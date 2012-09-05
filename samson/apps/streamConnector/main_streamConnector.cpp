@@ -167,7 +167,8 @@ int main(int argC, const char *argV[]) {
   // Engine and its associated elements
   engine::Engine::InitEngine(2, 10000000000, 1);
 
-  samson::ModulesManager::init("streamConnector");               // Init the modules manager
+  // Load modules
+  au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
 
   // Ignore verbose mode if interactive is activated
   if (interactive) {

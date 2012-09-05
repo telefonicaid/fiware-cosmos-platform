@@ -31,13 +31,10 @@ class Block;
  */
 
 class BlockListContainer {
-  std::string container_name;
-  au::map<std::string, BlockList > blockLists;
-
 public:
 
   // Constructor and destructor
-  BlockListContainer(std::string _container_name);
+  BlockListContainer(std::string _container_name, size_t task_id);
   ~BlockListContainer();
 
   // Get a particular block list
@@ -57,6 +54,12 @@ public:
 
   // Lock content on memory
   void lock_content_in_memory();
+
+private:
+
+  size_t task_id_;
+  std::string container_name_;
+  au::map<std::string, BlockList > blockLists_;
 };
 }
 }

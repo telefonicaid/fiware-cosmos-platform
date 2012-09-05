@@ -18,14 +18,14 @@ TEST(au_containers_Box, assignation) {
     box.Insert(t);
     box.Insert(t2);
 
-    EXPECT_TRUE(TestBase::num_instances() > 0 ) << "Something wrong with the instance counter for test class";
+    EXPECT_TRUE(TestBase::num_instances() > 0) << "Something wrong with the instance counter for test class";
 
     EXPECT_EQ(box.Contains(t), true) << "Error in au::Box basic operations";
     EXPECT_EQ(box.Contains(t3), false) << "Error in au::Box basic operations";
 
-    EXPECT_EQ((size_t)2,box.size()) << "Error in au::Box basic operations";
+    EXPECT_EQ((size_t)2, box.size()) << "Error in au::Box basic operations";
   }
 
-  EXPECT_EQ(0,TestBase::num_instances()) << "Error in number of instances of test class";
+  EXPECT_EQ(0, TestBase::num_instances()) << "Error in number of instances of test class";
 }
 

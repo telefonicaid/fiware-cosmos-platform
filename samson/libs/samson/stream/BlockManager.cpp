@@ -51,10 +51,9 @@ void BlockManager::init() {
     LM_X(1, ("Error with init BlockManager (double init)"));
   }
   blockManager = new BlockManager();
-  blockManager->recover_blocks_from_disks();     // Recover blocks from disk
 }
 
-BlockManager::BlockManager() {
+BlockManager::BlockManager() : token_("BlockManager") {
   // Default values for read/write scheduling
   scheduled_write_size = 0;
   scheduled_read_size = 0;
@@ -62,6 +61,9 @@ BlockManager::BlockManager() {
   // Maximum amount of memory
   size_t total_memory = au::Singleton<SamsonSetup>::shared()->getUInt64("general.memory");
   max_memory = (double)total_memory * 0.8;    // 60% of memory for block manager
+
+  // Recover files from disk
+  recover_blocks_from_disks();
 
   // Notification to review block manager
   listen(notification_review_block_manager);
@@ -72,6 +74,8 @@ BlockManager::~BlockManager() {
 }
 
 void BlockManager::create_block(size_t block_id, engine::BufferPointer buffer) {
+  au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
+
   if (buffer == NULL) {
     LM_X(1, ("Internal error"));
   }
@@ -80,65 +84,62 @@ void BlockManager::create_block(size_t block_id, engine::BufferPointer buffer) {
   // Add this block
   block_ids_.push_back(block_id);
   blocks_.Set(block_id, block);
-
-  // Review where this block goes...
-  review();
 }
 
-void BlockManager::create_block(size_t block_id, KVHeader *header) {
-  BlockPointer block(new Block(block_id, header));
+void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids
+                                           , const std::set<size_t>& my_block_ids
+                                           , const std::set<size_t>& worker_ids) {
+  au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
 
-  // Add this block
-  block_ids_.push_back(block_id);
-  blocks_.Set(block_id, block);
-
-  // Review where this block goes...
-  review();
-}
-
-void BlockManager::RemoveBlocksNotIncluded(const std::set<size_t>& blocks_ids) {
   std::list<size_t>::iterator it;
   for (it = block_ids_.begin(); it != block_ids_.end(); ) {
-    // Recover block
     size_t block_id = *it;
     BlockPointer block = blocks_.Get(block_id);
 
-    // Get creation time ( do not remove young blocks )
-    size_t time = block->creation_time();
-
-    // Check if this block is in the provided list
-    bool isUsed = blocks_ids.find(block_id) != blocks_ids.end();
-
-    if (block->canBeRemoved() && !isUsed && (time > 60 * 10 )) {
-      // Remove this block
-      it = block_ids_.erase(it);
-      blocks_.Extract(block_id);
-
-      schedule_remove_operation(block);
-    } else {
-      it++;
+    // Make sure we do not consider this block temporal any more
+    if (all_block_ids.find(block_id) != all_block_ids.end()) {
+      block->set_no_temporal();
     }
+
+    // Check if it is included in data model
+    if (my_block_ids.find(block_id) != my_block_ids.end()) {
+      it++;
+      continue;
+    }
+
+    if (!block->canBeRemoved()) {
+      it++;
+      continue;
+    }
+
+    if (block->temporal()) {
+      // This block is considered temporal, so should be preserve
+      // if the origin worker is still there
+      size_t worker_id = block->worker_id();
+      if (block->creation_time() < 600) {  // max 10 minuts
+        if (worker_ids.find(worker_id) != worker_ids.end()) {
+          it++;
+          continue;
+        }
+      }
+    }
+
+    // Remove this block
+    it = block_ids_.erase(it);
+    blocks_.Extract(block_id);
+    schedule_remove_operation(block);
   }
 }
 
 std::set<size_t> BlockManager::GetBlockIds() {
+  au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
+
   std::set<size_t> block_ids;
   std::list<size_t>::iterator it;
   for (it = block_ids_.begin(); it != block_ids_.end(); it++) {
     block_ids.insert(*it);
   }
   return block_ids;
-}
-
-std::set<size_t> BlockManager::GetPendingBlockIds(const std::set<size_t>& block_ids) {
-  std::set<size_t> pending_block_ids;
-  std::set<size_t>::iterator it;
-  for (it = block_ids.begin(); it != block_ids.end(); it++) {
-    if (!blocks_.ContainsKey(*it)) {
-      pending_block_ids.insert(*it);
-    }
-  }
-  return pending_block_ids;
 }
 
 void BlockManager::destroy() {
@@ -166,9 +167,11 @@ void BlockManager::notify(engine::Notification *notification) {
     size_t operation_size = notification->environment().Get("operation_size", 0);
     size_t block_id       = notification->environment().Get("block_id", 0);
 
+    if (type == "remove") {
+      return;  // nothing to do ( this avoid warning of block not found
+    }
     // Recover the block
     BlockPointer block = blocks_.Get(block_id);
-
 
     if (block == NULL) {
       LM_W(("Notification for non existing block %lu.Ignoring...", block_id));
@@ -187,8 +190,6 @@ void BlockManager::notify(engine::Notification *notification) {
       scheduled_read_size -= operation_size;
       block->state_ = Block::ready;
       review();
-    } else if (type == "remove") {
-      // Nothing to do here...
     }
   } else {
     LM_W(("Unknown notification at BlockManager"));
@@ -196,6 +197,8 @@ void BlockManager::notify(engine::Notification *notification) {
 }
 
 void BlockManager::review() {
+  au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
+
   // Get setup parameter to control review of BlockManager...
   size_t max_scheduled_write_size = au::Singleton<SamsonSetup>::shared()->getUInt64("stream.max_scheduled_write_size");
   size_t max_scheduled_read_size = au::Singleton<SamsonSetup>::shared()->getUInt64("stream.max_scheduled_read_size");
@@ -251,8 +254,6 @@ void BlockManager::review() {
   }
 
   LM_T(LmtBlockManager, ("Block limit %lu", last_block_id_in_memory ));
-
-  // --------------------------------------------------------------------------------
 
   // --------------------------------------------------------------------------------
   // Free memory of blocks that are not suppouse to be on memory
@@ -345,10 +346,14 @@ void BlockManager::review() {
 }
 
 BlockPointer BlockManager::getBlock(size_t block_id) {
+  au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
+
   return blocks_.Get(block_id);
 }
 
 void BlockManager::update(BlockInfo &block_info) {
+  au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
+
   std::list<size_t>::iterator b;
   for (b = block_ids_.begin(); b != block_ids_.end(); b++) {
     // Considering this block
@@ -360,6 +365,8 @@ void BlockManager::update(BlockInfo &block_info) {
 }
 
 gpb::Collection *BlockManager::getCollectionOfBlocks(const Visualization& visualization) {
+  au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
+
   // Sort the blocks to make sure it reflecs real order
   block_ids_.sort(BlockSorter(blocks_));
 
@@ -418,7 +425,14 @@ void BlockManager::create_block_from_disk(const std::string& fileName) {
   fclose(file);
 
   // Create the block
-  create_block(block_id, &header);
+  BlockPointer block(new Block(block_id, &header));
+
+  // Add this block
+  {
+    au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
+    block_ids_.push_back(block_id);
+    blocks_.Set(block_id, block);
+  }
 }
 
 void BlockManager::recover_blocks_from_disks() {
@@ -427,6 +441,8 @@ void BlockManager::recover_blocks_from_disks() {
   DIR *dp;
   struct dirent *dirp;
 
+  std::vector<std::string> file_names;
+
   if ((dp  = opendir(blocks_dir.c_str())) != NULL) {
     while ((dirp = readdir(dp)) != NULL) {
       std::string fileName = dirp->d_name;
@@ -434,16 +450,22 @@ void BlockManager::recover_blocks_from_disks() {
       // Full path of the file
       std::string path = au::path_from_directory(blocks_dir, dirp->d_name);
 
-      struct ::stat info;
-      stat(path.c_str(), &info);
-
-      if (S_ISREG(info.st_mode)) {
-        // Trying to recover block from disk....
-        create_block_from_disk(path);
-      }
+      file_names.push_back(path);
     }
     closedir(dp);
   }
+  for (size_t i = 0; i < file_names.size(); i++) {
+    LM_M(("Recovering data from file %lu/%lu %s", i + 1, file_names.size(), file_names[i].c_str()));
+
+    struct ::stat info;
+    stat(file_names[i].c_str(), &info);
+
+    if (S_ISREG(info.st_mode)) {
+      // Trying to recover block from disk....
+      create_block_from_disk(file_names[i]);
+    }
+  }
+  review();
 }
 
 void BlockManager::schedule_remove_operation(BlockPointer block) {
@@ -474,7 +496,6 @@ void BlockManager::schedule_read_operation(BlockPointer block) {
 
   // Read operation over this buffer
   std::string fileName = block->file_name();
-
 
   engine::DiskOperation *o = engine::DiskOperation::newReadOperation(fileName
                                                                      , 0
@@ -526,6 +547,8 @@ void BlockManager::schedule_write_operation(BlockPointer block) {
 }
 
 void BlockManager::resetBlockManager() {
+  au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
+
   // Clear dictionary and list of ids
   block_ids_.clear();
   blocks_.clear();

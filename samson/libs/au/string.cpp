@@ -82,7 +82,7 @@ std::string str_time_simple(size_t seconds) {
 }
 
 std::string str_time(size_t seconds) {
-  if (seconds > (3600L * 24L * 265L * 100L)) {
+  if (seconds > (3600ULL * 24ULL * 265ULL * 100ULL)) {
     return "   >100y";
   }
 

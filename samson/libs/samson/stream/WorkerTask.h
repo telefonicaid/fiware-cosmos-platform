@@ -64,8 +64,6 @@ public:
 
 private:
 
-  void sendBufferToQueue(engine::BufferPointer buffer, int outputWorker, std::string queue_name);
-
   // Specific function to execute map, reduce, parser operations
   void generateKeyValues_parser(samson::ProcessWriter *writer);
   void generateKeyValues_map(samson::ProcessWriter *writer);

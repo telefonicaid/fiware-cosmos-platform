@@ -431,23 +431,23 @@ static char usageString[800 * 200];
  */
 HelpVar helpVar[] =
 {
-  { "$PROGNAME", progNameV                                                                                                                },
-  { "$USER",     paUserName                                                                                                               },
-  { "$PWD",      paPwd                                                                                                                    },
-  { "$USAGE",    usageString                                                                                                              },
-  { "$COLUMNS",  paColumns                                                                                                                },
-  { "$ROWS",     paRows                                                                                                                   },
-  { "$DISPLAY",  paDisplay                                                                                                                },
-  { "$EDITOR",   paEditor                                                                                                                 },
-  { "$LANG",     paLang                                                                                                                   },
-  { "$PAGER",    paPager                                                                                                                  },
-  { "$PPID",     paPpid                                                                                                                   },
-  { "$PID",      paPid                                                                                                                    },
-  { "$PRINTER",  paPrinter                                                                                                                },
-  { "$SHELL",    paShell                                                                                                                  },
-  { "$TERM",     paTerm                                                                                                                   },
-  { "$SYSTEM",   paSystem                                                                                                                 },
-  { "$VISUAL",   paVisual                                                                                                                 }
+  { "$PROGNAME", progNameV                                                                                                                     },
+  { "$USER",     paUserName                                                                                                                    },
+  { "$PWD",      paPwd                                                                                                                         },
+  { "$USAGE",    usageString                                                                                                                   },
+  { "$COLUMNS",  paColumns                                                                                                                     },
+  { "$ROWS",     paRows                                                                                                                        },
+  { "$DISPLAY",  paDisplay                                                                                                                     },
+  { "$EDITOR",   paEditor                                                                                                                      },
+  { "$LANG",     paLang                                                                                                                        },
+  { "$PAGER",    paPager                                                                                                                       },
+  { "$PPID",     paPpid                                                                                                                        },
+  { "$PID",      paPid                                                                                                                         },
+  { "$PRINTER",  paPrinter                                                                                                                     },
+  { "$SHELL",    paShell                                                                                                                       },
+  { "$TERM",     paTerm                                                                                                                        },
+  { "$SYSTEM",   paSystem                                                                                                                      },
+  { "$VISUAL",   paVisual                                                                                                                      }
 };
 
 

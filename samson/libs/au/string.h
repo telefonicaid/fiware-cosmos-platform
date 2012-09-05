@@ -144,9 +144,21 @@ std::string substring_without_prefix_and_posfix(std::string& str, std::string pr
 // Reverse order of lines
 std::string reverse_lines(std::string& txt);
 
-
 // hash function (same as the method in system::String and system::Value
 int HashString(const std::string& str, int max_num_partitions);
+
+// Trasnform to string a vector of things
+template <typename C>
+std::string str(const std::vector<C>& vector) {
+  std::ostringstream output;
+
+  output << "[ ";
+  for (size_t i = 0; i < vector.size(); i++) {
+    output << vector[i] << " ";
+  }
+  output << "]";
+  return output.str();
+}
 }
 
 

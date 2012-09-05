@@ -6,13 +6,8 @@
 #include "WorkerNetwork.h"  // Own interface
 
 namespace samson {
-WorkerNetwork::WorkerNetwork(size_t worker_id
-                             , int port
-                             , NetworkInterfaceReceiver *receiver
-                             , au::SharedPointer<gpb::ClusterInfo> cluster_information)
-  : CommonNetwork(NodeIdentifier(WorkerNode, worker_id)
-                  , receiver
-                  , cluster_information) {
+WorkerNetwork::WorkerNetwork(size_t worker_id, int port)
+  : CommonNetwork(NodeIdentifier(WorkerNode, worker_id)) {
   // Add listener for incoming connections
   // ----------------------------------------------------------------------------
   {

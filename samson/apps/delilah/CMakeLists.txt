@@ -15,7 +15,6 @@ SET (STATIC_LIBS
      lm
      protobuf
      pthread
-     curses
      samsonNetwork
      samsonStream
      samsonModule

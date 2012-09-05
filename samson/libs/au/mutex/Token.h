@@ -53,9 +53,15 @@ private:
 
   // Mechanism to discover if you have locked this mutex
   // Allowing multiple Retains from the same thread
-  pid_t token_owner_thread_id_;
+
+  // syscall(SYS_gettid) is not supported on mac, so we come back to pthread_t
+  // Specific implementation for solaris may be necessary.
+  pthread_t token_owner_thread_t_;
   volatile bool locked_;
   volatile int counter_;   // Number of times this token is taken
+
+  // Method to get a unique identifier for the threads
+  size_t GetMyThreadId();
 };
 }
 

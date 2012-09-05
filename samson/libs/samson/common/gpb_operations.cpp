@@ -122,10 +122,34 @@ bool isWorkerIncluded(ClusterInfo *cluster_information, size_t worker_id) {
   return false;
 }
 
+size_t GetNumKVRanges(ClusterInfo *cluster_information, size_t worker_id) {
+  size_t total = 0;
+
+  for (int i = 0; i < cluster_information->process_units_size(); i++) {
+    if (cluster_information->process_units(i).worker_id() == worker_id) {
+      total++;
+    }
+  }
+  return total;
+}
+
 void reset_data(Data *data) {
+  // Remove all queues except .modules
+  ::samson::gpb::Queue *modules_queue = NULL;
+  ::samson::gpb::Queue *current_modules_queue = get_queue(data, ".modules");
+  if (current_modules_queue) {
+    modules_queue = new ::samson::gpb::Queue();
+    modules_queue->CopyFrom(*current_modules_queue);
+  }
+
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::Queue > *queues = data->mutable_queue();
   while (queues->size() > 0) {
     queues->RemoveLast();
+  }
+
+  if (modules_queue) {
+    queues->Add()->CopyFrom(*modules_queue);
+    delete modules_queue;
   }
 }
 
@@ -144,6 +168,7 @@ Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat f
   // Create a new one with the rigth format
   queue = data->add_queue();
   queue->set_name(queue_name);
+  queue->set_version(1);
   queue->set_key_format(format.keyFormat);
   queue->set_value_format(format.valueFormat);
   queue->mutable_blocks();                     // Just to force the creation of this element
@@ -230,6 +255,8 @@ void add_block(Data *data
   // Get or create this queue
   gpb::Queue *queue = get_or_create_queue(data, queue_name, format, error);
 
+  queue->set_version(version);
+
   if (error->IsActivated()) {
     return;
   }
@@ -254,6 +281,7 @@ void rm_block(Data *data
               , KVFormat format
               , ::samson::KVRange range
               , ::samson::KVInfo info
+              , int version
               , au::ErrorManager *error) {
   // Get or create this queue
   gpb::Queue *queue = get_queue(data, queue_name, format, error);
@@ -266,6 +294,8 @@ void rm_block(Data *data
     error->set(au::str("Queue %s does not exist", queue_name.c_str()));
     return;
   }
+
+  queue->set_version(version);
 
   // Get or create the block in this queue
   Block *block = get_first_block(queue, block_id);

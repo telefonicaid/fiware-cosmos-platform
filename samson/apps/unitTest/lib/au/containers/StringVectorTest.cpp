@@ -33,7 +33,7 @@ TEST(au_containers_StringVector, Assignation) {
   set.insert("hola");
   set.insert("adios");
   au::StringVector tmp2(set);
-  EXPECT_EQ((size_t)2,tmp2.size()) << "Error in size of string vector";
+  EXPECT_EQ((size_t)2, tmp2.size()) << "Error in size of string vector";
   au::StringVector a1("a");
   tmp2.Append(a1);
   EXPECT_EQ(tmp2.size(), (size_t)3) << "Error in size of string vector";

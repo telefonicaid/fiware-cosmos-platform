@@ -41,7 +41,7 @@
 
 #include "SamsonClient.h"                       // Own interface
 
-#include "samson/delilah/TXTFileSet.h"          // samson::DataSource
+#include "samson/delilah/DataSource.h"          // samson::DataSource
 
 namespace samson {
 SamsonClient::SamsonClient(std::string connection_type) {
@@ -109,15 +109,14 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
 
   // Init the modules manager
   LM_T(LmtModuleManager, ("Starting ModulesManager from SamsonClient::general_init()"));
-  samson::ModulesManager::init("samsonClient");
 }
 
 void SamsonClient::general_close() {
   // Wait all threads to finish
   au::Singleton<au::ThreadManager>::shared()->wait("SamsonClient");
 
-  // Close modules manager
-  samson::ModulesManager::destroy("samsonClient");
+  // Destroy all singletons
+  au::Singleton<ModulesManager>::DestroySingleton();
 
   // Close engine
   engine::Engine::DestroyEngine();

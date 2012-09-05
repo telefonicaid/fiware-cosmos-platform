@@ -112,6 +112,7 @@ public:
   std::string setupFileName();                               // Get the Steup file
   std::string sharedMemoryLogFileName();
   std::string modulesDirectory();
+  std::string worker_modules_directory();
   std::string blocksDirectory();
   std::string blockFileName(size_t block_id);
   size_t blockIdFromFileName(std::string fileName);

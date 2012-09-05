@@ -16,14 +16,14 @@
 
 #include "engine/DiskManager.h"     // engine::DiskManager
 #include "engine/Engine.h"               // engine::NotificationListener
-#include "engine/NotificationListener.h" // engine::NotificationListener
+#include "engine/NotificationListener.h"  // engine::NotificationListener
 
 #include "samson/common/samson.pb.h"  // samson::network
 
 #include "DelilahComponent.h"  // samson::DelilahComponent
 #include "samson/delilah/Delilah.h"  // samson::Delilah
 
-#include "TXTFileSet.h"  // samson::TXTFileSet
+#include "DataSource.h"  // samson::TXTFileSet
 
 
 namespace samson {

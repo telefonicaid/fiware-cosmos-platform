@@ -12,16 +12,14 @@
 #include "au/containers/set.h"
 #include "au/string.h"
 #include "au/tables/Table.h"
-
 #include "engine/Buffer.h"
 
-
-#include "samson/common/samson.pb.h"
+// Name of the notification
+#define notification_zoo_watcher "notification_zoo_watcher"
 
 namespace samson {
 namespace zoo {
 class Connection;
-class ConnectionWatcherInterface;
 
 // ----------------------------------------------------------------------
 //
@@ -39,15 +37,6 @@ class Connection {
   // Main zookeeper handler
   zhandle_t *handler_;
 
-  // Set of active watchers
-  au::set<ConnectionWatcherInterface> connection_watchers_;
-
-  // Internal struct used to group connection and connection_watcher
-  struct ConnectionWatcherInterfaceCaller {
-    Connection *connection;
-    ConnectionWatcherInterface *connection_wacher;
-  };
-
 public:
 
   // Constructor & destructor
@@ -61,12 +50,8 @@ public:
   /*
    * Note:
    * zookeeper c API does not allow to remove a watcher.
-   * We implemente this register mechanism to make sure a deleted
-   * object never received a watch callback
+   * Callbacks will be done using Engine so delegate can be removed
    */
-  void RegisterWatcher(ConnectionWatcherInterface *w);
-  void UnregisterWatcher(ConnectionWatcherInterface *w);
-  bool IsWatcherRegistered(ConnectionWatcherInterface *w);
 
   // Static watcher method ( to be used in the zookepper C API )
   static void static_watcher(zhandle_t *zzh
@@ -75,11 +60,6 @@ public:
                              , const char *path
                              , void *watcherCtx);
 
-  // General watcher function to route this alert to the associated ConectionWatcher
-  void watcher(ConnectionWatcherInterface *connection_watcher
-               , int type
-               , int state
-               , const char *path);
 
   // Connection operations
   int Connect(const std::string& host
@@ -110,51 +90,43 @@ public:
   int Remove(const std::string&path, int version = -1);
 
   // Set functions
-  int Set(const std::string& path
-          , const char *value = NULL
-          , int value_len = 0
-          , int version = -1);
-  int Set(const std::string& path
-          , ::google::protobuf::Message *value
-          , int version = -1);
+  int Set(const std::string& path, const char *value = NULL, int value_len = 0, int version = -1);
+  int Set(const std::string& path, ::google::protobuf::Message *value, int version = -1);
   // Get functions
-  int Get(const std::string& path
-          , char *buffer
-          , int *buflen
-          , struct Stat *stat = NULL);
-  int Get(const std::string& path
-          , ::google::protobuf::Message *value
-          , int buffer_size = 10000);
+  int Get(const std::string& path, char *buffer, int *buflen, struct Stat *stat = NULL);
+  int Get(const std::string& path, ::google::protobuf::Message *value);
   int Get(const std::string& path, engine::BufferPointer buffe);
   int Get(const std::string& path, std::string& value);
   int Get(const std::string& path
-          , ConnectionWatcherInterface *watcher
+          , size_t engine_id
           , char *buffer = NULL
           , int *buffer_len = NULL
           , struct Stat *stat = NULL);
   int Get(const std::string& path
-          , ConnectionWatcherInterface *watcher
+          , size_t engine_id
           , std::string& value
           , struct Stat *stat = NULL);
   int Get(const std::string& path
-          , ConnectionWatcherInterface *watcher
+          , size_t engine_id
           , ::google::protobuf::Message *value
-          , struct Stat *stat = NULL
-          , int buffer_size = 10000);
+          , struct Stat *stat = NULL);
 
   // Exist functions
   int Exists(const std::string& path, struct Stat *stat = NULL);
   int Exists(const std::string& path
-             , ConnectionWatcherInterface *watcher
+             , size_t engine_id
              , struct Stat *stat = NULL);
   // Get childrens
   int GetChildrens(const std::string& path, String_vector *vector);
   int GetChildrens(const std::string& path, au::StringVector& childrens);
 
+  // Connection time in seconds
+  double GetConnectionTime();
+
 private:
 
-  // Auxiliar function to create ConnectionWatcherInterfaceCaller*
-  ConnectionWatcherInterfaceCaller *get_new_watcher_caller(ConnectionWatcherInterface *watcher);
+  // Cronometer since its creation
+  au::Cronometer cronometer_;
 };
 }
 }                       // End of namespace samson::zoo

@@ -4,6 +4,7 @@
 
 #include "au/containers/list.h"
 #include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 #include <memory>
 
 namespace au {
@@ -28,20 +29,27 @@ public:
   }
 
   void Retain() {
+    au::TokenTaker tt(&token_);
+
     reference_counter_++;
   }
 
   int Release() {
+    au::TokenTaker tt(&token_);
+
     return --reference_counter_;
   }
 
   int count() {
+    au::TokenTaker tt(&token_);
+
     return reference_counter_;
   }
 
 private:
 
   int reference_counter_;
+  au::Token token_;  // Mutex protection for multi-thread
 };
 
 template <class C>
@@ -156,6 +164,7 @@ private:
     if (shared_reference_counter_->Release()  == 0) {
       if (c_) {
         delete c_;
+        c_ = NULL;
       }
       delete shared_reference_counter_;
     }

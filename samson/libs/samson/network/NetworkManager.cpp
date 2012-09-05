@@ -158,8 +158,9 @@ std::string NetworkManager::str() {
 }
 
 void NetworkManager::Review() {
+  std::set<std::string> current_connections = connections.getKeys();
   // Revie general queue to remove packets to long-unconnected nodes
-  multi_packet_queue.check();
+  multi_packet_queue.RemoveOldConnections(current_connections);
 
   // Remove all unconnected elements
   RemoveDisconnectedConnections();

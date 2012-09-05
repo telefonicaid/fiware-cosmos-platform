@@ -31,7 +31,7 @@ WorkerTask::WorkerTask(SamsonWorker *samson_worker
                        , Operation *operation
                        , KVRange range)
   : ProcessIsolated(au::str("WorkerTask %lu: %s", id, stream_operation.operation().c_str()), get_type(operation))
-    , WorkerTaskBase(id) {
+    , WorkerTaskBase(id, "worker_task") {
   // Keep a pointer to samson_worker to create output blocks
   samson_worker_ = samson_worker;
 
@@ -62,7 +62,6 @@ WorkerTask::~WorkerTask() {
 void WorkerTask::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
   if (visualization.get_flag("data")) {
     add(record, "id", get_id(), "left,different");
-
     for (int i = 0; i < 3; i++) {
       BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", i));
       BlockInfo block_info = block_list->getBlockInfo();
@@ -77,7 +76,23 @@ void WorkerTask::fill(samson::gpb::CollectionRecord *record, const Visualization
     return;
   }
 
+  if (visualization.get_flag("blocks")) {
+    add(record, "id", get_id(), "left,different");
+    for (int i = 0; i < 3; i++) {
+      BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", i));
+      add(record, au::str("Input %d", i), block_list->str_blocks(), "left,different");
+    }
+    for (int i = 0; i < 3; i++) {
+      BlockList *block_list = block_list_container_.getBlockList(au::str("output_%d", i));
+      add(record, au::str("Output %d", i), block_list->str_blocks(), "left,different");
+    }
+
+    return;
+  }
+
+
   add(record, "id", get_id(), "left,different");
+  add(record, "name", name(), "left,different");
   add(record, "worker_command_id", environment_.Get("worker_command_id", "?"), "left,different");
   add(record, "creation", creation_cronometer_.seconds(), "f=time,different");
   add(record, "running ", cronometer().seconds(), "f=time,different");
@@ -103,7 +118,7 @@ void WorkerTask::processOutputBuffer(engine::BufferPointer buffer, int output, i
   KVHeader *header = (KVHeader *)buffer->data();
 
   // Create a block ( and distribute it )
-  size_t block_id = samson_worker_->distribution_blocks_manager()->CreateBlock(buffer);
+  size_t block_id = samson_worker_->worker_block_manager()->CreateBlock(buffer);
   BlockPointer block = BlockManager::shared()->getBlock(block_id);
 
   // Add output to this operation
@@ -115,69 +130,12 @@ void WorkerTask::processOutputTXTBuffer(engine::BufferPointer buffer, bool finis
   KVHeader *header = (KVHeader *)buffer->data();
 
   // Create a block ( and distribute it )
-  size_t block_id = samson_worker_->distribution_blocks_manager()->CreateBlock(buffer);
+  size_t block_id = samson_worker_->worker_block_manager()->CreateBlock(buffer);
   BlockPointer block = BlockManager::shared()->getBlock(block_id);
 
   // Add output to this operation
   // Always on channel 0
   add_output(0, block, header->range, header->info);
-}
-
-void WorkerTask::sendBufferToQueue(engine::BufferPointer buffer, int outputWorker, std::string queue_name) {
-  LM_X(1, ("Unimplemented"));
-  /*
-   *
-   * if(!buffer)
-   * return;
-   *
-   * if( queue_name == "null")
-   * return;
-   *
-   * // Select the target worker_id
-   * // ------------------------------------------------------------------------------------
-   * size_t target_worker_id;
-   * if( outputWorker == -1 )
-   * {
-   * // To my self
-   * target_worker_id = distribution_information.get_my_worker_id();
-   * }
-   * else
-   * {
-   *
-   * if ( ( outputWorker < 0 ) || ( outputWorker > (int)distribution_information.workers.size() ) )
-   * LM_X(1, ("Non valid worker %d (#workers %lu) when seding buffer to queue %s" , outputWorker , distribution_information.workers.size() , queue_name.c_str() ) );
-   * target_worker_id = distribution_information.workers[ outputWorker ];
-   * }
-   *
-   * // ------------------------------------------------------------------------------------
-   * // Sent the packet
-   * // ------------------------------------------------------------------------------------
-   *
-   * Packet* packet = new Packet( Message::PushBlock );
-   * packet->set_buffer( buffer );    // Set the buffer of data
-   * packet->message->set_delilah_component_id( 0 );
-   *
-   * network::PushBlock* pb =  packet->message->mutable_push_block();
-   * pb->set_size( buffer->size() );
-   *
-   * std::vector<std::string> queue_names = au::split( queue_name , ',' );
-   * for ( size_t i = 0 ; i < queue_names.size() ; i++)
-   * {
-   * pb->add_queue( queue_names[i] );
-   * }
-   *
-   *
-   * // Direction to send packet
-   * packet->to.node_type = WorkerNode;
-   * //packet->to.id = target_worker_id;
-   *
-   * // Send packet
-   * //distribution_information.network->send( packet );
-   *
-   * // Release created packet
-   * packet->Release();
-   *
-   */
 }
 
 std::string WorkerTask::commit_command() {
@@ -220,15 +178,11 @@ std::string WorkerTask::commit_command() {
 }
 
 void WorkerTask::initProcessIsolated() {
-  LM_W(("Init worker task %lu", get_id()));
-
   // Review input blocks to count key-values
   for (int i = 0; i < operation_->getNumInputs(); i++) {
     BlockList *list = block_list_container_.getBlockList(au::str("input_%d", i));
     list->ReviewBlockReferences(error_);
   }
-
-  LM_W(("Finish Init worker task %lu", get_id()));
 }
 
 void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {

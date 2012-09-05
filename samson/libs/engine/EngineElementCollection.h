@@ -17,7 +17,7 @@
 #include "au/mutex/TokenTaker.h"
 
 #include "engine/NotificationListener.h"         // engine::EngineNotification
-#include "engine/NotificationListenersManager.h" // engine::NotificationListenersManager
+#include "engine/NotificationListenersManager.h"  // engine::NotificationListenersManager
 
 
 namespace au {

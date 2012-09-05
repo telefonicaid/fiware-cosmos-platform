@@ -72,6 +72,9 @@ public:
   size_t get_block_id();
   KVRange getKVRange();                // Working with KVRanges
   KVInfo getKVInfo();
+  size_t worker_id();
+  bool temporal();
+  void set_no_temporal();
 
   // Set accesors
   void set_priority(int _priority);
@@ -150,6 +153,9 @@ private:
   // Information about how key-values are organized in hash-groups
   au::SharedPointer<KVFile> file_;
   au::Token token_file_;
+
+  // Tempora flag ( means that this block has not been pushed into the model )
+  bool temporal_;
 
   friend class BlockManager;
   friend class BlockLookupList;

@@ -36,24 +36,24 @@ class ProcessIsolated : public ProcessItemIsolated {
 public:
 
   typedef enum {
-    key_value,                      // Emit key-values to multiple outputs / multiple workers
-    txt                             // Emit txt content using the entire buffer
+    key_value,             // Emit key-values to multiple outputs / multiple workers
+    txt                    // Emit txt content using the entire buffer
   } ProcessBaseType;
 
   ProcessBaseType type;
 
 public:
 
-  int shm_id;                       // Shared memory area used in this operation
+  int shm_id;              // Shared memory area used in this operation
   engine::SharedMemoryItem *item;   // Share memory item
 
-  ProcessWriter *writer;            // Object used to emit key-values if type=key_value
+  ProcessWriter *writer;   // Object used to emit key-values if type=key_value
   ProcessTXTWriter *txtWriter;      // Object used to emit txt content if type=txt
 
 public:
 
-  int num_outputs;      // Number of outputs
-  int num_hg_divisions;    // Number of hg divisions
+  int num_outputs;         // Number of outputs
+  static int num_hg_divisions;    // Number of hg divisions
 
   // Auxiliar information to give correct format to output buffers
   std::vector<KVFormat> outputFormats;

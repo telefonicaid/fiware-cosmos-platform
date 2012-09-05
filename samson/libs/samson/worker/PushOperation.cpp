@@ -4,10 +4,10 @@
 #include "samson/worker/SamsonWorker.h"
 #include "samson/zoo/CommitCommand.h"
 
-#include "PushManager.h"  // Own interface
+#include "PushOperation.h"  // Own interface
+
 
 namespace samson {
-namespace worker {
 PushOperation::PushOperation(SamsonWorker *samson_worker
                              , size_t block_id
                              , size_t delilah_id
@@ -42,10 +42,20 @@ size_t PushOperation::get_push_id() {
   return push_id_;
 }
 
+size_t PushOperation::time() {
+  return cronometer_.seconds();
+}
+
 void PushOperation::notify(engine::Notification *notification) {
-  if (distributed) {
-    return;                     // If the block has already been distributed, ignore notifications
+  if (!notification->isName("notification_block_correctly_distributed")) {
+    LM_W(("Unexpected notification at PushOperation"));
+    return;
   }
+
+  if (distributed) {
+    return;  // If the block has already been distributed, ignore notifications
+  }
+
   // Get block_id that has been distributed
   size_t block_id = notification->environment().Get("block_id", (size_t)-1);
 
@@ -90,12 +100,16 @@ void PushOperation::commit() {
 
   samson_worker_->data_model()->Commit(caller, command, &error);
 
-  if (error.IsActivated()) {
-    LM_W(("Error commiting to data model in push operation: %s", error.GetMessage().c_str()));                     // Send a commit response message to delilah
-  }
+  // Answer message to delilah
   PacketPointer packet(new Packet(Message::PushBlockCommitResponse));
   packet->to = NodeIdentifier(DelilahNode, delilah_id_);
   packet->message->set_push_id(push_id_);
+
+  if (error.IsActivated()) {
+    // Send a commit response message to delilah
+    LM_W(("Error commiting to data model in push operation: %s", error.GetMessage().c_str()));
+    packet->message->mutable_error()->set_message(au::str("Error: %s", error.GetMessage().c_str()));
+  }
   samson_worker_->network()->Send(packet);
 
   // Flag as commited
@@ -125,88 +139,5 @@ std::string PushOperation::getStatus() {
 
 std::string PushOperation::getStrBufferInfo() {
   return header.str();
-}
-
-// Received a message from a delilah
-void PushManager::receive_push_block(size_t delilah_id
-                                     , size_t push_id
-                                     , engine::BufferPointer buffer
-                                     , const std::vector<std::string>& queues) {
-  if (buffer == NULL) {
-    LM_W(("Push message without a buffer. This is an error..."));
-    return;
-  }
-
-  // Modify incomming buffer to assign only one hg
-  KVRanges ranges = samson_worker_->worker_controller()->GetMyKVRanges();
-  int hg = ranges.RandomHashGroup();
-
-  KVHeader *header = (KVHeader *)buffer->data();
-  if (!header->isTxt() || !header->check() || !header->range.isValid()) {
-    LM_W(("Push message with a non-valid buffer.Ignoring..."));
-    return;
-  }
-
-  header->range.set(hg, hg + 1);
-
-
-  // Create a new block in this worker ( and start distribution process )
-  size_t block_id   = samson_worker_->distribution_blocks_manager()->CreateBlock(buffer);
-
-  if (block_id == (size_t)-1) {
-    LM_W(("Error creating block in a push operation ( block_id -1 )"));
-    return;
-  }
-
-  // Check valid header
-  if (buffer->size() < sizeof(KVHeader)) {
-    LM_W(("Push message with a non-valid buffer.Ignoring..."));
-    return;
-  }
-
-  // Create PushOpertion object and insert in the vector of pending push operations
-  PushOperation *push_operation =
-    new PushOperation(samson_worker_, block_id, delilah_id, push_id, buffer,
-                      queues);
-  push_operations_.push_back(push_operation);
-
-  LM_TODO(("If the push is ready to confirm distirbution, answer here"));
-
-  return;
-}
-
-void PushManager::receive_push_block_commit(size_t delilah_id, size_t push_id) {
-  for (size_t i = 0; i < push_operations_.size(); i++) {
-    // Check if thi is the one
-    if (push_operations_[i]->get_delilah_id() == delilah_id) {
-      if (push_operations_[i]->get_push_id() == push_id) {
-        push_operations_[i]->commit();
-        return;
-      }
-    }
-  }
-
-  LM_W(("Unused commit message for a push operation"));
-  return;
-}
-
-gpb::Collection *PushManager::getCollectionForPushOperations(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
-  collection->set_name("push operations");
-
-  for (size_t i = 0; i < push_operations_.size(); i++) {
-    PushOperation *push_operation = push_operations_[i];
-
-    gpb::CollectionRecord *record = collection->add_record();
-
-    ::samson::add(record, "Delilah", push_operation->getStrIdentifiers());
-    ::samson::add(record, "block_id", push_operation->get_block_id());
-    ::samson::add(record, "Buffer", push_operation->getStrBufferInfo());
-    ::samson::add(record, "Status", push_operation->getStatus());
-  }
-
-  return collection;
-}
 }
 }

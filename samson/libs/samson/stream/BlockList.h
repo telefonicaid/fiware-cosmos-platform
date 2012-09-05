@@ -54,7 +54,7 @@ class BlockMatrix;
 
 /*
  *
- * BlockListItem
+ * BlockRef
  *
  *
  * Reference for a block and a particular range of key-values
@@ -91,17 +91,9 @@ private:
 };
 
 class BlockList {
-  std::string name_;           // Name of this block list ( for debugging )
-  size_t task_id_;             // Order of the task if really a task
-  bool lock_in_memory_;        // Lock in memory
-  int priority_;               // Priority level for blocks that are not involved in tasks
-
 public:
 
   au::list< BlockRef > blocks;  // List of blocks references
-
-public:
-
 
   BlockList(std::string name = "no_name", size_t task_id = ( size_t)-1) {
     name = name;
@@ -133,6 +125,16 @@ public:
 
   // Review blocks to verify number of key-values
   void ReviewBlockReferences(au::ErrorManager& error);
+
+  // string for debug blocks
+  std::string str_blocks();
+
+private:
+
+  std::string name_;           // Name of this block list ( for debugging )
+  size_t task_id_;             // Order of the task if really a task
+  bool lock_in_memory_;        // Lock in memory
+  int priority_;               // Priority level for blocks that are not involved in tasks
 };
 }
 }

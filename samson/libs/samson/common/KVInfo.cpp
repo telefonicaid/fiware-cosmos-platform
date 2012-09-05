@@ -89,8 +89,8 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
   KVHeader *header = (KVHeader *)_data;
   char *data = _data + sizeof(KVHeader);
 
-  Data *key_data = ModulesManager::shared()->getData(header->keyFormat);
-  Data *value_data = ModulesManager::shared()->getData(header->valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(header->keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(header->valueFormat);
 
   if (!key_data) {
     LM_E(("Unknown data type %s", header->keyFormat));

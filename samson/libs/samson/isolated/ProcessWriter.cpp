@@ -52,8 +52,8 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
       std::string key_data = processIsolated->outputFormats[i].keyFormat;
       std::string value_data = processIsolated->outputFormats[i].valueFormat;
 
-      Data *keyData =  ModulesManager::shared()->getData(key_data);
-      Data *valueData =  ModulesManager::shared()->getData(value_data);
+      Data *keyData =  au::Singleton<ModulesManager>::shared()->getData(key_data);
+      Data *valueData =  au::Singleton<ModulesManager>::shared()->getData(value_data);
 
       if (!keyData) {
         processIsolated->setUserError(au::str("Data %s not found", key_data.c_str()));

@@ -149,6 +149,7 @@ void BlockList::add(BlockRef *block_ref) {
   blocks.push_back(block_ref);
 
   // Update information in the block ( for sorting )
+  block_ref->block()->add_block_list(this);
 }
 
 void BlockList::remove(BlockRef *block_ref) {
@@ -156,6 +157,7 @@ void BlockList::remove(BlockRef *block_ref) {
   blocks.remove(block_ref);
 
   // Update information in the block ( for sorting )
+  block_ref->block()->remove_block_list(this);
 }
 
 void BlockList::lock_content_in_memory() {
@@ -202,6 +204,21 @@ void BlockList::ReviewBlockReferences(au::ErrorManager& error) {
       return;
     }
   }
+}
+
+std::string BlockList::str_blocks() {
+  if (blocks.size() == 0) {
+    return "empty";
+  }
+
+  std::ostringstream output;
+  output << "[ ";
+  au::list< BlockRef >::iterator it;
+  for (it = blocks.begin(); it != blocks.end(); it++) {
+    output << (*it)->block_id() << " ";
+  }
+  output << "]";
+  return output.str();
 }
 }
 }

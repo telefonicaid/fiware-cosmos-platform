@@ -38,40 +38,47 @@
 
 #include "samson/delilah/Delilah.h"
 #include "samson/network/WorkerNetwork.h"
-#include "samson/worker/DistributionBlocks.h"
-#include "samson/worker/PushManager.h"
+#include "samson/worker/PushOperation.h"
 #include "samson/worker/SamsonWorkerRest.h"
 #include "samson/worker/SamsonWorkerSamples.h"
+#include "samson/worker/WorkerBlockManager.h"
 #include "samson/worker/WorkerCommandManager.h"
 
+/*
+ *
+ * SamsonWorker
+ *
+ * Status
+ *
+ * unconnected --> Non connected to any cluster
+ * connected   --> Connected to ZK
+ * included    --> Part of the cluster
+ * ready       --> All blocks required for processing are here
+ *
+ */
 
 namespace samson {
 class NetworkInterface;
 class Info;
-class DistributionBlock;
+class DistributionOperation;
 
 namespace stream {
 class WorkerTaskManager;
 }
 
-namespace worker {
 class PushOperation;
-class PushManager;
-}
-
 class SamsonWorkerRest;
 
 class SamsonWorker :
-  public NetworkInterfaceReceiver,
   public engine::NotificationListener,
   public au::Console {
 public:
 
   SamsonWorker(std::string zoo_host, int port, int web_port);
   ~SamsonWorker() {
-  };                   // All internal components are shared pointers
+  };                     // All internal components are shared pointers
 
-  // Interface to receive Packets ( NetworkInterfaceReceiver )
+  // Interface to receive Packets
   void receive(const PacketPointer& packet);
 
   // Notification from the engine about finished tasks
@@ -85,29 +92,43 @@ public:
   // Get a collection with a single record with information for this worker...
   gpb::Collection *getWorkerCollection(const Visualization& visualization);
 
+  bool IsReady();      // Method to access if worker is ready
+  bool IsConnected();      // Method to access if worker is ready
+
   // Accessors to individual components of this worker
   au::SharedPointer<zoo::Connection> zoo_connection();
   au::SharedPointer<SamsonWorkerController> worker_controller();
   au::SharedPointer<DataModel> data_model();
   au::SharedPointer<WorkerNetwork> network();
+
+  // Accessors to individual components of this worker
   au::SharedPointer<SamsonWorkerRest> samson_worker_rest();
-  au::SharedPointer<samson::worker::PushManager> push_manager();
-  au::SharedPointer<DistributionBlockManager> distribution_blocks_manager();
+  au::SharedPointer<WorkerBlockManager> worker_block_manager();
   au::SharedPointer<stream::WorkerTaskManager> task_manager();
   au::SharedPointer<WorkerCommandManager> workerCommandManager();
 
+  // Relaod modules
+  void ReloadModulesIfNecessary();
+
 private:
 
+  enum State {
+    unconnected,
+    connected,
+    included,
+    ready,
+    cluster_ready,
+  };
 
-  // Reset worker ( when cluster setup chage )
-  void ResetWorker();
+  State state_;                  // Current state of this worker
+  std::string state_message_;    // Message of the last review of the state
 
   // Main function to review samson worker and all its elements
   // This function is preiodically called from engine
   void Review();
 
-  // Create zookeeper connection and related elements
-  void Connect();
+  void ResetToUnconnected();      // Reset when come back to unconnected
+  void ResetToConnected();        // Reset when come back to connected ( change cluster setup )
 
   // Connection values ( to reconnect if connections fails down )
   std::string zoo_host_;
@@ -118,18 +139,19 @@ private:
   au::Cronometer cronometer_;
 
   // Main elements of the worker
-  au::SharedPointer<zoo::Connection> zoo_connection_;            // Main connection with the zk
-  au::SharedPointer<SamsonWorkerController> worker_controller_;  // Cluster setup controller
-  au::SharedPointer<DataModel> data_model_;                      // Data model
-  au::SharedPointer<WorkerNetwork> network_;                     // Network manager to manage connections
-  au::SharedPointer<SamsonWorkerRest> samson_worker_rest_;       // REST Service
-  au::SharedPointer<samson::worker::PushManager> push_manager_;  // Manager of push operations
-  au::SharedPointer<DistributionBlockManager> distribution_blocks_manager_;     // Map of blocks recently created
-  au::SharedPointer<stream::WorkerTaskManager> task_manager_;    // Manager for tasks
-  au::SharedPointer<WorkerCommandManager> workerCommandManager_;  // Manager of the "Worker commands"
+  au::SharedPointer<zoo::Connection> zoo_connection_; // Main connection with the zk
+  au::SharedPointer<SamsonWorkerController> worker_controller_;    // Cluster setup controller
+  au::SharedPointer<DataModel> data_model_;           // Data model
+  au::SharedPointer<WorkerNetwork> network_;          // Network manager to manage connections
+  au::SharedPointer<SamsonWorkerRest> samson_worker_rest_;         // REST Service
+  au::SharedPointer<WorkerBlockManager> worker_block_manager_;       // Map of blocks recently created
+  au::SharedPointer<stream::WorkerTaskManager> task_manager_;      // Manager for tasks
+  au::SharedPointer<WorkerCommandManager> workerCommandManager_;    // Manager of the "Worker commands"
 
-  bool ready_;                                                   // Flag to indicate if this worker is ready
-  std::string status_message_;       // Message why we are not ready
+  size_t last_modules_version_;                       // Last version of the queue .modules observed so far
+
+  // State of this worker
+  std::string str_state();
 };
 }
 

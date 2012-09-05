@@ -45,9 +45,9 @@ private:
 class ActivityStatistics {
 public:
 
-  ActivityStatistics();
+  ActivityStatistics(const std::string& name);
 
-  void Push(ActivityItem *item);
+  void Push(double time);
   double GetAverage() const;
   double GetStdDeviation() const;
 
@@ -59,6 +59,7 @@ public:
 
 private:
 
+  std::string name_;
   double total_;            // Total time
   double total_square_;     // Total time*time
   double last_;             // Time of the last sample

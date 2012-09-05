@@ -48,7 +48,7 @@ KVInputVector::KVInputVector(Operation *operation) {
     return;
   }
 
-  Data *keyData       = ModulesManager::shared()->getData(inputFormats[0].keyFormat);
+  Data *keyData       = au::Singleton<ModulesManager>::shared()->getData(inputFormats[0].keyFormat);
   if (!keyData) {
     LM_X(1, ("Internal error:"));
   }
@@ -57,7 +57,7 @@ KVInputVector::KVInputVector(Operation *operation) {
     LM_X(1, ("Internal error:"));  // Get the rigth functions to process input key-values
   }
   for (int i = 0; i < (int)inputFormats.size(); i++) {
-    Data *valueData = ModulesManager::shared()->getData(inputFormats[i].valueFormat);
+    Data *valueData = au::Singleton<ModulesManager>::shared()->getData(inputFormats[i].valueFormat);
     if (!valueData) {
       LM_X(1, ("Internal error:"));
     }

@@ -59,7 +59,7 @@ public:
     }
 
     // Check if we have data types installed here
-    samson::ModulesManager *modulesManager = samson::ModulesManager::shared();
+    samson::ModulesManager *modulesManager = au::Singleton<samson::ModulesManager>::shared();
     samson::Data *keyData = modulesManager->getData(format.keyFormat);
     samson::Data *valueData = modulesManager->getData(format.valueFormat);
 

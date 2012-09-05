@@ -153,10 +153,7 @@ void DiskManager::FinishDiskOperation(const au::SharedPointer< ::engine::DiskOpe
   // Add a notification for this operation to the required target listener
   Notification *notification = new Notification(notification_disk_operation_request_response);
 
-  au::SharedPointer<NotificationObject> notification_object;
-  notification_object = operation.static_pointer_cast<NotificationObject>();
-
-  notification->dictionary().Set("disk_operation", notification_object);
+  notification->dictionary().Set("disk_operation", operation.static_pointer_cast<NotificationObject>());
   notification->AddEngineListeners(operation->listeners);
   notification->environment().Add(operation->environment);              // Recover the environment variables to identify this request
 

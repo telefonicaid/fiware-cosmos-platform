@@ -37,7 +37,6 @@ public:
 
   // Create blocks
   void create_block(size_t block_id, engine::BufferPointer buffer);
-  void create_block(size_t block_id, KVHeader *header);
 
   // Get a particular block
   BlockPointer getBlock(size_t _id);
@@ -49,7 +48,9 @@ public:
   void review();
 
   // Remove blocks not included in this list
-  void RemoveBlocksNotIncluded(const std::set<size_t>& blocks);
+  void RemoveBlocksIfNecessary(const std::set<size_t>& all_blocks
+                               , const std::set<size_t>& my_blocks
+                               , const std::set<size_t>& worker_ids);
 
   // Notification interface
   virtual void notify(engine::Notification *notification);
@@ -68,7 +69,7 @@ public:
     return scheduled_read_size;
   }
 
-  std::set<size_t> GetPendingBlockIds(const std::set<size_t>& block_ids);
+  // Get all block identifiers
   std::set<size_t> GetBlockIds();
 
 private:
@@ -86,6 +87,8 @@ private:
   size_t scheduled_write_size;        // Amount of bytes scheduled to be writen to disk
   size_t scheduled_read_size;         // Amount of bytes scheduled to be read from disk
   size_t max_memory;                  // Maximum amount of memory to be used by this block manager
+
+  au::Token token_;                   // Mutex protection since operations create blocks in multiple threads
 };
 }
 }

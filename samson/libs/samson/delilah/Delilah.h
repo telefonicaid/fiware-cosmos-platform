@@ -64,7 +64,7 @@ public:
  * Main class for the samson client element
  */
 
-class Delilah : public engine::NotificationListener, public DelilahBase, public NetworkInterfaceReceiver {
+class Delilah : public engine::NotificationListener, public DelilahBase {
   // Random identifier for this delilah
   size_t delilah_id_;
 
@@ -136,8 +136,11 @@ public:
   size_t get_num_push_items();
 
   // Add a push component
-  size_t add_push_component(std::vector<std::string> fileNames, const std::vector<std::string>& queues);
-  size_t add_push_component(DataSource *data_source, const std::vector<std::string>& queues);
+  size_t add_push_component(const std::vector<std::string>& file_names, const std::vector<std::string>& queues);
+  size_t add_push_component(DataSource *data_source, const std::vector<std::string>& queues, bool module = false);
+
+  // Add a push module component
+  size_t add_push_module_component(const std::vector<std::string>& file_names);
 
   size_t AddPopComponent(std::string queue_name, std::string fileName, bool force_flag, bool show_flag);
 

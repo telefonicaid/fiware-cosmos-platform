@@ -177,20 +177,6 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
     // Alloc a buffer to read buffer of data
     std::string buffer_name = au::str("Network Buffer from %s", fd->name().c_str());
 
-    au::Cronometer cronometer;
-    while (true) {
-      double memory_usage = engine::Engine::memory_manager()->memory_usage();
-      if (memory_usage < 0.9) {
-        break;
-      } else {
-        usleep(10000);
-      } if (cronometer.seconds() > 1) {
-        LM_W(("Cannot create buffer for packet since memory usage is %s"
-              , au::str_percentage(memory_usage).c_str()));
-        cronometer.Reset();
-      }
-    }
-
     buffer_ = engine::Buffer::Create(buffer_name, "network", header.kvDataLen);
 
     char *kvBuf  = buffer_->data();

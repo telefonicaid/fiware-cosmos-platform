@@ -2,18 +2,16 @@
 #ifndef _H_WORKER_COMMAND_DELILAH_COMPONENT
 #define _H_WORKER_COMMAND_DELILAH_COMPONENT
 
-#include "au/Cronometer.h"          // au::CronometerSystem
-#include "au/ErrorManager.h"        // au::ErrorManager
-
 #include <cstring>
 
-
-
+#include "au/Cronometer.h"          // au::CronometerSystem
+#include "au/ErrorManager.h"        // au::ErrorManager
+#include "au/console/CommandCatalogue.h"
 
 #include "samson/common/samson.pb.h"
 #include "samson/delilah/DelilahComponent.h"
-#include "samson/network/Message.h"             // Message::MessageCode
-#include "samson/network/Packet.h"              // samson::Packet
+#include "samson/network/Message.h" // Message::MessageCode
+#include "samson/network/Packet.h"  // samson::Packet
 
 namespace engine {
 class Buffer;
@@ -30,21 +28,63 @@ class Delilah;
 class WorkerResponese {
 public:
 
-  size_t worker_id;
-  au::ErrorManager error;
-
   WorkerResponese(size_t _worker_id) {
-    worker_id = _worker_id;
+    worker_id_ = _worker_id;
   }
 
   WorkerResponese(size_t _worker_id, std::string error_message) {
-    worker_id = _worker_id;
-    error.set(error_message);
+    worker_id_ = _worker_id;
+    error_.set(error_message);
   }
+
+  size_t worker_id() {
+    return worker_id_;
+  }
+
+  const au::ErrorManager&error() {
+    return error_;
+  }
+
+private:
+
+  size_t worker_id_;
+  au::ErrorManager error_;
 };
 
 class WorkerCommandDelilahComponent : public DelilahComponent {
+public:
+
+  WorkerCommandDelilahComponent(std::string _command, engine::BufferPointer buffer);
+  ~WorkerCommandDelilahComponent();
+
+  // Function to receive packets ( thougth Delilah )
+  void receive(const PacketPointer& packet);
+
+  // Main command to start this component
+  void run();
+
+  // DelilahComponent virtual methods
+  virtual std::string getStatus();
+  virtual std::string getExtraStatus();
+
+  // Get main table of result ( to show on screen )
+  au::tables::Table *getMainTable();
+
+  // Transform a collection received from workers to a table ( to be printed on screen )
+  static au::tables::Table *getStaticTable(gpb::Collection *collection);
+
+private:
+
+  // Internal function to print content of recevied collection
+  void print_content(gpb::Collection *collection);
+
+  // Transform a collection into a table
+  au::tables::Table *getTable(gpb::Collection *collection);
+
   std::string command;
+
+  // Instance of the command parsed from input command
+  au::console::CommandInstance *command_instance_;
 
   engine::BufferPointer buffer_;
 
@@ -64,35 +104,6 @@ class WorkerCommandDelilahComponent : public DelilahComponent {
   std::string sort_field;           // -sort
   bool connected_workers;           // -connected
   int limit;                        // -limit
-
-public:
-
-  WorkerCommandDelilahComponent(std::string _command, engine::BufferPointer buffer);
-  ~WorkerCommandDelilahComponent();
-
-  void receive(const PacketPointer& packet);
-
-  void run();
-
-  std::string getStatus();
-
-
-  au::tables::Table *getMainTable();
-
-
-  static au::tables::Table *getStaticTable(gpb::Collection *collection);
-
-private:
-
-  // Internal function to print content of recevied collection
-  void print_content(gpb::Collection *collection);
-
-  // Transform a collection into a table
-  au::tables::Table *getTable(gpb::Collection *collection);
-
-
-  // Check if this command has to be sent to only one worker
-  bool sendToAllWorker(const std::string& main_command);
 };
 }
 

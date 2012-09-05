@@ -68,14 +68,21 @@ au::tables::Table *MultiPacketQueue::getPendingPacketsTable() {
   return table;
 }
 
-void MultiPacketQueue::check() {
+void MultiPacketQueue::RemoveOldConnections(const std::set<std::string> current_connections) {
   au::TokenTaker tt(&token_packet_queues);
 
   au::map<std::string, PacketQueue>::iterator it_packet_queues;
   for (it_packet_queues = packet_queues.begin(); it_packet_queues != packet_queues.end(); ) {
-    if (it_packet_queues->second->seconds() > 60) {
-      std::string name = it_packet_queues->first;
+    std::string name = it_packet_queues->first;
 
+    if (current_connections.find(name) != current_connections.end()) {
+      // It is still connected
+      it_packet_queues->second->ResetInactivityCronometer();
+      ++it_packet_queues;
+      continue;
+    }
+
+    if (it_packet_queues->second->inactivity_time() > 60) {
       LM_W(("Removing  pending packets for %s since it has been disconnected mote than 60 secs", name.c_str()));
       packet_queues.erase(it_packet_queues++);
     } else {

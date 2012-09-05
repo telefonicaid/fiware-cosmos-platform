@@ -857,7 +857,7 @@ static char *lmLineFix
       STRING_ADD("%s", 4);
     } else if (strncmp(&format[fi], "FUNC", 4) == 0) {
       STRING_ADD(fName, 4);
-    } else { /* just a normal character */
+    } else {  /* just a normal character */
       CHAR_ADD(format[fi], 1);
     }
   }

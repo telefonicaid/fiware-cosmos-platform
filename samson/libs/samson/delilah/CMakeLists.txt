@@ -8,7 +8,7 @@ SET (HEADERS
 	PushDelilahComponent.h
 	PopDelilahComponent.h
 	WorkerCommandDelilahComponent.h
-	TXTFileSet.h
+	DataSource.h
 	DelilahCommandCatalogue.h
 	AlertCollection.h
 )
@@ -22,7 +22,7 @@ SET (SOURCES
 	PushDelilahComponent.cpp
 	PopDelilahComponent.cpp
 	WorkerCommandDelilahComponent.cpp
-	TXTFileSet.cpp
+	DataSource.cpp
 	DelilahCommandCatalogue.cpp
 	AlertCollection.cpp
 )

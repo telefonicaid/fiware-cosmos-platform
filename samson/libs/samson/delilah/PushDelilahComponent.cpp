@@ -44,6 +44,8 @@ PushDelilahComponent::PushDelilahComponent(DataSource *data_source, const std::v
   uploaded_size_ = 0;
   sent_size_ = 0;
 
+  uploading_module_ = false;     // By default we update a normal block of data
+
   // Set this to false ( true will be the end of processing data )
   finish_process = false;
 
@@ -93,11 +95,13 @@ void PushDelilahComponent::run_in_background() {
       // Activate this flag just to show information correctly
       finish_process = true;
 
+      current_status_ = "Waiting to finish scheduled push items...";
       while (true) {
         if (push_ids_.size() == 0) {
           setComponentFinished();
           return;
         }
+        usleep(10000);
       }
     }
 
@@ -105,11 +109,12 @@ void PushDelilahComponent::run_in_background() {
     au::Cronometer cronometer;
     current_status_ = "Waiting until used memory is under 70%";
     while (engine::Engine::memory_manager()->memory_usage() > 0.7) {
-      usleep(100000);
+      usleep(10000);
     }
 
     // Create a buffer to be filled
-    engine::BufferPointer buffer = engine::Buffer::Create("PushDelilahComponent", "push", 64 * 1024 * 1024);
+    size_t buffer_max_size = (64 * 1024 * 1024) + sizeof(KVHeader);
+    engine::BufferPointer buffer = engine::Buffer::Create("PushDelilahComponent", "push", buffer_max_size);
 
     // Skip KVHeader to write the header at the end
     buffer->SkipWrite(sizeof(KVHeader));
@@ -123,7 +128,11 @@ void PushDelilahComponent::run_in_background() {
 
     // Set the header
     KVHeader *header = (KVHeader *)buffer->data();
-    header->initForTxt(buffer->size() - sizeof(KVHeader));
+    if (uploading_module_) {
+      header->InitForModule(buffer->size() - sizeof(KVHeader));
+    } else {
+      header->InitForTxt(buffer->size() - sizeof(KVHeader));
+    }
 
     // Get the size to update the total process info
     sent_size_ += buffer->size();
@@ -155,6 +164,12 @@ void PushDelilahComponent::notify(engine::Notification *notification) {
 }
 
 std::string PushDelilahComponent::getStatus() {
+  return au::str("Sent %s Uploaded %s"
+                 , au::str(sent_size_, "B").c_str()
+                 , au::str(uploaded_size_, "B").c_str());
+}
+
+std::string PushDelilahComponent::getExtraStatus() {
   std::ostringstream output;
 
   au::tables::Table table(au::StringVector("Concept", "Value"));
@@ -201,5 +216,9 @@ std::string PushDelilahComponent::getStatus() {
 
   output << table.str();
   return output.str();
+}
+
+void PushDelilahComponent::SetUploadModule() {
+  uploading_module_ = true;
 }
 }

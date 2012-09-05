@@ -16,9 +16,12 @@
 #include "samson/network/Packet.h"
 
 namespace samson {
+// Number of blocks generated at the output of each operation
+// 5 is an arbitrary name ( should be based on the size of the cluster and redundancy )
+int ProcessIsolated::num_hg_divisions = 5;
+
 ProcessIsolated::ProcessIsolated(std::string description, ProcessBaseType _type) : ProcessItemIsolated(description) {
   num_outputs = 0;          // Outputs are defined calling "addOutput" with the rigth output format
-  num_hg_divisions = 5;     // Arbitrary name ( should be based on the size of the cluster and reducdancy )
 
   type = _type;
 
@@ -144,9 +147,9 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
 
         // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
         if (outputFormats.size() > (size_t)o) {
-          header->init(outputFormats[o], _channel->info);
+          header->Init(outputFormats[o], _channel->info);
         } else {
-          header->init(KVFormat("no-used", "no-used"), _channel->info);  // This buffer is not not sended with the buffer
+          header->Init(KVFormat("no-used", "no-used"), _channel->info);  // This buffer is not not sended with the buffer
         }
         KVInfo *info = (KVInfo *)malloc(sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS);
 
@@ -207,7 +210,7 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
       LM_X(1, ("Internal error"));
     }
     KVHeader *header = (KVHeader *)buffer->data();
-    header->initForTxt(size);
+    header->InitForTxt(size);
 
     // copy the entire buffer to here
     memcpy(buffer->data() + sizeof( KVHeader ), data, size);

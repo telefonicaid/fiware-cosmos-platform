@@ -15,19 +15,23 @@ struct KVHeader {
   // ---------------------------------------------------------------
 
   int magic_number;             // Magic number to make sure reception is correct
+
+  size_t worker_id;             // Identifier of the worker that created this block
+
   char keyFormat[100];          // Format for the key
   char valueFormat[100];        // Format for the value
 
   KVInfo info;                  // Total information in this package ( in all hash-groups )
   KVRange range;                // Range of has-groups used in this file
 
-  time_t time;                  // Time stamp for this block
+  time_t time;                  // Time stamp for this block ( for debugging )
 
   // Init header
   // ---------------------------------------------------------------
 
-  void init(KVFormat format, KVInfo _info);
-  void initForTxt(size_t size);
+  void Init(KVFormat format, KVInfo _info);
+  void InitForTxt(size_t size);
+  void InitForModule(size_t size);
 
   // Set extra information
   // ---------------------------------------------------------------
@@ -43,6 +47,7 @@ struct KVHeader {
   uint32 getTotalSize();
   uint32 getNumHashGroups();
   bool isTxt();
+  bool isModule();
 
   // Format operations
   // ---------------------------------------------------------------

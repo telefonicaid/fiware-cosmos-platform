@@ -25,22 +25,4 @@
 #include "samson/network/Message.h"               // samson::Message::MessageCode
 #include "samson/network/Packet.h"
 
-namespace samson {
-/* ****************************************************************************
- *
- * NetworkInterfaceReceiver -
- */
-
-class NetworkInterfaceReceiver {
-public:
-
-  // Method implemented to process received packets
-  virtual void receive(const PacketPointer& packet) = 0;
-
-  // Virtual destructor necessary since pure virtual methods are defined
-  virtual ~NetworkInterfaceReceiver() {
-  };
-};
-}
-
 #endif  // ifndef _H_NETWORK_INTERFACE

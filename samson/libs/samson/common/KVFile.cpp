@@ -45,8 +45,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     return kv_file;
   }
 
-  Data *key_data = ModulesManager::shared()->getData(kv_file->header_.keyFormat);
-  Data *value_data = ModulesManager::shared()->getData(kv_file->header_.valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(kv_file->header_.keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(kv_file->header_.valueFormat);
 
   if (!key_data) {
     error.set(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));

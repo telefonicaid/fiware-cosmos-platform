@@ -88,9 +88,6 @@ public:
       return SharedPointer<V>(NULL);
     }
 
-
-
-
     return iter->second;
   }
 
@@ -99,10 +96,6 @@ public:
     if (tmp != NULL) {
       return tmp;
     }
-
-
-
-
 
     // Create a new object
     tmp = new V();
@@ -116,10 +109,6 @@ public:
     if (tmp != NULL) {
       return tmp;
     }
-
-
-
-
 
     tmp = new V(a);
     Set(key, tmp);
@@ -141,22 +130,20 @@ public:
       return SharedPointer<V>(NULL);
     }
 
-
-
-
-
     SharedPointer<V> tmp = iter->second;
     std::map<K, SharedPointer<V>, _Compare>::erase(iter);
     return tmp;
   }
 
-  void getKeys(std::set<K>& childrens) {
+  std::set<K> getKeys() {
+    std::set<K> childrens;
     typename std::map<K, V *, _Compare >::iterator iter;
     for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
          iter++)
     {
       childrens.insert(iter->first);
     }
+    return childrens;
   }
 
   std::vector<K> getKeysVector() {

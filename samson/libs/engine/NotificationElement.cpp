@@ -1,7 +1,7 @@
 
 #include "engine/Engine.h"               // engine::Engine
 #include "engine/Notification.h"       // engine::Notification
-#include "engine/NotificationListener.h" // engine::EngineNotification
+#include "engine/NotificationListener.h"  // engine::EngineNotification
 
 #include "engine/NotificationElement.h"      // Own interface
 

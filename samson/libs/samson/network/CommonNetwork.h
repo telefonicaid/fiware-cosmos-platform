@@ -8,6 +8,7 @@
 
 #include "au/network/NetworkListener.h"
 
+#include "samson/common/NotificationMessages.h"
 #include "samson/common/ports.h"
 #include "samson/common/status.h"
 
@@ -26,36 +27,12 @@ class CommonNetwork : public NetworkManager, public engine::NotificationListener
   // Cluster information ( workers to be connected to )
   au::SharedPointer<gpb::ClusterInfo> cluster_information_;
 
-  // Receiver to be notified about packets
-  NetworkInterfaceReceiver *receiver_;
-
   // Mutex protection
   au::Token token_;
 
 public:
 
-  CommonNetwork(NodeIdentifier my_node_identifier
-                , NetworkInterfaceReceiver *receiver
-                , au::SharedPointer<gpb::ClusterInfo> cluster_information) : token_("CommonNetwork") {
-    // Keep pointer to receiver
-    receiver_ = receiver;
-
-    // Identify myself
-    node_identifier_ = my_node_identifier;
-
-    LM_V(("CommonNetwork %s", node_identifier_.str().c_str()));
-
-    // No cluster information at the moment
-    cluster_information_ = cluster_information;
-
-    // Listen and create notifications for network manager review
-    listen("notification_network_manager_review");
-    engine::Engine::shared()->notify(new engine::Notification("notification_network_manager_review"), 1);
-
-    // Listen notification to send packets
-    listen("send_to_all_delilahs");
-  }
-
+  CommonNetwork(NodeIdentifier my_node_identifier);
   ~CommonNetwork() {
   }
 
@@ -65,21 +42,16 @@ public:
   // Get my node identifier
   NodeIdentifier node_identifier();
 
-  // Set a new custer information ( if version is really new compared with the other ones )
+  // Set and remove cluster information
   void set_cluster_information(au::SharedPointer<gpb::ClusterInfo> cluster_information);
-
-  // Remove previous cluster_info ( deslilah to disconnect )
   void remove_cluster_information();
 
   // Review connections
   void review_connections();
 
-  // Engine notification interface
-  // ----------------------------------------------------------------
+  // Virtual method of engine::NotificationListener
   void notify(engine::Notification *notification);
 
-  // NetworkManager interface
-  // ----------------------------------------------------------------
   void receive(NetworkConnection *connection, const PacketPointer& packet);
 
   // Send packets
@@ -157,8 +129,23 @@ public:
   }
 
   // Check if this worker id is valid
-  bool isValidWorkerId(size_t worker_id) {
+  bool IsWorkerConnected(size_t worker_id) {
     return isConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName());
+  }
+
+  // Check if this worker id is valid
+  bool IsWorkerInCluster(size_t worker_id) {
+    if (cluster_information_ == NULL) {
+      return false;
+    }
+    // Check if this worker is part of the cluster
+    for (int i = 0; i < cluster_information_->workers_size(); i++) {
+      if (cluster_information_->workers(i).worker_id() == worker_id) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
 private:

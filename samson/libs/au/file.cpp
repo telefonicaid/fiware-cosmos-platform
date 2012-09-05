@@ -78,10 +78,10 @@ void removeDirectory(std::string fileName, au::ErrorManager & error) {
   }
 
   // first off, we need to create a pointer to a directory
-  DIR *pdir = opendir(fileName.c_str());    // "." will refer to the current directory
+  DIR *pdir = opendir(fileName.c_str());      // "." will refer to the current directory
   struct dirent *pent = NULL;
-  if (pdir != NULL) {  // if pdir wasn't initialised correctly
-    while ((pent = readdir(pdir))) {    // while there is still something in the directory to list
+  if (pdir != NULL) {    // if pdir wasn't initialised correctly
+    while ((pent = readdir(pdir))) {      // while there is still something in the directory to list
       if (pent != NULL) {
         if (strcmp(".", pent->d_name) == 0) {
           continue;
@@ -124,10 +124,10 @@ std::vector<std::string> getRegularFilesFromDirectory(std::string directory) {
   std::vector<std::string> files;
 
   // Add all plain files in this directory
-  DIR *pdir = opendir(directory.c_str());    // "." will refer to the current directory
+  DIR *pdir = opendir(directory.c_str());      // "." will refer to the current directory
   struct dirent *pent = NULL;
-  if (pdir != NULL) {  // if pdir wasn't initialised correctly
-    while ((pent = readdir(pdir))) {    // while there is still something in the directory to list
+  if (pdir != NULL) {    // if pdir wasn't initialised correctly
+    while ((pent = readdir(pdir))) {      // while there is still something in the directory to list
       if (pent != NULL) {
         if (strcmp(".", pent->d_name) == 0) {
           continue;
@@ -218,5 +218,48 @@ Status createFullDirectory(std::string path) {
   }
 
   return OK;
+}
+
+std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorManager& error) {
+  std::vector<std::string> file_names;
+
+  struct stat buf;
+  int rc = stat(file_name.c_str(), &buf);
+
+  if (rc) {
+    error.set(au::str("%s is not a valid local file or dir ", file_name.c_str()));
+    return file_names;
+  }
+
+  if (S_ISREG(buf.st_mode)) {
+    file_names.push_back(file_name);
+  } else if (S_ISDIR(buf.st_mode)) {
+    {
+      // first off, we need to create a pointer to a directory
+      DIR *pdir = opendir(file_name.c_str());      // "." will refer to the current directory
+      struct dirent *pent = NULL;
+      if (pdir != NULL) {    // if pdir wasn't initialised correctly
+        while ((pent = readdir(pdir))) {    // while there is still something in the directory to list
+          if (pent != NULL) {
+            std::ostringstream localFileName;
+            localFileName << file_name << "/" << pent->d_name;
+
+            struct stat buf2;
+            stat(localFileName.str().c_str(), &buf2);
+
+            if (S_ISREG(buf2.st_mode)) {
+              file_names.push_back(localFileName.str());
+            }
+          }
+        }
+        // finally, let's close the directory
+        closedir(pdir);
+      }
+    }
+  } else {
+    error.set(au::str("%s is not a valid local file or dir ", file_name.c_str()));
+  }
+
+  return file_names;
 }
 }

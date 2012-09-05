@@ -52,7 +52,7 @@ namespace sna{
 				    numbers.value_1 = node_a;
 				    numbers.value_2 = node_b;
 
-					//rest of the fields not interesting rigth now..
+					//rest of the fields not interesting right now..
 					writer->emit(0, &numbers, &void_data);
 					line_begin = offset+1;
 				}

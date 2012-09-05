@@ -38,7 +38,7 @@ namespace system{
 
 		void init( samson::KVWriter *writer )
 		{
-		   valueContainer.value->set_double( 1 );
+		   valueContainer.value->SetDouble( 1 );
 		}
 
         
@@ -60,7 +60,7 @@ namespace system{
                     // Sequence found
                     if( pos > pos_begin )
                     {
-                        keyContainer.value->set_string( &data[pos_begin] , pos - pos_begin );
+                        keyContainer.value->SetString( &data[pos_begin] , pos - pos_begin );
                         writer->emit( 0 , keyContainer.value , valueContainer.value );
                     }
                     
@@ -76,7 +76,7 @@ namespace system{
             // emit the last one
             if( pos > pos_begin )
             {
-                keyContainer.value->set_string( &data[pos_begin] , pos - pos_begin );
+                keyContainer.value->SetString( &data[pos_begin] , pos - pos_begin );
                 writer->emit( 0 , keyContainer.value , valueContainer.value );
             }
             

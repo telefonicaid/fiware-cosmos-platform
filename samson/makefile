@@ -65,6 +65,16 @@ ifndef LOGSERVER_LOG_DIR
 LOGSERVER_LOG_DIR=/var/log/logserver
 endif
 
+# Zookeeper server hostname
+ifndef ZOOKEEPER_SERVER
+ZOOKEEPER_SERVER=localhost
+endif
+
+# Log dir to handle tests for multiple version simultaneously
+ifndef ZOOKEEPER_PORT
+ZOOKEEPER_PORT=2181
+endif
+
 # Lint for C/C++ code
 ifndef CPPLINT
 	CPPLINT:=$(shell pwd)/scripts/cpplint.py
@@ -213,7 +223,7 @@ test_init:
 	bash -x scripts/lib_shared_memory.scr || true
 	lcov --directory BUILD_COVERAGE --zerocounters	
 	logServer -port ${SAMSON_LOG_PORT_ENV} -dir ${LOGSERVER_LOG_DIR} -query_port ${SAMSON_LOGQUERY_PORT_ENV}
-	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS}
+	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS} -zk ${ZOOKEEPER_SERVER}:${ZOOKEEPER_PORT}
 
 test_teardown:
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true

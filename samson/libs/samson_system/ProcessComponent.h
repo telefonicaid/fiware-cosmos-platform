@@ -1,38 +1,44 @@
-
 #ifndef _H_SAMSON_system_PROCESS_COMPONENT
 #define _H_SAMSON_system_PROCESS_COMPONENT
 
-#include "samson/module/KVWriter.h"
+#include <string>
+
 #include "samson_system/Value.h"
+#include "samson/module/KVWriter.h"
 
-namespace samson { namespace system {
-                   class ProcessComponent {
-                     std::string name_;  // Debug name
-                     int use_counter_;  // Internal use-counter to reorder ProcessComponent's inside a ProcessComponentsManager
+namespace samson {
+namespace system {
+class ProcessComponent {
 
-                     friend class ProcessComponentsManager;
+  public:
 
-public:
+    explicit ProcessComponent(std::string name) :
+      name_(name), use_counter_(0) {
+    }
 
-                     ProcessComponent(std::string name) {
-                       name_ = name;
-                       use_counter_ = 0;  // Init counter
-                     }
+    virtual ~ProcessComponent() {
+    }
 
-                     // Update this state based on input values ( return true if this state has been updated with this component )
-                     virtual bool update(Value *key,
-                                         Value *state,
-                                         Value **values,
-                                         size_t num_values,
-                                         samson::KVWriter *writer) = 0;
-                   };
+    std::string name() const {
+      return name_;
+    }
 
+    // Update this state based on input values ( return true if this state has been updated with this component )
+    virtual bool Update(Value *key, Value *state, Value **values, size_t num_values, samson::KVWriter* const writer) = 0;
+  private:
+    std::string name_; // Debug name
+    int use_counter_; // Internal use-counter to reorder ProcessComponent's inside a ProcessComponentsManager
 
-                   // Handy functions ( MACROs ? )
-                   void emit_output(Value *key, Value *state, samson::KVWriter *writer);
-                   void emit_feedback(Value *key, Value *state, samson::KVWriter *writer);
-                   void emit_state(Value *key, Value *state, samson::KVWriter *writer);
-                   void emit_log(const std::string& key, const std::string& message, samson::KVWriter *writer);
-                   } }  // End of namespace
+    friend class ProcessComponentsManager;
+};
+
+// Handy functions ( MACROs ? )
+void EmitOutput(Value *key, Value *state, samson::KVWriter* const writer);
+void EmitFeedback(Value *key, Value *state, samson::KVWriter* const writer);
+void EmitState(Value *key, Value *state, samson::KVWriter* const writer);
+void EmitLog(const std::string& key, const std::string& message, samson::KVWriter* const writer);
+
+}
+} // End of namespace
 
 #endif  // ifndef _H_SAMSON_system_PROCESS_COMPONENT

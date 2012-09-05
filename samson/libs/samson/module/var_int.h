@@ -23,7 +23,7 @@ namespace samson {
  * Variable length integer definition
  */
 
-inline int staticVarIntParse(char *data, size_t *value) {
+inline int staticVarIntParse(const char *data, size_t *value) {
   unsigned char *p = (unsigned char *)data;
   size_t base = 1;
 

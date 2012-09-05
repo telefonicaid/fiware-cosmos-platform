@@ -194,7 +194,7 @@ std::string str_double_progress_bar(double p1, double p2, char c1, char c2, char
   return output.str();
 }
 
-void find_and_replace(std::string &source, const std::string find, std::string replace) {
+void find_and_replace(std::string &source, const std::string& find, const std::string& replace) {
   size_t pos = 0;
 
   // LM_M(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
@@ -626,7 +626,7 @@ const char *laststrstr(const char *source, size_t source_length, const char *tar
 
 // Similar to strnstr(), but limits the length of the pattern to be searched
 // and assumes that text string is null terminated
-const char *strnstr_limitpattern(const char *text, const char *pattern, const size_t max_length) {
+const char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length) {
   char cpat, ctxt;
   size_t len;
 
@@ -649,7 +649,7 @@ const char *strnstr_limitpattern(const char *text, const char *pattern, const si
 // match a string against a simple pattern with wildcard characters meaning
 // any sequence of characters
 // Could be done with regexp library, but it is too much powerful (and slow)
-bool MatchPatterns(const char *inputString, const char *pattern, const char wildcard) {
+bool MatchPatterns(const char *inputString, const char *pattern, char wildcard) {
   const char *p_input;
   const char *p_pattern;
   char *p_wildcard;
@@ -837,7 +837,7 @@ bool string_begins_and_ends(std::string& str, std::string prefix, std::string po
   return true;
 }
 
-std::string substring_without_prefix_and_posfix(std::string& str, std::string prefix, std::string postfix) {
+std::string substring_without_prefix_and_posfix(std::string& str, const std::string& prefix, const std::string& postfix) {
   return str.substr(prefix.length(), str.length() - prefix.length() - postfix.length());
 }
 
@@ -862,17 +862,18 @@ std::string reverse_lines(std::string& txt) {
   return output.str();
 }
 
-int HashString(const std::string& str, const int max_num_partitions) {
+int HashString(const std::string& str, int max_num_partitions) {
   static const size_t InitialFNV = 2166136261U;
   static const size_t FNVMultiple = 16777619;
 
   size_t hash = InitialFNV;
 
-  for (size_t i = 0; i < str.length(); i++) {
-    hash = hash ^ (str[i]);
-    hash = hash * FNVMultiple;
+  size_t str_length = str.length();
+  for (size_t i = 0; i < str_length; ++i) {
+    hash ^= str[i];
+    hash *= FNVMultiple;
   }
-  return hash % max_num_partitions;
+  return static_cast<int>(hash % max_num_partitions);
 }
 }
 

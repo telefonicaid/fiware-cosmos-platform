@@ -69,12 +69,12 @@ SET (SOURCES
 	# SAMSOM WORKER library
 	lib/samson/worker/SamsonWorkerTest.cpp
 
+  #SAMSON SYSTEM library
+  lib/samson_system/ValueTest.cpp
+
 	#Common files
 	common_engine_test.h
 	common_engine_test.cpp
-
-	#samson_system lib
-	samson_system/samson_system.cpp
 
 	#comscore library
 	comscore/comscore.cpp
@@ -92,6 +92,7 @@ SET (SOURCES
 
 	#samon/isolated library
 	samson/isolated/SharedMemoryManager_test.cpp
+
 
 )
 

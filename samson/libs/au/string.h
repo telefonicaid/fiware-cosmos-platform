@@ -108,10 +108,10 @@ const char *laststrstr(const char *source, const char *target);
 const char *laststrstr(const char *source, size_t source_length, const char *target);
 
 // Extract substrings (patterns) from a line
-const char *strnstr_limitpattern(const char *text, const char *pattern, const size_t max_length);
+const char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length);
 
 // Check simple regular expressions in string
-bool matchPatterns(const char *inputString, const char *pattern, const char wildcard);
+bool matchPatterns(const char *inputString, const char *pattern, char wildcard);
 
 // Get common number of chars
 int getCommonChars(std::string& txt, std::string& txt2);
@@ -129,7 +129,7 @@ int get_term_size(int fd, int *x, int *y);
 std::string path_from_directory(std::string directory, std::string file);
 
 // Find and replace
-void find_and_replace(std::string &source, const std::string find, std::string replace);
+void find_and_replace(std::string &source, const std::string& find, const std::string& replace);
 
 // Add color escape codes to a string
 std::string string_in_color(std::string txt, std::string color);
@@ -146,7 +146,7 @@ std::string reverse_lines(std::string& txt);
 
 
 // hash function (same as the method in system::String and system::Value
-int HashString(std::string str, int max_num_partitions);
+int HashString(const std::string& str, int max_num_partitions);
 }
 
 

@@ -373,7 +373,7 @@ public:
       }
     }
 
-    // setFromString() Function to translate char * parameter in REST queries to internal data type
+    // SetFromString() Function to translate char * parameter in REST queries to internal data type
     file << "\tvoid setFromString(const char *_value_data){\n";
     file << "\t\tchar *p_data_decoded = NULL;\n";
     file << "\t\tchar *p_value_data = NULL;\n";

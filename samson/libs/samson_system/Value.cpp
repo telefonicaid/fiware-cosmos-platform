@@ -1,3 +1,30 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            Value.cpp
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            2012
+ *
+ * DESCRIPTION
+ *
+ *  Definition of Value class methods to create a flexible data type that
+ *  can be used as a number, a string, a vector of Values or a map of Values
+ *
+ */
+
 #include "samson_system/Value.h"  // Own interface
 
 #include <algorithm>

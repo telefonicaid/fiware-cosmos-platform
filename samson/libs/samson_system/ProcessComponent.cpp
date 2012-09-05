@@ -1,3 +1,30 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            ProcessComponent.cpp
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            2012
+ *
+ * DESCRIPTION
+ *
+ *  Definition of ProcessComponent class methods to emit new system.Value key-value pairs
+ *  to the three output queues (output, feedback and state), under the Process paradigm
+ *
+ */
+
 #include "ProcessComponent.h"  // Own interface
 
 #include "samson_system/ValueContainer.h"

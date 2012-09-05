@@ -1,3 +1,30 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            UpdateCountFunction.h
+ *
+ * AUTHOR          Gregorio Escalada
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ *
+ *  Declaration of UpdateCountFunction class to update a time weighted count
+ *  This class allows to keep different term profiles in HitCountProcess
+ *
+ */
+
 #ifndef _H_SAMSON_SYSTEM_UPDTE_COUNT_FUNCTION
 #define _H_SAMSON_SYSTEM_UPDTE_COUNT_FUNCTION
 

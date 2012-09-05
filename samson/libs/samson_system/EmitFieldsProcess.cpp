@@ -1,10 +1,37 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            EmitFieldsProcess.cpp
+ *
+ * AUTHOR          Gregorio Escalada
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ *
+ *  Definition of EmitFieldsProcess class methods to select and emit
+ *  fields from a system.Value key, under the Process paradigm
+ *
+ */
+
 #include "samson_system/EmitFieldsProcess.h" // Own interface
 
 namespace samson {
 namespace system {
 
-const std::string EmitFieldsProcess::kNullField = "null_field";
-const std::string EmitFieldsProcess::kNullDest = "null";
+const std::string EmitFieldsProcess::kNullField("null_field");
+const std::string EmitFieldsProcess::kNullDest("null");
 
 bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
     samson::KVWriter* const writer) {

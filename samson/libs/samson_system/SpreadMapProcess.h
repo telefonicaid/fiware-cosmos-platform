@@ -1,3 +1,31 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            SpreadMapProcess.h
+ *
+ * AUTHOR          Gregorio Escalada
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ *
+ *  Declaration of SpreadMapProcess class to emit
+ *  all the fields from a system.Value key, under the Process paradigm.
+ *  The inclusion of a reference field ("timestamp" usually) is optional
+ *
+ */
+
 #ifndef _H_SAMSON_system_SPREAD_MAP_PROCESS
 #define _H_SAMSON_system_SPREAD_MAP_PROCESS
 

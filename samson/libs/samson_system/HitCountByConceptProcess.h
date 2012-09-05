@@ -1,3 +1,31 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            HitCountByConceptProcess.h
+ *
+ * AUTHOR          Gregorio Escalada
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ *
+ *  Declaration of HitCountByConceptProcess class to keep
+ *  an updated and time filtered count of hits related by a concept,
+ *  under the Process paradigm
+ *
+ */
+
 #ifndef _H_SAMSON_system_HIT_COUNT_BY_CONCEPT_PROCESS
 #define _H_SAMSON_system_HIT_COUNT_BY_CONCEPT_PROCESS
 

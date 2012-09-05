@@ -1,3 +1,31 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            HitCountByConceptProcess.cpp
+ *
+ * AUTHOR          Gregorio Escalada
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ *
+ *  Definition of HitCountByConceptProcess class methods to keep
+ *  an updated and time filtered count of hits related by a concept,
+ *  under the Process paradigm
+ *
+ */
+
 #include "HitCountByConceptProcess.h" // Own interface
 
 #include "samson_system/Value.h"
@@ -6,7 +34,7 @@
 namespace samson {
 namespace system {
 
-const std::string HitCountByConceptProcess::kNullDest = "null";
+const std::string HitCountByConceptProcess::kNullDest("null");
 
 void HitCountByConceptProcess::AddUpdateCountFunction(const std::string& name, double time_span, int n_top_items) {
   UpdateCountFunction update_count_function(name, time_span, n_top_items);

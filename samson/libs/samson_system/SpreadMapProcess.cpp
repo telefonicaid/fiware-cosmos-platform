@@ -1,9 +1,38 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            SpreadMapProcess.cpp
+ *
+ * AUTHOR          Gregorio Escalada
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ *
+ *  Definition of SpreadMapProcess class methods to emit
+ *  all the fields from a system.Value key, under the Process paradigm.
+ *  The inclusion of a reference field ("timestamp" usually) is optional
+ *
+ */
+
 #include "samson_system/SpreadMapProcess.h" // Own interface
 
 namespace samson {
 namespace system {
 
-const std::string SpreadMapProcess::kNullField = "null_field";
+const std::string SpreadMapProcess::kNullField("null_field");
+const std::string SpreadMapProcess::kNullDest("null");
 
 bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
     samson::KVWriter* const writer) {

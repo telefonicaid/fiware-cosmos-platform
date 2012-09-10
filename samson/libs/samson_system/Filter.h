@@ -51,8 +51,7 @@ class Filter {
       next_(NULL) {
     }
 
-    virtual ~Filter() {
-    }
+    virtual ~Filter() {}
 
     virtual void run(KeyValue kv) = 0;
 

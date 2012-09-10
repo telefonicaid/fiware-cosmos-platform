@@ -25,7 +25,6 @@
  */
 
 #include "Filter.h"  // Own interface
-
 namespace samson {
 namespace system {
 
@@ -80,15 +79,12 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
     if (error->IsActivated()) {
       return NULL;
     }
-
     // Expect a ","
     if (!token_vector->popNextTokenIfItIs(",")) {
-      error->set(
-                 au::str("Expected ',' to separate key and value in a select statement. Found '%s'",
+      error->set(au::str("Expected ',' to separate key and value in a select statement. Found '%s'",
                          token_vector->getNextTokenContent().c_str()));
       return NULL;
     }
-
     Source *value_source = NULL;
     if (!token_vector->eof()) {
       value_source = GetSource(token_vector, error);
@@ -98,70 +94,49 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
     } else {
       value_source = new SourceVoid();
     }
-
     return new FilterSelect(key_source, value_source);
-  } else {
-    if (token->content == "parse_words") {
-      return new FilterParserWords();
-    } else {
-      if (token->content == "json") {
-        return new FilterJSONLine();
-      } else {
-        if (token->content == "xml_element") {
-          // Parse kind of filter
-          return FilterXMLElement::GetFilter(token_vector, error);
-        } else {
-          if (token->content == "parse_chars") {
-            return new FilterParserChars();
-          } else {
-            if (token->content == "parse") {
-              // Parse kind of filter
-              return FilterParser::GetFilter(token_vector, error);
-            } else {
-              if (token->content == "emit") {
-                if (writer) {
-                  if (token_vector->eof()) {
-                    return new FilterEmit(0, writer); // Default channel "0"
-                  }
-                  au::token::Token *number = token_vector->popToken();
-                  if (!number->isNumber()) {
-                    error->set(
-                               au::str("Channel '%s' not valid in emit command. It should be a number",
-                                       number->content.c_str()));
-                    return NULL;
-                  }
-
-                  int channel = atoi(number->content.c_str());
-                  return new FilterEmit(channel, writer);
-                } else {
-                  if (txt_writer) {
-                    FilterEmitTxt *filter_emit = new FilterEmitTxt(txt_writer, token_vector, error);
-                    if (error->IsActivated()) {
-                      delete filter_emit;
-                      return NULL;
-                    }
-                    return filter_emit;
-                  }
-                }
-              } else {
-                if (token->content == "filter") {
-                  Source *eval_source = GetSource(token_vector, error);
-                  if (error->IsActivated()) {
-                    return NULL;
-                  }
-                  if (!eval_source) {
-                    error->set("Not valid condition statement in filter command");
-                    return NULL;
-                  }
-
-                  return new FilterCondition(eval_source);
-                }
-              }
-            }
-          }
-        }
+  } else if (token->content == "parse_words") {
+    return new FilterParserWords();
+  } else if (token->content == "json") {
+    return new FilterJSONLine();
+  } else if (token->content == "xml_element") {
+    // Parse kind of filter
+    return FilterXMLElement::GetFilter(token_vector, error);
+  } else if (token->content == "parse_chars") {
+    return new FilterParserChars();
+  } else if (token->content == "parse") {
+    // Parse kind of filter
+    return FilterParser::GetFilter(token_vector, error);
+  } else if (token->content == "emit") {
+    if (writer) {
+      if (token_vector->eof()) {
+        return new FilterEmit(0, writer); // Default channel "0"
       }
+      au::token::Token *number = token_vector->popToken();
+      if (!number->isNumber()) {
+        error->set(au::str("Channel '%s' not valid in emit command. It should be a number", number->content.c_str()));
+        return NULL;
+      }
+      int channel = atoi(number->content.c_str());
+      return new FilterEmit(channel, writer);
+    } else if (txt_writer) {
+      FilterEmitTxt *filter_emit = new FilterEmitTxt(txt_writer, token_vector, error);
+      if (error->IsActivated()) {
+        delete filter_emit;
+        return NULL;
+      }
+      return filter_emit;
     }
+  } else if (token->content == "filter") {
+    Source *eval_source = GetSource(token_vector, error);
+    if (error->IsActivated()) {
+      return NULL;
+    }
+    if (!eval_source) {
+      error->set("Not valid condition statement in filter command");
+      return NULL;
+    }
+    return new FilterCondition(eval_source);
   }
   return NULL;
 }

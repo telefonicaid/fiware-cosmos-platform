@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef _H_SAMSON_SYSTEM_UPDTE_COUNT_FUNCTION
-#define _H_SAMSON_SYSTEM_UPDTE_COUNT_FUNCTION
+#ifndef _H_SAMSON_SYSTEM_UPDATE_COUNT_FUNCTION
+#define _H_SAMSON_SYSTEM_UPDATE_COUNT_FUNCTION
 
 #include <cstring>  //size_t
 #include <string>
@@ -46,12 +46,13 @@ class UpdateCountFunction {
 
     UpdateCountFunction(const std::string& name, double time_span, int n_top_items)
     : name_(name)
-    , time_span_(time_span) // 5 minutes
+    , time_span_(time_span)
     , forgetting_factor_((time_span_ - 1) / time_span_)
     , n_top_items_(n_top_items) {
     }
 
-    ~UpdateCountFunction();
+    ~UpdateCountFunction() {
+    }
 
     std::string name() const {
       return name_;
@@ -72,4 +73,4 @@ class UpdateCountFunction {
 }
 } // End of namespaces
 
-#endif // ifndef _H_SAMSON_SYSTEM_UPDTE_COUNT_FUNCTION
+#endif // ifndef _H_SAMSON_SYSTEM_UPDATE_COUNT_FUNCTION

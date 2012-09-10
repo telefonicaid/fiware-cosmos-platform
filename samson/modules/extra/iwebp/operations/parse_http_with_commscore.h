@@ -63,7 +63,7 @@ class OTTService {
         p_check = url;
       }
       for (unsigned int i = 0; i < httpPatterns_.size(); ++i) {
-        if (au::matchPatterns(p_check, httpPatterns_[i].c_str(), wildcard)) {
+        if (au::MatchPatterns(p_check, httpPatterns_[i].c_str(), wildcard)) {
           return true;
         }
       }
@@ -73,7 +73,7 @@ class OTTService {
     bool checkDNS(const char *dns) {
       char wildcard = '%';
       for (unsigned int i = 0; i < dnsPatterns_.size(); ++i) {
-        if (au::matchPatterns(dns, dnsPatterns_[i].c_str(), wildcard)) {
+        if (au::MatchPatterns(dns, dnsPatterns_[i].c_str(), wildcard)) {
           return true;
         }
       }

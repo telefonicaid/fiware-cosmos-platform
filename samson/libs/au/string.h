@@ -111,7 +111,7 @@ const char *laststrstr(const char *source, size_t source_length, const char *tar
 const char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length);
 
 // Check simple regular expressions in string
-bool matchPatterns(const char *inputString, const char *pattern, char wildcard);
+bool MatchPatterns(const char *inputString, const char *pattern, char wildcard);
 
 // Get common number of chars
 int getCommonChars(std::string& txt, std::string& txt2);

@@ -1,6 +1,32 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            ValueTest.cpp
+ *
+ * AUTHOR          Gregorio Escalada
+ *
+ * PROJECT         SAMSON samson_system unit test
+ *
+ * DATE            september 2012
+ *
+ * DESCRIPTION
+ *
+ *  Definition of unit tests on the Value class
+ *
+ */
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <string>
 
 #include "gtest/gtest.h"
 
@@ -76,7 +102,7 @@ TEST(samson_system_Value, basic) {
 }
 
 TEST(samson_system_Value, ser_string) {
-  char *line = (char *) malloc(sizeof(char) * 64000);
+  char *line = reinterpret_cast<char *>(malloc(sizeof(*line) * 64000));
 
   samson::system::ValueContainer value_container;
 
@@ -111,7 +137,7 @@ TEST(samson_system_Value, ser_string) {
 }
 
 TEST(samson_system_Value, ser_full) {
-  char *line = (char *) malloc(sizeof(char) * 64000);
+  char *line = reinterpret_cast<char *>(malloc(sizeof(*line) * 64000));
 
   samson::system::ValueContainer value_container;
 
@@ -127,8 +153,7 @@ TEST(samson_system_Value, ser_full) {
   v1->SetStringForMap("map2", "value2");
 
   std::string string_value = value_container.value->GetValueFromVector(2)->GetStringFromMap("map2");
-  EXPECT_TRUE(strcmp(string_value.c_str(), "value2") == 0);
-
+  EXPECT_STREQ("value2", string_value.c_str());
 
   samson::system::Value *v2 = value_container.value->AddValueToVector(2);
   v2->SetStringForMap("map1", "value2_1");
@@ -141,8 +166,10 @@ TEST(samson_system_Value, ser_full) {
   EXPECT_STREQ("value2", string_value.c_str());
 
   value_container.value->AddValueToVector()->SetString("New item");
+  value_container.value->AddValueToVector()->SetDouble(-1.0);
+  value_container.value->AddValueToVector()->SetDouble(12.0);
   value_container.value->AddValueToVector()->SetDouble(-2.0);
-  //value_container.value->AddValueToVector()->SetDouble(-25.7);
+  value_container.value->AddValueToVector()->SetDouble(-25.7);
 
   check_serialization(value_container.value, line, 100);
 
@@ -217,10 +244,10 @@ TEST(samson_system_Value, copy) {
 
   EXPECT_EQ(7, value_container.value->GetVectorSize());
   value_container_copy.value->PopBackFromVector();
-  //EXPECT_EQ(6, value_container.value->GetVectorSize());
-  std::string string_value = value_container.value->GetValueFromVector(4)->GetString();
+  EXPECT_EQ(6, value_container_copy.value->GetVectorSize());
+  std::string string_value = value_container_copy.value->GetValueFromVector(4)->GetString();
   EXPECT_STREQ("New item", string_value.c_str()) << "Error copying Value: "
-      << string_value << " vector: " << value_container.value->str();
+      << string_value << " vector: " << value_container_copy.value->str();
 }
 
 TEST(samson_system_Value, hash) {
@@ -258,18 +285,17 @@ TEST(samson_system_Value, hash) {
   value_container.value->SetDoubleForMap("b", 2.0);
   hash = value_container.value->hash(65536);
   EXPECT_EQ(45713, hash) << "Error hash for Map: " << hash;
+
   samson::system::Value *p_value = value_container.value->GetValueFromMap("a");
-  ++(*p_value);
-  (*p_value)++;
+  EXPECT_EQ(2.0, (++(*p_value)).GetDouble(0.0)) << "Error in prefix increment";
+  EXPECT_EQ(2.0, ((*p_value)++).GetDouble(0.0)) << "Error in postfix increment";
   double double_value = value_container.value->GetDoubleFromMap("a");
   EXPECT_EQ(3.0, double_value) << "Error in postfix increment: " << double_value;
   hash = p_value->hash(65536);
   EXPECT_EQ(3.0, hash) << "Error hash for Map: " << hash;
-
 }
 
 TEST(samson_system_Value, sort) {
-
   samson::system::ValueContainer value_container;
   value_container.value->SetAsVector();
   value_container.value->AddValueToVector()->SetDouble(3.0);
@@ -283,7 +309,7 @@ TEST(samson_system_Value, sort) {
   EXPECT_EQ(3.0, double_value) << "Error sorting doubles, second element: " << double_value
       << " vector: " << value_container.value->str();
   value_container.value->SortVectorInDescendingOrder();
-  EXPECT_TRUE(value_container.value->GetVectorSize() == 4);
+  EXPECT_EQ(4, value_container.value->GetVectorSize());
   double_value = value_container.value->GetValueFromVector(1)->GetDouble();
   EXPECT_EQ(7.0, double_value) << "Error sorting doubles, second element: " << double_value
       << " vector: " << value_container.value->str();

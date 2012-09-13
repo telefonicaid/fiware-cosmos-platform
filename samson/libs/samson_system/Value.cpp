@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -27,12 +27,13 @@
 
 #include "samson_system/Value.h"  // Own interface
 
-#include <algorithm>
 #include <string.h>
 
-#include "smaz.h"
+#include <algorithm>
 
-#include "MapCompareFunctor.h"
+#include "samson_system/smaz.h"
+
+#include "samson_system/MapCompareFunctor.h"
 
 namespace samson {
 namespace system {
@@ -69,13 +70,13 @@ bool IsValidDouble(const char *data) {
     // Signs
     if ((c == '-') || (c == '+')) {
       if (found_dot) {
-        return false; // sign after dot
+        return false;  // sign after dot
       }
       if (found_sign) {
-        return false; // Double sign
+        return false;  // Double sign
       }
       if (found_digit) {
-        return false; // Sign after digits
+        return false;  // Sign after digits
       }
       found_sign = true;
       continue;
@@ -113,18 +114,17 @@ int InternalGetConstantWordCode(const char *word, int min, int max) {
   int c = strcmp(word, kConstantWords[mid]);
   if (c == 0) {
     return mid;
-  } else
-    if (c > 0) {
-      return InternalGetConstantWordCode(word, mid, max);
-    } else {
-      return InternalGetConstantWordCode(word, min, mid);
-    }
+  } else if (c > 0) {
+    return InternalGetConstantWordCode(word, mid, max);
+  } else {
+    return InternalGetConstantWordCode(word, min, mid);
+  }
 }
 
 // Find if this word is a constant word ( serialized with 2 bytes )
 // Return -1 if not found
 int GetConstantWordCode(const char *word) {
-  int max = sizeof(kConstantWords) / sizeof(char *);
+  int max = sizeof(kConstantWords) / sizeof(word);
 
   if (strcmp(word, kConstantWords[0]) == 0) {
     return 0;
@@ -147,7 +147,7 @@ const char *GetConstantWord(int c) {
 
 inline int Value::ParseVoid(const char *data) {
   ChangeValueType(value_void);
-  return 1; // Void is always serialized in 1 byte
+  return 1;  // Void is always serialized in 1 byte
 }
 
 inline int Value::ParseNumber(const char *data) {
@@ -163,52 +163,53 @@ inline int Value::ParseNumber(const char *data) {
     // Constant values
     case ser_int_value_0:
       value_double_ = 0;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_1:
+      LM_W(("In ser_int_value_1, &tmp:%p, tmp:%lu", &tmp, tmp));
       value_double_ = 1;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_2:
       value_double_ = 2;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_3:
       value_double_ = 3;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_4:
       value_double_ = 4;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_5:
       value_double_ = 5;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_6:
       value_double_ = 6;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_7:
       value_double_ = 7;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_8:
       value_double_ = 8;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
       break;
     case ser_int_value_9:
       value_double_ = 9;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_10:
       value_double_ = 10;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_value_minus_1:
       value_double_ = -1;
-      return 1; // Codified in the serialization code
+      return 1;  // Codified in the serialization code
 
     case ser_int_positive:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
@@ -217,6 +218,7 @@ inline int Value::ParseNumber(const char *data) {
 
     case ser_int_negative:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
+      // The sign change must be done outside the static cast, otherwise error happens
       value_double_ = -static_cast<double> (tmp);
       return total;
 
@@ -239,41 +241,44 @@ inline int Value::ParseNumber(const char *data) {
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 10000.0;
       return total;
+      break;
 
     case ser_double_positive_5_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 100000.0;
       return total;
+      break;
 
     case ser_double_negative_1_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
-      value_double_ = static_cast<double> (-tmp) / 10.0;
+      // The sign change must be done outside the static cast, otherwise error happens
+      value_double_ = -1.0 * static_cast<double> (tmp) / 10.0;
       return total;
 
     case ser_double_negative_2_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
-      value_double_ = static_cast<double> (-tmp) / 100.0;
+      value_double_ = -1.0 * static_cast<double> (tmp) / 100.0;
       return total;
 
     case ser_double_negative_3_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
-      value_double_ = static_cast<double> (-tmp) / 1000.0;
+      value_double_ = -1.0 * static_cast<double> (tmp) / 1000.0;
       return total;
 
     case ser_double_negative_4_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
-      value_double_ = static_cast<double> (-tmp) / 10000.0;
+      value_double_ = -1.0 * static_cast<double> (tmp) / 10000.0;
       return total;
 
     case ser_double_negative_5_decimal:
       size_t tmp;
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
-      value_double_ = static_cast<double> (-tmp) / 100000.0;
+      value_double_ = -1.0 * static_cast<double> (tmp) / 100000.0;
       return total;
 
     case ser_double:
       value_double_ = *(reinterpret_cast<const double *> (data + 1));
-      return 1 + sizeof(double);
+      return 1 + sizeof(value_double_);
 
     default:
       LM_X(1, ("Internal error, unknown number serialization_code:%d", static_cast<int>(code)));
@@ -296,11 +301,11 @@ inline int Value::ParseString(const char *data) {
   switch (code) {
     case ser_string:
       value_string_ = &data[1];
-      return 1 + value_string_.length() + 1; // Serialization code, string, '\0'
+      return 1 + value_string_.length() + 1;   // Serialization code, string, '\0'
 
     case ser_string_constant:
       value_string_ = GetConstantWord(static_cast<unsigned char> (data[1]));
-      return 2; // Always length 2 ( serialization char and word index )
+      return 2;   // Always length 2 ( serialization char and word index )
 
     case ser_string_smaz: {
       // Create a compilation unit to avoid problems with the local variables
@@ -326,7 +331,6 @@ inline int Value::ParseString(const char *data) {
 
     default:
       LM_X(1, ("Internal error, unknown string serialization_code:%d", static_cast<int>(code)));
-
   }
   // Impossible condition to silent valgrind
   // In any case, LM_X will exit the program
@@ -431,7 +435,7 @@ inline int Value::ParseMap(const char *data) {
   }
 
   // Parse all components of the vector
-  Value tmp_key; // Component to parse keys...
+  Value tmp_key;   // Component to parse keys...
   for (size_t i = 0; i < length; ++i) {
     // Parse key
     // We have to const_cast because parse() does not receive const (yet)
@@ -526,52 +530,52 @@ int Value::SerializeVoid(char *data) {
 int Value::SerializeNumber(char *data) {
   if (value_double_ == 0) {
     data[0] = static_cast<char> (ser_int_value_0);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 1) {
     data[0] = static_cast<char> (ser_int_value_1);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 2) {
     data[0] = static_cast<char> (ser_int_value_2);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 3) {
     data[0] = static_cast<char> (ser_int_value_3);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 4) {
     data[0] = static_cast<char> (ser_int_value_4);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 5) {
     data[0] = static_cast<char> (ser_int_value_5);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 6) {
     data[0] = static_cast<char> (ser_int_value_6);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 7) {
     data[0] = static_cast<char> (ser_int_value_7);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 8) {
     data[0] = static_cast<char> (ser_int_value_8);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 9) {
     data[0] = static_cast<char> (ser_int_value_9);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
   if (value_double_ == 10) {
     data[0] = static_cast<char> (ser_int_value_10);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
 
   if (value_double_ == -1) {
     data[0] = static_cast<char> (ser_int_value_minus_1);
-    return 1; // Codified in 1 byte
+    return 1;   // Codified in 1 byte
   }
 
   // Generic variable length codification
@@ -644,7 +648,7 @@ int Value::SerializeNumber(char *data) {
   // Generic double codification
   data[0] = static_cast<char> (ser_double);
   *(reinterpret_cast<double *> (data + 1)) = value_double_;
-  return 1 + sizeof(double);
+  return 1 + sizeof(value_double_);
 }
 
 int Value::SerializeString(char *data) {
@@ -654,14 +658,14 @@ int Value::SerializeString(char *data) {
   if (index != -1) {
     data[0] = static_cast<char> (ser_string_constant);
     data[1] = static_cast<unsigned char> (index);
-    return 2; // Always 2 length serialization ( serialization code + index word )
+    return 2;   // Always 2 length serialization ( serialization code + index word )
   }
 
   if (value_string_.length() < 4096) {
     // Try compressed version
     const int kMaxLengthLine = 8192;
     char line[kMaxLengthLine];
-    size_t len = ::smaz_compress((char *) value_string_.c_str(), value_string_.length(), line, kMaxLengthLine);
+    size_t len = ::smaz_compress(const_cast<char *>(value_string_.c_str()), value_string_.length(), line, kMaxLengthLine);
 
     if (len < value_string_.length()) {
       // Serialize using compression
@@ -684,34 +688,29 @@ int Value::SerializeString(char *data) {
   // Default serialization of string
   data[0] = static_cast<char> (ser_string);
   strcpy(data + 1, value_string_.c_str());
-  int total = 1 + (value_string_.length() + 1); // Serialization code - string - '\0'
+  int total = 1 + (value_string_.length() + 1);   // Serialization code - string - '\0'
   return total;
 }
 
 int Value::SerializeVector(char *data) {
-  size_t offset = 1; //
+  size_t offset = 1;
 
   if (value_vector_.size() == 0) {
     data[0] = static_cast<char> (ser_vector_len_0);
-  } else
-    if (value_vector_.size() == 1) {
-      data[0] = static_cast<char> (ser_vector_len_1);
-    } else
-      if (value_vector_.size() == 2) {
-        data[0] = static_cast<char> (ser_vector_len_2);
-      } else
-        if (value_vector_.size() == 3) {
-          data[0] = static_cast<char> (ser_vector_len_3);
-        } else
-          if (value_vector_.size() == 4) {
-            data[0] = static_cast<char> (ser_vector_len_4);
-          } else
-            if (value_vector_.size() == 5) {
-              data[0] = static_cast<char> (ser_vector_len_5);
-            } else {
-              data[0] = static_cast<char> (ser_vector);
-              offset += samson::staticVarIntSerialize(data + offset, value_vector_.size());
-            }
+  } else if (value_vector_.size() == 1) {
+    data[0] = static_cast<char> (ser_vector_len_1);
+  } else if (value_vector_.size() == 2) {
+    data[0] = static_cast<char> (ser_vector_len_2);
+  } else if (value_vector_.size() == 3) {
+    data[0] = static_cast<char> (ser_vector_len_3);
+  } else if (value_vector_.size() == 4) {
+    data[0] = static_cast<char> (ser_vector_len_4);
+  } else if (value_vector_.size() == 5) {
+    data[0] = static_cast<char> (ser_vector_len_5);
+  } else {
+    data[0] = static_cast<char> (ser_vector);
+    offset += samson::staticVarIntSerialize(data + offset, value_vector_.size());
+  }
 
   // Serialize all the components
   for (size_t i = 0; i < value_vector_.size(); ++i) {
@@ -722,32 +721,27 @@ int Value::SerializeVector(char *data) {
 }
 
 int Value::SerializeMap(char *data) {
-  size_t offset = 1; //
+  size_t offset = 1;
 
   if (value_map_.size() == 0) {
     data[0] = static_cast<char> (ser_map_len_0);
-  } else
-    if (value_map_.size() == 1) {
-      data[0] = static_cast<char> (ser_map_len_1);
-    } else
-      if (value_map_.size() == 2) {
-        data[0] = static_cast<char> (ser_map_len_2);
-      } else
-        if (value_map_.size() == 3) {
-          data[0] = static_cast<char> (ser_map_len_3);
-        } else
-          if (value_map_.size() == 4) {
-            data[0] = static_cast<char> (ser_map_len_4);
-          } else
-            if (value_map_.size() == 5) {
-              data[0] = static_cast<char> (ser_map_len_5);
-            } else {
-              data[0] = static_cast<char> (ser_map);
-              offset += samson::staticVarIntSerialize(data + offset, value_map_.size());
-            }
+  } else if (value_map_.size() == 1) {
+    data[0] = static_cast<char> (ser_map_len_1);
+  } else if (value_map_.size() == 2) {
+    data[0] = static_cast<char> (ser_map_len_2);
+  } else if (value_map_.size() == 3) {
+    data[0] = static_cast<char> (ser_map_len_3);
+  } else if (value_map_.size() == 4) {
+    data[0] = static_cast<char> (ser_map_len_4);
+  } else if (value_map_.size() == 5) {
+    data[0] = static_cast<char> (ser_map_len_5);
+  } else {
+    data[0] = static_cast<char> (ser_map);
+    offset += samson::staticVarIntSerialize(data + offset, value_map_.size());
+  }
 
   // Serialize all the components
-  Value tmp_key; // Value to serialize key
+  Value tmp_key;   // Value to serialize key
   au::map<std::string, Value>::iterator it;
   for (it = value_map_.begin(); it != value_map_.end(); ++it) {
     tmp_key.SetString(it->first);
@@ -817,7 +811,7 @@ int Value::HashVector(int max_num_partitions) {
 }
 
 int Value::HashMap(int max_num_partitions) {
-  const int kNoPartitions = 2147483647; // 2^31 - 1
+  const int kNoPartitions = 2147483647;   // 2^31 - 1
   size_t accumulated_hash = 0;
 
   au::map<std::string, Value>::iterator it;
@@ -948,9 +942,8 @@ bool Value::operator>(const Value &other) const {
   return compare(other) > 0;
 }
 
-const Value Value::operator+(Value &other) { // const
-  Value result = *this; // Make a copy of myself.
-
+const Value Value::operator+(Value &other) {   // const & for other not possible because of GetString()
+  Value result = *this;   // Make a copy of myself.
 
   switch (value_type_) {
     case value_number:
@@ -967,11 +960,11 @@ const Value Value::operator+(Value &other) { // const
       result.SetAsVoid();
       break;
   }
-  return result; // All done!
+  return result;   // All done!
 }
 
 const Value Value::operator-(const Value &other) const {
-  Value result = *this; // Make a copy of myself.
+  Value result = *this;   // Make a copy of myself.
 
   switch (value_type_) {
     case value_number:
@@ -986,11 +979,11 @@ const Value Value::operator-(const Value &other) const {
       break;
   }
 
-  return result; // All done!
+  return result;   // All done!
 }
 
 const Value Value::operator*(const Value &other) const {
-  Value result = *this; // Make a copy of myself.
+  Value result = *this;   // Make a copy of myself.
 
   switch (value_type_) {
     case value_number:
@@ -1005,11 +998,11 @@ const Value Value::operator*(const Value &other) const {
       break;
   }
 
-  return result; // All done!
+  return result;   // All done!
 }
 
 const Value Value::operator/(const Value &other) const {
-  Value result = *this; // Make a copy of myself.
+  Value result = *this;   // Make a copy of myself.
 
   switch (value_type_) {
     case value_number:
@@ -1024,7 +1017,7 @@ const Value Value::operator/(const Value &other) const {
       break;
   }
 
-  return result; // All done!
+  return result;   // All done!
 }
 
 inline int Value::compare(const Value& other) const {
@@ -1040,22 +1033,20 @@ inline int Value::compare(const Value& other) const {
     case value_number:
       if (value_double_ > other.value_double_) {
         return 1;
-      } else
-        if (value_double_ < other.value_double_) {
-          return -1;
-        } else {
-          return 0;
-        }
+      } else if (value_double_ < other.value_double_) {
+        return -1;
+      } else {
+        return 0;
+      }
 
     case value_string:
       if (value_string_ > other.value_string_) {
         return 1;
-      } else
-        if (value_string_ < other.value_string_) {
-          return -1;
-        } else {
-          return 0;
-        }
+      } else if (value_string_ < other.value_string_) {
+        return -1;
+      } else {
+        return 0;
+      }
 
     case value_vector:
       if (value_vector_.size() != other.value_vector_.size()) {
@@ -1072,7 +1063,7 @@ inline int Value::compare(const Value& other) const {
           return c;
         }
       }
-      return 0; // all the elements are the same.
+      return 0;   // all the elements are the same.
 
     case value_map: {
       // Create a compilation unit to avoid problems with the local variables
@@ -1108,7 +1099,7 @@ inline int Value::compare(const Value& other) const {
         ++it;
         ++it2;
       }
-      return 0; // all the elements are the same.
+      return 0;   // all the elements are the same.
     }
 
     default:
@@ -1166,7 +1157,6 @@ void Value::SetFrom(struct json_object *json) {
       break;
     default:
       LM_E(("Internal error, unknown json_type:%d", static_cast<int>(type)));
-
   }
 }
 
@@ -1256,8 +1246,6 @@ std::string Value::str() {
 
     case value_map: {
       // Create a compilation unit to avoid problems with the local variables
-
-
       output << "{";
       au::map<std::string, Value>::iterator it;
       for (it = value_map_.begin(); it != value_map_.end();) {
@@ -1487,7 +1475,7 @@ void Value::_strHTMLTable(const std::string& _varNameInternal, std::ostream &out
       int init_col = 0;
       int end_col = 0;
       output << "<tr>\n";
-      { // paint_header  vector values
+      {   // paint_header  vector values
         if (value_vector_.size() > 0) {
           end_col = init_col + value_vector_[0]->num_basic_fields();
           output << "<th colspan=" << end_col << ">values</th>\n";
@@ -1498,7 +1486,7 @@ void Value::_strHTMLTable(const std::string& _varNameInternal, std::ostream &out
       }
       output << "</tr>\n";
       output << "<tr>\n";
-      { // paint_header_basic  vector values
+      {   // paint_header_basic  vector values
         if (value_vector_.size() > 0) {
           if (value_vector_[0]->is_terminal()) {
             output << "<th>values</th>\n";
@@ -1513,7 +1501,7 @@ void Value::_strHTMLTable(const std::string& _varNameInternal, std::ostream &out
       int m_num_values = max_num_values();
       for (int index_row = 0; (index_row < m_num_values); ++index_row) {
         output << "<tr>\n";
-        { // paint_value of vector values
+        {   // paint_value of vector values
           if ((index_row >= 0) && (index_row < static_cast<int> (value_vector_.size()))) {
             output << value_vector_[index_row]->paint_value(0) << "\n";
           } else {
@@ -1624,14 +1612,14 @@ void Value::clear() {
   // Clear elements in the map
   au::map<std::string, Value>::iterator it;
   for (it = value_map_.begin(); it != value_map_.end(); ++it) {
-    it->second->clear(); // Recursive reuse
+    it->second->clear();   // Recursive reuse
     reuseInstance(it->second);
   }
   value_map_.clear();
 
   // Clear elements in the vector
   for (size_t i = 0; i < value_vector_.size(); ++i) {
-    value_vector_[i]->clear(); // Recursive reuse
+    value_vector_[i]->clear();   // Recursive reuse
     reuseInstance(value_vector_[i]);
   }
   value_vector_.clear();
@@ -1646,10 +1634,10 @@ void Value::Vectorize() {
 
   value->copyFrom(this);
 
-  clear(); // Clear all elements used here
+  clear();   // Clear all elements used here
   SetAsVector();
 
-  value_vector_.push_back(value); // Put the copy of me
+  value_vector_.push_back(value);   // Put the copy of me
 }
 
 void Value::SwapVectorComponents(size_t pos, size_t pos2) {
@@ -1964,22 +1952,22 @@ double Value::GetDoubleFromMap(const char *key, double default_value) {
   return default_value;
 }
 
-Value *Value::GetValueFromMap(std::string& key) {
+Value *Value::GetValueFromMap(const std::string& key) {
   return value_map_.findInMap(key);
 }
 
 void Value::SetStringForMap(const char *key, const char *str) {
-  ChangeValueType(value_map); // Make sure this is a map
+  ChangeValueType(value_map);   // Make sure this is a map
   GetOrAddValueFromMap(key)->SetString(str);
 }
 
 void Value::SetUint64ForMap(const char *key, size_t value) {
-  ChangeValueType(value_map); // Make sure this is a map
+  ChangeValueType(value_map);   // Make sure this is a map
   GetOrAddValueFromMap(key)->SetUint64(value);
 }
 
 void Value::SetDoubleForMap(const char *key, double value) {
-  ChangeValueType(value_map); // Make sure this is a map
+  ChangeValueType(value_map);   // Make sure this is a map
   GetOrAddValueFromMap(key)->SetDouble(value);
 }
 
@@ -2024,7 +2012,7 @@ void Value::ConvertToString() {
 
 void Value::ChangeValueType(ValueType new_value_type) {
   if (value_type_ == new_value_type) {
-    return; // Nothing to do
+    return;   // Nothing to do
   }
   // Now, if we change (or think we change) type, we want to be sure data are cleaned
   // But perhaps we are using set_as_...() in too many places to be sure,
@@ -2099,7 +2087,7 @@ Value& Value::operator++() {
 }
 
 // postfix form
-const Value Value::operator++(int) {
+const Value Value::operator++(int /* just to distinguish prefix and postfix increment */) {
   Value old_value = *this;
   ++(*this);
   return old_value;
@@ -2138,15 +2126,15 @@ bool Value::Less(const Value* const left, const Value* const right) {
 }
 
 bool Value::Greater(const Value* const left, const Value* const right) {
-  return Less(right,left);
+  return Less(right, left);
 }
 
 bool Value::LessOrEqual(const Value* const left, const Value* const right) {
-  return !Less(right,left);
+  return !Less(right, left);
 }
 
 bool Value::GreaterOrEqual(const Value* const left, const Value* const right) {
-  return !Less(left,right);
+  return !Less(left, right);
 }
 
 bool Value::IsString() const {
@@ -2176,7 +2164,7 @@ double Value::GetDouble(double default_value) const {
   return value_double_;
 }
 
-std::string Value::GetString() {
+std::string Value::GetString() {  // const not possible because of str()
   switch (value_type_) {
     case value_void:
       return "";

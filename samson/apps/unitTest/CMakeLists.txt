@@ -117,6 +117,7 @@ SET (STATIC_LIBS
      engine
      protobuf
      pthread
+     samson_system
      samsonModule
      samsonWorkerLib
      samsonStream
@@ -124,8 +125,7 @@ SET (STATIC_LIBS
      samsonZoo
      samsonCommon
      zookeeper_mt
-     samson_comscore
-     samson_system
+     samson_comscore    
      samsonClient
      samsonIsolated
      au

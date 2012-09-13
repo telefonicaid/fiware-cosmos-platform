@@ -1,6 +1,6 @@
 
-#ifndef _H_SAMSON_CONNECTOR_LISTENER
-#define _H_SAMSON_CONNECTOR_LISTENER
+#ifndef _H_STREAM_CONNECTOR_LISTENER
+#define _H_STREAM_CONNECTOR_LISTENER
 
 #include "Adaptor.h"
 #include "LogManager.h"
@@ -32,4 +32,4 @@ public:
 }
 
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_LISTENER
+#endif  // ifndef _H_STREAM_CONNECTOR_LISTENER

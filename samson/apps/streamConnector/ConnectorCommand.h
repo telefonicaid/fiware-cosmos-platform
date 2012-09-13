@@ -1,6 +1,6 @@
 
-#ifndef _H_SAMSON_CONNECTOR_COMMAND
-#define _H_SAMSON_CONNECTOR_COMMAND
+#ifndef _H_STREAM_CONNECTOR_COMMAND
+#define _H_STREAM_CONNECTOR_COMMAND
 
 #include "au/CommandLine.h"
 
@@ -28,4 +28,4 @@ public:
 };
 }
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_COMMAND
+#endif  // ifndef _H_STREAM_CONNECTOR_COMMAND

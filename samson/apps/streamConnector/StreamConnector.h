@@ -1,5 +1,5 @@
-#ifndef _H_SAMSON_CONNECTOR
-#define _H_SAMSON_CONNECTOR
+#ifndef _H_STREAM_CONNECTOR
+#define _H_STREAM_CONNECTOR
 
 #include <set>
 
@@ -165,4 +165,4 @@ public:
   au::tables::Table *getInputInterChannelConnections();
 };
 }
-#endif  // ifndef _H_SAMSON_CONNECTOR
+#endif  // ifndef _H_STREAM_CONNECTOR

@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -24,7 +24,8 @@
  *
  */
 
-#include "Filter.h"  // Own interface
+#include "samson_system/Filter.h"   // Own interface
+
 namespace samson {
 namespace system {
 
@@ -64,7 +65,7 @@ std::string FilterCollection::str() {
 }
 
 Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson::KVWriter* const writer,
-    TXTWriter *txt_writer, au::ErrorManager *error) {
+                                    TXTWriter *txt_writer, au::ErrorManager *error) {
   // Check if there are tokens to be read
   if (token_vector->eof()) {
     error->set("Filter name not specified");
@@ -110,7 +111,7 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
   } else if (token->content == "emit") {
     if (writer) {
       if (token_vector->eof()) {
-        return new FilterEmit(0, writer); // Default channel "0"
+        return new FilterEmit(0, writer);   // Default channel "0"
       }
       au::token::Token *number = token_vector->popToken();
       if (!number->isNumber()) {
@@ -144,7 +145,7 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
 // filter key = 67 | select key:1,value | emit 0 / filter key = 56 | select key:1,value | emit 1
 
 Filter *FilterCollection::GetFilterChain(au::token::TokenVector *token_vector, samson::KVWriter* const writer,
-    TXTWriter *txt_writer, au::ErrorManager *error) {
+                                         TXTWriter *txt_writer, au::ErrorManager *error) {
   // Line of filters for this command...
   // Remeber au::vector works on pointers
   au::vector<Filter> tmp_filters;
@@ -181,7 +182,7 @@ Filter *FilterCollection::GetFilterChain(au::token::TokenVector *token_vector, s
 
 // General command to parse
 void FilterCollection::AddFilters(std::string command, samson::KVWriter* const writer, TXTWriter *txt_writer,
-    au::ErrorManager *error) {
+                                  au::ErrorManager *error) {
   // Tokenize the entire command
   // --------------------------------------------------------------------
   SamsonTokenizer tokenizer;

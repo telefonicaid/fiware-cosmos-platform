@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -27,12 +27,15 @@
 #ifndef _H_SAMSON_SYSTEM_FILTER
 #define _H_SAMSON_SYSTEM_FILTER
 
+#include <string>
+#include <vector>
+
 #include "au/StringComponents.h"
 #include "au/Tokenizer.h"
 #include "au/containers/vector.h"
 #include "au/string.h"
 
-#include <samson/module/samson.h>
+#include "samson/module/samson.h"
 
 #include "samson_system/KeyValue.h"
 #include "samson_system/Source.h"
@@ -47,9 +50,7 @@ namespace system {
 
 class Filter {
   public:
-    Filter() :
-      next_(NULL) {
-    }
+    Filter() : next_(NULL) {}
 
     virtual ~Filter() {}
 
@@ -69,10 +70,10 @@ class Filter {
 
     Filter* next() const { return next_; }
     void set_next(Filter *next) { next_ = next; }
-    bool ThereIsNext() const { return (next_ != NULL); }
+    bool IsThereNext() const { return (next_ != NULL); }
 
   private:
-    Filter *next_; // Pointer to the next filter
+    Filter *next_;   // Pointer to the next filter
 };
 
 // --------------------------------------------------------
@@ -80,15 +81,11 @@ class Filter {
 // --------------------------------------------------------
 
 class FilterEmit : public Filter {
-
   public:
-
     FilterEmit(int channel, samson::KVWriter* const writer) :
-      channel_(channel), writer_(writer) {
-    }
+      channel_(channel), writer_(writer) {}
 
-    virtual ~FilterEmit() {
-    }
+    virtual ~FilterEmit() {}
 
     virtual void run(KeyValue kv) {
       writer_->emit(channel_, kv.key(), kv.value());
@@ -108,9 +105,7 @@ class FilterEmit : public Filter {
 // ----------------------------------------------------------------------------
 
 class FilterJSONLine : public Filter {
-
   public:
-
     FilterJSONLine() {
       // Value is always void at the output
       new_value_.value->SetAsVoid();
@@ -120,8 +115,7 @@ class FilterJSONLine : public Filter {
       output_kv_.set_value(new_value_.value);
     }
 
-    virtual ~FilterJSONLine() {
-    }
+    virtual ~FilterJSONLine() {}
 
     virtual void run(KeyValue kv) {
       // Input key expected to be a string
@@ -137,7 +131,7 @@ class FilterJSONLine : public Filter {
       new_key_.value->SetFromJSONString(kv.key()->c_str());
 
       // Emit the output key-value to the next element in the chain
-      if (ThereIsNext()) {
+      if (IsThereNext()) {
         next()->run(output_kv_);
       }
     }
@@ -159,12 +153,11 @@ class FilterJSONLine : public Filter {
 
 class FilterXMLElement : public Filter {
   public:
-    FilterXMLElement(const std::string& element_name) :
+    explicit FilterXMLElement(const std::string& element_name) :
       element_name_(element_name) {
     }
 
-    virtual ~FilterXMLElement() {
-    }
+    virtual ~FilterXMLElement() {}
 
     static FilterXMLElement *GetFilter(au::token::TokenVector *token_vector, au::ErrorManager *error) {
       if (token_vector->eof()) {
@@ -200,7 +193,7 @@ class FilterXMLElement : public Filter {
 
       // Check errors in the parsing
       if (result.status != pugi::status_ok) {
-        return; // Do nothing
+        return;   // Do nothing
       }
       // Process all elements
       Process(xml_doc);
@@ -210,7 +203,7 @@ class FilterXMLElement : public Filter {
       // printf("Add (%s) %s %s\n" , prefix.c_str() , xml_node.name() , xml_node.value()  );
 
       switch (xml_node.type()) {
-        case pugi::node_element: // Element tag, i.e. '<node/>'
+        case pugi::node_element:   // Element tag, i.e. '<node/>'
         {
           for (pugi::xml_node_iterator n = xml_node.begin(); n != xml_node.end(); ++n) {
             // For each node
@@ -220,8 +213,8 @@ class FilterXMLElement : public Filter {
         }
           break;
 
-        case pugi::node_pcdata: // Plain character data, i.e. 'text'
-        case pugi::node_cdata: // Character data, i.e. '<![CDATA[text]]>'
+        case pugi::node_pcdata:   // Plain character data, i.e. 'text'
+        case pugi::node_cdata:    // Character data, i.e. '<![CDATA[text]]>'
         {
           if (prefix == "") {
             prefix = "content";
@@ -236,10 +229,10 @@ class FilterXMLElement : public Filter {
         }
 
         case pugi::node_null:
-        case pugi::node_comment: // Comment tag, i.e. '<!-- text -->'
-        case pugi::node_pi: // Processing instruction, i.e. '<?name?>'
-        case pugi::node_declaration: // Document declaration, i.e. '<?xml version="1.0"?>'
-        case pugi::node_doctype: // Document type declaration, i.e. '<!DOCTYPE doc>'
+        case pugi::node_comment:      // Comment tag, i.e. '<!-- text -->'
+        case pugi::node_pi:           // Processing instruction, i.e. '<?name?>'
+        case pugi::node_declaration:  // Document declaration, i.e. '<?xml version="1.0"?>'
+        case pugi::node_doctype:      // Document type declaration, i.e. '<!DOCTYPE doc>'
           return;
       }
     }
@@ -254,7 +247,7 @@ class FilterXMLElement : public Filter {
         Add(*n, "");
       }
 
-      if (ThereIsNext()) {
+      if (IsThereNext()) {
         next()->run(kv_);
       }
     }
@@ -271,12 +264,12 @@ class FilterXMLElement : public Filter {
           // Main document... just skip to main element
           pugi::xml_node_iterator n = xml_node.begin();
           if (n != xml_node.end()) {
-            Process(*n); // Process all elements inside
+            Process(*n);   // Process all elements inside
           }
           break;
         }
 
-        case pugi::node_element: // Element tag, i.e. '<node/>'
+        case pugi::node_element:   // Element tag, i.e. '<node/>'
         {
           if (xml_node.name() == element_name_) {
             Add(xml_node);
@@ -290,14 +283,14 @@ class FilterXMLElement : public Filter {
         }
           break;
 
-        case pugi::node_pcdata: // Plain character data, i.e. 'text'
-        case pugi::node_cdata: // Character data, i.e. '<![CDATA[text]]>'
+        case pugi::node_pcdata:   // Plain character data, i.e. 'text'
+        case pugi::node_cdata:    // Character data, i.e. '<![CDATA[text]]>'
           return;
 
-        case pugi::node_comment: // Comment tag, i.e. '<!-- text -->'
-        case pugi::node_pi: // Processing instruction, i.e. '<?name?>'
-        case pugi::node_declaration: // Document declaration, i.e. '<?xml version="1.0"?>'
-        case pugi::node_doctype: // Document type declaration, i.e. '<!DOCTYPE doc>'
+        case pugi::node_comment:      // Comment tag, i.e. '<!-- text -->'
+        case pugi::node_pi:           // Processing instruction, i.e. '<?name?>'
+        case pugi::node_declaration:  // Document declaration, i.e. '<?xml version="1.0"?>'
+        case pugi::node_doctype:      // Document type declaration, i.e. '<!DOCTYPE doc>'
           return;
       }
     }
@@ -318,12 +311,9 @@ class FilterXMLElement : public Filter {
 // --------------------------------------------------------
 
 class FilterEmitTxt : public Filter {
-
   public:
-
     FilterEmitTxt(samson::TXTWriter *writer, au::token::TokenVector *token_vector, au::ErrorManager *error) :
-      writer_(writer), separator_("|") {
-
+      writer_(writer), fields_(), separator_("|") {
       while (!token_vector->eof()) {
         if (token_vector->getNextTokenContent() == "|") {
           break;
@@ -342,8 +332,7 @@ class FilterEmitTxt : public Filter {
       }
     }
 
-    virtual ~FilterEmitTxt() {
-    }
+    virtual ~FilterEmitTxt() {}
 
     virtual void run(KeyValue kv) {
       std::ostringstream output;
@@ -385,14 +374,13 @@ class FilterEmitTxt : public Filter {
 // --------------------------------------------------------
 
 class FilterParser : public Filter {
-
   public:
-    FilterParser() :
-      separator_(' ') {
+    FilterParser() : fields_()
+      , separator_(' ')
+      , key_container_() {
     }
 
-    virtual ~FilterParser() {
-    }
+    virtual ~FilterParser() {}
 
     // parse field0 field1 field2 -separator X
 
@@ -441,15 +429,13 @@ class FilterParser : public Filter {
 
         if ((field_definition == "number") || (field_definition == "num") || (field_definition == "n")) {
           filter->fields_.push_back(number);
-        } else
-          if ((field_definition == "string") || (field_definition == "s")) {
-            filter->fields_.push_back(string);
-          } else
-            if (!token->isNormal()) {
-              error->set(au::str("Incorrect field definition %s", token->content.c_str()));
-              delete filter;
-              return NULL;
-            }
+        } else if ((field_definition == "string") || (field_definition == "s")) {
+          filter->fields_.push_back(string);
+        } else if (!token->isNormal()) {
+          error->set(au::str("Incorrect field definition %s", token->content.c_str()));
+          delete filter;
+          return NULL;
+        }
       }
       return filter;
     }
@@ -485,13 +471,16 @@ class FilterParser : public Filter {
               case number:
                 v->ConvertToNumber();
                 break;
+              default:
+                LM_E(("Wrong item in fields_[%d]: %d", i, fields_[i]));
+                break;
             }
           }
         }
       }
 
       // Run next filter
-      if (ThereIsNext()) {
+      if (IsThereNext()) {
         KeyValue next_kv(key_container_.value, kv.value());
         next()->run(next_kv);
       }
@@ -521,11 +510,10 @@ class FilterParser : public Filter {
 // --------------------------------------------------------
 
 class FilterParserWords : public Filter {
-
   public:
+    FilterParserWords() : key_container_() {}
 
-    virtual ~FilterParserWords() {
-    }
+    virtual ~FilterParserWords() {}
 
     virtual void run(KeyValue kv) {
       // Key should be string for this operation
@@ -549,7 +537,7 @@ class FilterParserWords : public Filter {
             key_container_.value->SetString(word);
 
             // Run next filter
-            if (ThereIsNext()) {
+            if (IsThereNext()) {
               next()->run(next_kv);
             }
           }
@@ -565,7 +553,7 @@ class FilterParserWords : public Filter {
         key_container_.value->SetString(word);
 
         // Run next filter
-        if (ThereIsNext()) {
+        if (IsThereNext()) {
           next()->run(next_kv);
         }
       }
@@ -585,10 +573,10 @@ class FilterParserWords : public Filter {
 // --------------------------------------------------------
 
 class FilterParserChars : public Filter {
-
   public:
-    virtual ~FilterParserChars() {
-    }
+    FilterParserChars() : key_container_() {}
+
+    virtual ~FilterParserChars() {}
 
     virtual void run(KeyValue kv) {
       // Key should be string for this operation
@@ -609,7 +597,7 @@ class FilterParserChars : public Filter {
         key_container_.value->SetString(letter);
 
         // Run next filter
-        if (ThereIsNext()) {
+        if (IsThereNext()) {
           next()->run(next_kv);
         }
       }
@@ -629,15 +617,11 @@ class FilterParserChars : public Filter {
 // ----------------------------------------------------
 
 class FilterCondition : public Filter {
-
   public:
-
     // filter key:2 = 4.56
-    FilterCondition(Source *eval_source) : eval_source_(eval_source) {
-    }
+    explicit FilterCondition(Source *eval_source) : eval_source_(eval_source) {}
 
-    ~FilterCondition() {
-    }
+    ~FilterCondition() {}
 
     bool test(KeyValue kv) {
       samson::system::Value *v = eval_source_->get(kv);
@@ -650,10 +634,8 @@ class FilterCondition : public Filter {
     }
 
     void run(KeyValue kv) {
-      if (test(kv)) {
-        if (ThereIsNext()) {
-          next()->run(kv);
-        }
+      if (test(kv) && IsThereNext()) {
+        next()->run(kv);
       }
     }
 
@@ -670,12 +652,9 @@ class FilterCondition : public Filter {
 // ----------------------------------------------------
 
 class FilterSelect : public Filter {
-
   public:
-
     FilterSelect(Source *source_for_key, Source *source_for_value) :
-      source_for_key_(source_for_key), source_for_value_(source_for_value) {
-    }
+      source_for_key_(source_for_key), source_for_value_(source_for_value) {}
 
     ~FilterSelect() {
       delete source_for_key_;
@@ -693,11 +672,7 @@ class FilterSelect : public Filter {
       samson::system::Value *value_for_key = source_for_key_->get(kv);
       samson::system::Value *value_for_value = source_for_value_->get(kv);
 
-      if (!value_for_key) {
-        return;
-      }
-
-      if (!value_for_value) {
+      if (!value_for_key || !value_for_value) {
         return;
       }
 
@@ -705,7 +680,7 @@ class FilterSelect : public Filter {
       value_container_.value->copyFrom(value_for_value);
 
       // Run next element
-      if (ThereIsNext()) {
+      if (IsThereNext()) {
         next()->run(KeyValue(key_container_.value, value_container_.value));
       }
     }
@@ -728,8 +703,8 @@ class SamsonTokenizer : public au::token::Tokenizer {
  */
 
 class FilterCollection {
-
   public:
+    FilterCollection() : filters_() {}
     ~FilterCollection();
 
     // String debug
@@ -744,7 +719,6 @@ class FilterCollection {
     size_t GetNumFilters();
 
   private:
-
     Filter *GetFilter(au::token::TokenVector *token_vector, samson::KVWriter* const writer, TXTWriter *txt_writer,
         au::ErrorManager *error);
 
@@ -754,7 +728,6 @@ class FilterCollection {
     // Collections of filters
     au::vector<Filter> filters_;
 };
-
 }
 }
 

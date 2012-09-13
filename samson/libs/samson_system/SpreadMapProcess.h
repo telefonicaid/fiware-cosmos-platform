@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -38,9 +38,7 @@
 namespace samson {
 namespace system {
 class SpreadMapProcess : public ProcessComponent {
-
   public:
-
     static const std::string kNullField;
     static const std::string kNullDest;
 
@@ -49,8 +47,7 @@ class SpreadMapProcess : public ProcessComponent {
       , out_app_name_("def_out")
       , out_def_name_("def_def")
       , additional_field_(kNullField)
-      , include_field_(false) {
-    }
+      , include_field_(false) {}
 
     SpreadMapProcess(const std::string& name = "default", const std::string& out_app = "def_out",
         const std::string& out_def = "def_def", const std::string& additional_field = kNullField)
@@ -62,8 +59,7 @@ class SpreadMapProcess : public ProcessComponent {
         include_field_ = true;
     }
 
-    ~SpreadMapProcess() {
-    }
+    ~SpreadMapProcess() {}
 
     std::string out_app_name() {
       return out_app_name_;
@@ -87,6 +83,6 @@ class SpreadMapProcess : public ProcessComponent {
     bool include_field_;
 };
 }
-} // End of namespace
+}   // End of namespace
 
-#endif // ifndef _H_SAMSON_system_SPREAD_MAP_PROCESS
+#endif   // ifndef _H_SAMSON_system_SPREAD_MAP_PROCESS

@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -24,7 +24,7 @@
  *
  */
 
-#include "UpdateCountFunction.h" // Own interface
+#include "samson_system/UpdateCountFunction.h"   // Own interface
 
 #include <math.h>
 
@@ -36,4 +36,4 @@ double UpdateCountFunction::UpdateCount(double old_count, size_t old_time, size_
   return (old_count * pow(forgetting_factor_, diff));
 }
 }
-} // End of namespaces
+}   // End of namespaces

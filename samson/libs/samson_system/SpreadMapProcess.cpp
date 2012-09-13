@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -26,7 +26,7 @@
  *
  */
 
-#include "samson_system/SpreadMapProcess.h" // Own interface
+#include "samson_system/SpreadMapProcess.h"   // Own interface
 
 namespace samson {
 namespace system {
@@ -35,10 +35,8 @@ const std::string SpreadMapProcess::kNullField("null_field");
 const std::string SpreadMapProcess::kNullDest("null");
 
 bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
-    samson::KVWriter* const writer) {
-
+                              samson::KVWriter* const writer) {
   if (key->CheckMapValue("app", name().c_str())) {
-
     Value *additional_field_value = NULL;
     if (include_field_) {
       // If additional field, we must check it is present among keys
@@ -109,4 +107,4 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
   }
 }
 }
-} // End of namespace
+}   // End of namespace

@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -28,31 +28,26 @@
 #ifndef _H_SAMSON_SYSTEM_UPDATE_COUNT_FUNCTION
 #define _H_SAMSON_SYSTEM_UPDATE_COUNT_FUNCTION
 
-#include <cstring>  //size_t
+#include <cstring>   // size_t
 #include <string>
 
 namespace samson {
 namespace system {
 class UpdateCountFunction {
-
-
   public:
     UpdateCountFunction()
     : name_("def_update")
-    , time_span_(300.0) // 5 minutes
+    , time_span_(300.0)   // 5 minutes
     , forgetting_factor_((time_span_ - 1) / time_span_)
-    , n_top_items_(100) {
-    }
+    , n_top_items_(100) {}
 
     UpdateCountFunction(const std::string& name, double time_span, int n_top_items)
     : name_(name)
     , time_span_(time_span)
     , forgetting_factor_((time_span_ - 1) / time_span_)
-    , n_top_items_(n_top_items) {
-    }
+    , n_top_items_(n_top_items) {}
 
-    ~UpdateCountFunction() {
-    }
+    ~UpdateCountFunction() {}
 
     std::string name() const {
       return name_;
@@ -71,6 +66,6 @@ class UpdateCountFunction {
     size_t n_top_items_;
 };
 }
-} // End of namespaces
+}   // End of namespaces
 
-#endif // ifndef _H_SAMSON_SYSTEM_UPDATE_COUNT_FUNCTION
+#endif   // ifndef _H_SAMSON_SYSTEM_UPDATE_COUNT_FUNCTION

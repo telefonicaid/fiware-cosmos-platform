@@ -1,12 +1,14 @@
 #ifndef _H_SAMSON_SYSTEM_SOURCE_FUNCTION
 #define _H_SAMSON_SYSTEM_SOURCE_FUNCTION
 
-#include <stdlib.h> //malloc()
+#include <stdlib.h>   // malloc()
+#include <regex.h>
 
 #include <iostream>
-#include <regex.h>
+#include <map>
 #include <sstream>
 #include <string>
+#include <utility>    // for pair<>
 #include <vector>
 
 #include "au/containers/vector.h"
@@ -22,18 +24,14 @@
 namespace samson {
 namespace system {
 class SourceFunction : public Source {
-
   public:
     SourceFunction(std::string name, int min_num_arguments = 1, int max_num_arguments = 1000) :
-      name_(name), min_num_arguments_(min_num_arguments), max_num_arguments_(max_num_arguments) {
+      name_(name), min_num_arguments_(min_num_arguments), max_num_arguments_(max_num_arguments) {}
 
-    }
-
-    virtual ~SourceFunction() {
-    }
+    virtual ~SourceFunction() {}
 
     // Static function to get an instance of SourceFunction
-    static SourceFunction *GetSourceForFunction(std::string function_name, au::vector<Source>& input_sources,
+    static SourceFunction *GetSourceForFunction(const std::string& function_name, au::vector<Source>& input_sources,
         au::ErrorManager *error);
 
     int min_num_arguments() const {
@@ -44,7 +42,7 @@ class SourceFunction : public Source {
       return max_num_arguments_;
     }
 
-    void setInputSource(au::vector<Source>& input_sources) {
+    void setInputSource(const au::vector<Source>& input_sources) {
       size_t input_sources_size = input_sources.size();
       for (size_t i = 0; i < input_sources_size; ++i) {
         input_sources_.push_back(input_sources[i]);
@@ -76,14 +74,11 @@ class SourceFunction : public Source {
 // Now accepts vector and maps ( all fields are processed )
 
 class OneToOne_SourceFunction : public SourceFunction {
-
   public:
-    OneToOne_SourceFunction(std::string name) :
-      SourceFunction(name, 1, 1) {
-    }
+    explicit OneToOne_SourceFunction(std::string name) :
+      SourceFunction(name, 1, 1) {}
 
-    virtual ~OneToOne_SourceFunction() {
-    }
+    virtual ~OneToOne_SourceFunction() {}
 
     // Method to transform simple parameters
     virtual samson::system::Value *IndividualGet(samson::system::Value *input) = 0;
@@ -111,33 +106,30 @@ class OneToOne_SourceFunction : public SourceFunction {
           samson::system::Value *output_component_value = IndividualGet(input_component_value);
 
           if (!output_component_value) {
-            return NULL; // If one of the components can not be transformed, not return anything
+            return NULL;   // If one of the components can not be transformed, not return anything
           }
           value_container_.value->AddValueToVector()->copyFrom(output_component_value);
         }
         return value_container_.value;
-      } else {
-        if (source_value->IsMap()) {
-          // Create a map transforming individual component
+      } else if (source_value->IsMap()) {
+        // Create a map transforming individual component
+        value_container_.value->SetAsMap();
+        std::vector<std::string> keys = source_value->GetKeysFromMap();
+        size_t keys_size = keys.size();
+        for (size_t i = 0; i < keys_size; ++i) {
+          // value component
+          samson::system::Value *input_component_value = source_value->GetValueFromMap(keys[i]);
+          samson::system::Value *output_component_value = IndividualGet(input_component_value);
 
-          value_container_.value->SetAsMap();
-          std::vector<std::string> keys = source_value->GetKeysFromMap();
-          size_t keys_size = keys.size();
-          for (size_t i = 0; i < keys_size; ++i) {
-            // value component
-            samson::system::Value *input_component_value = source_value->GetValueFromMap(keys[i]);
-            samson::system::Value *output_component_value = IndividualGet(input_component_value);
-
-            if (!output_component_value) {
-              return NULL; // If one of the components can not be transformed, not return anything
-            }
-            value_container_.value->AddValueToMap(keys[i])->copyFrom(output_component_value);
+          if (!output_component_value) {
+            return NULL;   // If one of the components can not be transformed, not return anything
           }
-          return value_container_.value;
-        } else {
-          // Transform individual component
-          return IndividualGet(source_value);
+          value_container_.value->AddValueToMap(keys[i])->copyFrom(output_component_value);
         }
+        return value_container_.value;
+      } else {
+        // Transform individual component
+        return IndividualGet(source_value);
       }
     }
 
@@ -147,14 +139,11 @@ class OneToOne_SourceFunction : public SourceFunction {
 };
 
 class String_OneToOne_SourceFunction : public OneToOne_SourceFunction {
-
   public:
-    String_OneToOne_SourceFunction(std::string name) :
-      OneToOne_SourceFunction(name) {
-    }
+    explicit String_OneToOne_SourceFunction(std::string name) :
+      OneToOne_SourceFunction(name) {}
 
-    virtual ~String_OneToOne_SourceFunction() {
-    }
+    virtual ~String_OneToOne_SourceFunction() {}
 
     samson::system::Value *IndividualGet(samson::system::Value *input) {
       if (!input->IsString()) {
@@ -167,14 +156,13 @@ class String_OneToOne_SourceFunction : public OneToOne_SourceFunction {
     }
 
     // Unique method to implement for single parameter string operations
-    virtual samson::system::Value *GetFromString(std::string& input) = 0;
+    virtual samson::system::Value *GetFromString(const std::string& input) = 0;
 
   private:
     std::string line_;
 };
 
 class SourceFunction_getSerialization : public SourceFunction {
-
   public:
     SourceFunction_getSerialization() :
       SourceFunction("getSerialization", 1, 1) {
@@ -209,7 +197,6 @@ class SourceFunction_getSerialization : public SourceFunction {
 };
 
 class SourceFunction_getSerializationLength : public SourceFunction {
-
   public:
     SourceFunction_getSerializationLength() :
       SourceFunction("getSerializationLength", 1, 1) {
@@ -243,11 +230,9 @@ class SourceFunction_getSerializationLength : public SourceFunction {
 };
 
 class SourceFunction_getType : public SourceFunction {
-
   public:
     SourceFunction_getType() :
-      SourceFunction("getType", 1, 1) {
-    }
+      SourceFunction("getType", 1, 1) {}
 
     samson::system::Value *get(KeyValue kv) {
       if (input_sources_.size() == 0) {
@@ -270,11 +255,9 @@ class SourceFunction_getType : public SourceFunction {
 };
 
 class SourceFunctionisAlpha : public SourceFunction {
-
   public:
     SourceFunctionisAlpha() :
-      SourceFunction("isAlpha", 1, 1) {
-    }
+      SourceFunction("isAlpha", 1, 1) {}
 
     samson::system::Value *get(KeyValue kv) {
       if (input_sources_.size() == 0) {
@@ -315,11 +298,9 @@ class SourceFunctionisAlpha : public SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_string : public SourceFunction {
-
   public:
     SourceFunction_string() :
-      SourceFunction("string") { // Accepts N parameters concatenating all of them...
-    }
+      SourceFunction("string") {}   // Accepts N parameters concatenating all of them...
 
     samson::system::Value *get(KeyValue kv) {
       if (input_sources_.size() == 0) {
@@ -350,11 +331,9 @@ class SourceFunction_string : public SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_substr : public SourceFunction {
-
   public:
     SourceFunction_substr() :
-      SourceFunction("substr", 2, 3) {
-    }
+      SourceFunction("substr", 2, 3) {}
 
     samson::system::Value *get(KeyValue kv) {
       if (input_sources_.size() == 0) {
@@ -414,12 +393,9 @@ class SourceFunction_substr : public SourceFunction {
 };
 
 class SourceFunction_find : public SourceFunction {
-
   public:
-
     SourceFunction_find() :
-      SourceFunction("find", 2, 2) { // find( string , "sub_string" )
-    }
+      SourceFunction("find", 2, 2) {}   // find( string , "sub_string" )
 
     samson::system::Value *get(KeyValue kv) {
       // Use only the first component
@@ -455,12 +431,9 @@ class SourceFunction_find : public SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_number : public SourceFunction {
-
   public:
-
     SourceFunction_number() :
-      SourceFunction("number", 1, 1) {
-    }
+      SourceFunction("number", 1, 1) {}
 
     samson::system::Value *get(KeyValue kv) {
       if (input_sources_.size() == 0) {
@@ -489,11 +462,9 @@ class SourceFunction_number : public SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_json : public SourceFunction {
-
   public:
     SourceFunction_json() :
-      SourceFunction("json", 1, 1) {
-    }
+      SourceFunction("json", 1, 1) {}
 
     samson::system::Value *get(KeyValue kv) {
       // Use only the first component
@@ -509,7 +480,6 @@ class SourceFunction_json : public SourceFunction {
 
   private:
     samson::system::ValueContainer value_container_;
-
 };
 
 // -----------------------------------------------------------------
@@ -519,12 +489,9 @@ class SourceFunction_json : public SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_str : public SourceFunction {
-
   public:
-
     SourceFunction_str() :
-      SourceFunction("str", 1, 1) {
-    }
+      SourceFunction("str", 1, 1) {}
 
     samson::system::Value *get(KeyValue kv) {
       // Use only the first component
@@ -549,12 +516,9 @@ class SourceFunction_str : public SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_time : public SourceFunction {
-
   public:
-
     SourceFunction_time() :
-      SourceFunction("time", 0, 0) {
-    }
+      SourceFunction("time", 0, 0) {}
 
     samson::system::Value *get(KeyValue kv) {
       value_container_.value->SetDouble(time(NULL));
@@ -570,21 +534,17 @@ class SourceFunction_time : public SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_strlen : public String_OneToOne_SourceFunction {
-
   public:
-
     SourceFunction_strlen() :
-      String_OneToOne_SourceFunction("strlen") {
-    }
+      String_OneToOne_SourceFunction("strlen") {}
 
-    samson::system::Value *GetFromString(std::string& input) {
+    samson::system::Value *GetFromString(const std::string& input) {
       value_container_.value->SetDouble(input.length());
       return value_container_.value;
     }
 
   private:
     samson::system::ValueContainer value_container_;
-
 };
 
 // -----------------------------------------------------------------
@@ -592,12 +552,9 @@ class SourceFunction_strlen : public String_OneToOne_SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_to_lower : public SourceFunction {
-
   public:
-
     SourceFunction_to_lower() :
-      SourceFunction("to_lower", 1, 1) , line_(NULL), max_line_size_(0) {
-    }
+      SourceFunction("to_lower", 1, 1) , line_(NULL), max_line_size_(0) {}
 
     ~SourceFunction_to_lower() {
       if (line_) {
@@ -652,12 +609,9 @@ class SourceFunction_to_lower : public SourceFunction {
 };
 
 class SourceFunction_match : public SourceFunction {
-
   public:
     SourceFunction_match() :
-      SourceFunction("match", 2, 2), compiled_(false), error_(false) {
-
-    }
+      SourceFunction("match", 2, 2), compiled_(false), error_(false) {}
 
     ~SourceFunction_match() {
       if (compiled_) {
@@ -723,12 +677,9 @@ class SourceFunction_match : public SourceFunction {
 // -----------------------------------------------------------------
 
 class SourceFunction_to_upper : public SourceFunction {
-
   public:
-
     SourceFunction_to_upper() :
-      SourceFunction("to_upper", 1, 1), line_(NULL), max_line_size_(0) {
-    }
+      SourceFunction("to_upper", 1, 1), line_(NULL), max_line_size_(0) {}
 
     ~SourceFunction_to_upper() {
       if (line_) {
@@ -795,9 +746,7 @@ SourceFunction *FactorySourceFunctionImpl() {
 }
 
 class SourceFunctionManager {
-
   public:
-
     SourceFunctionManager() {
       // String functions
       Add<SourceFunction_strlen> ("strlen");
@@ -826,10 +775,10 @@ class SourceFunctionManager {
 
     template<class C>
     void Add(std::string name) {
-      factories_.insert(std::pair<std::string, factory_SourceFunction>(name, FactorySourceFunctionImpl<C> ));
+      factories_.insert(std::pair<std::string, factory_SourceFunction>(name, FactorySourceFunctionImpl<C>));
     }
 
-    SourceFunction *getInstance(std::string name, au::vector<Source>& input_sources, au::ErrorManager *error) {
+    SourceFunction *getInstance(const std::string& name, au::vector<Source>& input_sources, au::ErrorManager *error) {
       // Find in map
       std::map<std::string, factory_SourceFunction>::iterator it_factories;
       it_factories = factories_.find(name);
@@ -841,7 +790,7 @@ class SourceFunctionManager {
 
       SourceFunction *source_function = it_factories->second();
 
-      int num_arguments = (int) input_sources.size();
+      int num_arguments = static_cast<int>(input_sources.size());
       int min_num_arguments = source_function->min_num_arguments();
       int max_num_arguments = source_function->max_num_arguments();
 

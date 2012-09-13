@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -37,25 +37,30 @@ namespace system {
 // -----------------------------------------------------------------------
 
 class KeyValue {
-public:
+  public:
+    // Constructor
+    KeyValue() :
+      key_(NULL), value_(NULL) {}
 
-  // Constructor
-  KeyValue() : key_(NULL), value_(NULL) {
-  }
+    KeyValue(Value *key, Value *value) :
+      key_(key), value_(value) {}
 
-  KeyValue(Value *key, Value *value) :
-    key_(key), value_(value) {
-  }
+    Value *key() const {
+      return key_;
+    }
+    Value *value() const {
+      return value_;
+    }
+    void set_key(Value *key) {
+      key_ = key;
+    }
+    void set_value(Value *value) {
+      value_ = value;
+    }
 
-  Value *key() const { return key_; }
-  Value *value() const { return value_; }
-  void set_key(Value *key) { key_ = key; }
-  void set_value(Value *value) { value_ = value; }
-
-private:
-Value *key_;
-Value *value_;
-
+  private:
+    Value *key_;
+    Value *value_;
 };
 }
 }

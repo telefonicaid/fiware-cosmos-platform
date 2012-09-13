@@ -6,8 +6,8 @@ namespace samson {
 namespace system {
 
 ValueList::ValueList(int max_num_elements) : max_num_elements_(max_num_elements)
-    , values_(static_cast<Value**>(malloc(max_num_elements_ * sizeof(Value *))))
-    , counters_(static_cast<int *>(malloc(max_num_elements_ * sizeof(int)))) {
+    , values_(static_cast<Value**>(malloc(max_num_elements_ * sizeof(*values_))))
+    , counters_(static_cast<int *>(malloc(max_num_elements_ * sizeof(*counters_)))) {
   for (int i = 0; i < max_num_elements_; i++) {
     values_[i] = new Value();
     counters_[i] = 0;             // Init counter to 0
@@ -30,7 +30,7 @@ void ValueList::Push(Value *value, int counter) {
       tmp->copyFrom(value);
 
       // Move the rest of pointers and counter
-      for (int j = (max_num_elements_ - 2 ); j >= i; --j) {
+      for (int j = (max_num_elements_ - 2); j >= i; --j) {
         values_[j + 1] = values_[j];
         counters_[j + 1] = counters_[j];
       }

@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -26,7 +26,7 @@
  *
  */
 
-#include "HitCountProcess.h" // Own interface
+#include "samson_system/HitCountProcess.h"   // Own interface
 
 #include "samson_system/Value.h"
 
@@ -41,7 +41,7 @@ void HitCountProcess::AddUpdateCountFunction(const std::string& name, double tim
 }
 
 bool HitCountProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
-    samson::KVWriter* const writer) {
+                             samson::KVWriter* const writer) {
   Value *p_hit;
 
   std::string input_item;
@@ -197,4 +197,4 @@ bool HitCountProcess::Update(Value *key, Value *state, Value **values, size_t nu
   }
 }
 }
-} // End of namespace
+}   // End of namespace

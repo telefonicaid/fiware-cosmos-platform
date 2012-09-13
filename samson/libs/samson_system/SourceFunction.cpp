@@ -1,6 +1,6 @@
 
 
-#include "SourceFunction.h"  // Own interface
+#include "samson_system/SourceFunction.h"  // Own interface
 
 
 namespace samson {
@@ -9,7 +9,7 @@ namespace system {
 SourceFunctionManager source_function_manager;
 
 
-SourceFunction *SourceFunction::GetSourceForFunction(std::string function_name
+SourceFunction *SourceFunction::GetSourceForFunction(const std::string& function_name
                                                      , au::vector<Source>& input_sources
                                                      , au::ErrorManager *error) {
   return source_function_manager.getInstance(function_name, input_sources, error);

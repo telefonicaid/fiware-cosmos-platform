@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -25,7 +25,9 @@
  *
  */
 
-#include "ProcessComponentManager.h"  // Own interface
+#include "samson_system/ProcessComponentManager.h"  // Own interface
+
+#include <algorithm>
 
 #include "samson_system/TopProcessComponent.h"
 #include "samson_system/ValueContainer.h"
@@ -56,14 +58,13 @@ void ProcessComponentsManager::Process(samson::KVSetStruct *inputs, samson::KVWr
   if (inputs[1].num_kvs > 0) {
     keyContainer.value->parse(inputs[1].kvs[0]->key);
     stateContainer.value->parse(inputs[1].kvs[0]->value);
-  } else
-    if (inputs[0].num_kvs > 0) {
-      keyContainer.value->parse(inputs[0].kvs[0]->key);
-      stateContainer.value->SetAsVoid();
-    } else {
-      LM_E(("Error, nothing to do because no key"));
-      return; // Nothing to do if no key ( this should never happen )
-    }
+  } else if (inputs[0].num_kvs > 0) {
+    keyContainer.value->parse(inputs[0].kvs[0]->key);
+    stateContainer.value->SetAsVoid();
+  } else {
+    LM_E(("Error, nothing to do because no key"));
+    return;   // Nothing to do if no key ( this should never happen )
+  }
   // Recover values to be processed
   // ---------------------------------------------------------
   for (size_t i = 0; i < inputs[0].num_kvs; ++i) {
@@ -76,7 +77,7 @@ void ProcessComponentsManager::Process(samson::KVSetStruct *inputs, samson::KVWr
 }
 
 void ProcessComponentsManager::Update(Value *key, Value *state, Value **values, size_t num_values,
-    samson::KVWriter* const writer) {
+                                      samson::KVWriter* const writer) {
   // Debug
   EmitLog("debug", "----------------------------------------", writer);
   EmitLog("debug",
@@ -116,4 +117,4 @@ void ProcessComponentsManager::Update(Value *key, Value *state, Value **values, 
   // Emit debug trace?
 }
 }
-} // End of namespace samson.system
+}   // End of namespace samson.system

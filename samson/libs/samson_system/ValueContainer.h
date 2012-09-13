@@ -15,8 +15,7 @@ namespace system {
 
 class ValueContainer {
   public:
-
-    Value *value; // Instance of value retained in this class
+    Value *value;   // Instance of value retained in this class
 
     ValueContainer() {
       value = Value::getInstance();
@@ -27,6 +26,6 @@ class ValueContainer {
     }
 };
 }
-} // End of namespace
+}   // End of namespace
 
 #endif  // ifndef _H_SAMSON_SYSTEM_VALUE_CONTAINER

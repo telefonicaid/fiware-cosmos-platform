@@ -24,13 +24,12 @@ namespace system {
 
 class Source {
   public:
+    Source() {}
 
-    virtual ~Source() {
-    }
+    virtual ~Source() {}
 
     virtual samson::system::Value *get(KeyValue kv) = 0;
     virtual std::string str() = 0;
-
 };
 
 // ---------------------------------------------------
@@ -38,9 +37,7 @@ class Source {
 // ---------------------------------------------------
 
 class SourceVoid : public Source {
-
   public:
-
     SourceVoid() {
       value_container_.value->SetAsVoid();
     }
@@ -61,14 +58,11 @@ class SourceVoid : public Source {
 // ---------------------------------------------------
 
 class SourceCompareSelector : public Source {
-
   public:
-
     SourceCompareSelector(Source *condition, Source *value1, Source *value2)
       : condition_(condition)
       , value1_(value1)
-      , value2_(value2) {
-    }
+      , value2_(value2) {}
 
     samson::system::Value *get(KeyValue kv) {
       Value *value_condition = condition_->get(kv);
@@ -100,46 +94,33 @@ class SourceCompareSelector : public Source {
 
 class SourceCompare : public Source {
   public:
-
     typedef enum {
-      equal, // ==
-      greater_than, // >
-      less_than, // <
-      greater_or_equal_than, // >=
-      less_or_equal_than, // <=
-      different_than, // !=
+      equal,                    // ==
+      greater_than,             // >
+      less_than,                // <
+      greater_or_equal_than,    // >=
+      less_or_equal_than,       // <=
+      different_than,           // !=
       unknown
     } Comparisson;
 
   public:
-
-    static Comparisson comparition_from_string(std::string s) {
+    static Comparisson comparition_from_string(const std::string& s) {
       Comparisson c = unknown;
 
       if (s == "==") {
         c = equal;
-      } else {
-        if (s == "<") {
-          c = less_than;
-        } else {
-          if (s == ">") {
-            c = greater_than;
-          } else {
-            if (s == ">=") {
-              c = greater_or_equal_than;
-            } else {
-              if (s == "<=") {
-                c = less_or_equal_than;
-              } else {
-                if (s == "!=") {
-                  c = different_than;
-                }
-              }
-            }
-          }
-        }
+      } else if (s == "<") {
+        c = less_than;
+      } else if (s == ">") {
+        c = greater_than;
+      } else if (s == ">=") {
+        c = greater_or_equal_than;
+      } else if (s == "<=") {
+        c = less_or_equal_than;
+      } else if (s == "!=") {
+        c = different_than;
       }
-
       return c;
     }
 
@@ -224,13 +205,11 @@ class SourceCompare : public Source {
     }
 
   private:
-
     Source *left_;
     Source *right_;
     Comparisson comparisson_;
 
     ValueContainer value_container_;
-
 };
 
 // ---------------------------------------------------
@@ -239,34 +218,26 @@ class SourceCompare : public Source {
 
 class SourceOperation : public Source {
   public:
-
     typedef enum {
-      sum, // +
-      minus, // -
-      multiply, // *
-      divide, // /
+      sum,        // +
+      minus,      // -
+      multiply,   // *
+      divide,     // /
       unknown
     } Operation;
 
   public:
-
-    static Operation operation_from_string(std::string s) {
+    static Operation operation_from_string(const std::string& s) {
       Operation c = unknown;
 
       if (s == "+") {
         c = sum;
-      } else {
-        if (s == "-") {
-          c = minus;
-        } else {
-          if (s == "*") {
-            c = multiply;
-          } else {
-            if (s == "/") {
-              c = divide;
-            }
-          }
-        }
+      } else if (s == "-") {
+        c = minus;
+      } else if (s == "*") {
+        c = multiply;
+      } else if (s == "/") {
+        c = divide;
       }
       return c;
     }
@@ -336,13 +307,11 @@ class SourceOperation : public Source {
     }
 
   private:
-
     Source *left_;
     Source *right_;
     Operation operation_;
 
     ValueContainer value_container_;
-
 };
 
 // ---------------------------------------------------
@@ -350,9 +319,7 @@ class SourceOperation : public Source {
 // ---------------------------------------------------
 
 class SourceStringConstant : public Source {
-
   public:
-
     explicit SourceStringConstant(std::string _value) {
       value_container_.value->SetString(_value);
     }
@@ -370,9 +337,7 @@ class SourceStringConstant : public Source {
 };
 
 class SourceNumberConstant : public Source {
-
   public:
-
     explicit SourceNumberConstant(double _value) {
       value_container_.value->SetDouble(_value);
     }
@@ -387,12 +352,10 @@ class SourceNumberConstant : public Source {
 
   private:
     ValueContainer value_container_;
-
 };
 
 class SourceKey : public Source {
   public:
-
     samson::system::Value *get(KeyValue kv) {
       return kv.key();
     }
@@ -404,7 +367,6 @@ class SourceKey : public Source {
 
 class SourceValue : public Source {
   public:
-
     samson::system::Value *get(KeyValue kv) {
       return kv.value();
     }
@@ -415,13 +377,9 @@ class SourceValue : public Source {
 };
 
 class SourceVectorComponent : public Source {
-
   public:
-
-    SourceVectorComponent(Source *_base, Source *_index) {
-      base_ = _base;
-      index_ = _index;
-    }
+    SourceVectorComponent(Source *base, Source *index) : base_(base)
+    , index_(index) {}
 
     samson::system::Value *get(KeyValue kv) {
       Value *base_value = base_->get(kv);
@@ -441,17 +399,12 @@ class SourceVectorComponent : public Source {
   private:
     Source *base_;
     Source *index_;
-
 };
 
 class SourceMapComponent : public Source {
-
   public:
-
-    SourceMapComponent(Source *_base, Source *_index) {
-      base_ = _base;
-      index_ = _index;
-    }
+    SourceMapComponent(Source *base, Source *index) : base_(base)
+    , index_(index) {}
 
     samson::system::Value *get(KeyValue kv) {
       Value *base_value = base_->get(kv);
@@ -476,8 +429,7 @@ class SourceMapComponent : public Source {
 
 class SourceVector : public Source {
   public:
-
-    SourceVector(au::vector<Source>& _source_components) {
+    explicit SourceVector(const au::vector<Source>& _source_components) {   // Could be const, but we had to modify au::vector
       for (size_t i = 0; i < _source_components.size(); i++) {
         source_components_.push_back(_source_components[i]);
       }
@@ -506,19 +458,17 @@ class SourceVector : public Source {
       output << "]";
       return output.str();
     }
+
   private:
     au::vector<Source> source_components_;
-    samson::system::ValueContainer value_container_; // To generate output
-
+    samson::system::ValueContainer value_container_;   // To generate output
 };
 
 class SourceMap : public Source {
-
   public:
-
     SourceMap(au::vector<Source> _source_keys, au::vector<Source> _source_values) {
       if (_source_keys.size() != _source_values.size()) {
-        return; // Error
+        return;   // Error
       }
       for (size_t i = 0; i < _source_keys.size(); i++) {
         source_keys_.push_back(_source_keys[i]);
@@ -559,11 +509,10 @@ class SourceMap : public Source {
     au::vector<Source> source_keys_;
     au::vector<Source> source_values_;
 
-    samson::system::ValueContainer value_container_; // To generate output
+    samson::system::ValueContainer value_container_;   // To generate output
 };
 
 Source *GetSource(au::token::TokenVector *token_vector, au::ErrorManager *error);
-
 }
 }
 

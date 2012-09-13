@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -29,7 +29,7 @@
 #ifndef _H_SAMSON_system_MAP_COMPARE_FUNCTOR
 #define _H_SAMSON_system_MAP_COMPARE_FUNCTOR
 
-#include <string.h>
+#include <string>
 
 #include "samson_system/Value.h"
 
@@ -40,9 +40,7 @@ namespace system {
 struct MapCompareAscendingFunctor {
     std::string field_;
 
-    MapCompareAscendingFunctor(const std::string& field) {
-      field_ = field;
-    }
+    explicit MapCompareAscendingFunctor(const std::string& field) : field_(field) {}
 
     bool operator()(const system::Value* const left, const Value* const right) {
       if (left->GetValueType() == Value::value_map) {
@@ -59,8 +57,7 @@ struct MapCompareAscendingFunctor {
 struct MapCompareDescendingFunctor {
     std::string field_;
 
-    MapCompareDescendingFunctor(const std::string& field): field_(field) {
-    }
+    explicit MapCompareDescendingFunctor(const std::string& field): field_(field) {}
 
     bool operator()(const system::Value* const left, const Value* const right) {
       if (left->GetValueType() == Value::value_map) {
@@ -73,7 +70,6 @@ struct MapCompareDescendingFunctor {
       return Value::Greater(left, right);
     }
 };
-
 }
-} // namespaces
-#endif // _H_SAMSON_system_MAP_COMPARE_FUNCTOR
+}   // namespaces
+#endif   // _H_SAMSON_system_MAP_COMPARE_FUNCTOR

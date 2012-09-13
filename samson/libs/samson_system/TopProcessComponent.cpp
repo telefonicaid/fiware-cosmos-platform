@@ -1,3 +1,30 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            TopProcessComponent.cpp
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            2012
+ *
+ * DESCRIPTION
+ *
+ *  Definition of TopProcessComponent class methods to update the count and emit the top
+ *  hits under the Process paradigm. It operates on fixed fields in the input queue
+ *  named "category", "concept", "total"
+ *
+ */
 #include "samson_system/TopProcessComponent.h"
 
 #include <math.h>
@@ -36,7 +63,7 @@ bool TopProcessComponent::Update(Value *key, Value *state, Value **values, size_
 }
 
 void TopProcessComponent::UpdateAccumulator(Value *key, Value *state, Value **values, size_t num_values,
-    samson::KVWriter* const writer) {
+                                            samson::KVWriter* const writer) {
   EmitLog("debug",
           au::str("Processing top.accumulateion state %s - %s with %lu values", key->str().c_str(),
                   state->str().c_str(), num_values), writer);
@@ -51,7 +78,7 @@ void TopProcessComponent::UpdateAccumulator(Value *key, Value *state, Value **va
   const char *concept = key->GetStringFromMap("concept");
 
   if (!category || !concept) {
-    return; // Incorrect key for this process component
+    return;   // Incorrect key for this process component
   }
   double state_total = state->GetDoubleFromMap("total", 0);
   size_t state_time = state->GetUint64FromMap("time");
@@ -67,7 +94,7 @@ void TopProcessComponent::UpdateAccumulator(Value *key, Value *state, Value **va
 
   // Add new samples
   for (size_t i = 0; i < num_values; ++i) {
-    double tmp_value = values[i]->GetDouble(0); // Get double value ( 0 as default if this is not a number )
+    double tmp_value = values[i]->GetDouble(0);   // Get double value ( 0 as default if this is not a number )
     state_total += tmp_value;
   }
 
@@ -91,7 +118,7 @@ void TopProcessComponent::UpdateCategoryWithValue(Value *state, Value *new_value
   const char *new_value_concept = new_value->GetStringFromMap("concept");
 
   if (!new_value_concept) {
-    return; // Skip incorrect value
+    return;   // Skip incorrect value
   }
   // Search for the same concept in the top list....
 
@@ -131,7 +158,7 @@ void TopProcessComponent::UpdateCategoryWithValue(Value *state, Value *new_value
 
     if (new_value_total > vector_value_total) {
       // Insert here
-      state->AddValueToVector(p)->copyFrom(new_value); // Insert this value at this position
+      state->AddValueToVector(p)->copyFrom(new_value);   // Insert this value at this position
 
       // Check length of the vector
       while (state->GetVectorSize() > top_list_max_size_) {
@@ -149,7 +176,7 @@ void TopProcessComponent::UpdateCategoryWithValue(Value *state, Value *new_value
 }
 
 void TopProcessComponent::UpdateCategory(Value *key, Value *state, Value **values, size_t num_values,
-    samson::KVWriter* const writer) {
+                                         samson::KVWriter* const writer) {
   EmitLog("debug",
           au::str("Processing top.category state %s - %s with %lu values", key->str().c_str(), state->str().c_str(),
                   num_values), writer);
@@ -163,7 +190,7 @@ void TopProcessComponent::UpdateCategory(Value *key, Value *state, Value **value
   const char *category = key->GetStringFromMap("category");
 
   if (!category) {
-    return; // Incorrect key for this process component
+    return;   // Incorrect key for this process component
   }
   // Process new elements
   for (size_t i = 0; i < num_values; i++) {
@@ -176,7 +203,6 @@ void TopProcessComponent::UpdateCategory(Value *key, Value *state, Value **value
   // Emit new state
   EmitState(key, state, writer);
 }
-
 }
-} // End of namespace
+}   // End of namespace
 

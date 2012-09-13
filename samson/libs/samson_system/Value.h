@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -28,7 +28,7 @@
 #ifndef _H_SAMSON_SYSTEM_VALUE_Value
 #define _H_SAMSON_SYSTEM_VALUE_Value
 
-#include "stdint.h"                // uint64_t
+#include <stdint.h>               // uint64_t
 
 #include <cctype>
 #include <string>
@@ -50,14 +50,13 @@ const char *GetConstantWord(int c);
 
 class Value : public samson::DataInstance {
   public:
-
     // Value types ( on memory )
     typedef enum {
-      value_void, // No content
+      value_void,   // No content
 
-      value_number, // Generic number content  ( using value_double_ )
-      value_string, // Generic string content  ( using value_string_ )
-      value_vector, // A vector of values      ( using value_vector_ )
+      value_number,   // Generic number content  ( using value_double_ )
+      value_string,   // Generic string content  ( using value_string_ )
+      value_vector,   // A vector of values      ( using value_vector_ )
       value_map,
     // A map of values         ( using value_map_    )
     } ValueType;
@@ -70,42 +69,41 @@ class Value : public samson::DataInstance {
 
       // Serialization of numbers
       // ------------------------------------------------------------
-      ser_int_positive, // Variable length possitive numbers
-      ser_int_negative, // Variable length negative numbers
-      ser_int_value_0, // Concrete values
+      ser_int_positive,   // Variable length possitive numbers
+      ser_int_negative,   // Variable length negative numbers
+      ser_int_value_0,   // Concrete values
       ser_int_value_1, ser_int_value_2, ser_int_value_3, ser_int_value_4, ser_int_value_5, ser_int_value_6,
       ser_int_value_7, ser_int_value_8, ser_int_value_9, ser_int_value_10,
       ser_int_value_minus_1,
 
-      ser_double_positive_1_decimal, // Double possitve or negative with a fixed number of decimals
+      ser_double_positive_1_decimal,   // Double possitve or negative with a fixed number of decimals
       ser_double_positive_2_decimal, ser_double_positive_3_decimal, ser_double_positive_4_decimal,
       ser_double_positive_5_decimal,
 
       ser_double_negative_1_decimal, ser_double_negative_2_decimal, ser_double_negative_3_decimal,
       ser_double_negative_4_decimal, ser_double_negative_5_decimal,
 
-      ser_double, // Generic double otherwise
+      ser_double,   // Generic double otherwise
 
       // Serialization of string
       // ------------------------------------------------------------
-      ser_string, ser_string_constant, // Constant words frequently used ( user, log, url, ...)
-      ser_string_smaz, // Compressed using smaz
+      ser_string, ser_string_constant,   // Constant words frequently used ( user, log, url, ...)
+      ser_string_smaz,   // Compressed using smaz
 
       // Serialization of vector
       // ------------------------------------------------------------
-      ser_vector, ser_vector_len_0, // Vector with a particular length
+      ser_vector, ser_vector_len_0,   // Vector with a particular length
       ser_vector_len_1, ser_vector_len_2, ser_vector_len_3, ser_vector_len_4, ser_vector_len_5,
 
       // Serialization of map
       // ------------------------------------------------------------
-      ser_map, ser_map_len_0, // Map with a particular number of elements inside
+      ser_map, ser_map_len_0,   // Map with a particular number of elements inside
       ser_map_len_1, ser_map_len_2, ser_map_len_3, ser_map_len_4, ser_map_len_5,
     } SerializationCode;
 
     static const std::string kSystemValueName;
 
-    Value() : samson::DataInstance() {
-    }
+    Value() : samson::DataInstance() {}
 
     ~Value() {
       // This instance will be never reused but the internal values will be reused
@@ -215,7 +213,7 @@ class Value : public samson::DataInstance {
     bool operator>=(const Value &other) const;
     bool operator<(const Value &other) const;
     bool operator>(const Value &other) const;
-    const Value operator+(Value &other); // const
+    const Value operator+(Value &other);   // const & for other not possible because of GetString()
     const Value operator-(const Value &other) const;
     const Value operator*(const Value &other) const;
     const Value operator/(const Value &other) const;
@@ -320,7 +318,7 @@ class Value : public samson::DataInstance {
     void SetStringForMap(const char *key, const char *str);
     void SetUint64ForMap(const char *key, size_t value);
     void SetDoubleForMap(const char *key, double value);
-    Value *GetValueFromMap(std::string& key);
+    Value *GetValueFromMap(const std::string& key);
     std::vector<std::string> GetKeysFromMap();
     void ConvertToNumber();
     void ConvertToString();
@@ -345,7 +343,7 @@ class Value : public samson::DataInstance {
     void SetString(const char *_value);
     void SetString(const char *_value, size_t len);
     Value& operator++();
-    const Value operator++(int);
+    const Value operator++(int /* dummy argument */);
 
     static bool Less(const Value* const left, const Value* const right);
     static bool Greater(const Value* const left, const Value* const right);
@@ -357,7 +355,7 @@ class Value : public samson::DataInstance {
     double GetDouble(double default_value = 0) const;
     size_t GetUint64(size_t default_value = 0) const;
     bool IsString(const char *str) const;
-    std::string GetString();
+    std::string GetString();   // const not possible because of str()
 
     // Access to the string char*
     const char *c_str() const;
@@ -384,6 +382,6 @@ class Value : public samson::DataInstance {
     au::map<std::string, Value> value_map_;
 };
 }
-} // end of namespace samson.system
+}   // end of namespace samson.system
 
 #endif  // ifndef _H_SAMSON_SYSTEM_VALUE_Value

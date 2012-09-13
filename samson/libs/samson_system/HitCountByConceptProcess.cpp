@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -26,7 +26,7 @@
  *
  */
 
-#include "HitCountByConceptProcess.h" // Own interface
+#include "samson_system/HitCountByConceptProcess.h"   // Own interface
 
 #include "samson_system/Value.h"
 #include "samson_system/ValueContainer.h"
@@ -41,7 +41,8 @@ void HitCountByConceptProcess::AddUpdateCountFunction(const std::string& name, d
   counts_.push_back(update_count_function);
 }
 
-Value *HitCountByConceptProcess::GetConceptInInstantProfile(Value *p_instant_profile, const std::string& concept) const {
+Value *HitCountByConceptProcess::GetConceptInInstantProfile(Value *p_instant_profile,
+                                                            const std::string& concept) const {
   Value *p_concept_profile = NULL;
 
   if ((p_concept_profile = FindConceptInInstantProfile(p_instant_profile, concept)) != NULL) {
@@ -79,7 +80,7 @@ Value *HitCountByConceptProcess::FindConceptInInstantProfile(Value *p_instant_pr
 }
 
 bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
-    samson::KVWriter* const writer) {
+                                      samson::KVWriter* const writer) {
   Value *p_instant_profile;
   Value *p_hit;
 
@@ -237,4 +238,4 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
   }
 }
 }
-} // End of namespace
+}   // End of namespace

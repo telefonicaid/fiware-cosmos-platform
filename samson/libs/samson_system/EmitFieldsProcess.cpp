@@ -5,14 +5,14 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
 /*
  * FILE            EmitFieldsProcess.cpp
  *
- * AUTHOR          Gregorio Escalada
+ * AUTHOR          Andreu Urruela
  *
  * PROJECT         SAMSON samson_system library
  *
@@ -25,7 +25,7 @@
  *
  */
 
-#include "samson_system/EmitFieldsProcess.h" // Own interface
+#include "samson_system/EmitFieldsProcess.h"   // Own interface
 
 namespace samson {
 namespace system {
@@ -34,10 +34,8 @@ const std::string EmitFieldsProcess::kNullField("null_field");
 const std::string EmitFieldsProcess::kNullDest("null");
 
 bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
-    samson::KVWriter* const writer) {
-
+                               samson::KVWriter* const writer) {
   if (key->CheckMapValue("app", name().c_str())) {
-
     Value *additional_field_value = NULL;
     if (include_field_) {
       // If additional field, we must check it is present among keys
@@ -98,8 +96,7 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
           }
           if (include_independent_) {
             size_t independent_size = independent_values.size();
-            for (size_t k = 0; (k < independent_size); ++k)
-            {
+            for (size_t k = 0; (k < independent_size); ++k) {
               new_key.AddValueToMap("member")->copyFrom(independent_values[k]);
               for (size_t j = 0; (j < num_values); j++) {
                 // LM_M(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
@@ -123,8 +120,7 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
         }
         if (include_independent_) {
           size_t independent_size = independent_values.size();
-          for (size_t k = 0; (k < independent_size); ++k)
-          {
+          for (size_t k = 0; (k < independent_size); ++k) {
             // We add the values to the key to have a state profile per user, or category...
             new_key.AddValueToMap("member")->copyFrom(independent_values[k]);
             for (size_t j = 0; (j < num_values); j++) {
@@ -156,4 +152,4 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
   }
 }
 }
-} // End of namespace
+}   // End of namespace

@@ -4,10 +4,11 @@
 #include <list>
 #include <map>
 #include <string>
+#include <utility>          // pair<>
 
 #include "au/containers/list.h"
-#include <samson/module/samson.h>
-#include <samson_system/Value.h>
+#include "samson/module/samson.h"
+#include "samson_system/Value.h"
 
 namespace samson {
 namespace system {
@@ -16,14 +17,13 @@ namespace system {
 // ---------------------------------------------
 
 class ValueList {
-
   public:
     explicit ValueList(int _max_num_elements);
     ~ValueList();
 
     void Init() {
       for (int i = 0; i < max_num_elements_; ++i) {
-        counters_[i] = 0; // Init counter to 0
+        counters_[i] = 0;   // Init counter to 0
       }
     }
 
@@ -45,14 +45,12 @@ class ValueList {
 
 class ValueReduce {
   public:
+    ValueReduce() {}
 
-    virtual ~ValueReduce() {
-    }
+    virtual ~ValueReduce() {}
 
     virtual void Run(samson::KVSetStruct *inputs, samson::KVWriter* const writer) = 0;
-    virtual void Init(std::string command) {
-      // Optional method to receive extra parameters
-    }
+    virtual void Init(std::string command) {}  // Optional method to receive extra parameters
 };
 
 // -----------------------------------------------------------------------------------------------
@@ -62,8 +60,10 @@ class ValueReduce {
 // -----------------------------------------------------------------------------------------------
 
 class ValueReduce_all : public ValueReduce {
-
   public:
+    ValueReduce_all() : ValueReduce()
+    , key_()
+    , value_() {}
 
     void Run(samson::KVSetStruct *inputs, samson::KVWriter* const writer) {
       // Parse common key
@@ -90,8 +90,11 @@ class ValueReduce_all : public ValueReduce {
 // -----------------------------------------------------------------------------------------------
 
 class ValueReduce_unique : public ValueReduce {
-
   public:
+    ValueReduce_unique() : ValueReduce()
+    , key_()
+    , value_()
+    , output_value_() {}
 
     void Run(samson::KVSetStruct *inputs, samson::KVWriter* const writer) {
       // Parse common key
@@ -126,8 +129,11 @@ class ValueReduce_unique : public ValueReduce {
 // -----------------------------------------------------------------------------------------------
 
 class ValueReduce_unique_counter : public ValueReduce {
-
   public:
+    ValueReduce_unique_counter() : ValueReduce()
+    , key_()
+    , value_()
+    , output_value_() {}
 
     void Run(samson::KVSetStruct *inputs, samson::KVWriter* const writer) {
       // Parse common key
@@ -166,12 +172,9 @@ class ValueReduce_unique_counter : public ValueReduce {
 // -----------------------------------------------------------------------------------------------
 
 class ValueReduce_top : public ValueReduce {
-
   public:
-
     ValueReduce_top() :
-      list_(NULL) {
-    }
+      list_(NULL) {}
 
     ~ValueReduce_top() {
       if (list_) {
@@ -195,11 +198,8 @@ class ValueReduce_top : public ValueReduce {
 // -----------------------------------------------------------------------------------------------
 
 class ValueReduce_top_concept : public ValueReduce {
-
   public:
-    ValueReduce_top_concept() {
-      list_ = NULL;
-    }
+    ValueReduce_top_concept() : list_(NULL) {}
 
     ~ValueReduce_top_concept() {
       if (list_) {
@@ -224,8 +224,12 @@ class ValueReduce_top_concept : public ValueReduce {
 
 
 class ValueReduce_sum : public ValueReduce {
-
   public:
+    ValueReduce_sum() : ValueReduce()
+    , key_()
+    , value_()
+    , output_value_() {}
+
     void Run(samson::KVSetStruct *inputs, samson::KVWriter* const writer) {
       // Parse common key
       key_.parse(inputs[0].kvs[0]->key);
@@ -256,8 +260,12 @@ class ValueReduce_sum : public ValueReduce {
 
 
 class ValueReduce_average : public ValueReduce {
-
   public:
+    ValueReduce_average() : ValueReduce()
+    , key_()
+    , value_()
+    , output_value_() {}
+
     void Run(samson::KVSetStruct *inputs, samson::KVWriter* const writer) {
       // Parse common key
       key_.parse(inputs[0].kvs[0]->key);
@@ -288,8 +296,14 @@ class ValueReduce_average : public ValueReduce {
 
 
 class ValueReduce_update_sum : public ValueReduce {
-
   public:
+    ValueReduce_update_sum() : ValueReduce()
+    , key_()
+    , value_()
+    , output_value_()
+    , time_span_(300)
+    , factor_((time_span_ - 1) / time_span_) {}
+
     void Init(std::string command);
     void Run(samson::KVSetStruct *inputs, samson::KVWriter* const writer);
 
@@ -299,7 +313,7 @@ class ValueReduce_update_sum : public ValueReduce {
     samson::system::Value output_value_;
     int time_span_;
     bool emit_;
-    double factor_; // Forgetting factor
+    double factor_;   // Forgetting factor
 };
 
 // -----------------------------------------------------------------------------------------------
@@ -310,8 +324,11 @@ class ValueReduce_update_sum : public ValueReduce {
 
 
 class ValueReduce_update_last : public ValueReduce {
-
   public:
+    ValueReduce_update_last() : key_()
+    , value_()
+    , output_value_() {}
+
     void Run(samson::KVSetStruct *inputs, samson::KVWriter* const writer) {
       // If inputs, emit the last input
       if (inputs[1].num_kvs > 0) {
@@ -340,11 +357,8 @@ class ValueReduce_update_last : public ValueReduce {
 // Accumulate elements {... counter=# ... }
 class TopList {
   public:
-
     TopList() :
-      num_elements_(100) {
-
-    }
+      num_elements_(100) {}
 
     ~TopList() {
       // Remove all newly created instances
@@ -377,13 +391,12 @@ class TopList {
       }
     }
 
-    size_t num_elements_; // Maximum number of elements
-    au::list<system::Value> values_; // List of values
+    size_t num_elements_;   // Maximum number of elements
+    au::list<system::Value> values_;   // List of values
 
   private:
     system::Value *Copy(system::Value *v) {
       system::Value *c = new system::Value();
-
       c->copyFrom(v);
       return c;
     }
@@ -401,8 +414,15 @@ class TopList {
 // TODO: Emit only relevant outputs after processing all input key-values
 
 class ValueReduce_accumulate : public ValueReduce {
-
   public:
+    ValueReduce_accumulate() : ValueReduce()
+    , key_()
+    , value_()
+    , tmp_value_()
+    , output_value_()
+    , time_span_(300)
+    , factor_((time_span_ - 1) / time_span_)
+    , current_time_(0) {}
 
     void Init(std::string command);
     void UpdateCounter(system::Value *value);
@@ -414,7 +434,7 @@ class ValueReduce_accumulate : public ValueReduce {
     samson::system::Value tmp_value_;
     samson::system::Value output_value_;
     int time_span_;
-    double factor_; // Forgetting factor
+    double factor_;   // Forgetting factor
     size_t current_time_;
 };
 
@@ -430,9 +450,15 @@ class ValueReduce_accumulate : public ValueReduce {
 // TODO: Emit only relevant outputs after processing all input key-values
 
 class ValueReduce_accumulate_top : public ValueReduce {
-
-
   public:
+    ValueReduce_accumulate_top() : ValueReduce()
+    , key_()
+    , value_()
+    , output_value_()
+    , time_span_(300)
+    , factor_((time_span_ - 1) / time_span_)
+    , top_list_()
+    , current_time_(0) {}
 
     void Init(std::string command);
     void UpdateCounter(system::Value *value);
@@ -443,8 +469,8 @@ class ValueReduce_accumulate_top : public ValueReduce {
     samson::system::Value value_;
     samson::system::Value output_value_;
     int time_span_;
-    double factor_; // Forgetting factor
-    TopList top_list_; // List to keep top elements
+    double factor_;     // Forgetting factor
+    TopList top_list_;  // List to keep top elements
     size_t current_time_;
 };
 
@@ -462,25 +488,23 @@ ValueReduce *factory_ValueReduce_impl() {
 }
 
 class ValueReduceManager {
-
   public:
-
-    ValueReduceManager(std::string type) {
+    explicit ValueReduceManager(std::string type) {
       if (type == "reduce") {
         Add<ValueReduce_all> ("all");
         Add<ValueReduce_unique> ("unique");
         Add<ValueReduce_unique_counter> ("unique_counter");
 
-        Add<ValueReduce_top> ("top"); // Expect key - value
-        Add<ValueReduce_top_concept> ("top_concept"); // Expect key - [ value counter ]
+        Add<ValueReduce_top> ("top");                  // Expect key - value
+        Add<ValueReduce_top_concept> ("top_concept");  // Expect key - [ value counter ]
 
         Add<ValueReduce_sum> ("sum");
         Add<ValueReduce_average> ("average");
       }
 
       if (type == "update") {
-        Add<ValueReduce_update_last> ("last"); // Keep the last value
-        Add<ValueReduce_update_sum> ("sum"); // Keep the total sum of seen values
+        Add<ValueReduce_update_last> ("last");   // Keep the last value
+        Add<ValueReduce_update_sum> ("sum");     // Keep the total sum of seen values
 
         Add<ValueReduce_accumulate> ("accumulate");
         // Received     { value:"XX" category:"XX" } , counter
@@ -496,7 +520,7 @@ class ValueReduceManager {
 
     template<class C>
     void Add(std::string name) {
-      factories_.insert(std::pair<std::string, factory_ValueReduce>(name, factory_ValueReduce_impl<C> ));
+      factories_.insert(std::pair<std::string, factory_ValueReduce>(name, factory_ValueReduce_impl<C>));
     }
 
     ValueReduce *getInstance(std::string command) {
@@ -537,7 +561,6 @@ class ValueReduceManager {
   private:
     // Map with all available commands
     std::map<std::string, factory_ValueReduce> factories_;
-
 };
 }
 }

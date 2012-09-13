@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -47,9 +47,7 @@ class ProcessComponent;
  */
 
 class ProcessComponentsManager {
-
   public:
-
     ProcessComponentsManager();
 
     // Add new process components
@@ -65,6 +63,6 @@ class ProcessComponentsManager {
      au::vector<ProcessComponent> components_;
 };
 }
-} // End of namespace samson.system
+}   // End of namespace samson.system
 
 #endif  // ifndef _H_SAMSON_system_PROCESS_COMPONENT_MANAGER

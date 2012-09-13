@@ -5,7 +5,7 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
@@ -25,7 +25,7 @@
  *
  */
 
-#include "ProcessComponent.h"  // Own interface
+#include "samson_system/ProcessComponent.h"  // Own interface
 
 #include "samson_system/ValueContainer.h"
 
@@ -65,4 +65,4 @@ void EmitLog(const std::string& key, const std::string& message, samson::KVWrite
   writer->emit(-1, key_message.value, value_message.value);
 }
 }
-} // End of namespace
+}   // End of namespace

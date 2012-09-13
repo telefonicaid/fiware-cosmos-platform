@@ -9,24 +9,21 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <samson/module/samson.h>
-#include <samson/modules/system/Value.h>
-#include <samson/modules/system/TimeUnix.h>
-#include <samson_system/ValueContainer.h>
+#include <string>
+#include <vector>
 
 #include "au/string.h"
 #include "comscore/SamsonComscoreDictionary.h"
+#include "samson_system/ValueContainer.h"
+#include "samson/module/samson.h"
+#include "samson/modules/system/TimeUnix.h"
+#include "samson/modules/system/Value.h"
 
 namespace samson {
 namespace iwebp {
 
 class OTTService {
-
-    std::vector<std::string> httpPatterns_;
-    std::vector<std::string> dnsPatterns_;
-
   public:
-
     std::string name_;
     int serviceId_;
     std::string group_;
@@ -58,8 +55,7 @@ class OTTService {
 
       if (category_ == true) {
         p_check = host;
-      }
-      else {
+      } else {
         p_check = url;
       }
       for (unsigned int i = 0; i < httpPatterns_.size(); ++i) {
@@ -87,22 +83,13 @@ class OTTService {
       return false;
     }
 
+  private:
+    std::vector<std::string> httpPatterns_;
+    std::vector<std::string> dnsPatterns_;
 };
 
 class parse_http_with_commscore : public samson::Parser {
-    samson::system::ValueContainer keyContainer_;
-    samson::system::ValueContainer valueContainer_;
-
-    // OTT services to be detected
-    std::vector<OTTService *> services_;
-
-    char *line_;
-    std::vector<char*> fields_;
-    char sep_;
-    samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary_;
-
   public:
-
     //  INFO_MODULE
     // If interface changes and you do not recreate this file, you will have to update this information (and of course, the module file)
     // Please, do not remove this comments, as it will be used to check consistency on module declaration
@@ -118,7 +105,7 @@ class parse_http_with_commscore : public samson::Parser {
       // Alloc space for the lines...
 #define MAX_LENGTH_LINE 20000
       line_ = static_cast<char *> (malloc(MAX_LENGTH_LINE + 1));
-      //LM_M(("Created line at %p", line));
+      // LM_M(("Created line at %p", line));
 
       au::ErrorManager error;
       samson_comscore_dictionary_.read("/var/comscore/samson_comscore_dictionary.bin");
@@ -405,7 +392,6 @@ class parse_http_with_commscore : public samson::Parser {
         newService->addHTTPPattern("%yoigo.com/tiendasyoigo%");
         services_.push_back(newService);
       }
-
     }
 
     OTTService *classify_http(const char *url, const char *host) {
@@ -472,12 +458,12 @@ class parse_http_with_commscore : public samson::Parser {
       samson::system::TimeUnix timestamp;
       timestamp.setFromStrTimeDate_dd_lett_YY_12H_AMPM(fields_[9]);
 
-      //LM_M(("Time ok"));
+      // LM_M(("Time ok"));
 
       char *url = fields_[8];
 
       if ((url == NULL) || (*url == '\0')) {
-        //LM_W(("Empty url at fields[0]:'%s', fields[1]:'%s', fields[2]:'%s', fields[6]:'%s', fields[9]:'%s' ", fields[0], fields[1], fields[2], fields[6], fields[9]));
+        // LM_W(("Empty url at fields[0]:'%s', fields[1]:'%s', fields[2]:'%s', fields[6]:'%s', fields[9]:'%s' ", fields[0], fields[1], fields[2], fields[6], fields[9]));
         return false;
       }
       char *host = fields_[2];
@@ -490,7 +476,7 @@ class parse_http_with_commscore : public samson::Parser {
       char *name_service = strdup(detected_service->name_.c_str());
       char *name_group = strdup(detected_service->group_.c_str());
 
-      //LM_M(("Service ok: %s", name_service));
+      // LM_M(("Service ok: %s", name_service));
 
       char *p_blank;
       if ((p_blank = strchr(url, ' ')) != NULL) {
@@ -509,16 +495,15 @@ class parse_http_with_commscore : public samson::Parser {
         domain = static_cast<char *> (malloc(length_domain + 1));
         strncpy(domain, p_domain, length_domain);
         domain[length_domain] = '\0';
-      }
-      else {
+      } else {
         domain = strdup(p_domain);
       }
 
-      //LM_M(("domain ok: %s", domain));
+      // LM_M(("domain ok: %s", domain));
 
       // Get all categories for this url
       std::vector<uint> categories_ids = samson_comscore_dictionary_.getCategories(url);
-      //LM_M(("categories ok with size:%d for url:'%s'", categories_ids.size(), url));
+      // LM_M(("categories ok with size:%d for url:'%s'", categories_ids.size(), url));
 
       keyContainer->value->SetAsMap();
       keyContainer->value->AddValueToMap("app")->SetString("agregatedKey");
@@ -536,11 +521,9 @@ class parse_http_with_commscore : public samson::Parser {
       int categories_size = categories_ids.size();
       if (categories_size == 0) {
         p_vector->AddValueToVector()->SetString("Unknown");
-      }
-      else {
+      } else {
         for (int i = 0; i < categories_size; ++i) {
-          std::string name =
-                  samson_comscore_dictionary_.getCategoryName(categories_ids[i]);
+          std::string name = samson_comscore_dictionary_.getCategoryName(categories_ids[i]);
           p_vector->AddValueToVector()->SetString(name);
         }
       }
@@ -552,14 +535,12 @@ class parse_http_with_commscore : public samson::Parser {
       // google search
       if ((p_search = strstr(url, "search?")) != NULL) {
         strncpy(query, p_search + strlen("search?"), MAX_LENGTH_QUERY);
-        //LM_M(("Detected google query:'%s'", query));
+        //  LM_M(("Detected google query:'%s'", query));
+      } else if ((p_search = strstr(url, "search.php?")) != NULL) {
+        //  facebook search
+        strncpy(query, p_search + strlen("search.php?"), MAX_LENGTH_QUERY);
+        // LM_M(("Detected query:'%s'", query));
       }
-      else
-        if ((p_search = strstr(url, "search.php?")) != NULL) {
-          //facebook search
-          strncpy(query, p_search + strlen("search.php?"), MAX_LENGTH_QUERY);
-          //LM_M(("Detected query:'%s'", query));
-        }
       keyContainer->value->AddValueToMap("search_query")->SetString(query);
 
       p_vector = keyContainer->value->AddValueToMap("query_words");
@@ -581,11 +562,9 @@ class parse_http_with_commscore : public samson::Parser {
       free(name_service);
       free(name_group);
       return true;
-
     }
 
     void run(char *data, size_t length, samson::KVWriter *writer) {
-
       // By default, value is 1
       valueContainer_.value->SetDouble(1.0);
 
@@ -593,30 +572,29 @@ class parse_http_with_commscore : public samson::Parser {
       char *p_data_begin = data;
       char *p_data_end = data + length;
 
-      //LM_M(("data block of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", length, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9]));
-      //LM_M(("line at %p of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", line, 0, line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]));
+      // LM_M(("data block of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", length, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9]));
+      // LM_M(("line at %p of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", line, 0, line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]));
 
       while (p_data < p_data_end) {
-        //LM_M(("Looking at p_data:'%c'", *p_data));
+        // LM_M(("Looking at p_data:'%c'", *p_data));
         if ((*p_data == '\n') || (*p_data == '\0')) {
           int copy_length = p_data - p_data_begin;
           if (copy_length > MAX_LENGTH_LINE) {
             copy_length = MAX_LENGTH_LINE;
           }
-          //LM_M(("Detected line with %d chars, line %p", copy_length, line));
+          // LM_M(("Detected line with %d chars, line %p", copy_length, line));
           strncpy(line_, p_data_begin, copy_length);
           // We overwrite the '\n'
           line_[copy_length] = '\0';
 
-          //LM_M(("line at %p of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", line, copy_length, line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]));
+          // LM_M(("line at %p of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", line, copy_length, line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]));
 
-          //LM_M(("Parsing line:'%s'", line));
+          // LM_M(("Parsing line:'%s'", line));
           if (parse_line_http(line_, &keyContainer_)) {
-            //LM_M(("Parsed line:'%s'", line));
-            //LM_M(("Result keyContainer: %s", keyContainer.value));
+            // LM_M(("Parsed line:'%s'", line));
+            // LM_M(("Result keyContainer: %s", keyContainer.value));
             writer->emit(0, keyContainer_.value, valueContainer_.value);
-          }
-          else {
+          } else {
             LM_W(("Wrong line:'%s'", line_));
           }
           p_data_begin = p_data + 1;
@@ -627,18 +605,27 @@ class parse_http_with_commscore : public samson::Parser {
 
     void finish(samson::KVWriter *writer) {
       size_t services_size = services_.size();
-      for (size_t i = 0; (i < services_size); ++i)
-      {
+      for (size_t i = 0; (i < services_size); ++i) {
         delete services_[i];
       }
       services_.clear();
       free(line_);
     }
 
-};
+  private:
+    samson::system::ValueContainer keyContainer_;
+    samson::system::ValueContainer valueContainer_;
 
+    // OTT services to be detected
+    std::vector<OTTService *> services_;
+
+    char *line_;
+    std::vector<char*> fields_;
+    char sep_;
+    samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary_;
+};
 }
-} // end of namespace iwebp, samson
+}   // end of namespace iwebp, samson
 
 #endif
 

@@ -5,14 +5,14 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
 /*
  * FILE            EmitFieldsProcess.h
  *
- * AUTHOR          Gregorio Escalada
+ * AUTHOR          Andreu Urruela
  *
  * PROJECT         SAMSON samson_system library
  *
@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef _H_SAMSON_system_EMIT_FIELDS_PROCESS
-#define _H_SAMSON_system_EMIT_FIELDS_PROCESS
+#ifndef SAMSON_LIBS_SAMSON_SYSTEM_EMITFIELDSPROCESS_H_
+#define SAMSON_LIBS_SAMSON_SYSTEM_EMITFIELDSPROCESS_H_
 
 #include <string>
 #include <vector>
@@ -38,7 +38,6 @@
 namespace samson {
 namespace system {
 class EmitFieldsProcess : public ProcessComponent {
-
   public:
     static const std::string kNullField;
     static const std::string kNullDest;
@@ -64,10 +63,12 @@ class EmitFieldsProcess : public ProcessComponent {
     , independent_concept_(independent_concept)
     , additional_field_(additional_field) {
       concepts_.clear();
-      if (independent_concept_ != kNullField)
+      if (independent_concept_ != kNullField) {
         include_independent_ = true;
-      if (additional_field_ != kNullField)
+      }
+      if (additional_field_ != kNullField) {
         include_field_ = true;
+      }
     }
 
     ~EmitFieldsProcess() {
@@ -85,7 +86,7 @@ class EmitFieldsProcess : public ProcessComponent {
     // Update this state based on input values ( return true if this state has been updated with this component )
     bool Update(Value *key, Value *state, Value **values, size_t num_values, samson::KVWriter* const writer);
 
-private:
+  private:
     std::string out_app_name_;
     std::string out_def_name_;
     std::vector<std::string> concepts_;
@@ -95,6 +96,6 @@ private:
     bool include_field_;
 };
 }
-} // End of namespace
+}   // End of namespace
 
-#endif // ifndef _H_SAMSON_system_EMIT_FIELDS_PROCESS
+#endif   // ifndef SAMSON_LIBS_SAMSON_SYSTEM_EMITFIELDSPROCESS_H_

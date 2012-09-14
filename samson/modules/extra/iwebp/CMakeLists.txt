@@ -88,6 +88,7 @@ ELSE (NOT SVN_BUILD)
     include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
     link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF (SVN_BUILD)
+include_directories("/usr/include/json") 
 
 
 MESSAGE( "----------------------------------------------------------------------------")

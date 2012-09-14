@@ -1,5 +1,5 @@
-#ifndef _H_SAMSON_CONNECTOR
-#define _H_SAMSON_CONNECTOR
+#ifndef _H_STREAM_CONNECTOR
+#define _H_STREAM_CONNECTOR
 
 #include <set>
 
@@ -84,7 +84,8 @@ class StreamConnector : public au::Console
   // Mutex protection for streamConnector( REST / Console / Review / ... )
   au::Token token;
 
-  // List of channels in this samsonConnector
+
+  // List of channels in this streamConnector
   au::map<std::string, Channel> channels_;
 
   // General environment
@@ -164,4 +165,4 @@ public:
   au::tables::Table *getInputInterChannelConnections();
 };
 }
-#endif  // ifndef _H_SAMSON_CONNECTOR
+#endif  // ifndef _H_STREAM_CONNECTOR

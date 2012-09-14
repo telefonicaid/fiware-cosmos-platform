@@ -1,5 +1,5 @@
-#ifndef _H_SAMSON_CONNECTOR_CONNECTION_BASE
-#define _H_SAMSON_CONNECTOR_CONNECTION_BASE
+#ifndef _H_STREAM_CONNECTOR_CONNECTION_BASE
+#define _H_STREAM_CONNECTOR_CONNECTION_BASE
 
 #include "au/ThreadManager.h"
 #include "engine/Buffer.h"
@@ -194,4 +194,4 @@ public:
 }
 
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_CONNECTION_BASE
+#endif  // ifndef _H_STREAM_CONNECTOR_CONNECTION_BASE

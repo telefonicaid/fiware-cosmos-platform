@@ -24,7 +24,7 @@
 
 /*
  *
- * //Test void add( MemoryRequest *request );
+ * //Old Test void add( MemoryRequest *request ); (MemoryRequest disappeared
  * TEST(memoryManagerTest, addTest)
  * {
  *

@@ -267,7 +267,7 @@ static const char *Smaz_rcb[254] = {
   "men",    ".com"
 };
 
-int smaz_compress(char *in, int inlen, char *out, int outlen) {
+int smaz_compress(const char *in, int inlen, char *out, int outlen) {
   unsigned int h1, h2, h3 = 0;
   int verblen = 0, _outlen = outlen;
   char verb[256], *_out = out;
@@ -353,7 +353,7 @@ int smaz_compress(char *in, int inlen, char *out, int outlen) {
   return out - _out;
 }
 
-int smaz_decompress(char *in, int inlen, char *out, int outlen) {
+int smaz_decompress(const char *in, int inlen, char *out, int outlen) {
   unsigned char *c = (unsigned char *)in;
   char *_out = out;
   int _outlen = outlen;

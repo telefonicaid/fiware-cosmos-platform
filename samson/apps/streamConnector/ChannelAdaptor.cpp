@@ -3,7 +3,7 @@
 #include "StreamConnector.h"
 #include "au/S.h"
 
-#include "ChannelAdaptor.h"  // Own interfave
+#include "ChannelAdaptor.h"  // Own interface
 
 namespace stream_connector {
 // ----------------------------------------------------------------
@@ -18,7 +18,7 @@ InputInterChannelConnection::InputInterChannelConnection(StreamConnector *stream
                                                          , au::SocketConnection *socket_connection)
   : Connection(NULL, connection_output, getName(host_name, "???")) {       // No item until we identify target channel
   if (!socket_connection) {
-    LM_X(1, ("Internal error"));  // Keep a pointer to SamsonConnector
+    LM_X(1, ("Internal error"));  // Keep a pointer to StreamConnector
   }
   stream_connector_ = stream_connector;
 

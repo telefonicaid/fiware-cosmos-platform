@@ -1,16 +1,16 @@
 
-#ifndef _H_SAMSON_CONNECTOR_COMMAND
-#define _H_SAMSON_CONNECTOR_COMMAND
+#ifndef _H_STREAM_CONNECTOR_COMMAND
+#define _H_STREAM_CONNECTOR_COMMAND
 
 #include "au/CommandLine.h"
 
 namespace stream_connector {
 /*
  *
- * SamsonConnectorCommandLine
+ * StreamConnectorCommandLine
  *
- * Command for a samsonConnector instance
- * It is passes acros multiple elements Channel, Item, etc...
+ * Command for a streamConnector instance
+ * It is passes across multiple elements Channel, Item, etc...
  *
  */
 
@@ -28,4 +28,4 @@ public:
 };
 }
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_COMMAND
+#endif  // ifndef _H_STREAM_CONNECTOR_COMMAND

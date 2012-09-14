@@ -1,6 +1,6 @@
 
-#ifndef _H_SAMSON_CONNECTOR_LISTENER
-#define _H_SAMSON_CONNECTOR_LISTENER
+#ifndef _H_STREAM_CONNECTOR_LISTENER
+#define _H_STREAM_CONNECTOR_LISTENER
 
 #include "Adaptor.h"
 #include "LogManager.h"
@@ -11,8 +11,6 @@ namespace stream_connector {
 class ListenerAdaptor : public Adaptor, public au::NetworkListener, public au::NetworkListenerInterface {
   // Port to open to accept connections
   int port;
-
-  friend class SamsonConnector;
 
   au::Status status_init;
 
@@ -34,4 +32,4 @@ public:
 }
 
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_LISTENER
+#endif  // ifndef _H_STREAM_CONNECTOR_LISTENER

@@ -108,10 +108,10 @@ const char *laststrstr(const char *source, const char *target);
 const char *laststrstr(const char *source, size_t source_length, const char *target);
 
 // Extract substrings (patterns) from a line
-const char *strnstr_limitpattern(const char *text, const char *pattern, const size_t max_length);
+const char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length);
 
 // Check simple regular expressions in string
-bool matchPatterns(const char *inputString, const char *pattern, const char wildcard);
+bool MatchPatterns(const char *inputString, const char *pattern, char wildcard);
 
 // Get common number of chars
 int getCommonChars(std::string& txt, std::string& txt2);
@@ -129,7 +129,7 @@ int get_term_size(int fd, int *x, int *y);
 std::string path_from_directory(std::string directory, std::string file);
 
 // Find and replace
-void find_and_replace(std::string &source, const std::string find, std::string replace);
+void find_and_replace(std::string &source, const std::string& find, const std::string& replace);
 
 // Add color escape codes to a string
 std::string string_in_color(std::string txt, std::string color);
@@ -140,11 +140,12 @@ bool string_ends(std::string& str, std::string postfix);
 bool string_begins_and_ends(std::string& str, std::string prefix, std::string postfix);
 std::string substring_without_prefix_and_posfix(std::string& str, std::string prefix, std::string postfix);
 
+
 // Reverse order of lines
 std::string reverse_lines(std::string& txt);
 
 // hash function (same as the method in system::String and system::Value
-int HashString(std::string str, int max_num_partitions);
+int HashString(const std::string& str, int max_num_partitions);
 
 // Trasnform to string a vector of things
 template <typename C>
@@ -161,4 +162,4 @@ std::string str(const std::vector<C>& vector) {
 }
 
 
-#endif  // ifndef _H_AU_STRING
+#endif // ifndef _H_AU_STRING

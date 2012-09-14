@@ -28,7 +28,7 @@ namespace hit{
 
 	  time_t reference_time_stamp;
 	  size_t time_span;
-	  double forgetting_factor;    //computable from time_span, but stored for efficiency
+	  double forgetting_factor;    //computable from time_span_, but stored for efficiency
 	  
 	  HitCollectionManager( std::string _concept , size_t _time_span, double _forgetting_factor )
 	  {
@@ -149,7 +149,7 @@ namespace hit{
 
 	  std::vector<HitCollectionManager*> managers;
 	  size_t time_span;
-	  double forgetting_factor;    //computable from time_span, but stored for efficiency
+	  double forgetting_factor;    //computable from time_span_, but stored for efficiency
 
    public:
 
@@ -174,7 +174,7 @@ namespace hit{
 	  void add( const char * concept , Hit* hit )
 	  {
 
-          // Just look for the rigth collection
+          // Just look for the right collection
 		 for ( size_t i = 0 ; i < managers.size() ; i++ )
 		 {
 			if( managers[i]->concept == concept )

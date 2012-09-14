@@ -1,5 +1,5 @@
-#ifndef _H_SAMSON_CONNECTOR_ITEM
-#define _H_SAMSON_CONNECTOR_ITEM
+#ifndef _H_STREAM_CONNECTOR_ITEM
+#define _H_STREAM_CONNECTOR_ITEM
 
 #include "au/containers/map.h"
 
@@ -107,4 +107,4 @@ public:
 };
 }
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_ITEM
+#endif  // ifndef _H_STREAM_CONNECTOR_ITEM

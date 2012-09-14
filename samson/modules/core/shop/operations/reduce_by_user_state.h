@@ -55,7 +55,7 @@ namespace shop{
 	        samson::system::Value trace;
 	        samson::system::Value value_void;
 
-	        value_void.set_as_void();
+	        value_void.SetAsVoid();
 
 	        if (inputs[1].num_kvs == 0)
 	        {
@@ -64,7 +64,7 @@ namespace shop{
 	            products.init();
 
 	            // operation traces
-	            trace.set_string(au::str("No profile for user:%lu", user.value).c_str());
+	            trace.SetString(au::str("No profile for user:%lu", user.value).c_str());
 	            writer->emit( -1 , &trace , &value_void );
 
 	            // platform logs
@@ -80,7 +80,7 @@ namespace shop{
 	            if (inputs[1].num_kvs > 1)
 	            {
 	                // operation traces
-	                trace.set_string(au::str("Multiple profiles(%lu) for user:%lu", inputs[1].num_kvs, user.value).c_str());
+	                trace.SetString(au::str("Multiple profiles(%lu) for user:%lu", inputs[1].num_kvs, user.value).c_str());
 	                writer->emit( -1 , &trace , &value_void );
 
 	                // platform logs
@@ -94,7 +94,7 @@ namespace shop{
 	            input_product.parse(inputs[0].kvs[i]->value);
 
 	            // operation traces
-	            trace.set_string(au::str("Processing product %lu for user:%lu", input_product.value, user.value).c_str());
+	            trace.SetString(au::str("Processing product %lu for user:%lu", input_product.value, user.value).c_str());
 	            writer->emit( -1 , &trace , &value_void );
 
 	            // platform logs

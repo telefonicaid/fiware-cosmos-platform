@@ -1,7 +1,7 @@
 
 
-#ifndef _H_SAMSON_CONNECTOR_COMMON
-#define _H_SAMSON_CONNECTOR_COMMON
+#ifndef _H_STREAM_CONNECTOR_COMMON
+#define _H_STREAM_CONNECTOR_COMMON
 
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
@@ -29,4 +29,4 @@ typedef enum {
 const char *str_ConnectionType(ConnectionType type);
 }
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_COMMON
+#endif  // ifndef _H_STREAM_CONNECTOR_COMMON

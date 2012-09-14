@@ -1,7 +1,7 @@
 
 
-#ifndef _H_SAMSON_CONNECTOR_BUFFER_LIST
-#define _H_SAMSON_CONNECTOR_BUFFER_LIST
+#ifndef _H_STREAM_CONNECTOR_BUFFER_LIST
+#define _H_STREAM_CONNECTOR_BUFFER_LIST
 
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
@@ -97,4 +97,4 @@ public:
 };
 }
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_BUFFER_LIST
+#endif  // ifndef _H_STREAM_CONNECTOR_BUFFER_LIST

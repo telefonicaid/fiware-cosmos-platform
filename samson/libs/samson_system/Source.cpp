@@ -1,18 +1,17 @@
+#include "samson_system/Source.h"  // Own interface
 
-
-#include "SourceFunction.h"
-
-#include "Source.h"  // Own interface
+#include "samson_system/SourceFunction.h"
 
 namespace samson {
 namespace system {
-Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *error) {
+
+Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *error) {
   // ----------------------------------------------------------------
-  // Braquets to group operations
+  // Brackets to group operations
   // ----------------------------------------------------------------
 
   if (token_vector->popNextTokenIfItIs("(")) {
-    Source *source = getSource(token_vector, error);
+    Source *source = GetSource(token_vector, error);
     if (!source || error->IsActivated()) {
       return NULL;
     }
@@ -43,7 +42,7 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
         return new SourceVector(source_components);
       }
 
-      Source *tmp = getSource(token_vector, error);
+      Source *tmp = GetSource(token_vector, error);
       if (error->IsActivated()) {
         source_components.clearVector();
         return NULL;
@@ -54,7 +53,9 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       // Read the mandatory "," if it is not the end of the vector
       if (!token_vector->checkNextTokenIs("]")) {
         if (!token_vector->popNextTokenIfItIs(",")) {
-          error->set(au::str("Wrong map format (expected ',' instead of %s)", token_vector->getNextTokenContent().c_str()));
+          error->set(
+                     au::str("Wrong map format (expected ',' instead of %s)",
+                             token_vector->getNextTokenContent().c_str()));
           source_components.clearVector();
           return NULL;
         }
@@ -84,7 +85,7 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
         return new SourceMap(source_keys, source_values);
       }
 
-      Source *tmp_key = getSource(token_vector, error);
+      Source *tmp_key = GetSource(token_vector, error);
       if (error->IsActivated()) {
         source_keys.clearVector();
         source_values.clearVector();
@@ -92,13 +93,14 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       }
 
       if (!token_vector->popNextTokenIfItIs(":")) {
-        error->set(au::str("Wrong map format (expected ':' instead of %s)", token_vector->getNextTokenContent().c_str()));
+        error->set(au::str("Wrong map format (expected ':' instead of %s)",
+                           token_vector->getNextTokenContent().c_str()));
         source_keys.clearVector();
         source_values.clearVector();
         return NULL;
       }
 
-      Source *tmp_value = getSource(token_vector, error);
+      Source *tmp_value = GetSource(token_vector, error);
       if (error->IsActivated()) {
         source_keys.clearVector();
         source_values.clearVector();
@@ -112,7 +114,9 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       // Read the mandatory "," if it is not the end of the map
       if (!token_vector->checkNextTokenIs("}")) {
         if (!token_vector->popNextTokenIfItIs(",")) {
-          error->set(au::str("Wrong map format (expected ',' instead of %s)", token_vector->getNextTokenContent().c_str()));
+          error->set(
+                     au::str("Wrong map format (expected ',' instead of %s)",
+                             token_vector->getNextTokenContent().c_str()));
           source_keys.clearVector();
           source_values.clearVector();
           return NULL;
@@ -134,11 +138,9 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       return NULL;
     }
 
-    token_vector->popToken();             // Skip "("
+    token_vector->popToken();   // Skip "("
 
     au::vector<Source> source_components;
-
-
 
     while (true) {
       au::token::Token *token = token_vector->getNextToken();
@@ -148,8 +150,8 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
         return NULL;
       } else if (token->is(")")) {
         // end of vector
-        token_vector->popToken();                 // skip ")"
-        return SourceFunction::getSourceForFunction(token_function_name->content, source_components, error);
+        token_vector->popToken();   // skip ")"
+        return SourceFunction::GetSourceForFunction(token_function_name->content, source_components, error);
       } else if ((source_components.size() == 0) || (token->is(","))) {
         if ((source_components.size() == 0) && token->is(",")) {
           error->set("Non valid first parameter for function call");
@@ -158,10 +160,10 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
         }
 
         if (token->is(",")) {
-          token_vector->popToken();                   // Skip ","
+          token_vector->popToken();   // Skip ","
         }
         // Another component
-        Source *tmp = getSource(token_vector, error);
+        Source *tmp = GetSource(token_vector, error);
         if (error->IsActivated()) {
           source_components.clearVector();
           return NULL;
@@ -194,17 +196,19 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   Source *main = NULL;
 
   if (token->is("key")) {
-    main =  new SourceKey();
+    main = new SourceKey();
   }
   if (token->is("value")) {
-    main =  new SourceValue();  // ---------------------------------------------------------
+    main = new SourceValue();
   }
+
+  // ---------------------------------------------------------
   // key or value
   // ---------------------------------------------------------
   if (main) {
     while (true) {
       if (token_vector->popNextTokenIfItIs("[")) {
-        Source *index = getSource(token_vector, error);
+        Source *index = GetSource(token_vector, error);
         if (error->IsActivated()) {
           delete main;
           return NULL;
@@ -221,7 +225,7 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
         // Cumulative source vectors
         main = new SourceVectorComponent(main, index);
       } else if (token_vector->popNextTokenIfItIs(".")) {
-        Source *index = getSource(token_vector, error);
+        Source *index = GetSource(token_vector, error);
         if (error->IsActivated()) {
           delete main;
           return NULL;
@@ -232,8 +236,9 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       } else {
         return main;
       }
-    }  // Negative numbers
+    }
   }
+  // Negative numbers
   if (token->is("-")) {
     // Get next token that has to be a number
     au::token::Token *next_token = token_vector->popToken();
@@ -247,10 +252,8 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       return NULL;
     }
 
-
     return new SourceNumberConstant(-atof(next_token->content.c_str()));
   }
-
 
   // ---------------------------------------------------------
   // Constant
@@ -262,12 +265,12 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   }
 }
 
-Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error) {
+Source *GetSource(au::token::TokenVector *token_vector, au::ErrorManager *error) {
   Source *source = NULL;
 
   while (true) {
     if (!source) {
-      source = getSingleSource(token_vector, error);
+      source = GetSingleSource(token_vector, error);
       if (!source || error->IsActivated()) {
         return NULL;
       }
@@ -276,14 +279,14 @@ Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
     // Check if there is something to continue "< > <= >= != + - * /
     au::token::Token *token = token_vector->getNextToken();
     if (!token) {
-      return source;               // No more tokens
+      return source;   // No more tokens
     }
     if (token->isComparator()) {
       // Skip the comparator
       std::string comparator = token->content;
       token_vector->popToken();
 
-      Source *_source = getSingleSource(token_vector, error);
+      Source *_source = GetSingleSource(token_vector, error);
       if (!_source || error->IsActivated()) {
         delete source;
         return NULL;
@@ -302,7 +305,7 @@ Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
       std::string operation_string = token->content;
       token_vector->popToken();
 
-      Source *_source = getSingleSource(token_vector, error);
+      Source *_source = GetSingleSource(token_vector, error);
       if (!_source || error->IsActivated()) {
         delete source;
         return NULL;
@@ -316,24 +319,23 @@ Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
       continue;
     }
 
-
     if (token_vector->popNextTokenIfItIs("?")) {
-      Source *first_source = getSingleSource(token_vector, error);
+      Source *first_source = GetSingleSource(token_vector, error);
       if (!first_source || error->IsActivated()) {
         delete source;
         return NULL;
       }
 
-
       if (!token_vector->popNextTokenIfItIs(":")) {
         delete source;
         delete first_source;
-        error->set(au::str("Statement '?' without ':'. Expected ':' but found %s"
-                           , token_vector->getNextTokenContent().c_str()));
+        error->set(
+                   au::str("Statement '?' without ':'. Expected ':' but found %s",
+                           token_vector->getNextTokenContent().c_str()));
         return NULL;
       }
 
-      Source *second_source = getSingleSource(token_vector, error);
+      Source *second_source = GetSingleSource(token_vector, error);
       if (!second_source || error->IsActivated()) {
         delete source;
         return NULL;
@@ -342,7 +344,6 @@ Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
       // Create a source X ? X : X
       source = new SourceCompareSelector(source, first_source, second_source);
     }
-
 
     return source;
   }

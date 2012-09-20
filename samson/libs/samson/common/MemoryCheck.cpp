@@ -52,9 +52,9 @@ void sysctl_value(char *param_name, samson_sysctl_t *param_value) {
 
 #elif defined(__sun__)
 void sysctl_value(char *param_name, samson_sysctl_t *param_value) {
-  unique_ptr<rctlblk_t> rblk;
+  rctlblk_t *rblk = NULL;
 
-  if ((rblk = reinterpret_cast<rctlblk_t *>(malloc(rctlblk_size()))) == NULL) {
+  if ((rblk = (rctlblk_t *)malloc(rctlblk_size())) == NULL) {
     (void)fprintf(stderr, "malloc failed: %s\n", strerror(errno));
   }
 
@@ -62,6 +62,10 @@ void sysctl_value(char *param_name, samson_sysctl_t *param_value) {
     (void)fprintf(stderr, "failed to get %s: %s\n", param_name, strerror(errno));
   } else {
     *param_value = rctlblk_get_value(rblk);
+  }
+
+  if (rblk != NULL) {
+    free(rblk);
   }
 }
 

@@ -15,15 +15,16 @@ SET( STATIC_LIBS
      samsonIsolated
      samsonNetwork
      samsonCommon
-	 samsonZoo
+     samsonZoo
      zookeeper_mt
      au
      lm
-	au
+     au
      pa
      protobuf
      dl
      pthread
+     ${SOLARIS_LIBS}
 )
 
 # Include directories

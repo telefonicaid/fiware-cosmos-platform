@@ -1,12 +1,12 @@
 SET (SOURCES
-	LogsDataSet.cpp
-	SamsonPushLogsConnectionsManager.cpp
+  LogsDataSet.cpp
+  SamsonPushLogsConnectionsManager.cpp
     main_samsonPushLogs.cpp
 )
 
 SET (HEADERS
-	LogsDataSet.h
-	SamsonPushLogsConnectionsManager.h
+  LogsDataSet.h
+  SamsonPushLogsConnectionsManager.h
 )
 
 SET( STATIC_LIBS
@@ -23,11 +23,12 @@ SET( STATIC_LIBS
      zookeeper_mt
      au
      lm
-	au
+     au
      pa
      protobuf
      dl
      pthread
+     ${SOLARIS_LIBS}
 )
 
 # Include directories

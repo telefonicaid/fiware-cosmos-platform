@@ -33,20 +33,20 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     ADD_DEFINITIONS(-DOSX)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOSX")
 
-	# Several compilers are used in mac environment
-	#
-	# gcc 4.2  : Default in current Lion version
-	# clang    : Usefull for code-coverage
-	# gcc 4.7  : from mac ports
+  # Several compilers are used in mac environment
+  #
+  # gcc 4.2  : Default in current Lion version
+  # clang    : Usefull for code-coverage
+  # gcc 4.7  : from mac ports
 
-    # By default if CC or CXX are set to default gcc 4.2
-    # to override this set CC or CXX to something other than /usr/bin/gcc or /usr/bin/g++
-    #
-    # e.g. CC=gcc-mp-4.7 CXX=g++-mp-4.7 make .....
-    # e.g. CC=clang  CXX=clang++ make .....
+  # By default if CC or CXX are set to default gcc 4.2
+  # to override this set CC or CXX to something other than /usr/bin/gcc or /usr/bin/g++
+  #
+  # e.g. CC=gcc-mp-4.7 CXX=g++-mp-4.7 make .....
+  # e.g. CC=clang  CXX=clang++ make .....
 
-	MESSAGE ("Using ${CMAKE_C_COMPILER} as our C compiler")
-	MESSAGE ("Using ${CMAKE_CXX_COMPILER} as our C++ compiler")
+  MESSAGE ("Using ${CMAKE_C_COMPILER} as our C compiler")
+  MESSAGE ("Using ${CMAKE_CXX_COMPILER} as our C++ compiler")
 
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -55,9 +55,10 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-# Disable unused but set variables - GCC 4.7+
 IF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable -m64 -std=c++0x")
+    set (SOLARIS_LIBS "-lsocket -lnsl")
+    set (CMAKE_MODULE_LINKER_FLAGS "-m64")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 
 # ---------------------------------------------------------------------------

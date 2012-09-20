@@ -244,7 +244,7 @@ void SamsonWorkerRest::process_intern(au::SharedPointer<au::network::RESTService
     if (components < 4) {
       command->AppendFormatedError(400, "Only /samson/state/queue/key paths are valid");
     } else {
-      streamManager->process(command);                   // Get this from the stream manager
+      streamManager->Process(command);                   // Get this from the stream manager
     }
   } else if (main_command == "data_test") {
     command->AppendFormatedElement("data_size", au::str("%lu", command->data_size));

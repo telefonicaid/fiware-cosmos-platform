@@ -43,3 +43,5 @@ ADD_LIBRARY(samsonModule STATIC ${SOURCES} ${HEADERS} ${HEADERS_INSTALL} )
 # Instalation header files
 # -----------------------------------------------------------------
 INSTALL(FILES ${HEADERS_INSTALL} DESTINATION include/samson/module )
+
+INSTALL(TARGETS samsonModule  DESTINATION   lib)

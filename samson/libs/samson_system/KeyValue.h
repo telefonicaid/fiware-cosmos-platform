@@ -1,14 +1,33 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            KeyValue.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            2012
+ *
+ * DESCRIPTION
+ *
+ *  Declaration of KeyValue class to create a keyValue pair with system.Value
+ *
+ */
 
 #ifndef _H_SAMSON_SYSTEM_KEYVALUE
 #define _H_SAMSON_SYSTEM_KEYVALUE
 
-#include "au/StringComponents.h"
-#include "au/Tokenizer.h"
-#include "au/containers/vector.h"
-#include "au/string.h"
-
 #include "samson_system/Value.h"
-#include <samson/module/samson.h>
 
 
 namespace samson {
@@ -18,18 +37,30 @@ namespace system {
 // -----------------------------------------------------------------------
 
 class KeyValue {
-public:
+  public:
+    // Constructor
+    KeyValue() :
+      key_(NULL), value_(NULL) {}
 
-  samson::system::Value *key;
-  samson::system::Value *value;
+    KeyValue(Value *key, Value *value) :
+      key_(key), value_(value) {}
 
-  // Constructor
-  KeyValue() {
-    key = NULL;
-    value = NULL;
-  }
+    Value *key() const {
+      return key_;
+    }
+    Value *value() const {
+      return value_;
+    }
+    void set_key(Value *key) {
+      key_ = key;
+    }
+    void set_value(Value *value) {
+      value_ = value;
+    }
 
-  KeyValue(samson::system::Value *_key, samson::system::Value *_value);
+  private:
+    Value *key_;
+    Value *value_;
 };
 }
 }

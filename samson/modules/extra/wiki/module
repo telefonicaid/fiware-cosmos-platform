@@ -42,7 +42,25 @@ reduce reduce_inverted_index
 	helpLine "Builds an inverted index (words or links), working on a state"
 }
 
+script demo_inverted_index_links
+{
+    code
+    {
+        remove_all_stream;
+        add_stream_operation parser wiki.parse_links input links;
+        add_stream_operation reduce wiki.reduce_inverted_index links inv_index inv_index;
+    }
+}
 
+script demo_inverted_index_words
+{
+    code
+    {
+        remove_all_stream;
+        add_stream_operation parser wiki.parse_words input words;
+        add_stream_operation reduce wiki.reduce_inverted_index words inv_index inv_index;
+    }
+}
 
 script init_stream_operations
 {

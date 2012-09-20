@@ -8,6 +8,7 @@ EXTRA_MODULES= webp \
 		level \
 		hit \
 		web \
+		iwebp \
 		gg \
 		mobility \
 		simple_mobility \

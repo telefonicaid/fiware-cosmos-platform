@@ -23,7 +23,7 @@ namespace txt{
 	  system::String key;
 	  system::UInt value;
 
-	  // Values taken from enviroment variables
+	  // Values taken from environment variables
 	  size_t num_samples;   // Total num samples
 	  int line_length;
 
@@ -31,7 +31,7 @@ namespace txt{
 	  size_t local_num_samples;   // Number of samples to be generated in this instance
 
 
-	  // Information for debuggin
+	  // Information for debugging
 	  int _worker;
 	  int _num_workers;
 	  int _process;

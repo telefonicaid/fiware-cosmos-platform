@@ -26,12 +26,12 @@ public:
 
 	int hash(int max_num_partitions)
 	{
-		return fmod(abs((double) 1000*value), max_num_partitions);
+		return fmod(abs(static_cast<int>(1000.0*value)), max_num_partitions);
 	}
 
 	void setFromString(const char *_data)
 	{
-		value = strtod((const char *)_data, (char **)NULL);
+		value = strtod(_data, NULL);
 	}
 
 	int *getDataPath(const std::string &dataPathString){

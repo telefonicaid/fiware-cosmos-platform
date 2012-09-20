@@ -1,7 +1,7 @@
 
 
-#ifndef _H_SAMSON_CONNECTOR_SERVICE
-#define _H_SAMSON_CONNECTOR_SERVICE
+#ifndef _H_STREAM_CONNECTOR_SERVICE
+#define _H_STREAM_CONNECTOR_SERVICE
 
 #include <set>
 
@@ -54,4 +54,4 @@ public:
 };
 }  // End of namespace stream_connector
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_SERVICE
+#endif  // ifndef _H_STREAM_CONNECTOR_SERVICE

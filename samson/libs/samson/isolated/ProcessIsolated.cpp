@@ -157,12 +157,16 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
           // Current hash-group output
           HashGroupOutput *_hgOutput     = &_channel->hg[i];
 
-          // Set gloal info
+          // Set global info
           info[i] = _hgOutput->info;
 
-          // Write data followign nodes
+          // Write data following nodes
           uint32 node_id = _hgOutput->first_node;
           while (node_id != KV_NODE_UNASIGNED) {
+            if (node_id >  _hgOutput->last_node) {
+              LM_W(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
+                    _hgOutput->first_node, _hgOutput->last_node, node_id));
+            }
             bool ans = buffer->Write((char *)node[node_id].data, node[node_id].size);
             if (!ans) {
               LM_X(1, ("Error writing key-values into a temporal Buffer ( size %lu ) ", node[node_id].size ));  // Go to the next node

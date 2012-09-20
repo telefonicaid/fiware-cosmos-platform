@@ -1,5 +1,5 @@
-#ifndef _H_SAMSON_CONNECTOR_CONNECTION_FileDescriptorConnection
-#define _H_SAMSON_CONNECTOR_CONNECTION_FileDescriptorConnection
+#ifndef _H_STREAM_CONNECTOR_CONNECTION_FileDescriptorConnection
+#define _H_STREAM_CONNECTOR_CONNECTION_FileDescriptorConnection
 
 #include "au/Cronometer.h"
 #include "au/mutex/TokenTaker.h"
@@ -72,4 +72,4 @@ public:
 }
 
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_CONNECTION_FileDescriptorConnection
+#endif  // ifndef _H_STREAM_CONNECTOR_CONNECTION_FileDescriptorConnection

@@ -7,7 +7,7 @@
 #define _H_SAMSON_txt_parser_words
 
 
-#include "au/charset.h"
+//#include "au/charset.h"
 
 #include <samson/module/samson.h>
 #include <samson/module/samson.h>

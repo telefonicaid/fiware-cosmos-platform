@@ -1,5 +1,5 @@
-#ifndef _H_SAMSON_CONNECTOR_SERVER_CONNECTION
-#define _H_SAMSON_CONNECTOR_SERVER_CONNECTION
+#ifndef _H_STREAM_CONNECTOR_SERVER_CONNECTION
+#define _H_STREAM_CONNECTOR_SERVER_CONNECTION
 
 #include <string>
 
@@ -14,7 +14,6 @@
 namespace stream_connector {
 class Channel;
 class SocketConnection;
-class SamsonConnector;
 
 class ConnectionConnection : public FileDescriptorConnection {
   // Information to reconnect when possible
@@ -83,4 +82,4 @@ public:
 }
 
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_SERVER_CONNECTION
+#endif  // ifndef _H_STREAM_CONNECTOR_SERVER_CONNECTION

@@ -32,9 +32,6 @@
 
 
 namespace engine {
-class MemoryRequest;
-class MemoryRequestDelegate;
-
 
 /*
  * SharedMemoryItem is a class that contains information about a region of memory shared between different processes

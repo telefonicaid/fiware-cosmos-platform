@@ -229,6 +229,8 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
   // LM_M(("PW emit: %s %s", key->str().c_str()  , value->str().c_str() ));
 
   // Serialize to the minibuffer
+  int hg_previous = key->hash(KVFILE_NUM_HASHGROUPS);
+  std::string original_key = key->str();
 
   size_t key_size             = key->serialize(miniBuffer);
   size_t key_size_theoretical = key->parse(miniBuffer);
@@ -253,6 +255,12 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
 
   // Emit the miniBuffer to the right place
   int hg = key->hash(KVFILE_NUM_HASHGROUPS);
+
+  if (hg != hg_previous) {
+    LM_E(("Error, different hash for original key:'%s' --> hash:%d and parsed key:'%s' --> hash:%d",
+          original_key.c_str(), hg_previous, key->str().c_str(), hg));
+    return;
+  }
 
   // Emit the generated data
   internal_emit(output, hg, miniBuffer, miniBufferSize);

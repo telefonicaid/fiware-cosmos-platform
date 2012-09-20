@@ -24,7 +24,7 @@ void test( std::string txt )
     
     printf("Tokens > %s\n" , token_vector.str().c_str() );
     
-    samson::system::Source* source = samson::system::getSource( &token_vector, &error);
+    samson::system::Source* source = samson::system::GetSource( &token_vector, &error);
 
     printf("-----------------------------------\n");
 
@@ -58,17 +58,17 @@ void test_selialization( double v )
 {
     char data[1000];
     samson::system::Value value, value2;
-    value.set_double(v);
+    value.SetDouble(v);
     size_t size = value.serialize(data);
     size_t size2 = value2.parse(data);
 
     if( size != size2 )
         printf("Error serialiazing %f ( Sizes %lu != %lu )\n" , v , size , size2 );
 
-    if( !value2.isNumber() )
+    if( !value2.IsNumber() )
         printf("Error serialiazing %f: Not a value recovered \n" , v );
 
-    double v2 = value2.get_double();
+    double v2 = value2.GetDouble();
     if( v != v2 )
         printf("Error serialiazing %f: Recovered %f \n" , v , v2 );
         
@@ -80,7 +80,7 @@ void test_selialization( std::string txt )
 {
     char data[10000];
     samson::system::Value value, value2;
-    value.set_string(txt);
+    value.SetString(txt);
     size_t size = value.serialize(data);
     size_t size2 = value2.parse(data);
     
@@ -90,13 +90,13 @@ void test_selialization( std::string txt )
         exit(0);
     }
     
-    if( !value2.isString() )
+    if( !value2.IsString() )
     {
         printf("Error serialiazing %s: Not a string recovered \n" , txt.c_str() );
         exit(0);
     }
     
-    std::string txt2 = value2.get_string();
+    std::string txt2 = value2.GetString();
     if( txt != txt2 )
     {
         printf("Error serialiazing '%s (length %lu)'\n" , txt.c_str() , txt.length() );

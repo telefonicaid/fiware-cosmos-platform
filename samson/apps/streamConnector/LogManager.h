@@ -1,6 +1,6 @@
 
-#ifndef _H_SAMSON_CONNECTOR_LOG_MANAGER
-#define _H_SAMSON_CONNECTOR_LOG_MANAGER
+#ifndef _H_STREAM_CONNECTOR_LOG_MANAGER
+#define _H_STREAM_CONNECTOR_LOG_MANAGER
 
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
@@ -60,4 +60,4 @@ private:
 };
 }  // End of namespace stream_connector
 
-#endif  // ifndef _H_SAMSON_CONNECTOR_LOG_MANAGER
+#endif  // ifndef _H_STREAM_CONNECTOR_LOG_MANAGER

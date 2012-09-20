@@ -1,5 +1,5 @@
-#ifndef _H_SAMSON_CHANNEL
-#define _H_SAMSON_CHANNEL
+#ifndef _H_STREAM_CHANNEL
+#define _H_STREAM_CHANNEL
 
 #include "ConnectorCommand.h"
 #include "LogManager.h"
@@ -87,4 +87,4 @@ public:
 };
 }
 
-#endif  // ifndef _H_SAMSON_CHANNEL
+#endif  // ifndef _H_STREAM_CHANNEL

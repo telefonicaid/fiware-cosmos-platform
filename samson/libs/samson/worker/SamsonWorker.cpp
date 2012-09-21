@@ -76,6 +76,8 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
   workerCommandManager_ = new WorkerCommandManager(this);
   samson_worker_rest_ = new SamsonWorkerRest(this, web_port_);
   task_manager_ =  new stream::WorkerTaskManager(this);
+  // network_ will be properly initialized later
+  network_ = NULL;
 
   // Initial state of this worker ( unconnected )
   state_ = unconnected;
@@ -347,6 +349,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     size_t delilah_id = packet->from.id;
     size_t delilah_component_id = packet->message->delilah_component_id();
     size_t pop_id = packet->message->pop_id();
+    LM_T(LmtDelilahCommand, ("Received a PopBlockRequest"));
 
     PacketPointer p(new Packet(Message::PopBlockRequestConfirmation, packet->from));
     p->message->set_delilah_component_id(packet->message->delilah_component_id());
@@ -354,6 +357,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     // Schedule operations to send this block to this user
     if (stream::BlockManager::shared()->getBlock(block_id) == NULL) {
+      LM_W(("Unknown block_id(%d) in PopBlockRequest", block_id));
       p->message->mutable_error()->set_message("Unknown block");
     } else {
       // Schedule task
@@ -369,7 +373,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     // Send confirmation packet
     network_->Send(p);
-
     return;
   }
 
@@ -431,8 +434,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     worker_block_manager_->ReceivedBlockDistributionResponse(block_id, worker_id);
     return;
   }
-
-
 
   // --------------------------------------------------------------------
   // push messages
@@ -507,6 +508,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
                                     , original_queue.c_str());
 
     // Generate packet with all queue content
+    LM_T(LmtDelilahCommand, ("Generate packet PopQueueResponse with all queue content"));
     au::SharedPointer<Packet> p(new Packet(Message::PopQueueResponse));
     p->message->set_delilah_component_id(packet->message->delilah_component_id());
     p->to = packet->from;
@@ -514,12 +516,15 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     gpb_queue->set_name(original_queue);
     gpb_queue->set_key_format("?");         // It is necessary to fill this fields
     gpb_queue->set_value_format("?");
+    // TODO: @andreu check the value that version should be initialized to
+    gpb_queue->set_version(1);
 
 
     // Get a copy of the entire data model
     au::SharedPointer<gpb::Data> data = data_model_->getCurrentModel();
 
     if (commit_id == static_cast<size_t>(-1)) {
+      LM_T(LmtDelilahCommand, ("As commit_id == -1, committing"));
       // Duplicate queue and link
       au::ErrorManager error;
       data_model_->Commit("pop", au::str("add_queue_connection %s %s", original_queue.c_str(),
@@ -532,18 +537,25 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
       // If the queue really exist, return all its content to be popped
       gpb::Queue *queue = get_queue(data.shared_object(), original_queue);
+
       if (queue) {
+        LM_T(LmtDelilahCommand, ("The original_queue:'%s' exists, so returning all its content, %d blocks", original_queue.c_str(), queue->blocks_size()));
         gpb_queue->CopyFrom(*queue);
+      } else {
+        LM_T(LmtDelilahCommand, ("The original_queue:'%s' doesn't exist"));
       }
     } else {
       // Copy blocks newer than commit_id
       gpb::Queue *queue = get_queue(data.shared_object(), pop_queue);
       if (queue) {
-        for (int i = 0; i < queue->blocks_size(); i++) {
+        LM_T(LmtDelilahCommand, ("The pop_queue:'%s' already committed with commit_id:%lu, %d blocks", pop_queue.c_str(), commit_id, queue->blocks_size()));
+        for (int i = 0; i < queue->blocks_size(); ++i) {
           if (queue->blocks(i).commit_id() > commit_id) {
             gpb_queue->add_blocks()->CopyFrom(queue->blocks(i));
           }
         }
+      } else {
+        LM_T(LmtDelilahCommand, ("The pop_queue:'%s' doesn't exist, already committed with commit_id:%lu", pop_queue.c_str(), commit_id));
       }
     }
 
@@ -931,6 +943,8 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   if (version <= last_modules_version_) {
     return;   // Not necessary to update
   }
+  LM_T(LmtModuleManager, ("ready to call clearModulesManager() with queue version(%d) > last_modules_version_(%d)",
+                          version, last_modules_version_));
 
   last_modules_version_ = version;
 

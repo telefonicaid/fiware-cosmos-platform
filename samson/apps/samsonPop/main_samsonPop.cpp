@@ -201,9 +201,8 @@ int main(int argC, const char *argV[]) {
   }
 
   // Wait until all operations are complete
-  LM_V(("Waiting forever..."));
-  while (true) {
-    sleep(10);
-  }
+  LM_V(("Waiting for client to finish..."));
+  client.waitUntilFinish();
+  LM_V(("Client finished"));
 }
 

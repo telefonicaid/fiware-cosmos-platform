@@ -89,6 +89,7 @@ void PushDelilahComponent::run() {
 void PushDelilahComponent::run_in_background() {
   while (true) {
     current_status_ = "Looping to push new data...";
+    LM_T(LmtDelilahComponent, ("Looping to push new data..."));
 
     // If data_source if finished, just wait for push_operations to finish
     if (data_source_->isFinish()) {
@@ -96,11 +97,14 @@ void PushDelilahComponent::run_in_background() {
       finish_process = true;
 
       current_status_ = "Waiting to finish scheduled push items...";
+      LM_T(LmtDelilahComponent, ("data_source is finished, Waiting to finish scheduled push items..."));
       while (true) {
         if (push_ids_.size() == 0) {
+          LM_T(LmtDelilahComponent, ("push is finished"));
           setComponentFinished();
           return;
         }
+        LM_T(LmtDelilahComponent, ("data_source is finished, sleeping with %lu push_ids", push_ids_.size()));
         usleep(10000);
       }
     }
@@ -109,6 +113,7 @@ void PushDelilahComponent::run_in_background() {
     au::Cronometer cronometer;
     current_status_ = "Waiting until used memory is under 70%";
     while (engine::Engine::memory_manager()->memory_usage() > 0.7) {
+      LM_T(LmtDelilahComponent, ("Waiting until used memory(%d) is under 70%", engine::Engine::memory_manager()->memory_usage()));
       usleep(10000);
     }
 
@@ -122,6 +127,7 @@ void PushDelilahComponent::run_in_background() {
     // Full the buffer with the content from the files
     current_status_ = au::S() <<  "Filling a new buffer " << buffer->str();
     if (data_source_->fill(buffer) != 0) {
+      LM_E(("Error filling buffer from '%s'", data_source_->get_name().c_str()));
       setComponentFinishedWithError(au::str("Error filling buffer from '%s'", data_source_->get_name().c_str()));
       return;
     }

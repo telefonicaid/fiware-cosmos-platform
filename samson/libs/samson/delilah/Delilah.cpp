@@ -106,7 +106,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   au::Status s = au::SocketConnection::Create(host_name, port, &socket_connection);
 
   if (s != au::OK) {
-    error->set(au::str("Error creating socket %s", au::status(s)));
+    error->set(au::str("Error creating socket: '%s'", au::status(s)));
     if (socket_connection) {
       delete socket_connection;
     }
@@ -570,10 +570,10 @@ bool Delilah::isActive(size_t id) {
   DelilahComponent *c = components_.findInMap(id);
 
   if (!c) {
+    LM_W(("Unknown delilah component for id:%lu", id));
     return false;
   }
-
-  return( !c->isComponentFinished());
+  return(!c->isComponentFinished());
 }
 
 bool Delilah::hasError(size_t id) {
@@ -583,6 +583,7 @@ bool Delilah::hasError(size_t id) {
 
   // No process, no error ;)
   if (!c) {
+    LM_W(("Unknown delilah component for id:%lu", id));
     return false;
   }
 

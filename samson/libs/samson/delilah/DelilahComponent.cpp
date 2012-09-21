@@ -73,6 +73,7 @@ std::string DelilahComponent::getIdAndConcept() {
 }
 
 bool DelilahComponent::isComponentFinished() {
+  LM_T(LmtDelilahComponent, ("checking component %d if finished:%d", id, component_finished));
   return component_finished;
 }
 
@@ -84,10 +85,11 @@ void DelilahComponent::setComponentFinished() {
 
   // LM_M(("Set component finish (%s)" , concept.c_str() ));
 
+  LM_T(LmtDelilahComponent, ("component %d set to finished", id));
   component_finished = true;
   cronometer.Stop();
 
-  // Show ourput on screen
+  // Show output on screen
   if (print_output_at_finish) {
     delilah->showMessage(output.str());
   }
@@ -100,6 +102,7 @@ void DelilahComponent::setComponentFinishedWithError(std::string error_message) 
     return;
   }
 
+  LM_T(LmtDelilahComponent, ("component %d set to finished with error:'%s'", id, error_message.c_str()));
   component_finished = true;
   cronometer.Stop();
 

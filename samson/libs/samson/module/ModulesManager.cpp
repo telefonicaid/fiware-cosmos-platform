@@ -42,6 +42,7 @@ void ModulesManager::clearModulesManager() {
   // Remove the main instances of the modules created while loading from disk
   au::TokenTaker tt(&token_modules, "ModulesManager::clearModulesManager");
 
+  LM_T(LmtModuleManager, ("clearing modules map"));
   modules.clearMap();
 
   // Close handlers
@@ -141,6 +142,7 @@ void ModulesManager::addModule(std::string path) {
       LM_W(("Error loading module from file %s since it is already loaded", module->file_name.c_str()));
       delete module;
       dlclose(hndl);
+      return;
     }
 
     LM_T(LmtModuleManager, ("Module %s compiled for version %s ... OK!", module->name.c_str(), platform_version.c_str()));

@@ -33,9 +33,10 @@ typedef enum TraceLevels {
   LmtHost                   = 30,    // Host & HostManager
   LmtRest                   = 31,    // REST Interface
   LmtCleanup                = 32,    // Valgrind ...
-  LmtCleanup2               = 33,    // Valgrind ...
+  LmtCleanup2               = 33,    // SharePointer destructor
   LmtRestData               = 34,
   LmtDelilahCommand         = 35,
+  LmtDelilahComponent       = 36,
 
   LmtEngine                 = 200,       // SamsonEngine
   LmtEngineNotification     = 201,

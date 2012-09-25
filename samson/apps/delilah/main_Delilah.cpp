@@ -196,8 +196,6 @@ void cleanup(void) {
     delilahConsole = NULL;
   }
 
-  LM_T(LmtCleanup, ("destroying ModulesManager"));
-
   LM_T(LmtCleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
   LM_T(LmtCleanup, ("Calling lmCleanProgName"));
@@ -348,19 +346,14 @@ int main(int argC, const char *argV[]) {
 
     if (id != 0) {
       // Wait until this operation is finished
-      LM_M(("Checking delilahConsole->isActive(id=%d)", id));
       while (delilahConsole->isActive(id)) {
-        // LM_M(("delilahConsole is Active for id:%d", id));
-        // Wait until command is finished
         usleep(100000);
       }
       LM_M(("Command activity is finished for command:'%s', id:%d", command, id));
 
       if (delilahConsole->hasError(id)) {
-        LM_E(("Error running '%s' \n", command ));
-        LM_E(("Error: %s",  delilahConsole->errorMessage(id).c_str()));
+        LM_E(("Error running command:'%s', error:'%s'\n", command, delilahConsole->errorMessage(id).c_str()));
       } else {
-        LM_M(("No error in command:'%s'", command));
         printf("%s", delilahConsole->getOutputForComponent(id).c_str());
         fflush(stdout);
       }
@@ -372,8 +365,6 @@ int main(int argC, const char *argV[]) {
 
     // Stopping network connections
     delilahConsole->stop();
-
-    LM_M(("Calling exit()"));
     exit(0);
   }
 
@@ -417,7 +408,6 @@ int main(int argC, const char *argV[]) {
         line[ strlen(line) - 1] = '\0';
       }
 
-      // LM_M(("Processing line: %s", line ));
       num_line++;
 
       if (( line[0] != '#' ) && ( strlen(line) > 0)) {
@@ -426,15 +416,13 @@ int main(int argC, const char *argV[]) {
         std::cerr << au::str("Delilah id generated %lu\n", id);
 
         if (id != 0) {
-          // LM_M(("Waiting until delilah-component %ul finish", id ));
           // Wait until this operation is finished
           while (delilahConsole->isActive(id)) {
             usleep(1000);
           }
 
           if (delilahConsole->hasError(id)) {
-            LM_E(("Error running '%s' at line %d", line, num_line));
-            LM_E(("Error: %s",  delilahConsole->errorMessage(id).c_str()));
+            LM_E(("Error running '%s' at line %d, error:'%s'", line, num_line, delilahConsole->errorMessage(id).c_str()));
           }
         }
       }

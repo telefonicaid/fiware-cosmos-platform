@@ -166,7 +166,6 @@ void PopBlockRequestTask::run() {
 
   // Full range ( TBC )
   if (ranges.IsFullRange()) {
-    LM_T(LmtDelilahCommand, ("Full range. Response sent with buffer"));
     sent_response(block_->buffer());
     return;
   }
@@ -175,10 +174,8 @@ void PopBlockRequestTask::run() {
   if (kv_file->header().isTxt()) {
     // If ranges includes
     if (ranges.IsOverlapped(block_->getHeader().range)) {
-      LM_T(LmtDelilahCommand, ("Buffer text. Response sent with buffer"));
       sent_response(block_->buffer());
     } else {
-      LM_T(LmtDelilahCommand, ("Buffer text no overlapped. Response sent with NULL"));
       sent_response(engine::BufferPointer(NULL));
     } return;
   }
@@ -216,7 +213,6 @@ void PopBlockRequestTask::run() {
     }
     source_data += size;      // Move pointer to the next
   }
-  LM_T(LmtDelilahCommand, ("PopBlockRequestTask::run() sends copied buffer and returns"));
   sent_response(buffer);
 }
 

@@ -28,6 +28,8 @@ public:
   // au::network::RESTServiceInterface
   void process(au::SharedPointer< au::network::RESTServiceCommand> command);
 
+  void StopRestService();
+
 private:
 
   // Main pointer to samson worker

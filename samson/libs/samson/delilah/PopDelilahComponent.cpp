@@ -45,7 +45,6 @@ PopDelilahComponent::PopDelilahComponent(std::string queue
   started_ = false;
 
   // concept for this delilah component
-  LM_T(LmtDelilahComponent, ("Pop queue %s to local directory %s", queue.c_str(), file_name.c_str()));
   setConcept(au::str("Pop queue %s to local directory %s", queue.c_str(), file_name.c_str()));
 }
 
@@ -58,7 +57,6 @@ void PopDelilahComponent::run() {
     if (force_flag_) {
       au::ErrorManager error;
       au::removeDirectory(file_name_, error);
-      LM_T(LmtDelilahComponent, ("%s directory removed", file_name_.c_str()));
     }
 
     if (mkdir(file_name_.c_str(), 0755)) {
@@ -213,7 +211,6 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     if (packet->message->has_error()) {
       // Error in confirmation, send the next one
       LM_W(("Error in confirmation, send the next one"));
-      LM_T(LmtDelilahComponent, ("send_request called from PopDelilahComponent::receive(), after error"));
       send_request(item);
       check();
       return;
@@ -254,7 +251,6 @@ void PopDelilahComponent::notify(engine::Notification *notification) {
 
 void PopDelilahComponent::check() {
   // Resent to other workers if necessary
-  LM_T(LmtDelilahComponent, ("Enters check()"));
   au::map< size_t, PopDelilahComponentItem >::iterator it;
   for (it = items_.begin(); it != items_.end(); it++) {
     PopDelilahComponentItem *item = it->second;
@@ -263,9 +259,7 @@ void PopDelilahComponent::check() {
       if (item->worker_confirmation()) {
         time_limit = 300;
       }
-      LM_W(("New request to other workers ready with time_limit:%d", time_limit));
       if (item->cronometer().seconds() > time_limit) {
-        LM_W(("Sending request to other workers with time_limit:%d", time_limit));
         send_request(item);
       }
     }

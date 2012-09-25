@@ -41,7 +41,7 @@ std::string DelilahComponent::getTypeName() {
 
     case pop:                   return "[ Pop     ]";
 
-    case worker_command:        return "[ Comamnd ]";
+    case worker_command:        return "[ Command ]";
   }
 
   LM_X(1, ("Impossible error"));
@@ -73,7 +73,6 @@ std::string DelilahComponent::getIdAndConcept() {
 }
 
 bool DelilahComponent::isComponentFinished() {
-  LM_T(LmtDelilahComponent, ("checking component %d if finished:%d", id, component_finished));
   return component_finished;
 }
 
@@ -82,8 +81,6 @@ void DelilahComponent::setComponentFinished() {
   if (component_finished) {
     return;
   }
-
-  // LM_M(("Set component finish (%s)" , concept.c_str() ));
 
   LM_T(LmtDelilahComponent, ("component %d set to finished", id));
   component_finished = true;

@@ -89,7 +89,6 @@ void PushDelilahComponent::run() {
 void PushDelilahComponent::run_in_background() {
   while (true) {
     current_status_ = "Looping to push new data...";
-    LM_T(LmtDelilahComponent, ("Looping to push new data..."));
 
     // If data_source if finished, just wait for push_operations to finish
     if (data_source_->isFinish()) {
@@ -97,7 +96,6 @@ void PushDelilahComponent::run_in_background() {
       finish_process = true;
 
       current_status_ = "Waiting to finish scheduled push items...";
-      LM_T(LmtDelilahComponent, ("data_source is finished, Waiting to finish scheduled push items..."));
       while (true) {
         if (push_ids_.size() == 0) {
           LM_T(LmtDelilahComponent, ("push is finished"));

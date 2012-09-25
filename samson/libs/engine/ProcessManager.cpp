@@ -2,17 +2,14 @@
 
 #include "engine/ProcessManager.h"
 
-
-
-#include "logMsg/logMsg.h"         // LM_X
 #include <sys/time.h>
 #include <time.h>
 
+#include "au/containers/SharedPointer.h"
 #include "au/Descriptors.h"        // au::Descriptors
+#include "au/mutex/TokenTaker.h"   // au::TokenTake
 #include "au/Singleton.h"
 #include "au/ThreadManager.h"
-#include "au/containers/SharedPointer.h"
-#include "au/mutex/TokenTaker.h"   // au::TokenTake
 #include "au/xml.h"                // au::xml...
 
 #include "engine/DiskOperation.h"  // engine::DiskOperation
@@ -23,12 +20,14 @@
 #include "engine/ProcessItem.h"    // engine::ProcessItem
 #include "engine/ProcessManager.h"  // engine::Process
 
+#include "logMsg/logMsg.h"         // LM_X
+#include "logMsg/traceLevels.h"
+
 namespace engine {
 void *ProcessManager_run_worker(void *p) {
   ProcessManager *process_manager = (ProcessManager *)p;
 
   process_manager->run_worker();
-  LM_T(LmtCleanup, ("run_worker() returned"));
   return NULL;
 }
 

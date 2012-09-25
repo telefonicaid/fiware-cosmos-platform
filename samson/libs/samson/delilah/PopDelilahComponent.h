@@ -126,7 +126,7 @@ public:
   // Function to check what to do with finish items
   void check();
 
-  bool started() { return started_; }
+  bool started() const { return started_; }
   void set_started(bool value) { started_ = value; }
 
 private:

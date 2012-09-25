@@ -89,8 +89,6 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   // Get host and port
   std::vector<std::string> components = au::split(host, ':');
 
-  LM_V(("Trying to connect to to %s", host.c_str()));
-
   std::string host_name;
   int port = -1;
   if (components.size() == 2) {
@@ -252,7 +250,6 @@ void Delilah::receive(const PacketPointer& packet) {
     if (!packet->message->has_cluster_info()) {
       LM_W(("Received a cluster info update message without cluster information from connection %s. Ignoring..."
             , packet->from.str().c_str()));
-
       return;
     }
 
@@ -272,7 +269,6 @@ void Delilah::receive(const PacketPointer& packet) {
   if (msgCode == Message::StatusReport) {
     int worker_id = packet->from.id;
     if (worker_id != -1) {
-      // LM_M(("Delilah received a status report... worker id: %d", worker_id));
       updateWorkerXMLString(worker_id, packet->message->info());
     } else {
       LM_W(("Status report received from an unknown endpoint"));
@@ -623,10 +619,8 @@ int Delilah::_receive(const PacketPointer& packet) {
 }
 
 // Get information for monitorization
-void Delilah::getInfo(std::ostringstream& output) {
-  if (output != output) {
-    LM_E(("sorry, just wanted to avoid a 'strict' warning ..."));  // Engine
-  }
+void Delilah::getInfo(std::ostringstream& /* output */ ) {
+  // Engine
   // engine::Engine::shared()->getInfo( output );
 
   // Engine system

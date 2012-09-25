@@ -2,14 +2,13 @@
 #ifndef _H_AU_SHARED_POINTER
 #define _H_AU_SHARED_POINTER
 
+#include <memory>
+
 #include "au/containers/list.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-
 #include "logMsg/logMsg.h"                          // LM_T
 #include "logMsg/traceLevels.h"
-
-#include <memory>
 
 namespace au {
 /* ------------------------------------------------------------------------

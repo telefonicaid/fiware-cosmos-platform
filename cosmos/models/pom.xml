@@ -14,7 +14,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>mobility</module>
         <module>samples</module>
         <module>webprofiling</module>
     </modules>

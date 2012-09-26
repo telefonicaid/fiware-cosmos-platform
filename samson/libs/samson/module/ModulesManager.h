@@ -41,6 +41,9 @@ public:
   samson::gpb::Collection *getDatasCollection(const Visualization& visualitzation);
   samson::gpb::Collection *getOperationsCollection(const Visualization& visualitzation);
 
+  // Local table of modules
+  std::string GetTableOfModules();
+  
   // Unique interface to get data and operations
   Data *getData(std::string name);
   Operation *getOperation(std::string name);

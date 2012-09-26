@@ -52,6 +52,7 @@ struct BlockInfo {
   // ----------------------------------------------------------------
   std::string str();
   std::string strShort();
+  std::string strShortInfo();
 };
 }
 

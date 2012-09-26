@@ -34,7 +34,42 @@ namespace engine {
  * Buffer class to hold data managed by MemoryManager
  */
 
-class Buffer : public NotificationObject {
+  class TagCollection
+  {
+    
+  public:
+    
+    void SetTag( const std::string tag )
+    {
+      tags_.insert(tag);
+    }
+    void RemoveTag( const std::string tag )
+    {
+      tags_.erase(tag);
+    }
+    
+    bool contains_tag( const std::string tag )
+    {
+      return ( tags_.find(tag) != tags_.end() );
+    }
+
+    std::string GetTagString()
+    {
+      std::ostringstream output;
+      std::set<std::string>::iterator iterator;
+      for ( iterator = tags_.begin() ;iterator != tags_.end(); iterator++ )
+        output << *iterator << " ";
+      return output.str();
+    }
+    
+  private:
+    
+    // Tag collection for correct identification
+    std::set<std::string> tags_;
+    
+  };
+  
+class Buffer : public NotificationObject , public TagCollection {
   Buffer(const std::string& name, const std::string& type, size_t max_size);
 
 public:
@@ -108,6 +143,9 @@ public:
   // Read a file and write to this buffer
   void WriteFile(const std::string& file_name, au::ErrorManager& error);
 
+  // Access to tags
+  
+  
 private:
 
   char *data_;                  // Buffer of data
@@ -129,6 +167,8 @@ private:
    */
 
   size_t offset_;
+  
+  
 };
 
 

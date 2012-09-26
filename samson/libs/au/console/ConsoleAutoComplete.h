@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-
+#include "au/string.h"
 
 
 
@@ -28,6 +28,20 @@ public:
     label = _label;
     add_space_if_unique = _add_space_if_unique;
   }
+  
+  std::string bold_label( std::string last_word )
+  {
+    if ( last_word.length() > label.length() )
+      return label;
+    
+    if( label.substr( 0 , last_word.length() ) == last_word )
+    {
+      return au::str( au::red , "%s" , last_word.c_str() ) + label.substr( last_word.length() );
+    }
+    else
+      return label;
+  }
+  
 };
 
 class ConsoleAutoComplete {

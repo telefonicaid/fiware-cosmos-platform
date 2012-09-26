@@ -45,11 +45,15 @@ public:
   WorkerSystemTask(size_t id, const std::string& name, const std::string& concept);
   ~WorkerSystemTask();
 
-  // Virtual methods from WorkerTaskBase
-  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
-
   // Get information
   std::string concept();
+
+  // Virtual methods from WorkerTaskBase
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
+  virtual size_t waiting_time_seconds(){ return ProcessItem::waiting_time_seconds();}
+  virtual size_t running_time_seconds(){ return ProcessItem::running_time_seconds();}
+  
+
 };
 
 

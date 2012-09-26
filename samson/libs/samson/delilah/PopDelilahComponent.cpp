@@ -124,7 +124,7 @@ std::string PopDelilahComponent::getExtraStatus() {
     output << "Waiting for " << num_pending_write_operations_ << " disk operations\n\n";
   }
   if (num_blocks_downloaded_ > 0) {
-    output << "Total blocks downlaoded " << num_blocks_downloaded_ << "\n\n";
+    output << "Total blocks downloaded " << num_blocks_downloaded_ << "\n\n";
   }
   output << table.str();
   output << "\n\n";
@@ -151,6 +151,10 @@ void PopDelilahComponent::send_main_request() {
 }
 
 void PopDelilahComponent::receive(const PacketPointer& packet) {
+  
+  // Message::PopQueueResponse
+  // Response to main request. It provides list of blocks to be downloaded
+  
   if (packet->msgCode == Message::PopQueueResponse) {
     if (!packet->message->has_pop_queue_response()) {
       LM_W(("Received a pop request response without correct information.Ignoring.."));
@@ -184,7 +188,8 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     return;
   }
 
-  // PopBlockRequestConfirmation
+  // Message::PopBlockRequestConfirmation
+  // response to confirm this block can or cannot be provided
 
   if (packet->msgCode == Message::PopBlockRequestConfirmation) {
     // Get identifier of the pop item it refers
@@ -209,7 +214,8 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     return;
   }
 
-  // PopBlockRequestResponse
+  // Message::PopBlockRequestResponse
+  // response with the content of a block
 
   if (packet->msgCode == Message::PopBlockRequestResponse) {
     // Get identifier of the pop item it refers
@@ -218,6 +224,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     // Search for this item
     PopDelilahComponentItem *item = items_.findInMap(pop_id);
     if (!item) {
+      LM_W(("Unknown pop item %lu in a PopBlockRequestResponse for delilah component %lu" , pop_id , id ));
       return;
     }
 

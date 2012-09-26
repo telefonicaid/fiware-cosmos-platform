@@ -257,10 +257,19 @@ void ConsoleAutoComplete::print_last_words_alternatives() {
   if (num_words_per_row == 0) {
     num_words_per_row = 1;
   }
-  for (size_t i = 0; i < last_word_alternatives.size(); i++) {
-    std::string format = std::string("%-") + au::str("%d", max_length) + std::string("s ");
-    printf(format.c_str(), last_word_alternatives[i].label.c_str());
-
+  for (size_t i = 0; i < last_word_alternatives.size(); i++)
+  {
+    
+    std::ostringstream output;
+    
+    output << last_word_alternatives[i].bold_label( last_word );
+    for ( int j = 0 ; j < ( max_length  - last_word_alternatives[i].label.length() ) ; j++ )
+      output << " ";
+    output << " ";
+    
+    // Print command and help
+    printf("%s",output.str().c_str());
+    
     if ((i % num_words_per_row) == (size_t)(num_words_per_row - 1)) {
       printf("\n");
     }

@@ -155,13 +155,13 @@ void ProcessManager::run_worker() {
     }
 
     // Init cronometer for this process item
-    item->StartCronometer();
+    item->StartActivity();
 
     // Run the process
     item->run();
 
     // Stop cronometer for this process item
-    item->StopCronometer();
+    item->StopActivity();
 
     // Remove from the box of running elements
     {

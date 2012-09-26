@@ -45,7 +45,7 @@ BlockPointer BlockRef::block() {
 }
 
 size_t BlockRef::block_id() {
-  return block_->get_block_id();
+  return block_->block_id();
 }
 
 KVInfo BlockRef::info() {
@@ -85,7 +85,7 @@ au::SharedPointer<KVFile> BlockRef::file() {
 
 void BlockRef::review(au::ErrorManager& error) {
   if (!block_->is_content_in_memory()) {
-    error.set(au::str("Block %lu is not in memory", block_->get_block_id()));
+    error.set(au::str("Block %lu is not in memory", block_->block_id()));
     return;
   }
 
@@ -113,10 +113,6 @@ void BlockRef::review(au::ErrorManager& error) {
     info_.append(file_->info[i]);
   }
 
-  LM_W(("Review block %lu %s %s"
-        , block_->get_block_id()
-        , range_.str().c_str()
-        , info_.str().c_str()));
 }
 
 // ------------------------------------------------------------------

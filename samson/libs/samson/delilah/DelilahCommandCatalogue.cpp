@@ -110,7 +110,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_string_argument("ls_local", "file", "*", "File or pattern to be displayed");
 
   add("ls_local_queues", "local", "Show a list of local queues");
-  add_string_argument("ls_local", "file", "*", "File or pattern to be displayed");
+  add_string_argument("ls_local_queues", "file", "*", "File or pattern to be displayed");
 
   add("rm_local", "local", "Remove a local file or directory (and all its contents)");
   add_mandatory_string_argument("rm_local", "file", "Local file or directory to be removed");
@@ -161,6 +161,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_tag("ls_blocks", "send_to_all_workers");
 
   add("ls_queue_blocks", "debug", "Show detailed list of the blocks included in every queue");
+  add_bool_option("ls_queue_blocks", "-a", "Show hiden queues as well ( used internally by the platform )");
 
   add("ls_buffers", "debug", "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool");
   add_tag("ls_buffers", "send_to_all_workers");
@@ -184,6 +185,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_modules", "modules", "Show a list of modules installed in SAMSON node workers");
   add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
 
+  add("ls_local_modules", "modules", "Show a list of modules installed available at this delilah");
+  
   add("ls_operations", "modules",  "Shows a list of available operations");
   add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
   add_bool_option("ls_operations", "-v", "Show more details about input/output parameters");
@@ -234,13 +237,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("add_stream_operation", "-forward", "Forward reduce operations are scheduled. ( No state )");
   add_bool_option("add_stream_operation", "-update_only", "Only update state for keys with new input values");
 
-  add("rm_stream_operation", "stream",
-      "Remove a previously defined operation with add_stream_operation",
-      "rm_stream_operation name <-f>\n"
-      "      -f      Option avoids complaints when the operation does not exist");
+  add("remove_stream_operation", "stream", "Remove a previously defined operation with add_stream_operation" );
+  add_mandatory_string_argument("remove_stream_operation", "name", "Name of the stream operations to remove");
 
+  
   add("remove_all_stream_operations", "stream", "Remove all stream operations");
-
 
   add("cancel_stream_operation", "stream", "Cancel of  execution of a particular stream operation");
   add_string_option("cancel_stream_operation", "name", "", "Name of the stream operation to be canceled");
@@ -306,7 +307,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_string_option("run", "-output", "", "Output queues to push data to");
 
   add("ls_batch_operations", "batch", "Show a list of current batch operations scheduled");
+  add_bool_option("ls_batch_operations" , "-input", "Show real input pending to be process");
+  add_bool_option("ls_batch_operations" , "-output", "Show output produces batch operations");
 
+  add("clear_batch_operations" , "batch" , "Clear finished batch operations" );
+  
   // PUSH&POP
   // ------------------------------------------------------------------
 

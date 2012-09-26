@@ -61,7 +61,10 @@ public:
   // Virtual methods from WorkerTaskBase
   virtual std::string str();
   virtual void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
+  virtual size_t waiting_time_seconds(){ return ProcessItem::waiting_time_seconds();}
+  virtual size_t running_time_seconds(){ return ProcessItem::running_time_seconds();}
 
+  
 private:
 
   // Specific function to execute map, reduce, parser operations

@@ -24,7 +24,7 @@ namespace samson {
 namespace stream {
 WorkerSystemTask::WorkerSystemTask(size_t id, const std::string& name, const std::string& concept)
   : engine::ProcessItem(PI_PRIORITY_NORMAL_OPERATION)
-    , WorkerTaskBase(id, name) {
+    , WorkerTaskBase(id, name , concept ) {
   // Keep internal values
   concept_ = concept;
 
@@ -61,11 +61,13 @@ void WorkerSystemTask::fill(samson::gpb::CollectionRecord *record,
   add(record, "id", get_id(), "left,different");
   add(record, "name", name(), "left,different");
   add(record, "worker_command_id", environment_.Get("worker_command_id", "?"), "left,different");
-  add(record, "creation", creation_cronometer_.seconds(), "f=time,different");
-  add(record, "running ", cronometer().seconds(), "f=time,different");
+  add(record, "waiting", ProcessItem::waiting_time_seconds(), "f=time,different");
+  add(record, "running ", ProcessItem::running_time_seconds(), "f=time,different");
   add(record, "progress ", progress(), "f=percentadge,different");
 
-  if (ProcessItem::running()) {
+  if (ProcessItem::finished()) {
+    add(record, "state", "finished", "left,different");
+  } else if (ProcessItem::running()) {
     add(record, "state", "running", "left,different");
   } else {
     add(record, "state", task_state(), "left,different");
@@ -158,6 +160,7 @@ void PopBlockRequestTask::run() {
   }
   au::SharedPointer<KVFile> kv_file = block_->getKVFile(error_);
   if (error_.IsActivated()) {
+    LM_W(("Not possible to get KVFile for block in a PopBlockRequestTask"));
     return;
   }
 
@@ -213,10 +216,15 @@ void PopBlockRequestTask::run() {
     }
     source_data += size;      // Move pointer to the next
   }
+  
+  // Sent response with computed buffer
+  sent_response( buffer );
+  
 }
 
 void PopBlockRequestTask::sent_response(engine::BufferPointer buffer) {
   // Send a packet to delilah with generated content
+  LM_W(("****** Sending PopBlockRequestResponse"));
   PacketPointer packet(new Packet(Message::PopBlockRequestResponse));
 
   packet->to = NodeIdentifier(DelilahNode, delilah_id_);

@@ -263,7 +263,7 @@ void ConsoleAutoComplete::print_last_words_alternatives() {
     std::ostringstream output;
     
     output << last_word_alternatives[i].bold_label( last_word );
-    for ( int j = 0 ; j < ( max_length  - last_word_alternatives[i].label.length() ) ; j++ )
+    for ( int j = 0 ; j < (int)( max_length  - last_word_alternatives[i].label.length() ) ; j++ )
       output << " ";
     output << " ";
     

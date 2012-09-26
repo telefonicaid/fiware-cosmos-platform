@@ -120,7 +120,7 @@ namespace c4{
 			  else if( message.type.value == 2 )
 			  {
 				 // Response message
-				 for ( int i = 0 ; i < next_boards.size() ; i++ )
+				 for ( int i = 0 ; i < (int)next_boards.size() ; i++ )
 				 {
 					if( next_boards[i].white_value() != message.board.white.value )
 					   continue;

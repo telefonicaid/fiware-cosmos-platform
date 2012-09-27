@@ -11,10 +11,12 @@
 
 package es.tid.cosmos.platform.injection.server;
 
-import java.io.File;
+import org.junit.Before;
+import org.junit.Test;
+
+import es.tid.cosmos.base.util.Logger;
 
 import static junit.framework.Assert.assertTrue;
-import org.junit.*;
 
 /**
  * InjectionServerTest
@@ -22,14 +24,22 @@ import org.junit.*;
  * @author logc
  * @since 15/05/12
  */
-public class InjectionServerTest {
+public class InjectionServerTest extends BaseSftpTest {
+
+    private static final org.apache.log4j.Logger LOGGER =
+            Logger.get(InjectionServer.class);
+
     private InjectionServer instance;
+
+    public InjectionServerTest() {
+        super(LOGGER);
+    }
 
     @Before
     public void setUp() throws Exception {
         Configuration configuration = new Configuration(
                 InjectionServerMain.class
-                        .getResource("/injection_server.dev.properties"));
+                                   .getResource("/injection_server.dev.properties"));
         this.instance = new InjectionServer(configuration);
     }
 

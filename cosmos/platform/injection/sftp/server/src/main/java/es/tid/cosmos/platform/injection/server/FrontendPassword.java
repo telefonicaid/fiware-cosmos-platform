@@ -23,8 +23,9 @@ import es.tid.cosmos.base.util.Logger;
 /**
  * FrontendPassword
  *
+ * checks that the user supplied password is found in the HUE frontend database
+ *
  * @author logc
- * @since  CTP 2
  */
 public class FrontendPassword implements PasswordAuthenticator {
     private static final String DJANGO_SEPARATOR = "$";

@@ -15,13 +15,15 @@ import java.net.URI;
 import java.net.URL;
 
 import org.apache.commons.configuration.ConfigurationException;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author sortega
  */
 public class ConfigurationTest {
+
     @Test(expected = ConfigurationException.class)
     public void shouldThrowExceptionWhenNotFound() throws Exception {
         new Configuration(getClass().getResource("/not/existing"));

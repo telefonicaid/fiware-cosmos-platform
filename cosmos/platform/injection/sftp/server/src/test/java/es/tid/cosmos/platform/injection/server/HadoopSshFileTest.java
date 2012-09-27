@@ -24,21 +24,21 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.sshd.server.SshFile;
 import org.junit.After;
-import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
 import org.mockito.Matchers;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import es.tid.cosmos.base.util.Logger;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * @author logc
  */
-public class HadoopSshFileTest {
-    private static final org.apache.log4j.Logger LOG =
+public class HadoopSshFileTest extends BaseSftpTest {
+
+    private static final org.apache.log4j.Logger LOGGER =
             Logger.get(HadoopSshFile.class);
 
     private HadoopSshFile hadoopSshFile;
@@ -46,6 +46,10 @@ public class HadoopSshFileTest {
     private FileSystem hadoopFS;
     private FileSystem mockedFileSystem;
     private HadoopSshFile neverExists;
+
+    public HadoopSshFileTest() {
+        super(LOGGER);
+    }
 
     @Before
     public void setUp() throws IOException, InterruptedException{
@@ -59,7 +63,6 @@ public class HadoopSshFileTest {
         this.hadoopSshDir = new HadoopSshFile(foodir, "user01", this.hadoopFS);
 
         this.mockedFileSystem = mock(FileSystem.class);
-
 
         this.neverExists = new HadoopSshFile("/in/fantasy", "whatever_user",
                 this.mockedFileSystem);
@@ -340,8 +343,6 @@ public class HadoopSshFileTest {
             .thenThrow(new AccessControlException("not authorized"));
         HadoopSshFile mockedDir = spy(this.neverExists);
         doReturn(true).when(mockedDir).isDirectory();
-        HadoopSshFile currentDir = new HadoopSshFile(Path.CUR_DIR, "user01",
-                this.mockedFileSystem);
         // There is only one object in the parent folder, namely this folder
         assertEquals(1, mockedDir.listSshFiles().size());
     }

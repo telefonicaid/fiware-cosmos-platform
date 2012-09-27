@@ -17,8 +17,9 @@ import java.sql.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import es.tid.cosmos.base.util.Logger;
+
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
@@ -26,16 +27,22 @@ import static junit.framework.Assert.assertTrue;
  * FrontendPasswordTest
  *
  * @author logc
- * @since 15/05/12
  */
-public class FrontendPasswordTest {
-    private static final Logger LOG = LoggerFactory.getLogger(
-            FrontendPasswordTest.class);
+public class FrontendPasswordTest extends BaseSftpTest {
+
+    private static final org.apache.log4j.Logger LOGGER =
+            Logger.get(FrontendPassword.class);
+    private static final org.apache.log4j.Logger TEST_LOGGER =
+            Logger.get(FrontendPasswordTest.class);
 
     private FrontendPassword instance;
     private String fileName;
     private String frontendDbUrl;
     private Connection connection;
+
+    public FrontendPasswordTest() {
+        super(LOGGER);
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -96,7 +103,8 @@ public class FrontendPasswordTest {
             deleted = f.delete();
         }
         if (!deleted) {
-            LOG.error("test DB at " + this.fileName + "could not be deleted");
+            TEST_LOGGER.error("test DB at " + this.fileName + "could not be " +
+                    "deleted");
         }
     }
 

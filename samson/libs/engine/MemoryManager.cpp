@@ -84,11 +84,12 @@ double MemoryManager::memory_usage() {
 }
 
 au::tables::Table MemoryManager::getTableOfBuffers() {
-  au::tables::Table table("Type,left,different|Name,left,different|Size,f=uint64,sum");
+  au::tables::Table table("Type,left,different|Name,left,different|Size,f=uint64,sum|TotalSize,f=uint64,sum|Tags,left");
 
   au::TokenTaker tt(&token_);
 
   std::set<Buffer *>::iterator it_buffers;
+  size_t total_size = 0;
   for (it_buffers = buffers_.begin(); it_buffers != buffers_.end(); it_buffers++) {
     Buffer *buffer = *it_buffers;
     au::StringVector values;
@@ -96,7 +97,9 @@ au::tables::Table MemoryManager::getTableOfBuffers() {
     values.push_back(buffer->type());
     values.push_back(buffer->name());
     values.push_back(au::str("%lu", buffer->size()));
-
+    total_size += buffer->size();
+    values.Push( total_size );
+    values.Push( buffer->GetTagString() );
     table.addRow(values);
   }
 

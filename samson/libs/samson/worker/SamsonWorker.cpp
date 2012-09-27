@@ -360,6 +360,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       p->message->mutable_error()->set_message("Unknown block");
     } else {
       // Schedule task
+      LM_W(("********* Scheduling WorkerSystemTask"));
       au::SharedPointer<stream::WorkerSystemTask> task;
       task.Reset(new stream::PopBlockRequestTask(task_manager_->getNewId()
                                                  , block_id

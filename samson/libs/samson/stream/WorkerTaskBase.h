@@ -33,7 +33,7 @@ class WorkerTaskBase {
 public:
 
   // Constructor and destructor
-  WorkerTaskBase(size_t id, const std::string& name);
+  WorkerTaskBase(size_t id, const std::string& name , const std::string& operation );
   virtual ~WorkerTaskBase();
 
   // Add blocks for input
@@ -43,8 +43,9 @@ public:
   void add_output(int channel, BlockPointer block, KVRange range, KVInfo info);
 
   bool is_ready();  // Funciton to check if all the blocks are in memory
-  size_t get_id();  // Get the id of this task
-  std::string name();
+  size_t get_id()const;  // Get the id of this task
+  std::string name()const;
+  std::string operation()const;
 
   // set & get over queue_task_state
   void SetTaskState(const std::string& _queue_task_state);
@@ -56,14 +57,36 @@ public:
   // Method to fill records with my information ( tables on delilah )
   virtual void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) = 0;
 
+  // Methods implemented by ProcessItem in all subclasses
+  virtual size_t waiting_time_seconds()=0;
+  virtual size_t running_time_seconds()=0;
+
+  std::string str_inputs()
+  {
+    std::ostringstream output;
+    for (int i = 0; i < 3; i++) {
+      BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", i));
+      BlockInfo block_info = block_list->getBlockInfo();
+      output << block_info.strShortInfo() << " ";
+    }
+  return output.str();
+  }
+  std::string str_outputs()
+  {
+    std::ostringstream output;
+    for (int i = 0; i < 3; i++) {
+      BlockList *block_list = block_list_container_.getBlockList(au::str("output_%d", i));
+      BlockInfo block_info = block_list->getBlockInfo();
+      output << block_info.strShortInfo() << " ";
+    }
+    return output.str();
+  }
+
+  
 protected:
 
   // Container for all input/output blocks
   BlockListContainer block_list_container_;
-
-  // Cronometers
-  au::Cronometer creation_cronometer_;
-  au::CronometerSystem cronometer_;
 
 private:
 
@@ -73,6 +96,9 @@ private:
   // Name of this type of task
   std::string name_;
 
+  // Name of the operation ( for statistics only )
+  std::string operation_;
+  
   // State information
   std::string task_state_;
 

@@ -11,12 +11,15 @@
 
 namespace samson {
 namespace stream {
-WorkerTaskBase::WorkerTaskBase(size_t id, const std::string& name)
+WorkerTaskBase::WorkerTaskBase(size_t id, const std::string& name , const std::string& operation )
   : block_list_container_(au::str("block lists for task %lu", id), id) {
   id_ = id;    // Set the id of this task
   ready_ = false;   // By default it is not ready
   task_state_ = "Init";    // Set initial state
   name_ = name;
+  operation_ = operation;
+
+    
 }
 
 WorkerTaskBase::~WorkerTaskBase() {
@@ -41,13 +44,16 @@ bool WorkerTaskBase::is_ready() {
   return ready_;
 }
 
-size_t WorkerTaskBase::get_id() {
+size_t WorkerTaskBase::get_id() const{
   return id_;
 }
 
-std::string WorkerTaskBase::name() {
+std::string WorkerTaskBase::name() const{
   return name_;
 }
+  std::string WorkerTaskBase::operation() const {
+    return operation_;
+  }
 
 void WorkerTaskBase::SetTaskState(const std::string& task_state) {
   task_state_ = task_state;

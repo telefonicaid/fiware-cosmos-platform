@@ -36,9 +36,10 @@
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
+#include "samson/common/samsonDirectories.h"
+#include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/ports.h"
-#include "samson/common/samsonVars.h"
 #include "samson/common/samsonVersion.h"
 #include "samson/common/status.h"
 
@@ -271,6 +272,10 @@ int main(int argC, const char *argV[]) {
   paParse(paArgs, argC, (char **)argV, 1, true);
 
 
+  // working directories to find modules and stuff
+  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
+
+
   // Clean up function
   atexit(cleanup);
 
@@ -289,7 +294,6 @@ int main(int argC, const char *argV[]) {
   lmAux((char *)"father");
   logFd = lmFirstDiskFileDescriptor();
 
-
   // Setup parameters from command line
   size_t _memory           = (size_t)memory_gb * (size_t)(1024 * 1024 * 1024);
   size_t _load_buffer_size = (size_t)load_buffer_size_mb * (size_t)(1024 * 1024);
@@ -302,7 +306,7 @@ int main(int argC, const char *argV[]) {
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
   engine::Engine::InitEngine(num_cores,  _memory, 1);
 
-// Load modules
+  // Load modules
   au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
 
   // Create a DelilahControler once network is ready

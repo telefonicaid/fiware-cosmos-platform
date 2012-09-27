@@ -815,6 +815,12 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     } return 0;
   }
 
+  if( mainCommand == "ls_local_modules")
+  {
+    writeOnConsole( au::Singleton<ModulesManager>::shared()->GetTableOfModules() + "\n" );
+    return 0;
+  }
+  
   if (mainCommand == "ls_local") {
     std::string file = command_instance->get_string_argument("file");
 

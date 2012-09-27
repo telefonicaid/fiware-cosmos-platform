@@ -70,14 +70,25 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
       return;
     }
 
-    // Common log for tasks
+    // Log for this task ( for ls_last_tasks command )
+    WorkerTaskLog worker_task_log;
+    worker_task_log.task = task_base->str();
+    worker_task_log.waiting_time_seconds = task_base->waiting_time_seconds();
+    worker_task_log.running_time_seconds = task_base->running_time_seconds();
+    worker_task_log.operation = task_base->operation();
+    worker_task_log.inputs = task_base->str_inputs();
+    worker_task_log.outputs = task_base->str_outputs();
+    
     if (notification->environment().IsSet("error")) {
       std::string error = notification->environment().Get("error", "???");
-      last_tasks_.push_back(WorkerTaskLog(task_base->str(), error));
+      worker_task_log.result = error;
     } else {
-      last_tasks_.push_back(WorkerTaskLog(task_base->str(), "OK"));
+      worker_task_log.result = "OK";
     }
-
+    // Log activity
+    last_tasks_.push_back( worker_task_log);
+    
+    
     // remove execise logs ( just last 100 )
     while (last_tasks_.size() > 100) {
       last_tasks_.pop_front();
@@ -204,7 +215,6 @@ void WorkerTaskManager::Reset() {
 
 samson::gpb::Collection *WorkerTaskManager::getLastTasksCollection(const ::samson::Visualization& visualization) {
   samson::gpb::Collection *collection = new samson::gpb::Collection();
-
   collection->set_name("last_tasks");
 
   std::list<WorkerTaskLog>::iterator it;
@@ -213,6 +223,10 @@ samson::gpb::Collection *WorkerTaskManager::getLastTasksCollection(const ::samso
 
     add(record, "tasks", it->task, "different");
     add(record, "result", it->result, "left,different");
+    add(record, "inputs", it->inputs, "left,different");
+    add(record, "outputs", it->outputs, "left,different");
+    add(record, "waiting", it->waiting_time_seconds, "left,different,f=time");
+    add(record, "running", it->running_time_seconds, "left,different,f=time");
   }
 
   return collection;
@@ -267,14 +281,6 @@ void WorkerTaskManager::review_stream_operations() {
       break;
     }
 
-    // Check memory status. New tasks are not scheduled if memory usage is too high
-    double memory_usage = engine::Engine::memory_manager()->memory_usage();
-    if (memory_usage >= 1.0) {
-      LM_W(("Not schedulling new stream-tasks since memory usage is %s >= 100%"
-            , au::str_percentage(memory_usage).c_str()));
-      break;
-    }
-
     // Get a copy of data mode
     au::SharedPointer<gpb::Data> data = samson_worker_->data_model()->getCurrentModel();
 
@@ -325,6 +331,14 @@ void WorkerTaskManager::review_stream_operations() {
       }
     }
 
+    // Check memory status. New tasks are not scheduled if memory usage is too high
+    double memory_usage = engine::Engine::memory_manager()->memory_usage();
+    if (memory_usage >= 1.0) {
+      LM_W(("Not schedulling new stream-tasks since memory usage is %s >= 100%"
+            , au::str_percentage(memory_usage).c_str()));
+      break;
+    }
+    
     if (max_priority_rank == 0) {
       LM_T(LmtEngineTime, ("No more operations"));
       break;     // No more operations to be schedule

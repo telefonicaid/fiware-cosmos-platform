@@ -43,6 +43,7 @@ Queue *get_or_create_queue(Data *data, const std::string& name, KVFormat format,
 
 void removeQueue(Data *data, const std::string& name);
 
+  
 // Operations over Queue
 void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size_t *size);
 ::samson::FullKVInfo getKVInfoForQueue(const gpb::Queue& queue);
@@ -81,6 +82,7 @@ void data_remove_queue_connection(gpb::Data *data, const std::string& queue_sour
 
 // Batch operation
 bool bath_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batch_operation);
+  void remove_finished_operation(gpb::Data *data);
 }
 }  // End of namespace samson::gpb
 

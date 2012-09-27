@@ -74,6 +74,7 @@ public:
 
 private:
 
+  void sort(); // Sort blocks
   void create_block_from_disk(const std::string& path);
   void recover_blocks_from_disks();
 

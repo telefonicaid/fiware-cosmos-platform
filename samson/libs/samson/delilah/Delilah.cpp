@@ -634,7 +634,7 @@ void Delilah::getInfo(std::ostringstream& /* output */ ) {
 }
 
 std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
-  au::tables::Table table("Name,left|Type,left|Size|Format,left");
+  au::tables::Table table("Name,left|Type,left|Size|Format,left|Error");
 
   // first off, we need to create a pointer to a directory
   DIR *pdir = opendir(".");    // "." will refer to the current directory
@@ -655,7 +655,7 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
           if (S_ISREG(buf2.st_mode)) {
             size_t size = buf2.st_size;
             if (!only_queues) {
-              table.addRow(au::StringVector(pent->d_name, "FILE", au::str(size, "bytes"), "-"));
+              table.addRow(au::StringVector(pent->d_name, "FILE", au::str(size, "bytes"), "-" ,  "-" ));
             }
           }
           if (S_ISDIR(buf2.st_mode)) {
@@ -664,13 +664,14 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
 
             if (error.IsActivated()) {
               if (!only_queues) {
-                table.addRow(au::StringVector(pent->d_name, "DIR", "", ""));
+                table.addRow(au::StringVector(pent->d_name, "DIR", "", "", error.GetMessage() ));
               }
             } else {
               table.addRow(au::StringVector(pent->d_name
                                             , "SAMSON queue"
                                             , samson_data_set->info().strDetailed()
-                                            , samson_data_set->format().str()));
+                                            , samson_data_set->format().str()
+                                            , "-" ));
             }
           }
         }

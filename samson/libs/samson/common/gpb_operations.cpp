@@ -450,5 +450,63 @@ bool bath_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batc
 
   return true;
 }
+  
+  bool string_starts_with( const std::string& s , const std::string& prefix )
+  {
+    if( s.length() < prefix.length() )
+      return false;
+    
+    return( s.substr(0,prefix.length()) == prefix );
+  }
+  
+  void remove_finished_operation(gpb::Data *data)
+  {
+    ::google::protobuf::RepeatedPtrField< ::samson::gpb::BatchOperation > *operations = data->mutable_batch_operations();
+    
+    for ( int i = 0 ; i < operations->size() ; i++ )
+    {
+      if( !operations->Get(i).finished() )
+        continue;
+
+      // Remove associated stream operation and queues
+      size_t delilah_id = operations->Get(i).delilah_id();
+      size_t delilah_component_id = operations->Get(i).delilah_component_id();
+      
+      std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
+
+      // Remove all queues and stream operations starting with this....
+      ::google::protobuf::RepeatedPtrField< ::samson::gpb::Queue > *queues = data->mutable_queue();
+      for ( int j = 0 ; j < queues->size() ; j++ )
+      {
+        std::string name = queues->Get(j).name();
+        if( string_starts_with(name,prefix) )
+        {
+          // Remove queue
+          queues->SwapElements(j, queues->size()-1);
+          queues->RemoveLast();
+        }
+      }
+
+      // Remove all queues and stream operations starting with this....
+      ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *stream_operations = data->mutable_operations();
+      for ( int j = 0 ; j < stream_operations->size() ; j++ )
+      {
+        std::string name = stream_operations->Get(j).name();
+        if( string_starts_with(name,prefix) )
+        {
+          // Remove queue
+          stream_operations->SwapElements(j, stream_operations->size()-1);
+          stream_operations->RemoveLast();
+        }
+      }
+      
+      // Remove this element
+      operations->SwapElements(i, operations->size()-1);
+      operations->RemoveLast();
+        
+    }
+  }
+  
+  
 }
 }

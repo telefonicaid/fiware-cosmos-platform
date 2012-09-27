@@ -32,6 +32,7 @@
 #include "samson/common/NotificationMessages.h"  // notification_review_timeOut_SamsonPushBuffer
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
 #include "samson/common/samsonDirectories.h"
+#include "samson/common/samsonVars.h"
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 

@@ -171,7 +171,7 @@ au::SharedPointer<WorkerTask> StreamOperationInfo::schedule_new_task(size_t task
     }
 
     // Stop if we need to much memory for this task
-    if (accumulated_size > 120000000) {
+    if (accumulated_size > 200000000 ) {
       break;                           // No more accumulation for this operation
     }
   }
@@ -242,8 +242,7 @@ void StreamOperationInfo::fill(samson::gpb::CollectionRecord *record, const Visu
     ::samson::add(record, "tasks", worker_task_->get_id(), "different");
   } else {
     ::samson::add(record, "tasks", "none", "different");
-  } ::samson::add(record, "state", state_,
-                  "different");
+  } ::samson::add(record, "state", state_,"different,left");
 }
 
 bool StreamOperationInfo::isValid(gpb::Data *data, au::ErrorManager *error) {

@@ -1167,13 +1167,14 @@ void WorkerCommand::run() {
     std::string inputs = command_instance->get_string_option("input");
     std::string outputs = command_instance->get_string_option("output");
 
-    std::string command = au::str("batch %s -input %s -output %s -delilah_id %lu -delilah_component_id %lu "
+    std::string command = au::str("batch %s -input \"%s\" -output \"%s\" -delilah_id %lu -delilah_component_id %lu "
                                   , operation.c_str()
                                   , inputs.c_str()
                                   , outputs.c_str()
                                   , delilah_id
                                   , delilah_component_id);
 
+    
     au::ErrorManager error;
     std::string caller = au::str("run_deliah_%s_%lu", au::code64_str(delilah_id).c_str(), delilah_component_id);
     samsonWorker->data_model()->Commit(caller, command, &error);
@@ -1343,11 +1344,8 @@ gpb::Collection *WorkerCommand::getCollectionOfBuffers(const Visualization& visu
 
     for (size_t c = 0; c < table.getNumColumns(); c++) {
       std::string concept = table.getColumn(c);
-      std::string format = table.getFormatForColumn(c);
-
       std::string value = table.getValue(r, c);
-
-      ::samson::add(record, concept, value, format);
+      ::samson::add(record, concept, value, "left");
     }
   }
 

@@ -41,7 +41,6 @@ PopDelilahComponent::PopDelilahComponent(std::string queue
 
   // Counter for responses we get
   num_pop_queue_responses_ = 0;
-
   started_ = false;
 
   // concept for this delilah component
@@ -156,6 +155,8 @@ void PopDelilahComponent::send_main_request() {
 
 void PopDelilahComponent::receive(const PacketPointer& packet) {
   LM_T(LmtDelilahComponent, ("Received a packet:%s", Message::messageCode(packet->msgCode)));
+  // Message::PopQueueResponse
+  // Response to main request. It provides list of blocks to be downloaded
   if (packet->msgCode == Message::PopQueueResponse) {
     if (!packet->message->has_pop_queue_response()) {
       LM_W(("Received a pop request response without correct information.Ignoring.."));
@@ -196,7 +197,8 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     return;
   }
 
-  // PopBlockRequestConfirmation
+  // Message::PopBlockRequestConfirmation
+  // response to confirm this block can or cannot be provided
 
   if (packet->msgCode == Message::PopBlockRequestConfirmation) {
     // Get identifier of the pop item it refers
@@ -222,7 +224,8 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     return;
   }
 
-  // PopBlockRequestResponse
+  // Message::PopBlockRequestResponse
+  // response with the content of a block
 
   if (packet->msgCode == Message::PopBlockRequestResponse) {
     // Get identifier of the pop item it refers
@@ -231,6 +234,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     // Search for this item
     PopDelilahComponentItem *item = items_.findInMap(pop_id);
     if (!item) {
+      LM_W(("Unknown pop item %lu in a PopBlockRequestResponse for delilah component %lu" , pop_id , id ));
       return;
     }
 

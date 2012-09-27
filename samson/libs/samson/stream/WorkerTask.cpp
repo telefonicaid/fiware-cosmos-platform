@@ -31,7 +31,7 @@ WorkerTask::WorkerTask(SamsonWorker *samson_worker
                        , Operation *operation
                        , KVRange range)
   : ProcessIsolated(au::str("WorkerTask %lu: %s", id, stream_operation.operation().c_str()), get_type(operation))
-    , WorkerTaskBase(id, "worker_task") {
+    , WorkerTaskBase(id, "worker_task" , stream_operation.operation() ) {
   // Keep a pointer to samson_worker to create output blocks
   samson_worker_ = samson_worker;
 
@@ -94,11 +94,13 @@ void WorkerTask::fill(samson::gpb::CollectionRecord *record, const Visualization
   add(record, "id", get_id(), "left,different");
   add(record, "name", name(), "left,different");
   add(record, "worker_command_id", environment_.Get("worker_command_id", "?"), "left,different");
-  add(record, "creation", creation_cronometer_.seconds(), "f=time,different");
-  add(record, "running ", cronometer().seconds(), "f=time,different");
+  add(record, "waiting", ProcessItem::waiting_time_seconds(), "f=time,different");
+  add(record, "running ", ProcessItem::running_time_seconds(), "f=time,different");
   add(record, "progress ", progress(), "f=percentadge,different");
 
-  if (ProcessItem::running()) {
+  if (ProcessItem::finished()) {
+    add(record, "state", "finished", "left,different");
+  } else if (ProcessItem::running()) {
     add(record, "state", "running", "left,different");
   } else {
     add(record, "state", task_state(), "left,different");

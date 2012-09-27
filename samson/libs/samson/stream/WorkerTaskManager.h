@@ -27,14 +27,15 @@ class StreamOperationInfo;
 
 // Logs for debugging
 
-struct WorkerTaskLog {
-  std::string task;
-  std::string result;
-
-  WorkerTaskLog(const std::string& _task, const std::string& _result) {
-    task = _task;
-    result = _result;
-  }
+  struct WorkerTaskLog {
+  std::string task;         // General description
+  std::string result;       // Result of the operation
+  std::string operation;    // Name of the operation
+  std::string inputs;       // Information at the input of the operation
+  std::string outputs;      // Information at output of the operation
+  int waiting_time_seconds; // Waiting time until execution starts
+  int running_time_seconds; // Running time
+    
 };
 
 

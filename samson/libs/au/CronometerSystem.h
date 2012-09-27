@@ -31,6 +31,9 @@ public:
   double running_seconds() const;
   double seconds() const;
 
+  // Get time informtion formatted correctly
+  std::string str_seconds() const;
+  
 private:
 
   Cronometer cronometer_;

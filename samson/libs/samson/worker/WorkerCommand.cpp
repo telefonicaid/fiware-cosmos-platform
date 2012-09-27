@@ -190,7 +190,7 @@ bool WorkerCommand::isFinished() {
 }
 
 void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
-  // LM_M(("WC Running command '%s'" , command.c_str() ));
+  LM_M(("WC Running command '%s'", command.c_str()));
 
   if (ignoreCommand(command)) {
     return;
@@ -256,7 +256,7 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
     // Structure to set names alias
     AliasManager alias_manager;
 
-    // Read code, execute it recursivelly
+    // Read code, execute it recursively
     au::ErrorManager sub_error;
     for (size_t i = 0; i < op->code.size(); i++) {
       std::string sub_command = op->code[i];
@@ -337,6 +337,7 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
   }
 
   // Unknown command error message
+  LM_E(("Unknown command %s", main_command.c_str()));
   error->set(au::str("Unknown command %s", main_command.c_str()));
 }
 
@@ -445,7 +446,7 @@ void WorkerCommand::run() {
   // General visualization options
   Visualization visualization;
 
-  // Add all bool falgs like -v -state automatically
+  // Add all bool flags like -v -state automatically
   const std::vector<au::console::CommandItem *> options = command_instance->command()->options();
   for (size_t i = 0; i < options.size(); i++) {
     if (options[i]->type() == au::console::options::option_bool) {
@@ -459,6 +460,7 @@ void WorkerCommand::run() {
     visualization.set_pattern(command_instance->get_string_argument("pattern"));  // Get main command
   }
   std::string main_command = command_instance->main_command();
+  LM_M(("Processing command:'%s'", command.c_str()));
 
   /*
    *
@@ -674,7 +676,12 @@ void WorkerCommand::run() {
 
 
   if (main_command == "wait") {
-    error.set("Unimplemented");
+    // Recovering old wait command
+    LM_T(LmtDelilahComponent, ("Processing wait command"));
+    if (samsonWorker->data_model()->CheckForAllOperationsFinished() == false) {
+      pending_to_be_executed = true;
+      return;
+    }
 
     /*
      *
@@ -1060,7 +1067,8 @@ void WorkerCommand::run() {
       samsonWorker->network()->SendAlertToAllDelilahs("warning", "delilah", full_message);
     } else {
       samsonWorker->network()->SendAlertToAllDelilahs("message", "delilah", full_message);
-    } finishWorkerTask();
+    }
+    finishWorkerTask();
     return;
   }
 
@@ -1174,22 +1182,24 @@ void WorkerCommand::run() {
                                   , delilah_id
                                   , delilah_component_id);
 
-    
     au::ErrorManager error;
     std::string caller = au::str("run_deliah_%s_%lu", au::code64_str(delilah_id).c_str(), delilah_component_id);
     samsonWorker->data_model()->Commit(caller, command, &error);
 
     if (error.IsActivated()) {
+      LM_E(("Error in Commit for command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
       finishWorkerTaskWithError(error.GetMessage());
     } else {
       finishWorkerTask();
-    } return;
+    }
+    return;
   }
 
   // Simple commands
   au::ErrorManager error;
   runCommand(command, &error);
   if (error.IsActivated()) {
+    LM_E(("Error in Commit for command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
     finishWorkerTaskWithError(error.GetMessage());
   } else {
     finishWorkerTask();
@@ -1214,6 +1224,7 @@ void WorkerCommand::finishWorkerTask() {
   }
 
   if (notify_finish) {
+    LM_T(LmtDelilahComponent, ("notify_finish for command:'%s', delilah_id:%d", command.c_str()));
     PacketPointer p(new Packet(Message::WorkerCommandResponse));
     gpb::WorkerCommandResponse *c = p->message->mutable_worker_command_response();
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand);
@@ -1221,8 +1232,9 @@ void WorkerCommand::finishWorkerTask() {
     // Put the error if any
     if (error.IsActivated()) {
       // LM_M(("Sending error message %s" , error.GetMessage().c_str() ));
-      c->mutable_error()->set_message(error.GetMessage());  // Set delilah id
+      c->mutable_error()->set_message(error.GetMessage());
     }
+    // Set delilah id
     p->message->set_delilah_component_id(delilah_component_id);
 
     // Direction of this packets

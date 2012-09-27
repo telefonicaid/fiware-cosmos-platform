@@ -794,9 +794,9 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
       }      // A new argument is obtained
     }
     if (command->arguments().size() <= (size_t)pos_argument) {
-      error->set(au::str("Extra non-defined argument (%s) provided for Command %s"
-                         , components[i].c_str()
-                         , main_command.c_str(), command->usage().c_str()));
+      error->set(au::str("Extra non-defined argument (%s) (args_size:%lu <= pos_argument:%d) provided for Command '%s'"
+                         , components[i].c_str(), command->arguments().size(), pos_argument
+                         , main_command.c_str()));
       error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
       error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
       delete command_instance;

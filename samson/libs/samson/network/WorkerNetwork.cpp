@@ -22,8 +22,9 @@ WorkerNetwork::WorkerNetwork(size_t worker_id, int port)
 }
 
 WorkerNetwork::~WorkerNetwork() {
-  LM_T(LmtCleanup, ("In cleanup"));
   if (worker_listener != NULL) {
+    LM_T(LmtCleanup, ("In ~WorkerNetwork() calling StopNetworkListeners()"));
+    worker_listener->StopNetworkListener();
     delete worker_listener;
     worker_listener = NULL;
   }

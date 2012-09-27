@@ -20,6 +20,7 @@ CommitCommandItem::CommitCommandItem(const std::string& command
 CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au::ErrorManager *error) {
   std::vector<std::string> components = au::split(command, ':');
   if (components.size() != 9) {
+    LM_W(("Wrong number of components (%lu!=9) in commit command component: '%s'", components.size(), command.c_str()));
     error->set(au::str("Wrong number of components (%lu!=9) in commit command component: '%s'"
                        , components.size()
                        , command.c_str()));
@@ -29,6 +30,7 @@ CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au
   std::string sub_command = components[0];
 
   if (( sub_command != "add" ) && ( sub_command != "rm" )) {
+    LM_W(("Wrong command (%s) in commit command component: '%s'", sub_command.c_str(), command.c_str()));
     error->set(au::str("Wrong command (%s) in commit command component: '%s'"
                        , sub_command.c_str()
                        , command.c_str()));
@@ -37,10 +39,9 @@ CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au
 
   size_t block_id = atoll(components[2].c_str());
   if (block_id == 0) {
-    error->set(au::str("Wrong block_id (%lu) in commit command component: '%s'"
-                       , block_id
-                       , command.c_str()));
-    return NULL;
+    LM_W(("Suspicious wrong block_id (%lu) in commit command component: '%s'", block_id, command.c_str()));
+    // Same as in SamsonWorkerController. Why? Apparently, zookeeper is giving block ids starting from 0,
+    // but if also uses 0 to mark errors
   }
 
   KVFormat format(components[3], components[4]);

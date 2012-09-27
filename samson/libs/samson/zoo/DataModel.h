@@ -31,7 +31,6 @@ namespace samson {
 
 class DataModel : public ZooNodeCommiter<gpb::Data>{
 public:
-
   DataModel(zoo::Connection *zoo_connection);
   virtual ~DataModel();
 
@@ -55,9 +54,13 @@ public:
   // Get list of all block_ids I whould have
   std::set<size_t> get_my_block_ids(const KVRanges& hg_ranges);
 
-private:
+  // method trying to discover if all operations have finished
+  bool CheckForAllOperationsFinished();
 
+private:
   void ReviewBatchOperations(au::SharedPointer<gpb::Data>, int version,  au::ErrorManager *error);
+  // method trying to discover if a batch operation is really finished
+  bool CheckIfBatchOPerationIsFinished(const gpb::BatchOperation* const batch_operation, au::SharedPointer<gpb::Data> data) const;
 };
 }
 

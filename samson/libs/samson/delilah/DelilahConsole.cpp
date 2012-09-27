@@ -365,6 +365,7 @@ size_t DelilahConsole::runAsyncCommand(std::string command) {
   au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command, &error);
 
   if (error.IsActivated()) {
+    LM_E(("Error parsing command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
     write(&error);       // Write errors and messages
     return 0;
   }

@@ -60,7 +60,7 @@ void WorkerCommandManager::notify(engine::Notification *notification) {
     // Review all WorkerCommand is necessary
     au::map< size_t, WorkerCommand >::iterator it_workerCommands;
     for (it_workerCommands = workerCommands.begin(); it_workerCommands != workerCommands.end(); it_workerCommands++) {
-      it_workerCommands->second->run();             // Excute if necessary
+      it_workerCommands->second->run();             // Execute if necessary
     }
     return;
   }

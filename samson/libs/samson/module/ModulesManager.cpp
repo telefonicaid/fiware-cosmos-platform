@@ -44,7 +44,6 @@ void ModulesManager::clearModulesManager() {
   au::TokenTaker tt(&token_modules, "ModulesManager::clearModulesManager");
 
   modules.clearMap();
-
   // Close handlers
   closeHandlers();
 }
@@ -61,8 +60,6 @@ void ModulesManager::closeHandlers() {
 }
 
 void ModulesManager::addModulesFromDirectory(std::string dir_name) {
-  LM_T(LmtModuleManager, ("Adding modules from directory %s", dir_name.c_str()));
-
   DIR *dp;
   struct dirent *dirp;
   if ((dp  = opendir(dir_name.c_str())) == NULL) {
@@ -93,8 +90,6 @@ typedef const char *(*getVersionFunction)();
 
 
 void ModulesManager::addModule(std::string path) {
-  LM_T(LmtModuleManager, ("Adding module at path %s", path.c_str()));
-
   // Dynamic link open
   void *hndl = dlopen(path.c_str(), RTLD_NOW);
 
@@ -144,6 +139,7 @@ void ModulesManager::addModule(std::string path) {
             , module->file_name.c_str()));
       delete module;
       dlclose(hndl);
+      return;
     }
 
     LM_T(LmtModuleManager, ("Module %s compiled for version %s ... OK!", module->name.c_str(), platform_version.c_str()));

@@ -2,6 +2,7 @@
 
 
 #include "SamsonWorker.h"
+#include "samson/common/ports.h"          // SAMSON_WORKER_PORT
 #include "samson/common/samsonVersion.h"
 #include "samson/delilah/WorkerCommandDelilahComponent.h"
 
@@ -13,9 +14,19 @@ SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) : 
   samson_worker_ = samson_worker;
 
   // No auto-client at the moment
-  delilah = NULL;     // Still testing cluster setup.... ( disabling temporary )
-  // delilah = new Delilah( "rest" );
-  // delilah->connect( au::str("localhost:%d" , port ) ); // Connect to myself
+  // delilah = NULL;     // Still testing cluster setup.... ( disabling temporary )
+
+  // Trying to recover internal delilah for REST interface, but not working
+  // TODO: Fix the way this delilah client should connect to the samsonWorker
+  delilah = new Delilah("rest");
+  int port = SAMSON_WORKER_PORT;
+  au::ErrorManager error;
+  delilah->connect(au::str("localhost:%d" , port), &error); // Connect to myself
+  if (error.IsActivated()) {
+    LM_E(("Error connecting internal delilah for REST to localhost, error:'%s'", error.GetMessage().c_str()));
+    delete delilah;
+    delilah = NULL;
+  }
 
   // Run REST interface
   rest_service = new au::network::RESTService(web_port, this);
@@ -30,10 +41,19 @@ SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) : 
 }
 
 SamsonWorkerRest::~SamsonWorkerRest() {
+  LM_T(LmtCleanup, ("Calling ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
   rest_service->StopService();
+  if (rest_service) {
+    delete rest_service;
+  }
   if (delilah) {
     delete delilah;
   }
+}
+
+void SamsonWorkerRest::StopRestService() {
+  LM_T(LmtCleanup, ("Calling rest_service->StopService()"));
+  rest_service->StopService();
 }
 
 void SamsonWorkerRest::notify(engine::Notification *notification) {
@@ -268,8 +288,11 @@ void SamsonWorkerRest::process_delilah_command(std::string delilah_command,
                                                au::SharedPointer<au::network::RESTServiceCommand> command) {
   // Create client if not created
   if (!delilah) {
-    LM_X(1, ("Internal error"));    // Send the command
+    LM_E(("Internal error, no delilah client found, delilah_command:'%s'", delilah_command.c_str()));
+    // Perhaps better returning than exit
+    return;
   }
+  // Send the command
   LM_T(LmtDelilahCommand, ("Sending delilah command: '%s'", delilah_command.c_str()));
   size_t command_id = delilah->sendWorkerCommand(delilah_command);
 

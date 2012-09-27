@@ -76,6 +76,8 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
   workerCommandManager_ = new WorkerCommandManager(this);
   samson_worker_rest_ = new SamsonWorkerRest(this, web_port_);
   task_manager_ =  new stream::WorkerTaskManager(this);
+  // network_ will be properly initialized later
+  network_ = NULL;
 
   // Initial state of this worker ( unconnected )
   state_ = unconnected;
@@ -354,6 +356,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     // Schedule operations to send this block to this user
     if (stream::BlockManager::shared()->getBlock(block_id) == NULL) {
+      LM_W(("Unknown block_id(%d) in PopBlockRequest", block_id));
       p->message->mutable_error()->set_message("Unknown block");
     } else {
       // Schedule task
@@ -370,7 +373,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     // Send confirmation packet
     network_->Send(p);
-
     return;
   }
 
@@ -432,8 +434,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     worker_block_manager_->ReceivedBlockDistributionResponse(block_id, worker_id);
     return;
   }
-
-
 
   // --------------------------------------------------------------------
   // push messages
@@ -515,6 +515,8 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     gpb_queue->set_name(original_queue);
     gpb_queue->set_key_format("?");         // It is necessary to fill this fields
     gpb_queue->set_value_format("?");
+    // TODO: @andreu check the value that version should be initialized to
+    gpb_queue->set_version(1);
 
 
     // Get a copy of the entire data model
@@ -533,6 +535,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
       // If the queue really exist, return all its content to be popped
       gpb::Queue *queue = get_queue(data.shared_object(), original_queue);
+
       if (queue) {
         gpb_queue->CopyFrom(*queue);
       }
@@ -540,7 +543,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       // Copy blocks newer than commit_id
       gpb::Queue *queue = get_queue(data.shared_object(), pop_queue);
       if (queue) {
-        for (int i = 0; i < queue->blocks_size(); i++) {
+        for (int i = 0; i < queue->blocks_size(); ++i) {
           if (queue->blocks(i).commit_id() > commit_id) {
             gpb_queue->add_blocks()->CopyFrom(queue->blocks(i));
           }
@@ -932,7 +935,6 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   if (version <= last_modules_version_) {
     return;   // Not necessary to update
   }
-
   last_modules_version_ = version;
 
   std::string directory = au::Singleton<SamsonSetup>::shared()->worker_modules_directory();

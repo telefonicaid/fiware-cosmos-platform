@@ -181,12 +181,10 @@ void cleanup(void) {
   // Stop engine
   engine::Engine::StopEngine();
 
-  /*
-   * if( delilahConsole )
-   * delilahConsole->stop();
-   */
+  // Stopping network interface
+  delilahConsole->network->reset();
 
-  // Wait all threads to finsih
+  // Wait all threads to finish
   au::Singleton<au::ThreadManager>::shared()->wait("Delilah");
 
   // Clear google protocol buffers library
@@ -198,8 +196,6 @@ void cleanup(void) {
     delete delilahConsole;
     delilahConsole = NULL;
   }
-
-  LM_T(LmtCleanup, ("destroying ModulesManager"));
 
   LM_T(LmtCleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
@@ -289,11 +285,10 @@ int main(int argC, const char *argV[]) {
     if (strlen(log_file) > 0) {
       local_log_file = log_file;
     } else {
-      local_log_file = au::str("%s/delilahLog_%s_%d", paLogDir, au::code64_str(
-                                 delilah_random_code).c_str(),
-                               (int)getpid());
-    } au::start_log_to_server(log_host, log_port,
-                              local_log_file);
+      local_log_file = au::str("%s/delilahLog_%s_%d", paLogDir, au::code64_str(delilah_random_code).c_str(),
+                               static_cast<int>(getpid()));
+    }
+    au::start_log_to_server(log_host, log_port,local_log_file);
   }
 
   lmAux((char *)"father");
@@ -351,16 +346,17 @@ int main(int argC, const char *argV[]) {
     delilahConsole->setNoOutput();
     size_t id = delilahConsole->runAsyncCommand(command);
 
+    LM_M(("runAsyncCommand returned for command:'%s', id:%d", command, id));
+
     if (id != 0) {
       // Wait until this operation is finished
       while (delilahConsole->isActive(id)) {
-        // Wait until command is finished
-        usleep(1000);
+        usleep(100000);
       }
+      LM_M(("Command activity is finished for command:'%s', id:%d", command, id));
 
       if (delilahConsole->hasError(id)) {
-        LM_E(("Error running '%s' \n", command ));
-        LM_E(("Error: %s",  delilahConsole->errorMessage(id).c_str()));
+        LM_E(("Error running command:'%s', error:'%s'\n", command, delilahConsole->errorMessage(id).c_str()));
       } else {
         printf("%s", delilahConsole->getOutputForComponent(id).c_str());
         fflush(stdout);
@@ -368,9 +364,11 @@ int main(int argC, const char *argV[]) {
     }
 
     // Disconnect delilah
+    LM_M(("Calling delilahConsole->disconnect()"));
     delilahConsole->disconnect();
 
-
+    // Stopping network connections
+    delilahConsole->stop();
     exit(0);
   }
 
@@ -414,7 +412,6 @@ int main(int argC, const char *argV[]) {
         line[ strlen(line) - 1] = '\0';
       }
 
-      // LM_M(("Processing line: %s", line ));
       num_line++;
 
       if (( line[0] != '#' ) && ( strlen(line) > 0)) {
@@ -423,15 +420,13 @@ int main(int argC, const char *argV[]) {
         std::cerr << au::str("Delilah id generated %lu\n", id);
 
         if (id != 0) {
-          // LM_M(("Waiting until delilah-component %ul finish", id ));
           // Wait until this operation is finished
           while (delilahConsole->isActive(id)) {
             usleep(1000);
           }
 
           if (delilahConsole->hasError(id)) {
-            LM_E(("Error running '%s' at line %d", line, num_line));
-            LM_E(("Error: %s",  delilahConsole->errorMessage(id).c_str()));
+            LM_E(("Error running '%s' at line %d, error:'%s'", line, num_line, delilahConsole->errorMessage(id).c_str()));
           }
         }
       }

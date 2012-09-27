@@ -216,10 +216,8 @@ void PopBlockRequestTask::run() {
     }
     source_data += size;      // Move pointer to the next
   }
-  
   // Sent response with computed buffer
   sent_response( buffer );
-  
 }
 
 void PopBlockRequestTask::sent_response(engine::BufferPointer buffer) {
@@ -232,6 +230,7 @@ void PopBlockRequestTask::sent_response(engine::BufferPointer buffer) {
   packet->message->set_delilah_component_id(delilah_component_id_);
   packet->message->set_pop_id(pop_id_);
   packet->set_buffer(buffer);
+  LM_T(LmtDelilahCommand, ("Sends notification for packet %s", Message::messageCode(packet->msgCode)));
 
   // Sending a engine notification to really sent this packet
   engine::Notification *notification = new engine::Notification(notification_send_packet);

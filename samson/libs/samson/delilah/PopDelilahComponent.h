@@ -126,6 +126,9 @@ public:
   // Function to check what to do with finish items
   void check();
 
+  bool started() const { return started_; }
+  void set_started(bool value) { started_ = value; }
+
 private:
 
   // Send pop request
@@ -149,6 +152,7 @@ private:
     packet->message->set_pop_id(item->pop_id());
     packet->message->set_block_id(item->block_id());
     packet->message->mutable_ranges()->CopyFrom(item->ranges());
+    LM_T(LmtDelilahComponent, ("pop request packet sent to worker_id_:%lu", worker_id_));
     delilah->network->Send(packet);
   }
 
@@ -180,6 +184,9 @@ private:
 
   // Pending write operations
   int num_pending_write_operations_;
+
+  // Flag to avoid finishing component before it was started
+  bool started_;
 };
 }
 

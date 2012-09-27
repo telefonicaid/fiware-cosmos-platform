@@ -41,7 +41,7 @@ std::string DelilahComponent::getTypeName() {
 
     case pop:                   return "[ Pop     ]";
 
-    case worker_command:        return "[ Comamnd ]";
+    case worker_command:        return "[ Command ]";
   }
 
   LM_X(1, ("Impossible error"));
@@ -82,12 +82,11 @@ void DelilahComponent::setComponentFinished() {
     return;
   }
 
-  // LM_M(("Set component finish (%s)" , concept.c_str() ));
-
+  LM_T(LmtDelilahComponent, ("component %d set to finished", id));
   component_finished = true;
   cronometer.Stop();
 
-  // Show ourput on screen
+  // Show output on screen
   if (print_output_at_finish) {
     delilah->showMessage(output.str());
   }
@@ -100,6 +99,7 @@ void DelilahComponent::setComponentFinishedWithError(std::string error_message) 
     return;
   }
 
+  LM_T(LmtDelilahComponent, ("component %d set to finished with error:'%s'", id, error_message.c_str()));
   component_finished = true;
   cronometer.Stop();
 

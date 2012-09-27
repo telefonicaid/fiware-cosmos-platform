@@ -725,7 +725,7 @@ size_t SamsonWorkerController::get_new_block_id() {
 
   if (rc) {
     // Some error...
-    LM_W(("Error creating node to get a new block id: %s", samson::zoo::str_error(rc).c_str()));
+    LM_W(("Error (%d) creating node to get a new block id: %s", rc, samson::zoo::str_error(rc).c_str()));
     return (size_t)-1;
   } else {
     // Created blocks
@@ -734,11 +734,14 @@ size_t SamsonWorkerController::get_new_block_id() {
     // Remove node
     rc = zoo_connection_->Remove(path);
     if (rc) {
-      LM_W(("Not possible to remove node at %s", path.c_str()));        // Check non zero id generated
+      LM_W(("Error (%d), not possible to remove node at %s", rc, path.c_str()));
     }
+    // Check non zero id generated
+    // TODO: @andreu please check if 0 ids are really wrong
+    // Why? Apparently, zookeeper is giving block ids starting from 0
     if (block_id == 0) {
-      LM_W(("Wrong block_id generated"));
-      return (size_t)-1;
+      LM_W(("Wrong block_id generated from path '%s'", path.c_str()));
+//      return (size_t)-1;
     }
 
     return block_id;

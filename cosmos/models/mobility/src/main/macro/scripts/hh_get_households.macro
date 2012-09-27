@@ -1,5 +1,0 @@
-#Script hh_get_households
-
-
-  hh_parse_households $1 $1_map  
- 

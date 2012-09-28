@@ -775,7 +775,7 @@ class SourceFunctionManager {
 
     template<class C>
     void Add(std::string name) {
-      factories_.insert(std::pair<std::string, factory_SourceFunction>(name, FactorySourceFunctionImpl<C>));
+      factories_.insert(std::pair<std::string, factory_SourceFunction>(name, &FactorySourceFunctionImpl<C>));
     }
 
     SourceFunction *getInstance(const std::string& name, au::vector<Source>& input_sources, au::ErrorManager *error) {

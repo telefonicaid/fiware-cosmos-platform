@@ -1,16 +1,17 @@
 --NAME--
 system.value operations - Simple operations with system.value data-type
 --DELILAH-INIT--
-remove_all_stream
+remove_all
 push quijote.txt input
+push_module ${SAMSON_HOME}/modules/libsystem.so
 flush_buffers
-run system.parse input lines
+run system.parse -input input -output lines
 flush_buffers
-run system.map lines words env:command " parse_words |  emit "
+run system.map -input lines -output words env:command " parse_words |  emit "
 flush_buffers
-run system.map words lengths env:command " select  strlen(key) , 1 | emit "
+run system.map -input words -output lengths env:command " select  strlen(key) , 1 | emit "
 flush_buffers
-run system.reduce lengths lengths_total env:command sum
+run system.reduce -input lengths -output lengths_total env:command sum
 flush_buffers
 pop lengths_total /tmp/lengths_total -force
 --SHELL--

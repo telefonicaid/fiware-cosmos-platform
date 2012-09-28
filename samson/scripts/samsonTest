@@ -59,6 +59,7 @@ function setup_test_vars
     fi
     TEST_DIFF=${TEST_BASENAME}.diff
     TEST_OUTPUT=${TEST_BASENAME}.out
+    TEST_OUTPUT_COMPLETE=${TEST_BASENAME}.out.complete
 
     if [ $HAVE_COMMAND -eq 0 -a $HAVE_SHELL -eq 0 -a $HAVE_SCRIPT -eq 0 ]; then
         echo "ERROR: $TEST_FILE is missing a test"
@@ -98,7 +99,7 @@ function execute_test
             cat  `basename $TEST_DELILAH_INIT`
         fi
         pushd  `dirname $TEST_DELILAH_INIT` > /dev/null
-        delilah ${SAMSON_LOG_LEVELS} -log_classic -log_port ${SAMSON_LOG_PORT_ENV}  -f `basename $TEST_DELILAH_INIT` ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} 2> `basename $TEST_DELILAH_INIT`.stderr > `basename $TEST_DELILAH_INIT`.stdout
+        delilah ${SAMSON_LOG_LEVELS} -log_classic -log_port ${SAMSON_LOG_PORT_ENV}  -f `basename $TEST_DELILAH_INIT` ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} 2> `basename $TEST_DELILAH_INIT`.stderr > `basename $TEST_DELILAH_INIT`.stdout
         if [ $? -ne 0 ]; then
             INIT_DELILAH_ERROR=1
         fi
@@ -123,7 +124,8 @@ function execute_test
         if [ $TEST_VERBOSE -eq 1 ]; then
             echo "Executing test command - ${TEST_COMMAND}"
         fi
-        delilah ${SAMSON_LOG_LEVELS} -log_classic -log_port ${SAMSON_LOG_PORT_ENV} -command  "$TEST_COMMAND" ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} | grep -v "^[MEW]:" > $TEST_OUTPUT 2>/dev/null
+        delilah -log_classic ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "$TEST_COMMAND"  > $TEST_OUTPUT_COMPLETE 2>/dev/null
+        grep -v "^[MEWT]:" $TEST_OUTPUT_COMPLETE > $TEST_OUTPUT 2>/dev/null
     fi
 
     # ------------------------------------------------
@@ -136,6 +138,9 @@ function execute_test
         if [ -f  $TEST_OUTPUT ]; then
             rm -f  $TEST_OUTPUT
         fi
+        if [ -f  $TEST_OUTPUT_COMPLETE ]; then
+            rm -f  $TEST_OUTPUT_COMPLETE
+        fi
         IFS="
 "
         for command in $(awk '{print $0}' $TEST_DELILAH_SCRIPT)
@@ -143,8 +148,9 @@ function execute_test
             if [ $TEST_VERBOSE -eq 1 ]; then
                 echo "Executing - ${command}"
             fi
-            delilah ${SAMSON_LOG_LEVELS} -log_classic -log_port ${SAMSON_LOG_PORT_ENV} -command "${command}" ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  | grep -v "^[MEW]:" >> $TEST_OUTPUT 2>/dev/null
+            delilah -log_classic -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "${command}"  >> $TEST_OUTPUT_COMPLETE 2>/dev/null
         done
+        grep -v "^[MEWT]:" $TEST_OUTPUT_COMPLETE > $TEST_OUTPUT 2>/dev/null
     fi
 
     # ------------------------------------------------
@@ -155,9 +161,11 @@ function execute_test
             echo "Executing test using bash"
         fi
         if [ $TEST_VERBOSE -eq 1 ]; then
-            bash -x $TEST_SHELL_SCRIPT | grep -v "^[MEW]:" > $TEST_OUTPUT 2>/dev/null
+            bash -x $TEST_SHELL_SCRIPT > $TEST_OUTPUT_COMPLETE 2>/dev/null
+            grep -v "^[MEWT]:" $TEST_OUTPUT_COMPLETE > $TEST_OUTPUT 2>/dev/null
         else
-            bash $TEST_SHELL_SCRIPT | grep -v "^[MEW]:" > $TEST_OUTPUT 2>/dev/null
+            bash $TEST_SHELL_SCRIPT > $TEST_OUTPUT_COMPLETE 2>/dev/null
+            grep -v "^[MEWT]:" $TEST_OUTPUT_COMPLETE > $TEST_OUTPUT 2>/dev/null
         fi
     fi
 
@@ -192,6 +200,7 @@ function execute_test
         # Clean up files for succesful test runs
         rm -f $TEST_EXPECT \
                 $TEST_OUTPUT \
+                $TEST_OUTPUT_COMPLETE \
                 $TEST_DELILAH_SCRIPT \
                 $TEST_SHELL_SCRIPT \
                 $TEST_BASENAME.diff

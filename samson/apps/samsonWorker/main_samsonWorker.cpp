@@ -362,9 +362,20 @@ int main(int argC, const char *argV[]) {
   // Run worker console ( -fg is activated )
   worker->runConsole();
 
+  LM_T(LmtCleanup, ("Returned from console (worker at %p)", worker));
   // Stop engine to clean up
   engine::Engine::StopEngine();
 
+  LM_T(LmtCleanup, ("Engine stopped (worker at %p)", worker));
+
+  // Closing network connections before the wait for the threads
+  LM_T(LmtCleanup, ("Stopping REST service (worker at %p)", worker));
+  worker->samson_worker_rest()->StopRestService();
+
+  LM_T(LmtCleanup, ("Stopping network listener (worker at %p)", worker));
+  worker->network()->stop();
+
+  LM_T(LmtCleanup, ("Waiting for threads (worker at %p)", worker));
   au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");
 
   // Shutdown all GPB stuff

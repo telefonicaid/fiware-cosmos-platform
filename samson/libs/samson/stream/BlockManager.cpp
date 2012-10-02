@@ -372,12 +372,12 @@ void BlockManager::update(BlockInfo &block_info) {
   }
 }
 
-gpb::Collection *BlockManager::getCollectionOfBlocks(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> BlockManager::getCollectionOfBlocks(const Visualization& visualization) {
   au::TokenTaker tt(&token_);  // Mutex protection for the list of blocks
 
   sort();
   
-  gpb::Collection *collection = new gpb::Collection();
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("blocks");
 
   size_t accumulated_size = 0;

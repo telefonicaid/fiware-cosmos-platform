@@ -13,24 +13,22 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "au/CommandLine.h"                 // au::CommandLine
 #include "au/containers/map.h"              // au::map
-#include "au/containers/vector.h"
+#include "au/containers/SharedPointer.h"
 #include "au/string.h"                      // au::Format
-
-#include "engine/NotificationListener.h"    // engine::NotificationListener
-
-#include "samson/common/Visualitzation.h"
-#include "samson/common/samson.pb.h"        // network::...
-#include "samson/module/Environment.h"      // samson::Environment
-#include "samson/module/ModulesManager.h"   // samson::ModulesManager
-
-#include "samson/stream/WorkerTaskManager.h"  // samson::stream::WorkerTaskManager
 
 #include "engine/Buffer.h"                  // engine::Buffer
 #include "engine/NotificationListener.h"    // engine::NotificationListener
+#include "engine/NotificationListener.h"    // engine::NotificationListener
 
+#include "samson/common/samson.pb.h"        // network::...
+#include "samson/common/Visualitzation.h"
+#include "samson/module/Environment.h"      // samson::Environment
+#include "samson/module/ModulesManager.h"   // samson::ModulesManager
+#include "samson/stream/WorkerTaskManager.h"  // samson::stream::WorkerTaskManager
 
 namespace samson {
 class SamsonWorker;
@@ -80,7 +78,7 @@ class WorkerCommand : public engine::NotificationListener {
   int num_pending_disk_operations;
 
   // Collections added in the response message
-  au::vector< samson::gpb::Collection > collections;
+  std::vector< au::SharedPointer<samson::gpb::Collection> > collections;
 
 
   friend class WorkerCommandManager;
@@ -117,7 +115,7 @@ private:
   stream::StreamOperationBase *getStreamOperation(Operation *op);
 
   // Create collection for buffers (Memory manager )
-  gpb::Collection *getCollectionOfBuffers(const Visualization& visualization);
+  au::SharedPointer <gpb::Collection> getCollectionOfBuffers(const Visualization& visualization);
 
   // Function to check everything is finished
   void checkFinish();

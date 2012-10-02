@@ -90,7 +90,7 @@ public:
   std::string getPrompt();
 
   // Get a collection with a single record with information for this worker...
-  gpb::Collection *getWorkerCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> getWorkerCollection(const Visualization& visualization);
 
   bool IsReady();      // Method to access if worker is ready
   bool IsConnected();      // Method to access if worker is ready

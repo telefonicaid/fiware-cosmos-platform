@@ -1,19 +1,18 @@
+#include "samson/delilah/WorkerCommandDelilahComponent.h"      // Own interface
 
-
+#include <utility>                               // std::pair
 
 #include "au/CommandLine.h"                      // samson::CommandLine
 #include "au/containers/Uint64Vector.h"
 
 #include "engine/Buffer.h"                       // engine::Buffer
 
-#include "DelilahCommandCatalogue.h"
-#include "DelilahComponent.h"
-#include "WorkerCommandDelilahComponent.h"      // Own interface
 #include "samson/common/EnvironmentOperations.h"  // copyEnviroment()
 #include "samson/common/MessagesOperations.h"
 #include "samson/delilah/Delilah.h"              // samson::Delilah
+#include "samson/delilah/DelilahCommandCatalogue.h"
+#include "samson/delilah/DelilahComponent.h"
 #include "samson/network/Packet.h"               // samson::Packet
-
 
 namespace samson {
 WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _command, engine::BufferPointer buffer)
@@ -77,7 +76,7 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
 
 WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent() {
   responses.clearMap();
-  collections.clearMap();
+  collections.clear();
   if (command_instance_) {
     delete command_instance_;
   }
@@ -157,7 +156,13 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
     std::string name = packet->message->collection(i).name();
     std::string title = packet->message->collection(i).title();
 
-    gpb::Collection *collection = collections.findOrCreate(name);
+    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+    std::map< std::string, au::SharedPointer<gpb::Collection> >::iterator it_collection = collections.find(name);
+    if (it_collection != collections.end()) {
+      collection = it_collection->second;
+    } else {
+      collections[name] = collection;
+    }
     collection->set_name(name);
     collection->set_title(title);
 
@@ -190,7 +195,7 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
     }
 
     // Print the result in a table if necessary
-    au::map<std::string, gpb::Collection >::iterator it;
+    std::map<std::string, au::SharedPointer<gpb::Collection> >::iterator it;
     for (it = collections.begin(); it != collections.end(); it++) {
       print_content(it->second);
     }
@@ -208,7 +213,7 @@ au::tables::Table *WorkerCommandDelilahComponent::getMainTable() {
     return NULL;
   }
 
-  gpb::Collection *collection = collections.begin()->second;
+  au::SharedPointer<gpb::Collection> collection = collections.begin()->second;
 
   if (collection->record_size() == 0) {
     return NULL;
@@ -218,7 +223,7 @@ au::tables::Table *WorkerCommandDelilahComponent::getMainTable() {
   return getTable(collection);
 }
 
-au::tables::Table *WorkerCommandDelilahComponent::getStaticTable(gpb::Collection *collection) {
+au::tables::Table *WorkerCommandDelilahComponent::getStaticTable(au::SharedPointer<gpb::Collection> collection) {
   std::string table_definition;
 
   for (int i = 0; i < collection->record(0).item_size(); i++) {
@@ -252,7 +257,7 @@ au::tables::Table *WorkerCommandDelilahComponent::getStaticTable(gpb::Collection
   return table;
 }
 
-au::tables::Table *WorkerCommandDelilahComponent::getTable(gpb::Collection *collection) {
+au::tables::Table *WorkerCommandDelilahComponent::getTable(au::SharedPointer<gpb::Collection> collection) {
   // Get static transformation of table
   au::tables::Table *table = getStaticTable(collection);
 
@@ -265,7 +270,7 @@ au::tables::Table *WorkerCommandDelilahComponent::getTable(gpb::Collection *coll
   return selected_table;
 }
 
-void WorkerCommandDelilahComponent::print_content(gpb::Collection *collection) {
+void WorkerCommandDelilahComponent::print_content(au::SharedPointer<gpb::Collection> collection) {
   if (collection->record_size() == 0) {
     if (!hidden) {
       delilah->showWarningMessage("No records\n");

@@ -1,12 +1,7 @@
 --NAME--
 samsonSetup - show
 --SHELL--
-# Trying to fix the setup uncertainty for all environments
-if [ -f ${SAMSON_WORKING}/etc/setup.txt ] ; then mv ${SAMSON_WORKING}/etc/setup.txt  ${SAMSON_WORKING}/etc/setup.txt.old ; fi
-cp ../setup.txt ${SAMSON_WORKING}/etc/setup.txt
 samsonSetup -show
-# Restoring the old setup (if any)
-if [ -f ${SAMSON_WORKING}/etc/setup.txt.old ] ; then mv ${SAMSON_WORKING}/etc/setup.txt.old  ${SAMSON_WORKING}/etc/setup.txt ; fi
 --EXPECT--
 /----------------------------------------------------------------------------------------------------------------------------------------------------\
 | Samson setup parameters                                                                                                                            |

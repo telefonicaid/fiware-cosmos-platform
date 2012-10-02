@@ -1,3 +1,4 @@
+#include "WorkerCommand.h"     // Own interface
 
 #include <algorithm>
 
@@ -10,24 +11,15 @@
 #include "engine/Notification.h"
 #include "engine/ProcessManager.h"
 
-
 #include "samson/common/EnvironmentOperations.h"        // copyEnvironment
 #include "samson/common/SamsonSetup.h"                  // SamsonSetup
-
+#include "samson/delilah/DelilahCommandCatalogue.h"
 #include "samson/network/Packet.h"                      // samson::Packet
-
-#include "samson/worker/SamsonWorker.h"
-
+#include "samson/stream/Block.h"
 #include "samson/stream/BlockList.h"
 #include "samson/stream/BlockManager.h"
 #include "samson/stream/StreamOperationInfo.h"
-
-#include "samson/stream/Block.h"
-#include "samson/stream/BlockList.h"
-
-#include "samson/delilah/DelilahCommandCatalogue.h"
-
-#include "WorkerCommand.h"     // Own interface
+#include "samson/worker/SamsonWorker.h"
 
 namespace samson {
 class KVRangeAndSize {
@@ -178,7 +170,7 @@ WorkerCommand::~WorkerCommand() {
   if (originalWorkerCommand) {
     delete originalWorkerCommand;  // Remove collections created for this command
   }
-  collections.clearVector();
+  collections.clear();
 }
 
 void WorkerCommand::setSamsonWorker(SamsonWorker *_samsonWorker) {
@@ -326,6 +318,8 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
   // unset_stream_operation_property
   // add_queue_connection ( pending )
   // rm_queue_connection ( pending )
+
+  // TODO: @jges review list of commands
 
   if (samsonWorker->data_model()->isValidCommand(main_command)) {
     std::string caller = au::str("Command %s from delilah %s"
@@ -495,7 +489,7 @@ void WorkerCommand::run() {
 
   // Query commands
   if (main_command == "ls") {
-    gpb::Collection *c = samsonWorker->data_model()->getCollectionForQueues(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->data_model()->getCollectionForQueues(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -503,7 +497,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_queue_blocks") {
-    gpb::Collection *c = samsonWorker->data_model()->getCollectionForQueuesWithBlocks(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->data_model()->getCollectionForQueuesWithBlocks(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -511,7 +505,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_last_data_commits") {
-    gpb::Collection *c =  samsonWorker->data_model()->getLastCommitsCollection(visualization);
+    au::SharedPointer<gpb::Collection> c =  samsonWorker->data_model()->getLastCommitsCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -519,7 +513,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_last_tasks") {
-    gpb::Collection *c =  samsonWorker->task_manager()->getLastTasksCollection(visualization);
+    au::SharedPointer<gpb::Collection> c =  samsonWorker->task_manager()->getLastTasksCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -528,7 +522,7 @@ void WorkerCommand::run() {
 
 
   if (main_command == "ls_push_operations") {
-    gpb::Collection *c = samsonWorker->worker_block_manager()->getCollectionForPushOperations(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->worker_block_manager()->getCollectionForPushOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -536,7 +530,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_distribution_operations") {
-    gpb::Collection *c = samsonWorker->worker_block_manager()->GetCollectionForDistributionOperations(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->worker_block_manager()->GetCollectionForDistributionOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -544,7 +538,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_block_requests") {
-    gpb::Collection *c = samsonWorker->worker_block_manager()->GetCollectionForBlockRequests(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->worker_block_manager()->GetCollectionForBlockRequests(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -553,7 +547,7 @@ void WorkerCommand::run() {
 
 
   if (main_command == "ls_blocks") {
-    gpb::Collection *c = stream::BlockManager::shared()->getCollectionOfBlocks(visualization);
+    au::SharedPointer<gpb::Collection> c = stream::BlockManager::shared()->getCollectionOfBlocks(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -561,7 +555,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_buffers") {
-    gpb::Collection *c = getCollectionOfBuffers(visualization);
+    au::SharedPointer<gpb::Collection> c = getCollectionOfBuffers(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -580,8 +574,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_stream_operations") {
-    gpb::Collection *c;
-    c = samsonWorker->data_model()->getCollectionForStreamOperations(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->data_model()->getCollectionForStreamOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -589,8 +582,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_batch_operations") {
-    gpb::Collection *c;
-    c = samsonWorker->data_model()->getCollectionForBatchOperations(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->data_model()->getCollectionForBatchOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -599,8 +591,7 @@ void WorkerCommand::run() {
 
 
   if (main_command == "ps_stream_operations") {
-    gpb::Collection *c;
-    c = samsonWorker->task_manager()->getCollectionForStreamOperationsInfo(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->task_manager()->getCollectionForStreamOperationsInfo(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -609,7 +600,7 @@ void WorkerCommand::run() {
 
 
   if (main_command == "ls_queue_connections") {
-    gpb::Collection *c = samsonWorker->data_model()->getCollectionForQueueConnections(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->data_model()->getCollectionForQueueConnections(visualization);
     c->set_title(command);
     collections.push_back(c);
 
@@ -618,7 +609,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ps_tasks") {
-    gpb::Collection *c = samsonWorker->task_manager()->getCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->task_manager()->getCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -627,7 +618,7 @@ void WorkerCommand::run() {
 
   if (main_command == "ls_workers") {
     // Add the ps stream
-    gpb::Collection *c = samsonWorker->getWorkerCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->getWorkerCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -635,21 +626,21 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_modules") {
-    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getModulesCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = au::Singleton<ModulesManager>::shared()->getModulesCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
     return;
   }
   if (main_command == "ls_operations") {
-    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getOperationsCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = au::Singleton<ModulesManager>::shared()->getOperationsCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
     return;
   }
   if (main_command == "ls_datas") {
-    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getDatasCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = au::Singleton<ModulesManager>::shared()->getDatasCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -657,8 +648,8 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_connections") {
-    gpb::Collection *c = samsonWorker->network()->getConnectionsCollection(visualization);
-    if (c) {
+    au::SharedPointer<gpb::Collection> c = samsonWorker->network()->getConnectionsCollection(visualization);
+    if (c != NULL) {
       c->set_title(command);
       collections.push_back(c);
     }
@@ -667,7 +658,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ps_workers") {
-    gpb::Collection *c = samsonWorker->workerCommandManager()->getCollectionOfWorkerCommands(visualization);
+    au::SharedPointer<gpb::Collection> c = samsonWorker->workerCommandManager()->getCollectionOfWorkerCommands(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -768,7 +759,7 @@ void WorkerCommand::run() {
     lmPos = lmLogLineGet(NULL, (char *)date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos,
                          NULL);
 
-    samson::gpb::Collection *collection = new samson::gpb::Collection();
+    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
     collection->set_name("Log File Lines");
     collection->set_title("Log File Lines");
 
@@ -810,7 +801,7 @@ void WorkerCommand::run() {
     } else if (lmVerbose  == true) {
       vLevel = 1;
     } else {  vLevel = 0; }
-    samson::gpb::Collection *collection = new  samson::gpb::Collection();
+    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
     collection->set_title("Logs");
     collection->set_name("logs");
     samson::gpb::CollectionRecord *record = collection->add_record();
@@ -890,8 +881,10 @@ void WorkerCommand::run() {
         vLevel = 2;
       } else if (lmVerbose  == true) {
         vLevel = 1;
-      } else { vLevel = 0; }
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      } else {
+        vLevel = 0;
+      }
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Verbose");
       collection->set_name("verbose");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -918,7 +911,7 @@ void WorkerCommand::run() {
       LM_F(("DEBUG is turned ON"));
       LM_D(("DEBUG is ON"));
     } else if (subcommand == "get") {
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Debug");
       collection->set_name("debug_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -947,7 +940,7 @@ void WorkerCommand::run() {
       lmReads = true;
       LM_F(("READS ON"));
     } else if (subcommand == "get") {
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Reads");
       collection->set_name("reads_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -976,7 +969,7 @@ void WorkerCommand::run() {
       lmWrites = true;
       LM_F(("WRITES ON"));
     } else if (subcommand == "get") {
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Writes");
       collection->set_name("writes_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -1014,7 +1007,7 @@ void WorkerCommand::run() {
       char levels[1024];
       lmTraceGet(levels);
 
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Trace information");
       collection->set_name("trace_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -1341,9 +1334,8 @@ void WorkerCommand::fill(samson::gpb::CollectionRecord *record, const Visualizat
   add(record, "error", error.GetMessage(), "left,different");
 }
 
-gpb::Collection *WorkerCommand::getCollectionOfBuffers(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
+au::SharedPointer<gpb::Collection> WorkerCommand::getCollectionOfBuffers(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("buffers");
 
   au::tables::Table table = engine::Engine::memory_manager()->getTableOfBuffers();

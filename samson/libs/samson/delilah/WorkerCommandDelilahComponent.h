@@ -3,10 +3,12 @@
 #define _H_WORKER_COMMAND_DELILAH_COMPONENT
 
 #include <cstring>
+#include <map>
 
+#include "au/console/CommandCatalogue.h"
+#include "au/containers/SharedPointer.h"
 #include "au/Cronometer.h"          // au::CronometerSystem
 #include "au/ErrorManager.h"        // au::ErrorManager
-#include "au/console/CommandCatalogue.h"
 
 #include "samson/common/samson.pb.h"
 #include "samson/delilah/DelilahComponent.h"
@@ -71,15 +73,15 @@ public:
   au::tables::Table *getMainTable();
 
   // Transform a collection received from workers to a table ( to be printed on screen )
-  static au::tables::Table *getStaticTable(gpb::Collection *collection);
+  static au::tables::Table *getStaticTable(au::SharedPointer<gpb::Collection> collection);
 
 private:
 
-  // Internal function to print content of recevied collection
-  void print_content(gpb::Collection *collection);
+  // Internal function to print content of received collection
+  void print_content(au::SharedPointer<gpb::Collection> collection);
 
   // Transform a collection into a table
-  au::tables::Table *getTable(gpb::Collection *collection);
+  au::tables::Table *getTable(au::SharedPointer<gpb::Collection> collection);
 
   std::string command;
 
@@ -92,7 +94,7 @@ private:
   au::map<size_t, WorkerResponese > responses;      // Map with all the responses from workers
 
   // Collections reported by workers
-  au::map<std::string, gpb::Collection > collections;
+  std::map<std::string, au::SharedPointer<gpb::Collection> > collections;
 
   std::string main_command;
 

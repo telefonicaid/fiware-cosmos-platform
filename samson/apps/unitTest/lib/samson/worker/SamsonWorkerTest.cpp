@@ -5,7 +5,8 @@
 #include "samson/worker/SamsonWorker.h"
 #include "unitTest/TestClasses.h"
 
-
+// Test disabled because of the thread count error, pending to be fixed
+// TODO: @andreu Remove DISABLED when running threads be solved
 TEST(DISABLED_samson_worker_SamsonWorker, basic) {
   EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 
@@ -26,7 +27,7 @@ TEST(DISABLED_samson_worker_SamsonWorker, basic) {
   engine::Engine::DestroyEngine();
 
   // Make sure no background threads are left there
-  // TODO: read and write threads still running.
+  // TODO: @andreu read and write threads still running.
   // I have tried to stop worker network interface, but unsuccessfully
   EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }

@@ -59,7 +59,7 @@ public:
   void update(BlockInfo &block_info);
 
   // Get collection of blocks for remote listing
-  gpb::Collection *getCollectionOfBlocks(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> getCollectionOfBlocks(const Visualization& visualization);
 
   size_t get_scheduled_write_size() {
     return scheduled_write_size;

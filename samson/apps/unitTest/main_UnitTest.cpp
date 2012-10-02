@@ -69,7 +69,7 @@ int main(int argC, char **argV) {
   lmAssertAtExit = true;
 
   // Start login to server ( this avoids warning )
-  au::start_log_to_server("localhost", AU_LOG_SERVER_PORT, "/tmp/smson_unitTest");
+  au::start_log_to_server("localhost", AU_LOG_SERVER_PORT, "/tmp/samson_unitTest");
 
   // Run all tests
   ::testing::InitGoogleTest(&argC, argV);

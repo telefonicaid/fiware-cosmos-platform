@@ -1,12 +1,11 @@
-
+#include "samson/worker/WorkerCommandManager.h"  // Own interface
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
 
 #include "samson/common/NotificationMessages.h"
+#include "samson/worker/WorkerCommand.h"
 
-#include "WorkerCommand.h"
-#include "WorkerCommandManager.h"  // Own interface
 
 
 namespace samson {
@@ -66,9 +65,8 @@ void WorkerCommandManager::notify(engine::Notification *notification) {
   }
 }
 
-samson::gpb::Collection *WorkerCommandManager::getCollectionOfWorkerCommands(const Visualization& visualization) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
-
+au::SharedPointer<gpb::Collection> WorkerCommandManager::getCollectionOfWorkerCommands(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("worker_commands");
 
   au::map< size_t, WorkerCommand >::iterator it;

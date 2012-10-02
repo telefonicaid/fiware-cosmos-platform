@@ -102,10 +102,7 @@ public:
 
   // Stop all threads ( just before calling delete )
   void stop() {
-    std::vector <std::string> connections = network->getAllConnectionNames();
-    for (size_t i = 0; (i < connections.size()); ++i) {
-      network->Remove(connections[i]);
-    }
+    network->ClearConnections();
   }
 
   // Connect and disconnect to a cluster

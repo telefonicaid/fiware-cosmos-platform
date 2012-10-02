@@ -1,9 +1,8 @@
-#include "au/network/SocketConnection.h"
+#include "samson/network/NetworkManager.h"  // Own interface
 
-#include "NetworkManager.h"  // Own interface
+#include "au/network/SocketConnection.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
-#include "samson/network/NetworkConnection.h"
 #include "samson/network/NetworkConnection.h"
 
 namespace samson {
@@ -199,9 +198,8 @@ void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
   }
 }
 
-gpb::Collection *NetworkManager::getConnectionsCollection(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
+au::SharedPointer<gpb::Collection> NetworkManager::getConnectionsCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("connections");
 
   au::TokenTaker tt(&token_connections_);

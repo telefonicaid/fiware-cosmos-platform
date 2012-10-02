@@ -1,19 +1,15 @@
-
-
-
 #ifndef _H_SAMSON_COMMON_NETWORK
 #define _H_SAMSON_COMMON_NETWORK
 
-#include "engine/NotificationListener.h"
-
+#include "au/containers/SharedPointer.h"
 #include "au/network/NetworkListener.h"
+
+#include "engine/NotificationListener.h"
 
 #include "samson/common/NotificationMessages.h"
 #include "samson/common/ports.h"
-#include "samson/common/status.h"
-
 #include "samson/common/samson.pb.h"
-
+#include "samson/common/status.h"
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/NetworkManager.h"
 #include "samson/network/PacketQueue.h"
@@ -59,7 +55,7 @@ public:
   void SendToAllWorkers(const PacketPointer& packet, std::set<size_t>& workers);
 
   // Get a collection of current network to show a list of them on a console/ rest / etc..
-  gpb::Collection *getConnectionsCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> getConnectionsCollection(const Visualization& visualization);
 
   // Get my node identifier
   NodeIdentifier  getMynodeIdentifier();

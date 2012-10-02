@@ -3,6 +3,7 @@
 
 #include "au/containers/map.h"
 #include "au/containers/set.h"
+#include "au/containers/SharedPointer.h"
 
 #include "engine/Buffer.h"
 #include "engine/NotificationListener.h"
@@ -67,9 +68,9 @@ public:
   void Reset();
 
   // Collections for all internall elements
-  gpb::Collection *GetCollectionForDistributionOperations(const Visualization& visualization);
-  gpb::Collection *GetCollectionForBlockRequests(const Visualization& visualization);
-  gpb::Collection *getCollectionForPushOperations(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForDistributionOperations(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForBlockRequests(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> getCollectionForPushOperations(const Visualization& visualization);
 
 private:
 

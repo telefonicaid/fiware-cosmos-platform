@@ -834,9 +834,8 @@ std::string SamsonWorker::getPrompt() {
   return "SamsonWorker> ";
 }
 
-gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
+au::SharedPointer<gpb::Collection> SamsonWorker::getWorkerCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("workers");
 
   gpb::CollectionRecord *record = collection->add_record();

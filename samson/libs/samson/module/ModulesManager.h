@@ -6,21 +6,20 @@
 
 
 #include "au/CommandLine.h"          /* AUCommandLine                            */
-#include "au/ErrorManager.h"         /* Lock                            */
-#include "au/Singleton.h"
 #include "au/containers/map.h"       // au::map
+#include "au/containers/SharedPointer.h"
+#include "au/ErrorManager.h"         /* Lock                            */
 #include "au/mutex/Token.h"          /* Lock                            */
+#include "au/Singleton.h"
 #include "au/string.h"               // au::xml_...
 
 #include "samson/common/coding.h"    // ss:KVInfo
 #include "samson/common/samson.pb.h"  // samson::network::...
 #include "samson/common/status.h"
-
+#include "samson/common/Visualitzation.h"
 #include "samson/module/Factory.h"      // au::Factory
 #include "samson/module/KVFormat.h"     // samson::KVFormat
 #include "samson/module/Module.h"    // samson::Module
-
-#include "samson/common/Visualitzation.h"
 
 namespace samson {
 class Data;
@@ -37,9 +36,9 @@ public:
   void clearModulesManager();
 
   // Get collection for queries
-  samson::gpb::Collection *getModulesCollection(const Visualization& visualitzation);
-  samson::gpb::Collection *getDatasCollection(const Visualization& visualitzation);
-  samson::gpb::Collection *getOperationsCollection(const Visualization& visualitzation);
+  au::SharedPointer<gpb::Collection> getModulesCollection(const Visualization& visualitzation);
+  au::SharedPointer<gpb::Collection> getDatasCollection(const Visualization& visualitzation);
+  au::SharedPointer<gpb::Collection> getOperationsCollection(const Visualization& visualitzation);
 
   // Local table of modules
   std::string GetTableOfModules();

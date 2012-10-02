@@ -3,28 +3,29 @@
  * FILE                 ModulesManager.cpp -
  *
  */
+
+#include "samson/module/ModulesManager.h"       /* Own interface                            */
+
 #include <dirent.h>
 #include <dlfcn.h>
 #include <fnmatch.h>
 #include <iomanip>
-#include <ios>
-#include <iostream>
-#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "logMsg/logMsg.h"
-#include "logMsg/traceLevels.h"                 // Lmt...
+#include <ios>
+#include <iostream>
+#include <string>
 
 #include "au/mutex/TokenTaker.h"                // au::TokenTake
 #include "au/tables/Table.h"
 
-#include "samson/common/MessagesOperations.h"
-#include "samson/common/MessagesOperations.h"   // evalHelpFilter(.)
-#include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
-#include "samson/common/samsonDirectories.h"    /* SAMSON_MODULES_DIRECTORY                 */
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"                 // Lmt...
 
-#include "samson/module/ModulesManager.h"       /* Own interface                            */
+#include "samson/common/MessagesOperations.h"   // evalHelpFilter(.)
+#include "samson/common/samsonDirectories.h"    /* SAMSON_MODULES_DIRECTORY                 */
+#include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
 #include <samson/module/Data.h>                 /* samson::system::UInt ... */
 #include <samson/module/Module.h>
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                           */
@@ -221,9 +222,8 @@ Status ModulesManager::loadModule(std::string path, Module **module, std::string
     
   }
 
-samson::gpb::Collection *ModulesManager::getModulesCollection(const Visualization& visualitzation) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
-
+au::SharedPointer<gpb::Collection> ModulesManager::getModulesCollection(const Visualization& visualitzation) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("modules");
   au::TokenTaker tt(&token_modules, "ModulesManager::getModulesCollection");
   au::map< std::string, Module >::iterator it;
@@ -244,9 +244,8 @@ samson::gpb::Collection *ModulesManager::getModulesCollection(const Visualizatio
   return collection;
 }
 
-samson::gpb::Collection *ModulesManager::getDatasCollection(const Visualization& visualization) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
-
+au::SharedPointer<gpb::Collection> ModulesManager::getDatasCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("datas");
   au::TokenTaker tt(&token_modules, "ModulesManager::getDatasCollection");
   au::map< std::string, Module >::iterator it;
@@ -273,9 +272,8 @@ samson::gpb::Collection *ModulesManager::getDatasCollection(const Visualization&
   return collection;
 }
 
-samson::gpb::Collection *ModulesManager::getOperationsCollection(const Visualization& visualization) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
-
+au::SharedPointer<gpb::Collection> ModulesManager::getOperationsCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("operations");
   au::TokenTaker tt(&token_modules, "ModulesManager::getOperationsCollection");
   au::map< std::string, Module >::iterator it;

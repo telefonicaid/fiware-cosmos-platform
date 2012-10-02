@@ -1,8 +1,7 @@
+#include "samson/stream/WorkerTaskManager.h"   // Own interface
 
-
-#include "WorkerTask.h"                         // samson::stream::WorkerTask
-#include "WorkerTaskManager.h"   // Own interface
 #include <fnmatch.h>
+
 #include <sstream>                              // std::ostringstream
 #include <vector>
 
@@ -14,13 +13,11 @@
 #include "samson/common/NotificationMessages.h"  // notification_process_request
 #include "samson/common/SamsonSetup.h"          // SamsonSetup
 #include "samson/module/ModulesManager.h"
-
+#include "samson/stream/BlockManager.h"
 #include "samson/stream/StreamOperationInfo.h"
-
+#include "samson/stream/WorkerSystemTask.h"        // WorkerSystemTask
+#include "samson/stream/WorkerTask.h"                         // samson::stream::WorkerTask
 #include "samson/worker/SamsonWorker.h"
-
-#include "BlockManager.h"
-#include "WorkerSystemTask.h"        // WorkerSystemTask
 
 #define notification_run_stream_tasks_if_necessary "notification_run_stream_tasks_if_necessary"
 
@@ -213,8 +210,8 @@ void WorkerTaskManager::Reset() {
   }
 }
 
-samson::gpb::Collection *WorkerTaskManager::getLastTasksCollection(const ::samson::Visualization& visualization) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
+au::SharedPointer<gpb::Collection> WorkerTaskManager::getLastTasksCollection(const ::samson::Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("last_tasks");
 
   std::list<WorkerTaskLog>::iterator it;
@@ -232,9 +229,8 @@ samson::gpb::Collection *WorkerTaskManager::getLastTasksCollection(const ::samso
   return collection;
 }
 
-samson::gpb::Collection *WorkerTaskManager::getCollection(const ::samson::Visualization& visualization) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
-
+au::SharedPointer<gpb::Collection> WorkerTaskManager::getCollection(const ::samson::Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("ps_tasks");
 
   std::vector< au::SharedPointer<WorkerTaskBase> > running_tasks = running_tasks_.items();
@@ -359,7 +355,7 @@ void WorkerTaskManager::review_stream_operations() {
   }
 }
 
-gpb::Collection *WorkerTaskManager::getCollectionForStreamOperationsInfo(const ::samson::Visualization& visualization)
+au::SharedPointer<gpb::Collection>WorkerTaskManager::getCollectionForStreamOperationsInfo(const ::samson::Visualization& visualization)
 {
   // Template-based creation of collection based on map
   return getCollectionForMap("stream operations"

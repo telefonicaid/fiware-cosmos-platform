@@ -5,11 +5,10 @@
 #include <fnmatch.h>
 
 #include "au/containers/map.h"
-
-#include "samson/common/Visualitzation.h"
-#include "samson/common/samson.pb.h"    // network:...
+#include "au/containers/SharedPointer.h"
 
 #include "samson/common/samson.pb.h"    // network::
+#include "samson/common/Visualitzation.h"
 #include "samson/module/KVFormat.h"     // KVFormat
 
 namespace samson {
@@ -49,10 +48,9 @@ bool name_match(const char *pattern, C _value) {
 
 // Get a collection from a map
 template <typename K, typename V>
-gpb::Collection *getCollectionForMap(const std::string& title,
+au::SharedPointer<gpb::Collection>getCollectionForMap(const std::string& title,
                                      std::map<K, V *>& m, const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name(title);
 
   typename std::map<K, V * >::iterator iter;

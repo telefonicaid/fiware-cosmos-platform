@@ -6,16 +6,15 @@
 
 #include "au/containers/Dictionary.h"
 #include "au/containers/Queue.h"
+#include "au/containers/SharedPointer.h"
 
 #include "engine/NotificationListener.h"  // engine::NotificationListener
 
-#include "samson/module/ModulesManager.h"
-#include "samson/module/Operation.h"
-
-#include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
 #include "samson/common/status.h"
-
+#include "samson/common/Visualitzation.h"
+#include "samson/module/ModulesManager.h"
+#include "samson/module/Operation.h"
 #include "samson/stream/WorkerSystemTask.h"
 #include "samson/stream/WorkerTask.h"
 
@@ -65,15 +64,15 @@ public:
   void Reset();
 
   // Get a collection for monitoring
-  samson::gpb::Collection *getCollection(const ::samson::Visualization& visualization);
-  samson::gpb::Collection *getLastTasksCollection(const ::samson::Visualization& visualization);
+  au::SharedPointer<gpb::Collection>getCollection(const ::samson::Visualization& visualization);
+  au::SharedPointer<gpb::Collection>getLastTasksCollection(const ::samson::Visualization& visualization);
 
 
   size_t get_num_running_tasks();
   size_t get_num_tasks();
 
   // Get collection to list in delilah
-  gpb::Collection *getCollectionForStreamOperationsInfo(const ::samson::Visualization& visualization);
+  au::SharedPointer<gpb::Collection>getCollectionForStreamOperationsInfo(const ::samson::Visualization& visualization);
 
 private:
 

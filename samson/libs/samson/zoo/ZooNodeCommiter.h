@@ -103,9 +103,8 @@ public:
     }
   }
 
-  gpb::Collection *getLastCommitsCollection(const Visualization& visualization) {
-    gpb::Collection *collection = new gpb::Collection();
-
+  au::SharedPointer<gpb::Collection> getLastCommitsCollection(const Visualization& visualization) {
+    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
     collection->set_name("last_commits");
 
     int num = 0;

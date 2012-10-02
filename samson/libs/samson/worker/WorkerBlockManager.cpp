@@ -1,11 +1,9 @@
-
-
 #include "WorkerBlockManager.h"  // Own interface
-
-#include "samson/worker/SamsonWorker.h"
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
+
+#include "samson/worker/SamsonWorker.h"
 
 namespace samson {
 WorkerBlockManager::WorkerBlockManager(SamsonWorker *samson_worker) {
@@ -76,11 +74,11 @@ void WorkerBlockManager::ReviewDistributionOperations() {
   }
 }
 
-gpb::Collection *WorkerBlockManager::GetCollectionForDistributionOperations(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> WorkerBlockManager::GetCollectionForDistributionOperations(const Visualization& visualization) {
   return getCollectionForMap("distribution_blocks", distribution_operations_, visualization);
 }
 
-gpb::Collection *WorkerBlockManager::GetCollectionForBlockRequests(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> WorkerBlockManager::GetCollectionForBlockRequests(const Visualization& visualization) {
   return getCollectionForMap("block_requests", block_requests_, visualization);
 }
 
@@ -272,9 +270,8 @@ void WorkerBlockManager::receive_push_block_commit(size_t delilah_id, size_t pus
   return;
 }
 
-gpb::Collection *WorkerBlockManager::getCollectionForPushOperations(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
+au::SharedPointer<gpb::Collection> WorkerBlockManager::getCollectionForPushOperations(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("push operations");
 
   au::set<PushOperation>::iterator it;

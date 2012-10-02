@@ -13,6 +13,7 @@
  */
 
 #include "au/containers/map.h"
+#include "au/containers/SharedPointer.h"
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
@@ -54,7 +55,7 @@ public:
   void getInfo(std::ostringstream& output);
 
   // Get Collection of worker_commands ( for ls_worker_commands )
-  samson::gpb::Collection *getCollectionOfWorkerCommands(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> getCollectionOfWorkerCommands(const Visualization& visualization);
 };
 }
 

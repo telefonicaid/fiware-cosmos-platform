@@ -1,12 +1,11 @@
-
-#include "samson/common/MessagesOperations.h"
-#include "samson/common/gpb_operations.h"
+#include "samson/network/CommonNetwork.h"  // Own interface
 
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
-#include "samson/network/NetworkConnection.h"
 
-#include "CommonNetwork.h"  // Own interface
+#include "samson/common/gpb_operations.h"
+#include "samson/common/MessagesOperations.h"
+#include "samson/network/NetworkConnection.h"
 
 namespace samson {
 CommonNetwork::CommonNetwork(NodeIdentifier my_node_identifier) : token_("CommonNetwork") {
@@ -334,7 +333,7 @@ au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
   return table;
 }
 
-gpb::Collection *CommonNetwork::getConnectionsCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> CommonNetwork::getConnectionsCollection(const Visualization& visualization) {
   return NetworkManager::getConnectionsCollection(visualization);
 }
 

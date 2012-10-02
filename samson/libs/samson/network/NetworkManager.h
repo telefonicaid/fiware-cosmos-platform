@@ -4,17 +4,19 @@
 #ifndef _H_SAMSON_NETWORK_MANAGER
 #define _H_SAMSON_NETWORK_MANAGER
 
-#include "au/mutex/Token.h"
-#include "au/mutex/TokenTaker.h"
+#include <vector>
 
 #include "au/containers/map.h"
+#include "au/containers/SharedPointer.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
+#include "au/network/NetworkListener.h"
 #include "au/tables/Table.h"
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
 #include "engine/NotificationListener.h"
 
-#include "au/network/NetworkListener.h"
 #include "samson/network/Packet.h"
 #include "samson/network/PacketQueue.h"
 
@@ -74,6 +76,14 @@ public:
   // Remove all unconnected connections
   void RemoveDisconnectedConnections();
 
+  // Remove all connections hold.
+  void ClearConnections() {
+    std::vector<std::string> connections = getAllConnectionNames();
+    for (size_t i = 0; (i < connections.size()); ++i) {
+      Remove(connections[i]);
+    }
+  }
+
   // Check connection
   bool isConnected(std::string connection_name);
 
@@ -93,7 +103,7 @@ public:
   std::string str();
 
   // Get a collection for all connections
-  gpb::Collection *getConnectionsCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> getConnectionsCollection(const Visualization& visualization);
 
   // Reset all connections
   void reset();

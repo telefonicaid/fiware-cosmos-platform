@@ -317,9 +317,9 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
 // au::Token token_lookupList;
 // BlockLookupList* lookupList;
 
-std::string Block::lookup(const char *key, std::string outputFormat) {
-  // Mutex preotection
-  au::TokenTaker tt(&token_lookupList);
+  void Block::lookup(const char *key, au::SharedPointer<au::network::RESTServiceCommand> command ) {
+    
+  au::TokenTaker tt(&token_lookupList);  // Mutex protection
 
   // We should check if the block can be locked in memory...
 
@@ -331,13 +331,12 @@ std::string Block::lookup(const char *key, std::string outputFormat) {
       LM_E(("Error creating BlockLookupList (%s)", lookupList->error.GetMessage().c_str()));
       delete lookupList;
       lookupList = NULL;
-      return au::xml_simple("error", "Error creating BlockLookupList");
+      command->AppendFormatedError("Error creating BlockLookupList");
+      return;
     }
-  } else {
-    LM_M(("lookupList already created for block_id %lu", block_id_ ));
   }
-
-  return lookupList->lookup(key, outputFormat);
+  
+    lookupList->lookup(key, command );
 }
 
 std::string Block::str_state() {

@@ -53,6 +53,9 @@ public:
   // Get workers that should have a copy of a block in this range ( I am excluded from the list )
   au::Uint64Set GetWorkerIdsForRange(KVRange range);
 
+  // Get ALL workers taht should have a copy of a block
+  au::Uint64Set GetAllWorkerIdsForRange(KVRange range);
+
   // Get all the workers identifiers
   std::set<size_t> GetWorkerIds();
 

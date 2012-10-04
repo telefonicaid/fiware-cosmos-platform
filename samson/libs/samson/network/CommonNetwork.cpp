@@ -146,7 +146,7 @@ void CommonNetwork::review_connections() {
 
 void CommonNetwork::notify(engine::Notification *notification) {
   if (notification->isName(notification_send_packet)) {
-    au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
+    au::SharedPointer<Packet> packet = notification->dictionary().Get<Packet>("packet");
 
     if (packet == NULL) {
       LM_W(("Notification notification_send_packet without packet"));
@@ -158,7 +158,7 @@ void CommonNetwork::notify(engine::Notification *notification) {
   }
 
   if (notification->isName("send_to_all_delilahs")) {
-    au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
+    au::SharedPointer<Packet> packet = notification->dictionary().Get<Packet>("packet");
 
     if (packet != NULL) {
       SendToAllDelilahs(packet);
@@ -350,7 +350,7 @@ void CommonNetwork::schedule_receive(PacketPointer packet) {
   // Create a notification containing the packet we have just received
   engine::Notification *notification = new engine::Notification(notification_packet_received);
 
-  notification->dictionary().Set("packet", packet.static_pointer_cast<engine::NotificationObject>());
+  notification->dictionary().Set<Packet>("packet", packet );
   engine::Engine::shared()->notify(notification);
 }
 
@@ -382,9 +382,10 @@ std::string CommonNetwork::getClusterSetupStr() {
     au::StringVector values;
     values.Push(worker_id);
 
-    std::string host = au::str("%s:%d"
+    std::string host = au::str("%s:%d (rest :%d)"
                                , cluster_information_->workers(i).worker_info().host().c_str()
                                , cluster_information_->workers(i).worker_info().port()
+                               , cluster_information_->workers(i).worker_info().port_web()
                                );
     values.push_back(host);
 

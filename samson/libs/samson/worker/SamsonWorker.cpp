@@ -15,7 +15,6 @@
 #include "au/S.h"
 #include "au/ThreadManager.h"
 #include "au/file.h"
-#include "au/log/LogToServer.h"
 #include "au/network/RESTServiceCommand.h"
 #include "au/string.h"                            // au::Format
 #include "au/tables/pugixml.hpp"                  // pugixml
@@ -81,9 +80,8 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
   state_ = unconnected;
   state_message_ = "Worker starting...";
 
-  listen(notification_samson_worker_send_trace);              // Listen this notification to send traces
+  listen(notification_samson_worker_send_message);              // Listen this notification to send traces
   listen(notification_update_status);                         // Notification to update state
-  listen("rest_operation_stream_manager");                    // Notification with rest commands
   listen("notification_cluster_info_changed_in_worker");      // Cluster setup changes
   listen("samson_worker_review");                             // Review notification ( in this review all connections are stablished )
   listen(notification_packet_received);
@@ -302,7 +300,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     size_t worker_id = packet->from.id;
 
     // Schedule operations to send this block to this worker
-    if (stream::BlockManager::shared()->getBlock(block_id) == NULL) {
+    if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
       LM_W(("Received a Message::BlockRequest for unknown block %lu", block_id));
 
       // Return with an error
@@ -353,19 +351,19 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     p->message->set_pop_id(packet->message->pop_id());
 
     // Schedule operations to send this block to this user
-    if (stream::BlockManager::shared()->getBlock(block_id) == NULL) {
+    if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
       p->message->mutable_error()->set_message("Unknown block");
     } else {
       // Schedule task
-      LM_W(("********* Scheduling WorkerSystemTask"));
-      au::SharedPointer<stream::WorkerSystemTask> task;
-      task.Reset(new stream::PopBlockRequestTask(task_manager_->getNewId()
+      au::SharedPointer<stream::WorkerTaskBase> task;
+      task.Reset(new stream::PopBlockRequestTask( this
+                                                 , task_manager_->getNewId()
                                                  , block_id
                                                  , ranges
                                                  , delilah_id
                                                  , delilah_component_id
                                                  , pop_id));
-      task_manager_->Add(task.static_pointer_cast<stream::WorkerTaskBase>());
+      task_manager_->Add(task);
     }
 
     // Send confirmation packet
@@ -569,13 +567,14 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     std::string worker_command_id = au::str("%s_%lu", au::code64_str(delilah_id).c_str(), delilah_component_id);
 
-    WorkerCommand *workerCommand = new WorkerCommand(worker_command_id
+    WorkerCommand *workerCommand = new WorkerCommand( this
+                                                     , worker_command_id
                                                      , delilah_id
                                                      , delilah_component_id
                                                      , packet->message->worker_command()
                                                      );
 
-    workerCommandManager_->addWorkerCommand(workerCommand);
+    workerCommandManager_->Add(workerCommand);
     return;
   }
 
@@ -611,7 +610,7 @@ std::string SamsonWorker::str_state() {
 // Receive notifications
 void SamsonWorker::notify(engine::Notification *notification) {
   if (notification->isName(notification_packet_received)) {
-    au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
+    au::SharedPointer<Packet> packet = notification->dictionary().Get<Packet>("packet");
     if (packet == NULL) {
       LM_W(("Received a notification to receive a packet without a packet"));
     }
@@ -657,27 +656,6 @@ void SamsonWorker::notify(engine::Notification *notification) {
     LM_W(("Cluster setup change: Assgined ranges %s", ranges.str().c_str()));
     return;
   }
-
-  if (notification->isName("rest_operation_stream_manager")) {
-    LM_X(1, ("Rest still not implemented"));
-    /*
-     *
-     * au::network::RESTServiceCommand* command = (au::network::RESTServiceCommand*)notification->object();
-     * if( command == NULL )
-     * {
-     * LM_W(("rest_connection notification without a command. This is probably an error..."));
-     * return;
-     * }
-     *
-     * // Sync-Engine implementation of the rest command
-     * streamManager->process( command );             // Get this from the stream manager
-     *
-     * // Mark as finish and wake up thread to answer this connection
-     * command->finish();
-     */
-    return;
-  }
-
 
   if (notification->isName(notification_update_status)) {
     LM_M(( str_state().c_str()));
@@ -727,11 +705,16 @@ void SamsonWorker::notify(engine::Notification *notification) {
     return;
   }
 
-  if (notification->isName(notification_samson_worker_send_trace)) {
+  if (notification->isName(notification_samson_worker_send_message)) {
     std::string message = notification->environment().Get("message", "No message coming with trace-notification");
     std::string context = notification->environment().Get("context", "?");
     std::string type    = notification->environment().Get("type", "message");
-    network_->SendAlertToAllDelilahs(type, context, message);
+
+    size_t delilah_id = notification->environment().Get("delilah_id", (size_t) -1 );
+    if( delilah_id == (size_t)-1)
+      network_->SendAlertToAllDelilahs(type, context, message);
+    else
+      network_->SendAlertToDelilah(delilah_id , type, context, message);
     return;
   }
 
@@ -763,8 +746,6 @@ void SamsonWorker::autoComplete(au::ConsoleAutoComplete *info) {
     info->add("exit");
     info->add("threads");
     info->add("cluster");
-    info->add("show_logs");
-    info->add("hide_logs");
     info->add("show_engine_statistics");
     info->add("show_engine_last_items");
     info->add("show_engine_elements");
@@ -792,15 +773,6 @@ void SamsonWorker::evalCommand(std::string command) {
   }
   if (main_command == "threads") {
     writeOnConsole(au::Singleton<au::ThreadManager>::shared()->str());
-  }
-
-  if (main_command == "show_logs") {
-    au::add_log_plugin(this);
-    writeOnConsole("OK\n");
-  }
-  if (main_command == "hide_logs") {
-    au::remove_log_plugin(this);
-    writeOnConsole("OK\n");
   }
 
   if (main_command == "show_engine_current_element") {
@@ -858,8 +830,8 @@ gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualiz
     double off_time = engine::Engine::disk_manager()->off_time();
     ::samson::add(record, "On time", on_time, "f=double,differet");
     ::samson::add(record, "Off time", off_time, "f=double,differet");
-    ::samson::add(record, "BM writing",  stream::BlockManager::shared()->get_scheduled_write_size(), "f=uint64,sum");
-    ::samson::add(record, "BM reading",  stream::BlockManager::shared()->get_scheduled_read_size(), "f=uint64,sum");
+    ::samson::add(record, "BM writing",  stream::BlockManager::shared()->scheduled_write_size(), "f=uint64,sum");
+    ::samson::add(record, "BM reading",  stream::BlockManager::shared()->scheduled_read_size(), "f=uint64,sum");
     double usage =  engine::Engine::disk_manager()->on_off_activity();
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
   } else {
@@ -950,7 +922,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
     size_t block_id = queue->blocks(i).block_id();
 
     // Recover block
-    stream::BlockPointer block = stream::BlockManager::shared()->getBlock(block_id);
+    stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
 
     if (block == NULL) {
       LM_W(("Block %lu necessary for a module not found. Skipping..."));

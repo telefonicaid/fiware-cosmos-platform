@@ -23,6 +23,7 @@ public:
   void stop();
 
   void SendAlertToAllDelilahs(std::string type, std::string context, std::string message);
+  void SendAlertToDelilah( size_t delilah_id , std::string type, std::string context, std::string message);
 
   // NetworkManager interface
   void newSocketConnection(au::NetworkListener *listener, au::SocketConnection *socket_connetion);

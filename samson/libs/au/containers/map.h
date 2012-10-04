@@ -141,7 +141,7 @@ public:
     std::set<K> keys_to_remove;
 
     for (iter = std::map<K, V *, _Compare >::begin(); iter != std::map<K, V *, _Compare >::end(); iter++) {
-      if (iter->second->isFinished()) {
+      if (iter->second->finished()) {
         keys_to_remove.insert(iter->first);
       }
     }
@@ -154,6 +154,20 @@ public:
 
     return keys_to_remove.size();
   }
+  
+  void RemoveKeysNotIncludedIn( const std::set<K>& keys )
+  {
+    typename std::map<K, V *, _Compare >::iterator iter;
+    for (iter = std::map<K, V *, _Compare >::begin(); iter != std::map<K, V *, _Compare >::end(); ) {
+      if (keys.find(iter->first) == keys.end() )
+      {
+        std::map<K, V *, _Compare >::erase( iter++ );
+      }
+      else
+        ++iter;
+    }
+  }
+
 
   V *extractFromMap(const K& key) {
     typename std::map<K, V *, _Compare >::iterator iter = std::map<K, V *, _Compare>::find(key);

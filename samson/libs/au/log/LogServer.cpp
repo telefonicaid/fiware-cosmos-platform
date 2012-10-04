@@ -1,5 +1,5 @@
 
-#include "au/log/log_server_common.h"
+#include "au/log/LogCommon.h"
 
 #include "LogServer.h"  // Own interface
 

@@ -20,7 +20,7 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   processIsolated = _processIsolated;
 
   // Get the assignated shared memory region
-  item = engine::SharedMemoryManager::shared()->getSharedMemoryChild(processIsolated->shm_id);
+  item = engine::SharedMemoryManager::shared()->getSharedMemoryChild(processIsolated->get_shm_id());
 
   // General output buffer
   buffer = item->data;
@@ -32,7 +32,7 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   if (size == 0) {
     LM_X(1, ("Wrong size in a ProcessWriter operation"));  // Number of outputs
   }
-  num_outputs = processIsolated->num_outputs;
+  num_outputs = processIsolated->get_num_outputs();
   num_hg_divisions = processIsolated->num_hg_divisions;
 
   // Hash code for the outputs
@@ -41,7 +41,7 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   outputKeyDataInstance = (DataInstance **)malloc(sizeof(DataInstance *) * num_outputs);
   outputValueDataInstance = (DataInstance **)malloc(sizeof(DataInstance *) * num_outputs);
 
-  if (num_outputs != (int)processIsolated->outputFormats.size()) {
+  if (num_outputs != (int)processIsolated->get_outputFormats().size()) {
     LM_E((
            "Not possible to get the hash-code of the data instances used at the output since output formats are not defined"));
     processIsolated->setUserError(
@@ -49,8 +49,8 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
     return;
   } else {
     for (int i = 0; i < (int)num_outputs; i++) {
-      std::string key_data = processIsolated->outputFormats[i].keyFormat;
-      std::string value_data = processIsolated->outputFormats[i].valueFormat;
+      std::string key_data = processIsolated->get_outputFormats()[i].keyFormat;
+      std::string value_data = processIsolated->get_outputFormats()[i].valueFormat;
 
       Data *keyData =  au::Singleton<ModulesManager>::shared()->getData(key_data);
       Data *valueData =  au::Singleton<ModulesManager>::shared()->getData(value_data);
@@ -214,7 +214,7 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
   }
 
   if (value->getHashType() != keyValueHash[output].value_hash) {
-    std::string data_name = processIsolated->outputFormats[output].valueFormat;
+    std::string data_name = processIsolated->get_outputFormats()[output].valueFormat;
 
     std::ostringstream error_message;
     error_message << "Wrong data at output # " << (output + 1) << "/" << num_outputs;
@@ -267,7 +267,7 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
 }
 
 void ProcessWriter::flushBuffer(bool finish) {
-  // Send code to be understoo
+  // Send code to the platform
   if (finish) {
     processIsolated->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH);
   } else {
@@ -291,7 +291,7 @@ ProcessTXTWriter::ProcessTXTWriter(ProcessIsolated *_workerTaskItem) {
   workerTaskItem = _workerTaskItem;
 
   // Get the assignated shared memory region
-  item = engine::SharedMemoryManager::shared()->getSharedMemoryChild(workerTaskItem->shm_id);
+  item = engine::SharedMemoryManager::shared()->getSharedMemoryChild(workerTaskItem->get_shm_id());
 
   // Size if the firt position in the buffer
   size = (size_t *)item->data;

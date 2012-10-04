@@ -42,16 +42,13 @@ public:
   WorkerCommandManager(SamsonWorker *_samsonWorker);
 
   // Add a worker command to this stream manager
-  void addWorkerCommand(WorkerCommand *workerCommand);
+  void Add(WorkerCommand *workerCommand);
 
   // Cancel worker command
-  bool cancel(std::string worker_command_id);
+  bool Cancel(std::string worker_command_id);
 
   // Notification system from engine
   void notify(engine::Notification *notification);
-
-  // XML report
-  void getInfo(std::ostringstream& output);
 
   // Get Collection of worker_commands ( for ls_worker_commands )
   samson::gpb::Collection *getCollectionOfWorkerCommands(const Visualization& visualization);

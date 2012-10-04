@@ -41,8 +41,7 @@ au::Status RESTServiceCommand::Read(
         socket_connection->host_and_port().c_str()));
 
   // Read a line from socket
-  au::Status s = socket_connection->ReadLine(
-    request_line_, sizeof(request_line_), 10);
+  au::Status s = socket_connection->ReadLine(request_line_, sizeof(request_line_), 10);
 
   if (s == au::OK) {
     LM_T(LmtRest, ("REST FIRST Head line: %s", request_line_ ));
@@ -73,25 +72,18 @@ au::Status RESTServiceCommand::Read(
 
 
     // Get path componenets and format
-    path_components_ = StringVector::ParseFromString(resource_,
-                                                     '/');
+    path_components_ = StringVector::ParseFromString(resource_,'/');
 
     // Extract extension from the last one
     format_ = "";                 // Default values
     if (path_components_.size() > 0) {
-      size_t pos =
-        path_components_[path_components_.size() - 1].rfind(".");
+      size_t pos = path_components_[path_components_.size() - 1].rfind(".");
       if (pos != std::string::npos) {
-        format_ =
-          path_components_[path_components_.size() - 1].substr(
-            pos + 1);
+        format_ = path_components_[path_components_.size() - 1].substr(pos + 1);
 
-        if ((format_ == "json") || (format_ == "xml") ||
-            (format_ == "html") || (format_ == "thtml"))
+        if ((format_ == "json") || (format_ == "xml") || (format_ == "txt")|| (format_ == "html") || (format_ == "thtml"))
         {
-          path_components_[path_components_.size() - 1]
-            = path_components_[path_components_.size() -
-                               1].substr(0, pos);
+          path_components_[path_components_.size() - 1]= path_components_[path_components_.size()-1].substr(0, pos);
         }
       }
     }
@@ -255,11 +247,9 @@ void RESTServiceCommand::AppendFormatedElement(
   std::ostringstream output;
 
   if (format_ == "xml") {
-    au::xml_simple(output, name,
-                   value);
+    au::xml_simple(output, name,value);
   } else if (format_ == "json") {
-    au::json_simple(output, name,
-                    value);
+    au::json_simple(output, name,value);
   } else if (format_ == "html") {
     output << "<h1>" << name << "</h1>" << value;
   } else {

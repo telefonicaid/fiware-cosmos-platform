@@ -13,7 +13,7 @@ namespace au {
  * class au::SharedPointer
  *
  * Shared pointer class
- *
+ * Andreu: This class cannot use mutex since it is used in fork-multithread environments
  * ------------------------------------------------------------------------*/
 
 class SharedReferenceCounter {
@@ -29,27 +29,20 @@ public:
   }
 
   void Retain() {
-    au::TokenTaker tt(&token_);
-
     reference_counter_++;
   }
 
   int Release() {
-    au::TokenTaker tt(&token_);
-
     return --reference_counter_;
   }
 
   int count() {
-    au::TokenTaker tt(&token_);
-
     return reference_counter_;
   }
 
 private:
 
   int reference_counter_;
-  au::Token token_;  // Mutex protection for multi-thread
 };
 
 template <class C>

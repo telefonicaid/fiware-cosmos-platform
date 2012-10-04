@@ -11,6 +11,7 @@
 #include "samson/common/samson.pb.h"
 
 #include "samson/worker/DistributionOperation.h"
+#include "samson/worker/BlockRequest.h"
 #include "samson/worker/PushOperation.h"
 
 /*
@@ -69,8 +70,12 @@ public:
   // Collections for all internall elements
   gpb::Collection *GetCollectionForDistributionOperations(const Visualization& visualization);
   gpb::Collection *GetCollectionForBlockRequests(const Visualization& visualization);
-  gpb::Collection *getCollectionForPushOperations(const Visualization& visualization);
+  gpb::Collection *GetCollectionForPushOperations(const Visualization& visualization);
 
+  // Check if a particular block is being distributed
+  // Crapy solution: check if it is not included in any distribution mechanism
+  bool IsBlockBeingDistributed( size_t block_id );
+  
 private:
 
   void ReviewDistributionOperations();

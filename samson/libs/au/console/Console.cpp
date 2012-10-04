@@ -686,17 +686,5 @@ void handle_tstp(int sig) {
   }
 }
 
-void Console::process_log(au::SharedPointer<Log>log) {
-  // Print a warning on screen
-
-  std::string type = log->Get("type");
-
-  if (( type == "E" ) || ( type == "X" )) {
-    writeErrorOnConsole("TRACE: " + log_formatter.get(log) + "\n");
-  } else if (type == "W") {
-    writeWarningOnConsole("TRACE: " + log_formatter.get(log) + "\n");
-  } else {
-    writeOnConsole("TRACE: " + log_formatter.get(log) + "\n");
-  }
-}
+  
 }

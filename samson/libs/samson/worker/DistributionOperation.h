@@ -34,6 +34,12 @@ public:
   // Get information for delilah listing
   void fill(gpb::CollectionRecord *record, const Visualization& visualization);
 
+  // Accessorts
+  size_t block_id() const
+  {
+    return block_id_;
+  }
+  
 private:
 
   SamsonWorker *samson_worker_;               // Pointer to samsonWorker to interact with network, worker_controller,...
@@ -46,32 +52,6 @@ private:
   au::Cronometer cronometer_;                 // Cronometer to reset operations
 };
 
-
-class BlockRequest {
-public:
-
-  BlockRequest(SamsonWorker *samson_worker, size_t block_id, size_t worker_id);
-  ~BlockRequest() {
-  }
-
-  size_t creation_time() {
-    return cronometer_.seconds();
-  }
-
-  // Get information for delilah listing
-  void fill(gpb::CollectionRecord *record, const Visualization& visualization) {
-    add(record, "block_id", block_id_, "different");
-    add(record, "target_worker_id", worker_id_, "different");
-    add(record, "time", cronometer_.str(), "different");
-  }
-
-private:
-
-  SamsonWorker *samson_worker_;      // Pointer to samsonWorker to interact with network, worker_controller,...
-  size_t block_id_;                  // Identifier of this block
-  size_t worker_id_;                 // Worker where we have sent this data
-  au::Cronometer cronometer_;        // Cronometer since creation ( to reset )
-};
 }
 
 #endif  // ifndef _H_SAMSON_DISTRIBUTION_BLOCKS

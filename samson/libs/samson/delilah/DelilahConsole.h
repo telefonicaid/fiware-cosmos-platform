@@ -61,7 +61,6 @@ class DelilahConsole : public au::Console, public Delilah {
 
   // Flag to indicate if we are shoing traces
   bool show_alerts;
-  bool show_local_logs;
   bool show_server_logs;
 
   // Flag to show on screen certain messages

@@ -6,9 +6,8 @@
 #include "au/log/LogFormatter.h"
 #include "au/log/LogServer.h"
 #include "au/log/TableLogFormatter.h"
-#include "au/log/log_server_common.h"
+#include "au/log/LogCommon.h"
 
-#define DEF_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"
 
 char format[1024];
 char pattern[1024];
@@ -24,7 +23,7 @@ char str_date[1024];
 PaArgument paArgs[] =
 {
   { "-format",        format,                   "",                     PaString,                     PaOpt,
-    _i DEF_FORMAT,    PaNL,
+    _i AU_LOG_DEFAULT_FORMAT,    PaNL,
     PaNL,
     "Log file to scan"                         },
   { "-pattern",       pattern,                  "",                     PaString,                     PaOpt,
@@ -115,7 +114,7 @@ int main(int argC, const char *argV[]) {
   table_log_formater.set_as_multi_session(is_multi_session);
   table_log_formater.set_limit(limit);
 
-  table_log_formater.init(&error);
+  table_log_formater.init(error);
 
   if (error.IsActivated()) {
     LM_X(1, ("Error: %s", error.GetMessage().c_str()));

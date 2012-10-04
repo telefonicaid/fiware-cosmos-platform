@@ -41,14 +41,8 @@ class NetworkManager {
 
 public:
 
-  NetworkManager() : token_connections_("token_connections_") {
-  }
-
-  ~NetworkManager() {
-    // Remove all pending packets to be sent
-    multi_packet_queue.Clear();
-  }
-
+  NetworkManager() : token_connections_("token_connections_") {}
+  ~NetworkManager();
   // Unique method to add connections
   void AddConnection(NodeIdentifier new_node_identifier, au::SocketConnection *socket_connection);
 

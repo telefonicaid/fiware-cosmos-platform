@@ -20,7 +20,6 @@
 #include "logMsg/traceLevels.h"    // LmtModuleManager
 
 namespace samson {
-#define TRACE_CHANNEL -1   // Handy definition to emit traces at the output
 
 /**
  *

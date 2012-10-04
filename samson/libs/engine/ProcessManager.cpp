@@ -108,10 +108,8 @@ void ProcessManager::Cancel(au::SharedPointer<ProcessItem> item) {
     Notification *notification = new Notification(notification_process_request_response);
     notification->AddEngineListeners(item->listeners());
 
-    au::SharedPointer<NotificationObject> notification_object;
-    notification_object = item.static_pointer_cast<NotificationObject>();
-
-    notification->dictionary().Set("process_item", notification_object);
+    // Add the item as an object in the internal dictionary
+    notification->dictionary().Set<ProcessItem>("process_item", item);
 
     notification->environment().Add(item->environment());
     notification->environment().Set("error", "Canceled");
@@ -173,9 +171,7 @@ void ProcessManager::run_worker() {
     Notification *notification = new Notification(notification_process_request_response);
 
     // Add item itself as an object inside the notification
-    au::SharedPointer<NotificationObject> notification_object;
-    notification_object = item.static_pointer_cast<NotificationObject>();
-    notification->dictionary().Set("process_item", notification_object);
+    notification->dictionary().Set<ProcessItem>("process_item", item);
 
     // Add targets to be notified
     notification->AddEngineListeners(item->listeners());

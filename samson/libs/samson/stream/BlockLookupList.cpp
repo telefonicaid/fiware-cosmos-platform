@@ -28,6 +28,11 @@
 namespace samson {
 namespace stream {
 BlockLookupList::BlockLookupList(Block *block) {
+
+  // Get id of the block
+  block_id_ = block->block_id();
+  
+  // Data pointer
   char *data = block->buffer()->data();
 
   // Vector of KVInfo per hash-group
@@ -157,16 +162,17 @@ int compare_binary_keys(char *key, size_t key_size, char *key2, size_t key_size2
   return 0;
 }
 
-std::string BlockLookupList::lookup(const char *key, std::string outputFormat) {
+void BlockLookupList::lookup(const char *key, au::SharedPointer< au::network::RESTServiceCommand> command ) {
+  
   int hashGroup;
   int keySize;
   int testKeySize;
   char keyName[1024];
-  Data *keyData             = au::Singleton<ModulesManager>::shared()->getData(kvFormat.keyFormat);
-  DataInstance *keyDataInstance     = (DataInstance *)keyData->getInstance();
+  Data *keyData = au::Singleton<ModulesManager>::shared()->getData(kvFormat.keyFormat);
+  DataInstance *keyDataInstance = (DataInstance *)keyData->getInstance();
   int compare;
 
-
+  // Set instance from provided string
   keyDataInstance->setFromString(key);
 
   keySize      = keyDataInstance->serialize(keyName);
@@ -202,41 +208,10 @@ std::string BlockLookupList::lookup(const char *key, std::string outputFormat) {
             valueDataInstance->getName().c_str(),
             valueDataInstance->getType()));
 
-      if (outputFormat == "xml") {
-        std::ostringstream output;
-        output << "<key>\n";
-        output << keyDataInstance->strXML();
-        output << "</key>\n";
-        output << "<value>\n";
-        output << valueDataInstance->strXML();
-        output << "</value>\n";
-        return output.str();
-      }
-      if (outputFormat == "html") {
-        std::ostringstream output;
-        output << "<h1>key</h1>\n";
-        output << keyDataInstance->strHTML(2);
-        output << "<h1>value</h1>\n";
-        output << valueDataInstance->strHTML(2);
-        return output.str();
-      }
-      if (outputFormat == "thtml") {
-        std::ostringstream output;
+      // Output key and Value
+      command->AppendFormatedElement("key", keyDataInstance->strFormatted(command->format()));
+      command->AppendFormatedElement("value", valueDataInstance->strFormatted(command->format()));
 
-        output << keyDataInstance->strHTMLTable("key");
-
-        output << valueDataInstance->strHTMLTable("value");
-
-        return output.str();
-      } else {
-        std::ostringstream output;
-        output << "{ \"key\" : ";
-        output << keyDataInstance->strJSON();
-        output << ",\"value\" : ";
-        output << valueDataInstance->strJSON();
-        output << " } ";
-        return output.str();
-      }
     }
 
     if (compare < 0) {                     // keyName < testKey => Go to the left - to 'smaller' key names
@@ -246,11 +221,14 @@ std::string BlockLookupList::lookup(const char *key, std::string outputFormat) {
     } testIx = (endIx - startIx) / 2 + startIx;
 
     if (startIx > endIx) {                 // Not found
-      if (outputFormat == "xml") {
-        return au::xml_simple("error", au::str("Key %s not found", key));
-      } else {
-        return std::string("  \"error\" : \"") + au::str("Key %s not found\"\r\n", key);
-      }
+      command->AppendFormatedError(au::str("Key %s [HG %d  Index <%d:%d> ] not found inside block %lu [Size %lu]"
+                                           ,key
+                                           ,hashGroup
+                                           ,hashInfo[hashGroup].startIx
+                                           ,hashInfo[hashGroup].endIx
+                                           ,block_id_
+                                           ,size ));
+      return;
     }
   }
 }

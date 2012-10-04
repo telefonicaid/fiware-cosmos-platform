@@ -13,7 +13,6 @@
 #include "samson/module/KVFormat.h"     // KVFormat
 
 namespace samson {
-bool filterName(const std::string& name, const std::string& begin, const std::string& end);
 
 template <typename C>
 void add(samson::gpb::CollectionRecord *record, std::string name, C _value, std::string format) {

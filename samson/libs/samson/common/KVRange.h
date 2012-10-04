@@ -63,21 +63,28 @@ struct KVRange {
       return KVRange(0, 0);
     }
 
-
-
-
-
     if (range.hg_begin >= hg_end) {
       return KVRange(0, 0);
     }
 
-
-
-
-
-
     return KVRange(std::max(hg_begin, range.hg_begin)
                    , std::min(hg_end, range.hg_end));
+  }
+  
+  std::vector<KVRange> divide( int factor ) const
+  {
+    // Max factor
+    if( factor > (hg_end-hg_begin) )
+      factor = hg_end - hg_begin;
+    
+    // Divide range in a number of sub ranges
+    int length = ( hg_end - hg_begin ) / factor;
+  
+    std::vector<KVRange> ranges;
+    for ( int i = 0 ; i < (factor-1) ; i++ )
+      ranges.push_back( KVRange( hg_begin + i*length , hg_begin + (i+1)*length  ));
+    ranges.push_back( KVRange(hg_begin + (factor-1)*length , hg_end ));
+    return ranges;
   }
 };
 
@@ -299,6 +306,21 @@ public:
       total_size += ranges_[i].size();
     }
     return total_size;
+  }
+  
+  KVRange max_range() const
+  {
+    if( ranges_.size() == 0)
+      return KVRange(0,0);
+    KVRange range = ranges_[0];
+    for ( size_t i = 1 ; i < ranges_.size() ; i++ )
+    {
+      if( ranges_[i].hg_begin < range.hg_begin )
+        range.hg_begin = ranges_[i].hg_begin;
+      if( ranges_[i].hg_end > range.hg_end )
+        range.hg_end = ranges_[i].hg_end;
+    }
+    return range;
   }
 
 private:

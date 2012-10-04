@@ -10,6 +10,7 @@
 namespace samson {
 PushOperation::PushOperation(SamsonWorker *samson_worker
                              , size_t block_id
+                             , size_t block_size
                              , size_t delilah_id
                              , size_t push_id
                              , engine::BufferPointer buffer
@@ -17,6 +18,7 @@ PushOperation::PushOperation(SamsonWorker *samson_worker
   samson_worker_ = samson_worker;
 
   block_id_   = block_id;
+  block_size_   = block_size;
   delilah_id_ = delilah_id;
   push_id_    = push_id;
   for (size_t i = 0; i < queues.size(); i++) {
@@ -88,7 +90,7 @@ void PushOperation::commit() {
   // Prepare commit command
   CommitCommand commit_command;
   for (size_t i = 0; i < queues_.size(); i++) {
-    commit_command.AddBlock(queues_[i], block_id_, header.getKVFormat(), header.range, header.info);
+    commit_command.AddBlock(queues_[i], block_id_, block_size_ , header.getKVFormat(), header.range, header.info);
   }
   std::string command = commit_command.GetCommitCommand();
 

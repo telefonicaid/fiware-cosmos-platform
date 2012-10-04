@@ -5,16 +5,26 @@
 
 #include "au/containers/SharedPointer.h"
 #include "au/log/Log.h"
-
-#define DEFAULT_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"
+#include "au/log/LogCommon.h"
 
 namespace au {
 class LogFormatter {
 public:
 
-  LogFormatter(const std::string& _definition = DEFAULT_FORMAT);
-  std::string get(au::SharedPointer<Log> log) const;
+  // Constructor with initial format
+  LogFormatter(const std::string& definition = AU_LOG_DEFAULT_FORMAT );
 
+  // Modify the format used here
+  void set_format( const std::string& definition );
+
+  // Parse a log to get a string
+  std::string get(au::SharedPointer<Log> log ) const;
+  
+  std::string definition()
+  {
+    return definition_;
+  }
+  
 private:
   std::string definition_;
   std::vector<std::string> fields_;

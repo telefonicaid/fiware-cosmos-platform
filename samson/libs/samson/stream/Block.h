@@ -87,7 +87,7 @@ public:
   std::string str_state();
 
   // Lookup for a particular queue ( lookupList is created if necessary )
-  std::string lookup(const char *key, std::string outputFormat);
+  void lookup(const char *key, au::SharedPointer<au::network::RESTServiceCommand> command );
 
   // Handy function to check if this block can be removed from manager
   bool canBeRemoved();

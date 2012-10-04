@@ -7,7 +7,7 @@
 #include "au/network/SocketConnection.h"
 #include "au/utils.h"
 
-#include "au/log/log_server_common.h"
+#include "au/log/LogCommon.h"
 #include "au/network/ConsoleService.h"
 
 

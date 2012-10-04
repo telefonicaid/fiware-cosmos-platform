@@ -25,16 +25,8 @@ public:
 };
 
 class KVInputVector : public KVInputVectorBase {
+
 public:
-
-  DataInstance *keyDataInstance;                // Instances to be used when adding key-values
-  std::vector<DataInstance *> valueDataInstances;
-
-  int num_inputs;                               // Number of input channels ( 1 in maps and parseOut , N in reduce operations )
-
-  KVSetStruct *inputStructs;                    // Structure used to process key-values contained in this input vector in reduce operations
-
-  size_t pos_begin, pos_end;                    // State variables used across calls to init and getNext
 
   // Constructors & destructors
   KVInputVector(Operation *operation);
@@ -53,10 +45,22 @@ public:
   // Spetial sort where first part of the added key-value is not sorted and the other half is already sorted
   void sortAndMerge(size_t middle_pos);
 
-
   // Init and getNext functions allows to retrieve key-values in groups with the same key
-  void init();
-  KVSetStruct *getNext();
+  void Init();
+  KVSetStruct *GetNext();
+  
+private:
+  
+  DataInstance *keyDataInstance;                    // Data instance for the key ( common to all inputs )
+  std::vector<DataInstance *> valueDataInstances;   // Data instances for the values
+  
+  int num_inputs;                                   // Number of input channels ( 1 in maps and parseOut , N in reduce operations )
+  
+  KVSetStruct *inputStructs;                        // Structure used to process key-values contained in this input vector in reduce operations
+  
+  size_t pos_begin, pos_end;                        // State variables used across calls to init and getNext
+
+  
 };
 }
 

@@ -29,7 +29,7 @@ namespace c4{
 		  // Vector of winners in each position
 		  movementSetLength(7);
 		  for ( int i = 0 ; i < 7 ; i++ )
-			 movement[i].value = 10; // Unknown
+			 movement[i].value = C4_NONE; // Unknown
 		  boardsSetLength(0);
 	   }
 

@@ -1,13 +1,15 @@
 #include <vector>
 
-#include "au/mutex/Token.h"
-#include "au/mutex/TokenTaker.h"
-
 #ifndef _H_AU_SINGLETON
 #define _H_AU_SINGLETON
 
 
 namespace au {
+  
+  /*
+   Andreu:  This class is used in SAMSON project and cannot contain mutexs since it is used across a fork operation
+   */
+  
 class SingletonBase {
 public:
   // Destroy the shared object
@@ -57,7 +59,6 @@ class Singleton : public SingletonBase {
 public:
 
   static C *shared() {
-    au::TokenTaker tt(&token_);
 
     if (!instance_) {
       instance_ = new C();
@@ -73,7 +74,6 @@ public:
   }
 
   static void DestroySingleton() {
-    au::TokenTaker tt(&token_);
 
     if (!instance_) {
       delete instance_;
@@ -83,13 +83,11 @@ public:
 
 private:
 
-  static au::Token token_;
   static C *instance_;
 };
 
 // Static members
 template <class C> C * Singleton<C>::instance_ = NULL;
-template <class C> au::Token Singleton<C>::token_("singleton");
 }  // end of au namesapce
 
 #endif  // ifndef _H_AU_SINGLETON

@@ -53,7 +53,7 @@ class DiskManager;
 // Note: NotificationObject is an empty class to allow us to include a
 // disk operation in a notification dictionary
 
-class DiskOperation : public NotificationObject {
+class DiskOperation {
 public:
 
   au::Environment environment;      // Environment properties

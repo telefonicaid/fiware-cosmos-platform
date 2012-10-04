@@ -664,6 +664,28 @@ std::set<size_t> SamsonWorkerController::GetWorkerIds() {
   return worker_ids;
 }
 
+  
+  au::Uint64Set SamsonWorkerController::GetAllWorkerIdsForRange(KVRange range)
+  {
+    // Set of identifier to return
+    au::Uint64Set worker_ids;
+    
+    for (int i = 0; i < cluster_info_->process_units_size(); i++) {
+      const gpb::ProcessUnit& process_unit = cluster_info_->process_units(i);
+      
+      // Get range for this process unit
+      KVRange process_unit_range(process_unit.hg_begin(), process_unit.hg_end());
+      
+      if (process_unit_range.IsOverlapped(range))
+      {
+        worker_ids.insert(process_unit.worker_id());      // Add replicas
+        for (int r = 0; r < process_unit.replica_worker_id_size(); r++)
+          worker_ids.insert(process_unit.replica_worker_id(r));
+      }
+    }
+    return worker_ids;
+  }
+
 // Get workers that should have a copy of a block in this range
 au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) {
   // Set of identifier to return

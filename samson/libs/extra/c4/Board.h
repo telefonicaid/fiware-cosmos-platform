@@ -271,19 +271,18 @@ namespace au {
         return output.str();
       }
       
-      std::vector<Board> GetNextBoards( int player )
+      int GetNextBoards( int player , Board* boards )
       {
-        
-        std::vector<Board> boards;
+        int pos = 0;
         for ( int i = 0 ; i < 7 ; i++ )
         {
-          au::c4::Board board = *this;
-          if( board.Move( player , i ) )
+          boards[pos] = *this;
+          if( boards[pos].Move( player , i ) )
           {
-            boards.push_back( board );            // Valid movement
+            pos++;
           }
         }
-        return boards;
+        return pos;
       }
       
       size_t white_value()

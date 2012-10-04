@@ -34,17 +34,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("alerts", "delilah", "Activate or disactivate showing alerts from SAMSON platform on console");
   add_string_options_argument("alerts", "action", "Options:on:off", "Command to activate or disactivate alerts");
 
-  add("local_logs", "delilah", "Activate or disactivate logs for this delilah");
-  add_string_options_argument("local_logs", "action", "Options:on:off");
-
-  add("set_log_server", "delilah", "Set log server for all workers");
-  add_string_argument("set_log_server", "host", "localhost", "host to send logs for current SAMSON cluster");
-
-  add("log", "delilah", "Show log generated at nodes of current SAMSON cluster");
-  add_string_argument("log", "pattern", "", "Pattern for logs to display");
-  add_string_option("log", "-type", "", "Select only a particular type of message ( M,W,E,X )");
-  add_string_option("log", "-file", "", "Select logs generated at a particular file");
-  add_int_option("log", "-lines", 0, "Number of lines to show");
+  add("log", "delilah", "Setup log in this delilah ( see more details about log system)");
+  add_mandatory_string_argument("log", "command", "Command for log setup");
 
   add("show_alerts", "delilah", "Show the last alerts received from current SAMSON cluster at this delilah");
 
@@ -123,6 +114,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // ------------------------------------------------------------------
 
   add("ls", "data", "Show a list of all data queues in the system");
+  add_string_argument("ls", "pattern", "*", "Pattern of the queues to show");
   add_bool_option("ls", "-rates", "Show information about data rate in queues (data movement)");
   add_bool_option("ls", "-blocks", "Show information about blocks contained at each queue");
   add_bool_option("ls", "-properties", "Show information about propeties at each queue");
@@ -178,6 +170,9 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_last_tasks", "debug", "Show last 100 tasks sqcheduled in workers");
   add_tag("ls_last_tasks", "send_to_all_workers");
 
+  add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
+  add_mandatory_string_argument("ls_queue_ranges", "name", "Name of the queue we would like to scan");
+  
   // MODULES
   // ------------------------------------------------------------------
 
@@ -212,19 +207,18 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ls_stream_operations", "-a",
                   "Show hiden stream operations as well ( used internally by the platform )");
 
-  add("ps_stream_operations", "stream", "Show a list of stream operations with information about processes",
-      "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
-      "They consist in aplying a particular operation ( defined in a module ) to process data from\n"
-      "one or multiple input queues and send result to one or multiple output queues\n"
-      "Please, add new stream operations with add_stream_operations command");
-  add_bool_option("ps_stream_operations", "-state", "Show planning state ( paused, error, ready for scheduling...)");
-  add_bool_option("ps_stream_operations", "-tasks", "Show tasks associated to stream_operations");
-  add_bool_option("ps_stream_operations", "-properties", "Information about properties of each stream opertion");
-  add_bool_option("ps_stream_operations", "-data", "Show input and output data processed of each operation");
-  add_bool_option("ps_stream_operations", "-rates", "Show input and output data rates of each operation");
-  add_uint64_option("ps_stream_operations", "-w", (size_t)-1, "Selected worker");
-  add_tag("ps_stream_operations", "send_to_all_workers");
+  add("ps_stream_operations", "stream", "Show a list of stream operations with information about execution planning");
 
+  add("ps_stream_operations_ranges", "stream", "Show a list of stream operations with information about running processes");
+  add_bool_option("ps_stream_operations_ranges", "-state", "Show planning state ( paused, error, ready for scheduling...)");
+  add_bool_option("ps_stream_operations_ranges", "-tasks", "Show tasks associated to stream_operations");
+  add_bool_option("ps_stream_operations_ranges", "-properties", "Information about properties of each stream opertion");
+  add_bool_option("ps_stream_operations_ranges", "-data", "Show input and output data processed of each operation");
+  add_bool_option("ps_stream_operations_ranges", "-rates", "Show input and output data rates of each operation");
+  add_uint64_option("ps_stream_operations_ranges", "-w", (size_t)-1, "Selected worker");
+  add_tag("ps_stream_operations_ranges", "send_to_all_workers");
+  
+  
   add("add_stream_operation", "stream", "Add a new stream operation to the current SAMSON cluster",
       "A stream operation is an operation that is automatically executed to transform data readed from one queue\n"
       "and store produced data in another set of queues\n");
@@ -311,6 +305,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ls_batch_operations" , "-output", "Show output produces batch operations");
 
   add("clear_batch_operations" , "batch" , "Clear finished batch operations" );
+  add_bool_option("clear_batch_operations", "-a", "Clear also unfinished tasks");
   
   // PUSH&POP
   // ------------------------------------------------------------------

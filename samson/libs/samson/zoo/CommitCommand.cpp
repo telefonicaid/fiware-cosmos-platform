@@ -6,12 +6,14 @@ namespace samson {
 CommitCommandItem::CommitCommandItem(const std::string& command
                                      , const std::string& queue
                                      , size_t block_id
+                                     , size_t block_size
                                      , const KVFormat& format
                                      , const KVRange& range
                                      , const KVInfo& info)
   : command_(command)
     , queue_(queue)
     , block_id_(block_id)
+    , block_size_(block_size)
     , format_(format)
     , range_(range)
     , info_(info) {
@@ -19,10 +21,8 @@ CommitCommandItem::CommitCommandItem(const std::string& command
 
 CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au::ErrorManager *error) {
   std::vector<std::string> components = au::split(command, ':');
-  if (components.size() != 9) {
-    error->set(au::str("Wrong number of components (%lu!=9) in commit command component: '%s'"
-                       , components.size()
-                       , command.c_str()));
+  if (components.size() != 10) {
+    error->set("Wrong number of components in data_commit");
     return NULL;
   }
 
@@ -43,9 +43,17 @@ CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au
     return NULL;
   }
 
-  KVFormat format(components[3], components[4]);
+  size_t block_size = atoll(components[3].c_str());
+  if (block_size == 0) {
+    error->set(au::str("Wrong block_size (%lu) in commit command component: '%s'"
+                       , block_size
+                       , command.c_str()));
+    return NULL;
+  }
+  
+  KVFormat format(components[4], components[5]);
 
-  KVRange range(atoi(components[5].c_str()), atoi(components[6].c_str()));
+  KVRange range(atoi(components[6].c_str()), atoi(components[7].c_str()));
   if (!range.isValid()) {
     error->set(au::str("Wrong range (%s) in commit command component: '%s'"
                        , range.str().c_str()
@@ -53,9 +61,9 @@ CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au
     return NULL;
   }
 
-  KVInfo info(atoll(components[7].c_str()), atoll(components[8].c_str()));
+  KVInfo info(atoll(components[8].c_str()), atoll(components[9].c_str()));
 
-  return new CommitCommandItem(sub_command, components[1], block_id, format, range, info);
+  return new CommitCommandItem(sub_command, components[1], block_id, block_size,  format, range, info);
 }
 
 std::string CommitCommandItem::command() const {
@@ -69,6 +77,10 @@ std::string CommitCommandItem::queue() const {
 size_t CommitCommandItem::block_id() const {
   return block_id_;
 }
+
+  size_t CommitCommandItem::block_size() const {
+    return block_size_;
+  }
 
 KVFormat CommitCommandItem::format() const {
   return format_;
@@ -88,6 +100,7 @@ std::string CommitCommandItem::str() const {
   output << command_        << ":";
   output << queue_          << ":";
   output << block_id_       << ":";
+  output << block_size_     << ":";
   output << format_.keyFormat     << ":";
   output << format_.valueFormat   << ":";
   output << range_.hg_begin << ":";
@@ -125,12 +138,8 @@ void CommitCommand::ParseCommitCommand(const std::string& command, au::ErrorMana
 
 
   for (int i = 1; i < num_arguments; i++) {
-    au::ErrorManager tmp_error;
-    CommitCommandItem *item =  CommitCommandItem::create_item(cmdLine.get_argument(i), &tmp_error);
-    if (tmp_error.IsActivated()) {
-      error->set(au::str(" Error parsing sub command %s: %s"
-                         , cmdLine.get_argument(i).c_str()
-                         , tmp_error.GetMessage().c_str()));
+    CommitCommandItem *item =  CommitCommandItem::create_item(cmdLine.get_argument(i), error);
+    if (error->IsActivated()) {
       return;
     }
 
@@ -141,18 +150,20 @@ void CommitCommand::ParseCommitCommand(const std::string& command, au::ErrorMana
 
 void CommitCommand::AddBlock(const std::string& queue
                              , size_t block_id
+                             , size_t block_size
                              , const KVFormat& format
                              , const KVRange& range
                              , const KVInfo& info) {
-  items_.push_back(new CommitCommandItem("add", queue, block_id, format, range, info));
+  items_.push_back(new CommitCommandItem("add", queue, block_id,block_size, format, range, info));
 }
 
 void CommitCommand::RemoveBlock(const std::string& queue
                                 , size_t block_id
+                                , size_t block_size
                                 , const KVFormat& format
                                 , const KVRange& range
                                 , const KVInfo& info) {
-  items_.push_back(new CommitCommandItem("rm", queue, block_id, format, range, info));
+  items_.push_back(new CommitCommandItem("rm", queue, block_id,block_size, format, range, info));
 }
 
 std::string CommitCommand::GetCommitCommand() const {

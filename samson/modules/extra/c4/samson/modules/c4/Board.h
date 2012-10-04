@@ -28,6 +28,16 @@ namespace c4{
     }
     
 
+	virtual std::string strHTML(int level_html_heading)
+	{
+	   return str();
+	}
+
+	// XML Version of this data instance
+	virtual std::string strXML()
+	{
+	   return str();
+	}
 
 	std::string str()
 	{
@@ -43,6 +53,28 @@ namespace c4{
 	   return output.str();
 	}
     
+    // Set from a string provided at the url
+	virtual void setFromString(const char *str) {
+	   
+       // New board
+	   au::c4::Board board;
+
+	   if (str != NULL)
+		  for ( size_t i = 0 ; i < strlen( str) ; i++ )
+		  {
+			 if( str[i] == 'W' || str[i] == 'w' )
+				board.Set( C4_WHITE , i/7 , i%7 );
+			 if( str[i] == 'B' || str[i] == 'b' )
+				board.Set( C4_BLACK , i/7 , i%7 );
+	   }
+
+	   white.value = board.white_value(); // Set masks for white and black
+	   black.value = board.black_value();
+	   turn.value = C4_WHITE; 	    // Turn is white ( by default )
+
+	}
+
+
     
 	};
 

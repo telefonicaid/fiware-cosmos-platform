@@ -39,6 +39,7 @@ private:
   void process_node(au::SharedPointer<au::network::RESTServiceCommand> command);
   void process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command);
   void process_logging(au::SharedPointer<au::network::RESTServiceCommand> command);
+  void process_synchronized( au::SharedPointer<au::network::RESTServiceCommand> command );
 
   // Auto-client for REST interface
   Delilah *delilah;

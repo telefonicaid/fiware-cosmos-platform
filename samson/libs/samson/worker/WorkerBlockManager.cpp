@@ -87,7 +87,7 @@ gpb::Collection *WorkerBlockManager::GetCollectionForBlockRequests(const Visuali
 size_t WorkerBlockManager::CreateBlock(engine::BufferPointer buffer, size_t block_id) {
   // If a block_id is provided, we just include in the local block manager
   if (block_id != (size_t)-1) {
-    stream::BlockManager::shared()->create_block(block_id, buffer);
+    stream::BlockManager::shared()->CreateBlock(block_id, buffer);
     return block_id;
   }
 
@@ -109,7 +109,7 @@ size_t WorkerBlockManager::CreateBlock(engine::BufferPointer buffer, size_t bloc
   header->worker_id = samson_worker_->worker_controller()->worker_id();
 
   // Insert in the local BlockManager
-  stream::BlockManager::shared()->create_block(block_id, buffer);
+  stream::BlockManager::shared()->CreateBlock(block_id, buffer);
 
   // Create a distribution block ( insert in local block manager and distribute to replicas )
   DistributionOperation *distribution_block = new DistributionOperation(samson_worker_, block_id);
@@ -229,8 +229,9 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
 
 
   // Create a new block in this worker ( and start distribution process )
+  size_t block_size = buffer->size();
   size_t block_id   = samson_worker_->worker_block_manager()->CreateBlock(buffer);
-
+  
   if (block_id == (size_t)-1) {
     LM_W(("Error creating block in a push operation ( block_id -1 )"));
     return;
@@ -244,7 +245,7 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
 
   // Create PushOpertion object and insert in the vector of pending push operations
   PushOperation *push_operation =
-    new PushOperation(samson_worker_, block_id, delilah_id, push_id, buffer,
+    new PushOperation(samson_worker_, block_id, block_size , delilah_id, push_id, buffer,
                       queues);
   push_operations_.insert(push_operation);
 
@@ -272,7 +273,7 @@ void WorkerBlockManager::receive_push_block_commit(size_t delilah_id, size_t pus
   return;
 }
 
-gpb::Collection *WorkerBlockManager::getCollectionForPushOperations(const Visualization& visualization) {
+gpb::Collection *WorkerBlockManager::GetCollectionForPushOperations(const Visualization& visualization) {
   gpb::Collection *collection = new gpb::Collection();
 
   collection->set_name("push operations");
@@ -297,4 +298,14 @@ void WorkerBlockManager::notify(engine::Notification *notification) {
     return;
   }
 }
+  
+  bool WorkerBlockManager::IsBlockBeingDistributed( size_t block_id )
+  {
+    au::map<size_t, DistributionOperation>::iterator it;
+    for ( it = distribution_operations_.begin(); it != distribution_operations_.end(); it++)
+      if( it->second->block_id() == block_id )
+        return true;
+    return false;
+  }
+
 }

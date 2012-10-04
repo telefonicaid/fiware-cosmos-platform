@@ -17,14 +17,17 @@ namespace samson {
 namespace stream {
 class BlockList;
 
-/**
- * Manager of all the blocks running on the system
+/*
+ 
+ BlockManager
+ 
+ Manager of all the blocks running on the system
+ Main responsible to keep blocks of data in memory for operations
+ 
  */
 
 
 class BlockManager : public engine::NotificationListener {
-  BlockManager();                     // Private constructor for singleton implementation
-  ~BlockManager();
 
 public:
 
@@ -33,19 +36,17 @@ public:
   static BlockManager *shared();
   static void destroy();
 
-public:
-
   // Create blocks
-  void create_block(size_t block_id, engine::BufferPointer buffer);
+  void CreateBlock(size_t block_id, engine::BufferPointer buffer);
 
   // Get a particular block
-  BlockPointer getBlock(size_t _id);
+  BlockPointer GetBlock(size_t _id);
 
   // Reset the entire block manager
-  void resetBlockManager();
+  void ResetBlockManager();
 
   // Function to review pending read / free / write operations
-  void review();
+  void Review();
 
   // Remove blocks not included in this list
   void RemoveBlocksIfNecessary(const std::set<size_t>& all_blocks
@@ -55,18 +56,15 @@ public:
   // Notification interface
   virtual void notify(engine::Notification *notification);
 
-  // To be removed....
-  void update(BlockInfo &block_info);
-
   // Get collection of blocks for remote listing
-  gpb::Collection *getCollectionOfBlocks(const Visualization& visualization);
+  gpb::Collection *GetCollectionOfBlocks(const Visualization& visualization);
 
-  size_t get_scheduled_write_size() {
-    return scheduled_write_size;
+  size_t scheduled_write_size() {
+    return scheduled_write_size_;
   }
 
-  size_t get_scheduled_read_size() {
-    return scheduled_read_size;
+  size_t scheduled_read_size() {
+    return scheduled_read_size_;
   }
 
   // Get all block identifiers
@@ -74,22 +72,25 @@ public:
 
 private:
 
-  void sort(); // Sort blocks
-  void create_block_from_disk(const std::string& path);
-  void recover_blocks_from_disks();
+  BlockManager(); // Private constructor & destructir for singleton implementation
+  ~BlockManager();
+  
+  void Sort(); // Sort blocks
+  void CreateBlockFromDisk(const std::string& path);
+  void RecoverBlocksFromDisks();
 
-  void schedule_remove_operation(BlockPointer block);
-  void schedule_read_operation(BlockPointer block);
-  void schedule_write_operation(BlockPointer block);
+  void ScheduleRemoveOperation(BlockPointer block);
+  void ScheduleReadOperation(BlockPointer block);
+  void ScheduleWriteOperation(BlockPointer block);
 
   au::Dictionary<size_t, Block> blocks_;     // Dictionary of blocks
-  std::list<size_t> block_ids_;       // list of block identifiers in order
+  std::list<size_t> block_ids_;              // list of block identifiers in order
 
-  size_t scheduled_write_size;        // Amount of bytes scheduled to be writen to disk
-  size_t scheduled_read_size;         // Amount of bytes scheduled to be read from disk
-  size_t max_memory;                  // Maximum amount of memory to be used by this block manager
+  size_t scheduled_write_size_;               // Amount of bytes scheduled to be writen to disk
+  size_t scheduled_read_size_;                // Amount of bytes scheduled to be read from disk
+  size_t max_memory_;                         // Maximum amount of memory to be used by this block manager
 
-  au::Token token_;                   // Mutex protection since operations create blocks in multiple threads
+  au::Token token_;                          // Mutex protection since operations create blocks in multiple threads
 };
 }
 }

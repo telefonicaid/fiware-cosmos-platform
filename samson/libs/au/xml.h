@@ -40,10 +40,18 @@ void xml_content(std::ostringstream& output, std::string _content);
 template< typename T>
 void xml_simple(std::ostringstream& output, std::string name, T value) {
   output << "<" << name << ">";
-  output << "<![CDATA[" << value << "]]>";
+  output << value;
   output << "</" << name << ">";
 }
 
+template< typename T>
+void xml_simple_literal(std::ostringstream& output, std::string name, T value) {
+  output << "<" << name << ">";
+  output << "<![CDATA[" << value << "]]>";
+  output << "</" << name << ">";
+}
+  
+  
 template< typename T>
 void json_simple(std::ostringstream& output, std::string name, T value) {
   output << "{\"" << name << "\":\"" << value << "\"}";

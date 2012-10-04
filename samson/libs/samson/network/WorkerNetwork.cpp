@@ -133,4 +133,21 @@ void WorkerNetwork::SendAlertToAllDelilahs(std::string type, std::string context
   // Send packet
   SendToAllDelilahs(p);
 }
+  
+  void WorkerNetwork::SendAlertToDelilah( size_t delilah_id , std::string type, std::string context, std::string message) {
+    PacketPointer p(new Packet(Message::Alert));
+    gpb::Alert *alert = p->message->mutable_alert();
+    
+    alert->set_type(type);
+    alert->set_context(context);
+    alert->set_text(message);
+    
+    // This message do not belong to any delilah operation
+    p->message->set_delilah_component_id((size_t)-1);
+    
+    // Direction of this packet
+    p->to = NodeIdentifier( DelilahNode , delilah_id );
+    Send(p);
+  }
+
 }

@@ -17,6 +17,7 @@ namespace samson {
 namespace gpb {
 // Operations over gpb::StreamOperations
 gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& name);
+  gpb::StreamOperation * getStreamOperation(gpb::Data *data, size_t stream_operation_id);
 void removeStreamOperation(gpb::Data *data, const std::string& name);
 void reset_stream_operations(gpb::Data *data);
 
@@ -40,9 +41,7 @@ Queue *get_queue(Data *data, const std::string& queue_name,  KVFormat format,
                  au::ErrorManager *error);
 Queue *get_or_create_queue(Data *data, const std::string& name, KVFormat format,
                            au::ErrorManager *error);
-
 void removeQueue(Data *data, const std::string& name);
-
   
 // Operations over Queue
 void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size_t *size);
@@ -52,6 +51,7 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
 void add_block(Data *data
                , const std::string& queue_name
                , size_t block_id
+               , size_t block_size
                , KVFormat format
                , ::samson::KVRange range
                , ::samson::KVInfo info
@@ -82,7 +82,33 @@ void data_remove_queue_connection(gpb::Data *data, const std::string& queue_sour
 
 // Batch operation
 bool bath_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batch_operation);
-  void remove_finished_operation(gpb::Data *data);
+  void remove_finished_operation(gpb::Data *data , bool all_flag);
+
+  
+  // Compute information for a queue in a set of ranges
+  class DataInfoForRanges {
+    
+  public:
+    DataInfoForRanges()
+    {
+      data_size = 0;
+      data_size_in_ranges = 0;
+      max_memory_size_for_a_range = 0;
+      max_data_size_for_a_range = 0;
+      defrag_factor = 0;
+    }
+    
+    size_t data_size;
+    size_t data_size_in_ranges;
+    size_t max_memory_size_for_a_range;
+    size_t max_data_size_for_a_range;
+    double defrag_factor;
+  };
+  
+  DataInfoForRanges get_data_info_for_ranges( gpb::Data*data , const std::vector<std::string>& queues , std::vector<samson::KVRange> ranges );
+  DataInfoForRanges get_data_info_for_ranges( gpb::Data*data , const std::string& queue , std::vector<samson::KVRange> ranges );
+  
+  
 }
 }  // End of namespace samson::gpb
 

@@ -40,6 +40,8 @@ public:
     pattern_ = "*";   // Default pattern
   }
 
+  bool match( const std::string& value) const;
+  
   void set_flag(const std::string& name, bool value);
   bool get_flag(const std::string& name) const;
 
@@ -50,7 +52,7 @@ public:
 };
 
 // Simplified match
-bool match(std::string pattern, std::string name);
+bool match(const std::string& pattern, const std::string& name);
 }
 
 

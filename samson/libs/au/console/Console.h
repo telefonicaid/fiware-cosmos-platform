@@ -21,7 +21,7 @@ class ConsoleAutoComplete;
 class ConsoleCommandHistory;
 
 
-class Console : public LogPlugin {
+class Console {
   // History information ( all commands introduced before )
   ConsoleCommandHistory *command_history;
 
@@ -41,11 +41,7 @@ class Console : public LogPlugin {
 
   // Detector of scape sequences
   ConsoleEscapeSequence escape_sequence;
-
-  // Default method to print logs if added as plugin
-  LogFormatter log_formatter;
-  virtual void process_log(au::SharedPointer<Log> log);
-
+  
 public:
 
   Console();
@@ -108,6 +104,7 @@ private:
   // Get the next entry from console
   void getEntry(ConsoleEntry *entry);
 };
+  
 }
 
 #endif  // ifndef _AU_CONSOLE

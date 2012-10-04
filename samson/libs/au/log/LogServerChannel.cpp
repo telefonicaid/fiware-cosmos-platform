@@ -347,7 +347,7 @@ std::string LogServerChannel::getTable(au::CommandLine *cmdLine) {
   table_log_formater.set_type(str_type);
 
   au::ErrorManager error;
-  table_log_formater.init(&error);
+  table_log_formater.init(error);
 
   if (error.IsActivated()) {
     return au::str("Error: %s", error.GetMessage().c_str());

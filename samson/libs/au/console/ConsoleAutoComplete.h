@@ -36,7 +36,7 @@ public:
     
     if( label.substr( 0 , last_word.length() ) == last_word )
     {
-      return au::str( au::red , "%s" , last_word.c_str() ) + label.substr( last_word.length() );
+      return au::str( au::red , "%s" , last_word.c_str() ) + au::str( au::purple , "%s" , label.substr( last_word.length() ).c_str() );
     }
     else
       return label;

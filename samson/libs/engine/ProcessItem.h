@@ -49,7 +49,7 @@ class ProcessManager;
 
 // Note: NotificationObject is an empty class base to allo us to include a process item in a notification
 
-class ProcessItem : public NotificationObject {
+class ProcessItem {
 public:
 
   // Constructor with priority

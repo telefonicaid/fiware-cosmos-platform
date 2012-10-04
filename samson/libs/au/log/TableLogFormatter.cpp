@@ -148,11 +148,11 @@ void TableLogFormatter::set_type(std::string _str_type) {
   str_type = _str_type;
 }
 
-void TableLogFormatter::init(ErrorManager *error) {
+void TableLogFormatter::init(ErrorManager& error) {
   // Make sure we only call this method once
   if (flag_init) {
     LM_W(("init called twice in TableLogFormatter"));
-    error->set("Init called twice");
+    error.set("Init called twice");
     return;
   }
   flag_init = true;
@@ -179,7 +179,7 @@ void TableLogFormatter::init(ErrorManager *error) {
   // Patern restriction
   if (str_pattern != "") {
     pattern = new Pattern(str_pattern, error);
-    if (error->IsActivated()) {
+    if (error.IsActivated()) {
       return;
     }
   }
@@ -192,7 +192,7 @@ void TableLogFormatter::init(ErrorManager *error) {
 
     if (str_time != "") {
       if (str_time.length() != 8) {
-        error->set("Error: Wrong format for -time. It is -time HH:MM:SS\n");
+        error.set("Error: Wrong format for -time. It is -time HH:MM:SS\n");
         return;
       }
 
@@ -205,7 +205,7 @@ void TableLogFormatter::init(ErrorManager *error) {
 
     if (str_date != "") {
       if (str_date.length() != 8) {
-        error->set("Error: Wrong format for -date. It is -date DD/MM/YY\n");
+        error.set("Error: Wrong format for -date. It is -date DD/MM/YY\n");
       }
 
       // DD/MM/YY
@@ -234,7 +234,7 @@ bool TableLogFormatter::filter(au::SharedPointer<Log> log) {
 
   // Filter by pattern
   if (pattern) {
-    if (!log->match(&pattern->preg)) {
+    if (!log->match(pattern)) {
       return false;
     }
   }
@@ -245,13 +245,14 @@ bool TableLogFormatter::filter(au::SharedPointer<Log> log) {
       return false;
     }
   }
-
+/*
   // Check if the type is correct
   if (str_type != "") {
     if (log->log_data().type != str_type[0]) {
       return false;
     }
   }
+ */
 
   if (channel != "") {
     if (log->Get("channel") != channel) {

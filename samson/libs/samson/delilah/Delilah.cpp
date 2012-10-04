@@ -179,7 +179,7 @@ bool Delilah::isConnected() {
 
 void Delilah::notify(engine::Notification *notification) {
   if (notification->isName(notification_packet_received)) {
-    au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
+    au::SharedPointer<Packet> packet = notification->dictionary().Get<Packet>("packet");
     if (packet == NULL) {
       LM_W(("Received a notification to receive a packet without a packet"));
     }
@@ -639,7 +639,7 @@ void Delilah::getInfo(std::ostringstream& output) {
 }
 
 std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
-  au::tables::Table table("Name,left|Type,left|Size|Format,left|Error");
+  au::tables::Table table("Name,left|Type,left|Size|Format,left|Error,left");
 
   // first off, we need to create a pointer to a directory
   DIR *pdir = opendir(".");    // "." will refer to the current directory

@@ -31,8 +31,9 @@ message StreamOperation
 
 	optional Environment environment     = 10; // Environment variables for this operation
 
-	optional bool reduce_forward         = 11; // Flag to indicate a reduce forward operation
-	optional bool reduce_update_only     = 12; // Flag to indicate that only key-values with new data is really executed
+	required bool reduce_forward         = 11; // Flag to indicate a reduce forward operation
+	required bool reduce_update_only     = 12; // Flag to indicate that only key-values with new data is really executed
+	required bool batch_operation        = 13; // Flag to indicate that this belongs to a batch operation
 	
 }
 
@@ -63,12 +64,13 @@ message KVRanges
 
 message Block
 {
-	required uint64   block_id  = 1; // Identifier of this block
-	required KVRanges ranges    = 2; // Ranges considered for this block
-	required uint64   size      = 3; // Size in bytes for this block 
-	required uint64   kvs       = 4; // Number of key-values for this block
-	required uint64   time      = 5; // Creation time
-	required uint64   commit_id = 7; // Commit number where this block was added
+	required uint64   block_id   = 1; // Identifier of this block
+	required uint64   block_size = 2; // Size of the full block ( necessary for planning tasks )
+	required KVRanges ranges     = 3; // Ranges considered for this block
+	required uint64   size       = 4; // Size in bytes for this block 
+	required uint64   kvs        = 5; // Number of key-values for this block
+	required uint64   time       = 6; // Creation time
+	required uint64   commit_id  = 7; // Commit number where this block was added
 }
 
 message Queue

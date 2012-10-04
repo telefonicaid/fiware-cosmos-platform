@@ -1,7 +1,7 @@
 
 #include "samson/common/gpb_operations.h"
 #include "samson/network/Packet.h"
-
+#include "samson/common/NotificationMessages.h"
 #include "DataModel.h"  // Own interface
 
 namespace samson {
@@ -22,12 +22,18 @@ namespace samson {
     
     // Forward flag to indicate that this is a reduce forward operation ( no update if state )
     cmd.SetFlagBoolean("forward");
+
+    // -a flag
+    cmd.SetFlagBoolean("a");
     
     // Number of divisions in state operations
     cmd.SetFlagInt("divisions", au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess"));
     
-    // Use third party software only for state with new input
+    // Flag to indicate that states with no inputs should be copied to output automatically
     cmd.SetFlagBoolean("update_only");
+
+    // Flag to indicat that this is a batch operation
+    cmd.SetFlagBoolean("batch_operation");
     
     // Prefix used to change names of queues and operations
     cmd.SetFlagString("prefix", "");
@@ -37,10 +43,12 @@ namespace samson {
     
     cmd.Parse(command);
     
-    // Recover prefix
+    // Common fields
     std::string prefix = cmd.GetFlagString("prefix");
     bool forward       = cmd.GetFlagBool("forward");
     bool update_only   = cmd.GetFlagBool("update_only");
+    bool batch_operation  = cmd.GetFlagBool("batch_operation");
+    bool all_flag = cmd.GetFlagBool("a");
     
     if (cmd.get_num_arguments() == 0) {
       error->set("No command specified");
@@ -66,7 +74,7 @@ namespace samson {
     
     if( main_command == "clear_batch_operations" )
     {
-      gpb::remove_finished_operation( data.shared_object() );
+      gpb::remove_finished_operation( data.shared_object() , all_flag );
       return;
     }
     
@@ -165,7 +173,7 @@ namespace samson {
         new_command << prefix << output_queues[i]<< " ";
       }
       new_command << "\"";
-      
+      new_command << " -batch_operation "; // Add this flag to identify the stream
       
       PerformCommit(data, new_command.str(), version, error);
       if (error->IsActivated()) {
@@ -249,8 +257,10 @@ namespace samson {
         so->add_outputs(cmd_outputs.get_argument(i));
       }
       
+      // Optional flags for the new operation
       so->set_reduce_forward(forward);
       so->set_reduce_update_only(update_only);
+      so->set_batch_operation(batch_operation);
       
       error->AddMessage(au::str("StreamOperation %s added correctly", name.c_str()));
       return;
@@ -332,6 +342,7 @@ namespace samson {
           add_block(data.shared_object()
                     , item->queue()
                     , item->block_id()
+                    , item->block_size()
                     , item->format()
                     , item->range()
                     , item->info()
@@ -348,6 +359,7 @@ namespace samson {
             add_block(data.shared_object()
                       , connected_queues[i]
                       , item->block_id()
+                      , item->block_size()
                       , item->format()
                       , item->range()
                       , item->info()
@@ -529,8 +541,17 @@ namespace samson {
       gpb::CollectionRecord *record = collection->add_record();
       
       ::samson::add(record, "id", stream_operation.stream_operation_id(), "different");
-      ::samson::add(record, "name", stream_operation.name(), "different");
+      ::samson::add(record, "name", stream_operation.name(), "different,left");
       ::samson::add(record, "operation", stream_operation.operation(), "different");
+
+      std::ostringstream flags;
+      if( stream_operation.batch_operation() )
+        flags << "batch_operation ";
+      if( stream_operation.reduce_forward() )
+        flags << "reduce_forward ";
+      if( stream_operation.reduce_update_only() )
+        flags << "update_only ";
+      ::samson::add(record, "Flags", flags.str() , "different");
       
       std::ostringstream inputs;
       inputs << "[" << stream_operation.inputs_size() << "] ";
@@ -676,6 +697,8 @@ namespace samson {
         
         ::samson::add(record, "queue", queue.name(), "different");
         ::samson::add(record, "block", block.block_id(), "different");
+
+        ::samson::add(record, "block_size", block.block_size(), "f=uint64,different");
         
         KVRanges ranges = block.ranges();   // Implicit conversion
         
@@ -726,6 +749,66 @@ namespace samson {
     return collection;
   }
   
+  
+  gpb::Collection *DataModel::getCollectionForQueueRanges(const Visualization& visualization, const std::string& queue_name ) {
+
+    // Create collection
+    gpb::Collection *collection = new gpb::Collection();
+    collection->set_name("queue_ranges");
+
+    // Get a copy of the current node
+    au::SharedPointer<gpb::Data> data = getCurrentModel();
+
+    // Get queue of interest
+    gpb::Queue* queue = gpb::get_queue(data.shared_object(), queue_name);
+    if( !queue )
+      return collection;
+
+    
+    // For all ranges
+    int num_ranges = 32;
+    std::vector<KVRange> ranges;
+    std::vector<size_t> sizes;
+    std::vector<size_t> kvs;
+    for ( int i = 0 ; i < num_ranges ; i++ )
+    {
+      ranges.push_back( rangeForDivision(i,num_ranges) );
+      sizes.push_back(0);
+      kvs.push_back(0);
+    }
+
+    // Compute size in each range
+    for ( int i = 0 ; i < queue->blocks_size() ; i++ )
+    {
+      KVRanges block_ranges = queue->blocks(i).ranges(); // Implicit conversion
+      
+      for ( int r = 0 ; r < num_ranges ; r++ )
+      {
+        double overlap = block_ranges.GetOverlapFactor( ranges[r] );
+        sizes[r] += overlap*queue->blocks(i).size();
+        kvs[r] += overlap*queue->blocks(i).kvs();
+      }
+    }
+
+    // Compute max size
+    size_t max_size = sizes[0];
+    for ( int r = 1 ; r < num_ranges ; r++ )
+      if( sizes[r] > max_size )
+        max_size = sizes[r];
+    
+    // Generate all records
+    for ( int r = 0 ; r < num_ranges ; r++ )
+    {
+      gpb::CollectionRecord *record = collection->add_record();
+      ::samson::add(record, "range", ranges[r].str() , "different");
+      ::samson::add(record, "#kvs", kvs[r] , "f=uint64");
+      ::samson::add(record, "size", sizes[r] , "f=uint64");
+      ::samson::add(record, "comparison", au::str_progress_bar( (double) sizes[r] / (double) max_size , 50), "different");
+    }
+    
+    return collection;
+  }
+  
   gpb::Collection *DataModel::getCollectionForQueues(const Visualization& visualization) {
     // Get a copy of the current node
     au::SharedPointer<gpb::Data> data = getCurrentModel();
@@ -746,6 +829,11 @@ namespace samson {
       if (!all_flag && name[0] == '.') {
         continue;
       }
+      
+      if (!visualization.match(name) )
+        continue;
+
+      
       size_t kvs;
       size_t size;
       size_t num_blocks;
@@ -835,6 +923,18 @@ namespace samson {
       
       if( !operation_finished )
         continue; // Still pending data to be process
+      
+      // Send a message to original delilah
+      engine::Notification* notification = new engine::Notification(notification_samson_worker_send_message);
+      std::string message = au::str("Batch operation %s_%lu has finished correctly"
+                                    , au::code64_str(batch_operation->delilah_id()).c_str()
+                                    , batch_operation->delilah_component_id());
+      notification->environment().Set("message", message);
+      notification->environment().Set("context", "system");
+      notification->environment().Set("type", "warning");
+      notification->environment().Set("delilah_id", batch_operation->delilah_id() );
+      
+      engine::Engine::shared()->notify(notification);
       
       // Set finished and move data
       batch_operation->set_finished(true);

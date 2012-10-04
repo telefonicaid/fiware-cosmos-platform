@@ -23,9 +23,9 @@ namespace c4{
 	   samson::c4::Board board; 		   // SAMSON Board data
 	   samson::c4::Info info;              // Information about this board
 
-	   au::c4::Board current_board;             // Analysis of the current board
-	   std::vector<au::c4::Board> next_boards;  // Vector of possible movements
-
+	   au::c4::Board current_board;        // Analysis of the current board
+	   au::c4::Board next_boards[7];       // Vector of possible movements
+	   size_t next_boards_size;
 	public:
 
 
@@ -46,7 +46,7 @@ namespace c4{
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-
+		   //printf("Processing key-values %lu %lu\n" , inputs[0].num_kvs , inputs[1].num_kvs );
 
 		   // ------------------------------------------------------------------
 		   // Get Board
@@ -59,17 +59,16 @@ namespace c4{
 
 		   // Internal structure to analyse better current board
 		   current_board.SetBoard( board.white.value , board.black.value );
- 
-		   next_boards.clear();
-		   next_boards = current_board.GetNextBoards( board.turn.value );
+
+		   // Get future boards with all movements
+		   next_boards_size = current_board.GetNextBoards( board.turn.value , next_boards );
 
 		   // ------------------------------------------------------------------
 		   // Get previous info or analyse board
 		   // ------------------------------------------------------------------
  
 		   if( inputs[1].num_kvs > 0 ){
-			  // There is a preivous board here
-			  info.parse( inputs[1].kvs[0]->value );
+			  info.parse( inputs[1].kvs[0]->value ); 			  // There is a previous board here
 		   }
 		   else
 		   {
@@ -77,7 +76,7 @@ namespace c4{
 			  info.reset();
 
 			  // Check for direct winners
-			  for ( size_t i = 0 ; i < next_boards.size() ; i++ )
+			  for ( size_t i = 0 ; i < next_boards_size ; i++ )
 				 info.movement[i].value = next_boards[i].GetWinner();
 
 			  // Compute final result based on particals
@@ -86,7 +85,7 @@ namespace c4{
 			  // If the result is unknown, I sent forward message to new boards
 			  if( info.winner.value == C4_NONE )
 			  {
-				 for ( size_t i = 0 ; i < next_boards.size() ; i++ )
+				 for ( size_t i = 0 ; i < next_boards_size ; i++ )
 				 {
 					samson::c4::Board forward_board;
 					forward_board.white.value = next_boards[i].white_value();
@@ -112,15 +111,15 @@ namespace c4{
 
 			  if( message.type.value == 1 )
 			  {
-				 // forward message
+				 // Forward message: another board is requesting our solution
 				 // add to the vector of boards to be answered
 				 samson::c4::Board* tmp_board = info.boardsAdd();
 				 tmp_board->copyFrom( &message.board );
 			  }
 			  else if( message.type.value == 2 )
 			  {
-				 // Response message
-				 for ( int i = 0 ; i < (int)next_boards.size() ; i++ )
+				 // Response message: another board is answering our demand of solution
+				 for ( int i = 0 ; i < (int)next_boards_size ; i++ )
 				 {
 					if( next_boards[i].white_value() != message.board.white.value )
 					   continue;
@@ -132,12 +131,12 @@ namespace c4{
 					break;
 				 }
 			  }
-		   }
+		   }		
 
 		   // Review board ( based on new information, if any... )
 		   review();
 
-		   // If board is revolved, send message back to pending boards
+		   // If board is revolved, send message back to pending boards and remove them
 		   if( info.winner.value != C4_NONE )
 		   {
 			  for ( int i = 0 ; i < info.boards_length ; i++ )
@@ -149,10 +148,10 @@ namespace c4{
 				 
 				 writer->emit( 0 , &info.boards[i] , &message );
 			  }
+			  info.boardsSetLength(0); // Remove vector of pending boards
 		   }
 
-
-		   // emit the state at the output
+		   // Emit current state (always) at the output
 		   writer->emit(1,&board,&info);
 
 		}
@@ -160,23 +159,23 @@ namespace c4{
 		void review(  )
 		{
 		   // If one movement is winner, I win
-		   for (size_t i = 0 ; i < next_boards.size()  ; i++ )
+		   for (size_t i = 0 ; i < next_boards_size  ; i++ )
 			  if( info.movement[i].value == board.turn.value )
 			  {
 				 info.winner.value = board.turn.value; // me
 				 return;
 			  }
 
-		   // If Any is unknown, still unknown
-		   for (size_t i = 0 ; i < next_boards.size()  ; i++ )
+		   // If Any is unknown, still unknown ( there is hope... )
+		   for (size_t i = 0 ; i < next_boards_size  ; i++ )
 			  if( info.movement[i].value == C4_NONE )
 			  {
 				 info.winner.value = C4_NONE;
 				 return;
 			  }
 
-		   // If any is DRAW, it is DRAW
-		   for (size_t i = 0 ; i < next_boards.size()  ; i++ )
+		   // If any is DRAW, it is DRAW ( best possibiliy for us now... )
+		   for (size_t i = 0 ; i < next_boards_size  ; i++ )
 			  if( info.movement[i].value == C4_DRAW )
 			  {
 				 info.winner.value = C4_DRAW;

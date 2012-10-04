@@ -21,6 +21,7 @@ public:
 
   PushOperation(SamsonWorker *samson_worker
                 , size_t block_id
+                , size_t block_size
                 , size_t delilah_id
                 , size_t push_id
                 , engine::BufferPointer buffer
@@ -51,6 +52,7 @@ private:
   ::samson::SamsonWorker * samson_worker_;  // Pointer to samson worker
 
   size_t block_id_;                 // Identifier of the block created ( given by BLockManager )
+  size_t block_size_;               // Size of the created block
   size_t delilah_id_;               // Identifier of deliah node that should be notfied when finish
   size_t push_id_;                  // Identifier of the concrete push in this delilah
   KVHeader header;                  // Buffer information ( for table visualization )

@@ -75,7 +75,7 @@ namespace au {
     LogData& log_data();
     
     // Set and get methods
-    inline void Set(const std::string& field_name, const std::string& field_value);
+    void Set(const std::string& field_name, const std::string& field_value);
     template< typename T>
     inline void Set(const std::string& field_name, const T& t)
     {

@@ -22,7 +22,7 @@
 #include "samson/common/samson.pb.h"
 
 #include "samson/module/KVSetStruct.h"              // samson::KVSetStruct
-#include "samson/Stream/BlockInfo.h"                              // struct BlockInfo
+#include "samson/stream/BlockInfo.h"                              // struct BlockInfo
 
 
 namespace samson {

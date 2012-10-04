@@ -48,8 +48,7 @@ class Service;
 class ServiceItem {
 public:
 
-  ServiceItem(Service *_service,
-              SocketConnection *_socket_connection);
+  ServiceItem(Service *_service,SocketConnection *_socket_connection);
   virtual ~ServiceItem();
 
   // Stop this connection
@@ -68,7 +67,7 @@ private:
   friend class Service;
 };
 
-// Service opening a paricular port and accepting connections
+// Service opening a particular port and accepting connections
 
 class Service : public NetworkListenerInterface {
 public:
@@ -81,14 +80,11 @@ public:
   void StopService();                // Stop all threads for connections and thread for listener
 
   // Main method to define the service itself
-  virtual void run(SocketConnection *soket_connection,
-                   bool *quit) = 0;
+  virtual void run(SocketConnection *soket_connection,bool *quit) = 0;
 
   // virtual methods of NetworkListenerInterface
-  virtual void newSocketConnection(
-    NetworkListener *_listener,
-    SocketConnection *socket_connetion);
-
+  virtual void newSocketConnection(NetworkListener *_listener,SocketConnection *socket_connetion);
+  
   // Accessorts
   int port() const;
 

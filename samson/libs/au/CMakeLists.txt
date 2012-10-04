@@ -33,6 +33,7 @@ log/Log.h
 log/LogChannelFilter.h
 log/LogChannels.h
 log/LogCentral.h
+log/LogDispatcher.h
 log/LogPlugin.h
 log/LogPluginServer.h
 log/LogPluginScreen.h
@@ -49,6 +50,7 @@ log/Log.cpp
 log/LogChannelFilter.cpp
 log/LogChannels.cpp
 log/LogCentral.cpp
+log/LogDispatcher.cpp
 log/LogPlugin.cpp
 log/LogPluginServer.cpp
 log/LogPluginScreen.cpp

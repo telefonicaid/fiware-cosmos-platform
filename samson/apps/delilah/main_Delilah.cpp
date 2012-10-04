@@ -171,7 +171,7 @@ void cleanup(void) {
    * delilahConsole->stop();
    */
 
-  // Wait all threads to finsih
+  // Wait all threads to finish
   au::Singleton<au::ThreadManager>::shared()->wait("Delilah");
 
   // Clear google protocol buffers library
@@ -183,8 +183,6 @@ void cleanup(void) {
     delete delilahConsole;
     delilahConsole = NULL;
   }
-
-  LM_T(LmtCleanup, ("destroying ModulesManager"));
 
   LM_T(LmtCleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
@@ -289,7 +287,7 @@ int main(int argC, const char *argV[]) {
 
   // Change log to console
   au::log_central.evalCommand("screen off"); // Disable log to screen since we log to console
-  au::log_central.AddPlugin( new au::LogPluginConsole(delilahConsole) );
+  au::log_central.AddPlugin( "console" , new au::LogPluginConsole(delilahConsole) );
   
   AU_LM_M(("Delilah running..."));
   
@@ -344,9 +342,11 @@ int main(int argC, const char *argV[]) {
     }
 
     // Disconnect delilah
+    LM_M(("Calling delilahConsole->disconnect()"));
     delilahConsole->disconnect();
 
-
+    // Stopping network connections
+    delilahConsole->stop();
     exit(0);
   }
 
@@ -390,7 +390,6 @@ int main(int argC, const char *argV[]) {
         line[ strlen(line) - 1] = '\0';
       }
 
-      // LM_M(("Processing line: %s", line ));
       num_line++;
 
       if (( line[0] != '#' ) && ( strlen(line) > 0)) {
@@ -399,7 +398,6 @@ int main(int argC, const char *argV[]) {
         std::cerr << au::str("Delilah id generated %lu\n", id);
 
         if (id != 0) {
-          // LM_M(("Waiting until delilah-component %ul finish", id ));
           // Wait until this operation is finished
           while (delilahConsole->isActive(id)) {
             usleep(1000);

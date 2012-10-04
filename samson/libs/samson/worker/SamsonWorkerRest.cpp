@@ -2,12 +2,14 @@
 
 
 #include "SamsonWorker.h"
+#include "samson/common/ports.h"          // SAMSON_WORKER_PORT
 #include "samson/common/samsonVersion.h"
 #include "samson/delilah/WorkerCommandDelilahComponent.h"
 
 #include "SamsonWorkerRest.h"  // Own interface
 
 namespace samson {
+
   SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) : samson_worker_samples(samson_worker) {
     // Keep pointer to samson worker
     samson_worker_ = samson_worker;
@@ -62,6 +64,7 @@ namespace samson {
       // Mark as finish and wake up thread to answer this connection
       command->NotifyFinish();
       
+
       return;
     }
     
@@ -925,3 +928,4 @@ namespace samson {
     
   }
 }
+

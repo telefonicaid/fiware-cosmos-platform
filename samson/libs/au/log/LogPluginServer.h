@@ -72,8 +72,8 @@ namespace au {
     au::SharedPointer<FileDescriptor> local_file_descriptor_;    // Local file descriptor to write the log if not possible to connect
     au::SharedPointer<SocketConnection> socket_connection_;      // Socket connection with the logServer ( if any )
     
-    au::Cronometer time_since_last_connection_;        // Cronometer with the time since last connection
-    size_t time_reconnect_;                            // time for the next reconnection
+    au::Cronometer time_since_last_connection_;                  // Cronometer with the time since last connection
+    size_t time_reconnect_;                                      // time for the next reconnection
     
   };
   

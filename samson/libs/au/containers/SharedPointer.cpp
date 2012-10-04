@@ -1,6 +1,9 @@
 
 #include "au/mutex/TokenTaker.h"
 
+#include "logMsg/logMsg.h"                          // LM_T
+#include "logMsg/traceLevels.h"
+
 #include "Object.h"  // Own interface
 
 
@@ -17,6 +20,7 @@ void Object::Release() {
   }
 
   if (run_self_destroy) {
+    LM_T(LmtCleanup2, ("Calling delete for ~SharedPointer this:%p", this));
     delete this;
   }
 }

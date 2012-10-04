@@ -24,6 +24,20 @@ namespace au {
     // Main function to process incoming log
     void virtual Emit(au::SharedPointer<Log> log) = 0;
 
+    // Function to check if a log is accepted
+    bool Accept(au::SharedPointer<Log> log)
+    {
+      if( !activated_ )
+        return false;
+    
+      // Check emission channel
+      int channel = log->log_data().channel;
+      if( ! log_channels_filter_.IsChannelActivated(channel) )
+        return false;
+      
+      return true;
+    }
+    
     // Status function
     std::string virtual status() = 0;
     
@@ -55,6 +69,7 @@ namespace au {
     }
     
   private:
+    
     std::string name_;
     bool activated_;
     LogChannelFilter log_channels_filter_;

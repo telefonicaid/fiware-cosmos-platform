@@ -85,23 +85,47 @@ void LogServerChannel::initLogServerChannel(au::ErrorManager *error) {
 }
 
 void LogServerChannel::run(au::SocketConnection *socket_connection, bool *quit) {
-  while (!*quit) {
-    // Reaf a log
-    au::SharedPointer<Log>log(new Log());
-    log->Set("host", socket_connection->host_and_port());
 
+  // Read initial packet to understand if this is a log provider connection or a log prove connection
+  
+  
+  //if ( prove connection )
+  if( false )
+  {
+    LogProveConnection log_prove_connection;
+    log_connections_.insert(&log_prove_connection);
+    
+    while( !*quit )
+    {
+      LogPointer log = log_prove_connection.Pop();
+      if( log != NULL )
+        log->Write(socket_connection);
+      else
+        usleep(100000);
+      
+      if( socket_connection->IsClosed())
+        return;
+    }
+    
+  }
+  
+  
+  while (!*quit) {
+    // Read a log
+    au::SharedPointer<Log>log(new Log());
     if (!log->Read(socket_connection)) {
       LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
-      return;           // Not possible to read a log...
+      return; // Not possible to read a log...
     }
 
-    // Add channel information to keep logs separated
-    std::string exec_name = log->Get("EXEC");
     std::string channel = au::str("%s_%s_%d"
-                                  , exec_name.c_str()
+                                  , log->Get("EXEC").c_str()
                                   , socket_connection->host_and_port().c_str()
+
                                   , log->log_data().pid);
+    // Additional information to the log
     log->Set("channel", channel);
+    log->Set("host", socket_connection->host_and_port()); // Additional information to the log
 
     // Add log...
     add(log);

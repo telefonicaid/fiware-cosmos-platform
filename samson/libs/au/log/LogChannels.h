@@ -1,4 +1,7 @@
 
+#ifndef _H_AU_LOG_CHANNELS
+#define _H_AU_LOG_CHANNELS
+
 #include <string>
 #include <vector>
 
@@ -109,3 +112,5 @@ namespace au {
 
   
 }
+
+#endif

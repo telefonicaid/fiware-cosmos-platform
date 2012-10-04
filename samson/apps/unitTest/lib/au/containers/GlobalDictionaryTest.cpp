@@ -1,4 +1,4 @@
-#include "au/containers/GlobalDictionary.h"
+#include "au/containers/GeneralDictionary.h"
 #include "au/containers/SharedPointer.h"
 #include "gtest/gtest.h"
 

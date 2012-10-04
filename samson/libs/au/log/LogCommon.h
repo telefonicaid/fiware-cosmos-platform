@@ -17,8 +17,6 @@
 #define AU_LOG_SERVER_QUERY_PORT 6000
 #define AU_LOG_SERVER_DIRECTORY  "/var/log/logserver/"
 
-//Plugins
-#define AU_LOG_MAX_PLUGINS 128
 
 // Formatting
 //#define AU_LOG_DEFAULT_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"

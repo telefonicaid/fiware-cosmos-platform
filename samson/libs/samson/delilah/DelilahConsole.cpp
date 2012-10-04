@@ -23,7 +23,7 @@
 #include "au/tables/Table.h"
 #include "au/tables/Tree.h"                      // au::tables::TreeItem
 
-#include "au/log/LogCentral.h"
+#include "au/log/LogMain.h"
 
 #include "engine/DiskManager.h"
 #include "engine/MemoryManager.h"                // samson::MemoryManager

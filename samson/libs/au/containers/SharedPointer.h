@@ -2,10 +2,13 @@
 #ifndef _H_AU_SHARED_POINTER
 #define _H_AU_SHARED_POINTER
 
+#include <memory>
+
 #include "au/containers/list.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-#include <memory>
+#include "logMsg/logMsg.h"                          // LM_T
+#include "logMsg/traceLevels.h"
 
 namespace au {
 /* ------------------------------------------------------------------------
@@ -57,7 +60,7 @@ public:
 
   SharedPointer(const SharedPointer<C>& shared_pointer) {
     if (!shared_pointer.shared_reference_counter_) {
-      LM_X(1, ("Internal error un au::SharedPoint"));
+      LM_X(1, ("Internal error in au::SharedPoint"));
     }
 
     shared_reference_counter_ = shared_pointer.shared_reference_counter_;
@@ -66,7 +69,8 @@ public:
   }
 
   ~SharedPointer() {
-    // Release previous assignation
+    LM_T(LmtCleanup2, ("Called ~SharedPointer this:%p with counter:%d", this, shared_reference_counter_->count()));
+    // Release previous assignment
     Release();
   }
 
@@ -163,7 +167,7 @@ private:
     }
   }
 
-  // Spetial constructor for castings
+  // Special constructor for castings
   SharedPointer(SharedReferenceCounter *shared_refence_counter, C *c) {
     // Pointing to a newly created element
     shared_reference_counter_ = shared_refence_counter;

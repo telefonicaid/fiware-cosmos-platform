@@ -2,9 +2,11 @@
 #include <time.h>
 #define Char_to_int(x) ((x) - 48)
 
-#include "au/containers/vector.h"
 #include "logMsg/logMsg.h"                 // LM_T
 #include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
+
+#include "au/gpb.h"
+#include "au/containers/vector.h"
 
 namespace au {
 LogServerChannel::LogServerChannel(int port, std::string _directory)
@@ -87,12 +89,17 @@ void LogServerChannel::initLogServerChannel(au::ErrorManager *error) {
 void LogServerChannel::run(au::SocketConnection *socket_connection, bool *quit) {
 
   // Read initial packet to understand if this is a log provider connection or a log prove connection
+  gpb::LogConnectionHello* hello;
+  au::Status s = readGPB( socket_connection->fd() , &hello , 10 ); // 10 seconds timeout to read hello message
   
+  if( s != au::OK )
+    return;
   
-  //if ( prove connection )
-  if( false )
+  if( hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogProve )
   {
+    // Prove connection
     LogProveConnection log_prove_connection;
+    // TODO: Setup prove connection based on incomming hello message
     log_connections_.insert(&log_prove_connection);
     
     while( !*quit )
@@ -106,10 +113,10 @@ void LogServerChannel::run(au::SocketConnection *socket_connection, bool *quit) 
       if( socket_connection->IsClosed())
         return;
     }
-    
   }
+
   
-  
+  // Provider
   while (!*quit) {
     // Read a log
     au::SharedPointer<Log>log(new Log());

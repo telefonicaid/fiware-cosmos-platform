@@ -1,4 +1,6 @@
 
+#include "au/au.pb.h"
+#include "au/gpb.h"
 #include "LogPluginServer.h"  // Own interface
 
 namespace au {
@@ -27,7 +29,6 @@ namespace au {
     }
     
     // Connect the next time a trace is sent
-    socket_connection_ = NULL;
     time_reconnect_ = 0;
   }
   
@@ -54,6 +55,7 @@ namespace au {
     host_ = host;
     port_ = port;
     socket_connection_ = NULL;
+    time_reconnect_ = 0;
   }
   
   
@@ -97,15 +99,17 @@ namespace au {
              , host_.c_str(), port_, au::status(s), au::str_time(next_try_time).c_str()));
              */
           }
-          else
-            socket_connection_.Reset(tmp_socket_connection);
-          
-          /*
-           if (time  > 10) {
-           LM_LW(("Connected to log server after %s disconnected", au::str_time(time).c_str()));
-           }
-           */
         }
+        else
+        {
+          // Write hello message
+          gpb::LogConnectionHello hello;
+          hello.set_type( gpb::LogConnectionHello_LogConnectionType_LogProvider );
+          au::Status s = writeGPB( tmp_socket_connection->fd() , &hello);
+          if( s == au::OK )
+            socket_connection_.Reset(tmp_socket_connection);
+        }
+        
       }
     }
   }

@@ -1,7 +1,8 @@
-#include <vector>
-
 #ifndef _H_AU_SINGLETON
 #define _H_AU_SINGLETON
+
+#include <vector>
+#include <cstring>
 
 
 namespace au {

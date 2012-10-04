@@ -78,40 +78,6 @@ namespace au {
   };
   
   
-  class LogPluginFile : public LogPlugin {
-    
-  public:
-
-    LogPluginFile( ) : LogPlugin("File")
-    {
-      set_activated(false); // No activated by default
-    }
-    
-    LogPluginFile( std::string local_file );
-    ~LogPluginFile(){}
-    
-    // Emit a log in this channel
-    virtual void Emit( au::SharedPointer<Log> log );
-    virtual std::string status();
-    
-    // Accesors
-    std::string local_file() const
-    {
-      return local_file_;
-    }
-    
-    void set_local_file( const std::string& file_name );
-    
-  private:
-    
-    // File name to store logs
-    std::string local_file_;
-    
-    // Active connections to local file or network connection
-    au::SharedPointer<FileDescriptor> local_file_descriptor_;    // Local file descriptor to write the log if not possible to connect
-    
-  };
-  
   
 }
 

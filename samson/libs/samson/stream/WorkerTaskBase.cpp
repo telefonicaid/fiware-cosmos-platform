@@ -195,7 +195,7 @@ namespace samson {
       CommitCommand commit_command;
       
       // Input elements
-      for (int c = 0; c < inputs.size() ; c++) {
+      for (size_t c = 0; c < inputs.size() ; c++) {
         BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", c));
         au::list< BlockRef >::iterator it;
         for (it = block_list->blocks.begin(); it != block_list->blocks.end(); it++) {
@@ -211,7 +211,7 @@ namespace samson {
       }
       
       // Output elements
-      for (int c = 0; c < outputs.size(); c++) {
+      for (size_t c = 0; c < outputs.size(); c++) {
         BlockList *block_list = block_list_container_.getBlockList(au::str("output_%d", c));
         au::list< BlockRef >::iterator it;
         for (it = block_list->blocks.begin(); it != block_list->blocks.end(); it++) {

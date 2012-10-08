@@ -14,7 +14,7 @@ SAMSON_VERSION=0.7.0
 endif
 ifndef SAMSON_RELEASE
 	# Use the current timestamp guarantee unique builds
-	SAMSON_RELEASE=$(shell echo `date +%Y%M%d%H%M`_git)
+	SAMSON_RELEASE:=$(shell echo `date +%Y%M%d%H%M`_git)
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER

@@ -233,13 +233,13 @@ void KVInputVector::sortAndMerge(size_t middle_pos) {
   std::inplace_merge(_kv, _kv + middle_pos, _kv + num_kvs, compareKV);
 }
 
-void KVInputVector::init() {
+void KVInputVector::Init() {
   // Process all the key-values in order
-  pos_begin = 0;        // Position where the next group of key-values begin
-  pos_end      = 1;     // Position where the next group of key-values finish
+  pos_begin = 0;   // Position where the next group of key-values begin
+  pos_end   = 1;   // Position where the next group of key-values finish
 }
 
-KVSetStruct *KVInputVector::getNext() {
+KVSetStruct *KVInputVector::GetNext() {
   if (pos_begin >= num_kvs) {
     return NULL;
   }

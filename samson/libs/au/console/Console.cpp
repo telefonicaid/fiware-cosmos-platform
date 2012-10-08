@@ -103,10 +103,8 @@ bool Console::isImputReady() {
 }
 
 void Console::process_auto_complete(ConsoleAutoComplete *info) {
-  // Do something with autocomplete information provided by thrid party
 
   std::string help_message = info->getHelpMessage();
-
   if (( help_message.length() > 0) || info->necessary_print_last_words_alternatives()) {
     print_command();
     printf("\n");
@@ -688,17 +686,5 @@ void handle_tstp(int sig) {
   }
 }
 
-void Console::process_log(au::SharedPointer<Log>log) {
-  // Print a warning on screen
-
-  std::string type = log->Get("type");
-
-  if (( type == "E" ) || ( type == "X" )) {
-    writeErrorOnConsole("TRACE: " + log_formatter.get(log) + "\n");
-  } else if (type == "W") {
-    writeWarningOnConsole("TRACE: " + log_formatter.get(log) + "\n");
-  } else {
-    writeOnConsole("TRACE: " + log_formatter.get(log) + "\n");
-  }
-}
+  
 }

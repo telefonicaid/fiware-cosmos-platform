@@ -27,25 +27,37 @@ statistics/ActivityMonitor.cpp
 # ---------------------------------------------------
 
 SET( LOG_FILES
-log/log_server_common.h
-
-log/LogCentral.h
-log/LogPlugin.h
+log/LogMain.h
+log/LogCommon.h
 log/Log.h
+log/LogChannelFilter.h
+log/LogChannels.h
+log/LogCentral.h
+log/LogDispatcher.h
+log/LogPlugin.h
+log/LogPluginServer.h
+log/LogPluginScreen.h
+log/LogPluginConsole.h
+log/LogPluginFile.h
 log/LogServer.h
 log/LogServerChannel.h
-log/LogToServer.h
 log/LogFile.h
 log/LogFormatter.h
 log/TableLogFormatter.h
 log/LogContainer.h
 
-log/LogCentral.cpp
-log/LogPlugin.cpp
 log/Log.cpp
+log/LogChannelFilter.cpp
+log/LogChannels.cpp
+log/LogCentral.cpp
+log/LogDispatcher.cpp
+log/LogPlugin.cpp
+log/LogPluginServer.cpp
+log/LogPluginScreen.cpp
+log/LogPluginConsole.cpp
+log/LogPluginFile.cpp
 log/LogServer.cpp
 log/LogServerChannel.cpp
-log/LogToServer.cpp
 log/LogFile.cpp
 log/LogFormatter.cpp
 log/TableLogFormatter.cpp
@@ -60,6 +72,7 @@ SET( CONTAINERS_FILES
 
 containers/SharedPointer.h
 containers/Dictionary.h
+containers/GeneralDictionary.h
 containers/Queue.h
 containers/Box.h
 containers/map.h
@@ -169,7 +182,7 @@ Descriptors.h
 gpb.h
 Environment.h
 CommandLine.h
-
+Pattern.h
 ErrorManager.h
 varint.h
 Cronometer.h
@@ -183,19 +196,13 @@ string.h
 xml.h
 cpu.h
 ProcessStats.h
-
 ThreadManager.h
-
 StringCollection.h
 StructCollection.h
-
 Pool.h
 StringComponents.h
-
 Tokenizer.h
-
 OnOffMonitor.h
-
 daemonize.h
 )
 
@@ -209,9 +216,8 @@ Singleton.cpp
 Descriptors.cpp
 gpb.cpp
 CommandLine.cpp
+Pattern.cpp
 Environment.cpp
-
-
 ErrorManager.cpp
 Cronometer.cpp
 CronometerSystem.cpp
@@ -224,19 +230,13 @@ string.cpp
 xml.cpp
 cpu.cpp
 ProcessStats.cpp
-
 ThreadManager.cpp
-
 StringCollection.cpp
 StructCollection.cpp
-
 Pool.cpp
 StringComponents.cpp
-
 Tokenizer.cpp
-
 OnOffMonitor.cpp
-
 daemonize.cpp
 )
 

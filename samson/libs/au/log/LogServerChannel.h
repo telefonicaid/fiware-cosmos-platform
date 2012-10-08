@@ -23,6 +23,34 @@
 
 namespace au {
 class LogServer;
+  
+  
+  // Connection to receive logs
+  class LogProveConnection
+  {
+    
+  public:
+    
+    
+    void Push( LogPointer log )
+    {
+      au::TokenTaker tt(&token_);
+      // Check if we need this log
+      // TODO
+      
+      log_queue_.Push(log);
+    }
+    
+    LogPointer Pop()
+    {
+      au::TokenTaker tt(&token_);
+      return log_queue_.Pop();
+    }
+    
+  private:
+    au::Token token_;
+    au::Queue<Log> log_queue_;
+  };
 
 
 class LogServerChannel : public network::Service {
@@ -36,12 +64,12 @@ public:
   void initLogServerChannel(au::ErrorManager *error);
 
   // network::Service interface : main function for every active connection
-  void run(au::SocketConnection *socket_connection, bool *quit);
+  void run( au::SocketConnection *socket_connection, bool *quit );
 
   // Get some info bout logs
   std::string getInfo();
 
-  // Generic function to get a table of logs ( based on disk files )
+  // Generic function to get a table of logs
   std::string  getTable(au::CommandLine *cmdLine);
 
   // Generic function to get a table of channels ( log connections )
@@ -66,10 +94,11 @@ private:
   int file_counter;              // Used to write over a file
   size_t current_size;           // Current written size
   au::FileDescriptor *fd;        // Current file descriptor to save data
-  LogContainer log_container;       // Container of logs in memory ( fast query )
-
+  LogContainer log_container;    // Container of logs in memory ( fast query )
   au::rate::Rate rate;           // Estimated data rate for this channel
 
+  std::set<LogProveConnection*> log_connections_; // Connection to reveide logs
+  
   friend class LogServer;
 };
 }

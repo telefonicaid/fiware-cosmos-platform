@@ -16,6 +16,16 @@ gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& nam
   return NULL;
 }
 
+  gpb::StreamOperation * getStreamOperation(gpb::Data *data, size_t stream_operation_id) {
+    for (int i = 0; i < data->operations_size(); i++) {
+      if (stream_operation_id == data->operations(i).stream_operation_id()) {
+        return data->mutable_operations(i);
+      }
+    }
+    return NULL;
+  }
+  
+  
 void reset_stream_operations(gpb::Data *data) {
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *operations =
     data->mutable_operations();
@@ -247,6 +257,7 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
 void add_block(Data *data
                , const std::string& queue_name
                , size_t block_id
+               , size_t block_size
                , KVFormat format
                , ::samson::KVRange range
                , ::samson::KVInfo info
@@ -264,6 +275,7 @@ void add_block(Data *data
   // Always add at the end of the vector with a new block reference
   Block *block = queue->add_blocks();
   block->set_block_id(block_id);
+  block->set_block_size(block_size);
   block->set_kvs(info.kvs);
   block->set_size(info.size);
   block->set_time(time(NULL));
@@ -301,6 +313,10 @@ void rm_block(Data *data
   Block *block = get_first_block(queue, block_id);
 
   if (!block) {
+    
+    // If KVInfo = 0,0, no problem...
+    if( ( info.kvs == 0 ) && ( info.size == 0 ) )
+      return;
     error->set(au::str("Unknown block %lu", block_id));
     return;
   }
@@ -450,5 +466,143 @@ bool bath_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batc
 
   return true;
 }
+  
+  bool string_starts_with( const std::string& s , const std::string& prefix )
+  {
+    if( s.length() < prefix.length() )
+      return false;
+    
+    return( s.substr(0,prefix.length()) == prefix );
+  }
+  
+  void remove_finished_operation(gpb::Data *data , bool all_flag )
+  {
+    ::google::protobuf::RepeatedPtrField< ::samson::gpb::BatchOperation > *operations = data->mutable_batch_operations();
+    
+    int i=0;
+    while( i < operations->size() )
+    {
+      if( !all_flag )
+        if( !operations->Get(i).finished() )
+        {
+          i++;
+          continue;
+        }
+      
+      // Remove associated stream operation and queues
+      size_t delilah_id = operations->Get(i).delilah_id();
+      size_t delilah_component_id = operations->Get(i).delilah_component_id();
+      
+      std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
+
+      // Remove all queues and stream operations starting with this....
+      ::google::protobuf::RepeatedPtrField< ::samson::gpb::Queue > *queues = data->mutable_queue();
+      for ( int j = 0 ; j < queues->size() ; j++ )
+      {
+        std::string name = queues->Get(j).name();
+        if( string_starts_with(name,prefix) )
+        {
+          // Remove queue
+          queues->SwapElements(j, queues->size()-1);
+          queues->RemoveLast();
+        }
+      }
+
+      // Remove all queues and stream operations starting with this....
+      ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *stream_operations = data->mutable_operations();
+      for ( int j = 0 ; j < stream_operations->size() ; j++ )
+      {
+        std::string name = stream_operations->Get(j).name();
+        if( string_starts_with(name,prefix) )
+        {
+          // Remove queue
+          stream_operations->SwapElements(j, stream_operations->size()-1);
+          stream_operations->RemoveLast();
+        }
+      }
+      
+      // Remove this element
+      operations->SwapElements(i, operations->size()-1);
+      operations->RemoveLast();
+        
+    }
+  }
+  
+  
+  DataInfoForRanges get_data_info_for_ranges( gpb::Data*data , const std::string& queue , std::vector<samson::KVRange> ranges )
+  {
+    std::vector<std::string> queues;
+    queues.push_back( queue );
+    return get_data_info_for_ranges(data , queues, ranges );
+    
+  }
+
+  DataInfoForRanges get_data_info_for_ranges( gpb::Data*data , const std::vector<std::string>& queues , std::vector<samson::KVRange> ranges )
+  {
+    DataInfoForRanges info;
+
+    for ( size_t q = 0 ; q < queues.size() ; q++ )
+    {
+      gpb::Queue* queue = gpb::get_queue( data , queues[q] );
+      if( !queue )
+        continue;
+      
+      
+      for (int b = 0; b < queue->blocks_size(); b++)
+      {
+        const gpb::Block& block = queue->blocks(b);
+        info.data_size += block.size();
+      }
+      
+      std::vector<double> defrag_factors;
+      
+      for ( size_t r = 0 ; r < ranges.size() ; r++ )
+      {
+        size_t range_memory_size=0;
+        size_t range_data_size=0;
+        
+        for (int b = 0; b < queue->blocks_size(); b++)
+        {
+          const gpb::Block& block = queue->blocks(b);
+          size_t memory_size = block.block_size();
+          
+          samson::KVRanges block_ranges = block.ranges();  // Implicit conversion
+          double overlap_factor = block_ranges.GetOverlapFactor(ranges[r]);
+          size_t data_size = overlap_factor*block.size();
+          
+          if( overlap_factor > 0 )
+          {
+            info.data_size_in_ranges += data_size; // Total size of data in this queue for selected ranges
+
+            range_memory_size += memory_size;
+            range_data_size += data_size;
+          }
+          
+        }
+        
+        // Compute defrag factor
+        if( range_data_size > 0 )
+          defrag_factors.push_back( (double) range_data_size / (double) range_memory_size  );
+        
+        // Collect maximum
+        if( range_memory_size > info.max_memory_size_for_a_range )
+          info.max_memory_size_for_a_range = range_memory_size;
+        if( range_data_size > info.max_data_size_for_a_range )
+          info.max_data_size_for_a_range = range_data_size;
+
+      }
+    
+      // Compute average defrag_fractor
+      double total_defrag_factor = 0;
+      for ( size_t i = 0 ; i < defrag_factors.size() ; i++ )
+        total_defrag_factor+= defrag_factors[i];
+      
+      info.defrag_factor = total_defrag_factor / (double) defrag_factors.size();
+      
+    }
+    
+    return info;
+  }
+  
 }
 }

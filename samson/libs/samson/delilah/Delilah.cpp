@@ -89,8 +89,6 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   // Get host and port
   std::vector<std::string> components = au::split(host, ':');
 
-  LM_V(("Trying to connect to to %s", host.c_str()));
-
   std::string host_name;
   int port = -1;
   if (components.size() == 2) {
@@ -106,7 +104,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   au::Status s = au::SocketConnection::Create(host_name, port, &socket_connection);
 
   if (s != au::OK) {
-    error->set(au::str("Error creating socket %s", au::status(s)));
+    error->set(au::str("Error creating socket: '%s'", au::status(s)));
     if (socket_connection) {
       delete socket_connection;
     }
@@ -179,7 +177,7 @@ bool Delilah::isConnected() {
 
 void Delilah::notify(engine::Notification *notification) {
   if (notification->isName(notification_packet_received)) {
-    au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
+    au::SharedPointer<Packet> packet = notification->dictionary().Get<Packet>("packet");
     if (packet == NULL) {
       LM_W(("Received a notification to receive a packet without a packet"));
     }
@@ -252,7 +250,6 @@ void Delilah::receive(const PacketPointer& packet) {
     if (!packet->message->has_cluster_info()) {
       LM_W(("Received a cluster info update message without cluster information from connection %s. Ignoring..."
             , packet->from.str().c_str()));
-
       return;
     }
 
@@ -272,7 +269,6 @@ void Delilah::receive(const PacketPointer& packet) {
   if (msgCode == Message::StatusReport) {
     int worker_id = packet->from.id;
     if (worker_id != -1) {
-      // LM_M(("Delilah received a status report... worker id: %d", worker_id));
       updateWorkerXMLString(worker_id, packet->message->info());
     } else {
       LM_W(("Status report received from an unknown endpoint"));
@@ -570,10 +566,10 @@ bool Delilah::isActive(size_t id) {
   DelilahComponent *c = components_.findInMap(id);
 
   if (!c) {
+    LM_W(("Unknown delilah component for id:%lu", id));
     return false;
   }
-
-  return( !c->isComponentFinished());
+  return(!c->isComponentFinished());
 }
 
 bool Delilah::hasError(size_t id) {
@@ -583,6 +579,7 @@ bool Delilah::hasError(size_t id) {
 
   // No process, no error ;)
   if (!c) {
+    LM_W(("Unknown delilah component for id:%lu", id));
     return false;
   }
 
@@ -622,10 +619,8 @@ int Delilah::_receive(const PacketPointer& packet) {
 }
 
 // Get information for monitorization
-void Delilah::getInfo(std::ostringstream& output) {
-  if (output != output) {
-    LM_E(("sorry, just wanted to avoid a 'strict' warning ..."));  // Engine
-  }
+void Delilah::getInfo(std::ostringstream& /* output */ ) {
+  // Engine
   // engine::Engine::shared()->getInfo( output );
 
   // Engine system
@@ -639,7 +634,7 @@ void Delilah::getInfo(std::ostringstream& output) {
 }
 
 std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
-  au::tables::Table table("Name,left|Type,left|Size|Format,left");
+  au::tables::Table table("Name,left|Type,left|Size|Format,left|Error,left");
 
   // first off, we need to create a pointer to a directory
   DIR *pdir = opendir(".");    // "." will refer to the current directory
@@ -660,7 +655,7 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
           if (S_ISREG(buf2.st_mode)) {
             size_t size = buf2.st_size;
             if (!only_queues) {
-              table.addRow(au::StringVector(pent->d_name, "FILE", au::str(size, "bytes"), "-"));
+              table.addRow(au::StringVector(pent->d_name, "FILE", au::str(size, "bytes"), "-" ,  "-" ));
             }
           }
           if (S_ISDIR(buf2.st_mode)) {
@@ -669,13 +664,14 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
 
             if (error.IsActivated()) {
               if (!only_queues) {
-                table.addRow(au::StringVector(pent->d_name, "DIR", "", ""));
+                table.addRow(au::StringVector(pent->d_name, "DIR", "", "", error.GetMessage() ));
               }
             } else {
               table.addRow(au::StringVector(pent->d_name
                                             , "SAMSON queue"
                                             , samson_data_set->info().strDetailed()
-                                            , samson_data_set->format().str()));
+                                            , samson_data_set->format().str()
+                                            , "-" ));
             }
           }
         }

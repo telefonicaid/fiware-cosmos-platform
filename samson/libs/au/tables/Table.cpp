@@ -355,9 +355,10 @@ void TableColumn::processModifier(std::string modifier) {
     if (str_format == "double") {
       format = format_double;
     }
-    if (str_format == "per") {
+    if ((str_format == "per") || str_format == "percentadge" ) {
       format = format_percentadge;
     }
+    
     if (str_format == "time") {
       format = format_time;
     }
@@ -704,7 +705,7 @@ std::string Table::str_xml() {
 
   // Main title...
   if (title != "") {
-    au::xml_simple(output, "title",  title);  // For each record at the input, create an output
+    au::xml_simple_literal(output, "title",  title);  // For each record at the input, create an output
   }
   for (size_t r = 0; r < rows.size(); r++) {
     // Skip separators
@@ -716,13 +717,13 @@ std::string Table::str_xml() {
     for (size_t c = 0; c < columns.size(); c++) {
       au::xml_open(output, "property");
 
-      au::xml_simple(output, "name", columns[c]->getTitle());
+      au::xml_simple_literal(output, "name", columns[c]->getTitle());
 
       // Get the formatted output
       std::string column = columns[c]->getName();
       std::string value = getValue(r, c);
 
-      au::xml_simple(output, "value", value);
+      au::xml_simple_literal(output, "value", value);
 
       au::xml_close(output, "property");
     }

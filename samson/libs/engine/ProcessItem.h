@@ -49,7 +49,7 @@ class ProcessManager;
 
 // Note: NotificationObject is an empty class base to allo us to include a process item in a notification
 
-class ProcessItem : public NotificationObject {
+class ProcessItem {
 public:
 
   // Constructor with priority
@@ -67,22 +67,35 @@ public:
   std::string process_item_description() const;
   std::string process_item_current_task_description() const;
   std::string process_item_status() const;  // Status management
-  bool running() const;  // Check status of this process item
   double progress() const;  // Get progress of this task
+  bool finished() const;
+  bool running() const;
 
   // Debug string
   std::string str() const;
 
 
-  // Methods to indicate that we are starting running this process
-  void StartCronometer();
-  void StopCronometer();
+  // Methods to indicate that we start and stop activty ( cronometers for time measumenet )
+  void StartActivity();
+  void StopActivity();
 
   au::Environment& environment();
   au::ErrorManager& error();
 
-  const au::CronometerSystem& cronometer();
+  const au::CronometerSystem& running_cronometer() const;
+  const au::CronometerSystem& waiting_cronometer() const;
 
+  // Information about times
+  size_t waiting_time_seconds()
+  {
+    return waiting_cronometer_.seconds();
+  }
+  size_t running_time_seconds()
+  {
+    return running_cronometer_.seconds();
+  }
+
+  
 protected:
 
   // Interface to monitor operations performance
@@ -105,14 +118,16 @@ private:
   // Priority level ( 0 = low priority ,  10 = high priority )
   int priority_;
 
-  // Cronometer to measure time running
-  au::CronometerSystem cronometer_;
+  // Cronometer to measure time waiting and running
+  au::CronometerSystem waiting_cronometer_;
+  au::CronometerSystem running_cronometer_;
 
   // Identifiers of the listeners that should be notified when operation is finished
   std::set<size_t> listeners_;
 
-  // Flag to indivate if this process is running
+  // Internal falgs
   bool running_;
+  bool finished_;
 
   // Progress of the operation ( if internally reported somehow )
   double progress_;

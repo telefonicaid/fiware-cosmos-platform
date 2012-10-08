@@ -50,11 +50,11 @@
  *
  * Status
  *
- * unconnected --> Non connected to any cluster
- * connected   --> Connected to ZK
- * included    --> Part of the cluster
- * ready       --> All blocks required for processing are here
- *
+ * unconnected    --> Non connected to any cluster
+ * connected      --> Connected to ZK
+ * included       --> Part of the cluster
+ * ready          --> All blocks required for processing are here
+ * cluster_ready  --> All elements in the cluster are ready
  */
 
 namespace samson {

@@ -664,6 +664,28 @@ std::set<size_t> SamsonWorkerController::GetWorkerIds() {
   return worker_ids;
 }
 
+  
+  au::Uint64Set SamsonWorkerController::GetAllWorkerIdsForRange(KVRange range)
+  {
+    // Set of identifier to return
+    au::Uint64Set worker_ids;
+    
+    for (int i = 0; i < cluster_info_->process_units_size(); i++) {
+      const gpb::ProcessUnit& process_unit = cluster_info_->process_units(i);
+      
+      // Get range for this process unit
+      KVRange process_unit_range(process_unit.hg_begin(), process_unit.hg_end());
+      
+      if (process_unit_range.IsOverlapped(range))
+      {
+        worker_ids.insert(process_unit.worker_id());      // Add replicas
+        for (int r = 0; r < process_unit.replica_worker_id_size(); r++)
+          worker_ids.insert(process_unit.replica_worker_id(r));
+      }
+    }
+    return worker_ids;
+  }
+
 // Get workers that should have a copy of a block in this range
 au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) {
   // Set of identifier to return
@@ -725,7 +747,7 @@ size_t SamsonWorkerController::get_new_block_id() {
 
   if (rc) {
     // Some error...
-    LM_W(("Error creating node to get a new block id: %s", samson::zoo::str_error(rc).c_str()));
+    LM_W(("Error (%d) creating node to get a new block id: %s", rc, samson::zoo::str_error(rc).c_str()));
     return (size_t)-1;
   } else {
     // Created blocks
@@ -734,11 +756,14 @@ size_t SamsonWorkerController::get_new_block_id() {
     // Remove node
     rc = zoo_connection_->Remove(path);
     if (rc) {
-      LM_W(("Not possible to remove node at %s", path.c_str()));        // Check non zero id generated
+      LM_W(("Error (%d), not possible to remove node at %s", rc, path.c_str()));
     }
+    // Check non zero id generated
+    // TODO: @andreu please check if 0 ids are really wrong
+    // Why? Apparently, zookeeper is giving block ids starting from 0
     if (block_id == 0) {
-      LM_W(("Wrong block_id generated"));
-      return (size_t)-1;
+      LM_W(("Wrong block_id generated from path '%s'", path.c_str()));
+//      return (size_t)-1;
     }
 
     return block_id;

@@ -68,6 +68,21 @@ public:
   // HTML table version of this data type
   virtual std::string strHTMLTable(std::string name) = 0;
 
+  // General formated output
+  std::string strFormatted( const std::string& format )
+  {
+    if( ( format == "xml" ) || ( format == "XML" ))
+      return strXML();
+    if( ( format == "json" ) || ( format == "JSON" ))
+      return strJSON();
+    if( ( format == "html" ) || ( format == "HTML" ))
+      return strHTML(0);
+    if( ( format == "thtml" ) || ( format == "THTML" ))
+      return strHTMLTable("");
+    
+    return str();
+  }
+  
   virtual std::string paint_header(int init_col) = 0;
   virtual std::string paint_header_basic(int init_col) = 0;
   virtual std::string paint_value(int init_col) = 0;

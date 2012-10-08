@@ -46,17 +46,6 @@ double BlockInfo::lockedPercentadge() {
   return (double)size_locked / (double)size;
 }
 
-std::string BlockInfo::str() {
-  return au::str("%s [ %s | %s on memory / %s on disk / %s locked ] %s "
-                 , au::str(num_blocks, "Blocs").c_str()
-                 , au::str(size, "bytes").c_str()
-                 , au::str_percentage(size_on_memory, size).c_str()
-                 , au::str_percentage(size_on_disk, size).c_str()
-                 , au::str_percentage(size_locked, size).c_str()
-                 , info.str().c_str()
-                 );
-}
-
 void BlockInfo::push(KVFormat _format) {
   if (format == KVFormat("*", "*")) {
     format = _format;
@@ -114,7 +103,18 @@ bool BlockInfo::isContentOnDisk() {
   return ( size == size_on_disk );
 }
 
-std::string BlockInfo::strShort() {
+  std::string BlockInfo::str() {
+    return au::str("%s [ %s | %s on memory / %s on disk / %s locked ] %s "
+                   , au::str(num_blocks, "Blocs").c_str()
+                   , au::str(size, "bytes").c_str()
+                   , au::str_percentage(size_on_memory, size).c_str()
+                   , au::str_percentage(size_on_disk, size).c_str()
+                   , au::str_percentage(size_locked, size).c_str()
+                   , info.str().c_str()
+                   );
+  }
+
+  std::string BlockInfo::strShort() {
   if (num_blocks == 0) {
     return "empty";
   }
@@ -127,4 +127,15 @@ std::string BlockInfo::strShort() {
                  , ( size_on_disk == size ) ? 'D' : ' '
                  );
 }
+  std::string BlockInfo::strShortInfo() {
+    if (num_blocks == 0) {
+      return "empty";
+    }
+    
+    return au::str("%3dbs %s %s"
+                   , num_blocks
+                   , au::str(info.kvs, "kvs").c_str()
+                   , au::str(info.size, "B").c_str()
+                   );
+  }
 }

@@ -68,9 +68,11 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   }
 
   // The ls_blocks command, always group by block_id
+    /*
   if (main_command == "ls_blocks") {
     group_field = "block_id";
   }
+     */
 }
 
 WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent() {

@@ -4,7 +4,7 @@
 #include "Visualitzation.h"
 
 namespace samson {
-bool match(std::string pattern, std::string name) {
+bool match(const std::string& pattern, const std::string& name) {
   if (pattern == "*") {
     return true;
   }
@@ -46,6 +46,11 @@ const std::string& Visualization::pattern() const {
   return pattern_;
 }
 
+  bool Visualization::match( const std::string& value) const  {
+    return( ::fnmatch(pattern_.c_str(), value.c_str(), FNM_PATHNAME) == 0 );
+  }
+
+  
 const au::Environment& Visualization::environment() {
   return environment_;
 }

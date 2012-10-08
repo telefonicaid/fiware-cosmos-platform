@@ -16,7 +16,7 @@ BlockListContainer::~BlockListContainer() {
   blockLists_.clearMap();                      // Remove all BlockList instances
 }
 
-BlockList *BlockListContainer::getBlockList(std::string name) {
+BlockList *BlockListContainer::getBlockList(std::string name)  {
   BlockList *blockList = blockLists_.findInMap(name);
 
   if (!blockList) {

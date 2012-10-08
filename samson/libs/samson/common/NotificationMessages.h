@@ -11,7 +11,7 @@
 #define notification_samson_worker_check_finish_tasks "notification_samson_worker_check_finish_tasks"
 
 
-#define notification_samson_worker_send_trace         "notification_samson_worker_send_trace"
+#define notification_samson_worker_send_message         "notification_samson_worker_send_message"
 
 
 #define notification_review_worker_command_manager    "notification_review_worker_command_manager"

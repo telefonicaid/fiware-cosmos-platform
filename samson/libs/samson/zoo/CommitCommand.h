@@ -27,6 +27,7 @@ class CommitCommandItem {
   std::string command_;
   std::string queue_;
   size_t block_id_;
+  size_t block_size_;
   KVFormat format_;
   KVRange range_;
   KVInfo info_;
@@ -38,9 +39,10 @@ class CommitCommandItem {
    * [0]  command
    * [1]  queue
    * [2]  block_id
-   * [3][4] format
-   * [5][6] range
-   * [7][8] info ( size - kvs )
+   * [3]  block_size
+   * [4][5] format
+   * [6][7] range
+   * [8][9] info ( size - kvs )
    *
    */
 
@@ -49,6 +51,7 @@ public:
   CommitCommandItem(const std::string& command
                     , const std::string& queue
                     , size_t block_id
+                    , size_t block_size
                     , const KVFormat& format
                     , const KVRange& range
                     , const KVInfo& info);
@@ -60,6 +63,7 @@ public:
   std::string command() const;
   std::string queue() const;
   size_t block_id() const;
+  size_t block_size() const;
   KVFormat format() const;
   KVRange range() const;
   KVInfo info() const;
@@ -84,11 +88,13 @@ public:
   // handy function to add items to this command
   void AddBlock(const std::string& queue
                 , size_t block_id
+                , size_t block_size
                 , const KVFormat& format
                 , const KVRange& range
                 , const KVInfo& info);
   void RemoveBlock(const std::string& queue
                    , size_t block_id
+                   , size_t block_size
                    , const KVFormat& format
                    , const KVRange& range
                    , const KVInfo& info);

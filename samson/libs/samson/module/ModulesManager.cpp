@@ -17,6 +17,7 @@
 #include "logMsg/traceLevels.h"                 // Lmt...
 
 #include "au/mutex/TokenTaker.h"                // au::TokenTake
+#include "au/tables/Table.h"
 
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/MessagesOperations.h"   // evalHelpFilter(.)
@@ -43,7 +44,6 @@ void ModulesManager::clearModulesManager() {
   au::TokenTaker tt(&token_modules, "ModulesManager::clearModulesManager");
 
   modules.clearMap();
-
   // Close handlers
   closeHandlers();
 }
@@ -60,8 +60,6 @@ void ModulesManager::closeHandlers() {
 }
 
 void ModulesManager::addModulesFromDirectory(std::string dir_name) {
-  LM_T(LmtModuleManager, ("Adding modules from directory %s", dir_name.c_str()));
-
   DIR *dp;
   struct dirent *dirp;
   if ((dp  = opendir(dir_name.c_str())) == NULL) {
@@ -92,8 +90,6 @@ typedef const char *(*getVersionFunction)();
 
 
 void ModulesManager::addModule(std::string path) {
-  LM_T(LmtModuleManager, ("Adding module at path %s", path.c_str()));
-
   // Dynamic link open
   void *hndl = dlopen(path.c_str(), RTLD_NOW);
 
@@ -138,9 +134,12 @@ void ModulesManager::addModule(std::string path) {
     Module *previous_module = modules.findInMap(module->name);
 
     if (previous_module != NULL) {
-      LM_W(("Error loading module from file %s since it is already loaded", module->file_name.c_str()));
+      LM_W(("Error loading module %s from file %s since it is already loaded"
+            , module->name.c_str()
+            , module->file_name.c_str()));
       delete module;
       dlclose(hndl);
+      return;
     }
 
     LM_T(LmtModuleManager, ("Module %s compiled for version %s ... OK!", module->name.c_str(), platform_version.c_str()));
@@ -198,6 +197,29 @@ Status ModulesManager::loadModule(std::string path, Module **module, std::string
 
   return OK;
 }
+
+  std::string ModulesManager::GetTableOfModules()
+  {
+    au::TokenTaker tt(&token_modules, "ModulesManager::GetTableOfModules");
+    
+    au::tables::Table table("Name,left|Version|#Operations|#Datas|Author,left");
+    table.setTitle("Modules");
+    au::map< std::string, Module >::iterator it;
+    for (it = modules.begin(); it != modules.end(); it++) {
+      std::string name = it->second->name;
+
+      Module *module = it->second;
+      au::StringVector values;
+      values.Push( module->name );
+      values.Push(  module->version );
+      values.Push(  module->operations.size() );
+      values.Push(  module->datas.size() );
+      values.Push(  module->author );
+      table.addRow(values);
+    }
+    return table.str();
+    
+  }
 
 samson::gpb::Collection *ModulesManager::getModulesCollection(const Visualization& visualitzation) {
   samson::gpb::Collection *collection = new samson::gpb::Collection();

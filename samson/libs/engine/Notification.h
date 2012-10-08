@@ -25,22 +25,12 @@
 #include <set>                  // std::set
 
 #include "au/Environment.h"     // au::Enrivonment
-
 #include "au/containers/Dictionary.h"
+#include "au/containers/GeneralDictionary.h"
 
 #include <string.h>
 
 namespace engine {
-class Object;
-
-// Empty class to derive objects that should be included in Notification disctionary
-class NotificationObject {
-public:
-  NotificationObject() {
-  };
-  virtual ~NotificationObject() {
-  };
-};
 
 class Notification {
 public:
@@ -55,7 +45,7 @@ public:
 
   // Accessorts
   const char *name();
-  au::Dictionary<std::string, NotificationObject>& dictionary();
+  au::GeneralDictionary& dictionary();
   au::Environment& environment();
   bool isName(const char *name);
   const std::set<size_t>& targets();
@@ -63,14 +53,14 @@ public:
   // Get a string for debug
   std::string GetDescription();
   std::string GetShortDescription();
-
+  
 private:
 
   // Name of the notification
   const char *name_;
 
   // Generic dictionary ob objects ( shared pointers )
-  au::Dictionary<std::string, NotificationObject> dictionary_;
+  au::GeneralDictionary dictionary_;
 
   // Identifiers that should receive this notification
   std::set<size_t> targets_;

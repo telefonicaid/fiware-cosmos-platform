@@ -39,6 +39,11 @@ double CronometerSystem::seconds() const {
     return seconds_;
   }
 }
+  
+  std::string CronometerSystem::str_seconds() const
+  {
+    return  au::str_time( seconds() );
+  }
 
 std::ostream& operator<<(std::ostream& o, const CronometerSystem& cronometer_system) {
   o << "[ " << au::str_time_simple(cronometer_system.seconds());

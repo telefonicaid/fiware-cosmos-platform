@@ -43,6 +43,7 @@ public:
 
   // Get collection to be displayed on delilah
   gpb::Collection *getCollectionForQueues(const Visualization& visualization);
+  gpb::Collection *getCollectionForQueueRanges(const Visualization& visualization, const std::string& queue_name );
   gpb::Collection *getCollectionForQueuesWithBlocks(const Visualization& visualization);
   gpb::Collection *getCollectionForStreamOperations(const Visualization& visualization);
   gpb::Collection *getCollectionForBatchOperations(const Visualization& visualization);

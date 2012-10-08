@@ -6,7 +6,7 @@
 
 #include "engine/Buffer.h"  // engine::Buffer
 #include "engine/DiskOperation.h"
-#include "engine/Notification.h"                // engine::Notificaiton
+#include "engine/Notification.h"                // engine::Notification
 
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
 #include "samson/common/samson.pb.h"  // network::...
@@ -41,6 +41,7 @@ PopDelilahComponent::PopDelilahComponent(std::string queue
 
   // Counter for responses we get
   num_pop_queue_responses_ = 0;
+  started_ = false;
 
   // concept for this delilah component
   setConcept(au::str("Pop queue %s to local directory %s", queue.c_str(), file_name.c_str()));
@@ -58,6 +59,7 @@ void PopDelilahComponent::run() {
     }
 
     if (mkdir(file_name_.c_str(), 0755)) {
+      LM_E(("Not possible to create directory %s (%s).", file_name_.c_str(), strerror(errno)));
       setComponentFinishedWithError(au::str("Not possible to create directory %s (%s).", file_name_.c_str(),
                                             strerror(errno)));
       return;
@@ -124,7 +126,7 @@ std::string PopDelilahComponent::getExtraStatus() {
     output << "Waiting for " << num_pending_write_operations_ << " disk operations\n\n";
   }
   if (num_blocks_downloaded_ > 0) {
-    output << "Total blocks downlaoded " << num_blocks_downloaded_ << "\n\n";
+    output << "Total blocks downloaded " << num_blocks_downloaded_ << "\n\n";
   }
   output << table.str();
   output << "\n\n";
@@ -148,9 +150,13 @@ void PopDelilahComponent::send_main_request() {
 
   // Send message
   delilah->network->Send(packet);
+  LM_T(LmtDelilahComponent, ("pop request packet sent to worker_id_:%lu", worker_id_));
 }
 
 void PopDelilahComponent::receive(const PacketPointer& packet) {
+  LM_T(LmtDelilahComponent, ("Received a packet:%s", Message::messageCode(packet->msgCode)));
+  // Message::PopQueueResponse
+  // Response to main request. It provides list of blocks to be downloaded
   if (packet->msgCode == Message::PopQueueResponse) {
     if (!packet->message->has_pop_queue_response()) {
       LM_W(("Received a pop request response without correct information.Ignoring.."));
@@ -161,6 +167,9 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
 
     // Add all element to the list
     const gpb::Queue& queue = packet->message->pop_queue_response().queue();
+    LM_T(LmtDelilahComponent, ("Received a pop request response for queue:'%s', with correct information. blocks_size:%d, num_pop_queue_responses_:%d",
+          queue.name().c_str(), queue.blocks_size(), num_pop_queue_responses_));
+    LM_T(LmtDelilahComponent, ("Message:'%s'", packet->message->ShortDebugString().c_str()));
     for (int i = 0; i < queue.blocks_size(); i++) {
       int commit_id = queue.blocks(i).commit_id();
       if (commit_id > commit_id_) {
@@ -172,19 +181,24 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
       size_t item_id = item_id_++;
       PopDelilahComponentItem *item = new PopDelilahComponentItem(item_id, block_id, ranges);
       items_.insertInMap(item_id, item);
+      LM_T(LmtDelilahComponent, ("activate component with started flag"));
+      set_started(true);
 
       // Send first request for this item
+      LM_T(LmtDelilahComponent, ("send_request called from PopDelilahComponent::receive(), first request"));
       send_request(item);
 
       // total counter of blocks
       num_blocks_downloaded_++;
     }
 
+    LM_T(LmtDelilahComponent, ("pop request response received (num_pop_queue_responses_:%d). Ready to check()", num_pop_queue_responses_));
     check();
     return;
   }
 
-  // PopBlockRequestConfirmation
+  // Message::PopBlockRequestConfirmation
+  // response to confirm this block can or cannot be provided
 
   if (packet->msgCode == Message::PopBlockRequestConfirmation) {
     // Get identifier of the pop item it refers
@@ -198,6 +212,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
 
     if (packet->message->has_error()) {
       // Error in confirmation, send the next one
+      LM_W(("Error in confirmation, send the next one"));
       send_request(item);
       check();
       return;
@@ -209,7 +224,8 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     return;
   }
 
-  // PopBlockRequestResponse
+  // Message::PopBlockRequestResponse
+  // response with the content of a block
 
   if (packet->msgCode == Message::PopBlockRequestResponse) {
     // Get identifier of the pop item it refers
@@ -218,6 +234,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     // Search for this item
     PopDelilahComponentItem *item = items_.findInMap(pop_id);
     if (!item) {
+      LM_W(("Unknown pop item %lu in a PopBlockRequestResponse for delilah component %lu" , pop_id , id ));
       return;
     }
 
@@ -237,7 +254,7 @@ void PopDelilahComponent::notify(engine::Notification *notification) {
 }
 
 void PopDelilahComponent::check() {
-  // Resent to other workers if necessry
+  // Resent to other workers if necessary
   au::map< size_t, PopDelilahComponentItem >::iterator it;
   for (it = items_.begin(); it != items_.end(); it++) {
     PopDelilahComponentItem *item = it->second;
@@ -259,6 +276,7 @@ void PopDelilahComponent::check() {
     // Get buffer for this item ( if available )
     engine::BufferPointer buffer = item->buffer();
     if (buffer == NULL) {
+      LM_W(("No buffer available in response to pop request"));
       return;
     }
 
@@ -270,10 +288,12 @@ void PopDelilahComponent::check() {
 
       au::SharedPointer< engine::DiskOperation> operation(engine::DiskOperation::newWriteOperation(buffer, file_name,
                                                                                                    engine_id()));
+      LM_T(LmtDelilahComponent, ("Add write operation on file:'%s'", file_name.c_str()));
       engine::Engine::disk_manager()->Add(operation);
       num_pending_write_operations_++;
     } else {
       // Use delilah interface to report this block
+      LM_T(LmtDelilahComponent, ("Use delilah interface to report this block"));
       delilah->PublishBufferFromQueue(queue_, buffer);
     }
 
@@ -283,9 +303,17 @@ void PopDelilahComponent::check() {
 
   // Set component as finish if everything is done
   if (file_name_ != "") {
-    if (( num_pending_write_operations_ == 0 ) && ( items_.size() == 0)) {
+    // Adding stated() to avoid finishing a component before started
+    if (started() && (num_pending_write_operations_ == 0) && (items_.size() == 0)) {
+      LM_T(LmtDelilahComponent, ("pop operation finished on file '%s' because started:%d, num_pending_write_operations_:%d && items_.size():%lu",
+            file_name_.c_str(), started_, num_pending_write_operations_, items_.size()));
       setComponentFinished();
+    } else {
+      LM_T(LmtDelilahComponent, ("Waiting for pop component started:%d with num_pending_write_operations_:%d, items.size():%lu",
+            started_, num_pending_write_operations_, items_.size()));
     }
+  } else {
+    LM_W(("pop operation without file_name"));
   }
 }
 }

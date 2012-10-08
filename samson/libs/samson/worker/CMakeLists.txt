@@ -6,6 +6,7 @@ SET (HEADERS
 	WorkerBlockManager.h
 	PushOperation.h
 	DistributionOperation.h
+	BlockRequest.h
 	SamsonWorkerSamples.h
 	SamsonWorkerRest.h
 )
@@ -17,6 +18,7 @@ SET (SOURCES
 	WorkerBlockManager.cpp
 	PushOperation.cpp
 	DistributionOperation.cpp
+	BlockRequest.cpp
 	SamsonWorkerSamples.cpp
 	SamsonWorkerRest.cpp
 )

@@ -34,7 +34,47 @@ namespace engine {
  * Buffer class to hold data managed by MemoryManager
  */
 
-class Buffer : public NotificationObject {
+  class TagCollection
+  {
+    
+  public:
+    
+    void SetTag( const std::string tag )
+    {
+      au::TokenTaker tt(&token_);
+      tags_.insert(tag);
+    }
+    void RemoveTag( const std::string tag )
+    {
+      au::TokenTaker tt(&token_);
+      tags_.erase(tag);
+    }
+    
+    bool contains_tag( const std::string tag )
+    {
+      au::TokenTaker tt(&token_);
+      return ( tags_.find(tag) != tags_.end() );
+    }
+
+    std::string GetTagString()
+    {
+      au::TokenTaker tt(&token_);
+      std::ostringstream output;
+      std::set<std::string>::iterator iterator;
+      for ( iterator = tags_.begin() ;iterator != tags_.end(); iterator++ )
+        output << *iterator << " ";
+      return output.str();
+    }
+    
+  private:
+    
+    // Tag collection for correct identification
+    std::set<std::string> tags_;
+    au::Token token_;
+    
+  };
+  
+class Buffer : public TagCollection {
   Buffer(const std::string& name, const std::string& type, size_t max_size);
 
 public:
@@ -58,6 +98,13 @@ public:
   // Get a description of the buffer ( debugging )
   std::string str() const;
 
+  // Environment variable
+  au::Environment& environment()
+  {
+    return environment_;
+  }
+
+  
   // Set internal name and type for debuggin
   void set_name_and_type(std::string name, std::string type);
 
@@ -108,6 +155,9 @@ public:
   // Read a file and write to this buffer
   void WriteFile(const std::string& file_name, au::ErrorManager& error);
 
+  // Access to tags
+  
+  
 private:
 
   char *data_;                  // Buffer of data
@@ -129,6 +179,10 @@ private:
    */
 
   size_t offset_;
+  
+
+  au::Environment environment_;
+  
 };
 
 

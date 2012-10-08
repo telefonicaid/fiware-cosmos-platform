@@ -157,6 +157,9 @@ void Block::freeBlock() {
 
   // Relase buffer
   buffer_ = NULL;
+  
+  // Release KVFILE
+  file_ = NULL;
 }
 
 // Get information about this block
@@ -261,7 +264,7 @@ KVInfo Block::getKVInfo() {
   return header.info;
 }
 
-size_t Block::get_block_id() {
+size_t Block::block_id() {
   return block_id_;
 }
 
@@ -277,9 +280,9 @@ size_t Block::worker_id() {
   return header.worker_id;
 }
 
-void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
+void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization , size_t accumulated_size ) {
   samson::add(record, "block_id", block_id_, "left,different");
-  samson::add(record, "origin_worker_id", header.worker_id, "left,different");
+  samson::add(record, "o_worker", header.worker_id, "left,different");
 
   if (temporal_) {
     samson::add(record, "tmp", "Y", "left,different");
@@ -289,6 +292,8 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
 
   samson::add(record, "size", getSize(), "f=uint64,sum");
 
+  samson::add(record, "tsize", accumulated_size, "f=uint64,sum");
+  
   samson::add(record, "KVFormat", getKVFormat().str(), "left,different");
   samson::add(record, "KVRange", getKVRange().str(), "left,different");
   samson::add(record, "KVInfo", getKVInfo().str(), "left,different");
@@ -312,9 +317,9 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
 // au::Token token_lookupList;
 // BlockLookupList* lookupList;
 
-std::string Block::lookup(const char *key, std::string outputFormat) {
-  // Mutex preotection
-  au::TokenTaker tt(&token_lookupList);
+  void Block::lookup(const char *key, au::SharedPointer<au::network::RESTServiceCommand> command ) {
+    
+  au::TokenTaker tt(&token_lookupList);  // Mutex protection
 
   // We should check if the block can be locked in memory...
 
@@ -326,13 +331,12 @@ std::string Block::lookup(const char *key, std::string outputFormat) {
       LM_E(("Error creating BlockLookupList (%s)", lookupList->error.GetMessage().c_str()));
       delete lookupList;
       lookupList = NULL;
-      return au::xml_simple("error", "Error creating BlockLookupList");
+      command->AppendFormatedError("Error creating BlockLookupList");
+      return;
     }
-  } else {
-    LM_M(("lookupList already created for block_id %lu", block_id_ ));
   }
-
-  return lookupList->lookup(key, outputFormat);
+  
+    lookupList->lookup(key, command );
 }
 
 std::string Block::str_state() {
@@ -394,6 +398,7 @@ bool Block::compare(Block *b1, Block *b2) {
   size_t min_task_id_1 = b1->min_task_id_;
   size_t min_task_id_2 = b2->min_task_id_;
 
+  
   if (min_task_id_1 == min_task_id_2) {
     // Comapre by priority
     int p1 = b1->max_priority_;
@@ -410,7 +415,9 @@ bool Block::compare(Block *b1, Block *b2) {
 
     return p1 > p2;
   } else {
-    return( min_task_id_1 < min_task_id_2 );
+
+    bool ans = ( min_task_id_1 < min_task_id_2 );
+    return ans;
   }
 }
 

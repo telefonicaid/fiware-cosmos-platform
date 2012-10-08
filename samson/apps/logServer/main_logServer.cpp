@@ -3,7 +3,7 @@
 
 #include "au/daemonize.h"
 #include "au/log/LogServer.h"
-#include "au/log/log_server_common.h"
+#include "au/log/LogCommon.h"
 
 #define LOC           "localhost"
 

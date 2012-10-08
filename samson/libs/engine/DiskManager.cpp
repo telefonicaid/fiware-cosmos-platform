@@ -114,11 +114,9 @@ void DiskManager::Cancel(const au::SharedPointer<engine::DiskOperation>& operati
     // Add a notification for this operation ( removed when delegate is notified )
     Notification *notification = new Notification(notification_disk_operation_request_response);
 
-    au::SharedPointer<NotificationObject> notification_object;
-    notification_object = operation.static_pointer_cast<NotificationObject>();
-    // notification_object = operation;
-
-    notification->dictionary().Set("disk_operation",  notification_object);
+    // Add disk operation to the notification dictionary
+    notification->dictionary().Set<DiskOperation>("disk_operation",  operation);
+    
     notification->AddEngineListeners(operation->listeners);
     notification->environment().Add(operation->environment);
     // Recover the environment variables to identify this request
@@ -153,7 +151,7 @@ void DiskManager::FinishDiskOperation(const au::SharedPointer< ::engine::DiskOpe
   // Add a notification for this operation to the required target listener
   Notification *notification = new Notification(notification_disk_operation_request_response);
 
-  notification->dictionary().Set("disk_operation", operation.static_pointer_cast<NotificationObject>());
+  notification->dictionary().Set<DiskOperation>("disk_operation", operation );
   notification->AddEngineListeners(operation->listeners);
   notification->environment().Add(operation->environment);              // Recover the environment variables to identify this request
 

@@ -25,28 +25,26 @@ WorkerCommandManager::WorkerCommandManager(SamsonWorker *_samsonWorker) {
   }
 }
 
-void WorkerCommandManager::addWorkerCommand(WorkerCommand *workerCommand) {
-  // Set the internal pointer to stream manager
-  workerCommand->setSamsonWorker(samsonWorker);
+void WorkerCommandManager::Add(WorkerCommand *workerCommand) {
 
   size_t id = worker_task_id++;
   workerCommands.insertInMap(id, workerCommand);
 
   // First run of this worker command
-  workerCommand->run();
+  workerCommand->Run();
 }
 
 // Cancel worker command
-bool WorkerCommandManager::cancel(std::string worker_command_id) {
+bool WorkerCommandManager::Cancel(std::string worker_command_id) {
   bool found = false;
 
   au::map< size_t, WorkerCommand >::iterator it_workerCommands;
   for (it_workerCommands = workerCommands.begin(); it_workerCommands != workerCommands.end(); it_workerCommands++) {
-    std::string my_worker_command_id = it_workerCommands->second->worker_command_id;
+    std::string my_worker_command_id = it_workerCommands->second->worker_command_id_;
 
     if (my_worker_command_id == worker_command_id) {
       found = true;
-      it_workerCommands->second->finishWorkerTaskWithError("Canceled");
+      it_workerCommands->second->FinishWorkerTaskWithError("Canceled");
     }
   }
   return found;
@@ -60,7 +58,7 @@ void WorkerCommandManager::notify(engine::Notification *notification) {
     // Review all WorkerCommand is necessary
     au::map< size_t, WorkerCommand >::iterator it_workerCommands;
     for (it_workerCommands = workerCommands.begin(); it_workerCommands != workerCommands.end(); it_workerCommands++) {
-      it_workerCommands->second->run();             // Excute if necessary
+      it_workerCommands->second->Run();             // Excute if necessary
     }
     return;
   }
@@ -73,7 +71,7 @@ samson::gpb::Collection *WorkerCommandManager::getCollectionOfWorkerCommands(con
 
   au::map< size_t, WorkerCommand >::iterator it;
   for (it = workerCommands.begin(); it != workerCommands.end(); it++) {
-    std::string command = it->second->command;
+    std::string command = it->second->command_;
     if (match(visualization.pattern(), command)) {
       it->second->fill(collection->add_record(), visualization);
     }
@@ -81,13 +79,4 @@ samson::gpb::Collection *WorkerCommandManager::getCollectionOfWorkerCommands(con
   return collection;
 }
 
-// Get information for monitoring
-void WorkerCommandManager::getInfo(std::ostringstream& output) {
-  output << "<worker_command_manager>\n";
-
-  // WorkerCommands
-  au::xml_iterate_map(output, "worker_commands", workerCommands);
-
-  output << "</worker_command_manager>\n";
-}
 }

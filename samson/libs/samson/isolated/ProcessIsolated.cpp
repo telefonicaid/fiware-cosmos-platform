@@ -20,10 +20,11 @@ namespace samson {
 // 5 is an arbitrary name ( should be based on the size of the cluster and redundancy )
 int ProcessIsolated::num_hg_divisions = 5;
 
-ProcessIsolated::ProcessIsolated(std::string description, ProcessBaseType _type) : ProcessItemIsolated(description) {
+ProcessIsolated::ProcessIsolated(SamsonWorker* samson_worker,size_t worker_task_id , const std::string& operation , const std::string& concept ,  ProcessBaseType _type)
+  : ProcessItemIsolated(samson_worker, worker_task_id , operation, concept ) {
+    
   num_outputs = 0;          // Outputs are defined calling "addOutput" with the rigth output format
-
-  type = _type;
+  type = _type;             // Keep the type of operation ( data is generated differently )
 
   // By default we have no asignation of shared memory
   // This is obtained when executing
@@ -133,7 +134,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
       OutputChannel *_channel = &channel[ o * num_hg_divisions + s ];
 
       if (_channel->info.size > 0) {
-        engine::BufferPointer buffer = engine::Buffer::Create("Output of " + processItemIsolated_description
+        engine::BufferPointer buffer = engine::Buffer::Create("Output of [" + concept() + "]"
                                                               , "ProcessIsolated"
                                                               , sizeof(KVHeader) + _channel->info.size);
 
@@ -184,7 +185,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
         free(info);
 
         // Process the output buffer
-        processOutputBuffer(buffer, o, s, finish);
+        processOutputBuffer(buffer, o);
       }
     }
   }
@@ -202,7 +203,7 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
 #pragma mark ---
 
   if (size > 0) {
-    engine::BufferPointer buffer = engine::Buffer::Create("Output of " + processItemIsolated_description
+    engine::BufferPointer buffer = engine::Buffer::Create("Output of [" + concept() + "]"
                                                           , "ProcessIsolated"
                                                           , sizeof(KVHeader) + size);
 
@@ -216,18 +217,19 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
     memcpy(buffer->data() + sizeof( KVHeader ), data, size);
     buffer->set_size(sizeof(KVHeader) + size);
 
-    processOutputTXTBuffer(buffer, finish);
+    processOutputBuffer(buffer, 0); // Output is always channel "0"
   }
 }
 
 void ProcessIsolated::initProcessItemIsolated() {
-  // Init function in the foreground-process
-  initProcessIsolated();
+
+  initProcessIsolated();  // Init function in the foreground-process
 
   if (error_.IsActivated()) {
     return;
   }
 
+  // Init the shared memory segment
   shm_id = engine::SharedMemoryManager::shared()->RetainSharedMemoryArea();
   if (shm_id != -1) {
     item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform(shm_id);

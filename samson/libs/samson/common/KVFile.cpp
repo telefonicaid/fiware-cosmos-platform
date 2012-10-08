@@ -11,15 +11,17 @@
 
 namespace samson {
 au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::ErrorManager& error) {
-  // Candidate instance
-  au::SharedPointer<KVFile> kv_file(new KVFile());
-  kv_file->buffer_ = buffer;
 
   if (buffer == NULL) {
     error.set("NULL buffer provided");
     return au::SharedPointer<KVFile>(NULL);
   }
 
+  // Candidate instance
+  au::SharedPointer<KVFile> kv_file(new KVFile());
+  kv_file->buffer_ = buffer;
+  buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
+  
   if (buffer->size() < sizeof(KVHeader)) {
     error.set(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
     return au::SharedPointer<KVFile>(NULL);
@@ -151,6 +153,10 @@ KVFile::~KVFile() {
     free(kvs_index);
     kvs_index = NULL;
   }
+  if( buffer_ != NULL )
+    buffer_->RemoveTag( au::str("kvfile_%p" , this ) );
+
+  
 }
 
 size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {

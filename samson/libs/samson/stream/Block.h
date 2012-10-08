@@ -69,12 +69,16 @@ public:
   size_t getSizeOnDisk();
   KVFormat getKVFormat();
   size_t getTime();
-  size_t get_block_id();
+  size_t block_id();
   KVRange getKVRange();                // Working with KVRanges
   KVInfo getKVInfo();
   size_t worker_id();
   bool temporal();
   void set_no_temporal();
+  size_t min_task_id()
+  {
+    return min_task_id_;
+  }
 
   // Set accesors
   void set_priority(int _priority);
@@ -83,7 +87,7 @@ public:
   std::string str_state();
 
   // Lookup for a particular queue ( lookupList is created if necessary )
-  std::string lookup(const char *key, std::string outputFormat);
+  void lookup(const char *key, au::SharedPointer<au::network::RESTServiceCommand> command );
 
   // Handy function to check if this block can be removed from manager
   bool canBeRemoved();
@@ -111,7 +115,7 @@ public:
   std::string str();
 
   // Collection-like monitorization information
-  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization , size_t accumulated_size );
 
   // Get internal buffer with data
   engine::BufferPointer buffer();

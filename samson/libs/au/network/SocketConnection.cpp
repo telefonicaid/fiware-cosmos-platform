@@ -54,17 +54,15 @@ Status SocketConnection::Create(std::string host, int port, SocketConnection **s
 
   if ((hp = gethostbyname(host.c_str())) == NULL) {
     *socket_connection = NULL;
+    LM_E(("gethostbyname(%s): errno(%d): %s", host.c_str(), errno, strerror(errno)));
     return GetHostByNameError;
   }
 
-  // LM_RE(GetHostByNameError, ("gethostbyname(%s): %s", host.c_str() , strerror(errno)));
-
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     *socket_connection = NULL;
+    LM_E(("socket error, errno(%d): %s", errno, strerror(errno)));
     return SocketError;
   }
-
-  // LM_RE(SocketError, ("socket: %s", strerror(errno)));
 
   memset((char *)&peer, 0, sizeof(peer));
 
@@ -89,7 +87,6 @@ Status SocketConnection::Create(std::string host, int port, SocketConnection **s
         *socket_connection = NULL;
         return ConnectError;
       }
-
       ++tri;
     } else {
       break;

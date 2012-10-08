@@ -23,8 +23,9 @@
 
 #include "au/ThreadManager.h"
 #include "au/log/Log.h"
-#include "au/log/LogToServer.h"
-#include "au/log/log_server_common.h"
+#include "au/log/LogCentral.h"
+#include "au/log/LogPluginConsole.h"
+#include "au/log/LogCommon.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/string.h"
 
@@ -36,9 +37,10 @@
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
+#include "samson/common/samsonDirectories.h"
+#include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/ports.h"
-#include "samson/common/samsonVars.h"
 #include "samson/common/samsonVersion.h"
 #include "samson/common/status.h"
 
@@ -65,11 +67,8 @@ char commandFileName[1024];
 bool monitorization;
 char command[1024];
 
-char log_file[1024];
-char log_host[1024];
-char cluster_id[1024];
+char log_command[1024];
 unsigned short log_port;
-bool log_classic;
 
 char host[1024];
 
@@ -82,22 +81,10 @@ char host[1024];
  */
 PaArgument paArgs[] =
 {
-  { "-cluster",          cluster_id,                     "",                           PaString,
-    PaOpt,
-    _i "default",      PaNL,
-    PaNL,    "Name of the cluster"                      },
-  { "-log_classic",      &log_classic,                   "",                           PaBool,
-    PaOpt,                          false,              false,
-    true,    "Use only the classical log system"        },
-  { "-log_host",         log_host,                       "",                           PaString,
-    PaOpt,                          _i "localhost",     PaNL,
+  SAMSON_ARGS,
+  { "-log",         log_command,                       "",                           PaString,
+    PaOpt,                          _i "",     PaNL,
     PaNL,    "log server host"                          },
-  { "-log_port",         &log_port,                      "",                           PaShortU,
-    PaOpt,                          LOG_PORT,           0,
-    10000,   "log server port"                          },
-  { "-log_file",         log_file,                       "",                           PaString,
-    PaOpt,                          _i "",              PaNL,
-    PaNL,    "Local log file"                           },
   { "-user",             user,                           "",                           PaString,
     PaOpt,                          _i "anonymous",     PaNL,
     PaNL,    "User to connect to SAMSON cluster"        },
@@ -184,7 +171,7 @@ void cleanup(void) {
    * delilahConsole->stop();
    */
 
-  // Wait all threads to finsih
+  // Wait all threads to finish
   au::Singleton<au::ThreadManager>::shared()->wait("Delilah");
 
   // Clear google protocol buffers library
@@ -197,8 +184,6 @@ void cleanup(void) {
     delilahConsole = NULL;
   }
 
-  LM_T(LmtCleanup, ("destroying ModulesManager"));
-
   LM_T(LmtCleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
   LM_T(LmtCleanup, ("Calling lmCleanProgName"));
@@ -208,8 +193,6 @@ void cleanup(void) {
   // Remove engine
   engine::Engine::DestroyEngine();
 
-  // Stop logging to server
-  au::stop_log_to_server();
 }
 
 // Handy function to find a flag in command line without starting paParse
@@ -248,18 +231,10 @@ int main(int argC, const char *argV[]) {
   paConfig("man reportingbugs",             (void *)manReportingBugs);
   paConfig("man copyright",                 (void *)manCopyright);
   paConfig("man version",                   (void *)manVersion);
-
   paConfig("default value", "-logDir", (void *)"/var/log/samson");
-
-  bool flag_log_classic = find_flag(argC, argV, "-log_classic");
-
-  if (flag_log_classic) {
-    paConfig("if hook active, no traces to file", (void *)false);
-    paConfig("log to file",                       (void *)true);
-  } else {
-    paConfig("if hook active, no traces to file", (void *)true);
-  }
-
+  paConfig("if hook active, no traces to file", (void *)false);
+  paConfig("log to file",                       (void *)true);
+  
   // Random initialization
   struct timeval tp;
   gettimeofday(&tp, NULL);
@@ -273,26 +248,25 @@ int main(int argC, const char *argV[]) {
 
   paParse(paArgs, argC, (char **)argV, 1, true);
 
+  
+  // New log system
+  au::log_central.Init( argV[0] );
+  au::log_central.evalCommand("file on /var/log/samson/delilah.log");
+  au::log_central.evalCommand(log_command); // Command provided in command line
+
+  AU_LM_M(("Delilah starting..."));
+
+  // working directories to find modules and stuff
+  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
 
   // Clean up function
   atexit(cleanup);
 
-  // Start connection with log server....
-  if (!flag_log_classic) {
-    std::string local_log_file;
-    if (strlen(log_file) > 0) {
-      local_log_file = log_file;
-    } else {
-      local_log_file = au::str("%s/delilahLog_%s_%d", paLogDir, au::code64_str(
-                                 delilah_random_code).c_str(),
-                               (int)getpid());
-    } au::start_log_to_server(log_host, log_port,
-                              local_log_file);
-  }
+  // Start secondary log system
+  // TODO: Complete this initialization
 
   lmAux((char *)"father");
   logFd = lmFirstDiskFileDescriptor();
-
 
   // Setup parameters from command line
   size_t _memory           = (size_t)memory_gb * (size_t)(1024 * 1024 * 1024);
@@ -301,17 +275,22 @@ int main(int argC, const char *argV[]) {
   au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.memory", au::str("%lu", _memory));
   au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("load.buffer_size",
                                                                      au::str("%lu", _load_buffer_size));
-
   // Engine and its associated elements
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
   engine::Engine::InitEngine(num_cores,  _memory, 1);
 
-// Load modules
+  // Load modules
   au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
 
   // Create a DelilahControler once network is ready
   delilahConsole = new samson::DelilahConsole(delilah_random_code);
 
+  // Change log to console
+  au::log_central.evalCommand("screen off"); // Disable log to screen since we log to console
+  au::log_central.AddPlugin( "console" , new au::LogPluginConsole(delilahConsole) );
+  
+  AU_LM_M(("Delilah running..."));
+  
   std::vector<std::string> hosts = au::split(host, ' ');
   for (size_t i = 0; i < hosts.size(); i++) {
     au::ErrorManager error;
@@ -363,9 +342,11 @@ int main(int argC, const char *argV[]) {
     }
 
     // Disconnect delilah
+    LM_M(("Calling delilahConsole->disconnect()"));
     delilahConsole->disconnect();
 
-
+    // Stopping network connections
+    delilahConsole->stop();
     exit(0);
   }
 
@@ -409,7 +390,6 @@ int main(int argC, const char *argV[]) {
         line[ strlen(line) - 1] = '\0';
       }
 
-      // LM_M(("Processing line: %s", line ));
       num_line++;
 
       if (( line[0] != '#' ) && ( strlen(line) > 0)) {
@@ -418,7 +398,6 @@ int main(int argC, const char *argV[]) {
         std::cerr << au::str("Delilah id generated %lu\n", id);
 
         if (id != 0) {
-          // LM_M(("Waiting until delilah-component %ul finish", id ));
           // Wait until this operation is finished
           while (delilahConsole->isActive(id)) {
             usleep(1000);

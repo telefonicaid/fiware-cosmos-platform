@@ -23,18 +23,19 @@ namespace samson {
 class SamsonWorker;
 
 namespace stream {
-class StreamOperationInfo;
-
+class StreamOperationRangeInfo;
+  class StreamOperationGlobalInfo;
+  
 // Logs for debugging
 
-struct WorkerTaskLog {
-  std::string task;
-  std::string result;
-
-  WorkerTaskLog(const std::string& _task, const std::string& _result) {
-    task = _task;
-    result = _result;
-  }
+  struct WorkerTaskLog {
+  std::string description;  // Description of the task
+  std::string result;       // Result of the operation
+  std::string inputs;       // Information at the input of the operation
+  std::string outputs;      // Information at output of the operation
+  int waiting_time_seconds; // Waiting time until execution starts
+  int running_time_seconds; // Running time
+    
 };
 
 
@@ -67,12 +68,12 @@ public:
   samson::gpb::Collection *getCollection(const ::samson::Visualization& visualization);
   samson::gpb::Collection *getLastTasksCollection(const ::samson::Visualization& visualization);
 
-
   size_t get_num_running_tasks();
   size_t get_num_tasks();
 
   // Get collection to list in delilah
-  gpb::Collection *getCollectionForStreamOperationsInfo(const ::samson::Visualization& visualization);
+  gpb::Collection *getCollectionForStreamOperations(const ::samson::Visualization& visualization);
+  gpb::Collection *getCollectionForStreamOperationsRanges(const ::samson::Visualization& visualization);
 
 private:
 
@@ -81,7 +82,8 @@ private:
   au::Dictionary< size_t, WorkerTaskBase > running_tasks_;         // Map of running tasks
 
   // Information about execution of current stream operations
-  au::map<std::string, StreamOperationInfo > stream_operations_info_;
+  au::map<std::string, StreamOperationRangeInfo > stream_operations_info_;
+  au::map<size_t, StreamOperationGlobalInfo > stream_operations_globla_info_;
 
   // Pointer to samson worker
   SamsonWorker *samson_worker_;

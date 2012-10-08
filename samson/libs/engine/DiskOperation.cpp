@@ -166,7 +166,7 @@ void DiskOperation::run() {
           setError("Error writing data to the file");
         }
       }
-
+      LM_T(LmtDisk, ("DiskManager: write operation on file %s completed", fileName.c_str()));
       fclose(file);
     }
   }

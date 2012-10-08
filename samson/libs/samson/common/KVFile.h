@@ -47,6 +47,10 @@ public:
     return &kvs[kvs_index[hg]];
   }
 
+  char* data_for_hg(int hg)
+  {
+    return kvs[kvs_index[hg]].key;
+  }
 private:
 
   // Buffer of data ( retained by the shared reference counter )

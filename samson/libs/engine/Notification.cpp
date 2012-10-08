@@ -30,7 +30,7 @@ const char *Notification::name() {
   return name_;
 }
 
-au::Dictionary<std::string, NotificationObject>& Notification::dictionary() {
+au::GeneralDictionary& Notification::dictionary() {
   return dictionary_;
 }
 

@@ -20,11 +20,10 @@
 #include "au/containers/StringVector.h"
 #include "au/file.h"
 #include "au/string.h"                           // au::Format
-
 #include "au/tables/Table.h"
 #include "au/tables/Tree.h"                      // au::tables::TreeItem
 
-#include "au/log/LogToServer.h"
+#include "au/log/LogMain.h"
 
 #include "engine/DiskManager.h"
 #include "engine/MemoryManager.h"                // samson::MemoryManager
@@ -33,7 +32,7 @@
 #include "au/tables/pugi.h"                      // pugi::Pugi
 #include "au/tables/pugixml.hpp"                 // pugi:...
 
-#include "au/log/log_server_common.h"
+#include "au/log/LogCommon.h"
 
 #include "samson/common/EnvironmentOperations.h"  // Environment operations (CopyFrom)
 #include "samson/common/NotificationMessages.h"
@@ -88,7 +87,6 @@ const char *auths = "Andreu Urruela, Grant Croker, J.Gregorio Escalada & Ken Zan
 DelilahConsole::DelilahConsole(size_t delilah_id) : Delilah("console",
                                                             delilah_id), log_client(AU_LOG_SERVER_QUERY_PORT) {
   // Default values
-  show_local_logs = false;
   show_server_logs = false;
   show_alerts = false;
   verbose = true;
@@ -411,6 +409,16 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     return 0;
   }
 
+  
+  if (mainCommand == "log")
+  {
+    std::string command = command_instance->get_string_argument("command");
+    au::ErrorManager error;
+    au::log_central.evalCommand( command , error );
+    write( &error );
+    return 0;
+  }
+  
   if (mainCommand == "connect") {
     // Disconnect first from whatever cluster I am connected to...
     disconnect();
@@ -571,34 +579,6 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     delete table;
     return 0;
   }
-
-  if (mainCommand == "local_logs") {
-    std::string action = command_instance->get_string_argument("action");
-
-    if (action == "on") {
-      if (!show_local_logs) {
-        // Connect plugin
-        add_log_plugin(this);
-      }
-      show_local_logs = true;
-      writeOnConsole("Local logs are now activated\n");
-      return 0;
-    }
-
-    if (action == "off") {
-      if (show_local_logs) {
-        // Disconnec plugin
-        remove_log_plugin(this);
-      }
-      show_local_logs = false;
-      writeOnConsole("Local logs are now NOT activated\n");
-      return 0;
-    }
-
-    writeErrorOnConsole("Usage: alerts on/off\n");
-    return 0;
-  }
-
 
   if (mainCommand == "alerts") {
     std::string action = command_instance->get_string_argument("action");
@@ -815,6 +795,12 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     } return 0;
   }
 
+  if( mainCommand == "ls_local_modules")
+  {
+    writeOnConsole( au::Singleton<ModulesManager>::shared()->GetTableOfModules() + "\n" );
+    return 0;
+  }
+  
   if (mainCommand == "ls_local") {
     std::string file = command_instance->get_string_argument("file");
 
@@ -920,7 +906,7 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
         fwrite(trace_message.c_str(), trace_message.length(), 1, trace_file);
       }
 
-      if (show_alerts) {
+      if (show_alerts || _context == "system" ) {
         au::tables::Table table("Concept|Value,left");
         table.setTitle("ALERT");
 

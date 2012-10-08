@@ -28,6 +28,8 @@ public:
   // au::network::RESTServiceInterface
   void process(au::SharedPointer< au::network::RESTServiceCommand> command);
 
+  void StopRestService();
+
 private:
 
   // Main pointer to samson worker
@@ -39,6 +41,7 @@ private:
   void process_node(au::SharedPointer<au::network::RESTServiceCommand> command);
   void process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command);
   void process_logging(au::SharedPointer<au::network::RESTServiceCommand> command);
+  void process_synchronized( au::SharedPointer<au::network::RESTServiceCommand> command );
 
   // Auto-client for REST interface
   Delilah *delilah;

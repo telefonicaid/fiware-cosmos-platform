@@ -8,6 +8,7 @@
 
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/samsonDirectories.h"
+#include "samson/common/samsonVars.h"
 
 #include "samson/client/SamsonClient.h"
 

@@ -2,9 +2,11 @@
 #include <time.h>
 #define Char_to_int(x) ((x) - 48)
 
-#include "au/containers/vector.h"
 #include "logMsg/logMsg.h"                 // LM_T
 #include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
+
+#include "au/gpb.h"
+#include "au/containers/vector.h"
 
 namespace au {
 LogServerChannel::LogServerChannel(int port, std::string _directory)
@@ -85,23 +87,52 @@ void LogServerChannel::initLogServerChannel(au::ErrorManager *error) {
 }
 
 void LogServerChannel::run(au::SocketConnection *socket_connection, bool *quit) {
-  while (!*quit) {
-    // Reaf a log
-    au::SharedPointer<Log>log(new Log());
-    log->Set("host", socket_connection->host_and_port());
 
+  // Read initial packet to understand if this is a log provider connection or a log prove connection
+  gpb::LogConnectionHello* hello;
+  au::Status s = readGPB( socket_connection->fd() , &hello , 10 ); // 10 seconds timeout to read hello message
+  
+  if( s != au::OK )
+    return;
+  
+  if( hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogProve )
+  {
+    // Prove connection
+    LogProveConnection log_prove_connection;
+    // TODO: Setup prove connection based on incomming hello message
+    log_connections_.insert(&log_prove_connection);
+    
+    while( !*quit )
+    {
+      LogPointer log = log_prove_connection.Pop();
+      if( log != NULL )
+        log->Write(socket_connection);
+      else
+        usleep(100000);
+      
+      if( socket_connection->IsClosed())
+        return;
+    }
+  }
+
+  
+  // Provider
+  while (!*quit) {
+    // Read a log
+    au::SharedPointer<Log>log(new Log());
     if (!log->Read(socket_connection)) {
       LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
-      return;           // Not possible to read a log...
+      return; // Not possible to read a log...
     }
 
-    // Add channel information to keep logs separated
-    std::string exec_name = log->Get("EXEC");
     std::string channel = au::str("%s_%s_%d"
-                                  , exec_name.c_str()
+                                  , log->Get("EXEC").c_str()
                                   , socket_connection->host_and_port().c_str()
+
                                   , log->log_data().pid);
+    // Additional information to the log
     log->Set("channel", channel);
+    log->Set("host", socket_connection->host_and_port()); // Additional information to the log
 
     // Add log...
     add(log);
@@ -347,7 +378,7 @@ std::string LogServerChannel::getTable(au::CommandLine *cmdLine) {
   table_log_formater.set_type(str_type);
 
   au::ErrorManager error;
-  table_log_formater.init(&error);
+  table_log_formater.init(error);
 
   if (error.IsActivated()) {
     return au::str("Error: %s", error.GetMessage().c_str());

@@ -7,6 +7,16 @@
 #include "samson/network/NetworkConnection.h"
 
 namespace samson {
+  
+  NetworkManager::~NetworkManager() {
+    // Remove all pending packets to be sent
+    multi_packet_queue.Clear();
+    
+    // Close all connections
+    connections.clearMap();
+    
+  }
+
 // Get all connections
 std::vector<std::string> NetworkManager::getAllConnectionNames() {
   au::TokenTaker tt(&token_connections_);

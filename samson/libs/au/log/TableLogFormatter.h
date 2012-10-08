@@ -4,35 +4,16 @@
 #include <regex.h>
 #include <string>
 #include <vector>
+#include <fcntl.h>
+#include <regex.h>
 
 #include "au/containers/SharedPointer.h"
 #include "au/tables/Table.h"
+#include "au/Pattern.h"
 
 namespace au {
 class LogFormatter;
 class Log;
-
-// Auxiliar class used for pattern matching
-
-class Pattern {
-public:
-
-  regex_t preg;
-
-  Pattern(std::string pattern, au::ErrorManager *error) {
-    int r = regcomp(&preg, pattern.c_str(), 0);
-
-    if (r != 0) {
-      char buffer[1024];
-      regerror(errno, &preg, buffer, sizeof( buffer ));
-      error->set(buffer);
-    }
-  }
-
-  ~Pattern() {
-    regfree(&preg);
-  }
-};
 
 // ---------------------------------------------------------
 // TableLogFormatter
@@ -92,7 +73,7 @@ public:
   ~TableLogFormatter();
 
   // Init table log formatter after all setup is done ( call this only once )
-  void init(ErrorManager *error);
+  void init(ErrorManager& error);
 
   // Filter if this log should be added to the current table
   bool filter(au::SharedPointer<Log> log);

@@ -27,8 +27,8 @@
 #include "au/ThreadManager.h"
 #include "au/daemonize.h"
 #include "au/log/Log.h"
-#include "au/log/LogToServer.h"
-#include "au/log/log_server_common.h"
+#include "au/log/LogCommon.h"
+#include "au/log/LogCentral.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 
 #include "engine/DiskManager.h"
@@ -64,7 +64,6 @@ char zoo_host[1024];
 
 char log_file[1024];
 char log_host[1024];
-bool log_classic;
 int log_port;
 bool thread_mode;
 
@@ -82,10 +81,6 @@ PaArgument paArgs[] =
     PaNL,
     PaNL,
     "Zookeeper server"                   },
-  { "-log_classic",&log_classic,  "",           PaBool,        PaOpt,              false,
-    false,
-    true,
-    "Classical log file"                 },
   { "-log_host",log_host,      "",           PaString,      PaOpt,              _i "localhost",
     PaNL,
     PaNL,     "log server host"                          },
@@ -214,17 +209,8 @@ int main(int argC, const char *argV[]) {
              (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
   paConfig("screen line format",                (void *)"TYPE@TIME  EXEC: TEXT");
   paConfig("default value", "-logDir",          (void *)"/var/log/samson");
-
-  // Searh for this flag before using pa brary
-  bool flag_log_classic = find_flag(argC, argV, "-log_classic");
-
-  if (flag_log_classic) {
-    paConfig("if hook active, no traces to file", (void *)false);
-    paConfig("log to file",                       (void *)true);
-  } else {
-    paConfig("if hook active, no traces to file", (void *)true);
-  }
-
+  paConfig("if hook active, no traces to file", (void *)false);
+  paConfig("log to file",                       (void *)true);
   paConfig("man synopsis",                      (void *)manSynopsis);
   paConfig("man shortdescription",              (void *)manShortDescription);
   paConfig("man description",                   (void *)manDescription);
@@ -238,6 +224,8 @@ int main(int argC, const char *argV[]) {
   const char *extra = paIsSetSoGet(argC, (char **)argV, "-port");
   paParse(paArgs, argC, (char **)argV, 1, false, extra);
 
+  lmAux((char *)"father");
+
 
   // log level for zo library
   zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
@@ -248,20 +236,16 @@ int main(int argC, const char *argV[]) {
     samson::ProcessItemIsolated::isolated_process_as_tread = true;
   }
 
-  // New log system ( if flag log_classic is not activated )
-  if (!flag_log_classic) {
-    std::string local_log_file;
-    if (strlen(log_file) > 0) {
-      local_log_file = log_file;
-    } else {
-      local_log_file = au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid());
-    } au::start_log_to_server(
-      log_host, log_port,
-      local_log_file);
-  }
-
-  lmAux((char *)"father");
-
+  // New log system
+  au::log_central.Init( argV[0] );
+  au::log_central.evalCommand("screen on");
+  au::log_central.evalCommand("file on /var/log/samson/samsonWorker.log");
+  //au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid());
+  
+  // Exampe of the new log system
+  AU_LM_M(("Worker running..."));
+  AU_LM_T( 0 , ("Worker running..."));
+  
   LM_V(("Started with arguments:"));
   for (int ix = 0; ix < argC; ix++) {
     LM_V(("  %02d: '%s'", ix, argV[ix]));
@@ -397,9 +381,6 @@ int main(int argC, const char *argV[]) {
   LM_T(LmtCleanup, ("Calling lmCleanProgName"));
   lmCleanProgName();
   LM_T(LmtCleanup, ("Cleanup DONE"));
-
-  // Stop logging to server
-  au::stop_log_to_server();
 
   return 0;
 }

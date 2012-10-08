@@ -17,24 +17,31 @@ ProcessItem::ProcessItem(int _priority) {
   priority_ = _priority;
   progress_ = 0;                // Initial progress to "0"
   running_ = false;
+  finished_ = false;
+
   process_item_description_ = "unknown";
   process_item_current_task_description_ = "";
+  
+  waiting_cronometer_.Start(); // Start counting as waiting since creation
 }
 
 ProcessItem::~ProcessItem() {
 }
 
 std::string ProcessItem::process_item_status() const {
-  int p = progress_ * 100.0;
   std::ostringstream o;
 
-  if (p > 0) {
-    o << "[" << au::str_percentage(p) << "]";
-  }
   if (running_) {
-    o << "Running (" << cronometer_ << ")";
-  } else {
-    o << "Queued";
+    // Show progress is any
+    int p = progress_ * 100.0;
+    if (p > 0) {
+      o << "[" << au::str_percentage(p) << "]";
+    }
+    o << "Running (" << running_cronometer_.str_seconds() << ")";
+  } if ( finished_ )
+    o << "Finished";
+    else {
+      o << "Queued waiting " << waiting_cronometer_.str_seconds() ;
   } o << " : " << priority_;
 
   if (process_item_current_task_description_.length() > 0) {
@@ -59,18 +66,25 @@ void ProcessItem::AddListener(size_t _listenerId) {
   listeners_.insert(_listenerId);
 }
 
-bool ProcessItem::running() const {
-  return running_;
-}
+  bool ProcessItem::finished() const
+  {
+    return finished_;
+  }
+  bool ProcessItem::running() const
+  {
+    return running_;
+  }
 
-void ProcessItem::StartCronometer() {
-  running_ = false;
-  cronometer_.Start();
-}
-
-void ProcessItem::StopCronometer() {
+void ProcessItem::StartActivity() {
   running_ = true;
-  cronometer_.Stop();
+  waiting_cronometer_.Stop();
+  running_cronometer_.Start();
+}
+
+void ProcessItem::StopActivity() {
+  running_ = false;
+  finished_ = true;
+  running_cronometer_.Stop();
 }
 
 std::set<size_t> ProcessItem::listeners() const {
@@ -106,7 +120,10 @@ double ProcessItem::progress() const {
   return progress_;
 }
 
-const au::CronometerSystem& ProcessItem::cronometer() {
-  return cronometer_;
+const au::CronometerSystem& ProcessItem::running_cronometer() const {
+  return running_cronometer_;
 }
+  const au::CronometerSystem& ProcessItem::waiting_cronometer() const {
+    return running_cronometer_;
+  }
 }

@@ -10,23 +10,20 @@
 namespace samson {
 /**
  * Structure used to report information about blocks
+ * This belongs to the old system of samson 0.6 where blocks where managed in each worker
+ * It is still used just to report data contained by operations
  **/
 
 struct BlockInfo {
-  int num_blocks;
-
-  // Size of the blocks ( including headers )
-  size_t size;
-  size_t size_on_memory;
-  size_t size_on_disk;
-  size_t size_locked;
-
-  FullKVInfo info;      // Number of key-values and data size
-
-  KVFormat format;      // Common format for all the information
-
-  time_t min_time;
-  time_t max_time;
+  int num_blocks;           // Number of blocks
+  size_t size;              // Size of the blocks ( including headers )
+  size_t size_on_memory;    // Size contained in memory
+  size_t size_on_disk;      // Size contained on disk
+  size_t size_locked;       // Size locked in memory
+  FullKVInfo info;          // Number of key-values and data size
+  KVFormat format;          // Common format for all the information
+  time_t min_time;          // Min time of all blocks
+  time_t max_time;          // Max time of all blocks
 
   // Default constructor to initialize all values
   BlockInfo();
@@ -52,6 +49,7 @@ struct BlockInfo {
   // ----------------------------------------------------------------
   std::string str();
   std::string strShort();
+  std::string strShortInfo();
 };
 }
 

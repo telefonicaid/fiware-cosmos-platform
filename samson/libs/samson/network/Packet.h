@@ -36,7 +36,7 @@ namespace samson {
  *
  */
 
-class Packet : public engine::NotificationObject {
+class Packet {
   engine::BufferPointer buffer_;
 
 public:

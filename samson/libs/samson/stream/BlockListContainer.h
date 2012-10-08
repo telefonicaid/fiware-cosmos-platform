@@ -26,8 +26,9 @@ class Block;
 
 /*
  *
- * Collection of block lists
+ * Collection of blockLists
  *
+ * Used in WorkerTaskBase to contain all the references to blocks included in operations ( input & output )
  */
 
 class BlockListContainer {

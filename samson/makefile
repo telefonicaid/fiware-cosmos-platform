@@ -13,7 +13,8 @@ ifndef SAMSON_VERSION
 SAMSON_VERSION=0.7.0
 endif
 ifndef SAMSON_RELEASE
-	SAMSON_RELEASE=1
+	# Use the current timestamp guarantee unique builds
+	SAMSON_RELEASE=$(shell echo `date +%Y%M%d%H%M`_git)
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -397,9 +398,6 @@ reset:
 reset_xcode:
 	rm -Rf xcode_proj
 
-cleansvn: 
-	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done
-
 # Remove /opt/samson to guarantee a clean build
 cleanhudson:
 	rm -rf /opt/samson
@@ -438,10 +436,17 @@ publish_packages:
 		fi; \
 	fi
 
+# Create a source tarball
+# Note that this only uses the checked in source, any non-committed code 
+# will not be archived
+tarball:
+	git archive --format=tar --prefix=./samson-$(SAMSON_VERSION)/ HEAD | gzip > samson-$(SAMSON_VERSION).tar.gz
+
 rpm: clean
 	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
 	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
-	tar cz --transform 's,^./,samson-$(SAMSON_VERSION)/,' .  --show-transformed-names --exclude=*.svn* -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
+	# Generate a tarball from the latest checked in code
+	git archive --format=tar --prefix=./samson-$(SAMSON_VERSION)/ HEAD | gzip > ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
 	rpmbuild -bb rpm/samson.spec --define 'version $(SAMSON_VERSION)' --define 'release $(SAMSON_RELEASE)'
 
 publish_rpm: rpm

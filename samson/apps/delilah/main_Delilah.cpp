@@ -251,7 +251,8 @@ int main(int argC, const char *argV[]) {
   
   // New log system
   au::log_central.Init( argV[0] );
-  au::log_central.evalCommand("file on /var/log/samson/delilah.log");
+  au::log_central.evalCommand("log_to_file /var/log/samson/delilah.log");
+  au::log_central.evalCommand("log_to_server localhost /var/log/samson/delilah_server.log");
   au::log_central.evalCommand(log_command); // Command provided in command line
 
   AU_LM_M(("Delilah starting..."));
@@ -286,10 +287,10 @@ int main(int argC, const char *argV[]) {
   delilahConsole = new samson::DelilahConsole(delilah_random_code);
 
   // Change log to console
-  au::log_central.evalCommand("screen off"); // Disable log to screen since we log to console
   au::log_central.AddPlugin( "console" , new au::LogPluginConsole(delilahConsole) );
   
   AU_LM_M(("Delilah running..."));
+  AU_LM_E(("Example of error"));
   
   std::vector<std::string> hosts = au::split(host, ' ');
   for (size_t i = 0; i < hosts.size(); i++) {

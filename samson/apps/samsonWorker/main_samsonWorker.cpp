@@ -29,6 +29,7 @@
 #include "au/log/Log.h"
 #include "au/log/LogCommon.h"
 #include "au/log/LogCentral.h"
+#include "au/log/LogPluginConsole.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 
 #include "engine/DiskManager.h"
@@ -238,13 +239,13 @@ int main(int argC, const char *argV[]) {
 
   // New log system
   au::log_central.Init( argV[0] );
-  au::log_central.evalCommand("screen on");
-  au::log_central.evalCommand("file on /var/log/samson/samsonWorker.log");
+  au::log_central.evalCommand("log_to_file /var/log/samson/samsonWorker.log");
+  au::log_central.evalCommand("log_to_server localhost /var/log/samson/samsonWorker_server.log");
+
   //au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid());
   
   // Exampe of the new log system
   AU_LM_M(("Worker running..."));
-  AU_LM_T( 0 , ("Worker running..."));
   
   LM_V(("Started with arguments:"));
   for (int ix = 0; ix < argC; ix++) {
@@ -342,6 +343,8 @@ int main(int argC, const char *argV[]) {
       sleep(10);
     }
   }
+
+  au::log_central.AddPlugin( "console" , new au::LogPluginConsole(worker) );
 
   // Run worker console ( -fg is activated )
   worker->runConsole();

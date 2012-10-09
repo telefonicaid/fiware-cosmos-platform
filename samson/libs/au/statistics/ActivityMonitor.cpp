@@ -91,16 +91,14 @@ void ActivityMonitor::StartActivity(const std::string& activity_name) {
   au::TokenTaker tt(&token_);
   double stop_time = cronometer_.seconds();
   double time = stop_time - current_activirty_start_time_;
-
+  
   // Inset in the list of last items
-  /*
-   * items_.push_back( new ActivityItem(current_activty_, time) );
-   * // Only keep the list of last 100 elements
-   * while (items_.size() > 100) {
-   * ActivityItem *tmp_item = items_.extractFront();
-   * delete tmp_item;
-   * }
-   */
+  items_.push_back( new ActivityItem(current_activty_, time) );
+  // Only keep the list of last 100 elements
+  while (items_.size() > 100) {
+    ActivityItem *tmp_item = items_.extractFront();
+    delete tmp_item;
+  }
 
   // Update the associated element statustics
   ActivityStatistics *activity_estatistics = elements_.findOrCreate(activity_name, activity_name);
@@ -134,7 +132,8 @@ std::string ActivityMonitor::GetElementsTable() const {
 
   au::tables::Table table(
     "Element|Num,f=uint64|Total time,f=double|Average,f=double|std dev,f=double|Min,f=double|Max,f=double");
-
+  table.setTitle("Engine statistics");
+  
   au::map<std::string, ActivityStatistics >::const_iterator it;
   for (it = elements_.begin(); it != elements_.end(); it++) {
     au::StringVector values;

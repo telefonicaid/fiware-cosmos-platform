@@ -33,6 +33,13 @@ TARGET_LINK_LIBRARIES(logClient ${STATIC_LIBS})
 INSTALL(TARGETS               logClient
         RUNTIME DESTINATION   bin)
 
+ADD_EXECUTABLE(logProbe main_logProbe.cpp  )
+TARGET_LINK_LIBRARIES(logProbe ${STATIC_LIBS})
+
+INSTALL(TARGETS               logProbe
+        RUNTIME DESTINATION   bin)
+
+
 ADD_EXECUTABLE(logCat main_logCat.cpp  )
 TARGET_LINK_LIBRARIES(logCat ${STATIC_LIBS})
 

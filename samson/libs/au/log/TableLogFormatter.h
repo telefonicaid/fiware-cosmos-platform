@@ -1,15 +1,15 @@
 #ifndef _H_AU_TABLE_LOG_FORATTER
 #define _H_AU_TABLE_LOG_FORATTER
 
+#include <fcntl.h>
+#include <regex.h>
 #include <regex.h>
 #include <string>
 #include <vector>
-#include <fcntl.h>
-#include <regex.h>
 
+#include "au/Pattern.h"
 #include "au/containers/SharedPointer.h"
 #include "au/tables/Table.h"
-#include "au/Pattern.h"
 
 namespace au {
 class LogFormatter;

@@ -272,6 +272,7 @@ void Console::process_background() {
   }
 
   if (pending_messages.size() != 0) {
+    
     au::TokenTaker tt(&token_pending_messages);
 
     clearTerminalLine();
@@ -514,8 +515,6 @@ int Console::waitWithMessage(std::string message, double sleep_time, ConsoleEntr
 }
 
 void Console::writeOnConsole(std::string message) {
-  // Print per lines if necessary
-  // --------------------------------------------------------------------------------------------
 
   if (pthread_self() == t_running) {
     clearTerminalLine();

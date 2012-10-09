@@ -311,10 +311,6 @@ public:
       return get_string_option("-" + name);
     }
 
-
-
-
-
     CommandItem *item = command_->get_option(name);
 
     if (!item) {
@@ -502,7 +498,7 @@ public:
   bool isValidCategory(const std::string& category);
 
   // Parse command to check validity
-  CommandInstance *parse(const std::string command_line, au::ErrorManager *error);
+  CommandInstance *parse(const std::string command_line, au::ErrorManager& error);
 
 private:
 

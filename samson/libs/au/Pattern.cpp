@@ -1,4 +1,5 @@
 
+#include <fnmatch.h>
 #include "Pattern.h" // Own interface
 
 namespace au {
@@ -24,5 +25,16 @@ namespace au {
       return true;
     else
       return false;
+  }
+  
+  
+  SimplePattern::SimplePattern(const std::string& pattern) {
+    pattern_ = pattern;
+  }
+  
+  
+  bool SimplePattern::match( const std::string& value )
+  {
+    return ( 0 == ::fnmatch( pattern_.c_str() , value.c_str() , 0 ) );
   }
 }

@@ -5,8 +5,8 @@
 #include "logMsg/logMsg.h"                 // LM_T
 #include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
 
-#include "au/gpb.h"
 #include "au/containers/vector.h"
+#include "au/gpb.h"
 
 namespace au {
 LogServerChannel::LogServerChannel(int port, std::string _directory)
@@ -87,42 +87,56 @@ void LogServerChannel::initLogServerChannel(au::ErrorManager *error) {
 }
 
 void LogServerChannel::run(au::SocketConnection *socket_connection, bool *quit) {
-
   // Read initial packet to understand if this is a log provider connection or a log prove connection
-  gpb::LogConnectionHello* hello;
-  au::Status s = readGPB( socket_connection->fd() , &hello , 10 ); // 10 seconds timeout to read hello message
-  
-  if( s != au::OK )
+  gpb::LogConnectionHello *hello;
+  au::Status s = readGPB(socket_connection->fd(), &hello, 10);  // 10 seconds timeout to read hello message
+
+  if (s != au::OK) {
+    LM_W(("Error reading hello message for incomming connection (%s)", au::status(s)));
     return;
-  
-  if( hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogProve )
-  {
+  }
+
+  if (hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogProbe) {
     // Prove connection
-    LogProveConnection log_prove_connection;
-    // TODO: Setup prove connection based on incomming hello message
-    log_connections_.insert(&log_prove_connection);
-    
-    while( !*quit )
+    std::string filter;
+    if (hello->has_filter()) {
+      filter = hello->filter();
+    }
+
+    LogProveConnection log_prove_connection(filter);
+
     {
+      au::TokenTaker tt(&token_log_connections_);
+      log_connections_.insert(&log_prove_connection);
+    }
+
+    while (!*quit) {
       LogPointer log = log_prove_connection.Pop();
-      if( log != NULL )
+
+      if (log != NULL) {
         log->Write(socket_connection);
-      else
+      } else {
         usleep(100000);
-      
-      if( socket_connection->IsClosed())
+      }
+
+      if (socket_connection->IsClosed()) {
+        {
+          au::TokenTaker tt(&token_log_connections_);
+          log_connections_.erase(&log_prove_connection);
+        }
         return;
+      }
     }
   }
 
-  
+
   // Provider
   while (!*quit) {
     // Read a log
     au::SharedPointer<Log>log(new Log());
     if (!log->Read(socket_connection)) {
       LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
-      return; // Not possible to read a log...
+      return;  // Not possible to read a log...
     }
 
     std::string channel = au::str("%s_%s_%d"
@@ -132,7 +146,17 @@ void LogServerChannel::run(au::SocketConnection *socket_connection, bool *quit) 
                                   , log->log_data().pid);
     // Additional information to the log
     log->Set("channel", channel);
-    log->Set("host", socket_connection->host_and_port()); // Additional information to the log
+    log->Set("host", socket_connection->host_and_port());  // Additional information to the log
+
+
+    // Push logs to probes
+    {
+      au::TokenTaker tt(&token_log_connections_);
+      std::set<LogProveConnection *>::iterator iterator;
+      for (iterator = log_connections_.begin(); iterator != log_connections_.end(); iterator++) {
+        (*iterator)->Push(log);
+      }
+    }
 
     // Add log...
     add(log);

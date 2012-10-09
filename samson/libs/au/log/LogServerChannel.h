@@ -23,34 +23,120 @@
 
 namespace au {
 class LogServer;
-  
-  
-  // Connection to receive logs
-  class LogProveConnection
-  {
-    
-  public:
-    
-    
-    void Push( LogPointer log )
-    {
-      au::TokenTaker tt(&token_);
-      // Check if we need this log
-      // TODO
-      
+
+class LogFilterItem {
+public:
+
+  LogFilterItem(const std::string&  field, const std::string&  values) {
+    field_ = field;
+    values_ = au::split(values, ',');
+
+    // Create patterns for all values
+    for (size_t i = 0; i < values_.size(); i++) {
+      patterns_.push_back(new SimplePattern(values_[i]));
+    }
+  }
+
+  virtual ~LogFilterItem() {
+    patterns_.clearVector();
+  }
+
+  virtual bool accept(LogPointer log) {
+    std::string value = log->Get(field_);
+
+    for (size_t i = 0; i < patterns_.size(); i++) {
+      if (patterns_[i]->match(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static au::SharedPointer<LogFilterItem> Create(const std::string& command) {
+    size_t pos = command.find("=");
+
+    if (pos == std::string::npos) {
+      return au::SharedPointer<LogFilterItem>(NULL);
+    }
+
+    std::string field = command.substr(0, pos);
+    std::string values = command.substr(pos + 1);
+
+    return au::SharedPointer<LogFilterItem>(new LogFilterItem(field, values));
+  }
+
+private:
+
+  std::string command_;
+
+  std::string field_;
+  std::vector<std::string> values_;
+  au::vector<SimplePattern> patterns_;
+};
+
+
+
+class LogFilter {
+public:
+
+  LogFilter(const std::string& definition) {
+    definition_ = definition;
+
+    // Split in commands
+    std::vector<std::string> commands = au::split(definition, '|');
+    for (size_t i = 0; i < commands.size(); i++) {
+      au::SharedPointer<LogFilterItem> item = LogFilterItem::Create(commands[i]);
+      if (item != NULL) {
+        items_.push_back(item);
+      }
+    }
+  }
+
+  bool accept(LogPointer log) {
+    for (size_t i = 0; i < items_.size(); i++) {
+      if (!items_[i]->accept(log)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+private:
+
+  std::string definition_;
+  std::vector< au::SharedPointer<LogFilterItem> > items_;
+};
+
+// Connection to receive logs
+class LogProveConnection {
+public:
+
+  LogProveConnection(const std::string& filter) : log_filter_(filter) {
+    // Filter definition
+    // channel_alias=M,W,E
+  }
+
+  void Push(LogPointer log) {
+    au::TokenTaker tt(&token_);
+
+    if (log_filter_.accept(log)) {
       log_queue_.Push(log);
     }
-    
-    LogPointer Pop()
-    {
-      au::TokenTaker tt(&token_);
-      return log_queue_.Pop();
-    }
-    
-  private:
-    au::Token token_;
-    au::Queue<Log> log_queue_;
-  };
+  }
+
+  LogPointer Pop() {
+    au::TokenTaker tt(&token_);
+
+    return log_queue_.Pop();
+  }
+
+private:
+
+  au::Token token_;
+  au::Queue<Log> log_queue_;
+  LogFilter log_filter_;
+};
 
 
 class LogServerChannel : public network::Service {
@@ -64,7 +150,7 @@ public:
   void initLogServerChannel(au::ErrorManager *error);
 
   // network::Service interface : main function for every active connection
-  void run( au::SocketConnection *socket_connection, bool *quit );
+  void run(au::SocketConnection *socket_connection, bool *quit);
 
   // Get some info bout logs
   std::string getInfo();
@@ -97,8 +183,9 @@ private:
   LogContainer log_container;    // Container of logs in memory ( fast query )
   au::rate::Rate rate;           // Estimated data rate for this channel
 
-  std::set<LogProveConnection*> log_connections_; // Connection to reveide logs
-  
+  au::Token token_log_connections_;
+  std::set<LogProveConnection *> log_connections_;  // Connection to reveide logs
+
   friend class LogServer;
 };
 }

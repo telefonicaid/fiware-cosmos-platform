@@ -24,7 +24,7 @@ LogServer::LogServer()
 void LogServer::runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {
   CommandLine cmdLine;
 
-  cmdLine.SetFlagString("format", "TYPE : time : TEXT");    // Format of each log
+  cmdLine.SetFlagString("format", AU_LOG_DEFAULT_FORMAT_LOG_CLIENT);    // Format of each log
   cmdLine.SetFlagInt("limit", 0);                           // Max number of logs
   cmdLine.SetFlagString("pattern", "");                     // Pattern for strings...
   cmdLine.SetFlagString("time", "");                        // time for logs
@@ -89,37 +89,8 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
   }
 
   if (main_command == "show_format_fiels") {
-    au::tables::Table table("Field|Description,left");
-
-    table.addRow(au::StringVector("HOST", "Host where trace was generated"));
-    table.addRow(au::StringVector("TYPE", "Type of trace: Warning, Error, Message"));
-    table.addRow(au::StringVector("PID", "Process identifier of the executable that generated the trace"));
-    table.addRow(au::StringVector("TID", "Thread identifier of the executable that generated the trace"));
-
-    table.addRow(au::StringVector("date", "Date when trace was generated"));
-    table.addRow(au::StringVector("DATE", "More verbose date"));
-
-    table.addRow(au::StringVector("time", "Timestamp when trace was generated"));
-    table.addRow(au::StringVector("TIME", "More verbose timestamp"));
-
-    table.addRow(au::StringVector("timestamp", "date + time"));
-
-    table.addRow(au::StringVector("unix_time", "Timestamp in seconds since epoc 1 January 1970"));
-
-    table.addRow(au::StringVector("FILE", "Source file where trace was generated"));
-    table.addRow(au::StringVector("LINE", "Line of code in the source file"));
-
-    table.addRow(au::StringVector("TLEV", "Trace level ( if the it is a trace )"));
-    table.addRow(au::StringVector("EXEC", "Name of the executable that generated the trace"));
-    table.addRow(au::StringVector("AUX", "Completementary name of the executable"));
-    table.addRow(au::StringVector("TEXT", "Body of the trace"));
-    table.addRow(au::StringVector("text", "Body of the trace limited to 100 characters"));
-    table.addRow(au::StringVector("FUNC", "Name of the funciton where the trace was generated"));
-    table.addRow(au::StringVector("STRE", "Error description"));
-
-    table.addRow(au::StringVector("channel", "Channel associated to the connection with the log server"));
-
-    error->AddMessage(table.str() + "\n");
+    au::SharedPointer<au::tables::Table> table = getTableOfFields();
+    error->AddMessage(table->str() + "\n");
   }
 
   if (main_command == "new_session") {

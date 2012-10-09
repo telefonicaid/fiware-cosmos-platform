@@ -360,7 +360,7 @@ void add(const char *list[], std::vector<std::string> &commands) {
 size_t DelilahConsole::runAsyncCommand(std::string command) {
   // Parse command acording to the commands catalogue
   au::ErrorManager error;
-  au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command, &error);
+  au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command, error);
 
   if (error.IsActivated()) {
     write(&error);       // Write errors and messages

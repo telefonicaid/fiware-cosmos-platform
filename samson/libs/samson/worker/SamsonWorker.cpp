@@ -660,7 +660,7 @@ void SamsonWorker::notify(engine::Notification *notification) {
   }
 
   if (notification->isName(notification_update_status)) {
-    LM_M(( str_state().c_str()));
+    AU_LM_M(( str_state().c_str()));
 
     // Some ancient samson-0.6 useful Status information
     // Collect some information and print status...
@@ -688,13 +688,13 @@ void SamsonWorker::notify(engine::Notification *notification) {
     // Pointer to cluster info
     au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
     size_t worker_id = worker_controller_->worker_id();
-    LM_M(("Worker %lu %lu/%lu kv-ranges [ Cluster %lu workers ]"
+    AU_LM_M(("Worker %lu %lu/%lu kv-ranges [ Cluster %lu workers ]"
           , worker_id
           , GetNumKVRanges(cluster_info.shared_object(), worker_id)
           , cluster_info->process_units_size()
           , cluster_info->workers_size()
           ));
-    LM_M(("Status (%s) [ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
+    AU_LM_M(("Status (%s) [ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
           , au::str_time(cronometer_.seconds()).c_str()
           , au::str_percentage(num_processes, max_processes).c_str()
           , au::str_percentage(used_memory, max_memory).c_str()
@@ -747,7 +747,6 @@ void SamsonWorker::autoComplete(au::ConsoleAutoComplete *info) {
     info->add("quit");
     info->add("exit");
     info->add("threads");
-    info->add("cluster");
     info->add("show_engine_statistics");
     info->add("show_engine_last_items");
     info->add("show_engine_elements");

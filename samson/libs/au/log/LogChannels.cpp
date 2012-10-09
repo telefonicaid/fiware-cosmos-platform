@@ -1,11 +1,7 @@
 
-#include "LogChannels.h" // Own interface
+#include "LogChannels.h"  // Own interface
 
-namespace au
-{
-  // Unique main 
-  LogChannels log_channels;
-  
-  
-  
+namespace au {
+// Unique main
+LogChannels log_channels;
 }

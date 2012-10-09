@@ -246,12 +246,12 @@ bool TableLogFormatter::filter(au::SharedPointer<Log> log) {
     }
   }
 /*
-  // Check if the type is correct
-  if (str_type != "") {
-    if (log->log_data().type != str_type[0]) {
-      return false;
-    }
-  }
+ * // Check if the type is correct
+ * if (str_type != "") {
+ *  if (log->log_data().type != str_type[0]) {
+ *    return false;
+ *  }
+ * }
  */
 
   if (channel != "") {

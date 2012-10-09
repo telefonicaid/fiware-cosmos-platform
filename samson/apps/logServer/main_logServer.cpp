@@ -53,6 +53,11 @@ static const char *manVersion       = "0.1";
 
 int logFd = -1;
 
+
+void captureSIGPIPE(int s) {
+  LM_LM(("Captured SIGPIPE %d", s));
+}
+
 int main(int argC, const char *argV[]) {
   paConfig("prefix",                        (void *)"LOG_CLIENT_");
   paConfig("usage and exit on any warning", (void *)true);
@@ -83,6 +88,10 @@ int main(int argC, const char *argV[]) {
     LM_M(("logServer running in foreground"));
   }
 
+  if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
+    LM_W(("SIGPIPE cannot be handled"));
+  }
+  
   // Log server
   au::LogServer log_server;
 

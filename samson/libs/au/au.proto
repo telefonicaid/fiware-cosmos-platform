@@ -46,10 +46,14 @@ message LogConnectionHello
     enum LogConnectionType
     {
         LogProvider    = 1;
-        LogProve       = 2;
+        LogProbe       = 2;
     }
 
 	// type of connection
 	required LogConnectionType type = 1;
+
+	// optional filters
+	optional string filter = 2;
+
 
 }

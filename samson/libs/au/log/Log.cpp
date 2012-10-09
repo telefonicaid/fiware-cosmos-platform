@@ -4,9 +4,10 @@
 
 namespace au {
 const char *log_reseved_words[] =
-{ "host","channel","channel_name","channel_alias","pid","tid","DATE","date","TIME","time","timestamp","time_unix","line","exec","file"
-  ,"text","function", NULL };
-  
+{ "host", "channel", "channel_name", "channel_alias", "pid",       "tid",       "DATE"
+  ,       "date",    "TIME",         "time",          "timestamp", "time_unix", "line","exec", "exec_short", "file"
+  ,       "text",    "function",     NULL };
+
 
 void Log::Set(const std::string& field_name, const std::string& field_value) {
   if (fields_.find(field_name) == fields_.end()) {
@@ -49,20 +50,21 @@ bool Log::Read(au::FileDescriptor *fd) {
 bool Log::Write(au::FileDescriptor *fd) {
   // LM_V(("Writing %s" , str().c_str() ));
   LogHeader header;
+
   header.setMagicNumber();
   size_t strings_size = getStringsSize();
   header.dataLen = sizeof(LogData) + strings_size;
 
-  
+
   // Total message to be writted
-  TemporalBuffer buffer(sizeof(LogHeader) + sizeof(LogData) + strings_size );
+  TemporalBuffer buffer(sizeof(LogHeader) + sizeof(LogData) + strings_size);
 
   size_t offset = 0;
-  memcpy(buffer.data()+offset, &header, sizeof(LogHeader) );
-  offset+= sizeof(LogHeader);
-  memcpy(buffer.data()+offset, &log_data_, sizeof(LogData) );
-  offset+=sizeof(LogData);
-  copyStrings( buffer.data()+offset);
+  memcpy(buffer.data() + offset, &header, sizeof(LogHeader));
+  offset += sizeof(LogHeader);
+  memcpy(buffer.data() + offset, &log_data_, sizeof(LogData));
+  offset += sizeof(LogData);
+  copyStrings(buffer.data() + offset);
 
   // Write log at once
   au::Status s = fd->partWrite(buffer.data(), buffer.size(), "log", 1, 1, 0);
@@ -124,7 +126,7 @@ std::string Log::Get(std::string name) {
     strftime(buffer_time, 1024, "%X", &timeinfo);
     return std::string(buffer_time) + au::str("(%d)", log_data_.tv.tv_usec);
   }
-  
+
   if (name == "time") {
     struct tm timeinfo;
     char buffer_time[1024];
@@ -152,6 +154,15 @@ std::string Log::Get(std::string name) {
     } else {
       return t;
     }
+  }
+
+  if (name == "exec_short") {
+    std::string exec = Get("exec");
+    size_t pos = exec.find_last_of("/");
+    if (pos == std::string::npos) {
+      return exec;
+    }
+    return exec.substr(pos + 1);
   }
 
   // General look up in the strings...
@@ -239,7 +250,7 @@ LogData& Log::log_data() {
 
 void Log::SetNewSession() {
   log_data_.line = 0;
-  log_data_.channel = -1; // Mark for the new session
+  log_data_.channel = -1;  // Mark for the new session
   log_data_.tv.tv_sec = time(NULL);
   log_data_.tv.tv_usec = 0;
   log_data_.timezone = 0;
@@ -251,27 +262,27 @@ void Log::SetNewSession() {
 bool Log::IsNewSession() {
   return Get("new_session", "no") == "yes";
 }
-  
-  au::SharedPointer<au::tables::Table> getTableOfFields()
-  {
-    au::SharedPointer<au::tables::Table>table ( new au::tables::Table("filed|description") );
 
-    table->addRow(au::StringVector( "host","Host where trace was generated ( only in log server)"));
-    table->addRow(au::StringVector( "channel","Numerical log channel"));
-    table->addRow(au::StringVector( "channel_name","Name of the log channel (message,warning,error...)"));
-    table->addRow(au::StringVector( "channel_alias","Alias of the log channel (M,W,E...)"));
-    table->addRow(au::StringVector( "pid","Process identifier"));
-    table->addRow(au::StringVector( "tid","Thread identifier"));
-    table->addRow(au::StringVector( "data,DATE","Date of the log in different formats"));
-    table->addRow(au::StringVector( "time,TIME","Time of the log in different formats"));
-    table->addRow(au::StringVector( "timestamp,time_unix","Complete timestamp of the log in different formats"));
-    table->addRow(au::StringVector( "exec","Name of the exec file that generated the log"));
-    table->addRow(au::StringVector( "function","Name of the function"));
-    table->addRow(au::StringVector( "line","Number of line where the trace was generated"));
-    table->addRow(au::StringVector( "text","Text of the log"));
-    
-    return table;
-  }
+au::SharedPointer<au::tables::Table> getTableOfFields() {
+  au::SharedPointer<au::tables::Table>table(new au::tables::Table("filed|description,left"));
 
-  
+  table->addRow(au::StringVector("host", "Host where trace was generated ( only in log server)"));
+  table->addRow(au::StringVector("channel", "Numerical log channel"));
+  table->addRow(au::StringVector("channel_name", "Name of the log channel (message,warning,error...)"));
+  table->addRow(au::StringVector("channel_alias", "Alias of the log channel (M,W,E...)"));
+  table->addRow(au::StringVector("pid", "Process identifier"));
+  table->addRow(au::StringVector("tid", "Thread identifier"));
+  table->addRow(au::StringVector("data,DATE", "Date of the log in different formats"));
+  table->addRow(au::StringVector("time,TIME", "Time of the log in different formats"));
+  table->addRow(au::StringVector("timestamp,time_unix", "Complete timestamp of the log in different formats"));
+  table->addRow(au::StringVector("exec", "Name of the exec file that generated the log"));
+  table->addRow(au::StringVector("exec_short", "Same as exec but without full path"));
+
+
+  table->addRow(au::StringVector("function", "Name of the function"));
+  table->addRow(au::StringVector("line", "Number of line where the trace was generated"));
+  table->addRow(au::StringVector("text", "Text of the log"));
+
+  return table;
+}
 }

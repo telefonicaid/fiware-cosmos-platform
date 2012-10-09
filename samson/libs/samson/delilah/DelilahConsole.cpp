@@ -5,60 +5,51 @@
  * DESCRIPTION			   Console terminal for delilah
  *
  */
+#include "samson/delilah/DelilahConsole.h"       // Own interface
 
 #include <dirent.h>                              // DIR directory header
-#include <iomanip>
-#include <iostream>
 #include <sys/stat.h>                            // stat(.)
 
+#include <iomanip>
+#include <iostream>
 
 #include "au/CommandLine.h"                      // au::CommandLine
-#include "au/Descriptors.h"                      // au::Descriptors
-#include "au/S.h"
-#include "au/ThreadManager.h"
 #include "au/containers/SharedPointer.h"
 #include "au/containers/StringVector.h"
+#include "au/Descriptors.h"                      // au::Descriptors
 #include "au/file.h"
+#include "au/log/LogCommon.h"
+#include "au/log/LogMain.h"
+#include "au/S.h"
 #include "au/string.h"                           // au::Format
+#include "au/tables/pugi.h"                      // pugi::Pugi
+#include "au/tables/pugixml.hpp"                 // pugi:...
 #include "au/tables/Table.h"
 #include "au/tables/Tree.h"                      // au::tables::TreeItem
-
-#include "au/log/LogMain.h"
+#include "au/ThreadManager.h"
 
 #include "engine/DiskManager.h"
 #include "engine/MemoryManager.h"                // samson::MemoryManager
 #include "engine/Notification.h"                 // samson::Notification
 
-#include "au/tables/pugi.h"                      // pugi::Pugi
-#include "au/tables/pugixml.hpp"                 // pugi:...
-
-#include "au/log/LogCommon.h"
-
+#include "samson/client/SamsonClient.h"
 #include "samson/common/EnvironmentOperations.h"  // Environment operations (CopyFrom)
 #include "samson/common/NotificationMessages.h"
-
-#include "samson/network/Packet.h"               // ss:Packet
-
-#include "samson/client/SamsonClient.h"
-
-#include "samson/module/ModulesManager.h"        // samson::ModulesManager
-#include "samson/module/samsonVersion.h"         // SAMSON_VERSION
-
-#include "samson/stream/BlockManager.h"          // samson::stream::BlockManager
-
 #include "samson/common/SamsonDataSet.h"
 #include "samson/delilah/Delilah.h"              // samson::Delailh
-#include "samson/delilah/DelilahConsole.h"       // Own interface
 #include "samson/delilah/WorkerCommandDelilahComponent.h"
+#include "samson/module/ModulesManager.h"        // samson::ModulesManager
+#include "samson/module/samsonVersion.h"         // SAMSON_VERSION
+#include "samson/network/Packet.h"               // ss:Packet
+#include "samson/stream/BlockManager.h"          // samson::stream::BlockManager
 
 #define DEF1 "TYPE:EXEC/FUNC: TEXT"
-
 
 // Fancy function to get function to show clock evolution
 std::string strClock(au::Cronometer& cronometer) {
   char c = '-';
 
-  switch ((int)( cronometer.seconds() * 3 ) % 4) {
+  switch (static_cast<int>((cronometer.seconds()) * 3) % 4) {
     case 0:
       c = '-';
       break;
@@ -76,32 +67,29 @@ std::string strClock(au::Cronometer& cronometer) {
 }
 
 namespace samson {
-const char *general_description = \
-  "SAMSON is a distributed platform for efficient processing of unbounded streams of big data";
+const char *general_description =
+    "SAMSON is a distributed platform for efficient processing of unbounded streams of big data";
 
 const char *auths = "Andreu Urruela, Grant Croker, J.Gregorio Escalada & Ken Zangelin";
 
-
-
-
-DelilahConsole::DelilahConsole(size_t delilah_id) : Delilah("console",
-                                                            delilah_id), log_client(AU_LOG_SERVER_QUERY_PORT) {
+DelilahConsole::DelilahConsole(size_t delilah_id) :
+  Delilah("console", delilah_id), log_client(AU_LOG_SERVER_QUERY_PORT) {
   // Default values
   show_server_logs = false;
   show_alerts = false;
   verbose = true;
 
-  mode = mode_normal;     // Normal mode by default
+  mode = mode_normal;   // Normal mode by default
 
   // Schedule a notification to review repeat-tasks
   engine::Engine::shared()->notify(new engine::Notification(notification_delilah_review_repeat_tasks), 1);
 
   // Cool stuff
   addEspaceSequence("samson");
-  addEspaceSequence("q");        // ls
-  addEspaceSequence("d");        // Database mode...
-  addEspaceSequence("l");        // logs mode...
-  addEspaceSequence("n");        // normal mode...
+  addEspaceSequence("q");   // ls
+  addEspaceSequence("d");   // Database mode...
+  addEspaceSequence("l");   // logs mode...
+  addEspaceSequence("n");   // normal mode...
 
   // By default no save traces
   trace_file = NULL;
@@ -132,7 +120,6 @@ void DelilahConsole::evalCommand(std::string command) {
   // Run this command
   size_t _delilah_id = runAsyncCommand(command);
 
-
   // Wait until this delilah command has finished ( give some options to the user )
   if (_delilah_id != 0) {
     au::Cronometer cronometer;
@@ -140,11 +127,8 @@ void DelilahConsole::evalCommand(std::string command) {
       au::ConsoleEntry entry;
       std::string message;
       if (cronometer.seconds() > 1) {
-        message = au::str("[ %s ] Waiting process %lu : %s ... [ b: background c: cancel ]"
-                          , strClock(cronometer).c_str()
-                          , _delilah_id
-                          , command.c_str()
-                          );
+        message = au::str("[ %s ] Waiting process %lu : %s ... [ b: background c: cancel ]",
+                          strClock(cronometer).c_str(), _delilah_id, command.c_str());
       }
       int s = waitWithMessage(message, 0.2, &entry);
 
@@ -164,7 +148,7 @@ void DelilahConsole::evalCommand(std::string command) {
           cancelComponent(_delilah_id);
           return;
         } else if (entry.isChar('b')) {
-          refresh();     // Refresh console
+          refresh();   // Refresh console
           return;
         }
       }
@@ -194,24 +178,21 @@ void DelilahConsole::autoCompleteQueues(au::ConsoleAutoComplete *info) {
   if (!table) {
     return;
   }
-  for (size_t r = 0; r <  table->getNumRows(); r++) {
+  for (size_t r = 0; r < table->getNumRows(); r++) {
     info->add(table->getValue(r, "name"));
   }
   delete table;
 }
 
-void DelilahConsole::autoCompleteQueueWithFormat(
-  au::ConsoleAutoComplete *info,
-  std::string key_format,
-  std::string value_format
-  ) {
+void DelilahConsole::autoCompleteQueueWithFormat(au::ConsoleAutoComplete *info, std::string key_format,
+                                                 std::string value_format) {
   au::tables::Table *table = database.getTable("queues");
 
   if (!table) {
     return;
   }
 
-  for (size_t r = 0; r <  table->getNumRows(); r++) {
+  for (size_t r = 0; r < table->getNumRows(); r++) {
     if (table->getValue(r, "format/key_format") == key_format) {
       if (table->getValue(r, "format/value_format") == value_format) {
         info->add(table->getValue(r, "name"));
@@ -232,19 +213,13 @@ void DelilahConsole::autoCompleteQueueForOperation(au::ConsoleAutoComplete *info
   }
 
   if (argument_pos < operation->getNumInputs()) {
-    autoCompleteQueueWithFormat(
-      info
-      , operation->inputFormats[argument_pos].keyFormat
-      , operation->inputFormats[argument_pos].valueFormat
-      );
+    autoCompleteQueueWithFormat(info, operation->inputFormats[argument_pos].keyFormat,
+                                operation->inputFormats[argument_pos].valueFormat);
   } else {
     argument_pos -= operation->getNumInputs();
     if (argument_pos < operation->getNumOutputs()) {
-      autoCompleteQueueWithFormat(
-        info
-        , operation->outputFormats[argument_pos].keyFormat
-        , operation->outputFormats[argument_pos].valueFormat
-        );
+      autoCompleteQueueWithFormat(info, operation->outputFormats[argument_pos].keyFormat,
+                                  operation->outputFormats[argument_pos].valueFormat);
     }
   }
 }
@@ -295,8 +270,8 @@ void DelilahConsole::run() {
 
     while (fgets(line, sizeof(line), f)) {
       // Remove the last return of a string
-      while (( strlen(line) > 0 ) && ( line[ strlen(line) - 1] == '\n') > 0) {
-        line[ strlen(line) - 1] = '\0';
+      while ((strlen(line) > 0) && (line[strlen(line) - 1] == '\n') > 0) {
+        line[strlen(line) - 1] = '\0';
       }
 
       // LM_M(("Processing line: %s", line ));
@@ -333,7 +308,7 @@ std::string string_for_list(const char *list[]) {
   int i = 0;
 
   while (list[i] != NULL) {
-    output << list[i];;
+    output << list[i];
     if (list[i + 1] != NULL) {
       if (((i + 1) % 4) == 0) {
         output << "\n";
@@ -363,7 +338,8 @@ size_t DelilahConsole::runAsyncCommand(std::string command) {
   au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command, error);
 
   if (error.IsActivated()) {
-    write(&error);       // Write errors and messages
+    LM_E(("Error parsing command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
+    write(&error);   // Write errors and messages
     return 0;
   }
 
@@ -398,7 +374,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (mode == mode_logs) {
     au::ErrorManager error;
     log_client.evalCommand(command_instance->command_line(), &error);
-    write(&error);       // Console method to write all the answers
+    write(&error);   // Console method to write all the answers
     return 0;
   }
 
@@ -409,16 +385,14 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     return 0;
   }
 
-  
-  if (mainCommand == "log")
-  {
+  if (mainCommand == "log") {
     std::string command = command_instance->get_string_argument("command");
     au::ErrorManager error;
-    au::log_central.evalCommand( command , error );
-    write( &error );
+    au::log_central.evalCommand(command, error);
+    write(&error);
     return 0;
   }
-  
+
   if (mainCommand == "connect") {
     // Disconnect first from whatever cluster I am connected to...
     disconnect();
@@ -429,14 +403,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     if (hosts.size() == 0) {
       writeErrorOnConsole(command_instance->ErrorMessage(au::str("No host provided (%s)", host.c_str())));
     }
-    for (int i =
-           0;
-         i <
-         (int)
-         hosts.
-         size();
-         i++)
-    {
+    for (int i = 0; i < static_cast<int>(hosts. size()); i++) {
       writeOnConsole(au::str("Connecting to %s...\n", hosts[i].c_str()));
 
       au::ErrorManager error;
@@ -458,7 +425,6 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     disconnect();
     return 0;
   }
-
 
   if (mainCommand == "show_cluster_setup") {
     writeOnConsole(network->getClusterSetupStr() + "\n");
@@ -512,7 +478,6 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       output << au::lineInConsole('-') << "\n";
       output << "\n";
 
-
       std::string text = output.str();
 
       writeOnConsole(text);
@@ -521,7 +486,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "quit") {
-    Console::quitConsole();       // Quit the console
+    Console::quitConsole();   // Quit the console
     return 0;
   }
 
@@ -532,21 +497,18 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     return 0;
   }
 
-
   if (mainCommand == "set") {
     std::string name = command_instance->get_string_argument("name");
     std::string value = command_instance->get_string_argument("value");
 
     // Only set, we show all the defined parameters
-    if (name  == "") {
+    if (name == "") {
       au::tables::Table table(au::StringVector("Property", "Value"));
       table.setTitle("Environent variables");
 
       std::map<std::string, std::string>::iterator it_environment;
       for (it_environment = environment.environment.begin()
-           ; it_environment != environment.environment.end()
-           ; it_environment++)
-      {
+      ; it_environment != environment.environment.end(); it_environment++) {
         table.addRow(au::StringVector(it_environment->first, it_environment->second));
       }
 
@@ -573,8 +535,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "ls_local_connections") {
-    samson::Visualization v;     // No visualization options here
-    au::tables::Table *table = WorkerCommandDelilahComponent::getStaticTable(network->getConnectionsCollection(v));
+    samson::Visualization v;   // No visualization options here
+    au::tables::Table *table = WorkerCommandDelilahComponent::getStaticTable(network->GetConnectionsCollection(v));
     writeOnConsole(table->str());
     delete table;
     return 0;
@@ -607,7 +569,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
         writeOnConsole("verbose mode is activated\n");
       } else {
         writeOnConsole("verbose mode is NOT activated\n");
-      } return 0;
+      }
+      return 0;
     }
 
     if (action == "on") {
@@ -635,17 +598,17 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     std::string filename = command_instance->get_string_argument("file");
 
     if (trace_file) {
-      writeErrorOnConsole(au::str("Please close previous alerts file (%s) with command 'close_alerts_file'\n"
-                                  , trace_file_name.c_str()));
+      writeErrorOnConsole(
+                          au::str("Please close previous alerts file (%s) with command 'close_alerts_file'\n",
+                                  trace_file_name.c_str()));
       return 0;
     }
 
     trace_file = fopen(filename.c_str(), "w");
     if (!trace_file) {
-      writeErrorOnConsole(au::str("Error opening file '%s' to store alerts (%s)\n"
-                                  , trace_file_name.c_str()
-                                  , strerror(errno))
-                          );
+      writeErrorOnConsole(
+                          au::str("Error opening file '%s' to store alerts (%s)\n", trace_file_name.c_str(),
+                                  strerror(errno)));
       return 0;
     }
 
@@ -661,7 +624,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     fclose(trace_file);
     writeOnConsole(
-      "Stop saving alerts to file '%s'.\nRemeber you can open a new alerts file with command 'open_alerts_file\n'");
+                   "Stop saving alerts to file '%s'.\nRemeber you can open a new alerts file with command 'open_alerts_file\n'");
     return 0;
   }
 
@@ -685,7 +648,6 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
         table.addRow(au::StringVector("Delilah", au::code64_str(get_delilah_id())));
         table.addRow(au::StringVector("Job id", au::str("%lu", id)));
-
 
         if (component->isComponentFinished()) {
           table.addRow(au::StringVector("Finished", "Yes"));
@@ -734,7 +696,6 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     std::string file_name = command_instance->get_string_argument("file");
     std::string queue = command_instance->get_string_argument("queue");
 
-
     au::ErrorManager error;
     std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
     if (error.IsActivated()) {
@@ -774,12 +735,12 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   // Push data to a queue
 
   if (mainCommand == "pop") {
-    std::string queue_name  = command_instance->get_string_argument("queue");
-    std::string fileName    = command_instance->get_string_argument("file_name");
+    std::string queue_name = command_instance->get_string_argument("queue");
+    std::string fileName = command_instance->get_string_argument("file_name");
 
     bool force_flag = command_instance->get_bool_option("-force");
     bool show_flag = command_instance->get_bool_option("-show");
-    size_t id = AddPopComponent(queue_name,  fileName, force_flag, show_flag);
+    size_t id = AddPopComponent(queue_name, fileName, force_flag, show_flag);
     return id;
   }
 
@@ -792,15 +753,15 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       writeErrorOnConsole(error.GetMessage());
     } else {
       writeWarningOnConsole("OK");
-    } return 0;
-  }
-
-  if( mainCommand == "ls_local_modules")
-  {
-    writeOnConsole( au::Singleton<ModulesManager>::shared()->GetTableOfModules() + "\n" );
+    }
     return 0;
   }
-  
+
+  if (mainCommand == "ls_local_modules") {
+    writeOnConsole(au::Singleton<ModulesManager>::shared()->GetTableOfModules() + "\n");
+    return 0;
+  }
+
   if (mainCommand == "ls_local") {
     std::string file = command_instance->get_string_argument("file");
 
@@ -814,7 +775,6 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     writeOnConsole(getLsLocal(file, true));
     return 0;
   }
-
 
   if (mainCommand == "show_local_queue") {
     std::string queue = command_instance->get_string_argument("queue");
@@ -866,7 +826,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
       std::ostringstream output;
       samson_data_set->printContent(limit, show_hg, output);
-      std::string txt =  output.str();
+      std::string txt = output.str();
       writeOnConsole(output.str());
       return 0;
     } else {
@@ -886,27 +846,22 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
 int DelilahConsole::_receive(const PacketPointer& packet) {
   switch (packet->msgCode) {
-    case Message::Alert:
-    {
-      std::string _text     = packet->message->alert().text();
-      std::string _type     = packet->message->alert().type();
-      std::string _context  = packet->message->alert().context();
+    case Message::Alert: {
+      std::string _text = packet->message->alert().text();
+      std::string _type = packet->message->alert().type();
+      std::string _context = packet->message->alert().context();
 
       // Add to the local collection of traces
       trace_colleciton.add(packet->from, _type, _context, _text);
 
       // Write to disk if required
       if (trace_file) {
-        std::string trace_message =  au::str("%s %s %s %s\n"
-                                             , packet->from.str().c_str()
-                                             , _type.c_str()
-                                             , _context.c_str()
-                                             , _text.c_str()
-                                             );
+        std::string trace_message = au::str("%s %s %s %s\n", packet->from.str().c_str(), _type.c_str(),
+                                            _context.c_str(), _text.c_str());
         fwrite(trace_message.c_str(), trace_message.length(), 1, trace_file);
       }
 
-      if (show_alerts || _context == "system" ) {
+      if (show_alerts || _context == "system") {
         au::tables::Table table("Concept|Value,left");
         table.setTitle("ALERT");
 
@@ -926,26 +881,25 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
         }
       }
     }
-    break;
+      break;
 
     default:
       LM_W(("Unknown message %s received at delilahConsole", Message::messageCode(packet->msgCode)));
       break;
   }
 
-
   return 0;
 }
 
 void DelilahConsole::delilahComponentStartNotification(DelilahComponent *component) {
   if (component->hidden) {
-    return;     // No notification for hidden processes
+    return;   // No notification for hidden processes
   }
   if (verbose) {
     std::ostringstream o;
 
-    o << "Process started: " << au::code64_str(get_delilah_id()) << "_" <<  component->getId() << " " <<
-    component->getConcept() << "\n";
+    o << "Process started: " << au::code64_str(get_delilah_id()) << "_" << component->getId() << " "
+        << component->getConcept() << "\n";
     if (component->error.IsActivated()) {
       showErrorMessage(o.str());
     } else {
@@ -956,22 +910,18 @@ void DelilahConsole::delilahComponentStartNotification(DelilahComponent *compone
 
 void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *component) {
   if (component->hidden) {
-    return;     // No notification for hidden processes
+    return;   // No notification for hidden processes
   }
   if (verbose) {
     if (!component->error.IsActivated()) {
-      showWarningMessage(au::str("Process finished: %s_%lu %s\n"
-                                 , au::code64_str(get_delilah_id()).c_str()
-                                 , component->getId()
-                                 , component->getConcept().c_str()));
+      showWarningMessage(
+                         au::str("Process finished: %s_%lu %s\n", au::code64_str(get_delilah_id()).c_str(),
+                                 component->getId(), component->getConcept().c_str()));
     } else {
-      showErrorMessage(au::str("Process finished with error: %s_%lu %s\nERROR: %s\n"
-                               , au::code64_str(get_delilah_id()).c_str()
-                               , component->getId()
-                               , component->getConcept().c_str()
-                               , component->error.GetMessage().c_str()
-                               )
-                       );
+      showErrorMessage(
+                       au::str("Process finished with error: %s_%lu %s\nERROR: %s\n",
+                               au::code64_str(get_delilah_id()).c_str(), component->getId(),
+                               component->getConcept().c_str(), component->error.GetMessage().c_str()));
     }
   }
 }
@@ -984,12 +934,11 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
 
   std::string directory_name = au::str("stream_out_%s", queue.c_str());
 
-  if (( mkdir(directory_name.c_str(), 0755) != 0 ) && ( errno != EEXIST )) {
-    showErrorMessage(au::str("It was not possible to create directory %s to store data from queue %s",
+  if ((mkdir(directory_name.c_str(), 0755) != 0) && (errno != EEXIST)) {
+    showErrorMessage(
+                     au::str("It was not possible to create directory %s to store data from queue %s",
                              directory_name.c_str(), queue.c_str()));
-    showErrorMessage(au::str("Rejecting a %s data from queue %s"
-                             , au::str(packet_size, "B").c_str()
-                             , queue.c_str()));
+    showErrorMessage(au::str("Rejecting a %s data from queue %s", au::str(packet_size, "B").c_str(), queue.c_str()));
     return;
   }
 
@@ -997,7 +946,7 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
 
   if (verbose) {
     // Show the first line or key-value
-    SamsonClientBlock samson_client_block(buffer);        // Not remove buffer at destrutor
+    SamsonClientBlock samson_client_block(buffer);   // Not remove buffer at destrutor
 
     std::ostringstream output;
     output << "====================================================================\n";
@@ -1011,9 +960,8 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
     showMessage(output.str());
   }
 
-
   // Disk operation....
-  engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer,  fileName, engine_id());
+  engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer, fileName, engine_id());
   au::SharedPointer<engine::DiskOperation> operation(o);
   engine::Engine::disk_manager()->Add(operation);
 }
@@ -1023,7 +971,7 @@ void DelilahConsole::runAsyncCommandAndWait(std::string command) {
   size_t tmp_id = runAsyncCommand(command);
 
   if (tmp_id == 0) {
-    return;     // Sync command
+    return;   // Sync command
   }
   while (true) {
     if (!isActive(tmp_id)) {

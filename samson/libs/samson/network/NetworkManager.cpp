@@ -1,21 +1,18 @@
-#include "au/network/SocketConnection.h"
+#include "samson/network/NetworkManager.h"  // Own interface
 
-#include "NetworkManager.h"  // Own interface
+#include <set>
+
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 #include "samson/network/NetworkConnection.h"
-#include "samson/network/NetworkConnection.h"
 
 namespace samson {
-  
-  NetworkManager::~NetworkManager() {
-    // Remove all pending packets to be sent
-    multi_packet_queue.Clear();
-    
-    // Close all connections
-    connections.clearMap();
-    
-  }
+NetworkManager::~NetworkManager() {
+  // Remove all pending packets to be sent
+  multi_packet_queue.Clear();
+  // Close all connections
+  connections.clearMap();
+}
 
 // Get all connections
 std::vector<std::string> NetworkManager::getAllConnectionNames() {
@@ -45,7 +42,7 @@ void NetworkManager::Remove(const std::string& connection_name) {
     return;
   } else {
     LM_W(("trying to remove connection %s that is not present in this connection manager"
-          , connection_name.c_str()));
+            , connection_name.c_str()));
   }
 }
 
@@ -93,7 +90,7 @@ au::tables::Table *NetworkManager::getConnectionsTable() {
   for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
     au::StringVector values;
 
-    values.push_back(it_connections->first);     // Name of the connection
+    values.push_back(it_connections->first);   // Name of the connection
 
     NetworkConnection *connection = it_connections->second;
     au::SocketConnection *socket_connection = connection->socket_connection_;
@@ -111,7 +108,7 @@ au::tables::Table *NetworkManager::getConnectionsTable() {
 
 void NetworkManager::RemoveDisconnectedConnections() {
   au::map<std::string, NetworkConnection>::iterator it;
-  for (it = connections.begin(); it != connections.end(); ) {
+  for (it = connections.begin(); it != connections.end();) {
     NetworkConnection *connection = it->second;
 
     if (connection->isDisconnectd()) {
@@ -135,7 +132,7 @@ std::vector<size_t> NetworkManager::getDelilahIds() {
   for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
     NodeIdentifier _node_identifier = it_connections->second->node_identifier();
 
-    if (_node_identifier.node_type  == DelilahNode) {
+    if (_node_identifier.node_type == DelilahNode) {
       size_t id = _node_identifier.id;
 
       if (it_connections->first == _node_identifier.getCodeName()) {
@@ -143,10 +140,9 @@ std::vector<size_t> NetworkManager::getDelilahIds() {
         ids.push_back(id);
       } else {
         LM_W(("Delilah %lu (%s) connected using wrong connection name %s",
-              _node_identifier.id,
-              _node_identifier.getCodeName().c_str(),
-              it_connections->first.c_str()
-              ));
+                _node_identifier.id,
+                _node_identifier.getCodeName().c_str(),
+                it_connections->first.c_str()));
       }
     }
   }
@@ -209,9 +205,8 @@ void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
   }
 }
 
-gpb::Collection *NetworkManager::getConnectionsCollection(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
+au::SharedPointer<gpb::Collection> NetworkManager::GetConnectionsCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("connections");
 
   au::TokenTaker tt(&token_connections_);
@@ -278,9 +273,8 @@ std::string NetworkManager::getStatusForConnection(std::string connection_name) 
   } else if (connection->isDisconnectd()) {
     return "Disconnected";
   } else {
-    return au::str("Connected In: %s Out: %s "
-                   , au::str(connection->get_rate_in(), "B/s").c_str()
-                   , au::str(connection->get_rate_out(), "B/s").c_str());
+    return au::str("Connected In: %s Out: %s ", au::str(connection->get_rate_in(), "B/s").c_str(),
+                   au::str(connection->get_rate_out(), "B/s").c_str());
   }
 }
 

@@ -2,7 +2,6 @@
 #define _H_BLOCK_INFO
 
 #include <string>                       // std::string
-
 #include "samson/common/FullKVInfo.h"
 #include "samson/common/KVInfo.h"
 #include "samson/module/KVFormat.h"
@@ -15,15 +14,15 @@ namespace samson {
  **/
 
 struct BlockInfo {
-  int num_blocks;           // Number of blocks
-  size_t size;              // Size of the blocks ( including headers )
-  size_t size_on_memory;    // Size contained in memory
-  size_t size_on_disk;      // Size contained on disk
-  size_t size_locked;       // Size locked in memory
-  FullKVInfo info;          // Number of key-values and data size
-  KVFormat format;          // Common format for all the information
-  time_t min_time;          // Min time of all blocks
-  time_t max_time;          // Max time of all blocks
+  int num_blocks;   // Number of blocks
+  size_t size;   // Size of the blocks ( including headers )
+  size_t size_on_memory;   // Size contained in memory
+  size_t size_on_disk;   // Size contained on disk
+  size_t size_locked;   // Size locked in memory
+  FullKVInfo info;   // Number of key-values and data size
+  KVFormat format;   // Common format for all the information
+  time_t min_time;   // Min time of all blocks
+  time_t max_time;   // Max time of all blocks
 
   // Default constructor to initialize all values
   BlockInfo();

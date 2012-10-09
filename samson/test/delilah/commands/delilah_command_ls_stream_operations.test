@@ -1,20 +1,19 @@
 --NAME--
 ls_stream_operations - fetch the current stream_operation list
 --DELILAH-INIT--
-remove_all_stream
-add_stream_operation o1 txt.parser_words input words
-add_stream_operation o2 txt.word_count_accumulate words words_count words_count
+remove_all
+add_stream_operation o1 txt.parser_words -input input -output words
+add_stream_operation o2 txt.word_count_accumulate -input "words words_count" -output words_count
 set_stream_operation_property o2 update_only true
 set_stream_operation_property o2 num_divisions 4
 --COMMAND--
-ls_stream_operations -group name -properties
+ls_stream_operations 
 --EXPECT--
-/-------------------------------------------------------------------------------------------------------------\
-| ls_stream_operations -group name -properties                                                                |
-|-------------------------------------------------------------------------------------------------------------|
-| worker_id | name |                 operation |                                                   properties |
-|-----------+------+---------------------------+--------------------------------------------------------------|
-|         0 | o2   | txt.word_count_accumulate | (max_latency=60,num_divisions=4,priority=1,update_only=true) |
-|         0 | o1   |          txt.parser_words |                                  (max_latency=60,priority=1) |
-\-------------------------------------------------------------------------------------------------------------/
-
+/-------------------------------------------------------------------------------------------------------------------------------\
+| ls_stream_operations                                                                                                          |
+|-------------------------------------------------------------------------------------------------------------------------------|
+| id | name |                 operation | Flags |                 inputs |          outputs |                       environment | 
+|----+------+---------------------------+-------+------------------------+------------------+-----------------------------------|
+|  5 | o1   |          txt.parser_words |       |             [1] input  |       [1] words  |                                   | 
+|  6 | o2   | txt.word_count_accumulate |       | [2] words words_count  | [1] words_count  | update_only=true num_divisions=4  | 
+\-------------------------------------------------------------------------------------------------------------------------------/

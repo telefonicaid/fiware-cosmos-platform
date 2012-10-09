@@ -333,14 +333,19 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
       if (aP->type == PaBoolean) {
         --argNo;
       }
-    } else if ((aP = argFind(paList, argV[argNo], UNSTRICT, NULL)) != NULL) {
-      valueP = &argV[argNo][strlen(aP->option)];
+//    The UNSTRICT condition caused -port_node being detected as -port, without warning
+//    about the change in the syntax
     } else if ((aP = argFind(paList, (char *)"", UNSTRICT, &param)) != NULL) {
+      if (argV[argNo][0] == '-') {
+        sprintf(w, "%s '%s' argument starts with '-'", optOrPar(argV[argNo]), argV[argNo]);
+        fprintf(stderr, "Warning: '%s'\n", w);
+      }
       valueP = argV[argNo];
     } else {
       sprintf(w, "%s '%s' not recognized", optOrPar(argV[argNo]), argV[argNo]);
       PA_W(("Warning: '%s'", w));
       PA_WARNING(PasNoSuchOption, w);
+      fprintf(stderr, "Warning: '%s'\n", w);
       continue;
     }
 

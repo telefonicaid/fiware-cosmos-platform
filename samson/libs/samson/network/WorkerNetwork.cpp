@@ -1,13 +1,12 @@
+#include "samson/network/WorkerNetwork.h"  // Own interface
 
 #include "au/utils.h"
 
 #include "samson/network/NetworkConnection.h"
 
-#include "WorkerNetwork.h"  // Own interface
-
 namespace samson {
-WorkerNetwork::WorkerNetwork(size_t worker_id, int port)
-  : CommonNetwork(NodeIdentifier(WorkerNode, worker_id)) {
+WorkerNetwork::WorkerNetwork(size_t worker_id, int port) :
+  CommonNetwork(NodeIdentifier(WorkerNode, worker_id)) {
   // Add listener for incoming connections
   // ----------------------------------------------------------------------------
   {
@@ -22,8 +21,9 @@ WorkerNetwork::WorkerNetwork(size_t worker_id, int port)
 }
 
 WorkerNetwork::~WorkerNetwork() {
-  LM_T(LmtCleanup, ("In cleanup"));
   if (worker_listener != NULL) {
+    LM_T(LmtCleanup, ("In ~WorkerNetwork() calling StopNetworkListeners()"));
+    worker_listener->StopNetworkListener();
     delete worker_listener;
     worker_listener = NULL;
   }
@@ -31,9 +31,11 @@ WorkerNetwork::~WorkerNetwork() {
 
 void WorkerNetwork::stop() {
   // Stop listeners
+  LM_T(LmtCleanup, ("NetworkListener called to stop"));
   worker_listener->StopNetworkListener();
 
   // Close all connections
+  LM_T(LmtCleanup, ("Close all connections"));
   NetworkManager::reset();
 }
 
@@ -44,7 +46,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
     delete socket_connection;
   }
 
-  if (cluster_information_version() == (size_t)-1) {  // Still not part of any cluster..
+  if (cluster_information_version() == (size_t) -1) {   // Still not part of any cluster..
     LM_W(("Connection rejected since I am still not part of any cluster..."));
     socket_connection->Close();
     delete socket_connection;
@@ -64,7 +66,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
 
   if (packet.msgCode != Message::Hello) {
     LM_W(("Received message %s instead of the required hello message. Closing connection"
-          , messageCode(packet.msgCode)));
+            , messageCode(packet.msgCode)));
     socket_connection->Close();
     delete socket_connection;
     return;
@@ -82,7 +84,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   NodeIdentifier new_node_identifier(packet.message->hello().node_identifier());
 
   if (new_node_identifier.node_type == UnknownNode) {
-    LM_W(("Hello message received with nodetype unknown. Closing connection" ));
+    LM_W(("Hello message received with nodetype unknown. Closing connection"));
     socket_connection->Close();
     delete socket_connection;
     return;
@@ -92,7 +94,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   if (new_node_identifier.node_type == DelilahNode) {
     size_t new_delilah_id = new_node_identifier.id;
     if (!au::code64_is_valid(new_delilah_id)) {
-      LM_W(("No valid delilah_id (%lu). Closing conneciton...", new_delilah_id ));
+      LM_W(("No valid delilah_id (%lu). Closing conneciton...", new_delilah_id));
       socket_connection->Close();
       delete socket_connection;
       return;
@@ -103,7 +105,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   if (new_node_identifier.node_type == DelilahNode) {
     PacketPointer ci_packet = getClusterInfoPacket();
     ci_packet->from = node_identifier();
-    ci_packet->to   = new_node_identifier;
+    ci_packet->to = new_node_identifier;
 
     au::Status s = ci_packet->write(socket_connection, NULL);
 
@@ -128,26 +130,25 @@ void WorkerNetwork::SendAlertToAllDelilahs(std::string type, std::string context
   alert->set_text(message);
 
   // This message do not belong to any delilah operation
-  p->message->set_delilah_component_id((size_t)-1);
+  p->message->set_delilah_component_id((size_t) -1);
 
   // Send packet
   SendToAllDelilahs(p);
 }
-  
-  void WorkerNetwork::SendAlertToDelilah( size_t delilah_id , std::string type, std::string context, std::string message) {
-    PacketPointer p(new Packet(Message::Alert));
-    gpb::Alert *alert = p->message->mutable_alert();
-    
-    alert->set_type(type);
-    alert->set_context(context);
-    alert->set_text(message);
-    
-    // This message do not belong to any delilah operation
-    p->message->set_delilah_component_id((size_t)-1);
-    
-    // Direction of this packet
-    p->to = NodeIdentifier( DelilahNode , delilah_id );
-    Send(p);
-  }
 
+void WorkerNetwork::SendAlertToDelilah(size_t delilah_id, std::string type, std::string context, std::string message) {
+  PacketPointer p(new Packet(Message::Alert));
+  gpb::Alert *alert = p->message->mutable_alert();
+
+  alert->set_type(type);
+  alert->set_context(context);
+  alert->set_text(message);
+
+  // This message do not belong to any delilah operation
+  p->message->set_delilah_component_id((size_t) -1);
+
+  // Direction of this packet
+  p->to = NodeIdentifier(DelilahNode, delilah_id);
+  Send(p);
+}
 }

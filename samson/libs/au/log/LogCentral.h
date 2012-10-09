@@ -31,6 +31,9 @@ public:
   // Init log system
   void Init(std::string exec = "Unknown");
 
+  // Stop the loggin system
+  void Stop();
+  
   // Emit a log thougth the pipe
   void Emit(Log *log);
 
@@ -73,6 +76,10 @@ private:
   // Frind function to run in background
   friend void *run_LogCentral(void *p);
 
+  
+  // Flag to indicate the backgroud thread to finish
+  bool quit_;
+  
   // Pipe and thread for the log process
   pthread_t t_;
   int fds_[2];

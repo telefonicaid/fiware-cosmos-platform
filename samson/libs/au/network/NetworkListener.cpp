@@ -59,6 +59,7 @@ NetworkListener::~NetworkListener() {
 
 void NetworkListener::StopNetworkListener() {
   if (!background_thread_running_) {
+    LM_W(("NetworkListener not running, nothing to stop"));
     return;   // Nothing to do
   }
   background_thread_running_ = false;
@@ -71,8 +72,9 @@ void NetworkListener::StopNetworkListener() {
   rFd_ = -1;
 
   // Joint the background thread
-  // LM_LW(( "Joining background thread of listener on port %d to finish\n", port_ ));
-  if (!return_code_) {  // Still pending to be collected
+  // LM_LT(LmtCleanup, ( "Joining background thread of listener on port %d to finish\n", port_ ));
+  if (!return_code_) {
+    // Still pending to be collected
     pthread_join(t, &return_code_);
   }
 }
@@ -126,7 +128,7 @@ Status NetworkListener::InitNetworkListener(int port) {
 
 
   // Create thread
-  LM_T(LmtCleanup, ("Creating a thread"));
+  LM_T(LmtCleanup, ("Creating a thread, NetworkListener on port:%d", port));
   std::string name = au::str("NetworkListener on port %d", port);
   int s = au::Singleton<au::ThreadManager>::shared()->addNonDetachedThread(name
                                                                            , &t
@@ -155,11 +157,13 @@ void *NetworkListener::runNetworkListener() {
   struct timeval tv;
 
   int fds;
+  LM_T(LmtCleanup, ("Thread running"));
 
   while (true) {
     // this means that stop has been called
     int rFd = rFd_;
     if (rFd == -1) {
+      LM_T(LmtCleanup, ("return because rFd_ == -1"));
       return (void *)"rFd_ == -1";
     }
 
@@ -173,7 +177,9 @@ void *NetworkListener::runNetworkListener() {
     tv.tv_usec = 0;
 
     // Main select to wait new connections
+    LM_T(LmtCleanup, ("Before select"));
     fds = select(max + 1,  &rFds, NULL, NULL, &tv);
+    LM_T(LmtCleanup, ("After select select, fds:%d", fds));
 
     if ((fds == -1) && (errno == EINTR)) {
       continue;

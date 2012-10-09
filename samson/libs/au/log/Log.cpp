@@ -1,6 +1,4 @@
-
 #include "Log.h"
-
 
 namespace au {
 const char *log_reseved_words[] =
@@ -54,7 +52,6 @@ bool Log::Write(au::FileDescriptor *fd) {
   header.setMagicNumber();
   size_t strings_size = getStringsSize();
   header.dataLen = sizeof(LogData) + strings_size;
-
 
   // Total message to be writted
   TemporalBuffer buffer(sizeof(LogHeader) + sizeof(LogData) + strings_size);
@@ -250,7 +247,7 @@ LogData& Log::log_data() {
 
 void Log::SetNewSession() {
   log_data_.line = 0;
-  log_data_.channel = -1;  // Mark for the new session
+  log_data_.channel = -1;   // Mark for the new session
   log_data_.tv.tv_sec = time(NULL);
   log_data_.tv.tv_usec = 0;
   log_data_.timezone = 0;

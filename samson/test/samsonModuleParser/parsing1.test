@@ -7,6 +7,7 @@ samsonModuleParser module /tmp/samsonModuleParser_test main
 diff /tmp/samsonModuleParser_test/main.h expected_main.h
 diff /tmp/samsonModuleParser_test/main.cpp expected_main.cpp
 echo Finish
+rm main.cpp main.h
 --EXPECT--
 Begin
 Finish

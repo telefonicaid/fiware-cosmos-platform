@@ -1,5 +1,7 @@
+#include "samson/delilah/DelilahComponent.h"                    // Own interface
 
-
+#include <map>
+#include <vector>
 
 #include "au/CommandLine.h"                      // samson::CommandLine
 
@@ -8,12 +10,9 @@
 
 #include "samson/common/EnvironmentOperations.h"  // copyEnviroment()
 #include "samson/common/NotificationMessages.h"     // notification_delilah_review_repeat_tasks
-
-#include "samson/network/Packet.h"               // samson::Packet
-
-#include "DelilahComponent.h"                    // Own interface
 #include "samson/delilah/Delilah.h"              // samson::Delilah
 #include "samson/delilah/DelilahConsole.h"       // samson::DelilahConsole
+#include "samson/network/Packet.h"               // samson::Packet
 
 
 namespace samson {

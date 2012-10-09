@@ -72,15 +72,15 @@ public:
    * In this case no flags are considered
    */
 
-  CommandLine(std::string _command);
+  CommandLine(const std::string& _command);
   CommandLine(int argc, const char *argv[]);
 
   /**
    * Parse a command line in the classical C-style way
    */
 
+  void Parse(const std::string& _command);
   void Parse(int args, const char *argv[]);
-  void Parse(std::string _command);
 
   /**
    * Defining flags
@@ -88,32 +88,32 @@ public:
 
   void ResetFlags();
 
-  void SetFlagBoolean(std::string name);
-  void SetFlagInt(std::string name, int default_value);
-  void SetFlagString(std::string name, std::string default_value);
-  void SetFlagUint64(std::string name, std::string default_value);
-  void SetFlagUint64(std::string name, size_t default_value);
-  void SetFlagDouble(std::string name, double default_value);
+  void SetFlagBoolean(const std::string& name);
+  void SetFlagInt(const std::string& name, int default_value);
+  void SetFlagString(const std::string& name, const std::string& default_value);
+  void SetFlagUint64(const std::string& name, const std::string& default_value);
+  void SetFlagUint64(const std::string& name, size_t default_value);
+  void SetFlagDouble(const std::string& name, double default_value);
 
   /**
    * Acces information about arguments
    */
 
-  int get_num_arguments();
-  std::string get_argument(int index);
+  int get_num_arguments() const;
+  std::string get_argument(int index) const;
 
   /**
    * Specialed access to parametes
    */
 
-  bool GetFlagBool(std::string flag_name);
-  int GetFlagInt(std::string flag_name);
-  double GetFlagDouble(std::string flag_name);
-  std::string GetFlagString(std::string flag_name);
-  size_t GetFlagUint64(std::string flag_name);
+  bool GetFlagBool(const std::string& flag_name) const;
+  int GetFlagInt(const std::string& flag_name) const;
+  double GetFlagDouble(const std::string& flag_name) const;
+  std::string GetFlagString(const std::string& flag_name) const;
+  size_t GetFlagUint64(const std::string& flag_name) const;
 
   // Original command+
-  std::string command();
+  std::string command() const;
 
 private:
 
@@ -121,17 +121,17 @@ private:
    * Access to flags
    */
 
-  std::string GetFlagValue(std::string flag_name);
-  std::string GetFlagType(std::string flag_name);
+  std::string GetFlagValue(const std::string& flag_name) const;
+  std::string GetFlagType(const std::string& flag_name) const;
 
   /**
    * Functions to transform values
    */
 
-  static int getIntValue(std::string value);
+  static int getIntValue(const std::string& value);
   static size_t getUint64Value(std::string value);
-  static double getDoubleValue(std::string value);
-  static bool getBoolValue(std::string value);
+  static double getDoubleValue(const std::string& value);
+  static bool getBoolValue(const std::string& value);
 
   // Internal function to parse content
   void ClearValues();

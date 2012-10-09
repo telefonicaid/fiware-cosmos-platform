@@ -24,6 +24,8 @@ LogCentral::LogCentral() {
 
   fd_read_logs_ = NULL;
   fd_write_logs_ = NULL;
+  
+  quit_ = false;
 }
 
 void LogCentral::AddPlugin(const std::string& name, LogPlugin *log_plugin, au::ErrorManager& error) {
@@ -39,6 +41,10 @@ inline LogChannels& LogCentral::log_channels() {
 }
 
 void LogCentral::Init(std::string exec) {
+
+  // Flag to indicate background thread to quit
+  quit_ = false;
+
   // keep the name of the executable
   exec_ = exec;
 
@@ -62,6 +68,25 @@ void LogCentral::Init(std::string exec) {
   tm->addThread("log_thread", &t_, NULL, run_LogCentral, this);
 }
 
+  void LogCentral::Stop()
+  {
+    // Flush all pending logs
+    // Stop the background thread
+
+    // Set the quit flag
+    quit_ = true;
+    
+    // Close pipes to force log process to fail
+    close(fds_[0]);
+    close(fds_[1]);
+
+    // Wait for the background threads
+    void* return_code; // Return code to be ignored
+    pthread_join(t_, &return_code);
+    
+  }
+
+  
 void LogCentral::Emit(Log *log) {
   // Write to the pipe
   log->Write(fd_write_logs_);
@@ -73,7 +98,10 @@ void LogCentral::run() {
   while (true) {
     LogPointer log(new Log());
     bool real_log = log->Read(fd_read_logs_);
+
     if (!real_log) {
+      if( quit_)
+        return; // Finish this thread
       continue;
     }
 

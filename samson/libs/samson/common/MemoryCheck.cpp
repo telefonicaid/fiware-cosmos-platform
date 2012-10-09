@@ -52,9 +52,9 @@ void sysctl_value(char *param_name, samson_sysctl_t *param_value) {
 
 #elif defined(__sun__)
 void sysctl_value(char *param_name, samson_sysctl_t *param_value) {
-  unique_ptr<rctlblk_t> rblk;
+  rctlblk_t *rblk = NULL;
 
-  if ((rblk = reinterpret_cast<rctlblk_t *>(malloc(rctlblk_size()))) == NULL) {
+  if ((rblk = (rctlblk_t *)malloc(rctlblk_size())) == NULL) {
     (void)fprintf(stderr, "malloc failed: %s\n", strerror(errno));
   }
 
@@ -62,6 +62,10 @@ void sysctl_value(char *param_name, samson_sysctl_t *param_value) {
     (void)fprintf(stderr, "failed to get %s: %s\n", param_name, strerror(errno));
   } else {
     *param_value = rctlblk_get_value(rblk);
+  }
+
+  if (rblk != NULL) {
+    free(rblk);
   }
 }
 
@@ -127,18 +131,25 @@ bool MemoryCheck() {
     LM_E(("Set kernel.shmall to %ld using the command 'sudo sysctl -w %s=%ld'.", needed_shmall, SYSCTL_SHMALL,
           needed_shmall));
     return false;
+  } else {
+    // Update output to keep the structure of old tests
+    LM_M(("Found enough shared memory for SAMSON, samson_required_mem(%ld) <= max_memory_size(%ld)\n",
+          samson_required_mem, max_memory_size));
   }
 #endif  /* !__sun__ */
 
   // Check to see if the segment size (shmmax) is big enough for each SAMSON buffer
   if (shared_memory_size_per_buffer > kernel_shmmax) {
-    LM_E((
-           "The system shared memory segment size (kernel.shmmax) is too small for SAMSON. The system allows for a maximum size of %ld and we need %ld",
+    LM_E(("The system shared memory segment size (kernel.shmmax) is too small for SAMSON. The system allows for a maximum size of %ld and we need %ld",
            kernel_shmmax, shared_memory_size_per_buffer));
     /* TODO - Determine the correct command for Solaris */
     LM_E(("Set kernel.shmmax to %ld using the command 'sudo sysctl -w %s=%ld'.", shared_memory_size_per_buffer,
           SYSCTL_SHMMAX, shared_memory_size_per_buffer));
     return false;
+  } else {
+    // Update output to keep the structure of old tests
+    LM_M(("The maximum shared memory segment size is sufficent for SAMSON. shared_memory_size_per_buffer(%ld) <=  kernel_shmmax(%ld)\n",
+          shared_memory_size_per_buffer, kernel_shmmax));
   }
   return true;
 }

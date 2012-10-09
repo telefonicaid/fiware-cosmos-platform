@@ -440,11 +440,7 @@ int TextEncoding::IConv( void* pTo, int nToCharSize, int nFromCharSize )
 		size_t nToCountRemaining = (size_t)m_nToCount * nToCharSize;
 		size_t nToCountRemainingBefore;
 		char* pToChar = (char*)pTo;
-#if defined(__sun__)
-		const char* pFromChar = (char*)m_pFrom;
-#else
 		char* pFromChar = (char*)m_pFrom;
-#endif /* __sun__ */
 		char* pToTempBuffer = NULL;
 		const size_t nTempBufferSize = 2048;
 		size_t nResult;

@@ -1,7 +1,7 @@
 --NAME--
 samsonPop - version
 --SHELL--
-samsonPop -port_node ${SAMSON_WORKER_PORT_ENV}  -version
+samsonPop -node ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -version
 --EXPECT--
 No MAN version
 No MAN Copyright

@@ -338,7 +338,7 @@ public:
         file << (*field).getCompareCommand("\t\t");
       }
     }
-    file << "\t\treturn 0; //If everything is equal\n";
+    file << "\t\treturn 0;   //If everything is equal\n";
     file << "\t}\n\n";
 
     // Global compare function
@@ -743,7 +743,7 @@ public:
 
 
     // End of class
-    file << "\t}; //class " << name << "_base\n\n";
+    file << "\t};   //class " << name << "_base\n\n";
 
     // End of namespace
     file << "} // end of namespace " << module << "\n";

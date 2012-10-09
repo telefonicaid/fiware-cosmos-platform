@@ -3,34 +3,35 @@
  * FILE                 ModulesManager.cpp -
  *
  */
+
+#include "samson/module/ModulesManager.h"       /* Own interface                            */
+
 #include <dirent.h>
 #include <dlfcn.h>
 #include <fnmatch.h>
 #include <iomanip>
-#include <ios>
-#include <iostream>
-#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "logMsg/logMsg.h"
-#include "logMsg/traceLevels.h"                 // Lmt...
+#include <ios>
+#include <iostream>
+#include <string>
 
 #include "au/mutex/TokenTaker.h"                // au::TokenTake
 #include "au/tables/Table.h"
 
-#include "samson/common/MessagesOperations.h"
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"                 // Lmt...
 #include "samson/common/MessagesOperations.h"   // evalHelpFilter(.)
-#include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
 #include "samson/common/samsonDirectories.h"    /* SAMSON_MODULES_DIRECTORY                 */
-
-#include "samson/module/ModulesManager.h"       /* Own interface                            */
+#include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
 #include <samson/module/Data.h>                 /* samson::system::UInt ... */
 #include <samson/module/Module.h>
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                           */
 
 namespace samson {
-ModulesManager::ModulesManager() : token_modules("ModulesManager") {
+ModulesManager::ModulesManager() :
+  token_modules("ModulesManager") {
   LM_T(LmtModuleManager, ("Creating ModulesManager"));
 }
 
@@ -62,7 +63,7 @@ void ModulesManager::closeHandlers() {
 void ModulesManager::addModulesFromDirectory(std::string dir_name) {
   DIR *dp;
   struct dirent *dirp;
-  if ((dp  = opendir(dir_name.c_str())) == NULL) {
+  if ((dp = opendir(dir_name.c_str())) == NULL) {
     // logError( "Error opening directory for modules " + dir_name );
     LM_E(("Error opening directory for modules at dir_name:%s", dir_name.c_str()));
     return;
@@ -87,8 +88,6 @@ void ModulesManager::addModulesFromDirectory(std::string dir_name) {
 typedef Module *(*moduleFactory)();
 typedef const char *(*getVersionFunction)();
 
-
-
 void ModulesManager::addModule(std::string path) {
   // Dynamic link open
   void *hndl = dlopen(path.c_str(), RTLD_NOW);
@@ -112,11 +111,11 @@ void ModulesManager::addModule(std::string path) {
     return;
   }
 
-  moduleFactory f = (moduleFactory)mkr;
-  getVersionFunction fv = (getVersionFunction)getVersionPointer;
+  moduleFactory f = (moduleFactory) mkr;
+  getVersionFunction fv = (getVersionFunction) getVersionPointer;
 
   Module *module = f();
-  std::string platform_version  = fv();
+  std::string platform_version = fv();
 
   if (!module) {
     LM_E(( "Not possible to load module at path %s (no container found)", path.c_str()));
@@ -135,20 +134,19 @@ void ModulesManager::addModule(std::string path) {
 
     if (previous_module != NULL) {
       LM_W(("Error loading module %s from file %s since it is already loaded"
-            , module->name.c_str()
-            , module->file_name.c_str()));
+              , module->name.c_str()
+              , module->file_name.c_str()));
       delete module;
       dlclose(hndl);
       return;
     }
 
-    LM_T(LmtModuleManager, ("Module %s compiled for version %s ... OK!", module->name.c_str(), platform_version.c_str()));
-    LM_T(LmtModuleManager, ("Adding module %s (%s) %d ops & %d data-types",
-                            module->name.c_str(),
-                            path.c_str(),
-                            (int)module->operations.size(),
-                            (int)module->datas.size()
-                            ));
+    LM_T(LmtModuleManager, ("Module %s compiled for version %s ... OK!", module->name.c_str(), platform_version.c_str())); LM_T(LmtModuleManager, ("Adding module %s (%s) %d ops & %d data-types",
+            module->name.c_str(),
+            path.c_str(),
+            (int)module->operations.size(),
+            (int)module->datas.size()
+        ));
 
     // Insert in the modules map
     modules.insertInMap(module->name, module);
@@ -157,7 +155,7 @@ void ModulesManager::addModule(std::string path) {
     handlers.push_back(hndl);
   } else {
     LM_W(("Not loading file %s since its using a different API version %s vs %s", path.c_str(), platform_version.c_str(),
-          SAMSON_VERSION ));
+            SAMSON_VERSION ));
     delete module;
 
     // Close dynamic link
@@ -188,8 +186,8 @@ Status ModulesManager::loadModule(std::string path, Module **module, std::string
     return Error;
   }
 
-  moduleFactory f = (moduleFactory)mkr;
-  getVersionFunction fv = (getVersionFunction)getVersionPointer;
+  moduleFactory f = (moduleFactory) mkr;
+  getVersionFunction fv = (getVersionFunction) getVersionPointer;
 
   // Get module and get version
   *module = f();
@@ -198,35 +196,33 @@ Status ModulesManager::loadModule(std::string path, Module **module, std::string
   return OK;
 }
 
-  std::string ModulesManager::GetTableOfModules()
-  {
-    au::TokenTaker tt(&token_modules, "ModulesManager::GetTableOfModules");
-    
-    au::tables::Table table("Name,left|Version|#Operations|#Datas|Author,left");
-    table.setTitle("Modules");
-    au::map< std::string, Module >::iterator it;
-    for (it = modules.begin(); it != modules.end(); it++) {
-      std::string name = it->second->name;
+std::string ModulesManager::GetTableOfModules() {
+  au::TokenTaker tt(&token_modules, "ModulesManager::GetTableOfModules");
 
-      Module *module = it->second;
-      au::StringVector values;
-      values.Push( module->name );
-      values.Push(  module->version );
-      values.Push(  module->operations.size() );
-      values.Push(  module->datas.size() );
-      values.Push(  module->author );
-      table.addRow(values);
-    }
-    return table.str();
-    
+  au::tables::Table table("Name,left|Version|#Operations|#Datas|Author,left");
+  table.setTitle("Modules");
+  au::map<std::string, Module>::iterator it;
+  for (it = modules.begin(); it != modules.end(); it++) {
+    std::string name = it->second->name;
+
+    Module *module = it->second;
+    au::StringVector values;
+    values.Push(module->name);
+    values.Push(module->version);
+    values.Push(module->operations.size());
+    values.Push(module->datas.size());
+    values.Push(module->author);
+    table.addRow(values);
   }
+  return table.str();
 
-samson::gpb::Collection *ModulesManager::getModulesCollection(const Visualization& visualitzation) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
+}
 
+au::SharedPointer<gpb::Collection> ModulesManager::GetModulesCollection(const Visualization& visualitzation) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("modules");
-  au::TokenTaker tt(&token_modules, "ModulesManager::getModulesCollection");
-  au::map< std::string, Module >::iterator it;
+  au::TokenTaker tt(&token_modules, "ModulesManager::GetModulesCollection");
+  au::map<std::string, Module>::iterator it;
   for (it = modules.begin(); it != modules.end(); it++) {
     std::string name = it->second->name;
     if (::fnmatch(visualitzation.pattern().c_str(), name.c_str(), FNM_PATHNAME) == 0) {
@@ -244,21 +240,16 @@ samson::gpb::Collection *ModulesManager::getModulesCollection(const Visualizatio
   return collection;
 }
 
-samson::gpb::Collection *ModulesManager::getDatasCollection(const Visualization& visualization) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
-
+au::SharedPointer<gpb::Collection> ModulesManager::GetDatasCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("datas");
-  au::TokenTaker tt(&token_modules, "ModulesManager::getDatasCollection");
-  au::map< std::string, Module >::iterator it;
+  au::TokenTaker tt(&token_modules, "ModulesManager::GetDatasCollection");
+  au::map<std::string, Module>::iterator it;
   for (it = modules.begin(); it != modules.end(); it++) {
     Module *module = it->second;
 
     std::map<std::string, Data *>::iterator it_datas;
-    for (
-      it_datas = module->datas.begin();
-      it_datas != module->datas.end();
-      it_datas++)
-    {
+    for (it_datas = module->datas.begin(); it_datas != module->datas.end(); it_datas++) {
       std::string name = it_datas->first;
       Data *data = it_datas->second;
 
@@ -273,21 +264,16 @@ samson::gpb::Collection *ModulesManager::getDatasCollection(const Visualization&
   return collection;
 }
 
-samson::gpb::Collection *ModulesManager::getOperationsCollection(const Visualization& visualization) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
-
+au::SharedPointer<gpb::Collection> ModulesManager::GetOperationsCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("operations");
-  au::TokenTaker tt(&token_modules, "ModulesManager::getOperationsCollection");
-  au::map< std::string, Module >::iterator it;
+  au::TokenTaker tt(&token_modules, "ModulesManager::GetOperationsCollection");
+  au::map<std::string, Module>::iterator it;
   for (it = modules.begin(); it != modules.end(); it++) {
     Module *module = it->second;
 
     std::map<std::string, Operation *>::iterator it_operation;
-    for (
-      it_operation = module->operations.begin();
-      it_operation != module->operations.end();
-      it_operation++)
-    {
+    for (it_operation = module->operations.begin(); it_operation != module->operations.end(); it_operation++) {
       std::string name = it_operation->first;
       Operation *operation = it_operation->second;
 
@@ -312,7 +298,7 @@ Data *ModulesManager::getData(std::string name) {
   // Search in all modules ( inefficient but generic )
   au::TokenTaker tt(&token_modules, "ModulesManager::getData");
 
-  au::map< std::string, Module >::iterator it_modules;
+  au::map<std::string, Module>::iterator it_modules;
   for (it_modules = modules.begin(); it_modules != modules.end(); it_modules++) {
     Data *data = it_modules->second->getData(name);
     if (data) {
@@ -326,7 +312,7 @@ Operation *ModulesManager::getOperation(std::string name) {
   // Search in all modules ( inefficient but generic )
   au::TokenTaker tt(&token_modules, "ModulesManager::getOperation");
 
-  au::map< std::string, Module >::iterator it_modules;
+  au::map<std::string, Module>::iterator it_modules;
   for (it_modules = modules.begin(); it_modules != modules.end(); it_modules++) {
     Operation *operation = it_modules->second->getOperation(name);
     if (operation) {

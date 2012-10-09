@@ -1,26 +1,23 @@
+#include "samson/worker/WorkerBlockManager.h"  // Own interface
 
-
-#include "WorkerBlockManager.h"  // Own interface
-
-#include "samson/worker/SamsonWorker.h"
+#include <utility>    // std::pair<>
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
 
+#include "samson/worker/SamsonWorker.h"
+
 namespace samson {
-WorkerBlockManager::WorkerBlockManager(SamsonWorker *samson_worker) {
-  samson_worker_ = samson_worker;
-};
 
 void WorkerBlockManager::Review() {
-  ReviewDistributionOperations();      // Review distribution blocks and remove finished...
-  ReviewPushOperations();              // Review push operations
-  ReviewBlockRequests();               // Review all block requests
+  ReviewDistributionOperations();   // Review distribution blocks and remove finished...
+  ReviewPushOperations();   // Review push operations
+  ReviewBlockRequests();   // Review all block requests
 }
 
 void WorkerBlockManager::ReviewPushOperations() {
-  au::set<PushOperation>::iterator it;      // Remove old operations...
-  for (it = push_operations_.begin(); it != push_operations_.end(); it++) {
+  au::set<PushOperation>::iterator it;   // Remove old operations...
+  for (it = push_operations_.begin(); it != push_operations_.end(); ++it) {
     PushOperation *push_operation = *it;
     if (push_operation->time() > 60) {
       delete push_operation;
@@ -35,14 +32,14 @@ void WorkerBlockManager::ReviewBlockRequests() {
   std::vector<size_t> block_ids;
 
   au::map<size_t, BlockRequest>::iterator it;
-  for (it = block_requests_.begin(); it != block_requests_.end(); it++) {
+  for (it = block_requests_.begin(); it != block_requests_.end(); ++it) {
     if (it->second->creation_time() > 30) {
       block_ids.push_back(it->first);
     }
   }
 
   // Remove selected requests
-  for (size_t i = 0; i  < block_ids.size(); i++) {
+  for (size_t i = 0; i < block_ids.size(); ++i) {
     BlockRequest *request = block_requests_.extractFromMap(block_ids[i]);
     if (request) {
       delete request;
@@ -53,14 +50,14 @@ void WorkerBlockManager::ReviewBlockRequests() {
 void WorkerBlockManager::ReviewDistributionOperations() {
   std::vector<size_t> remove_block_ids;
   au::map<size_t, DistributionOperation>::iterator it;
-  for (it = distribution_operations_.begin(); it != distribution_operations_.end(); it++) {
+  for (it = distribution_operations_.begin(); it != distribution_operations_.end(); ++it) {
     it->second->Review();
     if (it->second->IsReady()) {
       remove_block_ids.push_back(it->first);
     }
   }
 
-  for (size_t i = 0; i < remove_block_ids.size(); i++) {
+  for (size_t i = 0; i < remove_block_ids.size(); ++i) {
     size_t block_id = remove_block_ids[i];
 
     // Notify to alert that this block is completelly distributed
@@ -76,36 +73,37 @@ void WorkerBlockManager::ReviewDistributionOperations() {
   }
 }
 
-gpb::Collection *WorkerBlockManager::GetCollectionForDistributionOperations(const Visualization& visualization) {
-  return getCollectionForMap("distribution_blocks", distribution_operations_, visualization);
+au::SharedPointer<gpb::Collection> WorkerBlockManager::GetCollectionForDistributionOperations(
+                                                                                              const Visualization& visualization) {
+  return GetCollectionForMap("distribution_blocks", distribution_operations_, visualization);
 }
 
-gpb::Collection *WorkerBlockManager::GetCollectionForBlockRequests(const Visualization& visualization) {
-  return getCollectionForMap("block_requests", block_requests_, visualization);
+au::SharedPointer<gpb::Collection> WorkerBlockManager::GetCollectionForBlockRequests(const Visualization& visualization) {
+  return GetCollectionForMap("block_requests", block_requests_, visualization);
 }
 
 size_t WorkerBlockManager::CreateBlock(engine::BufferPointer buffer, size_t block_id) {
   // If a block_id is provided, we just include in the local block manager
-  if (block_id != (size_t)-1) {
+  if (block_id != (size_t) -1) {
     stream::BlockManager::shared()->CreateBlock(block_id, buffer);
     return block_id;
   }
 
   // If worker is not connected, it does not make any sense to create a block
   if (!samson_worker_->IsConnected()) {
-    return (size_t)-1;
+    return (size_t) -1;
   }
 
   // Get a new block id
   block_id = samson_worker_->worker_controller()->get_new_block_id();
 
   // Detect error creating block
-  if (block_id == (size_t)-1) {
+  if (block_id == (size_t) -1) {
     return block_id;
   }
 
   // Set this worker as the creator of this buffer
-  KVHeader *header = (KVHeader *)buffer->data();
+  KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
   header->worker_id = samson_worker_->worker_controller()->worker_id();
 
   // Insert in the local BlockManager
@@ -130,13 +128,13 @@ void WorkerBlockManager::ReceivedBlockDistributionResponse(size_t block_id, size
 // Auxiliar function to get list of workers for a block
 std::vector<size_t> get_workers_for_block_id(const std::multimap<size_t, size_t>& blocks_map, size_t block_id) {
   std::vector<size_t> worker_ids;
-  typedef std::multimap<size_t, size_t>::const_iterator   iterator;
+  typedef std::multimap<size_t, size_t>::const_iterator iterator;
 
   // Get the list of workers containing this block
   std::pair<iterator, iterator> range = blocks_map.equal_range(block_id);
 
   // Look at returned range
-  for (iterator i = range.first; i != range.second; i++) {
+  for (iterator i = range.first; i != range.second; ++i) {
     worker_ids.push_back(i->second);
   }
 
@@ -154,13 +152,13 @@ void WorkerBlockManager::RequestBlocks(const std::set<size_t>& pending_block_ids
   }
 
   std::set<size_t>::const_iterator it;
-  for (it = pending_block_ids.begin(); it != pending_block_ids.end(); it++) {
+  for (it = pending_block_ids.begin(); it != pending_block_ids.end(); ++it) {
     // Identifier of the block
     size_t block_id = *it;
 
     // If we have requested this block before, just skip...
     if (block_requests_.findInMap(block_id)) {
-      continue;    // Get the list of workers
+      continue;   // Get the list of workers
     }
     std::vector<size_t> worker_ids = get_workers_for_block_id(blocks_map, block_id);
 
@@ -177,7 +175,7 @@ void WorkerBlockManager::RequestBlocks(const std::set<size_t>& pending_block_ids
     BlockRequest *block_request = new BlockRequest(samson_worker_, block_id, worker_id);
     block_requests_.insertInMap(block_id, block_request);
 
-    LM_W(("New block request for block %lu to worker %lu", block_id, worker_id ));
+    LM_W(("New block request for block %lu to worker %lu", block_id, worker_id));
   }
 }
 
@@ -198,16 +196,14 @@ void WorkerBlockManager::Reset() {
 }
 
 // Received a message from a delilah
-void WorkerBlockManager::receive_push_block(size_t delilah_id
-                                            , size_t push_id
-                                            , engine::BufferPointer buffer
-                                            , const std::vector<std::string>& queues) {
+void WorkerBlockManager::receive_push_block(size_t delilah_id, size_t push_id, engine::BufferPointer buffer,
+                                            const std::vector<std::string>& queues) {
   if (buffer == NULL) {
     LM_W(("Push message without a buffer. This is an error..."));
     return;
   }
 
-  KVHeader *header = (KVHeader *)buffer->data();
+  KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
 
   if (!header->check() || !header->range.isValid()) {
     LM_W(("Push message with a non-valid buffer.Ignoring..."));
@@ -215,7 +211,7 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
   }
 
   if (header->isTxt()) {
-    // Modify incomming buffer to assign only one hg
+    // Modify incoming buffer to assign only one hg
     KVRanges ranges = samson_worker_->worker_controller()->GetMyKVRanges();
     int hg = ranges.RandomHashGroup();
     header->range.set(hg, hg + 1);
@@ -227,12 +223,11 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
     return;
   }
 
-
   // Create a new block in this worker ( and start distribution process )
   size_t block_size = buffer->size();
-  size_t block_id   = samson_worker_->worker_block_manager()->CreateBlock(buffer);
-  
-  if (block_id == (size_t)-1) {
+  size_t block_id = samson_worker_->worker_block_manager()->CreateBlock(buffer);
+
+  if (block_id == (size_t) -1) {
     LM_W(("Error creating block in a push operation ( block_id -1 )"));
     return;
   }
@@ -244,9 +239,8 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
   }
 
   // Create PushOpertion object and insert in the vector of pending push operations
-  PushOperation *push_operation =
-    new PushOperation(samson_worker_, block_id, block_size , delilah_id, push_id, buffer,
-                      queues);
+  PushOperation *push_operation = new PushOperation(samson_worker_, block_id, block_size, delilah_id, push_id, buffer,
+                                                    queues);
   push_operations_.insert(push_operation);
 
   LM_TODO(("If the push is ready to confirm distirbution, answer here"));
@@ -257,7 +251,7 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
 void WorkerBlockManager::receive_push_block_commit(size_t delilah_id, size_t push_id) {
   // Find the block, run the commit and remove push operation
   au::set<PushOperation>::iterator it;
-  for (it = push_operations_.begin(); it != push_operations_.end(); it++) {
+  for (it = push_operations_.begin(); it != push_operations_.end(); ++it) {
     PushOperation *push_operation = *it;
     if (push_operation->get_delilah_id() == delilah_id) {
       if (push_operation->get_push_id() == push_id) {
@@ -273,13 +267,13 @@ void WorkerBlockManager::receive_push_block_commit(size_t delilah_id, size_t pus
   return;
 }
 
-gpb::Collection *WorkerBlockManager::GetCollectionForPushOperations(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
+au::SharedPointer<gpb::Collection> WorkerBlockManager::GetCollectionForPushOperations(
+                                                                                      const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("push operations");
 
   au::set<PushOperation>::iterator it;
-  for (it = push_operations_.begin(); it != push_operations_.end(); it++) {
+  for (it = push_operations_.begin(); it != push_operations_.end(); ++it) {
     PushOperation *push_operation = *it;
 
     gpb::CollectionRecord *record = collection->add_record();
@@ -298,14 +292,12 @@ void WorkerBlockManager::notify(engine::Notification *notification) {
     return;
   }
 }
-  
-  bool WorkerBlockManager::IsBlockBeingDistributed( size_t block_id )
-  {
-    au::map<size_t, DistributionOperation>::iterator it;
-    for ( it = distribution_operations_.begin(); it != distribution_operations_.end(); it++)
-      if( it->second->block_id() == block_id )
-        return true;
-    return false;
-  }
 
+bool WorkerBlockManager::IsBlockBeingDistributed(size_t block_id) {
+  au::map<size_t, DistributionOperation>::iterator it;
+  for (it = distribution_operations_.begin(); it != distribution_operations_.end(); ++it)
+    if (it->second->block_id() == block_id)
+      return true;
+  return false;
+}
 }

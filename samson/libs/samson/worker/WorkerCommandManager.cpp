@@ -1,13 +1,10 @@
-
+#include "samson/worker/WorkerCommandManager.h"  // Own interface
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
 
 #include "samson/common/NotificationMessages.h"
-
-#include "WorkerCommand.h"
-#include "WorkerCommandManager.h"  // Own interface
-
+#include "samson/worker/WorkerCommand.h"
 
 namespace samson {
 WorkerCommandManager::WorkerCommandManager(SamsonWorker *_samsonWorker) {
@@ -26,7 +23,6 @@ WorkerCommandManager::WorkerCommandManager(SamsonWorker *_samsonWorker) {
 }
 
 void WorkerCommandManager::Add(WorkerCommand *workerCommand) {
-
   size_t id = worker_task_id++;
   workerCommands.insertInMap(id, workerCommand);
 
@@ -38,7 +34,7 @@ void WorkerCommandManager::Add(WorkerCommand *workerCommand) {
 bool WorkerCommandManager::Cancel(std::string worker_command_id) {
   bool found = false;
 
-  au::map< size_t, WorkerCommand >::iterator it_workerCommands;
+  au::map<size_t, WorkerCommand>::iterator it_workerCommands;
   for (it_workerCommands = workerCommands.begin(); it_workerCommands != workerCommands.end(); it_workerCommands++) {
     std::string my_worker_command_id = it_workerCommands->second->worker_command_id_;
 
@@ -56,20 +52,20 @@ void WorkerCommandManager::notify(engine::Notification *notification) {
     workerCommands.removeInMapIfFinished();
 
     // Review all WorkerCommand is necessary
-    au::map< size_t, WorkerCommand >::iterator it_workerCommands;
+    au::map<size_t, WorkerCommand>::iterator it_workerCommands;
     for (it_workerCommands = workerCommands.begin(); it_workerCommands != workerCommands.end(); it_workerCommands++) {
-      it_workerCommands->second->Run();             // Excute if necessary
+      it_workerCommands->second->Run();   // Execute if necessary
     }
     return;
   }
 }
 
-samson::gpb::Collection *WorkerCommandManager::getCollectionOfWorkerCommands(const Visualization& visualization) {
-  samson::gpb::Collection *collection = new samson::gpb::Collection();
-
+au::SharedPointer<gpb::Collection> WorkerCommandManager::GetCollectionOfWorkerCommands(
+                                                                                       const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("worker_commands");
 
-  au::map< size_t, WorkerCommand >::iterator it;
+  au::map<size_t, WorkerCommand>::iterator it;
   for (it = workerCommands.begin(); it != workerCommands.end(); it++) {
     std::string command = it->second->command_;
     if (match(visualization.pattern(), command)) {
@@ -78,5 +74,4 @@ samson::gpb::Collection *WorkerCommandManager::getCollectionOfWorkerCommands(con
   }
   return collection;
 }
-
 }

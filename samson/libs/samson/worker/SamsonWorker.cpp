@@ -803,9 +803,9 @@ void SamsonWorker::evalCommand(std::string command) {
 std::string SamsonWorker::getPrompt() {
   return "SamsonWorker> ";
 }
+  au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visualization& visualization){
 
-gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
+    au::SharedPointer<gpb::Collection> collection ( new gpb::Collection() );
 
   collection->set_name("workers");
 

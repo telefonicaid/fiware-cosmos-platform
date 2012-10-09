@@ -2,7 +2,6 @@
 #ifndef _H_AU_LOG
 #define _H_AU_LOG
 
-
 #define DATE_FORMAT "%A %d %h %H:%M:%S %Y"
 
 #include <fcntl.h>

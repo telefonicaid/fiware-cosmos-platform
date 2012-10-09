@@ -192,12 +192,12 @@ SimpleBuffer Buffer::GetSimpleBufferAtOffset(size_t offset) {
   return SimpleBuffer(data_ + offset, max_size_ - offset);
 }
 
-void Buffer::set_name_and_type(std::string name, std::string type) {
+void Buffer::set_name_and_type(const std::string& name, const std::string& type) {
   name_ = name;
   type_ = type;
 }
 
-void Buffer::add_to_name(std::string description) {
+void Buffer::add_to_name(const std::string& description) {
   name_.append(description);
 }
 

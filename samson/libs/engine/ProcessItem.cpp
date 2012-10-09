@@ -22,7 +22,7 @@ ProcessItem::ProcessItem(int _priority) {
   process_item_description_ = "unknown";
   process_item_current_task_description_ = "";
   
-  waiting_cronometer_.Start(); // Start counting as waiting since creation
+  waiting_cronometer_.Start();   // Start counting as waiting since creation
 }
 
 ProcessItem::~ProcessItem() {

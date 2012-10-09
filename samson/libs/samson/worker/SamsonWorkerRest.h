@@ -7,6 +7,8 @@
  *
  */
 
+#include <string>
+
 #include "au/network/RESTService.h"
 #include "au/network/RESTServiceCommand.h"
 #include "engine/NotificationListener.h"
@@ -17,40 +19,39 @@
 
 namespace samson {
 class SamsonWorkerRest : public au::network::RESTServiceInterface, engine::NotificationListener {
-public:
+  public:
+    SamsonWorkerRest(SamsonWorker *samson_worker, int web_port);
+    virtual ~SamsonWorkerRest();
 
-  SamsonWorkerRest(SamsonWorker *samson_worker, int web_port);
-  virtual ~SamsonWorkerRest();
+    // Receive notifications to take tample
+    void notify(engine::Notification *notification);
 
-  // Receive notifications to take tample
-  void notify(engine::Notification *notification);
+    // au::network::RESTServiceInterface
+    void process(au::SharedPointer<au::network::RESTServiceCommand> command);
 
-  // au::network::RESTServiceInterface
-  void process(au::SharedPointer< au::network::RESTServiceCommand> command);
+    void StopRestService();
 
-  void StopRestService();
+  private:
+    // Main pointer to samson worker
+    SamsonWorker *samson_worker_;
 
-private:
+    // Auxiliar functions to satisfy Rest queries
+    void process_intern(au::SharedPointer<au::network::RESTServiceCommand> command);
+    void process_delilah_command(std::string delilah_command,
+                                 au::SharedPointer<au::network::RESTServiceCommand> command);
+    void process_node(au::SharedPointer<au::network::RESTServiceCommand> command);
+    void process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command);
+    void process_logging(au::SharedPointer<au::network::RESTServiceCommand> command);
+    void process_synchronized(au::SharedPointer<au::network::RESTServiceCommand> command);
 
-  // Main pointer to samson worker
-  SamsonWorker *samson_worker_;
+    // Auto-client for REST interface
+    Delilah *delilah;
 
-  // Auxiliar functions to satisfy Rest queries
-  void process_intern(au::SharedPointer< au::network::RESTServiceCommand> command);
-  void process_delilah_command(std::string delilah_command, au::SharedPointer<au::network::RESTServiceCommand> command);
-  void process_node(au::SharedPointer<au::network::RESTServiceCommand> command);
-  void process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command);
-  void process_logging(au::SharedPointer<au::network::RESTServiceCommand> command);
-  void process_synchronized( au::SharedPointer<au::network::RESTServiceCommand> command );
+    // REST Service itself
+    au::network::RESTService *rest_service;
 
-  // Auto-client for REST interface
-  Delilah *delilah;
-
-  // REST Service itself
-  au::network::RESTService *rest_service;
-
-  // Sampler for REST interface
-  SamsonWorkerSamples samson_worker_samples;
+    // Sampler for REST interface
+    SamsonWorkerSamples samson_worker_samples;
 };
 }
 

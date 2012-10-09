@@ -1,12 +1,11 @@
-
-#include "logMsg/logMsg.h"      // Log system
-#include "logMsg/traceLevels.h"  // LmtEngine
+#include "engine/Notification.h"   // Own interface
 
 #include "au/string.h"      // au::Format
 
-#include "NotificationListener.h"         // engine::NotificationListener
+#include "engine/NotificationListener.h"         // engine::NotificationListener
 
-#include "Notification.h"   // Own interface
+#include "logMsg/logMsg.h"      // Log system
+#include "logMsg/traceLevels.h"  // LmtEngine
 
 namespace engine {
 // Simples constructor

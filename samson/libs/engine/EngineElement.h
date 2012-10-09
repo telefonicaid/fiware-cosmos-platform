@@ -38,7 +38,7 @@ namespace engine {
 class EngineElement {
 public:
 
-  explicit EngineElement(std::string name); // Constructor for single task or extra tasks
+  explicit EngineElement(std::string name);   // Constructor for single task or extra tasks
   EngineElement(std::string name, int seconds);    // Constructor for repeated task
   virtual ~EngineElement() {
   };                                        // Virtual destructor necessary to destory children-classes correctly
@@ -81,7 +81,7 @@ private:
   au::Cronometer cronometer_;     // Cronometer since creation or last execution
 
   std::string description_;       // String for easy debugging
-  std::string short_description_; // Short description
+  std::string short_description_;   // Short description
 };
 }
 #endif  // SAMSON_LIBS_ENGINE_ENGINEELEMENT_H_

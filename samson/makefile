@@ -174,8 +174,16 @@ install_debug_all: debug_all
 
 install_coverage: coverage
 	make -C BUILD_COVERAGE install -j $(CPU_COUNT)
+	
+setup_test_config:
 	mkdir -p  $(SAMSON_WORKING)/etc
+	# Trying to fix the setup uncertainty for all environments
+	if [ -f ${SAMSON_WORKING}/etc/setup.txt ] ; then mv ${SAMSON_WORKING}/etc/setup.txt  ${SAMSON_WORKING}/etc/setup.txt.old ; fi
 	cp etc/setup.txt.test $(SAMSON_WORKING)/etc/setup.txt
+
+recover_setup_config:
+	# Restoring the old setup (if any)
+	if [ -f ${SAMSON_WORKING}/etc/setup.txt.old ] ; then mv ${SAMSON_WORKING}/etc/setup.txt.old  ${SAMSON_WORKING}/etc/setup.txt ; fi
 
 install_man_release: man_release
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
@@ -222,9 +230,11 @@ test_init:
 	#killall samsonWorker || true
 	kill `ps -efl | fgrep "logServer -port ${SAMSON_LOG_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 	bash -x scripts/lib_shared_memory.scr || true
-	lcov --directory BUILD_COVERAGE --zerocounters	
+	mkdir -p coverage
+	lcov --capture --initial --directory BUILD_COVERAGE -b BUILD_COVERAGE --output-file coverage/samson.init.info
+	lcov --directory BUILD_COVERAGE --zerocounters
 	logServer -port ${SAMSON_LOG_PORT_ENV} -dir ${LOGSERVER_LOG_DIR} -query_port ${SAMSON_LOGQUERY_PORT_ENV}
-	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS} -zk ${ZOOKEEPER_SERVER}:${ZOOKEEPER_PORT}
+	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_LOG_LEVELS} -zk ${ZOOKEEPER_SERVER}:${ZOOKEEPER_PORT}
 
 test_teardown:
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
@@ -232,8 +242,8 @@ test_teardown:
 	bash -x scripts/lib_shared_memory.scr
 
 test_report:
-	mkdir -p coverage
-	lcov --directory BUILD_COVERAGE --capture --output-file coverage/samson.info
+	lcov --directory BUILD_COVERAGE --capture -b BUILD_COVERAGE --output-file coverage/samson.test.info 
+	lcov --add-tracefile coverage/samson.init.info --add-tracefile coverage/samson.test.info --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "BUILD_COVERAGE/modules/*" -o coverage/samson.info
@@ -241,11 +251,11 @@ test_report:
 	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
 
-run_coverage: install_coverage test_coverage test_report
+run_coverage: install_coverage setup_test_config test_init test_coverage test_report
 
 # There is a problem with coverage tool for mac.. please do use this output a mac environment
 
-run_mac_coverage: install_coverage
+run_mac_coverage: install_coverage setup_test_config
 	export GCOV_PREFIX=$(PWD)
 	make begin_mac_coverage
 	make process_mac_coverage
@@ -260,7 +270,7 @@ begin_mac_coverage:
 
 process_mac_coverage:
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
-	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS}
+	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_LOG_LEVELS}
 	make test_coverage
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 
@@ -287,6 +297,7 @@ ctest: debug_all
 	sed 's/1500/400/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	make setup_test_config
 	make test -C BUILD_DEBUG_ALL ARGS="-D ExperimentalTest" TEST_VERBOSE=1
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
@@ -294,6 +305,7 @@ ctest: debug_all
 	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest ${SAMSON_LOG_LEVELS} --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
+	make recover_setup_config
 
 unit_test: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
@@ -301,6 +313,7 @@ unit_test: debug_all
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
+	make setup_test_config
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
@@ -308,23 +321,25 @@ unit_test: debug_all
 	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest  ${SAMSON_LOG_LEVELS} --gtest_shuffle --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
+	make recover_setup_config
 
 test_coverage:
 	cp BUILD_COVERAGE/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
 	mkdir -p /tmp/dir_test
+	make setup_test_config
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_COVERAGE/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_COVERAGE/DartConfiguration.tcl
 	# Disable functional testing until we can sort out zookeeper
-	#make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" TEST_VERBOSE=1 || true
+	# make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" TEST_VERBOSE=1 || true
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest  ${SAMSON_LOG_LEVELS} --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' -e 's,\(<testcase name="\)DISABLED_\(.*status="notrun".*\) />,\1\2>\n      <skipped/>\n    </testcase>,' BUILD_COVERAGE/samson_test.xml
-
+	make recover_setup_config
 
 test_samsonWorker: install_debug
 	scripts/samsonTest test/samsonWorker
@@ -388,6 +403,7 @@ reset:
 	rm -Rf BUILD_RELEASE
 	rm -Rf BUILD_RELEASE_ALL
 	rm -Rf BUILD_COVERAGE
+	rm -Rf coverage
 	rm -f libs/common/samson.pb.*
 	rm -f libs/data/data.pb.*
 	rm -Rf /usr/local/include/samson || true

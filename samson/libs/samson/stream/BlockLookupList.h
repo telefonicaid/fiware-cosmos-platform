@@ -8,7 +8,6 @@
 #include "au/containers/SharedPointer.h"
 #include "au/network/RESTServiceCommand.h"
 #include "au/containers/simple_map.h"                         // au::simple_map
-
 #include "engine/MemoryManager.h"
 #include "engine/DiskOperation.h"                   // engine::DiskOperation
 #include "engine/NotificationListener.h"            // engien::EngineListener
@@ -24,51 +23,46 @@
 #include "samson/module/KVSetStruct.h"              // samson::KVSetStruct
 #include "samson/stream/BlockInfo.h"                              // struct BlockInfo
 
-
 namespace samson {
-  namespace stream {
-    class BlockList;
-    class Block;
-    
-    typedef struct BlockLookupRecord {
-      char *keyP;
-      size_t keyS;
-    } BlockLookupRecord;
-    
-    typedef struct BlockHashLookupRecord {
-      size_t startIx;
-      size_t endIx;
-    } BlockHashLookupRecord;
-    
-    /*
-     
-     BlockLookupList
-     
-     Lookup facility to locate "keys" in a block
-     
-     */
-    
-    class BlockLookupList {
-      
-    public:
-      
-      au::ErrorManager error;
-      
-      BlockLookupList(Block *_block);
-      ~BlockLookupList();
-      
-      void lookup(const char *key, au::SharedPointer< au::network::RESTServiceCommand> command );
-      
-    private:
-      
-      BlockLookupRecord *head;
-      size_t size;
-      BlockHashLookupRecord *hashInfo;
-      KVFormat kvFormat;
-      size_t block_id_;
-      
-    };
-  }
+namespace stream {
+class BlockList;
+class Block;
+
+typedef struct BlockLookupRecord {
+    char *keyP;
+    size_t keyS;
+} BlockLookupRecord;
+
+typedef struct BlockHashLookupRecord {
+    size_t startIx;
+    size_t endIx;
+} BlockHashLookupRecord;
+
+/*
+
+ BlockLookupList
+
+ Lookup facility to locate "keys" in a block
+
+ */
+
+class BlockLookupList {
+  public:
+    au::ErrorManager error;
+
+    explicit BlockLookupList(Block *_block);
+    ~BlockLookupList();
+
+    void lookup(const char *key, au::SharedPointer<au::network::RESTServiceCommand> command);
+
+  private:
+    BlockLookupRecord *head;
+    size_t size;
+    BlockHashLookupRecord *hashInfo;
+    KVFormat kvFormat;
+    size_t block_id_;
+};
+}
 }
 
 #endif  // ifndef _H_BLOCK_LOOKUPLIST

@@ -1,5 +1,4 @@
 
-
 #ifndef _H_AU_LOG_FORMATTER
 #define _H_AU_LOG_FORMATTER
 
@@ -9,25 +8,24 @@
 
 namespace au {
 class LogFormatter {
-public:
+  public:
 
-  // Constructor with initial format
-  LogFormatter(const std::string& definition = AU_LOG_DEFAULT_FORMAT );
+    // Constructor with initial format
+    LogFormatter(const std::string& definition = AU_LOG_DEFAULT_FORMAT);
 
-  // Modify the format used here
-  void set_format( const std::string& definition );
+    // Modify the format used here
+    void set_format(const std::string& definition);
 
-  // Parse a log to get a string
-  std::string get(au::SharedPointer<Log> log ) const;
-  
-  std::string definition()
-  {
-    return definition_;
-  }
-  
-private:
-  std::string definition_;
-  std::vector<std::string> fields_;
+    // Parse a log to get a string
+    std::string get(au::SharedPointer<Log> log) const;
+
+    std::string definition() {
+      return definition_;
+    }
+
+  private:
+    std::string definition_;
+    std::vector<std::string> fields_;
 };
 }
 

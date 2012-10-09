@@ -97,7 +97,7 @@ private:
   LogContainer log_container;    // Container of logs in memory ( fast query )
   au::rate::Rate rate;           // Estimated data rate for this channel
 
-  std::set<LogProveConnection*> log_connections_; // Connection to reveide logs
+  std::set<LogProveConnection*> log_connections_;   // Connection to reveide logs
   
   friend class LogServer;
 };

@@ -61,7 +61,7 @@ namespace au {
     
   private:
     
-    void ReviewSocketConnection(); // Review socket connection
+    void ReviewSocketConnection();   // Review socket connection
     
     // Connection information
     std::string host_;

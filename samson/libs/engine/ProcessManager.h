@@ -69,7 +69,7 @@ public:
 
 private:
 
-  // Stop backgroudn threads
+  // Stop background threads
   void Stop();
 
   // Method executed by background threads to run tasks

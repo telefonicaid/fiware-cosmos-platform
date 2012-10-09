@@ -20,7 +20,6 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
-
 #include "au/ThreadManager.h"
 #include "au/log/Log.h"
 #include "au/log/LogCentral.h"
@@ -29,14 +28,12 @@
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/string.h"
 
-
 #include "engine/DiskManager.h"
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
-
 #include "samson/common/samsonDirectories.h"
 #include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
@@ -51,11 +48,11 @@
 
 #include "samson/common/status.h"
 
-
 /* ****************************************************************************
  *
  * Option variables
  */
+
 SAMSON_ARG_VARS;
 
 char user[1024];
@@ -72,63 +69,57 @@ unsigned short log_port;
 
 char host[1024];
 
-
 #define LOC      "localhost"
 #define LOG_PORT AU_LOG_SERVER_PORT
 /* ****************************************************************************
  *
  * parse arguments
  */
-PaArgument paArgs[] =
-{
-  SAMSON_ARGS,
-  { "-log",         log_command,                       "",                           PaString,
-    PaOpt,                          _i "",     PaNL,
-    PaNL,    "log server host"                          },
-  { "-user",             user,                           "",                           PaString,
-    PaOpt,                          _i "anonymous",     PaNL,
-    PaNL,    "User to connect to SAMSON cluster"        },
-  { "-password",         password,                       "",                           PaString,
-    PaOpt,                          _i "anonymous",     PaNL,
-    PaNL,    "Password to connect to SAMSON cluster"    },
-  { "-memory",           &memory_gb,                     "MEMORY",                     PaInt,
-    PaOpt,                          1,                  1,
-    100,     "memory in GBytes"                         },
-  { "-load_buffer_size", &load_buffer_size_mb,           "LOAD_BUFFER_SIZE",           PaInt,
-    PaOpt,                          64,                 64,
-    2048,    "load buffer size in MBytes"               },
-  { "-f",                commandFileName,                "FILE_NAME",                  PaString,
-    PaOpt,                          _i "",              PaNL,
-    PaNL,    "File with commands to run"                },
-  { "-command",          command,                        "",                           PaString,
-    PaOpt,                          _i "",              PaNL,
-    PaNL,    "Single command to be executed"            },
-  { "-user",             user,                           "",                           PaString,
-    PaOpt,                          _i "anonymous",     PaNL,
-    PaNL,    "User to connect to SAMSON cluster"        },
-  { "-password",         password,                       "",                           PaString,
-    PaOpt,                          _i "anonymous",     PaNL,
-    PaNL,    "Password to connect to SAMSON cluster"    },
-  { "-memory",           &memory_gb,                     "MEMORY",                     PaInt,
-    PaOpt,                          1,                  1,
-    100,     "memory in GBytes"                         },
-  { "-load_buffer_size", &load_buffer_size_mb,           "LOAD_BUFFER_SIZE",           PaInt,
-    PaOpt,                          64,                 64,
-    2048,    "load buffer size in MBytes"               },
-  { "-f",                commandFileName,                "FILE_NAME",                  PaString,
-    PaOpt,                          _i "",              PaNL,
-    PaNL,    "File with commands to run"                },
-  { "-command",          command,                        "",                           PaString,
-    PaOpt,                          _i "",              PaNL,
-    PaNL,    "Single command to be executed"            },
-  { "",                  host,                           "",                           PaString,
-    PaOpt,                          _i "localhost",     PaNL,
-    PaNL,    "host to be connected"                     },
+PaArgument paArgs[] = { SAMSON_ARGS, { "-log", log_command, "", PaString,
+PaOpt, _i "", PaNL,
+PaNL, "log server host"},
+{"-user", user, "", PaString,
+PaOpt, _i "anonymous", PaNL,
+PaNL, "User to connect to SAMSON cluster"},
+{"-password", password, "", PaString,
+PaOpt, _i "anonymous", PaNL,
+PaNL, "Password to connect to SAMSON cluster"},
+{"-memory", &memory_gb, "MEMORY", PaInt,
+PaOpt, 1, 1,
+100, "memory in GBytes"},
+{"-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,
+PaOpt, 64, 64,
+2048, "load buffer size in MBytes"},
+{"-f", commandFileName, "FILE_NAME", PaString,
+PaOpt, _i "", PaNL,
+PaNL, "File with commands to run"},
+{"-command", command, "", PaString,
+PaOpt, _i "", PaNL,
+PaNL, "Single command to be executed"},
+{"-user", user, "", PaString,
+PaOpt, _i "anonymous", PaNL,
+PaNL, "User to connect to SAMSON cluster"},
+{"-password", password, "", PaString,
+PaOpt, _i "anonymous", PaNL,
+PaNL, "Password to connect to SAMSON cluster"},
+{"-memory", &memory_gb, "MEMORY", PaInt,
+PaOpt, 1, 1,
+100, "memory in GBytes"},
+{"-load_buffer_size", &load_buffer_size_mb, "LOAD_BUFFER_SIZE", PaInt,
+PaOpt, 64, 64,
+2048, "load buffer size in MBytes"},
+{"-f", commandFileName, "FILE_NAME", PaString,
+PaOpt, _i "", PaNL,
+PaNL, "File with commands to run"},
+{"-command", command, "", PaString,
+PaOpt, _i "", PaNL,
+PaNL, "Single command to be executed"},
+{"", host, "", PaString,
+PaOpt, _i "localhost", PaNL,
+PaNL, "host to be connected"},
 
-  PA_END_OF_ARGS
+PA_END_OF_ARGS
 };
-
-
 
 /* ****************************************************************************
  *
@@ -136,40 +127,40 @@ PaArgument paArgs[] =
  */
 int logFd = -1;
 
-
-
 /* ****************************************************************************
  *
  * man texts -
  */
-static const char *manSynopsis         = " [OPTION]";
-static const char *manShortDescription =  "delilah is the command-line client for SAMSON system\n";
-static const char *manDescription      =
-  "\n"
+static const char *manSynopsis = " [OPTION]";
+static const char *manShortDescription = "delilah is the command-line client for SAMSON system\n";
+static const char *manDescription = "\n"
   "delilah is the command-line client to upload & download data, run processing commands and monitor a SAMSON system.\n"
   "See pdf document about samson system to get more information about how to use delilah client"
   "\n";
 
-static const char *manExitStatus    = "0      if OK\n 1-255  error\n";
-static const char *manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
+static const char *manExitStatus = "0      if OK\n 1-255  error\n";
+static const char *manAuthor = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
 static const char *manReportingBugs = "bugs to samson-dev@tid.es\n";
-static const char *manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
-static const char *manVersion       = SAMSON_VERSION;
-
-
+static const char *manCopyright = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
+static const char *manVersion = SAMSON_VERSION;
 
 samson::DelilahConsole *delilahConsole = NULL;
-
-
 
 void cleanup(void) {
   // Stop engine
   engine::Engine::StopEngine();
 
-  /*
-   * if( delilahConsole )
-   * delilahConsole->stop();
-   */
+   if( delilahConsole ) {
+     delilahConsole->stop();
+   }
+
+   // Stopping network interface
+   delilahConsole->network->reset();
+
+   // Stopping the new log_central thread
+   au::log_central.stop();
+   LM_T(LmtCleanup, ("log_central marked to stop"));
+   AU_LM_M(("log_central stopping..."));
 
   // Wait all threads to finish
   au::Singleton<au::ThreadManager>::shared()->wait("Delilah");
@@ -215,26 +206,26 @@ size_t delilah_random_code;
  */
 
 int main(int argC, const char *argV[]) {
-  paConfig("prefix",                        (void *)"DELILAH_");
-  paConfig("builtin prefix",                (void *)"SS_DELILAH_");
-  paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)true);
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
-  paConfig("log to stderr",                 (void *)true);
+  paConfig("prefix", (void *) "DELILAH_");
+  paConfig("builtin prefix", (void *) "SS_DELILAH_");
+  paConfig("usage and exit on any warning", (void *) true);
+  paConfig("log to screen", (void *) true);
+  paConfig("log file line format", (void *) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("screen line format", (void *) "TYPE: TEXT");
+  paConfig("log to stderr", (void *) true);
 
-  paConfig("man synopsis",                  (void *)manSynopsis);
-  paConfig("man shortdescription",          (void *)manShortDescription);
-  paConfig("man description",               (void *)manDescription);
-  paConfig("man exitstatus",                (void *)manExitStatus);
-  paConfig("man author",                    (void *)manAuthor);
-  paConfig("man reportingbugs",             (void *)manReportingBugs);
-  paConfig("man copyright",                 (void *)manCopyright);
-  paConfig("man version",                   (void *)manVersion);
-  paConfig("default value", "-logDir", (void *)"/var/log/samson");
-  paConfig("if hook active, no traces to file", (void *)false);
-  paConfig("log to file",                       (void *)true);
-  
+  paConfig("man synopsis", (void *) manSynopsis);
+  paConfig("man shortdescription", (void *) manShortDescription);
+  paConfig("man description", (void *) manDescription);
+  paConfig("man exitstatus", (void *) manExitStatus);
+  paConfig("man author", (void *) manAuthor);
+  paConfig("man reportingbugs", (void *) manReportingBugs);
+  paConfig("man copyright", (void *) manCopyright);
+  paConfig("man version", (void *) manVersion);
+  paConfig("default value", "-logDir", (void *) "/var/log/samson");
+  paConfig("if hook active, no traces to file", (void *) false);
+  paConfig("log to file", (void *) true);
+
   // Random initialization
   struct timeval tp;
   gettimeofday(&tp, NULL);
@@ -243,16 +234,15 @@ int main(int argC, const char *argV[]) {
 
   // Random code for delilah
   delilah_random_code = au::code64_rand();
-  paUsageProgName     = strdup("delilah");
-  paProgName          = strdup(au::str("delilah_%s", au::code64_str(delilah_random_code).c_str()).c_str());
+  paUsageProgName = strdup("delilah");
+  paProgName = strdup(au::str("delilah_%s", au::code64_str(delilah_random_code).c_str()).c_str());
 
-  paParse(paArgs, argC, (char **)argV, 1, true);
+  paParse(paArgs, argC, (char **) argV, 1, true);
 
-  
   // New log system
-  au::log_central.Init( argV[0] );
+  au::log_central.Init(argV[0]);
   au::log_central.evalCommand("file on /var/log/samson/delilah.log");
-  au::log_central.evalCommand(log_command); // Command provided in command line
+  au::log_central.evalCommand(log_command);   // Command provided in command line
 
   AU_LM_M(("Delilah starting..."));
 
@@ -265,19 +255,19 @@ int main(int argC, const char *argV[]) {
   // Start secondary log system
   // TODO: Complete this initialization
 
-  lmAux((char *)"father");
+  lmAux((char *) "father");
   logFd = lmFirstDiskFileDescriptor();
 
   // Setup parameters from command line
-  size_t _memory           = (size_t)memory_gb * (size_t)(1024 * 1024 * 1024);
-  size_t _load_buffer_size = (size_t)load_buffer_size_mb * (size_t)(1024 * 1024);
+  size_t _memory = (size_t) memory_gb * (size_t) (1024 * 1024 * 1024);
+  size_t _load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024 * 1024);
 
   au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.memory", au::str("%lu", _memory));
   au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("load.buffer_size",
                                                                      au::str("%lu", _load_buffer_size));
   // Engine and its associated elements
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
-  engine::Engine::InitEngine(num_cores,  _memory, 1);
+  engine::Engine::InitEngine(num_cores, _memory, 1);
 
   // Load modules
   au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
@@ -286,11 +276,11 @@ int main(int argC, const char *argV[]) {
   delilahConsole = new samson::DelilahConsole(delilah_random_code);
 
   // Change log to console
-  au::log_central.evalCommand("screen off"); // Disable log to screen since we log to console
-  au::log_central.AddPlugin( "console" , new au::LogPluginConsole(delilahConsole) );
-  
+  au::log_central.evalCommand("screen off");   // Disable log to screen since we log to console
+  au::log_central.AddPlugin("console", new au::LogPluginConsole(delilahConsole));
+
   AU_LM_M(("Delilah running..."));
-  
+
   std::vector<std::string> hosts = au::split(host, ' ');
   for (size_t i = 0; i < hosts.size(); i++) {
     au::ErrorManager error;
@@ -298,13 +288,14 @@ int main(int argC, const char *argV[]) {
       delilahConsole->writeWarningOnConsole(au::str("Connected to %s", hosts[i].c_str()));
       break;
     } else {
-      delilahConsole->writeWarningOnConsole(au::str("Not possible to connect with %s: %s", hosts[i].c_str(),
+      delilahConsole->writeWarningOnConsole(
+                                            au::str("Not possible to connect with %s: %s", hosts[i].c_str(),
                                                     error.GetMessage().c_str()));
     }
   }
 
   if (!delilahConsole->isConnected()) {
-    delilahConsole->writeWarningOnConsole("Delilah client not connected to any SAMSON cluster. ( see help connect )");  // ----------------------------------------------------------------
+    delilahConsole->writeWarningOnConsole("Delilah client not connected to any SAMSON cluster. ( see help connect )");   // ----------------------------------------------------------------
   }
   // Special mode with one command line command
   // ----------------------------------------------------------------
@@ -325,6 +316,8 @@ int main(int argC, const char *argV[]) {
     delilahConsole->setNoOutput();
     size_t id = delilahConsole->runAsyncCommand(command);
 
+    LM_M(("runAsyncCommand returned for command:'%s', id:%d", command, id));
+
     if (id != 0) {
       // Wait until this operation is finished
       while (delilahConsole->isActive(id)) {
@@ -334,7 +327,7 @@ int main(int argC, const char *argV[]) {
 
       if (delilahConsole->hasError(id)) {
         LM_E(("Error running '%s' \n", command ));
-        LM_E(("Error: %s",  delilahConsole->errorMessage(id).c_str()));
+        LM_E(("Error: %s", delilahConsole->errorMessage(id).c_str()));
       } else {
         printf("%s", delilahConsole->getOutputForComponent(id).c_str());
         fflush(stdout);
@@ -352,7 +345,7 @@ int main(int argC, const char *argV[]) {
 
   // LM_M(("Delilah random code %s" , au::code64_str( delilah_random_code ).c_str() ));
   // LM_M(("Running delilah console..."));
-  lmFdUnregister(2);  // no more traces to stdout
+  lmFdUnregister(2);   // no more traces to stdout
 
   // ----------------------------------------------------------------
   // Special mode for file-based commands
@@ -386,13 +379,13 @@ int main(int argC, const char *argV[]) {
 
     while (fgets(line, sizeof(line), f)) {
       // Remove the last return of a string
-      while (( strlen(line) > 0 ) && ( line[ strlen(line) - 1] == '\n') > 0) {
-        line[ strlen(line) - 1] = '\0';
+      while ((strlen(line) > 0) && (line[strlen(line) - 1] == '\n') > 0) {
+        line[strlen(line) - 1] = '\0';
       }
 
       num_line++;
 
-      if (( line[0] != '#' ) && ( strlen(line) > 0)) {
+      if ((line[0] != '#') && (strlen(line) > 0)) {
         std::cerr << au::str("Processing: '%s'\n", line);
         size_t id = delilahConsole->runAsyncCommand(line);
         std::cerr << au::str("Delilah id generated %lu\n", id);
@@ -405,7 +398,7 @@ int main(int argC, const char *argV[]) {
 
           if (delilahConsole->hasError(id)) {
             LM_E(("Error running '%s' at line %d", line, num_line));
-            LM_E(("Error: %s",  delilahConsole->errorMessage(id).c_str()));
+            LM_E(("Error: %s", delilahConsole->errorMessage(id).c_str()));
           }
         }
       }

@@ -63,7 +63,7 @@ struct KVHeader {
   // Debug strings
   // ---------------------------------------------------------------
 
-  std::string str();
+  std::string str() const;
   void getInfo(std::ostringstream &output);
 };
 }

@@ -1,5 +1,4 @@
 
-
 #include "engine/ProcessManager.h"
 
 #include <sys/time.h>
@@ -11,36 +10,27 @@
 #include "au/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/xml.h"                // au::xml...
-
 #include "engine/DiskOperation.h"  // engine::DiskOperation
 #include "engine/Engine.h"         // engine::Engine
 #include "engine/EngineElement.h"  // engine::EngineElement
 #include "engine/Notification.h"   // engine::Notification
 #include "engine/NotificationElement.h"       // engine::EngineNotificationElement
 #include "engine/ProcessItem.h"    // engine::ProcessItem
-#include "engine/ProcessManager.h"  // engine::Process
-
 #include "logMsg/logMsg.h"         // LM_X
 #include "logMsg/traceLevels.h"
 
 namespace engine {
 void *ProcessManager_run_worker(void *p) {
-  ProcessManager *process_manager = (ProcessManager *)p;
+  ProcessManager *process_manager = reinterpret_cast<ProcessManager *>(p);
 
   process_manager->run_worker();
   return NULL;
 }
 
-ProcessManager::ProcessManager(int max_num_procesors) : token_("engine::ProcessManager") {
-  stopped_ = false;
+ProcessManager::ProcessManager(int max_num_procesors) :
+  token_("engine::ProcessManager"), num_procesors_(0), max_num_procesors_(max_num_procesors), stopped_(false) {}
 
-  // Defined maximum number of background threads
-  num_procesors_ = 0;
-  max_num_procesors_ = max_num_procesors;
-}
-
-ProcessManager::~ProcessManager() {
-}
+ProcessManager::~ProcessManager() {}
 
 void ProcessManager::Stop() {
   {
@@ -70,7 +60,7 @@ void ProcessManager::Stop() {
 
 void ProcessManager::notify(Notification *notification) {
   LM_X(1, ("Wrong notification at ProcessManager [Listener %lu] %s",
-           engine_id(), notification->GetDescription().c_str()));
+          engine_id(), notification->GetDescription().c_str()));
 }
 
 void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId) {
@@ -87,11 +77,7 @@ void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId)
   if (!stopped_) {
     while (num_procesors_ < max_num_procesors_) {
       pthread_t t;
-      au::Singleton<au::ThreadManager>::shared()->addThread("background_worker"
-                                                            , &t
-                                                            , 0
-                                                            , ProcessManager_run_worker
-                                                            , this);
+      au::Singleton<au::ThreadManager>::shared()->addThread("background_worker", &t, 0, ProcessManager_run_worker, this);
       num_procesors_++;
     }
   }
@@ -114,7 +100,7 @@ void ProcessManager::Cancel(au::SharedPointer<ProcessItem> item) {
     notification->AddEngineListeners(item->listeners());
 
     // Add the item as an object in the internal dictionary
-    notification->dictionary().Set<ProcessItem>("process_item", item);
+    notification->dictionary().Set<ProcessItem> ("process_item", item);
 
     notification->environment().Add(item->environment());
     notification->environment().Set("error", "Canceled");
@@ -126,7 +112,7 @@ void ProcessManager::Cancel(au::SharedPointer<ProcessItem> item) {
 int ProcessManager::num_used_procesors() {
   au::TokenTaker tt(&token_);
 
-  return (int)running_items_.size();
+  return static_cast<int>(running_items_.size());
 }
 
 int ProcessManager::max_num_procesors() {
@@ -142,7 +128,7 @@ void ProcessManager::run_worker() {
       if (stopped_ || (num_procesors_ > max_num_procesors_)) {
         num_procesors_--;
         LM_T(LmtCleanup, ("run_worker exits because stopped or num_processors(%d) > max_num_procesors(%d)",
-                          num_procesors_, max_num_procesors_));
+                num_procesors_, max_num_procesors_));
         return;
       }
     }
@@ -180,7 +166,7 @@ void ProcessManager::run_worker() {
     Notification *notification = new Notification(notification_process_request_response);
 
     // Add item itself as an object inside the notification
-    notification->dictionary().Set<ProcessItem>("process_item", item);
+    notification->dictionary().Set<ProcessItem> ("process_item", item);
 
     // Add targets to be notified
     notification->AddEngineListeners(item->listeners());
@@ -190,7 +176,7 @@ void ProcessManager::run_worker() {
 
     // Extra error environment if necessary
     if (item->error().IsActivated()) {
-      notification->environment().Set("error", item->error().GetMessage());  // Add the notification to the main engine
+      notification->environment().Set("error", item->error().GetMessage());   // Add the notification to the main engine
     }
     Engine::shared()->notify(notification);
   }

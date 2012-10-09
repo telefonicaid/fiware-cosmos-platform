@@ -24,7 +24,7 @@
 
 #include "au/containers/Box.h"
 #include "au/containers/Queue.h"
-
+#include "au/containers/SharedPointer.h"
 #include "au/containers/ListMap.h"  // au::ListMap
 #include "au/mutex/Token.h"         // au::Token
 
@@ -34,7 +34,6 @@
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"   // engine::MemoryManager
 #include "engine/NotificationListener.h"     // engine::EngineNotification
-
 #include "engine/ReadFileManager.h"  // engine::ReadFileManager
 
 #define notification_disk_operation_request_response "notification_disk_operation_request_response"
@@ -86,10 +85,10 @@ private:
   // Notification that a disk operation has finished
   void FinishDiskOperation(const au::SharedPointer< ::engine::DiskOperation >& operation);
 
-  // Auxiliar function to get the next operation ( NULL if no more disk operations )
+  // Auxiliary function to get the next operation ( NULL if no more disk operations )
   au::SharedPointer< ::engine::DiskOperation > getNextDiskOperation();
 
-  // Create thresds
+  // Create threads
   void CreateThreads();
 
   // Disk Operations

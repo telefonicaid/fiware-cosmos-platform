@@ -67,7 +67,7 @@ private:
   int port_;
 
   // Internal file descriptor
-  int rFd_;
+  volatile int rFd_;
 
   // Background thread
   pthread_t t;

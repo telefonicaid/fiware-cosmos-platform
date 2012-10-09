@@ -39,7 +39,7 @@ namespace example{
 			operation->setHelpLine("Simple generator that generates example.samples pairs of integers");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<generator_error_operation_crashes>( "example.generator_error_operation_crashes" , samson::Operation::generator);
@@ -47,7 +47,7 @@ namespace example{
 			operation->setHelpLine("Generator that fails when executing. To simulate the processs 3rd party operation fails and crash");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<generator_error_timeout>( "example.generator_error_timeout" , samson::Operation::generator);
@@ -55,7 +55,7 @@ namespace example{
 			operation->setHelpLine("Generator that fails when executing for a timeout.");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<generator_error_user_generated>( "example.generator_error_user_generated" , samson::Operation::generator);
@@ -63,7 +63,7 @@ namespace example{
 			operation->setHelpLine("Generator that fails with a user defined error");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<generator_error_wrong_data_type>( "example.generator_error_wrong_data_type" , samson::Operation::generator);
@@ -71,7 +71,7 @@ namespace example{
 			operation->setHelpLine("Generator that fails because it use a system.Double instead of a system.UInt");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<select>( "example.select" , samson::Operation::parserOut);
@@ -80,7 +80,7 @@ namespace example{
 			operation->setHelpLine("Export system.UInt system.UInt key-values in a standard format. Use example.separator to custommize separator");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<map>( "example.map" , samson::Operation::map);
@@ -89,7 +89,7 @@ namespace example{
 			operation->setHelpLine("");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<reduce>( "example.reduce" , samson::Operation::reduce);
@@ -98,7 +98,7 @@ namespace example{
 			operation->setHelpLine("Reduce example to test platform");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<reduce2>( "example.reduce2" , samson::Operation::reduce);
@@ -109,7 +109,7 @@ namespace example{
 			operation->setHelpLine("Reduce with two imputs");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::Operation( "example.test" , samson::Operation::script);
@@ -125,7 +125,7 @@ namespace example{
 			operation->code.push_back("example.select test.samples3 test.samples.txt -create ");
 			operation->code.push_back("example.parser test.samples.txt test.samples4 -create ");
 
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<generator2>( "example.generator2" , samson::Operation::generator);
@@ -134,7 +134,7 @@ namespace example{
 			operation->setHelpLine("");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<parser>( "example.parser" , samson::Operation::parser);
@@ -143,7 +143,7 @@ namespace example{
 			operation->setHelpLine("");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::Operation( "example.script" , samson::Operation::script);
@@ -158,7 +158,7 @@ namespace example{
 			operation->code.push_back("add andreu system.UInt system.UInt ");
 			operation->code.push_back("example.generator andreu ");
 
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<error>( "example.error" , samson::Operation::map);
@@ -167,7 +167,7 @@ namespace example{
 			operation->setHelpLine("Map to produce an error while running to test fault-issolation");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<map_error>( "example.map_error" , samson::Operation::map);
@@ -176,7 +176,7 @@ namespace example{
 			operation->setHelpLine("Map to produce an error while running to test fault-issolation");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<map_error_user>( "example.map_error_user" , samson::Operation::map);
@@ -185,7 +185,7 @@ namespace example{
 			operation->setHelpLine("Map to produce an error while running to test fault-issolation. User generated error");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<map_traces>( "example.map_traces" , samson::Operation::map);
@@ -194,7 +194,7 @@ namespace example{
 			operation->setHelpLine("Map that produce traces");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<generator_list>( "example.generator_list" , samson::Operation::generator);
@@ -202,7 +202,7 @@ namespace example{
 			operation->setHelpLine("Example of how to use list types");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<map_list>( "example.map_list" , samson::Operation::map);
@@ -211,17 +211,17 @@ namespace example{
 			operation->setHelpLine("Example of how to use list types");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 		{
 			samson::Operation * operation = new samson::OperationImpl<splitter>( "example.splitter" , samson::Operation::splitter);
 			operation->setHelpLine("Example of splitter that change first two characters of every line by XX");
 			std::ostringstream o;
 			operation->setHelp( o.str() );
-			add( operation ); // Add this operation to the module
+			add( operation );   // Add this operation to the module
 		}
 
-	}; // end of class
+	};   // end of class
 
 } // end of namespace samson
 } // end of namespace example

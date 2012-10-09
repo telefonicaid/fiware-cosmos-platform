@@ -99,7 +99,7 @@ public:
     return true;
   }
 
-  std::string str() {
+  std::string str() const {
     return keyFormat + "-" + valueFormat;
   }
 

@@ -2,15 +2,16 @@
 #ifndef _AU_CONSOLE
 #define _AU_CONSOLE
 
-#include <list>
-#include <string>
 #include <termios.h>                // termios
 
-#include "au/ErrorManager.h"
-#include "au/console/ConsoleCode.h"
+#include <list>
+#include <string>
+
 #include "au/console/ConsoleCode.h"
 #include "au/console/ConsoleEntry.h"
 #include "au/console/ConsoleEscapeSequence.h"
+
+#include "au/ErrorManager.h"
 #include "au/log/LogFormatter.h"
 #include "au/log/LogPlugin.h"
 #include "au/mutex/Token.h"
@@ -30,7 +31,7 @@ class Console {
   std::list< std::string > pending_messages;
   au::Token token_pending_messages;
 
-  // Flag to bock background mesages
+  // Flag to block background messages
   bool block_background_messages;
 
   // Flag to quit internal loop
@@ -39,13 +40,12 @@ class Console {
   // Counter used only for testing
   int counter;
 
-  // Detector of scape sequences
+  // Detector of escape sequences
   ConsoleEscapeSequence escape_sequence;
-  
-public:
 
+public:
   Console();
-  ~Console();
+  virtual ~Console();
 
   void runConsole();
   void runConsoleInBackground();
@@ -86,7 +86,6 @@ public:
   std::string str_history(int limit);
 
 private:
-
   void print_command();
   bool isImputReady();
 
@@ -104,8 +103,6 @@ private:
   // Get the next entry from console
   void getEntry(ConsoleEntry *entry);
 };
-  
 }
-
 #endif  // ifndef _AU_CONSOLE
 

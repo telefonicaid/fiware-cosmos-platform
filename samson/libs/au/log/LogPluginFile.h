@@ -36,7 +36,7 @@ namespace au {
     
     LogPluginFile( ) : LogPlugin("File")
     {
-      set_activated(false); // No activated by default
+      set_activated(false);   // No activated by default
     }
     
     LogPluginFile( std::string local_file );

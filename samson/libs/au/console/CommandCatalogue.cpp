@@ -719,7 +719,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   tokenizer.addSingleCharTokens(" \t\n");
   token::TokenVector token_vector = tokenizer.parse(command_line);
 
-  // Get component eliminating spaces ( literals are placed toguether )
+  // Get component eliminating spaces ( literals are placed together )
   std::vector<std::string> components;
   while (!token_vector.eof()) {
     token::Token *token = token_vector.popToken();
@@ -747,7 +747,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   int pos_argument = 0;      // Position of the argument we are parsing
 
   for (size_t i = 1; i < components.size(); i++) {
-    // Check if we are at the begining of a -option element
+    // Check if we are at the beginning of a -option element
     if (components[i].length() > 0) {
       if (components[i][0] == '-') {
         std::string option_name = components[i];
@@ -794,9 +794,9 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
       }      // A new argument is obtained
     }
     if (command->arguments().size() <= (size_t)pos_argument) {
-      error->set(au::str("Extra non-defined argument (%s) provided for Command %s"
-                         , components[i].c_str()
-                         , main_command.c_str(), command->usage().c_str()));
+      error->set(au::str("Extra non-defined argument (%s) (args_size:%lu <= pos_argument:%d) provided for Command '%s'"
+                         , components[i].c_str(), command->arguments().size(), pos_argument
+                         , main_command.c_str()));
       error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
       error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
       delete command_instance;

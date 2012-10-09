@@ -43,8 +43,8 @@ namespace au {
 
     int RegisterChannel( const std::string& name , const std::string& alias )
     {
-      names_[num_log_channels_] = name; // Copy the name for debugging
-      alias_[num_log_channels_] = alias; // Copy the name for debugging
+      names_[num_log_channels_] = name;   // Copy the name for debugging
+      alias_[num_log_channels_] = alias;   // Copy the name for debugging
       return num_log_channels_++;
     }
     

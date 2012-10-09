@@ -101,10 +101,10 @@ bool KVHeader::check() {
   return ( magic_number == 4652783);
 }
 
-std::string KVHeader::str() {
+std::string KVHeader::str() const {
   std::ostringstream output;
 
-  output << "KVHeader: " << info.str() << "(" << range.str() << ") (" << getKVFormat().str() << ")";
+  output << "KVHeader: " << info.str() << "(" << range.str() << ") (" << keyFormat << "-" << valueFormat << ")";
   return output.str();
 }
 

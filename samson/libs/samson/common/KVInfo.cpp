@@ -60,7 +60,7 @@ void KVInfo::remove(KVInfo other) {
   kvs -= other.kvs;
 }
 
-std::string KVInfo::str() {
+std::string KVInfo::str() const {
   std::ostringstream o;
 
   o <<  "( " << au::str(kvs, "kvs") << " in " << au::str(size, "bytes") << " )";

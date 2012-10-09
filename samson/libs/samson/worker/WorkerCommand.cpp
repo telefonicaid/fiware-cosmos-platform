@@ -1,3 +1,4 @@
+#include "samson/worker/WorkerCommand.h"     // Own interface
 
 #include <algorithm>
 
@@ -9,23 +10,14 @@
 #include "engine/Notification.h"
 #include "engine/ProcessManager.h"
 
-
 #include "samson/common/EnvironmentOperations.h"        // copyEnvironment
 #include "samson/common/SamsonSetup.h"                  // SamsonSetup
-
+#include "samson/delilah/DelilahCommandCatalogue.h"
 #include "samson/network/Packet.h"                      // samson::Packet
-
-#include "samson/worker/SamsonWorker.h"
-
-#include "samson/stream/BlockList.h"
-#include "samson/stream/BlockManager.h"
-
 #include "samson/stream/Block.h"
 #include "samson/stream/BlockList.h"
-
-#include "samson/delilah/DelilahCommandCatalogue.h"
-
-#include "WorkerCommand.h"     // Own interface
+#include "samson/stream/BlockManager.h"
+#include "samson/worker/SamsonWorker.h"
 
 namespace samson {
 
@@ -48,34 +40,29 @@ bool ignoreCommand(std::string command) {
 }
 
 class AliasManager {
-  au::simple_map<std::string, std::string> aliases;
+    au::simple_map<std::string, std::string> aliases;
 
-public:
-
-  void add(std::string reference, std::string name) {
-    aliases.insertInMap(reference, name);
-  }
-
-  std::string transform(std::string command) {
-    au::simple_map<std::string, std::string>::iterator it_aliases;
-
-    for (it_aliases = aliases.begin(); it_aliases != aliases.end(); it_aliases++) {
-      au::find_and_replace(command, it_aliases->first, it_aliases->second);
+  public:
+    void add(std::string reference, std::string name) {
+      aliases.insertInMap(reference, name);
     }
 
-    return command;
-  }
+    std::string transform(std::string command) {
+      au::simple_map<std::string, std::string>::iterator it_aliases;
+
+      for (it_aliases = aliases.begin(); it_aliases != aliases.end(); it_aliases++) {
+        au::find_and_replace(command, it_aliases->first, it_aliases->second);
+      }
+
+      return command;
+    }
 };
 
-WorkerCommand::WorkerCommand(SamsonWorker* samson_worker
-                             , std::string worker_command_id
-                             , size_t delilah_id
-                             , size_t delilah_component_id
-                             ,  const gpb::WorkerCommand& command) {
-
+WorkerCommand::WorkerCommand(SamsonWorker* samson_worker, std::string worker_command_id, size_t delilah_id,
+                             size_t delilah_component_id, const gpb::WorkerCommand& command) {
   // Keep pointer to samson worker
   samson_worker_ = samson_worker;
-  
+
   // Unique identifier of the worker
   worker_command_id_ = worker_command_id;
 
@@ -83,10 +70,10 @@ WorkerCommand::WorkerCommand(SamsonWorker* samson_worker
   delilah_id_ = delilah_id;
   delilah_component_id_ = delilah_component_id;
 
-  notify_finish_ = ( delilah_id_ != 0 );   // 0 used as a non notify delilah
+  notify_finish_ = (delilah_id_ != 0);   // 0 used as a non notify delilah
 
   // Copy the original message
-  originalWorkerCommand_.Reset( new gpb::WorkerCommand() );
+  originalWorkerCommand_.Reset(new gpb::WorkerCommand());
   originalWorkerCommand_->CopyFrom(command);
 
   // Extract environment properties
@@ -96,7 +83,7 @@ WorkerCommand::WorkerCommand(SamsonWorker* samson_worker
   command_ = originalWorkerCommand_->command();
 
   // Original value for the flags
-  pending_to_be_executed_ =  true;
+  pending_to_be_executed_ = true;
   finished_ = false;
 
   // No pending process at the moment
@@ -105,9 +92,8 @@ WorkerCommand::WorkerCommand(SamsonWorker* samson_worker
 }
 
 WorkerCommand::~WorkerCommand() {
-  collections_.clearVector();
+  collections_.clear();
 }
-
 
 bool WorkerCommand::finished() {
   return finished_;
@@ -134,7 +120,6 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
   cmd.SetFlagString("prefix", "");
   cmd.Parse(command);
 
-
   std::string prefix = cmd.GetFlagString("prefix");
 
   if (cmd.get_num_arguments() == 0) {
@@ -147,7 +132,8 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
 
   if (main_command == "init_stream") {
     if (cmd.get_num_arguments() < 2) {
-      error->set(au::str("Not enough parameters for command 'init_stream' ( only %d argument provided )",
+      error->set(
+                 au::str("Not enough parameters for command 'init_stream' ( only %d argument provided )",
                          cmd.get_num_arguments()));
       return;
     }
@@ -158,9 +144,9 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
       prefix.append(cmd.get_argument(1));
       prefix.append(".");
 
-      operation_name  = cmd.get_argument(2);
+      operation_name = cmd.get_argument(2);
     } else if (cmd.get_num_arguments() == 2) {
-      operation_name  = cmd.get_argument(1);
+      operation_name = cmd.get_argument(1);
     }
 
     Operation *op = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
@@ -171,20 +157,18 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
 
     if (op->getType() != Operation::script) {
       error->set(
-        au::str("Non valid operation %d. Only script operations supported for init_stream command"
-                , operation_name.c_str()));
+                 au::str("Non valid operation %d. Only script operations supported for init_stream command",
+                         operation_name.c_str()));
       return;
     }
-
 
     // Structure to set names alias
     AliasManager alias_manager;
 
-    // Read code, execute it recursivelly
+    // Read code, execute it recursively
     au::ErrorManager sub_error;
     for (size_t i = 0; i < op->code.size(); i++) {
       std::string sub_command = op->code[i];
-
 
       au::CommandLine intern_cmdLine;
       intern_cmdLine.Parse(sub_command);
@@ -205,7 +189,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
         std::string full_command = alias_manager.transform(sub_command);
 
         if (prefix.length() > 0) {
-          full_command.append(au::str(" -prefix %s", prefix.c_str()));  // LM_M(("Full Command %s (original %s)" , full_command.c_str(),  sub_command.c_str() ));
+          full_command.append(au::str(" -prefix %s", prefix.c_str()));   // LM_M(("Full Command %s (original %s)" , full_command.c_str(),  sub_command.c_str() ));
         }
         RunCommand(full_command, &sub_error);
       }
@@ -231,16 +215,18 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
   // add_queue_connection ( pending )
   // rm_queue_connection ( pending )
 
+  // TODO(@jges): review list of commands
+
   if (samson_worker_->data_model()->isValidCommand(main_command)) {
-    std::string caller = au::str("Command %s from delilah %s"
-                                 , main_command.c_str()
-                                 , au::code64_str(delilah_id_).c_str());
+    std::string caller = au::str("Command %s from delilah %s", main_command.c_str(),
+                                 au::code64_str(delilah_id_).c_str());
 
     samson_worker_->data_model()->Commit(caller, command, error);
     return;
   }
 
   // Unknown command error message
+  LM_E(("Unknown command %s", main_command.c_str()));
   error->set(au::str("Unknown command %s", main_command.c_str()));
 }
 
@@ -264,16 +250,16 @@ bool compare_blocks_defrag(stream::Block *b, stream::Block *b2) {
 }
 
 typedef struct LogLineInfo {
-  char type;
-  std::string date;
-  int ms;
-  std::string progName;
-  std::string fileName;
-  int lineNo;
-  int pid;
-  int tid;
-  std::string funcName;
-  std::string message;
+    char type;
+    std::string date;
+    int ms;
+    std::string progName;
+    std::string fileName;
+    int lineNo;
+    int pid;
+    int tid;
+    std::string funcName;
+    std::string message;
 } LogLineInfo;
 
 void WorkerCommand::Run() {
@@ -293,7 +279,7 @@ void WorkerCommand::Run() {
   // General visualization options
   Visualization visualization;
 
-  // Add all bool falgs like -v -state automatically
+  // Add all bool flags like -v -state automatically
   const std::vector<au::console::CommandItem *> options = command_instance->command()->options();
   for (size_t i = 0; i < options.size(); i++) {
     if (options[i]->type() == au::console::options::option_bool) {
@@ -304,14 +290,14 @@ void WorkerCommand::Run() {
 
   // Add argument pattern if exist
   if (command_instance->has_string_argument("pattern")) {
-    visualization.set_pattern(command_instance->get_string_argument("pattern"));  // Get main command
+    visualization.set_pattern(command_instance->get_string_argument("pattern"));   // Get main command
   }
   std::string main_command = command_instance->main_command();
-
+  LM_M(("Processing command:'%s'", command_.c_str()));
 
   // Query commands
   if (main_command == "ls") {
-    gpb::Collection *c = samson_worker_->data_model()->getCollectionForQueues(visualization);
+    au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForQueues(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -320,15 +306,17 @@ void WorkerCommand::Run() {
 
   if (main_command == "ls_queue_ranges") {
     std::string queue_name = command_instance->get_string_argument("name");
-    gpb::Collection *c = samson_worker_->data_model()->getCollectionForQueueRanges(visualization , queue_name );
+    au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForQueueRanges(visualization,
+                                                                                                     queue_name);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
     return;
   }
-  
+
   if (main_command == "ls_queue_blocks") {
-    gpb::Collection *c = samson_worker_->data_model()->getCollectionForQueuesWithBlocks(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->data_model()->GetCollectionForQueuesWithBlocks(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -336,7 +324,7 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_last_data_commits") {
-    gpb::Collection *c =  samson_worker_->data_model()->getLastCommitsCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetLastCommitsCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -344,16 +332,16 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_last_tasks") {
-    gpb::Collection *c =  samson_worker_->task_manager()->getLastTasksCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = samson_worker_->task_manager()->GetLastTasksCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
     return;
   }
 
-
   if (main_command == "ls_push_operations") {
-    gpb::Collection *c = samson_worker_->worker_block_manager()->GetCollectionForPushOperations(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->worker_block_manager()->GetCollectionForPushOperations(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -361,7 +349,8 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_distribution_operations") {
-    gpb::Collection *c = samson_worker_->worker_block_manager()->GetCollectionForDistributionOperations(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->worker_block_manager()->GetCollectionForDistributionOperations(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -369,16 +358,16 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_block_requests") {
-    gpb::Collection *c = samson_worker_->worker_block_manager()->GetCollectionForBlockRequests(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->worker_block_manager()->GetCollectionForBlockRequests(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
     return;
   }
 
-
   if (main_command == "ls_blocks") {
-    gpb::Collection *c = stream::BlockManager::shared()->GetCollectionOfBlocks(visualization);
+    au::SharedPointer<gpb::Collection> c = stream::BlockManager::shared()->GetCollectionOfBlocks(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -386,7 +375,7 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_buffers") {
-    gpb::Collection *c = GetCollectionOfBuffers(visualization);
+    au::SharedPointer<gpb::Collection> c = GetCollectionOfBuffers(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -395,7 +384,7 @@ void WorkerCommand::Run() {
 
   if (main_command == "ls_pop_connections") {
     /*
-     * gpb::Collection * c = streamManager->getCollectionForPopConnections(&visualitzation);
+     * gpb::Collection * c = streamManager->GetCollectionForPopConnections(&visualitzation);
      * c->set_title( command  );
      * collections_.push_back( c );
      */
@@ -405,8 +394,8 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_stream_operations") {
-    gpb::Collection *c;
-    c = samson_worker_->data_model()->getCollectionForStreamOperations(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->data_model()->GetCollectionForStreamOperations(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -414,18 +403,16 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_batch_operations") {
-    gpb::Collection *c;
-    c = samson_worker_->data_model()->getCollectionForBatchOperations(visualization);
+    au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForBatchOperations(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
     return;
   }
 
-
   if (main_command == "ps_stream_operations_ranges") {
-    gpb::Collection *c;
-    c = samson_worker_->task_manager()->getCollectionForStreamOperationsRanges(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->task_manager()->GetCollectionForStreamOperationsRanges(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -433,26 +420,25 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ps_stream_operations") {
-    gpb::Collection *c;
-    c = samson_worker_->task_manager()->getCollectionForStreamOperations(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->task_manager()->GetCollectionForStreamOperations(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
     return;
   }
 
-
   if (main_command == "ls_queue_connections") {
-    gpb::Collection *c = samson_worker_->data_model()->getCollectionForQueueConnections(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->data_model()->GetCollectionForQueueConnections(visualization);
     c->set_title(command_);
     collections_.push_back(c);
-
     FinishWorkerTask();
     return;
   }
 
   if (main_command == "ps_tasks") {
-    gpb::Collection *c = samson_worker_->task_manager()->getCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = samson_worker_->task_manager()->GetCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -461,7 +447,7 @@ void WorkerCommand::Run() {
 
   if (main_command == "ls_workers") {
     // Add the ps stream
-    gpb::Collection *c = samson_worker_->getWorkerCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = samson_worker_->GetWorkerCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -469,21 +455,22 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_modules") {
-    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getModulesCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = au::Singleton<ModulesManager>::shared()->GetModulesCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
     return;
   }
   if (main_command == "ls_operations") {
-    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getOperationsCollection(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        au::Singleton<ModulesManager>::shared()->GetOperationsCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
     return;
   }
   if (main_command == "ls_datas") {
-    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getDatasCollection(visualization);
+    au::SharedPointer<gpb::Collection> c = au::Singleton<ModulesManager>::shared()->GetDatasCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -491,8 +478,8 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_connections") {
-    gpb::Collection *c = samson_worker_->network()->getConnectionsCollection(visualization);
-    if (c) {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->network()->GetConnectionsCollection(visualization);
+    if (c != NULL) {
       c->set_title(command_);
       collections_.push_back(c);
     }
@@ -501,30 +488,35 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ps_workers") {
-    gpb::Collection *c = samson_worker_->workerCommandManager()->getCollectionOfWorkerCommands(visualization);
+    au::SharedPointer<gpb::Collection> c =
+        samson_worker_->workerCommandManager()->GetCollectionOfWorkerCommands(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
     return;
   }
 
-
   if (main_command == "wait") {
-    error_.set("Unimplemented");
+    // Recovering old wait command
+    LM_T(LmtDelilahComponent, ("Processing wait command"));
+    if (samson_worker_->data_model()->CheckForAllOperationsFinished() == false) {
+      pending_to_be_executed_ = true;
+      return;
+    }
 
     /*
      *
      * // Special operation to wait until no activity is present in stream manager
      * if( streamManager->WorkerTaskManager.isActive() )
      * {
-     * pending_to_be_executed = true;
+     * pending_to_be_executed_ = true;
      * return;
      * }
      *
      * // No pending data to be processed
      * if( streamManager->isSomethingPending() )
      * {
-     * pending_to_be_executed = true;
+     * pending_to_be_executed_ = true;
      * return;
      * }
      *
@@ -535,8 +527,6 @@ void WorkerCommand::Run() {
     return;
   }
 
-
-
   if (main_command == "wlog") {
     int vLevel;
     if (lmVerbose5 == true) {
@@ -544,14 +534,15 @@ void WorkerCommand::Run() {
     } else if (lmVerbose4 == true) {
       vLevel = 4;
     } else if (lmVerbose3 == true) {
-      vLevel =
-        3;
+      vLevel = 3;
     } else if (lmVerbose2 == true) {
       vLevel = 2;
-    } else if (lmVerbose  == true) {
+    } else if (lmVerbose == true) {
       vLevel = 1;
-    } else {  vLevel = 0; }
-    samson::gpb::Collection *collection = new  samson::gpb::Collection();
+    } else {
+      vLevel = 0;
+    }
+    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
     collection->set_title("Logs");
     collection->set_name("logs");
     samson::gpb::CollectionRecord *record = collection->add_record();
@@ -562,22 +553,24 @@ void WorkerCommand::Run() {
       ::samson::add(record, "Debug", "on", "left,different");
     } else {
       ::samson::add(record, "Debug", "off", "left,different");
-    } if (lmReads) {
+    }
+    if (lmReads) {
       ::samson::add(record, "Reads", "on", "left,different");
     } else {
       ::samson::add(record, "Reads", "off", "left,different");
-    } if (lmWrites) {
+    }
+    if (lmWrites) {
       ::samson::add(record, "Writes", "on", "left,different");
     } else {
       ::samson::add(record, "Writes", "off", "left,different");
-    } char levels[1024];
+    }
+    char levels[1024];
     lmTraceGet(levels);
 
     ::samson::add(record, "Trace levels", levels, "left,different");
 
     FinishWorkerTask();
   }
-
 
   if (main_command == "wverbose") {
     std::string subcommand;
@@ -587,28 +580,32 @@ void WorkerCommand::Run() {
     LM_M(("Got a wverbose command: '%s'", subcommand.c_str()));
 
     if ((subcommand == "off") || (subcommand == "0")) {
-      lmVerbose  = false;
+      lmVerbose = false;
       lmVerbose2 = false;
       lmVerbose3 = false;
       lmVerbose4 = false;
       lmVerbose5 = false;
-    } else if ((subcommand == "1") || (subcommand == "2") || (subcommand == "3") || (subcommand == "4") ||
-               (subcommand == "5"))
-    {
+    } else if ((subcommand == "1") || (subcommand == "2") || (subcommand == "3") || (subcommand == "4") || (subcommand
+        == "5")) {
       int level = subcommand.c_str()[0] - '0';
 
-      lmVerbose  = false;
+      lmVerbose = false;
       lmVerbose2 = false;
       lmVerbose3 = false;
       lmVerbose4 = false;
       lmVerbose5 = false;
 
       switch (level) {
-        case 5: lmVerbose5 = true;
-        case 4: lmVerbose4 = true;
-        case 3: lmVerbose3 = true;
-        case 2: lmVerbose2 = true;
-        case 1: lmVerbose  = true;
+        case 5:
+          lmVerbose5 = true;
+        case 4:
+          lmVerbose4 = true;
+        case 3:
+          lmVerbose3 = true;
+        case 2:
+          lmVerbose2 = true;
+        case 1:
+          lmVerbose = true;
       }
 
       LM_V(("Verbose level 1 is ON"));
@@ -623,16 +620,16 @@ void WorkerCommand::Run() {
         vLevel = 5;
       } else if (lmVerbose4 == true) {
         vLevel = 4;
-      } else if (lmVerbose3 ==
-                 true)
-      {
+      } else if (lmVerbose3 == true) {
         vLevel = 3;
       } else if (lmVerbose2 == true) {
         vLevel = 2;
-      } else if (lmVerbose  == true) {
+      } else if (lmVerbose == true) {
         vLevel = 1;
-      } else { vLevel = 0; }
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      } else {
+        vLevel = 0;
+      }
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Verbose");
       collection->set_name("verbose");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -659,7 +656,7 @@ void WorkerCommand::Run() {
       LM_F(("DEBUG is turned ON"));
       LM_D(("DEBUG is ON"));
     } else if (subcommand == "get") {
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Debug");
       collection->set_name("debug_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -668,7 +665,8 @@ void WorkerCommand::Run() {
         ::samson::add(record, "Debug", "on", "left,different");
       } else {
         ::samson::add(record, "Debug", "off", "left,different");
-      } collections_.push_back(collection);
+      }
+      collections_.push_back(collection);
     } else {
       FinishWorkerTaskWithError("Usage: wdebug [ off | on ]");
       return;
@@ -688,7 +686,7 @@ void WorkerCommand::Run() {
       lmReads = true;
       LM_F(("READS ON"));
     } else if (subcommand == "get") {
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Reads");
       collection->set_name("reads_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -697,7 +695,8 @@ void WorkerCommand::Run() {
         ::samson::add(record, "Reads", "on", "left,different");
       } else {
         ::samson::add(record, "Reads", "off", "left,different");
-      } collections_.push_back(collection);
+      }
+      collections_.push_back(collection);
     } else {
       FinishWorkerTaskWithError("Usage: wreads [ off | on ]");
       return;
@@ -717,7 +716,7 @@ void WorkerCommand::Run() {
       lmWrites = true;
       LM_F(("WRITES ON"));
     } else if (subcommand == "get") {
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Writes");
       collection->set_name("writes_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -726,7 +725,8 @@ void WorkerCommand::Run() {
         ::samson::add(record, "Writes", "on", "left,different");
       } else {
         ::samson::add(record, "Writes", "off", "left,different");
-      } collections_.push_back(collection);
+      }
+      collections_.push_back(collection);
     } else {
       FinishWorkerTaskWithError("Usage: wwrites [ off | on ]");
       return;
@@ -755,7 +755,7 @@ void WorkerCommand::Run() {
       char levels[1024];
       lmTraceGet(levels);
 
-      samson::gpb::Collection *collection = new  samson::gpb::Collection();
+      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_title("Trace information");
       collection->set_name("trace_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
@@ -771,13 +771,13 @@ void WorkerCommand::Run() {
       }
 
       if (subcommand == "set") {
-        lmTraceSet((char *)levels.c_str());
+        lmTraceSet(levels.c_str());
         LM_F(("Set trace levels '%s'", levels.c_str()));
       } else if (subcommand == "add") {
-        lmTraceAdd((char *)levels.c_str());
+        lmTraceAdd(levels.c_str());
         LM_F(("Added trace levels '%s'", levels.c_str()));
       } else if (subcommand == "del") {
-        lmTraceSub((char *)levels.c_str());
+        lmTraceSub(levels.c_str());
         LM_F(("Removed trace levels '%s'", levels.c_str()));
       }
     } else {
@@ -795,11 +795,8 @@ void WorkerCommand::Run() {
     bool warning = command_instance->get_bool_option("-error");
 
     // Full message
-    std::string full_message = au::str("[Alert from Delilah_%s] %s"
-                                       , au::code64_str(delilah_id_).c_str()
-                                       , message.c_str()
-                                       );
-
+    std::string full_message = au::str("[Alert from Delilah_%s] %s", au::code64_str(delilah_id_).c_str(),
+                                       message.c_str());
 
     // Send a trace to all delilahs
     if (error) {
@@ -808,7 +805,8 @@ void WorkerCommand::Run() {
       samson_worker_->network()->SendAlertToAllDelilahs("warning", "delilah", full_message);
     } else {
       samson_worker_->network()->SendAlertToAllDelilahs("message", "delilah", full_message);
-    } FinishWorkerTask();
+    }
+    FinishWorkerTask();
     return;
   }
 
@@ -915,29 +913,28 @@ void WorkerCommand::Run() {
     std::string inputs = command_instance->get_string_option("input");
     std::string outputs = command_instance->get_string_option("output");
 
-    std::string command = au::str("batch %s -input \"%s\" -output \"%s\" -delilah_id %lu -delilah_component_id %lu "
-                                  , operation.c_str()
-                                  , inputs.c_str()
-                                  , outputs.c_str()
-                                  , delilah_id_
-                                  , delilah_component_id_);
+    std::string command = au::str("batch %s -input \"%s\" -output \"%s\" -delilah_id %lu -delilah_component_id %lu ",
+                                  operation.c_str(), inputs.c_str(), outputs.c_str(), delilah_id_,
+                                  delilah_component_id_);
 
-    
     au::ErrorManager error;
     std::string caller = au::str("run_deliah_%s_%lu", au::code64_str(delilah_id_).c_str(), delilah_component_id_);
     samson_worker_->data_model()->Commit(caller, command, &error);
 
     if (error.IsActivated()) {
+      LM_E(("Error in Commit for command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
       FinishWorkerTaskWithError(error.GetMessage());
     } else {
       FinishWorkerTask();
-    } return;
+    }
+    return;
   }
 
   // Simple commands
   au::ErrorManager error;
   RunCommand(command_, &error_);
   if (error.IsActivated()) {
+    LM_E(("Error in Commit for command:'%s', error:'%s'", command_.c_str(), error.GetMessage().c_str()));
     FinishWorkerTaskWithError(error.GetMessage());
   } else {
     FinishWorkerTask();
@@ -962,6 +959,7 @@ void WorkerCommand::FinishWorkerTask() {
   }
 
   if (notify_finish_) {
+    LM_T(LmtDelilahComponent, ("notify_finish for command:'%s', delilah_id:%d", command_.c_str()));
     PacketPointer p(new Packet(Message::WorkerCommandResponse));
     gpb::WorkerCommandResponse *c = p->message->mutable_worker_command_response();
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand_);
@@ -969,14 +967,14 @@ void WorkerCommand::FinishWorkerTask() {
     // Put the error if any
     if (error_.IsActivated()) {
       // LM_M(("Sending error message %s" , error.GetMessage().c_str() ));
-      c->mutable_error()->set_message(error_.GetMessage());  // Set delilah id
+      c->mutable_error()->set_message(error_.GetMessage());
     }
+    // Set delilah id
     p->message->set_delilah_component_id(delilah_component_id_);
 
     // Direction of this packets
     p->to.node_type = DelilahNode;
     p->to.id = delilah_id_;
-
 
     // Add collections as answers...
     for (size_t i = 0; i < collections_.size(); i++) {
@@ -991,10 +989,9 @@ void WorkerCommand::FinishWorkerTask() {
   finished_ = true;
 }
 
-
 void WorkerCommand::notify(engine::Notification *notification) {
   if (notification->isName(notification_process_request_response)) {
-    num_pending_processes_--;
+    --num_pending_processes_;
 
     if (notification->environment().IsSet("error")) {
       error_.set(notification->environment().Get("error", "no_error"));
@@ -1009,30 +1006,29 @@ void WorkerCommand::notify(engine::Notification *notification) {
 void WorkerCommand::CheckFinish() {
   if (error_.IsActivated()) {
     FinishWorkerTask();
-  } else if (( num_pending_processes_ <= 0 ) && (num_pending_disk_operations_ <= 0 )) {
+  } else if ((num_pending_processes_ <= 0) && (num_pending_disk_operations_ <= 0)) {
     FinishWorkerTask();
   }
 }
 
-
 void WorkerCommand::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
   std::string name = NodeIdentifier(DelilahNode, delilah_id_).getCodeName();
 
-  add(record, "id",  worker_command_id_, "left,different");
+  add(record, "id", worker_command_id_, "left,different");
 
   if (finished_) {
     add(record, "status", "finished", "left,different");
   } else {
     add(record, "status", "running", "left,different");
-  } add(record, "command", command_, "left,different");
+  }
+  add(record, "command", command_, "left,different");
   add(record, "#operations", num_pending_processes_, "left,uint64,sum");
   add(record, "#disk_operations", num_pending_disk_operations_, "left,uint64,sum");
   add(record, "error", error_.GetMessage(), "left,different");
 }
 
-gpb::Collection *WorkerCommand::GetCollectionOfBuffers(const Visualization& visualization) {
-  gpb::Collection *collection = new gpb::Collection();
-
+au::SharedPointer<gpb::Collection> WorkerCommand::GetCollectionOfBuffers(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("buffers");
 
   au::tables::Table table = engine::Engine::memory_manager()->getTableOfBuffers();

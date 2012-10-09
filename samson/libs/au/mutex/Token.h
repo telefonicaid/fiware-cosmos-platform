@@ -32,6 +32,7 @@ public:
   Token(const std::string& name = "no name");
   ~Token();
 
+  std::string name() const { return name_; }
   // Check if I am retaining this token
   bool IsRetainedByMe() const;
 

@@ -33,7 +33,7 @@ public:
   
   virtual std::string status()
   {
-    return "OK"; // nothing to show
+    return "OK";   // nothing to show
   }
   
 private:

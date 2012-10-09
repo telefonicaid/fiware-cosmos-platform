@@ -55,7 +55,7 @@ typedef enum TraceLevels {
   LmtClusterSetup           = 212,   // Cluster setup ( interaction with zookeeper  )
 
   LmtWorkerTasks            = 213,   // Scheduing of tasks
-  
+
   LmtIsolated               = 215,   // Isolated mechanism
   LmtIsolatedOperations     = 216,   // Traces to see start and stop of executions
   LmtReduceOperation        = 217,   // Reduce operation steps

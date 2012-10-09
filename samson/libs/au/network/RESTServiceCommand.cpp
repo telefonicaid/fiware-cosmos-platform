@@ -1,22 +1,20 @@
+#include "au/network/RESTServiceCommand.h"  // Own interface
 
-#include "RESTServiceCommand.h"  // Own interface
 #include "au/xml.h"
 
 namespace au {
 namespace network {
-void find_and_replace(std::string &source,
-                      const std::string find,
-                      std::string replace) {
+void find_and_replace(std::string& source, const std::string& find, const std::string& replace) {
   size_t j;
 
-  for (; (j = source.find(find)) != std::string::npos; ) {
+  for (; (j = source.find(find)) != std::string::npos;) {
     source.replace(j, find.length(), replace);
   }
 }
 
-RESTServiceCommand::RESTServiceCommand() : token_(
-                                             "RESTServiceCommandBase") {
-  http_state_ = 200;                 // By default 200 response
+RESTServiceCommand::RESTServiceCommand() :
+  token_("RESTServiceCommandBase") {
+  http_state_ = 200; // By default 200 response
 
   // No data by default
   data_ = NULL;
@@ -33,18 +31,16 @@ RESTServiceCommand::~RESTServiceCommand() {
 }
 
 // Read command from a socket
-au::Status RESTServiceCommand::Read(
-  SocketConnection *socket_connection,
-  au::ErrorManager& error) {
+au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::ErrorManager& error) {
   LM_T(LmtRest,
-       ("Start reading a REST request from socket %s",
-        socket_connection->host_and_port().c_str()));
+      ("Start reading a REST request from socket %s",
+          socket_connection->host_and_port().c_str()));
 
   // Read a line from socket
   au::Status s = socket_connection->ReadLine(request_line_, sizeof(request_line_), 10);
 
   if (s == au::OK) {
-    LM_T(LmtRest, ("REST FIRST Head line: %s", request_line_ ));
+    LM_T(LmtRest, ("REST FIRST Head line: %s", request_line_));
 
     // Remove last "\n" "\r" characters.
     au::remove_return_chars(request_line_);
@@ -54,8 +50,7 @@ au::Status RESTServiceCommand::Read(
     cmdLine.Parse(request_line_);
 
     if (cmdLine.get_num_arguments() < 2) {
-      error.set(au::str("Unexpected format. Incomming line %s",
-                        request_line_));
+      error.set(au::str("Unexpected format. Incomming line %s", request_line_));
       return au::Error;
     }
 
@@ -70,20 +65,19 @@ au::Status RESTServiceCommand::Read(
     find_and_replace(resource_, "%5B", "[");
     find_and_replace(resource_, "%5D", "]");
 
-
     // Get path componenets and format
-    path_components_ = StringVector::ParseFromString(resource_,'/');
+    path_components_ = StringVector::ParseFromString(resource_, '/');
 
     // Extract extension from the last one
-    format_ = "";                 // Default values
+    format_ = ""; // Default values
     if (path_components_.size() > 0) {
       size_t pos = path_components_[path_components_.size() - 1].rfind(".");
       if (pos != std::string::npos) {
         format_ = path_components_[path_components_.size() - 1].substr(pos + 1);
 
-        if ((format_ == "json") || (format_ == "xml") || (format_ == "txt")|| (format_ == "html") || (format_ == "thtml"))
-        {
-          path_components_[path_components_.size() - 1]= path_components_[path_components_.size()-1].substr(0, pos);
+        if ((format_ == "json") || (format_ == "xml") || (format_ == "txt") || (format_ == "html") || (format_
+            == "thtml")) {
+          path_components_[path_components_.size() - 1] = path_components_[path_components_.size() - 1].substr(0, pos);
         }
       }
     }
@@ -91,12 +85,11 @@ au::Status RESTServiceCommand::Read(
     // Read the rest of the REST Request
     char line[1024];
     while (s == au::OK) {
-      s = socket_connection->ReadLine(line, sizeof(request_line_),
-                                      10);
+      s = socket_connection->ReadLine(line, sizeof(request_line_), 10);
       au::remove_return_chars(line);
 
       if (strlen(line) == 0) {
-        LM_T(LmtRest, ("REST End of header" ));
+        LM_T(LmtRest, ("REST End of header"));
         break;
       }
 
@@ -105,8 +98,7 @@ au::Status RESTServiceCommand::Read(
         size_t pos = header_line.find(":");
 
         if (pos == std::string::npos) {
-          error.set(au::str("No valid HTTP header field: %s",
-                            line));
+          error.set(au::str("No valid HTTP header field: %s", line));
           return au::Error;
         }
 
@@ -115,8 +107,8 @@ au::Status RESTServiceCommand::Read(
         header_.Set(concept, value);
 
         LM_T(LmtRest,
-             ("REST Head line: '%s' [%s=%s]", line,
-              concept.c_str(), value.c_str()));
+            ("REST Head line: '%s' [%s=%s]", line,
+                concept.c_str(), value.c_str()));
       } else {
         error.set("No valid HTTP header");
         return au::Error;
@@ -127,20 +119,18 @@ au::Status RESTServiceCommand::Read(
     if (header_.IsSet("Content-Length")) {
       size_t size = header_.Get("Content-Length", 0);
       if (size > 0) {
-        LM_T(LmtRest, ("REST Reading body of %lu bytes", size ));
+        LM_T(LmtRest, ("REST Reading body of %lu bytes", size));
 
         if (data_) {
           free(data_);
         }
-        data_ = (char *)malloc(size);
+        data_ = reinterpret_cast<char *>(malloc(size));
         data_size_ = size;
 
         s = socket_connection->readBuffer(data_, size, 10);
 
         if (s != au::OK) {
-          error.set(au::str(
-                      "Error reading REST body (%lu bytes)",
-                      size));
+          error.set(au::str("Error reading REST body (%lu bytes)", size));
           return au::Error;
         }
       }
@@ -154,8 +144,7 @@ au::Status RESTServiceCommand::Read(
 }
 
 // Write answer to the socket
-au::Status RESTServiceCommand::Write(
-  SocketConnection *socket_connection) {
+au::Status RESTServiceCommand::Write(SocketConnection *socket_connection) {
   // String with a complete answer
   std::string data = output_.str();
 
@@ -205,7 +194,8 @@ au::Status RESTServiceCommand::Write(
     header << "Content-Type: application/thtml\n";
   } else {
     LM_W(("no format (does this mean its XML?"));
-  } header << "Content-Length: " << data.length() << "\n";
+  }
+  header << "Content-Length: " << data.length() << "\n";
   header << "Connection: close\n";
   header << "\n";
 
@@ -216,8 +206,7 @@ au::Status RESTServiceCommand::Write(
 
   // Write the complete output
   // Try just once, timeout 0.0001 seconds
-  socket_connection->WriteLine(
-    full_output.str().c_str(), 1, 0, 100);
+  socket_connection->WriteLine(full_output.str().c_str(), 1, 0, 100);
   return au::OK;
 }
 
@@ -242,34 +231,31 @@ void RESTServiceCommand::set_format(const std::string format) {
   format_ = format;
 }
 
-void RESTServiceCommand::AppendFormatedElement(
-  const std::string& name, const std::string& value) {
+void RESTServiceCommand::AppendFormatedElement(const std::string& name, const std::string& value) {
   std::ostringstream output;
 
   if (format_ == "xml") {
-    au::xml_simple(output, name,value);
+    au::xml_simple(output, name, value);
   } else if (format_ == "json") {
-    au::json_simple(output, name,value);
+    au::json_simple(output, name, value);
   } else if (format_ == "html") {
     output << "<h1>" << name << "</h1>" << value;
   } else {
     output << name << ":\n" << value;
-  } Append(output.str());
+  }
+  Append(output.str());
 }
 
-void RESTServiceCommand::AppendFormatedError(
-  const std::string& message) {
+void RESTServiceCommand::AppendFormatedError(const std::string& message) {
   AppendFormatedElement("error", message);
 }
 
-void RESTServiceCommand::AppendFormatedError(
-  int _http_state, const std::string& message) {
+void RESTServiceCommand::AppendFormatedError(int _http_state, const std::string& message) {
   set_http_state(_http_state);
   AppendFormatedElement("error", message);
 }
 
-void RESTServiceCommand::SetRedirect(
-  const std::string& redirect_resource) {
+void RESTServiceCommand::SetRedirect(const std::string& redirect_resource) {
   redirect_ = redirect_resource;
 }
 

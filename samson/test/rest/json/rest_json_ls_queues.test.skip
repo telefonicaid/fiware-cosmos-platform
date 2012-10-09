@@ -1,0 +1,11 @@
+--NAME--
+REST JSON /samson/queues
+--SHELL--
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command remove_all_stream 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "add_stream_operation o1 txt.parser_words input words" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "push input.txt input" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "wait" 2>/dev/null
+curl -s http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/queues.json
+--EXPECT--
+{{"title":"ls -group name -sort name","items":[{"worker_id":"0","name":"words_count","#kvs":" 10.0 ","size":"  110 ","key":"system.String","value":"system.UInt"},{"worker_id":"0","name":"words","#kvs":"    0 ","size":"    0 ","key":"system.String","value":"system.UInt"},{"worker_id":"0","name":"input","#kvs":"    0 ","size":"    0 ","key":"txt","value":"txt"}]}}

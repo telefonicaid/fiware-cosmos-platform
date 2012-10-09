@@ -67,7 +67,7 @@ namespace au {
     
     // If connected but closed, remove it
     if ( (socket_connection_!=NULL) && socket_connection_->IsClosed()) {
-      socket_connection_ = NULL; // Socket is closed automatically on destructor
+      socket_connection_ = NULL;   // Socket is closed automatically on destructor
       
       time_since_last_connection_.Reset();    // This is the time counter since last connection
       time_reconnect_ = 0;                    // Force try reconnect in next log
@@ -85,7 +85,7 @@ namespace au {
         if (s != au::OK) {
           // Compute new time to try connection
           if (time == 0) {
-            time_reconnect_ = 120; // try again in 2 minutes
+            time_reconnect_ = 120;   // try again in 2 minutes
           }
           if (time_reconnect_ < time) {
             time_reconnect_ = time;

@@ -21,7 +21,7 @@ namespace c4{
 
 	   Message()
 	   {
-		  type.value = 0; // Init message
+		  type.value = 0;   // Init message
 
 	   }
 

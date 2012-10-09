@@ -11,6 +11,8 @@
 
 #include <iostream>                          // std::cout
 #include <set>                               // std::set
+#include <string>
+#include <vector>
 
 #include "logMsg/logMsg.h"                   // lmInit, LM_*
 
@@ -102,6 +104,7 @@ public:
 
   // Stop all threads ( just before calling delete )
   void stop() {
+    network->ClearConnections();
   }
 
   // Connect and disconnect to a cluster

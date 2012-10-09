@@ -2,22 +2,22 @@
 #define SAMSON_OPERATION_H
 
 #include <math.h>
-#include <sstream>                 // std::ostringstream
-
-#include <samson/module/KVFormat.h>       // KVFormat
-#include <samson/module/KVSetStruct.h>    // KVSetStruct
-#include <samson/module/KVWriter.h>       // KVWriter
 
 #include <map>                     // std::map
-
-#include <samson/module/DataInstance.h>     // samson::Environment
-
-#include <samson/module/Environment.h>      // samson::Environment
-#include <samson/module/OperationController.h>
-#include <samson/module/Tracer.h>  // samson::Tracer
+#include <sstream>                 // std::ostringstream
+#include <string>
+#include <vector>
 
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"    // LmtModuleManager
+
+#include "samson/module/DataInstance.h"     // samson::Environment
+#include "samson/module/Environment.h"      // samson::Environment
+#include "samson/module/KVFormat.h"       // KVFormat
+#include "samson/module/KVSetStruct.h"    // KVSetStruct
+#include "samson/module/KVWriter.h"       // KVWriter
+#include "samson/module/OperationController.h"
+#include "samson/module/Tracer.h"  // samson::Tracer
 
 namespace samson {
 
@@ -32,240 +32,250 @@ namespace samson {
  */
 
 class OperationInstance {
-public:
+  public:
+    Environment *environment;   // Environment variables
+    Tracer *tracer;   // To send traces for debugging
+    OperationController *operationController;   // Element to interact for operation stuff ( report progress at the moment )
 
-  Environment *environment;                         // Environment variables
-  Tracer *tracer;                                   // To send traces for debugging
-  OperationController *operationController;         // Element to interact for operation stuff ( report progress at the moment )
+    // Instances of the data types used for input and output
+    std::vector<KVFormatDataInstances> inputData;
+    std::vector<KVFormatDataInstances> outputData;
 
-  // Instances of the data types used for input and output
-  std::vector< KVFormatDataInstances > inputData;
-  std::vector< KVFormatDataInstances > outputData;
-
-  OperationInstance() {
-  }
-
-  virtual ~OperationInstance() {
-    for (size_t i = 0; i  < inputData.size(); i++) {
-      inputData[i].destroy();
+    OperationInstance() {
     }
-    for (size_t i = 0; i  < outputData.size(); i++) {
-      outputData[i].destroy();
+
+    virtual ~OperationInstance() {
+      for (size_t i = 0; i < inputData.size(); i++) {
+        inputData[i].destroy();
+      }
+      for (size_t i = 0; i < outputData.size(); i++) {
+        outputData[i].destroy();
+      }
     }
-  }
 };
 
 typedef void * (*CreationFunction)();
 
 class Operation {
-public:
-  typedef enum {
-    generator,
-    map,
-    reduce,
-    parser,
-    parserOut,
-    parserOutReduce,
-    script,
-    system,                            // Special operation of the system
-    splitter,                          // Operation to split input data blocks pushed to the platform, before been sent to the parser
-    unknown
-  } Type;
+  public:
+    typedef enum {
+      generator, map, reduce, parser, parserOut, parserOutReduce, script, system,   // Special operation of the system
+      splitter,   // Operation to split input data blocks pushed to the platform, before been sent to the parser
+      unknown
+    } Type;
+
+    // Basic stuff
+    std::string _name;   // !< Name of the operation
+    Type _type;   // !< Identifier of the operation
 
 
-  // Basic stuff
-  std::string _name;                   // !< Name of the operation
-  Type _type;                          // !< Identifier of the operation
+    std::vector<KVFormat> inputFormats;   // !< Formats of the key-value at the inputs
+    std::vector<KVFormat> outputFormats;   // !< Format of the key-value at the outputs
 
 
-  std::vector<KVFormat> inputFormats;  // !< Formats of the key-value at the inputs
-  std::vector<KVFormat> outputFormats;  // !< Format of the key-value at the outputs
+    // Code in lines (scripts)
+    std::vector<std::string> code;   // !< Code for scripts
+
+    // Auxiliar stuff
+    std::string _helpMessage;   // !< Help message shown on screen
+    std::string _helpLine;   // !< Help in a line
 
 
-  // Code in lines (scripts)
-  std::vector<std::string> code;       // !< Code for scripts
+    Operation(std::string name, Type type) {
+      _type = type;
 
-  // Auxiliar stuff
-  std::string _helpMessage;            // !< Help message shown on screen
-  std::string _helpLine;               // !< Help in a line
+      _name = name;
 
-
-  Operation(std::string name, Type type) {
-    _type = type;
-
-    _name = name;
-
-    _helpLine = "";
-    _helpMessage = "Help coming soon\n";
-  }
-
-  virtual ~Operation() {
-    LM_T(LmtModuleManager,
-         ("Operation destructor for op:%s with helpLine:%s and helpMessage:%s", _name.c_str(), _helpLine.c_str(),
-          _helpMessage.c_str()));
-  }
-
-  // Get instance of this operation
-  virtual OperationInstance *getInstance() {
-    // Note pure virtual since scripts do not generate instances
-    return NULL;
-  }
-
-  // XML formated informatio
-  void getInfo(std::ostringstream& output) {
-    output << "<operation>\n";
-    output << "<name>" << _name << "</name>\n";
-    output << "<type>" << getTypeName() << "</type>\n";
-
-    output << "<input_description>" << inputFormatsString() << "</input_description>";
-    output << "<output_description>" << outputFormatsString() << "</output_description>";
-
-    output << "<input_formats>\n";
-    for (size_t i = 0; i < inputFormats.size(); i++) {
-      inputFormats[i].getInfo(output);
+      _helpLine = "";
+      _helpMessage = "Help coming soon\n";
     }
-    output << "</input_formats>\n";
 
-    output << "<output_formats>\n";
-    for (size_t i = 0; i < outputFormats.size(); i++) {
-      outputFormats[i].getInfo(output);
+    virtual ~Operation() {
+      LM_T(LmtModuleManager,
+          ("Operation destructor for op:%s with helpLine:%s and helpMessage:%s", _name.c_str(), _helpLine.c_str(),
+              _helpMessage.c_str()));
     }
-    output << "</output_formats>\n";
 
-    output << "<help>" << _helpLine << "</help>\n";
-
-    output << "</operation>\n";
-  }
-
-  void setHelpLine(std::string line) {
-    _helpLine = line;
-  }
-
-  void setHelp(std::string help) {
-    _helpMessage = help;
-  }
-
-  std::string help() {
-    return _helpMessage;
-  };
-
-  std::string helpLine() {
-    return _helpLine;
-  };
-
-  std::string getName() {
-    return _name;
-  }
-
-  int getNumInputs() {
-    return inputFormats.size();
-  }
-
-  int getNumOutputs() {
-    return outputFormats.size();
-  }
-
-  Type getType() {
-    return _type;
-  }
-
-  std::string getTypeName() {
-    switch (getType()) {
-      case parser:            return "parser";    break;
-      case parserOut:         return "parserOut"; break;
-      case parserOutReduce:   return "parserReduce"; break;
-      case map:               return "map";       break;
-      case reduce:            return "reduce";    break;
-      case generator:         return "generator"; break;
-      case script:            return "script";    break;
-      case system:            return "system";    break;
-      case splitter:          return "splitter";  break;
-      case unknown:           return "unknown";   break;
+    // Get instance of this operation
+    virtual OperationInstance *getInstance() {
+      // Note pure virtual since scripts do not generate instances
+      return NULL;
     }
-    return "?";
-  }
 
-  std::string inputFormatsString() {
-    std::ostringstream o;
+    // XML formated informatio
+    void getInfo(std::ostringstream& output) {
+      output << "<operation>\n";
+      output << "<name>" << _name << "</name>\n";
+      output << "<type>" << getTypeName() << "</type>\n";
 
-    for (int i = 0; i  < getNumInputs(); i++) {
-      o << "[" << inputFormats[i].str() << "]";
-    }
-    return o.str();
-  }
+      output << "<input_description>" << inputFormatsString() << "</input_description>";
+      output << "<output_description>" << outputFormatsString() << "</output_description>";
 
-  std::string outputFormatsString() {
-    std::ostringstream o;
-
-    for (int i = 0; i  < getNumOutputs(); i++) {
-      o << "[" << outputFormats[i].str() << "]";
-    }
-    return o.str();
-  }
-
-  std::string strHelp() {
-    std::ostringstream o;
-
-    o << "Help for operation " << _name <<  " ( " << getTypeName() << " )" <<  std::endl;
-    o << "=======================================================" << std::endl;
-    o << _helpLine << std::endl;
-    o << "=======================================================" << std::endl;
-    o << inputFormatsString() << " --> " << outputFormatsString() << std::endl;
-    o << "=======================================================" << std::endl;
-    o << _helpMessage << std::endl;
-
-    return o.str();
-  }
-
-  bool containsInputFormat(KVFormat f) {
-    for (size_t i = 0; i < inputFormats.size(); i++) {
-      if (inputFormats[i].isEqual(f)) {
-        return true;
+      output << "<input_formats>\n";
+      for (size_t i = 0; i < inputFormats.size(); i++) {
+        inputFormats[i].getInfo(output);
       }
-    }
+      output << "</input_formats>\n";
 
-    return false;
-  }
-
-  bool containsOutputFormat(KVFormat f) {
-    for (size_t i = 0; i < outputFormats.size(); i++) {
-      if (outputFormats[i].isEqual(f)) {
-        return true;
+      output << "<output_formats>\n";
+      for (size_t i = 0; i < outputFormats.size(); i++) {
+        outputFormats[i].getInfo(output);
       }
+      output << "</output_formats>\n";
+
+      output << "<help>" << _helpLine << "</help>\n";
+
+      output << "</operation>\n";
     }
 
-    return false;
-  }
+    void setHelpLine(std::string line) {
+      _helpLine = line;
+    }
 
-  std::vector<KVFormat> getInputFormats() {
-    return inputFormats;
-  }
+    void setHelp(std::string help) {
+      _helpMessage = help;
+    }
 
-  std::vector<KVFormat> getOutputFormats() {
-    return outputFormats;
-  }
+    std::string help() {
+      return _helpMessage;
+    }
 
-  KVFormat getInputFormat(int i) {
-    return inputFormats[i];
-  }
+    std::string helpLine() {
+      return _helpLine;
+    }
 
-  KVFormat getOutputFormat(int i) {
-    return outputFormats[i];
-  }
+    std::string getName() {
+      return _name;
+    }
+
+    int getNumInputs() {
+      return inputFormats.size();
+    }
+
+    int getNumOutputs() {
+      return outputFormats.size();
+    }
+
+    Type getType() {
+      return _type;
+    }
+
+    std::string getTypeName() {
+      switch (getType()) {
+        case parser:
+          return "parser";
+          break;
+        case parserOut:
+          return "parserOut";
+          break;
+        case parserOutReduce:
+          return "parserReduce";
+          break;
+        case map:
+          return "map";
+          break;
+        case reduce:
+          return "reduce";
+          break;
+        case generator:
+          return "generator";
+          break;
+        case script:
+          return "script";
+          break;
+        case system:
+          return "system";
+          break;
+        case splitter:
+          return "splitter";
+          break;
+        case unknown:
+          return "unknown";
+          break;
+      }
+      return "?";
+    }
+
+    std::string inputFormatsString() {
+      std::ostringstream o;
+
+      for (int i = 0; i < getNumInputs(); i++) {
+        o << "[" << inputFormats[i].str() << "]";
+      }
+      return o.str();
+    }
+
+    std::string outputFormatsString() {
+      std::ostringstream o;
+
+      for (int i = 0; i < getNumOutputs(); i++) {
+        o << "[" << outputFormats[i].str() << "]";
+      }
+      return o.str();
+    }
+
+    std::string strHelp() {
+      std::ostringstream o;
+
+      o << "Help for operation " << _name << " ( " << getTypeName() << " )" << std::endl;
+      o << "=======================================================" << std::endl;
+      o << _helpLine << std::endl;
+      o << "=======================================================" << std::endl;
+      o << inputFormatsString() << " --> " << outputFormatsString() << std::endl;
+      o << "=======================================================" << std::endl;
+      o << _helpMessage << std::endl;
+
+      return o.str();
+    }
+
+    bool containsInputFormat(KVFormat f) {
+      for (size_t i = 0; i < inputFormats.size(); i++) {
+        if (inputFormats[i].isEqual(f)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    bool containsOutputFormat(KVFormat f) {
+      for (size_t i = 0; i < outputFormats.size(); i++) {
+        if (outputFormats[i].isEqual(f)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    std::vector<KVFormat> getInputFormats() {
+      return inputFormats;
+    }
+
+    std::vector<KVFormat> getOutputFormats() {
+      return outputFormats;
+    }
+
+    KVFormat getInputFormat(int i) {
+      return inputFormats[i];
+    }
+
+    KVFormat getOutputFormat(int i) {
+      return outputFormats[i];
+    }
 };
 
-
-template <class OI>
+template<class OI>
 class OperationImpl : public Operation {
-public:
+  public:
+    OperationImpl(std::string name, Type type) :
+      Operation(name, type) {
+    }
 
-  OperationImpl(std::string name, Type type) : Operation(name, type) {
-  }
-
-  // Get instance of this operation
-  virtual OperationInstance *getInstance() {
-    return new OI();
-  }
+    // Get instance of this operation
+    virtual OperationInstance *getInstance() {
+      return new OI();
+    }
 };
 
 /**
@@ -280,32 +290,34 @@ public:
  */
 
 class Generator : public OperationInstance {
-public:
-  /**
-   * Main function to overload. Here your define the custom operation.\n
-   * \param writer element to deliver output value pairs \n
-   */
+  public:
+    /**
+     * Main function to overload. Here your define the custom operation.\n
+     * \param writer element to deliver output value pairs \n
+     */
 
-  virtual void init(KVWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void init(KVWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                             // Called once before running any operation
+    // Called once before running any operation
 
-  // Called once to inform the generator about how many different generators will run in paralel in the cluster
-  virtual void setup(int worker, int num_workers, int process, int num_processes) {
-    if (worker == -1 || num_workers == -1 || process == -1 || num_processes == -1) {
-      return;
+    // Called once to inform the generator about how many different generators will run in paralel in the cluster
+    virtual void setup(int worker, int num_workers, int process, int num_processes) {
+      if (worker == -1 || num_workers == -1 || process == -1 || num_processes == -1) {
+        return;
+      }
     }
-  };
 
-  virtual void run(KVWriter *writer) = 0;
+    virtual void run(KVWriter *writer) = 0;
 
-  virtual void finish(KVWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void finish(KVWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                               // Called once after all operations are executed
+    // Called once after all operations are executed
 };
 
 /**
@@ -319,26 +331,27 @@ public:
  */
 
 class Map : public OperationInstance {
-public:
-  /**
-   * Main function to overload by the operation
-   */
+  public:
+    /**
+     * Main function to overload by the operation
+     */
 
-  virtual void init(KVWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void init(KVWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once before running any operation
+    // Called once before running any operation
 
-  virtual void run(KVSetStruct *inputs, KVWriter *writer) = 0;
+    virtual void run(KVSetStruct *inputs, KVWriter *writer) = 0;
 
-  virtual void finish(KVWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void finish(KVWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once after all operations are executed
+    // Called once after all operations are executed
 };
-
 
 /**
  *
@@ -351,24 +364,26 @@ public:
  */
 
 class ParserOut : public OperationInstance {
-public:
-  /**
-   * Main function to overload by the operation
-   */
+  public:
+    /**
+     * Main function to overload by the operation
+     */
 
-  virtual void init(TXTWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void init(TXTWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once before running any operation
+    // Called once before running any operation
 
-  virtual void run(KVSetStruct *inputs, TXTWriter *writer) = 0;
+    virtual void run(KVSetStruct *inputs, TXTWriter *writer) = 0;
 
-  virtual void finish(TXTWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void finish(TXTWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once after all operations are executed
+    // Called once after all operations are executed
 };
 
 /**
@@ -382,27 +397,27 @@ public:
  */
 
 class ParserOutReduce : public OperationInstance {
-public:
-  /**
-   * Main function to overload by the operation
-   */
+  public:
+    /**
+     * Main function to overload by the operation
+     */
 
-  virtual void init(TXTWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void init(TXTWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once before running any operation
+    // Called once before running any operation
 
-  virtual void run(KVSetStruct *inputs, TXTWriter *writer) = 0;
+    virtual void run(KVSetStruct *inputs, TXTWriter *writer) = 0;
 
-  virtual void finish(TXTWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void finish(TXTWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once after all operations are executed
+    // Called once after all operations are executed
 };
-
-
 
 /**
  *
@@ -416,26 +431,27 @@ public:
  */
 
 class Reduce : public OperationInstance {
-public:
-  /**
-   * Main function to overload by the map
-   */
+  public:
+    /**
+     * Main function to overload by the map
+     */
 
-  virtual void init(KVWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void init(KVWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once before running any operation
+    // Called once before running any operation
 
-  virtual void run(KVSetStruct *inputs, samson::KVWriter *writer) = 0;
+    virtual void run(KVSetStruct *inputs, samson::KVWriter *writer) = 0;
 
-  virtual void finish(KVWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void finish(KVWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once after all operations are executed
+    // Called once after all operations are executed
 };
-
 
 /**
  *
@@ -448,9 +464,8 @@ public:
  */
 
 class Script : public OperationInstance {
-  // NO operation by itself ( only txt added in code field )
+    // NO operation by itself ( only txt added in code field )
 };
-
 
 /**
  *
@@ -460,21 +475,22 @@ class Script : public OperationInstance {
  */
 
 class Parser : public OperationInstance {
-public:
-
-  virtual void init(KVWriter *writer) {
-    if (writer == NULL) {
-      return;
+  public:
+    virtual void init(KVWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once before running any operation
+    // Called once before running any operation
 
-  virtual void run(char *data, size_t length, samson::KVWriter *writer) = 0;
+    virtual void run(char *data, size_t length, samson::KVWriter *writer) = 0;
 
-  virtual void finish(KVWriter *writer) {
-    if (writer == NULL) {
-      return;
+    virtual void finish(KVWriter *writer) {
+      if (writer == NULL) {
+        return;
+      }
     }
-  };                                                                              // Called once after all operations are executed
+    // Called once after all operations are executed
 };
 
 /**
@@ -486,24 +502,23 @@ public:
  */
 
 class SplitterEmitter {
-public:
-  virtual void emit(char *data, size_t length) = 0;
-  virtual ~SplitterEmitter() {
-  }
+  public:
+    virtual void emit(char *data, size_t length) = 0;
+    virtual ~SplitterEmitter() {
+    }
 };
 
 class Splitter : public OperationInstance {
-public:
+  public:
+    virtual int split(char *inData, size_t inLength, bool finished, char **nextData, SplitterEmitter *emitter) = 0;
 
-  virtual int split(char *inData, size_t inLength, bool finished, char **nextData, SplitterEmitter *emitter) = 0;
+    // inData & inLength  --> Input buffer to be processed
+    // finish             --> Flag to indicate that this is the last call from this stream
 
-  // inData & inLength  --> Input buffer to be processed
-  // finish             --> Flag to indicate that this is the last call from this stream
+    // nextData           --> Rest of buffer not processed in this call
+    // emitter            --> Class used to emit data at the output
 
-  // nextData           --> Rest of buffer not processed in this call
-  // emitter            --> Class used to emit data at the output
-
-  // Return value : 0 OK , 1 Error ( buffer will be discarted )
+    // Return value : 0 OK , 1 Error ( buffer will be discarted )
 };
 }
 

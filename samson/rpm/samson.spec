@@ -66,8 +66,6 @@ chmod 755 $RPM_BUILD_ROOT/etc/profile.d/samson.sh
 echo "%%defattr(-, %{owner}, %{owner}, - )" > MANIFEST
 (cd %{buildroot}; find . -type f -or -type l | sed -e s/^.// -e /^$/d) >>MANIFEST
 cp MANIFEST /tmp
-echo "%%defattr(-, %{owner}, %{owner}, - )" > MANIFEST.samson-gui
-grep "samsonLevelMonitor\|samsonTopicMonitor\|delilah_graph\|samsonLocal" MANIFEST >> MANIFEST.samson-gui
 echo "%%defattr(-, %{owner}, %{owner}, - )" > MANIFEST.samson-devel
 grep "include\/\|lib\/\|samsonModule" MANIFEST >> MANIFEST.samson-devel
 echo "%%defattr(-, %{owner}, %{owner}, - )" > MANIFEST.samson-modules
@@ -109,15 +107,6 @@ Group: Applications/Engineering
 %description modules
 
 %files modules -f MANIFEST.samson-modules
-
-# QT based GUI tools
-%package gui
-Summary: GUI tools for the SAMSON Platform
-Group: Applications/Engineering
-Requires: %{name} = %{version}-%{release}, kdchart
-%description gui
-
-%files gui -f MANIFEST.%{name}-gui
 
 # logging server
 %package logserver

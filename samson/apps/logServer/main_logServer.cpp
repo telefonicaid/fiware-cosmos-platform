@@ -1,4 +1,18 @@
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <pwd.h>
+#include <signal.h>
+#include <netinet/in.h>
+#include <sys/mman.h>
+
 #include "parseArgs/parseArgs.h"
 
 #include "au/daemonize.h"

@@ -65,6 +65,7 @@ bool monitorization;
 char command[1024];
 
 char log_command[1024];
+char log_server[1024];
 unsigned short log_port;
 
 char host[1024];
@@ -79,6 +80,9 @@ PaArgument paArgs[] =
 {
   SAMSON_ARGS,
   { "-log",         log_command,                       "",                           PaString,
+    PaOpt,                          _i "",     PaNL,
+    PaNL,    "log server host"                          },
+  { "-log_server",  log_server,                        "",                           PaString,
     PaOpt,                          _i "",     PaNL,
     PaNL,    "log server host"                          },
   { "-user",             user,                           "",                           PaString,
@@ -236,10 +240,16 @@ int main(int argC, const char *argV[]) {
   paParse(paArgs, argC, (char **) argV, 1, true);
 
   // New log system
+  
+  std::string str_log_file = std::string(paLogDir) + "delilah.log";
+  std::string str_log_server =  log_server;
+  std::string str_log_server_file = std::string(paLogDir) + "delilah_" + log_server +  ".log";
+  
   au::log_central.Init( argV[0] );
-  au::log_central.evalCommand("log_to_file /var/log/samson/delilah.log");
-  au::log_central.evalCommand("log_to_server localhost /var/log/samson/delilah_server.log");
-  au::log_central.evalCommand(log_command); // Command provided in command line
+  au::log_central.evalCommand("log_to_file " + str_log_file);
+  if( str_log_server != "" )
+    au::log_central.evalCommand("log_to_server " + str_log_server + " " + str_log_server_file );
+  au::log_central.evalCommand(log_command);  // Command provided in command line
 
   AU_LM_M(("Delilah starting..."));
 
@@ -334,6 +344,10 @@ int main(int argC, const char *argV[]) {
 
     // Stopping network connections
     delilahConsole->stop();
+    
+    // Stopping the new log_central thread
+    au::log_central.Stop();
+    
     exit(0);
   }
 
@@ -412,6 +426,7 @@ int main(int argC, const char *argV[]) {
   // Run console
   delilahConsole->run();
 
+  
   return 0;
 }
 

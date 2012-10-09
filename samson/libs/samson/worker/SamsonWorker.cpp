@@ -766,6 +766,22 @@ void SamsonWorker::evalCommand(std::string command) {
 
   std::string main_command = cmdLine.get_argument(0);
 
+  au::ErrorManager error;
+  if (main_command == "log") {
+    
+    if( cmdLine.get_num_arguments() < 2 )
+    {
+      au::log_central.evalCommand("help" , error );
+    }
+    else
+      au::log_central.evalCommand( cmdLine.get_argument(1) , error );
+
+    // Write the output of the command
+    write( &error );
+    return;
+  }
+  
+  
   if (main_command == "quit") {
     quitConsole();
   }

@@ -60,8 +60,8 @@ int web_port;
 
 char zoo_host[1024];
 
-char log_file[1024];
-char log_host[1024];
+char log_command[1024];
+char log_server[1024];
 int log_port;
 bool thread_mode;
 
@@ -76,18 +76,13 @@ PaArgument paArgs[] =
 {
   SAMSON_ARGS,
   { "-zk",    zoo_host,      "",           PaString,      PaOpt,              _i "localhost:2181",
-    PaNL,
-    PaNL,
-    "Zookeeper server"                   },
-  { "-log_host",log_host,      "",           PaString,      PaOpt,              _i "localhost",
-    PaNL,
-    PaNL,     "log server host"                          },
-  { "-log_port",&log_port,     "",           PaInt,         PaOpt,              LOG_PORT,
-    0,
-    10000,    "log server port"                          },
-  { "-log_file",log_file,      "",           PaString,      PaOpt,              _i "",
-    PaNL,
-    PaNL,     "Local log file"                           },
+    PaNL,PaNL,"Zookeeper server"                   },
+  { "-log",   log_command,                       "",                           PaString,
+    PaOpt,                          _i "",     PaNL,
+    PaNL,    "log server host"                          },
+  { "-log_server",  log_server,                        "",                           PaString,
+    PaOpt,                          _i "",     PaNL,
+    PaNL,    "log server host"                          },
   { "-fg",    &fg,           "",           PaBool,        PaOpt,              false,
     false,
     true,
@@ -228,9 +223,18 @@ int main(int argC, const char *argV[]) {
 
   // New log system
   au::log_central.Init( argV[0] );
-  au::log_central.evalCommand("log_to_file /var/log/samson/samsonWorker.log");
-  au::log_central.evalCommand("log_to_server localhost /var/log/samson/samsonWorker_server.log");
 
+  std::string str_log_file = std::string(paLogDir) + "samsonWorker.log";
+  std::string str_log_server =  log_server;
+  std::string str_log_server_file = std::string(paLogDir) + "samsonWorker_" + log_server +  ".log";
+  
+  au::log_central.Init( argV[0] );
+  au::log_central.evalCommand("log_to_file " + str_log_file);
+  if( str_log_server != "" )
+    au::log_central.evalCommand("log_to_server " + str_log_server + " " + str_log_server_file );
+  au::log_central.evalCommand(log_command);  // Command provided in command line
+  
+  
   //au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid());
 
   // Exampe of the new log system

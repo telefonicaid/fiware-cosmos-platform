@@ -12,8 +12,8 @@
  *
  */
 
-#include "au/log/LogToServer.h"
-#include "au/log/log_server_common.h"
+#include "au/log/LogCentral.h"
+#include "au/log/LogCommon.h"
 #include "gtest/gtest.h"
 #include "logMsg/logMsg.h"
 #include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
@@ -55,7 +55,6 @@ int main(int argC, char **argV) {
   paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
   paConfig("screen line format",            (void *)"TYPE@TIME  EXEC: TEXT");
   paConfig("default value", "-logDir",      (void *)"/var/log/samson");
-
   paConfig("man author",                    "Samson team");
 
 
@@ -67,9 +66,6 @@ int main(int argC, char **argV) {
     paParse(paArgs, 1, (char **)argV, 1, false);  // Set assert flag to true ro force asserts instead of exits
   }
   lmAssertAtExit = true;
-
-  // Start login to server ( this avoids warning )
-  au::start_log_to_server("localhost", AU_LOG_SERVER_PORT, "/tmp/samson_unitTest");
 
   // Run all tests
   ::testing::InitGoogleTest(&argC, argV);

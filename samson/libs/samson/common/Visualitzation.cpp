@@ -1,15 +1,16 @@
+#include "samson/common/Visualitzation.h"
 
 #include <fnmatch.h>
 
-#include "Visualitzation.h"
+#include <string>
 
 namespace samson {
-bool match(std::string pattern, std::string name) {
+bool match(const std::string& pattern, const std::string& name) {
   if (pattern == "*") {
     return true;
   }
 
-  return( ::fnmatch(pattern.c_str(), name.c_str(), FNM_PATHNAME) == 0 );
+  return (::fnmatch(pattern.c_str(), name.c_str(), FNM_PATHNAME) == 0);
 }
 
 void Visualization::set_flag(const std::string& name, bool value) {
@@ -22,7 +23,7 @@ void Visualization::set_flag(const std::string& name, bool value) {
 
 bool Visualization::get_flag(const std::string& name) const {
   // Be robust agains omitting "-" in request
-  if (( name.length() > 0 ) && (name[0] != '-' )) {
+  if ((name.length() > 0) && (name[0] != '-')) {
     return get_flag("-" + name);
   }
 
@@ -44,6 +45,10 @@ void Visualization::set_pattern(const std::string& pattern) {
 
 const std::string& Visualization::pattern() const {
   return pattern_;
+}
+
+bool Visualization::match(const std::string& value) const {
+  return (::fnmatch(pattern_.c_str(), value.c_str(), FNM_PATHNAME) == 0);
 }
 
 const au::Environment& Visualization::environment() {

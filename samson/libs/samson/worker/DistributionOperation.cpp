@@ -1,15 +1,14 @@
+#include "samson/worker/DistributionOperation.h"  // Own interface
 
-
+#include <vector>
 
 #include "samson/stream/BlockManager.h"
 #include "samson/worker/SamsonWorker.h"
 
-#include "DistributionOperation.h"  // Own interface
-
 namespace samson {
 DistributionOperation::DistributionOperation(SamsonWorker *samson_worker, size_t block_id) {
-  samson_worker_ = samson_worker;    // keep a pointer to samson worker
-  block_id_ = block_id;            // Keep the block_id
+  samson_worker_ = samson_worker;   // keep a pointer to samson worker
+  block_id_ = block_id;   // Keep the block_id
 
   // First review to include necessary workers
   Review();
@@ -19,7 +18,7 @@ void DistributionOperation::ConfirmWorker(size_t worker_id) {
   if (worker_ids_.contains(worker_id)) {
     confirmed_worker_ids_.insert(worker_id);
   } else {
-    LM_W(("Worker %lu confirmed on block %lu. It was not a selected worker...", worker_id, block_id_ ));
+    LM_W(("Worker %lu confirmed on block %lu. It was not a selected worker...", worker_id, block_id_));
   }
 }
 
@@ -32,7 +31,7 @@ void DistributionOperation::Review() {
   }
 
   // Recover block
-  stream::BlockPointer block = stream::BlockManager::shared()->getBlock(block_id_);
+  stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id_);
   if (block == NULL) {
     worker_ids_.clear();   // This block does no exist any more, just do not distribute
     return;
@@ -66,29 +65,12 @@ void DistributionOperation::fill(gpb::CollectionRecord *record, const Visualizat
 }
 
 bool DistributionOperation::IsReady() {
-  std::set<size_t>::iterator it;    // Check all slected workers have a copy...
+  std::set<size_t>::iterator it;   // Check all selected workers have a copy...
   for (it = worker_ids_.begin(); it != worker_ids_.end(); it++) {
     if (!confirmed_worker_ids_.contains(*it)) {
       return false;
     }
   }
   return true;
-}
-
-// ---------
-
-BlockRequest::BlockRequest(SamsonWorker *samson_worker, size_t block_id, size_t worker_id) {
-  samson_worker_ = samson_worker;
-  block_id_ = block_id;
-  worker_id_ = worker_id;
-
-
-  // Send packet to selected worker
-  PacketPointer packet(new Packet(Message::BlockRequest));
-  packet->message->set_block_id(block_id_);
-  packet->to = NodeIdentifier(WorkerNode, worker_id_);
-
-  // Send packet
-  samson_worker_->network()->Send(packet);
 }
 }

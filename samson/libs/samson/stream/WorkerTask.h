@@ -1,15 +1,13 @@
 #ifndef _H_SAMSON_QUEUE_TASK
 #define _H_SAMSON_QUEUE_TASK
 
-#include <set>
 #include <set>                            // std::set
 #include <sstream>
+#include <string>
 
 #include "au/S.h"
 #include "au/string.h"                    // au::Format
-
 #include "engine/ProcessItem.h"           // engine::ProcessItem
-
 #include "samson/common/MessagesOperations.h"
 #include "samson/isolated/ProcessIsolated.h"
 #include "samson/stream/Block.h"          // samson::Stream::Block
@@ -22,110 +20,97 @@ class SamsonWorker;
 namespace stream {
 class Block;
 
+/*
+ 
+ WorkerTask : Main class fot all the tasks based on third party operations
+ 
+ */
 
-// Base class for all the stream tasks ( parser , map , reduce , parseOut )
-class WorkerTask : public ::samson::ProcessIsolated, public WorkerTaskBase {
-public:
+class WorkerTask : public ::samson::ProcessIsolated {
+  public:
+    // Constructor
+    WorkerTask(SamsonWorker *samson_worker, size_t id, const gpb::StreamOperation& stream_operation,
+               Operation *operation, KVRange range);
 
-  // Constructor
-  WorkerTask(SamsonWorker *samson_worker
-             , size_t id
-             , const gpb::StreamOperation& stream_operation
-             , Operation *operation
-             , KVRange range);
+    ~WorkerTask();
 
-  ~WorkerTask();
+    // Virtual methods of samson::ProcessIsolated
+    virtual void initProcessIsolated();
+    virtual void generateKeyValues(samson::ProcessWriter *writer);
+    virtual void generateTXT(TXTWriter *writer);
 
-  // Virtual methods of samson::ProcessIsolated
-  virtual void initProcessIsolated();
-  virtual void generateKeyValues(samson::ProcessWriter *writer);
-  virtual void generateTXT(TXTWriter *writer);
-  virtual void processOutputBuffer(engine::BufferPointer buffer, int output, int hg_division, bool finish);
-  virtual void processOutputTXTBuffer(engine::BufferPointer buffer, bool finish);
+    // Method to process output buffer ( in Engine main thread )
+    void processOutputBuffers();
 
+    // Commit command to use when this operation finish
+    std::string commit_command();
 
-  // Commit command to use when this operation finish
-  std::string commit_command();
+    // Get information of the current process
+    std::string getStatus();
 
-  // Get information of the current process
-  std::string getStatus();
+    // Check status
+    const au::ErrorManager& error();
 
-  // Finish methids
-  void set_finished();
-  void set_finished_with_error(const std::string& error_message);
+    // Virtual methods from WorkerTaskBase
+    virtual std::string str();
 
-  // Check status
-  const au::ErrorManager& error();
-  bool is_finished();
+  private:
+    // Specific function to execute map, reduce, parser operations
+    void generateKeyValues_parser(samson::ProcessWriter *writer);
+    void generateKeyValues_map(samson::ProcessWriter *writer);
+    void generateKeyValues_reduce(samson::ProcessWriter *writer);
 
-  // Virtual methods from WorkerTaskBase
-  virtual std::string str();
-  virtual void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
-  virtual size_t waiting_time_seconds(){ return ProcessItem::waiting_time_seconds();}
-  virtual size_t running_time_seconds(){ return ProcessItem::running_time_seconds();}
+    // Information about the operation to run
+    gpb::StreamOperation *stream_operation_;
 
-  
-private:
+    // Operation to be used here ( form ModulesManager )
+    Operation *operation_;
 
-  // Specific function to execute map, reduce, parser operations
-  void generateKeyValues_parser(samson::ProcessWriter *writer);
-  void generateKeyValues_map(samson::ProcessWriter *writer);
-  void generateKeyValues_reduce(samson::ProcessWriter *writer);
+    // Range to apply this operation
+    KVRange range_;
 
-  // Information about the operation to run
-  gpb::StreamOperation *stream_operation_;
+    // Error container if something happen suring execution
+    au::ErrorManager error_;
 
-  // Operation to be used here ( form ModulesManager )
-  Operation *operation_;
-
-  // Range to apply this operation
-  KVRange range_;
-
-  // Falg to indicate that this operation is finished
-  bool finished_;
-
-  // Error container if something happen suring execution
-  au::ErrorManager error_;
-
-  // Pointer to samson worker to create new blocks
-  SamsonWorker *samson_worker_;
+    // Pointer to samson worker to create new blocks
+    SamsonWorker *samson_worker_;
 };
 
+// Handy class to generate traces for operations
+// Andreu: To be removed since it adds more complecity to undestand everything.
 
 class OperationTraces {
-  std::string name;
-  au::Cronometer cronometer;
-  size_t input_size;
+    std::string name;
+    au::Cronometer cronometer;
+    size_t input_size;
 
-public:
-
-  OperationTraces(std::string _name, size_t _input_size) {
-    name = _name;
-    input_size = _input_size;
-    LM_T(LmtIsolatedOperations, ("%s starts with input %s", name.c_str(), au::str(input_size, "B").c_str()));
-  }
-
-  ~OperationTraces() {
-    size_t time = cronometer.seconds();
-    double rate = 0;
-
-    if (time > 0) {
-      rate = input_size / time;
+  public:
+    OperationTraces(std::string _name, size_t _input_size) {
+      name = _name;
+      input_size = _input_size;
+      LM_T(LmtIsolatedOperations, ("%s starts with input %s", name.c_str(), au::str(input_size, "B").c_str()));
     }
 
-    LM_T(LmtIsolatedOperations, ("%s ( input size %s ) finish atfer %s. Aprox rate %s"
-                                 , name.c_str()
-                                 , au::str(input_size, "B").c_str()
-                                 , au::S(cronometer).str().c_str()
-                                 , au::str(rate, "B/s").c_str()
-                                 ));
-  }
+    ~OperationTraces() {
+      size_t time = cronometer.seconds();
+      double rate = 0;
 
-  void trace_block(size_t block_size) {
-    LM_T(LmtIsolatedOperations,
-         ("%s running a block of %s. Time since start %s", name.c_str(),
-          au::str(block_size, "B").c_str(), au::S(cronometer).str().c_str()));
-  }
+      if (time > 0) {
+        rate = input_size / time;
+      }
+
+      LM_T(LmtIsolatedOperations, ("%s ( input size %s ) finish atfer %s. Aprox rate %s"
+              , name.c_str()
+              , au::str(input_size, "B").c_str()
+              , au::S(cronometer).str().c_str()
+              , au::str(rate, "B/s").c_str()));
+    }
+
+    void trace_block(size_t block_size) {
+      LM_T(LmtIsolatedOperations,
+          ("%s running a block of %s. Time since start %s", name.c_str(),
+              au::str(block_size, "B").c_str(), au::S(cronometer).str().c_str()));
+    }
 };
 }
 }

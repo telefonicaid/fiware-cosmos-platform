@@ -384,7 +384,7 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
       output << std::endl;
     }
 
-    output << "\t\t\tadd( operation ); // Add this operation to the module\n";
+    output << "\t\t\tadd( operation );   // Add this operation to the module\n";
     output << "\t\t}\n";
   }
 
@@ -394,7 +394,7 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
 
   output << "\n";
 
-  output << "\t}; // end of class\n";
+  output << "\t};   // end of class\n";
 
   output << "\n";
 

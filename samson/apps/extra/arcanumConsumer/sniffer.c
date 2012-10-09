@@ -336,7 +336,7 @@ void bufPush(char* buf, int size)
 
             int* iP = (int*) savedBuffer;
             V1(("saved: 0x%x 0x%x 0x%x 0x%x", iP[0], iP[1], iP[2], iP[3]));
-            return; // read more ...
+            return;   // read more ...
         }
     }
 }

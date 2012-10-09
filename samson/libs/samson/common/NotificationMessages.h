@@ -1,4 +1,3 @@
-
 #ifndef _H_NotificationMessages
 #define _H_NotificationMessages
 
@@ -10,9 +9,7 @@
 
 #define notification_samson_worker_check_finish_tasks "notification_samson_worker_check_finish_tasks"
 
-
-#define notification_samson_worker_send_trace         "notification_samson_worker_send_trace"
-
+#define notification_samson_worker_send_message         "notification_samson_worker_send_message"
 
 #define notification_review_worker_command_manager    "notification_review_worker_command_manager"
 
@@ -26,14 +23,12 @@
 // Notification to recover state from files
 #define notification_recoverStateFromDisk             "notification_recoverStateFromDisk"
 
-
 // Notification to review repeat commands in delilha
 #define notification_delilah_review_repeat_tasks      "notification_delilah_review_repeat_tasks"
 
 // Notification to review push manager in the worker
 #define notification_worker_block_manager_review      "notification_worker_block_manager_review"
 
-#define notification_send_packet                      "notification_send_packet" // Notification to send a packet
-#define notification_packet_received                  "notification_packet_received" // Notification to receive a packet
-
+#define notification_send_packet                      "notification_send_packet"   // Notification to send a packet
+#define notification_packet_received                  "notification_packet_received"   // Notification to receive a packet
 #endif  // ifndef _H_NotificationMessages

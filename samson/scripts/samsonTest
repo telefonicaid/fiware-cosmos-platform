@@ -99,7 +99,7 @@ function execute_test
             cat  `basename $TEST_DELILAH_INIT`
         fi
         pushd  `dirname $TEST_DELILAH_INIT` > /dev/null
-        delilah ${SAMSON_LOG_LEVELS} -log_classic -log_port ${SAMSON_LOG_PORT_ENV}  -f `basename $TEST_DELILAH_INIT` ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} 2> `basename $TEST_DELILAH_INIT`.stderr > `basename $TEST_DELILAH_INIT`.stdout
+        delilah ${SAMSON_LOG_LEVELS} -f `basename $TEST_DELILAH_INIT` ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} 2> `basename $TEST_DELILAH_INIT`.stderr > `basename $TEST_DELILAH_INIT`.stdout
         if [ $? -ne 0 ]; then
             INIT_DELILAH_ERROR=1
         fi
@@ -124,7 +124,7 @@ function execute_test
         if [ $TEST_VERBOSE -eq 1 ]; then
             echo "Executing test command - ${TEST_COMMAND}"
         fi
-        delilah -log_classic ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "$TEST_COMMAND"  > $TEST_OUTPUT_COMPLETE 2>/dev/null
+        delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "$TEST_COMMAND"  > $TEST_OUTPUT_COMPLETE 2>/dev/null
         grep -v "^[MEWT]:" $TEST_OUTPUT_COMPLETE > $TEST_OUTPUT 2>/dev/null
     fi
 
@@ -148,7 +148,7 @@ function execute_test
             if [ $TEST_VERBOSE -eq 1 ]; then
                 echo "Executing - ${command}"
             fi
-            delilah -log_classic -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "${command}"  >> $TEST_OUTPUT_COMPLETE 2>/dev/null
+            delilah ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -command "${command}"  >> $TEST_OUTPUT_COMPLETE 2>/dev/null
         done
         grep -v "^[MEWT]:" $TEST_OUTPUT_COMPLETE > $TEST_OUTPUT 2>/dev/null
     fi

@@ -1,8 +1,9 @@
-
 #ifndef _H_MESSAGES_OPERATIONS
 #define _H_MESSAGES_OPERATIONS
 
 #include <fnmatch.h>
+#include <map>
+#include <string>
 
 #include "au/containers/map.h"
 #include "au/containers/SharedPointer.h"
@@ -10,11 +11,9 @@
 #include "samson/common/samson.pb.h"    // network::
 #include "samson/common/Visualitzation.h"
 #include "samson/module/KVFormat.h"     // KVFormat
-
 namespace samson {
-bool filterName(const std::string& name, const std::string& begin, const std::string& end);
 
-template <typename C>
+template<typename C>
 void add(samson::gpb::CollectionRecord *record, std::string name, C _value, std::string format) {
   std::ostringstream value;
 
@@ -26,7 +25,7 @@ void add(samson::gpb::CollectionRecord *record, std::string name, C _value, std:
   item->set_format(format);
 }
 
-template <typename C>
+template<typename C>
 void add(samson::gpb::CollectionRecord *record, std::string name, C _value) {
   std::ostringstream value;
 
@@ -37,25 +36,25 @@ void add(samson::gpb::CollectionRecord *record, std::string name, C _value) {
   item->set_value(value.str());
 }
 
-template <typename C>
+template<typename C>
 bool name_match(const char *pattern, C _value) {
   std::ostringstream value;
 
   value << _value;
 
-  return ( ::fnmatch(pattern, value.str().c_str(), 0) == 0);
+  return (::fnmatch(pattern, value.str().c_str(), 0) == 0);
 }
 
 // Get a collection from a map
-template <typename K, typename V>
-au::SharedPointer<gpb::Collection>getCollectionForMap(const std::string& title,
-                                     std::map<K, V *>& m, const Visualization& visualization) {
+template<typename K, typename V>
+au::SharedPointer<gpb::Collection> GetCollectionForMap(const std::string& title, std::map<K, V *>& m,
+                                                       const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name(title);
 
-  typename std::map<K, V * >::iterator iter;
+  typename std::map<K, V *>::iterator iter;
 
-  for (iter = m.begin(); iter != m.end(); iter++) {
+  for (iter = m.begin(); iter != m.end(); ++iter) {
     // Get pointer to the instance
     V *v = iter->second;
 

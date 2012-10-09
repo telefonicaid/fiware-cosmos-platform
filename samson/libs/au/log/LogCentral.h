@@ -1,99 +1,135 @@
-#ifndef _H_AU_LOG_CENTRAL
-#define _H_AU_LOG_CENTRAL
 
-#include <arpa/inet.h>          // inet_ntoa
-#include <netdb.h>              // gethostbyname
-#include <netinet/in.h>         // struct sockaddr_in
-#include <netinet/tcp.h>        // TCP_NODELAY
-#include <signal.h>
-#include <sys/socket.h>         // socket, bind, listen
-#include <sys/un.h>             // sockaddr_un
-#include <unistd.h>
+#ifndef _H_AU_MAIN_LOG_CENTRAL
+#define _H_AU_MAIN_LOG_CENTRAL
 
-#include "logMsg/logMsg.h"
-#include "logMsg/traceLevels.h"
-#include "parseArgs/paBuiltin.h"
-#include "parseArgs/paConfig.h"
-#include "parseArgs/paIsSet.h"
-#include "parseArgs/parseArgs.h"
+#include <set>
 
-#include "au/containers/SharedPointer.h"
-#include "au/containers/set.h"
-#include "au/mutex/Token.h"
-#include "au/mutex/TokenTaker.h"
-#include "au/network/SocketConnection.h"
-#include "au/string.h"
-
-#include "au/log/Log.h"
-#include "au/log/LogPlugin.h"
-#include "log_server_common.h"
+#include "au/console/CommandCatalogue.h"
+#include "au/log/LogChannelFilter.h"
+#include "au/log/LogChannels.h"
+#include "au/log/LogDispatcher.h"
+#include "au/network/FileDescriptor.h"
+#include "au/Singleton.h"
+#include "au/ThreadManager.h"
 
 namespace au {
+
+class Log;
+class LogPluginScreen;
+class LogPluginFile;
+class LogPluginServer;
+
+void* run_LogCentral(void* p);
+
+//
 class LogCentral {
-public:
 
-  LogCentral(std::string _host, int _port, std::string _local_file);
-  ~LogCentral();
+  public:
 
-  // In direct mode, we just try to send traces ( not reconnection, no blocking )
-  void SetDirectMode(bool flag);
+    LogCentral();
 
-  // Change the host and port
-  void SetLogServer(std::string log_host, int log_port = AU_LOG_SERVER_PORT);
+    // Init log system
+    void Init(std::string exec = "Unknown");
 
-  // Write log
-  void Write(au::SharedPointer<Log> log);
+    // Emit a log thougth the pipe
+    void Emit(Log* log);
 
-  // Plugins
-  void AddPlugin(LogPlugin *p);
-  void RemovePlugin(LogPlugin *p);
+    // Console interface for this element
+    void evalCommand(std::string command);
+    void evalCommand(std::string command, au::ErrorManager& error);
 
-  // Accesors
-  std::string host() const;
-  int port() const;
-  std::string local_file() const;
-  int getFd() const;
+    // Accessors
+    inline LogChannels& log_channels();
 
-private:
+    // Add and remove plugins to the system
+    void AddPlugin(const std::string& name, LogPlugin *p);
 
-  void write_to_server_or_file(au::SharedPointer<Log> log);
-  void write_to_plugins(au::SharedPointer<Log> log);
+    inline bool CheckLogChannel(int c) {
+      return main_log_channel_filter_.IsChannelActivated(c);
+    }
 
-  void close_socket_connection();
-  void close_local_file();
+    inline LogChannelFilter& main_log_channel_filter() {
+      return main_log_channel_filter_;
+    }
 
-  // Mutex to protect socket connection
-  au::Token token_;
+    void stop() {
+      marked_to_stop_ = true;
+      evalCommand("ping");
+    }
 
-  // Connection information
-  std::string host_;
-  int port_;
-  std::string local_file_;
+  private:
 
-  SocketConnection *socket_connection_;              // Socket connection with the logServer ( if any )
-  au::Cronometer time_since_last_connection_;        // Cronometer with the time since last connection
-  size_t time_reconnect_;                            // time for the next reconnection
+    // MAin function for the background thread
+    void run();
 
-  // Local file descriptor to write the log if not possible to connect
-  FileDescriptor *local_file_descriptor_;
+    // Channel registration
+    LogChannels log_channels_;
 
-  // List of plugins
-  au::Token token_plugins_;
-  au::set<LogPlugin> plugins_;
+    // Friend function to run in background
+    friend void* run_LogCentral(void* p);
 
-  // Current thread loging
-  au::Token token_current_thread_;
-  pthread_t current_thread_;
-  bool current_thread_activated_;
+    // Pipe and thread for the log process
+    pthread_t t_;
+    int fds_[2];
 
-  // Bool direct mode is a non-blocking no-multi-thread no-reconnection way to send logs
-  bool direct_mode_;
+    // File descriptor to emit logs
+    au::FileDescriptor *fd_write_logs_;
+    au::FileDescriptor *fd_read_logs_;
 
-  // Current fd we are using
-  int fd_;
+    // Fix plugins
+    LogPluginScreen* screen_plugin_;
+    LogPluginFile* file_plugin_;
+    LogPluginServer* server_plugin_;
+
+    // Name of the main executalbe
+    std::string exec_;
+
+    // Set of Plugins for logs
+    au::map<std::string, LogPlugin> plugins_;
+
+    // Main elements to emit or not logs
+    LogChannelFilter main_log_channel_filter_;
+
+    volatile bool marked_to_stop_;
+
 };
+
+extern LogCentral log_central;
+
+class LogCentralCatalogue : public au::console::CommandCatalogue {
+  public:
+
+    // Constructor with commands definitions
+    LogCentralCatalogue() {
+      add("screen", "general", "Mofify log to screen setup");
+      add_mandatory_string_argument("screen", "command", "on/off activate or deactivate screen log");
+      add_string_argument("screen", "format", AU_LOG_DEFAULT_FORMAT, "Format of logs on screen");
+
+      add("file", "general", "Mofify log to file setup");
+      add_mandatory_string_argument("file", "command", "on/off activate or deactivate file log");
+      add_string_argument("file", "file", "", "File to store logs");
+
+      // test
+      add("ping", "general", "Force the logCentral to receive and process a message");
+
+      // Show information
+      add("show_fields", "general", "Show available fields for logs");
+      add("show_plugins", "general", "Show current plugins for logs");
+
+      // Add and remove channels for logging
+      add("add", "general", "Add a channel to generate logs");
+      add_mandatory_string_argument("add", "pattern", "Name (or pattern) of log channels");
+
+      add("remove", "general", "Remove a channel to generate logs");
+      add_mandatory_string_argument("remove", "pattern", "Name (or pattern) of log channels");
+
+      add("verbose", "general", "Add verbose channel to generate logs");
+      add("verbose2", "general", "Add verbose-level-2 channel to generate logs");
+      add("verbose3", "general", "Add verbose-level-3 channel to generate logs");
+
+    }
+};
+
 }
 
-#endif  // ifndef _H_AU_LOG_CENTRAL
-
-
+#endif

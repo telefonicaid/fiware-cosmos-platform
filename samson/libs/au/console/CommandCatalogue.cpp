@@ -719,7 +719,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   tokenizer.addSingleCharTokens(" \t\n");
   token::TokenVector token_vector = tokenizer.parse(command_line);
 
-  // Get component eliminating spaces ( literals are placed toguether )
+  // Get component eliminating spaces ( literals are placed together )
   std::vector<std::string> components;
   while (!token_vector.eof()) {
     token::Token *token = token_vector.popToken();
@@ -747,7 +747,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   int pos_argument = 0;      // Position of the argument we are parsing
 
   for (size_t i = 1; i < components.size(); i++) {
-    // Check if we are at the begining of a -option element
+    // Check if we are at the beginning of a -option element
     if (components[i].length() > 0) {
       if (components[i][0] == '-') {
         std::string option_name = components[i];

@@ -57,3 +57,9 @@ reduce process
 	out c4.Board c4.Message	     # Output messages
 	out c4.Board c4.Info	
 }
+
+map filter_solved
+{
+	in  c4.Board c4.Info
+	out c4.Board system.Void
+}

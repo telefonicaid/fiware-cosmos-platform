@@ -1,19 +1,15 @@
-
-#include "DelilahCommandCatalogue.h"
-
+#include "samson/delilah/DelilahCommandCatalogue.h"
 
 namespace samson {
 DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // SETUP
   // ------------------------------------------------------------------
 
-  add("show_cluster_setup", "setup", "Show cluster setup"
-      , "Get information about workers currently connected to current ( number of cores, memory, etc... )\n"
-      );
+  add("show_cluster_setup", "setup", "Show cluster setup",
+      "Get information about workers currently connected to current ( number of cores, memory, etc... )\n");
 
   add("show_cluster_assignation", "setup", "Show cluster assignment",
-      "Get information about what hash-groups are assigned to what workers\n"
-      );
+      "Get information about what hash-groups are assigned to what workers\n");
 
   add("ls_connections", "management", "Show status of all connections in the cluster");
   add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
@@ -34,17 +30,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("alerts", "delilah", "Activate or deactivate showing alerts from SAMSON platform on console");
   add_string_options_argument("alerts", "action", "Options:on:off", "Command to activate or deactivate alerts");
 
-  add("local_logs", "delilah", "Activate or deactivate logs for this delilah");
-  add_string_options_argument("local_logs", "action", "Options:on:off");
-
-  add("set_log_server", "delilah", "Set log server for all workers");
-  add_string_argument("set_log_server", "host", "localhost", "host to send logs for current SAMSON cluster");
-
-  add("log", "delilah", "Show log generated at nodes of current SAMSON cluster");
-  add_string_argument("log", "pattern", "", "Pattern for logs to display");
-  add_string_option("log", "-type", "", "Select only a particular type of message ( M,W,E,X )");
-  add_string_option("log", "-file", "", "Select logs generated at a particular file");
-  add_int_option("log", "-lines", 0, "Number of lines to show");
+  add("log", "delilah", "Setup log in this delilah ( see more details about log system)");
+  add_mandatory_string_argument("log", "command", "Command for log setup");
 
   add("show_alerts", "delilah", "Show the last alerts received from current SAMSON cluster at this delilah");
 
@@ -61,25 +48,18 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("wverbose", "delilah", "Activate or deactivate verbose mode for workers",
       "verbose <0-5>   set level of verbosity\n"
-      "verbose off     disable verbose mode\n"
-      "verbose get     get level of verbosity\n"
-      );
+        "verbose off     disable verbose mode\n"
+        "verbose get     get level of verbosity\n");
 
-  add("wdebug", "delilah", "Activate or deactivate debug mode for workers",
-      "debug on\n"
-      "debug off\n"
-      "debug get\n"
-      );
+  add("wdebug", "delilah", "Activate or deactivate debug mode for workers", "debug on\n"
+    "debug off\n"
+    "debug get\n");
 
-  add("wreads", "delilah", "Activate or deactivate reads mode for workers.",
-      "reads on\n"
-      "reads off\n"
-      "reads get\n"
-      );
+  add("wreads", "delilah", "Activate or deactivate reads mode for workers.", "reads on\n"
+    "reads off\n"
+    "reads get\n");
 
-  add("wwrites", "delilah", "Activate or deactivate writes mode for workers",
-      "writes <on> <off> <get>"
-      );
+  add("wwrites", "delilah", "Activate or deactivate writes mode for workers", "writes <on> <off> <get>");
 
   add("wtrace", "delilah", "Activate or deactivate trace levels for workers.");
   add_string_options_argument("wtrace", "action", "Options::off:set:add:remove",
@@ -97,11 +77,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_string_argument("ps", "id", "", "Show more information for this process");
 
   add("set", "delilah", "Set environment variable in delilah client");
-  add_string_argument("set", "name",  "", "Name of the variable to set");
+  add_string_argument("set", "name", "", "Name of the variable to set");
   add_string_argument("set", "value", "", "Value to assign");
 
   add("unset", "delilah", "Remove an environment variable in delilah client");
-  add_string_argument("set", "name",  "", "Name of the variable to set");
+  add_string_argument("set", "name", "", "Name of the variable to set");
 
   add("set_mode", "delilah", "Select delilah working mode: normal, database, logs");
   add_string_options_argument("set_mode", "mode", "Options:normal:database:logs");
@@ -124,13 +104,14 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // ------------------------------------------------------------------
 
   add("ls", "data", "Show a list of all data queues in the system");
+  add_string_argument("ls", "pattern", "*", "Pattern of the queues to show");
   add_bool_option("ls", "-rates", "Show information about data rate in queues (data movement)");
   add_bool_option("ls", "-blocks", "Show information about blocks contained at each queue");
   add_bool_option("ls", "-properties", "Show information about properties at each queue");
   add_bool_option("ls", "-a", "Show hidden queues as well ( used internally by the platform )");
   add_string_option("ls", "-group", "", "Group results by a particular column");
 
-  add("add", "data",  "Create a new queue");
+  add("add", "data", "Create a new queue");
   add_mandatory_string_argument("add", "queue", "Name of the new queue");
   add_mandatory_string_argument("add", "key_format", "Format for the key's in new queue (txt is accepted)");
   add_string_argument("add", "value_format", "txt", "Format for the value's in new queue (txt is accepted)");
@@ -151,14 +132,13 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_mandatory_string_argument("unset_queue_property", "queue", "Queue to be updated");
   add_mandatory_string_argument("unset_queue_property", "property", "Name of the property we want to update");
 
-
   // Debug
   // ------------------------------------------------------------------
 
   add("threads", "debug", "Show current threads in this delilah");
 
   add("ls_blocks", "debug", "Show a list of data blocks managed by SAMSON nodes");
-  add_uint64_option("ls_blocks", "-w", (size_t)-1, "Specify a worker to request the list of blocks");
+  add_uint64_option("ls_blocks", "-w", (size_t) -1, "Specify a worker to request the list of blocks");
   add_tag("ls_blocks", "send_to_all_workers");
 
   add("ls_queue_blocks", "debug", "Show detailed list of the blocks included in every queue");
@@ -179,16 +159,19 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_last_tasks", "debug", "Show last 100 tasks scheduled in workers");
   add_tag("ls_last_tasks", "send_to_all_workers");
 
+  add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
+  add_mandatory_string_argument("ls_queue_ranges", "name", "Name of the queue we would like to scan");
+
   // MODULES
   // ------------------------------------------------------------------
 
 
   add("ls_modules", "modules", "Show a list of modules installed in SAMSON node workers");
   add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
-  
+
   add("ls_local_modules", "modules", "Show a list of modules installed available at this delilah");
 
-  add("ls_operations", "modules",  "Shows a list of available operations");
+  add("ls_operations", "modules", "Shows a list of available operations");
   add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
   add_bool_option("ls_operations", "-v", "Show more details about input/output parameters");
 
@@ -200,35 +183,34 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("clear_modules", "modules", "Remove all previously updated modules");
 
-
   // STREAM
   // ------------------------------------------------------------------
 
 
   add("ls_stream_operations", "stream", "Show a list of stream operations",
       "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
-      "They consist in applying a particular operation ( defined in a module ) to process data from\n"
-      "one or multiple input queues and send result to one or multiple output queues\n"
-      "Please, add new stream operations with add_stream_operations command");
+        "They consist in applying a particular operation ( defined in a module ) to process data from\n"
+        "one or multiple input queues and send result to one or multiple output queues\n"
+        "Please, add new stream operations with add_stream_operations command");
   add_bool_option("ls_stream_operations", "-a",
                   "Show hidden stream operations as well ( used internally by the platform )");
 
-  add("ps_stream_operations", "stream", "Show a list of stream operations with information about processes",
-      "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
-      "They consist in applying a particular operation ( defined in a module ) to process data from\n"
-      "one or multiple input queues and send result to one or multiple output queues\n"
-      "Please, add new stream operations with add_stream_operations command");
-  add_bool_option("ps_stream_operations", "-state", "Show planning state ( paused, error, ready for scheduling...)");
-  add_bool_option("ps_stream_operations", "-tasks", "Show tasks associated to stream_operations");
-  add_bool_option("ps_stream_operations", "-properties", "Information about properties of each stream operation");
-  add_bool_option("ps_stream_operations", "-data", "Show input and output data processed of each operation");
-  add_bool_option("ps_stream_operations", "-rates", "Show input and output data rates of each operation");
-  add_uint64_option("ps_stream_operations", "-w", (size_t)-1, "Selected worker");
-  add_tag("ps_stream_operations", "send_to_all_workers");
+  add("ps_stream_operations", "stream", "Show a list of stream operations with information about execution planning");
+
+  add("ps_stream_operations_ranges", "stream",
+      "Show a list of stream operations with information about running processes");
+  add_bool_option("ps_stream_operations_ranges", "-state",
+                  "Show planning state ( paused, error, ready for scheduling...)");
+  add_bool_option("ps_stream_operations_ranges", "-tasks", "Show tasks associated to stream_operations");
+  add_bool_option("ps_stream_operations_ranges", "-properties", "Information about properties of each stream opertion");
+  add_bool_option("ps_stream_operations_ranges", "-data", "Show input and output data processed of each operation");
+  add_bool_option("ps_stream_operations_ranges", "-rates", "Show input and output data rates of each operation");
+  add_uint64_option("ps_stream_operations_ranges", "-w", (size_t) -1, "Selected worker");
+  add_tag("ps_stream_operations_ranges", "send_to_all_workers");
 
   add("add_stream_operation", "stream", "Add a new stream operation to the current SAMSON cluster",
       "A stream operation is an operation that is automatically executed to transform data read from one queue\n"
-      "and store produced data in another set of queues\n");
+        "and store produced data in another set of queues\n");
   add_mandatory_string_argument("add_stream_operation", "name", "Name of the new stream operation");
   add_mandatory_string_argument("add_stream_operation", "operation", "Name of the operation to run");
 
@@ -238,7 +220,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("add_stream_operation", "-forward", "Forward reduce operations are scheduled. ( No state )");
   add_bool_option("add_stream_operation", "-update_only", "Only update state for keys with new input values");
 
-  add("remove_stream_operation", "stream", "Remove a previously defined operation with add_stream_operation" );
+  add("remove_stream_operation", "stream", "Remove a previously defined operation with add_stream_operation");
   add_mandatory_string_argument("remove_stream_operation", "name", "Name of the stream operations to remove");
 
   add("remove_all_stream_operations", "stream", "Remove all stream operations");
@@ -248,11 +230,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("cancel_stream_operation", "stream", "Cancel of  execution of a particular stream operation");
   add_string_option("cancel_stream_operation", "name", "", "Name of the stream operation to be canceled");
 
-
   add("set_stream_operation_property", "stream",
       "Set value of an environment property associated to a stream operation (see add_stream_operation)",
       "set_stream_operation_property <stream_operation_name> <variable_name> <value>");
-  add_mandatory_string_argument("set_stream_operation_property", "operation_name", "Name of the affected stream operation");
+  add_mandatory_string_argument("set_stream_operation_property", "operation_name",
+                                "Name of the affected stream operation");
   add_mandatory_string_argument("set_stream_operation_property", "variable_name", "Name of the variable");
   add_mandatory_string_argument("set_stream_operation_property", "value", "Value of the variable");
 
@@ -260,7 +242,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
       "Remove an environment property associated to a stream operation (see add_stream_operation)",
       "unset_stream_operation_property <stream_operation_name> <variable_name>");
 
-  add_mandatory_string_argument("unset_stream_operation_property", "operation_name", "Name of the affected stream operation");
+  add_mandatory_string_argument("unset_stream_operation_property", "operation_name",
+                                "Name of the affected stream operation");
   add_mandatory_string_argument("unset_stream_operation_property", "variable_name", "Name of the variable");
 
   add("add_queue_connection", "stream", "Connect a queue to other queues to duplicate data automatically");
@@ -276,7 +259,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ls_queue_connections", "-a", "Show hidden items as well ( used internally by the platform )");
 
   add("ps_tasks", "stream", "Get a list of current stream tasks currently running in all workers");
-  add_uint64_option("ps_tasks", "-w", (size_t)-1, "Specify worker to request list of tasks");
+  add_uint64_option("ps_tasks", "-w", (size_t) -1, "Specify worker to request list of tasks");
   add_bool_option("ps_tasks", "-data", "Get detailed information of input/output data");
   add_bool_option("ps_tasks", "-blocks", "Get detailed information of input/output blocks");
   add_tag("ps_tasks", "send_to_all_workers");
@@ -286,25 +269,15 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ls_workers", "-disk", "Show details about underlying engines at worker nodes");
   add_tag("ls_workers", "send_to_all_workers");
 
-  add("init_stream", "stream",
-      "Execute am initialization script to setup some automatic stream operations",
+  add("init_stream", "stream", "Execute am initialization script to setup some automatic stream operations",
       "init_stream [prefix] <script_name>\n"
-      "          [prefix]         It is used to name operations and queues\n"
-      "          <script_name>    Name of the script (e.g. module.script)\n"
-      );
+        "          [prefix]         It is used to name operations and queues\n"
+        "          <script_name>    Name of the script (e.g. module.script)\n");
 
+  add("ps_workers", "stream", "Show a list of commands being executed in each node of the cluster",
+      "ps_workers <command pattern>\n");
 
-  add("ps_workers", "stream",
-      "Show a list of commands being executed in each node of the cluster",
-      "ps_workers <command pattern>\n"
-      );
-
-
-  add("defrag", "stream",
-      "Defrag content of a particular queue",
-      "defrag <queue> <destination_queue>\n"
-      );
-
+  add("defrag", "stream", "Defrag content of a particular queue", "defrag <queue> <destination_queue>\n");
 
   // BATCH
 
@@ -314,10 +287,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_string_option("run", "-output", "", "Output queues to push data to");
 
   add("ls_batch_operations", "batch", "Show a list of current batch operations scheduled");
-  add_bool_option("ls_batch_operations" , "-input", "Show real input pending to be process");
-  add_bool_option("ls_batch_operations" , "-output", "Show output produces batch operations");
+  add_bool_option("ls_batch_operations", "-input", "Show real input pending to be process");
+  add_bool_option("ls_batch_operations", "-output", "Show output produces batch operations");
 
-  add("clear_batch_operations" , "batch" , "Clear finished batch operations" );
+  add("clear_batch_operations", "batch", "Clear finished batch operations");
+  add_bool_option("clear_batch_operations", "-a", "Clear also unfinished tasks");
 
   // PUSH&POP
   // ------------------------------------------------------------------
@@ -344,10 +318,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
       "Disconnects from a particular queue to not receive live data from a SAMSON cluster");
   add_mandatory_string_argument("disconnect_from_queue", "queue", "Source queue ( see ls command )");
 
-  add("ls_pop_connections", "push&pop"
-      , "Show a list of connections to receive live data from SAMSON."
-      , "ls_pop_connections");
-
+  add("ls_pop_connections", "push&pop", "Show a list of connections to receive live data from SAMSON.",
+      "ls_pop_connections");
 
   add("show_local_queue", "push&pop", "Show contents of a local queue downloaded using pop",
       "Note: Modules should be installed locally");

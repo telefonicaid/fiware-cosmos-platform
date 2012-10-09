@@ -1,7 +1,4 @@
 
-
-
-
 #ifndef SAMSON_VISUALITZATION_H
 #define SAMSON_VISUALITZATION_H
 
@@ -17,41 +14,43 @@
  *
  */
 
-#include "au/Environment.h"
-#include "logMsg/logMsg.h"
+
 #include <set>
 #include <string>
+
+#include "au/Environment.h"
+#include "logMsg/logMsg.h"
 
 namespace samson {
 // All informaiton required for visualitzation
 
 class Visualization {
-  std::set<std::string> flags_activated_;
-  std::set<std::string> flags_not_activated_;
+    std::set<std::string> flags_activated_;
+    std::set<std::string> flags_not_activated_;
 
-  std::string pattern_;
+    std::string pattern_;
 
-  // Environemnt properties
-  au::Environment environment_;
+    // Environemnt properties
+    au::Environment environment_;
 
-public:
+  public:
+    Visualization() {
+      pattern_ = "*";   // Default pattern
+    }
 
-  Visualization() {
-    pattern_ = "*";   // Default pattern
-  }
+    bool match(const std::string& value) const;
 
-  void set_flag(const std::string& name, bool value);
-  bool get_flag(const std::string& name) const;
+    void set_flag(const std::string& name, bool value);
+    bool get_flag(const std::string& name) const;
 
-  void set_pattern(const std::string& pattern);
-  const std::string& pattern() const;
+    void set_pattern(const std::string& pattern);
+    const std::string& pattern() const;
 
-  const au::Environment& environment();
+    const au::Environment& environment();
 };
 
 // Simplified match
-bool match(std::string pattern, std::string name);
+bool match(const std::string& pattern, const std::string& name);
 }
-
 
 #endif  // ifndef SAMSON_VISUALITZATION_H

@@ -1,10 +1,12 @@
+#include "au/tables/Table.h"  // Own interface
 
-#include "Select.h"
 #include <algorithm>
+#include <map>
+#include <string>
+#include <vector>
 
+#include "au/tables/Select.h"
 #include "au/xml.h"
-
-#include "Table.h"  // Own interface
 
 /*
  * #define AU_TABLE_H        "-"
@@ -32,7 +34,6 @@
 #define AU_TABLE_X_VL      "|" // Vertical left
 #define AU_TABLE_X         "+" // Full cross
 
-
 /*
  * #define AU_TABLE_H         "━"
  * #define AU_TABLE_V         "┃"
@@ -46,7 +47,6 @@
  * #define AU_TABLE_X_VL      "┫" // Vertical left
  * #define AU_TABLE_X         "╋" // Full cross
  */
-
 
 namespace au {
 namespace tables {
@@ -114,10 +114,9 @@ int TableCell::compare(std::string v1, std::string v2, TableColumnFormat format)
     case format_time:
     case format_timestamp:
     case format_double:
-    case format_percentadge:
-    {
-      double _v1 = strtof(v1.c_str(), (char **)NULL);
-      double _v2 = strtof(v2.c_str(), (char **)NULL);
+    case format_percentadge: {
+      double _v1 = strtof(v1.c_str(), (char **) NULL);
+      double _v2 = strtof(v2.c_str(), (char **) NULL);
 
       if (_v1 < _v2) {
         return -1;
@@ -125,17 +124,18 @@ int TableCell::compare(std::string v1, std::string v2, TableColumnFormat format)
         return 1;
       } else {
         return 0;
-      } break;
+      }
+      break;
     }
-    case format_string:
-    {
+    case format_string: {
       if (v1 < v2) {
         return -1;
       } else if (v1 > v2) {
         return 1;
       } else {
         return 0;
-      } break;
+      }
+      break;
     }
   }
 
@@ -143,7 +143,7 @@ int TableCell::compare(std::string v1, std::string v2, TableColumnFormat format)
 }
 
 int TableCell::compare(TableCell *cell, TableColumnFormat format) {
-  if (values.size() !=  cell->values.size()) {
+  if (values.size() != cell->values.size()) {
     return values.size() - cell->values.size();
   }
 
@@ -172,7 +172,7 @@ TableRow::TableRow(Type _type) {
 TableRow::TableRow(StringVector _columns, StringVector _values) {
   type = normal;
   for (size_t i = 0; i < std::min(_columns.size(), _values.size()); i++) {
-    cells.insertInMap(_columns[i],  new TableCell(_values[i]));
+    cells.insertInMap(_columns[i], new TableCell(_values[i]));
   }
 }
 
@@ -180,7 +180,7 @@ TableRow::TableRow(TableRow *row) {
   // Keep type
   type = row->type;
 
-  au::map<std::string, TableCell >::iterator it_cells;
+  au::map<std::string, TableCell>::iterator it_cells;
   for (it_cells = row->cells.begin(); it_cells != row->cells.end(); it_cells++) {
     std::string name = it_cells->first;
     cells.insertInMap(name, new TableCell(it_cells->second));
@@ -215,7 +215,7 @@ void TableRow::set(std::string name, std::string value) {
   if (cell) {
     delete cell;
   }
-  cells.insertInMap(name,  new TableCell(value));
+  cells.insertInMap(name, new TableCell(value));
 }
 
 void TableRow::set(std::string name, TableCell *cell) {
@@ -224,7 +224,7 @@ void TableRow::set(std::string name, TableCell *cell) {
   if (old_cell) {
     delete old_cell;
   }
-  cells.insertInMap(name,  cell);
+  cells.insertInMap(name, cell);
 }
 
 // Get a particular cell
@@ -275,15 +275,14 @@ std::string TableRow::str() {
 // ------------------------------------------------------------
 
 
-
 TableColumn::TableColumn(std::string _field_definition) {
   // Original field description
   field_definition = _field_definition;
 
-  left = false;                // By default no left alignment
-  format = format_string;      // By default string format
+  left = false;   // By default no left alignment
+  format = format_string;   // By default string format
 
-  group = sum;                 // Default criteria
+  group = sum;   // Default criteria
 
   std::vector<std::string> components;
   split(field_definition, ',', components);
@@ -304,31 +303,31 @@ TableColumn::TableColumn(std::string _field_definition) {
 
 void TableColumn::processModifier(std::string modifier) {
   // Single commands
-  if (( modifier == "l" ) || ( modifier == "left")) {
+  if ((modifier == "l") || (modifier == "left")) {
     left = true;
     return;
   }
 
-  if (( modifier == "sum" ) || ( modifier == "s")) {
+  if ((modifier == "sum") || (modifier == "s")) {
     group = sum;
     return;
   }
 
-  if (( modifier == "different" ) || ( modifier == "d")) {
+  if ((modifier == "different") || (modifier == "d")) {
     group = different;
     return;
   }
 
-  if (( modifier == "vector" ) || ( modifier == "v")) {
+  if ((modifier == "vector") || (modifier == "v")) {
     group = vector;
     return;
   }
 
-  if (( modifier == "max" )) {
+  if ((modifier == "max")) {
     group = max;
     return;
   }
-  if (( modifier == "min" )) {
+  if ((modifier == "min")) {
     group = min;
     return;
   }
@@ -340,7 +339,7 @@ void TableColumn::processModifier(std::string modifier) {
     return;
   }
 
-  if (((modifier_components[0] == "format" ) || (modifier_components[0] == "f" ))) {
+  if (((modifier_components[0] == "format") || (modifier_components[0] == "f"))) {
     std::string str_format = modifier_components[1];
 
     if (str_format == "string") {
@@ -355,9 +354,10 @@ void TableColumn::processModifier(std::string modifier) {
     if (str_format == "double") {
       format = format_double;
     }
-    if (str_format == "per") {
+    if ((str_format == "per") || str_format == "percentadge") {
       format = format_percentadge;
     }
+
     if (str_format == "time") {
       format = format_time;
     }
@@ -367,7 +367,7 @@ void TableColumn::processModifier(std::string modifier) {
     return;
   }
 
-  if (((modifier_components[0] == "title" ) || (modifier_components[0] == "t" ))) {
+  if (((modifier_components[0] == "title") || (modifier_components[0] == "t"))) {
     title = modifier_components[1];
     return;
   }
@@ -387,19 +387,26 @@ bool TableColumn::getLeft() {
 
 std::string TableColumn::simple_transform(std::string value) {
   switch (format) {
-    case format_string:       return value;
+    case format_string:
+      return value;
 
-    case format_uint:         return value;
+    case format_uint:
+      return value;
 
-    case format_uint64:       return au::str((size_t)strtoll(value.c_str(), (char **)NULL, 10));
+    case format_uint64:
+      return au::str((size_t) strtoll(value.c_str(), (char **) NULL, 10));
 
-    case format_double:       return au::str(strtof(value.c_str(), (char **)NULL));
+    case format_double:
+      return au::str(strtof(value.c_str(), (char **) NULL));
 
-    case format_time:         return au::str_time(strtoll(value.c_str(), (char **)NULL, 10));
+    case format_time:
+      return au::str_time(strtoll(value.c_str(), (char **) NULL, 10));
 
-    case format_timestamp:    return au::str_timestamp(strtoll(value.c_str(), (char **)NULL, 10));
+    case format_timestamp:
+      return au::str_timestamp(strtoll(value.c_str(), (char **) NULL, 10));
 
-    case format_percentadge:  return au::str_percentage(atof(value.c_str()));
+    case format_percentadge:
+      return au::str_percentage(atof(value.c_str()));
   }
 
   return "<ERROR>";
@@ -415,8 +422,7 @@ std::string TableColumn::transform(StringVector& values) {
   }
 
   switch (group) {
-    case vector:
-    {
+    case vector: {
       std::ostringstream output;
       output << "[ ";
       for (size_t i = 0; i < values.size(); i++) {
@@ -426,8 +432,7 @@ std::string TableColumn::transform(StringVector& values) {
       return output.str();
     }
 
-    case different:
-    {
+    case different: {
       values.RemoveDuplicated();
       if (values.size() == 1) {
         return values[0];
@@ -446,20 +451,17 @@ std::string TableColumn::transform(StringVector& values) {
       return output.str();
     }
 
-    case min:
-    {
+    case min: {
       sort(values);
       return simple_transform(values[values.size() - 1]);
     }
 
-    case max:
-    {
+    case max: {
       sort(values);
       return simple_transform(values[0]);
     }
 
-    case min_max:
-    {
+    case min_max: {
       std::string min = simple_transform(values[values.size() - 1]);
       std::string max = simple_transform(values[0]);
       return au::str("[ %s - %s ]", min.c_str(), max.c_str());
@@ -473,10 +475,10 @@ std::string TableColumn::transform(StringVector& values) {
 }
 
 void TableColumn::sort(StringVector& values) {
-  if (( format == format_uint ) || ( format == format_uint64 ) || ( format == format_time )) {
+  if ((format == format_uint) || (format == format_uint64) || (format == format_time)) {
     std::vector<size_t> _values;
     for (size_t i = 0; i < values.size(); i++) {
-      _values.push_back(strtoll(values[i].c_str(), (char **)NULL, 10));
+      _values.push_back(strtoll(values[i].c_str(), (char **) NULL, 10));
     }
     std::sort(_values.begin(), _values.end());
 
@@ -486,10 +488,10 @@ void TableColumn::sort(StringVector& values) {
     }
   }
 
-  if (( format == format_double ) || ( format == format_percentadge )) {
+  if ((format == format_double) || (format == format_percentadge)) {
     std::vector<double> _values;
     for (size_t i = 0; i < values.size(); i++) {
-      _values.push_back(strtof(values[i].c_str(), (char **)NULL));
+      _values.push_back(strtof(values[i].c_str(), (char **) NULL));
     }
     std::sort(_values.begin(), _values.end());
 
@@ -501,18 +503,18 @@ void TableColumn::sort(StringVector& values) {
 }
 
 std::string TableColumn::str_sum(StringVector& values) {
-  if (( format == format_uint64 ) || ( format == format_time )) {
+  if ((format == format_uint64) || (format == format_time)) {
     size_t total = 0;
     for (size_t i = 0; i < values.size(); i++) {
-      total += strtoll(values[i].c_str(), (char **)NULL, 10);
+      total += strtoll(values[i].c_str(), (char **) NULL, 10);
     }
     return simple_transform(au::str("%lu", total));
   }
 
-  if (( format == format_double ) || ( format == format_percentadge )) {
+  if ((format == format_double) || (format == format_percentadge)) {
     size_t total = 0;
     for (size_t i = 0; i < values.size(); i++) {
-      total += strtof(values[i].c_str(), (char **)NULL);
+      total += strtof(values[i].c_str(), (char **) NULL);
     }
     return simple_transform(au::str(total));
   }
@@ -558,7 +560,7 @@ Table::~Table() {
 }
 
 std::string Table::getValue(size_t r, size_t c) {
-  if (( r == (size_t)-1) || ( c == (size_t)-1)) {
+  if ((r == (size_t) -1) || (c == (size_t) -1)) {
     return "";
   }
 
@@ -590,7 +592,7 @@ size_t Table::getColumn(std::string title) {
     }
   }
 
-  return (size_t)-1;
+  return (size_t) -1;
 }
 
 std::string Table::getColumn(size_t pos) {
@@ -623,19 +625,17 @@ std::string Table::str() {
 
   std::vector<size_t> column_width;
   for (size_t c = 0; c < columns.size(); c++) {
-    size_t _column_width = std::max(getMaxWidthForColumn(c)
-                                    , columns[c]->getTitle().length()
-                                    );
+    size_t _column_width = std::max(getMaxWidthForColumn(c), columns[c]->getTitle().length());
     column_width.push_back(_column_width);
     title_length += _column_width;
   }
-  title_length += 3 * ( columns.size() - 1);
+  title_length += 3 * (columns.size() - 1);
 
   // Check enough space for the title length
   int pos = 0;
   while (title.length() > title_length) {
     column_width[pos++]++;
-    if (pos >= (int)column_width.size()) {
+    if (pos >= (int) column_width.size()) {
       pos = 0;
     }
     title_length++;
@@ -701,10 +701,9 @@ std::string Table::str_xml() {
 
   au::xml_open(output, "table");
 
-
   // Main title...
   if (title != "") {
-    au::xml_simple(output, "title",  title);  // For each record at the input, create an output
+    au::xml_simple_literal(output, "title", title);   // For each record at the input, create an output
   }
   for (size_t r = 0; r < rows.size(); r++) {
     // Skip separators
@@ -716,13 +715,13 @@ std::string Table::str_xml() {
     for (size_t c = 0; c < columns.size(); c++) {
       au::xml_open(output, "property");
 
-      au::xml_simple(output, "name", columns[c]->getTitle());
+      au::xml_simple_literal(output, "name", columns[c]->getTitle());
 
       // Get the formatted output
       std::string column = columns[c]->getName();
       std::string value = getValue(r, c);
 
-      au::xml_simple(output, "value", value);
+      au::xml_simple_literal(output, "value", value);
 
       au::xml_close(output, "property");
     }
@@ -742,7 +741,7 @@ std::string Table::str_json() {
 
   // Main title...
   if (title != "") {
-    output << "\"title\":\"" <<  title << "\",";  // For each record at the input, create an output
+    output << "\"title\":\"" << title << "\",";   // For each record at the input, create an output
   }
   output << "\"items\":[";
   for (size_t r = 0; r < rows.size(); r++) {
@@ -755,9 +754,9 @@ std::string Table::str_json() {
       std::string _title = columns[c]->getTitle();
       std::string column = columns[c]->getName();
       std::string _value = getValue(r, c);
-      output << "\"" << _title << "\":\"" <<  _value << "\"";
+      output << "\"" << _title << "\":\"" << _value << "\"";
 
-      if (c !=  ( columns.size() - 1 )) {
+      if (c != (columns.size() - 1)) {
         output << ",";
       }
     }
@@ -768,8 +767,8 @@ std::string Table::str_json() {
     }
   }
 
-  output << "]";     // End of items
-  output << "}";     // End of global map
+  output << "]";   // End of items
+  output << "}";   // End of global map
 
   return output.str();
 }
@@ -810,9 +809,8 @@ std::string Table::str_html() {
    */
 
   // Add style to the table
-  output <<
-  "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#table-5 tbody tr:hover td{color:#009;}</style>";
-
+  output
+      << "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#table-5 tbody tr:hover td{color:#009;}</style>";
 
   output << "<table id=\"table-5\">";
 
@@ -820,7 +818,7 @@ std::string Table::str_html() {
   if (title != "") {
     output << "<tr>";
     output << "<td colspan=\"" << columns.size() << "\">";
-    output <<  "<h1>" << title <<  "</h1>";
+    output << "<h1>" << title << "</h1>";
     output << "</td>";
     output << "</tr>";
   }
@@ -889,7 +887,6 @@ TableColumn *Table::getSelectColumn(std::string description) {
     }
   }
 
-
   // Create a new one
   return new TableColumn(description);
 }
@@ -906,13 +903,13 @@ Table *Table::selectTable(SelectTableInformation *select) {
   if (select->title != "") {
     table->title = select->title;
   } else {
-    table->title = title;  // Add all filtered rows
+    table->title = title;   // Add all filtered rows
   }
   size_t counter = 0;
   for (size_t r = 0; r < rows.size(); r++) {
     if (select->check(rows[r])) {
       if (rows[r]->getType() != TableRow::normal) {
-        continue;     // Skip separators and so...
+        continue;   // Skip separators and so...
       }
       // Duplicate row for the new table
       table->rows.push_back(new TableRow(rows[r]));
@@ -938,9 +935,8 @@ Table *Table::selectTable(SelectTableInformation *select) {
     while (row_begin < table->rows.size()) {
       // Determine the end of this group of rows
       size_t row_end = row_begin + 1;
-      while (( row_end < rows.size())
-             && ( table->rows[row_begin]->compare(table->rows[row_end], select->group_columns) == 0 ))
-      {
+      while ((row_end < rows.size()) && (table->rows[row_begin]->compare(table->rows[row_end], select->group_columns)
+          == 0)) {
         row_end++;
       }
 
@@ -976,9 +972,8 @@ Table *Table::selectTable(SelectTableInformation *select) {
     for (size_t i = 0; i < final_rows.size(); i++) {
       table->rows.push_back(final_rows[i]);
     }
-    final_rows.clear();     // Not delete instances
+    final_rows.clear();   // Not delete instances
   }
-
 
   // Sort
   if (select->sort_columns.size() > 0) {
@@ -996,11 +991,8 @@ std::string Table::str(SelectTableInformation *select) {
   return output;
 }
 
-std::string Table::strSortedGroupedAndfiltered(std::string title
-                                               , std::string group_field
-                                               , std::string sort_field
-                                               ,  std::string conditions
-                                               , size_t limit) {
+std::string Table::strSortedGroupedAndfiltered(std::string title, std::string group_field, std::string sort_field,
+                                               std::string conditions, size_t limit) {
   // Select all the columns
   SelectTableInformation select;
 
@@ -1024,11 +1016,8 @@ std::string Table::strSortedGroupedAndfiltered(std::string title
   return str(&select);
 }
 
-Table *Table::selectTable(std::string title
-                          , std::string group_field
-                          , std::string sort_field
-                          ,  std::string conditions
-                          , size_t limit) {
+Table *Table::selectTable(std::string title, std::string group_field, std::string sort_field, std::string conditions,
+                          size_t limit) {
   // Select all the columns
   SelectTableInformation select;
 
@@ -1059,10 +1048,10 @@ void Table::sort(StringVector &sort_columns) {
       int c = 0;
 
       int pos_sort_columns = 0;
-      while ((c == 0) && (pos_sort_columns < (int)sort_columns.size())) {
+      while ((c == 0) && (pos_sort_columns < (int) sort_columns.size())) {
         std::string column_name = sort_columns[pos_sort_columns];
         size_t column_id = getColumn(column_name);
-        if (column_id != (size_t)-1) {
+        if (column_id != (size_t) -1) {
           TableCell *cell1 = rows[r]->get(column_name);
           TableCell *cell2 = rows[rr]->get(column_name);
 
@@ -1117,7 +1106,7 @@ std::string Table::top_line(std::vector<size_t> &length) {
     }
 
     // Get the formatted output
-    if (c != ( length.size() - 1)) {
+    if (c != (length.size() - 1)) {
       output << AU_TABLE_H << AU_TABLE_H << AU_TABLE_H;
     }
   }
@@ -1138,7 +1127,7 @@ std::string Table::top_line2(std::vector<size_t> &length) {
     }
 
     // Get the formatted output
-    if (c != ( length.size() - 1)) {
+    if (c != (length.size() - 1)) {
       output << AU_TABLE_H << AU_TABLE_X_HD << AU_TABLE_H;
     }
   }
@@ -1159,7 +1148,7 @@ std::string Table::bottom_line(std::vector<size_t> &length) {
     }
 
     // Get the formatted output
-    if (c != ( length.size() - 1)) {
+    if (c != (length.size() - 1)) {
       output << AU_TABLE_H << AU_TABLE_X_HU << AU_TABLE_H;
     }
   }
@@ -1180,7 +1169,7 @@ std::string Table::line(std::vector<size_t> &length) {
     }
 
     // Get the formatted output
-    if (c != ( length.size() - 1)) {
+    if (c != (length.size() - 1)) {
       output << AU_TABLE_H << AU_TABLE_X << AU_TABLE_H;
     }
   }

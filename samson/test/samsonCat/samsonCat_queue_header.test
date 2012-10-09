@@ -1,15 +1,15 @@
 --NAME--
 samsonCat - queue_header
 --SHELL--
-delilah -log_classic  ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command remove_all
-delilah -log_classic  ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "push_module ${SAMSON_HOME}/modules/libsystem.so"
-delilah -log_classic  ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "push_module ${SAMSON_HOME}/modules/libtxt.so"
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command remove_all
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "push_module ${SAMSON_HOME}/modules/libsystem.so"
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "push_module ${SAMSON_HOME}/modules/libtxt.so"
 samsonPush -node ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} input < input.txt
-delilah -log_classic  ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "run txt.parser_words -input input -output words" 
-delilah -log_classic  ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "wait"
-delilah -log_classic  ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "run txt.word_count_accumulate -input 'words words_count' -output words_count" 
-delilah -log_classic  ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "wait"
-delilah -log_classic  ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "pop words_count /tmp/words_count_samsonCat_queue_header -force"
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "run txt.parser_words -input input -output words" 
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "wait"
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "run txt.word_count_accumulate -input 'words words_count' -output words_count" 
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "wait"
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "pop words_count /tmp/words_count_samsonCat_queue_header -force"
 ls -lrt /tmp/words_count_samsonCat_queue_header > /tmp/words_count_samsonCat_queue_header.info
 samsonCat -header /tmp/words_count_samsonCat_queue_header | sed 's/\(\[[0-9]* [0-9]*\]\)/[***** *****]/' | head -1
 --EXPECT--

@@ -27,7 +27,7 @@ if [ -z $ZOOKEEPER_PORT ]; then
   ZOOKEEPER_PORT=2181
 fi
 
-#SAMSON_LOG_LEVELS="-t 15,20,22,31,32,33,34,35,210"
+#SAMSON_LOG_LEVELS="-t 15,20,22,31,32,33,34,35,36,210"
 
 # Base directory for installation
 if [ -z $1 ];

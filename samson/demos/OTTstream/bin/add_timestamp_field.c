@@ -114,7 +114,7 @@ time_t GetTimeUTCFromCalendar(struct tm *tm)
     dst = 0;
 
   if (dst > seconds)
-    overflow++; // dst is always non-negative
+    overflow++;   // dst is always non-negative
   seconds -= dst;
 
   if (overflow)

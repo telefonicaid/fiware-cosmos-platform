@@ -30,7 +30,7 @@ struct KVInfo {
   bool canAppend(KVInfo other);
   void remove(uint32 _size, uint32 _kvs);
   void remove(KVInfo other);
-  std::string str();
+  std::string str() const;
   bool isEmpty();
   void getInfo(std::ostringstream& output);
 };

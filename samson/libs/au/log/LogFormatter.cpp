@@ -1,15 +1,20 @@
-
 #include "LogFormatter.h"  // Own interface
 #include "au/log/Log.h"
 
 namespace au {
 LogFormatter::LogFormatter(const std::string& definition) {
-  au::token::Tokenizer tokenizer;
+  set_format(definition);
+}
+
+void LogFormatter::set_format(const std::string& definition) {
 
   // Keep a copy of the definition string
   definition_ = definition;
 
-  // Att all reserved words
+  fields_.clear();   // Remove previous definition ( if any )
+
+  // Tokenize with reserved words
+  au::token::Tokenizer tokenizer;
   size_t i = 0;
   while (log_reseved_words[i] != NULL) {
     tokenizer.addToken(log_reseved_words[i++]);
@@ -25,7 +30,6 @@ LogFormatter::LogFormatter(const std::string& definition) {
     token = token_vector.getNextToken();
   }
 
-  LM_VV(("LogFormatter %s %lu fields", definition.c_str(), fields_.size()));
 }
 
 std::string LogFormatter::get(au::SharedPointer<Log> log) const {

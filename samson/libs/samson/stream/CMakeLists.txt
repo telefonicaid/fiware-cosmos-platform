@@ -2,29 +2,35 @@
 SET (HEADERS
 Block.h
 BlockInfo.h
+BlockRef.h
 BlockList.h
 BlockListContainer.h
 BlockLookupList.h
 BlockManager.h
-StreamOperationInfo.h
+StreamOperationGlobalInfo.h
+StreamOperationRangeInfo.h
 WorkerSystemTask.h
 WorkerTask.h
 WorkerTaskBase.h
 WorkerTaskManager.h
+BlockReaderCollection.h
 )
 
 SET (SOURCES
 Block.cpp
 BlockInfo.cpp
+BlockRef.cpp
 BlockList.cpp
 BlockListContainer.cpp
 BlockLookupList.cpp
 BlockManager.cpp
-StreamOperationInfo.cpp
+StreamOperationGlobalInfo.cpp
+StreamOperationRangeInfo.cpp
 WorkerSystemTask.cpp
 WorkerTask.cpp
 WorkerTaskBase.cpp
 WorkerTaskManager.cpp
+BlockReaderCollection.cpp
 )
 
 

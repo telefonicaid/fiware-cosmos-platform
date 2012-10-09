@@ -1,12 +1,17 @@
 #ifndef _H_BLOCK_LOOKUPLIST
 #define _H_BLOCK_LOOKUPLIST
 
+#include <set>
+
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-
+#include "au/containers/SharedPointer.h"
+#include "au/network/RESTServiceCommand.h"
 #include "au/containers/simple_map.h"                         // au::simple_map
-
 #include "engine/MemoryManager.h"
+#include "engine/DiskOperation.h"                   // engine::DiskOperation
+#include "engine/NotificationListener.h"            // engien::EngineListener
+#include "engine/ProcessItem.h"
 
 #include "samson/common/FullKVInfo.h"
 #include "samson/common/KVFile.h"
@@ -15,46 +20,47 @@
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
 
-#include "engine/DiskOperation.h"                   // engine::DiskOperation
-#include "engine/NotificationListener.h"            // engien::EngineListener
-
-#include "engine/ProcessItem.h"
-
 #include "samson/module/KVSetStruct.h"              // samson::KVSetStruct
-
-#include "BlockInfo.h"                              // struct BlockInfo
-
-#include <set>
+#include "samson/stream/BlockInfo.h"                              // struct BlockInfo
 
 namespace samson {
 namespace stream {
 class BlockList;
+class Block;
 
 typedef struct BlockLookupRecord {
-  char *keyP;
-  size_t keyS;
+    char *keyP;
+    size_t keyS;
 } BlockLookupRecord;
 
 typedef struct BlockHashLookupRecord {
-  size_t startIx;
-  size_t endIx;
+    size_t startIx;
+    size_t endIx;
 } BlockHashLookupRecord;
 
-class Block;
+/*
+
+ BlockLookupList
+
+ Lookup facility to locate "keys" in a block
+
+ */
+
 class BlockLookupList {
-  BlockLookupRecord *head;
-  size_t size;
-  BlockHashLookupRecord *hashInfo;
-  KVFormat kvFormat;
+  public:
+    au::ErrorManager error;
 
-public:
+    explicit BlockLookupList(Block *_block);
+    ~BlockLookupList();
 
-  au::ErrorManager error;
+    void lookup(const char *key, au::SharedPointer<au::network::RESTServiceCommand> command);
 
-  BlockLookupList(Block *_block);
-  ~BlockLookupList();
-
-  std::string lookup(const char *key, std::string outputFormat);
+  private:
+    BlockLookupRecord *head;
+    size_t size;
+    BlockHashLookupRecord *hashInfo;
+    KVFormat kvFormat;
+    size_t block_id_;
 };
 }
 }

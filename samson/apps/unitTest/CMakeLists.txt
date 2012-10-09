@@ -21,6 +21,7 @@ SET (SOURCES
 	# AU CONTAINERS LIBRARY
 	lib/au/containers/SharedPointerTest.cpp
 	lib/au/containers/DictionaryTest.cpp
+	lib/au/containers/GlobalDictionaryTest.cpp
 	lib/au/containers/QueueTest.cpp
 	lib/au/containers/BoxTest.cpp
 	lib/au/containers/StringVectorTest.cpp
@@ -65,6 +66,10 @@ SET (SOURCES
 	# SAMSON COMMON LIBRARY
 	lib/samson/common/SamsonSetupTest.cpp 
 	lib/samson/common/SamsonFileTest.cpp
+	lib/samson/common/KVInfoTest.cpp
+	lib/samson/common/FullKVInfoTest.cpp
+	lib/samson/common/KVRangeTest.cpp
+
 
 	# SAMSOM WORKER library
 	lib/samson/worker/SamsonWorkerTest.cpp
@@ -79,8 +84,6 @@ SET (SOURCES
 	#comscore library
 	comscore/comscore.cpp
 	
-	#common library
-	common/common_test.cpp
 
 	#delilah library
 	delilah/common_delilah_test.h

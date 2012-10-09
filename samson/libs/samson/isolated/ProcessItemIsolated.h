@@ -1,73 +1,68 @@
 #ifndef _H_PROCESS_ITEM_ISOLATED
 #define _H_PROCESS_ITEM_ISOLATED
 
-#include "SharedMemoryItem.h"                  // engine::SharedMemoryItem
-#include "engine/ProcessItem.h"
+#include <string>
+
 #include "engine/ProcessItem.h"                // samson::ProcessItem
+
 #include "samson/common/samson.pb.h"           // samson::network
+#include "samson/isolated/SharedMemoryItem.h"                  // engine::SharedMemoryItem
 #include "samson/module/OperationController.h"  // samson::Tracer
 #include "samson/module/Tracer.h"              // samson::Tracer
-
+#include "samson/stream/WorkerTaskBase.h"
 
 namespace samson {
-class ProcessItemIsolated : public engine::ProcessItem, public Tracer, public OperationController {
-  // Pipes used between two process
-  int pipeFdPair1[2];
-  int pipeFdPair2[2];
+class ProcessItemIsolated : public stream::WorkerTaskBase, public Tracer, public OperationController {
+  public:
+    // Constructor
+    ProcessItemIsolated(SamsonWorker* samson_worker, size_t worker_task_id, const std::string& operation,
+                        const std::string& concept);
 
-protected:
+    // Destructor ( free the shared memory segment used internally )
+    ~ProcessItemIsolated();
 
-  std::string processItemIsolated_description;
+    // Virtual methods of engine::ProcessItem
+    virtual void run();
 
-public:
+    // Function to be implemented ( running on a different process )
+    virtual void initProcessItemIsolated() = 0;
+    virtual void runIsolated() = 0;
+    virtual void finishProcessItemIsolated() = 0;
 
-  static bool isolated_process_as_tread;   // Static falg to execute background processes as threads ( not forks )
+    // Function executed at this process side when a code is sent from the background process
+    // The returned value is the code send to the isolated process back ( typically continue or kill )
+    virtual void runCode(int c) = 0;
 
-  // Virtual methods of engine::ProcessItem
-  virtual void run();
+    // Functions used inside runIsolated
+    void sendCode(int c);   // Send a code to the main process
+    void trace(LogLineData *logData);   // Send a trace to the main process ( to be removed with the new log system )
+    void reportProgress(double p);   // Report progress
+    void reportProgress(double p, std::string status);
+    void setUserError(std::string message);   // Set the error and finish the task
+    void sendMessageProcessPlatform(samson::gpb::MessageProcessPlatform *message);   // Generic function to send messages from process to platform
 
-  // Constructor
-  ProcessItemIsolated(std::string _description);
+    // Static flag to execute background processes as threads ( not forks )
+    static bool isolated_process_as_tread;
 
-  // Destructor ( free the shared memory segment used internally )
-  ~ProcessItemIsolated();
+  private:
+    // Internal function to be executed by a separate process or thread
+    void runBackgroundProcessRun();
 
-  // Function to be implemented ( running on a different process )
-  virtual void initProcessItemIsolated() = 0;
-  virtual void runIsolated() = 0;
-  virtual void finishProcessItemIsolated() = 0;
+    // Exchange messages from the main process
+    void runExchangeMessages();
 
-  // Function executed at this process side when a code is sent from the background process
-  // The returned value is the code send to the isolated process back ( contunue or kill )
-  virtual void runCode(int c) = 0;
+    // Process a message from the background process ( Return true if it necessary to finish )
+    bool processProcessPlatformMessage(samson::gpb::MessageProcessPlatform *message);
 
-  // Function used inside runIsolated to send a code to the main process
-  void sendCode(int c);
+    // Pipes used between two process
+    int pipeFdPair1[2];
+    int pipeFdPair2[2];
 
-  // Function used indide the runIsaled to send a trace to the main process
-  void trace(LogLineData *logData);
+    friend void *run_ProcessItemIsolated(void *p);
 
-  // Function used inside the runIsolated to send progress to the main process
-  void reportProgress(double p);
-  void reportProgress(double p, std::string status);
-
-  // Set the error and finish the task
-  void setUserError(std::string message);
-
-  // Generic function to send messages from process to platform
-  void sendMessageProcessPlatform(samson::gpb::MessageProcessPlatform *message);
-
-  // Internal function to be executed by a separate process or thread
-  void runBackgroundProcessRun();
-
-  // Process a message from the background process
-  // Return true if it necessary to finish
-  bool processProcessPlatformMessage(samson::gpb::MessageProcessPlatform *message);
-
-private:
-
-  void runExchangeMessages();
+    // Operation name for debugging
+    std::string operation_;
 };
-};
+}
 
 #endif  // ifndef _H_PROCESS_ITEM_ISOLATED

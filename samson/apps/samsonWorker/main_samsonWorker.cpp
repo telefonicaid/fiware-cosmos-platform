@@ -14,9 +14,7 @@
 #include <signal.h>
 #include <sys/socket.h>         // socket, bind, listen
 #include <sys/un.h>             // sockaddr_un
-
 #include <locale.h>             // setlocale
-
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 #include "parseArgs/paBuiltin.h"  // paLsHost, paLsPort
@@ -27,10 +25,9 @@
 #include "au/ThreadManager.h"
 #include "au/daemonize.h"
 #include "au/log/Log.h"
-#include "au/log/LogToServer.h"
-#include "au/log/log_server_common.h"
+#include "au/log/LogCommon.h"
+#include "au/log/LogCentral.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
-
 #include "engine/DiskManager.h"
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
@@ -53,6 +50,7 @@
  *
  * Option variables
  */
+
 SAMSON_ARG_VARS;
 
 bool fg;
@@ -64,10 +62,8 @@ char zoo_host[1024];
 
 char log_file[1024];
 char log_host[1024];
-bool log_classic;
 int log_port;
 bool thread_mode;
-
 
 #define LOG_PORT AU_LOG_SERVER_PORT
 
@@ -75,81 +71,68 @@ bool thread_mode;
  *
  * parse arguments
  */
-PaArgument paArgs[] =
-{
-  SAMSON_ARGS,
-  { "-zk",    zoo_host,      "",           PaString,      PaOpt,              _i "localhost:2181",
-    PaNL,
-    PaNL,
-    "Zookeeper server"                   },
-  { "-log_classic",&log_classic,  "",           PaBool,        PaOpt,              false,
-    false,
-    true,
-    "Classical log file"                 },
-  { "-log_host",log_host,      "",           PaString,      PaOpt,              _i "localhost",
-    PaNL,
-    PaNL,     "log server host"                          },
-  { "-log_port",&log_port,     "",           PaInt,         PaOpt,              LOG_PORT,
-    0,
-    10000,    "log server port"                          },
-  { "-log_file",log_file,      "",           PaString,      PaOpt,              _i "",
-    PaNL,
-    PaNL,     "Local log file"                           },
-  { "-fg",    &fg,           "",           PaBool,        PaOpt,              false,
-    false,
-    true,
-    "don't start as daemon"              },
-  { "-port",  &port,         "",           PaInt,         PaOpt,              SAMSON_WORKER_PORT,
-    1,
-    9999,
-    "Port to receive new connections"    },
-  { "-web_port",&web_port,     "",           PaInt,         PaOpt,              SAMSON_WORKER_WEB_PORT,
-    1,
-    9999,
-    "Port to receive web connections"    },
-  { "-valgrind",&valgrind,     "",           PaInt,         PaOpt,              0,
-    0,
-    20,
-    "help valgrind debug process"        },
-  { "-thread_mode",&thread_mode,  "",           PaBool,        PaOpt,              false,
-    false,
-    true,     "thread_mode"                              },
-  PA_END_OF_ARGS
+PaArgument paArgs[] = { SAMSON_ARGS, { "-zk", zoo_host, "", PaString, PaOpt, _i "localhost:2181",
+PaNL,
+PaNL,
+"Zookeeper server"},
+{"-log_host",log_host, "", PaString, PaOpt, _i "localhost",
+PaNL,
+PaNL, "log server host"},
+{"-log_port",&log_port, "", PaInt, PaOpt, LOG_PORT,
+0,
+10000, "log server port"},
+{"-log_file",log_file, "", PaString, PaOpt, _i "",
+PaNL,
+PaNL, "Local log file"},
+{"-fg", &fg, "", PaBool, PaOpt, false,
+false,
+true,
+"don't start as daemon"},
+{"-port", &port, "", PaInt, PaOpt, SAMSON_WORKER_PORT,
+1,
+9999,
+"Port to receive new connections"},
+{"-web_port",&web_port, "", PaInt, PaOpt, SAMSON_WORKER_WEB_PORT,
+1,
+9999,
+"Port to receive web connections"},
+{"-valgrind",&valgrind, "", PaInt, PaOpt, 0,
+0,
+20,
+"help valgrind debug process"},
+{"-thread_mode",&thread_mode, "", PaBool, PaOpt, false,
+false,
+true, "thread_mode"},
+PA_END_OF_ARGS
 };
-
-
 
 /* ****************************************************************************
  *
  * global variables
  */
-int logFd             = -1;
-samson::SamsonWorker *worker            = NULL;
-au::LockDebugger *lockDebugger      = NULL;
-engine::SharedMemoryManager *smManager         = NULL;
-
-
+int logFd = -1;
+samson::SamsonWorker *worker = NULL;
+au::LockDebugger *lockDebugger = NULL;
+engine::SharedMemoryManager *smManager = NULL;
 
 /* ****************************************************************************
  *
  * man texts -
  */
-static const char *manSynopsis         = " [OPTION]";
+static const char *manSynopsis = " [OPTION]";
 static const char *manShortDescription = "samsond is the main process in a SAMSON system.\n\n";
-static const char *manDescription      =
-  "\n"
+static const char *manDescription = "\n"
   "samsond is the main process in a SAMSON system. All the nodes in the cluster has its own samsonWorker process\n"
   "All samsond processes are responsible for processing a segment of available data"
   "All clients of the platform ( delila's ) are connected to all samsonWorkers in the system"
   "See samson documentation to get more information about how to get a SAMSON system up and running"
   "\n";
 
-static const char *manExitStatus    = "0      if OK\n 1-255  error\n";
-static const char *manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
+static const char *manExitStatus = "0      if OK\n 1-255  error\n";
+static const char *manAuthor = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
 static const char *manReportingBugs = "bugs to samson-dev@tid.es\n";
-static const char *manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
-static const char *manVersion       = SAMSON_VERSION;
-
+static const char *manCopyright = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
+static const char *manVersion = SAMSON_VERSION;
 
 // Andreu: All logs in signal handlers should be local.
 
@@ -199,45 +182,36 @@ bool find_flag(int argc, const char *argV[], const char *flag) {
 int main(int argC, const char *argV[]) {
   char *oldlocale = setlocale(LC_ALL, "C");
 
-  paConfig("builtin prefix",                    (void *)"SS_WORKER_");
-  paConfig("usage and exit on any warning",     (void *)true);
+  paConfig("builtin prefix", (void *) "SS_WORKER_");
+  paConfig("usage and exit on any warning", (void *) true);
 
   // Searh for this flag before using pa brary
   bool flag_fg = find_flag(argC, argV, "-fg");
 
   if (flag_fg) {
-    paConfig("log to screen",                 (void *)true);
+    paConfig("log to screen", (void *) true);
   } else {
-    paConfig("log to screen",
-             (void *)"only errors");
-  } paConfig("log file line format",
-             (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-  paConfig("screen line format",                (void *)"TYPE@TIME  EXEC: TEXT");
-  paConfig("default value", "-logDir",          (void *)"/var/log/samson");
-
-  // Searh for this flag before using pa brary
-  bool flag_log_classic = find_flag(argC, argV, "-log_classic");
-
-  if (flag_log_classic) {
-    paConfig("if hook active, no traces to file", (void *)false);
-    paConfig("log to file",                       (void *)true);
-  } else {
-    paConfig("if hook active, no traces to file", (void *)true);
+    paConfig("log to screen", (void *) "only errors");
   }
+  paConfig("log file line format", (void *) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("screen line format", (void *) "TYPE@TIME  EXEC: TEXT");
+  paConfig("default value", "-logDir", (void *) "/var/log/samson");
+  paConfig("if hook active, no traces to file", (void *) false);
+  paConfig("log to file", (void *) true);
+  paConfig("man synopsis", (void *) manSynopsis);
+  paConfig("man shortdescription", (void *) manShortDescription);
+  paConfig("man description", (void *) manDescription);
+  paConfig("man exitstatus", (void *) manExitStatus);
+  paConfig("man author", (void *) manAuthor);
+  paConfig("man reportingbugs", (void *) manReportingBugs);
+  paConfig("man copyright", (void *) manCopyright);
+  paConfig("man version", (void *) manVersion);
+  paConfig("screen line format", (void *) "TYPE: TEXT");
 
-  paConfig("man synopsis",                      (void *)manSynopsis);
-  paConfig("man shortdescription",              (void *)manShortDescription);
-  paConfig("man description",                   (void *)manDescription);
-  paConfig("man exitstatus",                    (void *)manExitStatus);
-  paConfig("man author",                        (void *)manAuthor);
-  paConfig("man reportingbugs",                 (void *)manReportingBugs);
-  paConfig("man copyright",                     (void *)manCopyright);
-  paConfig("man version",                       (void *)manVersion);
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
+  const char *extra = paIsSetSoGet(argC, (char **) argV, "-port");
+  paParse(paArgs, argC, (char **) argV, 1, false, extra);
 
-  const char *extra = paIsSetSoGet(argC, (char **)argV, "-port");
-  paParse(paArgs, argC, (char **)argV, 1, false, extra);
-
+  lmAux((char *) "father");
 
   // log level for zo library
   zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
@@ -248,19 +222,15 @@ int main(int argC, const char *argV[]) {
     samson::ProcessItemIsolated::isolated_process_as_tread = true;
   }
 
-  // New log system ( if flag log_classic is not activated )
-  if (!flag_log_classic) {
-    std::string local_log_file;
-    if (strlen(log_file) > 0) {
-      local_log_file = log_file;
-    } else {
-      local_log_file = au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid());
-    } au::start_log_to_server(
-      log_host, log_port,
-      local_log_file);
-  }
+  // New log system
+  au::log_central.Init(argV[0]);
+  au::log_central.evalCommand("screen on");
+  au::log_central.evalCommand("file on /var/log/samson/samsonWorker.log");
+  //au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid());
 
-  lmAux((char *)"father");
+  // Exampe of the new log system
+  AU_LM_M(("Worker running..."));
+  AU_LM_T( 0 , ("Worker running..."));
 
   LM_V(("Started with arguments:"));
   for (int ix = 0; ix < argC; ix++) {
@@ -277,7 +247,7 @@ int main(int argC, const char *argV[]) {
     LM_W(("SIGINT cannot be handled"));
   }
   if (signal(SIGTERM, captureSIGTERM) == SIG_ERR) {
-    LM_W(("SIGTERM cannot be handled"));  // Init basic setup stuff (necessary for memory check)
+    LM_W(("SIGTERM cannot be handled"));   // Init basic setup stuff (necessary for memory check)
   }
 
   // Set directories and load setup file
@@ -304,7 +274,7 @@ int main(int argC, const char *argV[]) {
   if (!file) {
     LM_X(1, ("Error opening file '%s' to store pid", pid_file_name));
   }
-  int pid = (int)getpid();
+  int pid = (int) getpid();
   if (fprintf(file, "%d", pid) == 0) {
     LM_X(1, ("Error writing pid %d to file %s", pid, pid_file_name));
   }
@@ -320,8 +290,8 @@ int main(int argC, const char *argV[]) {
 
   valgrindExit(5);
   LM_D(("engine::SharedMemoryManager::init"));
-  size_t shared_memory_size = au::Singleton<samson::SamsonSetup>::shared()->getUInt64(
-    "general.shared_memory_size_per_buffer");
+  size_t shared_memory_size =
+      au::Singleton<samson::SamsonSetup>::shared()->getUInt64("general.shared_memory_size_per_buffer");
   engine::SharedMemoryManager::init(num_processors, shared_memory_size);
 
   // Global init of engine
@@ -374,6 +344,11 @@ int main(int argC, const char *argV[]) {
 
   LM_T(LmtCleanup, ("Stopping network listener (worker at %p)", worker));
   worker->network()->stop();
+  LM_T(LmtCleanup, ("log_central marked to stop"));
+  AU_LM_M(("log_central stopping..."));
+
+  // Stopping the new log_central thread
+  au::log_central.stop();
 
   LM_T(LmtCleanup, ("Waiting for threads (worker at %p)", worker));
   au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");
@@ -408,9 +383,6 @@ int main(int argC, const char *argV[]) {
   LM_T(LmtCleanup, ("Calling lmCleanProgName"));
   lmCleanProgName();
   LM_T(LmtCleanup, ("Cleanup DONE"));
-
-  // Stop logging to server
-  au::stop_log_to_server();
 
   return 0;
 }

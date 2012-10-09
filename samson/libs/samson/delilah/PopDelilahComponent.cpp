@@ -248,9 +248,9 @@ void PopDelilahComponent::notify(engine::Notification *notification) {
   if (notification->isName(notification_disk_operation_request_response)) {
     num_pending_write_operations_--;
     check();
+  } else {
+    LM_W(("Unexpected notification %s", notification->name()));
   }
-
-  LM_W(("Unexpected notification %s", notification->name()));
 }
 
 void PopDelilahComponent::check() {

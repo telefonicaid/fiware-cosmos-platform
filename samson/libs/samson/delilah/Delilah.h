@@ -11,6 +11,8 @@
 
 #include <iostream>                          // std::cout
 #include <set>                               // std::set
+#include <string>
+#include <vector>
 
 #include "logMsg/logMsg.h"                   // lmInit, LM_*
 

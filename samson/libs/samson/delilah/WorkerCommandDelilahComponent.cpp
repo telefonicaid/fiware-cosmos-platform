@@ -30,7 +30,7 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   DelilahCommandCatalogue catalogue;
 
   au::ErrorManager error;
-  command_instance_ = catalogue.parse(command, &error);
+  command_instance_ = catalogue.parse(command, error);
 
   send_to_all_workers = command_instance_->command()->tag("send_to_all_workers");
 

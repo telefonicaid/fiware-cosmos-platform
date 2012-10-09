@@ -428,7 +428,17 @@ CommandItem *CommandCatalogue::add_option(const std::string& command_name
           , name.c_str(), command_name.c_str()));
     return NULL;
   }
-  CommandItem *item = new CommandItem(name, type, optional, help, default_value, min_value, max_value);
+  
+  // Robust for asking without "-"
+  std::string final_name;
+  if (( name.length() > 0 ) && ( name[0] != '-' )) {
+    final_name = "-" + name;
+  }
+  else
+    final_name = name;
+  
+  
+  CommandItem *item = new CommandItem(final_name, type, optional, help, default_value, min_value, max_value);
   c->add_option(item);
   return item;
 }
@@ -712,14 +722,14 @@ Command *CommandCatalogue::get_command(const std::string& name) {
   return NULL;
 }
 
-CommandInstance *CommandCatalogue::parse(const std::string command_line, au::ErrorManager *error) {
+CommandInstance *CommandCatalogue::parse(const std::string command_line, au::ErrorManager& error) {
   // Tokenize provided line
   token::Tokenizer tokenizer;
 
   tokenizer.addSingleCharTokens(" \t\n");
   token::TokenVector token_vector = tokenizer.parse(command_line);
 
-  // Get component eliminating spaces ( literals are placed together )
+  // Get component eliminating spaces ( literals are placed toguether )
   std::vector<std::string> components;
   while (!token_vector.eof()) {
     token::Token *token = token_vector.popToken();
@@ -730,7 +740,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
 
   // Analyse the line
   if (components.size() == 0) {
-    error->set("No provided command");
+    error.set("No provided command");
     return NULL;
   }
 
@@ -738,7 +748,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   std::string main_command = components[0];
   Command *command = get_command(main_command);
   if (!command) {
-    error->set(au::str("Command '%s' not found", main_command.c_str()));
+    error.set(au::str("Command '%s' not found", main_command.c_str()));
     return NULL;
   }
 
@@ -747,7 +757,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   int pos_argument = 0;      // Position of the argument we are parsing
 
   for (size_t i = 1; i < components.size(); i++) {
-    // Check if we are at the beginning of a -option element
+    // Check if we are at the begining of a -option element
     if (components[i].length() > 0) {
       if (components[i][0] == '-') {
         std::string option_name = components[i];
@@ -755,10 +765,10 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
         // Find option in the command
         CommandItem *item = command->get_option(option_name);
         if (!item) {
-          error->set(au::str("Option %s is not defined for command %s", option_name.c_str(),
+          error.set(au::str("Option %s is not defined for command %s", option_name.c_str(),
                              main_command.c_str()));
-          error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
-          error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
+          error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
+          error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
           delete command_instance;
           return NULL;
         } else {
@@ -767,10 +777,10 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
             continue;
           } else {
             if (i == (components.size() - 1)) {
-              error->set(au::str("No value provided for option %s in command %s"
+              error.set(au::str("No value provided for option %s in command %s"
                                  , option_name.c_str(), main_command.c_str()));
-              error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
-              error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
+              error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
+              error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
               delete command_instance;
               return NULL;
             } else {
@@ -778,10 +788,10 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
               i++;
 
               if (!item->isValidValue(value)) {
-                error->set(au::str("%s is not a valid value for option %s in command %s",
+                error.set(au::str("%s is not a valid value for option %s in command %s",
                                    value.c_str(), option_name.c_str(), main_command.c_str()));
-                error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
-                error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
+                error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
+                error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
                 delete command_instance;
                 return NULL;
               } else {
@@ -794,11 +804,11 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
       }      // A new argument is obtained
     }
     if (command->arguments().size() <= (size_t)pos_argument) {
-      error->set(au::str("Extra non-defined argument (%s) (args_size:%lu <= pos_argument:%d) provided for Command '%s'"
-                         , components[i].c_str(), command->arguments().size(), pos_argument
-                         , main_command.c_str()));
-      error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
-      error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
+      error.set(au::str("Extra non-defined argument (%s) provided for Command %s"
+                         , components[i].c_str()
+                         , main_command.c_str(), command->usage().c_str()));
+      error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
+      error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
       delete command_instance;
       return NULL;
     }
@@ -808,10 +818,10 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
     std::string value = components[i];
 
     if (!item->isValidValue(value)) {
-      error->set(au::str("%s is not a valid value for argument %s in command %s",
+      error.set(au::str("%s is not a valid value for argument %s in command %s",
                          value.c_str(), item->name().c_str(), main_command.c_str()));
-      error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
-      error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
+      error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
+      error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
       delete command_instance;
       return NULL;
     }
@@ -823,10 +833,10 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   for (size_t i = 0; i < command->options().size(); i++) {
     if (!command->options()[i]->optional()) {
       if (!command_instance->hasValueFor(command->options()[i]->name())) {
-        error->set(au::str("Missing mandatory option %s in command %s",
+        error.set(au::str("Missing mandatory option %s in command %s",
                            command->options()[i]->name().c_str(), main_command.c_str()));
-        error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
-        error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
+        error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
+        error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
         delete command_instance;
         return NULL;
       }
@@ -836,10 +846,10 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   for (size_t i = 0; i < command->arguments().size(); i++) {
     if (!command->arguments()[i]->optional()) {
       if (!command_instance->hasValueFor(command->arguments()[i]->name())) {
-        error->set(au::str("Missing mandatory argument %s in command %s",
+        error.set(au::str("Missing mandatory argument %s in command %s",
                            command->arguments()[i]->name().c_str(), main_command.c_str()));
-        error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
-        error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
+        error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
+        error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
         delete command_instance;
         return NULL;
       }

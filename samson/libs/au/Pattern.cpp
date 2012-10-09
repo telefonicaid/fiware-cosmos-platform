@@ -1,4 +1,5 @@
 
+#include <fnmatch.h>
 #include "Pattern.h" // Own interface
 
 namespace au {
@@ -17,12 +18,22 @@ namespace au {
     regfree(&preg);
   }
   
-  bool Pattern::match( const std::string& value )
+  bool Pattern::match( const std::string& value ) const
   {
     int c = regexec(&preg, value.c_str(), 0, NULL, 0);
     if (c == 0)
       return true;
     else
       return false;
+  }
+  
+  
+  SimplePattern::SimplePattern(const std::string& pattern) {
+    pattern_ = pattern;
+  }
+  
+  bool SimplePattern::match( const std::string& value ) const
+  {
+    return ( 0 == ::fnmatch( pattern_.c_str() , value.c_str() , 0 ) );
   }
 }

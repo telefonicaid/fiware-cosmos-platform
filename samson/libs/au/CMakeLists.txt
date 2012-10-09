@@ -30,10 +30,10 @@ SET( LOG_FILES
 log/LogMain.h
 log/LogCommon.h
 log/Log.h
+log/LogCounter.h
 log/LogChannelFilter.h
 log/LogChannels.h
 log/LogCentral.h
-log/LogDispatcher.h
 log/LogPlugin.h
 log/LogPluginServer.h
 log/LogPluginScreen.h
@@ -47,10 +47,10 @@ log/TableLogFormatter.h
 log/LogContainer.h
 
 log/Log.cpp
+log/LogCounter.cpp
 log/LogChannelFilter.cpp
 log/LogChannels.cpp
 log/LogCentral.cpp
-log/LogDispatcher.cpp
 log/LogPlugin.cpp
 log/LogPluginServer.cpp
 log/LogPluginScreen.cpp

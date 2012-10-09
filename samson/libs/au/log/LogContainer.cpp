@@ -1,6 +1,6 @@
 
 
-#include "LogContainer.h"  // Own interface
+#include "au/log/LogContainer.h"  // Own interface
 
 namespace au {
 LogContainer::LogContainer() : token_("LogContainer") {

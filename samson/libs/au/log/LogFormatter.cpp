@@ -1,4 +1,6 @@
-#include "LogFormatter.h"  // Own interface
+
+#include "au/log/LogFormatter.h"  // Own interface
+
 #include "au/log/Log.h"
 
 namespace au {
@@ -7,7 +9,6 @@ LogFormatter::LogFormatter(const std::string& definition) {
 }
 
 void LogFormatter::set_format(const std::string& definition) {
-
   // Keep a copy of the definition string
   definition_ = definition;
 
@@ -29,7 +30,6 @@ void LogFormatter::set_format(const std::string& definition) {
     token_vector.popToken();
     token = token_vector.getNextToken();
   }
-
 }
 
 std::string LogFormatter::get(au::SharedPointer<Log> log) const {

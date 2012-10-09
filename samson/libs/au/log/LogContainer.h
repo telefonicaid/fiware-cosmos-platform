@@ -10,14 +10,13 @@
 #include "au/Descriptors.h"
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
+#include "au/log/Log.h"
+#include "au/log/LogFile.h"
+#include "au/log/TableLogFormatter.h"
 #include "au/network/FileDescriptor.h"
 #include "au/network/Service.h"
 #include "au/string/split.h"
 #include "au/tables/Table.h"
-
-#include "au/log/Log.h"
-#include "au/log/LogFile.h"
-#include "au/log/TableLogFormatter.h"
 
 namespace au {
 class LogServer;

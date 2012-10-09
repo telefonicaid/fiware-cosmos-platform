@@ -15,6 +15,7 @@
 #define _H_AU_SOCKET_CONNECTION
 
 #include "au/Cronometer.h"
+#include "au/containers/SharedPointer.h"
 #include "au/Status.h"
 #include "au/mutex/Token.h"
 #include "au/network/FileDescriptor.h"
@@ -41,6 +42,9 @@ public:
   static Status Create(std::string host, int port,
                        SocketConnection **socket_connection);
 
+  // Secondary method to create a socket connection
+  static SharedPointer<SocketConnection> Create( const std::string& host , au::ErrorManager& error );
+  
   // Accesors
   std::string host();
   int port();

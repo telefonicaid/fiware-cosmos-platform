@@ -1,15 +1,18 @@
-#include "LogServerChannel.h"  // Own interface
+#include "au/log/LogServerChannel.h"  // Own interface
+
 #include <time.h>
-#define Char_to_int(x) ((x) - 48)
 
 #include "logMsg/logMsg.h"                 // LM_T
 #include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
-#include "au/gpb.h"
+
 #include "au/containers/vector.h"
+#include "au/gpb.h"
+
+#define Char_to_int(x) ((x) - 48)
 
 namespace au {
-LogServerChannel::LogServerChannel(int port, std::string _directory) :
-  network::Service(port), token("LogServerChannel") {
+LogServerChannel::LogServerChannel(int port, std::string _directory)
+  : network::Service(port), token("LogServerChannel") {
   directory = _directory;
 
   file_counter = 0;
@@ -42,7 +45,7 @@ void LogServerChannel::openFileDescriptor(au::ErrorManager *error) {
       struct stat buf;
       int s = stat(current_file_name.c_str(), &buf);
       if (s == 0) {
-        continue;   // File exist, so let's try the next number...
+        continue;             // File exist, so let's try the next number...
       }
       int _fd = open(current_file_name.c_str(), O_CREAT | O_WRONLY, 0644);
       LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
@@ -66,7 +69,7 @@ void LogServerChannel::openFileDescriptor(au::ErrorManager *error) {
 
 void LogServerChannel::initLogServerChannel(au::ErrorManager *error) {
   // Create directory
-  if ((mkdir(directory.c_str(), 0755) != 0) && (errno != EEXIST)) {
+  if (( mkdir(directory.c_str(), 0755) != 0 ) && ( errno != EEXIST )) {
     error->set(au::str("Error creating directory %s (%s)", directory.c_str(), strerror(errno)));
     return;
   }
@@ -86,47 +89,76 @@ void LogServerChannel::initLogServerChannel(au::ErrorManager *error) {
 }
 
 void LogServerChannel::run(au::SocketConnection *socket_connection, bool *quit) {
-
   // Read initial packet to understand if this is a log provider connection or a log prove connection
-  gpb::LogConnectionHello* hello;
-  au::Status s = readGPB(socket_connection->fd(), &hello, 10);   // 10 seconds timeout to read hello message
+  gpb::LogConnectionHello *hello;
+  au::Status s = readGPB(socket_connection->fd(), &hello, 10);  // 10 seconds timeout to read hello message
 
-  if (s != au::OK)
+  if (s != au::OK) {
+    LM_W(("Error reading hello message for incomming connection (%s)", au::status(s)));
     return;
+  }
 
-  if (hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogProve) {
+  if (hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogProbe) {
     // Prove connection
-    LogProveConnection log_prove_connection;
-    // TODO: Setup prove connection based on incomming hello message
-    log_connections_.insert(&log_prove_connection);
+    std::string filter;
+    if (hello->has_filter()) {
+      filter = hello->filter();
+    }
+
+    LogProveConnection log_prove_connection(filter);
+
+    {
+      au::TokenTaker tt(&token_log_connections_);
+      log_connections_.insert(&log_prove_connection);
+    }
 
     while (!*quit) {
       LogPointer log = log_prove_connection.Pop();
-      if (log != NULL)
-        log->Write(socket_connection);
-      else
-        usleep(100000);
 
-      if (socket_connection->IsClosed())
+      if (log != NULL) {
+        log->Write(socket_connection);
+      } else {
+        usleep(100000);
+      }
+
+      if (socket_connection->IsClosed()) {
+        {
+          au::TokenTaker tt(&token_log_connections_);
+          log_connections_.erase(&log_prove_connection);
+        }
         return;
+      }
     }
   }
+
 
   // Provider
   while (!*quit) {
     // Read a log
-    au::SharedPointer<Log> log(new Log());
+    au::SharedPointer<Log>log(new Log());
     if (!log->Read(socket_connection)) {
       LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
-      return;   // Not possible to read a log...
+      return;  // Not possible to read a log...
     }
 
-    std::string channel = au::str("%s_%s_%d", log->Get("EXEC").c_str(), socket_connection->host_and_port().c_str()
+    std::string channel = au::str("%s_%s_%d"
+                                  , log->Get("EXEC").c_str()
+                                  , socket_connection->host_and_port().c_str()
 
-    , log->log_data().pid);
+                                  , log->log_data().pid);
     // Additional information to the log
     log->Set("channel", channel);
-    log->Set("host", socket_connection->host_and_port());   // Additional information to the log
+    log->Set("host", socket_connection->host_and_port());  // Additional information to the log
+
+
+    // Push logs to probes
+    {
+      au::TokenTaker tt(&token_log_connections_);
+      std::set<LogProveConnection *>::iterator iterator;
+      for (iterator = log_connections_.begin(); iterator != log_connections_.end(); iterator++) {
+        (*iterator)->Push(log);
+      }
+    }
 
     // Add log...
     add(log);
@@ -149,7 +181,7 @@ void LogServerChannel::add(au::SharedPointer<Log> log) {
       fd->Close();
       delete fd;
       fd = NULL;
-    } // Open if necessary
+    }  // Open if necessary
   }
   if (!fd) {
     current_size = 0;
@@ -179,81 +211,82 @@ void LogServerChannel::addNewSession() {
 }
 
 class ChannelInfo {
-  public:
+public:
 
-    std::string name_;
+  std::string name_;
 
-    int logs_;   // Number of logs
-    size_t size_;   // Total size
+  int logs_;            // Number of logs
+  size_t size_;         // Total size
 
-    au::Descriptors descriptors_;
+  au::Descriptors descriptors_;
 
-    std::string time_;   // Most recent time stamp
+  std::string time_;       // Most recent time stamp
 
-    ChannelInfo(std::string name, au::SharedPointer<Log> log) {
-      name_ = name;
+  ChannelInfo(std::string name, au::SharedPointer<Log> log) {
+    name_ = name;
 
-      logs_ = 0;
-      size_ = 0;
+    logs_ = 0;
+    size_ = 0;
 
-      // First time
-      time_ = log->Get("date") + " " + log->Get("time");
+    // First time
+    time_ = log->Get("date") + " " + log->Get("time");
 
-      add_log(log);
+    add_log(log);
+  }
+
+  void add_log(au::SharedPointer<Log> log) {
+    logs_++;
+    size_ += log->SerialitzationSize();
+
+    std::string type = log->Get("TYPE");
+    if (type == "") {
+      type = "?";
     }
-
-    void add_log(au::SharedPointer<Log> log) {
-      logs_++;
-      size_ += log->SerialitzationSize();
-
-      std::string type = log->Get("TYPE");
-      if (type == "") {
-        type = "?";
-      }
-      descriptors_.Add(type);
-    }
+    descriptors_.Add(type);
+  }
 };
 
 class ChannelsInfo {
-    au::vector<ChannelInfo> channel_info;
+  au::vector<ChannelInfo> channel_info;
 
-  public:
+public:
 
-    void add_channel(std::string channel, au::SharedPointer<Log> log) {
-      for (size_t i = 0; i < channel_info.size(); i++) {
-        if (channel_info[i]->name_ == channel) {
-          channel_info[i]->add_log(log);
-          return;
-        }
+  void add_channel(std::string channel, au::SharedPointer<Log> log) {
+    for (size_t i = 0; i < channel_info.size(); i++) {
+      if (channel_info[i]->name_ == channel) {
+        channel_info[i]->add_log(log);
+        return;
       }
-      // Create a new one
-      ChannelInfo *_channel_info = new ChannelInfo(channel, log);
-      channel_info.push_back(_channel_info);
     }
+    // Create a new one
+    ChannelInfo *_channel_info = new ChannelInfo(channel, log);
+    channel_info.push_back(_channel_info);
+  }
 
-    std::string getTable() {
-      au::tables::Table table("Channel|Last time|#Logs|Type|Size,f=uint64");
+  std::string getTable() {
+    au::tables::Table table("Channel|Last time|#Logs|Type|Size,f=uint64");
 
-      table.setTitle("Channels");
-      for (size_t i = 0; i < channel_info.size(); i++) {
-        au::StringVector values;
+    table.setTitle("Channels");
+    for (size_t i = 0; i < channel_info.size(); i++) {
+      au::StringVector values;
 
-        values.push_back(channel_info[i]->name_);
-        values.push_back(channel_info[i]->time_);
+      values.push_back(channel_info[i]->name_);
+      values.push_back(channel_info[i]->time_);
 
-        values.push_back(au::str("%d", channel_info[i]->logs_));
-        values.push_back(channel_info[i]->descriptors_.str());
-        values.push_back(au::str("%lu", channel_info[i]->size_));
+      values.push_back(au::str("%d", channel_info[i]->logs_));
+      values.push_back(channel_info[i]->descriptors_.str());
+      values.push_back(au::str("%lu", channel_info[i]->size_));
 
-        table.addRow(values);
-      }
-      return table.str();
+      table.addRow(values);
     }
+    return table.str();
+  }
 
-    size_t getNumChannels() {
-      return channel_info.size();
-    }
+  size_t getNumChannels() {
+    return channel_info.size();
+  }
 };
+
 
 std::string LogServerChannel::getInfo() {
   return log_container.getInfo();
@@ -261,9 +294,9 @@ std::string LogServerChannel::getInfo() {
 
 std::string LogServerChannel::getChannelsTable(au::CommandLine *cmdLine) {
   // Get formats from
-  int limit = cmdLine->GetFlagInt("limit");
+  int limit             = cmdLine->GetFlagInt("limit");
   bool is_multi_session = cmdLine->GetFlagBool("multi_session");
-  bool file = cmdLine->GetFlagBool("file");
+  bool file             = cmdLine->GetFlagBool("file");
 
   // Get current log file
   int tmp_file_counter = file_counter;
@@ -274,7 +307,7 @@ std::string LogServerChannel::getChannelsTable(au::CommandLine *cmdLine) {
   // Table based on on-memory logs
   // --------------------------------------------------------
   if (!file) {
-    std::vector<au::SharedPointer<Log> > logs = log_container.logs();
+    std::vector< au::SharedPointer<Log> > logs = log_container.logs();
     for (size_t i = 0; i < logs.size(); i++) {
       // Get channel
       std::string channel = logs[i]->Get("channel");
@@ -283,7 +316,7 @@ std::string LogServerChannel::getChannelsTable(au::CommandLine *cmdLine) {
       channel_info.add_channel(channel, logs[i]);
 
       if (limit > 0) {
-        if (((int) channel_info.getNumChannels()) >= limit) {
+        if (((int)channel_info.getNumChannels()) >= limit) {
           break;
         }
       }
@@ -299,13 +332,13 @@ std::string LogServerChannel::getChannelsTable(au::CommandLine *cmdLine) {
 
     au::ErrorManager error;
     std::string file_name = getFileNameForLogFile(tmp_file_counter);
-    std::vector<au::SharedPointer<Log> > logs = readLogFile(file_name, error);
+    std::vector< au::SharedPointer<Log> > logs = readLogFile(file_name, error);
 
     if (!error.IsActivated()) {
       size_t num_logs = logs.size();
       for (size_t i = 0; i < num_logs; i++) {
         // Get log and add to the table log formatter
-        au::SharedPointer<Log> log = logs[num_logs - i - 1];
+        au::SharedPointer<Log> log = logs[ num_logs - i - 1 ];
 
         if (!is_multi_session && log->IsNewSession()) {
           finish = true;
@@ -319,7 +352,7 @@ std::string LogServerChannel::getChannelsTable(au::CommandLine *cmdLine) {
         channel_info.add_channel(channel, log);
 
         if (limit > 0) {
-          if (((int) channel_info.getNumChannels()) >= limit) {
+          if (((int)channel_info.getNumChannels()) >= limit) {
             finish = true;
             break;
           }
@@ -383,8 +416,8 @@ std::string LogServerChannel::getTable(au::CommandLine *cmdLine) {
   // Table based on on-memory logs
   // --------------------------------------------------------
   if (!file) {
-    std::vector<au::SharedPointer<Log> > logs = log_container.logs();
-    for (size_t i = 0; i < logs.size(); i++) {
+    std::vector< au::SharedPointer<Log> > logs = log_container.logs();
+    for (size_t i = 0; i  < logs.size(); i++) {
       // Add the log to the table formatter
       table_log_formater.add(logs[i]);
 
@@ -401,13 +434,13 @@ std::string LogServerChannel::getTable(au::CommandLine *cmdLine) {
   while (!table_log_formater.enougthRecords()) {
     au::ErrorManager error;
     std::string file_name = getFileNameForLogFile(tmp_file_counter);
-    std::vector<au::SharedPointer<Log> > logs = readLogFile(file_name, error);
+    std::vector< au::SharedPointer<Log> > logs = readLogFile(file_name, error);
 
     if (!error.IsActivated()) {
       // Read logs from this file
       size_t num_logs = logs.size();
       for (size_t i = 0; i < num_logs; i++) {
-        table_log_formater.add(logs[num_logs - i - 1]);
+        table_log_formater.add(logs[ num_logs - i - 1]);
       }
     }
 

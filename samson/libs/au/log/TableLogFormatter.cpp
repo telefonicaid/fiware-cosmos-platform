@@ -21,10 +21,12 @@
  * DESCRIPTION
  */
 
-#include "./TableLogFormatter.h"  // Own interface
+#include "au/log/TableLogFormatter.h"  // Own interface
+
+#include <string>               // std::string
+
 #include "au/log/Log.h"
 #include "au/log/LogFormatter.h"
-#include <string>               // std::string
 
 #define Char_to_int(x) ((x) - 48)
 
@@ -246,12 +248,12 @@ bool TableLogFormatter::filter(au::SharedPointer<Log> log) {
     }
   }
 /*
-  // Check if the type is correct
-  if (str_type != "") {
-    if (log->log_data().type != str_type[0]) {
-      return false;
-    }
-  }
+ * // Check if the type is correct
+ * if (str_type != "") {
+ *  if (log->log_data().type != str_type[0]) {
+ *    return false;
+ *  }
+ * }
  */
 
   if (channel != "") {

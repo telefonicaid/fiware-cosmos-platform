@@ -272,7 +272,7 @@ void WorkerCommand::Run() {
 
   // Parse a delilah command
   DelilahCommandCatalogue delilah_command_catalogue;
-  au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command_, &error_);
+  au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command_, error_);
   if (error_.IsActivated()) {
     return;   // Finish with this error
   }

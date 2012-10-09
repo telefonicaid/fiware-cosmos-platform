@@ -1,9 +1,23 @@
 
+#include <errno.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <pwd.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "parseArgs/parseArgs.h"
 
 #include "au/daemonize.h"
-#include "au/log/LogServer.h"
 #include "au/log/LogCommon.h"
+#include "au/log/LogServer.h"
 
 #define LOC           "localhost"
 
@@ -53,6 +67,11 @@ static const char *manVersion       = "0.1";
 
 int logFd = -1;
 
+
+void captureSIGPIPE(int s) {
+  LM_LM(("Captured SIGPIPE %d", s));
+}
+
 int main(int argC, const char *argV[]) {
   paConfig("prefix",                        (void *)"LOG_CLIENT_");
   paConfig("usage and exit on any warning", (void *)true);
@@ -81,6 +100,10 @@ int main(int argC, const char *argV[]) {
     Daemonize();
   } else {
     LM_M(("logServer running in foreground"));
+  }
+
+  if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
+    LM_W(("SIGPIPE cannot be handled"));
   }
 
   // Log server

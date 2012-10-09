@@ -7,6 +7,10 @@
  * CREATION DATE            Dec 14 2010
  *
  */
+
+#include "samson/worker/SamsonWorker.h" // Own interface
+
+
 #include <arpa/inet.h>          // inet_ntoa
 #include <netdb.h>              // gethostbyname
 #include <netinet/in.h>         // struct sockaddr_in
@@ -15,24 +19,26 @@
 #include <sys/socket.h>         // socket, bind, listen
 #include <sys/un.h>             // sockaddr_un
 #include <locale.h>             // setlocale
+
+#include <string>
+
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 #include "parseArgs/paBuiltin.h"  // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"
 #include "parseArgs/paIsSet.h"
 #include "parseArgs/parseArgs.h"
-
 #include "au/ThreadManager.h"
 #include "au/daemonize.h"
 #include "au/log/Log.h"
 #include "au/log/LogCommon.h"
 #include "au/log/LogCentral.h"
+#include "au/log/LogPluginConsole.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "engine/DiskManager.h"
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
-
 #include "samson/common/MemoryCheck.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/samsonVars.h"
@@ -42,15 +48,12 @@
 #include "samson/module/ModulesManager.h"
 #include "samson/network/WorkerNetwork.h"
 #include "samson/stream/BlockManager.h"
-#include "samson/worker/SamsonWorker.h"
 
-#include <string.h>
 
 /* ****************************************************************************
  *
  * Option variables
  */
-
 SAMSON_ARG_VARS;
 
 bool fg;
@@ -60,10 +63,11 @@ int web_port;
 
 char zoo_host[1024];
 
-char log_file[1024];
-char log_host[1024];
+char log_command[1024];
+char log_server[1024];
 int log_port;
 bool thread_mode;
+
 
 #define LOG_PORT AU_LOG_SERVER_PORT
 
@@ -71,39 +75,37 @@ bool thread_mode;
  *
  * parse arguments
  */
-PaArgument paArgs[] = { SAMSON_ARGS, { "-zk", zoo_host, "", PaString, PaOpt, _i "localhost:2181",
-PaNL,
-PaNL,
-"Zookeeper server"},
-{"-log_host",log_host, "", PaString, PaOpt, _i "localhost",
-PaNL,
-PaNL, "log server host"},
-{"-log_port",&log_port, "", PaInt, PaOpt, LOG_PORT,
-0,
-10000, "log server port"},
-{"-log_file",log_file, "", PaString, PaOpt, _i "",
-PaNL,
-PaNL, "Local log file"},
-{"-fg", &fg, "", PaBool, PaOpt, false,
-false,
-true,
-"don't start as daemon"},
-{"-port", &port, "", PaInt, PaOpt, SAMSON_WORKER_PORT,
-1,
-9999,
-"Port to receive new connections"},
-{"-web_port",&web_port, "", PaInt, PaOpt, SAMSON_WORKER_WEB_PORT,
-1,
-9999,
-"Port to receive web connections"},
-{"-valgrind",&valgrind, "", PaInt, PaOpt, 0,
-0,
-20,
-"help valgrind debug process"},
-{"-thread_mode",&thread_mode, "", PaBool, PaOpt, false,
-false,
-true, "thread_mode"},
-PA_END_OF_ARGS
+PaArgument paArgs[] =
+{
+  SAMSON_ARGS,
+  { "-zk",    zoo_host,      "",           PaString,      PaOpt,              _i "localhost:2181",
+    PaNL,PaNL,"Zookeeper server"                   },
+  { "-log",   log_command,                       "",                           PaString,
+    PaOpt,                          _i "",     PaNL,
+    PaNL,    "log server host"                          },
+  { "-log_server",  log_server,                        "",                           PaString,
+    PaOpt,                          _i "",     PaNL,
+    PaNL,    "log server host"                          },
+  { "-fg",    &fg,           "",           PaBool,        PaOpt,              false,
+    false,
+    true,
+    "don't start as daemon"              },
+  { "-port",  &port,         "",           PaInt,         PaOpt,              SAMSON_WORKER_PORT,
+    1,
+    9999,
+    "Port to receive new connections"    },
+  { "-web_port",&web_port,     "",           PaInt,         PaOpt,              SAMSON_WORKER_WEB_PORT,
+    1,
+    9999,
+    "Port to receive web connections"    },
+  { "-valgrind",&valgrind,     "",           PaInt,         PaOpt,              0,
+    0,
+    20,
+    "help valgrind debug process"        },
+  { "-thread_mode",&thread_mode,  "",           PaBool,        PaOpt,              false,
+    false,
+    true,     "thread_mode"                              },
+  PA_END_OF_ARGS
 };
 
 /* ****************************************************************************
@@ -223,15 +225,24 @@ int main(int argC, const char *argV[]) {
   }
 
   // New log system
-  au::log_central.Init(argV[0]);
-  au::log_central.evalCommand("screen on");
-  au::log_central.evalCommand("file on /var/log/samson/samsonWorker.log");
+  au::log_central.Init( argV[0] );
+
+  std::string str_log_file = std::string(paLogDir) + "samsonWorker.log";
+  std::string str_log_server =  log_server;
+  std::string str_log_server_file = std::string(paLogDir) + "samsonWorker_" + log_server +  ".log";
+  
+  au::log_central.Init( argV[0] );
+  au::log_central.evalCommand("log_to_file " + str_log_file);
+  if( str_log_server != "" )
+    au::log_central.evalCommand("log_to_server " + str_log_server + " " + str_log_server_file );
+  au::log_central.evalCommand(log_command);  // Command provided in command line
+  
+  
   //au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid());
 
   // Exampe of the new log system
   AU_LM_M(("Worker running..."));
-  AU_LM_T( 0 , ("Worker running..."));
-
+  
   LM_V(("Started with arguments:"));
   for (int ix = 0; ix < argC; ix++) {
     LM_V(("  %02d: '%s'", ix, argV[ix]));
@@ -247,7 +258,7 @@ int main(int argC, const char *argV[]) {
     LM_W(("SIGINT cannot be handled"));
   }
   if (signal(SIGTERM, captureSIGTERM) == SIG_ERR) {
-    LM_W(("SIGTERM cannot be handled"));   // Init basic setup stuff (necessary for memory check)
+    LM_W(("SIGTERM cannot be handled"));  // Init basic setup stuff (necessary for memory check)
   }
 
   // Set directories and load setup file
@@ -274,7 +285,7 @@ int main(int argC, const char *argV[]) {
   if (!file) {
     LM_X(1, ("Error opening file '%s' to store pid", pid_file_name));
   }
-  int pid = (int) getpid();
+  int pid = (int)getpid();
   if (fprintf(file, "%d", pid) == 0) {
     LM_X(1, ("Error writing pid %d to file %s", pid, pid_file_name));
   }
@@ -290,8 +301,8 @@ int main(int argC, const char *argV[]) {
 
   valgrindExit(5);
   LM_D(("engine::SharedMemoryManager::init"));
-  size_t shared_memory_size =
-      au::Singleton<samson::SamsonSetup>::shared()->getUInt64("general.shared_memory_size_per_buffer");
+  size_t shared_memory_size = au::Singleton<samson::SamsonSetup>::shared()->getUInt64(
+    "general.shared_memory_size_per_buffer");
   engine::SharedMemoryManager::init(num_processors, shared_memory_size);
 
   // Global init of engine
@@ -329,10 +340,11 @@ int main(int argC, const char *argV[]) {
     }
   }
 
+  au::log_central.AddPlugin( "console" , new au::LogPluginConsole(worker) );
+
   // Run worker console ( -fg is activated )
   worker->runConsole();
 
-  LM_T(LmtCleanup, ("Returned from console (worker at %p)", worker));
   // Stop engine to clean up
   engine::Engine::StopEngine();
 
@@ -348,7 +360,7 @@ int main(int argC, const char *argV[]) {
   AU_LM_M(("log_central stopping..."));
 
   // Stopping the new log_central thread
-  au::log_central.stop();
+  au::log_central.Stop();
 
   LM_T(LmtCleanup, ("Waiting for threads (worker at %p)", worker));
   au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");

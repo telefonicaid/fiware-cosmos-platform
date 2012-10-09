@@ -2,11 +2,11 @@
 
 #include "parseArgs/parseArgs.h"
 
+#include "au/log/LogCommon.h"
 #include "au/log/LogFile.h"
 #include "au/log/LogFormatter.h"
 #include "au/log/LogServer.h"
 #include "au/log/TableLogFormatter.h"
-#include "au/log/LogCommon.h"
 
 
 char format[1024];

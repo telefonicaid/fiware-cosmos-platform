@@ -1,23 +1,23 @@
 
+#include <errno.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <pwd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <pwd.h>
-#include <signal.h>
-#include <netinet/in.h>
 #include <sys/mman.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "parseArgs/parseArgs.h"
 
 #include "au/daemonize.h"
-#include "au/log/LogServer.h"
 #include "au/log/LogCommon.h"
+#include "au/log/LogServer.h"
 
 #define LOC           "localhost"
 
@@ -105,7 +105,7 @@ int main(int argC, const char *argV[]) {
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
     LM_W(("SIGPIPE cannot be handled"));
   }
-  
+
   // Log server
   au::LogServer log_server;
 

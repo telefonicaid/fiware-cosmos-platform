@@ -1,5 +1,5 @@
 
-#include "au/Log/LogMain.h"
+#include "au/log/LogMain.h"
 #include "PacketQueue.h"  // Own interface
 
 namespace samson {

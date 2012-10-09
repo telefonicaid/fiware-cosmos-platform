@@ -161,6 +161,11 @@ void LogCentral::evalCommand(std::string command, au::ErrorManager& error) {
       return;
     }
 
+    if (command_instance->main_command() == "help") {
+      error.AddMessage( log_central_catalogue.getHelpForConcept("all") );
+      return;
+    }
+    
     // "show_fields"
     if (command_instance->main_command() == "show_fields") {
       error.AddMessage(getTableOfFields()->str());
@@ -169,7 +174,8 @@ void LogCentral::evalCommand(std::string command, au::ErrorManager& error) {
 
     if (command_instance->main_command() == "show_plugins") {
       au::tables::Table table("Name|Active|Total logs|Total Size|Rate|Status,left");
-
+      table.setTitle("Log Plugins");
+      
       au::map<std::string, LogPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); it++) {
         LogPlugin *log_plugin = it->second;

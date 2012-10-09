@@ -12,7 +12,7 @@ namespace au {
 class LogPlugin {
 public:
 
-  LogPlugin(const std::string& name) {
+  explicit LogPlugin(const std::string& name) {
     name_ = name;
     activated_ = true;
   }
@@ -22,7 +22,7 @@ public:
   };
 
 
-  void virtual Process(au::SharedPointer<Log> log) {
+  void Process(au::SharedPointer<Log> log) {
     log_counter_.Process(log);
     Emit(log);
   }
@@ -31,7 +31,7 @@ public:
   void virtual Emit(au::SharedPointer<Log> log) = 0;
 
   // Function to check if a log is accepted
-  bool Accept(au::SharedPointer<Log> log) {
+  bool Accept(au::SharedPointer<Log> log) const {
     if (!activated_) {
       return false;
     }
@@ -88,4 +88,4 @@ private:
 };
 }
 
-#endif // ifndef _H_AU_LOG_PLUGIN
+#endif  // ifndef _H_AU_LOG_PLUGIN

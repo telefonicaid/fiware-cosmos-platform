@@ -7,6 +7,10 @@
  * CREATION DATE            Dec 14 2010
  *
  */
+
+#include "samson/worker/SamsonWorker.h" // Own interface
+
+
 #include <arpa/inet.h>          // inet_ntoa
 #include <netdb.h>              // gethostbyname
 #include <netinet/in.h>         // struct sockaddr_in
@@ -15,13 +19,15 @@
 #include <sys/socket.h>         // socket, bind, listen
 #include <sys/un.h>             // sockaddr_un
 #include <locale.h>             // setlocale
+
+#include <string>
+
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 #include "parseArgs/paBuiltin.h"  // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"
 #include "parseArgs/paIsSet.h"
 #include "parseArgs/parseArgs.h"
-
 #include "au/ThreadManager.h"
 #include "au/daemonize.h"
 #include "au/log/Log.h"
@@ -33,7 +39,6 @@
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
-
 #include "samson/common/MemoryCheck.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/samsonVars.h"
@@ -43,9 +48,7 @@
 #include "samson/module/ModulesManager.h"
 #include "samson/network/WorkerNetwork.h"
 #include "samson/stream/BlockManager.h"
-#include "samson/worker/SamsonWorker.h"
 
-#include <string.h>
 
 /* ****************************************************************************
  *

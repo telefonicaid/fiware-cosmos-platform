@@ -273,7 +273,7 @@ public:
     output << "<tr>\n";
     int i;
     for (it_elements = elements.begin(),  i = 0; it_elements != elements.end(); it_elements++, i++) {
-      output << "<th>" << "List" << "</th>";;
+      output << "<th>" << "List" << "</th>";
     }
     output << "<tr>\n";
 

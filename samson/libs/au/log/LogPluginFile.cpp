@@ -1,6 +1,6 @@
 
 
-#include "LogPluginFile.h"  // Own interface
+#include "au/log/LogPluginFile.h"  // Own interface
 
 namespace au {
 LogPluginFile::LogPluginFile(std::string file_name) : LogPlugin("file") {

@@ -59,12 +59,18 @@ public:
     if (c < 0) {
       return "[?]";
     }
+    if (c >= num_log_channels_) {
+      return "[?]";
+    }
 
     return names_[c];
   }
 
   std::string channel_alias(int c) {
     if (c < 0) {
+      return "[?]";
+    }
+    if (c >= num_log_channels_) {
       return "[?]";
     }
     return alias_[c];
@@ -112,4 +118,4 @@ private:
 };
 }
 
-#endif // ifndef _H_AU_LOG_CHANNELS
+#endif  // ifndef _H_AU_LOG_CHANNELS

@@ -1,11 +1,11 @@
 
 
-#include "Log.h"
-#include "LogFile.h"  // Own interface
+#include "au/log/LogFile.h"  // Own interface
 
 #include "logMsg/logMsg.h"                 // LM_T
 #include "logMsg/traceLevels.h"            // LmtOtherFileDescriptors, etc.
 
+#include "au/log/Log.h"
 
 namespace au {
 std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error) {

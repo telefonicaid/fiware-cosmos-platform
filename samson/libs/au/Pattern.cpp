@@ -18,7 +18,7 @@ namespace au {
     regfree(&preg);
   }
   
-  bool Pattern::match( const std::string& value )
+  bool Pattern::match( const std::string& value ) const
   {
     int c = regexec(&preg, value.c_str(), 0, NULL, 0);
     if (c == 0)
@@ -32,8 +32,7 @@ namespace au {
     pattern_ = pattern;
   }
   
-  
-  bool SimplePattern::match( const std::string& value )
+  bool SimplePattern::match( const std::string& value ) const
   {
     return ( 0 == ::fnmatch( pattern_.c_str() , value.c_str() , 0 ) );
   }

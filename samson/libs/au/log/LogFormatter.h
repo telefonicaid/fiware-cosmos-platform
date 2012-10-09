@@ -20,7 +20,7 @@ public:
   // Parse a log to get a string
   std::string get(au::SharedPointer<Log> log) const;
 
-  std::string definition() {
+  std::string definition() const {
     return definition_;
   }
 

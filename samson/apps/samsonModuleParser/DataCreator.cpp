@@ -399,7 +399,7 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
   output << "\n";
 
   output << "} // end of namespace samson\n";
-  output << "} // end of namespace " << module.name << "\n";;
+  output << "} // end of namespace " << module.name << "\n";
 
 
   // Implementation of the Module constructor

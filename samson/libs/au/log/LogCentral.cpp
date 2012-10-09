@@ -1,10 +1,11 @@
 
-#include "LogCommon.h"
+#include "au/log/LogCentral.h"  // Own interface
+
+#include "au/log/LogCommon.h"
 #include "au/log/LogPluginFile.h"
 #include "au/log/LogPluginScreen.h"
 #include "au/log/LogPluginServer.h"
 
-#include "LogCentral.h"  // Own interface
 
 
 namespace au {
@@ -24,7 +25,7 @@ LogCentral::LogCentral() {
 
   fd_read_logs_ = NULL;
   fd_write_logs_ = NULL;
-  
+
   quit_ = false;
 }
 
@@ -40,8 +41,7 @@ inline LogChannels& LogCentral::log_channels() {
   return log_channels_;
 }
 
-void LogCentral::Init(std::string exec) {
-
+void LogCentral::Init(const std::string& exec) {
   // Flag to indicate background thread to quit
   quit_ = false;
 
@@ -68,25 +68,22 @@ void LogCentral::Init(std::string exec) {
   tm->addThread("log_thread", &t_, NULL, run_LogCentral, this);
 }
 
-  void LogCentral::Stop()
-  {
-    // Flush all pending logs
-    // Stop the background thread
+void LogCentral::Stop() {
+  // Flush all pending logs
+  // Stop the background thread
 
-    // Set the quit flag
-    quit_ = true;
-    
-    // Close pipes to force log process to fail
-    close(fds_[0]);
-    close(fds_[1]);
+  // Set the quit flag
+  quit_ = true;
 
-    // Wait for the background threads
-    void* return_code; // Return code to be ignored
-    pthread_join(t_, &return_code);
-    
-  }
+  // Close pipes to force log process to fail
+  close(fds_[0]);
+  close(fds_[1]);
 
-  
+  // Wait for the background threads
+  void *return_code;   // Return code to be ignored
+  pthread_join(t_, &return_code);
+}
+
 void LogCentral::Emit(Log *log) {
   // Write to the pipe
   log->Write(fd_write_logs_);
@@ -100,8 +97,9 @@ void LogCentral::run() {
     bool real_log = log->Read(fd_read_logs_);
 
     if (!real_log) {
-      if( quit_)
-        return; // Finish this thread
+      if (quit_) {
+        return;  // Finish this thread
+      }
       continue;
     }
 
@@ -143,13 +141,13 @@ void LogCentral::ReviewChannelsActivateion() {
   }
 }
 
-void LogCentral::evalCommand(std::string command) {
+void LogCentral::evalCommand(const std::string& command) {
   au::ErrorManager error;
 
   evalCommand(command, error);
 }
 
-void LogCentral::evalCommand(std::string command, au::ErrorManager& error) {
+void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error) {
   // Catalogue to parse input commands ( separated by commas )
   LogCentralCatalogue log_central_catalogue;
 
@@ -162,10 +160,10 @@ void LogCentral::evalCommand(std::string command, au::ErrorManager& error) {
     }
 
     if (command_instance->main_command() == "help") {
-      error.AddMessage( log_central_catalogue.getHelpForConcept("all") );
+      error.AddMessage(log_central_catalogue.getHelpForConcept("all"));
       return;
     }
-    
+
     // "show_fields"
     if (command_instance->main_command() == "show_fields") {
       error.AddMessage(getTableOfFields()->str());
@@ -175,7 +173,7 @@ void LogCentral::evalCommand(std::string command, au::ErrorManager& error) {
     if (command_instance->main_command() == "show_plugins") {
       au::tables::Table table("Name|Active|Total logs|Total Size|Rate|Status,left");
       table.setTitle("Log Plugins");
-      
+
       au::map<std::string, LogPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); it++) {
         LogPlugin *log_plugin = it->second;

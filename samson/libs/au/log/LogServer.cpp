@@ -1,7 +1,8 @@
 
+#include "au/log/LogServer.h"  // Own interface
+
 #include "au/log/LogCommon.h"
 
-#include "LogServer.h"  // Own interface
 
 namespace au {
 LogServer::LogServer()

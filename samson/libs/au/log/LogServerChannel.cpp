@@ -1,12 +1,14 @@
-#include "LogServerChannel.h"  // Own interface
+#include "au/log/LogServerChannel.h"  // Own interface
+
 #include <time.h>
-#define Char_to_int(x) ((x) - 48)
 
 #include "logMsg/logMsg.h"                 // LM_T
 #include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
 
 #include "au/containers/vector.h"
 #include "au/gpb.h"
+
+#define Char_to_int(x) ((x) - 48)
 
 namespace au {
 LogServerChannel::LogServerChannel(int port, std::string _directory)

@@ -1,5 +1,5 @@
 
-#include "LogChannelFilter.h"  // Own interface
+#include "au/log/LogChannelFilter.h"  // Own interface
 
 namespace au {
 }

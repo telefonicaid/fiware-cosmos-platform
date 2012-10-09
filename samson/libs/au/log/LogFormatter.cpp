@@ -1,5 +1,6 @@
 
-#include "LogFormatter.h"  // Own interface
+#include "au/log/LogFormatter.h"  // Own interface
+
 #include "au/log/Log.h"
 
 namespace au {

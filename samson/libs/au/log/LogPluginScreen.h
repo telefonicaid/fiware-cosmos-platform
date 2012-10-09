@@ -17,6 +17,9 @@ public:
     output_stderror_ = output_stderror;
   }
 
+  virtual ~LogPluginScreen() {
+  }
+
   virtual void Emit(au::SharedPointer<Log> log) {
     if (output_stderror_) {
       fprintf(stdout, "%s\n", log_formatter_.get(log).c_str());
@@ -45,4 +48,4 @@ private:
 };
 }
 
-#endif // ifndef _H_AU_LOG_PLUGIN_SCREEN
+#endif  // ifndef _H_AU_LOG_PLUGIN_SCREEN

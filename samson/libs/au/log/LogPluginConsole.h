@@ -15,6 +15,9 @@ public:
     console_ = console;
   }
 
+  virtual ~LogPluginConsole() {
+  };
+
   virtual void Emit(au::SharedPointer<Log>log) {
     std::string type = log->Get("channel_alias");
 
@@ -40,4 +43,4 @@ private:
 };
 }
 
-#endif // ifndef _H_LOG_PLUGIN_CONSOLE
+#endif  // ifndef _H_LOG_PLUGIN_CONSOLE

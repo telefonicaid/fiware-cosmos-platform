@@ -1,10 +1,11 @@
-#include "Log.h"
+// Own interface
+#include "au/log/Log.h"
 
 namespace au {
 const char *log_reseved_words[] =
-{ "host", "channel", "channel_name", "channel_alias", "pid",       "tid",       "DATE"
-  ,       "date",    "TIME",         "time",          "timestamp", "time_unix", "line","exec", "exec_short", "file"
-  ,       "text",    "function",     NULL };
+{ "host", "channel",    "channel_name", "channel_alias", "pid",                "tid",       "DATE"
+  ,       "date",       "TIME",         "time",          "timestamp",          "time_unix", "line","exec", "exec_short", "file"
+  ,       "text",       "function",     NULL };
 
 
 void Log::Set(const std::string& field_name, const std::string& field_value) {
@@ -68,16 +69,16 @@ bool Log::Write(au::FileDescriptor *fd) {
   return (s == au::OK);
 }
 
-std::string Log::str() {
+std::string Log::str() const {
   std::ostringstream output;
 
-  output << "Line:" << log_data_.line << ",";;
+  output << "Line:" << log_data_.line << ",";
   output << au::str("Channel:%d", log_data_.channel) << ",";
   output << "Time:" << log_data_.tv.tv_sec << "(" << log_data_.tv.tv_usec << "),";
   output << "TimeZone:" << log_data_.timezone << ",";
 
   output << "[ ";
-  std::map<std::string, std::string>::iterator it_fields;
+  std::map<std::string, std::string>::const_iterator it_fields;
   for (it_fields = fields_.begin(); it_fields != fields_.end(); it_fields++) {
     output << it_fields->first << ":" << it_fields->second << " ";
   }
@@ -86,8 +87,23 @@ std::string Log::str() {
   return output.str();
 }
 
+bool Log::match(Pattern *pattern) const {
+  std::map<std::string, std::string>::const_iterator it_fields;
+  for (it_fields = fields_.begin(); it_fields != fields_.end(); it_fields++) {
+    std::string value = it_fields->second;
+    if (pattern->match(value)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+int Log::channel() const {
+  return log_data_.channel;
+}
+
 // Get information from this log
-std::string Log::Get(std::string name) {
+std::string Log::Get(std::string name) const {
   LM_V(("Getting %s from log %s", name.c_str(), str().c_str()));
 
   if (name == "host") {
@@ -163,7 +179,7 @@ std::string Log::Get(std::string name) {
   }
 
   // General look up in the strings...
-  std::map<std::string, std::string>::iterator it_fields = fields_.find(name);
+  std::map<std::string, std::string>::const_iterator it_fields = fields_.find(name);
   if (it_fields != fields_.end()) {
     return it_fields->second;
   }
@@ -173,8 +189,8 @@ std::string Log::Get(std::string name) {
   return name;
 }
 
-std::string Log::Get(const std::string& name, const std::string& default_value) {
-  std::map<std::string, std::string>::iterator it_fields = fields_.find(name);
+std::string Log::Get(const std::string& name, const std::string& default_value) const {
+  std::map<std::string, std::string>::const_iterator it_fields = fields_.find(name);
   if (it_fields == fields_.end()) {
     return default_value;
   } else {
@@ -186,10 +202,10 @@ size_t Log::SerialitzationSize() {
   return sizeof(LogHeader) + sizeof(LogMsg) + getStringsSize();
 }
 
-size_t Log::getStringsSize() {
+size_t Log::getStringsSize() const {
   size_t total = 0;
 
-  std::map<std::string, std::string>::iterator it_fields;
+  std::map<std::string, std::string>::const_iterator it_fields;
   for (it_fields = fields_.begin(); it_fields != fields_.end(); it_fields++) {
     total += it_fields->first.length();
     total++;
@@ -256,7 +272,7 @@ void Log::SetNewSession() {
   Set("new_session", "yes");
 }
 
-bool Log::IsNewSession() {
+bool Log::IsNewSession() const {
   return Get("new_session", "no") == "yes";
 }
 

@@ -25,7 +25,7 @@ public:
   ~Pattern();
 
   // Main function to check match
-  bool match( const std::string& value );
+  bool match( const std::string& value ) const;
   
 private:
   regex_t preg;
@@ -36,11 +36,11 @@ private:
     
   public:
     
-    SimplePattern(const std::string& pattern);
+    explicit SimplePattern(const std::string& pattern);
     ~SimplePattern(){};
     
     // Main function to check match
-    bool match( const std::string& value );
+    bool match( const std::string& value ) const;
     
   private:
 

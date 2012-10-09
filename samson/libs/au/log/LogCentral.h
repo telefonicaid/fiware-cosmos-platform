@@ -11,7 +11,6 @@
 #include "au/console/CommandCatalogue.h"
 #include "au/log/LogChannelFilter.h"
 #include "au/log/LogChannels.h"
-#include "au/log/LogDispatcher.h"
 #include "au/network/FileDescriptor.h"
 
 namespace au {
@@ -29,17 +28,17 @@ public:
   LogCentral();
 
   // Init log system
-  void Init(std::string exec = "Unknown");
+  void Init(const std::string& exec = "Unknown");
 
   // Stop the loggin system
   void Stop();
-  
+
   // Emit a log thougth the pipe
   void Emit(Log *log);
 
   // Console interface for this element
-  void evalCommand(std::string command);
-  void evalCommand(std::string command, au::ErrorManager& error);
+  void evalCommand(const std::string& command);
+  void evalCommand(const std::string& command, au::ErrorManager& error);
 
   // Accessors
   inline LogChannels& log_channels();
@@ -76,10 +75,10 @@ private:
   // Frind function to run in background
   friend void *run_LogCentral(void *p);
 
-  
+
   // Flag to indicate the backgroud thread to finish
   bool quit_;
-  
+
   // Pipe and thread for the log process
   pthread_t t_;
   int fds_[2];
@@ -112,4 +111,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_MAIN_LOG_CENTRAL
+#endif  // ifndef _H_AU_MAIN_LOG_CENTRAL

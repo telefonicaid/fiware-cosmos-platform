@@ -1,5 +1,6 @@
 
-#include "LogPluginServer.h"  // Own interface
+#include "au/log/LogPluginServer.h"  // Own interface
+
 #include "au/au.pb.h"
 #include "au/gpb.h"
 

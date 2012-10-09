@@ -68,8 +68,8 @@ class map : public std::map<K, V *, _Compare> {
      * NULL if not found
      */
 
-    V *findInMap(const K& key) {
-      typename std::map<K, V *, _Compare>::iterator iter = std::map<K, V *, _Compare>::find(key);
+    V *findInMap(const K& key) const {
+      typename std::map<K, V *, _Compare>::const_iterator iter = std::map<K, V *, _Compare>::find(key);
 
       if (iter == std::map<K, V *, _Compare>::end()) {
         return NULL;

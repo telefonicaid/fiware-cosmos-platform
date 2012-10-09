@@ -14,6 +14,7 @@
 
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
+
 #include "parseArgs/paBuiltin.h"
 #include "parseArgs/paConfig.h"
 #include "parseArgs/paIsSet.h"
@@ -21,12 +22,11 @@
 
 #include "au/containers/SharedPointer.h"
 #include "au/containers/set.h"
-#include "au/network/SocketConnection.h"
-#include "au/string.h"
-
 #include "au/log/Log.h"
 #include "au/log/LogCommon.h"
 #include "au/log/LogPlugin.h"
+#include "au/network/SocketConnection.h"
+#include "au/string.h"
 
 namespace au {
 /*
@@ -41,7 +41,7 @@ public:
   }
 
   LogPluginServer(const std::string& host, int port, const std::string& local_file);
-  ~LogPluginServer();
+  virtual ~LogPluginServer();
 
   void set_host(const std::string& host, int port, const std::string& local_file);
 

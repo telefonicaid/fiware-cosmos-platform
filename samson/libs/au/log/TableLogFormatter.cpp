@@ -21,10 +21,12 @@
  * DESCRIPTION
  */
 
-#include "./TableLogFormatter.h"  // Own interface
+#include "au/log/TableLogFormatter.h"  // Own interface
+
+#include <string>               // std::string
+
 #include "au/log/Log.h"
 #include "au/log/LogFormatter.h"
-#include <string>               // std::string
 
 #define Char_to_int(x) ((x) - 48)
 

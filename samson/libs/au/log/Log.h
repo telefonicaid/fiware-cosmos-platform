@@ -13,12 +13,11 @@
 #include "au/containers/SharedPointer.h"
 #include "au/containers/StringVector.h"
 #include "au/containers/vector.h"
+#include "au/log/LogCommon.h"
 #include "au/network/FileDescriptor.h"
 #include "au/string/split.h"
 #include "au/tables/Table.h"
 #include "au/tables/Table.h"
-
-#include "au/log/LogCommon.h"
 
 namespace au {
 /*
@@ -84,43 +83,30 @@ public:
     Set(field_name, output.str());
   }
 
-  std::string Get(const std::string& name, const std::string& default_value);
-  std::string Get(std::string name);
+  std::string Get(const std::string& name, const std::string& default_value) const;
+  std::string Get(std::string name) const;
 
   // Read and Write over a file descriptor ( network or disk )
   bool Read(au::FileDescriptor *fd);
   bool Write(au::FileDescriptor *fd);
 
   // Debug string
-  std::string str();
+  std::string str() const;
 
   // Get total number og bytes when serialized
   size_t SerialitzationSize();
 
   // Match agains a particuar regular expression
-  bool match(Pattern *pattern) {
-    std::map<std::string, std::string>::iterator it_fields;
-    for (it_fields = fields_.begin(); it_fields != fields_.end(); it_fields++) {
-      std::string value = it_fields->second;
-      if (pattern->match(value)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  int channel() {
-    return log_data_.channel;
-  }
-
+  bool match(Pattern *pattern) const;
+  int channel() const;
   // Spetial log to define mark of new session
   void SetNewSession();
-  bool IsNewSession();
+  bool IsNewSession() const;
 
 private:
 
   // Methods to serialize string-kind fields
-  size_t getStringsSize();
+  size_t getStringsSize() const;
   void copyStrings(char *data);
   void addStrings(char *strings, size_t len);
 

@@ -76,4 +76,4 @@
 #define AU_LM_V4(s) AU_LM_T(AU_LOG_V4, s)
 #define AU_LM_V5(s) AU_LM_T(AU_LOG_V5, s)
 
-#endif // ifndef _H_LOG_SERVER_COMMON
+#endif  // ifndef _H_LOG_SERVER_COMMON

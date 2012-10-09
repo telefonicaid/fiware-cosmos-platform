@@ -20,12 +20,11 @@
 
 #include "au/containers/SharedPointer.h"
 #include "au/containers/set.h"
-#include "au/network/SocketConnection.h"
-#include "au/string.h"
-
 #include "au/log/Log.h"
 #include "au/log/LogCommon.h"
 #include "au/log/LogPlugin.h"
+#include "au/network/SocketConnection.h"
+#include "au/string.h"
 
 namespace au {
 class LogPluginFile : public LogPlugin {
@@ -36,7 +35,7 @@ public:
   }
 
   LogPluginFile(std::string local_file);
-  ~LogPluginFile() {
+  virtual ~LogPluginFile() {
   }
 
   // Emit a log in this channel

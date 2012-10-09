@@ -513,7 +513,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     gpb_queue->set_name(original_queue);
     gpb_queue->set_key_format("?");         // It is necessary to fill this fields
     gpb_queue->set_value_format("?");
-    // TODO: @andreu check the value that version should be initialized to
     gpb_queue->set_version(1);
 
 
@@ -723,7 +722,7 @@ void SamsonWorker::notify(engine::Notification *notification) {
   LM_W(("SamsonWorker received an unexpected notification %s. Ignoring...", notification->GetDescription().c_str()));
 }
 
-std::string getFormatedElement(std::string name, std::string value, std::string& format) {
+std::string getFormatedElement(const std::string& name, const std::string& value, const std::string& format) {
   std::ostringstream output;
 
   if (format == "xml") {
@@ -870,16 +869,16 @@ std::string SamsonWorker::getPrompt() {
 
 au::SharedPointer<zoo::Connection> SamsonWorker::zoo_connection() {
   return zoo_connection_;
-};
+}
 au::SharedPointer<SamsonWorkerController> SamsonWorker::worker_controller() {
   return worker_controller_;
-};
+}
 au::SharedPointer<DataModel> SamsonWorker::data_model() {
   return data_model_;
-};
+}
 au::SharedPointer<WorkerNetwork> SamsonWorker::network() {
   return network_;
-};
+}
 
 au::SharedPointer<SamsonWorkerRest> SamsonWorker::samson_worker_rest() {
   return samson_worker_rest_;
@@ -891,7 +890,7 @@ au::SharedPointer<WorkerBlockManager> SamsonWorker::worker_block_manager() {
 
 au::SharedPointer<stream::WorkerTaskManager> SamsonWorker::task_manager() {
   return task_manager_;
-};
+}
 au::SharedPointer<WorkerCommandManager> SamsonWorker::workerCommandManager() {
   return workerCommandManager_;
 }
@@ -985,5 +984,5 @@ bool SamsonWorker::IsReady() {
 
 bool SamsonWorker::IsConnected() {
   return state_ != unconnected;
-};
+}
 }

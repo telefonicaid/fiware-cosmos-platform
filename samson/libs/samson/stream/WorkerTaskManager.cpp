@@ -264,7 +264,7 @@ void WorkerTaskManager::review_stream_operations() {
       size_t stream_operation_id = stream_operation.stream_operation_id();
       std::string stream_operation_name = stream_operation.name();
 
-      // Recover glocal information for this stream operation
+      // Recover global information for this stream operation
       StreamOperationGlobalInfo* global_info = stream_operations_globla_info_.findInMap(stream_operation_id);
       if (!global_info) {
         std::vector<KVRange> worker_ranges = samson_worker_->worker_controller()->GetMyKVRanges();
@@ -319,7 +319,7 @@ void WorkerTaskManager::review_stream_operations() {
               max_key = key;
             }
           } else {
-            stream_operation_info->set_state("reviwing stream operation...");
+            stream_operation_info->set_state("Reviewing stream operation...");
           }
         }
       }

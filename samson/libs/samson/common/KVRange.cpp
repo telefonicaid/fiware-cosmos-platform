@@ -117,7 +117,7 @@ void KVRange::getInfo(std::ostringstream& output) const {
 }
 
 std::string KVRange::str() const {
-  return au::str("[%d %d]", hg_begin, hg_end);
+  return au::str("[%05d %05d)", hg_begin, hg_end);
 }
 
 bool KVRange::IsOverlapped(const KVRange& range) const {

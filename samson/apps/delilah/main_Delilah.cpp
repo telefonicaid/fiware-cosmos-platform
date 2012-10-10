@@ -441,6 +441,24 @@ int main(int argC, const char *argV[]) {
   // Run console
   delilahConsole->run();
 
+
+  // The same stuff
+  // TODO(@andreu): Could it be moved to cleanup()?
+
+  // Disconnect delilah
+  delilahConsole->disconnect();
+
+  // Stopping network connections
+  delilahConsole->stop();
+
+  // Stopping the new log_central thread
+  LM_M(("Calling au::log_central.Stop()"));
+  au::log_central.Stop();
+
+  // Flush content of console
+  // delilahConsole->flush();
+  LM_M(("delilah exit correctly"));
+  exit(0);
   
   return 0;
 }

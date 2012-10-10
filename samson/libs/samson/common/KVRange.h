@@ -291,9 +291,14 @@ class KVRanges {
       }
 
       if (range_total == 0) {
+        // TODO(@jges): Remove log message
+        LM_M(("overlap_factor(0) because range_total(%lu)", range_total));
+
         return 0;
       }
 
+      // TODO(@jges): Remove log message
+      LM_M(("overlap_factor(%lf) = range_in(%lu)/range_total(%lu)", (static_cast<double>(range_in) / static_cast<double>(range_total)), range_in, range_total));
       return (static_cast<double>(range_in) / static_cast<double>(range_total));
     }
 

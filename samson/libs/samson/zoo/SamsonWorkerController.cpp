@@ -139,7 +139,7 @@ void SamsonWorkerController::notify(engine::Notification *notification) {
     }
     rc = check();
     if (rc) {
-      LM_W(("Error reviwing worker-controller (error %s)", zoo::str_error(rc).c_str()));
+      LM_W(("Error reviewing worker-controller (error %s)", zoo::str_error(rc).c_str()));
     }
     return;
   }
@@ -151,7 +151,7 @@ void SamsonWorkerController::notify(engine::Notification *notification) {
     }
     rc = check();
     if (rc) {
-      LM_W(("Error reviwing worker-controller (error %s)", zoo::str_error(rc).c_str()));
+      LM_W(("Error reviewing worker-controller (error %s)", zoo::str_error(rc).c_str()));
     }
     return;
   }

@@ -366,12 +366,12 @@ class TopList {
     }
 
     void Push(Value *value) {
-      double new_num = value->GetValueFromMap("counter")->GetDouble();
+      double new_num = value->GetValueFromMap(Value::kCounterField.c_str())->GetDouble();
 
       // Push a new element
       std::list<system::Value *>::iterator it_values;
       for (it_values = values_.begin(); it_values != values_.end(); ++it_values) {
-        double num = (*it_values)->GetValueFromMap("counter")->GetDouble();
+        double num = (*it_values)->GetValueFromMap(Value::kCounterField.c_str())->GetDouble();
         if (new_num > num) {
           values_.insert(it_values, Copy(value));
           return;

@@ -22,7 +22,7 @@ void Visualization::set_flag(const std::string& name, bool value) {
 }
 
 bool Visualization::get_flag(const std::string& name) const {
-  // Be robust agains omitting "-" in request
+  // Be robust against omitting "-" in request
   if ((name.length() > 0) && (name[0] != '-')) {
     return get_flag("-" + name);
   }

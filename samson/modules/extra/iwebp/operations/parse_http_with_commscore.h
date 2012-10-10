@@ -12,18 +12,21 @@
 #include <string>
 #include <vector>
 
+#include "au/ErrorManager.h"
 #include "au/string.h"
+
 #include "comscore/SamsonComscoreDictionary.h"
 #include "samson_system/ValueContainer.h"
+#include "samson_system/Value.h"
 #include "samson/module/samson.h"
 #include "samson/modules/system/TimeUnix.h"
-#include "samson/modules/system/Value.h"
 
 namespace samson {
 namespace iwebp {
 
 class OTTService {
   public:
+
     std::string name_;
     int serviceId_;
     std::string group_;
@@ -101,6 +104,9 @@ class parse_http_with_commscore : public samson::Parser {
 
     void init(samson::KVWriter *writer) {
       sep_ = '\t';
+
+      // TODO(@jges): Remove log message
+      LM_M(("iwebp.parse: init()"));
 
       // Alloc space for the lines...
 #define MAX_LENGTH_LINE 20000
@@ -421,7 +427,7 @@ class parse_http_with_commscore : public samson::Parser {
       return services_[0];
     }
 
-    bool parse_line_http(char * line, samson::system::ValueContainer *keyContainer) {
+    bool parse_line_http(char * line, samson::system::ValueContainer *keyContainer, au::ErrorManager& error) {
       /*
        --- HTTP ---
        MOBILE_IP_ADDRESS       88.31.48.46
@@ -442,15 +448,18 @@ class parse_http_with_commscore : public samson::Parser {
        APPLICATION_ID          80
        */
 
+      error.Reset();
       au::SplitInWords(line, fields_, sep_);
 
       if (fields_.size() != 16) {
         LM_W(("Wrong number of fields(%d) != expected(%d)", fields_.size(), 16));
+        error.set(au::str("Wrong number of fields(%d) != expected(%d)", fields_.size(), 16));
         return false;
       }
 
       uint64_t userId = strtoul(fields_[6], NULL, 10);
       if (userId == 0) {
+        error.set("No userId at field 6");
         return false;
       }
       uint64_t imei = strtoul(fields_[11], NULL, 10);
@@ -464,6 +473,7 @@ class parse_http_with_commscore : public samson::Parser {
 
       if ((url == NULL) || (*url == '\0')) {
         // LM_W(("Empty url at fields[0]:'%s', fields[1]:'%s', fields[2]:'%s', fields[6]:'%s', fields[9]:'%s' ", fields[0], fields[1], fields[2], fields[6], fields[9]));
+        error.set("Empty url");
         return false;
       }
       char *host = fields_[2];
@@ -471,6 +481,7 @@ class parse_http_with_commscore : public samson::Parser {
       OTTService *detected_service = classify_http(url, host);
       if (detected_service == NULL) {
         LM_W(("No service detected"));
+        error.set("No service detected");
         return false;
       }
       char *name_service = strdup(detected_service->name_.c_str());
@@ -506,16 +517,16 @@ class parse_http_with_commscore : public samson::Parser {
       // LM_M(("categories ok with size:%d for url:'%s'", categories_ids.size(), url));
 
       keyContainer->value->SetAsMap();
-      keyContainer->value->AddValueToMap("app")->SetString("agregatedKey");
-      keyContainer->value->AddValueToMap("user")->SetDouble(static_cast<double> (userId));
-      keyContainer->value->AddValueToMap("imei")->SetDouble(static_cast<double> (imei));
-      keyContainer->value->AddValueToMap("timestamp")->SetDouble(static_cast<double> (timestamp.value));
-      keyContainer->value->AddValueToMap("url")->SetString(url);
-      keyContainer->value->AddValueToMap("domain")->SetString(domain);
-      keyContainer->value->AddValueToMap("service")->SetString(name_service);
+      keyContainer->value->AddValueToMap(system::Value::kAppField)->SetString("agregatedKey");
+      keyContainer->value->AddValueToMap(system::Value::kUserField)->SetDouble(static_cast<double> (userId));
+      keyContainer->value->AddValueToMap(system::Value::kImeiField)->SetDouble(static_cast<double> (imei));
+      keyContainer->value->AddValueToMap(system::Value::kTimestampField)->SetDouble(static_cast<double> (timestamp.value));
+      keyContainer->value->AddValueToMap(system::Value::kUrlField)->SetString(url);
+      keyContainer->value->AddValueToMap(system::Value::kDomainField)->SetString(domain);
+      keyContainer->value->AddValueToMap(system::Value::kServiceField)->SetString(name_service);
       keyContainer->value->AddValueToMap("group")->SetString(name_group);
 
-      samson::system::Value *p_vector = keyContainer->value->AddValueToMap("categories");
+      samson::system::Value *p_vector = keyContainer->value->AddValueToMap(system::Value::kCategoriesField);
       p_vector->SetAsVoid();
       p_vector->SetAsVector();
       int categories_size = categories_ids.size();
@@ -543,7 +554,7 @@ class parse_http_with_commscore : public samson::Parser {
       }
       keyContainer->value->AddValueToMap("search_query")->SetString(query);
 
-      p_vector = keyContainer->value->AddValueToMap("query_words");
+      p_vector = keyContainer->value->AddValueToMap(system::Value::kQueryWordsField);
       p_vector->SetAsVector();
       if ((p_search = strstr(query, "q=")) != NULL) {
         p_search += strlen("q=");
@@ -572,7 +583,10 @@ class parse_http_with_commscore : public samson::Parser {
       char *p_data_begin = data;
       char *p_data_end = data + length;
 
-      // LM_M(("data block of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", length, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9]));
+      au::ErrorManager error;
+
+      // TODO(@jges): Remove log message
+      LM_M(("iwebp.parse: data block of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", length, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9]));
       // LM_M(("line at %p of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", line, 0, line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]));
 
       while (p_data < p_data_end) {
@@ -590,12 +604,12 @@ class parse_http_with_commscore : public samson::Parser {
           // LM_M(("line at %p of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", line, copy_length, line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]));
 
           // LM_M(("Parsing line:'%s'", line));
-          if (parse_line_http(line_, &keyContainer_)) {
+          if (parse_line_http(line_, &keyContainer_, error)) {
             // LM_M(("Parsed line:'%s'", line));
             // LM_M(("Result keyContainer: %s", keyContainer.value));
             writer->emit(0, keyContainer_.value, valueContainer_.value);
-          } else {
-            LM_W(("Wrong line:'%s'", line_));
+          } else if (error.GetMessage() != "Empty url") {
+            LM_W(("Wrong line:'%s', error:'%s'", line_, error.GetMessage().c_str()));
           }
           p_data_begin = p_data + 1;
         }
@@ -604,6 +618,9 @@ class parse_http_with_commscore : public samson::Parser {
     }
 
     void finish(samson::KVWriter *writer) {
+      // TODO(@jges): Remove log message
+      LM_M(("iwebp.parse: finish()"));
+
       size_t services_size = services_.size();
       for (size_t i = 0; (i < services_size); ++i) {
         delete services_[i];

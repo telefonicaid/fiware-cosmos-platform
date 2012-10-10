@@ -100,9 +100,75 @@ bool IsValidDouble(const char *data) {
 // Constant word serialization stuff
 // --------------------------------------------------------
 
+// Preferred names for fields
+const std::string Value::kAppField("app");
+const std::string Value::kCategoriesField("categories");
+const std::string Value::kCategoryField("category");
+const std::string Value::kCellIdField("cellId");
+const std::string Value::kConceptField("concept");
+const std::string Value::kCounterField("counter");
+const std::string Value::kCountField("count");
+const std::string Value::kDomainField("domain");
+const std::string Value::kGlobalCountField("global_count");
+const std::string Value::kHitsField("hits");
+const std::string Value::kImeiField("imei");
+const std::string Value::kImsiField("imsi");
+const std::string Value::kInstantProfileField("instant_profile");
+const std::string Value::kItemField("item");
+const std::string Value::kLanguageField("language");
+const std::string Value::kLinkField("link");
+const std::string Value::kMemberField("member");
+const std::string Value::kNameField("name");
+const std::string Value::kQueryField("query");
+const std::string Value::kQueryWordsField("query_words");
+const std::string Value::kServiceField("service");
+const std::string Value::kTimestampField("timestamp");
+const std::string Value::kTopCategoryField("top.category");
+const std::string Value::kTotalField("total");
+const std::string Value::kUpdatedCountField("updated_count");
+const std::string Value::kUrlField("url");
+const std::string Value::kUserField("user");
+const std::string Value::kUserIdField("userId");
+const std::string Value::kUsrField("usr");
+const std::string Value::kValueField("value");
+const std::string Value::kVectorProfileField("vector_profile");
+const std::string Value::kWeightField("weight");
+const std::string Value::kWordField("word");
+
 // Constant sorted alphabetically for fast search
-const char *kConstantWords[] = { "app", "category", "log", "time", "timestamp", "top", "top.category",
-                                 "url", "user", "usr", };
+const char *kConstantWords[] = { Value::kAppField.c_str(),
+                                 Value::kCategoryField.c_str(),
+                                 Value::kCategoriesField.c_str(),
+                                 Value::kCellIdField.c_str(),
+                                 Value::kConceptField.c_str(),
+                                 Value::kCounterField.c_str(),
+                                 Value::kCountField.c_str(),
+                                 Value::kDomainField.c_str(),
+                                 Value::kGlobalCountField.c_str(),
+                                 Value::kHitsField.c_str(),
+                                 Value::kImeiField.c_str(),
+                                 Value::kImsiField.c_str(),
+                                 Value::kInstantProfileField.c_str(),
+                                 Value::kItemField.c_str(),
+                                 Value::kLanguageField.c_str(),
+                                 Value::kLinkField.c_str(),
+                                 Value::kMemberField.c_str(),
+                                 Value::kNameField.c_str(),
+                                 Value::kQueryWordsField.c_str(),
+                                 Value::kQueryField.c_str(),
+                                 Value::kServiceField.c_str(),
+                                 Value::kTimestampField.c_str(),
+                                 Value::kTopCategoryField.c_str(),
+                                 Value::kTotalField.c_str(),
+                                 Value::kUpdatedCountField.c_str(),
+                                 Value::kUrlField.c_str(),
+                                 Value::kUserField.c_str(),
+                                 Value::kUserIdField.c_str(),
+                                 Value::kUsrField.c_str(),
+                                 Value::kValueField.c_str(),
+                                 Value::kVectorProfileField.c_str(),
+                                 Value::kWeightField.c_str(),
+                                 Value::kWordField.c_str() };
 
 int InternalGetConstantWordCode(const char *word, int min, int max) {
   if (max <= (min + 1)) {
@@ -166,7 +232,8 @@ inline int Value::ParseNumber(const char *data) {
       return 1;  // Codified in the serialization code
 
     case ser_int_value_1:
-      LM_W(("In ser_int_value_1, &tmp:%p, tmp:%lu", &tmp, tmp));
+      // TODO: @jges remove log messages
+      // LM_W(("In ser_int_value_1, &tmp:%p, tmp:%lu", &tmp, tmp));
       value_double_ = 1;
       return 1;  // Codified in the serialization code
 
@@ -818,6 +885,8 @@ int Value::HashMap(int max_num_partitions) {
   for (it = value_map_.begin(); it != value_map_.end(); ++it) {
     accumulated_hash ^= (au::HashString(it->first, kNoPartitions) * it->second->hash(kNoPartitions));
   }
+  // TODO: @jges remove log message
+  // LM_M(("HashMap for key:'%s', hash:%d", str().c_str(), accumulated_hash % max_num_partitions));
   return accumulated_hash % max_num_partitions;
 }
 
@@ -1261,12 +1330,12 @@ std::string Value::str() {
     }
 
     default:
-      LM_X(1, ("Internal error, unknown value_type:%d", static_cast<int>(value_type_)));
+      LM_E(("Internal error, unknown value_type:%d", static_cast<int>(value_type_)));
   }
 
   // Impossible condition to silent valgrind
   // In any case, LM_X will exit the program
-  LM_X(1, ("Internal error"));
+  LM_E(("Internal error"));
   return "unknown";
 }
 
@@ -1610,6 +1679,8 @@ bool Value::IsVector() const {
 
 void Value::clear() {
   // Clear elements in the map
+  // TODO: @jges remove log message
+  //LM_M(("clear called for key:'%s', this:%p", str().c_str(), this));
   au::map<std::string, Value>::iterator it;
   for (it = value_map_.begin(); it != value_map_.end(); ++it) {
     it->second->clear();   // Recursive reuse
@@ -1623,6 +1694,8 @@ void Value::clear() {
     reuseInstance(value_vector_[i]);
   }
   value_vector_.clear();
+  // TODO: @jges remove log message
+  //LM_M(("ends clear for key:'%s', this:%p", str().c_str(), this));
 }
 
 void Value::SetAsVector() {
@@ -1788,6 +1861,9 @@ void Value::PartialSortVectorInAscendingOrder(uint64_t num_items_sorted) {
   if (value_vector_.size() < 2) {
     return;
   }
+  if (num_items_sorted > value_vector_.size()) {
+    num_items_sorted = value_vector_.size();
+  }
   std::partial_sort(value_vector_.begin(), value_vector_.begin() + num_items_sorted, value_vector_.end(),
                     Value::Less);
   return;
@@ -1799,6 +1875,9 @@ void Value::PartialSortVectorInDescendingOrder(uint64_t num_items_sorted) {
   }
   if (value_vector_.size() < 2) {
     return;
+  }
+  if (num_items_sorted > value_vector_.size()) {
+    num_items_sorted = value_vector_.size();
   }
   std::partial_sort(value_vector_.begin(), value_vector_.begin() + num_items_sorted, value_vector_.end(),
                     Value::Greater);
@@ -1815,6 +1894,9 @@ void Value::PartialSortVectorOfMapsInAscendingOrder(const std::string& field, ui
   if (value_vector_[0]->value_type_ != value_map) {
     return;
   }
+  if (num_items_sorted > value_vector_.size()) {
+    num_items_sorted = value_vector_.size();
+  }
   MapCompareAscendingFunctor comp_functor(field);
   std::partial_sort(value_vector_.begin(), value_vector_.begin() + num_items_sorted, value_vector_.end(),
                     comp_functor);
@@ -1830,6 +1912,9 @@ void Value::PartialSortVectorOfMapsInDescendingOrder(const std::string& field, u
   }
   if (value_vector_[0]->value_type_ != value_map) {
     return;
+  }
+  if (num_items_sorted > value_vector_.size()) {
+    num_items_sorted = value_vector_.size();
   }
   MapCompareDescendingFunctor comp_functor(field);
   std::partial_sort(value_vector_.begin(), value_vector_.begin() + num_items_sorted, value_vector_.end(),
@@ -2096,10 +2181,12 @@ const Value Value::operator++(int /* just to distinguish prefix and postfix incr
 // Comparison operators (mainly for numbers and strings)
 bool Value::Less(const Value* const left, const Value* const right) {
   if (left->value_type_ < right->value_type_) {
+    // TODO: @jges remove log messages
     LM_W(("Comparing different types of values: left->value_type_:%d, right->value_type_:%d",
           left->value_type_, right->value_type_));
     return true;
   } else if (left->value_type_ < right->value_type_) {
+    // TODO: @jges remove log messages
     LM_W(("Comparing different types of values: left->value_type_:%d, right->value_type_:%d",
           left->value_type_, right->value_type_));
     return true;

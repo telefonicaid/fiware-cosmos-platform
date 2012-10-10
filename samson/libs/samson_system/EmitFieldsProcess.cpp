@@ -35,7 +35,7 @@ const std::string EmitFieldsProcess::kNullDest("null");
 
 bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
                                samson::KVWriter* const writer) {
-  if (key->CheckMapValue("app", name().c_str())) {
+  if (key->CheckMapValue(Value::kAppField.c_str(), name().c_str())) {
     Value *additional_field_value = NULL;
     if (include_field_) {
       // If additional field, we must check it is present among keys
@@ -79,8 +79,8 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
       }
 
       new_key.SetAsMap();
-      new_key.AddValueToMap("app")->SetString(out_app_name_);
-      new_key.AddValueToMap("concept")->SetString(concepts_[i]);
+      new_key.AddValueToMap(Value::kAppField)->SetString(out_app_name_);
+      new_key.AddValueToMap(Value::kConceptField)->SetString(concepts_[i]);
 
       if (p_value->IsMap()) {
         LM_E(("Error, don't know how to distribute concept '%s' being a map", concepts_[i].c_str()));
@@ -89,8 +89,8 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
         size_t value_vector_size = p_value->GetVectorSize();
         for (size_t j = 0; (j < value_vector_size); ++j) {
           new_value.SetAsMap();
-          new_value.AddValueToMap("concept")->SetString(concepts_[i]);
-          new_value.AddValueToMap("item")->SetString(p_value->GetValueFromVector(j)->GetString());
+          new_value.AddValueToMap(Value::kConceptField)->SetString(concepts_[i]);
+          new_value.AddValueToMap(Value::kItemField)->SetString(p_value->GetValueFromVector(j)->GetString());
           if (include_field_) {
             new_value.AddValueToMap(additional_field_)->copyFrom(additional_field_value);
           }
@@ -113,8 +113,8 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
       } else {
         // new_value.SetAsVoid();
         new_value.SetAsMap();
-        new_value.AddValueToMap("concept")->SetString(concepts_[i]);
-        new_value.AddValueToMap("item")->SetString(p_value->GetString());
+        new_value.AddValueToMap(Value::kConceptField)->SetString(concepts_[i]);
+        new_value.AddValueToMap(Value::kItemField)->SetString(p_value->GetString());
         if (include_field_) {
           new_value.AddValueToMap(additional_field_)->copyFrom(additional_field_value);
         }
@@ -139,7 +139,7 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
 
     if (out_def_name() != EmitFieldsProcess::kNullDest) {
       // Just reemit key-value pairs to the default output stream
-      key->SetStringForMap("app", out_def_name().c_str());
+      key->SetStringForMap(Value::kAppField.c_str(), out_def_name().c_str());
       for (size_t j = 0; (j < num_values); j++) {
         // LM_M(("Emit feedback, key:'%s', value:'%s'", key->str().c_str(), values[j]->str().c_str()));
         EmitFeedback(key, values[j], writer);
@@ -147,7 +147,7 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
     }
     return true;
   } else {
-    // Input key-value not processed because this is not process "app"
+    // Input key-value not processed because this is not process Value::kAppField
     return false;
   }
 }

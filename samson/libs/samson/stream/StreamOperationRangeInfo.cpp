@@ -176,6 +176,8 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
       if (i < num_pending_size_inputs) {
         KVRanges ranges2 = block.ranges(); // Implicit conversion
         double overlap_factor = ranges2.GetOverlapFactor(range_);
+        // TODO(@jges): Remove log messages
+        LM_M(("pending_size(%lu) = pending_size(%lu) + overlap_factor(%lf)*block.size(%lu)", pending_size_ + (overlap_factor * block.size()), pending_size_, overlap_factor, block.size()));
         pending_size_ += (overlap_factor * block.size());
       }
 
@@ -212,8 +214,8 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
   }
 
   if (accumulated_size > (0.5 * (double) engine::Engine::shared()->memory_manager()->memory())) {
-    // Excesive size, defrag is required
-    state_ = au::str("Defrag required ( opearation size %s )", au::str(accumulated_size).c_str());
+    // Excessive size, defrag is required
+    state_ = au::str("Defrag required ( operation size %s )", au::str(accumulated_size).c_str());
     LM_W(("Individual range operation detected defrag was necessary..."));
     return au::SharedPointer<WorkerTask>(NULL);
   }
@@ -221,9 +223,11 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
   // Compute priority rank based on time and size
   size_t time = last_task_cronometer_.seconds();
   priority_rank_ = pending_size_ * (1 + time);
-  if (pending_size_ > 0)
+  if (pending_size_ > 0) {
+    // TODO(@jges): Remove log messages
+    LM_M(("Ready to schedule a new task, with priority:%lu", priority_rank_));
     state_ = "Ready to schedule a new task";
-  else {
+  } else {
     state_ = "No data to be processed";
   }
 
@@ -234,7 +238,7 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
     if (worker_task_ != NULL) {
       last_task_cronometer_.Reset(); // Reset cronometer
 
-      // Add environment varialble to identify this stream_operation_id
+      // Add environment variable to identify this stream_operation_id
       worker_task_->environment().Set("system.stream_operation_id", stream_operation_id_);
 
       // Return the newly generated worker task to be really shcedulled in the worker task manager
@@ -298,6 +302,8 @@ void StreamOperationRangeInfo::fill(samson::gpb::CollectionRecord *record, const
   // Default view
 
   ::samson::add(record, "pending_size", pending_size_, "sum,f=uint64");
+  // TODO(@jges): remove log messages
+  LM_M(("task:'%s', pending_size:%lu", stream_operation_name_.c_str(), pending_size_));
   ::samson::add(record, "time", au::str_time(last_task_cronometer_.seconds()), "different");
   ::samson::add(record, "priority rank", priority_rank(), "f=uint64,different");
 

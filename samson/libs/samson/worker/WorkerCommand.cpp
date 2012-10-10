@@ -412,7 +412,7 @@ void WorkerCommand::Run() {
 
   if (main_command == "ps_stream_operations_ranges") {
     au::SharedPointer<gpb::Collection> c =
-        samson_worker_->task_manager()->GetCollectionForStreamOperationsRanges(visualization);
+    samson_worker_->task_manager()->GetCollectionForStreamOperations(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -421,7 +421,7 @@ void WorkerCommand::Run() {
 
   if (main_command == "ps_stream_operations") {
     au::SharedPointer<gpb::Collection> c =
-        samson_worker_->task_manager()->GetCollectionForStreamOperations(visualization);
+    samson_worker_->task_manager()->GetCollectionForStreamOperationsRanges(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();

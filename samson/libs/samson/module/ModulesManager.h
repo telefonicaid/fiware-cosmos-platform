@@ -58,7 +58,6 @@ class ModulesManager {
     void addModule(std::string path);
     void addModules();
 
-    au::Token token_modules;   // !< General lock for modules accessquit
     au::map<std::string, Module> modules;   // Individual modules ( just for listing )
     std::vector<void *> handlers;   // Open handlers
 };

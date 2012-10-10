@@ -30,8 +30,7 @@
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                           */
 
 namespace samson {
-ModulesManager::ModulesManager() :
-  token_modules("ModulesManager") {
+ModulesManager::ModulesManager() {
   LM_T(LmtModuleManager, ("Creating ModulesManager"));
 }
 
@@ -42,7 +41,6 @@ ModulesManager::~ModulesManager() {
 
 void ModulesManager::clearModulesManager() {
   // Remove the main instances of the modules created while loading from disk
-  au::TokenTaker tt(&token_modules, "ModulesManager::clearModulesManager");
 
   modules.clearMap();
   // Close handlers
@@ -128,7 +126,6 @@ void ModulesManager::addModule(std::string path) {
 
   // Check platform version
   if (platform_version == SAMSON_VERSION) {
-    au::TokenTaker tt(&token_modules, "ModulesManager::addModule");
 
     Module *previous_module = modules.findInMap(module->name);
 
@@ -197,7 +194,6 @@ Status ModulesManager::loadModule(std::string path, Module **module, std::string
 }
 
 std::string ModulesManager::GetTableOfModules() {
-  au::TokenTaker tt(&token_modules, "ModulesManager::GetTableOfModules");
 
   au::tables::Table table("Name,left|Version|#Operations|#Datas|Author,left");
   table.setTitle("Modules");
@@ -221,7 +217,6 @@ std::string ModulesManager::GetTableOfModules() {
 au::SharedPointer<gpb::Collection> ModulesManager::GetModulesCollection(const Visualization& visualitzation) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("modules");
-  au::TokenTaker tt(&token_modules, "ModulesManager::GetModulesCollection");
   au::map<std::string, Module>::iterator it;
   for (it = modules.begin(); it != modules.end(); it++) {
     std::string name = it->second->name;
@@ -243,7 +238,6 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetModulesCollection(const Vi
 au::SharedPointer<gpb::Collection> ModulesManager::GetDatasCollection(const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("datas");
-  au::TokenTaker tt(&token_modules, "ModulesManager::GetDatasCollection");
   au::map<std::string, Module>::iterator it;
   for (it = modules.begin(); it != modules.end(); it++) {
     Module *module = it->second;
@@ -267,7 +261,6 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetDatasCollection(const Visu
 au::SharedPointer<gpb::Collection> ModulesManager::GetOperationsCollection(const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("operations");
-  au::TokenTaker tt(&token_modules, "ModulesManager::GetOperationsCollection");
   au::map<std::string, Module>::iterator it;
   for (it = modules.begin(); it != modules.end(); it++) {
     Module *module = it->second;
@@ -296,7 +289,6 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetOperationsCollection(const
 
 Data *ModulesManager::getData(std::string name) {
   // Search in all modules ( inefficient but generic )
-  au::TokenTaker tt(&token_modules, "ModulesManager::getData");
 
   au::map<std::string, Module>::iterator it_modules;
   for (it_modules = modules.begin(); it_modules != modules.end(); it_modules++) {
@@ -310,7 +302,6 @@ Data *ModulesManager::getData(std::string name) {
 
 Operation *ModulesManager::getOperation(std::string name) {
   // Search in all modules ( inefficient but generic )
-  au::TokenTaker tt(&token_modules, "ModulesManager::getOperation");
 
   au::map<std::string, Module>::iterator it_modules;
   for (it_modules = modules.begin(); it_modules != modules.end(); it_modules++) {

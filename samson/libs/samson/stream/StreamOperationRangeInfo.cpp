@@ -24,6 +24,7 @@ StreamOperationRangeInfo::StreamOperationRangeInfo(SamsonWorker *samson_worker, 
 
   // Default values
   priority_rank_ = 0;
+  pending_size_ = 0;
   state_ = "No info";
   worker_task_ = NULL; // No task by default
 }

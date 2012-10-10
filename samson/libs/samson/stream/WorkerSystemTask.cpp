@@ -6,7 +6,6 @@
 #include "engine/Notification.h"
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/NotificationMessages.h"
-#include "samson/module/ModulesManager.h"           // samson::ModulesManager
 #include "samson/network/Packet.h"                  // network::Packet
 #include "samson/stream/Block.h"                                  // samson::stream::Block
 #include "samson/stream/BlockList.h"                              // samson::stream::BlockList

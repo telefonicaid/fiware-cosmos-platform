@@ -64,7 +64,10 @@ namespace samson {
       ~StreamOperationRangeInfo();
       
       // Review this stream operation to compute priority rank
-      void ReviewCurrentTask( );
+      void ReviewCurrentTask(  );
+      
+      // Review state of this stream operation for this range independently of it is running a task or not
+      void Review( gpb::Data *data );
       
       // Get a new task for this stream operation ( or compute priority for next task )
       // If (task_id == -1) --> compute priority
@@ -73,10 +76,6 @@ namespace samson {
       // Get a record for this element ( listing in delilah )
       void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
       
-      // Reset all pending worker_tasks
-      void Reset();
-      void ResetWithError(const std::string& error_message);
-      
       
       // Get information
       size_t priority_rank();
@@ -84,18 +83,32 @@ namespace samson {
       void set_state( const std::string& state );
       std::string str();
       au::SharedPointer<WorkerTask> worker_task();      // Accessor to worker task
-
+      size_t stream_operation_id()
+      {
+        return stream_operation_id_;
+      }
       
     private:
       
+      // Set error and reset cronometer to count how much time since last error
+      void SetError( const std::string error_message )
+      {
+        error_.set( error_message );
+        cronometer_error_.Reset();
+      }
       
       size_t stream_operation_id_;           // Unique identifier of the stream operation
       std::string stream_operation_name_;    // Name of the stream operation
       KVRange range_;                        // Range in this stream operation
+      
+      std::string state_input_queues_;       // String containing last state of input queues ( every review updates this )
       std::string state_;                    // String describing the state of this stream operation ( good for debugging )
-      size_t pending_size_;                  // Pending size to be processed
-      size_t priority_rank_;                 // Last Priority number computed
+      
+      size_t pending_size_;                  // Size to be processes ( thrigerring task if > 0)
+      size_t priority_rank_;                 // Priority number to scehdule a new task ( time * pending_size )
+      
       au::Cronometer last_task_cronometer_;  // Last execution cronometer
+
       au::ErrorManager error_;               // Contains the last error of an operation
       au::Cronometer cronometer_error_;      // Time since the last error
       

@@ -913,33 +913,7 @@ bool DataModel::CheckForAllOperationsFinished() {
   operations_size = data->batch_operations_size();
   for (int i = 0; i < operations_size; ++i) {
     gpb::BatchOperation *batch_operation = data->mutable_batch_operations(i);
-    if (CheckIfBatchOPerationIsFinished(batch_operation, data) == false) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// method trying to discover if a batch operation is really finished,
-// by looking at the input queues
-bool DataModel::CheckIfBatchOPerationIsFinished(const gpb::BatchOperation* const batch_operation,
-                                                au::SharedPointer<gpb::Data> data) const {
-  LM_T(LmtDelilahComponent, ("CheckIfBatchOPerationIsFinished '%s' with %d inputs",
-          batch_operation->operation().c_str(), batch_operation->inputs_size()));
-
-  // To check for finish, we should take into account just the first input,
-  // as the other would be the state or a permanent queue
-  // Small change in the criteria. Now we can have several inputs, so the test
-  // must include all queues but the last one
-  size_t delilah_id = batch_operation->delilah_id();
-  size_t delilah_component_id = batch_operation->delilah_component_id();
-  for (int i = 0; i < batch_operation->inputs_size() - 1; ++i) {
-    std::string hidden_queue_name = au::str(".%s_%lu_%s", au::code64_str(delilah_id).c_str(), delilah_component_id,
-                                            batch_operation->inputs(i).c_str());
-    gpb::Queue *queue = get_queue(data.shared_object(), hidden_queue_name);
-    if (queue && (queue->blocks_size() > 0)) {
-      LM_T(LmtDelilahComponent, ("Batch operation: '%s', queue:'%s' with size:%lu",
-              batch_operation->operation().c_str(), hidden_queue_name.c_str(), queue->blocks_size()));
+    if ( gpb::bath_operation_is_finished(data.shared_object(), *batch_operation) == false) {
       return false;
     }
   }
@@ -953,37 +927,42 @@ void DataModel::ReviewBatchOperations(au::SharedPointer<gpb::Data> data, int ver
   for (int i = 0; i < operations_size; ++i) {
     gpb::BatchOperation *batch_operation = updated_data->mutable_batch_operations(i);
 
-    if (!batch_operation->finished()) {
-      if (CheckIfBatchOPerationIsFinished(batch_operation, updated_data) == true) {
-        // Send a message to original delilah
-        engine::Notification* notification = new engine::Notification(notification_samson_worker_send_message);
-        std::string message = au::str("Batch operation %s_%lu has finished correctly",
-                                      au::code64_str(batch_operation->delilah_id()).c_str(),
-                                      batch_operation->delilah_component_id());
-        notification->environment().Set("message", message);
-        notification->environment().Set("context", "system");
-        notification->environment().Set("type", "warning");
-        notification->environment().Set("delilah_id", batch_operation->delilah_id());
+    if( batch_operation->finished() )
+      continue;
+    
+    bool finished = gpb::bath_operation_is_finished( updated_data.shared_object() , *batch_operation );
+    
+    if ( finished ) {
 
-        engine::Engine::shared()->notify(notification);
-        // Set finished and move data
-        batch_operation->set_finished(true);
-
-        size_t delilah_id = batch_operation->delilah_id();
-        size_t delilah_component_id = batch_operation->delilah_component_id();
-        std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
-
-        // Perform all push for output queues
-        for (int j = 0; j < batch_operation->outputs_size(); ++j) {
-          std::string queue_name = batch_operation->outputs(j);
-          std::string final_queue_name = prefix + queue_name;
-          std::string command = au::str("push_queue %s %s", final_queue_name.c_str(), queue_name.c_str());
-
-          PerformCommit(updated_data, command, version, error);
-          if (error->IsActivated()) {
-            LM_W(("Error performing commit command:'%s'  error:'%s'", command.c_str(), error->GetMessage().c_str()));
-            return;
-          }
+      // Set finished and move data
+      batch_operation->set_finished(true);
+      
+      // Send a message to original delilah
+      engine::Notification* notification = new engine::Notification(notification_samson_worker_send_message);
+      std::string message = au::str("Batch operation %s_%lu has finished correctly",
+                                    au::code64_str(batch_operation->delilah_id()).c_str(),
+                                    batch_operation->delilah_component_id());
+      notification->environment().Set("message", message);
+      notification->environment().Set("context", "system");
+      notification->environment().Set("type", "warning");
+      notification->environment().Set("delilah_id", batch_operation->delilah_id());
+      
+      engine::Engine::shared()->notify(notification);
+      
+      size_t delilah_id = batch_operation->delilah_id();
+      size_t delilah_component_id = batch_operation->delilah_component_id();
+      std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
+      
+      // Perform all push for output queues
+      for (int j = 0; j < batch_operation->outputs_size(); ++j) {
+        std::string queue_name = batch_operation->outputs(j);
+        std::string final_queue_name = prefix + queue_name;
+        std::string command = au::str("push_queue %s %s", final_queue_name.c_str(), queue_name.c_str());
+        
+        PerformCommit(updated_data, command, version, error);
+        if (error->IsActivated()) {
+          LM_W(("Error performing commit command:'%s'  error:'%s'", command.c_str(), error->GetMessage().c_str()));
+          return;
         }
       }
     }

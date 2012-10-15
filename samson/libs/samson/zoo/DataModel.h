@@ -124,9 +124,6 @@ class DataModel : public ZooNodeCommiter<gpb::Data> {
 
   private:
     void ReviewBatchOperations(au::SharedPointer<gpb::Data>, int version, au::ErrorManager *error);
-    // method trying to discover if a batch operation is really finished
-    bool CheckIfBatchOPerationIsFinished(const gpb::BatchOperation* const batch_operation,
-                                         au::SharedPointer<gpb::Data> data) const;
 };
 }
 

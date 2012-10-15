@@ -11,7 +11,9 @@
 namespace samson {
 namespace stream {
 WorkerTaskBase::WorkerTaskBase(::samson::SamsonWorker* samson_worker, size_t id, const std::string& concept) :
-  block_list_container_(au::str("block lists for task %lu", id), id) {
+  block_list_container_(au::str("block lists for task %lu", id), id)
+  , activity_monitor_("definition")
+  {
   samson_worker_ = samson_worker;
   id_ = id;   // Not assigned at the moment
   ready_ = false;   // By default it is not ready
@@ -181,6 +183,7 @@ void WorkerTaskBase::SetFinishedWithError(const std::string& error_message) {
 
 std::string WorkerTaskBase::generate_commit_command(const std::vector<std::string>& inputs,
                                                     const std::vector<std::string>& outputs) {
+
   // Get the commit command for this stream operation
   CommitCommand commit_command;
 
@@ -211,5 +214,17 @@ std::string WorkerTaskBase::generate_commit_command(const std::vector<std::strin
   // Gerate the commit command
   return commit_command.GetCommitCommand();
 }
+  void WorkerTaskBase::setActivity( const std::string name )
+  {
+    activity_monitor_.StartActivity(name);
+  }
+  
+  std::string WorkerTaskBase::GetActivitySummary()
+  {
+    activity_monitor_.StopActivity(); 
+    return activity_monitor_.GetSummary();
+  }
+
+  
 }
 }

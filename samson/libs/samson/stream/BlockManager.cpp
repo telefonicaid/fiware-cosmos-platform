@@ -411,9 +411,10 @@ void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
 
   // Check file-size
   if (!header.check_size(fileSize)) {
-    LM_W(("Not correct size while recovering block_id %lu from file %s"
-            , block_id
-            , fileName.c_str()));
+    LM_W(("Not correct size (%lu) while recovering block_id %lu from file %s"
+          , fileSize
+          , block_id
+          , fileName.c_str()));
 
     fclose(file);
     return;

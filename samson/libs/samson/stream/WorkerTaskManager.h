@@ -31,9 +31,10 @@ class StreamOperationGlobalInfo;
 
 struct WorkerTaskLog {
     std::string description;   // Description of the task
-    std::string result;   // Result of the operation
-    std::string inputs;   // Information at the input of the operation
+    std::string result;    // Result of the operation
+    std::string inputs;    // Information at the input of the operation
     std::string outputs;   // Information at output of the operation
+    std::string times;     // Information at output of the operation
     int waiting_time_seconds;   // Waiting time until execution starts
     int running_time_seconds;   // Running time
 };
@@ -75,6 +76,7 @@ class WorkerTaskManager : public ::engine::NotificationListener {
     au::SharedPointer<gpb::Collection> GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
 
   private:
+  
     size_t id_;   // Id of the current task
     au::Queue<WorkerTaskBase> pending_tasks_;   // List of pending task to be executed
     au::Dictionary<size_t, WorkerTaskBase> running_tasks_;   // Map of running tasks
@@ -88,6 +90,11 @@ class WorkerTaskManager : public ::engine::NotificationListener {
 
     // Log of last tasks...
     std::list<WorkerTaskLog> last_tasks_;
+  
+  // Get the number of current running tasks for a particular stream operation
+  int GetRunningTasks( size_t stream_operation_id );
+
+  
 };
 }
 }

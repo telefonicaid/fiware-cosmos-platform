@@ -4,6 +4,11 @@
 #include <string>
 #include <vector>
 
+#include "engine/Engine.h"
+#include "engine/MemoryManager.h"
+#include "engine/ProcessManager.h"
+
+#include "au/log/LogMain.h"
 #include "au/string.h"
 #include "au/utils.h"
 
@@ -310,18 +315,18 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
 
   // Update the size and number of kvs
   if (block->kvs() < info.kvs) {
-    error->set(
-               au::str("Not possible to remove %s kvs in blockref %lu (%lu kvs)", au::str(info.kvs).c_str(), block_id,
-                       au::str(block->kvs()).c_str()));
+    error->set( au::str("Not possible to remove %s kvs in blockref %lu (%lu kvs)"
+                        ,au::str(info.kvs).c_str(), block_id
+                        ,au::str(block->kvs()).c_str()));
     return;
   } else {
     block->set_kvs(block->kvs() - info.kvs);
   }
 
   if (block->size() < info.size) {
-    error->set(
-               au::str("Not possible to remove %s in blockref %lu (%lu)", au::str(info.size, "B").c_str(), block_id,
-                       au::str(block->size(), "B").c_str()));
+    error->set(au::str("Not possible to remove %s in blockref %lu (%lu)"
+                       ,au::str(info.size, "B").c_str(), block_id
+                       ,au::str(block->size(), "B").c_str()));
     return;
   } else {
     block->set_size(block->size() - info.size);
@@ -420,9 +425,11 @@ au::StringVector data_get_queues_connected(gpb::Data *data, const std::string& q
 }
 
 bool bath_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batch_operation) {
+
+  
   size_t delilah_id = batch_operation.delilah_id();
   size_t delilah_component_id = batch_operation.delilah_component_id();
-
+  
   for (int i = 0; i < batch_operation.inputs_size(); i++) {
     std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
     std::string queue_name = prefix + batch_operation.inputs(i);
@@ -526,9 +533,11 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::vector<std
         samson::KVRanges block_ranges = block.ranges();   // Implicit conversion
         double overlap_factor = block_ranges.GetOverlapFactor(ranges[r]);
         size_t data_size = overlap_factor * block.size();
+        size_t kvs_size = overlap_factor * block.kvs();
 
         if (overlap_factor > 0) {
           info.data_size_in_ranges += data_size;   // Total size of data in this queue for selected ranges
+          info.data_kvs_in_ranges += kvs_size;   // Total size of data in this queue for selected ranges
 
           range_memory_size += memory_size;
           range_data_size += data_size;
@@ -555,5 +564,16 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::vector<std
   }
   return info;
 }
+
+
 }
+  size_t GetMaxMemoryPerTask()
+  {
+    // Memory size limits in this platform
+    size_t memory = engine::Engine::shared()->memory_manager()->memory();
+    size_t num_cores = engine::Engine::shared()->process_manager()->max_num_procesors();
+    return  0.7 * ((double) memory / num_cores);
+  }
+
+  
 }

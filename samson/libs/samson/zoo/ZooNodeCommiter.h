@@ -38,11 +38,16 @@ struct CommitRecord {
     std::string caller;
     std::string commit_command;
     std::string result;
+    double commit_time;
 
-    CommitRecord(const std::string& _caller, const std::string& _commit_command, const std::string& _result) {
+    CommitRecord(const std::string& _caller
+                 , const std::string& _commit_command
+                 , const std::string& _result
+                 , double _commit_time) {
       caller = _caller;
       commit_command = _commit_command;
       result = _result;
+      commit_time = _commit_time;
     }
 };
 
@@ -87,14 +92,17 @@ class ZooNodeCommiter : public engine::NotificationListener {
 
     // Commit a new commit_command
     void Commit(const std::string& caller, const std::string& commit_command, au::ErrorManager *error) {
-      // Perform real commit
-      InternCommit(commit_command, error);
 
+      // Perform real commit
+      au::Cronometer cronometer;
+      InternCommit(commit_command, error);
+      double time = cronometer.seconds();
+      
       // Log activity for debugging
       if (error->IsActivated()) {
-        last_commits_.push_back(CommitRecord(caller, commit_command, error->GetMessage()));
+        last_commits_.push_front(CommitRecord(caller, commit_command, error->GetMessage() , time));
       } else {
-        last_commits_.push_back(CommitRecord(caller, commit_command, "OK"));
+        last_commits_.push_front(CommitRecord(caller, commit_command, "OK" , time));
       }
 
       while (last_commits_.size() > 100) {
@@ -130,6 +138,14 @@ class ZooNodeCommiter : public engine::NotificationListener {
           ::samson::add(record, "Concept", "Result", "different");
           ::samson::add(record, "Value", it->result, "different");
         }
+        
+        {
+          gpb::CollectionRecord *record = collection->add_record();
+          ::samson::add(record, "#commit", num, "different");
+          ::samson::add(record, "Concept", "Time", "different");
+          ::samson::add(record, "Value", au::str(it->commit_time), "different");
+        }
+        
         num++;
       }
 

@@ -23,11 +23,11 @@
 #define AU_LOG_DEFAULT_FORMAT            "exec_short[pid] : channel_alias : date : time : file[line] : function : text"
 #define AU_LOG_DEFAULT_FORMAT_LOG_CLIENT "exec_short[pid]@host : channel_alias : date : time : function : text"
 
+// Common channels
 #define AU_LOG_M                         0
 #define AU_LOG_W                         1
 #define AU_LOG_E                         2
 #define AU_LOG_X                         3
-
 #define AU_LOG_V                         4
 #define AU_LOG_V2                        4
 #define AU_LOG_V3                        5

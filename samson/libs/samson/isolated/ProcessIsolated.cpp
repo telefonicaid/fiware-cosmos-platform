@@ -218,8 +218,9 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
 }
 
 void ProcessIsolated::initProcessItemIsolated() {
-  initProcessIsolated();   // Init function in the foreground-process
 
+  setActivity("process");
+  initProcessIsolated();   // Init function in the foreground-process
   if (error_.IsActivated()) {
     return;
   }
@@ -239,6 +240,9 @@ void ProcessIsolated::finishProcessItemIsolated() {
     item = NULL;
     shm_id = -1;
   }
+  
+  setActivity("finishing");
+
 }
 
 void ProcessIsolated::runIsolated() {

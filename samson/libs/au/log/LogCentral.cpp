@@ -357,42 +357,41 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       au::tables::Table table(table_definition);
       table.setTitle("Channels for logging");
 
-      for (int i =  0; i < AU_LOG_MAX_CHANNELS; i++) {
+      for (int i =  0; i < log_channels_.num_channels(); i++) {
         std::string name = log_channels_.channel_name(i);
-        if (name != "") {
-          au::StringVector values;
-          values.Push(log_channels_.channel_alias(i));
-          values.Push(name);
-          values.Push(main_log_channel_filter_.IsChannelActivated(i) ? "[Y]" : "[N]");
 
-          if (rates) {
-            values.Push(log_counter_.str_rate(i));
-          } else {
-            values.Push(log_counter_.str(i));
-          }
-
-          au::map<std::string, LogPlugin>::iterator it;
-          for (it = plugins_.begin(); it != plugins_.end(); it++) {
-            std::ostringstream info;
-            LogPlugin *log_plugin = it->second;
-
-            if (log_plugin->log_channel_filter().IsChannelActivated(i)) {
-              info << "[Y] ";
-            } else {
-              info << "[N] ";
-            }
-
-            if (rates) {
-              info << log_plugin->log_counter().str_rate(i);
-            } else {
-              info << log_plugin->log_counter().str(i);
-            }
-
-            values.Push(info.str());
-          }
-
-          table.addRow(values);
+        au::StringVector values;
+        values.Push(log_channels_.channel_alias(i));
+        values.Push(name);
+        values.Push(main_log_channel_filter_.IsChannelActivated(i) ? "[Y]" : "[N]");
+        
+        if (rates) {
+          values.Push(log_counter_.str_rate(i));
+        } else {
+          values.Push(log_counter_.str(i));
         }
+        
+        au::map<std::string, LogPlugin>::iterator it;
+        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+          std::ostringstream info;
+          LogPlugin *log_plugin = it->second;
+          
+          if (log_plugin->log_channel_filter().IsChannelActivated(i)) {
+              info << "[Y] ";
+          } else {
+            info << "[N] ";
+          }
+          
+          if (rates) {
+            info << log_plugin->log_counter().str_rate(i);
+          } else {
+            info << log_plugin->log_counter().str(i);
+          }
+          
+          values.Push(info.str());
+        }
+        
+        table.addRow(values);
       }
 
       error.AddMessage(table.str());

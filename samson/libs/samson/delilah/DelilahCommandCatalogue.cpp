@@ -157,6 +157,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_tag("ls_last_data_commits", "send_to_all_workers");
 
   add("ls_last_tasks", "debug", "Show last 100 tasks scheduled in workers");
+  add_bool_option("ls_last_tasks", "-times" , "Show times spent by tasks");
   add_tag("ls_last_tasks", "send_to_all_workers");
 
   add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
@@ -196,6 +197,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
                   "Show hidden stream operations as well ( used internally by the platform )");
 
   add("ps_stream_operations", "stream", "Show a list of stream operations with information about execution planning");
+  add_bool_option("ps_stream_operations", "-state","Show state of this stream operations");
 
   add("ps_stream_operations_ranges", "stream",
       "Show a list of stream operations with information about running processes");

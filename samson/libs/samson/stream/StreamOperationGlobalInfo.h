@@ -55,11 +55,9 @@ class StreamOperationGlobalInfo {
     StreamOperationGlobalInfo(SamsonWorker *samson_worker, size_t stream_operation_id,
                               const std::string& stream_operation_name, const std::vector<KVRange>& ranges);
 
-    void schedule_defrag(gpb::Data *data);
-    void schedule_defrag(gpb::Data* data, const std::string& queue_name);
 
     // main review function based on current data model
-    void Review(gpb::Data *data);
+    void Review(gpb::Data *data , int num_running_operations );
 
     // Get a record for this element ( tables on delilah )
     void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
@@ -86,11 +84,12 @@ class StreamOperationGlobalInfo {
       return execute_range_operations_;
     }
 
-    bool execute_defrag() {
-      return execute_defrag_;
-    }
-
   private:
+
+  // Schedule defrag operation ( called from Review )
+  void schedule_defrag(gpb::Data *data);
+  void schedule_defrag(gpb::Data* data, const std::string& queue_name);
+  
     // Compute ranges given the current division factor
     std::vector<KVRange> ranges_for_division_factor(int division_factor) const {
       if (division_factor_ == 1)
@@ -127,10 +126,10 @@ class StreamOperationGlobalInfo {
 
     // State in the last review...
     std::string state_;
+    std::string state_input_queues_;
 
     // flag to indicate that operations for ranges shoudl be executed
     bool execute_range_operations_;
-    bool execute_defrag_;
 
     // Internal error
     au::ErrorManager error_;

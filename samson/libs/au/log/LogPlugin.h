@@ -58,7 +58,7 @@ public:
     return log_channels_filter_.IsChannelActivated(c);
   }
 
-  bool activated() {
+  bool activated() const {
     return activated_;
   }
 

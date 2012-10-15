@@ -29,8 +29,9 @@ class Block;
 class WorkerTask : public ::samson::ProcessIsolated {
   public:
     // Constructor
-    WorkerTask(SamsonWorker *samson_worker, size_t id, const gpb::StreamOperation& stream_operation,
-               Operation *operation, KVRange range);
+    WorkerTask( SamsonWorker *samson_worker, size_t id
+               ,const gpb::StreamOperation& stream_operation
+               ,Operation *operation, KVRange range);
 
     ~WorkerTask();
 
@@ -54,7 +55,9 @@ class WorkerTask : public ::samson::ProcessIsolated {
     // Virtual methods from WorkerTaskBase
     virtual std::string str();
 
+  
   private:
+  
     // Specific function to execute map, reduce, parser operations
     void generateKeyValues_parser(samson::ProcessWriter *writer);
     void generateKeyValues_map(samson::ProcessWriter *writer);
@@ -71,7 +74,7 @@ class WorkerTask : public ::samson::ProcessIsolated {
 
     // Error container if something happen suring execution
     au::ErrorManager error_;
-
+  
     // Pointer to samson worker to create new blocks
     SamsonWorker *samson_worker_;
 };

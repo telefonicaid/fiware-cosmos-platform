@@ -7,6 +7,7 @@
 
 #include "au/ErrorManager.h"
 #include "au/containers/StringVector.h"
+#include "au/containers/SharedPointer.h"
 #include "samson/common/FullKVInfo.h"
 #include "samson/common/KVInfo.h"
 #include "samson/common/KVRange.h"
@@ -16,6 +17,9 @@
 
 namespace samson {
 namespace gpb {
+  
+typedef au::SharedPointer<Collection> CollectionPointer;
+  
 // Operations over gpb::StreamOperations
 gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& name);
 gpb::StreamOperation * getStreamOperation(gpb::Data *data, size_t stream_operation_id);
@@ -70,6 +74,7 @@ class DataInfoForRanges {
   public:
     DataInfoForRanges() {
       data_size = 0;
+      data_kvs_in_ranges = 0;
       data_size_in_ranges = 0;
       max_memory_size_for_a_range = 0;
       max_data_size_for_a_range = 0;
@@ -77,6 +82,7 @@ class DataInfoForRanges {
     }
 
     size_t data_size;
+    size_t data_kvs_in_ranges;
     size_t data_size_in_ranges;
     size_t max_memory_size_for_a_range;
     size_t max_data_size_for_a_range;
@@ -87,7 +93,12 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::vector<std
                                            std::vector<samson::KVRange> ranges);
 DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::string& queue,
                                            std::vector<samson::KVRange> ranges);
+  
+  
 }
+
+  size_t GetMaxMemoryPerTask();
+
 }   // End of namespace samson::gpb
 
 #endif  // ifndef _H_SAMOSN_GPB_OPERATIONS

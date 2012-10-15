@@ -2,6 +2,8 @@
 
 #include <algorithm>
 
+#include "engine/Engine.h"
+#include "engine/ProcessManager.h"
 #include "samson/common/gpb_operations.h"
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/SamsonSetup.h"
@@ -232,127 +234,141 @@ std::string StreamOperationGlobalInfo::str() {
   return output.str();
 }
 
-void StreamOperationGlobalInfo::Review(gpb::Data *data) {
+void StreamOperationGlobalInfo::Review(gpb::Data *data , int num_running_operations ) {
   
   // Review current tasks
   ReviewCurrentTasks();
 
-  // Memory size limits in this platform
-  size_t hard_max_memory = 0.5 * (double) engine::Engine::shared()->memory_manager()->memory();
-  size_t soft_max_memory = 0.25 * (double) engine::Engine::shared()->memory_manager()->memory();
-  
+  size_t max_memory_per_task = GetMaxMemoryPerTask();
   
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);
 
   bool batch_operation = stream_operation->batch_operation();
   bool reduce_forward = stream_operation->reduce_forward();
 
-  // Update state
-  state_ = ""; // Init state string
+  state_ = "";
+  state_input_queues_ = "";
 
-  if (batch_operation) {
+  // All ranges currently in use
+  std::vector<KVRange> all_ranges = ranges();
+
+  // Information about input queues...
+  // Scan all inputs
+  for (int i = 0; i < stream_operation->inputs_size(); i++)
+  {
+    std::string input_queue = stream_operation->inputs(i);
+    gpb::DataInfoForRanges info = gpb::get_data_info_for_ranges(data, input_queue, all_ranges);
+    
+    state_input_queues_ += au::str("[%s %s %s]"
+                                   , input_queue.c_str()
+                                   , au::str(info.data_kvs_in_ranges,"kvs").c_str()
+                                   , au::str(info.data_size_in_ranges,"B").c_str()
+                                   );
+    
+  }
   
-    // All ranges currently in use
-    std::vector<KVRange> all_ranges = ranges();
-    
-    // Consider all input queues
-    std::vector<std::string> all_queues;
-    for (int i = 0; i < stream_operation->inputs_size(); i++) {
-      std::string queue = stream_operation->inputs(i);
-      all_queues.push_back(queue);
-      gpb::DataInfoForRanges info = gpb::get_data_info_for_ranges(data, queue, all_ranges);
-      state_ += au::str("[%s (S:%s)(D:%s)] ", queue.c_str(), au::str(info.data_size_in_ranges, "B").c_str(),
-                        au::str(info.defrag_factor).c_str());
-    }
-    
-    // If running defrag tasks, do not execute anything else
-    if (defrag_tasks_.size() > 0) {
-      execute_defrag_ = false;
-      execute_range_operations_ = false;
-      return;
-    }
-    
-    // Default value
-    execute_defrag_ = false;
-    
-    // Batch operation, defrag with all inputs
-    // If defrag is not the solution, increase division_factor_
-    gpb::DataInfoForRanges info = gpb::get_data_info_for_ranges(data, all_queues, all_ranges);
-    
-    
-    if (info.max_memory_size_for_a_range < hard_max_memory) {
-      execute_range_operations_ = true;
-      execute_defrag_ = false;
-      return;
-    }
-    
-    state_ += au::str("[ Max Data %s / Max Memory %s]", au::str(info.max_data_size_for_a_range).c_str(),
-                      au::str(info.max_memory_size_for_a_range).c_str());
-    
-    // Too much memory required for an operation over a range
+  // If running defrag tasks, wait for them...
+  if (defrag_tasks_.size() > 0) {
+    state_ = au::str("Running %lu defrag tasks" , defrag_tasks_.size() );
     execute_range_operations_ = false;
-    
-    if (info.max_data_size_for_a_range < soft_max_memory) {
-      // Defrag is possible
-      execute_defrag_ = true; // Only when all individual range tasks are done
-    } else {
-      // It is necessary to increase divison
-      division_factor_ *= 2;
-    }
-    
     return;
   }
   
+  if (batch_operation) {
+  
+    // Consider all input queues
+    std::vector<std::string> all_queues;
+    for (int i = 0; i < stream_operation->inputs_size(); i++)
+      all_queues.push_back(stream_operation->inputs(i));
+
+    // Global information for all queues
+    gpb::DataInfoForRanges info = gpb::get_data_info_for_ranges(data, all_queues, all_ranges);
+    
+    if (info.max_memory_size_for_a_range > max_memory_per_task )
+    {
+      // too much memory for standalone application
+      execute_range_operations_ = false; // In all cases, individual operations should not be scheduled
+      
+      if (info.max_data_size_for_a_range > max_memory_per_task )
+      {
+        // defrag is not enougth, we need to increase the division factor...
+        state_ = "Increasing division factor...";
+        division_factor_ *= 2;
+        return;
+      }
+      
+      // Defrag is necessary
+      if( num_running_operations == 0 )
+      {
+        // Schedule defrag operation only if normal range tasks are finished
+        state_ = "Scheduling defrag operations...";
+        schedule_defrag(data);
+      }
+      else
+        state_ = au::str("Waiting %lu tasks to run defrag over input queus",num_running_operations);
+      
+      return;
+    }
+    
+    execute_range_operations_ = true; // Authorize range operations to be executed
+    state_ = au::str("OK. Max Data per range %s / Max Memory per range %s]"
+                     , au::str(info.max_data_size_for_a_range).c_str()
+                     , au::str(info.max_memory_size_for_a_range).c_str());
+    
+    return;
+  }
+    
+  
   if (reduce_forward) {
+    
     state_ = "Still not implemented how to defrag in reduce forward";
     return;
   }
 
   
+  // Normal stream operations
+  
+  // Consider only the last queue ( state ) to increase the number of divisions
+  std::string state_queue = stream_operation->inputs( stream_operation->inputs_size() - 1 );
+  
+  // Get information for this queue in this ranges
+  gpb::DataInfoForRanges state_info = gpb::get_data_info_for_ranges(data, state_queue, all_ranges);
+  
+  if( state_info.max_memory_size_for_a_range > (max_memory_per_task/2) )
   {
-    // No defrag to stream operations
-    execute_defrag_ = false;
-    
-    // Init state string
-    state_ = "";
-    
-    // All ranges currently in use
-    std::vector<KVRange> all_ranges = ranges();
-    
-    // Consider only the last queue ( state )
-    std::vector<std::string> all_queues;
-    std::string queue = stream_operation->inputs( stream_operation->inputs_size() - 1 );
-    all_queues.push_back(queue);
-
-    // Get information for this queue in this ranges
-    gpb::DataInfoForRanges info = gpb::get_data_info_for_ranges(data, queue, all_ranges);
-    state_ += au::str("[State %s (Size:%s)(Max:%s)] "
-                      , queue.c_str()
-                      , au::str(info.data_size_in_ranges, "B").c_str()
-                      , au::str(info.max_memory_size_for_a_range , "B").c_str()
-                      );
-    
-    size_t max_memory_for_range = info.max_memory_size_for_a_range;
-                                   
-    if( max_memory_for_range > hard_max_memory )
-      division_factor_ *= 2;
-    else
-      execute_range_operations_ = true; // Authorize range operations to be executed
-    
+    execute_range_operations_ = false;
+    division_factor_ *= 2;
+    state_ = "Increasing number of divisions";
   }
-
+  else
+  {
+    execute_range_operations_ = true; // Authorize range operations to be executed
+    state_ = au::str("OK. Max State Data per range %s / Max State Memory per range %s]"
+                     , au::str(state_info.max_data_size_for_a_range).c_str()
+                     , au::str(state_info.max_memory_size_for_a_range).c_str());
+  }
+  
 }
 
 void StreamOperationGlobalInfo::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
+
   ::samson::add(record, "id", stream_operation_id_, "different");
   ::samson::add(record, "name", stream_operation_name_, "different");
-
   ::samson::add(record, "division", division_factor_, "different");
+  ::samson::add(record, "Allow running", execute_range_operations_ ? "YES" : "NO", "different");
 
-  ::samson::add(record, "Running", execute_range_operations_ ? "YES" : "NO", "different");
+  if( visualization.get_flag("state"))
+  {
+    ::samson::add(record, "state", state_, "different");
+    return;
+  }
+  
+  if(  defrag_tasks_.size() > 0 )
+    ::samson::add(record, "Defrag", au::str("%lu operations", defrag_tasks_.size()), "different");
+  else
+    ::samson::add(record, "Defrag", "none", "different");
 
-  ::samson::add(record, "Defrag", au::str("%lu operations", defrag_tasks_.size()), "different");
-
+  ::samson::add(record, "inputs", state_input_queues_, "different");
   ::samson::add(record, "state", state_, "different");
 
 }

@@ -262,6 +262,11 @@ au::SharedPointer<gpb::Collection> WorkerTaskManager::GetCollection(const ::sams
   }
 
   
+  bool compare_StreamOperationRangeInfo( StreamOperationRangeInfo* a , StreamOperationRangeInfo* b)
+  {
+    return ( a->priority_rank() > b->priority_rank() );
+  }
+  
 void WorkerTaskManager::review_stream_operations() {
   
   au::ExecesiveTimeAlarm alarm("WorkerTaskManager::reviewStreamOperations");
@@ -279,10 +284,6 @@ void WorkerTaskManager::review_stream_operations() {
 
   // Get a copy of data mode
   au::SharedPointer<gpb::Data> data = samson_worker_->data_model()->getCurrentModel();
-
-  // Find the most urgent stream operation to be processed
-  size_t max_priority_rank = 0;
-  std::string max_key;
 
   // Review all stream operations
   for (int s = 0; s < data->operations_size(); s++) {
@@ -331,23 +332,10 @@ void WorkerTaskManager::review_stream_operations() {
         stream_operations_info_.insertInMap(key, stream_operation_info);
       }
 
-      //Review this stream operation
-      stream_operation_info->Review( data.shared_object() );
+      stream_operation_info->Review( data.shared_object() , global_info->execute_range_operations()  );
 
       // Insert into the global set to remove all non-used elements at the end
       keys_stream_operation_ranges.insert(key);
-
-      // If global strem operation accepts running, try to schedule this task
-      if( global_info->execute_range_operations() )
-      {
-        size_t priority_rank = stream_operation_info->priority_rank();
-        
-        // Keep reference to the maximum priority ( if no current task & max priority )
-        if ((priority_rank > 0) && (priority_rank > max_priority_rank)) {
-          max_priority_rank = priority_rank;
-          max_key = key;
-        }
-      }
 
     }
   }
@@ -374,21 +362,36 @@ void WorkerTaskManager::review_stream_operations() {
     return;
   }
   
-  // Schedule next task
-  if (max_priority_rank > 0) {
-    
-    StreamOperationRangeInfo *max_priority_stream_operation_info = stream_operations_info_.findInMap(max_key);
-    au::SharedPointer<WorkerTask> queue_task =
-    max_priority_stream_operation_info->schedule_new_task(getNewId(), data.shared_object());
-    
+
+  
+  // Schedule only the maximum priotiry tasks ( in order ) while get_num_tasks() < (1.5 * num_processors)
+  std::vector< StreamOperationRangeInfo* > stream_operation_range_info;
+  au::map<std::string, StreamOperationRangeInfo>::iterator iterator;
+  for (iterator = stream_operations_info_.begin() ; iterator != stream_operations_info_.end() ; iterator++ )
+  {
+    if( iterator->second->priority_rank() > 0 )
+      stream_operation_range_info.push_back( iterator->second );
+  }
+  // Sort tasks by priority
+  std::sort(stream_operation_range_info.begin(),stream_operation_range_info.end(),compare_StreamOperationRangeInfo);
+
+  size_t pos = 0;
+  while ( get_num_tasks() < (1.5 * num_processors)  ) {
+  
+    // no more tasks to be scheduled
+    if( pos >= stream_operation_range_info.size() )
+      break;
+
+    // Schedule a tasks in stream_operation_range_info[pos]
+    StreamOperationRangeInfo * stream_operation = stream_operation_range_info[pos];
+    au::SharedPointer<WorkerTask> queue_task = stream_operation->schedule_new_task(getNewId(), data.shared_object());
     if (queue_task == NULL) {
       LM_W(("Worker task finally not scheduled for stream operation"));
     } else {
       Add(queue_task.static_pointer_cast<WorkerTaskBase> ());
     }
+    pos++;
   }
-  else
-    LM_T(LmtEngineTime, ("No more operations"));
 
 }
 

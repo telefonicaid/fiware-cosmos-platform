@@ -67,7 +67,7 @@ namespace samson {
       void ReviewCurrentTask(  );
       
       // Review state of this stream operation for this range independently of it is running a task or not
-      void Review( gpb::Data *data );
+      void Review( gpb::Data *data , bool schedule_tasks );
       
       // Get a new task for this stream operation ( or compute priority for next task )
       // If (task_id == -1) --> compute priority

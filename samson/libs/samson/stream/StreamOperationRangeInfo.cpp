@@ -98,7 +98,7 @@ namespace samson {
     }
     
     
-    void StreamOperationRangeInfo::Review( gpb::Data *data )
+    void StreamOperationRangeInfo::Review( gpb::Data *data , bool schedule_tasks )
     {
       
       // Reset strings of states
@@ -167,6 +167,13 @@ namespace samson {
       {
         ReviewCurrentTask();   // Review if this task finished...
         state_ = "Running task...";
+        return;
+      }
+      
+      
+      if( !schedule_tasks )
+      {
+        state_ = "Not scheeduling task ( blocked by stream operation )";
         return;
       }
       

@@ -106,7 +106,7 @@ class ZooNodeCommiter : public engine::NotificationListener {
       }
 
       while (last_commits_.size() > 100) {
-        last_commits_.pop_front();
+        last_commits_.pop_back();
       }
     }
 

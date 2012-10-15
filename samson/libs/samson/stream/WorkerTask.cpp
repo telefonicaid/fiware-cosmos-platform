@@ -116,9 +116,6 @@ void WorkerTask::initProcessIsolated() {
     list->ReviewBlockReferences(error_);
   }
   
-  
-  AU_LM_W(("Task %lu: initProcessIsolated in %s" , id() , au::str(cronometer.seconds() ).c_str() ));
-  
 }
 
 void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
@@ -142,8 +139,6 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
       LM_W(("Operation still not implemented"));
       break;
   }
-  
-  AU_LM_W(("Task %lu: generateKeyValues in %s" , id() , au::str(cronometer.seconds() ).c_str() ));
   
 }
 

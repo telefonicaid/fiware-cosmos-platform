@@ -93,7 +93,7 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
 
     // remove execise logs ( just last 100 )
     while (last_tasks_.size() > 100) {
-      last_tasks_.pop_front();
+      last_tasks_.pop_back();
     }
 
     // Mark the task as finished

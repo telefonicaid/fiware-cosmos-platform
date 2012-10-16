@@ -209,7 +209,7 @@ void BlockManager::Review() {
 
   // Internal consistency
   if (blocks_.size() != block_ids_.size())
-    LM_X(1, ("Internal error: Different number of blocks and blocks ids (%lu != %lu)"
+    LM_X(1, ("Internal error in BLockManager: Different number of blocks and blocks ids (%lu != %lu)"
             , blocks_.size(), block_ids_.size()));
 
   // Get setup parameter to control review of BlockManager...

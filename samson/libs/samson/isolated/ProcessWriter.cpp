@@ -31,7 +31,9 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
     LM_X(1, ("Wrong size in a ProcessWriter operation"));   // Number of outputs
   }
   num_outputs = processIsolated->get_num_outputs();
-  num_hg_divisions = processIsolated->num_hg_divisions;
+
+  // Take the ranges to emit packets....
+  //num_hg_divisions = processIsolated->num_hg_divisions;
 
   // Hash code for the outputs
   keyValueHash = new KeyValueHash[num_outputs];
@@ -75,11 +77,11 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   // Outputs structures placed at the beginning of the buffer
   channel = reinterpret_cast<OutputChannel *>(buffer);
 
-  if (size < sizeof(OutputChannel) * num_outputs * num_hg_divisions) {
+  if (size < sizeof(OutputChannel) * num_outputs) {
     LM_X(1, ("Wrong size of shared-memory segment (%lu)", size));   // Buffer starts next
   }
-  node = reinterpret_cast<NodeBuffer *>((buffer + sizeof(OutputChannel) * num_outputs * num_hg_divisions));
-  num_nodes = (size - (sizeof(OutputChannel) * num_outputs * num_hg_divisions)) / sizeof(NodeBuffer);
+  node = reinterpret_cast<NodeBuffer *>((buffer + sizeof(OutputChannel) * num_outputs ));
+  num_nodes = (size - (sizeof(OutputChannel) * num_outputs )) / sizeof(NodeBuffer);
 
   // Clear this structure to receive new key-values
   clear();
@@ -114,11 +116,9 @@ ProcessWriter::~ProcessWriter() {
 }
 
 void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_size) {
-  // Detect hg-group it should go
-  int hg_division = divisionForHashGroup(hg, num_hg_divisions);
 
   // Get a pointer to the current node
-  OutputChannel *_channel = &channel[output * num_hg_divisions + hg_division];   // Final Output channel ( output + server )
+  OutputChannel *_channel = &channel[output ];   // Final Output channel ( output + server )
   HashGroupOutput *_hgOutput = &_channel->hg[hg];   // Current hash-group output
 
   size_t availableSpace = (num_nodes - new_node) * KV_NODE_SIZE;
@@ -273,7 +273,7 @@ void ProcessWriter::flushBuffer(bool finish) {
 
 void ProcessWriter::clear() {
   // Init all the outputs
-  for (size_t c = 0; c < (size_t) (num_outputs * num_hg_divisions); c++) {
+  for (size_t c = 0; c < (size_t) (num_outputs); c++) {
     channel[c].init();
   }
   new_node = 0;

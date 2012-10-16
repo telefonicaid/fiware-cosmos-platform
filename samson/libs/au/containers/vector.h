@@ -65,6 +65,18 @@ public:
     return result;
   }
 
+  V* extract_back()
+  {
+    size_t size = std::vector<V *>::size();
+    if( size == 0 )
+      return NULL;
+    
+    V*v = (*this)[size-1];
+    std::vector<V *>::pop_back();
+    
+    return v;
+  }
+  
   void reverse() {
     std::vector<V *> tmp;
     size_t num = std::vector<V *>::size();

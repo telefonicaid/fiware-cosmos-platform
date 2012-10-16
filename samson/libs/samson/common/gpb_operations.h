@@ -56,8 +56,6 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
 void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVFormat format, ::samson::KVRange range,
               ::samson::KVInfo info, int version, au::ErrorManager *error);
 
-Block *get_first_block(Queue *queue, size_t block_id);
-void erase_block(Queue *queue, Block *block);
 
 // Queue connections
 bool data_exist_queue_connection(gpb::Data *data, const std::string& queue_source, const std::string& queue_target);
@@ -89,11 +87,12 @@ class DataInfoForRanges {
     double defrag_factor;
 };
 
-DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::vector<std::string>& queues,
-                                           std::vector<samson::KVRange> ranges);
-DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::string& queue,
-                                           std::vector<samson::KVRange> ranges);
-  
+DataInfoForRanges get_data_info_for_ranges(gpb::Data*data
+                                           , const std::vector<std::string>& queues
+                                           , const std::vector<samson::KVRange>& ranges);
+DataInfoForRanges get_data_info_for_ranges(gpb::Data*data
+                                           , const std::string& queue
+                                           , const std::vector<samson::KVRange>& ranges);
   
 }
 

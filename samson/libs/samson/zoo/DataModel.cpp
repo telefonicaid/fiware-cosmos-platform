@@ -39,6 +39,8 @@ void DataModel::InitializeCommandFlags(au::CommandLine& cmd) {
   cmd.SetFlagString("output", "");
   // Forward flag to indicate that this is a reduce forward operation ( no update if state )
   cmd.SetFlagBoolean("forward");
+  //Paused
+  cmd.SetFlagBoolean("paused");
   // -a flag
   cmd.SetFlagBoolean("a");
   // Number of divisions in state operations
@@ -141,7 +143,7 @@ void DataModel::ProcessAddStreamOperationCommand(au::SharedPointer<gpb::Data> da
   so->set_stream_operation_id(stream_operation_id);
   so->set_name(name);
   so->set_operation(operation);
-  so->set_paused(false);
+  so->set_paused(cmd.GetFlagBool("paused"));
   // Add input queues
   au::CommandLine cmd_inputs(inputs);
   for (int i = 0; i < cmd_inputs.get_num_arguments(); ++i) {
@@ -442,6 +444,18 @@ void DataModel::ProcessSetStreamOperationPropertyCommand(au::SharedPointer<gpb::
     return;
   }
 
+  if( property == "paused")
+  {
+    if( value == "yes" || value == "y" )
+      stream_operation->set_paused(true);
+    else if( value == "no" || value == "n" )
+      stream_operation->set_paused(false);
+    else
+      error->set( au::str("Unknown value %d for paused. Say yes or no" , value.c_str() )) ;
+
+    return;
+  }
+  
   setProperty(stream_operation->mutable_environment(), property, value);
   error->AddMessage(au::str("Stream operation %s has been updated correctly", name.c_str()));
   return;
@@ -708,9 +722,9 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueuesWithBlocks(c
       ::samson::add(record, "queue", queue_name, "different");
       ::samson::add(record, "block", block.block_id(), "different");
       ::samson::add(record, "block_size", block.block_size(), "f=uint64,different");
-      KVRanges ranges = block.ranges();   // Implicit conversion
-      ::samson::add(record, "ranges", ranges.str(), "different");
-      KVInfo info(block.size(), block.kvs());
+      KVRange range = block.range();   // Implicit conversion
+      ::samson::add(record, "ranges", range.str(), "different");
+      KVInfo info( block.size() , block.kvs() );
       ::samson::add(record, "info", info.str(), "different");
       ::samson::add(record, "commit", block.commit_id(), "different");
       ::samson::add(record, "time", block.time(), "f=timestamp");
@@ -813,10 +827,10 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueueRanges(const 
 
   // Compute size in each range
   for (int i = 0; i < queue->blocks_size(); ++i) {
-    KVRanges block_ranges = queue->blocks(i).ranges();   // Implicit conversion
+    KVRange range = queue->blocks(i).range();   // Implicit conversion
 
     for (int r = 0; r < num_ranges; ++r) {
-      double overlap = block_ranges.GetOverlapFactor(ranges[r]);
+      double overlap = range.GetOverlapFactor(ranges[r]);
       sizes[r] += overlap * queue->blocks(i).size();
       kvs[r] += overlap * queue->blocks(i).kvs();
     }
@@ -856,22 +870,21 @@ std::set<size_t> DataModel::get_block_ids() {
   return block_ids;
 }
 
-std::set<size_t> DataModel::get_my_block_ids(const KVRanges& hg_ranges) {
-  // Prepare list of ids to be returned
-  std::set<size_t> block_ids;
-  // Get a copy of the data
-  au::SharedPointer<gpb::Data> my_data = getCurrentModel();
+std::set<size_t> DataModel::get_my_block_ids(const std::vector<KVRange>& ranges) {
+
+  std::set<size_t> block_ids;  // Prepare list of ids to be returned
+
+  au::SharedPointer<gpb::Data> my_data = getCurrentModel();  // Get a copy of the data
 
   // Loop all the queues
   for (int q = 0; q < my_data->queue_size(); q++) {
     const gpb::Queue& queue = my_data->queue(q);
     for (int b = 0; b < queue.blocks_size(); b++) {
       const gpb::Block& block = queue.blocks(b);
-
-      // Implicit conversion to C++ type
-      KVRanges ranges = block.ranges();
-
-      if (ranges.IsOverlapped(hg_ranges)) {
+      
+      KVRange range = block.range();
+      
+      if (range.IsOverlapped(ranges)) {
         block_ids.insert(block.block_id());
       }
     }

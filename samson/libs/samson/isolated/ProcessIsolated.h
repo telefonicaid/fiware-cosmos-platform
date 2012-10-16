@@ -37,8 +37,8 @@ class NetworkInterface;
  */
 
 class ProcessIsolated : public ProcessItemIsolated {
-  public:
-    static int num_hg_divisions;   // Number of hg divisions
+
+public:
 
     typedef enum {
       key_value,   // Emit key-values to multiple outputs / multiple workers
@@ -46,9 +46,13 @@ class ProcessIsolated : public ProcessItemIsolated {
     // Emit txt content using the entire buffer
     } ProcessBaseType;
 
-    ProcessIsolated(SamsonWorker* samson_worker, size_t worker_task_id, const std::string& operation,
-                    const std::string& concept, ProcessBaseType _type);
-    virtual ~ProcessIsolated();
+    ProcessIsolated(SamsonWorker* samson_worker
+                    , size_t worker_task_id
+                    , const std::string& operation
+                    , const std::string& concept
+                    , ProcessBaseType _type
+                    );
+  virtual ~ProcessIsolated();
 
     ProcessWriter *getWriter();   // Get writer to emit key-values
     ProcessTXTWriter *getTXTWriter();   // Get writer to emit txt content
@@ -125,6 +129,9 @@ class ProcessIsolated : public ProcessItemIsolated {
   private:
     ProcessBaseType type;   // Type of process( to generate key-values or generate txt content )
 
+  std::vector<KVRange> output_ranges_; // Ranges to emit separated packets
+  
+  
     int shm_id;   // Shared memory area used in this operation
     engine::SharedMemoryItem *item;   // Share memory item
 

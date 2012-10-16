@@ -35,15 +35,18 @@
 
 namespace samson {
 struct CommitRecord {
+    int id;
     std::string caller;
     std::string commit_command;
     std::string result;
     double commit_time;
 
-    CommitRecord(const std::string& _caller
+    CommitRecord(int _id
+                 , const std::string& _caller
                  , const std::string& _commit_command
                  , const std::string& _result
                  , double _commit_time) {
+      id = _id;
       caller = _caller;
       commit_command = _commit_command;
       result = _result;
@@ -65,7 +68,11 @@ class ZooNodeCommiter : public engine::NotificationListener {
 
       // Get data from zk
       GetDataFromZooNode();
+  
+        // Identifiers for the list of commits
+        last_commits_id_ = 1;
     }
+  
 
     virtual ~ZooNodeCommiter() {
     }
@@ -100,9 +107,9 @@ class ZooNodeCommiter : public engine::NotificationListener {
       
       // Log activity for debugging
       if (error->IsActivated()) {
-        last_commits_.push_front(CommitRecord(caller, commit_command, error->GetMessage() , time));
+        last_commits_.push_front(CommitRecord(last_commits_id_++,caller, commit_command, error->GetMessage() , time));
       } else {
-        last_commits_.push_front(CommitRecord(caller, commit_command, "OK" , time));
+        last_commits_.push_front(CommitRecord(last_commits_id_++,caller, commit_command, "OK" , time));
       }
 
       while (last_commits_.size() > 100) {
@@ -114,12 +121,11 @@ class ZooNodeCommiter : public engine::NotificationListener {
       au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
       collection->set_name("last_commits");
 
-      int num = 0;
       std::list<CommitRecord>::iterator it;
       for (it = last_commits_.begin(); it != last_commits_.end(); it++) {
         {
           gpb::CollectionRecord *record = collection->add_record();
-          ::samson::add(record, "#commit", num, "different");
+          ::samson::add(record, "#commit", it->id, "different");
           ::samson::add(record, "Concept", "Caller", "different");
           ::samson::add(record, "Value", it->caller, "different");
         }
@@ -127,26 +133,25 @@ class ZooNodeCommiter : public engine::NotificationListener {
         std::vector<std::string> components = au::split(it->commit_command, ' ');
         for (size_t i = 0; i < components.size(); i++) {
           gpb::CollectionRecord *record = collection->add_record();
-          ::samson::add(record, "#commit", num, "different");
+          ::samson::add(record, "#commit", it->id, "different");
           ::samson::add(record, "Concept", "Command", "different");
           ::samson::add(record, "Value", components[i], "different");
         }
 
         {
           gpb::CollectionRecord *record = collection->add_record();
-          ::samson::add(record, "#commit", num, "different");
+          ::samson::add(record, "#commit", it->id, "different");
           ::samson::add(record, "Concept", "Result", "different");
           ::samson::add(record, "Value", it->result, "different");
         }
         
         {
           gpb::CollectionRecord *record = collection->add_record();
-          ::samson::add(record, "#commit", num, "different");
+          ::samson::add(record, "#commit", it->id, "different");
           ::samson::add(record, "Concept", "Time", "different");
           ::samson::add(record, "Value", au::str(it->commit_time), "different");
         }
         
-        num++;
       }
 
       return collection;
@@ -236,6 +241,7 @@ class ZooNodeCommiter : public engine::NotificationListener {
     au::Token token_;   // Mutex protection
 
     std::list<CommitRecord> last_commits_;
+    int last_commits_id_;
 };
 }
 

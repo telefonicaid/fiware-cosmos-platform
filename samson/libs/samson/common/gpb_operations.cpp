@@ -263,7 +263,7 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
     return;
   }
 
-  // Always add at the end of the vector with a new block reference
+  // Add a new block reference
   Block *block = queue->add_blocks();
   block->set_block_id(block_id);
   block->set_block_size(block_size);
@@ -271,9 +271,9 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
   block->set_size(info.size);
   block->set_time(time(NULL));
   block->set_commit_id(version);
-
-  // Add this unique range
-  KVRange *gpb_range = block->mutable_ranges()->add_range();
+  
+  // Add range to this block
+  KVRange *gpb_range = block->mutable_range();
   gpb_range->set_hg_begin(range.hg_begin);
   gpb_range->set_hg_end(range.hg_end);
 }
@@ -294,74 +294,34 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
 
   queue->set_version(version);
 
-  // Get or create the block in this queue
-  Block *block = get_first_block(queue, block_id);
 
-  if (!block) {
-    // If KVInfo = 0,0, no problem...
-    if ((info.kvs == 0) && (info.size == 0))
-      return;
-    error->set(au::str("Unknown block %lu", block_id));
-    return;
-  }
-
-  // Get the KVRanges ( implicit conversion )
-  ::samson::KVRanges ranges = block->ranges();
-  int rc = ranges.Remove(range);
-  if (rc) {
-    error->set(au::str("Not possible to remove %s to %s", range.str().c_str(), ranges.str().c_str()));
-    return;
-  }
-
-  // Update the size and number of kvs
-  if (block->kvs() < info.kvs) {
-    error->set( au::str("Not possible to remove %s kvs in blockref %lu (%lu kvs)"
-                        ,au::str(info.kvs).c_str(), block_id
-                        ,au::str(block->kvs()).c_str()));
-    return;
-  } else {
-    block->set_kvs(block->kvs() - info.kvs);
-  }
-
-  if (block->size() < info.size) {
-    error->set(au::str("Not possible to remove %s in blockref %lu (%lu)"
-                       ,au::str(info.size, "B").c_str(), block_id
-                       ,au::str(block->size(), "B").c_str()));
-    return;
-  } else {
-    block->set_size(block->size() - info.size);
-  }
-
-  if ((block->kvs() == 0) && (block->size() == 0)) {
-    // Remove block if no content after removing
-    erase_block(queue, block);
-  } else {
-    // Fill again the gpb structure
-    block->mutable_ranges()->Clear();
-    ranges.fill(block->mutable_ranges());
-  }
-}
-
-Block *get_first_block(Queue *queue, size_t block_id) {
-  for (int i = 0; i < queue->blocks_size(); i++) {
-    if (queue->blocks(i).block_id() == block_id) {
-      return queue->mutable_blocks(i);
-    }
-  }
-
-  return NULL;
-}
-
-void erase_block(Queue *queue, Block *block) {
+  // Remove the first time ( and probably the only one ) this block is in the queue
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block > *blocks = queue->mutable_blocks();
-
   for (int i = 0; i < blocks->size(); i++) {
-    if (blocks->Mutable(i) == block) {
+    if (blocks->Get(i).block_id() == block_id)
+    {
+      // Check information is correct
+      if( blocks->Get(i).size() != info.size )
+      {
+        error->set(au::str("Error removing block %lu in queue %s ( size mismatch %lu != %lu"
+                           , block_id
+                           , queue_name.c_str()
+                           , blocks->Get(i).size()
+                           , info.size ));
+      }
+      if( blocks->Get(i).kvs() != info.kvs )
+      {
+        error->set(au::str("Error removing block %lu in queue %s ( #kvs mismatch %lu != %lu"
+                           , block_id
+                           , queue_name.c_str()
+                           , blocks->Get(i).kvs()
+                           , info.kvs ));
+      }
+      
       // The only options is moving this element until the end of the vector and remove it!
       for (int j = i; j < (blocks->size() - 1); j++) {
         blocks->SwapElements(j, j + 1);
       }
-
       blocks->RemoveLast();
       return;
     }
@@ -499,15 +459,17 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
   }
 }
 
-DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::string& queue,
-                                           std::vector<samson::KVRange> ranges) {
+DataInfoForRanges get_data_info_for_ranges(gpb::Data*data
+                                           , const std::string& queue
+                                           , const std::vector<samson::KVRange>& ranges) {
   std::vector<std::string> queues;
   queues.push_back(queue);
   return get_data_info_for_ranges(data, queues, ranges);
 }
 
-DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::vector<std::string>& queues,
-                                           std::vector<samson::KVRange> ranges) {
+DataInfoForRanges get_data_info_for_ranges(  gpb::Data*data
+                                           , const std::vector<std::string>& queues
+                                           , const std::vector<samson::KVRange>& ranges) {
   DataInfoForRanges info;
 
   for (size_t q = 0; q < queues.size(); q++) {
@@ -529,9 +491,9 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data*data, const std::vector<std
       for (int b = 0; b < queue->blocks_size(); b++) {
         const gpb::Block& block = queue->blocks(b);
         size_t memory_size = block.block_size();
-
-        samson::KVRanges block_ranges = block.ranges();   // Implicit conversion
-        double overlap_factor = block_ranges.GetOverlapFactor(ranges[r]);
+        samson::KVRange block_range = block.range();   // Implicit conversion
+        
+        double overlap_factor = block_range.GetOverlapFactor(ranges[r]);
         size_t data_size = overlap_factor * block.size();
         size_t kvs_size = overlap_factor * block.kvs();
 

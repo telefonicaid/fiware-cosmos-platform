@@ -29,8 +29,8 @@ class KVFile {
     KVHeader header();
 
     // Main interface to interact with key-values contained in this block
-    KV *kvs;   // Pointers to all key-values
-    KVInfo *info;   // Vector with all KVInfos for each hash-group
+    KV *kvs;          // Pointers to all key-values
+    KVInfo *info;     // Vector with all KVInfos for each hash-group
     int *kvs_index;   // Index in the kvs vector for each hash-group
 
     // Main interface to interact with content if txt content is provided

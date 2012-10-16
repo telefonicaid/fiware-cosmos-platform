@@ -37,8 +37,7 @@ namespace samson {
 class SamsonWorkerController : public engine::NotificationListener {
   public:
     SamsonWorkerController(zoo::Connection *zoo_connection, int port, int port_web);
-    ~SamsonWorkerController() {
-    }
+    ~SamsonWorkerController() {}
 
     // Function to init everything with this connection( error code returned if not possible )
     int init();
@@ -62,8 +61,8 @@ class SamsonWorkerController : public engine::NotificationListener {
     std::set<size_t> GetWorkerIds();
 
     // Get ranges this worker should process
-    KVRanges GetMyKVRanges();   // Where I am responsible
-    KVRanges GetAllMyKVRanges();   // Where I am responsible or replica
+    std::vector<KVRange> GetMyKVRanges();   // Where I am responsible
+    std::vector<KVRange> GetAllMyKVRanges();   // Where I am responsible or replica
 
     // Update worker-node with information about me
     int UpdateWorkerNode(bool worker_ready);
@@ -77,6 +76,17 @@ class SamsonWorkerController : public engine::NotificationListener {
     // Get a new identifier for a block
     size_t get_new_block_id();
 
+  // Get ranges to process data
+  std::vector<KVRange> GetKVRanges()
+  {
+    std::vector<KVRange> ranges;
+    int num_divisions = cluster_info_->process_units_size();
+    for ( int i = 0 ; i < num_divisions ; i++ )
+      ranges.push_back( rangeForDivision(i, num_divisions )  );
+    return ranges;
+  }
+
+  
   private:
     // Get all worker identifiers
     int get_all_workers_from_zk(std::vector<size_t>& worker_ids);

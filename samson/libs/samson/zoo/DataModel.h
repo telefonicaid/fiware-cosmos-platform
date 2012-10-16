@@ -117,7 +117,7 @@ class DataModel : public ZooNodeCommiter<gpb::Data> {
     std::set<size_t> get_block_ids();
 
     // Get list of all block_ids I would have
-    std::set<size_t> get_my_block_ids(const KVRanges& hg_ranges);
+  std::set<size_t> get_my_block_ids(const std::vector<KVRange>& ranges);
 
     // method trying to discover if all operations have finished
     bool CheckForAllOperationsFinished();

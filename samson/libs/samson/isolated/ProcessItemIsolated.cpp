@@ -186,6 +186,8 @@ void ProcessItemIsolated::run() {
     LM_W(("ProcessItemIsolated ´%s´ not executed since an error ´%s´ "
             , process_item_description().c_str()
             , error_.GetMessage().c_str()));
+    close(pipeFdPair1[0]);
+    close(pipeFdPair1[1]);
     return;
   }
 
@@ -437,8 +439,14 @@ void ProcessItemIsolated::runExchangeMessages() {
       LM_E(("Isolated process op:'%s', %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' (time_out:%d)",
             concept().c_str(), str().c_str(), pipeFdPair1[0], au::status(c), timeout_setup));
 
-      error_.set(au::str("Third party operation '%s' has crashed [%s] - [ Error code %s ]", operation_.c_str(),
-                         concept().c_str(), au::status(c)));
+      error_.set("Process crashed");
+
+      /*
+      error_.set(au::str("Process crashed [%s] - [ Error code %s ]"
+                         , concept().c_str()
+                         , au::status(c)));
+       */
+      
       return;
     }
 

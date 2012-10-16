@@ -89,7 +89,7 @@ std::string PopDelilahComponent::getStatus() {
 }
 
 std::string PopDelilahComponent::getExtraStatus() {
-  au::tables::Table table("pop id|block id|Ranges|Worker|Confirmed|Time|Buffer");
+  au::tables::Table table("pop id|block id|Worker|Confirmed|Time|Buffer");
 
   table.setTitle("Items for this pop operation");
 
@@ -101,7 +101,6 @@ std::string PopDelilahComponent::getExtraStatus() {
 
     values.Push(item->pop_id());
     values.Push(item->block_id());
-    values.Push(KVRanges(item->ranges()).str());
 
 
     values.Push(item->worker_id());
@@ -176,10 +175,9 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
         commit_id_ = commit_id;
       }
       size_t block_id = queue.blocks(i).block_id();
-      const gpb::KVRanges& ranges = queue.blocks(i).ranges();   // Implicit conversion
 
       size_t item_id = item_id_++;
-      PopDelilahComponentItem *item = new PopDelilahComponentItem(item_id, block_id, ranges);
+      PopDelilahComponentItem *item = new PopDelilahComponentItem(item_id, block_id);
       items_.insertInMap(item_id, item);
       LM_T(LmtDelilahComponent, ("activate component with started flag"));
       set_started(true);

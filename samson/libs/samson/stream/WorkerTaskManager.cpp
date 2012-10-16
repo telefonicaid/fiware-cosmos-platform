@@ -100,6 +100,8 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     if (notification->environment().IsSet("error")) {
       std::string error = notification->environment().Get("error", "???");
       task_base->SetFinishedWithError(error);
+      if( !task_base->error().IsActivated() )
+        LM_X(1, ("Internal error"));
     } else {
       task_base->SetFinished();
     }
@@ -173,7 +175,9 @@ bool WorkerTaskManager::runNextWorkerTasksIfNecessary() {
 }
 
 void WorkerTaskManager::Reset() {
-  stream_operations_info_.clearMap();
+  
+  // Reset current model for stream operations ( default ranges have changed for instance )
+  stream_operations_global_info_.clearMap();
 
   // Remove running task...
   std::vector<size_t> pending_tasks_ids = running_tasks_.getKeysVector();
@@ -247,19 +251,7 @@ au::SharedPointer<gpb::Collection> WorkerTaskManager::GetCollection(const ::sams
   return collection;
 }
 
-  int WorkerTaskManager::GetRunningTasks( size_t stream_operation_id ) {
-    
-    int total = 0;
-    
-    au::map<std::string, StreamOperationRangeInfo>::iterator iterator;
-    for ( iterator = stream_operations_info_.begin(); iterator != stream_operations_info_.end() ; iterator++ )
-    {
-      if( iterator->second->stream_operation_id() == stream_operation_id )
-        if( iterator->second->worker_task() != NULL )
-          total++;
-    }
-    return total;
-  }
+
 
   
   bool compare_StreamOperationRangeInfo( StreamOperationRangeInfo* a , StreamOperationRangeInfo* b)
@@ -278,10 +270,9 @@ void WorkerTaskManager::review_stream_operations() {
     return;   // Nothing to do here
   }
 
-  // Set of stream operations-ranges executed in this iteration
-  std::set<size_t> keys_stream_operation_ids;           // Keys considered in the review process
-  std::set<std::string> keys_stream_operation_ranges;   // Keys considered in the review process
-
+  // Set of stream operations-ranges revies in this loop ( remove non-reviwed elements )
+  std::set<size_t> keys_stream_operation_ids;
+ 
   // Get a copy of data mode
   au::SharedPointer<gpb::Data> data = samson_worker_->data_model()->getCurrentModel();
 
@@ -296,53 +287,24 @@ void WorkerTaskManager::review_stream_operations() {
     std::string stream_operation_name = stream_operation.name();
 
     // Recover glocal information for this stream operation
-    StreamOperationGlobalInfo* global_info = stream_operations_globla_info_.findInMap(stream_operation_id);
+    StreamOperationGlobalInfo* global_info = stream_operations_global_info_.findInMap(stream_operation_id);
     if (!global_info) {
       std::vector<KVRange> worker_ranges = samson_worker_->worker_controller()->GetMyKVRanges();
       global_info = new StreamOperationGlobalInfo(samson_worker_, stream_operation_id, stream_operation_name,
                                                   worker_ranges);
-      stream_operations_globla_info_.insertInMap(stream_operation_id, global_info);
+      stream_operations_global_info_.insertInMap(stream_operation_id, global_info);
     }
-
-    // Recover the number of running operations for this stream oepration
-    int num_running_operations = GetRunningTasks( stream_operation_id );
     
-    // Review this stream operation
-    global_info->Review( data.shared_object() , num_running_operations );
+    // Complete review of this stream operation ( defrag operations, divisions, compute priority rank,.... )
+    global_info->Review( data.shared_object() );
 
     // Insert this key into the global set to remove non-used previously defined stream operations
     keys_stream_operation_ids.insert(stream_operation_id);
 
-    // Ranges for this particular stream operation
-    std::vector<KVRange> ranges = global_info->ranges();
-
-    for (size_t r = 0; r < ranges.size(); r++) {
-      // Get the range we are considering
-      KVRange range = ranges[r];
-
-      // Index in the map of StreamOperationRangeInfo elements
-      std::string key = au::str("%lu_%s", stream_operation_id, range.str().c_str());
-
-      // Recover ( or create ) information for this stream operation
-      StreamOperationRangeInfo *stream_operation_info = stream_operations_info_.findInMap(key);
-      if (!stream_operation_info) {
-        stream_operation_info = new StreamOperationRangeInfo(samson_worker_, stream_operation_id,
-                                                             stream_operation_name, range);
-        
-        stream_operations_info_.insertInMap(key, stream_operation_info);
-      }
-
-      stream_operation_info->Review( data.shared_object() , global_info->execute_range_operations()  );
-
-      // Insert into the global set to remove all non-used elements at the end
-      keys_stream_operation_ranges.insert(key);
-
-    }
   }
 
   // Remove elements in the map not considered
-  stream_operations_globla_info_.RemoveKeysNotIncludedIn(keys_stream_operation_ids);
-  stream_operations_info_.RemoveKeysNotIncludedIn(keys_stream_operation_ranges);
+  stream_operations_global_info_.RemoveKeysNotIncludedIn(keys_stream_operation_ids);
   
   // If enougth tasks have been scheduled, do not schedule more.
   // This is for two reasons:
@@ -362,16 +324,20 @@ void WorkerTaskManager::review_stream_operations() {
     return;
   }
   
-
-  
   // Schedule only the maximum priotiry tasks ( in order ) while get_num_tasks() < (1.5 * num_processors)
   std::vector< StreamOperationRangeInfo* > stream_operation_range_info;
-  au::map<std::string, StreamOperationRangeInfo>::iterator iterator;
-  for (iterator = stream_operations_info_.begin() ; iterator != stream_operations_info_.end() ; iterator++ )
+  au::map<size_t, StreamOperationGlobalInfo>::iterator it;
+  for (it = stream_operations_global_info_.begin() ; it != stream_operations_global_info_.end() ; ++it )
   {
-    if( iterator->second->priority_rank() > 0 )
-      stream_operation_range_info.push_back( iterator->second );
+    // Get info for each range
+    const au::vector<StreamOperationRangeInfo>& ranges = it->second->stream_operations_range_info();
+    for (size_t i = 0 ; i < ranges.size() ; i++)
+    {
+      if( ranges[i]->priority_rank() > 0 )
+        stream_operation_range_info.push_back( ranges[i] );
+    }
   }
+  
   // Sort tasks by priority
   std::sort(stream_operation_range_info.begin(),stream_operation_range_info.end(),compare_StreamOperationRangeInfo);
 
@@ -395,15 +361,52 @@ void WorkerTaskManager::review_stream_operations() {
 
 }
 
-au::SharedPointer<gpb::Collection> WorkerTaskManager::GetCollectionForStreamOperationsRanges(
-                                                                                             const ::samson::Visualization& visualization) {
-  // Template-based creation of collection based on map
-  return GetCollectionForMap("stream operations_ranges", stream_operations_globla_info_, visualization);
+gpb::CollectionPointer WorkerTaskManager::GetCollectionForStreamOperationsRanges( const ::samson::Visualization& visualization) {
+  
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("stream operations ranges");
+
+  au::SimplePattern pattern( visualization.pattern() );
+  
+  au::map<size_t, StreamOperationGlobalInfo>::iterator iter;
+  for (iter = stream_operations_global_info_.begin(); iter != stream_operations_global_info_.end(); ++iter) {
+
+    if( !pattern.match(iter->second->stream_operation_name()) )
+      continue;
+    
+    const au::vector<StreamOperationRangeInfo>& ranges = iter->second->stream_operations_range_info();
+    for (size_t i = 0 ; i < ranges.size() ; i++)
+    {
+    
+      // Create a new record for this instance
+      gpb::CollectionRecord *record = collection->add_record();
+      
+      // Common type to joint queries ls_workers -group type
+      ranges[i]->fill(record, visualization);
+    }
+  }
+  
+  return collection;
 }
 
 gpb::CollectionPointer WorkerTaskManager::GetCollectionForStreamOperations(const ::samson::Visualization& visualization){
-  // Template-based creation of collection based on map
-  return GetCollectionForMap("stream operations", stream_operations_info_, visualization);
+  
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("stream operations");
+  
+  au::SimplePattern pattern( visualization.pattern() );
+  
+  au::map<size_t, StreamOperationGlobalInfo>::iterator iter;
+  for (iter = stream_operations_global_info_.begin(); iter != stream_operations_global_info_.end(); ++iter) {
+    
+    if( !pattern.match(iter->second->stream_operation_name()) )
+      continue;
+
+    // Create a new record for this entry
+    iter->second->fill(collection->add_record(), visualization);
+  }
+  
+  return collection;
 }
 
 // Update ranges ( this removes all current running operations )

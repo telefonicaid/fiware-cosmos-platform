@@ -23,11 +23,14 @@ ProcessIsolated::ProcessBaseType get_type(Operation *operation) {
 
 WorkerTask::WorkerTask( SamsonWorker *samson_worker, size_t id
                        ,const gpb::StreamOperation& stream_operation
-                       ,Operation *operation, KVRange range) :
+                       ,Operation *operation
+                       , KVRange range
+                       ) :
       ProcessIsolated( samson_worker
                       ,id
                       ,stream_operation.operation().c_str()
-                      ,au::str("WorkerTask %lu: %s", id, stream_operation.operation().c_str()), get_type(operation))
+                      ,au::str("WorkerTask %lu: %s", id, stream_operation.operation().c_str()), get_type(operation)
+                      )
   {
   // Keep a pointer to samson_worker to create output blocks
   samson_worker_ = samson_worker;
@@ -503,9 +506,6 @@ std::string WorkerTask::getStatus() {
   return output.str();
 }
 
-const au::ErrorManager& WorkerTask::error() {
-  return error_;
-}
 
 std::string WorkerTask::str() {
   return au::str("Task %lu : %s %s %s", worker_task_id(), stream_operation_->name().c_str(),

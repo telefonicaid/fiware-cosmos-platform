@@ -57,32 +57,31 @@ namespace samson {
     class StreamOperationRangeInfo {
     public:
       
-      StreamOperationRangeInfo(SamsonWorker *samson_worker
-                          , size_t stream_operation_id
-                          , const std::string& string_operation_name
-                          , const KVRange& range);
+      StreamOperationRangeInfo( StreamOperationGlobalInfo * stream_operation_global_info
+                               , SamsonWorker *samson_worker
+                               , size_t stream_operation_id
+                               , const std::string& string_operation_name
+                               , const KVRange& range);
       ~StreamOperationRangeInfo();
-      
-      // Review this stream operation to compute priority rank
-      void ReviewCurrentTask(  );
-      
+
       // Review state of this stream operation for this range independently of it is running a task or not
-      void Review( gpb::Data *data , bool schedule_tasks );
+      void Review( gpb::Data *data );
       
-      // Get a new task for this stream operation ( or compute priority for next task )
-      // If (task_id == -1) --> compute priority
+      // Get a new task for this stream operation ( task id is the identifier of the new task )
       au::SharedPointer<WorkerTask> schedule_new_task( size_t task_id, gpb::Data *data );
       
       // Get a record for this element ( listing in delilah )
       void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
       
-      
       // Get information
       size_t priority_rank();
       std::string state();
+      std::string short_state(){ return short_state_; }
       void set_state( const std::string& state );
       std::string str();
+      KVRange range() { return range_; }
       au::SharedPointer<WorkerTask> worker_task();      // Accessor to worker task
+      bool range_division_necessary(){ return range_division_necessary_; }
       size_t stream_operation_id()
       {
         return stream_operation_id_;
@@ -90,9 +89,14 @@ namespace samson {
       
     private:
       
+      // Review this stream operation to compute priority rank
+      void ReviewCurrentTask(  );
+
       // Set error and reset cronometer to count how much time since last error
       void SetError( const std::string error_message )
       {
+        state_ = "Error: " + error_message;
+        short_state_ = "[E]";
         error_.set( error_message );
         cronometer_error_.Reset();
       }
@@ -103,9 +107,11 @@ namespace samson {
       
       std::string state_input_queues_;       // String containing last state of input queues ( every review updates this )
       std::string state_;                    // String describing the state of this stream operation ( good for debugging )
+      std::string short_state_;
       
       size_t pending_size_;                  // Size to be processes ( thrigerring task if > 0)
       size_t priority_rank_;                 // Priority number to scehdule a new task ( time * pending_size )
+      bool range_division_necessary_;        // Is range division necessary
       
       au::Cronometer last_task_cronometer_;  // Last execution cronometer
 
@@ -114,9 +120,14 @@ namespace samson {
       
       // Pointer to the worker task we have scheduled ( if any )
       au::SharedPointer<WorkerTask> worker_task_;
+      au::SharedPointer<DefragTask> defrag_task_;
       
       // Pointer to samsonWorker to commit finished tasks
       SamsonWorker *samson_worker_;
+      
+      // Pointer to my parent global infoma
+      StreamOperationGlobalInfo * stream_operation_global_info_;
+      
     };
    
     // Check if this stream operation is valid as it is

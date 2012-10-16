@@ -1,5 +1,10 @@
 package samson.gpb;
 
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Basic components
+//
+
 message KVRange
 {
 	required int32  hg_begin = 1;
@@ -12,6 +17,7 @@ message KVInfo
 	required int64  kvs = 1;
 	required int64  size   = 2;
 }
+
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -57,28 +63,28 @@ message BatchOperation
 // Data model for a worker
 //
 
-message KVRanges
-{
-	repeated KVRange range    = 1; // Ranges considered for this block
-}
+//message KVRanges
+//{
+//	repeated KVRange range    = 1; // Ranges considered for this block
+//}
 
 message Block
 {
 	required uint64   block_id   = 1; // Identifier of this block
-	required uint64   block_size = 2; // Size of the full block ( necessary for planning tasks )
-	required KVRanges ranges     = 3; // Ranges considered for this block
-	required uint64   size       = 4; // Size in bytes for this block 
-	required uint64   kvs        = 5; // Number of key-values for this block
+	required uint64   block_size = 2; // Full size of this block
+	required KVRange  range      = 3; // Range for this particular block
+	required uint64   kvs        = 4; // Number of kvs
+	required uint64   size       = 5; // Size in bytes of the kvs
 	required uint64   time       = 6; // Creation time
 	required uint64   commit_id  = 7; // Commit number where this block was added
 }
 
 message Queue
 {
-	required string name   = 1;        // Name of this queue
-	required uint64 version = 2;       // Version number of this queue ( updated when modified )
-	repeated Block  blocks = 3;        // Blocks contained in this queue
-	required string key_format = 4;    // Format for the key
+	required string name         = 1;  // Name of this queue
+	required uint64 version      = 2;  // Version number of this queue ( updated when modified )
+	repeated Block  blocks       = 3;  // Blocks contained in this queue
+	required string key_format   = 4;  // Format for the key
 	required string value_format = 5;  // Format for the value
 }
 
@@ -354,7 +360,7 @@ message Message
 	optional uint64 block_id = 100;
 
 	// Uses in some pop messages
-	optional KVRanges ranges = 106;
+	// optional KVRanges ranges = 106;
 
 	// Identifier of the delilah push operation ( used in all Push-like messages )
 	optional uint64 push_id = 101;

@@ -34,7 +34,6 @@ class ProcessWriter : public KVWriter {
   size_t size;                          // General output buffer size
 
   int num_outputs;                      // Number of global outputs ( channels of output )
-  int num_hg_divisions;    // Number of hg divisions
 
   /*
    * Output key-values for a particular output channel will be dividided in "num_hg_divisions" blocks
@@ -50,7 +49,7 @@ class ProcessWriter : public KVWriter {
   DataInstance **outputValueDataInstance;
   KeyValueHash *keyValueHash;
 
-  // Structure to divide shared memory buffer to emit key-values
+  // Structure to divide shared memory buffer to emit key-values for each output
   OutputChannel *channel;
 
   // Node buffers ( inodes in the shared-memory buffer )

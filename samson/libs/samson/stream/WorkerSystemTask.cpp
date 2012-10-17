@@ -188,7 +188,7 @@ void DefragTask::run() {
     // Compute info for this range
     KVInfo info;
     for ( int hg = range.hg_begin ; hg < range.hg_end ; hg++ )
-      for ( int i = 0 ; i < kv_files.size() ; i++ )
+      for ( int i = 0 ; i < (int)kv_files.size() ; i++ )
         info.append( kv_files[i]->info[hg] );
     
     if ( info.size == 0 )

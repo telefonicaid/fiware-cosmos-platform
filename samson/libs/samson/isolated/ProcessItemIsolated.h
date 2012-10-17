@@ -60,8 +60,6 @@ class ProcessItemIsolated : public stream::WorkerTaskBase, public Tracer, public
 
     friend void *run_ProcessItemIsolated(void *p);
 
-    // Operation name for debugging
-    std::string operation_;
 };
 }
 

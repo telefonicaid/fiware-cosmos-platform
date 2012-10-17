@@ -2,17 +2,23 @@
 
 #include <string>
 
+#include "engine/Engine.h"
+#include "engine/ProcessManager.h"
 #include "samson/common/gpb_operations.h"
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/module/ModulesManager.h"
 #include "samson/stream/WorkerTask.h"
 #include "samson/worker/SamsonWorker.h"
+#include "samson/stream/StreamOperationGlobalInfo.h"
 
 namespace samson {
 namespace stream {
-StreamOperationRangeInfo::StreamOperationRangeInfo(SamsonWorker *samson_worker, size_t stream_operation_id,
-                                                   const std::string& stream_operation_name, const KVRange& range) {
+    StreamOperationRangeInfo::StreamOperationRangeInfo( StreamOperationGlobalInfo * stream_operation_global_info
+                                                       , SamsonWorker *samson_worker
+                                                       , size_t stream_operation_id
+                                                       , const std::string& stream_operation_name
+                                                       , const KVRange& range) {
 
   // Informaiton for this stream operation info
   stream_operation_id_ = stream_operation_id;
@@ -21,9 +27,12 @@ StreamOperationRangeInfo::StreamOperationRangeInfo(SamsonWorker *samson_worker, 
 
   // Keep a pointer to samson worker
   samson_worker_ = samson_worker;
+      // Keep a reference to my parent global information
+      stream_operation_global_info_ = stream_operation_global_info;
 
   // Default values
   priority_rank_ = 0;
+      pending_size_ = 0;
   state_ = "No info";
   worker_task_ = NULL; // No task by default
 }
@@ -31,12 +40,331 @@ StreamOperationRangeInfo::StreamOperationRangeInfo(SamsonWorker *samson_worker, 
 StreamOperationRangeInfo::~StreamOperationRangeInfo() {
 }
 
-void StreamOperationRangeInfo::ReviewCurrentTask() {
+    /*
+     Dynamic inputs
+     ----------------------------
+     map,parse,...     All inputs are dynamic (1 dynamic input)
+     Batch operation:  All inputs are non dynamic ( all input required )
+     Stream operation: All inputs are dynamic except last ( state ) input
+     Reduce forward:   All inputs are dynamic except last ( auxiliar data-set ) input
+     
+     Inputs to count for pending size
+     ----------------------------
+     map,parse,...     Single input ( counts )
+     Batch operation:  All inputs
+     Stream operation: N-1 ( last one is state and it is not considered pending.size)
+     */
+    
+    
+    // Get number of inputs that can be taken in small blocks
+    int GetNumberOfDynamicInputs( gpb::StreamOperation* stream_operation )
+    {
+      std::string operation_name = stream_operation->operation();
+      Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+      
+      if (!operation)
+        LM_X(1, ("Internal error"));
+      
+      bool batch_operation = stream_operation->batch_operation();
+      bool reduce_operation = (operation->getType() == Operation::reduce);
+      
+      if ( reduce_operation && batch_operation )
+        return 0;
+      
+      if ( reduce_operation )
+        return operation->getNumInputs() - 1;
+      
+      // No reduce... it is always 1
+      return 1;
+      
+    }
+    
+    // Get the number of inputs to take into account for thrigerring tasks
+    int GetNumberOfInputsForThrigering( gpb::StreamOperation* stream_operation)
+    {
+      std::string operation_name = stream_operation->operation();
+      Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+      
+      if (!operation)
+        LM_X(1, ("Internal error"));
+      
+      bool batch_operation = stream_operation->batch_operation();
+      bool reduce_operation = (operation->getType() == Operation::reduce);
+      
+      if ( reduce_operation && batch_operation )
+        return operation->getNumInputs();
+      
+      if ( reduce_operation )
+        return operation->getNumInputs() - 1;
+      
+      // No reduce... it is always 1
+      return 1;
+    }
+    
+    
+    void StreamOperationRangeInfo::Review( gpb::Data *data )
+    {
+      
+      // Reset strings of states
+      state_input_queues_ = "";
+      state_ = "";
+      short_state_ = "";
+      range_division_necessary_ = false;
 
   // Init pending size and priority to be recomputed
-  state_ = au::str("Running task %lu", worker_task_->worker_task_id());
   pending_size_ = 0;
   priority_rank_ = 0;
+      // Recover stream operation from data
+      gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);
+      if (!stream_operation) {
+        SetError(au::str("stream operation %s does not exist"));
+        worker_task_ = NULL; // Cancel task if any
+        return;
+      }
+
+      // Check if the operation is valid
+      au::ErrorManager error;
+      if (!isStreamOperationValid(data, *stream_operation, &error)) {
+        SetError( au::str("Error validating stream operation: %s" , error.GetMessage().c_str() ) );
+        worker_task_ = NULL; // Cancel task if any
+        return;
+      }
+      
+
+      std::string operation_name = stream_operation->operation();
+      Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+      if (!operation)
+        LM_X(1, ("Internal error"));
+      
+      bool reduce_operation = (operation->getType() == Operation::reduce);
+      bool batch_operation = stream_operation->batch_operation();
+      
+      // Check info from input queues
+      
+      //int num_dynamic_input = GetNumberOfDynamicInputs( stream_operation );
+      //int num_thrigger_input = GetNumberOfInputsForThrigering( stream_operation );
+      
+      // Scan all inputs
+      std::vector<size_t> input_sizes;
+      for (int i = 0; i < stream_operation->inputs_size(); i++)
+      {
+        std::string input_queue = stream_operation->inputs(i);
+        std::vector<KVRange> ranges;
+        ranges.push_back(range_);
+        gpb::DataInfoForRanges info = gpb::get_data_info_for_ranges(data, input_queue, ranges);
+        
+        state_input_queues_ += au::str("[%s %s %s]"
+                                       , input_queue.c_str()
+                                       , au::str(info.data_kvs_in_ranges,"kvs").c_str()
+                                       , au::str(info.data_size_in_ranges,"B").c_str()
+                                       );
+        
+        input_sizes.push_back( info.data_size_in_ranges );
+      }
+      
+      // Reset error in timeout 60
+      if ((error_.IsActivated() && (cronometer_error_.seconds() > 60))) {
+        error_.Reset();
+      }
+      if (error_.IsActivated()) {
+        // Wait until previous error is finally canceled
+        state_ = au::str("Error [%s]: %s" , cronometer_error_.str().c_str() , error_.GetMessage().c_str() );
+        short_state_ = "[E]";
+        return;
+      }
+      
+      // If operation is paused, do not consider then...
+      if (stream_operation->paused()) {
+        state_ = "Operation paused";
+        short_state_ ="[P]";
+        return;
+      }
+      
+      if (worker_task_ != NULL)
+      {
+        ReviewCurrentTask();   // Review if this task finished...
+        state_ = "Running task...";
+        short_state_ ="[*]";
+        return;
+      }
+
+      if (defrag_task_ != NULL)
+      {
+        ReviewCurrentTask();   // Review if this defrag task finished...
+        state_ = "Running defrag task...";
+        short_state_ ="[D]";
+        return;
+      }
+      
+      
+      // Decide if the range has to be divided ( only in reduce operations )
+      if( reduce_operation )
+      {
+        // Maximum memory per task
+        size_t max_memory_per_task = GetMaxMemoryPerTask();
+        
+        if( batch_operation )
+        {
+          // sum all inputs > max per task
+          size_t total = 0;
+          for ( size_t i = 0 ; i < input_sizes.size() ; i++ )
+            total += input_sizes[i];
+          
+          if( total > max_memory_per_task )
+          {
+            // It is not necessary to write state_ since review will be called again
+            range_division_necessary_ = true;
+            return;
+          }
+          
+        }
+        else
+        {
+          // In stream operations ( or reduce forward ), only state is responsible for breaking a range
+          if( input_sizes[ input_sizes.size()-1 ] > ( max_memory_per_task/2) )
+          {
+            // It is not necessary to write state_ since review will be called again
+            range_division_necessary_ = true;
+            return;
+          }
+          
+        }
+      }
+
+      // Study if a defrag operation is required or we should wait for others
+      for (int i = 0; i < stream_operation->inputs_size(); i++ )
+      {
+        std::string input_queue = stream_operation->inputs(i);
+        gpb::Queue* queue = gpb::get_queue(data, input_queue);
+        if( !queue )
+          continue; // No queue, no problem...
+
+        bool defrag_task = false;
+        for (int b = 0; b < queue->blocks_size(); b++) {
+          
+          const gpb::Block& block = queue->blocks(b);
+          size_t block_id = block.block_id();
+          KVRange range = block.range();
+
+          if( !range.IsOverlapped(range_) )
+            continue; // we are not interested in this block
+
+          
+          if ( range.hg_begin < range_.hg_begin )
+          {
+            state_ = au::str( "Waiting for defrag in queue %s (block %lu)" , input_queue.c_str() , block_id );
+            short_state_ = "[W]";
+            return;
+          }
+          if( range.hg_end > range_.hg_end )
+          {
+            defrag_task = true;
+            break;
+          }
+          
+        }
+        
+        if( defrag_task )
+        {
+          
+          // Schedule a defrag task for this queue and this range
+          std::vector<KVRange> defrag_ranges = stream_operation_global_info_->GetDefragKVRanges();
+          defrag_task_ = new DefragTask(samson_worker_
+                                        , input_queue,samson_worker_->task_manager()->getNewId()
+                                        , defrag_ranges );
+          
+          size_t max_memory_per_task = GetMaxMemoryPerTask();
+          size_t accumulated_size = 0;
+          
+          for (int b = 0; b < queue->blocks_size(); b++) {
+            
+            const gpb::Block& block = queue->blocks(b);
+            size_t block_id = block.block_id();
+            KVRange range = block.range();
+            KVInfo info( block.size() , block.kvs() );
+            
+            if( !range.IsOverlapped(range_) )
+              continue; // we are not interested in this block
+
+            
+            if( range.hg_end > range_.hg_end )
+            {
+              
+              // Memory limit for this tasks
+              if ( accumulated_size > 0 )
+                if(  accumulated_size + block.size() > max_memory_per_task )
+                  break;
+              accumulated_size += block.size();
+              
+              BlockPointer real_block = BlockManager::shared()->GetBlock(block.block_id());
+              
+              if( real_block == NULL )
+              {
+                SetError(au::str("Block %lu not found while trying to defrag" , block_id ));
+                defrag_task_ = NULL;
+                return;
+              }
+              
+              // Add this element to the defrag task
+              defrag_task_->AddInput(0, real_block, range, info );
+
+            }
+            
+          }
+          
+         
+          state_ ="Running defrag";
+          short_state_ = "[D]";
+
+          // Schedule this tasks
+          samson_worker_->task_manager()->Add(defrag_task_.dynamic_pointer_cast<WorkerTaskBase> ());
+          
+          return;
+          
+        }
+        
+      }
+      
+      
+      // Compute pending size based on input size
+      if( reduce_operation && !batch_operation )
+      {
+        // We do not consider pending size the state or the joint-set
+        for (int i = 0; i < ( stream_operation->inputs_size() -1 ); i++ )
+          pending_size_ += input_sizes[i];
+      }
+      else
+      {
+        // all inputs are pending size
+        for (int i = 0; i < stream_operation->inputs_size(); i++ )
+          pending_size_ += input_sizes[i];
+      }
+      
+      // Eval pending size to scehdule new tasks
+      
+      if ( pending_size_ > 0 )
+      {
+        // Compute priotiy based on pending size and time
+        size_t time = 1 + last_task_cronometer_.seconds();
+        priority_rank_ = pending_size_ * time;
+        
+        state_ = "Ready to schedule a new task";
+        short_state_ = "[R]";
+      }
+      else
+      {
+        state_ = "No data to be processed";
+        short_state_ = "[N]";
+        last_task_cronometer_.Reset();
+        // Reset the cronometer if not data sice otherwise it will count a lot of time when some data appears
+      }
+      
+      
+    }
+    
+    void StreamOperationRangeInfo::ReviewCurrentTask() {
+      
+      LM_W(("We do not check if all generated blocks are distributed"));
 
   if (worker_task_ != NULL) {
 
@@ -44,13 +372,16 @@ void StreamOperationRangeInfo::ReviewCurrentTask() {
     worker_task_->processOutputBuffers();
 
     // If we are running a task, let see if it is finished
-    if (worker_task_->finished()) {
+        if (worker_task_->IsWorkerTaskFinished()) {
 
       // Process outputs generated by this task
       worker_task_->processOutputBuffers();
 
-      if (worker_task_->error().IsActivated()) {
-        ResetWithError(worker_task_->error().GetMessage()); // If there is an error, reset
+          if (worker_task_->error().IsActivated())
+          {
+            // Tansfer the error message ( this will block this for 60 seconds )
+            SetError( worker_task_->error().GetMessage() );
+            worker_task_ = NULL;
         return;
       } else {
 
@@ -59,15 +390,38 @@ void StreamOperationRangeInfo::ReviewCurrentTask() {
         std::string caller = au::str("task %lu // %s", worker_task_->worker_task_id(), str().c_str());
         au::ErrorManager error;
         samson_worker_->data_model()->Commit(caller, commit_command, &error);
-        if (error.IsActivated()) {
-          ResetWithError(au::str("Error commiting tasks: %s", error.GetMessage().c_str()));
+            if (error.IsActivated())
+              SetError( error.GetMessage() );
+            
+            worker_task_ = NULL;        // Release our copy of this task
+            return;
+          }
+        }
         }
 
-        // Release our copy of this task
-        worker_task_ = NULL;
+      if (defrag_task_ != NULL) {
 
-        state_ = "Reviwing...";
+        // If we are running a task, let see if it is finished
+        if (defrag_task_->IsWorkerTaskFinished() ) {
 
+          if (defrag_task_->error().IsActivated())
+          {
+            // Tansfer the error message ( this will block this for 60 seconds )
+            SetError( defrag_task_->error().GetMessage() );
+            defrag_task_ = NULL;
+            return;
+          } else {
+            
+            
+            // Commit changes and release task
+            std::string commit_command = defrag_task_->commit_command();
+            std::string caller = au::str("defrag task %lu // %s", defrag_task_->worker_task_id(), str().c_str());
+            au::ErrorManager error;
+            samson_worker_->data_model()->Commit(caller, commit_command, &error);
+            if (error.IsActivated())
+              SetError( error.GetMessage() );
+            defrag_task_ = NULL;        // Release our copy of this task
+            return;
       }
     }
   }
@@ -79,88 +433,42 @@ size_t StreamOperationRangeInfo::priority_rank() {
 
 au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t task_id, gpb::Data *data) {
 
-  // Init pending size and priority to be recomputed
-  priority_rank_ = 0;
-  pending_size_ = 0;
+      // Memory limits
+      size_t max_memory_per_task = GetMaxMemoryPerTask();
 
-  // Recover stream operation from data
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);
-  if (!stream_operation) {
-    ResetWithError("Stream operation not found");
-    return au::SharedPointer<WorkerTask>(NULL);
-  }
-  // Reset error in timeout 60
-  if ((error_.IsActivated() && (cronometer_error_.seconds() > 60))) {
-    error_.Reset();
-  }
-
-  // Previous error
-  if (error_.IsActivated()) {
-    state_ = au::str("E[%s]: ", error_.GetMessage().c_str());
-    return au::SharedPointer<WorkerTask>(NULL);
-  }
-
-  // Check if the operatio is valid
-  au::ErrorManager error;
-  if (!isStreamOperationValid(data, *stream_operation, &error)) {
-    state_ = au::str("E[%s]: ", error.GetMessage().c_str());
-    ResetWithError(error.GetMessage());
-    return au::SharedPointer<WorkerTask>(NULL);
-  }
-
-  // If operation is paused, do not consider then...
-  if (stream_operation->paused()) {
-    state_ = "Operation paused";
-    return au::SharedPointer<WorkerTask>(NULL);
-  }
 
   std::string operation_name = stream_operation->operation();
   Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
 
-  if (!operation) {
-    ResetWithError(au::str("Operation %s not found", operation_name.c_str()));
-    return au::SharedPointer<WorkerTask>(NULL);
-  }
+      // Everything is checked by Rreview command, so no error is accepted
+      if( priority_rank_ == 0 )
+        LM_X(1, ("Internal error"));
+      if (!stream_operation)
+        LM_X(1, ("Internal error"));
+      if (error_.IsActivated() )
+        LM_X(1, ("Internal error"));
+      au::ErrorManager error;
+      if (!isStreamOperationValid(data, *stream_operation, &error))
+        LM_X(1, ("Internal error"));
+      if (stream_operation->paused())
+        LM_X(1, ("Internal error"));
+      if (!operation)
+        LM_X(1, ("Internal error"));
 
-  /*
-   Dynamic inputs
-   ----------------------------
-   map,parse,...     All inputs are dynamic (1 dynamic input)
-   Batch operation:  All inputs are non dynamic ( all input required )
-   Stream operation: All inputs are dynamic except last ( state ) input
-   Reduce forward:   All inputs are dynamic except last ( auxiliar data-set ) input
-
-   Inputs to count for pending size
-   ----------------------------
-   map,parse,...     Single input ( counts )
-   Batch operation:  All inputs
-   Stream operation: N-1 ( last one is state and it is not considered pending.size)
-   */
-
-  bool batch_operation = stream_operation->batch_operation();
-
-  int num_dynamic_inputs = 1;
-  int num_pending_size_inputs = 1; // Numer of inputs to consider for the "pending size"
-  if (operation->getType() == Operation::reduce) {
-    if (batch_operation) {
-      num_dynamic_inputs = 0;
-      num_pending_size_inputs = operation->getNumInputs();
-    } else {
-      num_dynamic_inputs = operation->getNumInputs() - 1;
-      num_pending_size_inputs = operation->getNumInputs() - 1;
-    }
-  }
+      // Get the relevant number of input for all aspects
+      int num_dynamic_input = GetNumberOfDynamicInputs( stream_operation );
+      //int num_thrigger_input = GetNumberOfInputsForThrigering( stream_operation );
 
   // Create candidate task ( if id is provided )
-  if (task_id != (size_t) -1)
     worker_task_ = new WorkerTask(samson_worker_, task_id, *stream_operation, operation, range_);
 
-  // Compute the limit block to start packaging blocks in the task
+      // Accumulated memory used for this task ( we will limit taken blocks with this element )
   size_t accumulated_size = 0; // Accumulated size required to be in memory for this operation
-  au::Uint64Set block_ids; // Block required so far
+      au::Uint64Set block_ids;     // Set of Block ids required so far
 
-  // Scan all inputs
-  for (int i = 0; i < stream_operation->inputs_size(); i++) {
+      // Scan all inputs ( in reverse order to include first state.... )
+      for (int i = stream_operation->inputs_size()-1; i >=0 ; i--) {
     std::string input_queue = stream_operation->inputs(i);
     gpb::Queue *queue = ::samson::gpb::get_queue(data, input_queue);
 
@@ -171,79 +479,56 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
     for (int b = 0; b < queue->blocks_size(); b++) {
       const gpb::Block& block = queue->blocks(b);
       size_t block_id = block.block_id();
-      const gpb::KVRanges ranges = block.ranges();
+          KVRange range = block.range();
+          KVInfo info( block.size() , block.kvs());
+          // If this block is not in our range of interest, just skip it
+          if( !range.IsOverlapped(range_))
+            continue;
 
-      if (i < num_pending_size_inputs) {
-        KVRanges ranges2 = block.ranges(); // Implicit conversion
-        double overlap_factor = ranges2.GetOverlapFactor(range_);
-        // TODO(@jges): Remove log messages
-        LM_M(("pending_size(%lu) = pending_size(%lu) + overlap_factor(%lf)*block.size(%lu)", pending_size_ + (overlap_factor * block.size()), pending_size_, overlap_factor, block.size()));
-        pending_size_ += (overlap_factor * block.size());
-      }
+          if( !range_.includes( range ) )
+            LM_X(1, ("Internal error. Block %lu (%s) in queue %s shoudl be contained in range %s"
+                     , block_id
+                     , range.str().c_str()
+                     , input_queue.c_str()
+                     , range_.str().c_str() ));
 
-      for (int r = 0; r < ranges.range_size(); r++) {
-        KVRange range = ranges.range(r); // Implicit conversion
-        KVRange intersection = range.Intersection(range_);
-
-        if (intersection.size() > 0) {
-          // This block should be considered
           BlockPointer real_block = BlockManager::shared()->GetBlock(block.block_id());
           if (real_block == NULL) {
-            ResetWithError(au::str("Block %lu not found", block.block_id()));
+            worker_task_ = NULL;
+            SetError( au::str("Block %lu not found", block.block_id()));
             return au::SharedPointer<WorkerTask>(NULL);
           }
 
-          // Add input to the task
-          if (worker_task_ != NULL)
-            worker_task_->AddInput(i, real_block, intersection, KVInfo(0, 0));
 
           // Accumulate size if the block was not considered before
           if (!block_ids.contains(block_id)) {
             accumulated_size += real_block->getSize(); // Accumulate size of the block
             block_ids.insert(block_id);
           }
-        }
+          // Add input to the task
+          worker_task_->AddInput(i, real_block, range_ , info );
       }
 
       // Stop if we need to much memory for this task
-      if (i < num_dynamic_inputs)
-        if (accumulated_size > 200000000) { // Limit for dynamic inputs
+        if (i < num_dynamic_input )
+          if (accumulated_size > max_memory_per_task ) {
           break; // No more data from this input
         }
-    }
   }
 
-  if (accumulated_size > (0.5 * (double) engine::Engine::shared()->memory_manager()->memory())) {
-    // Excessive size, defrag is required
-    state_ = au::str("Defrag required ( operation size %s )", au::str(accumulated_size).c_str());
-    LM_W(("Individual range operation detected defrag was necessary..."));
+      if (accumulated_size > 2*max_memory_per_task )
+      {
+        worker_task_ = NULL;
+        SetError( au::str("Error: Memory footprint of %s for previous operation." , au::str(accumulated_size).c_str()));
     return au::SharedPointer<WorkerTask>(NULL);
   }
 
-  // Compute priority rank based on time and size
-  size_t time = last_task_cronometer_.seconds();
-  priority_rank_ = pending_size_ * (1 + time);
-  if (pending_size_ > 0) {
-    // TODO(@jges): Remove log messages
-    LM_M(("Ready to schedule a new task, with priority:%lu", priority_rank_));
-    state_ = "Ready to schedule a new task";
-  } else {
-    state_ = "No data to be processed";
-  }
-
-  if (worker_task_ != NULL)
-    state_ = "Running task...";
-
-  if (task_id != (size_t) -1)
-    if (worker_task_ != NULL) {
-      last_task_cronometer_.Reset(); // Reset cronometer
+      // Reset cronometer
+      last_task_cronometer_.Reset();
 
       // Add environment variable to identify this stream_operation_id
       worker_task_->environment().Set("system.stream_operation_id", stream_operation_id_);
 
-      // Return the newly generated worker task to be really shcedulled in the worker task manager
-      state_ = au::str("Waiting task %lu", task_id);
-    }
 
   return worker_task_;
 }
@@ -256,18 +541,6 @@ void StreamOperationRangeInfo::set_state(const std::string& state) {
   state_ = state;
 }
 
-// Reset all pending worker_tasks
-void StreamOperationRangeInfo::Reset() {
-  // Release current working task ( if any )
-  priority_rank_ = 0;
-  worker_task_ = NULL;
-}
-
-void StreamOperationRangeInfo::ResetWithError(const std::string& error_message) {
-  error_.set(error_message);
-  cronometer_error_.Reset();
-  Reset();
-}
 
 std::string StreamOperationRangeInfo::str() {
   std::ostringstream output;
@@ -301,9 +574,7 @@ void StreamOperationRangeInfo::fill(samson::gpb::CollectionRecord *record, const
 
   // Default view
 
-  ::samson::add(record, "pending_size", pending_size_, "sum,f=uint64");
-  // TODO(@jges): remove log messages
-  LM_M(("task:'%s', pending_size:%lu", stream_operation_name_.c_str(), pending_size_));
+      ::samson::add(record, "inputs", state_input_queues_ , "different");
   ::samson::add(record, "time", au::str_time(last_task_cronometer_.seconds()), "different");
   ::samson::add(record, "priority rank", priority_rank(), "f=uint64,different");
 

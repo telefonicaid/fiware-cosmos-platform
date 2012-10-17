@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "au/log/LogMain.h"
 #include "au/ErrorManager.h"
 #include "au/containers/map.h"                  // au::map
 #include "au/string.h"                          // au::Format
@@ -18,6 +19,7 @@
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/coding.h"               // KVRange
+#include "samson/common/KVRange.h"
 #include "samson/common/samson.pb.h"            // network::...
 #include "samson/stream/WorkerTaskBase.h"       // samson::stream::WorkerTaskBase
 
@@ -66,24 +68,28 @@ class BlockDistributionTask : public WorkerTaskBase {
 
 class PopBlockRequestTask : public WorkerTaskBase {
   public:
-    PopBlockRequestTask(SamsonWorker *samson_worker, size_t id, size_t block_id, const gpb::KVRanges& ranges,
-                        size_t delialh_id, size_t delilah_component_id, size_t pop_id);
+    PopBlockRequestTask(SamsonWorker *samson_worker
+                        , size_t id
+                        , size_t block_id
+                        , size_t delialh_id
+                        , size_t delilah_component_id
+                        , size_t pop_id);
 
     // Virtual method from engine::ProcessItem
     virtual void run();
 
     // Virtual method of WorkerTaskBase
     virtual std::string str() {
-      return au::str("Task %lu: Pop Request for block %lu Ranges %s from delilah %s ( component %d pop_id %d)",
-                     worker_task_id(), block_id_, KVRanges(ranges_).str().c_str(), au::code64_str(delilah_id_).c_str(),
-                     delilah_component_id_, pop_id_);
+      return au::str("Task %lu: Pop Request for block %lu from delilah %s ( component %d pop_id %d)",
+                     worker_task_id()
+                     , block_id_
+                     , au::code64_str(delilah_id_).c_str()
+                     , delilah_component_id_, pop_id_);
     }
 
   private:
-    void sent_response(engine::BufferPointer buffer);
 
     size_t block_id_;
-    gpb::KVRanges ranges_;
     BlockPointer block_;
 
     size_t delilah_id_;
@@ -93,10 +99,12 @@ class PopBlockRequestTask : public WorkerTaskBase {
 
 class DefragTask : public WorkerTaskBase {
   public:
-    DefragTask(SamsonWorker *samson_worker, const std::string& queue_name, size_t id) :
+  DefragTask(SamsonWorker *samson_worker, const std::string& queue_name, size_t id , const std::vector<KVRange>& ranges ) :
       WorkerTaskBase(samson_worker, id, "Defrag Operation") {
       samson_worker_ = samson_worker;
-      queue_name_ = queue_name;
+        queue_name_ = queue_name;
+        ranges_ = ranges;
+        AU_LM_W( ("DEFRAG over ranges %s" , ::samson::str(ranges_).c_str() ));
     }
 
     // Virtual method from engine::ProcessItem
@@ -111,10 +119,12 @@ class DefragTask : public WorkerTaskBase {
     }
 
   private:
+  
     void AddOutputBuffer(engine::BufferPointer buffer);
 
     SamsonWorker *samson_worker_;
     std::string queue_name_;   // Name of the queue we are processing
+  std::vector<KVRange> ranges_;
 };
 }
 }

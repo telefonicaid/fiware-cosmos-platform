@@ -21,9 +21,7 @@ public:
     RegisterChannel("Message", "M");
     RegisterChannel("Warning", "W");
     RegisterChannel("Error", "E");
-
     RegisterChannel("Exit", "X");
-
     RegisterChannel("Verbose", "V");
     RegisterChannel("Verbose2", "V");
     RegisterChannel("Verbose3", "V");
@@ -107,6 +105,11 @@ public:
     return channels;
   }
 
+  int num_channels() const
+  {
+    return num_log_channels_;
+  }
+  
 private:
 
   // Names for each channel

@@ -886,9 +886,9 @@ void SamsonWorkerRest::process_synchronized(au::SharedPointer<au::network::RESTS
   for (int b = 0; b < queue->blocks_size(); b++) {
     const gpb::Block& block = queue->blocks(b);
     size_t block_id = block.block_id();
-    KVRanges ranges = block.ranges(); // Implicit conversion
+    KVRange range = block.range(); // Implicit conversion
 
-    if (ranges.Contains(hg)) {
+    if (range.contains(hg)) {
       // This is the block
       stream::BlockPointer block_ptr = stream::BlockManager::shared()->GetBlock(block_id);
 
@@ -907,7 +907,7 @@ void SamsonWorkerRest::process_synchronized(au::SharedPointer<au::network::RESTS
       block_ptr->lookup(key.c_str(), command);
       return;
     } else {
-      command->AppendFormatedElement("block", au::str("%lu %s\n", block_id, ranges.str().c_str()));
+      command->AppendFormatedElement("block", au::str("%lu %s\n", block_id, range.str().c_str()));
     }
   }
 

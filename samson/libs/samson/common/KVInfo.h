@@ -33,8 +33,11 @@ struct KVInfo {
   std::string str() const;
   bool isEmpty();
   void getInfo(std::ostringstream& output);
+  
 };
 
+  
+  
 // Create an allocated vector of KVInfo with information for all hash-groups
 KVInfo *createKVInfoVector(char *data, au::ErrorManager *error);
 

@@ -86,34 +86,23 @@ namespace samson {
     }
     
     void BlockRef::review(au::ErrorManager& error) {
+      
       if (!block_->is_content_in_memory()) {
         error.set(au::str("Block %lu is not in memory", block_->block_id()));
         return;
       }
       
       if (block_->getKVFormat().isTxt()) {
-        // Just full update info
-        info_ = block_->getKVInfo();
+        // If data is txt, nothing else to do
         return;
       }
       
       // Get complete information about how key-values are organized in this block
       file_ = block_->getKVFile(error);
-      
-      if (error.IsActivated()) {
-        return;
-      }
-      
       if (file_ == NULL) {
         error.set(au::str("Not possible to parse block %lu", block_id()));
-        return;
       }
       
-      // Update info ( absolutelly necessary for a correct commit at the end )
-      info_.set(0, 0);
-      for (int i = range_.hg_begin; i < range_.hg_end; i++) {
-        info_.append(file_->info[i]);
-      }
       
     }
   }

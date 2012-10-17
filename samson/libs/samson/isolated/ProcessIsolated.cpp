@@ -6,6 +6,7 @@
 #include "engine/ProcessItem.h"             // engine::ProcessItem
 #include "engine/ProcessManager.h"          // engine::ProcessManager
 
+#include "samson/worker/SamsonWorker.h"
 #include "samson/common/KVHeader.h"
 #include "samson/isolated/ProcessIsolated.h"                // Own interface
 #include "samson/isolated/ProcessWriter.h"
@@ -14,12 +15,12 @@
 #include "samson/network/Packet.h"
 
 namespace samson {
-// Number of blocks generated at the output of each operation
-// 5 is an arbitrary name ( should be based on the size of the cluster and redundancy )
-int ProcessIsolated::num_hg_divisions = 5;
 
-ProcessIsolated::ProcessIsolated(SamsonWorker* samson_worker, size_t worker_task_id, const std::string& operation,
-                                 const std::string& concept, ProcessBaseType _type) :
+ProcessIsolated::ProcessIsolated(SamsonWorker* samson_worker
+                                 , size_t worker_task_id
+                                 , const std::string& operation
+                                 , const std::string& concept
+                                 , ProcessBaseType _type ) :
   ProcessItemIsolated(samson_worker, worker_task_id, operation, concept) {
   num_outputs = 0;   // Outputs are defined calling "addOutput" with the rigth output format
   type = _type;   // Keep the type of operation ( data is generated differently )
@@ -29,6 +30,9 @@ ProcessIsolated::ProcessIsolated(SamsonWorker* samson_worker, size_t worker_task
   shm_id = -1;
   item = NULL;
 
+    // Output ranges based on cluster information
+    output_ranges_ = samson_worker->worker_controller()->GetKVRanges();
+    
   writer = NULL;
   txtWriter = NULL;
 }
@@ -121,69 +125,92 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
   OutputChannel *channel = reinterpret_cast<OutputChannel *>(buffer);
 
   // NodeBuffers ( inodes in the shared memory buffer )
-  NodeBuffer *node = reinterpret_cast<NodeBuffer *>(buffer + sizeof(OutputChannel) * num_outputs * num_hg_divisions);
+  NodeBuffer *node = reinterpret_cast<NodeBuffer *>(buffer + sizeof(OutputChannel) * num_outputs );
 
 #pragma mark ---
 
   // size_t task_id = task->workerTask.task_id();
 
   for (int o = 0; o < num_outputs; o++) {
-    for (size_t s = 0; s < (size_t) num_hg_divisions; s++) {
-      OutputChannel *_channel = &channel[o * num_hg_divisions + s];
 
-      if (_channel->info.size > 0) {
-        engine::BufferPointer buffer = engine::Buffer::Create("Output of [" + concept() + "]", "ProcessIsolated",
-                                                              sizeof(KVHeader) + _channel->info.size);
+    OutputChannel *_channel = &channel[o];
+    
+    if (_channel->info.size == 0)
+      continue;
 
-        if (buffer == NULL) {
-          LM_X(1, ("Internal error: Missing buffer in ProcessBase"));   // Pointer to the header
-        }
-        KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
+    // For each output range, create an output buffer
+    for ( size_t r = 0 ; r < output_ranges_.size() ; r++ )
+    {
+      // Selected range
+      KVRange range = output_ranges_[r];
+      
+      // Compute size for the buffer
+      KVInfo range_info;
+      for ( int hg = range.hg_begin ; hg < range.hg_end ;hg ++ )
+        range_info.append( _channel->hg[hg].info );
 
-        // Initial offset for the buffer to write data
-        buffer->SkipWrite(sizeof(KVHeader));
-
-        // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
-        if (outputFormats.size() > (size_t) o) {
-          header->Init(outputFormats[o], _channel->info);
-        } else {
-          header->Init(KVFormat("no-used", "no-used"), _channel->info);   // This buffer is not not sended with the buffer
-        }
-        KVInfo *info = reinterpret_cast<KVInfo *>(malloc(sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS));
-
-        for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
-          // Current hash-group output
-          HashGroupOutput *_hgOutput = &_channel->hg[i];
-
-          // Set global info
-          info[i] = _hgOutput->info;
-
-          // Write data following nodes
-          uint32 node_id = _hgOutput->first_node;
-          while (node_id != KV_NODE_UNASIGNED) {
-            if (node_id > _hgOutput->last_node) {
-              LM_W(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
-                      _hgOutput->first_node, _hgOutput->last_node, node_id));
-            }
-            bool ans = buffer->Write(reinterpret_cast<char *>(node[node_id].data), node[node_id].size);
-            if (!ans) {
-              LM_X(1, ("Error writing key-values into a temporal Buffer ( size %lu ) ", node[node_id].size));   // Go to the next node
-            }
-            node_id = node[node_id].next;
-          }
-        }
-
-        if (buffer->size() != buffer->max_size()) {
-          LM_X(1, ("Internal error"));   // Set the hash-group limits of the header
-        }
-        header->range.setFrom(info);
-
-        // Free buffer of KVInfo ( not not sended with the buffer )
-        free(info);
-
-        // Process the output buffer
-        processOutputBuffer(buffer, o);
+      if( range_info.size == 0)
+        continue;
+      
+      engine::BufferPointer buffer = engine::Buffer::Create("Output of [" + concept() + "]"
+                                                            , "ProcessIsolated"
+                                                            , sizeof(KVHeader) + range_info.size );
+      
+      if (buffer == NULL) {
+        LM_X(1, ("Internal error: Not possible to create a buffer"));
       }
+      // Pointer to the header
+      KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
+      
+      // Initial offset for the buffer to write data
+      buffer->SkipWrite(sizeof(KVHeader));
+      
+      // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
+      if (outputFormats.size() > (size_t) o) {
+        header->Init( outputFormats[o],  range_info );
+      } else {
+        error_.set(au::str("No output format for output %d" , o));
+        return;
+      }
+      
+      for (int i = range.hg_begin; i <  range.hg_end; i++) {
+
+        // Current hash-group output
+        HashGroupOutput *_hgOutput = &_channel->hg[i];
+        
+        // Write data following nodes
+        uint32 node_id = _hgOutput->first_node;
+        while (node_id != KV_NODE_UNASIGNED) {
+          if (node_id > _hgOutput->last_node) {
+            LM_W(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
+                  _hgOutput->first_node, _hgOutput->last_node, node_id));
+          }
+          bool ans = buffer->Write(reinterpret_cast<char *>(node[node_id].data), node[node_id].size);
+          if (!ans) {
+            LM_X(1, ("Error writing key-values into a temporal Buffer ( size %lu ) ", node[node_id].size));   // Go to the next node
+          }
+          node_id = node[node_id].next;
+        }
+      }
+      
+      if (buffer->size() != buffer->max_size()) {
+        LM_X(1, ("Internal error"));   // Set the hash-group limits of the header
+      }
+
+      int min_hg = range.hg_begin;
+      int max_hg = range.hg_end;
+      
+      while( _channel->hg[min_hg].info.size == 0 )
+        min_hg++;
+      while( _channel->hg[max_hg-1].info.size == 0 )
+        max_hg--;
+      
+      // Compute the range of valid data
+      header->range = KVRange( min_hg , max_hg );
+      
+      // Process the output buffer
+      processOutputBuffer(buffer, o);
+      
     }
   }
 }
@@ -218,12 +245,18 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
 }
 
 void ProcessIsolated::initProcessItemIsolated() {
-  initProcessIsolated();   // Init function in the foreground-process
 
+  setActivity("process");
+  
+  initProcessIsolated();   // Init function in the foreground-process
+  
+  if( !CheckCompleteKVRanges(output_ranges_) )
+    error_.set("Output ranges are not complete");
+  
   if (error_.IsActivated()) {
     return;
   }
-
+  
   // Init the shared memory segment
   shm_id = engine::SharedMemoryManager::shared()->RetainSharedMemoryArea();
   if (shm_id != -1) {
@@ -239,6 +272,9 @@ void ProcessIsolated::finishProcessItemIsolated() {
     item = NULL;
     shm_id = -1;
   }
+  
+  setActivity("finishing");
+
 }
 
 void ProcessIsolated::runIsolated() {

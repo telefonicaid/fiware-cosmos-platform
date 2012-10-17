@@ -104,6 +104,8 @@ class SamsonWorker : public engine::NotificationListener, public au::Console {
     // Reload modules
     void ReloadModulesIfNecessary();
 
+  
+  
   private:
 
     enum State {

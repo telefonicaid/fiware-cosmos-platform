@@ -39,6 +39,8 @@ void DataModel::InitializeCommandFlags(au::CommandLine& cmd) {
   cmd.SetFlagString("output", "");
   // Forward flag to indicate that this is a reduce forward operation ( no update if state )
   cmd.SetFlagBoolean("forward");
+  //Paused
+  cmd.SetFlagBoolean("paused");
   // -a flag
   cmd.SetFlagBoolean("a");
   // Number of divisions in state operations
@@ -141,7 +143,7 @@ void DataModel::ProcessAddStreamOperationCommand(au::SharedPointer<gpb::Data> da
   so->set_stream_operation_id(stream_operation_id);
   so->set_name(name);
   so->set_operation(operation);
-  so->set_paused(false);
+  so->set_paused(cmd.GetFlagBool("paused"));
   // Add input queues
   au::CommandLine cmd_inputs(inputs);
   for (int i = 0; i < cmd_inputs.get_num_arguments(); ++i) {
@@ -442,6 +444,18 @@ void DataModel::ProcessSetStreamOperationPropertyCommand(au::SharedPointer<gpb::
     return;
   }
 
+  if( property == "paused")
+  {
+    if( value == "yes" || value == "y" )
+      stream_operation->set_paused(true);
+    else if( value == "no" || value == "n" )
+      stream_operation->set_paused(false);
+    else
+      error->set( au::str("Unknown value %d for paused. Say yes or no" , value.c_str() )) ;
+
+    return;
+  }
+  
   setProperty(stream_operation->mutable_environment(), property, value);
   error->AddMessage(au::str("Stream operation %s has been updated correctly", name.c_str()));
   return;
@@ -708,9 +722,9 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueuesWithBlocks(c
       ::samson::add(record, "queue", queue_name, "different");
       ::samson::add(record, "block", block.block_id(), "different");
       ::samson::add(record, "block_size", block.block_size(), "f=uint64,different");
-      KVRanges ranges = block.ranges();   // Implicit conversion
-      ::samson::add(record, "ranges", ranges.str(), "different");
-      KVInfo info(block.size(), block.kvs());
+      KVRange range = block.range();   // Implicit conversion
+      ::samson::add(record, "ranges", range.str(), "different");
+      KVInfo info( block.size() , block.kvs() );
       ::samson::add(record, "info", info.str(), "different");
       ::samson::add(record, "commit", block.commit_id(), "different");
       ::samson::add(record, "time", block.time(), "f=timestamp");
@@ -813,10 +827,10 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueueRanges(const 
 
   // Compute size in each range
   for (int i = 0; i < queue->blocks_size(); ++i) {
-    KVRanges block_ranges = queue->blocks(i).ranges();   // Implicit conversion
+    KVRange range = queue->blocks(i).range();   // Implicit conversion
 
     for (int r = 0; r < num_ranges; ++r) {
-      double overlap = block_ranges.GetOverlapFactor(ranges[r]);
+      double overlap = range.GetOverlapFactor(ranges[r]);
       sizes[r] += overlap * queue->blocks(i).size();
       kvs[r] += overlap * queue->blocks(i).kvs();
     }
@@ -856,22 +870,21 @@ std::set<size_t> DataModel::get_block_ids() {
   return block_ids;
 }
 
-std::set<size_t> DataModel::get_my_block_ids(const KVRanges& hg_ranges) {
-  // Prepare list of ids to be returned
-  std::set<size_t> block_ids;
-  // Get a copy of the data
-  au::SharedPointer<gpb::Data> my_data = getCurrentModel();
+std::set<size_t> DataModel::get_my_block_ids(const std::vector<KVRange>& ranges) {
+
+  std::set<size_t> block_ids;  // Prepare list of ids to be returned
+
+  au::SharedPointer<gpb::Data> my_data = getCurrentModel();  // Get a copy of the data
 
   // Loop all the queues
   for (int q = 0; q < my_data->queue_size(); q++) {
     const gpb::Queue& queue = my_data->queue(q);
     for (int b = 0; b < queue.blocks_size(); b++) {
       const gpb::Block& block = queue.blocks(b);
-
-      // Implicit conversion to C++ type
-      KVRanges ranges = block.ranges();
-
-      if (ranges.IsOverlapped(hg_ranges)) {
+      
+      KVRange range = block.range();
+      
+      if (range.IsOverlapped(ranges)) {
         block_ids.insert(block.block_id());
       }
     }
@@ -913,33 +926,7 @@ bool DataModel::CheckForAllOperationsFinished() {
   operations_size = data->batch_operations_size();
   for (int i = 0; i < operations_size; ++i) {
     gpb::BatchOperation *batch_operation = data->mutable_batch_operations(i);
-    if (CheckIfBatchOPerationIsFinished(batch_operation, data) == false) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// method trying to discover if a batch operation is really finished,
-// by looking at the input queues
-bool DataModel::CheckIfBatchOPerationIsFinished(const gpb::BatchOperation* const batch_operation,
-                                                au::SharedPointer<gpb::Data> data) const {
-  LM_T(LmtDelilahComponent, ("CheckIfBatchOPerationIsFinished '%s' with %d inputs",
-          batch_operation->operation().c_str(), batch_operation->inputs_size()));
-
-  // To check for finish, we should take into account just the first input,
-  // as the other would be the state or a permanent queue
-  // Small change in the criteria. Now we can have several inputs, so the test
-  // must include all queues but the last one
-  size_t delilah_id = batch_operation->delilah_id();
-  size_t delilah_component_id = batch_operation->delilah_component_id();
-  for (int i = 0; i < batch_operation->inputs_size() - 1; ++i) {
-    std::string hidden_queue_name = au::str(".%s_%lu_%s", au::code64_str(delilah_id).c_str(), delilah_component_id,
-                                            batch_operation->inputs(i).c_str());
-    gpb::Queue *queue = get_queue(data.shared_object(), hidden_queue_name);
-    if (queue && (queue->blocks_size() > 0)) {
-      LM_T(LmtDelilahComponent, ("Batch operation: '%s', queue:'%s' with size:%lu",
-              batch_operation->operation().c_str(), hidden_queue_name.c_str(), queue->blocks_size()));
+    if ( gpb::bath_operation_is_finished(data.shared_object(), *batch_operation) == false) {
       return false;
     }
   }
@@ -953,37 +940,42 @@ void DataModel::ReviewBatchOperations(au::SharedPointer<gpb::Data> data, int ver
   for (int i = 0; i < operations_size; ++i) {
     gpb::BatchOperation *batch_operation = updated_data->mutable_batch_operations(i);
 
-    if (!batch_operation->finished()) {
-      if (CheckIfBatchOPerationIsFinished(batch_operation, updated_data) == true) {
-        // Send a message to original delilah
-        engine::Notification* notification = new engine::Notification(notification_samson_worker_send_message);
-        std::string message = au::str("Batch operation %s_%lu has finished correctly",
-                                      au::code64_str(batch_operation->delilah_id()).c_str(),
-                                      batch_operation->delilah_component_id());
-        notification->environment().Set("message", message);
-        notification->environment().Set("context", "system");
-        notification->environment().Set("type", "warning");
-        notification->environment().Set("delilah_id", batch_operation->delilah_id());
+    if( batch_operation->finished() )
+      continue;
+    
+    bool finished = gpb::bath_operation_is_finished( updated_data.shared_object() , *batch_operation );
+    
+    if ( finished ) {
 
-        engine::Engine::shared()->notify(notification);
-        // Set finished and move data
-        batch_operation->set_finished(true);
-
-        size_t delilah_id = batch_operation->delilah_id();
-        size_t delilah_component_id = batch_operation->delilah_component_id();
-        std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
-
-        // Perform all push for output queues
-        for (int j = 0; j < batch_operation->outputs_size(); ++j) {
-          std::string queue_name = batch_operation->outputs(j);
-          std::string final_queue_name = prefix + queue_name;
-          std::string command = au::str("push_queue %s %s", final_queue_name.c_str(), queue_name.c_str());
-
-          PerformCommit(updated_data, command, version, error);
-          if (error->IsActivated()) {
-            LM_W(("Error performing commit command:'%s'  error:'%s'", command.c_str(), error->GetMessage().c_str()));
-            return;
-          }
+      // Set finished and move data
+      batch_operation->set_finished(true);
+      
+      // Send a message to original delilah
+      engine::Notification* notification = new engine::Notification(notification_samson_worker_send_message);
+      std::string message = au::str("Batch operation %s_%lu has finished correctly",
+                                    au::code64_str(batch_operation->delilah_id()).c_str(),
+                                    batch_operation->delilah_component_id());
+      notification->environment().Set("message", message);
+      notification->environment().Set("context", "system");
+      notification->environment().Set("type", "warning");
+      notification->environment().Set("delilah_id", batch_operation->delilah_id());
+      
+      engine::Engine::shared()->notify(notification);
+      
+      size_t delilah_id = batch_operation->delilah_id();
+      size_t delilah_component_id = batch_operation->delilah_component_id();
+      std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
+      
+      // Perform all push for output queues
+      for (int j = 0; j < batch_operation->outputs_size(); ++j) {
+        std::string queue_name = batch_operation->outputs(j);
+        std::string final_queue_name = prefix + queue_name;
+        std::string command = au::str("push_queue %s %s", final_queue_name.c_str(), queue_name.c_str());
+        
+        PerformCommit(updated_data, command, version, error);
+        if (error->IsActivated()) {
+          LM_W(("Error performing commit command:'%s'  error:'%s'", command.c_str(), error->GetMessage().c_str()));
+          return;
         }
       }
     }

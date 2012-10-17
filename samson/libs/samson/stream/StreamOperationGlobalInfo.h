@@ -35,108 +35,83 @@
 
 
 namespace samson {
-class SamsonWorker;
-class Info;
-class Operation;
+  class SamsonWorker;
+  class Info;
+  class Operation;
 }
 
 namespace samson {
-namespace stream {
-class Queue;
-class WorkerTask;
-class Block;
-class BlockList;
-class WorkerCommand;
-class PopQueue;
-
-class StreamOperationGlobalInfo {
-
-  public:
-    StreamOperationGlobalInfo(SamsonWorker *samson_worker, size_t stream_operation_id,
-                              const std::string& stream_operation_name, const std::vector<KVRange>& ranges);
-
-    void schedule_defrag(gpb::Data *data);
-    void schedule_defrag(gpb::Data* data, const std::string& queue_name);
-
-    // main review function based on current data model
-    void Review(gpb::Data *data);
-
-    // Get a record for this element ( tables on delilah )
-    void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
-
-    // Debut string
-    std::string str();
-
-    // Accessors
-    au::SharedPointer<WorkerTask> worker_task() const;
-    std::string stream_operation_name() const {
-      return stream_operation_name_;
-    }
-
-    std::vector<KVRange> ranges() const {
-      // Ranges to consider in operations based on current division factor
-      return ranges_for_division_factor(division_factor_);
-    }
-
-    int division_factor() {
-      return division_factor_;
-    }
-
-    bool execute_range_operations() {
-      return execute_range_operations_;
-    }
-
-    bool execute_defrag() {
-      return execute_defrag_;
-    }
-
-  private:
-    // Compute ranges given the current division factor
-    std::vector<KVRange> ranges_for_division_factor(int division_factor) const {
-      if (division_factor_ == 1)
-        return ranges_;
-      std::vector<KVRange> all_ranges;
-      for (size_t i = 0; i < ranges_.size(); i++) {
-        std::vector<KVRange> tmp_ranges = ranges_[i].divide(division_factor);
-        for (size_t j = 0; j < tmp_ranges.size(); j++)
-          all_ranges.push_back(tmp_ranges[j]);
+  namespace stream {
+    class Queue;
+    class WorkerTask;
+    class Block;
+    class BlockList;
+    class WorkerCommand;
+    class PopQueue;
+    
+    class StreamOperationGlobalInfo {
+      
+    public:
+      
+      StreamOperationGlobalInfo(SamsonWorker *samson_worker
+                                , size_t stream_operation_id
+                                , const std::string& stream_operation_name
+                                , const std::vector<KVRange>& ranges );
+      
+      
+      // Unique method to review everything related with this stream operation
+      void Review( gpb::Data *data );
+      
+      // Accessors
+      au::SharedPointer<WorkerTask> worker_task() const;
+      std::string stream_operation_name() const {
+        return stream_operation_name_;
       }
-      return all_ranges;
-    }
 
-    void ReviewCurrentTasks();
-
-    void SetError(const std::string& error) {
-      error_.set(error);
-      cronometer_error_.Reset();
-    }
-
-    // Pointer to samson wokrer
-    SamsonWorker *samson_worker_;
-
-    // Information about stream operation
-    size_t stream_operation_id_;
-    std::string stream_operation_name_;
-
-    // Ranges I should process in this worker
-    std::vector<KVRange> ranges_;
-    int division_factor_; // Overdivision of the ranges if too mush data is present
-
-    // List of scheduled tasks
-    std::vector<au::SharedPointer<DefragTask> > defrag_tasks_;
-
-    // State in the last review...
-    std::string state_;
-
-    // flag to indicate that operations for ranges shoudl be executed
-    bool execute_range_operations_;
-    bool execute_defrag_;
-
-    // Internal error
-    au::ErrorManager error_;
-    au::Cronometer cronometer_error_;
-};
-}
+      // Detail about every range in this stream operation
+      const au::vector<StreamOperationRangeInfo>& stream_operations_range_info()
+      {
+        return stream_operations_range_info_;
+      }
+      
+      // Get a record for this element ( tables on delilah )
+      void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
+      std::string str();      // Debut string
+      
+      
+      // Get defrag ranges ( all ranges to defrag input data )
+      std::vector<KVRange> GetDefragKVRanges();
+      
+    private:
+      
+      void ReviewIntern(gpb::Data *data);
+      
+      std::vector<KVRange> GetActiveRanges();
+      
+      void SetError(const std::string& error) {
+        error_.set(error);
+        cronometer_error_.Reset();
+      }
+      
+      // Pointer to samson wokrer
+      SamsonWorker *samson_worker_;
+      
+      // Detail about every range in this stream operation
+      au::vector<StreamOperationRangeInfo> stream_operations_range_info_;
+      
+      // Information about stream operation
+      size_t stream_operation_id_;
+      std::string stream_operation_name_;
+      
+      // Global information for the stream operation
+      std::string state_;
+      std::string state_input_queues_;
+      
+      // Internal error
+      au::ErrorManager error_;
+      au::Cronometer cronometer_error_;
+    };
+  }
 } // end of namespace samson::stream
 
 #endif  // ifndef _H_STREAM_OPERATION

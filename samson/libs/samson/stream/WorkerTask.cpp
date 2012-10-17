@@ -21,10 +21,17 @@ ProcessIsolated::ProcessBaseType get_type(Operation *operation) {
   }
 }
 
-WorkerTask::WorkerTask(SamsonWorker *samson_worker, size_t id, const gpb::StreamOperation& stream_operation,
-                       Operation *operation, KVRange range) :
-      ProcessIsolated(samson_worker, id, stream_operation.operation().c_str(),
-                      au::str("WorkerTask %lu: %s", id, stream_operation.operation().c_str()), get_type(operation)) {
+WorkerTask::WorkerTask( SamsonWorker *samson_worker, size_t id
+                       ,const gpb::StreamOperation& stream_operation
+                       ,Operation *operation
+                       , KVRange range
+                       ) :
+      ProcessIsolated( samson_worker
+                      ,id
+                      ,stream_operation.operation().c_str()
+                      ,au::str("WorkerTask %lu: %s", id, stream_operation.operation().c_str()), get_type(operation)
+                      )
+  {
   // Keep a pointer to samson_worker to create output blocks
   samson_worker_ = samson_worker;
 
@@ -103,14 +110,21 @@ std::string WorkerTask::commit_command() {
 }
 
 void WorkerTask::initProcessIsolated() {
+  
+  au::Cronometer cronometer;
+  
   // Review input blocks to count key-values
   for (int i = 0; i < operation_->getNumInputs(); i++) {
     BlockList *list = block_list_container_.getBlockList(au::str("input_%d", i));
     list->ReviewBlockReferences(error_);
   }
+  
 }
 
 void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
+
+  au::Cronometer cronometer;
+
   switch (operation_->getType()) {
     case Operation::parser:
       generateKeyValues_parser(writer);
@@ -128,6 +142,7 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
       LM_W(("Operation still not implemented"));
       break;
   }
+  
 }
 
 void WorkerTask::generateTXT(TXTWriter *writer) {
@@ -491,9 +506,6 @@ std::string WorkerTask::getStatus() {
   return output.str();
 }
 
-const au::ErrorManager& WorkerTask::error() {
-  return error_;
-}
 
 std::string WorkerTask::str() {
   return au::str("Task %lu : %s %s %s", worker_task_id(), stream_operation_->name().c_str(),

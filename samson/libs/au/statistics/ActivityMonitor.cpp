@@ -101,8 +101,7 @@ void ActivityMonitor::StartActivity(const std::string& activity_name) {
   }
 
   // Update the associated element statustics
-  ActivityStatistics *activity_estatistics = elements_.findOrCreate(activity_name, activity_name);
-
+  ActivityStatistics *activity_estatistics = elements_.findOrCreate(current_activty_, current_activty_);
   activity_estatistics->Push(time);
 
   // Change the name of the current activty
@@ -127,6 +126,21 @@ std::string ActivityMonitor::GetLastItemsTable() const {
   return table.str();
 }
 
+  std::string ActivityMonitor::GetSummary() const
+  {
+    std::ostringstream output;
+    
+    au::TokenTaker tt(&token_);
+    
+    
+    au::map<std::string, ActivityStatistics >::const_iterator it;
+    for (it = elements_.begin(); it != elements_.end(); it++) {
+      output << "["<< it->first << ":" <<  au::str(it->second->total())  << "]";
+    }
+    return output.str();
+  }
+
+  
 std::string ActivityMonitor::GetElementsTable() const {
   au::TokenTaker tt(&token_);
 

@@ -157,6 +157,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_tag("ls_last_data_commits", "send_to_all_workers");
 
   add("ls_last_tasks", "debug", "Show last 100 tasks scheduled in workers");
+  add_bool_option("ls_last_tasks", "-times" , "Show times spent by tasks");
   add_tag("ls_last_tasks", "send_to_all_workers");
 
   add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
@@ -196,9 +197,12 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
                   "Show hidden stream operations as well ( used internally by the platform )");
 
   add("ps_stream_operations", "stream", "Show a list of stream operations with information about execution planning");
+  add_string_argument("ps_stream_operations_ranges", "pattern", "*", "Name of the stream operation");
+  add_bool_option("ps_stream_operations", "-state","Show state of this stream operations");
+  add_tag("ps_stream_operations", "send_to_all_workers");
 
-  add("ps_stream_operations_ranges", "stream",
-      "Show a list of stream operations with information about running processes");
+  add("ps_stream_operations_ranges", "stream","Show a detailed list of a stream operation (for each range)");
+  add_mandatory_string_argument("ps_stream_operations_ranges", "pattern", "Name of the stream operation");
   add_bool_option("ps_stream_operations_ranges", "-state",
                   "Show planning state ( paused, error, ready for scheduling...)");
   add_bool_option("ps_stream_operations_ranges", "-tasks", "Show tasks associated to stream_operations");
@@ -208,11 +212,10 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_uint64_option("ps_stream_operations_ranges", "-w", (size_t) -1, "Selected worker");
   add_tag("ps_stream_operations_ranges", "send_to_all_workers");
 
-  add("add_stream_operation", "stream", "Add a new stream operation to the current SAMSON cluster",
-      "A stream operation is an operation that is automatically executed to transform data read from one queue\n"
-        "and store produced data in another set of queues\n");
+  add("add_stream_operation", "stream", "Add a new stream operation to the current SAMSON cluster");
   add_mandatory_string_argument("add_stream_operation", "name", "Name of the new stream operation");
   add_mandatory_string_argument("add_stream_operation", "operation", "Name of the operation to run");
+  add_bool_option("add_stream_operation", "-paused" , "Start with the operation paused");
 
   add_string_option("add_stream_operation", "-input", "", "Input queues to get data from");
   add_string_option("add_stream_operation", "-output", "", "Output queues to push data to");

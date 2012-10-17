@@ -12,7 +12,7 @@
 
 #include "engine/NotificationListener.h"  // engine::NotificationListener
 
-#include "samson/common/samson.pb.h"
+#include "samson/common/gpb_operations.h"
 #include "samson/common/status.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/module/ModulesManager.h"
@@ -31,9 +31,10 @@ class StreamOperationGlobalInfo;
 
 struct WorkerTaskLog {
     std::string description;   // Description of the task
-    std::string result;   // Result of the operation
-    std::string inputs;   // Information at the input of the operation
+    std::string result;    // Result of the operation
+    std::string inputs;    // Information at the input of the operation
     std::string outputs;   // Information at output of the operation
+    std::string times;     // Information at output of the operation
     int waiting_time_seconds;   // Waiting time until execution starts
     int running_time_seconds;   // Running time
 };
@@ -63,31 +64,35 @@ class WorkerTaskManager : public ::engine::NotificationListener {
     void Reset();
 
     // Get a collection for monitoring
-    au::SharedPointer<gpb::Collection> GetCollection(const ::samson::Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetLastTasksCollection(const ::samson::Visualization& visualization);
+    gpb::CollectionPointer GetCollection(const ::samson::Visualization& visualization);
+    gpb::CollectionPointer GetLastTasksCollection(const ::samson::Visualization& visualization);
 
     size_t get_num_running_tasks();
     size_t get_num_tasks();
 
     // Get collection to list in delilah
-    au::SharedPointer<gpb::Collection>
-        GetCollectionForStreamOperationsRanges(const ::samson::Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
+    gpb::CollectionPointer GetCollectionForStreamOperationsRanges(const ::samson::Visualization& visualization);
+    gpb::CollectionPointer GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
 
   private:
+  
     size_t id_;   // Id of the current task
     au::Queue<WorkerTaskBase> pending_tasks_;   // List of pending task to be executed
     au::Dictionary<size_t, WorkerTaskBase> running_tasks_;   // Map of running tasks
 
     // Information about execution of current stream operations
-    au::map<std::string, StreamOperationRangeInfo> stream_operations_info_;
-    au::map<size_t, StreamOperationGlobalInfo> stream_operations_globla_info_;
+    au::map<size_t, StreamOperationGlobalInfo> stream_operations_global_info_;
 
     // Pointer to samson worker
     SamsonWorker *samson_worker_;
 
     // Log of last tasks...
     std::list<WorkerTaskLog> last_tasks_;
+  
+  // Get the number of current running tasks for a particular stream operation
+  int GetRunningTasks( size_t stream_operation_id );
+
+  
 };
 }
 }

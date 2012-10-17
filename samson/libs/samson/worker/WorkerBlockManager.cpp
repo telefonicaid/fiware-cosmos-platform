@@ -196,8 +196,10 @@ void WorkerBlockManager::Reset() {
 }
 
 // Received a message from a delilah
-void WorkerBlockManager::receive_push_block(size_t delilah_id, size_t push_id, engine::BufferPointer buffer,
-                                            const std::vector<std::string>& queues) {
+void WorkerBlockManager::receive_push_block(size_t delilah_id
+                                            , size_t push_id
+                                            , engine::BufferPointer buffer
+                                            , const std::vector<std::string>& queues) {
   if (buffer == NULL) {
     LM_W(("Push message without a buffer. This is an error..."));
     return;
@@ -211,10 +213,16 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id, size_t push_id, e
   }
 
   if (header->isTxt()) {
-    // Modify incoming buffer to assign only one hg
-    KVRanges ranges = samson_worker_->worker_controller()->GetMyKVRanges();
-    int hg = ranges.RandomHashGroup();
+    
+    // Rangom hash-group based on all my ranges
+    std::vector<KVRange> ranges = samson_worker_->worker_controller()->GetMyKVRanges();
+    std::vector<size_t> all_hgs;
+    for (size_t i = 0 ; i < ranges.size() ; i++ )
+      for ( int j = ranges[i].hg_begin ; j < ranges[i].hg_end ; j++)
+        all_hgs.push_back( j );
+    int hg =  all_hgs[ rand()%all_hgs.size()];
     header->range.set(hg, hg + 1);
+    
   } else if (header->isModule()) {
     // Make sure it is full range
     header->range.set(0, KVFILE_NUM_HASHGROUPS);

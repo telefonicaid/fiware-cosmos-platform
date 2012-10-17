@@ -157,7 +157,7 @@ void SamsonWorker::Review() {
     case included:
     {
       // Review if we have all blocks to promoto to "ready"
-      KVRanges hg_ranges = worker_controller_->GetAllMyKVRanges();   // Get a list of all the blocks I should have
+      std::vector<KVRange> hg_ranges = worker_controller_->GetAllMyKVRanges();   // Get a list of all the blocks I should have
       std::set<size_t> block_ids = data_model_->get_my_block_ids(hg_ranges);
 
       // Check if all the blocks are contained ( otherwise ask for them )
@@ -223,7 +223,7 @@ void SamsonWorker::Review() {
 
       // Remove all blocks I should not have
       std::set<size_t> all_block_ids = data_model_->get_block_ids();
-      KVRanges hg_ranges = worker_controller_->GetAllMyKVRanges();   // Get a list of all the blocks I should have
+      std::vector<KVRange> hg_ranges = worker_controller_->GetAllMyKVRanges();   // Get a list of all the blocks I should have
       std::set<size_t> my_block_ids = data_model_->get_my_block_ids(hg_ranges);
       std::set<size_t> worker_ids = worker_controller()->GetWorkerIds();
       stream::BlockManager::shared()->RemoveBlocksIfNecessary(all_block_ids, my_block_ids, worker_ids);
@@ -332,10 +332,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    if (!packet->message->has_ranges()) {
-      LM_W(("Received an incorrect Message::PopBlockRequest. No ranges"));
-      return;
-    }
 
     if (packet->from.node_type != DelilahNode) {
       LM_W(("Received a Message::PopBlockRequest from a worker node"));
@@ -343,7 +339,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
     size_t block_id  = packet->message->block_id();
-    const gpb::KVRanges ranges = packet->message->ranges();
     size_t delilah_id = packet->from.id;
     size_t delilah_component_id = packet->message->delilah_component_id();
     size_t pop_id = packet->message->pop_id();
@@ -362,7 +357,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       task.Reset(new stream::PopBlockRequestTask( this
                                                  , task_manager_->getNewId()
                                                  , block_id
-                                                 , ranges
                                                  , delilah_id
                                                  , delilah_component_id
                                                  , pop_id));
@@ -643,9 +637,7 @@ void SamsonWorker::notify(engine::Notification *notification) {
       return;
     }
 
-    // Num of generated packets per operation equal to the number of workers
-    ProcessIsolated::num_hg_divisions = cluster_info->workers_size();
-
+    
     // Change network setup to adapt to the new scenario
     network_->set_cluster_information(cluster_info);
 
@@ -653,8 +645,8 @@ void SamsonWorker::notify(engine::Notification *notification) {
     ResetToConnected();
 
     // Show a label with all the new ranges I am responsible for
-    KVRanges ranges = worker_controller_->GetMyKVRanges();
-    LM_W(("Cluster setup change: Assgined ranges %s", ranges.str().c_str()));
+    std::vector<KVRange> ranges = worker_controller_->GetMyKVRanges();
+    LM_W(("Cluster setup change: Assgined ranges %s", str(ranges).c_str()));
     return;
   }
 

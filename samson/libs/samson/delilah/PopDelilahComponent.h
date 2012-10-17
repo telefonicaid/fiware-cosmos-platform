@@ -34,10 +34,9 @@ class Buffer;
 class PopDelilahComponentItem {
 public:
 
-  PopDelilahComponentItem(size_t pop_id, size_t block_id, const gpb::KVRanges& ranges) {
+  PopDelilahComponentItem(size_t pop_id, size_t block_id ) {
     pop_id_ = pop_id;
     block_id_ = block_id;
-    ranges_.CopyFrom(ranges);
   }
 
   void SetContent(engine::BufferPointer buffer) {
@@ -62,10 +61,6 @@ public:
 
   size_t block_id() {
     return block_id_;
-  }
-
-  const gpb::KVRanges& ranges() {
-    return ranges_;
   }
 
   const au::Cronometer& cronometer() {
@@ -95,7 +90,6 @@ private:
 
   size_t pop_id_;                        // Identifier of this particular item
   size_t block_id_;                      // Identifier of the block
-  gpb::KVRanges ranges_;                 // Ranges we are interested in
 
   size_t worker_id_;                     // worker selected to retrieve this block
 
@@ -151,7 +145,6 @@ private:
     packet->message->set_delilah_component_id(id);
     packet->message->set_pop_id(item->pop_id());
     packet->message->set_block_id(item->block_id());
-    packet->message->mutable_ranges()->CopyFrom(item->ranges());
     LM_T(LmtDelilahComponent, ("pop request packet sent to worker_id_:%lu", worker_id_));
     delilah->network->Send(packet);
   }

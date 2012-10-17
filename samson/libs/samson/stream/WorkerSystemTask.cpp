@@ -6,7 +6,6 @@
 #include "engine/Notification.h"
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/NotificationMessages.h"
-#include "samson/module/ModulesManager.h"           // samson::ModulesManager
 #include "samson/network/Packet.h"                  // network::Packet
 #include "samson/stream/Block.h"                                  // samson::stream::Block
 #include "samson/stream/BlockList.h"                              // samson::stream::BlockList
@@ -72,13 +71,14 @@ void BlockDistributionTask::run() {
 //
 // ------------------------------------------------------------------------
 
-PopBlockRequestTask::PopBlockRequestTask(SamsonWorker *samson_worker, size_t id, size_t block_id,
-                                         const gpb::KVRanges& ranges, size_t delilah_id, size_t delilah_component_id,
-                                         size_t pop_id) :
+PopBlockRequestTask::PopBlockRequestTask(SamsonWorker *samson_worker
+                                         , size_t id
+                                         , size_t block_id
+                                         , size_t delilah_id
+                                         , size_t delilah_component_id
+                                         , size_t pop_id) :
   WorkerTaskBase(samson_worker, id, au::str("BlockPopRequest %lu [ delilah %lu ]", block_id, delilah_id)) {
   block_id_ = block_id;
-  ranges_.CopyFrom(ranges);
-
   delilah_id_ = delilah_id;
   delilah_component_id_ = delilah_component_id;
   pop_id_ = pop_id;
@@ -92,88 +92,27 @@ PopBlockRequestTask::PopBlockRequestTask(SamsonWorker *samson_worker, size_t id,
 
 // Virtual method from engine::ProcessItem
 void PopBlockRequestTask::run() {
+
   if (!block_->is_content_in_memory()) {
     LM_X(1, ("Internal error"));   // Get kv file for this block
   }
-  au::SharedPointer<KVFile> kv_file = block_->getKVFile(error_);
-  if (error_.IsActivated()) {
-    LM_W(("Not possible to get KVFile for block in a PopBlockRequestTask"));
-    return;
-  }
 
-  // Transform to c++ ranges class ( not gpb )
-  KVRanges ranges(ranges_);   // Implicit conversion
-
-  // Full range ( TBC )
-  if (ranges.IsFullRange()) {
-    sent_response(block_->buffer());
-    return;
-  }
-
-  // txt-txt buffers
-  if (kv_file->header().isTxt()) {
-    // If ranges includes
-    if (ranges.IsOverlapped(block_->getHeader().range)) {
-      sent_response(block_->buffer());
-    } else {
-      sent_response(engine::BufferPointer(NULL));
-    }
-    return;
-  }
-
-  // Compute total size
-  KVInfo info;
-  for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
-    if (ranges.Contains(i)) {
-      info.append(kv_file->info[i]);
-    }
-  }
-
-  // Build selected packet filtering with ranges_
-  size_t buffer_size = sizeof(KVHeader) + info.size;
-  engine::BufferPointer buffer(engine::Buffer::Create("test", "example", buffer_size));
-  buffer->set_size(buffer_size);
-
-  // Copy header
-  KVHeader header = block_->getHeader();
-  header.info = info;   // Replaces with new info
-  memcpy(buffer->data(), &header, sizeof(KVHeader));
-
-  // Copy content for each hash-group
-
-  char *source_data = kv_file->data;
-  char *target_data = buffer->data() + sizeof(KVHeader);
-
-  for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
-    size_t size = kv_file->info[i].size;
-
-    if (ranges.Contains(i)) {
-      memcpy(target_data, source_data, size);
-      target_data += size;   // Move pointer to the next
-    }
-    source_data += size;   // Move pointer to the next
-  }
-
-  // Sent response with computed buffer
-  sent_response(buffer);
-}
-
-void PopBlockRequestTask::sent_response(engine::BufferPointer buffer) {
-  // Send a packet to delilah with generated content
-  LM_W(("****** Sending PopBlockRequestResponse"));
+  // Send a packet to delilah with contents of this buffer
   PacketPointer packet(new Packet(Message::PopBlockRequestResponse));
-
+  
   packet->to = NodeIdentifier(DelilahNode, delilah_id_);
   packet->message->set_block_id(block_id_);
   packet->message->set_delilah_component_id(delilah_component_id_);
   packet->message->set_pop_id(pop_id_);
-  packet->set_buffer(buffer);
-
+  packet->set_buffer( block_->buffer() );
+  
   // Sending a engine notification to really sent this packet
   engine::Notification *notification = new engine::Notification(notification_send_packet);
   notification->dictionary().Set<Packet> ("packet", packet);
   engine::Engine::shared()->notify(notification);
+
 }
+
 
 void DefragTask::AddOutputBuffer(engine::BufferPointer buffer) {
   // Information for generated block
@@ -188,6 +127,7 @@ void DefragTask::AddOutputBuffer(engine::BufferPointer buffer) {
 }
 
 void DefragTask::run() {
+  
   // Review input blocks
   BlockList *list = block_list_container_.getBlockList("input_0");
   list->ReviewBlockReferences(error_);
@@ -239,49 +179,36 @@ void DefragTask::run() {
 
   KVHeader header = kv_files[0]->header();
 
-  // Process all kv_files
-  int hg_begin = 0;
-  while (hg_begin < KVFILE_NUM_HASHGROUPS) {
-    // Search for the end
-    int hg_end = hg_begin;
-    size_t accumulated_size = 0;
-    size_t accumulated_kvs = 0;
-    while (true) {
-      if (hg_end >= KVFILE_NUM_HASHGROUPS)
-        break;
+  for ( size_t r = 0 ; r < ranges_.size() ; r++ )
+  {
+    
+    // Generate block ( if any data is present for this range )
+    KVRange range = ranges_[r];
 
-      size_t tmp_size = 0;
-      size_t tmp_kvs = 0;
-      for (size_t i = 0; i < kv_files.size(); i++) {
-        tmp_size += kv_files[i]->info[hg_end].size;
-        tmp_kvs += kv_files[i]->info[hg_end].kvs;
-      }
-
-      if (accumulated_size > 0)
-        if ((accumulated_size + tmp_size) > 100000000)
-          break;
-
-      accumulated_size += tmp_size;
-      accumulated_kvs += tmp_kvs;
-
-      hg_end++;
-    }
-
+    // Compute info for this range
+    KVInfo info;
+    for ( int hg = range.hg_begin ; hg < range.hg_end ; hg++ )
+      for ( int i = 0 ; i < (int)kv_files.size() ; i++ )
+        info.append( kv_files[i]->info[hg] );
+    
+    if ( info.size == 0 )
+      continue;
+    
     // Create output buffer ( hg_begin hg_end )
-    size_t buffer_size = accumulated_size + sizeof(KVHeader);
+    size_t buffer_size = sizeof(KVHeader) + info.size;
     engine::BufferPointer buffer = engine::Buffer::Create("defrag", "normal", buffer_size);
     buffer->set_size(buffer_size);
 
     // Copy header and modify info
     KVHeader* buffer_header = reinterpret_cast<KVHeader*>(buffer->data());
-    char* buffer_data = buffer->data();
-
     memcpy(buffer_header, &header, sizeof(KVHeader));
-    buffer_header->info.set(accumulated_size, accumulated_kvs);
+    buffer_header->info = info;
+    buffer_header->range = range; // Set this range ( it could be better adjusted )
 
     // Copy data
+    char* buffer_data = buffer->data();
     size_t offset = sizeof(KVHeader);
-    for (int hg = hg_begin; hg < hg_end; hg++)
+    for (int hg = range.hg_begin; hg < range.hg_end; hg++)
       for (size_t i = 0; i < kv_files.size(); i++) {
         size_t size = kv_files[i]->info[hg].size;
         if (size > 0) {
@@ -299,9 +226,9 @@ void DefragTask::run() {
     // add generated buffer to the output
     AddOutputBuffer(buffer);
 
-    // Continue creating blocks
-    hg_begin = hg_end;
   }
+   
+
 }
 
 std::string DefragTask::commit_command() {

@@ -224,10 +224,10 @@ int SamsonWorkerController::get_all_workers_from_zk(std::vector<size_t>& worker_
   return rc; // OK
 }
 
-KVRanges SamsonWorkerController::GetMyKVRanges() {
+std::vector<KVRange> SamsonWorkerController::GetMyKVRanges() {
   au::TokenTaker tt(&token_);
 
-  KVRanges hg_ranges;
+  std::vector<KVRange> hg_ranges;
 
   for (int i = 0; i < cluster_info_->process_units_size(); i++) {
     // Range of this process unit
@@ -236,7 +236,7 @@ KVRanges SamsonWorkerController::GetMyKVRanges() {
 
     // Add if I am the main responsible
     if (cluster_info_->process_units(i).worker_id() == worker_id_) {
-      hg_ranges.Add(KVRange(hg_begin, hg_end));
+      hg_ranges.push_back( KVRange(hg_begin, hg_end) );
       continue;
     }
   }
@@ -244,10 +244,10 @@ KVRanges SamsonWorkerController::GetMyKVRanges() {
   return hg_ranges;
 }
 
-KVRanges SamsonWorkerController::GetAllMyKVRanges() {
+std::vector<KVRange> SamsonWorkerController::GetAllMyKVRanges() {
   au::TokenTaker tt(&token_);
 
-  KVRanges hg_ranges;
+  std::vector<KVRange> hg_ranges;
 
   for (int i = 0; i < cluster_info_->process_units_size(); i++) {
     // Range of this process unit
@@ -256,14 +256,14 @@ KVRanges SamsonWorkerController::GetAllMyKVRanges() {
 
     // Add if I am the main responsible
     if (cluster_info_->process_units(i).worker_id() == worker_id_) {
-      hg_ranges.Add(KVRange(hg_begin, hg_end));
+      hg_ranges.push_back(KVRange(hg_begin, hg_end));
       continue;
     }
 
     // Add if I am a replica responsible
     for (int j = 0; j < cluster_info_->process_units(i).replica_worker_id_size(); j++) {
       if (cluster_info_->process_units(i).replica_worker_id(j) == worker_id_) {
-        hg_ranges.Add(KVRange(hg_begin, hg_end));
+        hg_ranges.push_back(KVRange(hg_begin, hg_end));
         continue;
       }
     }
@@ -488,22 +488,23 @@ bool SamsonWorkerController::is_valid_cluster_info(au::SharedPointer<samson::gpb
   return false;
 }
 
-int SamsonWorkerController::create_cluster_info(size_t version) {
-  // New cluster info
-  cluster_info_.Reset(new gpb::ClusterInfo());
-  cluster_info_->set_version(version);
+int SamsonWorkerController::create_cluster_info( size_t version ) {
+
+  cluster_info_.Reset(new gpb::ClusterInfo());  // New cluster info
+  cluster_info_->set_version(version); // Set the new version
 
   // All information
   LM_T(LmtClusterSetup, ("Recovering information for all worker to define cluster"));
 
+  // Get list of workers involved in this cluster
   std::vector<size_t> worker_ids;
   int rc = get_all_workers_from_zk(worker_ids);
-
   if (rc) {
     LM_W(("Not possible to create cluster info since we cannot recover list of workers %s", zoo::str_error(rc).c_str()));
     return rc;
   }
 
+  // Get all information from all workers
   au::map<size_t, samson::gpb::WorkerInfo> workers_info;
   for (int i = 0; i < static_cast<int>(worker_ids.size()); i++) {
     LM_T(LmtClusterSetup, ("Recovering information for worker %lu", worker_ids[i]));
@@ -525,6 +526,7 @@ int SamsonWorkerController::create_cluster_info(size_t version) {
   // Create a new cluster based on workers information
   LM_T(LmtClusterSetup, ("Creating new cluster based on collected information (%lu workers)", workers_info.size()));
 
+  // Add individual worker information
   au::map<size_t, samson::gpb::WorkerInfo>::iterator it;
   for (it = workers_info.begin(); it != workers_info.end(); it++) {
     samson::gpb::ClusterWorker *cluster_worker = cluster_info_->add_workers();
@@ -533,22 +535,35 @@ int SamsonWorkerController::create_cluster_info(size_t version) {
   }
 
   // Decide how to organize process units
-  int replica_factor = 3;
+  int replica_factor = 2;
 
   if (worker_ids.size() == 1) {
     replica_factor = 1;
   } else if (worker_ids.size() == 2) {
     replica_factor = 2; // Decide number of process units
   }
-  int num_units = 16 * worker_ids.size(); // Number of divisions
+  
+  // Number of hash-group divsions
+  int num_units =  8;
+  if( worker_ids.size() > 1 )
+    num_units = 16;
+  if( worker_ids.size() > 2 )
+    num_units = 64;
+  if( worker_ids.size() > 5 )
+    num_units = 128;
+  if( worker_ids.size() > 10 )
+  {
+    LM_W(("Cluster setup not ready to handle more than 10 workers"));
+    //Note: In the future, we have to scale up the 128 limit to handle more workers
+  }
 
-  // Number of workers
-  int num_workers = worker_ids.size();
+  int num_workers = worker_ids.size();  // Number of workers
+  int num_units_per_worker = num_units / num_workers;  // Number of units per worker
 
-  // Number of units per worker
-  int num_units_per_worker = num_units / num_workers;
-
+  // andreu: This shoule be revised to map ranges to workers coherently based on previous information
+  
   for (int i = 0; i < num_units; i++) {
+    
     KVRange range = rangeForDivision(i, num_units);
 
     gpb::ProcessUnit *process_unit = cluster_info_->add_process_units();

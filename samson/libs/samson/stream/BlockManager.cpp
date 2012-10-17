@@ -209,7 +209,7 @@ void BlockManager::Review() {
 
   // Internal consistency
   if (blocks_.size() != block_ids_.size())
-    LM_X(1, ("Internal error: Different number of blocks and blocks ids (%lu != %lu)"
+    LM_X(1, ("Internal error in BLockManager: Different number of blocks and blocks ids (%lu != %lu)"
             , blocks_.size(), block_ids_.size()));
 
   // Get setup parameter to control review of BlockManager...
@@ -411,9 +411,10 @@ void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
 
   // Check file-size
   if (!header.check_size(fileSize)) {
-    LM_W(("Not correct size while recovering block_id %lu from file %s"
-            , block_id
-            , fileName.c_str()));
+    LM_W(("Not correct size (%lu) while recovering block_id %lu from file %s"
+          , fileSize
+          , block_id
+          , fileName.c_str()));
 
     fclose(file);
     return;

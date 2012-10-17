@@ -60,6 +60,12 @@ public:
     return main_log_channel_filter_;
   }
 
+  //Return the file descriptor used to send traces
+  int log_fd() const
+  {
+    return fds_[1];
+  }
+  
 private:
 
   // Main function for the background thread

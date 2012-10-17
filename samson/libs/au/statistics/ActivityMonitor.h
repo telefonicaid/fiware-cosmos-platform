@@ -83,6 +83,7 @@ public:
   // Information for activities
   std::string GetLastItemsTable() const;
   std::string GetElementsTable() const;
+  std::string GetSummary() const;
 
 private:
 

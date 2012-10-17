@@ -287,8 +287,9 @@ KVRange rangeForIntersection(const KVRange & left, const KVRange & right) {
 std::string str(const std::vector<KVRange>& ranges) {
   std::ostringstream output;
   size_t ranges_size = ranges.size();
-  for (size_t i = 0; i < ranges_size; ++i)
+  for (size_t i = 0; i < ranges_size; ++i) {
     output << ranges[i].str() << " ";
+  }
   return output.str();
 }
 
@@ -296,12 +297,15 @@ bool CheckCompleteKVRanges(const std::vector<KVRange>& ranges) {
   for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
     int total = 0;
     size_t ranges_size = ranges.size();
-    for (size_t r = 0; r < ranges_size; ++r)
-      if (ranges[r].contains(i))
+    for (size_t r = 0; r < ranges_size; ++r) {
+      if (ranges[r].contains(i)) {
         ++total;
+      }
+    }
 
-    if (total != 1)
+    if (total != 1) {
       return false;
+    }
 
   }
   return true;

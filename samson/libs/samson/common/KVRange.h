@@ -46,10 +46,6 @@ struct KVRange {
       range->set_hg_end(hg_end_);
     }
 
-    void RemoveIntersection(const KVRange& range) {
-      // Remove intersection with this range
-
-    }
     void set(int _hg_begin, int _hg_end);
     void setFrom(KVInfo *info);
     void setFrom(FullKVInfo *info);
@@ -132,32 +128,35 @@ class KVRangeDivision {
       AddDivision(KVFILE_NUM_HASHGROUPS);
     }
 
-    KVRangeDivision(int num_divisions) {
-      for (int i = 0; i < num_divisions; ++i)
-        Force(rangeForDivision(i, num_divisions));
+    explicit KVRangeDivision(int num_divisions) {
+      for (int i = 0; i < num_divisions; ++i) {
+        AddDivision(rangeForDivision(i, num_divisions));
+      }
     }
 
-    void Force(const KVRange& range) {
+    void AddDivision(const KVRange& range) {
       AddDivision(range.hg_begin_);
       AddDivision(range.hg_end_);
     }
 
-    void Force(const std::vector<KVRange>& ranges) {
+    void AddDivision(const std::vector<KVRange>& ranges) {
       size_t ranges_size = ranges.size();
       for (size_t i = 0; i < ranges_size; ++i) {
-        Force(ranges[i]);
+        AddDivision(ranges[i]);
       }
     }
 
     void AddDivision(int hg) {
-      if (hg < 0)
+      if (hg < 0) {
         return;
-      if (hg > KVFILE_NUM_HASHGROUPS)
+      }
+      if (hg > KVFILE_NUM_HASHGROUPS) {
         return;
+      }
       divisions_.insert(hg);
     }
 
-    std::vector<KVRange> ranges() {
+    std::vector<KVRange> ranges() const {
       if (divisions_.size() < 2) {
         LM_X(1, ("Internal error"));
       }

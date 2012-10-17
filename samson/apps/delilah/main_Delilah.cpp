@@ -181,7 +181,6 @@ void cleanup(void) {
   lmCleanProgName();
   LM_T(LmtCleanup, ("Cleanup DONE"));
 
-  // Remove engine
   engine::Engine::DestroyEngine();
 
 }
@@ -281,7 +280,6 @@ int main(int argC, const char *argV[]) {
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
   engine::Engine::InitEngine(num_cores, _memory, 1);
 
-  // Load modules
   au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
 
   // Create a DelilahControler once network is ready
@@ -334,7 +332,6 @@ int main(int argC, const char *argV[]) {
         // TODO(@jges): Remove log message
         LM_M(("Sleep after check isActive command_id:%d", id));
 
-        // Wait until command is finished
         usleep(100000);
       }
       LM_M(("Command activity is finished for command:'%s', id:%d", command, id));
@@ -362,8 +359,6 @@ int main(int argC, const char *argV[]) {
     exit(0);
   }
 
-  // LM_M(("Delilah random code %s" , au::code64_str( delilah_random_code ).c_str() ));
-  // LM_M(("Running delilah console..."));
   lmFdUnregister(2);   // no more traces to stdout
 
   // ----------------------------------------------------------------
@@ -371,7 +366,6 @@ int main(int argC, const char *argV[]) {
   // ----------------------------------------------------------------
 
   if (strcmp(commandFileName, "") != 0) {
-    // Set simple output
     delilahConsole->setSimpleOutput();
 
     {
@@ -425,7 +419,6 @@ int main(int argC, const char *argV[]) {
 
     fclose(f);
 
-    // Disconnect delilah
     delilahConsole->disconnect();
 
     // Stopping network connections
@@ -441,14 +434,12 @@ int main(int argC, const char *argV[]) {
     exit(0);
   }
 
-  // Run console
   delilahConsole->run();
 
 
   // The same stuff
   // TODO(@andreu): Could it be moved to cleanup()?
 
-  // Disconnect delilah
   delilahConsole->disconnect();
 
   // Stopping network connections
@@ -461,7 +452,6 @@ int main(int argC, const char *argV[]) {
   // Flush content of console
   // delilahConsole->flush();
   LM_M(("delilah exit correctly"));
-  exit(0);
   
   return 0;
 }

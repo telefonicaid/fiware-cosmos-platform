@@ -22,7 +22,7 @@ StreamOperationGlobalInfo::StreamOperationGlobalInfo(SamsonWorker *samson_worker
   stream_operation_name_ = stream_operation_name;
 
   // Create a StreamOperationInfoRange for each range
-  for (size_t i = 0; i < ranges.size(); i++) {
+  for (size_t i = 0; i < ranges.size(); ++i) {
     // Recover ( or create ) information for this stream operation
     StreamOperationRangeInfo * stream_operation_info = new StreamOperationRangeInfo(this, samson_worker,
                                                                                     stream_operation_id,
@@ -47,7 +47,7 @@ void StreamOperationGlobalInfo::ReviewIntern(gpb::Data *data) {
 
   // Information about input queues...
   // Scan all inputs
-  for (int i = 0; i < stream_operation->inputs_size(); i++) {
+  for (int i = 0; i < stream_operation->inputs_size(); ++i) {
     std::string input_queue = stream_operation->inputs(i);
     gpb::DataInfoForRanges info = gpb::get_data_info_for_ranges(data, input_queue, all_ranges);
 
@@ -56,10 +56,12 @@ void StreamOperationGlobalInfo::ReviewIntern(gpb::Data *data) {
 
   }
 
-  if (batch_operation)
+  if (batch_operation) {
     state_ += "[Batch]";
-  if (reduce_forward)
+  }
+  if (reduce_forward) {
     state_ += "[ReduceForward]";
+  }
 
 }
 
@@ -102,8 +104,9 @@ void StreamOperationGlobalInfo::Review(gpb::Data *data) {
   }
 
   // Push the new elements
-  for (size_t i = 0; i < new_ranges.size(); i++)
+  for (size_t i = 0; i < new_ranges.size(); ++i) {
     stream_operations_range_info_.push_back(new_ranges[i]);
+  }
 
 }
 
@@ -122,7 +125,7 @@ void StreamOperationGlobalInfo::fill(samson::gpb::CollectionRecord *record, cons
 
   std::ostringstream output;
   output << "(" << stream_operations_range_info_.size() << " ranges)";
-  for (size_t i = 0; i < stream_operations_range_info_.size(); i++) {
+  for (size_t i = 0; i < stream_operations_range_info_.size(); ++i) {
     output << stream_operations_range_info_[i]->short_state();
   }
 
@@ -140,8 +143,9 @@ void StreamOperationGlobalInfo::fill(samson::gpb::CollectionRecord *record, cons
 
 std::vector<KVRange> StreamOperationGlobalInfo::GetActiveRanges() {
   std::vector<KVRange> all_ranges;
-  for (size_t i = 0; i < stream_operations_range_info_.size(); ++i)
+  for (size_t i = 0; i < stream_operations_range_info_.size(); ++i) {
     all_ranges.push_back(stream_operations_range_info_[i]->range());
+  }
   return all_ranges;
 }
 
@@ -152,8 +156,8 @@ std::vector<KVRange> StreamOperationGlobalInfo::GetDefragKVRanges() {
   std::vector<KVRange> ranges = samson_worker_->worker_controller()->GetKVRanges();
   std::vector<KVRange> local_ranges = GetActiveRanges();
 
-  kv_range_division.Force(ranges);
-  kv_range_division.Force(local_ranges);
+  kv_range_division.AddDivision(ranges);
+  kv_range_division.AddDivision(local_ranges);
 
   return kv_range_division.ranges();
 }

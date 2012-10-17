@@ -177,9 +177,7 @@ void *NetworkListener::runNetworkListener() {
     tv.tv_usec = 0;
 
     // Main select to wait new connections
-    LM_T(LmtCleanup, ("Before select"));
     fds = select(max + 1,  &rFds, NULL, NULL, &tv);
-    LM_T(LmtCleanup, ("After select select, fds:%d", fds));
 
     if ((fds == -1) && (errno == EINTR)) {
       continue;

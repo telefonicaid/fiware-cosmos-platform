@@ -32,11 +32,10 @@
 
 #include "samson/module/Environment.h"      // samson::Environment
 
-#include "samson/stream/BlockList.h"        // BlockList
-#include "samson/stream/BlockListContainer.h"       // BlockListContainer ( parent class )
-#include "samson/stream/WorkerTaskManager.h"  // samson::stream::WorkerTaskManager
-
-#include "BlockInfo.h"                      // struct BlockInfo
+#include "samson/stream/BlockInfo.h"           // struct BlockInfo
+#include "samson/stream/BlockList.h"           // BlockList
+#include "samson/stream/BlockListContainer.h"  // BlockListContainer ( parent class )
+#include "samson/stream/WorkerTaskManager.h"   // samson::stream::WorkerTaskManager
 
 namespace samson {
   class SamsonWorker;
@@ -62,7 +61,7 @@ namespace samson {
                                , size_t stream_operation_id
                                , const std::string& string_operation_name
                                , const KVRange& range);
-      ~StreamOperationRangeInfo();
+      ~StreamOperationRangeInfo() {}
 
       // Review state of this stream operation for this range independently of it is running a task or not
       void Review( gpb::Data *data );
@@ -74,25 +73,23 @@ namespace samson {
       void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
       
       // Get information
-      size_t priority_rank();
-      std::string state();
-      std::string short_state(){ return short_state_; }
+      size_t priority_rank() const { return priority_rank_;}
+      std::string state() const { return state_;}
+      std::string short_state() const { return short_state_;}
+      std::string str() const;
+      KVRange range() const { return range_;}
+      au::SharedPointer<WorkerTask> worker_task() const { return worker_task_;}
+      bool range_division_necessary() const { return range_division_necessary_;}
+      size_t stream_operation_id() const { return stream_operation_id_;}
+
       void set_state( const std::string& state );
-      std::string str();
-      KVRange range() { return range_; }
-      au::SharedPointer<WorkerTask> worker_task();      // Accessor to worker task
-      bool range_division_necessary(){ return range_division_necessary_; }
-      size_t stream_operation_id()
-      {
-        return stream_operation_id_;
-      }
       
     private:
       
       // Review this stream operation to compute priority rank
       void ReviewCurrentTask(  );
 
-      // Set error and reset cronometer to count how much time since last error
+      // Set error and reset chronometer to count how much time since last error
       void SetError( const std::string error_message )
       {
         state_ = "Error: " + error_message;
@@ -109,11 +106,11 @@ namespace samson {
       std::string state_;                    // String describing the state of this stream operation ( good for debugging )
       std::string short_state_;
       
-      size_t pending_size_;                  // Size to be processes ( thrigerring task if > 0)
-      size_t priority_rank_;                 // Priority number to scehdule a new task ( time * pending_size )
+      size_t pending_size_;                  // Size to be processes ( triggering task if > 0)
+      size_t priority_rank_;                 // Priority number to schedule a new task ( time * pending_size )
       bool range_division_necessary_;        // Is range division necessary
       
-      au::Cronometer last_task_cronometer_;  // Last execution cronometer
+      au::Cronometer last_task_cronometer_;  // Last execution chronometer
 
       au::ErrorManager error_;               // Contains the last error of an operation
       au::Cronometer cronometer_error_;      // Time since the last error

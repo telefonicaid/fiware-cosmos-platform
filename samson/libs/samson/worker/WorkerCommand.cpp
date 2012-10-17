@@ -234,15 +234,15 @@ bool compare_blocks_defrag(stream::Block *b, stream::Block *b2) {
   KVHeader h1 = b->getHeader();
   KVHeader h2 = b2->getHeader();
 
-  if (h1.range.hg_begin < h2.range.hg_begin) {
+  if (h1.range.hg_begin_ < h2.range.hg_begin_) {
     return true;
   }
-  if (h1.range.hg_begin > h2.range.hg_begin) {
+  if (h1.range.hg_begin_ > h2.range.hg_begin_) {
     return false;
   }
 
   // If the same
-  if (h1.range.hg_end > h2.range.hg_end) {
+  if (h1.range.hg_end_ > h2.range.hg_end_) {
     return true;
   } else {
     return false;
@@ -293,6 +293,9 @@ void WorkerCommand::Run() {
     visualization.set_pattern(command_instance->get_string_argument("pattern"));   // Get main command
   }
   std::string main_command = command_instance->main_command();
+
+  // TODO(@jges): Remove log message
+  LM_T(LmtDelilahComponent, ("Processing '%s' command", main_command.c_str()));
 
   // Query commands
   if (main_command == "ls") {
@@ -497,7 +500,6 @@ void WorkerCommand::Run() {
 
   if (main_command == "wait") {
     // Recovering old wait command
-    LM_T(LmtDelilahComponent, ("Processing wait command"));
     if (samson_worker_->data_model()->CheckForAllOperationsFinished() == false) {
       pending_to_be_executed_ = true;
       return;
@@ -958,7 +960,7 @@ void WorkerCommand::FinishWorkerTask() {
   }
 
   if (notify_finish_) {
-    LM_T(LmtDelilahComponent, ("notify_finish for command:'%s', delilah_id:%d", command_.c_str()));
+    LM_T(LmtDelilahComponent, ("notify_finish for command:'%s', delilah_id:%lu", command_.c_str(), delilah_id_));
     PacketPointer p(new Packet(Message::WorkerCommandResponse));
     gpb::WorkerCommandResponse *c = p->message->mutable_worker_command_response();
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand_);

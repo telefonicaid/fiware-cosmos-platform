@@ -627,6 +627,8 @@ void Console::evalCommand(std::string command) {
 
   // Simple quit function...
   if (command == "quit") {
+    // TODO(@jges): Remove log messages
+    LM_M(("command:'%s'", command.c_str()));
     quit_console = true;
   }
 }

@@ -190,7 +190,7 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
       return;
     }
 
-    for (int hg = range_.hg_begin; hg < range_.hg_end; hg++) {
+    for (int hg = range_.hg_begin_; hg < range_.hg_end_; hg++) {
       KVInfo info = file->info[hg];
 
       if (info.size > 0) {
@@ -268,11 +268,11 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
     // Read key values
     inputVector.prepareInput(header->info.kvs);
 
-    for (int hg = range_.hg_begin; hg < range_.hg_end; hg++) {
+    for (int hg = range_.hg_begin_; hg < range_.hg_end_; hg++) {
       inputVector.addKVs(0, file->info[hg], &file->kvs[file->kvs_index[hg]]);
     }
 
-    // inputVector.addKVs(0, header->info, file->dataForHashGroup(range.hg_begin));
+    // inputVector.addKVs(0, header->info, file->dataForHashGroup(range.hg_begin_));
 
     KVSetStruct inputStruct;
     inputStruct.num_kvs = inputVector.num_kvs;
@@ -363,7 +363,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   }
 
   // Counters for statistics
-  int total_hgs = range_.hg_end - range_.hg_begin;
+  int total_hgs = range_.hg_end_ - range_.hg_begin_;
   int processed_hds = 0;
 
   int transfered_states = 0;
@@ -376,7 +376,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; hg++) {
 
     // Check if this is inside the range we are interested in processing
-    if ((hg < range_.hg_begin) || (hg >= range_.hg_end))
+    if ((hg < range_.hg_begin_) || (hg >= range_.hg_end_))
       continue;
 
     // Report progress to show in the lists

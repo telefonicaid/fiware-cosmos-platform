@@ -181,7 +181,6 @@ void cleanup(void) {
   lmCleanProgName();
   LM_T(LmtCleanup, ("Cleanup DONE"));
 
-  // Remove engine
   engine::Engine::DestroyEngine();
 
 }
@@ -206,7 +205,12 @@ size_t delilah_random_code;
  */
 
 int main(int argC, const char *argV[]) {
-  paConfig("prefix", (void *) "DELILAH_");
+  // This option makes delilah not to use SAMSON_HOME and SAMSON_WORKING as environment variables,
+  // but DELILAH_SAMSON_HOME...
+  // We could always define them, but usually we don't use the prefix option.
+  // Perhaps the right solution would be to have a configurable "prefixable" option in the arguments
+
+  //paConfig("prefix",                        (void *)"DELILAH_");
   paConfig("builtin prefix", (void *) "SS_DELILAH_");
   paConfig("usage and exit on any warning", (void *) true);
   paConfig("log to screen", (void *) true);
@@ -275,7 +279,6 @@ int main(int argC, const char *argV[]) {
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
   engine::Engine::InitEngine(num_cores, _memory, 1);
 
-  // Load modules
   au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
 
   // Create a DelilahControler once network is ready
@@ -321,12 +324,16 @@ int main(int argC, const char *argV[]) {
     delilahConsole->setNoOutput();
     size_t id = delilahConsole->runAsyncCommand(command);
 
+    LM_M(("runAsyncCommand returned for command:'%s', id:%d", command, id));
     if (id != 0) {
       // Wait until this operation is finished
       while (delilahConsole->isActive(id)) {
-        // Wait until command is finished
-        usleep(1000);
+        // TODO(@jges): Remove log message
+        LM_M(("Sleep after check isActive command_id:%d", id));
+
+        usleep(100000);
       }
+      LM_M(("Command activity is finished for command:'%s', id:%d", command, id));
 
       if (delilahConsole->hasError(id)) {
         LM_E(("Error running '%s' \n", command ));
@@ -345,13 +352,12 @@ int main(int argC, const char *argV[]) {
     delilahConsole->stop();
     
     // Stopping the new log_central thread
+    LM_M(("Calling au::log_central.Stop()"));
     au::log_central.Stop();
     
     exit(0);
   }
 
-  // LM_M(("Delilah random code %s" , au::code64_str( delilah_random_code ).c_str() ));
-  // LM_M(("Running delilah console..."));
   lmFdUnregister(2);   // no more traces to stdout
 
   // ----------------------------------------------------------------
@@ -359,7 +365,6 @@ int main(int argC, const char *argV[]) {
   // ----------------------------------------------------------------
 
   if (strcmp(commandFileName, "") != 0) {
-    // Set simple output
     delilahConsole->setSimpleOutput();
 
     {
@@ -413,8 +418,14 @@ int main(int argC, const char *argV[]) {
 
     fclose(f);
 
-    // Disconnect delilah
     delilahConsole->disconnect();
+
+    // Stopping network connections
+    delilahConsole->stop();
+
+    // Stopping the new log_central thread
+    LM_M(("Calling au::log_central.Stop()"));
+    au::log_central.Stop();
 
     // Flush content of console
     // delilahConsole->flush();
@@ -422,9 +433,24 @@ int main(int argC, const char *argV[]) {
     exit(0);
   }
 
-  // Run console
   delilahConsole->run();
 
+
+  // The same stuff
+  // TODO(@andreu): Could it be moved to cleanup()?
+
+  delilahConsole->disconnect();
+
+  // Stopping network connections
+  delilahConsole->stop();
+
+  // Stopping the new log_central thread
+  LM_M(("Calling au::log_central.Stop()"));
+  au::log_central.Stop();
+
+  // Flush content of console
+  // delilahConsole->flush();
+  LM_M(("delilah exit correctly"));
   
   return 0;
 }

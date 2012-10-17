@@ -139,7 +139,7 @@ void SamsonWorkerController::notify(engine::Notification *notification) {
     }
     rc = check();
     if (rc) {
-      LM_W(("Error reviwing worker-controller (error %s)", zoo::str_error(rc).c_str()));
+      LM_W(("Error reviewing worker-controller (error %s)", zoo::str_error(rc).c_str()));
     }
     return;
   }
@@ -151,7 +151,7 @@ void SamsonWorkerController::notify(engine::Notification *notification) {
     }
     rc = check();
     if (rc) {
-      LM_W(("Error reviwing worker-controller (error %s)", zoo::str_error(rc).c_str()));
+      LM_W(("Error reviewing worker-controller (error %s)", zoo::str_error(rc).c_str()));
     }
     return;
   }
@@ -165,7 +165,7 @@ std::vector<size_t> SamsonWorkerController::get_all_workers_from_cluster_info(
   // Get current worker ids included in the current cluster_model
   std::vector<size_t> worker_ids;
 
-  for (int i = 0; i < cluster_info->workers_size(); i++) {
+  for (int i = 0; i < cluster_info->workers_size(); ++i) {
     worker_ids.push_back(cluster_info->workers(i).worker_id());
   }
 
@@ -185,7 +185,7 @@ int SamsonWorkerController::GetBlockMap(std::multimap<size_t, size_t>& blocks_ma
     return rc;
   }
 
-  for (size_t i = 0; i < worker_ids.size(); i++) {
+  for (size_t i = 0; i < worker_ids.size(); ++i) {
     size_t worker_id = worker_ids[i];
     std::string path = node_for_worker(worker_id);
     gpb::WorkerInfo worker_info;
@@ -194,7 +194,7 @@ int SamsonWorkerController::GetBlockMap(std::multimap<size_t, size_t>& blocks_ma
     if (rc) {
       LM_W(("Not possible to recover information for worker %lu. Ignored", worker_id));
     } else {
-      for (int i = 0; i < worker_info.block_id_size(); i++) {
+      for (int i = 0; i < worker_info.block_id_size(); ++i) {
         size_t block_id = worker_info.block_id(i);
         blocks_map.insert(std::pair<size_t, size_t>(block_id, worker_id));
       }
@@ -215,7 +215,7 @@ int SamsonWorkerController::get_all_workers_from_zk(std::vector<size_t>& worker_
     return rc;
   }
 
-  for (size_t i = 0; i < childrens.size(); i++) {
+  for (size_t i = 0; i < childrens.size(); ++i) {
     worker_ids.push_back(atoll(childrens[i].substr(1).c_str())); //  Note children are... /wXXXX
   }
   // Sort ids
@@ -229,7 +229,7 @@ std::vector<KVRange> SamsonWorkerController::GetMyKVRanges() {
 
   std::vector<KVRange> hg_ranges;
 
-  for (int i = 0; i < cluster_info_->process_units_size(); i++) {
+  for (int i = 0; i < cluster_info_->process_units_size(); ++i) {
     // Range of this process unit
     int hg_begin = cluster_info_->process_units(i).hg_begin();
     int hg_end = cluster_info_->process_units(i).hg_end();
@@ -249,7 +249,7 @@ std::vector<KVRange> SamsonWorkerController::GetAllMyKVRanges() {
 
   std::vector<KVRange> hg_ranges;
 
-  for (int i = 0; i < cluster_info_->process_units_size(); i++) {
+  for (int i = 0; i < cluster_info_->process_units_size(); ++i) {
     // Range of this process unit
     int hg_begin = cluster_info_->process_units(i).hg_begin();
     int hg_end = cluster_info_->process_units(i).hg_end();
@@ -261,7 +261,7 @@ std::vector<KVRange> SamsonWorkerController::GetAllMyKVRanges() {
     }
 
     // Add if I am a replica responsible
-    for (int j = 0; j < cluster_info_->process_units(i).replica_worker_id_size(); j++) {
+    for (int j = 0; j < cluster_info_->process_units(i).replica_worker_id_size(); ++j) {
       if (cluster_info_->process_units(i).replica_worker_id(j) == worker_id_) {
         hg_ranges.push_back(KVRange(hg_begin, hg_end));
         continue;
@@ -279,7 +279,7 @@ bool SamsonWorkerController::IsClusterReady() {
     return false;
   }
 
-  for (size_t i = 0; i < worker_ids.size(); i++) {
+  for (size_t i = 0; i < worker_ids.size(); ++i) {
     size_t worker_id = worker_ids[i];
     std::string path = node_for_worker(worker_id);
     gpb::WorkerInfo worker_info;
@@ -316,7 +316,7 @@ int SamsonWorkerController::UpdateWorkerNode(bool worker_ready) {
 
   // Insert in the gpb message
   gpb_block_ids->Clear();
-  for (std::set<size_t>::iterator b = block_ids.begin(); b != block_ids.end(); b++) {
+  for (std::set<size_t>::iterator b = block_ids.begin(); b != block_ids.end(); ++b) {
     gpb_block_ids->Add(*b);
   }
 
@@ -352,12 +352,12 @@ int SamsonWorkerController::check() {
     LM_T(LmtClusterSetup, ("I am the Cluster Leader"));
 
     // Add a watch to all workers ( to be informed if any of them falls down... )
-    for (size_t i = 0; i < worker_ids.size(); i++) {
+    for (size_t i = 0; i < worker_ids.size(); ++i) {
       std::string node = au::str("/samson/workers/w%010lu", worker_ids[i]);
       LM_T(LmtClusterSetup, ("Adding watcher on %s", node.c_str()));
       int rc = zoo_connection_->Exists(node, engine_id());
       if (rc) {
-        // Recheck since a node has disapeared
+        // Recheck since a node has disappeared
         LM_T(LmtClusterSetup, ("Error while adding watcher on node %s (%s). Rechecking..."
                 , node.c_str()
                 , samson::zoo::str_error(rc).c_str()));
@@ -419,13 +419,13 @@ int SamsonWorkerController::check() {
     LM_T(LmtClusterSetup, ("I am a Non-Leader worker"));
 
     // Add a watcher to my previous worker to be alerted when it fails down
-    for (size_t i = 1; i < worker_ids.size(); i++) {
+    for (size_t i = 1; i < worker_ids.size(); ++i) {
       if (worker_ids[i] == worker_id_) {
         std::string node = au::str("/samson/workers/w%010lu", worker_ids[i - 1]);
         LM_T(LmtClusterSetup, ("Adding watcher on previous worker at %s", node.c_str()));
         int rc = zoo_connection_->Exists(node, engine_id());
         if (rc) {
-          // Recheck since a node has disapeared
+          // Recheck since a node has disappeared
           LM_T(LmtClusterSetup, ("Error while adding watcher on node %s. Rechecking...", node.c_str()));
           return 1;
         } else {
@@ -450,12 +450,11 @@ bool are_equal(const std::vector<size_t> &a, const std::vector<size_t>& b) {
     return false;
   }
 
-  for (size_t i = 0; i < a.size(); i++) {
+  for (size_t i = 0; i < a.size(); ++i) {
     if (a[i] != b[i]) {
       return false;
     }
   }
-
   return true;
 }
 
@@ -488,9 +487,9 @@ bool SamsonWorkerController::is_valid_cluster_info(au::SharedPointer<samson::gpb
   return false;
 }
 
-int SamsonWorkerController::create_cluster_info( size_t version ) {
+int SamsonWorkerController::create_cluster_info(size_t version) {
 
-  cluster_info_.Reset(new gpb::ClusterInfo());  // New cluster info
+  cluster_info_.Reset(new gpb::ClusterInfo()); // New cluster info
   cluster_info_->set_version(version); // Set the new version
 
   // All information
@@ -506,7 +505,7 @@ int SamsonWorkerController::create_cluster_info( size_t version ) {
 
   // Get all information from all workers
   au::map<size_t, samson::gpb::WorkerInfo> workers_info;
-  for (int i = 0; i < static_cast<int>(worker_ids.size()); i++) {
+  for (int i = 0; i < static_cast<int> (worker_ids.size()); ++i) {
     LM_T(LmtClusterSetup, ("Recovering information for worker %lu", worker_ids[i]));
 
     // Recover information for thi worker
@@ -528,7 +527,7 @@ int SamsonWorkerController::create_cluster_info( size_t version ) {
 
   // Add individual worker information
   au::map<size_t, samson::gpb::WorkerInfo>::iterator it;
-  for (it = workers_info.begin(); it != workers_info.end(); it++) {
+  for (it = workers_info.begin(); it != workers_info.end(); ++it) {
     samson::gpb::ClusterWorker *cluster_worker = cluster_info_->add_workers();
     cluster_worker->set_worker_id(it->first);
     cluster_worker->mutable_worker_info()->CopyFrom(*it->second);
@@ -540,39 +539,39 @@ int SamsonWorkerController::create_cluster_info( size_t version ) {
   if (worker_ids.size() == 1) {
     replica_factor = 1;
   } else if (worker_ids.size() == 2) {
-    replica_factor = 2; // Decide number of process units
+    replica_factor = 2;
   }
-  
-  // Number of hash-group divsions
-  int num_units =  8;
-  if( worker_ids.size() > 1 )
-    num_units = 16;
-  if( worker_ids.size() > 2 )
-    num_units = 64;
-  if( worker_ids.size() > 5 )
-    num_units = 128;
-  if( worker_ids.size() > 10 )
-  {
+
+  // Decide number of process units
+  // Number of hash-group divisions
+  // @jges: Changing the order of the tests
+  int num_units = 8;
+  int num_workers = static_cast<int>(worker_ids.size()); // Number of workers
+  if (num_workers > 10) {
     LM_W(("Cluster setup not ready to handle more than 10 workers"));
     //Note: In the future, we have to scale up the 128 limit to handle more workers
+  } else if (num_workers > 5) {
+    num_units = 128;
+  } else if (num_workers > 2) {
+    num_units = 64;
+  } else if (num_workers > 1) {
+    num_units = 16;
   }
 
-  int num_workers = worker_ids.size();  // Number of workers
-  int num_units_per_worker = num_units / num_workers;  // Number of units per worker
+  int num_units_per_worker = num_units / num_workers; // Number of units per worker
 
-  // andreu: This shoule be revised to map ranges to workers coherently based on previous information
-  
-  for (int i = 0; i < num_units; i++) {
-    
+  // TODO(@andreu): This should be revised to map ranges to workers coherently based on previous information
+
+  for (int i = 0; i < num_units; ++i) {
     KVRange range = rangeForDivision(i, num_units);
 
     gpb::ProcessUnit *process_unit = cluster_info_->add_process_units();
-    process_unit->set_hg_begin(range.hg_begin);
-    process_unit->set_hg_end(range.hg_end);
+    process_unit->set_hg_begin(range.hg_begin_);
+    process_unit->set_hg_end(range.hg_end_);
 
     // Chose correct worker ( make sure it is a valid worker )
     int w = i / num_units_per_worker;
-    while (w >= static_cast<int>(worker_ids.size())) {
+    while (w >= static_cast<int> (worker_ids.size())) {
       w -= worker_ids.size();
     }
 
@@ -580,9 +579,9 @@ int SamsonWorkerController::create_cluster_info( size_t version ) {
     process_unit->set_worker_id(worker_ids[w]);
 
     // Set replica
-    for (int r = 0; r < (replica_factor - 1); r++) {
+    for (int r = 0; r < (replica_factor - 1); ++r) {
       int ww = w + 1 + r;
-      while (ww >= static_cast<int>(worker_ids.size())) {
+      while (ww >= static_cast<int> (worker_ids.size())) {
         ww -= worker_ids.size();
       }
 
@@ -596,7 +595,7 @@ int SamsonWorkerController::create_cluster_info( size_t version ) {
   // Notify to everybody that cluster_info changed
   engine::Engine::shared()->notify(new engine::Notification("notification_cluster_info_changed_in_worker"));
 
-  return 0; // OK
+  return 0;   // OK
 }
 
 int SamsonWorkerController::check_cluster_info() {
@@ -659,17 +658,9 @@ int SamsonWorkerController::check_cluster_info() {
   return 0;
 }
 
-au::SharedPointer<samson::gpb::ClusterInfo> SamsonWorkerController::GetCurrentClusterInfo() {
-  return cluster_info_;
-}
-
-size_t SamsonWorkerController::worker_id() {
-  return worker_id_;
-}
-
 std::set<size_t> SamsonWorkerController::GetWorkerIds() {
   std::set<size_t> worker_ids;
-  for (int i = 0; i < cluster_info_->workers_size(); i++) {
+  for (int i = 0; i < cluster_info_->workers_size(); ++i) {
     worker_ids.insert(cluster_info_->workers(i).worker_id());
   }
   return worker_ids;
@@ -679,7 +670,7 @@ au::Uint64Set SamsonWorkerController::GetAllWorkerIdsForRange(KVRange range) {
   // Set of identifier to return
   au::Uint64Set worker_ids;
 
-  for (int i = 0; i < cluster_info_->process_units_size(); i++) {
+  for (int i = 0; i < cluster_info_->process_units_size(); ++i) {
     const gpb::ProcessUnit& process_unit = cluster_info_->process_units(i);
 
     // Get range for this process unit
@@ -687,7 +678,7 @@ au::Uint64Set SamsonWorkerController::GetAllWorkerIdsForRange(KVRange range) {
 
     if (process_unit_range.IsOverlapped(range)) {
       worker_ids.insert(process_unit.worker_id()); // Add replicas
-      for (int r = 0; r < process_unit.replica_worker_id_size(); r++)
+      for (int r = 0; r < process_unit.replica_worker_id_size(); ++r)
         worker_ids.insert(process_unit.replica_worker_id(r));
     }
   }
@@ -699,7 +690,7 @@ au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) {
   // Set of identifier to return
   au::Uint64Set worker_ids;
 
-  for (int i = 0; i < cluster_info_->process_units_size(); i++) {
+  for (int i = 0; i < cluster_info_->process_units_size(); ++i) {
     const gpb::ProcessUnit& process_unit = cluster_info_->process_units(i);
 
     // Get range for this process unit
@@ -711,7 +702,7 @@ au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) {
       if (tmp_worker_id != worker_id_) {
         worker_ids.insert(tmp_worker_id); // Add replicas
       }
-      for (int r = 0; r < process_unit.replica_worker_id_size(); r++) {
+      for (int r = 0; r < process_unit.replica_worker_id_size(); ++r) {
         size_t tmp_worker_id = process_unit.replica_worker_id(r);
         if (tmp_worker_id != worker_id_) {
           worker_ids.insert(tmp_worker_id);

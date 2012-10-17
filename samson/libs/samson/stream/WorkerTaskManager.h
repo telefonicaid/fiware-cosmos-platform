@@ -67,15 +67,14 @@ class WorkerTaskManager : public ::engine::NotificationListener {
     gpb::CollectionPointer GetCollection(const ::samson::Visualization& visualization);
     gpb::CollectionPointer GetLastTasksCollection(const ::samson::Visualization& visualization);
 
-    size_t get_num_running_tasks();
-    size_t get_num_tasks();
+    size_t get_num_running_tasks() const ;
+    size_t get_num_tasks() const ;
 
     // Get collection to list in delilah
     gpb::CollectionPointer GetCollectionForStreamOperationsRanges(const ::samson::Visualization& visualization);
     gpb::CollectionPointer GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
 
   private:
-  
     size_t id_;   // Id of the current task
     au::Queue<WorkerTaskBase> pending_tasks_;   // List of pending task to be executed
     au::Dictionary<size_t, WorkerTaskBase> running_tasks_;   // Map of running tasks
@@ -91,8 +90,6 @@ class WorkerTaskManager : public ::engine::NotificationListener {
   
   // Get the number of current running tasks for a particular stream operation
   int GetRunningTasks( size_t stream_operation_id );
-
-  
 };
 }
 }

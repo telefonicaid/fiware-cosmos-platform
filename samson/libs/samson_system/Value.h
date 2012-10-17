@@ -69,14 +69,14 @@ class Value : public samson::DataInstance {
 
       // Serialization of numbers
       // ------------------------------------------------------------
-      ser_int_positive,   // Variable length possitive numbers
+      ser_int_positive,   // Variable length positive numbers
       ser_int_negative,   // Variable length negative numbers
       ser_int_value_0,   // Concrete values
       ser_int_value_1, ser_int_value_2, ser_int_value_3, ser_int_value_4, ser_int_value_5, ser_int_value_6,
       ser_int_value_7, ser_int_value_8, ser_int_value_9, ser_int_value_10,
       ser_int_value_minus_1,
 
-      ser_double_positive_1_decimal,   // Double possitve or negative with a fixed number of decimals
+      ser_double_positive_1_decimal,   // Double positive or negative with a fixed number of decimals
       ser_double_positive_2_decimal, ser_double_positive_3_decimal, ser_double_positive_4_decimal,
       ser_double_positive_5_decimal,
 
@@ -103,6 +103,41 @@ class Value : public samson::DataInstance {
 
     static const std::string kSystemValueName;
 
+    // Preferred names for fields
+    static const std::string kAppField;
+    static const std::string kCategoriesField;
+    static const std::string kCategoryField;
+    static const std::string kCellIdField;
+    static const std::string kConceptField;
+    static const std::string kCounterField;
+    static const std::string kCountField;
+    static const std::string kDomainField;
+    static const std::string kGlobalCountField;
+    static const std::string kHitsField;
+    static const std::string kImeiField;
+    static const std::string kImsiField;
+    static const std::string kInstantProfileField;
+    static const std::string kItemField;
+    static const std::string kLanguageField;
+    static const std::string kLinkField;
+    static const std::string kMemberField;
+    static const std::string kNameField;
+    static const std::string kQueryField;
+    static const std::string kQueryWordsField;
+    static const std::string kServiceField;
+    static const std::string kTimestampField;
+    static const std::string kTopCategoryField;
+    static const std::string kTotalField;
+    static const std::string kUpdatedCountField;
+    static const std::string kUrlField;
+    static const std::string kUserField;
+    static const std::string kUserIdField;
+    static const std::string kUsrField;
+    static const std::string kValueField;
+    static const std::string kVectorProfileField;
+    static const std::string kWeightField;
+    static const std::string kWordField;
+
     Value() : samson::DataInstance() {}
 
     ~Value() {
@@ -113,26 +148,28 @@ class Value : public samson::DataInstance {
     static Value *getInstance() {
       // reusing instances caused some problems in the past,
       // but perhaps they are solved in samson_0.7, so let's give it a chance
-      if (!pool_values_)
-        pool_values_ = new au::Pool<Value>();
-
-      Value * recovered_value = pool_values_->pop();
-      LM_M(("Recovering value:%p from pool:%p size:%lu", recovered_value, pool_values_, pool_values_->size()));
-      if (recovered_value) {
-        return recovered_value;
-      }
+//      if (!pool_values_)
+//        pool_values_ = new au::Pool<Value>();
+//
+//      Value * recovered_value = pool_values_->pop();
+//      // TODO: @jges delete log message
+//      LM_M(("Recovering value:%p from pool:%p size:%lu", recovered_value, pool_values_, pool_values_->size()));
+//      if (recovered_value) {
+//        return recovered_value;
+//      }
       return new Value();
     }
 
     static void reuseInstance(Value *value) {
       // reusing instances caused some problems in the past,
       // but perhaps they are solved in samson_0.7, so let's give it a chance
-      if (!pool_values_)
-        pool_values_ = new au::Pool<Value>();
-
-      value->clear();
-      LM_M(("Pushing value:%p to pool:%p size:%lu", value, pool_values_, pool_values_->size()));
-      pool_values_->push(value);
+//      if (!pool_values_)
+//        pool_values_ = new au::Pool<Value>();
+//
+//      value->clear();
+//      // TODO: @jges delete log message
+//      LM_M(("Pushing value:%p to pool:%p size:%lu", value, pool_values_, pool_values_->size()));
+//      pool_values_->push(value);
     }
 
     // Return the name of this data type ( system.Value )

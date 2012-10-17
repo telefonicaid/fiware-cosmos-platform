@@ -163,10 +163,10 @@ void ValueReduce_update_sum::Init(std::string command) {
   au::CommandLine cmdLine;
 
   cmdLine.SetFlagBoolean("emit");
-  cmdLine.SetFlagInt("time", 0);
+  cmdLine.SetFlagInt(Value::kTimestampField, 0);
   cmdLine.Parse(command);
 
-  time_span_ = cmdLine.GetFlagInt("time");
+  time_span_ = cmdLine.GetFlagInt(Value::kTimestampField);
   emit_ = cmdLine.GetFlagBool("emit");
 
   if (time_span_ == 0) {
@@ -231,10 +231,10 @@ void ValueReduce_update_sum::Run(samson::KVSetStruct *inputs, samson::KVWriter* 
 void ValueReduce_accumulate::Init(std::string command) {
   au::CommandLine cmdLine;
 
-  cmdLine.SetFlagInt("time", 360);
+  cmdLine.SetFlagInt(Value::kTimestampField, 360);
   cmdLine.Parse(command);
 
-  time_span_ = cmdLine.GetFlagInt("time");
+  time_span_ = cmdLine.GetFlagInt(Value::kTimestampField);
 
   if (time_span_ == 0) {
     factor_ = 1.0;
@@ -246,8 +246,8 @@ void ValueReduce_accumulate::Init(std::string command) {
 
 void ValueReduce_accumulate::UpdateCounter(system::Value *value) {
   // Forgetting factor
-  size_t time_diff = current_time_ - value->GetValueFromMap("timestamp")->GetDouble();
-  system::Value *counter_value = value->GetValueFromMap("counter");
+  size_t time_diff = current_time_ - value->GetValueFromMap(Value::kTimestampField.c_str())->GetDouble();
+  system::Value *counter_value = value->GetValueFromMap(Value::kCounterField.c_str());
 
   double previous_counter = counter_value->GetDouble();
   double counter = previous_counter * pow(factor_, static_cast<int> (time_diff));
@@ -265,10 +265,10 @@ void ValueReduce_accumulate::Run(samson::KVSetStruct *inputs, samson::KVWriter* 
     key_.parse(inputs[1].kvs[0]->key);
   }
   // Check valid key
-  if (key_.GetValueFromMap("category") == NULL) {
+  if (key_.GetValueFromMap(Value::kCategoryField.c_str()) == NULL) {
     return;
   }
-  if (key_.GetValueFromMap("concept") == NULL) {
+  if (key_.GetValueFromMap(Value::kConceptField.c_str()) == NULL) {
     return;
   }
   // Recover state if any
@@ -282,16 +282,16 @@ void ValueReduce_accumulate::Run(samson::KVSetStruct *inputs, samson::KVWriter* 
     UpdateCounter(&value_);
 
     // Counter to accumulate inputs
-    total = value_.GetValueFromMap("counter")->GetDouble();
+    total = value_.GetValueFromMap(Value::kCounterField.c_str())->GetDouble();
   } else {
     value_.SetAsMap();
     // Copy value and category from key
-    value_.AddValueToMap("category")->copyFrom(key_.GetValueFromMap("category"));
-    value_.AddValueToMap("concept")->copyFrom(key_.GetValueFromMap("concept"));
+    value_.AddValueToMap(Value::kCategoryField)->copyFrom(key_.GetValueFromMap(Value::kCategoryField));
+    value_.AddValueToMap(Value::kConceptField)->copyFrom(key_.GetValueFromMap(Value::kConceptField));
 
     // Add time-stamp and counter
-    value_.AddValueToMap("timestamp")->SetDouble(t);
-    value_.AddValueToMap("counter")->SetDouble(0);
+    value_.AddValueToMap(Value::kTimestampField)->SetDouble(t);
+    value_.AddValueToMap(Value::kCounterField)->SetDouble(0);
     total = 0;
   }
 
@@ -305,11 +305,11 @@ void ValueReduce_accumulate::Run(samson::KVSetStruct *inputs, samson::KVWriter* 
   }
 
   // Emit to update the state
-  value_.AddValueToMap("counter")->SetDouble(total);
+  value_.AddValueToMap(Value::kCounterField)->SetDouble(total);
   writer->emit(1, &key_, &value_);
 
   // Emit to accumulate by category
-  key_.SetString(value_.GetValueFromMap("category")->GetString());
+  key_.SetString(value_.GetValueFromMap(Value::kCategoryField.c_str())->GetString());
   writer->emit(0, &key_, &value_);
 
   return;
@@ -322,7 +322,7 @@ void ValueReduce_accumulate_top::Init(std::string command) {
   cmdLine.SetFlagUint64("time_span", 360);
   cmdLine.Parse(command);
 
-  time_span_ = cmdLine.GetFlagInt("time");
+  time_span_ = cmdLine.GetFlagInt(Value::kTimestampField);
 
   if (time_span_ == 0) {
     factor_ = 1.0;
@@ -334,8 +334,8 @@ void ValueReduce_accumulate_top::Init(std::string command) {
 
 void ValueReduce_accumulate_top::UpdateCounter(system::Value *value) {
   // Forgetting factor
-  size_t time_diff = current_time_ - value->GetValueFromMap("timestamp")->GetDouble();
-  system::Value *counter_value = value->GetValueFromMap("counter");
+  size_t time_diff = current_time_ - value->GetValueFromMap(Value::kTimestampField.c_str())->GetDouble();
+  system::Value *counter_value = value->GetValueFromMap(Value::kCounterField.c_str());
 
   counter_value->SetDouble(counter_value->GetDouble() * pow(factor_, static_cast<int> (time_diff)));
 }

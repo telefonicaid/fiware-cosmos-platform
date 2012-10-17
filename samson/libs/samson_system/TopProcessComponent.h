@@ -22,7 +22,7 @@
  *
  *  Declaration of TopProcessComponent class to update the count and emit the top
  *  hits under the Process paradigm. It operates on fixed fields in the input queue
- *  named "category", "concept", "total"
+ *  named Value::kCategoryField("category"), Value::kConceptField("concept"), Value::kTotalField("total")
  *
  */
 #ifndef _H_SAMSON_system_TOP_PROCESS_COMPONENT

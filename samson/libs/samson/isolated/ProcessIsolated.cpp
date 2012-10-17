@@ -132,48 +132,47 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
   // size_t task_id = task->workerTask.task_id();
 
   for (int o = 0; o < num_outputs; o++) {
-
     OutputChannel *_channel = &channel[o];
     
     if (_channel->info.size == 0)
       continue;
 
     // For each output range, create an output buffer
-    for ( size_t r = 0 ; r < output_ranges_.size() ; r++ )
-    {
+    for (size_t r = 0; r < output_ranges_.size(); r++) {
       // Selected range
       KVRange range = output_ranges_[r];
-      
+
       // Compute size for the buffer
       KVInfo range_info;
-      for ( int hg = range.hg_begin ; hg < range.hg_end ;hg ++ )
-        range_info.append( _channel->hg[hg].info );
+      for (int hg = range.hg_begin_; hg < range.hg_end_; hg++) {
+        range_info.append(_channel->hg[hg].info);
+      }
 
-      if( range_info.size == 0)
+      if (range_info.size == 0) {
         continue;
-      
-      engine::BufferPointer buffer = engine::Buffer::Create("Output of [" + concept() + "]"
-                                                            , "ProcessIsolated"
-                                                            , sizeof(KVHeader) + range_info.size );
-      
+      }
+
+      engine::BufferPointer buffer = engine::Buffer::Create("Output of [" + concept() + "]", "ProcessIsolated",
+                                                            sizeof(KVHeader) + range_info.size);
+
       if (buffer == NULL) {
         LM_X(1, ("Internal error: Not possible to create a buffer"));
       }
       // Pointer to the header
-      KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
-      
+      KVHeader *header = reinterpret_cast<KVHeader *> (buffer->data());
+
       // Initial offset for the buffer to write data
       buffer->SkipWrite(sizeof(KVHeader));
-      
+
       // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
       if (outputFormats.size() > (size_t) o) {
-        header->Init( outputFormats[o],  range_info );
+        header->Init(outputFormats[o], range_info);
       } else {
-        error_.set(au::str("No output format for output %d" , o));
+        error_.set(au::str("No output format for output %d", o));
         return;
       }
       
-      for (int i = range.hg_begin; i <  range.hg_end; i++) {
+      for (int i = range.hg_begin_; i <  range.hg_end_; i++) {
 
         // Current hash-group output
         HashGroupOutput *_hgOutput = &_channel->hg[i];
@@ -197,20 +196,21 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
         LM_X(1, ("Internal error"));   // Set the hash-group limits of the header
       }
 
-      int min_hg = range.hg_begin;
-      int max_hg = range.hg_end;
+      int min_hg = range.hg_begin_;
+      int max_hg = range.hg_end_;
       
-      while( _channel->hg[min_hg].info.size == 0 )
+      while (_channel->hg[min_hg].info.size == 0) {
         min_hg++;
-      while( _channel->hg[max_hg-1].info.size == 0 )
+      }
+      while (_channel->hg[max_hg - 1].info.size == 0) {
         max_hg--;
+      }
       
       // Compute the range of valid data
-      header->range = KVRange( min_hg , max_hg );
+      header->range = KVRange(min_hg, max_hg);
       
       // Process the output buffer
       processOutputBuffer(buffer, o);
-      
     }
   }
 }

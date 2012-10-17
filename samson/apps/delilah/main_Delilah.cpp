@@ -331,8 +331,11 @@ int main(int argC, const char *argV[]) {
     if (id != 0) {
       // Wait until this operation is finished
       while (delilahConsole->isActive(id)) {
+        // TODO(@jges): Remove log message
+        LM_M(("Sleep after check isActive command_id:%d", id));
+
         // Wait until command is finished
-        usleep(1000);
+        usleep(100000);
       }
       LM_M(("Command activity is finished for command:'%s', id:%d", command, id));
 

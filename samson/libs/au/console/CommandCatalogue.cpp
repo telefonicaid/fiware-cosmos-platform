@@ -454,7 +454,7 @@ CommandItem *CommandCatalogue::add_argument(const std::string& command_name
   Command *c = get_command(command_name);
 
   if (!c) {
-    LM_W(("Not possible to add argument %s to command %s. This command has not been added previously"
+    LM_W(("Not possible to add argument '%s' to command '%s'. This command has not been added previously"
           , name.c_str(), command_name.c_str()));
     return NULL;
   }

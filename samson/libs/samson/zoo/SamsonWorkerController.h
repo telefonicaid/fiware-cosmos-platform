@@ -46,15 +46,15 @@ class SamsonWorkerController : public engine::NotificationListener {
     virtual void notify(engine::Notification *notification);
 
     // Get my worker id
-    size_t worker_id();
+    size_t worker_id() const { return worker_id_;};
 
     // Get a copy of the current cluster setup
-    au::SharedPointer<samson::gpb::ClusterInfo> GetCurrentClusterInfo();
+    au::SharedPointer<samson::gpb::ClusterInfo> GetCurrentClusterInfo() const { return cluster_info_;}
 
     // Get workers that should have a copy of a block in this range ( I am excluded from the list )
     au::Uint64Set GetWorkerIdsForRange(KVRange range);
 
-    // Get ALL workers taht should have a copy of a block
+    // Get ALL workers that should have a copy of a block
     au::Uint64Set GetAllWorkerIdsForRange(KVRange range);
 
     // Get all the workers identifiers
@@ -77,14 +77,14 @@ class SamsonWorkerController : public engine::NotificationListener {
     size_t get_new_block_id();
 
   // Get ranges to process data
-  std::vector<KVRange> GetKVRanges()
-  {
-    std::vector<KVRange> ranges;
-    int num_divisions = cluster_info_->process_units_size();
-    for ( int i = 0 ; i < num_divisions ; i++ )
-      ranges.push_back( rangeForDivision(i, num_divisions )  );
-    return ranges;
-  }
+  std::vector<KVRange> GetKVRanges() {
+      std::vector<KVRange> ranges;
+      int num_divisions = cluster_info_->process_units_size();
+      for (int i = 0; i < num_divisions; ++i) {
+        ranges.push_back(rangeForDivision(i, num_divisions));
+      }
+      return ranges;
+    }
 
   
   private:

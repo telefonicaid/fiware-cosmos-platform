@@ -34,7 +34,7 @@ TEST(samson_common_KVRange, test1) {
             "<kv_range><hg_begin>1</hg_begin><hg_end>10</hg_end></kv_range>") <<
   "Error in KVRange getInfo";
   
-  EXPECT_EQ(range_2.str(), "[1 10]") << "Error in KVRange str";
+  EXPECT_EQ(range_2.str(), "[00001 00010)") << "Error in KVRange str";
   EXPECT_EQ(range_2.getNumHashGroups(), 9) << "Error in KVRange getNumHashGroups";
   
   EXPECT_EQ(range_1.IsOverlapped(range_2), true) << "Error in KVRange overlap true";

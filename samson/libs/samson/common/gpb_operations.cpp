@@ -274,8 +274,8 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
   
   // Add range to this block
   KVRange *gpb_range = block->mutable_range();
-  gpb_range->set_hg_begin(range.hg_begin);
-  gpb_range->set_hg_end(range.hg_end);
+  gpb_range->set_hg_begin(range.hg_begin_);
+  gpb_range->set_hg_end(range.hg_end_);
 }
 
 void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVFormat format, ::samson::KVRange range,
@@ -384,22 +384,23 @@ au::StringVector data_get_queues_connected(gpb::Data *data, const std::string& q
   return target_queues;
 }
 
-bool bath_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batch_operation) {
-
-  
+bool batch_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batch_operation) {
   size_t delilah_id = batch_operation.delilah_id();
   size_t delilah_component_id = batch_operation.delilah_component_id();
-  
-  for (int i = 0; i < batch_operation.inputs_size(); i++) {
-    std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
+  std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
+
+  // Recovered from old DataModel::CheckIfBatchOperationIsFinished()
+  // To check for finish, we should take into account just the first input,
+  // as the other would be the state or a permanent queue
+  // Small change in the criteria. Now we can have several inputs, so the test
+  // must include all queues but the last one
+  for (int i = 0; (i < (batch_operation.inputs_size() - 1)); ++i) {
     std::string queue_name = prefix + batch_operation.inputs(i);
 
     Queue *queue = get_queue(data, queue_name);
 
-    if (queue) {
-      if (getKVInfoForQueue(*queue).size > 0) {
-        return false;
-      }
+    if ((queue) && (getKVInfoForQueue(*queue).size > 0)) {
+      return false;
     }
   }
 

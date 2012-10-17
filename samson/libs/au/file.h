@@ -52,9 +52,11 @@ std::string path_remove_last_component(std::string path);
 std::string get_directory_from_path(std::string path);
 
 // Create directories
-Status createDirectory(std::string path);
-Status createFullDirectory(std::string path);
-
+Status CreateDirectory(std::string path);
+Status CreateFullDirectory(std::string path);
+std::string GetCannonicalPath(const std::string& path);
+  
+  
 // Get list of files from a file_name ( directory --> all included files )
 std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorManager& error);
 }

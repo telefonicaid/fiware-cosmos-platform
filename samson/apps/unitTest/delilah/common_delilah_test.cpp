@@ -18,8 +18,8 @@ samson::DelilahConsole *init_delilah_test() {
   // Init samson setup with default values
   samson::SamsonSetup *samson_setup = au::Singleton<samson::SamsonSetup>::shared();
 
-  size_t memory = samson_setup->getUInt64("general.memory");
-  int num_cores = samson_setup->getInt("general.num_processess");
+  size_t memory = samson_setup->GetUInt64("general.memory");
+  int num_cores = samson_setup->GetInt("general.num_processess");
 
   engine::Engine::InitEngine(num_cores, memory, 1);
 

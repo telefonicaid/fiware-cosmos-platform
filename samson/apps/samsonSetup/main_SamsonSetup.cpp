@@ -108,15 +108,14 @@ public:
     }
 
     if (info->completingSecondWord("set")) {
-      std::vector<std::string> names = au::Singleton<samson::SamsonSetup>::shared()->getItemNames();
+      std::vector<std::string> names = au::Singleton<samson::SamsonSetup>::shared()->GetItemNames();
       info->add(names);
     }
 
     if (info->completingThirdWord("set", "*")) {
       std::string parameter = info->secondWord();
-      std::string current_value = au::Singleton<samson::SamsonSetup>::shared()->get(parameter);
-      std::string default_value = au::Singleton<samson::SamsonSetup>::shared()->get_default(parameter);
-
+      std::string current_value = au::Singleton<samson::SamsonSetup>::shared()->Get(parameter);
+      std::string default_value = au::Singleton<samson::SamsonSetup>::shared()->GetDefault(parameter);
       info->setHelpMessage(au::str("Current value %s ( default %s )", current_value.c_str(), default_value.c_str()));
     }
   }
@@ -145,12 +144,12 @@ public:
       std::string property = cmd.get_argument(1);
       std::string value = cmd.get_argument(2);
 
-      if (!au::Singleton<samson::SamsonSetup>::shared()->isParameterDefined(property)) {
+      if (!au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined(property)) {
         writeErrorOnConsole(au::str("Parameter '%s' not defined", property.c_str()));
         return;
       }
 
-      if (au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter(property, value)) {
+      if (au::Singleton<samson::SamsonSetup>::shared()->Set(property, value)) {
         modified = true;
         writeWarningOnConsole(au::str("Property '%s' set to '%s'", property.c_str(), value.c_str()));
       } else {
@@ -193,12 +192,11 @@ public:
 #endif  // LINUX
 
     if (main_command == "use_desktop_values") {
-      au::Singleton<samson::SamsonSetup>::shared()->resetToDefaultValues();
-      au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.memory", "2000000000");
-      au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.num_processess", "2");
-      au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.shared_memory_size_per_buffer",
-                                                                         "64000000");
-      au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("stream.max_operation_input_size", "64000000");
+      au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
+      au::Singleton<samson::SamsonSetup>::shared()->Set("general.memory", "2000000000");
+      au::Singleton<samson::SamsonSetup>::shared()->Set("general.num_processess", "2");
+      au::Singleton<samson::SamsonSetup>::shared()->Set("general.shared_memory_size_per_buffer","64000000");
+      au::Singleton<samson::SamsonSetup>::shared()->Set("stream.max_operation_input_size", "64000000");
 
       writeWarningOnConsole("Properties general.memory                        = 2Gb");
       writeWarningOnConsole("Properties general.num_processess                = 2");
@@ -211,7 +209,7 @@ public:
     }
 
     if (main_command == "use_default_values") {
-      au::Singleton<samson::SamsonSetup>::shared()->clearCustumValues();
+      au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
       writeOnConsole("OK");
       modified = true;
       return;
@@ -219,9 +217,9 @@ public:
 
 
     if (main_command == "save") {
-      int res = au::Singleton<samson::SamsonSetup>::shared()->save();        // Save a new file with the current setup
+      int res = au::Singleton<samson::SamsonSetup>::shared()->Save();        // Save a new file with the current setup
 
-      std::string fileName = au::Singleton<samson::SamsonSetup>::shared()->setupFileName();
+      std::string fileName = au::Singleton<samson::SamsonSetup>::shared()->setup_filename();
 
       if (!res) {
         writeWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
@@ -243,8 +241,8 @@ public:
           writeWarningOnConsole("Read nothing");
         }
         if (strcmp(line, "y") || strcmp(line, "Y")) {
-          au::Singleton<samson::SamsonSetup>::shared()->save();            // Save a new file with the current setup
-          std::string fileName = au::Singleton<samson::SamsonSetup>::shared()->setupFileName();
+          au::Singleton<samson::SamsonSetup>::shared()->Save();            // Save a new file with the current setup
+          std::string fileName = au::Singleton<samson::SamsonSetup>::shared()->setup_filename();
           writeWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
         }
       }

@@ -426,7 +426,7 @@ void ProcessItemIsolated::runExchangeMessages() {
 
   while (true) {
     // Take the timeout for reading operations from the other site
-    int timeout_setup = au::Singleton<SamsonSetup>::shared()->getInt("isolated.timeout");
+    int timeout_setup = au::Singleton<SamsonSetup>::shared()->GetInt("isolated.timeout");
 
     LM_T(LmtIsolated, ("Isolated process %s: Reading a new message with timeout %d", str().c_str(), timeout_setup));
 

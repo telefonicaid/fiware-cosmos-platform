@@ -59,7 +59,7 @@ BlockManager::BlockManager() :
   scheduled_read_size_ = 0;
 
   // Maximum amount of memory
-  size_t total_memory = au::Singleton<SamsonSetup>::shared()->getUInt64("general.memory");
+  size_t total_memory = au::Singleton<SamsonSetup>::shared()->GetUInt64("general.memory");
   max_memory_ = static_cast<double>(total_memory) * 0.8;   // 80% of memory for block manager
 
   // Recover files from disk
@@ -213,8 +213,8 @@ void BlockManager::Review() {
             , blocks_.size(), block_ids_.size()));
 
   // Get setup parameter to control review of BlockManager...
-  size_t max_scheduled_write_size = au::Singleton<SamsonSetup>::shared()->getUInt64("stream.max_scheduled_write_size");
-  size_t max_scheduled_read_size = au::Singleton<SamsonSetup>::shared()->getUInt64("stream.max_scheduled_read_size");
+  size_t max_scheduled_write_size = au::Singleton<SamsonSetup>::shared()->GetUInt64("stream.max_scheduled_write_size");
+  size_t max_scheduled_read_size = au::Singleton<SamsonSetup>::shared()->GetUInt64("stream.max_scheduled_read_size");
 
   // No schedule new operations until all the previous one have finished
   if (scheduled_read_size_ > 0) {
@@ -384,7 +384,7 @@ au::SharedPointer<gpb::Collection> BlockManager::GetCollectionOfBlocks(const Vis
 }
 
 void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
-  size_t block_id = au::Singleton<SamsonSetup>::shared()->blockIdFromFileName(fileName);
+  size_t block_id = au::Singleton<SamsonSetup>::shared()->block_id_from_filename(fileName);
 
   if (block_id == 0) {
     LM_W(("Not possible to get ids for file %s to recover block", fileName.c_str()));
@@ -435,7 +435,7 @@ void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
 
 void BlockManager::RecoverBlocksFromDisks() {
   // Recover all the blocks in current blocks directory
-  std::string blocks_dir = au::Singleton<SamsonSetup>::shared()->blocksDirectory();
+  std::string blocks_dir = au::Singleton<SamsonSetup>::shared()->blocks_directory();
   DIR *dp;
   struct dirent *dirp;
 

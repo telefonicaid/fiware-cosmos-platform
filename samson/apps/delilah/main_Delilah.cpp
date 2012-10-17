@@ -269,11 +269,10 @@ int main(int argC, const char *argV[]) {
   size_t _memory = (size_t) memory_gb * (size_t) (1024 * 1024 * 1024);
   size_t _load_buffer_size = (size_t) load_buffer_size_mb * (size_t) (1024 * 1024);
 
-  au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.memory", au::str("%lu", _memory));
-  au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("load.buffer_size",
-                                                                     au::str("%lu", _load_buffer_size));
+  au::Singleton<samson::SamsonSetup>::shared()->Set("general.memory", au::str("%lu", _memory));
+  au::Singleton<samson::SamsonSetup>::shared()->Set("load.buffer_size", au::str("%lu", _load_buffer_size));
   // Engine and its associated elements
-  int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
+  int num_cores = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
   engine::Engine::InitEngine(num_cores, _memory, 1);
 
   // Load modules

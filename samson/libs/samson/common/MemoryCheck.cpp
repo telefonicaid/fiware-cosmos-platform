@@ -105,9 +105,7 @@ bool MemoryCheck() {
 
 
   // Fetch the current SAMSON configuration
-  std::string shared_memory_size_per_buffer_str = samson_setup->getValueForParameter(
-    "general.shared_memory_size_per_buffer");
-  shared_memory_size_per_buffer = strtoul(shared_memory_size_per_buffer_str.c_str(), NULL, 10);
+  shared_memory_size_per_buffer = samson_setup->GetUInt64("general.shared_memory_size_per_buffer");
 
   // Fetch the system config
   sysctl_value(const_cast<char *>(KERNEL_SHMMAX), &kernel_shmmax);
@@ -120,8 +118,7 @@ bool MemoryCheck() {
   // max memory allowed  shmall * page_size
   max_memory_size = kernel_shmall * page_size;
 
-  std::string num_processes_str = samson_setup->getValueForParameter("general.num_processess");
-  num_processes = strtol(num_processes_str.c_str(), NULL, 10);
+  num_processes = samson_setup->GetUInt64("general.num_processess");
   samson_required_mem = num_processes * shared_memory_size_per_buffer;
   // Check to see if we can allocate all the memory needed
   if (samson_required_mem > max_memory_size) {

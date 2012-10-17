@@ -100,12 +100,11 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samson_home, samson_working);
 
   // Change the values for this parameters
-  au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.memory", au::str("%lu", memory));
-  au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("load.buffer_size",
-                                                                     au::str("%lu", load_buffer_size));
+  au::Singleton<samson::SamsonSetup>::shared()->Set("general.memory", au::str("%lu", memory));
+  au::Singleton<samson::SamsonSetup>::shared()->Set("load.buffer_size", au::str("%lu", load_buffer_size));
 
   // Init Engine, DiskManager, ProcessManager and Memory manager
-  int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
+  int num_cores = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
   engine::Engine::InitEngine(num_cores, memory, 1);
 
   // Init the modules manager

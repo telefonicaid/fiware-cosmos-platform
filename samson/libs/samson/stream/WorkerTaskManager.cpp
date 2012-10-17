@@ -116,7 +116,7 @@ void WorkerTaskManager::reviewPendingWorkerTasks() {
   // It is not recomended to execute more tasks than cores
   // since memory content of all the operations is locked in memory
 
-  int num_processors = au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess");
+  int num_processors = au::Singleton<SamsonSetup>::shared()->GetInt("general.num_processess");
   int num_running_tasks = running_tasks_.size();
 
   int max_running_operations = static_cast<int>(num_processors);
@@ -262,7 +262,7 @@ au::SharedPointer<gpb::Collection> WorkerTaskManager::GetCollection(const ::sams
 void WorkerTaskManager::review_stream_operations() {
   
   au::ExecesiveTimeAlarm alarm("WorkerTaskManager::reviewStreamOperations");
-  int num_processors = au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess");
+  int num_processors = au::Singleton<SamsonSetup>::shared()->GetInt("general.num_processess");
 
   // If I have no information about ranges, do nothing...
   if (samson_worker_->worker_controller() == NULL) {

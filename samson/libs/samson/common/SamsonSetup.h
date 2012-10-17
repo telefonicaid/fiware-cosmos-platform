@@ -11,6 +11,7 @@
 
 #include "au/Environment.h"  // au::Environment
 #include "au/Singleton.h"
+#include "au/file.h"
 #include "au/containers/StringVector.h"
 #include "au/containers/map.h"  // au::map
 
@@ -22,9 +23,6 @@ class ErrorManager;
 }
 
 namespace samson {
-Status createDirectory(std::string path);
-Status createFullDirectory(std::string path);
-std::string cannonical_path(std::string path);
 
 typedef enum {
   SetupItem_uint64,
@@ -32,99 +30,112 @@ typedef enum {
 } SamsonAdaptorType;
 
 class SetupItem {
-  std::string name;
-  std::string default_value;
-
-  std::string value;
-
-  std::string description;
-  SamsonAdaptorType type;
 
 public:
 
-  SetupItem(std::string _name, std::string _default_value, std::string _description, SamsonAdaptorType _type);
+  SetupItem( const std::string& name
+            , const std::string& default_value
+            , const std::string& description
+            , SamsonAdaptorType type );
+  
+  bool set_value(const std::string& value);
+  
+  std::string value() const;
+  std::string default_value() const;
+  std::string description() const;
+  std::string concept() const;
+  
+  bool CheckValidValue(const std::string& _value) const;
+  
+  void ResetToDefaultValue();
+  
+private:
 
-  bool setValue(std::string _value);
-  bool check_valid(std::string _value);
-  std::string getValue();
-  std::string getDefaultValue();
-  std::string getSetValue();
-  std::string getDescription();
-  std::string getConcept();
-  void resetToDefaultValue();
-  void clearCustumValue();
+std::string name_;
+std::string default_value_;
+std::string value_;
+std::string description_;
+SamsonAdaptorType type_;
+
 };
 
 
 class SetupItemCollection {
 protected:
 
-  au::map< std::string, SetupItem > items;
-
-  // Add a new parameter to consider
-  void  add(std::string _name, std::string _default_value, std::string _description, SamsonAdaptorType type);
-
 public:
 
+  SetupItemCollection(){}
   ~SetupItemCollection();
 
+  // Add a new setup parameter to consider
+  void AddItem(const std::string& _name
+               , const std::string& _default_value
+               , const std::string& _description
+               , SamsonAdaptorType type);
+  
   // Load a particular file to include all setup parameters
-  void load(std::string file);
+  bool Load(const std::string& file);
+  bool Save(const std::string& file);
 
-  // get the value of a parameter
-  std::string getValueForParameter(std::string name);
-
-  // Set manually a particular parameter ( special case )
-  bool setValueForParameter(std::string name, std::string value);
-
+  // Get access to parameters
+  std::string Get(const std::string& name) const;
+  bool Set(const std::string& name, const std::string& value);
+  std::string GetDefault(const std::string& name) const;  // Access to default value
+  size_t GetUInt64(const std::string& name) const;
+  int GetInt(const std::string& name) const;
+  
   // Check if a particular property if defined
-  bool isParameterDefined(std::string name);
+  bool IsParameterDefined(const std::string& name) const;
 
   // Come back to default parameters
-  void resetToDefaultValues();
+  void ResetToDefaultValues();
 
-  std::string str();
+  //Debug string
+  std::string str() const;
+
+  // Get a vector with all parameter to setup
+  std::vector<std::string> GetItemNames() const;
+  
+private:
+  
+  // Collection of setup items
+  au::map< std::string, SetupItem > items_;
+  
 };
 
 
 class SamsonSetup : public SetupItemCollection {
-  friend class au::Singleton<SamsonSetup>;
-  SamsonSetup();
-
-  std::string _samson_home;                 // Home directory for SAMSON system
-  std::string _samson_working;              // Working directory for SAMSON system
 
 public:
 
-  void SetWorkerDirectories(std::string samson_home, std::string samson_working);
+  // Modify main working directories
+  void SetWorkerDirectories( const std::string& samson_home, const std::string& samson_working );
 
-  // Used only in unitTests, to have them more complete
-  void addItem(std::string _name, std::string _default_value, std::string _description, SamsonAdaptorType type);
+  // Save to file in samson_working directory
+  bool Save();
 
-  // Get access to parameters
-  std::string get(std::string name);
-  size_t getUInt64(std::string name);
-  int getInt(std::string name);
+  // Get names of files and directories based on current setup
+  std::string setup_filename() const;
+  std::string shared_memory_log_filename() const;
+  std::string modules_directory() const;
+  std::string worker_modules_directory() const;
+  std::string blocks_directory() const;
+  std::string block_filename(size_t block_id) const;
+  size_t block_id_from_filename(const std::string& fileName) const;
+  std::string stream_manager_log_filename() const;
+  std::string cluster_information_filename() const;
+  std::vector<std::string> items_names() const;
+  
+private:
 
-  std::string get_default(std::string name);
+  friend class au::Singleton<SamsonSetup>;
+  SamsonSetup();  // Constructor to be used only with au::Singleton
+  
+  std::string samson_home_;                 // Home directory for SAMSON system
+  std::string samson_working_;              // Working directory for SAMSON system
 
-  // Get names fo files
-  std::string setupFileName();                               // Get the Steup file
-  std::string sharedMemoryLogFileName();
-  std::string modulesDirectory();
-  std::string worker_modules_directory();
-  std::string blocksDirectory();
-  std::string blockFileName(size_t block_id);
-  size_t blockIdFromFileName(std::string fileName);
-  std::string streamManagerLogFileName();
-  std::string clusterInformationFileName();
-  std::vector<std::string> getItemNames();
-
-
-  // Clear values specified manually
-  void clearCustumValues();
-
-  int save();
+  
 };
 }
 

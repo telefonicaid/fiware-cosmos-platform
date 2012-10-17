@@ -192,10 +192,10 @@ class map : public std::map<K, V *, _Compare> {
       return childrens;
     }
 
-    std::vector<K> getKeysVector() {
+    std::vector<K> getKeysVector() const {
       std::vector<K> v;
 
-      typename std::map<K, V *, _Compare>::iterator iter;
+      typename std::map<K, V *, _Compare>::const_iterator iter;
       for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); iter++) {
         v.push_back(iter->first);
       }

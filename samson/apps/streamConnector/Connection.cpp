@@ -100,7 +100,7 @@ void Connection::push(engine::BufferPointer buffer) {
   if (!output_buffer_list) {
     std::string directory = std::string(working_directory) + "/" + getFullName() + "/output";
     size_t max_memory_size =  5 * 1024 * 1024;
-    au::createFullDirectory(directory);
+    au::CreateFullDirectory(directory);
     output_buffer_list = new BufferList(directory, max_memory_size);
   }
 

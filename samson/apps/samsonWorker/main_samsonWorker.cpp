@@ -296,14 +296,13 @@ int main(int argC, const char *argV[]) {
   valgrindExit(4);
 
   // Recover values for the engine
-  size_t memory = au::Singleton<samson::SamsonSetup>::shared()->getUInt64("general.memory");
-  int num_processors = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
+  size_t memory = au::Singleton<samson::SamsonSetup>::shared()->GetUInt64("general.memory");
+  int num_processors = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
 
   valgrindExit(5);
   LM_D(("engine::SharedMemoryManager::init"));
-  size_t shared_memory_size = au::Singleton<samson::SamsonSetup>::shared()->getUInt64(
-    "general.shared_memory_size_per_buffer");
-  engine::SharedMemoryManager::init(num_processors, shared_memory_size);
+  size_t shm_size = au::Singleton<samson::SamsonSetup>::shared()->GetUInt64("general.shared_memory_size_per_buffer");
+  engine::SharedMemoryManager::init(num_processors, shm_size);
 
   // Global init of engine
   engine::Engine::InitEngine(num_processors, memory, 1);

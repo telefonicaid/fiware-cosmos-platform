@@ -41,8 +41,8 @@ SamsonWorkerController::SamsonWorkerController(zoo::Connection *zoo_connection, 
   worker_info_.set_host(get_local_ip());
   worker_info_.set_port(port_);
   worker_info_.set_port_web(port_web_);
-  worker_info_.set_cores(au::Singleton<SamsonSetup>::shared()->getUInt64("general.num_processess"));
-  worker_info_.set_memory(au::Singleton<SamsonSetup>::shared()->getUInt64("general.memory"));
+  worker_info_.set_cores(au::Singleton<SamsonSetup>::shared()->GetUInt64("general.num_processess"));
+  worker_info_.set_memory(au::Singleton<SamsonSetup>::shared()->GetUInt64("general.memory"));
   worker_info_.set_ready(false);   // By default, we are not ready now...
 
   // Notification every 5 seconds to recover cluster information anywat

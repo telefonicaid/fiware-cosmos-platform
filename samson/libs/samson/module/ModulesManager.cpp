@@ -48,7 +48,7 @@ void ModulesManager::clearModulesManager() {
 }
 
 void ModulesManager::addModulesFromDefaultDirectory() {
-  addModulesFromDirectory(au::Singleton<SamsonSetup>::shared()->modulesDirectory());
+  addModulesFromDirectory(au::Singleton<SamsonSetup>::shared()->modules_directory());
 }
 
 void ModulesManager::closeHandlers() {

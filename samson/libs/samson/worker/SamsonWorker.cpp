@@ -90,8 +90,8 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
 
   samson::SamsonSetup *samson_setup = au::Singleton<samson::SamsonSetup>::shared();
 
-  engine::notify(notification_update_status, samson_setup->getInt("general.update_status_period"));
-  engine::notify(notification_samson_worker_check_finish_tasks, samson_setup->getInt("worker.period_check_finish_tasks"));
+  engine::notify(notification_update_status, samson_setup->GetInt("general.update_status_period"));
+  engine::notify(notification_samson_worker_check_finish_tasks, samson_setup->GetInt("worker.period_check_finish_tasks"));
   engine::notify("samson_worker_review", 2);
   engine::notify_extra("samson_worker_review");
 
@@ -922,7 +922,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   // Clear directory
   au::ErrorManager error;
   au::removeDirectory(directory, error);
-  createDirectory(directory);
+  au::CreateDirectory(directory);
 
   // Write each loaded file
   for (int i = 0; i < queue->blocks_size(); i++) {

@@ -44,7 +44,7 @@ void DataModel::InitializeCommandFlags(au::CommandLine& cmd) {
   // -a flag
   cmd.SetFlagBoolean("a");
   // Number of divisions in state operations
-  cmd.SetFlagInt("divisions", au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess"));
+  cmd.SetFlagInt("divisions", au::Singleton<SamsonSetup>::shared()->GetInt("general.num_processess"));
   // Flag to indicate that states with no inputs should be copied to output automatically
   cmd.SetFlagBoolean("update_only");
   // Flag to indicate that this is a batch operation

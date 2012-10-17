@@ -184,7 +184,7 @@ std::string get_directory_from_path(std::string path) {
   }
 }
 
-Status createDirectory(std::string path) {
+Status CreateDirectory(std::string path) {
   if (mkdir(path.c_str(), 0755) == -1) {
     if (errno != EEXIST) {
       LM_W(("Error creating directory %s (%s)", path.c_str(), strerror(errno)));
@@ -194,7 +194,7 @@ Status createDirectory(std::string path) {
   return OK;
 }
 
-Status createFullDirectory(std::string path) {
+Status CreateFullDirectory(std::string path) {
   if (path.length() == 0) {
     return au::Error;
   }
@@ -208,7 +208,7 @@ Status createFullDirectory(std::string path) {
   }
   for (size_t i = 0; i < components.size(); i++) {
     accumulated_path += components[i];
-    Status s = createDirectory(accumulated_path);
+    Status s = CreateDirectory(accumulated_path);
     if (s != OK) {
       LM_W(("Error creating directory %s (%s)", accumulated_path.c_str(), status(s)));
       return s;
@@ -219,6 +219,14 @@ Status createFullDirectory(std::string path) {
 
   return OK;
 }
+ 
+  std::string GetCannonicalPath(const std::string& path) {
+
+    size_t pos = path.size()-1;
+    while ( (pos>0) && path[pos]=='/')
+      pos--;
+    return path.substr( 0 , pos);
+  }
 
 std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorManager& error) {
   std::vector<std::string> file_names;

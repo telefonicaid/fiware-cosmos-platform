@@ -197,7 +197,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
                   "Show hidden stream operations as well ( used internally by the platform )");
 
   add("ps_stream_operations", "stream", "Show a list of stream operations with information about execution planning");
-  add_string_argument("ps_stream_operations_ranges", "pattern", "*", "Name of the stream operation");
+  add_string_argument("ps_stream_operations", "pattern", "*", "Name of the stream operation");
   add_bool_option("ps_stream_operations", "-state","Show state of this stream operations");
   add_tag("ps_stream_operations", "send_to_all_workers");
 

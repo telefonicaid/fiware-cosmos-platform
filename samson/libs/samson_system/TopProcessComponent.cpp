@@ -22,7 +22,7 @@
  *
  *  Definition of TopProcessComponent class methods to update the count and emit the top
  *  hits under the Process paradigm. It operates on fixed fields in the input queue
- *  named "category", "concept", "total"
+ *  named Value::kCategoryField("category"), Value::kConceptField(Value::kConceptField), Value::kTotalField("total")
  *
  */
 #include "samson_system/TopProcessComponent.h"
@@ -40,9 +40,9 @@ void TopProcessComponent::EmitTopElement(const char *concept, const char *catego
   ValueContainer keyContainer;
   ValueContainer valueContainer;
 
-  keyContainer.value->SetStringForMap("app", "top");
-  keyContainer.value->SetStringForMap("concept", concept);
-  keyContainer.value->SetStringForMap("category", category);
+  keyContainer.value->SetStringForMap(Value::kAppField.c_str(), "top");
+  keyContainer.value->SetStringForMap(Value::kConceptField.c_str(), concept);
+  keyContainer.value->SetStringForMap(Value::kCategoryField.c_str(), category);
   valueContainer.value->SetDouble(counter);
 
   EmitFeedback(keyContainer.value, valueContainer.value, writer);
@@ -50,12 +50,12 @@ void TopProcessComponent::EmitTopElement(const char *concept, const char *catego
 
 // Update this state based on input values
 bool TopProcessComponent::Update(Value *key, Value *state, Value **values, size_t num_values, samson::KVWriter* const writer) {
-  if (key->CheckMapValue("app", "top")) {
+  if (key->CheckMapValue(Value::kAppField.c_str(), "top")) {
     UpdateAccumulator(key, state, values, num_values, writer);
     return true;
   }
 
-  if (key->CheckMapValue("app", "top.category")) {
+  if (key->CheckMapValue(Value::kAppField.c_str(), Value::kTopCategoryField.c_str())) {
     UpdateCategory(key, state, values, num_values, writer);
     return true;
   }
@@ -74,14 +74,14 @@ void TopProcessComponent::UpdateAccumulator(Value *key, Value *state, Value **va
     return;
   }
 
-  const char *category = key->GetStringFromMap("category");
-  const char *concept = key->GetStringFromMap("concept");
+  const char *category = key->GetStringFromMap(Value::kCategoryField.c_str());
+  const char *concept = key->GetStringFromMap(Value::kConceptField.c_str());
 
   if (!category || !concept) {
     return;   // Incorrect key for this process component
   }
-  double state_total = state->GetDoubleFromMap("total", 0);
-  size_t state_time = state->GetUint64FromMap("time");
+  double state_total = state->GetDoubleFromMap(Value::kTotalField.c_str(), 0);
+  size_t state_time = state->GetUint64FromMap(Value::kTimestampField.c_str());
 
   // Update time and total based on the new time stamp
   size_t current_time = ::time(NULL);
@@ -99,23 +99,23 @@ void TopProcessComponent::UpdateAccumulator(Value *key, Value *state, Value **va
   }
 
   // Reconstruct state
-  state->SetDoubleForMap("total", state_total);
-  state->SetUint64ForMap("time", state_time);
+  state->SetDoubleForMap(Value::kTotalField.c_str(), state_total);
+  state->SetUint64ForMap(Value::kTimestampField.c_str(), state_time);
   EmitState(key, state, writer);
 
   // Emit to be considered in the top list of categories
   ValueContainer key_emit_container;
   ValueContainer value_emit_container;
-  key_emit_container.value->SetStringForMap("app", "top.category");
-  key_emit_container.value->SetStringForMap("category", key->GetStringFromMap("category"));
+  key_emit_container.value->SetStringForMap(Value::kAppField.c_str(), Value::kTopCategoryField.c_str());
+  key_emit_container.value->SetStringForMap(Value::kCategoryField.c_str(), key->GetStringFromMap(Value::kCategoryField.c_str()));
   value_emit_container.value->copyFrom(state);
-  value_emit_container.value->SetStringForMap("concept", key->GetStringFromMap("concept"));
+  value_emit_container.value->SetStringForMap(Value::kConceptField.c_str(), key->GetStringFromMap(Value::kConceptField.c_str()));
   EmitFeedback(key_emit_container.value, value_emit_container.value, writer);
 }
 
 void TopProcessComponent::UpdateCategoryWithValue(Value *state, Value *new_value) {
-  double new_value_total = new_value->GetDoubleFromMap("total", 0);
-  const char *new_value_concept = new_value->GetStringFromMap("concept");
+  double new_value_total = new_value->GetDoubleFromMap(Value::kTotalField.c_str(), 0);
+  const char *new_value_concept = new_value->GetStringFromMap(Value::kConceptField.c_str());
 
   if (!new_value_concept) {
     return;   // Skip incorrect value
@@ -124,22 +124,22 @@ void TopProcessComponent::UpdateCategoryWithValue(Value *state, Value *new_value
 
   for (size_t p = 0; p < state->GetVectorSize(); ++p) {
     Value *vector_value = state->GetValueFromVector(p);
-    const char *vector_value_concept = vector_value->GetStringFromMap("concept");
+    const char *vector_value_concept = vector_value->GetStringFromMap(Value::kConceptField.c_str());
 
     if (strcmp(vector_value_concept, new_value_concept) == 0) {
       // Same concept, update element
       vector_value->copyFrom(new_value);
 
       // Recorder this element in the vector
-      while ((p > 0) && (state->GetValueFromVector(p)->GetDoubleFromMap("total", 0)
-          > state->GetValueFromVector(p - 1)->GetDoubleFromMap("total", 0))) {
+      while ((p > 0) && (state->GetValueFromVector(p)->GetDoubleFromMap(Value::kTotalField.c_str(), 0)
+          > state->GetValueFromVector(p - 1)->GetDoubleFromMap(Value::kTotalField.c_str(), 0))) {
         // Swap p and p-1 elements
         state->SwapVectorComponents(p, p - 1);
         --p;
       }
 
-      while ((p < (state->GetVectorSize() - 1)) && (state->GetValueFromVector(p)->GetDoubleFromMap("total", 0)
-          < state->GetValueFromVector(p + 1)->GetDoubleFromMap("total", 0))) {
+      while ((p < (state->GetVectorSize() - 1)) && (state->GetValueFromVector(p)->GetDoubleFromMap(Value::kTotalField.c_str(), 0)
+          < state->GetValueFromVector(p + 1)->GetDoubleFromMap(Value::kTotalField.c_str(), 0))) {
         // Swap p and p-1 elements
         state->SwapVectorComponents(p, p + 1);
         ++p;
@@ -153,8 +153,8 @@ void TopProcessComponent::UpdateCategoryWithValue(Value *state, Value *new_value
   for (size_t p = 0; p < state->GetVectorSize(); ++p) {
     Value *vector_value = state->GetValueFromVector(p);
 
-    // const char* vector_value_concept = vector_value->GetStringFromMap("concept");
-    double vector_value_total = vector_value->GetDoubleFromMap("total");
+    // const char* vector_value_concept = vector_value->GetStringFromMap(Value::kConceptField.c_str());
+    double vector_value_total = vector_value->GetDoubleFromMap(Value::kTotalField.c_str());
 
     if (new_value_total > vector_value_total) {
       // Insert here
@@ -187,7 +187,7 @@ void TopProcessComponent::UpdateCategory(Value *key, Value *state, Value **value
     return;
   }
 
-  const char *category = key->GetStringFromMap("category");
+  const char *category = key->GetStringFromMap(Value::kCategoryField.c_str());
 
   if (!category) {
     return;   // Incorrect key for this process component

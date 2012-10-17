@@ -64,7 +64,7 @@ au::StringVector data_get_queues_connected(gpb::Data *data, const std::string& q
 void data_remove_queue_connection(gpb::Data *data, const std::string& queue_source, const std::string& target_source);
 
 // Batch operation
-bool bath_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batch_operation);
+bool batch_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batch_operation);
 void remove_finished_operation(gpb::Data *data, bool all_flag);
 
 // Compute information for a queue in a set of ranges

@@ -55,6 +55,7 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
+# Disable unused but set variables - GCC 4.7+
 IF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable -m64 -std=c++0x")
     set (SOLARIS_LIBS "-lsocket -lnsl")

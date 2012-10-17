@@ -518,7 +518,7 @@ class SourceFunction_str : public SourceFunction {
 class SourceFunction_time : public SourceFunction {
   public:
     SourceFunction_time() :
-      SourceFunction("time", 0, 0) {}
+      SourceFunction(Value::kTimestampField, 0, 0) {}
 
     samson::system::Value *get(KeyValue kv) {
       value_container_.value->SetDouble(time(NULL));

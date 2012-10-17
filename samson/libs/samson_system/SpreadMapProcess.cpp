@@ -22,7 +22,7 @@
  *
  *  Definition of SpreadMapProcess class methods to emit
  *  all the fields from a system.Value key, under the Process paradigm.
- *  The inclusion of a reference field ("timestamp" usually) is optional
+ *  The inclusion of a reference field (Value::kTimestampField, "timestamp" usually) is optional
  *
  */
 
@@ -36,7 +36,7 @@ const std::string SpreadMapProcess::kNullDest("null");
 
 bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
                               samson::KVWriter* const writer) {
-  if (key->CheckMapValue("app", name().c_str())) {
+  if (key->CheckMapValue(Value::kAppField.c_str(), name().c_str())) {
     Value *additional_field_value = NULL;
     if (include_field_) {
       // If additional field, we must check it is present among keys
@@ -55,12 +55,12 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
     size_t keys_size = keys.size();
 
     for (size_t i = 0; (i < keys_size); ++i) {
-      if ((keys[i] == "app") || (include_field_ && (keys[i] == additional_field_))) {
+      if ((keys[i] == Value::kAppField) || (include_field_ && (keys[i] == additional_field_))) {
         continue;
       }
       new_key.SetAsMap();
-      new_key.AddValueToMap("app")->SetString(out_app_name_);
-      new_key.AddValueToMap("concept")->SetString(keys[i]);
+      new_key.AddValueToMap(Value::kAppField)->SetString(out_app_name_);
+      new_key.AddValueToMap(Value::kConceptField)->SetString(keys[i]);
 
       Value *p_value = key->GetValueFromMap(keys[i].c_str());
 
@@ -71,7 +71,7 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
         size_t value_vector_size = p_value->GetVectorSize();
         for (size_t j = 0; (j < value_vector_size); ++j) {
           new_value.SetAsMap();
-          new_value.AddValueToMap("item")->SetString(p_value->GetValueFromVector(j)->GetString());
+          new_value.AddValueToMap(Value::kItemField)->SetString(p_value->GetValueFromVector(j)->GetString());
           if (include_field_) {
             new_value.AddValueToMap(additional_field_)->copyFrom(additional_field_value);
           }
@@ -82,7 +82,7 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
         }
       } else {
         new_value.SetAsMap();
-        new_value.AddValueToMap("item")->SetString(p_value->GetString());
+        new_value.AddValueToMap(Value::kItemField)->SetString(p_value->GetString());
         if (include_field_) {
           new_value.AddValueToMap(additional_field_)->copyFrom(additional_field_value);
         }
@@ -95,14 +95,14 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
 
     if (out_def_name() != SpreadMapProcess::kNullDest) {
       // Just reemit key-value pairs to the default output stream
-      key->SetStringForMap("app", out_def_name().c_str());
+      key->SetStringForMap(Value::kAppField.c_str(), out_def_name().c_str());
       for (size_t j = 0; (j < num_values); j++) {
         EmitFeedback(key, values[j], writer);
       }
     }
     return true;
   } else {
-    // Input key-value not processed because this is not process "app"
+    // Input key-value not processed because this is not process Value::kAppField
     return false;
   }
 }

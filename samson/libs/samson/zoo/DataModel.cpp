@@ -444,14 +444,13 @@ void DataModel::ProcessSetStreamOperationPropertyCommand(au::SharedPointer<gpb::
     return;
   }
 
-  if( property == "paused")
-  {
-    if( value == "yes" || value == "y" )
+  if (property == "paused") {
+    if (value == "yes" || value == "y")
       stream_operation->set_paused(true);
-    else if( value == "no" || value == "n" )
+    else if (value == "no" || value == "n")
       stream_operation->set_paused(false);
     else
-      error->set( au::str("Unknown value %d for paused. Say yes or no" , value.c_str() )) ;
+      error->set(au::str("Unknown value %d for paused. Say yes or no", value.c_str()));
 
     return;
   }
@@ -697,7 +696,6 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForBatchOperations(co
 
 // All
 
-
 au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueuesWithBlocks(const Visualization& visualization) {
   // Get a copy of the current node
   au::SharedPointer<gpb::Data> data = getCurrentModel();
@@ -899,6 +897,10 @@ bool DataModel::CheckForAllOperationsFinished() {
   au::SharedPointer<gpb::Data> data = getCurrentModel();
 
   int operations_size = data->operations_size();
+
+  // TODO(@jges): Remove log message
+  LM_T(LmtDelilahComponent, ("operations.size(%d)", operations_size));
+
   for (int i = 0; i < operations_size; ++i) {
     const gpb::StreamOperation & stream_operation = data->operations(i);
     std::string name = stream_operation.name();
@@ -924,9 +926,11 @@ bool DataModel::CheckForAllOperationsFinished() {
   }
 
   operations_size = data->batch_operations_size();
+  // TODO(@jges): Remove log message
+  LM_T(LmtDelilahComponent, ("batch operations.size(%d)", operations_size));
   for (int i = 0; i < operations_size; ++i) {
     gpb::BatchOperation *batch_operation = data->mutable_batch_operations(i);
-    if ( gpb::bath_operation_is_finished(data.shared_object(), *batch_operation) == false) {
+    if ( gpb::batch_operation_is_finished(data.shared_object(), *batch_operation) == false) {
       return false;
     }
   }
@@ -940,13 +944,13 @@ void DataModel::ReviewBatchOperations(au::SharedPointer<gpb::Data> data, int ver
   for (int i = 0; i < operations_size; ++i) {
     gpb::BatchOperation *batch_operation = updated_data->mutable_batch_operations(i);
 
-    if( batch_operation->finished() )
+    if (batch_operation->finished()) {
       continue;
+    }
     
-    bool finished = gpb::bath_operation_is_finished( updated_data.shared_object() , *batch_operation );
+    bool finished = gpb::batch_operation_is_finished(updated_data.shared_object(), *batch_operation);
     
-    if ( finished ) {
-
+    if (finished) {
       // Set finished and move data
       batch_operation->set_finished(true);
       

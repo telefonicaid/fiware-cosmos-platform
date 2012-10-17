@@ -351,6 +351,8 @@ size_t DelilahConsole::runAsyncCommand(std::string command) {
 size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_instance) {
   std::string mainCommand = command_instance->main_command();
 
+  // TODO(@jges): Remove log messages
+  LM_M(("Received main_command:'%s'", mainCommand.c_str()));
   // Common command in all modes
   if (mainCommand == "set_mode") {
     std::string str_mode = command_instance->get_string_argument("mode");

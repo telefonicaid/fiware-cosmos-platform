@@ -90,7 +90,8 @@ void ProcessComponentsManager::Update(Value *key, Value *state, Value **values, 
   // Look into components
   // LM_M(("Loop for components, with components_.size():%lu", components_.size()));
   for (size_t i = 0, l = components_.size(); i < l; ++i) {
-    // LM_M(("Calling component[%d](%s)->Update() with key:'%s' and counter:%lu", i, components_[i]->name_.c_str(), key->str().c_str(), components_[i]->use_counter_));
+    // TODO(@jges): Remove log messages
+    LM_M(("Calling component[%d](%s)->Update() with key:'%s' and counter:%lu", i, components_[i]->name_.c_str(), key->str().c_str(), components_[i]->use_counter_));
     if (components_[i]->Update(key, state, values, num_values, writer)) {
       // LM_M(("Processed component[%d](%s)->Update()", i, components_[i]->name_.c_str()));
       EmitLog("debug", au::str("Processed this state with component %s", components_[i]->name_.c_str()), writer);

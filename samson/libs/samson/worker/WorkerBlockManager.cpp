@@ -60,7 +60,7 @@ void WorkerBlockManager::ReviewDistributionOperations() {
   for (size_t i = 0; i < remove_block_ids.size(); ++i) {
     size_t block_id = remove_block_ids[i];
 
-    // Notify to alert that this block is completelly distributed
+    // Notify to alert that this block is completely distributed
     engine::Notification *notification = new engine::Notification("notification_block_correctly_distributed");
     notification->environment().Set("block_id", block_id);
     engine::Engine::shared()->notify(notification);
@@ -213,16 +213,16 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
   }
 
   if (header->isTxt()) {
-    
-    // Rangom hash-group based on all my ranges
+    // Random hash-group based on all my ranges
     std::vector<KVRange> ranges = samson_worker_->worker_controller()->GetMyKVRanges();
     std::vector<size_t> all_hgs;
-    for (size_t i = 0 ; i < ranges.size() ; i++ )
-      for ( int j = ranges[i].hg_begin ; j < ranges[i].hg_end ; j++)
-        all_hgs.push_back( j );
+    for (size_t i = 0 ; i < ranges.size() ; i++ ) {
+      for ( int j = ranges[i].hg_begin_; j < ranges[i].hg_end_; j++) {
+        all_hgs.push_back(j);
+      }
+    }
     int hg =  all_hgs[ rand()%all_hgs.size()];
     header->range.set(hg, hg + 1);
-    
   } else if (header->isModule()) {
     // Make sure it is full range
     header->range.set(0, KVFILE_NUM_HASHGROUPS);
@@ -251,7 +251,7 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
                                                     queues);
   push_operations_.insert(push_operation);
 
-  LM_TODO(("If the push is ready to confirm distirbution, answer here"));
+  LM_TODO(("If the push is ready to confirm distribution, answer here"));
 
   return;
 }
@@ -303,9 +303,11 @@ void WorkerBlockManager::notify(engine::Notification *notification) {
 
 bool WorkerBlockManager::IsBlockBeingDistributed(size_t block_id) {
   au::map<size_t, DistributionOperation>::iterator it;
-  for (it = distribution_operations_.begin(); it != distribution_operations_.end(); ++it)
-    if (it->second->block_id() == block_id)
+  for (it = distribution_operations_.begin(); it != distribution_operations_.end(); ++it) {
+    if (it->second->block_id() == block_id) {
       return true;
+    }
+  }
   return false;
 }
 }

@@ -22,7 +22,7 @@
  *
  *  Declaration of SpreadMapProcess class to emit
  *  all the fields from a system.Value key, under the Process paradigm.
- *  The inclusion of a reference field ("timestamp" usually) is optional
+ *  The inclusion of a reference field (Value::kTimestampField, "timestamp" usually) is optional
  *
  */
 

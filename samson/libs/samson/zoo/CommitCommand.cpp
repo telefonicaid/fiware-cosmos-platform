@@ -91,8 +91,8 @@ std::string CommitCommandItem::str() const {
   output << block_size_ << ":";
   output << format_.keyFormat << ":";
   output << format_.valueFormat << ":";
-  output << range_.hg_begin << ":";
-  output << range_.hg_end << ":";
+  output << range_.hg_begin_ << ":";
+  output << range_.hg_end_ << ":";
   output << info_.size << ":";
   output << info_.kvs << ":";
   return output.str();

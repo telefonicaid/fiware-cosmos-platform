@@ -5,6 +5,9 @@ SET (SOURCES
 SET (HEADERS
 )
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+    set (SOLARIS_LIBS "-lsocket -lnsl")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 SET (STATIC_LIBS
   	 zookeeper_mt
      delilahLib

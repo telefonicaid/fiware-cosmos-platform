@@ -171,14 +171,13 @@ public:
       // Fetch the current max shared memory segment size
       samson::sysctl_value(const_cast<char *>(KERNEL_SHMMAX), &kernel_shmmax);
 
-      au::Singleton<samson::SamsonSetup>::shared()->resetToDefaultValues();
-      au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.memory", au::str("%lld", physical_ram));
-      au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.num_processess",
-                                                                         au::str("%d", no_cpus));
-      au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.shared_memory_size_per_buffer",
-                                                                         au::str("%ld", kernel_shmmax));
-      au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("stream.max_operation_input_size",
-                                                                         au::str("%ld", kernel_shmmax));
+      au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
+      au::Singleton<samson::SamsonSetup>::shared()->Set("general.memory", au::str("%lld", physical_ram));
+      au::Singleton<samson::SamsonSetup>::shared()->Set("general.num_processess",au::str("%d", no_cpus));
+      au::Singleton<samson::SamsonSetup>::shared()->Set("general.shared_memory_size_per_buffer"
+                                                        ,au::str("%ld", kernel_shmmax));
+      au::Singleton<samson::SamsonSetup>::shared()->Set("stream.max_operation_input_size"
+                                                        ,au::str("%ld", kernel_shmmax));
 
       writeWarningOnConsole(au::str("Properties general.memory                        = %lld", physical_ram));
       writeWarningOnConsole(au::str("Properties general.num_processess                = %d", no_cpus));

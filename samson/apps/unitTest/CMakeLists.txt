@@ -6,18 +6,21 @@ SET (SOURCES
 	TestClasses.h
 	TestClasses.cpp
 
+	# -----------------------------------------------------------
 	# AU library
+	# -----------------------------------------------------------
 
 	lib/au/fileTest.cpp
-	lib/au/STest.cpp
-	lib/au/DescriptorsTest.cpp
 	lib/au/EnvironmentTest.cpp
 	lib/au/CommandLineTest.cpp
-	lib/au/RateTest.cpp
-	lib/au/CounterCollectionTest.cpp
-	lib/au/StringComponentsTest.cpp
-	lib/au/stringTest.cpp
-	lib/au/TokenizerTest.cpp
+
+	# lib/au/string
+
+	lib/au/string/StringComponentsTest.cpp
+	lib/au/string/stringTest.cpp
+	lib/au/string/TokenizerTest.cpp
+	lib/au/string/STest.cpp
+	lib/au/string/DescriptorsTest.cpp
 
 	# AU SINGLETON 
 	lib/au/singleton/SingletonTest.cpp
@@ -37,6 +40,8 @@ SET (SOURCES
 
 	# AU STATISTICS LIBRARY
     lib/au/statistics/ActivityMonitorTest.cpp
+	lib/au/statistics/RateTest.cpp
+	lib/au/statistics/CounterCollectionTest.cpp
 
 	# AU MUTEX LIBRARY
     lib/au/mutex/TokenTest.cpp
@@ -48,7 +53,14 @@ SET (SOURCES
 	# AU tables library
 	lib/au/tables/TableTest.cpp	
 
+	# -----------------------------------------------------------
 	# ENGINE library
+	# -----------------------------------------------------------
+
+	# Common files
+	common_engine_test.h
+	common_engine_test.cpp
+
 	lib/engine/statusTest.cpp
 	lib/engine/EngineTest.cpp
 	lib/engine/BufferTest.cpp
@@ -69,11 +81,19 @@ SET (SOURCES
 	lib/engine/EngineElementTest.cpp
 	lib/engine/ReadFileManagerTest.cpp
 
+	# -----------------------------------------------------------
+	# ETXRA libraries
+	# -----------------------------------------------------------
+
 	# EXTRA C4 LIBRARY
 	lib/extra/c4/BoardTest.cpp 
 
 	# EXTRA COMSCORE LIBRAY
 	lib/extra/comscore/comscore.cpp
+
+    # -----------------------------------------------------------
+    # SAMSON libraries
+    # -----------------------------------------------------------
 
 	# SAMSON COMMON LIBRARY
 	lib/samson/common/SamsonSetupTest.cpp 
@@ -97,10 +117,6 @@ SET (SOURCES
 	lib/samson/delilah/common_delilah_test.h
 	lib/samson/delilah/common_delilah_test.cpp
 	lib/samson/delilah/delilahConsole_test.cpp	
-
-	# Common files
-	common_engine_test.h
-	common_engine_test.cpp
 
 )
 

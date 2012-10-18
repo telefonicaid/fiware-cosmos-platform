@@ -55,36 +55,19 @@ public:
     if (format_1 == "*") {
       return true;
     }
-
-
-
-
     if (format_2 == "*") {
       return true;
     }
-
-
-
-
     return ( format_1 == format_2 );
   }
-
+  
   bool isEqual(KVFormat otherFormat) {
     if (!compare_format(keyFormat, otherFormat.keyFormat)) {
       return false;
     }
-
-
-
-
     if (!compare_format(valueFormat, otherFormat.valueFormat)) {
       return false;
     }
-
-
-
-
-
     return true;
   }
 
@@ -92,10 +75,6 @@ public:
     if (!compare_format(keyFormat, otherFormat.keyFormat)) {
       return false;
     }
-
-
-
-
     return true;
   }
 
@@ -134,17 +113,9 @@ public:
     if (keyFormat != "*") {
       return false;
     }
-
-
-
-
     if (valueFormat != "*") {
       return false;
     }
-
-
-
-
     return true;
   }
 
@@ -159,6 +130,17 @@ public:
   bool isNonCommonKVFormat() {
     return isEqual(KVFormat("NonCommon", "NonCommon"));
   }
+  
+  static KVFormat KVFormatForTxt()
+  {
+    return KVFormat("txt","txt");
+  }
+  
+  static KVFormat KVFormatForModule()
+  {
+    return KVFormat("module","module");
+  }
+  
 };
 }
 

@@ -1,6 +1,6 @@
 
 
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 #include "gtest/gtest.h"
 
 TEST(au_Rate, basic) {

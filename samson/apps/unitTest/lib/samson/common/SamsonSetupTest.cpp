@@ -14,8 +14,7 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
 
   au::Singleton<samson::SamsonSetup>::shared()->AddItem("unit_test.samsonSetupTest"
                                                         , "initial"
-                                                        , "dummy for testing",
-                                                        samson::SetupItem_string);
+                                                        , "dummy for testing");
 
   EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined("unit_test.samsonSetupTest"),true)
   << "Error in isParameterDefined positive test";
@@ -38,7 +37,7 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
   EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined("non_existing_entry"),false)
   << "Error in isParameterDefined for non_existing_entry";
   
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("non_existing_entry"),"Error")
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("non_existing_entry"),"")
   << "Error in getValueForParameter for non_existing_entry";
 
   au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
@@ -54,7 +53,7 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
 
   au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
   
-  EXPECT_EQ(0, au::Singleton<samson::SamsonSetup>::shared()->Save()) << "Error in save SamsonSetup";
+  EXPECT_TRUE( au::Singleton<samson::SamsonSetup>::shared()->Save()) << "Error in save SamsonSetup";
 
   // Destroy singletons ( SamsonSetup )
   au::singleton_manager.DestroySingletons();

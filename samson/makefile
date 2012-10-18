@@ -393,6 +393,10 @@ xcode:
 	mkdir xcode_proj || true
 	cd xcode_proj; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=False -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) -G Xcode
 
+xcode_modules:
+	mkdir xcode_proj || true
+	cd xcode_proj; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) -G Xcode
+
 eclipse:	
 	./scripts/prepareEclipse
 

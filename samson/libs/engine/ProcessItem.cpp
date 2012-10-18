@@ -3,7 +3,7 @@
 #include "au/ExecesiveTimeAlarm.h"
 #include "au/ThreadManager.h"
 #include "au/mutex/TokenTaker.h"            // au::TokenTake
-#include "au/xml.h"                         // au::xml...
+#include "au/string/xml.h"                         // au::xml...
 
 #include "engine/Engine.h"                  // engine::Engine
 #include "engine/ProcessItem.h"             // Own interface

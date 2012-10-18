@@ -5,11 +5,11 @@
 #include <sstream>
 #include <string>
 
-#include "au/S.h"
-#include "au/string.h"                    // au::Format
+#include "au/string/S.h"
+#include "au/string/string.h"                    // au::Format
 #include "engine/ProcessItem.h"           // engine::ProcessItem
 #include "samson/common/MessagesOperations.h"
-#include "samson/isolated/ProcessIsolated.h"
+#include "samson/stream/ProcessIsolated.h"
 #include "samson/stream/Block.h"          // samson::Stream::Block
 #include "samson/stream/BlockInfo.h"      // struct BlockInfo
 #include "samson/stream/BlockList.h"      // stream::BlockList

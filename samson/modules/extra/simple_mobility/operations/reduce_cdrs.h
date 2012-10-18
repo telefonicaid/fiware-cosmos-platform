@@ -6,7 +6,7 @@
 #ifndef _H_SAMSON_simple_mobility_reduce_cdrs
 #define _H_SAMSON_simple_mobility_reduce_cdrs
 
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include <samson/module/samson.h>
 #include <samson/modules/mobility/Position.h>

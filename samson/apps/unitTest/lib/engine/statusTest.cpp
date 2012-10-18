@@ -68,10 +68,3 @@ TEST(commonTest, status) {
             samson::Error) << "Error in au_status GPB_WriteErrorSerializing";
   EXPECT_EQ(samson::au_status(au::GPB_WriteError), samson::Error) << "Error in au_status GPB_WriteError";
 }
-
-// Test  Visualization;
-TEST(commonTest, Visualization) {
-  EXPECT_EQ(samson::match("*", "string"), true) << "Error in match wildcard";
-  EXPECT_EQ(samson::match("[A-Z][A-Z]*", "TEST"), true) << "Error in match capital";
-  EXPECT_EQ(samson::match("[A-Z][A-Z]*", "test"), false) << "Error in match small";
-}

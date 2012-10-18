@@ -8,12 +8,12 @@
 #include "logMsg/logMsg.h"        // LM_X
 
 #include "au/ErrorManager.h"      // au::ErrorManager
-#include "au/Singleton.h"
+#include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/mutex/Token.h"       // au::Token
 #include "au/mutex/TokenTaker.h"  // au::TokenTake
-#include "au/string.h"            // au::xml_...
-#include "au/xml.h"               // au::xml...
+#include "au/string/string.h"            // au::xml_...
+#include "au/string/xml.h"               // au::xml...
 
 
 #include "Notification.h"         // engine::Notification

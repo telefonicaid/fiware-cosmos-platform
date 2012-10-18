@@ -1,7 +1,7 @@
 #include "samson/stream/Block.h"                                  // Own interface
 
 #include "au/mutex/TokenTaker.h"
-#include "au/S.h"
+#include "au/string/S.h"
 
 #include "engine/DiskManager.h"                     // notification_disk_operation_request_response
 #include "engine/DiskOperation.h"                   // engine::DiskOperation
@@ -264,7 +264,7 @@ size_t Block::block_id() {
 }
 
 KVFormat Block::getKVFormat() {
-  return header.getKVFormat();
+  return header.GetKVFormat();
 }
 
 size_t Block::getTime() {

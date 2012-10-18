@@ -1,7 +1,7 @@
 
 
 #include <stdio.h>
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include <samson/module/DataInstance.h>
 #include <samson/modules/system/Value.h>

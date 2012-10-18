@@ -14,7 +14,7 @@
 // For the operation traces
 #include "samson_system/Value.h"
 
-#include "au/string.h"
+#include "au/string/string.h"
 #include <stdint.h>
 
 namespace samson{

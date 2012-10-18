@@ -29,7 +29,7 @@
 
 #include <math.h>
 
-#include "au/string.h"
+#include "au/string/string.h"
 #include "samson_system/ValueContainer.h"
 
 namespace samson {

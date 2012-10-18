@@ -6,10 +6,10 @@
 
 #include <fcntl.h>
 
-#include "au/Pattern.h"
+#include "au/string/Pattern.h"
 #include "au/Status.h"
 #include "au/TemporalBuffer.h"
-#include "au/Tokenizer.h"
+#include "au/string/Tokenizer.h"
 #include "au/containers/SharedPointer.h"
 #include "au/containers/StringVector.h"
 #include "au/containers/vector.h"

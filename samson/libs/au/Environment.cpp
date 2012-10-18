@@ -1,5 +1,5 @@
 
-#include "au/string.h"          // au::split
+#include "au/string/string.h"          // au::split
 
 #include "Environment.h"        // OWn interface
 

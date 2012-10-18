@@ -24,7 +24,6 @@ SET (LIBS
     samsonNetwork
     samsonModule
     samsonStream
-    samsonIsolated
     samsonCommon
     samsonZoo
     zookeeper_mt

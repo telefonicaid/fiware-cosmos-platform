@@ -25,7 +25,7 @@
 #include "au/mutex/TokenTaker.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
-#include "au/string.h"
+#include "au/string/string.h"
 #include "au/tables/Table.h"
 #include "au/utils.h"
 

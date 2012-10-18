@@ -33,8 +33,8 @@
 #include <unistd.h>             // close
 
 #include "au/CommandLine.h"     // au::CommandLine
-#include "au/Cronometer.h"      // au::Cronometer
-#include "au/string.h"          // au::str()
+#include "au/statistics/Cronometer.h"      // au::Cronometer
+#include "au/string/string.h"          // au::str()
 #include "au/time.h"            // au::todatString()
 
 #include "logMsg/logMsg.h"
@@ -877,7 +877,7 @@ int main(int argC, const char *argV[]) {
 
   LM_V(("--------------------------------------------------------------------------------"));
   LM_V(("PushBuffer info:   %s", pushBuffer->rate_.str().c_str()));
-  LM_V(("SamsonClient info: %s", client.push_rate.str().c_str()));
+  LM_V(("SamsonClient info: %s", client.push_rate().str().c_str()));
   LM_V(("--------------------------------------------------------------------------------"));
 
 

@@ -7,7 +7,6 @@
 #include <list>
 #include <string>
 
-#include "au/console/ConsoleCode.h"
 #include "au/console/ConsoleEntry.h"
 #include "au/console/ConsoleEscapeSequence.h"
 

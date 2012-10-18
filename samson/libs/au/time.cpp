@@ -7,7 +7,7 @@
 #include <string>
 #include <sys/stat.h>   // stat(.)
 
-#include "au/string.h"
+#include "au/string/string.h"
 #include "au/time.h"
 
 

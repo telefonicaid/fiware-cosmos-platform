@@ -1,7 +1,7 @@
 
 
 #include "au/mutex/TokenTaker.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include "DataBase.h"  // Own interface
 #include "Select.h"

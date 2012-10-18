@@ -5,7 +5,7 @@
 #ifndef _H_AU_NETWORK_PACKET_READER_WRITER
 #define _H_AU_NETWORK_PACKET_READER_WRITER
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 
 #include "au/Status.h"
 #include "au/mutex/Token.h"

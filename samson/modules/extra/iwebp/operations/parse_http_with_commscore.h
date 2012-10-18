@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "au/ErrorManager.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include "comscore/SamsonComscoreDictionary.h"
 #include "samson_system/ValueContainer.h"

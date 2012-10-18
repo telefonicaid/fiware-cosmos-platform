@@ -9,7 +9,7 @@
 #include "engine/ProcessManager.h"
 
 #include "au/log/LogMain.h"
-#include "au/string.h"
+#include "au/string/string.h"
 #include "au/utils.h"
 
 

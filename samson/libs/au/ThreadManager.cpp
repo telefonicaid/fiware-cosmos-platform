@@ -4,7 +4,7 @@
 
 
 #include "ThreadManager.h"  // Own interface
-#include "au/S.h"
+#include "au/string/S.h"
 
 
 namespace au {

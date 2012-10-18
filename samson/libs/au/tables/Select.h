@@ -8,7 +8,7 @@
 #include "au/containers/StringVector.h"
 #include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
-#include "au/string.h"         // au::str(...)
+#include "au/string/string.h"         // au::str(...)
 #include "logMsg/logMsg.h"     // LM_W
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
@@ -18,7 +18,8 @@
 
 
 
-namespace au { namespace tables {
+namespace au {
+  namespace tables {
                class TableRow;
                class Table;
                class TreeItem;
@@ -109,6 +110,7 @@ public:
                    return au::str("SELECT TREE %s (%c)", name.c_str(), recursevely ? 'R' : ' ');
                  }
                };
-               } }  // end of namespace au::Tables
+               }
+}  // end of namespace au::Tables
 
 #endif  // ifndef _H_AU_TABLE_SELECT

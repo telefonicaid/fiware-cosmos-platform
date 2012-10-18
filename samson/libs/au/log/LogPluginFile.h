@@ -24,7 +24,7 @@
 #include "au/log/LogCommon.h"
 #include "au/log/LogPlugin.h"
 #include "au/network/SocketConnection.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 namespace au {
 class LogPluginFile : public LogPlugin {

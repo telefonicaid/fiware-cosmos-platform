@@ -3,7 +3,7 @@
 #ifndef _H_AU_ACTIVITY_MONITOR
 #define _H_AU_ACTIVITY_MONITOR
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 
 #include "au/containers/map.h"
 #include "au/mutex/Token.h"

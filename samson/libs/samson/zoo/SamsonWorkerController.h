@@ -81,7 +81,7 @@ class SamsonWorkerController : public engine::NotificationListener {
       std::vector<KVRange> ranges;
       int num_divisions = cluster_info_->process_units_size();
       for (int i = 0; i < num_divisions; ++i) {
-        ranges.push_back(rangeForDivision(i, num_divisions));
+        ranges.push_back(GetKVRangeForDivision(i, num_divisions));
       }
       return ranges;
     }

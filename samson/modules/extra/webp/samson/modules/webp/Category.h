@@ -6,7 +6,7 @@
 #ifndef _H_SAMSON_webp_Category
 #define _H_SAMSON_webp_Category
 
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include <samson/modules/webp/Category_base.h>
 

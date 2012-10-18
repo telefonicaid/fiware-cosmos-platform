@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 
 #include "engine/Buffer.h"
 #include "engine/Notification.h"

@@ -16,7 +16,6 @@ SET( STATIC_LIBS
      engine
      samsonModule
      samsonStream
-     samsonIsolated
      samsonNetwork
      samsonCommon
      samsonZoo

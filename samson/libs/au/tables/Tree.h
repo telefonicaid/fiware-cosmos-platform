@@ -29,7 +29,7 @@
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
-#include "au/string.h"         // au::str(...)
+#include "au/string/string.h"         // au::str(...)
 
 
 

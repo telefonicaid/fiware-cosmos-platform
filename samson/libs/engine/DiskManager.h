@@ -28,8 +28,8 @@
 #include "au/containers/ListMap.h"  // au::ListMap
 #include "au/mutex/Token.h"         // au::Token
 
-#include "au/OnOffMonitor.h"
-#include "au/Rate.h"
+#include "au/statistics/OnOffMonitor.h"
+#include "au/statistics/Rate.h"
 
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"   // engine::MemoryManager

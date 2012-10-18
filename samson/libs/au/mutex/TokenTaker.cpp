@@ -6,7 +6,7 @@
 
 #include "LockDebugger.h"               // LockDebugger
 #include "TokenTaker.h"                 // Own interface
-#include "au/Cronometer.h"              // au::Cronometer
+#include "au/statistics/Cronometer.h"              // au::Cronometer
 #include "au/ExecesiveTimeAlarm.h"
 #include "au/mutex/Token.h"             // au::Token
 

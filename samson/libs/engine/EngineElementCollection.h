@@ -8,7 +8,7 @@
 #include <set>                                   // std::set
 #include <string>
 
-#include "au/Cronometer.h"                       // au::Cronometer
+#include "au/statistics/Cronometer.h"                       // au::Cronometer
 #include "au/containers/list.h"                  // au::list
 #include "au/mutex/Token.h"                      // au::Token
 // NAMESPACE_BEGIN & }

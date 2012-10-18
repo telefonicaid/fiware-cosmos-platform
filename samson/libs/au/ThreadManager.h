@@ -36,11 +36,11 @@
 #include <string>       //  std::string
 #include <vector>       // std::vector
 
-#include "au/Cronometer.h"
-#include "au/Singleton.h"
+#include "au/statistics/Cronometer.h"
+#include "au/singleton/Singleton.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include "logMsg/logMsg.h"                                       // LM_M()
 
@@ -111,8 +111,6 @@ public:
     thread_function f,
     void *__restrict p
     );
-
-
 
   // Get name of all running threads
   au::StringVector getThreadNames();

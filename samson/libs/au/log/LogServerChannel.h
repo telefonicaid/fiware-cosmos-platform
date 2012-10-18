@@ -8,7 +8,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/Descriptors.h"
+#include "au/string/Descriptors.h"
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
 #include "au/network/FileDescriptor.h"

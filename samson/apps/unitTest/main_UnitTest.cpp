@@ -49,7 +49,7 @@ int logFd             = -1;
 
 int main(int argC, char **argV) {
   paConfig("usage and exit on any warning", (void *)true);
-//  paConfig("log to screen",                 (void*) "only errors");
+  paConfig("log to screen",                 (void*) "only errors");
   paConfig("log to screen",                 (void *)false);
   paConfig("log to file",                   (void *)true);
   paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
@@ -57,8 +57,7 @@ int main(int argC, char **argV) {
   paConfig("default value", "-logDir",      (void *)"/var/log/samson");
   paConfig("man author",                    "Samson team");
 
-
-  // Goyo. trying to get traces
+  // Parse incomming arguments without being alteres by google test library arguments
   if (( argC > 2 ) &&  (strcmp(argV[1], "-t") == 0)) {
     paParse(paArgs, 3, (char **)argV, 3, false);
   } else {

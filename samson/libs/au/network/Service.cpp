@@ -1,6 +1,6 @@
 
 
-#include "au/Singleton.h"
+#include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 
 #include "Service.h"  // Own interface

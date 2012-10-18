@@ -1,5 +1,27 @@
 
 # ---------------------------------------------------
+# setup directory
+# ---------------------------------------------------
+
+SET( SETUP_FILES
+setup/SetupItem.h
+setup/SetupItemCollection.h
+setup/SetupItem.cpp
+setup/SetupItemCollection.cpp
+)
+
+# ---------------------------------------------------
+# singleton directory
+# ---------------------------------------------------
+
+SET( SINGLETON_FILES
+singleton/Singleton.h
+singleton/SingletonManager.h
+singleton/Singleton.cpp
+singleton/SingletonManager.cpp
+)
+
+# ---------------------------------------------------
 # mutex directory
 # ---------------------------------------------------
 
@@ -18,8 +40,20 @@ mutex/TokenTaker.cpp
 # ---------------------------------------------------
 
 SET( STATISTICS_FILES
-statistics/ActivityMonitor.h
 statistics/ActivityMonitor.cpp
+statistics/ActivityMonitor.h
+statistics/CounterCollection.cpp
+statistics/CounterCollection.h
+statistics/Cronometer.cpp
+statistics/Cronometer.h
+statistics/CronometerSystem.cpp
+statistics/CronometerSystem.h
+statistics/OnOffMonitor.cpp
+statistics/OnOffMonitor.h
+statistics/ProcessStats.cpp
+statistics/ProcessStats.h
+statistics/Rate.cpp
+statistics/Rate.h
 )
 
 # ---------------------------------------------------
@@ -142,7 +176,6 @@ console/ConsoleEntry.h
 console/ConsoleCommand.h
 console/ConsoleCommandHistory.h
 console/ConsoleEscapeSequence.h
-console/ConsoleCode.h
 console/ConsoleAutoComplete.h
 console/CommandCatalogue.h
 
@@ -151,7 +184,6 @@ console/ConsoleEntry.cpp
 console/ConsoleCommand.cpp
 console/ConsoleCommandHistory.cpp
 console/ConsoleEscapeSequence.cpp
-console/ConsoleCode.cpp
 console/ConsoleAutoComplete.cpp
 console/CommandCatalogue.cpp
 )
@@ -162,8 +194,23 @@ console/CommandCatalogue.cpp
 # ---------------------------------------------------
 
 SET( STRING_FILES
-string/split.h
+string/Descriptors.cpp
+string/Descriptors.h
+string/Pattern.cpp
+string/Pattern.h
+string/S.h
+string/StringCollection.cpp
+string/StringCollection.h
+string/StringComponents.cpp
+string/StringComponents.h
+string/Tokenizer.cpp
+string/Tokenizer.h
 string/split.cpp
+string/split.h
+string/string.cpp
+string/string.h
+string/xml.cpp
+string/xml.h
 )
 
 # ---------------------------------------------------
@@ -171,38 +218,22 @@ string/split.cpp
 # ---------------------------------------------------
 
 SET (HEADERS
-S.h
 Status.h
-Singleton.h
 au.pb.h
 TemporalBuffer.h
-#charset.h
 utils.h
-Descriptors.h
 gpb.h
 Environment.h
 CommandLine.h
-Pattern.h
 ErrorManager.h
 varint.h
-Cronometer.h
-CronometerSystem.h
 ExecesiveTimeAlarm.h
-Rate.h
-CounterCollection.h
 file.h
 time.h
-string.h
-xml.h
 cpu.h
-ProcessStats.h
 ThreadManager.h
-StringCollection.h
 StructCollection.h
 Pool.h
-StringComponents.h
-Tokenizer.h
-OnOffMonitor.h
 daemonize.h
 )
 
@@ -210,47 +241,34 @@ SET (SOURCES
 Status.cpp
 au.pb.cc
 TemporalBuffer.cpp
-#charset.cpp
 utils.cpp
-Singleton.cpp
-Descriptors.cpp
 gpb.cpp
 CommandLine.cpp
-Pattern.cpp
 Environment.cpp
 ErrorManager.cpp
-Cronometer.cpp
-CronometerSystem.cpp
 ExecesiveTimeAlarm.cpp
-Rate.cpp
-CounterCollection.cpp
 file.cpp
 time.cpp
-string.cpp
-xml.cpp
 cpu.cpp
-ProcessStats.cpp
 ThreadManager.cpp
-StringCollection.cpp
 StructCollection.cpp
 Pool.cpp
-StringComponents.cpp
-Tokenizer.cpp
-OnOffMonitor.cpp
 daemonize.cpp
 )
 
 # Source groups to organize Xcode project
 # -----------------------------------------------------------------
 
-SOURCE_GROUP( mutex      FILES ${MUTEX_FILES} )
-SOURCE_GROUP( log        FILES ${LOG_FILES} )
-SOURCE_GROUP( statistics FILES ${STATISTICS_FILES} )
-SOURCE_GROUP( containers FILES ${CONTAINERS_FILES} )
-SOURCE_GROUP( tables     FILES ${TABLES_FILES} )
-SOURCE_GROUP( network    FILES ${NETWORK_FILES} )
-SOURCE_GROUP( console    FILES ${CONSOLE_FILES} )
-SOURCE_GROUP( string     FILES ${STRING_FILES} )
+SOURCE_GROUP( mutex         FILES ${MUTEX_FILES} )
+SOURCE_GROUP( singleton     FILES ${SINGLETON_FILES} )
+SOURCE_GROUP( setup         FILES ${SETUP_FILES} )
+SOURCE_GROUP( log           FILES ${LOG_FILES} )
+SOURCE_GROUP( statistics    FILES ${STATISTICS_FILES} )
+SOURCE_GROUP( containers    FILES ${CONTAINERS_FILES} )
+SOURCE_GROUP( tables        FILES ${TABLES_FILES} )
+SOURCE_GROUP( network       FILES ${NETWORK_FILES} )
+SOURCE_GROUP( console       FILES ${CONSOLE_FILES} )
+SOURCE_GROUP( string        FILES ${STRING_FILES} )
 
 # Generate 'au.pb.h' and 'au.pb.cc' from ''au.proto''
 add_custom_command (
@@ -266,22 +284,24 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS} ${MUTEX_FILES} ${LOG_FILES} ${STATISTICS_FILES}
+ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS} ${MUTEX_FILES} ${SINGLETON_FILES} ${SETUP_FILES}  ${LOG_FILES} ${STATISTICS_FILES}
 ${CONTAINERS_FILES} ${TABLES_FILES} ${NETWORK_FILES} ${CONSOLE_FILES}
 ${STRING_FILES})
 
 # Only needed for the "samson" project
 IF (CMAKE_PROJECT_NAME STREQUAL "Samson")
     INSTALL(TARGETS au ARCHIVE DESTINATION lib)
-    INSTALL(FILES ${HEADERS}          DESTINATION include/au)
-    INSTALL(FILES ${STATISTICS_FILES} DESTINATION include/au/statistics)
-    INSTALL(FILES ${MUTEX_FILES}      DESTINATION include/au/mutex)
-    INSTALL(FILES ${LOG_FILES}        DESTINATION include/au/log)
-    INSTALL(FILES ${CONTAINERS_FILES} DESTINATION include/au/containers)
-    INSTALL(FILES ${TABLES_FILES}     DESTINATION include/au/tables)
-    INSTALL(FILES ${NETWORK_FILES}    DESTINATION include/au/network)
-    INSTALL(FILES ${CONSOLE_FILES}    DESTINATION include/au/console)
-    INSTALL(FILES ${STRING_FILES}     DESTINATION include/au/string)
+    INSTALL(FILES ${HEADERS}              DESTINATION include/au)
+    INSTALL(FILES ${STATISTICS_FILES}     DESTINATION include/au/statistics)
+    INSTALL(FILES ${MUTEX_FILES}          DESTINATION include/au/mutex)
+    INSTALL(FILES ${SINGLETON_FILES}      DESTINATION include/au/singleton)
+    INSTALL(FILES ${SETUP_FILES}          DESTINATION include/au/setup)
+    INSTALL(FILES ${LOG_FILES}            DESTINATION include/au/log)
+    INSTALL(FILES ${CONTAINERS_FILES}     DESTINATION include/au/containers)
+    INSTALL(FILES ${TABLES_FILES}         DESTINATION include/au/tables)
+    INSTALL(FILES ${NETWORK_FILES}        DESTINATION include/au/network)
+    INSTALL(FILES ${CONSOLE_FILES}        DESTINATION include/au/console)
+    INSTALL(FILES ${STRING_FILES}         DESTINATION include/au/string)
 ENDIF (CMAKE_PROJECT_NAME STREQUAL "Samson")
 
 SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
@@ -296,7 +316,6 @@ SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 #ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )
 #TARGET_LINK_LIBRARIES(au_sleep_test ${LIBS} au lm pa )
 #INSTALL(TARGETS au_sleep_test        RUNTIME DESTINATION   bin)
-
 
 
 

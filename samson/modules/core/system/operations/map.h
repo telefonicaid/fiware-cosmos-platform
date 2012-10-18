@@ -5,7 +5,7 @@
 #ifndef _H_SAMSON_system_map
 #define _H_SAMSON_system_map
 
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include <samson/module/samson.h>
 

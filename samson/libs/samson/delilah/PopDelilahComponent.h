@@ -8,11 +8,11 @@
 #include <sstream>  // std::ostringstream
 #include <vector>  // std::vector
 
-#include "au/CounterCollection.h"   // au::CounterCollection
-#include "au/Cronometer.h"      // au::Cronometer
-#include "au/Descriptors.h"              // au::CounterCollection
+#include "au/statistics/CounterCollection.h"   // au::CounterCollection
+#include "au/statistics/Cronometer.h"      // au::Cronometer
+#include "au/string/Descriptors.h"              // au::CounterCollection
 #include "au/ErrorManager.h"  // au::ErrorManager
-#include "au/string.h"  // au::Format
+#include "au/string/string.h"  // au::Format
 
 #include "engine/DiskManager.h"     // engine::DiskManager
 #include "engine/Engine.h"               // engine::NotificationListener

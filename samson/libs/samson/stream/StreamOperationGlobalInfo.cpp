@@ -6,6 +6,7 @@
 #include "samson/common/gpb_operations.h"
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/SamsonSetup.h"
+#include "samson/common/KVRangeDivision.h"
 #include "samson/module/ModulesManager.h"
 #include "samson/stream/StreamOperationRangeInfo.h"
 #include "samson/stream/WorkerTask.h"

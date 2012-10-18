@@ -1,4 +1,4 @@
-#include "au/string.h"
+#include "au/string/string.h"
 #include "gtest/gtest.h"
 
 

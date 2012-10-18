@@ -12,7 +12,7 @@
 
 #include "au/ThreadManager.h"
 #include "au/daemonize.h"
-#include "au/string.h"                  // au::str()
+#include "au/string/string.h"                  // au::str()
 
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"

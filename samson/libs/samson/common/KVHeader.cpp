@@ -1,6 +1,6 @@
 
-#include "au/string.h"
-#include "au/xml.h"
+#include "au/string/string.h"
+#include "au/string/xml.h"
 
 #include "KVHeader.h"  // Own interface
 
@@ -9,8 +9,8 @@ void KVHeader::Init(KVFormat format, KVInfo _info) {            // Complete init
   magic_number =  4652783;
   worker_id = (size_t)-1;
 
-  setFormat(format);
-  setInfo(_info);
+  SetKVFormat(format);
+  info = _info;
 
   // Default initialization of the hash-group to full-files
   range.set(0, KVFILE_NUM_HASHGROUPS);
@@ -22,7 +22,7 @@ void KVHeader::Init(KVFormat format, KVInfo _info) {            // Complete init
 void KVHeader::InitForModule(size_t size) {
   magic_number =  4652783;
   worker_id = (size_t)-1;
-  setFormat(KVFormat("module", "module"));
+  SetKVFormat(KVFormat("module", "module"));
 
   // Full range to make sure it is in all workers
   range.set(0, KVFILE_NUM_HASHGROUPS);
@@ -37,7 +37,7 @@ void KVHeader::InitForModule(size_t size) {
 void KVHeader::InitForTxt(size_t size) {
   magic_number =  4652783;
   worker_id = (size_t)-1;
-  setFormat(KVFormat("txt", "txt"));
+  SetKVFormat(KVFormat("txt", "txt"));
 
   // Random hash-group
   int hg = rand() % KVFILE_NUM_HASHGROUPS;
@@ -50,54 +50,35 @@ void KVHeader::InitForTxt(size_t size) {
   time = ::time(NULL);
 }
 
-bool KVHeader::isTxt() {
-  return getKVFormat().isEqual(KVFormat("txt", "txt"));
+bool KVHeader::IsTxt() {
+  return KVFormat( keyFormat , valueFormat).isEqual(KVFormat("txt", "txt"));
 }
 
-bool KVHeader::isModule() {
-  return getKVFormat().isEqual(KVFormat("module", "module"));
+bool KVHeader::IsModule() {
+  return KVFormat( keyFormat , valueFormat).isEqual(KVFormat("module", "module"));
 }
 
-bool KVHeader::check_size(size_t total_size) {
+bool KVHeader::CheckTotalSize(size_t total_size) {
   return (total_size == ( sizeof(KVHeader) + info.size ));
 }
 
-void KVHeader::setHashGroups(uint32 _hg_begin, uint32 _hg_end) {
-  range.set(_hg_begin, _hg_end);
-}
-
-void KVHeader::setFormat(KVFormat format) {
+void KVHeader::SetKVFormat(KVFormat format) {
   snprintf(keyFormat, 100, "%s", format.keyFormat.c_str());
   snprintf(valueFormat, 100, "%s", format.valueFormat.c_str());
 }
 
-// Functions to set of get information from the header
-// ---------------------------------------------------------------
-
-void KVHeader::setInfo(KVInfo _info) {
-  info = _info;
-}
-
-uint32 KVHeader::getTotalSize() {
-  // Get the total size of the message including header, hash-group info and data
-  return sizeof(KVHeader) + sizeof(KVInfo) * getNumHashGroups() + info.size;
-}
-
-uint32 KVHeader::getNumHashGroups() {
-  return range.getNumHashGroups();
-}
 
 // Format operations
 // ---------------------------------------------------------------
 
-KVFormat KVHeader::getKVFormat() {
+KVFormat KVHeader::GetKVFormat() {
   return KVFormat(keyFormat, valueFormat);
 }
 
 // Check operations ( magic number and other conditions )
 // ---------------------------------------------------------------
 
-bool KVHeader::check() {
+bool KVHeader::Check() {
   return ( magic_number == 4652783);
 }
 
@@ -108,13 +89,4 @@ std::string KVHeader::str() const {
   return output.str();
 }
 
-void KVHeader::getInfo(std::ostringstream &output) {
-  au::xml_open(output, "kv_header");
-
-  getKVFormat().getInfo(output);
-  info.getInfo(output);
-  range.getInfo(output);
-
-  au::xml_close(output, "kv_header");
-}
 }

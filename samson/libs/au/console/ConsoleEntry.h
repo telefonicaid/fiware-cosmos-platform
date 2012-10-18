@@ -6,11 +6,8 @@
 #include <string>
 #include <termios.h>                // termios
 
-#include "au/console/ConsoleCode.h"
 #include "au/mutex/Token.h"
-
-
-#include "ConsoleEscapeSequence.h"
+#include "au/console/ConsoleEscapeSequence.h"
 
 namespace au {
 // Class used to get something from the entry

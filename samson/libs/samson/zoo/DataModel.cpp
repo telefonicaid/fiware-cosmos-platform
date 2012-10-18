@@ -8,6 +8,7 @@
 
 namespace samson {
 
+  // Default path in ZK for this information
 const std::string DataModel::kDefaultSamsonDataPath("/samson/data");
 
 // Constant strings for valid commands
@@ -483,9 +484,6 @@ void DataModel::ProcessUnsetStreamOperationPropertyCommand(au::SharedPointer<gpb
   return;
 }
 
-// All
-
-
 void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string command, int version,
                               au::ErrorManager *error) {
   au::CommandLine cmd;
@@ -818,7 +816,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueueRanges(const 
   std::vector<size_t> sizes;
   std::vector<size_t> kvs;
   for (int i = 0; i < num_ranges; ++i) {
-    ranges.push_back(rangeForDivision(i, num_ranges));
+    ranges.push_back(GetKVRangeForDivision(i, num_ranges));
     sizes.push_back(0);
     kvs.push_back(0);
   }
@@ -893,6 +891,7 @@ std::set<size_t> DataModel::get_my_block_ids(const std::vector<KVRange>& ranges)
 // method trying to discover if all operations have finished
 // (if no operations has pending data in its first input queue)
 bool DataModel::CheckForAllOperationsFinished() {
+  
   // Get a copy of the current version
   au::SharedPointer<gpb::Data> data = getCurrentModel();
 

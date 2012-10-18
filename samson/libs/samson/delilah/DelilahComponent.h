@@ -2,7 +2,7 @@
 #ifndef _H_DELILAH_COMPONENT
 #define _H_DELILAH_COMPONENT
 
-#include "au/CronometerSystem.h"
+#include "au/statistics/CronometerSystem.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
 
 #include "samson/network/Message.h"  // Message::MessageCode

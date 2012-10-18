@@ -1,7 +1,7 @@
 #ifndef _H_SAMSON_BLOCK_REQUEST
 #define _H_SAMSON_BLOCK_REQUEST
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 #include "au/containers/Uint64Vector.h"
 #include "samson/common/KVHeader.h"
 #include "samson/common/MessagesOperations.h"

@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "au/tables/Select.h"
-#include "au/xml.h"
+#include "au/string/xml.h"
 
 /*
  * #define AU_TABLE_H        "-"

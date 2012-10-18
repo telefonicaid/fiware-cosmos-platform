@@ -1,7 +1,7 @@
 #ifndef _H_SamsonPushBuffer_SamsonClient
 #define _H_SamsonPushBuffer_SamsonClient
 
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 #include "au/mutex/Token.h"
 #include <string>
 

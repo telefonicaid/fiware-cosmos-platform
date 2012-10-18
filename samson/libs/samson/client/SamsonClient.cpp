@@ -20,7 +20,7 @@
 #include "parseArgs/paConfig.h"
 
 #include "au/ThreadManager.h"
-#include "au/string.h"                  // au::Format
+#include "au/string/string.h"                  // au::Format
 
 #include "engine/DiskManager.h"         // engine::DiskManager
 #include "engine/Engine.h"              // engine::Engine
@@ -140,7 +140,7 @@ size_t SamsonClient::push(engine::BufferPointer buffer, const std::vector<std::s
     return 0;
   }
 
-  push_rate.Push(buffer->size());     // Update statistics
+  push_rate_.Push(buffer->size());     // Update statistics
   return delilah_->push_txt(buffer, queues);
 }
 

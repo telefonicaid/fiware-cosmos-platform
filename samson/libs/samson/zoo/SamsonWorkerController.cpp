@@ -563,7 +563,7 @@ int SamsonWorkerController::create_cluster_info(size_t version) {
   // TODO(@andreu): This should be revised to map ranges to workers coherently based on previous information
 
   for (int i = 0; i < num_units; ++i) {
-    KVRange range = rangeForDivision(i, num_units);
+    KVRange range = GetKVRangeForDivision(i, num_units);
 
     gpb::ProcessUnit *process_unit = cluster_info_->add_process_units();
     process_unit->set_hg_begin(range.hg_begin_);

@@ -6,6 +6,8 @@
 
 
 namespace au {
+  
+// Information about terminal
 int getTerminalColumns();
 void clearTerminalLine();
 

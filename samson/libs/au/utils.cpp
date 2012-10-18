@@ -1,14 +1,16 @@
+
+#include "au/utils.h"  // Own interface
+
 #include <iostream>
 #include <signal.h>
 #include <sstream>
 #include <stdio.h>
 #include <sys/ioctl.h>
-#include <termios.h>                // termios
+#include <termios.h>
 #include <unistd.h>
 
-#include "au/string.h"
+#include "au/string/string.h"
 
-#include "au/utils.h"  // Own interface
 
 namespace au {
 const char *valid_chars = "01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRTSUVXYZ";
@@ -76,9 +78,7 @@ void remove_return_chars(char *line) {
       return;
     }
 
-    if (line[l - 1] == '\n') {
-      line[l - 1] = '\0';
-    } else if (line[l - 1] == '\r') {
+    if ( (line[l - 1] == '\n') || (line[l - 1] == '\r')) {
       line[l - 1] = '\0';
     } else {
       return;

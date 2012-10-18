@@ -68,7 +68,7 @@ au::SharedPointer<gpb::Collection> WorkerCommandManager::GetCollectionOfWorkerCo
   au::map<size_t, WorkerCommand>::iterator it;
   for (it = workerCommands.begin(); it != workerCommands.end(); it++) {
     std::string command = it->second->command_;
-    if (match(visualization.pattern(), command)) {
+    if ( visualization.match(command)) {
       it->second->fill(collection->add_record(), visualization);
     }
   }

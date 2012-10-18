@@ -8,7 +8,7 @@
 
 #include "AUTockenizer.h"               // AUTockenizer
 #include "DataCreator.h"                // Own interface
-#include "au/string.h"
+#include "au/string/string.h"
 
 namespace samson {
 ModuleInformation *ModuleInformation::parse(std::string module_file, au::ErrorManager *error) {

@@ -888,7 +888,7 @@ void SamsonWorkerRest::process_synchronized(au::SharedPointer<au::network::RESTS
     size_t block_id = block.block_id();
     KVRange range = block.range(); // Implicit conversion
 
-    if (range.contains(hg)) {
+    if (range.Contains(hg)) {
       // This is the block
       stream::BlockPointer block_ptr = stream::BlockManager::shared()->GetBlock(block_id);
 

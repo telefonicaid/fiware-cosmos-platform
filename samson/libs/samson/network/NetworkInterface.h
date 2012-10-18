@@ -16,7 +16,7 @@
 #include "au/ErrorManager.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/Visualitzation.h"

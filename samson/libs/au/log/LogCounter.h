@@ -2,7 +2,7 @@
 #ifndef _H_AU_LOG_COUNTER
 #define _H_AU_LOG_COUNTER
 
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 #include "au/containers/SharedPointer.h"
 #include "au/containers/map.h"
 #include "au/log/Log.h"

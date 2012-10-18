@@ -2,7 +2,7 @@
 #ifndef AU_ExecesiveTimeAlarm_H_
 #define AU_ExecesiveTimeAlarm_H_
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 #include <string>
 
 namespace au {

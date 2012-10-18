@@ -21,7 +21,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/string.h"                  // au::str()
+#include "au/string/string.h"                  // au::str()
 
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
@@ -301,7 +301,7 @@ int main(int argc, const char *argv[]) {
   LM_V(("--------------------------------------------------------------------------------"));
   LM_V(("Stdin info:        %s", rate_stdin.str().c_str()));
   LM_V(("PushBuffer info:   %s", pushBuffer->rate_.str().c_str()));
-  LM_V(("SamsonClient info: %s", samson_client->push_rate.str().c_str()));
+  LM_V(("SamsonClient info: %s", samson_client->push_rate().str().c_str()));
   LM_V(("--------------------------------------------------------------------------------"));
 
 

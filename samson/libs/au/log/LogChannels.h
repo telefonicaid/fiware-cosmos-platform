@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "au/Pattern.h"
+#include "au/string/Pattern.h"
 #include "au/log/LogCommon.h"
 
 namespace au {

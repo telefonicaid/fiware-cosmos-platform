@@ -5,13 +5,7 @@
 #include <string>
 
 namespace samson {
-bool match(const std::string& pattern, const std::string& name) {
-  if (pattern == "*") {
-    return true;
-  }
-
-  return (::fnmatch(pattern.c_str(), name.c_str(), FNM_PATHNAME) == 0);
-}
+  
 
 void Visualization::set_flag(const std::string& name, bool value) {
   if (value) {

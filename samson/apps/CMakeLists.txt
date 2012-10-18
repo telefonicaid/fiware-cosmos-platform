@@ -1,18 +1,17 @@
 #
 # Command line tools that do not use QT or KDChart
 #
-ADD_SUBDIRECTORY(samsonSetup)
-ADD_SUBDIRECTORY(samsonWorker)
-ADD_SUBDIRECTORY(delilah)
-ADD_SUBDIRECTORY(samsonModuleParser)
 
+
+ADD_SUBDIRECTORY(delilah)
+ADD_SUBDIRECTORY(samsonWorker)
+ADD_SUBDIRECTORY(samsonSetup)
+ADD_SUBDIRECTORY(samsonModuleParser)
 ADD_SUBDIRECTORY(samsonCat)
 ADD_SUBDIRECTORY(samsonModuleCat)
-
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
 ADD_SUBDIRECTORY(samsonMemCheck)
-
 
 ADD_SUBDIRECTORY(streamConnector)
 

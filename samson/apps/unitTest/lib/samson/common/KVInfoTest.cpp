@@ -32,12 +32,6 @@ TEST(samson_common_KVInfo, test1) {
   info_1.set(100, 10);
   EXPECT_EQ(info_1.str(), "(  10.0 kvs in   100 bytes )") << "Error in KVInfo str() for set";
 
-  std::ostringstream output;
-  info_1.getInfo(output);
-  EXPECT_EQ(output.str(),
-            "<kv_info><kvs>10</kvs><size>100</size></kv_info>") << "Error in KVInfo getInfo";
-
-
   info_1.append(1, 1);
   EXPECT_EQ(info_1.str(), "(  11.0 kvs in   101 bytes )") << "Error in KVInfo str() for append";
   info_1.remove(2, 2);

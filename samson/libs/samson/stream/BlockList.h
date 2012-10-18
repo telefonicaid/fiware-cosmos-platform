@@ -15,7 +15,7 @@
 #include <ostream>                   // std::ostream
 #include <string>                    // std::string
 
-#include "au/Cronometer.h"      // au::cronometer
+#include "au/statistics/Cronometer.h"      // au::cronometer
 #include "au/containers/SharedPointer.h"
 #include "au/containers/list.h"      // au::list
 #include "au/containers/map.h"       // au::map

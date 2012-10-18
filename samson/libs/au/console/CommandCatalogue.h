@@ -11,7 +11,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/Tokenizer.h"
+#include "au/string/Tokenizer.h"
 #include "au/console/Console.h"
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/mutex/TokenTaker.h"

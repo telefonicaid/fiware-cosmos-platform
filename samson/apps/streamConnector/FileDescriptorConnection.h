@@ -1,7 +1,7 @@
 #ifndef _H_STREAM_CONNECTOR_CONNECTION_FileDescriptorConnection
 #define _H_STREAM_CONNECTOR_CONNECTION_FileDescriptorConnection
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 #include "au/mutex/TokenTaker.h"
 
 #include "au/network/NetworkListener.h"

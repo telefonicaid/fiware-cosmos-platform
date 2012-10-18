@@ -1,7 +1,7 @@
 
 #include "FileDescriptorConnection.h"
 #include "StreamConnector.h"
-#include "au/S.h"
+#include "au/string/S.h"
 
 #include "ChannelAdaptor.h"  // Own interface
 

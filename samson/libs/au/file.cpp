@@ -34,7 +34,7 @@
 #include <vector>
 
 #include "au/file.h"        // Own interface
-#include "au/string.h"
+#include "au/string/string.h"
 
 namespace au {
 size_t sizeOfFile(std::string fileName) {
@@ -225,7 +225,7 @@ Status CreateFullDirectory(std::string path) {
     size_t pos = path.size()-1;
     while ( (pos>0) && path[pos]=='/')
       pos--;
-    return path.substr( 0 , pos);
+    return path.substr( 0 , pos+1);
   }
 
 std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorManager& error) {

@@ -9,8 +9,8 @@
 #include "au/containers/SharedPointer.h"
 #include "au/ErrorManager.h"         /* Lock                            */
 #include "au/mutex/Token.h"          /* Lock                            */
-#include "au/Singleton.h"
-#include "au/string.h"               // au::xml_...
+#include "au/singleton/Singleton.h"
+#include "au/string/string.h"               // au::xml_...
 #include "samson/common/coding.h"    // ss:KVInfo
 #include "samson/common/samson.pb.h"  // samson::network::...
 #include "samson/common/status.h"

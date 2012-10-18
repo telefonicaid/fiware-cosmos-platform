@@ -207,12 +207,12 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
 
   KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
 
-  if (!header->check() || !header->range.isValid()) {
+  if (!header->Check() || !header->range.isValid()) {
     LM_W(("Push message with a non-valid buffer.Ignoring..."));
     return;
   }
 
-  if (header->isTxt()) {
+  if (header->IsTxt()) {
     // Random hash-group based on all my ranges
     std::vector<KVRange> ranges = samson_worker_->worker_controller()->GetMyKVRanges();
     std::vector<size_t> all_hgs;
@@ -223,7 +223,7 @@ void WorkerBlockManager::receive_push_block(size_t delilah_id
     }
     int hg =  all_hgs[ rand()%all_hgs.size()];
     header->range.set(hg, hg + 1);
-  } else if (header->isModule()) {
+  } else if (header->IsModule()) {
     // Make sure it is full range
     header->range.set(0, KVFILE_NUM_HASHGROUPS);
   } else {

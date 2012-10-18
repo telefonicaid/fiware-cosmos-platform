@@ -11,15 +11,14 @@
 #include <vector>
 
 #include "au/console/ConsoleAutoComplete.h"
-#include "au/console/ConsoleCode.h"
 #include "au/console/ConsoleCommand.h"
 #include "au/console/ConsoleCommandHistory.h"
 #include "au/console/ConsoleEscapeSequence.h"
 
 #include "au/containers/list.h"
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/string.h"
+#include "au/string/string.h"
 #include "au/ThreadManager.h"
 #include "au/utils.h"
 

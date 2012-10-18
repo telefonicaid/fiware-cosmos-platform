@@ -33,7 +33,7 @@
 #include "Table.h"
 
 #include "au/tables/pugi.h"
-#include "au/xml.h"
+#include "au/string/xml.h"
 
 
 namespace au {

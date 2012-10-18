@@ -10,7 +10,6 @@ SET( STATIC_LIBS
     samsonNetwork
     samsonModule
     samsonStream
-    samsonIsolated
     samsonCommon
     samson_system
     engine

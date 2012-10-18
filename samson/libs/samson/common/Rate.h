@@ -4,7 +4,7 @@
 
 
 
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 
 #include "samson/common/FullKVInfo.h"
 #include "samson/common/KVInfo.h"

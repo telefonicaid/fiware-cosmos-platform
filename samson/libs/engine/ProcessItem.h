@@ -21,7 +21,7 @@
 #include <sstream>
 #include <string>
 
-#include "au/CronometerSystem.h"
+#include "au/statistics/CronometerSystem.h"
 #include "au/Environment.h"             // au::Environment
 #include "au/ErrorManager.h"            // au::ErrorManager
 #include "au/mutex/Token.h"             // au::Token

@@ -30,7 +30,7 @@
 #include "au/containers/list.h"  // au::list
 #include "au/containers/map.h"  // au::map
 #include "au/mutex/Token.h"     // au::Token
-#include "au/string.h"          // au::Format
+#include "au/string/string.h"          // au::Format
 #include "engine/Buffer.h"      // samson::Buffer
 #include "engine/Engine.h"      // samson::Buffer
 

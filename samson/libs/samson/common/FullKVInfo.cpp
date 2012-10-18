@@ -1,7 +1,7 @@
 
 
-#include "au/string.h"
-#include "au/xml.h"
+#include "au/string/string.h"
+#include "au/string/xml.h"
 
 #include "FullKVInfo.h"  // Own interface
 

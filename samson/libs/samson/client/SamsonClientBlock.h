@@ -36,13 +36,13 @@ public:
     header = (KVHeader *)buffer->data();
 
     // Check header
-    if (!header->check()) {
+    if (!header->Check()) {
       error.set("Header check failed");
       return;
     }
 
     // Get the format from the header
-    format =  header->getKVFormat();
+    format =  header->GetKVFormat();
 
     size_t expected_size;
 

@@ -1,6 +1,6 @@
 
-#include "au/string.h"
-#include "au/xml.h"
+#include "au/string/string.h"
+#include "au/string/xml.h"
 
 #include "samson/module/Data.h"
 #include "samson/module/ModulesManager.h"
@@ -69,13 +69,6 @@ std::string KVInfo::str() const {
 
 bool KVInfo::isEmpty() {
   return ((kvs == 0) && (size == 0));
-}
-
-void KVInfo::getInfo(std::ostringstream& output) {
-  au::xml_open(output, "kv_info");
-  au::xml_simple(output, "kvs", kvs);
-  au::xml_simple(output, "size", size);
-  au::xml_close(output, "kv_info");
 }
 
 // Create the vector of KVInfo from block data
@@ -156,4 +149,5 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
   }
   return info;
 }
+
 }

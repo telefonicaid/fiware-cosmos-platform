@@ -13,7 +13,7 @@
 #include <string>               // std::string
 #include <vector>               // std::vector
 
-#include "au/string.h"
+#include "au/string/string.h"
 
 namespace samson {
 class AUToken {

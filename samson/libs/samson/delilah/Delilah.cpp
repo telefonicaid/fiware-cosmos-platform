@@ -9,7 +9,7 @@
 #include <map>
 
 #include "au/CommandLine.h"            // CommandLine
-#include "au/Cronometer.h"      // au::Cronometer
+#include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/mutex/TokenTaker.h"       // au::TokenTake
 #include "au/tables/Table.h"
 #include "engine/Buffer.h"      // engine::Buffer

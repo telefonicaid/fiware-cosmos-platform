@@ -4,7 +4,7 @@
 
 #include <string>
 
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
 #include "au/mutex/Token.h"

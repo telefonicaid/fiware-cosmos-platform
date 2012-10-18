@@ -144,7 +144,7 @@ void DefragTask::run() {
 
     // Check header for valid block
     KVHeader *header = reinterpret_cast<KVHeader *> (buffer->data());
-    if (!header->check()) {
+    if (!header->Check()) {
       error_.set("Not valid header in block reference");
       return;
     }

@@ -27,9 +27,9 @@
 #include <string>    // std::String
 #include <time.h>
 
-#include "au/Cronometer.h"
-#include "au/string.h"
-#include "au/xml.h"
+#include "au/statistics/Cronometer.h"
+#include "au/string/string.h"
+#include "au/string/xml.h"
 
 
 
@@ -47,11 +47,7 @@ public:
     if (s == 0) {
       return NULL;
     }
-
-
-
-
-
+    
     C *c = objects[ s - 1 ];
     objects.pop_back();
     return c;

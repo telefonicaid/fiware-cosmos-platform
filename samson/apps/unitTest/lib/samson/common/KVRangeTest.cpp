@@ -28,14 +28,9 @@ TEST(samson_common_KVRange, test1) {
   samson::KVRange range_2(1, 10);
   EXPECT_EQ(range_1.isValid(), true) << "Error in KVRange isValid() for initialised constructor";
   
-  std::ostringstream output;
-  range_2.getInfo(output);
-  EXPECT_EQ(output.str(),
-            "<kv_range><hg_begin>1</hg_begin><hg_end>10</hg_end></kv_range>") <<
-  "Error in KVRange getInfo";
   
   EXPECT_EQ(range_2.str(), "[00001 00010)") << "Error in KVRange str";
-  EXPECT_EQ(range_2.getNumHashGroups(), 9) << "Error in KVRange getNumHashGroups";
+  EXPECT_EQ(range_2.size(), 9) << "Error in KVRange getNumHashGroups";
   
   EXPECT_EQ(range_1.IsOverlapped(range_2), true) << "Error in KVRange overlap true";
   EXPECT_EQ(range_2.IsOverlapped(range_1), true) << "Error in KVRange overlap true";
@@ -43,17 +38,12 @@ TEST(samson_common_KVRange, test1) {
   EXPECT_EQ(range_3.IsOverlapped(range_1), true) << "Error in KVRange overlap true";
   EXPECT_EQ(range_3.IsOverlapped(range_2), false) << "Error in KVRange overlap false";
   
-  EXPECT_EQ(range_1.includes(range_2), true) << "Error in KVRange includes true";
-  EXPECT_EQ(range_2.includes(range_1), false) << "Error in KVRange includes false";
-  EXPECT_EQ(range_1.contains(15), true) << "Error in KVRange contains true";
-  EXPECT_EQ(range_1.contains(20), false) << "Error in KVRange contains false";
-  EXPECT_EQ(range_1.contains(range_2), true) << "Error in KVRange includes true";
-  EXPECT_EQ(range_2.contains(range_1), false) << "Error in KVRange includes false";
-  EXPECT_EQ(range_1.isValidForNumDivisions(10), true) << "Error in KVRange isValidForNumDivisions true";
-  EXPECT_EQ(range_1.isValidForNumDivisions(20000), false) << "Error in KVRange isValidForNumDivisions false";
-  EXPECT_EQ(range_1.getMaxNumDivisions(), 2048) << "Error in KVRange getMaxNumDivisions true";
-  EXPECT_EQ(range_2.getMaxNumDivisions(), 4096) << "Error in KVRange getMaxNumDivisions false";
-  
+  EXPECT_EQ(range_1.Includes(range_2), true) << "Error in KVRange includes true";
+  EXPECT_EQ(range_2.Includes(range_1), false) << "Error in KVRange includes false";
+  EXPECT_EQ(range_1.Contains(15), true) << "Error in KVRange contains true";
+  EXPECT_EQ(range_1.Contains(20), false) << "Error in KVRange contains false";
+  EXPECT_EQ(range_1.Contains(range_2), true) << "Error in KVRange includes true";
+  EXPECT_EQ(range_2.Contains(range_1), false) << "Error in KVRange includes false";
   
   EXPECT_EQ((range_1 < range_2), false) << "Error in KVRange operator < false";
   range_1.set(11, 20);

@@ -1,5 +1,5 @@
 
-#include "au/string.h"
+#include "au/string/string.h"
 #include "logMsg/logMsg.h"
 #include <stdlib.h>  // malloc
 
@@ -29,7 +29,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   // Copy & check header of this packet
   memcpy(&kv_file->header_, buffer->data(), sizeof(KVHeader));
-  if (!kv_file->header_.check()) {
+  if (!kv_file->header_.Check()) {
     error.set("KVHeader error: wrong magic number");
     return au::SharedPointer<KVFile>(NULL);
   }
@@ -40,7 +40,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
 
   // If txt content
-  if (kv_file->header_.isTxt()) {
+  if (kv_file->header_.IsTxt()) {
     kv_file->kvs = NULL;
     kv_file->info = NULL;
     kv_file->kvs_index = NULL;
@@ -160,24 +160,9 @@ KVFile::~KVFile() {
 }
 
 size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
-  /*
-   * if (strcmp(outputFormat, "plain") == 0)
-   * {
-   * output << "[" << time_string << "] " << key->str() << " " << value->str() << std::endl;
-   * }
-   * else if (strcmp(outputFormat, "json") == 0)
-   * {
-   * output << "[" << time_string << "] " << "{\"key\":" << key->strJSON() << ", \"value\":" << value->strJSON() << "}" << std::endl;
-   * }
-   * else if (strcmp(outputFormat, "xml") == 0)
-   * {
-   * output << "[" << time_string << "] " << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><key-value>\n<key>" << key->strXML() << "</key>\n<value>" << value->strXML() << "</value>\n</key-value>" << std::endl;
-   * }
-   *
-   */
 
 
-  if (header_.isTxt()) {
+  if (header_.IsTxt()) {
     size_t line_begin = 0;
     size_t num_lines = 0;
     while (true) {
@@ -230,4 +215,7 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
 KVHeader KVFile::header() {
   return header_;
 }
+  
+  
+
 }

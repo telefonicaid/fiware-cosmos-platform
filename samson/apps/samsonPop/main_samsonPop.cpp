@@ -20,7 +20,7 @@
 #include "logMsg/logMsg.h"
 #include "parseArgs/parseArgs.h"
 
-#include "au/string.h"                  // au::str()
+#include "au/string/string.h"                  // au::str()
 
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 

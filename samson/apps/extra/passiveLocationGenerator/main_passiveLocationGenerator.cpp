@@ -19,8 +19,8 @@
 
 
 #include "au/CommandLine.h"     // au::CommandLine
-#include "au/Cronometer.h"      // au::Cronometer
-#include "au/string.h"                  // au::str()
+#include "au/statistics/Cronometer.h"      // au::Cronometer
+#include "au/string/string.h"                  // au::str()
 #include "au/time.h"                    // au::todatString()
 
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient

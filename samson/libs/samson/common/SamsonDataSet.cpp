@@ -56,9 +56,9 @@ au::SharedPointer<SamsonDataSet> SamsonDataSet::create(const std::string& direct
 
   // Check common format
   std::vector< au::SharedPointer<SamsonFile> > items = samson_data_set->samson_files.items();
-  samson_data_set->format_ = items[0]->header().getKVFormat();
+  samson_data_set->format_ = items[0]->header().GetKVFormat();
   for (size_t i = 1; i < items.size(); i++) {
-    if (items[i]->header().getKVFormat() != samson_data_set->format_) {
+    if (items[i]->header().GetKVFormat() != samson_data_set->format_) {
       error.set("Different formats found in included files");
       return au::SharedPointer<SamsonDataSet>(NULL);
     }

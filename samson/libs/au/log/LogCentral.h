@@ -6,7 +6,7 @@
 
 #include <set>
 
-#include "au/Singleton.h"
+#include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/console/CommandCatalogue.h"
 #include "au/log/LogChannelFilter.h"

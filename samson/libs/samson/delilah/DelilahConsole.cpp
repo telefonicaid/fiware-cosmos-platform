@@ -16,12 +16,12 @@
 #include "au/CommandLine.h"                      // au::CommandLine
 #include "au/containers/SharedPointer.h"
 #include "au/containers/StringVector.h"
-#include "au/Descriptors.h"                      // au::Descriptors
+#include "au/string/Descriptors.h"                      // au::Descriptors
 #include "au/file.h"
 #include "au/log/LogCommon.h"
 #include "au/log/LogMain.h"
-#include "au/S.h"
-#include "au/string.h"                           // au::Format
+#include "au/string/S.h"
+#include "au/string/string.h"                           // au::Format
 #include "au/tables/pugi.h"                      // pugi::Pugi
 #include "au/tables/pugixml.hpp"                 // pugi:...
 #include "au/tables/Table.h"

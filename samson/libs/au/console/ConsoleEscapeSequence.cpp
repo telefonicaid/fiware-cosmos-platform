@@ -1,6 +1,6 @@
 
 #include "au/console/ConsoleEscapeSequence.h"  // Own interface
-#include "au/string.h"
+#include "au/string/string.h"
 
 namespace au {
 ConsoleEscapeSequence::ConsoleEscapeSequence() {

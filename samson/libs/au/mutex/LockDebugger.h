@@ -26,7 +26,7 @@
 #include <set>                   /* set                                      */
 #include <string>                /* std::string                              */
 
-#include "au/Singleton.h"
+#include "au/singleton/Singleton.h"
 
 namespace au {
 class Lock;

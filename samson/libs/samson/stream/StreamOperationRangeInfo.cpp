@@ -431,7 +431,7 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
       if (!range.IsOverlapped(range_))
         continue;
 
-      if (!range_.includes(range))
+      if (!range_.Includes(range))
         LM_X(1, ("Internal error. Block %lu (%s) in queue %s shoudl be contained in range %s"
                 , block_id
                 , range.str().c_str()

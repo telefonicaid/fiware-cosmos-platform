@@ -23,8 +23,6 @@
 
 #include "unitTest/common_engine_test.h"
 
-
-
 // Test size_t max_size();
 TEST(bufferTest, basic) {
   init_engine_test();

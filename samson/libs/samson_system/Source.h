@@ -5,10 +5,10 @@
 #include <sstream>
 #include <string>
 
-#include "au/StringComponents.h"
-#include "au/Tokenizer.h"
+#include "au/string/StringComponents.h"
+#include "au/string/Tokenizer.h"
 #include "au/containers/vector.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include "samson_system/KeyValue.h"
 #include "samson_system/Value.h"

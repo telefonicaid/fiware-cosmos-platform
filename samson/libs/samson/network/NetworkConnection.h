@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 

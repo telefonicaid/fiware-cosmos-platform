@@ -6,17 +6,12 @@
 #include <stdio.h>             /* sprintf */
 #include <string>              // std::string
 #include <sys/time.h>          // struct timeval
-
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/containers/map.h"  // au::map
 #include "au/mutex/Token.h"
-#include "au/string.h"         // au::str(...)
-
-
-
-
+#include "au/string/string.h"         // au::str(...)
 #include "au/tables/Collection.h"
 #include "au/tables/Table.h"
 #include "au/tables/Tree.h"

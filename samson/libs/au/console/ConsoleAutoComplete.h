@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "au/string.h"
+#include "au/string/string.h"
 
 namespace au {
 class ConsoleAutoCompleteAlternative {

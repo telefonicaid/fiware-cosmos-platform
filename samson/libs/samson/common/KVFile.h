@@ -60,6 +60,7 @@ class KVFile {
     DataInstance *key_;
     DataInstance *value_;
 };
+    
 }
 
 #endif  // ifndef _H_SAMSON_KVFILE

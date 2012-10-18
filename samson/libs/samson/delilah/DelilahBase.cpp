@@ -9,7 +9,7 @@
 
 #include "au/containers/StringVector.h"
 #include "au/mutex/TokenTaker.h"      // au::TokenTaker
-#include "au/xml.h"             // au::xml...
+#include "au/string/xml.h"             // au::xml...
 
 #include "au/tables/Select.h"
 

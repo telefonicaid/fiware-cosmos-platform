@@ -3,6 +3,7 @@ SET (HEADERS
 	KVInfo.h
 	FullKVInfo.h
 	KVRange.h
+	KVRangeDivision.h
 	KVHeader.h
 	KVFile.h
 	Rate.h	
@@ -28,6 +29,7 @@ SET (SOURCES
 	KVInfo.cpp
 	FullKVInfo.cpp
 	KVRange.cpp
+    KVRangeDivision.cpp 
 	KVHeader.cpp
 	KVFile.cpp
     Rate.cpp

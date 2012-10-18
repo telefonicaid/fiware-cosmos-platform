@@ -14,12 +14,12 @@
 #ifndef _H_AU_SOCKET_CONNECTION
 #define _H_AU_SOCKET_CONNECTION
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 #include "au/containers/SharedPointer.h"
 #include "au/Status.h"
 #include "au/mutex/Token.h"
 #include "au/network/FileDescriptor.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 /*****************************************************************************
 *

@@ -2,7 +2,7 @@
 
 #include <sys/stat.h>                  // mkdir
 
-#include "au/S.h"
+#include "au/string/S.h"
 
 #include "engine/MemoryManager.h"      // samson::MemoryManager
 #include "engine/Notification.h"       // engine::Notification

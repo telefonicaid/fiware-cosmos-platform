@@ -1,10 +1,10 @@
 
 
-#include "au/S.h"
-#include "au/Singleton.h"
+#include "au/string/S.h"
+#include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/network/RESTServiceCommand.h"
-#include "au/string.h"
+#include "au/string/string.h"
 #include "parseArgs/paConfig.h"
 
 #include "Channel.h"

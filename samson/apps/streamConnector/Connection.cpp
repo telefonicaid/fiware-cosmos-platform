@@ -4,7 +4,7 @@
 #include "BufferProcessor.h"
 #include "Connection.h"  // Own interface
 #include "StreamConnector.h"
-#include "au/Singleton.h"
+#include "au/singleton/Singleton.h"
 #include "au/file.h"
 
 extern char working_directory[1024];

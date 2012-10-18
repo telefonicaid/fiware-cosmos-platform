@@ -9,7 +9,7 @@
 #include "au/log/LogMain.h"
 #include "au/ErrorManager.h"
 #include "au/containers/map.h"                  // au::map
-#include "au/string.h"                          // au::Format
+#include "au/string/string.h"                          // au::Format
 #include "au/utils.h"
 #include "au/log/LogCommon.h"
 #include "au/log/LogCentral.h"

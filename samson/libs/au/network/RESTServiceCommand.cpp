@@ -1,6 +1,6 @@
 #include "au/network/RESTServiceCommand.h"  // Own interface
 
-#include "au/xml.h"
+#include "au/string/xml.h"
 
 namespace au {
 namespace network {

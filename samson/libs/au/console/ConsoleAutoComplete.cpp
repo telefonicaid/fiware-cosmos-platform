@@ -5,7 +5,7 @@
 #include <sys/types.h>
 
 #include "au/file.h"
-#include "au/string.h"
+#include "au/string/string.h"
 #include "au/utils.h"
 
 #include "au/console/ConsoleAutoComplete.h"  // Own interface

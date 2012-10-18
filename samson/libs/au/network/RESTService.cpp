@@ -1,7 +1,7 @@
 
 #include "RESTService.h"  // Own interface
 #include "RESTServiceCommand.h"
-#include "au/xml.h"
+#include "au/string/xml.h"
 
 
 namespace au {

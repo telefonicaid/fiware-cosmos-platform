@@ -13,11 +13,11 @@
 #ifndef _H_AU_FILE_DESCRIPTOR
 #define _H_AU_FILE_DESCRIPTOR
 
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 #include "au/Status.h"
 #include "au/ThreadManager.h"
 #include "au/mutex/Token.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 /*****************************************************************************
 *

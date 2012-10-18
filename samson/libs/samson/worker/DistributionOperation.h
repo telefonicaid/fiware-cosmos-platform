@@ -5,7 +5,7 @@
 #include <string>
 
 #include "au/containers/Uint64Vector.h"
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 
 #include "samson/common/KVHeader.h"
 #include "samson/common/MessagesOperations.h"

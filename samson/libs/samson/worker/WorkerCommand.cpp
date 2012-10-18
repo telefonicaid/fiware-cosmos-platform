@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "au/ErrorManager.h"
-#include "au/string.h"
+#include "au/string/string.h"
 #include "au/utils.h"
 
 #include "engine/DiskManager.h"
@@ -203,24 +203,9 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
     return;
   }
 
-  // Command over data model
-  // ls
-  // push_queue
-  // set_queue_property
-  // unset_queue_property
-  // add_stream_operation
-  // rm_stream_operation
-  // set_stream_operation_property
-  // unset_stream_operation_property
-  // add_queue_connection ( pending )
-  // rm_queue_connection ( pending )
-
-  // TODO(@jges): review list of commands
-
+  // If operation can be process by DataMode, go ahead
   if (samson_worker_->data_model()->isValidCommand(main_command)) {
-    std::string caller = au::str("Command %s from delilah %s", main_command.c_str(),
-                                 au::code64_str(delilah_id_).c_str());
-
+    std::string caller = au::str("Command %s from delilah %s",main_command.c_str(),au::code64_str(delilah_id_).c_str());
     samson_worker_->data_model()->Commit(caller, command, error);
     return;
   }

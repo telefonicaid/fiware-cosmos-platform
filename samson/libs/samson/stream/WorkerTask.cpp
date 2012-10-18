@@ -1,7 +1,7 @@
 #include "samson/stream/WorkerTask.h"      // Own interface
 #include "samson/common/coding.h"
 #include "samson/common/KVInputVector.h"
-#include "samson/isolated/ProcessWriter.h"
+#include "samson/stream/ProcessWriter.h"
 #include "samson/stream/Block.h"              // samson::Stream::Block
 #include "samson/stream/BlockManager.h"       // samson::stream::BlockManager
 #include "samson/stream/BlockReaderCollection.h"
@@ -253,7 +253,7 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
 
     // Check header for valid block
     KVHeader *header = (KVHeader *) buffer->data();
-    if (!header->check()) {
+    if (!header->Check()) {
       setUserError(("Not valid header in block refernce"));
       return;
     }

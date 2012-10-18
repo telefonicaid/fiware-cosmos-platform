@@ -27,7 +27,7 @@
 #include <string>                  // std::string
 
 #include "au/mutex/TokenTaker.h"   // au::TokenTaker
-#include "au/xml.h"                // au::xml...
+#include "au/string/xml.h"                // au::xml...
 
 #include "engine/Buffer.h"         // samson::Buffer
 

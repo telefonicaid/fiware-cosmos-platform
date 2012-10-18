@@ -7,7 +7,8 @@ SET (SOURCES
 	TestClasses.cpp
 
 	# AU library
-	lib/au/SingletonTest.cpp
+
+	lib/au/fileTest.cpp
 	lib/au/STest.cpp
 	lib/au/DescriptorsTest.cpp
 	lib/au/EnvironmentTest.cpp
@@ -17,6 +18,9 @@ SET (SOURCES
 	lib/au/StringComponentsTest.cpp
 	lib/au/stringTest.cpp
 	lib/au/TokenizerTest.cpp
+
+	# AU SINGLETON 
+	lib/au/singleton/SingletonTest.cpp
 
 	# AU CONTAINERS LIBRARY
 	lib/au/containers/SharedPointerTest.cpp
@@ -36,6 +40,10 @@ SET (SOURCES
 
 	# AU MUTEX LIBRARY
     lib/au/mutex/TokenTest.cpp
+
+	# AU setup
+	lib/au/setup/SetupItemTest.cpp
+	lib/au/setup/SetupItemCollectionTest.cpp
 
 	# AU tables library
 	lib/au/tables/TableTest.cpp	
@@ -61,41 +69,38 @@ SET (SOURCES
 	lib/engine/EngineElementTest.cpp
 	lib/engine/ReadFileManagerTest.cpp
 
+	# EXTRA C4 LIBRARY
+	lib/extra/c4/BoardTest.cpp 
 
+	# EXTRA COMSCORE LIBRAY
+	lib/extra/comscore/comscore.cpp
 
 	# SAMSON COMMON LIBRARY
 	lib/samson/common/SamsonSetupTest.cpp 
 	lib/samson/common/SamsonFileTest.cpp
 	lib/samson/common/KVInfoTest.cpp
 	lib/samson/common/FullKVInfoTest.cpp
+	lib/samson/common/KVHeaderTest.cpp
 	lib/samson/common/KVRangeTest.cpp
+	lib/samson/common/KVRangeDivisionTest.cpp
 
-
-	# SAMSOM WORKER library
+	# SAMSOM WORKER LIBRARY
 	lib/samson/worker/SamsonWorkerTest.cpp
 
-  #SAMSON SYSTEM library
-  lib/samson_system/ValueTest.cpp
+    #SAMSON SYSTEM LIBRARY
+    lib/samson_system/ValueTest.cpp
 
-	#Common files
+	#SAMSON STREAM library
+	lib/samson/stream/SharedMemoryManagerTest.cpp
+
+	#SAMSON DELILAH LIBRARY
+	lib/samson/delilah/common_delilah_test.h
+	lib/samson/delilah/common_delilah_test.cpp
+	lib/samson/delilah/delilahConsole_test.cpp	
+
+	# Common files
 	common_engine_test.h
 	common_engine_test.cpp
-
-	#comscore library
-	comscore/comscore.cpp
-	
-
-	#delilah library
-	delilah/common_delilah_test.h
-	delilah/common_delilah_test.cpp
-	delilah/delilahConsole_test.cpp
-	
-	#samson/client library
-	samson/client/SamsonClient_test.cpp
-
-	#samon/isolated library
-	samson/isolated/SharedMemoryManager_test.cpp
-
 
 )
 
@@ -130,7 +135,6 @@ SET (STATIC_LIBS
      zookeeper_mt
      samson_comscore    
      samsonClient
-     samsonIsolated
      au
      xmlmarkup
      xmlparser  
@@ -142,6 +146,7 @@ SET (STATIC_LIBS
 # Include directories
 # ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
+include_directories("${PROJECT_SOURCE_DIR}/libs/extra")
 include_directories("${PROJECT_SOURCE_DIR}/apps")
 include_directories("${PROJECT_SOURCE_DIR}/extern")
 include_directories("/usr/include")

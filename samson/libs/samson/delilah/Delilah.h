@@ -17,12 +17,12 @@
 #include "logMsg/logMsg.h"                   // lmInit, LM_*
 
 #include "au/CommandLine.h"                  // au::CommandLine
-#include "au/CounterCollection.h"            // au::CounterCollection
-#include "au/Cronometer.h"      // au::Cronometer
+#include "au/statistics/CounterCollection.h"            // au::CounterCollection
+#include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/containers/map.h"               // au::map
 #include "au/mutex/Token.h"                  // au::Token
 #include "au/mutex/TokenTaker.h"             // au::TokenTaker
-#include "au/string.h"                       // au::Table
+#include "au/string/string.h"                       // au::Table
 
 #include "au/tables/pugi.h"                  // pugi::...
 

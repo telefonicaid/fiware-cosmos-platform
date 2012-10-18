@@ -3,11 +3,11 @@
 #include <time.h>
 
 #include "au/containers/SharedPointer.h"
-#include "au/Descriptors.h"       // au::Descriptors
+#include "au/string/Descriptors.h"       // au::Descriptors
 #include "au/mutex/TokenTaker.h"  // au::TokenTaker...
-#include "au/Singleton.h"
+#include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
-#include "au/xml.h"               // au::xml...
+#include "au/string/xml.h"               // au::xml...
 
 #include "engine/DiskManager.h"   // Own interface
 #include "engine/DiskOperation.h"  // engine::DiskOperation

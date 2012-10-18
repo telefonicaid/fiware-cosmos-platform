@@ -26,7 +26,7 @@
 #include <sstream>         // std::ostringstream
 #include <stdlib.h>
 
-#include "au/S.h"
+#include "au/string/S.h"
 
 namespace au {
 class Environment {

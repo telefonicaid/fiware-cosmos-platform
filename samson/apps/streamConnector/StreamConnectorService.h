@@ -11,7 +11,7 @@
 #include "au/containers/map.h"
 #include "au/containers/vector.h"
 #include "au/mutex/Token.h"
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include "engine/Buffer.h"
 

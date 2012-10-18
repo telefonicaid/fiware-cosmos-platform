@@ -19,7 +19,7 @@
 #include "au/Environment.h"                 // au::Environment
 #include "au/ErrorManager.h"                // au::ErrorManager
 #include "au/containers/map.h"              // au::map
-#include "au/string.h"                      // au::Format
+#include "au/string/string.h"                      // au::Format
 
 #include "engine/Buffer.h"                  // engine::Buffer
 #include "engine/NotificationListener.h"    // engine::NotificationListener

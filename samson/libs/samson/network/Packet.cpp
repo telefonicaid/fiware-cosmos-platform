@@ -6,7 +6,7 @@
  *
  */
 
-#include "au/string.h"
+#include "au/string/string.h"
 
 #include "Packet.h"             // Own interface
 

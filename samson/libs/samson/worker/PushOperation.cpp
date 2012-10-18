@@ -83,7 +83,7 @@ void PushOperation::commit() {
   // Prepare commit command
   CommitCommand commit_command;
   for (size_t i = 0; i < queues_.size(); i++) {
-    commit_command.AddBlock(queues_[i], block_id_, block_size_, header.getKVFormat(), header.range, header.info);
+    commit_command.AddBlock(queues_[i], block_id_, block_size_, header.GetKVFormat(), header.range, header.info);
   }
   std::string command = commit_command.GetCommitCommand();
 

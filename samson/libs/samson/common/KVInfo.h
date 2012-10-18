@@ -16,12 +16,12 @@ namespace samson {
 ****************************************************************/
 
 struct KVInfo {
+  
   uint32 size;                  // Total size
   uint32 kvs;                   // Total number of kvs
 
-
-  KVInfo(uint32 _size, uint32 _kvs);
   KVInfo();
+  KVInfo(uint32 _size, uint32 _kvs);
 
   void set(uint32 _size, uint32 _kvs);
   void clear();
@@ -30,13 +30,11 @@ struct KVInfo {
   bool canAppend(KVInfo other);
   void remove(uint32 _size, uint32 _kvs);
   void remove(KVInfo other);
-  std::string str() const;
   bool isEmpty();
-  void getInfo(std::ostringstream& output);
+  std::string str() const;
   
 };
 
-  
   
 // Create an allocated vector of KVInfo with information for all hash-groups
 KVInfo *createKVInfoVector(char *data, au::ErrorManager *error);

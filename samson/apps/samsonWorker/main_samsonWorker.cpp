@@ -43,8 +43,8 @@
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/samsonVars.h"
 #include "samson/common/samsonVersion.h"
-#include "samson/isolated/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
-#include "samson/isolated/SharedMemoryManager.h"
+#include "samson/stream/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
+#include "samson/stream/SharedMemoryManager.h"
 #include "samson/module/ModulesManager.h"
 #include "samson/network/WorkerNetwork.h"
 #include "samson/stream/BlockManager.h"

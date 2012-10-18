@@ -46,8 +46,13 @@ class CommitCommandItem {
      */
 
   public:
-    CommitCommandItem(const std::string& command, const std::string& queue, size_t block_id, size_t block_size,
-                      const KVFormat& format, const KVRange& range, const KVInfo& info);
+    CommitCommandItem(const std::string& command
+                      , const std::string& queue
+                      , size_t block_id
+                      , size_t block_size
+                      , const KVFormat& format
+                      , const KVRange& range
+                      , const KVInfo& info);
 
     // Parse a provided command to generate a new item
     static CommitCommandItem *create_item(const std::string& command, au::ErrorManager *error);
@@ -66,10 +71,9 @@ class CommitCommandItem {
 };
 
 class CommitCommand {
-    // Vector of items
-    au::vector<CommitCommandItem> items_;
 
   public:
+  
     CommitCommand();
     ~CommitCommand();
 
@@ -87,6 +91,12 @@ class CommitCommand {
 
     // Accessor
     const au::vector<CommitCommandItem>& items();
+  
+private:
+  
+  // Vector of items
+  au::vector<CommitCommandItem> items_;
+
 };
 }
 

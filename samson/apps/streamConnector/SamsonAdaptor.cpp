@@ -104,7 +104,7 @@ void SamsonConnection::receive_buffer_from_queue(std::string queue, engine::Buff
   // Transformation of buffer
   samson::KVHeader *header = (samson::KVHeader *)buffer->data();
 
-  if (header->isTxt()) {
+  if (header->IsTxt()) {
     // Push the new buffer
     pushInputBuffer(buffer);
   } else {

@@ -109,7 +109,7 @@ void SamsonFile::printHeader(std::ostream& output) {
 }
 
 void SamsonFile::printHashGroups(std::ostream &output) {
-  if (header().isTxt()) {
+  if (header().IsTxt()) {
     output << "No hash-groups in txt packet\n";
     return;
   }

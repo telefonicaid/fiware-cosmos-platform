@@ -1,7 +1,7 @@
 #ifndef _H_STREAM_CONNECTOR_BLOCK_PROCESSOR
 #define _H_STREAM_CONNECTOR_BLOCK_PROCESSOR
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 #include "engine/Buffer.h"
 
 

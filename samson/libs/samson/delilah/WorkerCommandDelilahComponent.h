@@ -7,7 +7,7 @@
 
 #include "au/console/CommandCatalogue.h"
 #include "au/containers/SharedPointer.h"
-#include "au/Cronometer.h"          // au::CronometerSystem
+#include "au/statistics/Cronometer.h"          // au::CronometerSystem
 #include "au/ErrorManager.h"        // au::ErrorManager
 
 #include "samson/common/samson.pb.h"

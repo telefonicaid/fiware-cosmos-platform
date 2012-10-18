@@ -18,7 +18,7 @@
 #include "au/CommandLine.h"                 // au::CommandLine
 #include "au/containers/map.h"              // au::map
 #include "au/containers/SharedPointer.h"
-#include "au/string.h"                      // au::Format
+#include "au/string/string.h"                      // au::Format
 #include "engine/NotificationListener.h"    // engine::NotificationListener
 #include "samson/common/samson.pb.h"        // network::...
 #include "samson/common/Visualitzation.h"

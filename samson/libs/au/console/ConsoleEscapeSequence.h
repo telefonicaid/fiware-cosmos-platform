@@ -1,8 +1,7 @@
 #ifndef _AU_CONSOLE_ESCAPE_SEQUENCE
 #define _AU_CONSOLE_ESCAPE_SEQUENCE
 
-#include "au/console/ConsoleCode.h"
-#include "au/string.h"
+#include "au/string/string.h"
 #include <string>
 #include <vector>
 

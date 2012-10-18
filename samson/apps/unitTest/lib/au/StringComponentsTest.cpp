@@ -1,7 +1,7 @@
 
 #include "au/CommandLine.h"
-#include "au/CounterCollection.h"
-#include "au/StringComponents.h"
+#include "au/statistics/CounterCollection.h"
+#include "au/string/StringComponents.h"
 #include "gtest/gtest.h"
 
 

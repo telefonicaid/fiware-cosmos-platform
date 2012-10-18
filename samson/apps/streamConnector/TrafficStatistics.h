@@ -4,7 +4,7 @@
 #define _H_STREAM_CONNECTOR_TRAFFIC_STATISTICS
 
 
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 

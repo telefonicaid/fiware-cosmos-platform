@@ -13,7 +13,7 @@
 #include <string>                      // std::string
 #include <vector>                      // std::vector
 
-#include "au/Cronometer.h"             // au::Cronometer
+#include "au/statistics/Cronometer.h"             // au::Cronometer
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/containers/map.h"
 #include "au/mutex/Token.h"            // au::Token

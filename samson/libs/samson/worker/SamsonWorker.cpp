@@ -12,11 +12,11 @@
 #include "logMsg/traceLevels.h"                   // Trace Levels
 
 #include "au/CommandLine.h"                       // CommandLine
-#include "au/S.h"
+#include "au/string/S.h"
 #include "au/ThreadManager.h"
 #include "au/file.h"
 #include "au/network/RESTServiceCommand.h"
-#include "au/string.h"                            // au::Format
+#include "au/string/string.h"                            // au::Format
 #include "au/tables/pugixml.hpp"                  // pugixml
 #include "au/time.h"                              // au::todayString
 
@@ -34,7 +34,7 @@
 #include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
 #include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
 #include "samson/common/gpb_operations.h"
-#include "samson/isolated/SharedMemoryManager.h"  // engine::SharedMemoryManager
+#include "samson/stream/SharedMemoryManager.h"  // engine::SharedMemoryManager
 #include "samson/module/samsonVersion.h"          // SAMSON_VERSION
 #include "samson/network/Message.h"               // Message
 #include "samson/network/NetworkInterface.h"      // NetworkInterface

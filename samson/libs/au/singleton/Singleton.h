@@ -1,53 +1,59 @@
 #ifndef _H_AU_SINGLETON
 #define _H_AU_SINGLETON
 
-#include <vector>
-#include <cstring>
 #include "au/singleton/SingletonManager.h"
+#include <cstring>
+#include <vector>
 /*
- Andreu:  This class is used in SAMSON project and cannot contain mutexs since it is used across a fork operation
+ * Andreu:  This class is used in SAMSON project and cannot contain mutexs since it is used across a fork operation
  */
 
 namespace au {
-
-class SingletonBase {
-  public:
-    // Destroy the shared object
-    virtual void Destroy() = 0;
-};
-
-
 template<class C>
 class Singleton : public SingletonBase {
-  public:
-    static C *shared() {
-      if (!instance_) {
-        instance_ = new C();
-        // Add an instance of this Singleton to be able to remove it at the end
-        singleton_manager.Add(new Singleton<C> ());
-      }
-      return instance_;
-    }
+  Singleton() {
+    instance_ = new C();
+  };
 
-    virtual void Destroy() {
+public:
+
+  virtual ~Singleton() {
+    if (instance_) {
       delete instance_;
-      instance_ = NULL;
     }
+  };
 
-    static void DestroySingleton() {
-      if (!instance_) {
-        delete instance_;
-        instance_ = NULL;
-      }
+  static C *shared() {
+    if (!singleton_) {
+      singleton_ = new Singleton<C>;
+      singleton_manager.Add(singleton_);    // Add an instance of this Singleton to be able to remove it at the end
     }
+    return singleton_->instance_;
+  }
 
-  private:
-    static C *instance_;
+  static void DestroySingleton() {
+    if (singleton_) {
+      singleton_manager.Remove(singleton_);
+      delete singleton_;
+      singleton_ = NULL;
+    }
+  }
+
+private:
+
+  virtual void DestroySingletonInternal() {  // Method only called from SingletonManager
+    delete singleton_;
+    singleton_ = NULL;
+  }
+
+  friend class SingletonManager;  // Necessary to call Destroy
+
+  static Singleton<C> *singleton_;
+  C *instance_;
 };
 
 // Static members of the singleton to hold the instance
-template<class C> C * Singleton<C>::instance_ = NULL;
-  
-} // end of au namesapce
+template<class C> Singleton<C> *Singleton<C>::singleton_ = NULL;
+}  // end of au namesapce
 
 #endif  // ifndef _H_AU_SINGLETON

@@ -292,11 +292,11 @@ finish_mac_coverage:
 test: ctest
 ctest: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
-	cp apps/unitTest/delilah/words_input.txt /tmp
+	cp apps/unitTest/words_input.txt /tmp
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
-	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	cp apps/unitTest/words_input.txt /tmp/dir_test
 	make setup_test_config
 	make test -C BUILD_DEBUG_ALL ARGS="-D ExperimentalTest" TEST_VERBOSE=1
 	# Trying to clean up the shared memory
@@ -309,12 +309,12 @@ ctest: debug_all
 
 unit_test: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
-	cp apps/unitTest/delilah/words_input.txt /tmp
+	cp apps/unitTest/words_input.txt /tmp
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
 	make setup_test_config
-	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	cp apps/unitTest/words_input.txt /tmp/dir_test
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
@@ -325,10 +325,10 @@ unit_test: debug_all
 
 test_coverage:
 	cp BUILD_COVERAGE/modules/core/txt/libtxt.so /tmp
-	cp apps/unitTest/delilah/words_input.txt /tmp
+	cp apps/unitTest/words_input.txt /tmp
 	mkdir -p /tmp/dir_test
 	make setup_test_config
-	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	cp apps/unitTest/words_input.txt /tmp/dir_test
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_COVERAGE/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_COVERAGE/DartConfiguration.tcl
 	# Disable functional testing until we can sort out zookeeper

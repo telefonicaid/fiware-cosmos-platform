@@ -10,7 +10,7 @@
 #include "au/console/Console.h"
 #include "au/containers/StringVector.h"
 #include "au/containers/set.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/tables/Table.h"
 #include "engine/Buffer.h"
 

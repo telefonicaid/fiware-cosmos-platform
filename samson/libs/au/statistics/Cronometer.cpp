@@ -1,6 +1,6 @@
 
 #include "au/string/S.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "time.h"
 
 #include "Cronometer.h"     // Own interface

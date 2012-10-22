@@ -313,7 +313,7 @@ std::string TableLogFormatter::str() {
   } else {
     std::string lines = output.str();
     if (is_reverse) {
-      return au::reverse_lines(lines);
+      return au::ReverseLinesOrder(lines);
     } else {
       return lines;
     }

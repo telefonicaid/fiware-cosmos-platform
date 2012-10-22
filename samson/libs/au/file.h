@@ -56,6 +56,8 @@ Status CreateDirectory(std::string path);
 Status CreateFullDirectory(std::string path);
 std::string GetCannonicalPath(const std::string& path);
   
+// Get a fill path from a directory and file name
+std::string path_from_directory(const std::string& directory, const std::string& file);
   
 // Get list of files from a file_name ( directory --> all included files )
 std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorManager& error);

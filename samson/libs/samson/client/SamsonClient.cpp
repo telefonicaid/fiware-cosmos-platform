@@ -20,7 +20,7 @@
 #include "parseArgs/paConfig.h"
 
 #include "au/ThreadManager.h"
-#include "au/string/string.h"                  // au::Format
+#include "au/string/StringUtilities.h"                  // au::Format
 
 #include "engine/DiskManager.h"         // engine::DiskManager
 #include "engine/Engine.h"              // engine::Engine

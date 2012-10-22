@@ -27,7 +27,7 @@
 
 #include "au/containers/map.h"               // au::map
 #include "au/mutex/Token.h"                  // au::Token
-#include "au/string/string.h"                       // au::Format
+#include "au/string/StringUtilities.h"                       // au::Format
 
 namespace engine {
 class SharedMemoryItem;

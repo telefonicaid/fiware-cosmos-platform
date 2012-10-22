@@ -21,7 +21,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/string/string.h"                  // au::str()
+#include "au/string/StringUtilities.h"                  // au::str()
 
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
@@ -164,10 +164,8 @@ int main(int argC, const char *argV[]) {
     printf("got %ld items in string-list for datasets\n", (long)dir_list[0]);
 
     for (ix = 1; ix <= (long long)dir_list[0]; ix++) {
-      std::vector<char *> fields;
       char separator = ',';
-
-      SplitInWords(dir_list[ix], fields, separator);
+      std::vector<char *> fields = au::SplitInWords(dir_list[ix], separator);
 
       if (fields.size() != 6) {
         LM_E((

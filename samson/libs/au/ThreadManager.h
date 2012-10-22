@@ -40,7 +40,7 @@
 #include "au/singleton/Singleton.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 #include "logMsg/logMsg.h"                                       // LM_M()
 

@@ -172,7 +172,7 @@ class DelilahConsole : public au::Console, public Delilah {
         return;
       }
 
-      writeOnConsole(au::strToConsole(message));
+      writeOnConsole(au::StringInConsole(message));
     }
 
     void showWarningMessage(std::string message) {
@@ -186,7 +186,7 @@ class DelilahConsole : public au::Console, public Delilah {
         return;
       }
 
-      writeWarningOnConsole(au::strToConsole(message));
+      writeWarningOnConsole(au::StringInConsole(message));
     }
 
     void showErrorMessage(std::string message) {
@@ -200,7 +200,7 @@ class DelilahConsole : public au::Console, public Delilah {
         return;
       }
 
-      writeErrorOnConsole(au::strToConsole(message));
+      writeErrorOnConsole(au::StringInConsole(message));
     }
 
     virtual void showTrace(std::string message) {

@@ -34,7 +34,7 @@
 #include <vector>
 
 #include "au/file.h"        // Own interface
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 namespace au {
 size_t sizeOfFile(std::string fileName) {
@@ -270,4 +270,16 @@ std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorMa
 
   return file_names;
 }
+  
+  std::string path_from_directory(const std::string& directory, const std::string& file) {
+    if (directory.length() == 0) {
+      return file;
+    }
+    
+    if (directory[ directory.length() - 1 ] == '/') {
+      return directory + file;
+    } else {
+      return directory + "/" + file;
+    }
+  }
 }

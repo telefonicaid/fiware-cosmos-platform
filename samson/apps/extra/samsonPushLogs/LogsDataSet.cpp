@@ -7,7 +7,6 @@
 #include <string.h>             // memcpy
 #include <sys/types.h>          // types needed by socket include files
 #include <time.h>               // strptime, struct tm
-
 #include <dirent.h>             // opendir, scandir
 #include <errno.h>              // errno
 #include <errno.h>              // errno
@@ -15,12 +14,11 @@
 #include <inttypes.h>           // uint64_t etc.
 #include <sys/stat.h>           // stat
 #include <unistd.h>             // close, lseek
-
 #include <vector>               // std::vector
 
 #include "LogsDataSet.h"  // Own interface
 #include "logMsg/logMsg.h"      // traces LM_E, LM_W....
-
+#include "au/string/StringUtilities.h"
 
 char *fgetsFromFd(char *str, int line_max_size, int fd) {
   char *p_str = str;
@@ -42,41 +40,6 @@ char *fgetsFromFd(char *str, int line_max_size, int fd) {
   return NULL;
 }
 
-void SplitInWords(char *line, std::vector<char *>& words, char separator) {
-  size_t pos = 0;
-  size_t previous = 0;
-
-  bool finish = false;
-
-  // Clear words vector
-  words.clear();
-
-  while (!finish) {
-    if (( line[pos] == separator ) || ( line[pos] == '\0' )) {
-      if (( line[pos] == '\0' ) || (line[pos] == '\n')) {
-        finish = true;  // Artificial termination of string
-      }
-      line[pos] = '\0';
-
-      // Add the found word
-      words.push_back(&line[previous]);
-
-      // Point to the next words
-      // Jumps blank spaces
-      pos++;
-
-      // To avoid valgrind detected error when checking after the end of the buffer
-      if (!finish) {
-        while (line[pos] == ' ') {
-          pos++;
-        }
-      }
-      previous = pos;
-    } else {
-      pos++;
-    }
-  }
-}
 
 #define  YEAR0    1900
 #define  EPOCH_YR 1970
@@ -528,10 +491,7 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp) {
     while (fgets(temporal_buffer, LOGSDATASET_LINE_MAX_LENGTH, file_vector_[file_index].fp) != NULL) {
       *log = strdup(temporal_buffer);
       if (timestamp_position_ != -1) {
-        std::vector<char *> fields;
-
-        SplitInWords(temporal_buffer, fields, separator_);
-
+        std::vector<char *> fields = au::SplitInWords(temporal_buffer, separator_);
         if (static_cast<int>(fields.size()) != num_fields_) {
           free(*log);
           *log = NULL;
@@ -611,9 +571,7 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp) {
 
 
       if (timestamp_position_ != -1) {
-        std::vector<char *> fields;
-
-        SplitInWords(temporal_buffer, fields, separator_);
+        std::vector<char *> fields = au::SplitInWords(temporal_buffer, separator_);
 
         if (static_cast<int>(fields.size()) != num_fields_) {
           free(*log);

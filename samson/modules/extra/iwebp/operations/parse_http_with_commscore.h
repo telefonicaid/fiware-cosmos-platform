@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "au/ErrorManager.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 #include "comscore/SamsonComscoreDictionary.h"
 #include "samson_system/ValueContainer.h"
@@ -449,7 +449,8 @@ class parse_http_with_commscore : public samson::Parser {
        */
 
       error.Reset();
-      au::SplitInWords(line, fields_, sep_);
+	  fields_.clear();
+      fields_ = au::SplitInWords(line, sep_);
 
       if (fields_.size() != 16) {
         LM_W(("Wrong number of fields(%d) != expected(%d)", fields_.size(), 16));

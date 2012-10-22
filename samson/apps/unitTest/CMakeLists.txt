@@ -17,9 +17,11 @@ SET (SOURCES
 	# lib/au/string
 
 	lib/au/string/StringComponentsTest.cpp
-	lib/au/string/stringTest.cpp
+	lib/au/string/StringCollectionTest.cpp
+	lib/au/string/StringUtilitiesTest.cpp
 	lib/au/string/TokenizerTest.cpp
 	lib/au/string/STest.cpp
+	lib/au/string/StringCollectionTest.cpp
 	lib/au/string/PatternTest.cpp
 	lib/au/string/DescriptorsTest.cpp
 

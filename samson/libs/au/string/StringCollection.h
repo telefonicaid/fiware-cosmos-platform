@@ -41,26 +41,26 @@ public:
   ~StringCollection();
 
   // Add string ( cause reallocation if required )
-  int add(const char *string);
+  int Add(const char *string);
 
   // Read and write from disk
-  size_t write(FILE *file);
-  void read(FILE *file, size_t _size);
+  size_t Write(FILE *file);
+  void Read(FILE *file, size_t _size);
 
   // Get used size on disk/memory
-  size_t getSize();
+  size_t GetSize();
 
   // Recover string at this position ( returned when added )
-  const char *get(int pos);
+  const char *Get(int pos);
   
 private:
   
   // Global pointer with all serialized strings
-  char *v;
+  char *v_;
   // Current size of the vector
-  size_t size;
+  size_t size_;
   // Current malloc size of the vector
-  size_t max_size;
+  size_t max_size_;
 
   
 };

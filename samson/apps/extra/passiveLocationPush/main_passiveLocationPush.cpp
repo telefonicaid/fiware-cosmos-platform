@@ -34,7 +34,7 @@
 
 #include "au/CommandLine.h"     // au::CommandLine
 #include "au/statistics/Cronometer.h"      // au::Cronometer
-#include "au/string/string.h"          // au::str()
+#include "au/string/StringUtilities.h"          // au::str()
 #include "au/time.h"            // au::todatString()
 
 #include "logMsg/logMsg.h"

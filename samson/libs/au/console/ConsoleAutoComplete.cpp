@@ -5,7 +5,7 @@
 #include <sys/types.h>
 
 #include "au/file.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/utils.h"
 
 #include "au/console/ConsoleAutoComplete.h"  // Own interface
@@ -124,7 +124,7 @@ void ConsoleAutoComplete::add(ConsoleAutoCompleteAlternative alternative) {
     }
   }
 
-  if (strings_begin_equal(alternative.command, last_word)) {
+  if (CheckIfStringsBeginWith(alternative.command, last_word)) {
     last_word_alternatives.push_back(alternative);
   }
 }
@@ -157,7 +157,7 @@ void ConsoleAutoComplete::auto_complete_files(std::string file_selector) {
     stat(path.c_str(), &info);
 
     if (S_ISREG(info.st_mode)) {
-      if (string_ends(path, file_selector)) {
+      if (CheckIfStringsEndsWith(path, file_selector)) {
         // Final string to show
         size_t size = info.st_size;
 
@@ -187,7 +187,7 @@ int ConsoleAutoComplete::common_chars_in_last_word_alternative() {
 
   int common_chars = last_word_alternatives[0].command.length();
   for (size_t i = 1; i < last_word_alternatives.size(); i++) {
-    int n = getCommonChars(last_word_alternatives[i].command, last_word_alternatives[i - 1].command);
+    int n = GetCommonChars(last_word_alternatives[i].command, last_word_alternatives[i - 1].command);
     if (n < common_chars) {
       common_chars = n;
     }

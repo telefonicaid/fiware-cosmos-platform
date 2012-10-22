@@ -6,7 +6,7 @@
 #include <string>
 
 #include "au/string/S.h"
-#include "au/string/string.h"                    // au::Format
+#include "au/string/StringUtilities.h"                    // au::Format
 #include "engine/ProcessItem.h"           // engine::ProcessItem
 #include "samson/common/MessagesOperations.h"
 #include "samson/stream/ProcessIsolated.h"

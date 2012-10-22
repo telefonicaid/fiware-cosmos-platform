@@ -1,6 +1,6 @@
 
 #include "CronometerSystem.h"  // Own interface
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 namespace au {
 CronometerSystem::CronometerSystem() {

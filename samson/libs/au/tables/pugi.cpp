@@ -17,7 +17,7 @@
 *
 * ****************************************************************************/
 
-#include "au/string/string.h"      // au::tabs
+#include "au/string/StringUtilities.h"      // au::tabs
 #include "au/tables/Tree.h"    // au::tables::TreeItem
 #include "pugi.h"                       // Own interface
 

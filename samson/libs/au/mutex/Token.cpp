@@ -3,7 +3,7 @@
 
 
 #include "LockDebugger.h"       // LockDebugger
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "logMsg/logMsg.h"      // LM_M()
 #include <assert.h>
 #include <sys/syscall.h>

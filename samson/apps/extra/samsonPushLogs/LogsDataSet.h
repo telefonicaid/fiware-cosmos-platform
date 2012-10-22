@@ -21,7 +21,6 @@ typedef struct File {
   bool already_read;
 } File;
 
-void SplitInWords(char *line, std::vector<char *>& words, char separator);
 char *fgetsFromFd(char *str, int line_max_size, int fd);
 time_t GetTimeUTCFromCalendar(struct tm *tm);
 time_t GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(const char *strTimeDate);

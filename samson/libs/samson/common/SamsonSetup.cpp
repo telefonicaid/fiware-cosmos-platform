@@ -8,7 +8,7 @@
 
 #include "au/CommandLine.h"            // au::CommandLine
 #include "au/ErrorManager.h"           // au::ErrorManager
-#include "au/string/string.h"                 // au::Format
+#include "au/string/StringUtilities.h"                 // au::Format
 
 #include "au/containers/StringVector.h"
 #include "au/tables/Table.h"
@@ -126,7 +126,7 @@ namespace samson {
   
   bool isNumber(std::string txt) {
     for (size_t i = 0; i < txt.length(); i++) {
-      if (!au::isCharInRange(txt[i], 48, 57)) {
+      if (!au::IsCharInRange(txt[i], 48, 57)) {
         return false;
       }
     }

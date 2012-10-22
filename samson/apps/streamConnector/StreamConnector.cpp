@@ -4,7 +4,7 @@
 #include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/network/RESTServiceCommand.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "parseArgs/paConfig.h"
 
 #include "Channel.h"

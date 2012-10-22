@@ -37,7 +37,7 @@
 
 #include "au/Environment.h"     // au::Environment
 #include "au/ErrorManager.h"  // samson::Error
-#include "au/string/string.h"       // au::Format
+#include "au/string/StringUtilities.h"       // au::Format
 
 #include "engine/Buffer.h"   // engine::Buffer
 #include "engine/MemoryManager.h"       // engine::BufferContainer

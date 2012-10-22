@@ -215,18 +215,18 @@ void FindAndReplaceInString(std::string &source, const std::string& find, const 
 
 std::string str_indent(const std::string& txt) {
   // Copy input string
-  std::string _txt = txt;
+  std::string copied_txt = txt;
 
   // Replace all "returns" by "return and tab"
-  FindAndReplaceInString(_txt, "\n", "\n\t");
+  FindAndReplaceInString(copied_txt, "\n", "\n\t");
   // Insert the first tab
-  _txt.insert(0, "\t");
-  return _txt;
+  copied_txt.insert(0, "\t");
+  return copied_txt;
 }
 
 std::string str_indent(const std::string& txt, int num_spaces) {
   // Copy input string
-  std::string _txt = txt;
+  std::string copied_txt = txt;
 
   // Create separator string
   std::string sep;
@@ -236,11 +236,11 @@ std::string str_indent(const std::string& txt, int num_spaces) {
   }
 
   // Replace all "returns" by "return and tab"
-  FindAndReplaceInString(_txt, "\n", "\n" + sep);
+  FindAndReplaceInString(copied_txt, "\n", "\n" + sep);
 
   // Insert the first tab
-  _txt.insert(0, sep);
-  return _txt;
+  copied_txt.insert(0, sep);
+  return copied_txt;
 }
 
 std::string str(double value, char letter) {

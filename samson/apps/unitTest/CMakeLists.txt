@@ -10,31 +10,33 @@ SET (SOURCES
 	# AU library
 	# -----------------------------------------------------------
 
-	lib/au/fileTest.cpp
-	lib/au/EnvironmentTest.cpp
+
 	lib/au/CommandLineTest.cpp
+	lib/au/EnvironmentTest.cpp
+	lib/au/fileTest.cpp
 
 	# lib/au/string
-
-	lib/au/string/StringComponentsTest.cpp
-	lib/au/string/StringCollectionTest.cpp
-	lib/au/string/StringUtilitiesTest.cpp
-	lib/au/string/TokenizerTest.cpp
+	
+	lib/au/string/DescriptorsTest.cpp
 	lib/au/string/STest.cpp
 	lib/au/string/StringCollectionTest.cpp
+	lib/au/string/StringComponentsTest.cpp
+	lib/au/string/StringUtilitiesTest.cpp
+	lib/au/string/TokenizerTest.cpp
 	lib/au/string/PatternTest.cpp
-	lib/au/string/DescriptorsTest.cpp
+
 
 	# AU SINGLETON 
+
 	lib/au/singleton/SingletonTest.cpp
 
 	# AU CONTAINERS LIBRARY
-	lib/au/containers/SharedPointerTest.cpp
+	lib/au/containers/BoxTest.cpp
 	lib/au/containers/DictionaryTest.cpp
 	lib/au/containers/GlobalDictionaryTest.cpp
-	lib/au/containers/QueueTest.cpp
-	lib/au/containers/BoxTest.cpp
+	lib/au/containers/SharedPointerTest.cpp
 	lib/au/containers/StringVectorTest.cpp
+	lib/au/containers/QueueTest.cpp
 
 	# AU NETWORK LIBRARY
 	lib/au/network/FileDescriptorTest.cpp
@@ -43,15 +45,15 @@ SET (SOURCES
 
 	# AU STATISTICS LIBRARY
     lib/au/statistics/ActivityMonitorTest.cpp
-	lib/au/statistics/RateTest.cpp
 	lib/au/statistics/CounterCollectionTest.cpp
+	lib/au/statistics/RateTest.cpp
 
 	# AU MUTEX LIBRARY
     lib/au/mutex/TokenTest.cpp
 
 	# AU setup
-	lib/au/setup/SetupItemTest.cpp
 	lib/au/setup/SetupItemCollectionTest.cpp
+	lib/au/setup/SetupItemTest.cpp
 
 	# AU tables library
 	lib/au/tables/TableTest.cpp	
@@ -64,24 +66,23 @@ SET (SOURCES
 	common_engine_test.h
 	common_engine_test.cpp
 
-	lib/engine/statusTest.cpp
 	lib/engine/EngineTest.cpp
 	lib/engine/BufferTest.cpp
-    lib/engine/DiskOperationTest.cpp        
-	lib/engine/MemoryManagerTest.cpp        
-	lib/engine/ProcessItemTest.cpp              
-	lib/engine/ReadFileTest.cpp
 	lib/engine/DiskManagerTest.cpp          
-	lib/engine/EngineTest.cpp               
-	lib/engine/NotificationListenerTest.cpp 
-	lib/engine/NotificationListenersManagerTest.cpp
-	lib/engine/ProcessManagerTest.cpp       
-	lib/engine/statusTest.cpp
-	lib/engine/SimpleBufferTest.cpp
+    lib/engine/DiskOperationTest.cpp        
 	lib/engine/EngineElementCollectionTest.cpp
+	lib/engine/EngineElementTest.cpp
+	lib/engine/EngineTest.cpp               
+	lib/engine/MemoryManagerTest.cpp        
 	lib/engine/NotificationTest.cpp
 	lib/engine/NotificationElementTest.cpp
-	lib/engine/EngineElementTest.cpp
+	lib/engine/NotificationListenersManagerTest.cpp
+	lib/engine/NotificationListenerTest.cpp 
+	lib/engine/ProcessItemTest.cpp              
+	lib/engine/ProcessManagerTest.cpp       
+	lib/engine/ReadFileTest.cpp
+	lib/engine/statusTest.cpp
+	lib/engine/SimpleBufferTest.cpp
 	lib/engine/ReadFileManagerTest.cpp
 
 	# -----------------------------------------------------------
@@ -99,13 +100,13 @@ SET (SOURCES
     # -----------------------------------------------------------
 
 	# SAMSON COMMON LIBRARY
-	lib/samson/common/SamsonSetupTest.cpp 
-	lib/samson/common/SamsonFileTest.cpp
-	lib/samson/common/KVInfoTest.cpp
 	lib/samson/common/FullKVInfoTest.cpp
 	lib/samson/common/KVHeaderTest.cpp
-	lib/samson/common/KVRangeTest.cpp
+	lib/samson/common/KVInfoTest.cpp
 	lib/samson/common/KVRangeDivisionTest.cpp
+	lib/samson/common/KVRangeTest.cpp
+	lib/samson/common/SamsonSetupTest.cpp 
+	lib/samson/common/SamsonFileTest.cpp
 
 	# SAMSOM WORKER LIBRARY
 	lib/samson/worker/SamsonWorkerTest.cpp

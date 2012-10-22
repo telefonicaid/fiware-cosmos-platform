@@ -36,7 +36,6 @@ public class FrontendPassword implements PasswordAuthenticator {
     private String dbName;
     private String dbUserName;
     private String dbPassword;
-    private Connection connection;
 
     @Override
     public boolean authenticate(String username, String password,
@@ -46,11 +45,12 @@ public class FrontendPassword implements PasswordAuthenticator {
         boolean ans = false;
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
+        Connection connection = null;
         try {
-            this.connect(this.frontendDbUrl, this.dbName, this.dbUserName,
-                         this.dbPassword);
+            connection = this.connect(this.frontendDbUrl,
+                    this.dbName, this.dbUserName, this.dbPassword);
             String sql = "SELECT password FROM auth_user WHERE username = ?";
-            preparedStatement = this.connection.prepareStatement(sql);
+            preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, username);
             resultSet = preparedStatement.executeQuery();
             String algorithm = "";
@@ -88,6 +88,13 @@ public class FrontendPassword implements PasswordAuthenticator {
                     LOG.error("could not close a database statement", e);
                 }
             }
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    LOG.error("could not close a database connection", e);
+                }
+            }
         }
         return ans;
     }
@@ -101,8 +108,8 @@ public class FrontendPassword implements PasswordAuthenticator {
      * @param userName the username to connect to the frontend database
      * @param password the password to connect to the frontend database
      */
-    private void connect(String url, String dbName, String userName,
-                         String password) throws SQLException {
+    private Connection connect(String url, String dbName, String userName,
+                               String password) throws SQLException {
         if (url == null) {
             throw new IllegalArgumentException("no database URL set up");
         }
@@ -117,9 +124,9 @@ public class FrontendPassword implements PasswordAuthenticator {
                 throw new SQLException("Missing driver");
             }
             Class.forName(driver).newInstance();
-            this.connection = DriverManager.getConnection(url + dbName,
-                                                          userName,
-                                                          password);
+            return DriverManager.getConnection(url + dbName,
+                                               userName,
+                                               password);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new SQLException(e);

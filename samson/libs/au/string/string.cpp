@@ -468,6 +468,30 @@ std::vector<std::string> simpleTockenize(std::string txt) {
   }
   return items;
 }
+  
+  std::vector<std::string> split_using_multiple_separators(std::string input, std::string separators) {
+    std::vector<std::string> components;
+    size_t pos = 0;
+    
+    
+    while (pos < input.length()) {
+      size_t s = input.find_first_of(separators, pos);
+      
+      
+      if (s == std::string::npos) {
+        components.push_back(input.substr(pos, input.length() - pos));
+        break;
+      } else {
+        components.push_back(input.substr(pos, s - pos));
+        pos = s + 1;
+      }
+    }
+    
+    
+    // Return found components
+    return components;
+  }
+
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
   std::stringstream ss(s);

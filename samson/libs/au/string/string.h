@@ -63,6 +63,7 @@ std::string str_double_progress_bar(double p1, double p2, char c1, char c2, char
 std::vector<std::string> simpleTockenize(std::string txt);
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 std::vector<std::string> split(const std::string &s, char delim);
+std::vector<std::string> split_using_multiple_separators(std::string input, std::string separators);
 void SplitInWords(char *line, std::vector<char *>& words, char separator);
 
 

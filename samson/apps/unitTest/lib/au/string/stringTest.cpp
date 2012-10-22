@@ -64,3 +64,15 @@ TEST(au_string, simple) {
   std::string lines = "123\nabc\n";
   EXPECT_EQ(au::reverse_lines(lines), "abc\n123\n") << "Error in reverse_lines() false";
 }
+
+TEST ( au_string_string , str_vector )
+{
+   std::vector<int> numbers;
+   numbers.push_back(1);
+   numbers.push_back(4);
+   numbers.push_back(5);
+
+   std::string s = au::str( numbers );
+   EXPECT_EQ( "[ 1 4 5]" , s );
+
+}

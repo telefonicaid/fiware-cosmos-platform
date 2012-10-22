@@ -62,7 +62,7 @@ OS=$(uname -s)
 
 # Setup the Shared library path
 if [ ${OS} = "Linux" ]; then
-    LD_LIBRARY_PATH=${SAMSON_HOME}/lib:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=${SAMSON_HOME}/lib:/usr/local/lib:${LD_LIBRARY_PATH}
 elif [ ${OS} = "Darwin" ]; then
     DYLD_LIBRARY_PATH=${SAMSON_HOME}/lib:${DYLD_LIBRARY_PATH}
 fi

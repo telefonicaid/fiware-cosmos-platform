@@ -5,7 +5,7 @@
 #include "unitTest/TestClasses.h"
 
 
-TEST(au_Singleton, basic) {
+TEST(au_singleton_Singleton, basic) {
   // Destroy all previous singletons
   au::singleton_manager.DestroySingletons();
 
@@ -20,6 +20,14 @@ TEST(au_Singleton, basic) {
   EXPECT_EQ(1, TestBase::num_instances());
 
   // Check number of singleton in manager
+  EXPECT_EQ((size_t)1, au::singleton_manager.size());
+
+  // Destroy the instance to get a new one
+  au::Singleton<TestBase>::DestroySingleton();
+  TestBase *example3 = au::Singleton<TestBase>::shared();
+  EXPECT_FALSE(10 == example3->value());
+
+  // Still on element in the manager
   EXPECT_EQ((size_t)1, au::singleton_manager.size());
 
   // Unique call to remove all singletons

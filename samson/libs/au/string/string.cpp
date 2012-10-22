@@ -213,7 +213,7 @@ void find_and_replace(std::string &source, const std::string& find, const std::s
   }
 }
 
-std::string getRoot(std::string& path) {
+std::string getRoot(const std::string& path) {
   size_t pos = path.find(".", 0);
 
   if (pos == std::string::npos) {
@@ -223,7 +223,7 @@ std::string getRoot(std::string& path) {
   return path.substr(0, pos);
 }
 
-std::string getRest(std::string& path) {
+std::string getRest(const std::string& path) {
   size_t pos = path.find(".", 0);
 
   if (pos == std::string::npos) {
@@ -233,28 +233,33 @@ std::string getRest(std::string& path) {
   return path.substr(pos + 1, path.length());
 }
 
-std::string str_indent(std::string txt) {
+std::string str_indent(const std::string& txt) {
+  // Copy input string
+  std::string _txt = txt;
   // Replace all "returns" by "return and tab"
-  find_and_replace(txt, "\n", "\n\t");
-
+  find_and_replace(_txt, "\n", "\n\t");
   // Insert the first tab
-  txt.insert(0, "\t");
-  return txt;
+  _txt.insert(0, "\t");
+  return _txt;
 }
 
-std::string str_indent(std::string txt, int num_spaces) {
-  std::string sep;
+std::string str_indent(const std::string& txt, int num_spaces) {
 
+  // Copy input string
+  std::string _txt = txt;
+
+  // Create separator string
+  std::string sep;
   for (int i = 0; i < num_spaces; i++) {
     sep.append(" ");
   }
 
   // Replace all "returns" by "return and tab"
-  find_and_replace(txt, "\n", "\n" + sep);
+  find_and_replace(_txt, "\n", "\n" + sep);
 
   // Insert the first tab
-  txt.insert(0, sep);
-  return txt;
+  _txt.insert(0, sep);
+  return _txt;
 }
 
 std::string str(double value, char letter) {
@@ -386,33 +391,8 @@ std::string str(double value) {
   }
 }
 
-/*
- * std::string str( size_t value )
- * {
- *
- * if (value < 1000)
- * {
- * // Special case
- * return au::str("%4d ", (int)value );
- * //return au::str( (double)value , ' ' );
- * }
- * else if( value < 1000000)
- * return au::str( (double)value/ 1000.0 , 'K');
- * else if( value < 1000000000)
- * return au::str( (double)value/ 1000000.0 , 'M');
- * #ifdef __LP64__
- * else if( value < 1000000000000)
- * return au::str( (double)value/ 1000000000.0 , 'G');
- * else if( value < 1000000000000000)
- * return au::str( (double)value/ 1000000000000.0 , 'T');
- * #endif
- * else
- * return au::str( (double)value/ 1000000000000000.0 , 'P');
- *
- * }
- */
 
-std::string str(double value, std::string postfix) {
+std::string str(double value, const std::string& postfix) {
   return str(value) + postfix;
 }
 
@@ -424,7 +404,7 @@ std::string str_detail(size_t value) {
   return str("%lu (%s)", value, au::str(value).c_str());
 }
 
-std::string str_detail(size_t value, std::string postfix) {
+std::string str_detail(size_t value, const std::string& postfix) {
   if (value < 1000) {
     return str(value, postfix);
   }
@@ -432,7 +412,7 @@ std::string str_detail(size_t value, std::string postfix) {
   return str("%lu %s (%s)", value, postfix.c_str(), au::str(value, postfix).c_str());
 }
 
-bool isOneOf(char c, std::string s) {
+bool isOneOf(char c, const std::string& s) {
   for (size_t i = 0; i < s.size(); i++) {
     if (s[i] == c) {
       return true;
@@ -442,7 +422,7 @@ bool isOneOf(char c, std::string s) {
   return false;
 }
 
-std::vector<std::string> simpleTockenize(std::string txt) {
+std::vector<std::string> simpleTockenize(const std::string& txt) {
   std::string tockens = " #\r\t\r\n{};\"";  // All possible delimiters
 
   std::vector<std::string> items;
@@ -468,6 +448,30 @@ std::vector<std::string> simpleTockenize(std::string txt) {
   }
   return items;
 }
+  
+  std::vector<std::string> split_using_multiple_separators(const std::string& input, const std::string& separators) {
+    std::vector<std::string> components;
+    size_t pos = 0;
+    
+    
+    while (pos < input.length()) {
+      size_t s = input.find_first_of(separators, pos);
+      
+      
+      if (s == std::string::npos) {
+        components.push_back(input.substr(pos, input.length() - pos));
+        break;
+      } else {
+        components.push_back(input.substr(pos, s - pos));
+        pos = s + 1;
+      }
+    }
+    
+    
+    // Return found components
+    return components;
+  }
+
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
   std::stringstream ss(s);
@@ -499,9 +503,6 @@ int get_term_size(int fd, int *x, int *y) {
   if (ioctl(fd, TIOCGSIZE, &win)) {
     return 0;
   }
-
-
-
 
 
   if (y) {
@@ -567,9 +568,8 @@ std::string lineInConsole(char c) {
   return output.str();
 }
 
-std::string strWithMaxLineLength(std::string& txt, int max_line_length) {
+std::string strWithMaxLineLength(const std::string& txt, int max_line_length) {
   std::istringstream input_stream(txt);
-
   std::ostringstream output;
 
   char line[1024];
@@ -593,7 +593,7 @@ std::string strWithMaxLineLength(std::string& txt, int max_line_length) {
   return output.str();
 }
 
-std::string strToConsole(std::string& txt) {
+std::string strToConsole(const std::string& txt) {
   return strWithMaxLineLength(txt, getTerminalWidth());
 }
 
@@ -758,7 +758,7 @@ void SplitInWords(char *line, std::vector<char *>& words, char separator) {
   }
 }
 
-int getCommonChars(std::string& txt, std::string& txt2) {
+int getCommonChars(const std::string& txt,const  std::string& txt2) {
   size_t l = std::min(txt.length(), txt2.length());
 
   for (size_t i = 0; i < l; i++) {
@@ -773,7 +773,7 @@ bool isCharInRange(char c, char lower, char higher) {
   return ((c >= lower) && (c <= higher));
 }
 
-bool strings_begin_equal(std::string txt, std::string txt2) {
+bool strings_begin_equal(const std::string& txt, const std::string& txt2) {
   size_t l = std::min(txt.length(), txt2.length());
 
   for (size_t i = 0; i < l; i++) {
@@ -784,7 +784,7 @@ bool strings_begin_equal(std::string txt, std::string txt2) {
   return true;
 }
 
-std::string path_from_directory(std::string directory, std::string file) {
+std::string path_from_directory(const std::string& directory, const std::string& file) {
   if (directory.length() == 0) {
     return file;
   }
@@ -796,7 +796,7 @@ std::string path_from_directory(std::string directory, std::string file) {
   }
 }
 
-std::string string_in_color(std::string message, std::string color) {
+std::string string_in_color(const std::string& message, const std::string& color) {
   std::ostringstream output;
 
   if (( color == "red" ) || ( color == "r" )) {
@@ -808,18 +808,18 @@ std::string string_in_color(std::string message, std::string color) {
   } return output.str();
 }
 
-bool string_begins(std::string& str, std::string prefix) {
+bool string_begins(const  std::string& str, const  std::string& prefix) {
   return str.substr(0, prefix.length()) == prefix;
 }
 
-bool string_ends(std::string& str, std::string postfix) {
+bool string_ends(const std::string& str, const std::string& postfix) {
   if (postfix.length() > str.length()) {
     return false;
   }
   return str.substr(str.length() - postfix.length()) == postfix;
 }
 
-bool string_begins_and_ends(std::string& str, std::string prefix, std::string postfix) {
+bool string_begins_and_ends(const  std::string& str, const  std::string& prefix, const  std::string& postfix) {
   if (postfix.length() > str.length()) {
     return false;
   }
@@ -837,11 +837,11 @@ bool string_begins_and_ends(std::string& str, std::string prefix, std::string po
   return true;
 }
 
-std::string substring_without_prefix_and_posfix(std::string& str, const std::string& prefix, const std::string& postfix) {
+std::string substring_without_prefix_and_posfix(const  std::string& str, const std::string& prefix, const std::string& postfix) {
   return str.substr(prefix.length(), str.length() - prefix.length() - postfix.length());
 }
 
-std::string reverse_lines(std::string& txt) {
+std::string reverse_lines(const std::string& txt) {
   std::istringstream input_stream(txt);
 
 

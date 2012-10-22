@@ -13,7 +13,7 @@
 #include "au/containers/SharedPointer.h"
 #include "au/network/FileDescriptor.h"
 #include "au/network/Service.h"
-#include "au/string/split.h"
+#include "au/string/string.h"
 #include "au/tables/Table.h"
 
 #include "au/log/Log.h"

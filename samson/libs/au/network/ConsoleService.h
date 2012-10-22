@@ -36,9 +36,7 @@ class ConsoleServiceClientBase {
     void evalCommand(std::string command, au::ErrorManager *error);
     virtual void autoComplete(ConsoleAutoComplete *info);
     void addEspaceSequence(std::string sequence);
-    virtual void process_escape_sequence(std::string sequence) {
-    }
-    ;
+    virtual void process_escape_sequence(std::string sequence) {};
 
   private:
 
@@ -76,19 +74,17 @@ class ConsoleService : public Service {
     }
 
     // Virtual methods to be implemented by subclasses
-    virtual void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {
-    }
-    virtual void autoComplete(ConsoleAutoComplete *info, au::Environment *environment) {
-    }
+    virtual void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {}
+    virtual void autoComplete(ConsoleAutoComplete *info, au::Environment *environment) {}
     virtual std::string getPrompt(au::Environment *environment) {
       return ">>";
     }
 
-    // main function executed by all threads
-    virtual void run(SocketConnection *socket_connection, bool *quit);
-
   private:
 
+  // main function executed by all threads
+  virtual void run(SocketConnection *socket_connection, bool *quit);
+  
     // Fill message to be sent to client
     void fill_message(au::ErrorManager *error, au::gpb::ConsolePacket *message);
 

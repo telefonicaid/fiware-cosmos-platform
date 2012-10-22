@@ -42,10 +42,12 @@ SET (SOURCES
 	lib/au/network/FileDescriptorTest.cpp
 	lib/au/network/NetworkListenerTest.cpp
 	lib/au/network/RESTServiceTest.cpp
+	lib/au/network/ConsoleServiceTest.cpp
 
 	# AU STATISTICS LIBRARY
     lib/au/statistics/ActivityMonitorTest.cpp
 	lib/au/statistics/CounterCollectionTest.cpp
+	lib/au/statistics/CronometerTest.cpp
 	lib/au/statistics/RateTest.cpp
 
 	# AU MUTEX LIBRARY

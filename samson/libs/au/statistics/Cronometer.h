@@ -44,13 +44,6 @@ public:
   // Get the time difference since the last reset ( or creation ) in second
   double seconds() const;
 
-  // Get time and reset cronometer
-  double secondsAndReset();
-
-  // Check if time is grater than this and reset if so.
-  // Return true if time has been reset.
-  bool ResetIfGreaterThan(double time);
-
   // Manual offset of the time
   void AddOffset(int offset);
 

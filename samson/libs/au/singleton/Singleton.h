@@ -20,6 +20,7 @@ public:
   virtual ~Singleton() {
     if (instance_) {
       delete instance_;
+      instance_ = NULL;
     }
   };
 

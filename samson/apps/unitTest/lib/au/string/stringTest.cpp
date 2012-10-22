@@ -73,6 +73,6 @@ TEST ( au_string_string , str_vector )
    numbers.push_back(5);
 
    std::string s = au::str( numbers );
-   EXPECT_EQ( "[ 1 4 5]" , s );
+   EXPECT_EQ( "[ 1 4 5 ]" , s );
 
 }

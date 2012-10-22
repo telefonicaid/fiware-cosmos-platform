@@ -10,7 +10,7 @@ TEST(au_string_Pattern, pattern ) {
 
    EXPECT_FALSE( error.IsActivated());
    EXPECT_TRUE( pattern.match( "Andreu" ) );
-   EXPECT_TRUE( pattern.match( "Pepe" ) );
+   EXPECT_FALSE( pattern.match( "Pepe" ) );
 }
 
 TEST(au_string_Pattern, simple_pattern) {

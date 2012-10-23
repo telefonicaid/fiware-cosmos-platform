@@ -27,7 +27,7 @@
 
 
 
-TEST(engine_ProcessManager, instantiationTest) {
+TEST(DISABLED_engine_ProcessManager, instantiationTest) {
   init_engine_test();
 
   engine::ProcessManager *process_manager = engine::Engine::process_manager();

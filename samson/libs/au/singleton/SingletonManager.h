@@ -1,47 +1,61 @@
 #ifndef _H_AU_SINGLETON_MANAGER
 #define _H_AU_SINGLETON_MANAGER
 
-#include <vector>
 #include <cstring>
+#include <set>
 
 /*
- Andreu:  This class is used in SAMSON project and cannot contain mutexs since it is used across a fork operation
+ * Andreu:  This class is used in SAMSON project and cannot contain mutexs since it is used across a fork operation
  */
 
 namespace au {
-  
-  class SingletonBase;
-  
-  class SingletonManager {
-  public:
-    SingletonManager() {}
-    
-    virtual ~SingletonManager() {
-      DestroySingletons();      // Remove all singleton instances
-    }
-    
-    void DestroySingletons();
-    
-    size_t size() const {
-      return singletons_.size();
-    }
-    
-  private:
-    
-    void Add(SingletonBase *singleton) {
-      singletons_.push_back(singleton);
-    }
-    
-    // Vector of singletons
-    std::vector<SingletonBase *> singletons_;
-    
-    // Friend class Singleton to add Singleton in this manager
-    template<class C>
-    friend class Singleton;
-  };
+class SingletonBase {
+public:
+  // Destroy the shared object
+  virtual void DestroySingletonInternal() = 0;
+};
 
-  extern SingletonManager singleton_manager;
-  
+
+class SingletonManager {
+public:
+  SingletonManager() {
+  }
+
+  virtual ~SingletonManager() {
+    DestroySingletons();        // Remove all singleton instances
+  }
+
+  void DestroySingletons() {
+    std::set<SingletonBase *>::iterator iter;
+    for (iter = singletons_.begin(); iter != singletons_.end(); iter++) {
+      (*iter)->DestroySingletonInternal();
+    }
+    singletons_.clear();
+  }
+
+  size_t size() const {
+    return singletons_.size();
+  }
+
+private:
+
+  void Add(SingletonBase *singleton) {
+    singletons_.insert(singleton);
+  }
+
+  void Remove(SingletonBase *singleton) {
+    singletons_.erase(singleton);
+  }
+
+  // Vector of singletons
+  std::set<SingletonBase *> singletons_;
+
+  // Friend class Singleton to add and remove instances of singleton
+  template<class C>
+  friend class Singleton;
+};
+
+extern SingletonManager singleton_manager;
 }
 
-#endif
+#endif // ifndef _H_AU_SINGLETON_MANAGER

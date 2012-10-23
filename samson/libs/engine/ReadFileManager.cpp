@@ -28,6 +28,11 @@ ReadFile *ReadFileManager::GetReadFile(const std::string& file_name) {
     f = new ReadFile(file_name);
   }
 
+  if (f && !f->IsValid()) {
+    delete f;
+    return NULL;
+  }
+
   // Insert at front ( make sure most recent are at front )
   read_files_.insertAtFront(file_name, f);
 

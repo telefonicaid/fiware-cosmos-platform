@@ -31,7 +31,7 @@ int ReadFile::Seek(size_t offset) {
     return 3;
   }
 
-  // Everything corrent
+  // Everything correct
   return 0;
 }
 

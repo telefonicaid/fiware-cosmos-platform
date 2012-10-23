@@ -35,7 +35,7 @@ public:
 
 #define au_network_ConsoleService_TEST_PORT 9798
 
-TEST( au_network_ConsoleService , basic )
+TEST( au_network_ConsoleService , DISABLED_basic )
 {
   // No preivous paralel threads
   EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());

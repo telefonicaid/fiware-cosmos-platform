@@ -233,6 +233,7 @@ test_init:
 	mkdir -p coverage
 	lcov --zerocounters --directory BUILD_COVERAGE/
 	lcov --capture --initial --directory BUILD_COVERAGE -b BUILD_COVERAGE --output-file coverage/samson.init.info
+	mkdir -p $(LOG_DIR) || true
 	logServer -port ${SAMSON_LOG_PORT_ENV} -dir ${LOGSERVER_LOG_DIR} -query_port ${SAMSON_LOGQUERY_PORT_ENV}
 	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} ${SAMSON_LOG_LEVELS} -zk ${ZOOKEEPER_SERVER}:${ZOOKEEPER_PORT}
 

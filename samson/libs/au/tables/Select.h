@@ -8,7 +8,7 @@
 #include "au/containers/StringVector.h"
 #include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
-#include "au/string/string.h"         // au::str(...)
+#include "au/string/StringUtilities.h"         // au::str(...)
 #include "logMsg/logMsg.h"     // LM_W
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */

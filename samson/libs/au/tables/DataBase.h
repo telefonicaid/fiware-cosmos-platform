@@ -11,7 +11,7 @@
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/containers/map.h"  // au::map
 #include "au/mutex/Token.h"
-#include "au/string/string.h"         // au::str(...)
+#include "au/string/StringUtilities.h"         // au::str(...)
 #include "au/tables/Collection.h"
 #include "au/tables/Table.h"
 #include "au/tables/Tree.h"

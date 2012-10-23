@@ -618,11 +618,11 @@ std::string CommandCatalogue::getHelpForConcept(const std::string& name) {
   if (c) {
     std::ostringstream output;
 
-    output << au::lineInConsole('-') << "\n";
+    output << au::StringRepeatingCharInConsole('-') << "\n";
     output << au::str(au::purple, "COMMAND       %s\n", name.c_str(), c->category().c_str());
     output << au::str(au::purple, "CATEGORY      %s\n", c->category().c_str());
 
-    output << au::lineInConsole('-') << "\n";
+    output << au::StringRepeatingCharInConsole('-') << "\n";
 
     output << au::str(au::purple, "DESCRIPTION   ") << c->short_description() << "\n";
     output << au::str(au::purple, "USAGE         ")  << c->usage() << "\n";
@@ -647,7 +647,7 @@ std::string CommandCatalogue::getHelpForConcept(const std::string& name) {
 
 
     if (c->help().length() > 0) {
-      output << au::lineInConsole('-') << "\n";
+      output << au::StringRepeatingCharInConsole('-') << "\n";
 
       if (c->help() != "") {
         output << au::str_indent(c->help(), 14);
@@ -655,7 +655,7 @@ std::string CommandCatalogue::getHelpForConcept(const std::string& name) {
       }
     }
 
-    output << au::lineInConsole('-') << "\n";
+    output << au::StringRepeatingCharInConsole('-') << "\n";
 
     return output.str();
   }

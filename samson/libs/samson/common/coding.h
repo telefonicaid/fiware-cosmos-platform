@@ -11,7 +11,7 @@
 
 #include "logMsg/logMsg.h"              // LM_X
 
-#include "au/string/string.h"                  // au::Format
+#include "au/string/StringUtilities.h"                  // au::Format
 #include "au/string/xml.h"                     // au::xml...
 
 #include "engine/SimpleBuffer.h"        // engine::SimpleBuffer

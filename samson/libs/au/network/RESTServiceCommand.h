@@ -14,7 +14,7 @@
 #include "au/network/Service.h"
 #include "au/network/SocketConnection.h"
 #include "au/Status.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/tables/Table.h"
 #include "au/utils.h"
 

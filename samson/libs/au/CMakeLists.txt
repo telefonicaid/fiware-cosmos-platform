@@ -205,8 +205,8 @@ string/StringComponents.cpp
 string/StringComponents.h
 string/Tokenizer.cpp
 string/Tokenizer.h
-string/string.cpp
-string/string.h
+string/StringUtilities.h
+string/StringUtilities.cpp
 string/xml.cpp
 string/xml.h
 )

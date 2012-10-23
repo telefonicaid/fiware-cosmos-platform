@@ -7,7 +7,6 @@ namespace network {
 ConsoleServiceClientBase::ConsoleServiceClientBase(int port) :
   port_(port) {
   socket_connection_ = NULL;
-  current_prompt_ = ">>";
 }
 
 bool ConsoleServiceClientBase::Write(au::gpb::ConsolePacket *packet, au::ErrorManager *error) {
@@ -89,9 +88,10 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
 }
 
 std::string ConsoleServiceClientBase::getPrompt() {
-  if (cronometer_prompt_request_.seconds() < 2) {
-    return current_prompt_;
-  }
+  if( current_prompt_ != "" )
+    if (cronometer_prompt_request_.seconds() < 2) {
+      return current_prompt_;
+    }
 
   // Prepare message to be send to server
   au::gpb::ConsolePacket m;

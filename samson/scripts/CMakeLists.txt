@@ -5,6 +5,7 @@ SET (FILES
     samsonPrepareServer
     samsonModuleDist
     samsonInitSetup
+	samsonTest
 )
 
 # Instalation header files

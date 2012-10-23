@@ -31,7 +31,7 @@
 
 #include "au/statistics/Cronometer.h"
 #include "au/statistics/Cronometer.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 
 #include "au/mutex/Token.h"

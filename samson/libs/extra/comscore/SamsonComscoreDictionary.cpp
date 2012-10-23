@@ -55,9 +55,9 @@ void SamsonComscoreDictionary::push(OriginalDictionaryEntry& original_dictionary
   DictionaryEntry entry;
 
   entry.id = original_dictionary_entry.id;
-  entry.domain             = string_collection.add(original_dictionary_entry.domain.c_str());
-  entry.pre_domain_pattern = string_collection.add(original_dictionary_entry.pre_domain_pattern.c_str());
-  entry.path_pattern       = string_collection.add(original_dictionary_entry.path_pattern.c_str());
+  entry.domain             = string_collection.Add(original_dictionary_entry.domain.c_str());
+  entry.pre_domain_pattern = string_collection.Add(original_dictionary_entry.pre_domain_pattern.c_str());
+  entry.path_pattern       = string_collection.Add(original_dictionary_entry.path_pattern.c_str());
 
   dictionary_entries.add(entry);
 }
@@ -70,7 +70,7 @@ void SamsonComscoreDictionary::push_category(uint id, std::string category) {
   Id2Id entry;
 
   entry.first = id;
-  entry.second = string_collection.add(category.c_str());
+  entry.second = string_collection.Add(category.c_str());
 
   categories.add(entry);
 }
@@ -81,7 +81,7 @@ void SamsonComscoreDictionary::write(const char *file_name) {
   if (!file) {
     LM_X(1, ("Not possible to open file %s to write a SamsonComscoreDictionary", file_name ));  // Prepare & write header
   }
-  header.size_string_collection = string_collection.getSize();
+  header.size_string_collection = string_collection.GetSize();
   header.size_struct_collection_dictionary_entries = dictionary_entries.getSize();
   header.size_struct_collection_pattern_to_category = pattern_to_category.getSize();
   header.size_struct_collection_categories = categories.getSize();
@@ -107,7 +107,7 @@ void SamsonComscoreDictionary::write(const char *file_name) {
 
 
   // Write String collection
-  string_collection.write(file);
+  string_collection.Write(file);
 
   // Write dictionary_entries
   dictionary_entries.write(file);
@@ -128,7 +128,7 @@ void SamsonComscoreDictionary::read(const char *file_name) {
   if (fread(&header, sizeof( Header ), 1, file) != 1) {
     LM_X(1, ("Error reading %s while recovering SamsonComscoreDictionary", file_name));  // Recover string collection
   }
-  string_collection.read(file, header.size_string_collection);
+  string_collection.Read(file, header.size_string_collection);
 
   // Recover dictionary_entries
   dictionary_entries.read(file, header.size_struct_collection_dictionary_entries);
@@ -162,14 +162,14 @@ bool SamsonComscoreDictionary::find_pattern_range(const char *core_domain, uint 
 
     // Move limits while same core domain
     while ((*begin > 1) &&
-           (strcmp(core_domain, string_collection.get(dictionary_entries.v[*begin - 1].domain)) == 0))
+           (strcmp(core_domain, string_collection.Get(dictionary_entries.v[*begin - 1].domain)) == 0))
     {
       *begin = *begin - 1;
     }
     while (
       (*end < (uint)dictionary_entries.size - 2)
       &&
-      (strcmp(core_domain, string_collection.get(dictionary_entries.v[*end + 1].domain)) == 0)
+      (strcmp(core_domain, string_collection.Get(dictionary_entries.v[*end + 1].domain)) == 0)
       )
     {
       *end = *end + 1;
@@ -195,21 +195,21 @@ uint SamsonComscoreDictionary::find_one_pattern(const char *core_domain) {
 
 const char *SamsonComscoreDictionary::get_domain_for_pattern(uint pos) {
   uint string_pos = dictionary_entries.v[pos].domain;
-  const char *res = string_collection.get(string_pos);
+  const char *res = string_collection.Get(string_pos);
 
   return res;
 }
 
 const char *SamsonComscoreDictionary::get_pre_domain_for_pattern(uint pos) {
   uint string_pos = dictionary_entries.v[pos].pre_domain_pattern;
-  const char *res = string_collection.get(string_pos);
+  const char *res = string_collection.Get(string_pos);
 
   return res;
 }
 
 const char *SamsonComscoreDictionary::get_path_for_pattern(uint pos) {
   uint string_pos = dictionary_entries.v[pos].path_pattern;
-  const char *res = string_collection.get(string_pos);
+  const char *res = string_collection.Get(string_pos);
 
   return res;
 }
@@ -276,7 +276,7 @@ const char *SamsonComscoreDictionary::getCategoryName(uint id) {
   if (s.size() != 1) {
     return "Unknown";
   } else {
-    return string_collection.get(s[0]);
+    return string_collection.Get(s[0]);
   }
 }
 
@@ -295,21 +295,21 @@ const char *SamsonComscoreDictionary::getDomainForEntry(size_t i) {
   if (i > dictionary_entries.size) {
     return "Unknown";
   }
-  return string_collection.get(dictionary_entries.v[i].domain);
+  return string_collection.Get(dictionary_entries.v[i].domain);
 }
 
 const char *SamsonComscoreDictionary::getPreDomainPatternForEntry(size_t i) {
   if (i > dictionary_entries.size) {
     return "Unknown";
   }
-  return string_collection.get(dictionary_entries.v[i].pre_domain_pattern);
+  return string_collection.Get(dictionary_entries.v[i].pre_domain_pattern);
 }
 
 const char *SamsonComscoreDictionary::getPathPatternForEntry(size_t i) {
   if (i > dictionary_entries.size) {
     return "Unknown";
   }
-  return string_collection.get(dictionary_entries.v[i].path_pattern);
+  return string_collection.Get(dictionary_entries.v[i].path_pattern);
 }
 }
 }

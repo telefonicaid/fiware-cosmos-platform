@@ -21,7 +21,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/string/string.h"                  // au::str()
+#include "au/string/StringUtilities.h"                  // au::str()
 
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
@@ -92,7 +92,7 @@ PaArgument paArgs[] =
 
 int logFd = -1;
 
-void find_and_replace(std::string &source, const std::string find, std::string replace) {
+void FindAndReplaceInString(std::string &source, const std::string find, std::string replace) {
   size_t j;
 
   for (; (j = source.find(find)) != std::string::npos; ) {
@@ -104,7 +104,7 @@ void literal_string(std::string& txt) {
   std::string slash = "\n";
   std::string replace_slash = "\\n";
 
-  find_and_replace(txt, slash, replace_slash);
+  FindAndReplaceInString(txt, slash, replace_slash);
 }
 
 size_t full_read(int fd, char *data, size_t size) {

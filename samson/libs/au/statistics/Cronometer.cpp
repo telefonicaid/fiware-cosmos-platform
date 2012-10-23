@@ -1,6 +1,6 @@
 
 #include "au/string/S.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "time.h"
 
 #include "Cronometer.h"     // Own interface
@@ -18,13 +18,6 @@ void Cronometer::Reset() {
   }
 }
 
-double Cronometer::secondsAndReset() {
-  double t = seconds();
-
-  Reset();
-  return t;
-}
-
 double Cronometer::seconds() const {
   struct timeval t;
 
@@ -39,14 +32,6 @@ double Cronometer::seconds() const {
 
 void Cronometer::AddOffset(int offset) {
   t_.tv_sec += offset;
-}
-
-bool Cronometer::ResetIfGreaterThan(double time) {
-  if (seconds() >= time) {
-    Reset();
-    return true;
-  }
-  return false;
 }
 
 std::string Cronometer::str() {

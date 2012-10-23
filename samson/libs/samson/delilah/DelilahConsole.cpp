@@ -21,7 +21,7 @@
 #include "au/log/LogCommon.h"
 #include "au/log/LogMain.h"
 #include "au/string/S.h"
-#include "au/string/string.h"                           // au::Format
+#include "au/string/StringUtilities.h"                           // au::Format
 #include "au/tables/pugi.h"                      // pugi::Pugi
 #include "au/tables/pugixml.hpp"                 // pugi:...
 #include "au/tables/Table.h"
@@ -383,7 +383,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (mode == mode_database) {
     // Run data base command
     std::string result = runDatabaseCommand(command_instance->command_line());
-    writeOnConsole(au::strToConsole(result));
+    writeOnConsole(au::StringInConsole(result));
     return 0;
   }
 
@@ -460,9 +460,9 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     } else {
       std::ostringstream output;
       output << "\n";
-      output << au::lineInConsole('=') << "\n";
+      output << au::StringRepeatingCharInConsole('=') << "\n";
       output << " SAMSON v " << SAMSON_VERSION << "\n";
-      output << au::lineInConsole('=') << "\n";
+      output << au::StringRepeatingCharInConsole('=') << "\n";
       output << "\n";
       output << au::str_indent(general_description) << "\n";
       output << "\n";
@@ -470,14 +470,14 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       output << "\n";
       output << au::str_indent(au::str("Telefonica I+D 2010-2012")) << "\n";
       output << "\n";
-      output << au::lineInConsole('-') << "\n";
+      output << au::StringRepeatingCharInConsole('-') << "\n";
       output << "\n";
       output << "\thelp all .................. get a list of all available commands\n";
       output << "\thelp categories ........... get a list of command categories\n";
       output << "\thelp <command> ............ get detailed information for a command\n";
       output << "\thelp <category> ........... get list of commands for a particular categoriy\n";
       output << "\n";
-      output << au::lineInConsole('-') << "\n";
+      output << au::StringRepeatingCharInConsole('-') << "\n";
       output << "\n";
 
       std::string text = output.str();
@@ -592,7 +592,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "show_alerts") {
     std::string txt = trace_colleciton.str();
-    writeOnConsole(au::strToConsole(txt));
+    writeOnConsole(au::StringInConsole(txt));
     return 0;
   }
 
@@ -668,7 +668,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     }
 
     std::string txt = getListOfComponents();
-    writeOnConsole(au::strToConsole(txt));
+    writeOnConsole(au::StringInConsole(txt));
     return 0;
   }
 

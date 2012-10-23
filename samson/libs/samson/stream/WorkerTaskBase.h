@@ -8,7 +8,7 @@
 
 #include "au/log/LogCentral.h"
 #include "au/log/LogCommon.h"
-#include "au/string/string.h"               // au::Format
+#include "au/string/StringUtilities.h"               // au::Format
 #include "engine/ProcessItem.h"      // engine::ProcessItem
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/samson.pb.h"

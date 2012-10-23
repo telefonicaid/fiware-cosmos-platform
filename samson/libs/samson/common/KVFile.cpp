@@ -1,5 +1,5 @@
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "logMsg/logMsg.h"
 #include <stdlib.h>  // malloc
 

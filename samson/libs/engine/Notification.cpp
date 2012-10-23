@@ -1,6 +1,6 @@
 #include "engine/Notification.h"   // Own interface
 
-#include "au/string/string.h"      // au::Format
+#include "au/string/StringUtilities.h"      // au::Format
 
 #include "engine/NotificationListener.h"         // engine::NotificationListener
 

@@ -18,7 +18,7 @@
 #include "au/containers/list.h"
 #include "au/statistics/Cronometer.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/ThreadManager.h"
 #include "au/utils.h"
 
@@ -533,7 +533,7 @@ void Console::writeOnConsole(std::string message) {
 
     // Get terminal size
     int x, y;
-    au::get_term_size(1, &x, &y);
+    au::GetTerminalSize(1, &x, &y);
 
     int pos = 0;   // Line to print
     size_t num_lines_on_screen = y - 3;

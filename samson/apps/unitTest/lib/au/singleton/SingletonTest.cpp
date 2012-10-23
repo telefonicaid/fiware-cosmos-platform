@@ -25,7 +25,7 @@ TEST(au_singleton_Singleton, basic) {
   // Destroy the instance to get a new one
   au::Singleton<TestBase>::DestroySingleton();
   TestBase *example3 = au::Singleton<TestBase>::shared();
-  EXPECT_FALSE(10 == example3->value());
+  EXPECT_NE(10 , example3->value());
 
   // Still on element in the manager
   EXPECT_EQ((size_t)1, au::singleton_manager.size());

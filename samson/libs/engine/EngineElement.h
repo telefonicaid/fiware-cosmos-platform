@@ -32,7 +32,7 @@
 #include "logMsg/traceLevels.h"  // LmtEngine
 
 #include "au/statistics/Cronometer.h"
-#include "au/string/string.h"                      // au::Format
+#include "au/string/StringUtilities.h"                      // au::Format
 
 namespace engine {
 class EngineElement {

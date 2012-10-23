@@ -9,7 +9,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 
 namespace au {
@@ -18,7 +18,7 @@ const char *valid_chars = "01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP
 int getTerminalColumns() {
   int x, y;
 
-  get_term_size(0, &x, &y);
+  GetTerminalSize(0, &x, &y);
   return x;
 }
 

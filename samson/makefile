@@ -579,3 +579,6 @@ di_47:
 
 di_clang:
 	CC=clang CXX=clang++ make di
+
+gcovr:
+	scripts/gcovr --object-directory=$(PWD)/BUILD_COVERAGE -f $(PWD)/ -e BUILD_COVERAGE/modules -e modules

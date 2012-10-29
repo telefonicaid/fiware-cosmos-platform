@@ -15,7 +15,7 @@
 
 #include "au/file.h"                             // au::sizeOfFile
 #include "au/mutex/TokenTaker.h"                 // au::TokenTake
-#include "au/string/string.h"                           // au::Format
+#include "au/string/StringUtilities.h"                           // au::Format
 
 #include "SharedMemoryItem.h"   // samson::SharedMemoryItem
 #include "engine/Buffer.h"                       // samson::Buffer

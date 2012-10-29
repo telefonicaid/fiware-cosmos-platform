@@ -10,7 +10,7 @@
  * All rights reserved.
  */
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 #include "au/containers/StringVector.h"  // Own interface
 

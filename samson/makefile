@@ -14,7 +14,7 @@ SAMSON_VERSION=0.7.0
 endif
 ifndef SAMSON_RELEASE
 	# Use the current timestamp guarantee unique builds
-	SAMSON_RELEASE:=$(shell echo `date +%Y%M%d%H%M`_git)
+	SAMSON_RELEASE:=$(shell echo `date +%Y%M%d%H%M`)
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -233,6 +233,7 @@ test_init:
 	mkdir -p coverage
 	lcov --zerocounters --directory BUILD_COVERAGE/
 	lcov --capture --initial --directory BUILD_COVERAGE -b BUILD_COVERAGE --output-file coverage/samson.init.info
+	mkdir -p $(LOG_DIR) || true
 	logServer -port ${SAMSON_LOG_PORT_ENV} -dir ${LOGSERVER_LOG_DIR} -query_port ${SAMSON_LOGQUERY_PORT_ENV}
 	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} ${SAMSON_LOG_LEVELS} -zk ${ZOOKEEPER_SERVER}:${ZOOKEEPER_PORT}
 
@@ -471,8 +472,8 @@ rpm: clean
 
 publish_rpm: rpm
 	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
-	rsync  -v  ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@$(REPO_SERVER):/var/repository/redhat/6/x86_64
-	ssh repo@$(REPO_SERVER) createrepo -q -d /var/repository/redhat/6/x86_64
+	rsync  -e 'ssh -i package/ssh/repository' -v  ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@$(REPO_SERVER):/var/repository/redhat/6/x86_64
+	ssh -i package/ssh/repository repo@$(REPO_SERVER) createrepo -q -d /var/repository/redhat/6/x86_64
 
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
@@ -486,7 +487,7 @@ deb:
 
 publish_deb: deb
 	# Upload the files. A cron job on the server will include them in the repository
-	scp package/deb/* repo@$(REPO_SERVER):/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
+	rsync -e 'ssh -i package/ssh/repository' -v  package/deb/* repo@$(REPO_SERVER):/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
 
 man_release:
 	if [ ! -d BUILD_RELEASE ]; then \

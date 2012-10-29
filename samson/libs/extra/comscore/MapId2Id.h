@@ -9,7 +9,7 @@
 
 #include "au/string/StringCollection.h"
 #include "au/StructCollection.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 
 #include "comscore/common.h"

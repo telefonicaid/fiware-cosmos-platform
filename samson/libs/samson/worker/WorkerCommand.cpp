@@ -3,7 +3,7 @@
 #include <algorithm>
 
 #include "au/ErrorManager.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/utils.h"
 
 #include "engine/DiskManager.h"
@@ -51,7 +51,7 @@ class AliasManager {
       au::simple_map<std::string, std::string>::iterator it_aliases;
 
       for (it_aliases = aliases.begin(); it_aliases != aliases.end(); it_aliases++) {
-        au::find_and_replace(command, it_aliases->first, it_aliases->second);
+        au::FindAndReplaceInString(command, it_aliases->first, it_aliases->second);
       }
 
       return command;

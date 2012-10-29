@@ -5,7 +5,7 @@
 #define _H_SAMSON_COMSCORE_COMMON
 
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include <string>
 
 namespace samson {

@@ -1,6 +1,6 @@
 
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "engine/Buffer.h"
 #include "samson_system/Value.h"
 

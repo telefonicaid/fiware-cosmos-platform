@@ -22,7 +22,7 @@ public:
       delete instance_;
       instance_ = NULL;
     }
-  };
+  }
 
   static C *shared() {
     if (!singleton_) {

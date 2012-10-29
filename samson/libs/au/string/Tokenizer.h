@@ -26,7 +26,7 @@
 #include "logMsg/logMsg.h"
 
 #include "au/containers/vector.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 namespace au {
 namespace token {

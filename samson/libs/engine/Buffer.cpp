@@ -15,7 +15,7 @@
 #include "logMsg/traceLevels.h"  // Trace Levels
 
 #include "au/file.h"
-#include "au/string/string.h"          // au::Format
+#include "au/string/StringUtilities.h"          // au::Format
 #include "au/string/xml.h"             // au::xml...
 
 #include "engine/Buffer.h"      // Own interface

@@ -16,7 +16,7 @@
 #include "au/ThreadManager.h"
 #include "au/file.h"
 #include "au/network/RESTServiceCommand.h"
-#include "au/string/string.h"                            // au::Format
+#include "au/string/StringUtilities.h"                            // au::Format
 #include "au/tables/pugixml.hpp"                  // pugixml
 #include "au/time.h"                              // au::todayString
 

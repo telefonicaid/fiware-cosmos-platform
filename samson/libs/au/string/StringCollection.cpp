@@ -5,18 +5,19 @@
 
 namespace au {
 StringCollection::StringCollection() {
-  v = (char *)malloc(1);
-  size = 0;
-  max_size = 1;
+  v_ = (char *)malloc(1);
+  size_ = 0;
+  max_size_ = 1;
 }
 
 StringCollection::~StringCollection() {
-  if (v) {
-    free(v);
+  if (v_) {
+    free(v_);
+    v_ = NULL;
   }
 }
 
-int StringCollection::add(const char *string) {
+int StringCollection::Add(const char *string) {
   // --------------------------------------------------------
   // Check previously introduced the same string
   // --------------------------------------------------------
@@ -27,27 +28,27 @@ int StringCollection::add(const char *string) {
     return it->second;  // --------------------------------------------------------
   }
   size_t len = strlen(string);
-  size_t required_size = size + len + 1;
+  size_t required_size = size_ + len + 1;
 
   // Alloc more space if necessary
-  if (required_size > max_size) {
-    size_t future_max_size = max_size;
+  if (required_size > max_size_) {
+    size_t future_max_size = max_size_;
     while (future_max_size < required_size) {
       future_max_size *= 2;
     }
 
     char *vv = (char *)malloc(future_max_size);
-    memcpy(vv, v, size);
+    memcpy(vv, v_, size_);
 
-    free(v);
-    v = vv;
-    max_size = future_max_size;
+    free(v_);
+    v_ = vv;
+    max_size_ = future_max_size;
   }
 
-  int pos = (int)size;
+  int pos = (int)size_;
 
-  memcpy(v + size, string, len + 1);
-  size += (len + 1);
+  memcpy(v_ + size_, string, len + 1);
+  size_ += (len + 1);
 
 
   // Add in the map of preivous string
@@ -56,37 +57,37 @@ int StringCollection::add(const char *string) {
   return pos;
 }
 
-size_t StringCollection::write(FILE *file) {
-  size_t t = fwrite(v, size, 1, file);
+size_t StringCollection::Write(FILE *file) {
+  size_t t = fwrite(v_, size_, 1, file);
 
   if (t == 1) {
-    return size;
+    return size_;
   } else {
     return 0;
   }
 }
 
-void StringCollection::read(FILE *file, size_t _size) {
+void StringCollection::Read(FILE *file, size_t _size) {
   // Free preivous buffer if any
-  if (v) {
-    free(v);
+  if (v_) {
+    free(v_);
   }
-  v = (char *)malloc(_size);
-  size = _size;
-  max_size = _size;
+  v_ = (char *)malloc(_size);
+  size_ = _size;
+  max_size_ = _size;
 
   // Read content from file
-  size_t r = fread(v, _size, 1, file);
+  size_t r = fread(v_, _size, 1, file);
   if (r != 1) {
     LM_W(("Error reading StringCollection"));
   }
 }
 
-size_t StringCollection::getSize() {
-  return size;
+size_t StringCollection::GetSize() {
+  return size_;
 }
 
-const char *StringCollection::get(int pos) {
-  return &v[pos];
+const char *StringCollection::Get(int pos) {
+  return &v_[pos];
 }
 }

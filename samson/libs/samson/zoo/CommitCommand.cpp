@@ -1,6 +1,6 @@
 #include "samson/zoo/CommitCommand.h"  // Own interface
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 namespace samson {
 CommitCommandItem::CommitCommandItem(const std::string& command, const std::string& queue, size_t block_id,

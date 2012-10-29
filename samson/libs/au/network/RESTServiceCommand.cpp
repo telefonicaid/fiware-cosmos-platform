@@ -4,7 +4,7 @@
 
 namespace au {
 namespace network {
-void find_and_replace(std::string& source, const std::string& find, const std::string& replace) {
+void FindAndReplaceInString(std::string& source, const std::string& find, const std::string& replace) {
   size_t j;
 
   for (; (j = source.find(find)) != std::string::npos;) {
@@ -59,11 +59,11 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
     resource_ = cmdLine.get_argument(1);
 
     // Replace url-chars for the real ones....
-    find_and_replace(resource_, "%7B", "{");
-    find_and_replace(resource_, "%7D", "}");
-    find_and_replace(resource_, "%22", "\"");
-    find_and_replace(resource_, "%5B", "[");
-    find_and_replace(resource_, "%5D", "]");
+    FindAndReplaceInString(resource_, "%7B", "{");
+    FindAndReplaceInString(resource_, "%7D", "}");
+    FindAndReplaceInString(resource_, "%22", "\"");
+    FindAndReplaceInString(resource_, "%5B", "[");
+    FindAndReplaceInString(resource_, "%5D", "]");
 
     // Get path componenets and format
     path_components_ = StringVector::ParseFromString(resource_, '/');

@@ -28,7 +28,7 @@
 #include <string>           // std::string
 #include <vector>
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/tables/pugixml.hpp"     // pugi::...
 
 namespace au {

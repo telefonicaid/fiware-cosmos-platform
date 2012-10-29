@@ -12,7 +12,7 @@
 #include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/string/Descriptors.h"              // au::CounterCollection
 #include "au/ErrorManager.h"  // au::ErrorManager
-#include "au/string/string.h"  // au::Format
+#include "au/string/StringUtilities.h"  // au::Format
 
 #include "engine/DiskManager.h"     // engine::DiskManager
 #include "engine/Engine.h"               // engine::NotificationListener

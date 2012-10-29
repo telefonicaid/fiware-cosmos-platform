@@ -22,7 +22,7 @@
 #include "au/containers/map.h"               // au::map
 #include "au/mutex/Token.h"                  // au::Token
 #include "au/mutex/TokenTaker.h"             // au::TokenTaker
-#include "au/string/string.h"                       // au::Table
+#include "au/string/StringUtilities.h"                       // au::Table
 
 #include "au/tables/pugi.h"                  // pugi::...
 

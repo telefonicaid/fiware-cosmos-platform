@@ -27,7 +27,7 @@
 #include "au/log/LogPluginConsole.h"
 #include "au/log/LogCommon.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 #include "engine/DiskManager.h"
 #include "engine/Engine.h"

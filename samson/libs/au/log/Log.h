@@ -15,7 +15,7 @@
 #include "au/containers/vector.h"
 #include "au/log/LogCommon.h"
 #include "au/network/FileDescriptor.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/tables/Table.h"
 #include "au/tables/Table.h"
 

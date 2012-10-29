@@ -7,7 +7,7 @@
 #define _H_SAMSON_webp_parse_tid_web_logs
 
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include <samson/module/samson.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/Void.h>

@@ -1,6 +1,6 @@
 
 #include "au/mutex/TokenTaker.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 
 #include "Rate.h"        // Own interface
 

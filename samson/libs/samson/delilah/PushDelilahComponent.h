@@ -11,7 +11,7 @@
 #include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/ErrorManager.h"             // au::ErrorManager
 #include "au/containers/Uint64Vector.h"
-#include "au/string/string.h"                   // au::Format
+#include "au/string/StringUtilities.h"                   // au::Format
 
 #include "engine/DiskManager.h"     // engine::DiskManager
 #include "engine/Engine.h"               // engine::NotificationListener

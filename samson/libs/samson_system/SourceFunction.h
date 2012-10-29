@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "au/containers/vector.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/string/StringComponents.h"
 #include "au/string/Tokenizer.h"
 #include "samson_system/KeyValue.h"

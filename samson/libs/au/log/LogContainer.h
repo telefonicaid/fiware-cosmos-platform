@@ -15,7 +15,7 @@
 #include "au/log/TableLogFormatter.h"
 #include "au/network/FileDescriptor.h"
 #include "au/network/Service.h"
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/tables/Table.h"
 
 namespace au {

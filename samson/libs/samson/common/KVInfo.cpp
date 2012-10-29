@@ -1,5 +1,5 @@
 
-#include "au/string/string.h"
+#include "au/string/StringUtilities.h"
 #include "au/string/xml.h"
 
 #include "samson/module/Data.h"

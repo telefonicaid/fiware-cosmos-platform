@@ -2,9 +2,8 @@
 #include "ReadFile.h"               // engine::ReadFile
 #include "ReadFileManager.h"        // Own interface
 
-#include "logMsg/traceLevels.h"     // LmtIsolated, etc.
-
 namespace engine {
+
 ReadFileManager::ReadFileManager() {
   // Default number of open files
   max_open_files_ = 100;

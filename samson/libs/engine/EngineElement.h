@@ -1,29 +1,28 @@
-
-/*
- * Telefónica Digital - Product Development and Innovation
- *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
- *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
- */
-
-/*
- * AUTHOR          Andreu Urruela
- *
- * DATE            July 2011
- *
- * DESCRIPTION
- *
- * Element defining a simple foreground task to be executed in the main thread
- * This is the basic elements of the Engine library and can be scheduled using engine::Engine::shared()->add( . )
- */
-
 #ifndef SAMSON_LIBS_ENGINE_ENGINEELEMENT_H_
 #define SAMSON_LIBS_ENGINE_ENGINEELEMENT_H_
 
+/* ****************************************************************************
+* AUTHOR          Andreu Urruela
+*
+* DATE            July 2011
+*
+* DESCRIPTION
+* Element defining a simple foreground task to be executed in the main thread
+* This is the basic elements of the Engine library and can be scheduled using
+* engine::Engine::shared()->add( . )
+*
+*
+*
+* Telefónica Digital - Product Development and Innovation
+*
+* THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+* EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+*
+* Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+* All rights reserved.
+*
+*/
 #include <sstream>                          // std::ostringstream
 #include <string>
 #include <unistd.h>                         // sleep
@@ -38,17 +37,16 @@ namespace engine {
 class EngineElement {
 public:
 
-  explicit EngineElement(std::string name);   // Constructor for single task or extra tasks
+  explicit EngineElement(std::string name);        // Constructor for single task or extra tasks
   EngineElement(std::string name, int seconds);    // Constructor for repeated task
-  virtual ~EngineElement() {
-  };                                        // Virtual destructor necessary to destory children-classes correctly
+  virtual ~EngineElement() {};                     // Virtual destructor necessary to destroy child-classes correctly
 
-  virtual void run() = 0;                   // Run method to execute
+  virtual void run() = 0;                          // Run method to execute
 
   void SetAsExtra();  // Set as an extra element ( to be executed when nothing else has to be executed )
   void Reschedule();  // Reschedule action once executed ( for repeated )
 
-  // Accessorts
+  // Accessors
   bool IsRepeated() const;
   bool IsExtra() const;
   bool IsNormal() const;

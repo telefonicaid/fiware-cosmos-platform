@@ -11,20 +11,19 @@
  * unit testing of the dMemoryManager class in the engine library
  *
  */
-
 #include "gtest/gtest.h"
-
 #include "au/ThreadManager.h"
-
 #include "engine/MemoryManager.h"
-
 #include "xmlparser/xmlParser.h"
-
 #include "unitTest/common_engine_test.h"
+#include "engine/Buffer.h"
+#include "samson/client/BufferContainer.h"
+#include "au/tables/Table.h"
+
 
 /*
  *
- * //Old Test void add( MemoryRequest *request ); (MemoryRequest disappeared
+ * // Old Test void add( MemoryRequest *request ); (MemoryRequest disappeared
  * TEST(memoryManagerTest, addTest)
  * {
  *
@@ -67,39 +66,54 @@
  *      close_engine_test();
  *
  * }
- *
- * //Test size_t used_memory();
- * //Test double getMemoryUsage();
- * TEST(memoryManagerTest, used_memoryTest)
- * {
- *
- * init_engine_test();
- *
- *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 0) << "Used memory does not match";
- *
- *  engine::Buffer* buffer1 = engine::Engine::memory_manager()->createBuffer( "buffer1" ,  "test" , 100  );
- *
- *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 100) << "Used memory does not match";
- *
- *  engine::Buffer* buffer2 = engine::Engine::memory_manager()->createBuffer( "buffer2" , "test" , 100  );
- *
- *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 200) << "Used memory does not match";
- *
- *  buffer1->Release();
- *
- *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 100) << "Used memory does not match";
- *
- *  buffer2->Release();
- *
- *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 0) << "Used memory does not match";
- *
- *      close_engine_test();
- *
- * }
- *
- *
- *
- * //Test void runThread();
- *
- *
  */
+
+
+
+//
+// used_memory
+//
+TEST(memoryManagerTest, used_memory) {
+  init_engine_test();
+
+  {
+    samson::BufferContainer* bc   = new samson::BufferContainer();
+    engine::BufferPointer    buf1 = engine::Buffer::Create("buf1", "ram", 3 * 1024);  // Added to memory_manager
+
+    EXPECT_TRUE(buf1 != NULL);
+
+    bc->Push("testqueue", buf1);
+    size_t usedMemory = engine::Engine::memory_manager()->used_memory();
+    EXPECT_EQ(3 * 1024, usedMemory);
+
+    int bufs = engine::Engine::memory_manager()->num_buffers();
+    EXPECT_EQ(1, bufs);
+
+    double musage = engine::Engine::memory_manager()->memory_usage();
+    LM_M(("memory usage: %02d%%", (int) (musage * 100)));
+
+    bc->Pop("testqueue");
+    usedMemory = engine::Engine::memory_manager()->used_memory();
+    EXPECT_EQ(3 * 1024, usedMemory);  // Actually, I would like it to be empty ... :-(
+
+    delete bc;
+  }
+
+  close_engine_test(); // Can't kill memory manager until after block ends ...
+}
+
+
+
+//
+// table
+//
+TEST(memoryManagerTest, table) {
+  init_engine_test();
+
+  {
+    engine::BufferPointer    buf1   = engine::Buffer::Create("buf1", "ram", 3 * 1024);  // Added to memory_manager
+    au::tables::Table        table  = engine::Engine::memory_manager()->getTableOfBuffers();
+  }
+
+  close_engine_test();
+}

@@ -40,8 +40,9 @@ public:
 private:
 
   std::string file_name_;     // Filename
-  size_t offset_;             // Offset positiong while reading the file
-  FILE *file_;                // File pointer to access this file
+  size_t      offset_;        // Offset positiong while reading the file
+  FILE*       file_;          // File pointer to access this file
+  size_t      file_size_;     // Size of file
 };
 }
 

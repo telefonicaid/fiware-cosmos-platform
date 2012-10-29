@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE            Object.h
+* FILE            NotificationListener.h
 *
 * AUTHOR          Andreu Urruela
 *

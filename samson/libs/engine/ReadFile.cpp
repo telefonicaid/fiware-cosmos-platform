@@ -6,8 +6,17 @@
 namespace engine {
 ReadFile::ReadFile(const std::string& file_name) {
   file_name_ = file_name;
-  file_ = fopen(file_name_.c_str(), "r");
-  offset_ = 0;
+  file_      = fopen(file_name_.c_str(), "r");
+  offset_    = 0;
+
+  if (file_ != NULL)
+  {
+	 fseek(file_, 0, SEEK_END);
+	 file_size_ = ftell(file_);
+	 fseek(file_, 0, SEEK_SET);
+  }
+  else
+	 LM_E(("The file '%s' doesn't exist", file_name.c_str()));
 }
 
 ReadFile::~ReadFile() {
@@ -23,13 +32,18 @@ int ReadFile::Seek(size_t offset) {
     return 0;       // Correct... just do not move
   }
 
-  // Set the current offset
-  offset_ = offset;
+  if (offset > file_size_)
+  {
+	 return 2;
+  }
 
   if (fseek(file_, offset, SEEK_SET) != 0) {
     Close();
     return 3;
   }
+
+  // Set the current offset
+  offset_ = offset;
 
   // Everything correct
   return 0;
@@ -41,7 +55,7 @@ int ReadFile::Read(char *read_buffer, size_t size) {
   }
 
   if (fread(read_buffer, size, 1, file_) == 1) {
-    offset_ += size;     // Move the offser according to the read bytes
+    offset_ += size;     // Move the offset according to the bytes read
     return 0;
   } else {
     return 1;       // Error at reading

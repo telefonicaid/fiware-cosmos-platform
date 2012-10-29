@@ -28,12 +28,22 @@
 // Test size_t max_size();
 TEST(bufferTest, basic) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     EXPECT_EQ(0ULL, buffer1->size());
     EXPECT_EQ(15ULL, buffer1->max_size());
 
     buffer1->set_size(10);
+    EXPECT_EQ(10ULL, buffer1->size()) << "Error in set_size()";
+
+    au::Environment e = buffer1->environment();
+    // Anything to check?
+
+    //
+    // Erroneous set_size:
+    //
+    buffer1->set_size(16);
     EXPECT_EQ(10ULL, buffer1->size()) << "Error in set_size()";
 
     buffer1->set_size(5);
@@ -56,6 +66,7 @@ TEST(bufferTest, basic) {
 // Test bool write( char * input_buffer , size_t input_size );
 TEST(bufferTest, writeTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "01234567890123456789";
@@ -78,6 +89,7 @@ TEST(bufferTest, writeTest) {
 // Test bool skipWrite( size_t size );
 TEST(bufferTest, skipWriteTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "01234567890123456789";
@@ -98,6 +110,7 @@ TEST(bufferTest, skipWriteTest) {
 // Test void write( std::ifstream &inputStream );
 TEST(bufferTest, ifstreamWriteTest) {
   init_engine_test();
+
   {
     std::string fileName = "test_data/testdata.txt";
 
@@ -125,12 +138,14 @@ TEST(bufferTest, ifstreamWriteTest) {
 // Test size_t getAvailableWrite();
 TEST(bufferTest, getAvailableWriteTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "01234567890123456789";
     buffer1->Write(data, 10);
     EXPECT_EQ(5ULL, buffer1->GetAvailableSizeToWrite());
   }
+
   close_engine_test();
 }
 
@@ -140,6 +155,7 @@ TEST(bufferTest, getAvailableWriteTest) {
 // Test size_t skipRead( size_t size);
 TEST(bufferTest, skipReadTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "0123456789";
@@ -151,6 +167,7 @@ TEST(bufferTest, skipReadTest) {
     // readbuffer should have started reading at 3 instead of 0
     EXPECT_EQ(strcmp(readBuffer, "3456"), 0) << "wrong data after skipRead";
   }
+
   close_engine_test();
 }
 
@@ -159,6 +176,7 @@ TEST(bufferTest, skipReadTest) {
 // Test size_t read( char *output_buffer, size_t output_size);
 TEST(bufferTest, readTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "0123456789";
@@ -168,6 +186,7 @@ TEST(bufferTest, readTest) {
     readBuffer[4] = '\0';
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Reading error";
   }
+
   close_engine_test();
 }
 
@@ -177,6 +196,7 @@ TEST(bufferTest, readTest) {
 // Test size_t getSizePendingRead();
 TEST(bufferTest, getSizePendingReadTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "0123456789";
@@ -185,6 +205,7 @@ TEST(bufferTest, getSizePendingReadTest) {
     buffer1->Read(readBuffer, 4);
     EXPECT_EQ(buffer1->GetAvailableSizeToRead(), 6ULL) << "Wrong pending read size";
   }
+
   close_engine_test();
 }
 
@@ -194,6 +215,7 @@ TEST(bufferTest, getSizePendingReadTest) {
 // Test char *getData();
 TEST(bufferTest, getDataTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "0123456789";
@@ -203,15 +225,19 @@ TEST(bufferTest, getDataTest) {
     readBuffer[4] = '\0';
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Error accesing buffer data pointer";
   }
+
   close_engine_test();
 }
 
 
 
+//
 // Set used size manually
 // Test void set_size( size_t size );
+//
 TEST(bufferTest, set_sizeTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     buffer1->set_size(1);
@@ -224,14 +250,18 @@ TEST(bufferTest, set_sizeTest) {
     // the string "01234..." should start at position 1 instead of 0
     EXPECT_EQ(strcmp(readBuffer + 1, "0123456789"), 0) << "wrong data after manually setting used size";
   }
+
   close_engine_test();
 }
 
 
 
+//
 // Test SimpleBuffer getSimpleBuffer();
+//
 TEST(bufferTest, getSimpleBufferTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "0123456789";
@@ -246,14 +276,18 @@ TEST(bufferTest, getSimpleBufferTest) {
     readBuffer[4] = '\0';
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Wrong data in the SimpleBuffer";
   }
+
   close_engine_test();
 }
 
 
 
+//
 // Test SimpleBuffer getSimpleBufferAtOffset(size_t offset);
+//
 TEST(bufferTest, getSimpleBufferAtOffsetTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "0123456789";
@@ -269,21 +303,24 @@ TEST(bufferTest, getSimpleBufferAtOffsetTest) {
     // The dta in the SimpleBuffer should start at 2 instead of 0
     EXPECT_EQ(strcmp(readBuffer, "2345"), 0) << "Wrong data in the SimpleBuffer";
   }
+
   close_engine_test();
 }
 
 
 
+//
 // Remove the last characters of an unfinished line and put them in buffer.
 // Test int removeLastUnfinishedLine( char ** buffer , size_t* buffer_size);
+//
 TEST(bufferTest, removeLastUnfinishedLineTest) {
   init_engine_test();
+
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
 
     char data[21] = "0123\n0123\n012";
     buffer1->Write(data, 15);
-
 
     char *readBuffer = NULL;
     size_t bufferSize;
@@ -316,40 +353,44 @@ TEST(bufferTest, removeLastUnfinishedLineTest) {
 // GetTagString
 // RemoveTag
 //
-TEST(bufferTest, tagCollection)
-{
-	init_engine_test();
-	{
-		engine::BufferPointer buffer = engine::Buffer::Create("buffer1",  "test", 15);
-		std::string           s;
-		bool                  b;
+TEST(bufferTest, tagCollection) {
+  init_engine_test();
 
-		buffer->SetTag("aTag");
-		ASSERT_TRUE(buffer->contains_tag("aTag"));
+  {
+    engine::BufferPointer buffer = engine::Buffer::Create("buffer1",  "test", 15);
+    std::string           s;
+    bool                  b;
 
-		s = buffer->GetTagString();
-		LM_M(("GetTagString returned this: '%s'", s.c_str()));
+    buffer->SetTag("aTag");
+    ASSERT_TRUE(buffer->contains_tag("aTag"));
 
-		buffer->RemoveTag("aTag");
-		b = buffer->contains_tag("aTag");
-		if (b == true)
-			ASSERT_STREQ("Found 'aTag'", "This is an error - 'aTag' was just removed!");
-	}
+    s = buffer->GetTagString();
+    LM_M(("GetTagString returned this: '%s'", s.c_str()));
+
+    buffer->RemoveTag("aTag");
+    b = buffer->contains_tag("aTag");
+    if (b == true)
+       ASSERT_STREQ("Found 'aTag'", "This is an error - 'aTag' was just removed!");
+  }
+
+  close_engine_test();
 }
 
 
 
 // name
 // type
-TEST(bufferTest, name)
-{
-    init_engine_test();
-    {
-		engine::BufferPointer buffer = engine::Buffer::Create("buffer1",  "test", 15);
+TEST(bufferTest, name) {
+  init_engine_test();
 
-		EXPECT_STREQ("buffer1", buffer->name().c_str());
-		EXPECT_STREQ("test", buffer->type().c_str());
-	}
+  {
+    engine::BufferPointer buffer = engine::Buffer::Create("buffer1",  "test", 15);
+
+    EXPECT_STREQ("buffer1", buffer->name().c_str());
+    EXPECT_STREQ("test", buffer->type().c_str());
+  }
+
+  close_engine_test();
 }
 
 
@@ -357,20 +398,22 @@ TEST(bufferTest, name)
 //
 // setNameAndType
 //
-TEST(bufferTest, setNameAndType)
-{
-	init_engine_test();
-	{
-		engine::BufferPointer buf = engine::Buffer::Create("buf",  "test", 15);
+TEST(bufferTest, setNameAndType) {
+  init_engine_test();
 
-		buf->set_name_and_type("nameX", "typeX");
+  {
+    engine::BufferPointer buf = engine::Buffer::Create("buf",  "test", 15);
 
-		EXPECT_STREQ("nameX", buf->name().c_str());
-		EXPECT_STREQ("typeX", buf->type().c_str());
+    buf->set_name_and_type("nameX", "typeX");
 
-		buf->add_to_name("2");
-		EXPECT_STREQ("nameX2", buf->name().c_str());
-	}
+    EXPECT_STREQ("nameX", buf->name().c_str());
+    EXPECT_STREQ("typeX", buf->type().c_str());
+
+    buf->add_to_name("2");
+    EXPECT_STREQ("nameX2", buf->name().c_str());
+  }
+
+  close_engine_test();
 }
 
 
@@ -378,14 +421,32 @@ TEST(bufferTest, setNameAndType)
 //
 // WriteFile
 //
-TEST(bufferTest, WriteFile)
-{
-	init_engine_test();
-	{
-		au::ErrorManager       em;
-		engine::BufferPointer  buf = engine::Buffer::Create("buf",  "test", 150);
+TEST(bufferTest, WriteFile) {
+  init_engine_test();
 
-		buf->WriteFile("test_data/testdata.txt", em);
-		EXPECT_EQ(93, buf->size());
-	}
+  {
+    au::ErrorManager       em;
+    engine::BufferPointer  buf = engine::Buffer::Create("buf",  "test", 150);
+
+    buf->WriteFile("test_data/testdata.txt", em);
+    EXPECT_EQ(93, buf->size());
+  }
+
+  close_engine_test();
+}
+
+
+
+//
+// badMaxSize
+//
+TEST(bufferTest, badMaxSize) {
+  init_engine_test();
+
+  {
+    au::ErrorManager       em;
+    engine::BufferPointer  buf = engine::Buffer::Create("buf",  "test", 0);
+  }
+
+  close_engine_test();
 }

@@ -202,7 +202,7 @@ void DiskOperation::run() {
     // Get the Read file from the Manager
     ReadFile *rf = diskManager->fileManager_.GetReadFile(fileName);
 
-    if (!rf->IsValid()) {
+    if ((rf == NULL) || (!rf->IsValid())) {
       LM_E(("Internal error: Not valid read file %s", fileName.c_str()));
       setError("Internal error: Not valid read file");
     } else {

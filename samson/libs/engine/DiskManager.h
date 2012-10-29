@@ -57,8 +57,8 @@ public:
   void Cancel(const au::SharedPointer< ::engine::DiskOperation>& operation);
 
   // Main function for the background worker
-  // It is public only to be called form the thread-creation function
-  // note: make it frind
+  // It is public only to be called from the thread-creation function
+  // note: make it friend
   void run_worker();
 
   // Get information

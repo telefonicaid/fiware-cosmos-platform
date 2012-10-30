@@ -22,7 +22,7 @@ TEST(samson_common_KVHeader, basic) {
 
   samson::KVHeader header_txt;
   header_txt.InitForTxt(1000);
-  EXPECT_EQ( samson::KVFormat::KVFormatForTxt() , header_txt.GetKVFormat() );
+  EXPECT_TRUE( samson::KVFormat::KVFormatForTxt().isEqual( header_txt.GetKVFormat() ) );
   EXPECT_EQ( 0 , header_txt.info.kvs );
   EXPECT_EQ( 1000 , header_txt.info.size );
   EXPECT_TRUE( header_txt.IsTxt() );
@@ -31,7 +31,7 @@ TEST(samson_common_KVHeader, basic) {
 
   samson::KVHeader header_module;
   header_module.InitForModule(2000);
-  EXPECT_EQ( samson::KVFormat::KVFormatForModule() , header_module.GetKVFormat() );
+  EXPECT_TRUE( samson::KVFormat::KVFormatForModule().isEqual( header_module.GetKVFormat() ) );
   EXPECT_EQ( 2000 , header_module.info.size );
   EXPECT_EQ( 0 , header_module.info.kvs );
   EXPECT_FALSE( header_module.IsTxt() );

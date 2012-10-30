@@ -15,8 +15,6 @@
 *      In this case, we can return NULL if no object should be returned
 *      It greatly simplifies development of objects managers in memory
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef AU_CONTAINERS_QUEUE_H_

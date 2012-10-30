@@ -13,8 +13,6 @@
 *
 * Classes used to tokenize a string with a particular command
 *
-* COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 

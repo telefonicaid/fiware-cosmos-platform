@@ -14,8 +14,6 @@
  *      General ditionary of objects ( retained by shared pointers )
  *      Any object ( whatever class ) can be stored and retrieved
  *
- * COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef AU_CONTAINERS_GLOBAL_DICTIONARY_H_

@@ -14,8 +14,6 @@
 *  Class used to efficienly parse a string into components in a non-intrusive way
 *  Original string is never modified
 *
-* COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 

@@ -372,7 +372,7 @@ au::SharedPointer<gpb::Collection> BlockManager::GetCollectionOfBlocks(const Vis
 void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
   size_t block_id = au::Singleton<SamsonSetup>::shared()->block_id_from_filename(fileName);
 
-  if (block_id == 0) {
+  if (block_id == (size_t) -1 ) {
     LM_W(("Not possible to get ids for file %s to recover block", fileName.c_str()));
     return;
   }

@@ -15,7 +15,7 @@
 #include "au/containers/StringVector.h"
 #include "au/containers/map.h"  // au::map
 #include "au/setup/SetupItemCollection.h"
-
+#include "samson/stream/Block.h"
 #include "samson/common/status.h"
 
 

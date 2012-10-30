@@ -145,6 +145,7 @@ private:
     packet->message->set_delilah_component_id(id);
     packet->message->set_pop_id(item->pop_id());
     packet->message->set_block_id(item->block_id());
+    
     LM_T(LmtDelilahComponent, ("pop request packet sent to worker_id_:%lu", worker_id_));
     delilah->network->Send(packet);
   }

@@ -34,10 +34,17 @@
 #include "samson/stream/BlockInfo.h"                              // struct BlockInfo
 #include "samson/stream/BlockLookupList.h"
 
+
 namespace samson {
 namespace stream {
 class BlockList;
 
+  union BlockId
+  {
+    size_t uint64;
+    unsigned int uint32[2];
+  };
+  
 class Block {
   public:
     typedef enum {
@@ -153,12 +160,11 @@ class Block {
     friend class BlockManager;
     friend class BlockLookupList;
 };
-
   
 typedef au::SharedPointer<Block> BlockPointer;
+  
 }
-  // Auxiliar function to print block_ids on screen
-  std::string str_block_id( size_t block_id );
+  std::string str_block_id(size_t block_id);
 
 }
 

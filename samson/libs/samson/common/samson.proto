@@ -5,6 +5,7 @@ package samson.gpb;
 // Basic components
 //
 
+
 message KVRange
 {
 	required int32  hg_begin = 1;
@@ -70,7 +71,7 @@ message BatchOperation
 
 message Block
 {
-	required uint64   block_id   = 1; // Identifier of this block
+	required uint64  block_id   = 1; // Identifier of this block
 	required uint64   block_size = 2; // Full size of this block
 	required KVRange  range      = 3; // Range for this particular block
 	required uint64   kvs        = 4; // Number of kvs

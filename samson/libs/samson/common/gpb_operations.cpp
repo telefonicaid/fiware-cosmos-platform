@@ -7,7 +7,7 @@
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
-
+#include "samson/stream/Block.h"
 #include "au/log/LogMain.h"
 #include "au/string/StringUtilities.h"
 #include "au/utils.h"
@@ -303,16 +303,16 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
       // Check information is correct
       if( blocks->Get(i).size() != info.size )
       {
-        error.set(au::str("Error removing block %lu in queue %s ( size mismatch %lu != %lu"
-                           , block_id
+        error.set(au::str("Error removing block %s in queue %s ( size mismatch %lu != %lu"
+                           , str_block_id(block_id).c_str()
                            , queue_name.c_str()
                            , blocks->Get(i).size()
                            , info.size ));
       }
       if( blocks->Get(i).kvs() != info.kvs )
       {
-        error.set(au::str("Error removing block %lu in queue %s ( #kvs mismatch %lu != %lu"
-                           , block_id
+        error.set(au::str("Error removing block %s in queue %s ( #kvs mismatch %lu != %lu"
+                          , str_block_id(block_id).c_str()
                            , queue_name.c_str()
                            , blocks->Get(i).kvs()
                            , info.kvs ));

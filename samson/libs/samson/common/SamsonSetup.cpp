@@ -125,7 +125,11 @@ namespace samson {
   }
   
   std::string SamsonSetup::block_filename(size_t block_id)const {
-    return samson_working_ + "/blocks/" + au::str("block_%lu", block_id);
+    
+    stream::BlockId b;
+    b.uint64 = block_id;
+    
+    return samson_working_ + "/blocks/block_" + au::str("%d_%d", b.uint32[0] , b.uint32[1] );
   }
   
   bool isNumber(std::string txt) {
@@ -141,13 +145,21 @@ namespace samson {
     std::string path = samson_working_ + "/blocks/block_";
     
     if (fileName.substr(0, path.size()) != path) {
-      return false;
+      return (size_t)-1;
     }
     
     // Take the rest of the name
     std::string res_path = fileName.substr(path.size());
+
+    std::vector<std::string> components = au::split( res_path , '_' );
+    if( components.size() != 2 )
+      return (size_t)-1;
     
-    return atoll(res_path.c_str());
+    stream::BlockId b;
+    b.uint32[0] = atoll(components[0].c_str());
+    b.uint32[1] = atoll(components[1].c_str());
+
+    return b.uint64;
   }
   
   std::string SamsonSetup::stream_manager_log_filename() const {

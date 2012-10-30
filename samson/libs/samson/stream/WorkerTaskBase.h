@@ -15,7 +15,7 @@
 #include "samson/stream/Block.h"     // samson::Stream::Block
 #include "samson/stream/BlockList.h"  // stream::BlockList
 #include "samson/stream/BlockListContainer.h"
-#include "samson/zoo/CommitCommand.h"
+#include "samson/worker/CommitCommand.h"
 
 namespace samson {
 class SamsonWorker;
@@ -33,7 +33,7 @@ class Block;
 class WorkerTaskBase : public engine::ProcessItem {
   public:
     // Constructor and destructor
-    WorkerTaskBase(::samson::SamsonWorker* samson_worker, size_t id, const std::string& concept);
+    WorkerTaskBase(::samson::SamsonWorker* samson_worker, size_t id, const std::string& concept , bool simple_task = false);
     virtual ~WorkerTaskBase() {}
 
     // Add blocks for input
@@ -44,6 +44,11 @@ class WorkerTaskBase : public engine::ProcessItem {
 
     bool is_ready();   // Function to check if all the blocks are in memory
 
+  bool simple_task()
+  {
+    return simple_task_;
+  }
+  
     size_t worker_task_id() const { return id_;}  // Get the id of this task
     std::string concept() const { return concept_;}   // Get the concept ot this worker task
     std::string task_state() const { return task_state_;}
@@ -59,10 +64,24 @@ class WorkerTaskBase : public engine::ProcessItem {
     virtual std::string str() = 0;   // Debug string to get a description for  last_operations command
     std::string str_inputs();
     std::string str_outputs();
-
+  std::string str_short()
+  {
+    std::ostringstream output;
+    output << "[" << id() << ":";
+    output << task_state_;
+    if( running() )
+      output << "<Run>";
+    if( finished() )
+      output << "<finish>";
+    if( IsWorkerTaskFinished())
+      output << "<WT Finish>";
+    output << "]";
+    return output.str();
+  }
+  
     // Methods to activate the "finish" flag when the operation is over
-    void SetFinished();
-    void SetFinishedWithError(const std::string& error_message);
+    void SetWorkerTaskFinished();
+    void SetWorkerTaskFinishedWithError(const std::string& error_message);
     bool IsWorkerTaskFinished() const;   // Check if it finished
 
     // Method to generate commit command to update data-model
@@ -78,12 +97,16 @@ class WorkerTaskBase : public engine::ProcessItem {
     BlockListContainer block_list_container_;
 
   private:
+  
     // Pointer to the worker
     ::samson::SamsonWorker* samson_worker_;
 
     // Id of the operation
     size_t id_;
 
+  // Simple task ( not use ProcessManager  to execute it )
+  bool simple_task_;
+  
     // Concept
     std::string concept_;
 

@@ -18,7 +18,7 @@
 #include "samson/common/samson.pb.h"            // samson::network::
 #include "samson/common/samsonDirectories.h"    // SAMSON_WORKER_DEFAULT_PORT
 
-#include "samson/zoo/SamsonWorkerController.h"
+#include "samson/worker/SamsonWorkerController.h"
 
 #include "samson/delilah/Delilah.h"
 #include "samson/network/NetworkInterface.h"

@@ -147,9 +147,6 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_buffers", "debug", "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool");
   add_tag("ls_buffers", "send_to_all_workers");
 
-  add("ls_distribution_operations", "debug", "Show current bloc distribution operations in SAMSON nodes");
-  add_tag("ls_distribution_operations", "send_to_all_workers");
-
   add("ls_block_requests", "debug", "Show current block requests operations in SAMSON nodes");
   add_tag("ls_block_requests", "send_to_all_workers");
 
@@ -163,6 +160,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
   add_mandatory_string_argument("ls_queue_ranges", "name", "Name of the queue we would like to scan");
 
+  add("data_model_status"  , "debug" , "Show frozen and current data model status");
+  add("data_model_commits" , "debug" , "Show on-the-fly commits pending to be consolidated");
+  add("data_model_freeze"  , "debug" , "Show frozen and current data model status");
+  add("data_model_recover" , "debug" , "Show frozen and current data model status");
+  
   // MODULES
   // ------------------------------------------------------------------
 
@@ -308,9 +310,6 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_mandatory_string_argument("pop", "file_name", "Local directory to save downloaded blocks");
   add_bool_option("pop", "-force", "Delete local directory if it exists");
   add_bool_option("pop", "-show", "Show first lines of the content once downloaded");
-
-  add("ls_push_operations", "push&pop", "Show local list of push pending operations");
-  add_tag("ls_push_operations", "send_to_all_workers");
 
   add("ls_local_push_operations", "push&pop", "Show list of pending push items");
 

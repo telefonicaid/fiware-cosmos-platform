@@ -39,6 +39,10 @@ namespace samson {
     AddUInt64Item("worker.period_check_finish_tasks"
                   , "5"
                   ,"Period to review finished tasks in samsonWorker, to be clean from memory");
+
+    AddUInt64Item("worker.period_to_freeze_data_model"
+                  , "10"
+                  , "Period to freeze data model. Every X seconds, workers exchange all necessary blocks");
     
     // Upload & Download operations
     AddUInt64Item("load.buffer_size", "67108864", "Size of the data block for load operations");
@@ -157,5 +161,10 @@ namespace samson {
   bool SamsonSetup::Save() {
     return SetupItemCollection::Save( setup_filename() );
   }
-  
+ 
+  SamsonSetup* SharedSamsonSetup()
+  {
+    return au::Singleton<SamsonSetup>::shared();
+  }
+
 }

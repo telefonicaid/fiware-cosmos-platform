@@ -19,6 +19,7 @@
 #include "samson/module/ModulesManager.h"           // ModulesManager
 #include "samson/stream/BlockList.h"                              // BlockList
 #include "samson/stream/BlockManager.h"                           // BlockManager
+#include "samson/worker/SamsonWorkerController.h"
 
 namespace samson {
 namespace stream {
@@ -271,19 +272,9 @@ size_t Block::getTime() {
   return header.time;
 }
 
-size_t Block::worker_id() {
-  return header.worker_id;
-}
 
 void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization, size_t accumulated_size) {
-  samson::add(record, "block_id", block_id_, "left,different");
-  samson::add(record, "o_worker", header.worker_id, "left,different");
-
-  if (temporal_) {
-    samson::add(record, "tmp", "Y", "left,different");
-  } else {
-    samson::add(record, "tmp", "N", "left,different");
-  }
+  samson::add(record, "block_id", str_block_id( block_id_ ) , "left,different");
 
   samson::add(record, "size", getSize(), "f=uint64,sum");
 
@@ -306,7 +297,12 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
   } else {
     samson::add(record, "next task", min_task_id_, "left,different");   // Priority level
   }
+  
   samson::add(record, "priority", max_priority_, "left,different");
+  
+  // Lists
+  samson::add(record, "lists", block_lists_.size(), "left,different");
+  
 }
 
 // au::Token token_lookupList;
@@ -421,12 +417,14 @@ size_t Block::creation_time() {
   return cronometer.seconds();
 }
 
-bool Block::temporal() {
-  return temporal_;
 }
+  
+  // Auxiliar function to print block_ids on screen
+  std::string str_block_id( size_t block_id )
+  {
+    unsigned int *components = (unsigned int*) &block_id;
+    return au::str("%d_%d" , components[0] , components[1] );
+  }
 
-void Block::set_no_temporal() {
-  temporal_ = false;
-}
-}
+  
 }

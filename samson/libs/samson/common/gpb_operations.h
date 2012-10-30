@@ -20,6 +20,11 @@ namespace gpb {
   
 typedef au::SharedPointer<Collection> CollectionPointer;
   
+// Get all blocks in a datamodel
+void AddBlockIds( gpb::Data* data , std::set<size_t>& block_ids );
+void AddBlockIds( gpb::Data* data , const std::vector<samson::KVRange>&ranges , std::set<size_t>& block_ids );
+FullKVInfo GetFullKVInfo( gpb::Data* data );
+  
 // Operations over gpb::StreamOperations
 gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& name);
 gpb::StreamOperation * getStreamOperation(gpb::Data *data, size_t stream_operation_id);
@@ -41,8 +46,8 @@ size_t GetNumKVRanges(ClusterInfo *cluster_information, size_t worker_id);
 // Operations over DataModel
 void reset_data(Data *data);
 Queue *get_queue(Data *data, const std::string& queue_name);
-Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager *error);
-Queue *get_or_create_queue(Data *data, const std::string& name, KVFormat format, au::ErrorManager *error);
+Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager&error);
+Queue *get_or_create_queue(Data *data, const std::string& name, KVFormat format, au::ErrorManager&error);
 void removeQueue(Data *data, const std::string& name);
 
 // Operations over Queue
@@ -51,10 +56,10 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
 
 // Add and Remove ranges in block references
 void add_block(Data *data, const std::string& queue_name, size_t block_id, size_t block_size, KVFormat format,
-               ::samson::KVRange range, ::samson::KVInfo info, int version, au::ErrorManager *error);
+               ::samson::KVRange range, ::samson::KVInfo info, int version, au::ErrorManager&error);
 
 void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVFormat format, ::samson::KVRange range,
-              ::samson::KVInfo info, int version, au::ErrorManager *error);
+              ::samson::KVInfo info, int version, au::ErrorManager&error);
 
 
 // Queue connections

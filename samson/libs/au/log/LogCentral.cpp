@@ -14,12 +14,12 @@ LogCentral log_central;
 
 void *run_LogCentral(void *p) {
   LogCentral *log_central = (LogCentral *)p;
-
   log_central->run();
   return NULL;
 }
 
 LogCentral::LogCentral() {
+  
   fds_[0] = -1;
   fds_[1] = -1;
 
@@ -35,10 +35,6 @@ void LogCentral::AddPlugin(const std::string& name, LogPlugin *log_plugin, au::E
     return;   // Plugin already included with this name
   }
   plugins_.insertInMap(name, log_plugin);
-}
-
-inline LogChannels& LogCentral::log_channels() {
-  return log_channels_;
 }
 
 void LogCentral::Init(const std::string& exec) {
@@ -166,7 +162,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
 
     // "show_fields"
     if (command_instance->main_command() == "show_fields") {
-      error.AddMessage(getTableOfFields()->str());
+      error.AddMessage( au::getTableOfFields()->str());
       return;
     }
 

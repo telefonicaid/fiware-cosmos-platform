@@ -44,6 +44,12 @@ void FullKVInfo::append(FullKVInfo other) {
   kvs += other.kvs;
 }
 
+void FullKVInfo::Append( double factor , KVInfo other)
+  {
+    size += factor * (double) other.size;
+    kvs += factor * (double) other.kvs;
+  }
+  
 #ifdef __LP64__
 void FullKVInfo::remove(uint64 _size, uint64 _kvs) {
   size -= _size;
@@ -99,12 +105,10 @@ KVInfo FullKVInfo::getKVInfo() {
 }
 
 std::string FullKVInfo::str() {
-  std::ostringstream o;
-
-  o <<  "( " << au::str(kvs, "kvs") << " in " << au::str(size, "bytes") << " )";
-  return o.str();
+  return au::str(kvs, "kvs") + "/" + au::str(size, "B");
 }
 
+  
 std::string FullKVInfo::strDetailed() {
   return au::str("( %lu kvs [%s] in %lu bytes [%s] )"
                  , kvs

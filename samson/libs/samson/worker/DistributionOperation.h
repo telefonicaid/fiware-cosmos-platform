@@ -12,6 +12,8 @@
 #include "samson/common/samson.pb.h"
 
 
+// NOTE: Distribution operation are not necessary any more with the new pull-based stream processing architecture
+/*
 namespace samson {
 class SamsonWorker;
 
@@ -52,4 +54,5 @@ class DistributionOperation {
 };
 }
 
+ */
 #endif  // ifndef _H_SAMSON_DISTRIBUTION_BLOCKS

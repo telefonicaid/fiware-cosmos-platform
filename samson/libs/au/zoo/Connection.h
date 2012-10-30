@@ -7,6 +7,7 @@
 #include "zookeeper/zookeeper.h"
 #include <google/protobuf/message.h>
 
+#include "au/Log.h"
 #include "au/console/Console.h"
 #include "au/containers/StringVector.h"
 #include "au/containers/set.h"
@@ -17,7 +18,7 @@
 // Name of the notification
 #define notification_zoo_watcher "notification_zoo_watcher"
 
-namespace samson {
+namespace au {
 namespace zoo {
 class Connection;
 
@@ -62,9 +63,7 @@ public:
 
 
   // Connection operations
-  int Connect(const std::string& host
-              , const std::string& user
-              , const std::string& password);
+  int Connect(const std::string& host, const std::string& user, const std::string& password);
   int Connect(const std::string& host);
   int WaitUntilConnected(int milliseconds);
   int AddAuth(const std::string& user, const std::string& password);
@@ -73,18 +72,12 @@ public:
   std::string GetStatusString();
 
   // Create node functions
-  int Create(const std::string& path
-             , int flags = 0
-             , const char *value = NULL
-             , int value_len = 0);
+  int Create(const std::string& path, int flags = 0, const char *value = NULL, int value_len = 0);
   int Create(std::string& path, int flags, engine::BufferPointer buffer);
   int Create(std::string& path, int flags, ::google::protobuf::Message *value);
   int Create(const std::string& path, int flags, ::google::protobuf::Message *value);
   int Create(std::string& path, int flags, const std::string & value);
-  int Create(std::string& path
-             , int flags = 0
-             , const char *value = NULL
-             , int value_len = 0);
+  int Create(std::string& path, int flags = 0, const char *value = NULL, int value_len = 0);
 
   // Remove nodes
   int Remove(const std::string&path, int version = -1);
@@ -92,6 +85,7 @@ public:
   // Set functions
   int Set(const std::string& path, const char *value = NULL, int value_len = 0, int version = -1);
   int Set(const std::string& path, ::google::protobuf::Message *value, int version = -1);
+  
   // Get functions
   int Get(const std::string& path, char *buffer, int *buflen, struct Stat *stat = NULL);
   int Get(const std::string& path, ::google::protobuf::Message *value);
@@ -123,10 +117,18 @@ public:
   // Connection time in seconds
   double GetConnectionTime();
 
+  size_t get_rate_in(){ return rate_read_.rate(); };
+  size_t get_rate_out(){ return rate_write_.rate(); };
+  
 private:
 
   // Cronometer since its creation
   au::Cronometer cronometer_;
+  
+  // Rate measurements
+  au::rate::Rate rate_read_;
+  au::rate::Rate rate_write_;
+  
 };
 }
 }                       // End of namespace samson::zoo

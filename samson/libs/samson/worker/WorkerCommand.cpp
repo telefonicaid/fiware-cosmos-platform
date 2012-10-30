@@ -99,8 +99,7 @@ bool WorkerCommand::finished() {
   return finished_;
 }
 
-void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
-  // LM_M(("WC Running command '%s'" , command.c_str() ));
+void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
 
   if (ignoreCommand(command)) {
     return;
@@ -123,7 +122,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
   std::string prefix = cmd.GetFlagString("prefix");
 
   if (cmd.get_num_arguments() == 0) {
-    error->set("No command provided");
+    error.set("No command provided");
     return;
   }
 
@@ -132,7 +131,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
 
   if (main_command == "init_stream") {
     if (cmd.get_num_arguments() < 2) {
-      error->set(
+      error.set(
                  au::str("Not enough parameters for command 'init_stream' ( only %d argument provided )",
                          cmd.get_num_arguments()));
       return;
@@ -151,12 +150,12 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
 
     Operation *op = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
     if (!op) {
-      error->set(au::str("Unknown operation:'%s' in command arguments to init_stream", operation_name.c_str()));
+      error.set(au::str("Unknown operation:'%s' in command arguments to init_stream", operation_name.c_str()));
       return;
     }
 
     if (op->getType() != Operation::script) {
-      error->set(
+      error.set(
                  au::str("Non valid operation %d. Only script operations supported for init_stream command",
                          operation_name.c_str()));
       return;
@@ -175,7 +174,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
 
       if (intern_cmdLine.get_argument(0) == "alias") {
         if (intern_cmdLine.get_num_arguments() < 3) {
-          error->set(au::str("Not enough parameters for command %s", main_command.c_str()));
+          error.set(au::str("Not enough parameters for command %s", main_command.c_str()));
           return;
         }
 
@@ -191,11 +190,11 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
         if (prefix.length() > 0) {
           full_command.append(au::str(" -prefix %s", prefix.c_str()));   // LM_M(("Full Command %s (original %s)" , full_command.c_str(),  sub_command.c_str() ));
         }
-        RunCommand(full_command, &sub_error);
+        RunCommand(full_command, sub_error);
       }
 
       if (sub_error.IsActivated()) {
-        error->set(au::str("[%s:%d]%s", operation_name.c_str(), i, sub_error.GetMessage().c_str()));
+        error.set(au::str("[%s:%d]%s", operation_name.c_str(), i, sub_error.GetMessage().c_str()));
         return;
       }
     }
@@ -212,7 +211,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager *error) {
 
   // Unknown command error message
   LM_E(("Unknown command %s", main_command.c_str()));
-  error->set(au::str("Unknown command %s", main_command.c_str()));
+  error.set(au::str("Unknown command %s", main_command.c_str()));
 }
 
 bool compare_blocks_defrag(stream::Block *b, stream::Block *b2) {
@@ -264,7 +263,7 @@ void WorkerCommand::Run() {
   // General visualization options
   Visualization visualization;
 
-  // Add all bool flags like -v -state automatically
+  // Add all bool flags like -v -state automatically to visualization
   const std::vector<au::console::CommandItem *> options = command_instance->command()->options();
   for (size_t i = 0; i < options.size(); i++) {
     if (options[i]->type() == au::console::options::option_bool) {
@@ -282,7 +281,6 @@ void WorkerCommand::Run() {
   // TODO(@jges): Remove log message
   LM_T(LmtDelilahComponent, ("Processing '%s' command", main_command.c_str()));
 
-  // Query commands
   if (main_command == "ls") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForQueues(visualization);
     c->set_title(command_);
@@ -290,7 +288,25 @@ void WorkerCommand::Run() {
     FinishWorkerTask();
     return;
   }
+  
+  if( main_command == "data_model_status")
+  {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->GetCollectionForDataModelStatus(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
 
+  if( main_command == "data_model_commits")
+  {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->GetCollectionForDataModelCommits(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
+  
   if (main_command == "ls_queue_ranges") {
     std::string queue_name = command_instance->get_string_argument("name");
     au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForQueueRanges(visualization,
@@ -320,24 +336,6 @@ void WorkerCommand::Run() {
 
   if (main_command == "ls_last_tasks") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->task_manager()->GetLastTasksCollection(visualization);
-    c->set_title(command_);
-    collections_.push_back(c);
-    FinishWorkerTask();
-    return;
-  }
-
-  if (main_command == "ls_push_operations") {
-    au::SharedPointer<gpb::Collection> c =
-        samson_worker_->worker_block_manager()->GetCollectionForPushOperations(visualization);
-    c->set_title(command_);
-    collections_.push_back(c);
-    FinishWorkerTask();
-    return;
-  }
-
-  if (main_command == "ls_distribution_operations") {
-    au::SharedPointer<gpb::Collection> c =
-        samson_worker_->worker_block_manager()->GetCollectionForDistributionOperations(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -489,24 +487,6 @@ void WorkerCommand::Run() {
       pending_to_be_executed_ = true;
       return;
     }
-
-    /*
-     *
-     * // Special operation to wait until no activity is present in stream manager
-     * if( streamManager->WorkerTaskManager.isActive() )
-     * {
-     * pending_to_be_executed_ = true;
-     * return;
-     * }
-     *
-     * // No pending data to be processed
-     * if( streamManager->isSomethingPending() )
-     * {
-     * pending_to_be_executed_ = true;
-     * return;
-     * }
-     *
-     */
 
     // Nothing else to be waited
     FinishWorkerTask();
@@ -905,7 +885,7 @@ void WorkerCommand::Run() {
 
     au::ErrorManager error;
     std::string caller = au::str("run_deliah_%s_%lu", au::code64_str(delilah_id_).c_str(), delilah_component_id_);
-    samson_worker_->data_model()->Commit(caller, command, &error);
+    samson_worker_->data_model()->Commit(caller, command, error);
 
     if (error.IsActivated()) {
       LM_E(("Error in Commit for command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
@@ -918,7 +898,7 @@ void WorkerCommand::Run() {
 
   // Simple commands
   au::ErrorManager error;
-  RunCommand(command_, &error_);
+  RunCommand(command_, error_);
   if (error.IsActivated()) {
     LM_E(("Error in Commit for command:'%s', error:'%s'", command_.c_str(), error.GetMessage().c_str()));
     FinishWorkerTaskWithError(error.GetMessage());

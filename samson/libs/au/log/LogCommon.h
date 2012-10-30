@@ -34,10 +34,13 @@
 #define AU_LOG_V4                        6
 #define AU_LOG_V5                        7
 
+// MACRO TO REGISTER A LOG CHANNEL
+
+#define AU_LR(name,alias) ::au::log_central.log_channels().RegisterChannel( name , alias );
 
 // MACROS TO EMIT LOGS
 
-#define AU_LM_T(c, s)                                                            \
+#define AU_L(c, s)                                                            \
   do {                                                                             \
     if (au::log_central.CheckLogChannel(c))                                          \
     {                                                                                \
@@ -65,15 +68,15 @@
   } while (0)                                                                      \
 
 
-#define AU_LM_M(s)  AU_LM_T(AU_LOG_M, s)
-#define AU_LM_W(s)  AU_LM_T(AU_LOG_W, s)
-#define AU_LM_E(s)  AU_LM_T(AU_LOG_E, s)
-#define AU_LM_X(s)  AU_LM_T(AU_LOG_X, s)
+#define AU_LM_M(s)  AU_L(AU_LOG_M, s)
+#define AU_W(s)  AU_L(AU_LOG_W, s)
+#define AU_LM_E(s)  AU_L(AU_LOG_E, s)
+#define AU_LM_X(s)  AU_L(AU_LOG_X, s)
 
-#define AU_LM_V(s)  AU_LM_T(AU_LOG_V, s)
-#define AU_LM_V2(s) AU_LM_T(AU_LOG_V2, s)
-#define AU_LM_V3(s) AU_LM_T(AU_LOG_V3, s)
-#define AU_LM_V4(s) AU_LM_T(AU_LOG_V4, s)
-#define AU_LM_V5(s) AU_LM_T(AU_LOG_V5, s)
+#define AU_LM_V(s)  AU_L(AU_LOG_V, s)
+#define AU_LM_V2(s) AU_L(AU_LOG_V2, s)
+#define AU_LM_V3(s) AU_L(AU_LOG_V3, s)
+#define AU_LM_V4(s) AU_L(AU_LOG_V4, s)
+#define AU_LM_V5(s) AU_L(AU_LOG_V5, s)
 
 #endif  // ifndef _H_LOG_SERVER_COMMON

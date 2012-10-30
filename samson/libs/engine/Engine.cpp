@@ -129,7 +129,6 @@ void Engine::RunElement(EngineElement *running_element) {
   int waiting_time = running_element->GetWaitingTime();
   if (waiting_time > 10) {
     LM_W(("Engine is running an element that has been waiting %d seconds", waiting_time ));
-    LM_W(("Engine element to execute now: %s", running_element->str().c_str()));
 
     if (waiting_time > 100) {
       // Print all elements with traces for debuggin...

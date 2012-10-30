@@ -25,7 +25,6 @@ SET (LIBS
     samsonModule
     samsonStream
     samsonCommon
-    samsonZoo
     zookeeper_mt
     samson_system
     engine

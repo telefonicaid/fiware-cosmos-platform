@@ -41,12 +41,14 @@ public:
   void evalCommand(const std::string& command, au::ErrorManager& error);
 
   // Accessors
-  inline LogChannels& log_channels();
+  inline LogChannels& log_channels()
+  {
+    return log_channels_;
+  }
 
   // Add and remove plugins to the system
   void AddPlugin(const std::string& name,  LogPlugin *p) {
     au::ErrorManager error;
-
     AddPlugin(name, p, error);
   }
 
@@ -66,6 +68,18 @@ public:
     return fds_[1];
   }
   
+  // Handy functions 
+  
+  void AddFilePlugin(  const std::string& plugin_name, const std::string& file_name )
+  {
+    evalCommand("log_to_file " + file_name  + " -name " + plugin_name );
+  }
+
+  void AddServerPlugin(  const std::string& plugin_name, const std::string& host , const std::string file_name )
+  {
+    evalCommand("log_to_server " + host + " " + file_name  + " -name " + plugin_name );
+  }
+  
 private:
 
   // Main function for the background thread
@@ -73,7 +87,6 @@ private:
 
   // Review if channles are activated
   void ReviewChannelsActivateion();
-
 
   // Channel registration
   LogChannels log_channels_;
@@ -107,7 +120,6 @@ private:
 };
 
 extern LogCentral log_central;
-
 
 class LogCentralCatalogue : public au::console::CommandCatalogue {
 public:

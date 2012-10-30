@@ -39,6 +39,7 @@
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
+#include "samson/common/common.h"
 #include "samson/common/MemoryCheck.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/samsonVars.h"
@@ -224,25 +225,6 @@ int main(int argC, const char *argV[]) {
     samson::ProcessItemIsolated::isolated_process_as_tread = true;
   }
 
-  // New log system
-  au::log_central.Init( argV[0] );
-
-  std::string str_log_file = std::string(paLogDir) + "samsonWorker.log";
-  std::string str_log_server =  log_server;
-  std::string str_log_server_file = std::string(paLogDir) + "samsonWorker_" + log_server +  ".log";
-  
-  au::log_central.Init( argV[0] );
-  au::log_central.evalCommand("log_to_file " + str_log_file);
-  if( str_log_server != "" )
-    au::log_central.evalCommand("log_to_server " + str_log_server + " " + str_log_server_file );
-  au::log_central.evalCommand(log_command);  // Command provided in command line
-  
-  
-  //au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid());
-
-  // Exampe of the new log system
-  AU_LM_M(("Worker running..."));
-  
   LM_V(("Started with arguments:"));
   for (int ix = 0; ix < argC; ix++) {
     LM_V(("  %02d: '%s'", ix, argV[ix]));
@@ -264,6 +246,19 @@ int main(int argC, const char *argV[]) {
   // Set directories and load setup file
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
 
+  // AU Log system
+  au::log_central.Init( argV[0] );
+  samson::RegisterLogChannels();   // Add all log channels for samson project ( au library included )
+  au::log_central.AddFilePlugin("file" , std::string(paLogDir) + "/samsonWorker.log");
+  au::log_central.AddFilePlugin("file2" , samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log" );
+  if( strlen(log_server) > 0 )
+  {
+    std::string log_server_file = std::string(paLogDir) + "samsonWorker_" + log_server +  ".log";
+    au::log_central.AddServerPlugin( "server" , log_server , log_server_file );
+  }
+  au::log_central.evalCommand(log_command);  // Additional command provided in command line
+  
+  
   valgrindExit(2);
 
   // Check to see if the current memory configuration is ok or not
@@ -322,7 +317,7 @@ int main(int argC, const char *argV[]) {
   // -----------------------------------------------------------------------------------
   worker = new samson::SamsonWorker(zoo_host, port, web_port);
 
-  LM_M(("Worker Running..."));
+  AU_LM_M(("Worker Running..."));
 
   valgrindExit(13);
 
@@ -339,7 +334,10 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-  au::log_central.AddPlugin( "console" , new au::LogPluginConsole(worker) );
+  std::string log_console_format = "channel_alias : text"; // Simple and clear log format if not debuggin
+  if( paDebug )
+    log_console_format = "exec_short[pid] : channel_alias : date : time : file[line] : function : text";
+  au::log_central.AddPlugin( "console" , new au::LogPluginConsole(worker , log_console_format) );
 
   // Run worker console ( -fg is activated )
   worker->runConsole();

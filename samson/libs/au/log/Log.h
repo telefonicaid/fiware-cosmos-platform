@@ -114,10 +114,9 @@ private:
   std::map<std::string, std::string> fields_;
 };
 
+au::SharedPointer<au::tables::Table> getTableOfFields();
 typedef au::SharedPointer<Log>   LogPointer;
 
-// Table of fields
-au::SharedPointer<au::tables::Table> getTableOfFields();
 }
 
 #endif  // ifndef _H_AU_LOG

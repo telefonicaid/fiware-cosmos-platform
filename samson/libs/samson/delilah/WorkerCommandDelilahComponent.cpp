@@ -67,11 +67,9 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   }
 
   // The ls_blocks command, always group by block_id
-    /*
   if (main_command == "ls_blocks") {
     group_field = "block_id";
   }
-     */
 }
 
 WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent() {
@@ -170,7 +168,7 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
       gpb::CollectionRecord *record = collection->add_record();
 
       // Add worker_id if multiple workers are involved in the message
-      if (workers.size() > 1) {
+      if (send_to_all_workers) {
         ::samson::add(record, "worker_id", worker_id, "different");
       }
 

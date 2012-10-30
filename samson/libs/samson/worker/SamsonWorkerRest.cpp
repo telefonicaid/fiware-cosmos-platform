@@ -814,10 +814,11 @@ void SamsonWorkerRest::process_synchronized(au::SharedPointer<au::network::RESTS
   LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key.c_str() , queue_name.c_str() ));
 
   // Get  copy of the current data model
-  au::SharedPointer<gpb::Data> data = samson_worker_->data_model()->getCurrentModel();
-
+  au::SharedPointer<gpb::DataModel> data_model = samson_worker_->data_model()->getCurrentModel();
+  gpb::Data* data =  data_model->mutable_current_data();
+  
   // Get queue
-  gpb::Queue* queue = gpb::get_queue(data.shared_object(), queue_name);
+  gpb::Queue* queue = gpb::get_queue(data, queue_name);
 
   if (!queue) {
     LM_E(("Queue '%s' not found for REST query", queue_name.c_str()));

@@ -26,6 +26,7 @@ SET (HEADERS
 )
 
 SET (SOURCES
+	common.cpp
 	KVInfo.cpp
 	FullKVInfo.cpp
 	KVRange.cpp

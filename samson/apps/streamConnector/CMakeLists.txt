@@ -63,7 +63,6 @@ SET( STATIC_LIBS
      samsonStream
      samsonNetwork
      samsonCommon
-     samsonZoo
      zookeeper_mt
      au
      lm

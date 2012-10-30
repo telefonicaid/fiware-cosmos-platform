@@ -152,7 +152,6 @@ SET (STATIC_LIBS
      samsonWorkerLib
      samsonStream
      samsonNetwork
-     samsonZoo
      samsonCommon
      zookeeper_mt
      samson_comscore    

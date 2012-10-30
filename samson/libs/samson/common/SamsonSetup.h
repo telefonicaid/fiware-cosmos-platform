@@ -42,7 +42,17 @@ public:
   std::string stream_manager_log_filename() const;
   std::string cluster_information_filename() const;
   std::vector<std::string> items_names() const;
+
+  std::string samson_home()
+  {
+    return samson_home_;
+  }
   
+  std::string samson_working()
+  {
+    return samson_working_;
+  }
+
 private:
 
   friend class au::Singleton<SamsonSetup>;
@@ -53,6 +63,9 @@ private:
 
   
 };
+  
+  SamsonSetup* SharedSamsonSetup();
+  
 }
 
 #endif  // ifndef _H_SAMSON_SETUP

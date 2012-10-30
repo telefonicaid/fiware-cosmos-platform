@@ -5,6 +5,7 @@
 #include "samson/stream/BlockManager.h"
 #include "samson/worker/SamsonWorker.h"
 
+/*
 namespace samson {
 DistributionOperation::DistributionOperation(SamsonWorker *samson_worker, size_t block_id) {
   samson_worker_ = samson_worker;   // keep a pointer to samson worker
@@ -74,3 +75,5 @@ bool DistributionOperation::IsReady() {
   return true;
 }
 }
+ 
+ */

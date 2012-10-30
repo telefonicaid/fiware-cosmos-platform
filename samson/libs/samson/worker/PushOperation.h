@@ -12,6 +12,9 @@
 #include "samson/common/KVHeader.h"
 #include "samson/common/Visualitzation.h"
 
+// Note: Not necessary to keep PushOperations track at workers
+
+/*
 
 namespace samson {
 class NetworkInterface;
@@ -21,13 +24,15 @@ class SamsonWorker;
 }
 
 namespace samson {
-class PushOperation : public engine::NotificationListener {
+class PushOperation {
   public:
-    PushOperation(SamsonWorker *samson_worker, size_t block_id, size_t block_size, size_t delilah_id, size_t push_id,
-                  engine::BufferPointer buffer, const std::vector<std::string>& queues);
-
-    // engine::NotificationListener
-    virtual void notify(engine::Notification *notification);
+    PushOperation(  SamsonWorker *samson_worker
+                  , size_t block_id
+                  , size_t block_size
+                  , size_t delilah_id
+                  , size_t push_id
+                  , engine::BufferPointer buffer
+                  , const std::vector<std::string>& queues);
 
     // Commit order from delilah
     void commit();
@@ -56,11 +61,12 @@ class PushOperation : public engine::NotificationListener {
     KVHeader header;   // Buffer information ( for table visualization )
     std::vector<std::string> queues_;   // Vector of queues to add this block
 
-    bool distributed_;   // Flag to indicate that this block has been correctly distributed
     bool commited_;   // Flag to indicate that this block gas been correctly committed
 
     au::Cronometer cronometer_;
 };
 }   // End of namespace samson
 
+ 
+ */
 #endif  // ifndef _H_SAMSON_PUSH_OPERATION

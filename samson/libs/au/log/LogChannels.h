@@ -18,15 +18,15 @@ public:
     num_log_channels_ = 0;
 
     // Generic log channels
-    RegisterChannel("Message", "M");
-    RegisterChannel("Warning", "W");
-    RegisterChannel("Error", "E");
-    RegisterChannel("Exit", "X");
-    RegisterChannel("Verbose", "V");
-    RegisterChannel("Verbose2", "V");
-    RegisterChannel("Verbose3", "V");
-    RegisterChannel("Verbose4", "V");
-    RegisterChannel("Verbose5", "V");
+    RegisterChannel("::Message", "M");
+    RegisterChannel("::Warning", "W");
+    RegisterChannel("::Error", "E");
+    RegisterChannel("::Exit", "X");
+    RegisterChannel("::Verbose", "V");
+    RegisterChannel("::Verbose2", "V");
+    RegisterChannel("::Verbose3", "V");
+    RegisterChannel("::Verbose4", "V");
+    RegisterChannel("::Verbose5", "V");
   };
 
   // Register a channel

@@ -6,7 +6,7 @@
 #include "samson/stream/BlockManager.h"       // samson::stream::BlockManager
 #include "samson/stream/BlockReaderCollection.h"
 #include "samson/worker/SamsonWorker.h"
-#include "samson/zoo/CommitCommand.h"
+#include "samson/worker/CommitCommand.h"
 
 namespace samson {
 namespace stream {

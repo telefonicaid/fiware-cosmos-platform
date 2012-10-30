@@ -125,7 +125,30 @@ message Data
 
 	// Modules
 	repeated Module modules = 6;
-		
+
+	// Last commit seen so far
+	required uint64 last_commit_id = 7;
+}
+
+message DataCommit
+{
+	required uint64 id = 1;
+	required string message = 2;
+}
+
+message DataModel
+{
+	required Data previous_data  = 1;  // Previous "safe" data model
+	optional Data candidate_data = 2;  // Candidate for next "safe" model
+	required Data current_data   = 3;  // Current "on the fly" data model
+
+	// Commit history to recover commands ( mainly add_stream_operation or run )
+	required uint64 commit_id = 4;     // Id for the next commit
+	repeated DataCommit commit = 5;    // List of commits from previous_data to current_data
+
+	// Replication factor
+	required int32 replication_factor = 10;      // Number of times this should be replicated
+
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -144,12 +167,10 @@ message WorkerInfo
 	required int32 cores = 5;
 	required uint64 memory = 6;
 
-	// Flag to indicate we are ready
-	required bool ready = 7;
-
-	// Information about the blocks in the block manager
-	repeated uint64 block_id = 10;
+	// Last "seen" complete data model
+	required uint64 last_commit_id = 10; // Method to confirm data model
 }
+
 
 // ////////////////////////////////////////////////////////////////////////////
 //

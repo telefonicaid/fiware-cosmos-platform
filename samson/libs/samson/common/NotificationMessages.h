@@ -27,7 +27,6 @@
 #define notification_delilah_review_repeat_tasks      "notification_delilah_review_repeat_tasks"
 
 // Notification to review push manager in the worker
-#define notification_worker_block_manager_review      "notification_worker_block_manager_review"
 
 #define notification_send_packet                      "notification_send_packet"   // Notification to send a packet
 #define notification_packet_received                  "notification_packet_received"   // Notification to receive a packet

@@ -5,6 +5,7 @@
 
 #include "au/ExecesiveTimeAlarm.h"
 #include "au/file.h"
+#include "au/log/LogMain.h"
 
 #include "engine/DiskManager.h"        // notification_disk_operation_request_response
 #include "engine/Engine.h"             // engine::Engine
@@ -85,13 +86,15 @@ void BlockManager::CreateBlock(size_t block_id, engine::BufferPointer buffer) {
 
   BlockPointer block(new Block(block_id, buffer));
 
+  if( blocks_.Get(block_id) != NULL )
+    LM_X(1, ("Internal error. Trying to add block %lu twice" , block_id ));
+  
   // Add this block
   block_ids_.push_back(block_id);
   blocks_.Set(block_id, block);
 }
 
-void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids, const std::set<size_t>& my_block_ids,
-                                           const std::set<size_t>& worker_ids) {
+void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids ) {
   au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
 
   std::list<size_t>::iterator it;
@@ -99,35 +102,18 @@ void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids
     size_t block_id = *it;
     BlockPointer block = blocks_.Get(block_id);
 
-    // Make sure we do not consider this block temporal any more
-    if (all_block_ids.find(block_id) != all_block_ids.end()) {
-      block->set_no_temporal();
-    }
-
     // Check if it is included in data model
-    if (my_block_ids.find(block_id) != my_block_ids.end()) {
+    if (all_block_ids.find(block_id) != all_block_ids.end()) {
       it++;
       continue;
     }
 
+    // Do not remove blocks while reading or writing...
     if (!block->canBeRemoved()) {
       it++;
       continue;
     }
-
-    if (block->temporal()) {
-      // This block is considered temporal, so should be preserve
-      // if the origin worker is still there
-      size_t worker_id = block->worker_id();
-      if (block->creation_time() < 600) {
-        // max 10 minutes
-        if (worker_ids.find(worker_id) != worker_ids.end()) {
-          it++;
-          continue;
-        }
-      }
-    }
-
+    
     // Remove this block
     it = block_ids_.erase(it);
     blocks_.Extract(block_id);
@@ -173,7 +159,7 @@ void BlockManager::notify(engine::Notification *notification) {
   } else if (notification->isName(notification_disk_operation_request_response)) {
     std::string type = notification->environment().Get("type", "-");
     size_t operation_size = notification->environment().Get("operation_size", 0);
-    size_t block_id = notification->environment().Get("block_id", 0);
+    size_t block_id = notification->environment().Get("block_id", (size_t) 0);
 
     if (type == "remove") {
       return;   // nothing to do ( this avoid warning of block not found
@@ -453,7 +439,7 @@ void BlockManager::RecoverBlocksFromDisks() {
     closedir(dp);
   }
   for (size_t i = 0; i < file_names.size(); i++) {
-    LM_M(("Recovering data from file %lu/%lu %s", i + 1, file_names.size(), file_names[i].c_str()));
+    AU_LM_M(("Recovering data from file %lu/%lu %s", i + 1, file_names.size(), file_names[i].c_str()));
 
     struct ::stat info;
     stat(file_names[i].c_str(), &info);
@@ -496,8 +482,10 @@ void BlockManager::ScheduleReadOperation(BlockPointer block) {
   // Read operation over this buffer
   std::string fileName = block->file_name();
 
-  engine::DiskOperation *o = engine::DiskOperation::newReadOperation(fileName, 0, size,
-                                                                     block->buffer()->GetSimpleBuffer(), engine_id());
+  engine::DiskOperation *o = engine::DiskOperation::newReadOperation(fileName, 0
+                                                                     , size
+                                                                     , block->buffer()->GetSimpleBuffer()
+                                                                     , engine_id());
   au::SharedPointer<engine::DiskOperation> operation(o);
 
   operation->environment.Set("block_id", block_id);
@@ -572,5 +560,15 @@ void BlockManager::Sort() {
     // std::sort( block_ids_.begin() , block_ids_.end(), BlockSorter(blocks_) );
   }
 }
+  
+  bool BlockManager::CheckBlocks( const std::set<size_t>& block_ids )
+  {
+    std::set<size_t>::const_iterator it;
+    for (it = block_ids.begin() ; it != block_ids.end() ; it++ )
+      if( GetBlock(*it) == NULL )
+        return false;
+    return true;
+  }
+
 }
 }

@@ -24,8 +24,6 @@ typedef enum MessageCode {
   WorkerCommandResponse,
   PushBlock,                    // Push a block from delilah to a worker
   PushBlockResponse,            // Confirmation from worker that block has been distributed in the cluster
-  PushBlockCommit,              // Command to commit uploaded block to data model
-  PushBlockCommitResponse,      // Confirmation from worker to delilah that block has been commited to data model
 
   PopQueue,                     // Request from delilah for a particular queue ( returns information about queue )
   PopQueueResponse,             // Response from worker
@@ -34,13 +32,12 @@ typedef enum MessageCode {
   PopBlockRequestConfirmation,      // Confirmation this block can be served
   PopBlockRequestResponse,          // Block response from worker
 
-  StreamOutQueue,     // Unused message?
+  StreamOutQueue,                   // Unused message?
 
   Message,
 
-  BlockDistribution,                // Message to distribute a block from a worker to another worker
-  BlockDistributionResponse,        // Answer from the target so the paquet has been received
-  BlockRequest,                     // Request a particular block to a worker ( when starting worker )
+  BlockRequest,                     // Request a particular block to a worker
+  BlockRequestResponse,             // Answer to the block
 
   Unknown,
 } MessageCode;

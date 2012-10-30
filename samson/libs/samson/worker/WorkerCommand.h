@@ -47,7 +47,7 @@ class WorkerCommand : public engine::NotificationListener {
     void notify(engine::Notification *notification);
 
     // Run command
-    void RunCommand(std::string command, au::ErrorManager *error);
+    void RunCommand(std::string command, au::ErrorManager& error);
     void Run();
 
     // Accessor

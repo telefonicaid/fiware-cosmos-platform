@@ -11,6 +11,19 @@ setup/SetupItemCollection.cpp
 )
 
 # ---------------------------------------------------
+# zoo directory
+# ---------------------------------------------------
+
+SET( ZOO_FILES
+zoo/Connection.cpp
+zoo/Connection.h
+zoo/ZooNodeCommiter.cpp
+zoo/ZooNodeCommiter.h
+zoo/common.cpp
+zoo/common.h
+)
+
+# ---------------------------------------------------
 # singleton directory
 # ---------------------------------------------------
 
@@ -33,6 +46,8 @@ mutex/LockDebugger.cpp
 mutex/Token.cpp
 mutex/TokenTaker.cpp
 )
+
+
 
 
 # ---------------------------------------------------
@@ -217,6 +232,8 @@ string/xml.h
 
 SET (HEADERS
 Status.h
+Log.h
+Log.cpp
 au.pb.h
 TemporalBuffer.h
 utils.h
@@ -259,6 +276,7 @@ daemonize.cpp
 
 SOURCE_GROUP( mutex         FILES ${MUTEX_FILES} )
 SOURCE_GROUP( singleton     FILES ${SINGLETON_FILES} )
+SOURCE_GROUP( zoo           FILES ${ZOO_FILES} )
 SOURCE_GROUP( setup         FILES ${SETUP_FILES} )
 SOURCE_GROUP( log           FILES ${LOG_FILES} )
 SOURCE_GROUP( statistics    FILES ${STATISTICS_FILES} )
@@ -282,7 +300,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS} ${MUTEX_FILES} ${SINGLETON_FILES} ${SETUP_FILES}  ${LOG_FILES} ${STATISTICS_FILES}
+ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS} ${MUTEX_FILES} ${SINGLETON_FILES} ${ZOO_FILES} ${SETUP_FILES}  ${LOG_FILES} ${STATISTICS_FILES}
 ${CONTAINERS_FILES} ${TABLES_FILES} ${NETWORK_FILES} ${CONSOLE_FILES}
 ${STRING_FILES})
 
@@ -293,6 +311,7 @@ IF (CMAKE_PROJECT_NAME STREQUAL "Samson")
     INSTALL(FILES ${STATISTICS_FILES}     DESTINATION include/au/statistics)
     INSTALL(FILES ${MUTEX_FILES}          DESTINATION include/au/mutex)
     INSTALL(FILES ${SINGLETON_FILES}      DESTINATION include/au/singleton)
+    INSTALL(FILES ${ZOO_FILES}            DESTINATION include/au/zoo)
     INSTALL(FILES ${SETUP_FILES}          DESTINATION include/au/setup)
     INSTALL(FILES ${LOG_FILES}            DESTINATION include/au/log)
     INSTALL(FILES ${CONTAINERS_FILES}     DESTINATION include/au/containers)
@@ -314,6 +333,7 @@ SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 #ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )
 #TARGET_LINK_LIBRARIES(au_sleep_test ${LIBS} au lm pa )
 #INSTALL(TARGETS au_sleep_test        RUNTIME DESTINATION   bin)
+
 
 
 

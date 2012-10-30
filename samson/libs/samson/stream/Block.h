@@ -67,9 +67,6 @@ class Block {
     size_t block_id();
     KVRange getKVRange();   // Working with KVRanges
     KVInfo getKVInfo();
-    size_t worker_id();
-    bool temporal();
-    void set_no_temporal();
     size_t min_task_id() {
       return min_task_id_;
     }
@@ -157,8 +154,12 @@ class Block {
     friend class BlockLookupList;
 };
 
+  
 typedef au::SharedPointer<Block> BlockPointer;
 }
+  // Auxiliar function to print block_ids on screen
+  std::string str_block_id( size_t block_id );
+
 }
 
 #endif  // ifndef _H_BLOCK

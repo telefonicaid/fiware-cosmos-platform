@@ -28,6 +28,8 @@ struct FullKVInfo {
   void append(uint32 _size, uint32 _kvs);
   void append(KVInfo other);
 
+  void Append( double factor , KVInfo other);
+  
   void remove(uint64 _size, uint64 _kvs);
   void remove(FullKVInfo other);
   void remove(uint32 _size, uint32 _kvs);
@@ -44,6 +46,7 @@ struct FullKVInfo {
 
   bool isEmpty();
 };
+  
 }
 
 #endif  // ifndef _H_SAMSON_FULLKVINFO

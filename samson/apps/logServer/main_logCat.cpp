@@ -16,6 +16,7 @@ char target_file[1024];
 int limit;
 bool is_table;
 bool is_reverse;
+bool show_fields;
 bool is_multi_session;
 char str_time[1024];
 char str_date[1024];
@@ -48,10 +49,14 @@ PaArgument paArgs[] =
   { "-type",          type,                     "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Filter a particular type of logs"    },
+  { "-show_fields",&show_fields,                "",                     PaBool,                       PaOpt,
+    false,     false,           true,                "Show possible fields for format argument"               },
   { " ",              target_file,              "",                     PaString,                     PaReq,
     _i "",     PaNL,            PaNL,                "Log file to scan"                          },
   PA_END_OF_ARGS
 };
+
+
 
 static const char *manSynopsis         = "logCat log_file";
 static const char *manShortDescription = "logCat is a command line utility to scan a log file\n";
@@ -96,6 +101,14 @@ int main(int argC, const char *argV[]) {
   // Log formmatter
   LM_V(("Using format %s", format));
 
+  if( show_fields )
+  {
+    au::SharedPointer<au::tables::Table> table = au::getTableOfFields();
+    std::cout << table->str();
+    return 0;
+  }
+  
+  
   // Open teh log file
   au::ErrorManager error;
   std::vector<au::SharedPointer<au::Log> > logs = au::readLogFile(target_file, error);

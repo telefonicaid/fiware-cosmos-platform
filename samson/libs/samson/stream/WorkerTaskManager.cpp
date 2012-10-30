@@ -45,9 +45,9 @@ void WorkerTaskManager::Add(au::SharedPointer<WorkerTaskBase> task) {
   reviewPendingWorkerTasks();
 }
 
-void WorkerTaskManager::AddBlockDistributionTask(size_t block_id, const std::vector<size_t>& worker_ids) {
+void WorkerTaskManager::AddBlockRequestTask(size_t block_id, const std::vector<size_t>& worker_ids) {
   // Add a new block request task...
-  au::SharedPointer<WorkerTaskBase> task(new BlockDistributionTask(samson_worker_, getNewId(), block_id, worker_ids));
+  au::SharedPointer<WorkerTaskBase> task(new BlockRequestTask(samson_worker_, getNewId(), block_id, worker_ids));
   Add(task);
 }
 
@@ -95,11 +95,11 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     // Mark the task as finished
     if (notification->environment().IsSet("error")) {
       std::string error = notification->environment().Get("error", "???");
-      task_base->SetFinishedWithError(error);
+      task_base->SetWorkerTaskFinishedWithError(error);
       if (!task_base->error().IsActivated())
         LM_X(1, ("Internal error"));
     } else {
-      task_base->SetFinished();
+      task_base->SetWorkerTaskFinished();
     }
   }
 
@@ -150,19 +150,25 @@ bool WorkerTaskManager::runNextWorkerTasksIfNecessary() {
     au::SharedPointer<WorkerTaskBase> base_task = tasks[i];
 
     if (base_task->is_ready()) {
+      
       // Extract the task from the queue of pending tasks
       pending_tasks_.ExtractAll(base_task);
+      
+      // For simple tasks ( like BlockRequestTask ) we execute everything here in the main engine thread
+      if ( base_task->simple_task() )
+      {
+        base_task->StartActivity();  // Init cronometer for this process item
+        base_task->run();            // Run the process
+        base_task->StopActivity();   // Stop cronometer for this process item
+        
+        return true;
+      }
 
-      // Insert in the running vector
+      // Insert in the running vector & Add the task to the process manager
       size_t task_id = base_task->worker_task_id();
-
-      running_tasks_.Set(task_id, base_task);
-
-      base_task->SetTaskState("Scheduled");
-
       LM_T(LmtBlockManager, ("Scheduled task %lu ", task_id));
-
-      // Add the task to the process manager
+      running_tasks_.Set(task_id, base_task);
+      base_task->SetTaskState("Scheduled");
       engine::Engine::process_manager()->Add(base_task.static_pointer_cast<engine::ProcessItem> (), engine_id());
     }
   }
@@ -260,8 +266,9 @@ void WorkerTaskManager::review_stream_operations() {
   std::set<size_t> keys_stream_operation_ids;
 
   // Get a copy of data mode
-  au::SharedPointer<gpb::Data> data = samson_worker_->data_model()->getCurrentModel();
-
+  au::SharedPointer<gpb::DataModel> data_model = samson_worker_->data_model()->getCurrentModel();
+  gpb::Data* data = data_model->mutable_current_data();
+  
   // Review all stream operations
   for (int s = 0; s < data->operations_size(); ++s) {
     // Get reference to the stream operation
@@ -280,7 +287,7 @@ void WorkerTaskManager::review_stream_operations() {
     }
 
     // Complete review of this stream operation ( defrag operations, divisions, compute priority rank,.... )
-    global_info->Review(data.shared_object());
+    global_info->Review(data);
 
     // Insert this key into the global set to remove non-used previously defined stream operations
     keys_stream_operation_ids.insert(stream_operation_id);
@@ -302,7 +309,7 @@ void WorkerTaskManager::review_stream_operations() {
   // Check memory status. New tasks are not scheduled if memory usage is too high
   double memory_usage = engine::Engine::memory_manager()->memory_usage();
   if (memory_usage >= 1.0) {
-    AU_LM_W(("Not scheduling new stream-tasks since memory usage is %s >= 100%"
+    AU_W(("Not scheduling new stream-tasks since memory usage is %s >= 100%"
             , au::str_percentage(memory_usage).c_str()));
     return;
   }
@@ -331,7 +338,7 @@ void WorkerTaskManager::review_stream_operations() {
 
     // Schedule a tasks in stream_operation_range_info[pos]
     StreamOperationRangeInfo * stream_operation = stream_operation_range_info[pos];
-    au::SharedPointer<WorkerTask> queue_task = stream_operation->schedule_new_task(getNewId(), data.shared_object());
+    au::SharedPointer<WorkerTask> queue_task = stream_operation->schedule_new_task(getNewId(), data);
     if (queue_task == NULL) {
       LM_W(("Worker task finally not scheduled for stream operation"));
     } else {

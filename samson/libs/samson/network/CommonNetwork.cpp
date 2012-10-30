@@ -291,9 +291,6 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
     return;
   }
 
-  if (packet->from.id == 0) {
-    LM_W(("Strange node identifier 0 in received packet"));   // Schedule the new packet
-  }
   schedule_receive(packet);
 }
 

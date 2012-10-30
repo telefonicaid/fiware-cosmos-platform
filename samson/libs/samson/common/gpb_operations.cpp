@@ -165,10 +165,10 @@ void reset_data(Data *data) {
   }
 }
 
-Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager *error) {
+Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager&error) {
   Queue *queue = get_queue(data, queue_name, format, error);
 
-  if (error->IsActivated()) {
+  if (error.IsActivated()) {
     return NULL;
   }
 
@@ -186,21 +186,21 @@ Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat f
   return queue;
 }
 
-Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager *error) {
+Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager&error) {
   for (int i = 0; i < data->queue_size(); i++) {
     if (data->queue(i).name() == queue_name) {
       // Check formatblo
       Queue *queue = data->mutable_queue(i);
 
       if (queue->key_format() != format.keyFormat) {
-        error->set(
+        error.set(
                    au::str("Wrong key-format for queue %s (%s vs %s)", queue_name.c_str(), queue->key_format().c_str(),
                            format.keyFormat.c_str()));
         return NULL;
       }
 
       if (queue->value_format() != format.valueFormat) {
-        error->set(
+        error.set(
                    au::str("Wrong value-format for queue %s (%s vs %s)", queue_name.c_str(),
                            queue->value_format().c_str(), format.valueFormat.c_str()));
         return NULL;
@@ -253,13 +253,13 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
 }
 
 void add_block(Data *data, const std::string& queue_name, size_t block_id, size_t block_size, KVFormat format,
-               ::samson::KVRange range, ::samson::KVInfo info, int version, au::ErrorManager *error) {
+               ::samson::KVRange range, ::samson::KVInfo info, int version, au::ErrorManager&error) {
   // Get or create this queue
   gpb::Queue *queue = get_or_create_queue(data, queue_name, format, error);
 
   queue->set_version(version);
 
-  if (error->IsActivated()) {
+  if (error.IsActivated()) {
     return;
   }
 
@@ -279,16 +279,16 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
 }
 
 void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVFormat format, ::samson::KVRange range,
-              ::samson::KVInfo info, int version, au::ErrorManager *error) {
+              ::samson::KVInfo info, int version, au::ErrorManager&error) {
   // Get or create this queue
   gpb::Queue *queue = get_queue(data, queue_name, format, error);
 
-  if (error->IsActivated()) {
+  if (error.IsActivated()) {
     return;
   }
 
   if (!queue) {
-    error->set(au::str("Queue %s does not exist", queue_name.c_str()));
+    error.set(au::str("Queue %s does not exist", queue_name.c_str()));
     return;
   }
 
@@ -303,7 +303,7 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
       // Check information is correct
       if( blocks->Get(i).size() != info.size )
       {
-        error->set(au::str("Error removing block %lu in queue %s ( size mismatch %lu != %lu"
+        error.set(au::str("Error removing block %lu in queue %s ( size mismatch %lu != %lu"
                            , block_id
                            , queue_name.c_str()
                            , blocks->Get(i).size()
@@ -311,7 +311,7 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
       }
       if( blocks->Get(i).kvs() != info.kvs )
       {
-        error->set(au::str("Error removing block %lu in queue %s ( #kvs mismatch %lu != %lu"
+        error.set(au::str("Error removing block %lu in queue %s ( #kvs mismatch %lu != %lu"
                            , block_id
                            , queue_name.c_str()
                            , blocks->Get(i).kvs()
@@ -459,6 +459,46 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
     operations->RemoveLast();
   }
 }
+  
+  void AddBlockIds( gpb::Data* data , const std::vector<samson::KVRange>&ranges , std::set<size_t>& block_ids )
+  {
+    // Loop all the queues
+    for (int q = 0; q < data->queue_size(); q++) {
+      const gpb::Queue& queue = data->queue(q);
+      for (int b = 0; b < queue.blocks_size(); b++) {
+
+        const gpb::Block& block = queue.blocks(b);
+        samson::KVRange range = block.range(); // Implicit conversion
+        
+        if (range.IsOverlapped(ranges)) {
+          block_ids.insert(block.block_id());
+        }
+      }
+    }
+  }
+  
+  void AddBlockIds( gpb::Data* data , std::set<size_t>& block_ids )
+  {
+    for (int q = 0; q < data->queue_size(); q++) {
+      const gpb::Queue& queue = data->queue(q);
+      for (int b = 0; b < queue.blocks_size(); b++) {
+        block_ids.insert(queue.blocks(b).block_id());
+      }
+    }
+  }
+  
+  FullKVInfo GetFullKVInfo( gpb::Data* data )
+  {
+    FullKVInfo info;
+    for ( int q = 0 ; q < data->queue_size() ; q++ )
+      for ( int b = 0 ; b < data->queue(q).blocks_size() ; b++ )
+      {
+        size_t size = data->queue(q).blocks(b).size();
+        size_t kvs = data->queue(q).blocks(b).kvs();
+        info.append(size, kvs);
+      }
+      return info;
+  }
 
 DataInfoForRanges get_data_info_for_ranges(gpb::Data*data
                                            , const std::string& queue

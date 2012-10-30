@@ -422,7 +422,7 @@ size_t Block::creation_time() {
   // Auxiliar function to print block_ids on screen
   std::string str_block_id( size_t block_id )
   {
-    unsigned int *components = (unsigned int*) &block_id;
+    unsigned int *components =  reinterpret_cast<unsigned int*>(&block_id);
     return au::str("%d_%d" , components[0] , components[1] );
   }
 

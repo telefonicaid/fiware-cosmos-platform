@@ -617,7 +617,7 @@ namespace samson {
     cmd->Parse(command);
     std::string main_command = cmd->get_argument(0);
 
-    for ( int i = 0 ; i < sizeof(recovery_commands)/sizeof(std::string) ; i++ )
+    for ( size_t i = 0 ; i < sizeof(recovery_commands)/sizeof(std::string) ; i++ )
       if( main_command == recovery_commands[i])
         return true;
     return false;
@@ -695,7 +695,7 @@ namespace samson {
   
   bool DataModel::isValidCommand(const std::string& main_command) {
     
-    for ( int i = 0 ; i < sizeof(commands)/sizeof(std::string) ; i++ )
+    for ( size_t i = 0 ; i < sizeof(commands)/sizeof(std::string) ; i++ )
       if( main_command == commands[i])
         return true;
     return false;

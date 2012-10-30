@@ -33,11 +33,12 @@ namespace samson {
   const std::string DataModel::kSetStreamOperationProperty("set_stream_operation_property");
   const std::string DataModel::kUnsetStreamOperationProperty("unset_stream_operation_property");
   const std::string DataModel::kFreezeDataModel("data_model_freeze");
+  const std::string DataModel::kCancelFreezeDataModel("data_model_cancel_freeze");
   const std::string DataModel::kRecoverDataModel("data_model_recover");
   const std::string DataModel::kConsolidateDataModel("consolidate_data_model");
   
   const std::string DataModel::commands[] = {DataModel::kAdd , DataModel::kAddQueueConnection, kAddStreamOperation,kBatch,kBlock,kClearBatchOPerations,kClearModules, kPushQueue, kRemoveAll,kRemoveAllData,kRemoveAllStreamOperations,kRemoveStreamOperation,kRm,kRmQueueConnection,kSetQueueProperty,
-    kSetStreamOperationProperty, kUnsetStreamOperationProperty , kFreezeDataModel ,kRecoverDataModel, kConsolidateDataModel};
+    kSetStreamOperationProperty, kUnsetStreamOperationProperty , kFreezeDataModel ,kCancelFreezeDataModel,  kRecoverDataModel, kConsolidateDataModel};
 
   const std::string DataModel::recovery_commands[] = {DataModel::kAdd , DataModel::kAddQueueConnection, kAddStreamOperation, kBatch, kClearBatchOPerations, kClearModules, kPushQueue, kRemoveAll,kRemoveAllData,kRemoveAllStreamOperations,kRemoveStreamOperation,kRm,kRmQueueConnection,kSetQueueProperty,kSetStreamOperationProperty, kUnsetStreamOperationProperty };
   
@@ -91,6 +92,10 @@ namespace samson {
     std::string main_command = cmd->get_argument(0);
     if ( main_command == kFreezeDataModel ){
       ProcessFreezeDataModel(data, error);
+      return;
+    }
+    if ( main_command == kCancelFreezeDataModel ){
+      ProcessCancelFreezeDataModel(data, error);
       return;
     }
     if ( main_command == kRecoverDataModel ){
@@ -609,7 +614,18 @@ namespace samson {
     error.AddMessage("Ok. Frozen data model state scheduled correcly");
     
   }
+  
+  void DataModel::ProcessCancelFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error)
+  {
+    if( !data_model->has_candidate_data() )
+    {
+      error.set("No candidate data-model to cancel");
+      return;
+    }
 
+    // Clear candidate data
+    data_model->clear_candidate_data();
+  }
   
   bool DataModel::IsRecoveryCommand( const std::string& command )
   {

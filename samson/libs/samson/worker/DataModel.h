@@ -97,6 +97,7 @@ namespace samson {
   static const std::string kSetStreamOperationProperty;
   static const std::string kUnsetStreamOperationProperty;
   static const std::string kFreezeDataModel;
+  static const std::string kCancelFreezeDataModel;
   static const std::string kRecoverDataModel;
   static const std::string kConsolidateDataModel;
   
@@ -141,6 +142,7 @@ namespace samson {
   void ProcessSetStreamOperationPropertyCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
   void ProcessUnsetStreamOperationPropertyCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
   void ProcessFreezeDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error);
+  void ProcessCancelFreezeDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error);
   void ProcessRecoverDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error);
   void ProcessConsolidateDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error);
   

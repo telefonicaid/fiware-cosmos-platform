@@ -163,6 +163,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("data_model_status"  , "debug" , "Show frozen and current data model status");
   add("data_model_commits" , "debug" , "Show on-the-fly commits pending to be consolidated");
   add("data_model_freeze"  , "debug" , "Show frozen and current data model status");
+  add("data_model_cancel_freeze"  , "debug" , "Cancel candidate data model");
   add("data_model_recover" , "debug" , "Show frozen and current data model status");
   
   // MODULES

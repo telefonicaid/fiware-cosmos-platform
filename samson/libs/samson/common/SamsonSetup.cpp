@@ -125,7 +125,7 @@ namespace samson {
   }
   
   std::string SamsonSetup::block_filename(size_t block_id)const {
-    return samson_working_ + "/blocks/" + au::str("%block_%lu", block_id);
+    return samson_working_ + "/blocks/" + au::str("block_%lu", block_id);
   }
   
   bool isNumber(std::string txt) {

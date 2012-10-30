@@ -14,8 +14,6 @@
 *      Easy to use class to count how much seconds something happened.
 *      Used in situations where time-precision is not required ( seconds are ok )
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef AU_CRONOMETER_H

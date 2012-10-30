@@ -14,8 +14,6 @@
 *      CounterCollection is a class used to keep an arbitrary number of counters by a particular "key"
 *      For instance could be a string, so we keep a counter for each string.
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef _H_AU_COUNTER_COLLECTION

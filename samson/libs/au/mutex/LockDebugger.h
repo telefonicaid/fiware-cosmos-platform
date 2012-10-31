@@ -14,8 +14,6 @@
 *  Class used to debug the Locks and Tokens in au library.
 *  It can detecs auto-locks and cross-lock conditions
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef SAMSON_LOCK_DEBUGGER_H

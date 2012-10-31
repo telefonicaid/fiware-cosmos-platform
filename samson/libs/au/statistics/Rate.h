@@ -14,8 +14,6 @@
 *  Class used to measure the bandwith of a particular operation
 *  It automatically count the rate in the last minute and last hour
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 

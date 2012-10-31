@@ -11,7 +11,7 @@
  * Unit testing of the SimpleBuffer class in the engine library
  *
  *
- * Telefonica Digital - Product Development and Innovation
+ * Telefónica Digital - Product Development and Innovation
  *
  * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED

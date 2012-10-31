@@ -1,4 +1,3 @@
-
 /* ****************************************************************************
 *
 * FILE            Queue
@@ -14,6 +13,7 @@
 *      Specialized version of the std::queue when included objects are shared pointers.
 *      In this case, we can return NULL if no object should be returned
 *      It greatly simplifies development of objects managers in memory
+*
 *
 * COPYRIGHT       Copyright 2011 Andreu Urruela. All rights reserved.
 *

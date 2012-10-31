@@ -14,8 +14,6 @@
 *
 * Classes used to monitor and on-off system determining how much time it is in each state
 *
-* COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 

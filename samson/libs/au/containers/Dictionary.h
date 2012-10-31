@@ -16,8 +16,6 @@
 *      not found in the map.
 *      It greatly simplifies development of objects managers in memory
 *
-* COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef AU_CONTAINERS_DICTIONARY_H_

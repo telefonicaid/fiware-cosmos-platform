@@ -1,26 +1,35 @@
 /* ****************************************************************************
-*
-* FILE            readFile_test.cpp
-*
-* AUTHOR          Javier Lois
-*
-* DATE            January 2012
-*
-* DESCRIPTION
-*
-* unit testing of the ReadFile class in the engine library
-*
-*/
+ *
+ * FILE            readFile_test.cpp
+ *
+ * AUTHOR          Javier Lois
+ *
+ * DATE            January 2012
+ *
+ * DESCRIPTION
+ *
+ * Unit testing of the ReadFile class in the engine library
+ *
+ *
+ * Telefonica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefonica Investigacion y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 #include <stdlib.h>  // for MAX_PATH
+
+#include <string>
 
 #include "gtest/gtest.h"
 
 #include "engine/ReadFile.h"
 
-
-
-//
-// Test ReadFile( std::string _fileName );
+// -----------------------------------------------------------------------------
+// openTest - test to open a file that doesn't exist and another one that does
 //
 TEST(engine_ReadFile, openTest) {
   engine::ReadFile file1("badfile");
@@ -31,15 +40,13 @@ TEST(engine_ReadFile, openTest) {
   EXPECT_TRUE(file2.IsValid());
 }
 
-
-
-//
-// Test int read( char * read_buffer , size_t size );
+// -----------------------------------------------------------------------------
+// readTest -
 //
 TEST(readfileTest, readTest) {
   engine::ReadFile file("test_data/testdata.txt");
 
-  ASSERT_TRUE(file.IsValid());
+  EXPECT_TRUE(file.IsValid());
 
   if (file.IsValid()) {
     char data[10];
@@ -49,15 +56,13 @@ TEST(readfileTest, readTest) {
   }
 }
 
-
-
-//
-// Test int seek( size_t offset );
+// -----------------------------------------------------------------------------
+// seekTest - ok and not-ok seeks tested
 //
 TEST(engine_ReadFile, seekTest) {
   engine::ReadFile file("test_data/testdata.txt");
 
-  ASSERT_TRUE(file.IsValid());
+  EXPECT_TRUE(file.IsValid());
 
   if (file.IsValid()) {
     char data[10];
@@ -79,11 +84,8 @@ TEST(engine_ReadFile, seekTest) {
   EXPECT_EQ(fileBad.Seek(2), 1) << "Trying to seek a bad file should return 1";
 }
 
-
-
-//
-// Test bool IsValid();
-// Test void Close();
+// -----------------------------------------------------------------------------
+// closeTest - testing validity and closing of ReadFile
 //
 TEST(engine_ReadFile, closeTest) {
   engine::ReadFile file1("badfile");
@@ -91,7 +93,7 @@ TEST(engine_ReadFile, closeTest) {
   EXPECT_TRUE(file1.IsValid() == false);
 
   engine::ReadFile file2("test_data/testdata.txt");
-  ASSERT_TRUE(file2.IsValid());
+  EXPECT_TRUE(file2.IsValid());
 
   if (file2.IsValid()) {
     file2.Close();
@@ -99,29 +101,25 @@ TEST(engine_ReadFile, closeTest) {
   }
 }
 
-
-
-//
-// Test a seek to the same position
+// -----------------------------------------------------------------------------
+// seekSamePositionTest - test a seek to the same position
 //
 TEST(engine_ReadFile, seekSamePositionTest) {
   engine::ReadFile  file("test_data/testdata.txt");
   int               pos;
 
-  ASSERT_TRUE(file.IsValid());
-  
+  EXPECT_TRUE(file.IsValid());
+
   pos = file.Seek(2);
   EXPECT_EQ(pos, 0);
   pos = file.Seek(2);
   EXPECT_EQ(pos, 0);
 }
 
-
-
+// -----------------------------------------------------------------------------
+// misc - test offset and a read of zero bytes
 //
-// gets - 
-//
-TEST(engine_ReadFile, gets) {
+TEST(engine_ReadFile, misc) {
   engine::ReadFile  file("test_data/testdata.txt");
 
   std::string name = file.file_name();

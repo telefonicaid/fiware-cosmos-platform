@@ -1,16 +1,25 @@
 /* ****************************************************************************
-*
-* FILE            NotificationListenerTest.cpp
-*
-* AUTHOR          Javier Lois
-*
-* DATE            December 2011
-*
-* DESCRIPTION
-*
-* unit testing of the NotificationListenerTest class in the engine library
-*
-*/
+ *
+ * FILE            NotificationListenerTest.cpp
+ *
+ * AUTHOR          Javier Lois
+ *
+ * DATE            December 2011
+ *
+ * DESCRIPTION
+ *
+ * unit testing of the NotificationListenerTest class in the engine library
+ *
+ *
+ * Telefonica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefonica Investigacion y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 #include "gtest/gtest.h"
 
 #include "engine/Engine.h"
@@ -19,14 +28,12 @@
 
 #include "unitTest/common_engine_test.h"
 
-int x;
-
-class NotificationListenerTest : public engine::NotificationListener
-{
-public:
-  ~NotificationListenerTest() {}
-  void notify2(engine::Notification *notification) { notify(notification);      }
-  void listen2(const char *notification_name)      { listen(notification_name); }
+class NotificationListenerTest : public engine::NotificationListener {
+ public:
+  NotificationListenerTest() {}
+  virtual ~NotificationListenerTest() {}
+  void Notify(engine::Notification *notification) { notify(notification);      }
+  void Listen(const char *notification_name)      { listen(notification_name); }
 };
 
 TEST(engine_NotificationListener, engine_idTest) {
@@ -42,17 +49,17 @@ TEST(engine_NotificationListener, engine_idTest) {
   size_t id2 = object2->engine_id();
   size_t id3 = object3->engine_id();
 
-  EXPECT_TRUE(id1 != 0);
-  EXPECT_TRUE(id2 != 0);
-  EXPECT_TRUE(id3 != 0);
+  EXPECT_NE(id1, 0);
+  EXPECT_NE(id2, 0);
+  EXPECT_NE(id3, 0);
 
-  EXPECT_TRUE(id1 != id2);
-  EXPECT_TRUE(id1 != id3);
-  EXPECT_TRUE(id2 != id3);
+  EXPECT_NE(id1, id2);
+  EXPECT_NE(id1, id3);
+  EXPECT_NE(id2, id3);
 
   engine::Notification* nP = new engine::Notification("Test");
-  nlTest->notify2(nP);
-  nlTest->listen2("Test");
+  nlTest->Notify(nP);
+  nlTest->Listen("Test");
   delete nP;
 
   delete object1;

@@ -1,12 +1,35 @@
+/* ****************************************************************************
+ *
+ * FILE            NotificationListenersManagerTest.cpp
+ *
+ * AUTHOR          Javier Lois
+ *
+ * DATE            January 2012
+ *
+ * DESCRIPTION
+ *
+ * unit testing of the ProcessManager class in the engine library
+ *
+ *
+ * Telefonica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefonica Investigacion y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+#include <set>
+
+#include "gtest/gtest.h"
+
 #include "engine/Engine.h"
 #include "engine/NotificationListener.h"
 #include "engine/NotificationListenersManager.h"
-#include "gtest/gtest.h"
 
-
-
-//
-// idTest
+// -----------------------------------------------------------------------------
+// engine_idTest -
 //
 TEST(engine_NotificationListenersManager, engine_idTest) {
   engine::Engine::InitEngine(4, 1000000, 1);

@@ -1,7 +1,8 @@
+#include <string>
 
-
-#include "ReadFile.h"       // Own interface
 #include "logMsg/logMsg.h"         // LM_M ...
+
+#include "./ReadFile.h"            // Own interface
 
 namespace engine {
 ReadFile::ReadFile(const std::string& file_name) {
@@ -9,14 +10,13 @@ ReadFile::ReadFile(const std::string& file_name) {
   file_      = fopen(file_name_.c_str(), "r");
   offset_    = 0;
 
-  if (file_ != NULL)
-  {
-	 fseek(file_, 0, SEEK_END);
-	 file_size_ = ftell(file_);
-	 fseek(file_, 0, SEEK_SET);
+  if (file_ != NULL) {
+     fseek(file_, 0, SEEK_END);
+     file_size_ = ftell(file_);
+     fseek(file_, 0, SEEK_SET);
+  } else {
+     LM_E(("The file '%s' doesn't exist", file_name.c_str()));
   }
-  else
-	 LM_E(("The file '%s' doesn't exist", file_name.c_str()));
 }
 
 ReadFile::~ReadFile() {
@@ -32,9 +32,8 @@ int ReadFile::Seek(size_t offset) {
     return 0;       // Correct... just do not move
   }
 
-  if (offset > file_size_)
-  {
-	 return 2;
+  if (offset > file_size_) {
+     return 2;
   }
 
   if (fseek(file_, offset, SEEK_SET) != 0) {

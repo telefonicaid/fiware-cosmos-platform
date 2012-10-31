@@ -1,31 +1,52 @@
+/* ****************************************************************************
+ *
+ * FILE            EngineTest.cpp
+ *
+ * AUTHOR          Javier Lois
+ *
+ * DATE            January 2012
+ *
+ * DESCRIPTION
+ *
+ * Unit testing of the Engine class in the engine library
+ *
+ *
+ * Telefonica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefonica Investigacion y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 #include <fcntl.h>
+#include <string>
+
+#include "gtest/gtest.h"
 
 #include "au/ThreadManager.h"
 #include "engine/DiskManager.h"
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
-#include "engine/ProcessManager.h"
 #include "engine/NotificationListener.h"
-#include "gtest/gtest.h"
+#include "engine/ProcessManager.h"
 #include "unitTest/TestClasses.h"
 #include "unitTest/common_engine_test.h"
 
-
-
-//
-// upDown
+// -----------------------------------------------------------------------------
+// upDown -
 //
 TEST(engine_Engine, upDown) {
   engine::Engine::InitEngine(4, 1000000, 2);
 
   engine::Engine::DestroyEngine();
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());  // Make sure no background threads are left there
+  // Make sure no background threads are left
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }
 
-
-
-//
-// managers
+// -----------------------------------------------------------------------------
+// managers - quick test of the managers for memory, disk and process
 //
 TEST(engine_Engine, managers) {
   EXPECT_EQ(NULL, engine::Engine::shared());
@@ -40,17 +61,16 @@ TEST(engine_Engine, managers) {
   EXPECT_EQ(4,          engine::Engine::process_manager()->max_num_procesors());
 
   engine::Engine::DestroyEngine();
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());  // Make sure no background threads are left there
+  // Make sure no background threads are left there
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 
   EXPECT_EQ(NULL, engine::Engine::memory_manager());
   EXPECT_EQ(NULL, engine::Engine::disk_manager());
   EXPECT_EQ(NULL, engine::Engine::process_manager());
 }
 
-
-
-//
-// threads
+// -----------------------------------------------------------------------------
+// threads -
 //
 TEST(engine_Engine, threads) {
   EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
@@ -58,13 +78,12 @@ TEST(engine_Engine, threads) {
   engine::Engine::InitEngine(4, 1000000, 2);
 
   engine::Engine::DestroyEngine();
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());  // Make sure no background threads are left there
+  // Make sure no background threads are left
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }
 
-
-
-//
-// gets
+// -----------------------------------------------------------------------------
+// gets -
 //
 TEST(engine_Engine, gets) {
   engine::Engine* engine;
@@ -82,13 +101,12 @@ TEST(engine_Engine, gets) {
   EXPECT_EQ(0, engine->GetMaxWaitingTimeInEngineStack());
 
   engine::Engine::DestroyEngine();
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());  // Make sure no background threads are left there
+  // Make sure no background threads are left
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }
 
-
-
-//
-// notifications
+// -----------------------------------------------------------------------------
+// notifications -
 //
 TEST(engine_Engine, notifications) {
   engine::Engine::InitEngine(4, 1000000, 2);
@@ -97,29 +115,24 @@ TEST(engine_Engine, notifications) {
   engine::notify("notification with period", 1.0);
   engine::notify_extra("notification extra");
 
-  // engine::Engine*               engine;
-  // engine::NotificationListener  nl;
-  //
-  // engine = engine::Engine::shared();
-  // AddListenerToChannel ...
-
   engine::Engine::DestroyEngine();
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());  // Make sure no background threads are left there
+  // Make sure no background threads are left there
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }
 
-
-
-//
-// restart
+// -----------------------------------------------------------------------------
+// restart - initialize engine twice, destroy it twice - should work
 //
 TEST(engine_Engine, restart) {
   engine::Engine::InitEngine(4, 1000000, 2);
-  engine::Engine::InitEngine(4, 1000000, 2); // Second init is ignored and causes a warning
+  engine::Engine::InitEngine(4, 1000000, 2);  // Second init is ignored and causes a warning
 
   engine::Engine::DestroyEngine();
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());  // Make sure no background threads are left there
+
+  // Make sure no background threads are left there
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 
   // Destroying the engine again is ignored and causes a warning
   engine::Engine::DestroyEngine();
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());  // Make sure no background threads are left there
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }

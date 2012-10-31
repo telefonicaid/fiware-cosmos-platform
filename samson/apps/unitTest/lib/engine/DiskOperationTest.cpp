@@ -20,6 +20,8 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+#include "gtest/gtest.h"
+
 #include "engine/DiskManager.h"
 #include "engine/DiskOperation.h"
 #include "unitTest/common_engine_test.h"

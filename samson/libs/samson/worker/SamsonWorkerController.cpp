@@ -683,9 +683,9 @@ namespace samson {
   
   size_t worker_from_block_id( size_t block_id )
   {
-    unsigned int *components = (unsigned int*) &block_id;
-    return (size_t)components[0];
-    
+    BlockId b;
+    b.uint64 = block_id;
+    return b.uint32[0];
   }
   
   std::set<size_t> SamsonWorkerController::GetWorkers()

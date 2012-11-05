@@ -52,7 +52,7 @@ public:
   }
 
   ~SampleVector() {
-    free(values_);
+    delete[] values_;
   }
 
   void push_to_sample_vector(double value) {

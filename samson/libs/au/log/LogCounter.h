@@ -42,7 +42,7 @@ namespace au {
       size_ += log->SerialitzationSize();
       types_.Add(log->Get("type"));
       // Min-max time
-      size_t time = log->log_data().tv.tv_sec;
+      time_t time = log->log_data().tv.tv_sec;
       if( ( min_time == (time_t) -1 ) || ( time < min_time ) )
         min_time = time;
       if( ( max_time == (time_t) -1 ) || ( time > max_time ) )

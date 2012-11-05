@@ -17,19 +17,18 @@
  * CREATION DATE            2010
  *
  */
+#include <sstream>                      // std::stringstream
+#include <string>                       // std::string
 
-
-#include <sstream>              // std::stringstream
-
-#include "logMsg/logMsg.h"      // lmInit, LM_*
-#include "logMsg/traceLevels.h"  // Trace Levels
+#include "logMsg/logMsg.h"              // lmInit, LM_*
+#include "logMsg/traceLevels.h"         // Trace Levels
 
 #include "au/file.h"
-#include "au/string/StringUtilities.h"          // au::Format
-#include "au/string/xml.h"             // au::xml...
+#include "au/string/StringUtilities.h"  // au::Format
+#include "au/string/xml.h"              // au::xml...
 
-#include "engine/Buffer.h"      // Own interface
-#include "engine/MemoryManager.h"
+#include "engine/Buffer.h"              // Own interface
+#include "engine/MemoryManager.h"       // MemoryManager
 
 namespace engine {
 Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_size) {
@@ -43,14 +42,15 @@ Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_siz
   max_size_ = max_size;
 
   if (max_size > 0) {
-    data_ = (char *)malloc(max_size);
+    data_ = reinterpret_cast<char *>(malloc(max_size));
 
     if (!data_) {
       LM_X(1, ("Error (errno:%d) allocating memory for %d bytes for name:'%s' type:'%s'"
                , errno, max_size, name.c_str(), type.c_str()));
     }
   } else {
-    LM_W(("Buffer request of max_size(%lu) <= 0, for name:'%s' type:'%s'", max_size, name.c_str(), type.c_str()));
+    LM_W(("Buffer request of max_size(%lu) <= 0, for name:'%s' type:'%s'",
+          max_size, name.c_str(), type.c_str()));
     data_ = NULL;
   }
 
@@ -58,9 +58,14 @@ Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_siz
   Engine::memory_manager()->Add(this);
 }
 
-au::SharedPointer<Buffer> Buffer::Create(const std::string& name, const std::string& type, size_t max_size) {
+au::SharedPointer<Buffer> Buffer::Create(
+  const std::string&  name,
+  const std::string&  type,
+  size_t              max_size
+) {
   if (max_size > 1024 * 1024 * 1024) {
-    LM_X(1, ("Excesive size for buffer %s", au::str(max_size).c_str()));
+     LM_RE(au::SharedPointer<Buffer>(NULL),
+           ("Excessive size for buffer %s", au::str(max_size).c_str()));
   }
   return au::SharedPointer<Buffer>(new Buffer(name, type, max_size));
 }
@@ -131,14 +136,14 @@ void Buffer::Write(std::ifstream &inputStream) {
 int Buffer::RemoveLastUnfinishedLine(char *& buffer, size_t& buffer_size) {
   size_t last_line_size = 0;
 
-  while (( last_line_size < size_) && (data_[size_ - last_line_size - 1] != '\n' )) {
+  while ((last_line_size < size_) && (data_[size_ - last_line_size - 1] != '\n')) {
     last_line_size++;
   }
 
   if (last_line_size == size_) {
     return 1;     // Error... not final line found in the buffer
   }
-  buffer = (char *)malloc(last_line_size);
+  buffer = reinterpret_cast<char *>(malloc(last_line_size));
   memcpy(buffer, data_ + size_ - last_line_size, last_line_size);
 
   buffer_size = last_line_size;
@@ -156,7 +161,7 @@ int Buffer::RemoveLastUnfinishedLine(char *& buffer, size_t& buffer_size) {
 size_t Buffer::Read(char *output_buffer, size_t output_size) {
   size_t read_size = output_size;
 
-  if (read_size > ( size_ - offset_ )) {
+  if (read_size > (size_ - offset_)) {
     read_size = (size_ - offset_);
   }
   memcpy(output_buffer, data_ + offset_, read_size);

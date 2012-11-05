@@ -69,7 +69,7 @@ class ProcessItem {
     // Add additional listsners
     void AddListener(size_t _listenerId);
 
-    // Accessorts
+    // Accessors
     std::set<size_t> listeners() const;
     std::string process_item_description() const;
     std::string process_item_current_task_description() const;

@@ -13,6 +13,7 @@
 #include "BufferContainer.h"  // Own interface
 
 namespace  samson {
+
 void BufferContainer::Push(const std::string& queue_name, engine::BufferPointer buffer) {
   au::TokenTaker tt(&token_);
 
@@ -28,15 +29,19 @@ void BufferContainer::Push(const std::string& queue_name, engine::BufferPointer 
   queue->Push(buffer);
 }
 
+
+
 engine::BufferPointer BufferContainer::Pop(const std::string& queue_name) {
   au::TokenTaker tt(&token_);
 
   au::Queue<engine::Buffer> *queue = queues_.findInMap(queue_name);
 
   if (!queue) {
+    LM_W(("queue '%s' not found", queue_name.c_str()));
     return engine::BufferPointer(NULL);
   } else {
     return queue->Pop();
   }
 }
+
 }

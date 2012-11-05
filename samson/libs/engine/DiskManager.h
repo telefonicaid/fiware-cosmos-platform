@@ -18,18 +18,18 @@
 *
 * DESCRIPTION
 *
-* DiskManager is the entity in charge of schedulling all the read/write/remove acetions over file system
+* DiskManager is the entity in charge of scheduling all the read/write/remove actions in the file system
 *
 * ****************************************************************************/
 
-#ifndef _H_SAMSON_DISK_MANAGER
-#define _H_SAMSON_DISK_MANAGER
+#ifndef SAMSON_LIBS_ENGINE_DISKMANAGER_H_
+#define SAMSON_LIBS_ENGINE_DISKMANAGER_H_
 
-#include <iostream>                 // std::cout
-#include <list>
 #include <pthread.h>
-#include <set>                      // std::set
 #include <string.h>
+
+#include <list>
+#include <set>                      // std::set
 #include <string>
 
 #include "au/containers/Box.h"
@@ -56,8 +56,7 @@ class Notification;
 
 
 class DiskManager {
-public:
-
+ public:
   ~DiskManager();
 
   // Add a disk operation to be executed in the background
@@ -66,9 +65,10 @@ public:
   // Cancel a disk operation already included
   void Cancel(const au::SharedPointer< ::engine::DiskOperation>& operation);
 
-  // Main function for the background worker
-  // It is public only to be called form the thread-creation function
-  // note: make it frind
+  // run_worker - main function for the background worker
+  //   NOTE: the class that needs to use this method has to be made a friend
+  //   NOTE: a while (true) will steal the thread and it is encouraged to
+  //         only call this function from a thread explicitly created for the task.
   void run_worker();
 
   // Get information
@@ -81,13 +81,14 @@ public:
   double off_time() const;
   int num_disk_operations() const;
   int max_num_disk_operations() const;
-  void set_max_num_disk_operations(int _num_disk_operations);  // Setup the maimum number of paralel operations to be executed
+
+  // Setup the maximum number of parallel operations to be executed
+  void set_max_num_disk_operations(int _num_disk_operations);
   int num_disk_manager_workers() const;  // Get the number of workers running on the background
 
-private:
-
+ private:
   // Private constructor ( see engine::Engine::InitEngine() )
-  DiskManager(int max_num_disk_operations);
+  explicit DiskManager(int max_num_disk_operations);
 
   // Stop background threads
   void Stop();
@@ -126,4 +127,4 @@ private:
 };
 }
 
-#endif  // ifndef _H_SAMSON_DISK_MANAGER
+#endif  // SAMSON_LIBS_ENGINE_DISKMANAGER_H_

@@ -12,9 +12,8 @@
 #include "ReadFile.h"               // engine::ReadFile
 #include "ReadFileManager.h"        // Own interface
 
-#include "logMsg/traceLevels.h"     // LmtIsolated, etc.
-
 namespace engine {
+
 ReadFileManager::ReadFileManager() {
   // Default number of open files
   max_open_files_ = 100;
@@ -36,6 +35,11 @@ ReadFile *ReadFileManager::GetReadFile(const std::string& file_name) {
 
   if (!f) {
     f = new ReadFile(file_name);
+  }
+
+  if (f && !f->IsValid()) {
+    delete f;
+    return NULL;
   }
 
   // Insert at front ( make sure most recent are at front )

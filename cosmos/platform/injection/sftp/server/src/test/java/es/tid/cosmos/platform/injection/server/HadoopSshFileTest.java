@@ -11,17 +11,14 @@
 
 package es.tid.cosmos.platform.injection.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.net.URI;
+import java.io.*;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.AccessControlException;
+import org.apache.hadoop.thirdparty.guava.common.io.Files;
 import org.apache.sshd.server.SshFile;
 import org.junit.After;
 import org.junit.Before;
@@ -46,6 +43,7 @@ public class HadoopSshFileTest extends BaseSftpTest {
     private FileSystem hadoopFS;
     private FileSystem mockedFileSystem;
     private HadoopSshFile neverExists;
+    private File tempDir;
 
     public HadoopSshFileTest() {
         super(LOGGER);
@@ -54,11 +52,14 @@ public class HadoopSshFileTest extends BaseSftpTest {
     @Before
     public void setUp() throws IOException, InterruptedException{
         Configuration configuration = new Configuration();
-        String foodir = "/tmp/user01";
-        String foofile = "/tmp/user01/file01";
-        this.hadoopFS = FileSystem.get(
-                URI.create(configuration.get("fs.default.name")),
-                configuration, "user01");
+        this.tempDir = Files.createTempDir();
+        this.tempDir.setWritable(true, false);
+        String foodir = this.tempDir.getAbsolutePath().concat("/user01");
+        String foofile = this.tempDir.getAbsolutePath().concat("/user01/file01");
+        configuration.set("fs.default.name", "file:///" + this.tempDir.toString());
+        this.hadoopFS = FileSystem.get(configuration);
+                //URI.create(configuration.get("fs.default.name")),
+                //configuration, "user01");
         this.hadoopSshFile = new HadoopSshFile(foofile, "user01", this.hadoopFS);
         this.hadoopSshDir = new HadoopSshFile(foodir, "user01", this.hadoopFS);
 
@@ -76,13 +77,15 @@ public class HadoopSshFileTest extends BaseSftpTest {
         if (this.hadoopSshDir.doesExist()) {
             this.hadoopSshDir.delete();
         }
+        this.tempDir.delete();
         this.hadoopFS.close();
         this.mockedFileSystem.close();
     }
 
     @Test
     public void testGetAbsolutePath() throws Exception {
-        assertEquals("/tmp/user01/file01", this.hadoopSshFile.getAbsolutePath());
+        assertEquals(this.tempDir.getAbsolutePath().concat("/user01/file01"),
+                     this.hadoopSshFile.getAbsolutePath());
     }
 
     @Test
@@ -310,7 +313,8 @@ public class HadoopSshFileTest extends BaseSftpTest {
 
     @Test
     public void testMove() throws Exception {
-        String newsubdir = "/tmp/user01/new/file01";
+        String newsubdir = this.tempDir.getAbsolutePath()
+                .concat("/user01/new/file01");
         HadoopSshFile newfoo = new HadoopSshFile(newsubdir, "user01",
                 this.hadoopFS);
         this.hadoopSshFile.create();

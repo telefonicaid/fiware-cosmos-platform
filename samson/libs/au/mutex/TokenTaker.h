@@ -15,8 +15,6 @@
 *      Classical trick of retaining a mutex in the contructor and releasing in destructor
 *      Used in collaboration with au::Token class
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef _H_AU_TOCKEN_TAKER

@@ -34,8 +34,6 @@
 *   * Use one of the parse(.) methods to parse the incoming command line
 *   * Use get_flag_X methods to access content *
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef COMMAND_LINE_H

@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 /* ****************************************************************************
 *
@@ -40,8 +50,9 @@ public:
 private:
 
   std::string file_name_;     // Filename
-  size_t offset_;             // Offset positiong while reading the file
-  FILE *file_;                // File pointer to access this file
+  size_t      offset_;        // Offset positiong while reading the file
+  FILE*       file_;          // File pointer to access this file
+  size_t      file_size_;     // Size of file
 };
 }
 

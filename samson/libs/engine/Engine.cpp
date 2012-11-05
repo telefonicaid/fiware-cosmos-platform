@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 
 
@@ -57,18 +67,23 @@ void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
 }
 
 void Engine::StopEngine() {
-  disk_manager_->Stop();
-  process_manager_->Stop();
-  engine_->Stop();
+  if (disk_manager_ != NULL)
+    disk_manager_->Stop();
+
+  if (process_manager_ != NULL)
+    process_manager_->Stop();
+
+  if (engine_ != NULL)
+    engine_->Stop();
 }
 
 void Engine::DestroyEngine() {
-  // Make sure, engine is completelly stoped
+  // Make sure, engine is completely stoped
   Engine::StopEngine();
 
 
   if (!engine_) {
-    LM_W(("Stoping engine that was never initialized. Ignoring..."));
+    LM_W(("Stopping engine that was never initialized. Ignoring..."));
     return;
   }
 

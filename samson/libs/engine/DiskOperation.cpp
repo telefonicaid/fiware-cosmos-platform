@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 #include "engine/DiskManager.h"         // engine::DiskManager
 #include "engine/DiskOperation.h"       // Own interface
 #include "engine/Engine.h"              // engine::Engine
@@ -202,7 +212,7 @@ void DiskOperation::run() {
     // Get the Read file from the Manager
     ReadFile *rf = diskManager->fileManager_.GetReadFile(fileName);
 
-    if (!rf->IsValid()) {
+    if ((rf == NULL) || (!rf->IsValid())) {
       LM_E(("Internal error: Not valid read file %s", fileName.c_str()));
       setError("Internal error: Not valid read file");
     } else {

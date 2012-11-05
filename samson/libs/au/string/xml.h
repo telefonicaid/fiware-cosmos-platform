@@ -12,8 +12,6 @@
  *
  *      Usefull functions to generate xml tags
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_XML

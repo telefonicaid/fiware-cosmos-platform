@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 /* ****************************************************************************
  *
  * FILE            Buffer.h
@@ -81,10 +91,10 @@ class Buffer : public TagCollection {
     size_t size() const;
     void set_size(size_t size);
 
-    // Get internal name for debuggin
+    // Get internal name for debugging
     std::string name() const;
 
-    // Get internal type for debuggin
+    // Get internal type for debugging
     std::string type() const;
 
     // Get a description of the buffer ( debugging )

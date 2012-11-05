@@ -13,8 +13,6 @@
 *
 *      Box of instances of a partiuclar type using shared poitners
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef AU_CONTAINERS_BOX_H_

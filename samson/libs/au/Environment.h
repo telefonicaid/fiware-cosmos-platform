@@ -14,8 +14,6 @@
 *  Collection of enviroment variables. It is a key-value colection usign strings
 *  Convenient functions are provided to use values as integers, doubles, etc...
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef AU_ENVIRONMENT_H_

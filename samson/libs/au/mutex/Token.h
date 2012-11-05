@@ -14,8 +14,6 @@
 *  Wrapper of the mutex included in pthread library.
 *  Used to simplify development of multi-thread apps
 *
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
 * ****************************************************************************/
 
 #ifndef _H_AU_TOCKEN

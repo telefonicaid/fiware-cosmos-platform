@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 #include "engine/ProcessManager.h"
 
@@ -59,7 +69,7 @@ void ProcessManager::Stop() {
 }
 
 void ProcessManager::notify(Notification *notification) {
-  LM_X(1, ("Wrong notification at ProcessManager [Listener %lu] %s",
+  LM_E(("Wrong notification at ProcessManager [Listener %lu] %s",
           engine_id(), notification->GetDescription().c_str()));
 }
 
@@ -67,7 +77,7 @@ void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId)
   // Protect multi-thread access
   au::TokenTaker tt(&token_);
 
-  // We make sure items always come at least one listener id
+  // Make sure items always come with at least one listener id
   item->AddListener(listenerId);
 
   // Insert in the list of items

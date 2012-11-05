@@ -18,9 +18,5 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(zoo STATIC ${SOURCES} ${HEADERS} )
-
-
-
-
-
+ADD_LIBRARY(zoo STATIC ${SOURCES})
+INSTALL(TARGETS zoo DESTINATION lib)

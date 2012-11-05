@@ -27,7 +27,7 @@
 
 
 SET (HEADERS
-au.pb.h
+${CMAKE_CURRENT_SOURCE_DIR}/au.pb.h
 CommandLine.h
 console/CommandCatalogue.h
 console/Console.h
@@ -122,7 +122,7 @@ varint.h
 )
 
 SET (SOURCES
-au.pb.cc 
+${CMAKE_CURRENT_SOURCE_DIR}/au.pb.cc 
 CommandLine.cpp
 console/CommandCatalogue.cpp
 console/Console.cpp
@@ -217,6 +217,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(au SHARED ${SOURCES} ${HEADERS} )
+ADD_DEPENDENCIES(au au.pb.h)
+ADD_DEPENDENCIES(au au.pb.cc)
 TARGET_LINK_LIBRARIES( au protobuf pa lm )
 
 # Only needed for the "samson" project

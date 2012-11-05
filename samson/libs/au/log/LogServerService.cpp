@@ -7,7 +7,7 @@
 
 #include "au/containers/vector.h"
 #include "au/log/LogQuery.h"
-#include "au/gpb.h"
+#include "au/au.pb.h"
 
 #define Char_to_int(x) ((x) - 48)
 

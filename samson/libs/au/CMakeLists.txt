@@ -203,12 +203,12 @@ utils.cpp
 )
 
 # Generate 'au.pb.h' and 'au.pb.cc' from ''au.proto''
-#add_custom_command (
-#  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/au.pb.cc
-#  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/au.pb.h
-#  COMMAND protoc ${CMAKE_CURRENT_SOURCE_DIR}/au.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
-#  MAIN_DEPENDENCY au.proto
-#)
+add_custom_command (
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/au.pb.cc
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/au.pb.h
+  COMMAND protoc ${CMAKE_CURRENT_SOURCE_DIR}/au.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
+  MAIN_DEPENDENCY au.proto
+)
 
 # Include directories
 # -----------------------------------------------------------------

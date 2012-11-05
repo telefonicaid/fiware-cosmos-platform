@@ -3,11 +3,9 @@
 
 #include <string>
 
-#include "au/au.pb.h"
 #include "au/console/Console.h"
 #include "au/containers/set.h"
 #include "au/Environment.h"
-#include "au/gpb.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/network/NetworkListener.h"

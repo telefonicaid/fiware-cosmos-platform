@@ -17,7 +17,6 @@
 
 #include "au/Environment.h"
 #include "au/Status.h"
-#include "au/au.pb.h"
 #include "au/console/Console.h"
 #include "au/containers/set.h"
 #include "au/gpb.h"

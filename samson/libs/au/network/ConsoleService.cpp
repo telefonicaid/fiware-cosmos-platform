@@ -2,6 +2,9 @@
 
 #include <vector>
 
+#include "au/au.pb.h"
+
+
 namespace au {
 namespace network {
 ConsoleServiceClientBase::ConsoleServiceClientBase(int port) :

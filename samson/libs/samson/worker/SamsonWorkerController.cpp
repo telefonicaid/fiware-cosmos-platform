@@ -672,12 +672,12 @@ namespace samson {
       return (size_t) -1;
     
     // [worker 32bits][Counter 32bits]
+    BlockId block_id;
+
+    block_id.uint32[0] = (unsigned int) worker_id_;
+    block_id.uint32[1] = block_id_counter_++;;
     
-    size_t block_id;
-    unsigned int *components = (unsigned int*) &block_id;
-    components[0] = (unsigned int) worker_id_;
-    components[1] = block_id_counter_++;
-    return block_id;
+    return block_id.uint64;
     
   }
   

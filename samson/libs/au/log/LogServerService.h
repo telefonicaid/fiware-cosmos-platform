@@ -31,7 +31,11 @@
 namespace au {
 class LogServer;
 class LogQuery;
-
+  namespace gpb
+  {
+    class LogConnectionHello;
+  }
+  
 // Connection to receive logs
 class LogProbeConnection {
 public:

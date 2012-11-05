@@ -11,10 +11,14 @@
 #include "au/tables/Table.h"
 
 #include "au/Environment.h"
-#include "au/au.pb.h"
 #include "au/console/Console.h"
 #include "au/gpb.h"
 #include "au/network/Service.h"
+namespace au {
+  namespace gpb {
+    class ConsolePacket;
+  }
+}
 
 namespace au {
 namespace network {
@@ -86,7 +90,7 @@ class ConsoleService : public Service {
   virtual void run(SocketConnection *socket_connection, bool *quit);
   
     // Fill message to be sent to client
-    void fill_message(au::ErrorManager *error, au::gpb::ConsolePacket *message);
+    void fill_message(au::ErrorManager *error, au::gpb::ConsolePacket* message);
 
 };
 }

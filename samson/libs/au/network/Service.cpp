@@ -1,11 +1,9 @@
 
+#include "Service.h"  // Own interface
 
 #include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
-
-#include "Service.h"  // Own interface
-
-
+#include "au/au.pb.h"
 
 namespace au {
 namespace network {

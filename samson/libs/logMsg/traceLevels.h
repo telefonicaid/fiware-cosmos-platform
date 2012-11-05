@@ -45,7 +45,6 @@ typedef enum TraceLevels {
   LmtDisk                   = 204,   // disk library
   LmtMemory                 = 205,   // memory library
   LmtProcessManager         = 206,
-  LmtBlockManager           = 207,
 
   LmtBuffer                 = 208,
 
@@ -54,7 +53,6 @@ typedef enum TraceLevels {
 
   LmtWorkerTasks            = 213,   // Scheduing of tasks
 
-  LmtIsolated               = 215,   // Isolated mechanism
   LmtIsolatedOperations     = 216,   // Traces to see start and stop of executions
   LmtReduceOperation        = 217,   // Reduce operation steps
   LmtIsolatedOutputs        = 218,   // See processing of operations outputs
@@ -70,10 +68,5 @@ typedef enum TraceLevels {
 
 
 
-/* ****************************************************************************
- *
- * traceLevelName -
- */
-extern char *traceLevelName(TraceLevels level);
 
 #endif  // ifndef TRACE_LEVELS_H

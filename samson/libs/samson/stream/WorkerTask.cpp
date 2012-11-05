@@ -21,7 +21,8 @@ ProcessIsolated::ProcessBaseType get_type(Operation *operation) {
   }
 }
 
-WorkerTask::WorkerTask( SamsonWorker *samson_worker, size_t id
+WorkerTask::WorkerTask( SamsonWorker *samson_worker
+                       , size_t id
                        ,const gpb::StreamOperation& stream_operation
                        ,Operation *operation
                        , KVRange range
@@ -110,7 +111,8 @@ std::string WorkerTask::commit_command() {
 }
 
 void WorkerTask::initProcessIsolated() {
-  
+
+  AU_M(logs.background_process, ("Init background process for task %lu" , id() ) );
   au::Cronometer cronometer;
   
   // Review input blocks to count key-values
@@ -123,6 +125,8 @@ void WorkerTask::initProcessIsolated() {
 
 void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
 
+  AU_M(logs.background_process, ("Generate key-values for task %lu" , id() ) );
+  
   au::Cronometer cronometer;
 
   switch (operation_->getType()) {
@@ -146,10 +150,8 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
 }
 
 void WorkerTask::generateTXT(TXTWriter *writer) {
-  // Handy class to emit traces
-  // OperationTraces operation_traces( au::str( "[%lu] Parserout %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
-  OperationTraces operation_traces(au::str("[%lu] Parserout %s", worker_task_id(), process_item_description().c_str()),
-                                   100);
+
+  AU_M(logs.background_process, ("Generate txt-data for task %lu" , id() ) );
 
   // Type of inputs ( for selecting key-values )
   std::vector<KVFormat> inputFormats = operation_->getInputFormats();
@@ -213,9 +215,9 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
 }
 
 void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
-  // Handy class to emit traces
-  OperationTraces operation_traces(au::str("[%lu] Map %s", worker_task_id(), process_item_description().c_str()), 100);
 
+  AU_M(logs.background_process, ("generateKeyValues_map task %lu" , id() ) );
+  
   // Type of inputs ( for selecting key-values )
   std::vector<KVFormat> inputFormats = operation_->getInputFormats();
 
@@ -290,6 +292,9 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
 #pragma mark
 
 void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
+  
+  AU_M(logs.background_process, ("generateKeyValues_reduce task %lu" , id() ) );
+
   bool update_only = stream_operation_->has_reduce_update_only() && stream_operation_->reduce_update_only();
   bool reduce_forward = stream_operation_->has_reduce_forward() && stream_operation_->reduce_forward();
   bool batch_operation = stream_operation_->has_batch_operation() && stream_operation_->batch_operation();
@@ -312,11 +317,6 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   if (batch_operation) {
     LM_T(LmtReduceOperation,("Reduce %lu --> batch_operation", worker_task_id()));
   }
-
-  // Handy class to emit traces
-  // OperationTraces operation_traces( au::str( "[%lu] reduce %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
-  OperationTraces operation_traces(au::str("[%lu] reduce %s", worker_task_id(), process_item_description().c_str()),
-                                   100);
 
   // Get the operation instance
   Reduce *reduce = (Reduce *) operation_->getInstance();
@@ -452,11 +452,8 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
 void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
 
-  size_t id = worker_task_id();
-
-  // Handy class to emit traces
-  OperationTraces operation_traces(au::str("[%lu] Parser %s", id, stream_operation_->operation().c_str()), 100);
-
+  AU_M(logs.background_process, ("generateKeyValues_parser task %lu" , id() ) );
+  
   // Run the generator over the ProcessWriter to emit all key-values
   Parser *parser = (Parser *) operation_->getInstance();
 
@@ -483,9 +480,6 @@ void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
     // Pointer to the internal data in the buffer
     char *data = buffer->data() + sizeof(KVHeader);
     size_t size = buffer->size() - sizeof(KVHeader);
-
-    // Trace
-    operation_traces.trace_block(buffer->size());
 
     // Run parser with this data
     parser->run(data, size, writer);

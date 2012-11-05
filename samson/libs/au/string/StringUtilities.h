@@ -34,8 +34,14 @@
 namespace au {
 enum Color {
   normal,
-  purple,
-  red
+  blue,
+  red,
+  black,
+  green,
+  brown,
+  magenta,
+  cyan,
+  white,
 };
 
 // ------------------------------------------------------------------

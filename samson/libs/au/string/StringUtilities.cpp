@@ -288,9 +288,21 @@ std::string str(Color color, const char *format, ...) {
 
     case red:
       return std::string("\033[1;31m") + std::string(vmsg) + std::string("\033[0m");
-
-    case purple:
+    case magenta:
       return std::string("\033[1;35m") + std::string(vmsg) + std::string("\033[0m");
+    case blue:
+      return std::string("\033[1;34m") + std::string(vmsg) + std::string("\033[0m");
+    case black:
+      return std::string("\033[1;40m") + std::string(vmsg) + std::string("\033[0m");
+    case green:
+      return std::string("\033[1;42m") + std::string(vmsg) + std::string("\033[0m");
+    case brown:
+      return std::string("\033[1;43m") + std::string(vmsg) + std::string("\033[0m");
+    case cyan:
+      return std::string("\033[1;46m") + std::string(vmsg) + std::string("\033[0m");
+    case white:
+      return std::string("\033[1;47m") + std::string(vmsg) + std::string("\033[0m");
+       
   }
 
   // Default mode ( just in case )
@@ -718,8 +730,8 @@ Color GetColor(const std::string color_name) {
   if (( color_name == "red" ) || ( color_name == "r" )) {
     return red;
   }
-  if (( color_name == "purple" ) || ( color_name == "p" )) {
-    return purple;
+  if (( color_name == "magenta" ) || ( color_name == "m" )) {
+    return magenta;
   }
 
   return normal;

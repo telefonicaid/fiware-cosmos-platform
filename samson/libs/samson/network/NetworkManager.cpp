@@ -56,7 +56,7 @@ void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::Socke
   LM_T(LmtNetworkConnection, ("Adding network_connection:%s", name.c_str()));
 
   if (connections.findInMap(name) != NULL) {
-    LM_W(("Rejecting an incomming connection (%s) since it already exists", name.c_str()));
+    AU_SW(("Rejecting an incomming connection (%s) since it already exists", name.c_str()));
     delete socket_connection;
     return;
   }
@@ -113,7 +113,7 @@ void NetworkManager::RemoveDisconnectedConnections() {
 
     if (connection->isDisconnectd()) {
       // Extract connection
-      LM_M(("Removing connection %s since it is disconnected", it->first.c_str()));
+      AU_SW(("Removing connection %s since it is disconnected", it->first.c_str()));
       connections.erase(it++);
       delete connection;
     } else {

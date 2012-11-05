@@ -1,3 +1,4 @@
+
 SET (HEADERS
 	paBuiltin.h
 	paConfig.h
@@ -56,11 +57,11 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(pa STATIC ${SOURCES} ${HEADERS})
-SET (LIBPA ${PROJECT_BINARY_DIR}/libs/parseArgs/libpa.a CACHE INTERNAL "")
+ADD_LIBRARY(pa SHARED ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(pa lm)
+#SET (LIBPA ${PROJECT_BINARY_DIR}/libs/parseArgs/libpa.a CACHE INTERNAL "")
 
-# Only needed for the "samson" project
-IF (CMAKE_PROJECT_NAME STREQUAL "samson")
-    INSTALL(TARGETS pa ARCHIVE DESTINATION lib)
+IF (CMAKE_PROJECT_NAME STREQUAL "Samson")
+    INSTALL(TARGETS pa  DESTINATION lib)
     INSTALL(FILES ${HEADERS} DESTINATION include/parseArgs)
-ENDIF (CMAKE_PROJECT_NAME STREQUAL "samson")
+ENDIF (CMAKE_PROJECT_NAME STREQUAL "Samson")

@@ -72,14 +72,12 @@ const char *general_description =
 
 const char *auths = "Andreu Urruela, Grant Croker, J.Gregorio Escalada & Ken Zangelin";
 
-DelilahConsole::DelilahConsole(size_t delilah_id) :
-  Delilah("console", delilah_id), log_client(AU_LOG_SERVER_QUERY_PORT) {
+DelilahConsole::DelilahConsole(size_t delilah_id) : Delilah("console", delilah_id) {
+
   // Default values
   show_server_logs = false;
   show_alerts = false;
   verbose = true;
-
-  mode = mode_normal;   // Normal mode by default
 
   // Schedule a notification to review repeat-tasks
   engine::Engine::shared()->notify(new engine::Notification(notification_delilah_review_repeat_tasks), 1);
@@ -105,14 +103,6 @@ DelilahConsole::~DelilahConsole() {
 }
 
 std::string DelilahConsole::getPrompt() {
-  if (mode == mode_database) {
-    return "Database >";
-  }
-
-  if (mode == mode_logs) {
-    return log_client.getPrompt();
-  }
-
   return au::str("[%s] Delilah>", getClusterConnectionSummary().c_str());
 }
 
@@ -225,6 +215,8 @@ void DelilahConsole::autoCompleteQueueForOperation(au::ConsoleAutoComplete *info
 }
 
 void DelilahConsole::autoComplete(au::ConsoleAutoComplete *info) {
+  
+  /*
   if (mode == mode_database) {
     if (info->completingSecondWord("set_mode")) {
       info->add("setup");
@@ -239,18 +231,7 @@ void DelilahConsole::autoComplete(au::ConsoleAutoComplete *info) {
     autoCompleteForDatabaseCommand(info);
     return;
   }
-
-  if (mode == mode_logs) {
-    if (info->completingSecondWord("set_mode")) {
-      info->add("setup");
-      info->add("normal");
-      info->add("database");
-      info->add("logs");
-    }
-
-    log_client.autoComplete(info);
-    return;
-  }
+   */
 
   // Use catalogue for auto-completion
   delilah_command_catalogue.autoComplete(info);
@@ -351,42 +332,54 @@ size_t DelilahConsole::runAsyncCommand(std::string command) {
 size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_instance) {
   std::string mainCommand = command_instance->main_command();
 
-  // TODO(@jges): Remove log messages
-  LM_M(("Received main_command:'%s'", mainCommand.c_str()));
-  // Common command in all modes
-  if (mainCommand == "set_mode") {
-    std::string str_mode = command_instance->get_string_argument("mode");
-
-    if (str_mode == "normal") {
-      mode = mode_normal;
-      writeWarningOnConsole("Normal mode activated\n");
-    } else if (str_mode == "database") {
-      mode = mode_database;
-      writeWarningOnConsole("Database mode activated\n");
-    } else if (str_mode == "logs") {
-      mode = mode_logs;
-      writeWarningOnConsole("logs mode activated\n");
-    } else {
-      writeErrorOnConsole(command_instance->ErrorMessage("Unknown mode"));
-    }
-
-    return 0;
-  }
-
-  if (mode == mode_logs) {
-    au::ErrorManager error;
-    log_client.evalCommand(command_instance->command_line(), &error);
-    write(&error);   // Console method to write all the answers
-    return 0;
-  }
-
+  /*
   if (mode == mode_database) {
     // Run data base command
     std::string result = runDatabaseCommand(command_instance->command_line());
     writeOnConsole(au::StringInConsole(result));
     return 0;
   }
+   */
 
+  if( mainCommand == "wlog_show" )
+  {
+    if( log_probe != NULL )
+      log_probe = NULL;
+    
+    std::string host = command_instance->get_string_argument("host");
+    std::string format = command_instance->get_string_option("format");
+    std::string filter = command_instance->get_string_option("filter");
+
+    log_probe = new au::LogProbe();
+    log_probe->AddPlugin("console", new au::LogProbeConsole(this, format ) );
+    
+    au::ErrorManager error;
+    log_probe->ConnectAsProbe( host, filter, error );
+    
+    if( error.IsActivated() )
+    {
+      write( &error );
+      log_probe=NULL;
+    }
+    else
+      writeWarningOnConsole( au::str("Connected to %s to get logs (Filter %s)" , host.c_str() , filter.c_str() ));
+    
+    return 0;
+  }
+  
+  if( mainCommand == "wlog_hide" )
+  {
+    if( log_probe != NULL)
+    {
+      writeWarningOnConsole("Logs deactivated");
+      log_probe = NULL;
+    }
+    else
+      writeWarningOnConsole("Logs were not activated");
+    
+    return 0;
+  }
+  
   if (mainCommand == "log") {
     std::string command = command_instance->get_string_argument("command");
     au::ErrorManager error;

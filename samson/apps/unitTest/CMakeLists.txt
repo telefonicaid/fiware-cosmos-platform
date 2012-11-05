@@ -145,6 +145,7 @@ SET (STATIC_LIBS
      pa
      lm
      engine
+	 zoo
      protobuf
      pthread
      samson_system

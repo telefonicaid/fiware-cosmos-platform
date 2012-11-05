@@ -148,6 +148,7 @@ void SharedMemoryManager::createSharedMemorySegments() {
   LM_T(LmtMemory, ("Creating shared memory buffers"));
 
   for (int i = 0; i < shared_memory_num_buffers; i++) {
+
     int shmflg;                 /* shmflg to be passed to shmget() */
 
     // shmflg  = 384;		// Permission to read / write ( only owner )
@@ -160,6 +161,7 @@ void SharedMemoryManager::createSharedMemorySegments() {
              "Error creating the shared memory buffer of %s ( %d / %d ). \
               Please review SAMSON documentation about shared memory usage",
              au::str(shared_memory_size_per_buffer, "B").c_str(), i, shared_memory_num_buffers ));
+      
       LM_X(1, ("Error creating shared memory buffers. shmid return -1 (%s)", strerror(errno)));
     }
     shm_ids[i] = shmid;

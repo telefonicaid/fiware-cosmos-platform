@@ -18,8 +18,8 @@
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/worker/CommitCommand.h"
-#include "au/zoo/common.h"
-#include "au/zoo/Connection.h"
+#include "zoo/common.h"
+#include "zoo/Connection.h"
 
 #define NODE_WORKER_BASE "/samson/workers/w"
 
@@ -170,7 +170,7 @@ protected:
         // If not previous data, load from ZK
         if( c_ == NULL )
         {
-          AU_W(("Getting data since no previous model" ));
+          AU_SW(("Getting data since no previous model" ));
           int rc = GetDataFromZooNode();   // Get data from zk
           if (rc) {
             error.set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));

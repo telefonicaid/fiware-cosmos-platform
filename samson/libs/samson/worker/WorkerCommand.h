@@ -38,8 +38,11 @@ class BlockList;
 
 class WorkerCommand : public engine::NotificationListener {
   public:
-    WorkerCommand(SamsonWorker *_samsonWorker, std::string worker_command_id, size_t _delilah_id,
-                  size_t _delilah_component_id, const gpb::WorkerCommand& _command);
+    WorkerCommand(SamsonWorker *_samsonWorker
+                  , std::string worker_command_id
+                  , size_t _delilah_id
+                  , size_t _delilah_component_id
+                  , const gpb::WorkerCommand& _command);
 
     ~WorkerCommand();
 
@@ -59,7 +62,11 @@ class WorkerCommand : public engine::NotificationListener {
     // Create collection for buffers
     au::SharedPointer<gpb::Collection> GetCollectionOfBuffers(const Visualization& visualization);
 
+  // Debug info
+  std::string str();
+  
   private:
+  
     void FinishWorkerTaskWithError(std::string error_message);   // Mark this command as finished with an error as a message
     void FinishWorkerTask();   // Mark this command as finished
     void CheckFinish();   // Function to check everything is finished

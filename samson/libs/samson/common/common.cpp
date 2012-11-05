@@ -2,6 +2,7 @@
 
 #include "common.h" // Own interface
 
+#include "samson/module/samson.h"
 
 namespace samson {
 
@@ -12,6 +13,10 @@ namespace samson {
     
     // Register channels for samson library
     logs.RegisterChannels();
+    
+    // Register channel for operations
+    log_operations = AU_REGISTER_CHANNEL( "samson::OP" );
+    
   }
 
   // Channel logs

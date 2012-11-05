@@ -34,6 +34,7 @@
 #include <assert.h>
 
 #include "au/Status.h"  // au::Status
+#include "au/Log.h"
 
 
 
@@ -60,7 +61,7 @@ struct GPBHeader {
 
 template <class T>
 au::Status readGPB(int fd, T **t, int time_out) {
-  LM_T(LmtIsolated, ("Reading a GPB message from fd:%d with timeout %d", fd, time_out ));
+  AU_M(logs.gpb, ("Reading a GPB message from fd:%d with timeout %d", fd, time_out ));
 
   Status iom = iomMsgAwait(fd, time_out);     // Wait until this is ready
 
@@ -75,7 +76,7 @@ au::Status readGPB(int fd, T **t, int time_out) {
       return iom;
     }
   }
-  LM_T(LmtIsolated, ("readGPB(): iomMsgAwait returned OK on fd:%d", fd));
+  AU_M(logs.gpb, ("readGPB(): iomMsgAwait returned OK on fd:%d", fd));
 
   GPBHeader header;
   int nb = read(fd, &header, sizeof(header));
@@ -140,7 +141,7 @@ au::Status readGPB(int fd, T **t, int time_out) {
 
 template <class T>
 Status writeGPB(int fd, T *t) {
-  LM_T(LmtIsolated, ("Writing a GPB message to fd:%d ( Size:%d )", fd, (int)t->ByteSize()));
+  AU_M(logs.gpb, ("Writing a GPB message to fd:%d ( Size:%d )", fd, (int)t->ByteSize()));
 
   if (!t->IsInitialized()) {
     return GPB_NotInitializedMessage;

@@ -47,7 +47,7 @@ namespace samson {
       // Temporal flag
       temporal_ = true;   // By default we consider blocks are temporal
       
-      LM_T(LmtBlockManager, ("Block created from buffer: %s", str().c_str()));
+      AU_M( logs.block_manager , ("Block created from buffer: %s", str().c_str()));
     }
     
     Block::Block(size_t block_id, KVHeader *_header) :
@@ -73,7 +73,7 @@ namespace samson {
       // Put cronometer to 1 hour before to remove blocks not included in the data model rigth now
       cronometer.AddOffset(-24 * 60 * 60);
       
-      LM_T(LmtBlockManager, ("Block created from id: %s", this->str().c_str()));
+      AU_M( logs.block_manager, ("Block created from id: %s", this->str().c_str()));
     }
     
     Block::~Block() {
@@ -149,7 +149,7 @@ namespace samson {
         return;
       }
       
-      LM_T(LmtBlockManager, ("destroyBuffer for block:'%s'", str().c_str()));
+      AU_M(logs.block_manager, ("Destroying buffer for block:'%s'", str().c_str()));
       
       // Relase buffer
       buffer_ = NULL;

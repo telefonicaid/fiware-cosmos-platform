@@ -24,7 +24,7 @@
 #include "au/ThreadManager.h"
 #include "au/log/Log.h"
 #include "au/log/LogCentral.h"
-#include "au/log/LogPluginConsole.h"
+#include "au/log/LogCentralPluginConsole.h"
 #include "au/log/LogCommon.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/string/StringUtilities.h"
@@ -255,7 +255,7 @@ int main(int argC, const char *argV[]) {
     au::log_central.evalCommand("log_to_server " + str_log_server + " " + str_log_server_file );
   au::log_central.evalCommand(log_command);  // Command provided in command line
 
-  AU_LM_M(("Delilah starting..."));
+  AU_SM(("Delilah starting..."));
 
   // working directories to find modules and stuff
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
@@ -286,9 +286,9 @@ int main(int argC, const char *argV[]) {
 
   // Change log to console
   au::log_central.evalCommand("screen off");   // Disable log to screen since we log to console
-  au::log_central.AddPlugin("console", new au::LogPluginConsole(delilahConsole));
+  au::log_central.AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole));
 
-  AU_LM_M(("Delilah running..."));
+  AU_SM(("Delilah running..."));
 
   std::vector<std::string> hosts = au::split(host, ' ');
   for (size_t i = 0; i < hosts.size(); i++) {

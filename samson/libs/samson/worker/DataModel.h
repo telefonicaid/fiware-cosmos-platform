@@ -11,8 +11,8 @@
 #include "samson/common/gpb_operations.h"
 #include "samson/common/samson.pb.h"
 #include "samson/common/Visualitzation.h"
-#include "au/zoo/Connection.h"
-#include "au/zoo/ZooNodeCommiter.h"
+#include "zoo/Connection.h"
+#include "zoo/ZooNodeCommiter.h"
 
 #define NODE_WORKER_BASE "/samson/workers/w"
 

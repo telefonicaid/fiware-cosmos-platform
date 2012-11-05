@@ -22,20 +22,19 @@
 #include "au/containers/set.h"
 #include "au/log/Log.h"
 #include "au/log/LogCommon.h"
-#include "au/log/LogPlugin.h"
+#include "au/log/LogCentralPlugin.h"
 #include "au/network/SocketConnection.h"
 #include "au/string/StringUtilities.h"
 
 namespace au {
-class LogPluginFile : public LogPlugin {
+class LogCentralPluginFile : public LogCentralPlugin {
 public:
 
-  LogPluginFile() : LogPlugin("File") {
+  LogCentralPluginFile() : LogCentralPlugin("File") {
     set_activated(false);   // No activated by default
   }
-
-  LogPluginFile(std::string local_file);
-  virtual ~LogPluginFile() {
+  LogCentralPluginFile(std::string local_file);
+  virtual ~LogCentralPluginFile() {
   }
 
   // Emit a log in this channel

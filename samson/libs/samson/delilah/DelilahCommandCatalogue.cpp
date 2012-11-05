@@ -44,6 +44,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
       "In verbose mode, extra information is shown to the user");
   add_string_options_argument("verbose", "action", "Options::on:off");
 
+  /*
+  
   add("wlog", "delilah", "Show information about what logs are activated at nodes of current SAMSON cluster");
 
   add("wverbose", "delilah", "Activate or deactivate verbose mode for workers",
@@ -65,7 +67,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_string_options_argument("wtrace", "action", "Options::off:set:add:remove",
                               "Action to be performed over trace levels");
   add_string_argument("wtrace", "levels", "", "Levels selection. Example '1-5,7,76-99'");
-
+*/
+  
   add("send_alert", "delilah", "Send an alert to all connected delilahs using a random worker as sender");
   add_string_option("send_alert", "-worker", "", "Select broadcaster worker");
   add_bool_option("send_alert", "-error", "Mark message as an error");
@@ -82,9 +85,6 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("unset", "delilah", "Remove an environment variable in delilah client");
   add_string_argument("set", "name", "", "Name of the variable to set");
-
-  add("set_mode", "delilah", "Select delilah working mode: normal, database, logs");
-  add_string_options_argument("set_mode", "mode", "Options:normal:database:logs");
 
   add("ls_local", "local", "Show a list of current directory with relevant information about local queues");
   add_string_argument("ls_local", "file", "*", "File or pattern to be displayed");
@@ -165,6 +165,24 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("data_model_freeze"  , "debug" , "Show frozen and current data model status");
   add("data_model_cancel_freeze"  , "debug" , "Cancel candidate data model");
   add("data_model_recover" , "debug" , "Show frozen and current data model status");
+  
+  add("wlog_show" , "debug" , "Show logs received from workers (via logServer)");
+  add_string_argument("wlog_show", "host", "localhost", "logServer hostname ( optional :port)");
+  add_string_option("wlog_show", "format", AU_LOG_DEFAULT_FORMAT_CONSOLE, "Format of the logs");
+  add_string_option("wlog_show", "filter", "", "Filter of logs to show");
+  add("wlog_hide" , "debug" , "Not show logs received from workers (via logServer) anymore");
+
+  add("wlog_status" , "debug" , "Show current status of the logs from workers");
+  add_tag("wlog_status", "send_to_all_workers");
+
+  add("wlog_set_log_server" , "debug" , "Set the host for log server in all workers");
+  add_mandatory_string_argument("wlog_set_log_server", "host", "Log server host");
+  add_tag("wlog_set_log_server", "send_to_all_workers");
+
+  add("wlog_set" , "debug" , "Set the lovel of logs for a particular channel");
+  add_mandatory_string_argument("wlog_set", "channel_pattern", "Channel ( or channel pattern )");
+  add_string_argument("wlog_set" , "log_level" , "*" , "Level of logs");
+  add_tag("wlog_set", "send_to_all_workers");
   
   // MODULES
   // ------------------------------------------------------------------

@@ -18,6 +18,7 @@
 
 #include "au/containers/map.h"                      // au::map
 #include "samson/stream/BlockInfo.h"                // struct BlockInfo
+#include "samson/stream/BlockList.h"
 
 namespace samson {
 namespace stream {
@@ -55,6 +56,43 @@ class BlockListContainer {
     // Lock content on memory
     void lock_content_in_memory();
 
+  std::string str_inputs() const {
+    
+    int num_inputs = 0;
+    for (int i = 0; i < 10; i++)
+      if( blockLists_.findInMap(au::str("input_%d", i)))
+        num_inputs = i+1;
+
+    std::ostringstream output;
+    for (int i = 0; i < num_inputs; i++) {
+      BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
+      if( !block_list )
+        output << "-";
+      BlockInfo block_info = block_list->getBlockInfo();
+      output << "[" << block_info.strShortInfo() << "]";
+    }
+    return output.str();
+  }
+  
+  std::string str_outputs() const {
+    
+    int num_outputs = 0;
+    for (int i = 0; i < 10; i++)
+      if( blockLists_.findInMap(au::str("output_%d", i)))
+        num_outputs = i+1;
+    
+    std::ostringstream output;
+    for (int i = 0; i < num_outputs; i++) {
+      BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
+      if( !block_list )
+        output << "-";
+      BlockInfo block_info = block_list->getBlockInfo();
+      output << "[" << block_info.strShortInfo() << "]";
+    }
+    return output.str();
+  }
+  
+  
   private:
     size_t task_id_;
     std::string container_name_;

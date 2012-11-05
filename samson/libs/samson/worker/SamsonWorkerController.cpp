@@ -20,7 +20,7 @@
 #include "samson/common/common.h"
 #include "samson/common/KVRange.h"
 #include "samson/stream/BlockManager.h"
-#include "au/zoo/common.h"
+#include "zoo/common.h"
 
 namespace samson {
   SamsonWorkerController::SamsonWorkerController(au::zoo::Connection *zoo_connection, int port, int port_web) :
@@ -32,7 +32,7 @@ namespace samson {
     
     // Make sure basic folders are created
     
-    AU_L( logs.worker_controller, ("Creating basic folders in zk. Just in case I am the first one..."));
+    AU_M( logs.worker_controller, ("Creating basic folders in zk. Just in case I am the first one..."));
     zoo_connection_->Create("/samson");
     zoo_connection_->Create("/samson/workers");
     zoo_connection_->Create("/samson/workers_blocks");
@@ -57,7 +57,7 @@ namespace samson {
   
   int SamsonWorkerController::init() {
     
-    AU_L( logs.worker_controller, ("SamsonWorkerController constructor"));
+    AU_M( logs.worker_controller, ("SamsonWorkerController constructor"));
     
     // Create ephemeral node with my information
     node_worker_ = NODE_WORKER_BASE;
@@ -69,11 +69,11 @@ namespace samson {
       return rc;
     }
     
-    AU_L( logs.worker_controller, ("Ephemeral node created at %s", node_worker_.c_str()));
+    AU_M( logs.worker_controller, ("Ephemeral node created at %s", node_worker_.c_str()));
     
     // Get my assigned worker_id
     worker_id_ = worker_from_node(node_worker_);
-    AU_L( logs.worker_controller, ("Assigned Worker id: %lu", worker_id_));
+    AU_M( logs.worker_controller, ("Assigned Worker id: %lu", worker_id_));
 
     // General function to check everything
     rc = Review();
@@ -110,7 +110,7 @@ namespace samson {
     au::TokenTaker tt(&token_);
     
     // Recover cluster information and add watch for updates
-    AU_L( logs.worker_controller, ("Recovering cluster information"));
+    AU_M( logs.worker_controller, ("Recovering cluster information"));
     
     au::SharedPointer<gpb::ClusterInfo> cluster_info(new gpb::ClusterInfo());
     
@@ -143,7 +143,7 @@ namespace samson {
       if ( !au::CheckIfStringsBeginWith(path, "/samson/") )
         return;
       
-      AU_L( logs.worker_controller, ("SamsonWorkerController watch %s", path.c_str()));
+      AU_M( logs.worker_controller, ("SamsonWorkerController watch %s", path.c_str()));
 
       // Updates on cluster information
       if( path == "/samson/cluster")
@@ -168,7 +168,7 @@ namespace samson {
             return;
           }
           
-          AU_L( logs.worker_controller,("Updating from worker %lu node with commit %lu", worker_id , worker_info->last_commit_id() ));
+          AU_M( logs.worker_controller,("Updating from worker %lu node with commit %lu", worker_id , worker_info->last_commit_id() ));
           
           workers_info_.Set(worker_id, worker_info);
           return;
@@ -205,7 +205,7 @@ namespace samson {
 
     // Get all information from all workers...
     for (size_t i = 0; i < worker_ids_.size() ; ++i) {
-      AU_L( logs.worker_controller, ("Recovering information for worker %lu", worker_ids_[i]));
+      AU_M( logs.worker_controller, ("Recovering information for worker %lu", worker_ids_[i]));
       
       // Recover information for thi worker
       au::SharedPointer<samson::gpb::WorkerInfo> worker_info( new samson::gpb::WorkerInfo() );
@@ -289,30 +289,29 @@ namespace samson {
     int rc = zoo_connection_->Set( node_worker_ , &worker_info_);
     
     if (rc) {
-      AU_W(("Not possible to update worker node %s with new commit id %lu"
+      AU_SW(("Not possible to update worker node %s with new commit id %lu"
             , au::zoo::str_error(rc).c_str()
             , last_commit_id ));
       worker_info_.set_last_commit_id( previous_last_commit_id ); // Recover previous value
     }
 
-    AU_L( logs.worker_controller, ("Updating worker node with commit %lu", last_commit_id));
+    AU_M( logs.worker_controller, ("Updating worker node with commit %lu", last_commit_id));
     return rc;
   }
 
   int SamsonWorkerController::ReviewClusterLeather() {
     
     // I am the cluster leader
-    AU_W(("This worker is cluster leader"));
-    AU_L( logs.worker_controller, ("I am the Cluster Leader"));
+    AU_M( logs.worker_controller, ("This worker is the Cluster Leader"));
     
     // Add a watch to all workers ( to be informed if any of them falls down to change cluster setup )
     for (size_t i = 0; i < worker_ids_.size(); ++i) {
       std::string node = au::str("/samson/workers/w%010lu", worker_ids_[i]);
-      AU_L( logs.worker_controller, ("Adding watcher on %s", node.c_str()));
+      AU_M( logs.worker_controller, ("Adding watcher on %s", node.c_str()));
       int rc = zoo_connection_->Exists(node, engine_id());
       if (rc) {
         // Recheck since a node has disappeared
-        AU_L( logs.worker_controller, ("Error while adding watcher on node %s (%s). Rechecking..."
+        AU_M( logs.worker_controller, ("Error while adding watcher on node %s (%s). Rechecking..."
                                , node.c_str()
                                , au::zoo::str_error(rc).c_str()));
         return 1; // Error, recheck is necessary
@@ -366,14 +365,14 @@ namespace samson {
     }
     
     if (rc == ZNONODE) {
-      AU_L( logs.worker_controller, ("Creating a new cluster info"));
+      AU_M( logs.worker_controller, ("Creating a new cluster info"));
       int rc2 = CreateClusterInfo(0); // Create a version-0 cluster info
       if (rc2) {
         LM_W(("Not possible to create cluster info %s", au::zoo::str_error(rc2).c_str()));
         return rc2;
       }
       
-      AU_L( logs.worker_controller, ("Creating node /samson/cluster"));
+      AU_M( logs.worker_controller, ("Creating node /samson/cluster"));
       rc = zoo_connection_->Create("/samson/cluster", 0, cluster_info_.shared_object());
       if (rc) {
         LM_W(("Not possible to create cluster node at /samson/cluster (%s)", au::zoo::str_error(rc).c_str()));
@@ -411,16 +410,16 @@ namespace samson {
   }
 
   int SamsonWorkerController::ReviewNonClusterLeather() {
-    AU_L( logs.worker_controller, ("I am a Non-Leader worker"));    // I am a normal worker
+    AU_M( logs.worker_controller, ("I am a Non-Leader worker"));    // I am a normal worker
     
     // Add a watcher to my previous worker to be alerted when it fails down, so I would be promoted to cluster leather
     for (size_t i = 1; i < worker_ids_.size(); ++i) {
       if (worker_ids_[i] == worker_id_) {
         std::string previous_node_worker = au::str("/samson/workers/w%010lu", worker_ids_[i - 1]);
-        AU_L( logs.worker_controller, ("Adding watcher on previous worker at %s", previous_node_worker.c_str()));
+        AU_M( logs.worker_controller, ("Adding watcher on previous worker at %s", previous_node_worker.c_str()));
         int rc = zoo_connection_->Exists(previous_node_worker, engine_id());
         if (rc) {
-          AU_L( logs.worker_controller, ("Error while adding watcher on node %s. Rechecking...", previous_node_worker.c_str()));
+          AU_M( logs.worker_controller, ("Error while adding watcher on node %s. Rechecking...", previous_node_worker.c_str()));
         } else {
           break; //
         }
@@ -432,10 +431,10 @@ namespace samson {
   
   int SamsonWorkerController::Review() {
     
-    AU_L( logs.worker_controller , ("Checking worker controller") );
+    AU_M( logs.worker_controller , ("Checking worker controller") );
     
     au::TokenTaker tt(&token_);
-    AU_L( logs.worker_controller, ("check..."));
+    AU_M( logs.worker_controller, ("check..."));
     
     // Get all the workers involved in this cluster and all information
     int rc = GetAllWorkersFromZk();
@@ -491,11 +490,11 @@ namespace samson {
     
     // If the cluster is unchanged, do not update cluster information
     if (are_equal(worker_ids_, worker_ids_in_cluster )) {
-      AU_L( logs.worker_controller, ("Current cluster_info valid with %lu workers", worker_ids_.size()));
+      AU_M( logs.worker_controller, ("Current cluster_info valid with %lu workers", worker_ids_.size()));
       return true;
     }
     
-    AU_L( logs.worker_controller, ("ClusterInfo not valid since workers have changed..."));
+    AU_M( logs.worker_controller, ("ClusterInfo not valid since workers have changed..."));
     return false;
   }
   
@@ -505,10 +504,10 @@ namespace samson {
     cluster_info_->set_version(version);         // Set the version provided
     
     // All information
-    AU_L( logs.worker_controller, ("Recovering information for all worker to define cluster"));
+    AU_M( logs.worker_controller, ("Recovering information for all worker to define cluster"));
     
     // Create a new cluster based on workers information
-    AU_L( logs.worker_controller, ("Creating new cluster based on collected information (%lu workers)", workers_info_.size()));
+    AU_M( logs.worker_controller, ("Creating new cluster based on collected information (%lu workers)", workers_info_.size()));
     
     // Add individual worker information
     for ( size_t w = 0 ; w < worker_ids_.size() ; w++ ) {
@@ -661,7 +660,7 @@ namespace samson {
     }
     
     freeifaddrs(addrs);
-    LM_W(("Using 127.0.0.1 as local ip since no other local ip found"));
+    AU_W( logs.worker_controller, ("Using 127.0.0.1 as local ip since no other local ip found"));
     return "127.0.0.1";
   }
   
@@ -720,7 +719,7 @@ namespace samson {
       
       if( info->last_commit_id() < last_commit_id )
       {
-        //AU_W(("Checking data model %lu: Worker %lu is still at commit id %lu", last_commit_id, worker_ids_[w] , info->last_commit_id() ) );
+        //AU_SW(("Checking data model %lu: Worker %lu is still at commit id %lu", last_commit_id, worker_ids_[w] , info->last_commit_id() ) );
         return false;
       }
     }

@@ -17,7 +17,7 @@
 #include "au/containers/SharedPointer.h"
 #include "au/network/RESTService.h"
 #include "au/network/RESTServiceCommand.h"
-#include "au/zoo/Connection.h"
+#include "zoo/Connection.h"
 
 #include "engine/EngineElement.h"               // samson::EngineElement
 #include "logMsg/logMsg.h"
@@ -33,7 +33,6 @@
 #include "samson/stream/BlockManager.h"
 #include "samson/stream/WorkerTaskManager.h"
 #include "samson/stream/WorkerTaskManager.h"     // samson::stream::WorkerTaskManager
-#include "samson/worker/PushOperation.h"
 #include "samson/worker/SamsonWorkerRest.h"
 #include "samson/worker/SamsonWorkerSamples.h"
 #include "samson/worker/WorkerBlockManager.h"
@@ -86,6 +85,7 @@ class SamsonWorker : public engine::NotificationListener, public au::Console {
 
     // Function to get information about current status
     au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization);
+    au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization);
     au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
     au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
 

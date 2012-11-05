@@ -49,7 +49,6 @@ namespace samson {
   au::SharedPointer<au::CommandLine> DataModel::GetCommandLine() {
     
     au::SharedPointer<au::CommandLine> cmd( new au::CommandLine() );
-                                       
     // Input output definition of queues
     cmd->SetFlagString("input", "");
     cmd->SetFlagString("output", "");
@@ -77,6 +76,8 @@ namespace samson {
                                 , std::string command
                                 , int version
                                 , au::ErrorManager& error ) {
+    
+    AU_M(logs.data_model, ("Perform commit: %s (version  %d)" , command.c_str() , version ));
     
     // Analyse input commands
     au::SharedPointer<au::CommandLine> cmd = GetCommandLine();
@@ -134,6 +135,8 @@ namespace samson {
     
     // Get main command
     std::string main_command = cmd->get_argument(0);
+    AU_M(logs.data_model, ("ProcessCommand %s" , main_command.c_str() ));
+
     if (main_command == kAdd) {
       ProcessAddCommand(data, cmd, error);
     } else if (main_command == kAddQueueConnection) {
@@ -169,7 +172,7 @@ namespace samson {
     } else if (main_command == kUnsetStreamOperationProperty) {
       ProcessUnsetStreamOperationPropertyCommand(data, cmd, error);
     } else {
-      LM_W(("Unknown command (%s) in the commit to data model", main_command.c_str()));
+      AU_W(logs.data_model,("Unknown command (%s) in the commit to data model", main_command.c_str()));
       error.set(au::str("Unknown command (%s) in the commit to data model", main_command.c_str()));
     }
     return;
@@ -226,8 +229,8 @@ namespace samson {
   
   void DataModel::ProcessAddStreamOperationCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error) {
     if (cmd->get_num_arguments() < 3) {
-      LM_W(("Error in add_stream_operation, num_arguments < 3"));
-      LM_W(("Offending command: '%s'", cmd->command().c_str()));
+      AU_W(logs.data_model,("Error in add_stream_operation, num_arguments < 3"));
+      AU_W(logs.data_model,("Offending command: '%s'", cmd->command().c_str()));
       error.set( au::str("Usage: '%s' name operation -input \"input1 input2\" -output \"outputs1 outputs2 output3\"",
                          cmd->get_argument(0).c_str()));
       return;
@@ -248,8 +251,8 @@ namespace samson {
     gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, name);
     
     if (stream_operation != NULL) {
-      LM_W(("Stream operation %s already exist", name.c_str()));
-      LM_W(("Offending command: '%s'", cmd->command().c_str()));
+      AU_W(logs.data_model,("Stream operation %s already exist", name.c_str()));
+      AU_W(logs.data_model,("Offending command: '%s'", cmd->command().c_str()));
       error.set(au::str("Stream operation %s already exist", name.c_str()));
       return;
     }
@@ -383,7 +386,7 @@ namespace samson {
         add_block(data, item->queue(), item->block_id(), item->block_size(), item->format(),
                   item->range(), item->info(), version, error);
         if (error.IsActivated()) {
-          LM_W(("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
+          AU_W(logs.data_model,("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
           return;
         }
         // add also to the connected queues
@@ -396,7 +399,7 @@ namespace samson {
         rm_block(data, item->queue(), item->block_id(), item->format(), item->range(), item->info(),
                  version, error);
         if (error.IsActivated()) {
-          LM_W(("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
+          AU_W(logs.data_model,("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
           return;
         }
       }
@@ -405,7 +408,7 @@ namespace samson {
     // Blocks have been added or removed... review batch operation
     ReviewBatchOperations(data, error);
     if (error.IsActivated()) {
-      LM_W(("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
+      AU_W(logs.data_model,("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
     }
     return;
   }
@@ -435,7 +438,7 @@ namespace samson {
     
     samson::gpb::Queue *queue = get_queue(data, cmd->get_argument(1));
     if (!queue) {
-      LM_W(("queue '%s' not found", cmd->get_argument(1).c_str()));
+      AU_W(logs.data_model,("queue '%s' not found", cmd->get_argument(1).c_str()));
       return;   // nothing to do
     }
     queue->set_version( data->last_commit_id() );   // Update version where this queue was updated
@@ -443,7 +446,7 @@ namespace samson {
     samson::gpb::Queue *target_queue = get_or_create_queue(data, cmd->get_argument(2), format, error);
     
     if (error.IsActivated()) {
-      LM_W(("Error for queue:'%s' in get_or_create_queue, error:%s",
+      AU_W(logs.data_model,("Error for queue:'%s' in get_or_create_queue, error:%s",
             cmd->get_argument(2).c_str(), error.GetMessage().c_str()));
       return;
     }
@@ -705,7 +708,7 @@ namespace samson {
     au::ErrorManager error;
     Commit( "SAMSON system", "consolidate_data_model", error );
     if( error.IsActivated() ) {
-      AU_W(("Error in data-model commit to consolidate data model:  %s " , error.GetMessage().c_str() ));
+      AU_W( logs.data_model ,("Error in data-model commit to consolidate data model:  %s " , error.GetMessage().c_str() ));
     }
   }
   
@@ -1080,12 +1083,12 @@ namespace samson {
     int operations_size = data->operations_size();
     
     // TODO(@jges): Remove log message
-    LM_T(LmtDelilahComponent, ("operations.size(%d)", operations_size));
+    AU_D(logs.data_model, ("operations.size(%d)", operations_size));
     
     for (int i = 0; i < operations_size; ++i) {
       const gpb::StreamOperation & stream_operation = data->operations(i);
       std::string name = stream_operation.name();
-      LM_T(LmtDelilahComponent, ("CheckForAllOperationsFinished stream_operation:'%s' with %d inputs",
+      AU_D(logs.data_model, ("CheckForAllOperationsFinished stream_operation:'%s' with %d inputs",
                                  name.c_str(), operations_size));
       
       // To check for finish, we should take into account just the first input,
@@ -1099,7 +1102,7 @@ namespace samson {
         size_t size;
         getQueueInfo(*queue, &num_blocks, &kvs, &size);
         if (size > 0) {
-          LM_T(LmtDelilahComponent, ("Active operation: '%s', queue:'%s' with size:%lu",
+          AU_D(logs.data_model, ("Active operation: '%s', queue:'%s' with size:%lu",
                                      name.c_str(), queue_name.c_str(), size));
           return false;
         }
@@ -1107,8 +1110,7 @@ namespace samson {
     }
     
     operations_size = data->batch_operations_size();
-    // TODO(@jges): Remove log message
-    LM_T(LmtDelilahComponent, ("batch operations.size(%d)", operations_size));
+    AU_D(logs.data_model, ("batch operations.size(%d)", operations_size));
     for (int i = 0; i < operations_size; ++i) {
       gpb::BatchOperation *batch_operation = data->mutable_batch_operations(i);
       if ( gpb::batch_operation_is_finished(data, *batch_operation) == false) {
@@ -1198,7 +1200,7 @@ namespace samson {
           
           ProcessCommand(data, command , error);
           if (error.IsActivated()) {
-            LM_W(("Error performing commit command:'%s'  error:'%s'", command.c_str(), error.GetMessage().c_str()));
+            AU_W(logs.data_model,("Error performing commit command:'%s'  error:'%s'", command.c_str(), error.GetMessage().c_str()));
             return;
           }
         }

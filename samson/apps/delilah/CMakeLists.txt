@@ -20,6 +20,7 @@ SET (STATIC_LIBS
      samsonModule
      dl
      engine
+	 zoo
      samsonCommon	
      samson_system
      au

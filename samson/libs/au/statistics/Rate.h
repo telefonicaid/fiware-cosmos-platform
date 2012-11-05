@@ -49,6 +49,9 @@ public:
   // Push new samples
   void Push(size_t size);
 
+  // Clear data
+  void Clear();
+  
   // Get totals
   size_t hits() const;
   size_t size() const;

@@ -46,7 +46,6 @@ namespace samson {
       return finished_;
     }
     
-    
     // Get information for delilah listing
     void fill(gpb::CollectionRecord *record, const Visualization& visualization) {
       add(record, "block_id", str_block_id(block_id_), "different");

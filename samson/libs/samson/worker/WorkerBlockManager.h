@@ -17,7 +17,6 @@
 #include "samson/common/samson.pb.h"
 
 #include "samson/worker/BlockRequest.h"
-#include "samson/worker/PushOperation.h"
 
 /*
  *

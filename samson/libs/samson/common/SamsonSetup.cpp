@@ -54,6 +54,8 @@ namespace samson {
     AddUInt64Item("stream.max_operation_input_size"
                   , "400000000"
                   ,"Maximum input data ( in bytes ) to run an automatic stream processing task");
+    
+    SetWorkerDirectories("",""); // Take default values if nothing is provided
   }
   
   void SamsonSetup::SetWorkerDirectories(const std::string& samson_home, const std::string& samson_working) {

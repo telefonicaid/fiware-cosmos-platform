@@ -130,25 +130,11 @@ bool WorkerTaskBase::IsWorkerTaskFinished() const {
   return worker_task_finished_;
 }
 
-std::string WorkerTaskBase::str_inputs() {
-  // @jges: Cannot be made const, because BlockListContainer::getBlockList adds the element if it doesn't exist
-  std::ostringstream output;
-  for (int i = 0; i < 3; i++) {
-    BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", i));
-    BlockInfo block_info = block_list->getBlockInfo();
-    output << block_info.strShortInfo() << " ";
-  }
-  return output.str();
+std::string WorkerTaskBase::str_inputs()  const {
+  return block_list_container_.str_inputs();
 }
-std::string WorkerTaskBase::str_outputs() {
-  // @jges: Cannot be made const, because BlockListContainer::getBlockList adds the element if it doesn't exist
-  std::ostringstream output;
-  for (int i = 0; i < 3; i++) {
-    BlockList *block_list = block_list_container_.getBlockList(au::str("output_%d", i));
-    BlockInfo block_info = block_list->getBlockInfo();
-    output << block_info.strShortInfo() << " ";
-  }
-  return output.str();
+std::string WorkerTaskBase::str_outputs() const {
+  return block_list_container_.str_outputs();
 }
 
 void WorkerTaskBase::SetWorkerTaskFinished() {

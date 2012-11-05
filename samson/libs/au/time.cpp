@@ -48,5 +48,15 @@ size_t seconds_to_microseconds(double time) {
 size_t seconds_to_nanoseconds(double time) {
   return time * 1000000000;
 }
+  
+  std::string GetTimeStampString( time_t time )
+  {
+    struct tm timeinfo;
+    char buffer_time[1024];
+    localtime_r(&time, &timeinfo);
+    strftime(buffer_time, 1024, "%X %d/%m/%Y", &timeinfo);
+    return std::string(buffer_time);
+  }
+
 }
 

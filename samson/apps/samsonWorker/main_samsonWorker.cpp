@@ -33,12 +33,13 @@
 #include "au/log/Log.h"
 #include "au/log/LogCommon.h"
 #include "au/log/LogCentral.h"
-#include "au/log/LogPluginConsole.h"
+#include "au/log/LogCentralPluginConsole.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "engine/DiskManager.h"
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
+#include "samson/module/samson.h"
 #include "samson/common/common.h"
 #include "samson/common/MemoryCheck.h"
 #include "samson/common/SamsonSetup.h"
@@ -116,7 +117,6 @@ PaArgument paArgs[] =
 int logFd = -1;
 samson::SamsonWorker *worker = NULL;
 au::LockDebugger *lockDebugger = NULL;
-engine::SharedMemoryManager *smManager = NULL;
 
 /* ****************************************************************************
  *
@@ -249,15 +249,18 @@ int main(int argC, const char *argV[]) {
   // AU Log system
   au::log_central.Init( argV[0] );
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au library included )
+  
   au::log_central.AddFilePlugin("file" , std::string(paLogDir) + "/samsonWorker.log");
   au::log_central.AddFilePlugin("file2" , samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log" );
   if( strlen(log_server) > 0 )
   {
     std::string log_server_file = std::string(paLogDir) + "samsonWorker_" + log_server +  ".log";
     au::log_central.AddServerPlugin( "server" , log_server , log_server_file );
+    au::log_central.evalCommand("log_set * X server");
+    au::log_central.evalCommand("log_set samson::W M server");
+    au::log_central.evalCommand("log_set samson::OP W server");
   }
   au::log_central.evalCommand(log_command);  // Additional command provided in command line
-  
   
   valgrindExit(2);
 
@@ -317,7 +320,7 @@ int main(int argC, const char *argV[]) {
   // -----------------------------------------------------------------------------------
   worker = new samson::SamsonWorker(zoo_host, port, web_port);
 
-  AU_LM_M(("Worker Running..."));
+  AU_SM(("Worker Running..."));
 
   valgrindExit(13);
 
@@ -334,10 +337,7 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-  std::string log_console_format = "channel_alias : text"; // Simple and clear log format if not debuggin
-  if( paDebug )
-    log_console_format = "exec_short[pid] : channel_alias : date : time : file[line] : function : text";
-  au::log_central.AddPlugin( "console" , new au::LogPluginConsole(worker , log_console_format) );
+  au::log_central.AddPlugin( "console" , new au::LogCentralPluginConsole(worker) );
 
   // Run worker console ( -fg is activated )
   worker->runConsole();
@@ -354,7 +354,7 @@ int main(int argC, const char *argV[]) {
   LM_T(LmtCleanup, ("Stopping network listener (worker at %p)", worker));
   worker->network()->stop();
   LM_T(LmtCleanup, ("log_central marked to stop"));
-  AU_LM_M(("log_central stopping..."));
+  AU_SM(("log_central stopping..."));
 
   // Stopping the new log_central thread
   au::log_central.Stop();
@@ -371,12 +371,6 @@ int main(int argC, const char *argV[]) {
     LM_T(LmtCleanup, ("deleting worker"));
     delete worker;
     worker = NULL;
-  }
-
-  if (smManager != NULL) {
-    LM_T(LmtCleanup, ("Shutting down Shared Memory Manager"));
-    delete smManager;
-    smManager = NULL;
   }
 
   LM_T(LmtCleanup, ("destroying BlockManager"));

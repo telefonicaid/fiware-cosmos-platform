@@ -88,6 +88,11 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
 }
 
 std::string ConsoleServiceClientBase::getPrompt() {
+
+  // If not connected....
+  if( !socket_connection_ )
+    return "Disconnected > ";
+  
   if( current_prompt_ != "" )
     if (cronometer_prompt_request_.seconds() < 2) {
       return current_prompt_;
@@ -144,7 +149,7 @@ void ConsoleServiceClientBase::evalCommand(std::string command, au::ErrorManager
   }
 
   if (!socket_connection_) {
-    error->AddError("Not connected to any host. Type connect 'host'");
+    error->AddError("Not connected to any host. Type 'connect' command ");
     return;
   } else {
     // Write command to the server

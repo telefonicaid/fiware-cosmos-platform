@@ -8,11 +8,14 @@
 #include "au/utils.h"
 
 #include "au/log/LogCommon.h"
+#include "au/log/LogProbe.h"
+#include "au/log/LogFilter.h"
 #include "au/network/ConsoleService.h"
 
 char format[1024];
 char host[1024];
 char filter[1024];
+char file_name[1024];
 
 #define LOC     "localhost"
 #define LS_PORT AU_LOG_SERVER_QUERY_PORT
@@ -20,12 +23,10 @@ char filter[1024];
 
 PaArgument paArgs[] =
 {
-  { "",        host,        "",        PaString,        PaOpt,  _i "localhost",                      PaNL,
-    PaNL,
-    "Log server hostname"               },
-  { "-format", format,      "",  PaString, PaOpt, _i AU_LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL,
-    "Formats of the logs at the output" },
-  { "-filter", filter,      "",  PaString, PaOpt, _i "",                               PaNL,  PaNL, "Filter for logs"                   },
+  { "-host",   host,     "",  PaString,        PaOpt,  _i "localhost", PaNL,PaNL,"Log server hostname"  },
+  { "-format", format,   "",  PaString, PaOpt, _i AU_LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL, "Formats of the logs at the output" },
+  { "-filter", filter,   "",  PaString, PaOpt, _i "", PaNL,  PaNL, "Filter for logs"                   },
+  { "-save"  , file_name,"", PaString, PaOpt, _i "",  PaNL, PaNL,"Save received logs to file" },
   PA_END_OF_ARGS
 };
 
@@ -44,89 +45,68 @@ int logFd = -1;
 
 
 
-au::Color GetColorForLog(au::LogPointer log) {
-  if (log->Get("channel_alias") == "E") {
-    return au::red;
-  }
-  if (log->Get("channel_alias") == "W") {
-    return au::purple;
-  }
+  
+  int main(int argC, const char *argV[]) {
+    paConfig("prefix",                        (void *)"LOG_CLIENT_");
+    paConfig("usage and exit on any warning", (void *)true);
+    paConfig("log to screen",                 (void *)true);
+    paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+    paConfig("screen line format",            (void *)"TYPE: TEXT");
+    paConfig("log to file",                   (void *)false);
+    paConfig("log to stderr",                 (void *)true);
+    
+    paConfig("man synopsis",                  (void *)manSynopsis);
+    paConfig("man shortdescription",          (void *)manShortDescription);
+    paConfig("man description",               (void *)manDescription);
+    paConfig("man exitstatus",                (void *)manExitStatus);
+    paConfig("man author",                    (void *)manAuthor);
+    paConfig("man reportingbugs",             (void *)manReportingBugs);
+    paConfig("man copyright",                 (void *)manCopyright);
+    paConfig("man version",                   (void *)manVersion);
+    
+    paParse(paArgs, argC, (char **)argV, 1, true);
+    logFd = lmFirstDiskFileDescriptor();
 
-  return au::normal;
-}
-
-int main(int argC, const char *argV[]) {
-  paConfig("prefix",                        (void *)"LOG_CLIENT_");
-  paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)true);
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
-  paConfig("log to file",                   (void *)false);
-  paConfig("log to stderr",                 (void *)true);
-
-  paConfig("man synopsis",                  (void *)manSynopsis);
-  paConfig("man shortdescription",          (void *)manShortDescription);
-  paConfig("man description",               (void *)manDescription);
-  paConfig("man exitstatus",                (void *)manExitStatus);
-  paConfig("man author",                    (void *)manAuthor);
-  paConfig("man reportingbugs",             (void *)manReportingBugs);
-  paConfig("man copyright",                 (void *)manCopyright);
-  paConfig("man version",                   (void *)manVersion);
-
-  paParse(paArgs, argC, (char **)argV, 1, true);
-  // lmAux((char*) "father");
-  logFd = lmFirstDiskFileDescriptor();
-
-  LM_V(("Connecting to log server at %s", host ));
-
-  // Add default port to host if necessary
-  std::string str_host = host;
-  if (str_host.find_last_of(":") == std::string::npos) {
-    str_host += au::str(":%d", AU_LOG_SERVER_PORT);
-  }
-
-  // Create a socket connection with the provided host
-  au::ErrorManager error;
-  au::SharedPointer<au::SocketConnection> socket_connection = au::SocketConnection::Create(str_host, error);
-
-  if (error.IsActivated()) {
-    fprintf(stderr, "Error connecting with %s (%s)", host, error.GetMessage().c_str());
-    exit(0);
-  }
-
-  // Write a Hello message
-  au::gpb::LogConnectionHello hello;
-  hello.set_type(au::gpb::LogConnectionHello_LogConnectionType_LogProbe);
-  hello.set_filter(filter);
-
-  au::Status s = au::writeGPB(socket_connection->fd(), &hello);
-  if (s != au::OK) {
-    fprintf(stderr, "Not possible to sent hello message to log server");
-    exit(0);
-  }
-
-  // Log formatter to get the string to show
-  au::LogFormatter log_formatter(format);
-
-  // Infinite loop to receive logs
-  while (true) {
-    au::LogPointer log(new au::Log());
-    bool real_log = log->Read(socket_connection.shared_object());
-
-    if (real_log) {
-      au::Color color = GetColorForLog(log);
-      std::cerr << au::str(color, "%s", log_formatter.get(log).c_str()) << "\n";
-    } else {
-      fprintf(stderr, "Error reading log\n");
-      exit(0);
+    // Check format for filter
+    au::ErrorManager error;
+    au::LogFilter::Create( filter , error);
+    if( error.IsActivated() )
+    {
+      std::cerr << error.GetErrorMessage("Error in filter definition");
+      exit(1);
     }
-
-    if (socket_connection->IsClosed()) {
-      fprintf(stderr, "Socket connection closed by server");
-      exit(0);
+    
+    // Log Probe to get logs and print on screen...
+    au::LogProbe log_probe;
+    log_probe.AddPlugin("printer", new au::LogProbePriter(format) );
+    if( strlen( file_name) > 0 )
+    {
+      au::ErrorManager error;
+      log_probe.AddFilePlugin("file", file_name , error );
+      if( error.IsActivated() )
+        std::cerr << error.GetErrorMessage(au::str("Error login to file %s" , file_name)) << std::endl;
     }
+    
+    // Connect with LogServer
+    log_probe.ConnectAsProbe(host, filter, error);
+    
+    if( error.IsActivated() )
+    {
+      std::cerr << "Error connecting " << host << " : " << error.GetMessage() << std::endl;
+      exit(1);
+    }
+    
+    // Sleep forever
+    while (true) {
+      sleep(1);
+      if( !log_probe.IsConnected() )
+      {
+        // Show only if verbose is activated
+        //std::cerr << "Error receiving logs from " << host << " : " << log_probe_printer.error().GetMessage() << std::endl;
+        exit(1);
+      }
+    }
+    
+    return 0;
   }
-
-  return 0;
-}
-
+  

@@ -83,7 +83,7 @@ void MultiPacketQueue::RemoveOldConnections(const std::set<std::string> current_
     }
 
     if (it_packet_queues->second->inactivity_time() > 60) {
-      AU_W(("Removing  pending packets for %s since it has been disconnected mote than 60 secs", name.c_str()));
+      AU_SW(("Removing  pending packets for %s since it has been disconnected mote than 60 secs", name.c_str()));
       packet_queues.erase(it_packet_queues++);
     } else {
       ++it_packet_queues;

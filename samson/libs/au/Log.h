@@ -28,11 +28,13 @@ namespace au {
       if( registered_ )
         return;
       registered_ = true;
-      zoo = AU_LR( "au::zookeeper" , "ZK" );
+      zoo = AU_REGISTER_CHANNEL( "au::ZOO" );
+      gpb = AU_REGISTER_CHANNEL( "au::GPB" );
     }
     
     // Channels definied in this library
     int zoo;
+    int gpb;
 
   private:
     bool registered_;

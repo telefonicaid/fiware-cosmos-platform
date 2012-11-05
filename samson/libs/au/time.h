@@ -46,6 +46,9 @@ timeval secs_to_timeval(double s);
 
 size_t seconds_to_microseconds(double time);
 size_t seconds_to_nanoseconds(double time);
+  
+  std::string GetTimeStampString( time_t time );
+
 }
 
 #endif  // ifndef _H_AU_TIME

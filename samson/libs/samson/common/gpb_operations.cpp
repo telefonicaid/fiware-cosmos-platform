@@ -389,16 +389,10 @@ bool batch_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& bat
   size_t delilah_component_id = batch_operation.delilah_component_id();
   std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
 
-  // Recovered from old DataModel::CheckIfBatchOperationIsFinished()
-  // To check for finish, we should take into account just the first input,
-  // as the other would be the state or a permanent queue
-  // Small change in the criteria. Now we can have several inputs, so the test
-  // must include all queues but the last one
-  for (int i = 0; (i < (batch_operation.inputs_size() - 1)); ++i) {
+  // @andreu: We should check all inputs since it is a batch operation
+  for (int i = 0; i < batch_operation.inputs_size() ; ++i) {
     std::string queue_name = prefix + batch_operation.inputs(i);
-
     Queue *queue = get_queue(data, queue_name);
-
     if ((queue) && (getKVInfoForQueue(*queue).size > 0)) {
       return false;
     }

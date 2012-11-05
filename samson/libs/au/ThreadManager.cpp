@@ -44,10 +44,13 @@ int ThreadManager::addThread(std::string thread_name, pthread_t *__restrict t, c
   return s;
 }
 
-int ThreadManager::addNonDetachedThread(std::string thread_name, pthread_t *__restrict t,
-                                        const pthread_attr_t *__restrict attr_t,
-                                        thread_function f,
-                                        void *__restrict p) {
+  
+  
+int ThreadManager::addNonDetachedThread(  std::string thread_name
+                                        , pthread_t *__restrict t
+                                        , const pthread_attr_t *__restrict attr_t
+                                        , thread_function f
+                                        , void *__restrict p ) {
   // Mutex protection
   au::TokenTaker tt(&token_);
 

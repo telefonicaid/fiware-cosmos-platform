@@ -20,7 +20,7 @@
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/worker/CommitCommand.h"
-#include "au/zoo/Connection.h"
+#include "zoo/Connection.h"
 
 #define NODE_WORKER_BASE "/samson/workers/w"
 

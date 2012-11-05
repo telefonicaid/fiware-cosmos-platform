@@ -47,6 +47,7 @@ message LogConnectionHello
     {
         LogProvider    = 1;
         LogProbe       = 2;
+		LogQuery       = 3;
     }
 
 	// type of connection
@@ -54,6 +55,5 @@ message LogConnectionHello
 
 	// optional filters
 	optional string filter = 2;
-
 
 }

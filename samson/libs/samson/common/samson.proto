@@ -5,6 +5,31 @@ package samson.gpb;
 // Basic components
 //
 
+message EnvironmentVariable
+{
+	required string name	= 1;	// Name of the property
+	required string value	= 2;	// Value
+}
+
+message Environment
+{
+	repeated EnvironmentVariable variable=1;	// List of enrivonment variables
+}
+
+message Error
+{
+	// When Error is used inside another message, it is always optional
+	required string message = 2;	// String with the error definition ( if any )
+}
+
+message Alert
+{
+	
+	required string text     = 1; 
+	optional string type     = 2; // message , error , warning
+	optional string context  = 3; // Context where this was generated ( streaming , delilah , etc... ) 
+
+}
 
 message KVRange
 {
@@ -215,32 +240,6 @@ message ClusterInfo
 // Common 
 //
 
-message EnvironmentVariable
-{
-	required string name	=1;	// Name of the property
-	required string value	=2;	// Value
-}
-
-message Environment
-{
-	repeated EnvironmentVariable variable=1;	// List of enrivonment variables
-}
-
-
-message Error
-{
-	// When Error is used inside another message, it is always optional
-	required string message = 2;	// String with the error definition ( if any )
-}
-
-message Alert
-{
-	
-	required string text     = 1; 
-	optional string type     = 2; // message , error , warning
-	optional string context  = 3; // Context where this was generated ( streaming , delilah , etc... ) 
-
-}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -421,6 +420,9 @@ message Message
 
 	// Information about cluster ( sent from workers to delilahs )
 	optional ClusterInfo cluster_info = 15;
+
+	// Information about a log generated at workers to delilahs
+	optional Environment log = 16;
 
 }
 

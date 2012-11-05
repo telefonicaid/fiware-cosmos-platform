@@ -48,6 +48,7 @@ class WorkerTaskBase : public engine::ProcessItem {
   {
     return simple_task_;
   }
+
   
     size_t worker_task_id() const { return id_;}  // Get the id of this task
     std::string concept() const { return concept_;}   // Get the concept ot this worker task
@@ -62,8 +63,9 @@ class WorkerTaskBase : public engine::ProcessItem {
 
     // Debug strings
     virtual std::string str() = 0;   // Debug string to get a description for  last_operations command
-    std::string str_inputs();
-    std::string str_outputs();
+  std::string str_inputs() const;
+  std::string str_outputs() const;
+  
   std::string str_short()
   {
     std::ostringstream output;

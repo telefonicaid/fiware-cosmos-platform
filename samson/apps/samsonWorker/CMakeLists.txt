@@ -28,6 +28,7 @@ SET (LIBS
     zookeeper_mt
     samson_system
     engine
+	zoo
     au
     ${ICONV_LIB}
     ${SOLARIS_LIBS}

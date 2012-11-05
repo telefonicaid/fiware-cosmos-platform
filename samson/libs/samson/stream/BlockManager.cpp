@@ -168,13 +168,15 @@ void BlockManager::notify(engine::Notification *notification) {
     BlockPointer block = blocks_.Get(block_id);
 
     if (block == NULL) {
-      LM_W(("Notification for non existing block %lu.Ignoring...", block_id));
+      AU_W( logs.block_manager , ("Notification for non existing block %lu.Ignoring...", block_id));
       return;
     }
 
-    LM_T(LmtBlockManager, ("Received a disk notification with type %s and size %s"
-            , type.c_str()
-            , au::str(operation_size).c_str()));
+    AU_M(logs.block_manager, ("Received a disk notification ( type %s size %s block_id %s )"
+                              , type.c_str()
+                              , au::str(operation_size).c_str()
+                              , str_block_id(block_id).c_str()
+                              ));
 
     if (type == "write") {
       scheduled_write_size_ -= operation_size;
@@ -186,7 +188,7 @@ void BlockManager::notify(engine::Notification *notification) {
       Review();
     }
   } else {
-    LM_W(("Unknown notification at BlockManager"));
+    AU_W(logs.block_manager ,("Unknown notification at BlockManager"));
   }
 }
 
@@ -210,7 +212,7 @@ void BlockManager::Review() {
     return;
   }
 
-  LM_T(LmtBlockManager, ("Reviewing block manager"));
+  AU_D(logs.block_manager, ("Reviewing block manager"));
 
   // If no blocks, nothing to do...
   if (blocks_.size() == 0) {
@@ -227,7 +229,7 @@ void BlockManager::Review() {
   // Find the blocks that should be in memory ( all until "limit_block" )
   // --------------------------------------------------------------------------------
 
-  LM_T(LmtBlockManager, ("Detect limit_block"));
+  AU_D(logs.block_manager, ("Detect limit_block to see what blocks should be in memory"));
   size_t accumulated_memory = 0;
   size_t last_block_id_in_memory = *block_ids_.begin();
   std::list<size_t>::iterator b;
@@ -245,13 +247,13 @@ void BlockManager::Review() {
     last_block_id_in_memory = block_id;
   }
 
-  LM_T(LmtBlockManager, ("Block limit %lu", last_block_id_in_memory ));
+  AU_D(logs.block_manager, ("Block limit set for block %s", str_block_id( last_block_id_in_memory).c_str() ));
 
   // --------------------------------------------------------------------------------
   // Free memory of blocks that are not suppouse to be on memory
   // --------------------------------------------------------------------------------
   {
-    LM_T(LmtBlockManager, ("Free blocks in memory under block_limit"));
+    AU_D(logs.block_manager, ("Free blocks in memory under block_limit"));
     std::list<size_t>::reverse_iterator b;
     for (b = block_ids_.rbegin(); b != block_ids_.rend(); b++) {
       // Considering this block
@@ -264,7 +266,7 @@ void BlockManager::Review() {
       }
       if (block->state() == Block::ready) {
         // Both on disk and on memory
-        LM_T(LmtBlockManager, ("Free block:'%s'", block->str().c_str()));
+        AU_D(logs.block_manager, ("Free block:'%s'", block->str().c_str()));
 
         block->buffer()->RemoveTag("block_manager");
 
@@ -279,7 +281,7 @@ void BlockManager::Review() {
   // --------------------------------------------------------------------------------
 
   if (scheduled_write_size_ < max_scheduled_write_size) {
-    LM_T(LmtBlockManager, ("Schedule write operations"));
+    AU_D(logs.block_manager, ("Scheduling write operations..."));
     // Lock for new write operations...
     std::list<size_t>::reverse_iterator b;
     for (b = block_ids_.rbegin(); b != block_ids_.rend(); b++) {
@@ -288,12 +290,10 @@ void BlockManager::Review() {
       BlockPointer block = blocks_.Get(block_id);
 
       if (block->state() == Block::on_memory) {
-        LM_T(LmtBlockManager, ("Schedule write for block:'%s'", block->str().c_str()));
+        AU_M(logs.block_manager, ("Schedule write for block:'%s'", block->str().c_str()));
 
         // Schedule write
         ScheduleWriteOperation(block);
-
-        LM_T(LmtBlockManager, ("Write block %lu", block->block_id()));
 
         // No continue for more writes
         if (scheduled_write_size_ >= max_scheduled_write_size) {
@@ -309,7 +309,7 @@ void BlockManager::Review() {
 
   // Schedule new reads operations ( high priority elements ) if available memory
   if (scheduled_read_size_ < max_scheduled_read_size) {
-    LM_T(LmtBlockManager, ("Schedule read operations"));
+    AU_D(logs.block_manager, ("Scheduling read operations"));
     // Lock for new write operations...
     std::list<size_t>::iterator b;
     for (b = block_ids_.begin(); b != block_ids_.end(); b++) {
@@ -319,12 +319,10 @@ void BlockManager::Review() {
 
       if (block->state() == Block::on_disk) {
         // Needed to be loaded...
-        LM_T(LmtBlockManager, ("Trying to read block'%s'", block->str().c_str()));
+        AU_M(logs.block_manager, ("Scheduling read block'%s'", block->str().c_str()));
 
         // Read the block
         ScheduleReadOperation(block);
-
-        LM_T(LmtBlockManager, ("Scheduling read for block:'%s'", block->str().c_str()));
 
         // No continue for more writes
         if (scheduled_read_size_ > max_scheduled_read_size) {
@@ -334,7 +332,7 @@ void BlockManager::Review() {
 
       // No schedule read operations over the block limit
       if (block_id == last_block_id_in_memory) {
-        LM_T(LmtBlockManager, ("Stops looking for read, because block_limit reached"));
+        AU_D(logs.block_manager, ("Stops looking for read, because block_limit reached"));
         break;   // Not schedule reads on blocks that are not suppose to be on memory
       }
     }
@@ -373,7 +371,7 @@ void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
   size_t block_id = au::Singleton<SamsonSetup>::shared()->block_id_from_filename(fileName);
 
   if (block_id == (size_t) -1 ) {
-    LM_W(("Not possible to get ids for file %s to recover block", fileName.c_str()));
+    AU_W( logs.block_manager , ("Error recovering block from file %s (Not possible to get block id correctly)", fileName.c_str()));
     return;
   }
 
@@ -439,7 +437,7 @@ void BlockManager::RecoverBlocksFromDisks() {
     closedir(dp);
   }
   for (size_t i = 0; i < file_names.size(); i++) {
-    AU_LM_M(("Recovering data from file %lu/%lu %s", i + 1, file_names.size(), file_names[i].c_str()));
+    AU_SM(("Recovering data from file %lu/%lu %s", i + 1, file_names.size(), file_names[i].c_str()));
 
     struct ::stat info;
     stat(file_names[i].c_str(), &info);

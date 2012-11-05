@@ -1,16 +1,16 @@
 
-#include "au/log/LogPluginServer.h"  // Own interface
+#include "au/log/LogCentralPluginServer.h"  // Own interface
 
 #include "au/au.pb.h"
 #include "au/gpb.h"
 
 namespace au {
-LogPluginServer::LogPluginServer(const std::string& host, int port,
-                                 const std::string& local_file) : LogPlugin("Server") {
+LogCentralPluginServer::LogCentralPluginServer(const std::string& host, int port,
+                                 const std::string& local_file) : LogCentralPlugin("Server") {
   set_host(host, port, local_file);
 }
 
-void LogPluginServer::set_host(const std::string& host, int port, const std::string& local_file) {
+void LogCentralPluginServer::set_host(const std::string& host, int port, const std::string& local_file) {
   host_ = host;
   port_ = port;
   local_file_ = local_file;
@@ -32,32 +32,32 @@ void LogPluginServer::set_host(const std::string& host, int port, const std::str
   time_reconnect_ = 0;
 }
 
-LogPluginServer::~LogPluginServer() {
+LogCentralPluginServer::~LogCentralPluginServer() {
   // Not necessary to remove ( shared pointers used )
 }
 
 void SetLogServer(std::string _host, int _port);
 
-std::string LogPluginServer::host() const {
+std::string LogCentralPluginServer::host() const {
   return host_;
 }
 
-int LogPluginServer::port() const {
+int LogCentralPluginServer::port() const {
   return port_;
 }
 
-std::string LogPluginServer::local_file() const {
+std::string LogCentralPluginServer::local_file() const {
   return local_file_;
 }
 
-void LogPluginServer::SetLogServer(std::string host, int port) {
+void LogCentralPluginServer::SetLogServer(std::string host, int port) {
   host_ = host;
   port_ = port;
   socket_connection_ = NULL;
   time_reconnect_ = 0;
 }
 
-void LogPluginServer::ReviewSocketConnection() {
+void LogCentralPluginServer::ReviewSocketConnection() {
   // If already connected, nothing to do
   if ((socket_connection_ != NULL) && !socket_connection_->IsClosed()) {
     return;
@@ -108,7 +108,7 @@ void LogPluginServer::ReviewSocketConnection() {
   }
 }
 
-void LogPluginServer::Emit(SharedPointer<Log> log) {
+void LogCentralPluginServer::Emit(SharedPointer<Log> log) {
   // review connection with server if necessary
   ReviewSocketConnection();
 
@@ -117,6 +117,8 @@ void LogPluginServer::Emit(SharedPointer<Log> log) {
     if (log->Write(socket_connection_.shared_object())) {
       return;
     }
+    else
+      socket_connection_ = NULL;
   }
 
   // It was not possible, so use disk
@@ -127,13 +129,13 @@ void LogPluginServer::Emit(SharedPointer<Log> log) {
   }
 }
 
-std::string LogPluginServer::status() {
+std::string LogCentralPluginServer::status() {
   bool connected = (socket_connection_ != NULL);
 
-  return au::str("Host: %s:%d (%s) LocalFile: %s"
+  return au::str("Host: %s:%d (%s)"
                  , host_.c_str()
                  , port_
                  , connected ? "OK" : "[non connnected]"
-                 , local_file_.c_str());
+                 );
 }
 }

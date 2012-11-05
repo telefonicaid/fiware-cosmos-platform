@@ -12,7 +12,7 @@
 
 #include "au/ErrorManager.h"
 #include "au/log/LogFormatter.h"
-#include "au/log/LogPlugin.h"
+#include "au/log/LogCentralPlugin.h"
 #include "au/mutex/Token.h"
 
 namespace au {

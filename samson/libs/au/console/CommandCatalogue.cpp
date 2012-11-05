@@ -619,13 +619,13 @@ std::string CommandCatalogue::getHelpForConcept(const std::string& name) {
     std::ostringstream output;
 
     output << au::StringRepeatingCharInConsole('-') << "\n";
-    output << au::str(au::purple, "COMMAND       %s\n", name.c_str(), c->category().c_str());
-    output << au::str(au::purple, "CATEGORY      %s\n", c->category().c_str());
+    output << au::str(au::magenta, "COMMAND       %s\n", name.c_str(), c->category().c_str());
+    output << au::str(au::magenta, "CATEGORY      %s\n", c->category().c_str());
 
     output << au::StringRepeatingCharInConsole('-') << "\n";
 
-    output << au::str(au::purple, "DESCRIPTION   ") << c->short_description() << "\n";
-    output << au::str(au::purple, "USAGE         ")  << c->usage() << "\n";
+    output << au::str(au::magenta, "DESCRIPTION   ") << c->short_description() << "\n";
+    output << au::str(au::magenta, "USAGE         ")  << c->usage() << "\n";
     output << "\n";
 
     // Show options for this command

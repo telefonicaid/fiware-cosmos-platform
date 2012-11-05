@@ -1,11 +1,14 @@
 // Own interface
 #include "au/log/Log.h"
 
+#include "au/log/LogCentral.h"
+
+
 namespace au {
 const char *log_reseved_words[] =
-{ "host", "channel",    "channel_name", "channel_alias", "pid",                "tid",       "DATE"
-  ,       "date",       "TIME",         "time",          "timestamp",          "time_unix", "line","exec", "exec_short", "file"
-  ,       "text",       "function",     NULL };
+{ "host", "type", "channel",  "pid","tid","DATE"
+  ,"date","TIME","time","timestamp","time_unix","line","exec", "exec_short", "file"
+  ,"text","function",NULL };
 
 
 void Log::Set(const std::string& field_name, const std::string& field_value) {
@@ -28,6 +31,8 @@ bool Log::Read(au::FileDescriptor *fd) {
     return false;
   }
 
+
+  
   // Read fixed data
   // LM_V(("Reading fix log data of %lu bytes" ,sizeof(LogData)));
   s = fd->partRead(&log_data_, sizeof(LogData), "log data", 300);
@@ -42,7 +47,7 @@ bool Log::Read(au::FileDescriptor *fd) {
   fd->partRead(buffer.data(), string_length, "log_strings", 100);
 
   // Process strings
-  addStrings(buffer.data(), string_length);
+  AddStrings(buffer.data(), string_length);
   return true;
 }
 
@@ -51,7 +56,7 @@ bool Log::Write(au::FileDescriptor *fd) {
   LogHeader header;
 
   header.setMagicNumber();
-  size_t strings_size = getStringsSize();
+  size_t strings_size = GetStringsSize();
   header.dataLen = sizeof(LogData) + strings_size;
 
   // Total message to be writted
@@ -62,7 +67,7 @@ bool Log::Write(au::FileDescriptor *fd) {
   offset += sizeof(LogHeader);
   memcpy(buffer.data() + offset, &log_data_, sizeof(LogData));
   offset += sizeof(LogData);
-  copyStrings(buffer.data() + offset);
+  CopyStrings(buffer.data() + offset);
 
   // Write log at once
   au::Status s = fd->partWrite(buffer.data(), buffer.size(), "log", 1, 1, 0);
@@ -87,31 +92,52 @@ std::string Log::str() const {
   return output.str();
 }
 
-bool Log::match(Pattern *pattern) const {
+bool Log::Match(Pattern& pattern) const {
   std::map<std::string, std::string>::const_iterator it_fields;
   for (it_fields = fields_.begin(); it_fields != fields_.end(); it_fields++) {
     std::string value = it_fields->second;
-    if (pattern->match(value)) {
+    if (pattern.match(value)) {
       return true;
     }
   }
   return false;
 }
 
+  bool Log::Match(SimplePattern& pattern) const {
+    std::map<std::string, std::string>::const_iterator it_fields;
+    for (it_fields = fields_.begin(); it_fields != fields_.end(); it_fields++) {
+      std::string value = it_fields->second;
+      if (pattern.match(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  
 int Log::channel() const {
   return log_data_.channel;
 }
+
+  int Log::level() const {
+    return log_data_.level;
+  }
 
 // Get information from this log
 std::string Log::Get(std::string name) const {
   LM_V(("Getting %s from log %s", name.c_str(), str().c_str()));
 
+  if (name == "type") {
+    return GetLogLevel ( log_data_.level );
+  }
+  
   if (name == "host") {
     return Get("host", "");
   }
   if (name == "channel") {
-    return au::str("%d", log_data_.channel);
+    return Get("channel_name");
   }
+  
   if (name == "pid") {
     return au::str("%d", log_data_.pid);
   }
@@ -199,10 +225,10 @@ std::string Log::Get(const std::string& name, const std::string& default_value) 
 }
 
 size_t Log::SerialitzationSize() {
-  return sizeof(LogHeader) + sizeof(LogMsg) + getStringsSize();
+  return sizeof(LogHeader) + sizeof(LogMsg) + GetStringsSize();
 }
 
-size_t Log::getStringsSize() const {
+size_t Log::GetStringsSize() const {
   size_t total = 0;
 
   std::map<std::string, std::string>::const_iterator it_fields;
@@ -217,7 +243,7 @@ size_t Log::getStringsSize() const {
   return total;
 }
 
-void Log::copyStrings(char *data) {
+void Log::CopyStrings(char *data) {
   size_t pos = 0;
 
   std::map<std::string, std::string>::iterator it_fields;
@@ -232,7 +258,7 @@ void Log::copyStrings(char *data) {
   }
 }
 
-void Log::addStrings(char *strings, size_t len) {
+void Log::AddStrings(char *strings, size_t len) {
   std::vector<std::string> vector_strings;
 
   size_t pos = 0;
@@ -280,9 +306,8 @@ au::SharedPointer<au::tables::Table> getTableOfFields() {
   au::SharedPointer<au::tables::Table>table(new au::tables::Table("filed|description,left"));
 
   table->addRow(au::StringVector("host", "Host where trace was generated ( only in log server)"));
-  table->addRow(au::StringVector("channel", "Numerical log channel"));
-  table->addRow(au::StringVector("channel_name", "Name of the log channel (message,warning,error...)"));
-  table->addRow(au::StringVector("channel_alias", "Alias of the log channel (M,W,E...)"));
+  table->addRow(au::StringVector("type", "One letter type of message W, W, E, X, T..."));
+  table->addRow(au::StringVector("channel", "Name of the log channel ( example system )"));
   table->addRow(au::StringVector("pid", "Process identifier"));
   table->addRow(au::StringVector("tid", "Thread identifier"));
   table->addRow(au::StringVector("data,DATE", "Date of the log in different formats"));
@@ -298,4 +323,85 @@ au::SharedPointer<au::tables::Table> getTableOfFields() {
 
   return table;
 }
+  // Fancy functions to get the color of this log on screen
+  au::Color Log::GetColor()
+  {
+    if ( log_data_.level == AU_LOG_ERROR )
+      return au::red;
+    if ( log_data_.level == AU_LOG_ERROR_EXIT )
+      return au::red;
+    
+    if ( log_data_.level == AU_LOG_WARNING )
+      return au::magenta;
+    
+    if ( log_data_.level == AU_LOG_MESSAGE )
+      return au::blue;
+    
+    return au::normal;
+  }
+  
+  int Log::GetLogLevel( const std::string& str_log_level )
+  {
+    if( str_log_level == "E" )
+      return 1;
+    if( str_log_level == "W" )
+      return 2;
+    if( str_log_level == "V" )
+      return 3;
+    if( str_log_level == "M" )
+      return 4;
+    if( str_log_level == "D" )
+      return 5;
+    if( str_log_level == "*" )
+      return 256;
+    if( str_log_level == "all" )
+      return 5;
+    
+    // Any other case, 0
+    return 0;
+    
+  }
+  
+  std::string Log::GetLogLevel( int log_level )
+  {
+    switch (log_level) {
+      case 0: return "X";
+      case 1: return "E";
+      case 2: return "W";
+      case 3: return "V";
+      case 4: return "M";
+      case 5: return "D";
+        
+      case 256: return "*";
+        
+      default:
+        return "?";
+        break;
+    }
+  }
+
+  std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error) {
+    std::vector< au::SharedPointer<Log> > logs;
+    int fd = open(file_name.c_str(), O_RDONLY);
+    
+    LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
+    if (fd < 0) {
+      error.set(au::str("Not possible to open file %s", file_name.c_str()));
+      return logs;
+    }
+    
+    // File descriptor to read logs
+    FileDescriptor file_descriptor("reading log file", fd);
+    
+    while (true) {
+      au::SharedPointer<Log> log(new Log());
+      if (log->Read(&file_descriptor)) {
+        logs.push_back(log);
+      } else {
+        break;
+      }
+    }
+    
+    return logs;
+  }
 }

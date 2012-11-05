@@ -19,6 +19,7 @@
 #include "au/string/StringUtilities.h"                            // au::Format
 #include "au/tables/pugixml.hpp"                  // pugixml
 #include "au/time.h"                              // au::todayString
+#include "au/log/LogMain.h"
 
 #include "engine/DiskManager.h"                   // Notifications
 #include "engine/DiskOperation.h"                 // samson::DiskOperation
@@ -112,7 +113,7 @@ namespace samson {
       case unconnected:
       {
         // Try to connect with ZK
-        AU_L( logs.worker_controller,  ("Trying to connect with zk at %s", zoo_host_.c_str()));
+        AU_M( logs.worker_controller,  ("Trying to connect with zk at %s", zoo_host_.c_str()));
         zoo_connection_ = new au::zoo::Connection(zoo_host_, "samson", "samson");
         int rc = zoo_connection_->WaitUntilConnected(20000);
         if (rc) {
@@ -140,7 +141,7 @@ namespace samson {
         
         state_ = connected;          // Now we are connected
         state_message_ = "Connected";
-        AU_LM_M(("Worker connected to ZK"));
+        AU_M( logs.worker_controller, ("Worker connected to ZK"));
         break;
       }
       case connected:
@@ -151,7 +152,7 @@ namespace samson {
           network_->set_cluster_information(cluster_info);   // Inform network about cluster setup
           state_message_ = "Ready";
           state_ = ready;
-          AU_LM_M((">>> Worker connected to ZK and part of the cluster"));
+          AU_SM((">>> Worker connected to ZK and part of the cluster"));
         } else {
           state_message_ = "Still not included in the cluster";
         }
@@ -562,7 +563,7 @@ namespace samson {
     {
       au::ErrorManager error;
       data_model_->Commit("SAMSON cluster leader", "data_model_recover", error );
-      AU_W(("New cluster setup, so data model is recovered"));
+      AU_SW(("New cluster setup, so data model is recovered"));
       return;
     }
     
@@ -609,11 +610,11 @@ namespace samson {
       
       // Recover new cluster setup
       au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
-      AU_LM_M(("New cluster setup (version %lu)", cluster_info->version()));
+      AU_SM(("New cluster setup (version %lu)", cluster_info->version()));
       
       // If I am not part of this cluster, do not set connections
       if (!isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
-        AU_LM_M(("Still not included in cluster (version %lu). Not seting up this worker", cluster_info->version()));
+        AU_SM(("Still not included in cluster (version %lu). Not seting up this worker", cluster_info->version()));
         state_ = connected;   // Connected but still not included in the cluster
         state_message_ = "Still not included in the cluster";
         return;
@@ -628,14 +629,14 @@ namespace samson {
       
       // Show a label with all the new ranges I am responsible for
       std::vector<KVRange> ranges = worker_controller_->GetMyKVRanges();
-      AU_LM_M(("Cluster setup change: Assgined ranges %s", str(ranges).c_str()));
+      AU_SM(("Cluster setup change: Assgined ranges %s", str(ranges).c_str()));
       return;
     }
     
     if (notification->isName(notification_update_status)) {
       
       if ( (state_ ==  connected) || (state_ ==  unconnected) ) {
-        AU_W(("Not reporting state of this worker since it is not fully connected to ZK"));
+        AU_W( logs.worker, ("Not reporting state of this worker since it is not fully connected to ZK"));
         return;
       }
       
@@ -660,7 +661,7 @@ namespace samson {
       // Pointer to cluster info
       au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
       size_t worker_id = worker_controller_->worker_id();
-      AU_LM_M(("[ Worker %lu / %d workers ] (%s) [ %d/%d HashGroups ][ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
+      AU_M( logs.worker , ("[ Worker %lu / %d workers ] (%s) [ %d/%d HashGroups ][ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
                , worker_id
                , cluster_info->workers_size()
                , au::str_time(cronometer_.seconds()).c_str()
@@ -726,31 +727,21 @@ namespace samson {
   
   void SamsonWorker::evalCommand(std::string command) {
     au::CommandLine cmdLine;
-    
     cmdLine.Parse(command);
-    
     if (cmdLine.get_num_arguments() == 0) {
       return;
     }
     
-    
     std::string main_command = cmdLine.get_argument(0);
     
     au::ErrorManager error;
-    if (main_command == "log") {
-      
-      if( cmdLine.get_num_arguments() < 2 )
-      {
-        au::log_central.evalCommand("help" , error );
-      }
-      else
-        au::log_central.evalCommand( cmdLine.get_argument(1) , error );
-      
-      // Write the output of the command
-      write( &error );
+    
+    if( au::CheckIfStringsBeginWith(main_command, "log_"))
+    {
+      au::log_central.evalCommand( command , error );
+      write( &error );      // Write the output of the command
       return;
     }
-    
     
     if (main_command == "quit") {
       quitConsole();
@@ -789,6 +780,23 @@ namespace samson {
   std::string SamsonWorker::getPrompt() {
     return "SamsonWorker> ";
   }
+  
+  
+  au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerLogStatus(const Visualization& visualization){
+    
+    au::SharedPointer<gpb::Collection> collection ( new gpb::Collection() );
+    
+    collection->set_name("wlog status");
+    gpb::CollectionRecord *record = collection->add_record();
+
+    ::samson::add(record, "log server", au::log_central.GetPluginStatus("server") , "different");
+    ::samson::add(record, "Channels", au::log_central.GetPluginChannels("server") , "different");
+
+    ::samson::add(record, "AllChannels", au::log_central.log_channels().GetAllChannels() , "different");
+    
+    return collection;
+  }
+  
   au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visualization& visualization){
     
     au::SharedPointer<gpb::Collection> collection ( new gpb::Collection() );

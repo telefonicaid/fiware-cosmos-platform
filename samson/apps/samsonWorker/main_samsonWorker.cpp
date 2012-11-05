@@ -50,6 +50,7 @@
 #include "samson/module/ModulesManager.h"
 #include "samson/network/WorkerNetwork.h"
 #include "samson/stream/BlockManager.h"
+#include "samson/common/Logs.h"
 
 
 /* ****************************************************************************

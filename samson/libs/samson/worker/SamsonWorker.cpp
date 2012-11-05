@@ -41,8 +41,7 @@
 #include "samson/network/NetworkInterface.h"      // NetworkInterface
 #include "samson/network/Packet.h"                // samson::Packet
 #include "samson/network/WorkerNetwork.h"
-
-
+#include "samson/common/Logs.h"
 #include "samson/delilah/WorkerCommandDelilahComponent.h"
 #include "samson/module/ModulesManager.h"         // samson::ModulesManager
 #include "samson/network/NetworkInterface.h"      // samson::NetworkInterface

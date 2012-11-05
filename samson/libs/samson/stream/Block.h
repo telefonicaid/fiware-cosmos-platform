@@ -39,11 +39,6 @@ namespace samson {
 namespace stream {
 class BlockList;
 
-  union BlockId
-  {
-    size_t uint64;
-    unsigned int uint32[2];
-  };
   
 class Block {
   public:
@@ -164,7 +159,6 @@ class Block {
 typedef au::SharedPointer<Block> BlockPointer;
   
 }
-  std::string str_block_id(size_t block_id);
 
 }
 

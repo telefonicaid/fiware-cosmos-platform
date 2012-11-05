@@ -29,6 +29,7 @@
 #include "samson/stream/SharedMemoryItem.h"                // engine::SharedMemoryItem
 #include "samson/stream/SharedMemoryManager.h"
 #include "samson/network/Packet.h"           // samson::Packet
+#include "samson/common/Logs.h"
 
 extern int logFd;
 

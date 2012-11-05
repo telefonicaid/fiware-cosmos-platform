@@ -3,6 +3,7 @@
 #include "engine/Engine.h"
 #include "engine/Notification.h"
 
+#include "samson/common/Logs.h"
 #include "samson/common/NotificationMessages.h"
 #include "samson/worker/WorkerCommand.h"
 

@@ -1,5 +1,6 @@
 SET (HEADERS
 	common.h
+	Logs.h
 	KVInfo.h
 	FullKVInfo.h
 	KVRange.h
@@ -27,6 +28,7 @@ SET (HEADERS
 
 SET (SOURCES
 	common.cpp
+	Logs.cpp
 	KVInfo.cpp
 	FullKVInfo.cpp
 	KVRange.cpp

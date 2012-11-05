@@ -6,20 +6,11 @@
 
 namespace samson {
 
-  void RegisterLogChannels()
+  std::string str_block_id(size_t block_id )
   {
-    // Register channels of au library
-    au::logs.RegisterChannels();
-    
-    // Register channels for samson library
-    logs.RegisterChannels();
-    
-    // Register channel for operations
-    log_operations = AU_REGISTER_CHANNEL( "samson::OP" );
-    
+    BlockId id;
+    id.uint64 = block_id;
+    return au::str("%d_%d" , id.uint32[0] , id.uint32[1] );
   }
 
-  // Channel logs
-  LogChannels logs;
-  
 }

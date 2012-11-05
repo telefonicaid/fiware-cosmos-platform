@@ -30,7 +30,7 @@ void LogCounter::Process(LogPointer log) {
   descriptors_.findOrCreate("functions")->Add( log->Get("function") );
  
   // Min-max time
-  size_t time = log->log_data().tv.tv_sec;
+  time_t time = log->log_data().tv.tv_sec;
   if( ( min_time_ == (time_t) -1 ) || ( time < min_time_ ) )
     min_time_ = time;
   if( ( max_time_ == (time_t) -1 ) || ( time > max_time_ ) )

@@ -1,6 +1,7 @@
 
 #include "samson/stream/BlockManager.h"
 #include "samson/worker/SamsonWorker.h"
+#include "samson/common/Logs.h"
 
 #include "BlockRequest.h" // Own interface
 

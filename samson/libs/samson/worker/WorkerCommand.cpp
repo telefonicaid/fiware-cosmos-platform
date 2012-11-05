@@ -18,6 +18,7 @@
 #include "samson/stream/BlockList.h"
 #include "samson/stream/BlockManager.h"
 #include "samson/worker/SamsonWorker.h"
+#include "samson/common/Logs.h"
 
 namespace samson {
 

@@ -17,6 +17,7 @@
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
 #include "samson/stream/Block.h"
 #include "samson/stream/BlockList.h"
+#include "samson/common/Logs.h"
 
 
 /*

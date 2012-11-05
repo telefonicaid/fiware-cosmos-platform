@@ -6,6 +6,7 @@
 #include "engine/Engine.h"
 #include "engine/Notification.h"
 #include "samson/worker/SamsonWorker.h"
+#include "samson/common/Logs.h"
 
 namespace samson {
   

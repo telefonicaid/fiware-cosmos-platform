@@ -7,6 +7,7 @@
 #include "samson/stream/BlockReaderCollection.h"
 #include "samson/worker/SamsonWorker.h"
 #include "samson/worker/CommitCommand.h"
+#include "samson/common/Logs.h"
 
 namespace samson {
 namespace stream {

@@ -128,7 +128,7 @@ namespace samson {
   
   std::string SamsonSetup::block_filename(size_t block_id)const {
     
-    stream::BlockId b;
+    BlockId b;
     b.uint64 = block_id;
     
     return samson_working_ + "/blocks/block_" + au::str("%d_%d", b.uint32[0] , b.uint32[1] );
@@ -157,7 +157,7 @@ namespace samson {
     if( components.size() != 2 )
       return (size_t)-1;
     
-    stream::BlockId b;
+    BlockId b;
     b.uint32[0] = atoll(components[0].c_str());
     b.uint32[1] = atoll(components[1].c_str());
 

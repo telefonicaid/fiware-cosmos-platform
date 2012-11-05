@@ -17,6 +17,7 @@
 
 #include "au/log/LogMain.h"
 
+#include "samson/common/Logs.h"
 #include "samson/common/common.h"
 #include "samson/common/KVRange.h"
 #include "samson/stream/BlockManager.h"

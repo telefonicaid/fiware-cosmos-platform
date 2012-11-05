@@ -16,6 +16,7 @@
 #include "samson/stream/WorkerSystemTask.h"        // WorkerSystemTask
 #include "samson/stream/WorkerTask.h"                         // samson::stream::WorkerTask
 #include "samson/worker/SamsonWorker.h"
+#include "samson/common/Logs.h"
 
 #define notification_run_stream_tasks_if_necessary "notification_run_stream_tasks_if_necessary"
 

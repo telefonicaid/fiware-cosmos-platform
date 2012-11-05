@@ -20,6 +20,7 @@
 #include "samson/stream/BlockList.h"                              // BlockList
 #include "samson/stream/BlockManager.h"                           // BlockManager
 #include "samson/worker/SamsonWorkerController.h"
+#include "samson/common/Logs.h"
 
 namespace samson {
   namespace stream {
@@ -420,13 +421,4 @@ namespace samson {
     
   }
 
-  
-  std::string str_block_id(size_t block_id )
-  {
-    stream::BlockId id;
-    id.uint64 = block_id;
-    return au::str("%d_%d" , id.uint32[0] , id.uint32[1] );
-  }
-
-  
 }

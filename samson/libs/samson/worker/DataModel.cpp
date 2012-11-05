@@ -8,6 +8,7 @@
 #include "samson/common/NotificationMessages.h"
 #include "samson/stream/Block.h"
 #include "samson/network/Packet.h"
+#include "samson/common/Logs.h"
 
 namespace samson {
   

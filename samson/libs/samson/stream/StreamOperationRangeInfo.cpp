@@ -10,6 +10,7 @@
 #include "samson/stream/StreamOperationGlobalInfo.h"
 #include "samson/stream/WorkerTask.h"
 #include "samson/worker/SamsonWorker.h"
+#include "samson/common/Logs.h"
 
 namespace samson {
   namespace stream {

@@ -64,6 +64,7 @@ std::string str(double value);
 std::string str_detail(size_t value);
 
 std::string str(const std::vector<std::string>& hosts);
+std::string str_grouped(const std::vector<std::string>& names);
 
 // Strings in color
 std::string str(Color color, const char *format, ...);

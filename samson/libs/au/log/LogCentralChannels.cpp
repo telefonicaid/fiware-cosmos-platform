@@ -1,6 +1,8 @@
 
 #include "au/log/LogCentralChannels.h"  // Own interface
 
+#include "au/string/StringUtilities.h"
+
 namespace au {
 
   LogCentralChannels::LogCentralChannels() {
@@ -26,10 +28,13 @@ namespace au {
   
   std::string LogCentralChannels::GetAllChannels() const
   {
-    std::ostringstream output;
+    
+    std::vector<std::string> channels;
     for ( int i = 0 ; i < num_log_channels_ ; i++ )
-      output << names_[i] << " ";
-    return output.str();
+      channels.push_back( names_[i] );
+
+    return au::str_grouped( channels );
+    
   }
   
   std::string LogCentralChannels::channel_name(int c) {

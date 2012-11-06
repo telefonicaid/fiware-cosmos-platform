@@ -588,7 +588,7 @@ namespace samson {
       au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
       if( data_model != NULL )
         if( !data_model->has_candidate_data() )
-          if( data_model->current_data().last_commit_id() > data_model->previous_data().last_commit_id() )
+          if( data_model->current_data().commit_id() > data_model->previous_data().commit_id() )
           {
             au::ErrorManager error;
             data_model_->Commit("SAMSON cluster leader", "data_model_freeze", error );
@@ -1002,7 +1002,7 @@ namespace samson {
     FullKVInfo info = gpb::GetFullKVInfo( data );
     ::samson::add(record, "ZK size", data->ByteSize()  , "uint64,different");
     ::samson::add(record, "data", info.str() , "different");
-    ::samson::add(record, "#commit", data->last_commit_id() , "different");
+    ::samson::add(record, "#commit", data->commit_id() , "different");
   }
   
   au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelStatus(const Visualization& visualization)

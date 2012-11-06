@@ -109,25 +109,20 @@ namespace samson {
       return;
     }
 
-    // Commit id we are going to do
-    size_t commit_id = data->commit_id();
-    
-    // Modify current data model with this id
-    data->mutable_current_data()->set_last_commit_id( commit_id );
-    
     // Process whatever opertion on current data model
     ProcessCommand( data->mutable_current_data() , cmd , error );
     
     if( error.IsActivated() )
       return;
+
+    // update the commit_id
+    size_t commit_id = data->mutable_current_data()->commit_id();
+    data->mutable_current_data()->set_commit_id( commit_id+1 );
     
     // Add the commit to the global data model and increase the counter
     gpb::DataCommit* data_commit =  data->add_commit();
     data_commit->set_id( commit_id );
     data_commit->set_message(command);
-
-    // Increase the commit counter id
-    data->set_commit_id( commit_id + 1 );
     
   }
   
@@ -376,7 +371,7 @@ namespace samson {
       return;
     }
     
-    int version = data->last_commit_id();
+    int version = data->commit_id();
     
     // Perform all changes
     const au::vector<CommitCommandItem>& items = commit_command.items();
@@ -442,7 +437,7 @@ namespace samson {
       AU_W(logs.data_model,("queue '%s' not found", cmd->get_argument(1).c_str()));
       return;   // nothing to do
     }
-    queue->set_version( data->last_commit_id() );   // Update version where this queue was updated
+    queue->set_version( data->commit_id() );   // Update version where this queue was updated
     KVFormat format(queue->key_format(), queue->value_format());
     samson::gpb::Queue *target_queue = get_or_create_queue(data, cmd->get_argument(2), format, error);
     
@@ -607,7 +602,7 @@ namespace samson {
     }
 
     // If data model has not changed, no update
-    if( data_model->current_data().last_commit_id() == data_model->previous_data().last_commit_id() )
+    if( data_model->current_data().commit_id() == data_model->previous_data().commit_id() )
     {
       error.set("Nothing to be updated");
       return;
@@ -645,15 +640,12 @@ namespace samson {
   
   void DataModel::ProcessRecoverDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error)
   {
-    size_t last_commit_id = data_model->previous_data().last_commit_id();
-    
     // Recover previous version as current
     data_model->clear_candidate_data();
     
     // Current data based on previous model
     data_model->clear_current_data();
     data_model->mutable_current_data()->CopyFrom( data_model->previous_data() );
-    data_model->mutable_current_data()->set_last_commit_id( last_commit_id + 1 ); // Increase 1 the last commit id
 
     // Apply some selected data commits based on history
     std::vector< std::pair<size_t, std::string> > commits;
@@ -672,6 +664,7 @@ namespace samson {
       // Apply to current data model
       au::ErrorManager error2; // Ignore this erors
       ProcessCommand( data_model->mutable_current_data() , commits[i].second , error2);
+      data_model->mutable_current_data()->set_commit_id( commits[i].first ); // Update to this commit_id
     }
     
   }
@@ -689,10 +682,10 @@ namespace samson {
     data_model->clear_candidate_data(); // Remove candidate
 
     // Remove preivous commits
-    size_t last_commit = data_model->previous_data().last_commit_id();
+    size_t commit_id = data_model->previous_data().commit_id();
     std::vector< std::pair<size_t, std::string> > commits;
     for ( int i = 0 ; i < data_model->commit_size() ; i++ )
-      if( data_model->commit(i).id() > last_commit )
+      if( data_model->commit(i).id() > commit_id ) // Keep this commit since it is posterior
         commits.push_back(std::pair<size_t,std::string>(data_model->commit(i).id() ,data_model->commit(i).message()));
     data_model->clear_commit();
     for ( size_t i = 0 ; i < commits.size() ; i++ )
@@ -1033,7 +1026,7 @@ namespace samson {
   size_t DataModel::GetLastCommitIdForPreviousDataModel()
   {
     au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
-    return data_model->previous_data().last_commit_id();
+    return data_model->previous_data().commit_id();
   }
   
   std::set<size_t> DataModel::GetMyBlockIdsForPreviousAndCandidateDataModel(const std::vector<KVRange>& ranges )
@@ -1062,7 +1055,7 @@ namespace samson {
     
     if( !data_model->has_candidate_data() )
       return (size_t)-1;
-    return data_model->candidate_data().last_commit_id();
+    return data_model->candidate_data().commit_id();
   }
 
   std::set<size_t> DataModel::GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges )

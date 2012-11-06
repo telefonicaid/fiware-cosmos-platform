@@ -43,7 +43,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(engine STATIC ${SOURCES} ${HEADERS} )
-
+ADD_LIBRARY(engine SHARED ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES( engine  lm pa au )
+INSTALL( TARGETS engine DESTINATION lib )
 
 

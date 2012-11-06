@@ -260,7 +260,8 @@ int main(int argC, const char *argV[]) {
   // AU Log system
   au::log_central.Init( argV[0] );
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au library included )
-  
+
+  // Add plugins to report lgos to file, server and console
   au::log_central.AddFilePlugin("file" , std::string(paLogDir) + "/samsonWorker.log");
   au::log_central.AddFilePlugin("file2" , samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log" );
   if( strlen(log_server) > 0 )
@@ -348,8 +349,12 @@ int main(int argC, const char *argV[]) {
     }
   }
 
+  // Show logs on console
   au::log_central.AddPlugin( "console" , new au::LogCentralPluginConsole(worker) );
 
+  // Add samson::W M
+  au::log_central.evalCommand("log_set samson::W M");
+  
   // Run worker console ( -fg is activated )
   worker->runConsole();
 

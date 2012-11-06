@@ -152,8 +152,8 @@ message Data
 	// Modules
 	repeated Module modules = 6;
 
-	// Last commit seen so far
-	required uint64 last_commit_id = 7;
+	// Last commit seen so far ( and id for the next commit )
+	required uint64 commit_id = 7;
 }
 
 message DataCommit
@@ -169,11 +169,10 @@ message DataModel
 	required Data current_data   = 3;  // Current "on the fly" data model
 
 	// Commit history to recover commands ( mainly add_stream_operation or run )
-	required uint64 commit_id = 4;     // Id for the next commit
 	repeated DataCommit commit = 5;    // List of commits from previous_data to current_data
 
 	// Replication factor
-	required int32 replication_factor = 10;      // Number of times this should be replicated
+	required int32 replication_factor = 10;      // Number of times data  should be replicated to be considered "save"
 
 }
 

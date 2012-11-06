@@ -343,6 +343,58 @@ std::string str(const std::vector<std::string>& hosts) {
   return output.str();
 }
 
+std::string str_grouped(const std::vector<std::string>& names)
+{
+  
+  au::map<std::string, std::vector<std::string> > grouped_names;
+
+  for ( size_t i = 0 ; i < names.size() ; i++ )
+  {
+    std::string category;
+    std::string name;
+    size_t pos = names[i].find("::");
+    if( pos == std::string::npos )
+      category = names[i];
+    else
+    {
+      category = names[i].substr( 0 , pos );
+      name = names[i].substr(pos+2);
+    }
+    grouped_names.findOrCreate( category )->push_back(name);
+  }
+  
+  std::ostringstream output;
+  au::map<std::string, std::vector<std::string> >::iterator iter;
+  for ( iter = grouped_names.begin() ; iter != grouped_names.end() ; iter++ )
+  {
+    if( iter->second->size() == 1 )
+    {
+      std::string name = iter->second->at(0);
+      if( name == "" )
+        output << iter->first;
+      else
+        output << iter->first << "::" << name;
+
+    }
+    else
+    {
+      output << iter->first << "::{ ";
+      
+      for ( size_t i = 0 ; i < iter->second->size() ; i++ )
+      {
+        std::string name = iter->second->at(i);
+        if( name == "" )
+          output << "_ ";
+        else
+          output << name << " ";
+      }
+      output << "}";
+    }
+    output << " ";
+  }
+  return output.str();
+}
+  
 std::string str(double value) {
   if (value == 0) {
     return "    0 ";

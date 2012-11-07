@@ -48,23 +48,10 @@ typedef enum TraceLevels {
   LmtDelilahCommand         = 35,
   LmtDelilahComponent       = 36,
 
-  LmtEngine                 = 200,   // SamsonEngine
-  LmtEngineNotification     = 201,
-  LmtEngineTime             = 202,
-  LmtEngineDiskManager      = 203,   // SamsonEngine
-  LmtDisk                   = 204,   // disk library
-  LmtMemory                 = 205,   // memory library
-  LmtProcessManager         = 206,
-
-  LmtBuffer                 = 208,
-
   LmtModuleManager          = 210,   // Module Manager component
   LmtThreadManager          = 211,   // Tracking threads in ThreadManager
 
-  LmtWorkerTasks            = 213,   // Scheduing of tasks
-
   LmtIsolatedOperations     = 216,   // Traces to see start and stop of executions
-  LmtReduceOperation        = 217,   // Reduce operation steps
   LmtIsolatedOutputs        = 218,   // See processing of operations outputs
   LmtFileDescriptors        = 219,   // to keep track of opening/closing file descriptors
 

@@ -180,7 +180,7 @@ protected:
         // If not previous data, load from ZK
         if( c_ == NULL )
         {
-          AU_SW(("Getting data since no previous model" ));
+          LOG_SW(("Getting data since no previous model" ));
           int rc = GetDataFromZooNode();   // Get data from zk
           if (rc) {
             error.set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));

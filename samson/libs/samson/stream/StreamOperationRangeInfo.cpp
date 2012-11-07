@@ -481,13 +481,13 @@ namespace samson {
           
           if (worker_task_->error().IsActivated()) {
             std::string error_message = worker_task_->error().GetMessage();
-            AU_M(logs.task_manager, ("Error in task %lu (%s)" , worker_task_->id() , error_message.c_str() ));
+            LOG_M(logs.task_manager, ("Error in task %lu (%s)" , worker_task_->id() , error_message.c_str() ));
             SetError(error_message);
             worker_task_ = NULL;
             return;
           } else {
 
-            AU_M(logs.task_manager, ("Commiting task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
+            LOG_M(logs.task_manager, ("Commiting task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
             // Commit changes and release task
             std::string commit_command = worker_task_->commit_command();
             std::string caller = au::str("task %lu // %s", worker_task_->worker_task_id(), str().c_str());
@@ -511,13 +511,13 @@ namespace samson {
           
           if (defrag_task_->error().IsActivated()) {
             std::string error_message = worker_task_->error().GetMessage();
-            AU_M(logs.task_manager, ("Error in defrag task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
+            LOG_M(logs.task_manager, ("Error in defrag task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
             SetError(error_message);
             defrag_task_ = NULL;
             return;
           } else {
             // Commit changes and release task
-            AU_M(logs.task_manager, ("Commiting defrag task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
+            LOG_M(logs.task_manager, ("Commiting defrag task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
             std::string commit_command = defrag_task_->commit_command();
             std::string caller = au::str("defrag task %lu // %s", defrag_task_->worker_task_id(), str().c_str());
             au::ErrorManager error;
@@ -578,7 +578,7 @@ namespace samson {
       int num_dynamic_input = GetNumberOfDynamicInputs(stream_operation);
       
       // Create candidate task
-      worker_task_ = new WorkerTask(samson_worker_, task_id, *stream_operation, operation, range_);
+      worker_task_.Reset( new WorkerTask(samson_worker_, task_id, *stream_operation, operation, range_) );
       
       // Accumulated memory used for this task ( we will limit taken blocks with this element )
       size_t accumulated_size = 0; // Accumulated size required to be in memory for this operation

@@ -39,9 +39,9 @@ namespace samson {
 
 // MACROS USED TO EMIT LOGS TO "log_operations" channels
 
-#define AU_OE(s) AU_E( ::samson::log_operations , s )
-#define AU_OW(s) AU_W( ::samson::log_operations , s )
-#define AU_OM(s) AU_M( ::samson::log_operations , s )
-#define AU_OD(s) AU_D( ::samson::log_operations , s )
+#define AU_OE(s) LOG_E( ::samson::log_operations , s )
+#define AU_OW(s) LOG_W( ::samson::log_operations , s )
+#define AU_OM(s) LOG_M( ::samson::log_operations , s )
+#define AU_OD(s) LOG_D( ::samson::log_operations , s )
 
 #endif

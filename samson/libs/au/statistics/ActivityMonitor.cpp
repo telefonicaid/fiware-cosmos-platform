@@ -136,6 +136,14 @@ std::string ActivityMonitor::GetLastItemsTable() const {
   return table.str();
 }
 
+  double ActivityMonitor::GetTotalTimeForActivity( const std::string name ) const
+  {
+    ActivityStatistics* activity = elements_.findInMap(name);
+    if( !activity )
+      return 0;
+    return activity->total();
+  }
+  
   std::string ActivityMonitor::GetSummary() const
   {
     std::ostringstream output;
@@ -145,7 +153,7 @@ std::string ActivityMonitor::GetLastItemsTable() const {
     
     au::map<std::string, ActivityStatistics >::const_iterator it;
     for (it = elements_.begin(); it != elements_.end(); it++) {
-      output << "["<< it->first << ":" <<  au::str(it->second->total())  << "]";
+      output << "["<< it->first << ":" <<  au::str(it->second->total(),"s")  << "]";
     }
     return output.str();
   }

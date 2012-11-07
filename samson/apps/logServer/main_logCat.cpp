@@ -31,7 +31,7 @@ bool count;
 
 PaArgument paArgs[] =
 {
-  { "-format", format,   "",  PaString, PaOpt, _i AU_LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL, "Formats of the logs at the output" },
+  { "-format", format,   "",  PaString, PaOpt, _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL, "Formats of the logs at the output" },
   { "-filter", filter,   "",  PaString, PaOpt, _i "", PaNL,  PaNL, "Filter for logs"                   },
   { "-save"  , file_name,"", PaString, PaOpt, _i "",  PaNL, PaNL,"Save received logs to file" },
   { "-count" , &count,   "", PaBool,   PaOpt,false, false, true, "Show possible fields for format argument" },
@@ -106,7 +106,7 @@ int main(int argC, const char *argV[]) {
   if(count)
     log_probe.AddPlugin("count", new au::LogProbeCounter() );
   else
-    log_probe.AddPlugin("printer", new au::LogProbePriter(format) );
+    log_probe.AddPlugin("printer", new au::LogProbePriter(format , false) );
   if( strlen( file_name) > 0 )
   {
     au::ErrorManager error;

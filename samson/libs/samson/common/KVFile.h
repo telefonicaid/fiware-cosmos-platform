@@ -24,6 +24,7 @@ namespace samson {
  **/
 
 class KVFile {
+  
     KVFile() {
       // Default values ( for correct deallocation in case of errors )
       kvs = NULL;
@@ -32,12 +33,33 @@ class KVFile {
     }
 
   public:
+  
     static au::SharedPointer<KVFile> create(engine::BufferPointer buffer, au::ErrorManager& error);
     ~KVFile();
 
     // Get header information
     KVHeader header();
 
+  // Print content of key-values ( mainly drebugging )
+  size_t printContent(size_t limit, bool show_hg, std::ostream &output);
+  
+  // Get key-values vector for a particular hash-group
+  KV *kvs_for_hg(int hg) {
+    return &kvs[kvs_index[hg]];
+  }
+  
+  char* data_for_hg(int hg) {
+    return kvs[kvs_index[hg]].key;
+  }
+  
+  size_t size()
+  {
+    if( auxiliar_buffer_ != NULL )
+      return auxiliar_buffer_->max_size();
+    else
+      return 0;
+  }
+  
     // Main interface to interact with key-values contained in this block
     KV *kvs;          // Pointers to all key-values
     KVInfo *info;     // Vector with all KVInfos for each hash-group
@@ -47,22 +69,14 @@ class KVFile {
     char *data;
     size_t data_size;
 
-    // Print content of key-values ( mainly drebugging )
-    size_t printContent(size_t limit, bool show_hg, std::ostream &output);
-
-    // Get key-values vector for a particular hash-group
-    KV *kvs_for_hg(int hg) {
-      return &kvs[kvs_index[hg]];
-    }
-
-    char* data_for_hg(int hg) {
-      return kvs[kvs_index[hg]].key;
-    }
-
   private:
+  
     // Buffer of data ( retained by the shared reference counter )
     engine::BufferPointer buffer_;
 
+  // Buffer to hold all data for this KVFile
+  engine::BufferPointer auxiliar_buffer_;
+  
     // Copy of the heder contained in the buffer
     KVHeader header_;
 

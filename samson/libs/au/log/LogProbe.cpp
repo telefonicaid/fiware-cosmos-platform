@@ -57,7 +57,7 @@ namespace au {
     // Add default port to host if necessary
     std::string str_host = host;
     if (str_host.find_last_of(":") == std::string::npos) {
-      str_host += au::str(":%d", AU_LOG_SERVER_PORT);
+      str_host += au::str(":%d", LOG_SERVER_DEFAULT_PORT);
     }
     
     // Create a socket connection with the provided host
@@ -91,7 +91,7 @@ namespace au {
     // Add default port to host if necessary
     std::string str_host = host;
     if (str_host.find_last_of(":") == std::string::npos) {
-      str_host += au::str(":%d", AU_LOG_SERVER_PORT);
+      str_host += au::str(":%d", LOG_SERVER_DEFAULT_PORT);
     }
     
     // Create a socket connection with the provided host

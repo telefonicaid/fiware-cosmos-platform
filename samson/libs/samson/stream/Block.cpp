@@ -58,7 +58,7 @@ namespace samson {
       // Temporal flag
       temporal_ = true;   // By default we consider blocks are temporal
       
-      AU_M( logs.block_manager , ("Block created from buffer: %s", str().c_str()));
+      LOG_M( logs.block_manager , ("Block created from buffer: %s", str().c_str()));
     }
     
     Block::Block(size_t block_id, KVHeader *_header) :
@@ -84,7 +84,7 @@ namespace samson {
       // Put cronometer to 1 hour before to remove blocks not included in the data model rigth now
       cronometer.AddOffset(-24 * 60 * 60);
       
-      AU_M( logs.block_manager, ("Block created from id: %s", this->str().c_str()));
+      LOG_M( logs.block_manager, ("Block created from id: %s", this->str().c_str()));
     }
     
     Block::~Block() {
@@ -94,18 +94,30 @@ namespace samson {
       }
     }
     
-    au::SharedPointer<KVFile> Block::getKVFile(au::ErrorManager& error) {
+    au::SharedPointer<KVFile> Block::getKVFile(au::ErrorManager& error , bool retain ) {
       au::TokenTaker tt(&token_file_);
-      
-      if (file_ == NULL) {
-        // Create the file...
-        if (buffer_ != NULL) {
-          file_ = KVFile::create(buffer_, error);
-        } else {
-          error.set(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str() ));
-        }
+
+      // If it has been calculated before, just return
+      if( file_ != NULL )
+        return file_;
+
+      if (buffer_ == NULL) // Not possible to compute the KVFile
+      {
+        error.set(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str() ));
+        return file_; // Return NULL;
       }
-      return file_;
+      
+      if( retain )
+      {
+        file_ = KVFile::create(buffer_, error);
+        return file_;
+      }
+      else
+      {
+        au::SharedPointer<KVFile> file = KVFile::create(buffer_, error);
+        return file;
+      }
+      
     }
     
     Block::BlockState Block::state() {
@@ -160,7 +172,7 @@ namespace samson {
         return;
       }
       
-      AU_M(logs.block_manager, ("Destroying buffer for block:'%s'", str().c_str()));
+      LOG_M(logs.block_manager, ("Destroying buffer for block:'%s'", str().c_str()));
       
       // Relase buffer
       buffer_ = NULL;
@@ -291,6 +303,11 @@ namespace samson {
       samson::add(record, "size", getSize(), "f=uint64,sum");
       
       samson::add(record, "tsize", accumulated_size, "f=uint64,sum");
+
+      if( file_ == NULL )
+        samson::add(record, "Aux", "-", "f=uint64,sum");
+      else
+        samson::add(record, "Aux", file_->size(), "f=uint64,sum");
       
       samson::add(record, "KVFormat", getKVFormat().str(), "left,different");
       samson::add(record, "KVRange", getKVRange().str(), "left,different");

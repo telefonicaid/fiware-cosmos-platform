@@ -44,7 +44,8 @@ struct WorkerTaskLog {
     std::string result;    // Result of the operation
     std::string inputs;    // Information at the input of the operation
     std::string outputs;   // Information at output of the operation
-    std::string times;     // Information at output of the operation
+    std::string times;
+    std::string process_time;
     int waiting_time_seconds;   // Waiting time until execution starts
     int running_time_seconds;   // Running time
 };

@@ -107,7 +107,7 @@ namespace samson {
     engine::notify("samson_worker_review", 2);
     engine::notify("notification_freeze_data_model", samson_setup->GetInt("worker.period_to_freeze_data_model") );
         
-    //engine::notify_extra("samson_worker_review");
+    engine::notify_extra("samson_worker_review");
     
   }
   
@@ -122,7 +122,7 @@ namespace samson {
       case unconnected:
       {
         // Try to connect with ZK
-        AU_M( logs.worker_controller,  ("Trying to connect with zk at %s", zoo_host_.c_str()));
+        LOG_M( logs.worker_controller,  ("Trying to connect with zk at %s", zoo_host_.c_str()));
         zoo_connection_ = new au::zoo::Connection(zoo_host_, "samson", "samson");
         int rc = zoo_connection_->WaitUntilConnected(20000);
         if (rc) {
@@ -150,7 +150,7 @@ namespace samson {
         
         state_ = connected;          // Now we are connected
         state_message_ = "Connected";
-        AU_M( logs.worker_controller, ("Worker connected to ZK"));
+        LOG_M( logs.worker_controller, ("Worker connected to ZK"));
         break;
       }
       case connected:
@@ -161,7 +161,7 @@ namespace samson {
           network_->set_cluster_information(cluster_info);   // Inform network about cluster setup
           state_message_ = "Ready";
           state_ = ready;
-          AU_SM((">>> Worker connected to ZK and part of the cluster"));
+          LOG_M( logs.worker , ("Worker connected to ZK and part of the cluster"));
         } else {
           state_message_ = "Still not included in the cluster";
         }
@@ -572,7 +572,7 @@ namespace samson {
     {
       au::ErrorManager error;
       data_model_->Commit("SAMSON cluster leader", "data_model_recover", error );
-      AU_SW(("New cluster setup, so data model is recovered"));
+      LOG_W( logs.worker, ("New cluster setup, so data model is recovered"));
       return;
     }
     
@@ -586,13 +586,28 @@ namespace samson {
       
       // Freeze data model ( Create a candidate and so.... )
       au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
-      if( data_model != NULL )
-        if( !data_model->has_candidate_data() )
-          if( data_model->current_data().commit_id() > data_model->previous_data().commit_id() )
-          {
-            au::ErrorManager error;
-            data_model_->Commit("SAMSON cluster leader", "data_model_freeze", error );
-          }
+      if( data_model == NULL )
+        return;
+
+      // If a candidate data model is too old, remove it
+      if( data_model->has_candidate_data() )
+      {
+        if( cronometer_candidate_data_model_.seconds() > 300 )
+        {
+          LOG_W(logs.worker, ("Canceling data model candidate for timeout"));
+          au::ErrorManager error;
+          data_model_->Commit("SAMSON cluster leader" , "data_model_cancel_freeze", error );
+        }
+      }
+      
+      // Create a candidate if necessary
+      if( !data_model->has_candidate_data() )
+        if( data_model->current_data().commit_id() > data_model->previous_data().commit_id() )
+        {
+          au::ErrorManager error;
+          data_model_->Commit("SAMSON cluster leader", "data_model_freeze", error );
+          cronometer_candidate_data_model_.Reset();
+        }
       return;
     }
     
@@ -619,11 +634,11 @@ namespace samson {
       
       // Recover new cluster setup
       au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
-      AU_SM(("New cluster setup (version %lu)", cluster_info->version()));
+      LOG_M( logs.worker , ("New cluster setup (version %lu)", cluster_info->version()));
       
       // If I am not part of this cluster, do not set connections
       if (!isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
-        AU_SM(("Still not included in cluster (version %lu). Not seting up this worker", cluster_info->version()));
+        LOG_M( logs.worker , ("Still not included in cluster (version %lu). Not seting up this worker", cluster_info->version()));
         state_ = connected;   // Connected but still not included in the cluster
         state_message_ = "Still not included in the cluster";
         return;
@@ -638,14 +653,14 @@ namespace samson {
       
       // Show a label with all the new ranges I am responsible for
       std::vector<KVRange> ranges = worker_controller_->GetMyKVRanges();
-      AU_SM(("Cluster setup change: Assgined ranges %s", str(ranges).c_str()));
+      LOG_M(logs.worker , ("Cluster setup change: Assgined ranges %s", str(ranges).c_str()));
       return;
     }
     
     if (notification->isName(notification_update_status)) {
       
       if ( (state_ ==  connected) || (state_ ==  unconnected) ) {
-        AU_W( logs.worker, ("Not reporting state of this worker since it is not fully connected to ZK"));
+        LOG_W( logs.worker, ("Not reporting state of this worker since it is not fully connected to ZK"));
         return;
       }
       
@@ -670,7 +685,7 @@ namespace samson {
       // Pointer to cluster info
       au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
       size_t worker_id = worker_controller_->worker_id();
-      AU_M( logs.worker , ("[ Worker %lu / %d workers ] (%s) [ %d/%d HashGroups ][ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
+      LOG_M( logs.worker , ("[ Worker %lu / %d workers ] (%s) [ %d/%d HashGroups ][ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
                , worker_id
                , cluster_info->workers_size()
                , au::str_time(cronometer_.seconds()).c_str()
@@ -789,6 +804,23 @@ namespace samson {
   std::string SamsonWorker::getPrompt() {
     return "SamsonWorker> ";
   }
+  au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerAllLogChannels(const Visualization& visualization){
+    
+    au::SharedPointer<gpb::Collection> collection ( new gpb::Collection() );
+    
+    collection->set_name("wlog channels");
+
+    for ( int i = 0 ; i < au::log_central.log_channels().num_channels() ; i++ )
+    {
+      gpb::CollectionRecord *record = collection->add_record();
+      std::string name = au::log_central.log_channels().channel_name(i);
+      std::string description = au::log_central.log_channels().channel_description(i);
+      
+      ::samson::add(record, "Channel", name , "different,left");
+      ::samson::add(record, "Description", description , "different,left");
+    }
+    return collection;
+  }
   
   
   au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerLogStatus(const Visualization& visualization){
@@ -801,8 +833,6 @@ namespace samson {
     ::samson::add(record, "log server", au::log_central.GetPluginStatus("server") , "different");
     ::samson::add(record, "Channels", au::log_central.GetPluginChannels("server") , "different");
 
-    ::samson::add(record, "AllChannels", au::log_central.log_channels().GetAllChannels() , "different");
-    
     return collection;
   }
   

@@ -51,7 +51,6 @@ double EngineElement::GetTimeToTrigger() {
   // Time for the next execution
   if (type_ == repeated) {
     double t = cronometer_.seconds();
-    LM_T(LmtEngineTime, ("getTimeToTrigger: Period %d Cronometer: %f", period_, t ));
     return period_ - t;
   }
   return 0;

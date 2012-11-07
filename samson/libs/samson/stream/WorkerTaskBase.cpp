@@ -197,5 +197,12 @@ std::string WorkerTaskBase::GetActivitySummary() {
   activity_monitor_.StopActivity();
   return activity_monitor_.GetSummary();
 }
+
+  std::string WorkerTaskBase::GetProcessSummary() {
+    activity_monitor_.StopActivity();
+    return au::str(activity_monitor_.GetTotalTimeForActivity("process") , "s" );
+  }
+  
+  
 }
 }

@@ -119,18 +119,23 @@ namespace au {
     
   public:
     
-    LogProbePriter( const std::string& format ) : log_formatter_(format , true)
+    LogProbePriter( const std::string& format , bool output_stderr = true ) : log_formatter_(format , true )
     {
+      output_stderr_ = output_stderr;
     }
     
     virtual void Process( au::SharedPointer<au::Log> log )
     {
-      std::cerr << log_formatter_.get(log) << "\n";
+      if ( output_stderr_ )
+        std::cerr << log_formatter_.get(log) << "\n";
+      else
+        std::cout << log_formatter_.get(log) << "\n";
     }
     
   private:
     
     au::LogFormatter log_formatter_;
+    bool output_stderr_;
     
   };
   

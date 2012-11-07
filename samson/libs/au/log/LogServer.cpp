@@ -16,13 +16,13 @@
 
 namespace au {
 LogServer::LogServer()
-  : au::network::ConsoleService(AU_LOG_SERVER_QUERY_PORT)
-    , service_(AU_LOG_SERVER_PORT, AU_LOG_SERVER_DIRECTORY) {
+  : au::network::ConsoleService(LOG_SERVER_DEFAULT_CLIENT_PORT)
+    , service_(LOG_SERVER_DEFAULT_PORT, LOG_SERVER_DEFAULT_DIRECTORY) {
   // Init service to receive queries
   Status s = InitService();
 
   if (s != OK) {
-    LM_X(1, ( "Not possible to open query channel on port %d\n", AU_LOG_SERVER_QUERY_PORT ));  // Init channel to receive binrary logs
+    LM_X(1, ( "Not possible to open query channel on port %d\n", LOG_SERVER_DEFAULT_CLIENT_PORT ));  // Init channel to receive binrary logs
   }
   au::ErrorManager error;
   service_.initLogServerService(&error);
@@ -35,7 +35,7 @@ LogServer::LogServer()
 void LogServer::runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {
   CommandLine cmdLine;
 
-  cmdLine.SetFlagString("format", AU_LOG_DEFAULT_FORMAT_LOG_CLIENT);    // Format of each log
+  cmdLine.SetFlagString("format", LOG_DEFAULT_FORMAT_LOG_CLIENT);    // Format of each log
   cmdLine.SetFlagInt("limit", 0);                           // Max number of logs
   cmdLine.SetFlagString("pattern", "");                     // Pattern for strings...
   cmdLine.SetFlagString("time", "");                        // time for logs

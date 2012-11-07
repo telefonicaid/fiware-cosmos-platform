@@ -32,19 +32,19 @@ namespace samson {
 namespace stream {
 
 BlockList::~BlockList() {
+  clearBlockList();
+}
+
+void BlockList::clearBlockList() {
+  
   // Make sure I am not in any list in the blocks I am retaining...
   au::list<BlockRef>::iterator it_blocks;   // List of blocks references
   for (it_blocks = blocks.begin(); it_blocks != blocks.end(); it_blocks++) {
     BlockRef *block_ref = *it_blocks;
     BlockPointer block = block_ref->block();
-
     block->remove_block_list(this);
   }
-
-  clearBlockList();
-}
-
-void BlockList::clearBlockList() {
+  
   // Remove all reference contained in this list
   blocks.clearList();
 }
@@ -120,7 +120,7 @@ std::string BlockList::str_blocks() {
   output << "[ ";
   au::list<BlockRef>::iterator it;
   for (it = blocks.begin(); it != blocks.end(); it++) {
-    output << (*it)->block_id() << " ";
+    output << str_block_id( (*it)->block_id() ) << " ";
   }
   output << "]";
   return output.str();

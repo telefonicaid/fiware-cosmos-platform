@@ -28,8 +28,8 @@ namespace au {
       if( registered_ )
         return;
       registered_ = true;
-      zoo = AU_REGISTER_CHANNEL( "au::ZOO" );
-      gpb = AU_REGISTER_CHANNEL( "au::GPB" );
+      zoo = LOG_REGISTER_CHANNEL( "au::ZOO" , "au library : Zookeeper wrapper" );
+      gpb = LOG_REGISTER_CHANNEL( "au::GPB" , "au library : Google Protocol Buffers wrapper");
     }
     
     // Channels definied in this library

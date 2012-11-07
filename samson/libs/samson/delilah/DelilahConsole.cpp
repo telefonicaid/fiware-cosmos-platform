@@ -225,23 +225,6 @@ void DelilahConsole::autoCompleteQueueForOperation(au::ConsoleAutoComplete *info
 }
 
 void DelilahConsole::autoComplete(au::ConsoleAutoComplete *info) {
-  
-  /*
-  if (mode == mode_database) {
-    if (info->completingSecondWord("set_mode")) {
-      info->add("setup");
-      info->add("normal");
-      info->add("database");
-      info->add("logs");
-    }
-
-    if (info->completingFirstWord()) {
-      info->add("set_database_mode off");
-    }
-    autoCompleteForDatabaseCommand(info);
-    return;
-  }
-   */
 
   // Use catalogue for auto-completion
   delilah_command_catalogue.autoComplete(info);
@@ -390,10 +373,10 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     return 0;
   }
   
-  if (mainCommand == "log") {
-    std::string command = command_instance->get_string_argument("command");
+  if ( au::CheckIfStringsBeginWith(mainCommand, "log_") )
+  {
     au::ErrorManager error;
-    au::log_central.evalCommand(command, error);
+    au::log_central.evalCommand(command_instance->command_line(), error);
     write(&error);
     return 0;
   }

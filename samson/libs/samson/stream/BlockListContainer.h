@@ -65,7 +65,10 @@ class BlockListContainer {
 
     // Lock content on memory
     void lock_content_in_memory();
-
+  
+  // Get a string will all blocks involved here
+  std::string str_blocks();
+  
   std::string str_inputs() const {
     
     int num_inputs = 0;

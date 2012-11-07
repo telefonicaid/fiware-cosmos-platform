@@ -27,21 +27,25 @@ namespace samson {
         return;
       registered_ = true;
       
-      samson             = AU_REGISTER_CHANNEL( "samson");
-      worker             = AU_REGISTER_CHANNEL( "samson::W");
-      block_manager      = AU_REGISTER_CHANNEL( "samson::BM");
-      task_manager       = AU_REGISTER_CHANNEL( "samson::TM");
-      worker_controller  = AU_REGISTER_CHANNEL( "samson::WC");
-      background_process = AU_REGISTER_CHANNEL( "samson::BP");
-      isolated_process   =  AU_REGISTER_CHANNEL( "samson::IP");
-      worker_command_manager = AU_REGISTER_CHANNEL( "samson::WCM");
-      worker_command         = AU_REGISTER_CHANNEL( "samson::WC");
+      samson                 = LOG_REGISTER_CHANNEL( "samson"      , "samson library : General channel" );
+      worker                 = LOG_REGISTER_CHANNEL( "samson::W"   , "samson library : Worker");
+      block_manager          = LOG_REGISTER_CHANNEL( "samson::BM"  , "samson library : Block Manager");
+      task_manager           = LOG_REGISTER_CHANNEL( "samson::TM"  , "samson library : Task Manager");
+      worker_controller      = LOG_REGISTER_CHANNEL( "samson::WC"  , "samson library : WorkerController");
+      background_process     = LOG_REGISTER_CHANNEL( "samson::BP"  , "samson library : Background Process");
+      isolated_process       = LOG_REGISTER_CHANNEL( "samson::IP"  , "samson library : Isolated Process");
+      worker_command_manager = LOG_REGISTER_CHANNEL( "samson::WCM" , "samson library : Worker Comamnd Manager");
+      worker_command         = LOG_REGISTER_CHANNEL( "samson::WC"  , "samson library : Worker Command");
+      worker_task            = LOG_REGISTER_CHANNEL( "samson::WT"  , "samson library : Worker Task");
+      worker_block_manager   = LOG_REGISTER_CHANNEL( "samson::WBM" , "samson library : Worker Block Manager");
+      block_request          = LOG_REGISTER_CHANNEL( "samson::BR"  , "samson library : Block Request");
+      reduce_operation       = LOG_REGISTER_CHANNEL( "samson::RO"  , "samson library : Reduce Operation");
+      kv_file                = LOG_REGISTER_CHANNEL( "samson::KVF" , "samson library : KVFile ( key-values data interpretation )");
+      data_model             = LOG_REGISTER_CHANNEL( "samson::DM"  , "samson library : Data model");
       
-      worker_block_manager = AU_REGISTER_CHANNEL( "samson::WBM");
-      block_request        = AU_REGISTER_CHANNEL( "samson::BR");
+      delilah                = LOG_REGISTER_CHANNEL( "delilah"  , "delilah library : General channel");
       
-      data_model = AU_REGISTER_CHANNEL("samson::DM");
-    }
+    } 
     
     // Channels definied in this library
     int samson;
@@ -56,6 +60,12 @@ namespace samson {
     int worker_block_manager;
     int block_request;
     int data_model;
+    int worker_task;
+    int reduce_operation;
+    int kv_file;
+    
+    int delilah;
+    
   private:
     
     bool registered_;

@@ -22,7 +22,7 @@ namespace samson {
   
   void WorkerBlockManager::Review() {
     
-    AU_D(logs.worker_block_manager, ("Review"));
+    LOG_D(logs.worker_block_manager, ("Review"));
     
     // Review all block requests
     {
@@ -46,7 +46,7 @@ namespace samson {
     size_t block_id = samson_worker_->worker_controller()->get_new_block_id();
     stream::BlockManager::shared()->CreateBlock(block_id, buffer);
     
-    AU_M(logs.worker_block_manager, ("Create block from buffer %s --> %s"
+    LOG_M(logs.worker_block_manager, ("Create block from buffer %s --> %s"
                                      , buffer->str().c_str()
                                      , str_block_id(block_id).c_str() ));
     
@@ -56,7 +56,7 @@ namespace samson {
   // Messages received from other workers
   void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t worker_id , bool error)
   {
-    AU_M(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu error %s)"
+    LOG_M(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu error %s)"
                                      , str_block_id(block_id).c_str()
                                      , worker_id
                                      , error?"yes":"no" ));
@@ -84,18 +84,18 @@ namespace samson {
     BlockRequest* block_request = block_requests_.findInMap(block_id);
     if (block_request)
     {
-      AU_M(logs.worker_block_manager, ("Requested block %s.... found in Block Manager!", str_block_id(block_id).c_str() ));
+      LOG_M(logs.worker_block_manager, ("Requested block %s.... found in Block Manager!", str_block_id(block_id).c_str() ));
       return; // already requested
     }
 
     if( block_requests_.findInMap(block_id) )
     {
-      AU_M(logs.worker_block_manager, ("Requested block %s.... previously requestes and still waiting!", str_block_id(block_id).c_str() ));
+      LOG_M(logs.worker_block_manager, ("Requested block %s.... previously requestes and still waiting!", str_block_id(block_id).c_str() ));
       return;
     }
     
     // New block request for this block
-    AU_M(logs.worker_block_manager, ("Requested block %s", str_block_id(block_id).c_str() ));
+    LOG_M(logs.worker_block_manager, ("Requested block %s", str_block_id(block_id).c_str() ));
     block_request = new BlockRequest( samson_worker_, block_id );
     block_requests_.insertInMap(block_id, block_request);
     
@@ -110,7 +110,7 @@ namespace samson {
   }
   
   void WorkerBlockManager::Reset() {
-    AU_M(logs.worker_block_manager, ("Reset"));
+    LOG_M(logs.worker_block_manager, ("Reset"));
     // Remove all internal elements
     block_requests_.clearMap();
   }
@@ -121,28 +121,28 @@ namespace samson {
                                              , engine::BufferPointer buffer
                                              , const std::vector<std::string>& queues) {
     
-    AU_M(logs.worker_block_manager, ("Received a push block (Delilah %s PushId %lu Buffer %s Queues %s)"
+    LOG_M(logs.worker_block_manager, ("Received a push block (Delilah %s PushId %lu Buffer %s Queues %s)"
                                      , au::code64_str(delilah_id).c_str()
                                      , push_id
                                      , buffer->str().c_str()
                                      , au::str( queues ).c_str() ));
     
     if (buffer == NULL) {
-      AU_W( logs.worker_block_manager, ("Push message without a buffer. This is an error..."));
+      LOG_W( logs.worker_block_manager, ("Push message without a buffer. This is an error..."));
       return;
     }
     
     // Check valid header size
     size_t block_size = buffer->size();
     if (buffer->size() < sizeof(KVHeader)) {
-      AU_W(logs.worker_block_manager,("Push message with a non-valid buffer.Ignoring..."));
+      LOG_W(logs.worker_block_manager,("Push message with a non-valid buffer.Ignoring..."));
       return;
     }
     
     KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
     
     if (!header->Check() || !header->range.isValid()) {
-      AU_W(logs.worker_block_manager,("Push message with a non-valid buffer.Ignoring..."));
+      LOG_W(logs.worker_block_manager,("Push message with a non-valid buffer.Ignoring..."));
       return;
     }
     
@@ -160,7 +160,7 @@ namespace samson {
     } else if (header->IsModule()) {
       header->range.set(0, KVFILE_NUM_HASHGROUPS);      // Make sure it is full range
     } else {
-      AU_W(logs.worker_block_manager,("Push message with a buffer that is not data or a module.Ignoring..."));
+      LOG_W(logs.worker_block_manager,("Push message with a buffer that is not data or a module.Ignoring..."));
       return;
     }
     
@@ -168,7 +168,7 @@ namespace samson {
     size_t block_id = samson_worker_->worker_block_manager()->CreateBlock(buffer);
     
     if (block_id == (size_t) -1) {
-      AU_W(logs.worker_block_manager,("Error creating block in a push operation ( block_id -1 )"));
+      LOG_W(logs.worker_block_manager,("Error creating block in a push operation ( block_id -1 )"));
       return;
     }
     
@@ -188,7 +188,7 @@ namespace samson {
     
     if( error.IsActivated() )
     {
-      AU_W(logs.worker_block_manager,("Error comitting a push operation to data model: %s" , error.GetMessage().c_str() ));
+      LOG_W(logs.worker_block_manager,("Error comitting a push operation to data model: %s" , error.GetMessage().c_str() ));
       return;
     }
     

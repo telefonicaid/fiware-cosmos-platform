@@ -139,7 +139,7 @@ void DefragTask::run() {
   list->ReviewBlockReferences(error_);
 
   if (error_.IsActivated()) {
-    AU_SW((">>>> Error in defrag operation: %s" , error_.GetMessage().c_str() ));
+    LOG_SW((">>>> Error in defrag operation: %s" , error_.GetMessage().c_str() ));
     return;
   }
 

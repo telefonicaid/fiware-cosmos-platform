@@ -72,7 +72,7 @@ class AliasManager {
 WorkerCommand::WorkerCommand(SamsonWorker* samson_worker, std::string worker_command_id, size_t delilah_id,
                              size_t delilah_component_id, const gpb::WorkerCommand& command) {
   
-  AU_D(logs.worker_command, ("New WorkerCommand %s ( Delilah %s : %lu )"
+  LOG_D(logs.worker_command, ("New WorkerCommand %s ( Delilah %s : %lu )"
                              , worker_command_id.c_str()
                              , au::code64_str(delilah_id).c_str()
                              , delilah_component_id_));
@@ -109,7 +109,7 @@ WorkerCommand::WorkerCommand(SamsonWorker* samson_worker, std::string worker_com
 }
 
 WorkerCommand::~WorkerCommand() {
-  AU_D(logs.worker_command, ("Destructor WorkerCommand %s", worker_command_id_.c_str() ));
+  LOG_D(logs.worker_command, ("Destructor WorkerCommand %s", worker_command_id_.c_str() ));
 }
 
 bool WorkerCommand::finished() {
@@ -122,7 +122,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
     return;
   }
 
-  AU_M(logs.worker_command, ("[%s] Running command %s", worker_command_id_.c_str() , command.c_str() ));
+  LOG_M(logs.worker_command, ("[%s] Running command %s", worker_command_id_.c_str() , command.c_str() ));
   
   // Parse command
   au::CommandLine cmd;
@@ -227,7 +227,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
   }
 
   // Unknown command error message
-  AU_E( logs.worker_command , ("Unknown command %s", main_command.c_str()));
+  LOG_E( logs.worker_command , ("Unknown command %s", main_command.c_str()));
   error.set(au::str("Unknown command %s", main_command.c_str()));
 }
 
@@ -269,7 +269,7 @@ void WorkerCommand::Run() {
     return;
   }
 
-  AU_M(logs.worker_command, ("[%s] Run", worker_command_id_.c_str() ));
+  LOG_M(logs.worker_command, ("[%s] Run", worker_command_id_.c_str() ));
 
   pending_to_be_executed_ = false;   // Not pending any more, except if something happen...
 
@@ -298,7 +298,7 @@ void WorkerCommand::Run() {
   std::string main_command = command_instance->main_command();
 
   // TODO(@jges): Remove log message
-  AU_D( logs.worker_command, ("Processing '%s' command", main_command.c_str()));
+  LOG_D( logs.worker_command, ("Processing '%s' command", main_command.c_str()));
 
   if (main_command == "ls") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForQueues(visualization);
@@ -450,7 +450,6 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_workers") {
-    // Add the ps stream
     au::SharedPointer<gpb::Collection> c = samson_worker_->GetWorkerCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
@@ -458,8 +457,17 @@ void WorkerCommand::Run() {
     return;
   }
   
+  if( main_command == "wlog_all_channels")
+  {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->GetWorkerAllLogChannels(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+    
+  }
+  
   if( main_command == "wlog_status") {
-    // Add the ps stream
     au::SharedPointer<gpb::Collection> c = samson_worker_->GetWorkerLogStatus(visualization);
     c->set_title(command_);
     collections_.push_back(c);
@@ -613,7 +621,7 @@ void WorkerCommand::Run() {
     samson_worker_->data_model()->Commit(caller, command, error);
 
     if (error.IsActivated()) {
-      AU_E( logs.worker_command,("Error in Commit for command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
+      LOG_E( logs.worker_command,("Error in Commit for command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
       FinishWorkerTaskWithError(error.GetMessage());
     } else {
       FinishWorkerTask();
@@ -625,7 +633,7 @@ void WorkerCommand::Run() {
   au::ErrorManager error;
   RunCommand(command_, error_);
   if (error.IsActivated()) {
-    AU_E( logs.worker_command,("Error in Commit for command:'%s', error:'%s'", command_.c_str(), error.GetMessage().c_str()));
+    LOG_E( logs.worker_command,("Error in Commit for command:'%s', error:'%s'", command_.c_str(), error.GetMessage().c_str()));
     FinishWorkerTaskWithError(error.GetMessage());
   } else {
     FinishWorkerTask();
@@ -634,7 +642,7 @@ void WorkerCommand::Run() {
 
 void WorkerCommand::FinishWorkerTaskWithError(std::string error_message) {
 
-  AU_D(logs.worker_command, ("[%s] Finished with error %s ", worker_command_id_.c_str() , error_message.c_str() ));
+  LOG_D(logs.worker_command, ("[%s] Finished with error %s ", worker_command_id_.c_str() , error_message.c_str() ));
   
   error_.set(error_message);
   FinishWorkerTask();
@@ -651,10 +659,10 @@ void WorkerCommand::FinishWorkerTask() {
     return;
   }
 
-  AU_D(logs.worker_command, ("[%s] Finished OK", worker_command_id_.c_str() ));
+  LOG_D(logs.worker_command, ("[%s] Finished OK", worker_command_id_.c_str() ));
   
   if (notify_finish_) {
-    AU_D( logs.worker_command, ("notify_finish for command:'%s', delilah_id:%lu", command_.c_str(), delilah_id_));
+    LOG_D( logs.worker_command, ("notify_finish for command:'%s', delilah_id:%lu", command_.c_str(), delilah_id_));
     PacketPointer p(new Packet(Message::WorkerCommandResponse));
     gpb::WorkerCommandResponse *c = p->message->mutable_worker_command_response();
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand_);
@@ -686,7 +694,7 @@ void WorkerCommand::FinishWorkerTask() {
 void WorkerCommand::notify(engine::Notification *notification) {
   if (notification->isName(notification_process_request_response)) {
     
-    AU_D( logs.worker_command , ("Notification about finished process"));
+    LOG_D( logs.worker_command , ("Notification about finished process"));
     --num_pending_processes_;
     if (notification->environment().IsSet("error")) {
       error_.set(notification->environment().Get("error", "no_error"));
@@ -695,7 +703,7 @@ void WorkerCommand::notify(engine::Notification *notification) {
     return;
   }
 
-  AU_W( logs.worker_command , ("Unexpected notification at WorkerCommand"));
+  LOG_W( logs.worker_command , ("Unexpected notification at WorkerCommand"));
 }
 
 void WorkerCommand::CheckFinish() {

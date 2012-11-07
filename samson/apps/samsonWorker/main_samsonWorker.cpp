@@ -82,7 +82,7 @@ int log_port;
 bool thread_mode;
 
 
-#define LOG_PORT AU_LOG_SERVER_PORT
+#define LOG_PORT LOG_SERVER_DEFAULT_PORT
 
 /* ****************************************************************************
  *
@@ -332,7 +332,7 @@ int main(int argC, const char *argV[]) {
   // -----------------------------------------------------------------------------------
   worker = new samson::SamsonWorker(zoo_host, port, web_port);
 
-  AU_SM(("Worker Running..."));
+  LOG_M( samson::logs.worker , ("Worker Running..."));
 
   valgrindExit(13);
 
@@ -370,7 +370,7 @@ int main(int argC, const char *argV[]) {
   LM_T(LmtCleanup, ("Stopping network listener (worker at %p)", worker));
   worker->network()->stop();
   LM_T(LmtCleanup, ("log_central marked to stop"));
-  AU_SM(("log_central stopping..."));
+  LOG_M( samson::logs.worker , ("log_central stopping..."));
 
   // Stopping the new log_central thread
   au::log_central.Stop();

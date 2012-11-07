@@ -10,7 +10,7 @@ namespace au {
 class LogCentralPluginConsole : public LogCentralPlugin {
 public:
 
-  LogCentralPluginConsole(Console *console, const std::string& format = AU_LOG_DEFAULT_FORMAT_CONSOLE)
+  LogCentralPluginConsole(Console *console, const std::string& format = LOG_DEFAULT_FORMAT_CONSOLE)
   : LogCentralPlugin("console")
   , log_formatter_(format, true) // Output colored
   {

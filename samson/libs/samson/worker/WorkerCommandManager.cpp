@@ -37,7 +37,7 @@ void WorkerCommandManager::Add(WorkerCommand *worker_command) {
   size_t id = worker_task_id_++;
   worker_commands_.insertInMap(id, worker_command);
 
-  AU_M(logs.worker_command_manager, ("Adding command %s" , worker_command->str().c_str() ));
+  LOG_M(logs.worker_command_manager, ("Adding command %s" , worker_command->str().c_str() ));
   
   // First run of this worker command
   worker_command->Run();
@@ -46,7 +46,7 @@ void WorkerCommandManager::Add(WorkerCommand *worker_command) {
 // Cancel worker command
 bool WorkerCommandManager::Cancel(std::string worker_command_id) {
 
-  AU_M(logs.worker_command_manager, ("Canceling %s", worker_command_id.c_str() ));
+  LOG_M(logs.worker_command_manager, ("Canceling %s", worker_command_id.c_str() ));
   
   bool found = false;
   au::map<size_t, WorkerCommand>::iterator it_workerCommands;
@@ -59,7 +59,7 @@ bool WorkerCommandManager::Cancel(std::string worker_command_id) {
   }
   
   if(!found)
-    AU_M(logs.worker_command_manager, ("Canceling %s... not found", worker_command_id.c_str() ));
+    LOG_M(logs.worker_command_manager, ("Canceling %s... not found", worker_command_id.c_str() ));
   
   return found;
 }
@@ -67,7 +67,7 @@ bool WorkerCommandManager::Cancel(std::string worker_command_id) {
 void WorkerCommandManager::notify(engine::Notification *notification) {
   if (notification->isName(notification_review_worker_command_manager)) {
     
-    AU_M(logs.worker_command_manager, ("Review worker command manager finished task...."));
+    LOG_M(logs.worker_command_manager, ("Review worker command manager finished task...."));
     
     // Remove finished worker tasks elements
     worker_commands_.removeInMapIfFinished();

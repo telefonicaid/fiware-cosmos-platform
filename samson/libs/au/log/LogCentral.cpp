@@ -185,7 +185,7 @@ void LogCentral::Run() {
 
 void LogCentral::ReviewChannelsLevels() {
   
-  for (int c = 0; c < AU_LOG_MAX_CHANNELS; c++) {
+  for (int c = 0; c < LOG_MAX_CHANNELS; c++) {
     int max_level = 0;
 
     if (log_channels_.IsRegistered(c)) {
@@ -280,7 +280,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       std::string name = command_instance->get_string_option("name");
       std::string filename = command_instance->get_string_argument("filename");
       std::string host = command_instance->get_string_argument("host");
-      AddPlugin(name, new LogCentralPluginServer(host, AU_LOG_SERVER_PORT, filename), error);
+      AddPlugin(name, new LogCentralPluginServer(host, LOG_SERVER_DEFAULT_PORT, filename), error);
       error.AddMessage(au::str("Added a plugin to send logs to server %s", host.c_str()));
       return;
     }
@@ -300,7 +300,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       // Count elements
       bool no_elements = true;
 
-      for (int c = 0; c < AU_LOG_MAX_CHANNELS; c++) { // Loop channels
+      for (int c = 0; c < LOG_MAX_CHANNELS; c++) { // Loop channels
         
         if (!log_channels_.IsRegistered(c)) {
           continue;
@@ -350,7 +350,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       // Count elements
       bool no_elements = true;
       
-      for (int c = 0; c < AU_LOG_MAX_CHANNELS; c++) { // Loop channels
+      for (int c = 0; c < LOG_MAX_CHANNELS; c++) { // Loop channels
         
         if (!log_channels_.IsRegistered(c)) {
           continue;
@@ -406,7 +406,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       // Count elements
       bool no_elements = true;
       
-      for (int c = 0; c < AU_LOG_MAX_CHANNELS; c++) { // Loop channels
+      for (int c = 0; c < LOG_MAX_CHANNELS; c++) { // Loop channels
         
         if (!log_channels_.IsRegistered(c)) {
           continue;
@@ -458,18 +458,20 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       bool rates = command_instance->get_bool_option("rates");
       bool verbose = command_instance->get_bool_option("v");
 
-      std::string table_definition = "Channel|Level|Count";
+      std::string table_definition = "Channel,left|Level|Count";
 
       au::map<std::string, LogCentralPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); it++) {
         table_definition += ( "|" + it->first + " (" +  it->second->str_info() + ")" + ",left" );
       }
-
+      table_definition += "|Description,left";
+      
       au::tables::Table table(table_definition);
       table.setTitle("Channels for logging");
 
       for (int i =  0; i < log_channels_.num_channels(); i++) {
         std::string name = log_channels_.channel_name(i);
+        std::string description = log_channels_.channel_description(i);
 
         au::StringVector values;
         values.Push(name);
@@ -501,6 +503,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
           values.Push(info.str());
         }
         
+        values.Push(description);
         table.addRow(values);
       }
 
@@ -516,7 +519,7 @@ LogCentralCatalogue::LogCentralCatalogue() {
   
   add("log_to_screen", "general", "Add a log plugin to emit logs to screen");
   add_string_option("log_to_screen", "-name", "screen", "Name of the plugin");
-  add_string_option("log_to_screen", "-format", AU_LOG_DEFAULT_FORMAT, "Format of logs on screen");
+  add_string_option("log_to_screen", "-format", LOG_DEFAULT_FORMAT, "Format of logs on screen");
 
   add("log_to_file", "general", "Add a log plugin to emit logs to a file");
   add_mandatory_string_argument("log_to_file", "filename", "File to be created to store logs");

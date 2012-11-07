@@ -63,14 +63,18 @@ WorkerTask::WorkerTask( SamsonWorker *samson_worker
   stream_operation_ = new gpb::StreamOperation();
   stream_operation_->CopyFrom(stream_operation);
 
+    LOG_M(logs.worker_task, ("Worker task created %s" , str().c_str() ));
+    
 }
 
 WorkerTask::~WorkerTask() {
+  LOG_M(logs.worker_task, ("Worker task destroyed %s" , str().c_str() ));
   delete stream_operation_;
 }
 
 void WorkerTask::processOutputBuffers() {
 
+  
   engine::BufferPointer buffer = GetNextOutputBuffer();
 
   while (buffer != NULL) {
@@ -91,6 +95,12 @@ void WorkerTask::processOutputBuffers() {
     // Add output to this operation
     AddOutput(output, block, header->range, header->info);
 
+    LOG_M(logs.worker_task, ("Task %lu: Generated block %s ( %s ) for output %d "
+                            , id()
+                            , str_block_id(block_id).c_str()
+                            , header->str().c_str()
+                            , output ));
+    
     // Extract the next output buffer
     buffer = GetNextOutputBuffer();
   }
@@ -123,8 +133,17 @@ std::string WorkerTask::commit_command() {
 
 void WorkerTask::initProcessIsolated() {
 
-  AU_M(logs.background_process, ("Init background process for task %lu" , id() ) );
+  LOG_M(logs.background_process, ("Init background process for task %lu" , id() ) );
   au::Cronometer cronometer;
+  
+  if( operation_->getType() == Operation::reduce )
+  {
+    LOG_M(logs.reduce_operation, ("[%lu:%s] Init Block setup for blocks %s"
+                                 , id()
+                                 , au::str(cronometer.seconds() ,"s").c_str()
+                                 , block_list_container_.str_blocks().c_str() ));
+  }
+  
   
   // Review input blocks to count key-values
   for (int i = 0; i < operation_->getNumInputs(); i++) {
@@ -132,11 +151,15 @@ void WorkerTask::initProcessIsolated() {
     list->ReviewBlockReferences(error_);
   }
   
+  if( operation_->getType() == Operation::reduce )
+    LOG_M(logs.reduce_operation, ("[%lu] Finish Block setup for operation (%s) " , id() , au::str(cronometer.seconds() ,"s").c_str() ));
+
+  
 }
 
 void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
 
-  AU_M(logs.background_process, ("Generate key-values for task %lu" , id() ) );
+  LOG_M(logs.background_process, ("Generate key-values for task %lu" , id() ) );
   
   au::Cronometer cronometer;
 
@@ -162,7 +185,7 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
 
 void WorkerTask::generateTXT(TXTWriter *writer) {
 
-  AU_M(logs.background_process, ("Generate txt-data for task %lu" , id() ) );
+  LOG_M(logs.background_process, ("Generate txt-data for task %lu" , id() ) );
 
   // Type of inputs ( for selecting key-values )
   std::vector<KVFormat> inputFormats = operation_->getInputFormats();
@@ -227,7 +250,7 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
 
 void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
 
-  AU_M(logs.background_process, ("generateKeyValues_map task %lu" , id() ) );
+  LOG_M(logs.background_process, ("generateKeyValues_map task %lu" , id() ) );
   
   // Type of inputs ( for selecting key-values )
   std::vector<KVFormat> inputFormats = operation_->getInputFormats();
@@ -304,8 +327,11 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
 
 void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   
-  AU_M(logs.background_process, ("generateKeyValues_reduce task %lu" , id() ) );
+  LOG_M(logs.background_process, ("generateKeyValues_reduce task %lu" , id() ) );
 
+  au::Cronometer cronometer;
+  LOG_M(logs.reduce_operation, ("[%lu:%s] Start reduce task" , id() , au::str(cronometer.seconds() ,"s").c_str() ));
+  
   bool update_only = stream_operation_->has_reduce_update_only() && stream_operation_->reduce_update_only();
   bool reduce_forward = stream_operation_->has_reduce_forward() && stream_operation_->reduce_forward();
   bool batch_operation = stream_operation_->has_batch_operation() && stream_operation_->batch_operation();
@@ -313,20 +339,20 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   size_t num_inputs = operation_->getNumInputs();
   //size_t num_outputs = operation_->getNumInputs();
 
-  LM_T(LmtReduceOperation,("Reduce %lu - %s KVRange %s"
+  LOG_D(logs.reduce_operation,("Reduce %lu - %s KVRange %s"
           , worker_task_id()
           ,process_item_description().c_str()
           ,range_.str().c_str()));
 
   if (update_only) {
-    LM_T(LmtReduceOperation,("Reduce %lu --> update_only", worker_task_id()));
+    LOG_D(logs.reduce_operation,("Reduce %lu --> update_only", worker_task_id()));
   }
 
   if (reduce_forward) {
-    LM_T(LmtReduceOperation,("Reduce %lu --> reduce_forward", worker_task_id()));
+    LOG_D(logs.reduce_operation,("Reduce %lu --> reduce_forward", worker_task_id()));
   }
   if (batch_operation) {
-    LM_T(LmtReduceOperation,("Reduce %lu --> batch_operation", worker_task_id()));
+    LOG_D(logs.reduce_operation,("Reduce %lu --> batch_operation", worker_task_id()));
   }
 
   // Get the operation instance
@@ -340,6 +366,8 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   // Init function
   reduce->init(writer);
 
+  LOG_M(logs.reduce_operation, ("[%lu:%s] Collecting data..." , id() , au::str(cronometer.seconds() ,"s").c_str() ));
+  
   // Get the block reader list to prepare inputs for operation
   BlockReaderCollection blockreaderCollection(operation_);
 
@@ -349,7 +377,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
     au::list<BlockRef>::iterator bi;
 
-    LM_T(LmtReduceOperation,("Reduce %lu - Adding Input %d : %lu blocks"
+    LOG_D(logs.reduce_operation,("Reduce %lu - Adding Input %d : %lu blocks"
             , worker_task_id()
             , i
             , list->blocks.size()));
@@ -359,7 +387,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
       // BlockPointer block = block_ref->block();
       // engine::BufferPointer buffer = block->buffer();
 
-      LM_T(LmtReduceOperation,("Reduce %lu - Adding block %lu (%s)"
+      LOG_D(logs.reduce_operation,("Reduce %lu - Adding block %lu (%s)"
               , worker_task_id()
               , block_ref->block_id()
               , block_ref->info().str().c_str() ));
@@ -380,10 +408,13 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   int transfered_states = 0;
   int processed_states = 0;
 
-  LM_T(LmtReduceOperation,("Reduce %lu - %s Data ready! Running hash-groups"
+  LOG_D(logs.reduce_operation,("Reduce %lu - %s Data ready! Running hash-groups"
           , worker_task_id()
           , process_item_description().c_str()));
 
+  
+  LOG_M(logs.reduce_operation, ("[%lu:%s] Processing data..." , id() , au::str(cronometer.seconds() ,"s").c_str() ));
+  
   for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; hg++) {
 
     // Check if this is inside the range we are interested in processing
@@ -399,7 +430,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
     if (num_kvs > 0) {
 
-      LM_T(LmtReduceOperation , ("Reduce %lu -  Process hg %d - %lu key-values"
+      LOG_D(logs.reduce_operation , ("Reduce %lu -  Process hg %d - %lu key-values"
               , worker_task_id()
               , hg
               , num_kvs ));
@@ -411,7 +442,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
         // Trace with the number of key-values per channel
         if (num_inputs >= 2)
-          LM_T(LmtReduceOperation , ("Reduce %lu - hg %d - Processing I:%lu S:%lu key-values"
+          LOG_D(logs.reduce_operation, ("Reduce %lu - hg %d - Processing I:%lu S:%lu key-values"
                   , worker_task_id()
                   , hg
                   , inputStructs[0].num_kvs
@@ -452,18 +483,13 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   // Detele the created instance
   delete reduce;
 
-  // LM_M(("Finish ReduceWorkerTask for range %s  [%s]" , range.str().c_str() , block_info.str().c_str() ));
-  LM_T(LmtReduceOperation, ("Reduce %lu - %s finish [ Different key Processed: %d DirectStateTransfer: %d ]"
-          , worker_task_id()
-          , process_item_description().c_str()
-          , processed_states
-          , transfered_states
-      ));
+  LOG_M(logs.reduce_operation, ("[%lu:%s] Finish reduce task" , id() , au::str(cronometer.seconds() ,"s").c_str() ));
+
 }
 
 void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
 
-  AU_M(logs.background_process, ("generateKeyValues_parser task %lu" , id() ) );
+  LOG_M(logs.background_process, ("generateKeyValues_parser task %lu" , id() ) );
   
   // Run the generator over the ProcessWriter to emit all key-values
   Parser *parser = (Parser *) operation_->getInstance();

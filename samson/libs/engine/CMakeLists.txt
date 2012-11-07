@@ -1,4 +1,5 @@
 SET (HEADERS
+Logs.h
 NotificationListener.h
 NotificationListenersManager.h
 Buffer.h
@@ -18,6 +19,7 @@ DiskOperation.h
 )
 
 SET (SOURCES
+Logs.cpp
 NotificationListener.cpp
 NotificationListenersManager.cpp
 Buffer.cpp

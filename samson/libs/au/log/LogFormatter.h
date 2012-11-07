@@ -16,7 +16,7 @@ class LogFormatter {
 public:
 
   // Constructor with initial format
-  LogFormatter(const std::string& definition = AU_LOG_DEFAULT_FORMAT , bool color = false );
+  LogFormatter(const std::string& definition = LOG_DEFAULT_FORMAT , bool color = false );
 
   // Modify the format used here
   void SetFormat(const std::string& definition , bool color = false );

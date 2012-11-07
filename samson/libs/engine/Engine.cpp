@@ -28,11 +28,11 @@
 
 #include "Notification.h"         // engine::Notification
 
+#include "engine/Logs.h"
 #include "engine/DiskOperation.h"  // engine::DiskOperation
 #include "engine/EngineElement.h"  // engine::EngineElement
 #include "engine/NotificationElement.h"       // engine::EngineNotificationElement
 #include "engine/ProcessItem.h"   // engine::ProcessItem
-
 #include "engine/DiskManager.h"
 #include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
@@ -110,7 +110,6 @@ Engine::Engine() {
 
   engine_element_collection_.Add(element);
 
-  LM_T(LmtEngine, ("Running engine in background..."));
   quitting_thread_ = false;
   if (au::Singleton<au::ThreadManager>::shared()->addNonDetachedThread("Engine", &thread_id_, 0, runEngineBackground,
                                                                        NULL) == 0)
@@ -138,7 +137,7 @@ void Engine::RunElement(EngineElement *running_element) {
   activity_monitor_.StartActivity(running_element->name());
 
   // Execute the item selected as running_element
-  LM_T(LmtEngineTime, ("[START] Engine:  executing %s", running_element->str().c_str()));
+  LOG_M( logs.engine, ("[START] Engine:  executing %s", running_element->str().c_str()));
 
   // Print traces for debugging strange situations
   int waiting_time = running_element->GetWaitingTime();
@@ -166,14 +165,15 @@ void Engine::RunElement(EngineElement *running_element) {
     }
   }
 
-  LM_T(LmtEngineTime, ("[DONE] Engine:  executing %s", running_element->str().c_str()));
+  LOG_M( logs.engine , ("[DONE] Engine:  executing %s", running_element->str().c_str()));
 
   // Collect information about this execution
   activity_monitor_.StartActivity("engine_management");
 }
 
 void Engine::RunMainLoop() {
-  LM_T(LmtEngine, ("Engine run"));
+  
+  LOG_M( logs.engine, ("Engine run"));
 
   counter_ = 0;                // Init the counter to elements managed by this run-time
 
@@ -188,13 +188,13 @@ void Engine::RunMainLoop() {
 
     // Check if there are elements in the list
     if (engine_element_collection_.IsEmpty()) {
-      LM_T(LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
+      LOG_D( logs.engine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
       return;
     }
 
     // Warning if we have a lot of elements in the engine stack
     size_t num_engine_elements = engine_element_collection_.GetNumEngineElements();
-    LM_T(LmtEngine, ("Number of elements in the engine stack %lu", num_engine_elements ));
+    LOG_D( logs.engine, ("Number of elements in the engine stack %lu", num_engine_elements ));
 
     if (num_engine_elements > 10000) {
       LM_W(("Execesive number of elements in the engine stack %lu", num_engine_elements ));    // ------------------------------------------------------------------------------------
@@ -235,14 +235,14 @@ void Engine::RunMainLoop() {
     // If normal elements to be executed, do not sleep
     size_t num_normal_elements =  engine_element_collection_.GetNumNormalEngineElements();
     if (num_normal_elements > 0) {
-      LM_T(LmtEngine, ("Do not sleep since it seems there are %lu elements in the engine",
+      LOG_D( logs.engine, ("Do not sleep since it seems there are %lu elements in the engine",
                        num_normal_elements));
       continue;         // Do not sleep here
     }
 
     // If next repeated elements is close, do not sleep
     double t_next_repeated_elements = engine_element_collection_.TimeForNextRepeatedEngineElement();
-    LM_T(LmtEngine, ("Engine: Next repeated item in %.2f secs ...", t_next_repeated_elements));
+    LOG_D( logs.engine, ("Engine: Next repeated item in %.2f secs ...", t_next_repeated_elements));
     if (t_next_repeated_elements < 0.01) {
       continue;
     }

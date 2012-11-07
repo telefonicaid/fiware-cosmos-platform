@@ -28,13 +28,13 @@ char filter[1024];
 char file_name[1024];
 
 #define LOC     "localhost"
-#define LS_PORT AU_LOG_SERVER_QUERY_PORT
+#define LS_PORT LOG_SERVER_DEFAULT_CLIENT_PORT
 
 
 PaArgument paArgs[] =
 {
   { "-host",   host,     "",  PaString,        PaOpt,  _i "localhost", PaNL,PaNL,"Log server hostname"  },
-  { "-format", format,   "",  PaString, PaOpt, _i AU_LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL, "Formats of the logs at the output" },
+  { "-format", format,   "",  PaString, PaOpt, _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL, "Formats of the logs at the output" },
   { "-filter", filter,   "",  PaString, PaOpt, _i "", PaNL,  PaNL, "Filter for logs"                   },
   { "-save"  , file_name,"", PaString, PaOpt, _i "",  PaNL, PaNL,"Save received logs to file" },
   PA_END_OF_ARGS

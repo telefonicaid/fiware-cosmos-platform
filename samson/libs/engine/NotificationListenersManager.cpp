@@ -13,8 +13,9 @@
 #include "logMsg/logMsg.h"      // LM_M
 #include "logMsg/traceLevels.h"  // LmtEngineNotification
 
-#include "Notification.h"       // engine::Notification
-#include "NotificationListener.h"             // engine::NotificationListener
+#include "engine/Logs.h"
+#include "engine/Notification.h"       // engine::Notification
+#include "engine/NotificationListener.h"             // engine::NotificationListener
 
 #include "NotificationListenersManager.h"     // Own interface
 
@@ -37,13 +38,13 @@ void NotificationListenersManager::Add(NotificationListener *o) {
   // Adding object to the general map by id
   objects_.insertInMap(o->engine_id_, o);
 
-  LM_T(LmtEngineNotification, ("Add object %p for id %lu", o, o->engine_id_ ));
+  LOG_D( logs.notifications, ("Add object %p for id %lu", o, o->engine_id_ ));
 }
 
 void NotificationListenersManager::Remove(NotificationListener *o) {
   au::TokenTaker tt(&token_);
 
-  LM_T(LmtEngineNotification, ("Remove completely object %lu", o, o->engine_id_  ));
+  LOG_D( logs.notifications, ("Remove completely object %lu", o, o->engine_id_  ));
   objects_.extractFromMap(o->engine_id_);
 
   au::map< const char *, IdsCollection, au::strCompare >::iterator c;
@@ -55,14 +56,14 @@ void NotificationListenersManager::Remove(NotificationListener *o) {
 void NotificationListenersManager::AddToChannel(NotificationListener *o, const char *name) {
   au::TokenTaker tt(&token_);
 
-  LM_T(LmtEngineNotification, ("Add object %lu to channel %s", o->engine_id_, name ));
+  LOG_D( logs.notifications, ("Add object %lu to channel %s", o->engine_id_, name ));
   GetListenersForChannel(name)->add(o->engine_id_);
 }
 
 void NotificationListenersManager::RemoveFromChannel(NotificationListener *o, const char *name) {
   au::TokenTaker tt(&token_);
 
-  LM_T(LmtEngineNotification, ("Remove object %lu to channel %s", o->engine_id_, name ));
+  LOG_D( logs.notifications, ("Remove object %lu to channel %s", o->engine_id_, name ));
   GetListenersForChannel(name)->remove(o->engine_id_);
 }
 

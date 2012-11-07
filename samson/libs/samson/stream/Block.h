@@ -66,7 +66,7 @@ class Block {
 
     // Get Accessorrs
     BlockState state();
-    au::SharedPointer<KVFile> getKVFile(au::ErrorManager& error);
+    au::SharedPointer<KVFile> getKVFile(au::ErrorManager& error , bool retain );
     std::string file_name();
     int priority();
     size_t creation_time();

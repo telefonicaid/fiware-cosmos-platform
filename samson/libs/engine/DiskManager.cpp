@@ -19,6 +19,7 @@
 #include "au/ThreadManager.h"
 #include "au/string/xml.h"               // au::xml...
 
+#include "engine/Logs.h"
 #include "engine/DiskManager.h"   // Own interface
 #include "engine/DiskOperation.h"  // engine::DiskOperation
 #include "engine/Engine.h"        // engine::Engine
@@ -52,7 +53,7 @@ void DiskManager::CreateThreads() {
 
   // Create as many workers as necessary
   while (num_disk_manager_workers_ < max_num_disk_operations_) {
-    LM_T(LmtEngineDiskManager, ("create threads %d/%d", num_disk_manager_workers_, max_num_disk_operations_));
+    LOG_D( logs.disk_manager, ("create threads %d/%d", num_disk_manager_workers_, max_num_disk_operations_));
 
     num_disk_manager_workers_++;
 
@@ -65,7 +66,7 @@ void DiskManager::CreateThreads() {
     }
   }
 
-  LM_T(LmtEngineDiskManager, ("created %d threads", num_disk_manager_workers_));
+  LOG_D( logs.disk_manager, ("created %d threads", num_disk_manager_workers_));
 }
 
 DiskManager::~DiskManager() {
@@ -140,7 +141,7 @@ void DiskManager::FinishDiskOperation(const au::SharedPointer<engine::DiskOperat
   }
   if (operation->getType() == DiskOperation::append) {
     rate_out_.Push(operation->getSize());
-  } LM_T(LmtDisk,
+  } LOG_D( logs.disk_manager,
       ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s",
           operation->fileName.c_str()));
 
@@ -151,7 +152,7 @@ void DiskManager::FinishDiskOperation(const au::SharedPointer<engine::DiskOperat
   notification->AddEngineListeners(operation->listeners);
   notification->environment().Add(operation->environment);   // Recover the environment variables to identify this request
 
-  LM_T(LmtDisk,
+  LOG_D( logs.disk_manager,
       ("DiskManager::finishDiskOperation notification sent on file:%s and ready to share and checkDiskOperations",
           operation->fileName.c_str()));
   Engine::shared()->notify(notification);
@@ -184,12 +185,12 @@ int DiskManager::num_disk_manager_workers() const {
 
 // Check if we can run more disk operations
 void DiskManager::run_worker() {
-  LM_T(LmtEngineDiskManager, ("Running worker...", num_disk_manager_workers_));
+  LOG_D( logs.disk_manager, ("Running worker...", num_disk_manager_workers_));
 
   while (true) {
     // If quitting or too many workers... just quit.
     if (quitting_ || (num_disk_manager_workers_ > max_num_disk_operations_)) {
-      LM_T(LmtEngineDiskManager, ("Quitting worker...", num_disk_manager_workers_));
+      LOG_D( logs.disk_manager, ("Quitting worker...", num_disk_manager_workers_));
       au::TokenTaker tt(&token_);
       num_disk_manager_workers_--;
       return;

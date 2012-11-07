@@ -96,6 +96,7 @@ class SamsonWorker : public engine::NotificationListener, public au::Console {
     // Function to get information about current status
     au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization);
     au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization);
+    au::SharedPointer<gpb::Collection> GetWorkerAllLogChannels(const Visualization& visualization);
     au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
     au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
 
@@ -157,6 +158,9 @@ class SamsonWorker : public engine::NotificationListener, public au::Console {
     bool modules_available_;        // Flag to determine if blocks for modules are available
     size_t last_modules_version_;   // Last version of the queue .modules observed so far
 
+  // Cronometer for last candidate data model
+  au::Cronometer cronometer_candidate_data_model_;
+  
   // Visualitzation of current data model
   void fill( gpb::CollectionRecord *record , const std::string& name, gpb::Data* data, const Visualization& visualization );
   

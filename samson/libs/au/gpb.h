@@ -59,7 +59,7 @@ struct GPBHeader {
 
 template <class T>
 au::Status readGPB(int fd, T **t, int time_out) {
-  AU_M(logs.gpb, ("Reading a GPB message from fd:%d with timeout %d", fd, time_out ));
+  LOG_M(logs.gpb, ("Reading a GPB message from fd:%d with timeout %d", fd, time_out ));
 
   Status iom = iomMsgAwait(fd, time_out);     // Wait until this is ready
 
@@ -74,7 +74,7 @@ au::Status readGPB(int fd, T **t, int time_out) {
       return iom;
     }
   }
-  AU_M(logs.gpb, ("readGPB(): iomMsgAwait returned OK on fd:%d", fd));
+  LOG_M(logs.gpb, ("readGPB(): iomMsgAwait returned OK on fd:%d", fd));
 
   GPBHeader header;
   int nb = read(fd, &header, sizeof(header));
@@ -139,7 +139,7 @@ au::Status readGPB(int fd, T **t, int time_out) {
 
 template <class T>
 Status writeGPB(int fd, T *t) {
-  AU_M(logs.gpb, ("Writing a GPB message to fd:%d ( Size:%d )", fd, (int)t->ByteSize()));
+  LOG_M(logs.gpb, ("Writing a GPB message to fd:%d ( Size:%d )", fd, (int)t->ByteSize()));
 
   if (!t->IsInitialized()) {
     return GPB_NotInitializedMessage;

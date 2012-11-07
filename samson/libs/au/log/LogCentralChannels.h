@@ -16,19 +16,21 @@ public:
   LogCentralChannels();
   ~LogCentralChannels(){}
 
-  int RegisterChannel(const std::string& name );
+  int RegisterChannel(const std::string& name , const std::string& description );
   std::vector<int> Get(const std::string& str_pattern);  // Commands to activate or dactivate channels
 
   bool IsRegistered( int channel );
   int num_channels() const;
   int channel( const std::string name );
   std::string channel_name(int c);
+  std::string channel_description(int c);
   std::string GetAllChannels()const;
 
 private:
 
   // Names for each channel
-  std::string names_[AU_LOG_MAX_CHANNELS];
+  std::string names_[LOG_MAX_CHANNELS];
+  std::string descriptions_[LOG_MAX_CHANNELS];
 
   // Number of currently defined channels
   int num_log_channels_;

@@ -113,7 +113,7 @@ class DefragTask : public WorkerTaskBase {
       samson_worker_ = samson_worker;
         queue_name_ = queue_name;
         ranges_ = ranges;
-        AU_SW( ("DEFRAG over ranges %s" , ::samson::str(ranges_).c_str() ));
+        LOG_SW( ("DEFRAG over ranges %s" , ::samson::str(ranges_).c_str() ));
     }
 
     // Virtual method from engine::ProcessItem

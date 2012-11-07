@@ -11,7 +11,7 @@ namespace au {
   {
     std::ostringstream output;
     
-    for ( int c = 0 ; c < AU_LOG_MAX_CHANNELS ; c++ )
+    for ( int c = 0 ; c < LOG_MAX_CHANNELS ; c++ )
     {
       if( !log_central.log_channels().IsRegistered(c) )
         continue;

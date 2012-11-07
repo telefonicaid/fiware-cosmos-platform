@@ -103,6 +103,7 @@ class WorkerTaskBase : public engine::ProcessItem {
     // For statistics
     void setActivity( const std::string& name );
     std::string GetActivitySummary();
+  std::string GetProcessSummary();
   
   protected:
     // Container for all input/output blocks

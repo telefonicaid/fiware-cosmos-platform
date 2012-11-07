@@ -20,8 +20,8 @@ class LogCentralChannelsFilter {
 public:
 
   LogCentralChannelsFilter() {
-    for (int i = 0; i < AU_LOG_MAX_CHANNELS; i++) {
-      channels_level_[i] = AU_LOG_WARNING; // Warning and Errors by default
+    for (int i = 0; i < LOG_MAX_CHANNELS; i++) {
+      channels_level_[i] = LOG_LEVEL_WARNING; // Warning and Errors by default
     }
   }
 
@@ -29,7 +29,7 @@ public:
     if (channel < 0) {
       return 0;
     }
-    if( channel >= AU_LOG_MAX_CHANNELS )
+    if( channel >= LOG_MAX_CHANNELS )
       return 0;
     
     return channels_level_[channel];
@@ -39,7 +39,7 @@ public:
     if (channel < 0) {
       return;
     }
-    if( channel >= AU_LOG_MAX_CHANNELS )
+    if( channel >= LOG_MAX_CHANNELS )
       return;
     channels_level_[channel] = level;
   }
@@ -59,7 +59,7 @@ public:
   
 private:
 
-  int channels_level_[AU_LOG_MAX_CHANNELS];
+  int channels_level_[LOG_MAX_CHANNELS];
 };
 }  // end namespace au
 

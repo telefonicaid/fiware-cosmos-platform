@@ -9,16 +9,17 @@ namespace au {
     num_log_channels_ = 0;
     
     // Generic log channels
-    RegisterChannel("system");
+    RegisterChannel("system" , "System channel");
   };
   
-  int LogCentralChannels::RegisterChannel(const std::string& name ) {
+  int LogCentralChannels::RegisterChannel(const std::string& name , const std::string& description ) {
     names_[num_log_channels_] = name;   // Copy the name for debugging
+    descriptions_[num_log_channels_] = description;   // Copy the name for debugging
     return num_log_channels_++;
   }
   
   int LogCentralChannels::channel(const std::string name) {
-    for (int i = 0; i < AU_LOG_MAX_CHANNELS; i++) {
+    for (int i = 0; i < LOG_MAX_CHANNELS; i++) {
       if (names_[i] == name) {
         return i;
       }
@@ -47,6 +48,17 @@ namespace au {
     
     return names_[c];
   }
+  std::string LogCentralChannels::channel_description(int c) {
+    if (c < 0) {
+      return "?";
+    }
+    if (c >= num_log_channels_) {
+      return "?";
+    }
+    
+    return descriptions_[c];
+  }
+
   
   // Commands to activate or dactivate channels
   std::vector<int> LogCentralChannels::Get(const std::string& str_pattern) {
@@ -57,7 +69,7 @@ namespace au {
     SimplePattern pattern(str_pattern);
     
     // Search for channels
-    for (int i = 0; i < AU_LOG_MAX_CHANNELS; i++) {
+    for (int i = 0; i < LOG_MAX_CHANNELS; i++) {
       if (names_[i].length() > 0) {
         if (pattern.match(names_[i])) {
           channels.push_back(i);

@@ -11,7 +11,7 @@
 namespace au {
 class LogCentralPluginScreen : public LogCentralPlugin {
 public:
-  LogCentralPluginScreen(const std::string& format_definition = AU_LOG_DEFAULT_FORMAT, bool output_stderror = false)
+  LogCentralPluginScreen(const std::string& format_definition = LOG_DEFAULT_FORMAT, bool output_stderror = false)
     : LogCentralPlugin("Screen")
       , log_formatter_(format_definition) {
     output_stderror_ = output_stderror;

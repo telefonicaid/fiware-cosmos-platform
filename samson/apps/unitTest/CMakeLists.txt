@@ -110,6 +110,9 @@ SET (SOURCES
 	lib/samson/common/SamsonSetupTest.cpp 
 	lib/samson/common/SamsonFileTest.cpp
 
+	lib/samson/common/EnvironmentOperationsTest.cpp
+	lib/samson/common/KVFileTest.cpp
+
 	# SAMSOM WORKER LIBRARY
 	lib/samson/worker/SamsonWorkerTest.cpp
 

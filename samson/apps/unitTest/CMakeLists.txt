@@ -145,7 +145,6 @@ SET (STATIC_LIBS
      pa
      lm
      engine
-	 zoo
      protobuf
      pthread
      samson_system
@@ -162,6 +161,7 @@ SET (STATIC_LIBS
      xmlparser  
      curses
      dl
+     zoo
      ${COMMON_SAMSON_LIBS}
 )
 

@@ -40,7 +40,13 @@ namespace samson {
     }
     virtual ~DataModel() {}
 
-    // ZooNodeCommiter<gpb::Data>
+
+    // ZooNodeCommiter<gpb::DataModel>
+    virtual void NotificationNewModel(int previous_version
+                                      , au::SharedPointer<gpb::DataModel> previous_data
+                                      , int version
+                                      , au::SharedPointer<gpb::DataModel> new_data );
+    
     virtual void PerformCommit(au::SharedPointer<gpb::DataModel>, std::string command, int version, au::ErrorManager&);
   
     // Check if this command can be process by this element
@@ -73,6 +79,8 @@ namespace samson {
     // Get list of the last commits
     au::SharedPointer<gpb::Collection> GetLastCommitsCollection(const Visualization& visualization);
   
+
+    
   private:
   
   // Default path in ZK for this information

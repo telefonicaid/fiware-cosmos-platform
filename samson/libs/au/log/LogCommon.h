@@ -5,6 +5,8 @@
 
 
 #include <string>
+#include <pthread.h>
+#include <string.h>
 
 // Channel definition
 #define LOG_MAX_CHANNELS              1024
@@ -36,33 +38,37 @@
 
 // MACROS TO EMIT LOGS
 
-#define LOG_GENERATE( l, c, s)                                                    \
-  do {                                                                            \
-    if (au::log_central.IsLogAccepted(c,l))                                       \
-    {                                                                             \
-      au::Log log;                                                                \
-      log.Set("text", au::str s);                                                 \
-      log.Set("function", __FUNCTION__);                                          \
-                                                                                  \
-      std::string file = __FILE__;                                                \
-      size_t pos = file.find_last_of('/');                                        \
-      if (pos == std::string::npos) {                                             \
-        log.Set("file", file); }                                                  \
-      else {                                                                      \
-        log.Set("file", file.substr(pos + 1)); }                                  \
-                                                                                  \
-      au::LogData& log_data = log.log_data();                                     \
-      log_data.level = l;                                                         \
-      log_data.line = __LINE__;                                                   \
-      log_data.channel = c;                                                       \
-      log_data.tv.tv_sec = time(NULL);                                            \
-      log_data.tv.tv_usec = 0;                                                    \
-      log_data.timezone = 0;                                                      \
-      log_data.pid = getpid();                                                    \
-                                                                                  \
-      au::log_central.Emit(&log);                                                 \
-    }                                                                             \
-  } while (0)                                                                     \
+#define LOG_GENERATE( l, c, s)                                                              \
+  do {                                                                                      \
+    if (au::log_central.IsLogAccepted(c,l))                                                 \
+    {                                                                                       \
+      au::Log log;                                                                          \
+      log.Set("text", au::str s);                                                           \
+      log.Set("function", __FUNCTION__);                                                    \
+                                                                                            \
+      std::string file = __FILE__;                                                          \
+      size_t pos = file.find_last_of('/');                                                  \
+      if (pos == std::string::npos) {                                                       \
+        log.Set("file", file); }                                                            \
+      else {                                                                                \
+        log.Set("file", file.substr(pos + 1)); }                                            \
+                                                                                            \
+      au::LogData& log_data = log.log_data();                                               \
+      log_data.level = l;                                                                   \
+      log_data.line = __LINE__;                                                             \
+      log_data.channel = c;                                                                 \
+      log_data.tv.tv_sec = time(NULL);                                                      \
+      log_data.tv.tv_usec = 0;                                                              \
+      log_data.timezone = 0;                                                                \
+      log_data.pid = getpid();                                                              \
+                                                                                            \
+      ::pthread_t t = ::pthread_self();                                                     \
+      log_data.tid = 0;                                                                     \
+      ::memcpy( &log_data.tid , &t , std::min( sizeof(log_data.tid) , sizeof( pthread_t) ) );\
+                                                                                            \
+      au::log_central.Emit(&log);                                                           \
+    }                                                                                       \
+  } while (0)                                                                               \
 
 // General macros to emit logs for a channel
 

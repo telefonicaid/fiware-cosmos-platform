@@ -26,6 +26,7 @@ char format[1024];
 char host[1024];
 char filter[1024];
 char file_name[1024];
+bool no_color;
 
 #define LOC     "localhost"
 #define LS_PORT LOG_SERVER_DEFAULT_CLIENT_PORT
@@ -37,6 +38,7 @@ PaArgument paArgs[] =
   { "-format", format,   "",  PaString, PaOpt, _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL, "Formats of the logs at the output" },
   { "-filter", filter,   "",  PaString, PaOpt, _i "", PaNL,  PaNL, "Filter for logs"                   },
   { "-save"  , file_name,"", PaString, PaOpt, _i "",  PaNL, PaNL,"Save received logs to file" },
+  { "-no_color" , &no_color,"", PaBool, PaOpt, false,  false, true,"No colored output" },
   PA_END_OF_ARGS
 };
 
@@ -88,7 +90,7 @@ int logFd = -1;
     
     // Log Probe to get logs and print on screen...
     au::LogProbe log_probe;
-    log_probe.AddPlugin("printer", new au::LogProbePriter(format) );
+    log_probe.AddPlugin("printer", new au::LogProbePriter(format , !no_color , false ) );
     if( strlen( file_name) > 0 )
     {
       au::ErrorManager error;

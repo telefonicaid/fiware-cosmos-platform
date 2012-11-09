@@ -10,7 +10,7 @@ namespace samson {
   {
     BlockId id;
     id.uint64 = block_id;
-    return au::str("%d_%d" , id.uint32[0] , id.uint32[1] );
+    return au::str("B_%d_%d" , id.uint32[0] , id.uint32[1] );
   }
 
 }

@@ -370,6 +370,15 @@ void WorkerCommand::Run() {
     return;
   }
 
+  if (main_command == "ls_block_defrags") {
+    au::SharedPointer<gpb::Collection> c =
+    samson_worker_->worker_block_manager()->GetCollectionForBlockDefrags(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
+  
   if (main_command == "ls_blocks") {
     au::SharedPointer<gpb::Collection> c = stream::BlockManager::shared()->GetCollectionOfBlocks(visualization);
     c->set_title(command_);

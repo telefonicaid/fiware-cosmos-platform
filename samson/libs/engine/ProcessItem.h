@@ -99,6 +99,11 @@ class ProcessItem {
       return running_cronometer_.seconds();
     }
 
+  double GetTotalTime()
+  {
+    return cronometer_.seconds();
+  }
+  
   protected:
     // Interface to monitor operations performance
     void set_progress(double p);
@@ -123,6 +128,9 @@ class ProcessItem {
     au::CronometerSystem waiting_cronometer_;
     au::CronometerSystem running_cronometer_;
 
+  // Global time
+  au::Cronometer cronometer_;
+  
     // Identifiers of the listeners that should be notified when operation is finished
     std::set<size_t> listeners_;
 

@@ -79,6 +79,9 @@ class ZooNodeCommiter : public engine::NotificationListener {
       // Get data from zk
       GetDataFromZooNode();
   
+        // No version when eveything start
+        version_ = -1;
+        
         // Identifiers for the list of commits
         last_commits_id_ = 1;
     }
@@ -92,14 +95,25 @@ class ZooNodeCommiter : public engine::NotificationListener {
     PerformCommit(au::SharedPointer<C> c, std::string commit_command, int version, au::ErrorManager& error) = 0;
 
     // Virtual method to be nofitied when and update comes up
-    virtual void NotificationNewModel(int version, au::SharedPointer<C> c) {
+    virtual void NotificationNewModel(int previous_version
+                                      , au::SharedPointer<C> previous_data
+                                      , int version
+                                      , au::SharedPointer<C> new_data ) {
     }
 
-    // Get a duplicated version of the model ( node that C is a GPB message )
+    // Get current data model
     au::SharedPointer<C> getCurrentModel() {
       au::TokenTaker tt(&token_);
       return c_;
     }
+
+  // Get current data model
+  au::SharedPointer<C> getDuplicatedCurrentModel() {
+    au::TokenTaker tt(&token_);
+    au::SharedPointer<C> c( new C() );
+    c->CopyFrom( *c_.shared_object() );
+    return c;
+  }
 
     // virtual method of engine::NotificationListener
     virtual void notify(engine::Notification *notification) {
@@ -127,6 +141,11 @@ class ZooNodeCommiter : public engine::NotificationListener {
       }
     }
 
+  int version()
+  {
+    return version_;
+  }
+  
 protected:
   
   std::list<CommitRecord> last_commits_;
@@ -143,27 +162,54 @@ protected:
         return rc;
       }
 
-      int previous_version = stat_.version;
+      Stat stat;   // zk state for data node
+
       {
         au::TokenTaker tt(&token_);   // Mutex protection
-        rc = zoo_connection_->Get(path_.c_str(), engine_id(), c.shared_object(), &stat_);
+        rc = zoo_connection_->Get(path_.c_str(), engine_id(), c.shared_object(), &stat);
       }
-
+      
       if (rc) {
-        LM_W(("Not possible to get node %s from zk: %s"
+        LOG_W( logs.zoo , ("Not possible to get node %s from zk: %s"
                 , path_.c_str()
                 , zoo::str_error(rc).c_str()));
+        
+        
+        if (( rc == ZC_ERROR_GPB ) || ( rc == ZC_ERROR_GPB_NO_INITIALIZED ))
+        {
+          LOG_E(logs.zoo, ("Serialitzation errors are not allowed in DataCommiter"));
+          LM_X(1, ("Fatal error: Serialitzation error in Data commiter for path %s" , path_.c_str() ));
+        }
         return rc;
       }
 
       // Keep this new data model
-      c_ = c;
+      LOG_M( logs.zoo , ("Update data model in path %s from %d to %d" , path_.c_str() , version_, stat.version ));
 
-      // Check if we have a new version now...
-      if (stat_.version > previous_version) {
-        NotificationNewModel(stat_.version, c_);
+      if( version_ > stat.version )
+      {
+        LOG_E(logs.zoo, ("Major error in data model commiter at path %s. Previous version %d Current Version %d"
+                         , path_.c_str()
+                         , version_
+                         , stat.version ));
+        
+        // Change internal state
+        c_ = c;
+        version_ = stat.version;
+        return 0;
       }
+      
+      // Check if we have a new version now...
+      if( stat.version > version_ )
+      {
+        // Notification for the children classes
+        NotificationNewModel( version_ , c_ , stat.version , c );
 
+        // Change internal state
+        c_ = c;
+        version_ = stat.version;
+      }
+      
       return 0;   // Everything ok
     }
 
@@ -178,9 +224,8 @@ protected:
         trial++;
 
         // If not previous data, load from ZK
-        if( c_ == NULL )
-        {
-          LOG_SW(("Getting data since no previous model" ));
+        if( c_ == NULL ) {
+          LOG_M( logs.zoo , ("Getting data since no previous model" ));
           int rc = GetDataFromZooNode();   // Get data from zk
           if (rc) {
             error.set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
@@ -188,22 +233,37 @@ protected:
           }
         }
 
-        PerformCommit(c_, commit_command, stat_.version, error);   // Real changes on data model
+        // Get a copy of the data model
+        au::SharedPointer<C> c = getDuplicatedCurrentModel();
+        
+        LOG_M( logs.zoo , ("Performing commir %s over path %s" , commit_command.c_str() , path_.c_str() ));
+        PerformCommit(c, commit_command, version_, error);   // Real changes on data model
 
         if (error.IsActivated()) {
-          GetDataFromZooNode();   // Model is recovered from zk to make sure it is not affected
-          return;   // No commit is done
+          return; // If error in the operation itself, No commit is done at all
         }
 
         // Try to commit
-        int rc = zoo_connection_->Set(path_.c_str(), c_.shared_object(), stat_.version);
+        int rc = zoo_connection_->Set(path_.c_str(), c.shared_object(), version_ );
 
         if (rc == ZBADVERSION) {
-          // Wrong version ( this means another commit was accepted first )
-          int rc = GetDataFromZooNode();   // Get data from zk
           
+          LOG_M( logs.zoo , ("%d is the wrong version for %s: This mean another worker has commited first"
+                             , version_
+                             , path_.c_str() ));
+          
+          // Wrong version ( this means another commit was accepted first )
+          int previous_version = version_;
+          int rc = GetDataFromZooNode();   // Get data from zk
           if (rc) {
             error.set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
+            return;
+          }
+          
+          if( version_ <= previous_version )
+          {
+            error.set(au::str("Error in DataCommit: Version %d was rejected and not updated from ZK ( new version %d )"
+                              , previous_version, version_ ));
             return;
           }
           
@@ -211,6 +271,7 @@ protected:
         }
 
         if (rc) {
+          // Any other error cancel this operation
           error.set(au::str("Error with ZK: %s ", zoo::str_error(rc).c_str()));
           return;
         }
@@ -223,11 +284,11 @@ protected:
       GetDataFromZooNode();
     }
 
-    Stat stat_;   // zk state for data node
-    au::SharedPointer<C> c_;   // Current data
-    std::string path_;   // Path to commit in the zk
+    au::SharedPointer<C> c_;            // Current data
+    std::string path_;                  // Path to commit in the zk
     zoo::Connection *zoo_connection_;   // zk conneciton to keep sync
-    au::Token token_;   // Mutex protection
+    au::Token token_;                   // Mutex protection
+    int version_;
 
     int last_commits_id_;
 };

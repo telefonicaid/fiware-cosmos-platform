@@ -27,8 +27,8 @@ au::SharedPointer<BlockReader> BlockReader::create(BlockRef *block_ref, int chan
     return au::SharedPointer<BlockReader>(NULL);
   }
 
-  // Create the kv_file
-  block_reader->kv_file_ = KVFile::create(block->buffer(), error);
+  // Get the KVFile
+  block_reader->kv_file_ = block_ref->file();
 
   if (error.IsActivated()) {
     return au::SharedPointer<BlockReader>(NULL);

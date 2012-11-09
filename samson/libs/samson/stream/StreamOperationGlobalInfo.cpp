@@ -25,9 +25,10 @@
 namespace samson {
 namespace stream {
 
-StreamOperationGlobalInfo::StreamOperationGlobalInfo(SamsonWorker *samson_worker, size_t stream_operation_id,
-                                                     const std::string& stream_operation_name,
-                                                     const std::vector<KVRange>& ranges) {
+StreamOperationGlobalInfo::StreamOperationGlobalInfo( SamsonWorker *samson_worker
+                                                     , size_t stream_operation_id
+                                                     , const std::string& stream_operation_name
+                                                     , const std::vector<KVRange>& ranges ) {
   samson_worker_ = samson_worker;
   stream_operation_id_ = stream_operation_id;
   stream_operation_name_ = stream_operation_name;

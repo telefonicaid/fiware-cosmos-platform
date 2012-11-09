@@ -121,6 +121,7 @@ void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids
 
     // Do not remove blocks while reading or writing...
     if (!block->canBeRemoved()) {
+      LOG_D(logs.block_manager,("Block %s is not removed althougth it is not part of current data-model" , str_block_id(block_id).c_str() ));
       it++;
       continue;
     }
@@ -133,6 +134,7 @@ void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids
     engine::BufferPointer buffer = block->buffer();
     if (buffer != NULL)
       buffer->RemoveTag("block_manager");
+    LOG_D(logs.block_manager,("Block %s is removed since it is not part of data model" , str_block_id(block_id).c_str() ));
   }
 }
 
@@ -206,6 +208,8 @@ void BlockManager::notify(engine::Notification *notification) {
 void BlockManager::Review() {
   au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
 
+  LOG_D(logs.block_manager, ("Review starts...."));
+  
   // Internal consistency
   if (blocks_.size() != block_ids_.size())
     LM_X(1, ("Internal error in BLockManager: Different number of blocks and blocks ids (%lu != %lu)"
@@ -370,6 +374,10 @@ au::SharedPointer<gpb::Collection> BlockManager::GetCollectionOfBlocks(const Vis
   for (b = block_ids_.begin(); b != block_ids_.end(); b++) {
     // Considering this block
     size_t block_id = *b;
+
+    if( !visualization.match( str_block_id(block_id) ) )
+      continue;
+    
     BlockPointer block = blocks_.Get(block_id);
 
     accumulated_size += block->getSize();

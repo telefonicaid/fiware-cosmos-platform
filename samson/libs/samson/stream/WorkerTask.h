@@ -53,7 +53,7 @@ class WorkerTask : public ::samson::ProcessIsolated {
     virtual void generateTXT(TXTWriter *writer);
 
     // Method to process output buffer ( in Engine main thread )
-    void processOutputBuffers();
+    std::vector<size_t> ProcessOutputBuffers();
 
     // Commit command to use when this operation finish
     std::string commit_command();

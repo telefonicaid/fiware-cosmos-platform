@@ -72,9 +72,8 @@ int Connection::Set(const std::string& path, ::google::protobuf::Message *value,
   au::TemporalBuffer buffer(size);
 
   if (!value->SerializeToArray(buffer.data(), size)) {
-    std::string message = value->InitializationErrorString();
-    LM_X(1, ("GPB Serialitzation error for node %s: %s", path.c_str(), message.c_str()));
-
+    LOG_E( logs.zoo, ("GPB Serialitzation error for node %s: %s"
+                      , path.c_str(), value->InitializationErrorString().c_str()));
     return ZC_ERROR_GPB;
   }
 
@@ -126,37 +125,97 @@ int Connection::Get(const std::string& path
   value = line;
   return rc;
 }
-
-int Connection::Get(const std::string& path
-                    , size_t engine_id
-                    , ::google::protobuf::Message *value
-                    , struct Stat *stat) {
-  // Check the size of the buffer
-  struct Stat exist_stat;
-  int rc = Exists(path, &exist_stat);
-
-  if (rc) {
-    return rc;
+  
+  int Connection::Get(const std::string& path, ::google::protobuf::Message *value) {
+    
+    // Get information about state
+    struct Stat stat;
+    int rc = Exists(path, &stat);
+    if (rc) {
+      return rc;
+    }
+    
+    while (true) {
+      
+      // Temporal buffer with teh size colected at stat
+      int buffer_size = stat.dataLength;
+      au::TemporalBuffer buffer(buffer_size);
+      
+      // Get data using temporal buffer ( and collecting data2 to check if version changed )
+      struct Stat stat2;
+      rc = Get(path, buffer.data(), &buffer_size , &stat2);
+      
+      if (rc) {
+        return rc;
+      }
+      
+      if( stat2.version != stat.version )
+      {
+        // Version has changed while reading, get stat again and try again...
+        int rc = Exists(path, &stat);
+        if (rc) {
+          return rc;
+        }
+        continue;
+      }
+      
+      // It is the same version, so let's read and return
+      if ( value->ParseFromArray(buffer.data(), buffer_size) ) {
+        return 0; // OK
+      } else {
+        LOG_E( logs.zoo, ("GPB Serialitzation error for node %s: %s"
+                          , path.c_str(), value->InitializationErrorString().c_str()));
+        LM_W(("GPB Serialitzation error for node %s: %s", path.c_str(), value->InitializationErrorString().c_str()));
+        return ZC_ERROR_GPB;
+      }
+    }
+    
   }
 
-  int buffer_size = exist_stat.dataLength;
-  au::TemporalBuffer buffer(buffer_size);
+  int Connection::Get(const std::string& path
+                      , size_t engine_id
+                      , ::google::protobuf::Message *value
+                      , struct Stat *stat) {
+    
+    
+    while( true )
+    {
+      // Get information about node
+      struct Stat stat_intern;
+      int rc = Exists(path, &stat_intern);
+      if (rc) {
+        return rc;
+      }
+      
+      // Temporal buffer
+      int buffer_size = stat_intern.dataLength;
+      au::TemporalBuffer buffer(buffer_size);
+      
+      // Get data based on temporal buffer
+      struct Stat stat_intern2;
+      rc = Get(path, engine_id, buffer.data(), &buffer_size, &stat_intern2);
+      
+      if (rc) {
+        return rc;
+      }
+      
+      if( stat_intern2.version != stat_intern.version ){
+        continue;  // Version has changed while reading, get stat again and try again...
+      }
 
-  // Get data
-  rc = Get(path, engine_id, buffer.data(), &buffer_size, stat);
-
-  if (rc) {
-    return rc;
+      // Copy using the provided link
+      if( stat )
+        *stat = stat_intern;
+      
+      // Version is the same, so let's parse and return
+      if ( value->ParseFromArray(buffer.data(), buffer_size) ) {
+        return 0;  // OK
+      } else {
+          LM_W(("GPB error when ParseFromArray for node %s with a buffer of %d bytes", path.c_str(), buffer_size ));
+        return ZC_ERROR_GPB;
+      }
+    }
   }
-
-  bool r = value->ParseFromArray(buffer.data(), buffer_size);
-
-  if (r) {
-    return 0;                     // OK
-  } else {
-    return ZC_ERROR_GPB;
-  }
-}
 
 int Connection::Get(const std::string& path, std::string& value) {
   char line[1024];
@@ -201,34 +260,7 @@ int Connection::Get(const std::string& path, engine::BufferPointer buffer) {
   return rc;
 }
 
-int Connection::Get(const std::string& path, ::google::protobuf::Message *value) {
-  // Check the size of the buffer
-  struct Stat exist_stat;
-  int rc = Exists(path, &exist_stat);
 
-  if (rc) {
-    return rc;
-  }
-
-  int buffer_size = exist_stat.dataLength;
-  au::TemporalBuffer buffer(buffer_size);
-
-  // Get data
-  rc = Get(path, buffer.data(), &buffer_size);
-
-  if (rc) {
-    return rc;
-  }
-
-  bool r = value->ParseFromArray(buffer.data(), buffer_size);
-  if (r) {
-    return 0;                     // OK
-  } else {
-    std::string message = value->InitializationErrorString();
-    LM_X(1, ("GPB Serialitzation error for node %s: %s", path.c_str(), message.c_str()));
-    return ZC_ERROR_GPB;
-  }
-}
 
 int Connection::Exists(const std::string& path, struct Stat *stat) {
   au::TokenTaker tt(&token_);
@@ -353,12 +385,16 @@ int Connection::Create(std::string& path, int flags, engine::BufferPointer buffe
 
 int Connection::Create(std::string& path, int flags, ::google::protobuf::Message *value) {
   if (!value->IsInitialized()) {
+    LOG_E( logs.zoo, ("GPB Serialitzation error for node %s: %s"
+                      , path.c_str(), value->InitializationErrorString().c_str()));
     return ZC_ERROR_GPB_NO_INITIALIZED;
   }
 
   int size = value->ByteSize();
   au::TemporalBuffer buffer(size);
   if (!value->SerializeToArray(buffer.data(), size)) {
+    LOG_E( logs.zoo, ("GPB Serialitzation error for node %s: %s"
+                      , path.c_str(), value->InitializationErrorString().c_str()));
     return ZC_ERROR_GPB;
   }
 
@@ -371,6 +407,8 @@ int Connection::Create(const std::string& path, int flags, ::google::protobuf::M
   au::TemporalBuffer buffer(size);
 
   if (!value->SerializeToArray(buffer.data(), size)) {
+    LOG_E( logs.zoo, ("GPB Serialitzation error for node %s: %s"
+                      , path.c_str(), value->InitializationErrorString().c_str()));
     return ZC_ERROR_GPB;
   }
 

@@ -119,7 +119,7 @@ namespace au {
     
   public:
     
-    LogProbePriter( const std::string& format , bool output_stderr = true ) : log_formatter_(format , true )
+    LogProbePriter( const std::string& format , bool colored , bool output_stderr  ) : log_formatter_(format , colored )
     {
       output_stderr_ = output_stderr;
     }

@@ -121,6 +121,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("threads", "debug", "Show current threads in this delilah");
 
   add("ls_blocks", "debug", "Show a list of data blocks managed by SAMSON nodes");
+  add_string_argument("ls_blocks", "pattern", "*", "Pattern to find specific blocks");
   add_uint64_option("ls_blocks", "-w", (size_t) -1, "Specify a worker to request the list of blocks");
   add_tag("ls_blocks", "send_to_all_workers");
 
@@ -133,6 +134,10 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_block_requests", "debug", "Show current block requests operations in SAMSON nodes");
   add_tag("ls_block_requests", "send_to_all_workers");
 
+  add("ls_block_defrags", "debug", "Show current block defrags operations in all SAMSON nodes");
+  add_tag("ls_block_defrags", "send_to_all_workers");
+  
+  
   add("ls_last_data_commits", "debug", "Show last 100 commits on data model.");
   add_tag("ls_last_data_commits", "send_to_all_workers");
 

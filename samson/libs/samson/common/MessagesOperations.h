@@ -16,6 +16,7 @@
 #include <string>
 
 #include "au/containers/map.h"
+#include "au/containers/Dictionary.h"
 #include "au/containers/SharedPointer.h"
 
 #include "samson/common/samson.pb.h"    // network::
@@ -77,6 +78,32 @@ au::SharedPointer<gpb::Collection> GetCollectionForMap(const std::string& title,
 
   return collection;
 }
+  
+  // Get a collection from a map
+  template<typename K, typename V>
+  au::SharedPointer<gpb::Collection> GetCollectionForDiccionary(const std::string& title
+                                                                , au::Dictionary<K,V> & d
+                                                                , const Visualization& visualization) {
+    // Create a new collection to be returned
+    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+    collection->set_name(title);
+    
+    typename std::map<K, au::SharedPointer<V> >::iterator iter;
+    
+    for (iter = d.begin(); iter != d.end(); ++iter) {
+      // Get pointer to the instance
+      au::SharedPointer<V> v = iter->second;
+      
+      // Create a new record for this instance
+      gpb::CollectionRecord *record = collection->add_record();
+      
+      // Common type to joint queries ls_workers -group type
+      v->fill(record, visualization);
+    }
+    
+    return collection;
+  }
+  
 }
 
 #endif  // ifndef _H_MESSAGES_OPERATIONS

@@ -479,16 +479,27 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
         }
       }
     }
+    
+    // Loop all modules ( I should have all of them )
+    for ( int m = 0 ; m < data->modules_size() ; m++)
+      block_ids.insert(data->modules(m).block_id());
+    
   }
   
   void AddBlockIds( gpb::Data* data , std::set<size_t>& block_ids )
   {
+    // add all blocks from all queues
     for (int q = 0; q < data->queue_size(); q++) {
       const gpb::Queue& queue = data->queue(q);
       for (int b = 0; b < queue.blocks_size(); b++) {
         block_ids.insert(queue.blocks(b).block_id());
       }
     }
+    
+    // Add all blocks for modules
+    for ( int m = 0 ; m < data->modules_size() ; m++)
+      block_ids.insert( data->modules(m).block_id() );
+    
   }
   
   FullKVInfo GetFullKVInfo( gpb::Data* data )

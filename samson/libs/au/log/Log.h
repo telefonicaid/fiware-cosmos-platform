@@ -59,7 +59,7 @@ struct LogData {
   struct timeval tv;      // time since 1970
   int timezone;           // The timezone
   pid_t pid;              // pid of the process
-  pid_t tid;              // Identifier of the thread
+  size_t tid;             // Identifier of the thread ( opaque type over a size_t type )
 };
 
 // Entry in the log

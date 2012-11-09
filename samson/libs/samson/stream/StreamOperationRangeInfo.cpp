@@ -30,11 +30,16 @@ namespace samson {
       
     public:
       
+      InputData()
+      {
+        num_blocks_ = 0;
+      }
+      
       std::string str()
       {
         // Build string to inform about this
         std::ostringstream output;
-        output << "[ ";
+        output << "[ " << au::str(num_blocks_ ,"Bl" ) << " ";
         output << total_info_.str() << " ";
         output << "Ready: " << au::str_percentage( ready_info_.size , total_info_.size );
         output << " ]";
@@ -43,6 +48,7 @@ namespace samson {
       
       void AppendToTotal( double factor , KVInfo info )
       {
+        num_blocks_++;
         total_info_.Append(factor, info);
       }
 
@@ -69,6 +75,7 @@ namespace samson {
       
     private:
       
+      int num_blocks_;
       FullKVInfo total_info_;
       FullKVInfo ready_info_;
       
@@ -353,7 +360,7 @@ namespace samson {
       }
       
       // Decide if the range has to be divided ( only if no tasks are being executed )
-      if( ( worker_task_ == NULL) && ( defrag_task_ == NULL ) )
+      if( ( worker_task_ == NULL) )
       {
         
         // In batch reduce operations, range will be divided if all data (all inputs) for this range is larger than max memory size per task
@@ -372,56 +379,38 @@ namespace samson {
       // Schedule a defrag operation if required and we are not running one
       // ---------------------------------------------------------------------
       
-      if( defrag_task_ != NULL )
-        ReviewCurrentDefragTask();
-      else
+      for (int i = 0; i < stream_operation->inputs_size(); ++i)
       {
-        for (int i = 0; i < stream_operation->inputs_size(); ++i)
-        {
+        std::string input_queue = stream_operation->inputs(i);
+        gpb::Queue* queue = gpb::get_queue(data, input_queue);
+        
+        if (!queue) {
+          continue; // No queue, no problem...
+        }
+        
+        for (int b = 0; b < queue->blocks_size(); ++b) {
+          const gpb::Block& block = queue->blocks(b);
+          KVRange range = block.range();
           
-          std::string input_queue = stream_operation->inputs(i);
-          gpb::Queue* queue = gpb::get_queue(data, input_queue);
-          
-          if (!queue) {
-            continue; // No queue, no problem...
+          if (!range.IsOverlapped(range_)) {
+            continue;   // No problem with this...
           }
           
-          for (int b = 0; b < queue->blocks_size(); ++b) {
-            const gpb::Block& block = queue->blocks(b);
-            KVRange range = block.range();
-            
-            if (!range.IsOverlapped(range_)) {
-              continue;   // we are not interested in this block, no problem with this...
-            }
-            
-            if (range.hg_begin_ < range_.hg_begin_) {
-              continue; // This is not our responsability
-            }
-            
-            if (range.hg_end_ > range_.hg_end_)
-            {
+          if( range_.Includes(range))
+            continue; // This block has no problem since it fits inside my range
 
-              BlockPointer real_block = BlockManager::shared()->GetBlock(block.block_id());
-              KVInfo info(block.size(), block.kvs());
-
-              if( real_block != NULL ) // Local block
-              {
-                std::vector<KVRange> defrag_ranges = stream_operation_global_info_->GetDefragKVRanges();
-                defrag_task_ = new DefragTask(  samson_worker_
-                                              , input_queue
-                                              , samson_worker_->task_manager()->getNewId()
-                                              , defrag_ranges );
-                
-                defrag_task_->AddInput(0, real_block, range, info);
-                samson_worker_->task_manager()->Add( defrag_task_.dynamic_pointer_cast<WorkerTaskBase>() );
-                break;
-              }
-            }
-          }
+          size_t block_id = block.block_id();
+          BlockPointer real_block = BlockManager::shared()->GetBlock(block_id);
+          if( real_block == NULL)
+            continue; // We cannot defrag since it still not in this worker
+          
+          // Add defrag operation
+          std::vector<KVRange> defrag_ranges = stream_operation_global_info_->GetDefragKVRanges();
+          samson_worker_->worker_block_manager()->AddBlockBreak(input_queue, block_id, defrag_ranges);
         }
       }
-      
-      // Check if we can really execute this range
+    
+    // Check if we can really execute this range
       if( reduce_operation && batch_operation && !inputs_data.AreAllInputFullyReady() )
       {
         state_ = "Waiting for all data to be ready";
@@ -466,69 +455,10 @@ namespace samson {
     }
     
     void StreamOperationRangeInfo::ReviewCurrentTask() {
-      
-      if (worker_task_ != NULL) {
-        
-        // Process possibly generated output buffers
-        worker_task_->processOutputBuffers();
-        
-        // If we are running a task, let see if it is finished
-        if (worker_task_->IsWorkerTaskFinished()) {
-
-          
-          // Process outputs generated by this task
-          worker_task_->processOutputBuffers();
-          
-          if (worker_task_->error().IsActivated()) {
-            std::string error_message = worker_task_->error().GetMessage();
-            LOG_M(logs.task_manager, ("Error in task %lu (%s)" , worker_task_->id() , error_message.c_str() ));
-            SetError(error_message);
-            worker_task_ = NULL;
-            return;
-          } else {
-
-            LOG_M(logs.task_manager, ("Commiting task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
-            // Commit changes and release task
-            std::string commit_command = worker_task_->commit_command();
-            std::string caller = au::str("task %lu // %s", worker_task_->worker_task_id(), str().c_str());
-            au::ErrorManager error;
-            samson_worker_->data_model()->Commit(caller, commit_command, error);
-            if (error.IsActivated())
-              SetError(error.GetMessage());
-            
-            worker_task_ = NULL; // Release our copy of this task
-            return;
-          }
-        }
-      }
-    }
-    void StreamOperationRangeInfo::ReviewCurrentDefragTask()
-    {
-      if (defrag_task_ != NULL) {
-        // If we are running a task, let see if it is finished
-        if (defrag_task_->IsWorkerTaskFinished()) {
-          
-          
-          if (defrag_task_->error().IsActivated()) {
-            std::string error_message = worker_task_->error().GetMessage();
-            LOG_M(logs.task_manager, ("Error in defrag task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
-            SetError(error_message);
-            defrag_task_ = NULL;
-            return;
-          } else {
-            // Commit changes and release task
-            LOG_M(logs.task_manager, ("Commiting defrag task %lu (%s)" , worker_task_->id() , worker_task_->str().c_str() ));
-            std::string commit_command = defrag_task_->commit_command();
-            std::string caller = au::str("defrag task %lu // %s", defrag_task_->worker_task_id(), str().c_str());
-            au::ErrorManager error;
-            samson_worker_->data_model()->Commit(caller, commit_command, error);
-            
-            if (error.IsActivated())
-              SetError(error.GetMessage());
-            defrag_task_ = NULL; // Release our copy of this task
-            return;
-          }
-        }
+      if ( (worker_task_ != NULL) && (worker_task_->IsWorkerTaskFinished())) {
+        if ( worker_task_->error().IsActivated() )
+          SetError( worker_task_->error().GetMessage() );
+        worker_task_ = NULL;
       }
     }
     
@@ -682,12 +612,6 @@ namespace samson {
         } else {
           ::samson::add(record, "tasks", "none", "different");
         }
-        
-        if (defrag_task_ != NULL) {
-          ::samson::add(record, "tasks", defrag_task_->str_short() , "different");
-        } else {
-          ::samson::add(record, "tasks", "none", "different");
-        }
         return;
       }
       
@@ -701,12 +625,6 @@ namespace samson {
         ::samson::add(record, "tasks", worker_task_->str_short(), "different");
       } else {
         ::samson::add(record, "tasks", "none", "different");
-      }
-      
-      if (defrag_task_ != NULL) {
-        ::samson::add(record, "defrag", defrag_task_->str_short(), "different");
-      } else {
-        ::samson::add(record, "defrag", "none", "different");
       }
       
       ::samson::add(record, "state", state_, "different,left");

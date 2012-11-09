@@ -15,6 +15,7 @@
 #include "engine/Notification.h"
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/NotificationMessages.h"
+#include "samson/common/Logs.h"
 #include "samson/network/Packet.h"                  // network::Packet
 #include "samson/stream/Block.h"                                  // samson::stream::Block
 #include "samson/stream/BlockList.h"                              // samson::stream::BlockList
@@ -65,8 +66,13 @@ void BlockRequestTask::run() {
     LM_X(1, ("Internal error"));
   }
 
+  LOG_M(logs.block_request, ("Answering block request for %s to workers %s"
+                             , str_block_id(block_id_).c_str()
+                             , au::str(worker_ids_).c_str() ));
+
   // Send a packet to all selected workers
   for (size_t i = 0; i < worker_ids_.size(); ++i) {
+    
     PacketPointer packet(new Packet(Message::BlockRequestResponse));
     packet->set_buffer(block_->buffer());
     packet->message->set_block_id(block_id_);
@@ -76,6 +82,8 @@ void BlockRequestTask::run() {
     engine::Notification *notification = new engine::Notification(notification_send_packet);
     notification->dictionary().Set<Packet> ("packet", packet);
     engine::Engine::shared()->notify(notification);
+    
+    
   }
 }
 

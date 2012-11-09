@@ -267,7 +267,6 @@ au::tables::Table *WorkerCommandDelilahComponent::getTable(au::SharedPointer<gpb
 
   // Select the table with the common criteria
   std::string title = collection->title();
-  LOG_SW(("getTable with %s %s %s %s" , title.c_str() , group_field.c_str() , sort_field.c_str() , filter_field.c_str() ));
   au::tables::Table *selected_table = table->selectTable(title, group_field, sort_field, filter_field, limit);
 
   delete table;

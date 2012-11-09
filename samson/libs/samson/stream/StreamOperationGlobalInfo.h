@@ -73,7 +73,6 @@ namespace samson {
       void Review( gpb::Data *data );
       
       // Accessors
-      au::SharedPointer<WorkerTask> worker_task() const;
       std::string stream_operation_name() const {
         return stream_operation_name_;
       }
@@ -86,8 +85,7 @@ namespace samson {
       
       // Get a record for this element ( tables on delilah )
       void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
-      std::string str();      // Debut string
-      
+      std::string str();  // Debut string
       
       // Get defrag ranges ( all ranges to defrag input data )
       std::vector<KVRange> GetDefragKVRanges();

@@ -38,6 +38,58 @@ namespace samson {
           ++it;
       }
     }
+    
+    
+    // Review all defrag operations
+    {
+      std::vector<std::string> defrag_tasks_names = defrag_tasks_.getKeysVector();
+      std::vector<std::string> defrag_tasks_names_remove;
+      for ( size_t i = 0 ; i < defrag_tasks_names.size() ; i++ )
+      {
+        std::string defrag_task_name = defrag_tasks_names[i];
+        
+        au::SharedPointer<stream::DefragTask> defrag_task = defrag_tasks_.Get(defrag_task_name);
+        
+        if( defrag_task == NULL )
+          continue;
+        
+        // If we are running a task, let see if it is finished
+        if ( defrag_task->IsWorkerTaskFinished())
+        {
+          LOG_M(logs.worker_block_manager, ("Defrag task %s has finish" , defrag_task_name.c_str() ));
+          
+          defrag_tasks_names_remove.push_back( defrag_task_name ); // add key to be removed latter
+          
+          if (defrag_task->error().IsActivated()) {
+            std::string error_message = defrag_task->error().GetMessage();
+            LOG_W(logs.worker_block_manager , ("Error in defrag task %lu:%s (%s)"
+                                               ,defrag_task->id()
+                                               ,defrag_task_name.c_str()
+                                               , error_message.c_str() ));
+          } else {
+            // Commit changes and release task
+            LOG_M(logs.worker_block_manager, ("Commiting defrag task %lu:%s" , defrag_task->id() , defrag_task->str().c_str() ));
+            
+            std::string commit_command = defrag_task->commit_command();
+            std::string caller = au::str("defrag task %lu // %s", defrag_task->worker_task_id(), defrag_task_name.c_str() );
+            au::ErrorManager error;
+            samson_worker_->data_model()->Commit(caller, commit_command, error);
+            
+            if (error.IsActivated())
+              LOG_W(logs.worker_block_manager , ("Error commiting defrag task %lu:%s (%s)"
+                                                 , defrag_task->id()
+                                                 , defrag_task_name.c_str()
+                                                 , error.GetMessage().c_str() ));
+          }
+        }
+      }
+      
+      // Remove finished tasks
+      for ( size_t i = 0 ; i < defrag_tasks_names_remove.size() ; i++ ) {
+        defrag_tasks_.Extract( defrag_tasks_names_remove[i] );
+      }
+      
+    }
   }
   
   size_t WorkerBlockManager::CreateBlock( engine::BufferPointer buffer )
@@ -47,8 +99,8 @@ namespace samson {
     stream::BlockManager::shared()->CreateBlock(block_id, buffer);
     
     LOG_M(logs.worker_block_manager, ("Create block from buffer %s --> %s"
-                                     , buffer->str().c_str()
-                                     , str_block_id(block_id).c_str() ));
+                                      , buffer->str().c_str()
+                                      , str_block_id(block_id).c_str() ));
     
     return block_id;
   }
@@ -57,15 +109,15 @@ namespace samson {
   void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t worker_id , bool error)
   {
     LOG_M(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu error %s)"
-                                     , str_block_id(block_id).c_str()
-                                     , worker_id
-                                     , error?"yes":"no" ));
+                                      , str_block_id(block_id).c_str()
+                                      , worker_id
+                                      , error?"yes":"no" ));
     
     if( error )
     {
       BlockRequest* block_request = block_requests_.findInMap( block_id );
       if( block_request )
-        block_request->GotErrorMessage( worker_id );
+        block_request->NotifyErrorMessage( worker_id );
       return;
     }
     
@@ -79,18 +131,44 @@ namespace samson {
     return GetCollectionForMap("block_requests", block_requests_, visualization);
   }
   
+  au::SharedPointer<gpb::Collection> WorkerBlockManager::GetCollectionForBlockDefrags(const Visualization& visualization) {
+    
+    // Create a new collection to be returned
+    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+    collection->set_name("block_requests");
+    
+    std::map<std::string, au::SharedPointer< stream::DefragTask > >::iterator iter;
+
+    for (iter = defrag_tasks_.begin(); iter != defrag_tasks_.end(); ++iter) {
+
+      // Get pointer to the instance
+      au::SharedPointer<stream::DefragTask> defrag_task = iter->second;
+      
+      // Create a new record for this instance
+      gpb::CollectionRecord *record = collection->add_record();
+      
+      add(record, "name", iter->first, "left,different");
+      add(record , "time" , au::str_time_simple( defrag_task->GetTotalTime()) , "different" );
+      add(record, "info", defrag_task->str() , "left,different");
+      
+    }
+    
+    return collection;
+  }
+  
+  
   void WorkerBlockManager::RequestBlock( size_t block_id ) {
     
     BlockRequest* block_request = block_requests_.findInMap(block_id);
     if (block_request)
     {
-      LOG_M(logs.worker_block_manager, ("Requested block %s.... found in Block Manager!", str_block_id(block_id).c_str() ));
+      LOG_D(logs.worker_block_manager, ("Requested block %s.... Already requested!", str_block_id(block_id).c_str() ));
       return; // already requested
     }
-
+    
     if( block_requests_.findInMap(block_id) )
     {
-      LOG_M(logs.worker_block_manager, ("Requested block %s.... previously requestes and still waiting!", str_block_id(block_id).c_str() ));
+      LOG_D(logs.worker_block_manager, ("Requested block %s.... previously requestes and still waiting!", str_block_id(block_id).c_str() ));
       return;
     }
     
@@ -115,6 +193,41 @@ namespace samson {
     block_requests_.clearMap();
   }
   
+  
+  void WorkerBlockManager::AddBlockBreak( const std::string& queue_name, size_t block_id , const std::vector<KVRange>& ranges )
+  {
+    // Name in the map
+    std::string name = au::str("%s_%s" , queue_name.c_str() , au::str(block_id).c_str() );
+    
+    // If this operation is already scheduled, do nothing
+    if( defrag_tasks_.Get(name) != NULL )
+      return;
+
+    LOG_M(logs.worker_block_manager, ("AddBlockBreak for block %s in queeu %s" , str_block_id(block_id).c_str() , queue_name.c_str()));
+    
+    // Get the block to de defrag
+    stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
+    if( block == NULL )
+    {
+      LOG_W(logs.worker_block_manager, ("BLock %s not found to be defrag. Ignoring..." , str_block_id(block_id).c_str() ));
+      return;
+    }
+    
+    // Create a worker task and schedule
+    size_t task_id = samson_worker_->task_manager()->getNewId();
+    au::SharedPointer<stream::DefragTask> defrag_task;
+    defrag_task.Reset( new stream::DefragTask( samson_worker_ , queue_name ,task_id, ranges ));
+    
+    // Insert in the local map of tasks
+    defrag_tasks_.Set(name, defrag_task );
+    
+    // Add a unique block id
+    defrag_task->AddInput(0, block, block->getKVRange() , block->getKVInfo() );
+    
+    // Schedule task
+    samson_worker_->task_manager()->Add( defrag_task.dynamic_pointer_cast<stream::WorkerTaskBase>() );
+  }
+  
   // Received a message from a delilah
   void WorkerBlockManager::ReceivedPushBlock( size_t delilah_id
                                              , size_t push_id
@@ -122,10 +235,10 @@ namespace samson {
                                              , const std::vector<std::string>& queues) {
     
     LOG_M(logs.worker_block_manager, ("Received a push block (Delilah %s PushId %lu Buffer %s Queues %s)"
-                                     , au::code64_str(delilah_id).c_str()
-                                     , push_id
-                                     , buffer->str().c_str()
-                                     , au::str( queues ).c_str() ));
+                                      , au::code64_str(delilah_id).c_str()
+                                      , push_id
+                                      , buffer->str().c_str()
+                                      , au::str( queues ).c_str() ));
     
     if (buffer == NULL) {
       LOG_W( logs.worker_block_manager, ("Push message without a buffer. This is an error..."));
@@ -198,6 +311,18 @@ namespace samson {
     packet->message->set_push_id(push_id);
     samson_worker_->network()->Send(packet);
     return;
+  }
+  
+  void WorkerBlockManager::RemoveRequestIfNecessary( const std::set<size_t>& all_block_ids )
+  {
+    au::map<size_t, BlockRequest>::iterator iter;
+    for ( iter = block_requests_.begin() ; iter != block_requests_.end() ;  ) {
+      if( all_block_ids.find( iter->second->block_id() ) == all_block_ids.end() ){
+        block_requests_.erase(iter++);        // Remove this request
+      } else {
+        ++iter; // keep request
+      }
+    }
   }
   
 }

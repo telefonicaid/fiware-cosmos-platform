@@ -32,13 +32,23 @@ private:
 class SimplePattern {
 public:
 
-  explicit SimplePattern(const std::string& pattern);
+  explicit SimplePattern(const std::string& pattern = "*" );
   ~SimplePattern() {
   };
 
   // Main function to check match
   bool match(const std::string& value) const;
 
+  void set_pattern( const std::string pattern )
+  {
+    pattern_ = pattern;
+  }
+  
+  std::string pattern() const
+  {
+    return pattern_;
+  }
+  
 private:
 
   std::string pattern_;

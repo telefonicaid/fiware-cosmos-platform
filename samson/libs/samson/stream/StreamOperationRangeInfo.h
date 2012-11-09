@@ -97,7 +97,6 @@ namespace samson {
       
       // Review this stream operation to compute priority rank
       void ReviewCurrentTask( );
-      void ReviewCurrentDefragTask();
       
       // Set error and reset chronometer to count how much time since last error
       void SetError( const std::string error_message )
@@ -127,7 +126,6 @@ namespace samson {
       
       // Pointer to the worker task we have scheduled ( if any )
       au::SharedPointer<WorkerTask> worker_task_;
-      au::SharedPointer<DefragTask> defrag_task_;
       
       // Pointer to samsonWorker to commit finished tasks
       SamsonWorker *samson_worker_;

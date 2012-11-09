@@ -73,12 +73,19 @@ namespace samson {
     return cmd;
   }
   
+  void DataModel::NotificationNewModel(int previous_version
+                                    , au::SharedPointer<gpb::DataModel> previous_data
+                                    , int version
+                                    , au::SharedPointer<gpb::DataModel> new_data ) {
+    LOG_M(logs.data_model, ("Update DataModel from ZK from version %d to version %d" , previous_version , version));
+  }
+
+  
   void DataModel::PerformCommit( au::SharedPointer<gpb::DataModel> data
                                 , std::string command
                                 , int version
                                 , au::ErrorManager& error ) {
     
-    LOG_M(logs.data_model, ("Perform commit: %s (version  %d)" , command.c_str() , version ));
     
     // Analyse input commands
     au::SharedPointer<au::CommandLine> cmd = GetCommandLine();
@@ -117,6 +124,7 @@ namespace samson {
 
     // update the commit_id
     size_t commit_id = data->mutable_current_data()->commit_id();
+    LOG_M(logs.data_model, ("Trying to perform commit over Data model [candidate for %lu] %s (data version  %d)" , commit_id , command.c_str() , version ));
     data->mutable_current_data()->set_commit_id( commit_id+1 );
     
     // Add the commit to the global data model and increase the counter
@@ -1014,10 +1022,8 @@ namespace samson {
     std::set<size_t> block_ids;
     
     AddBlockIds( data_model->mutable_current_data() , block_ids );
-
     if( data_model->has_candidate_data() )
       AddBlockIds( data_model->mutable_candidate_data() , block_ids );
-    
     AddBlockIds( data_model->mutable_previous_data() , block_ids );
     
     return block_ids;

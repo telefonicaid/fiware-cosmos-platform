@@ -173,12 +173,16 @@ namespace samson {
         // Review all internal components
         worker_block_manager_->Review();
         task_manager_->review_stream_operations();
-        
         ReloadModulesIfNecessary();
         
-        // Remove all blocks that are not part of data model
+        // Take a list of all the blocks considered in data model
         std::set<size_t> all_block_ids = data_model_->GetAllBlockIds();
+        
+        // Remove all blocks that are not part of data model
         stream::BlockManager::shared()->RemoveBlocksIfNecessary(all_block_ids);
+        
+        // Remove all block request for blocks not belonging to data model
+        worker_block_manager_->RemoveRequestIfNecessary( all_block_ids );
         
         // Request blocks I am suppouse to have
         std::vector<KVRange> my_ranges = worker_controller_->GetAllMyKVRanges();
@@ -294,12 +298,12 @@ namespace samson {
     if (msgCode == Message::BlockRequest) {
       
       if (!packet->message->has_block_id()) {
-        LM_W(("Received a Message::BlockRequest without block id"));
+        LOG_W( logs.worker , ("Received a Message::BlockRequest without block id"));
         return;
       }
       
       if (packet->from.node_type == DelilahNode) {
-        LM_W(("Received a Message::BlockRequest from a delilah node"));
+        LOG_W( logs.worker , ("Received a Message::BlockRequest from a delilah node"));
         return;
       }
       
@@ -307,10 +311,10 @@ namespace samson {
       size_t worker_id = packet->from.id;
       
       // Schedule operations to send this block to this worker
-      if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
+      if (stream::BlockManager::shared()->GetBlock(block_id) == NULL ) {
         
         // Received a Message::BlockRequest for unknown block
-        
+        LOG_V(logs.block_request, ("Received block request for %s. Unknown block!" , str_block_id(block_id).c_str() ));
         PacketPointer p(new Packet(Message::BlockRequestResponse));
         p->to = packet->from;
         p->message->set_block_id(block_id);
@@ -322,6 +326,7 @@ namespace samson {
       // Add the task for this request
       std::vector<size_t> worker_ids;
       worker_ids.push_back(worker_id);
+      LOG_V(logs.block_request, ("Received block request for %s. Added to task manager!",str_block_id(block_id).c_str()));
       task_manager_->AddBlockRequestTask(block_id, worker_ids);
       return;
     }
@@ -353,14 +358,24 @@ namespace samson {
       if( packet->message->has_error() )
       {
         // If error, notify ....
+        LOG_M(logs.block_request, ("Received block request response for %s from worker %lu with error %s"
+                                   , str_block_id(block_id).c_str()
+                                   , worker_id
+                                   , packet->message->error().message().c_str()
+                                   ));
         worker_block_manager_->ReceivedBlockRequestResponse( block_id , worker_id , true );
         return;
       }
       
       if (packet->buffer() == NULL) {
-        LM_W(("Received a Message::BlockRequestResponse without a buffer. Ignoring..."));
+        LOG_W( logs.block_request, ("Received a Message::BlockRequestResponse without a buffer. Ignoring..."));
         return;
       }
+
+      LOG_M(logs.block_request, ("Received block request response for %s from worker %lu"
+                                 , str_block_id(block_id).c_str()
+                                 , worker_id
+                                 ));
       
       // Add the block to the block manager
       if( stream::BlockManager::shared()->GetBlock(block_id) == NULL )
@@ -802,7 +817,20 @@ namespace samson {
   }
   
   std::string SamsonWorker::getPrompt() {
-    return "SamsonWorker> ";
+    
+    if( worker_controller_ == NULL )
+      return "[Unconnected] SamsonWorker > ";
+    size_t worker_id = worker_controller_->worker_id();
+    if( worker_id == (size_t) -1 )
+      return "[Unconnected] SamsonWorker > ";
+    
+    std::ostringstream output;
+    if( data_model_ != NULL ) {
+      output << "[ DM " << data_model_->version() << " ]";
+    }
+    output << au::str("[%s] SamsonWorker %lu > ", network_->getClusterConnectionStr().c_str() , worker_id );
+    return output.str();
+    
   }
   au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerAllLogChannels(const Visualization& visualization){
     

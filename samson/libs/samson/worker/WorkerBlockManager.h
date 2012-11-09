@@ -43,6 +43,9 @@
 
 namespace samson {
   class SamsonWorker;
+  namespace stream{
+    class DefragTask;
+  }
   
   class WorkerBlockManager {
   public:
@@ -52,15 +55,24 @@ namespace samson {
     }
     ~WorkerBlockManager() {}
     
-    // Create a block adding to the block manager ( output of any operation executed in this worker )
+    /*
+     \brief Create a block adding to the block manager
+     Output of any operation in this worker create blocks using the method
+     */
     size_t CreateBlock( engine::BufferPointer buffer );
-    
-    // Notify that a block request response message has been received
+
+    /*
+     \brief Notify that a block request response message has been received
+     This will effectivelly add a new block to the local block manager
+     */
     void ReceivedBlockRequestResponse(size_t block_id, size_t worker_id , bool error);
 
     // Add block requests
     void RequestBlocks(const std::set<size_t>& pending_block_ids);
     void RequestBlock(size_t block_id);
+
+    // Add a block-break request
+    void AddBlockBreak( const std::string& queue_name, size_t block_id , const std::vector<KVRange>& ranges );
     
     // Review all kind of elements
     void Review();
@@ -74,13 +86,18 @@ namespace samson {
     // General reset command ( worker has disconnected )
     void Reset();
     
+    // Remove request for all blocks not belonmging to data model any more
+    void RemoveRequestIfNecessary( const std::set<size_t>& all_block_ids );
+    
     // Collections for all internal elements
     au::SharedPointer<gpb::Collection> GetCollectionForBlockRequests(const Visualization& visualization);
+    au::SharedPointer<gpb::Collection> GetCollectionForBlockDefrags( const Visualization& visualization);
     
   private:
     
     SamsonWorker *samson_worker_;
     au::map<size_t, BlockRequest> block_requests_;   // Block requests sent by this worker
+    au::Dictionary<std::string, stream::DefragTask > defrag_tasks_;
   };
   
 }

@@ -76,6 +76,11 @@ class WorkerTaskBase : public engine::ProcessItem {
   std::string str_inputs() const;
   std::string str_outputs() const;
   
+  std::string str_block_ids() const
+  {
+    return block_list_container_.str_block_ids();
+  }
+  
   std::string str_short()
   {
     std::ostringstream output;
@@ -117,8 +122,7 @@ class WorkerTaskBase : public engine::ProcessItem {
     // Id of the operation
     size_t id_;
 
-  // Simple task ( not use ProcessManager  to execute it )
-  bool simple_task_;
+  bool simple_task_;  // Simple task ( not use ProcessManager  to execute it )
   
     // Concept
     std::string concept_;

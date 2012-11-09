@@ -8,12 +8,12 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-
+#include <string>
 
 #include "au/string/StringUtilities.h"
 #include "au/string/xml.h"
 
-#include "FullKVInfo.h"  // Own interface
+#include "./FullKVInfo.h"  // Own interface
 
 namespace samson {
 FullKVInfo::FullKVInfo(uint32 _size, uint32 _kvs) {
@@ -116,12 +116,11 @@ std::string FullKVInfo::str() {
 }
 
 std::string FullKVInfo::strDetailed() {
-  return au::str("( %lu kvs [%s] in %lu bytes [%s] )"
-                 , kvs
-                 , au::str(kvs).c_str()
-                 , size
-                 , au::str(size).c_str()
-                 );
+  return au::str("( %lu kvs [%s] in %lu bytes [%s] )",
+                 kvs,
+                 au::str(kvs).c_str(),
+                 size,
+                 au::str(size).c_str());
 }
 
 void FullKVInfo::getInfo(std::ostringstream& output) {

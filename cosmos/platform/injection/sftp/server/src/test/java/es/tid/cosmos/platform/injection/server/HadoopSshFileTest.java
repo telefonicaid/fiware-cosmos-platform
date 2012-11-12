@@ -37,6 +37,7 @@ public class HadoopSshFileTest extends BaseSftpTest {
 
     private static final org.apache.log4j.Logger LOGGER =
             Logger.get(HadoopSshFile.class);
+    public static final String USER01 = "/user01";
 
     private HadoopSshFile hadoopSshFile;
     private HadoopSshFile hadoopSshDir;
@@ -53,15 +54,17 @@ public class HadoopSshFileTest extends BaseSftpTest {
     public void setUp() throws IOException, InterruptedException{
         Configuration configuration = new Configuration();
         this.tempDir = Files.createTempDir();
-        this.tempDir.setWritable(true, false);
-        String foodir = this.tempDir.getAbsolutePath().concat("/user01");
-        String foofile = this.tempDir.getAbsolutePath().concat("/user01/file01");
+        boolean success = this.tempDir.setWritable(true, false);
+        if (!success) {
+            throw new IllegalStateException("could not set to writable: " +
+                    this.tempDir.toString());
+        }
+        String foodir = this.tempDir.getAbsolutePath().concat(USER01);
         configuration.set("fs.default.name", "file:///" + this.tempDir.toString());
         this.hadoopFS = FileSystem.get(configuration);
-                //URI.create(configuration.get("fs.default.name")),
-                //configuration, "user01");
-        this.hadoopSshFile = new HadoopSshFile(foofile, "user01", this.hadoopFS);
         this.hadoopSshDir = new HadoopSshFile(foodir, "user01", this.hadoopFS);
+        this.hadoopSshFile = new HadoopSshFile(foodir + "/file01",
+                "user01", this.hadoopFS);
 
         this.mockedFileSystem = mock(FileSystem.class);
 
@@ -77,15 +80,19 @@ public class HadoopSshFileTest extends BaseSftpTest {
         if (this.hadoopSshDir.doesExist()) {
             this.hadoopSshDir.delete();
         }
-        this.tempDir.delete();
+        boolean success = this.tempDir.delete();
+        if (!success) {
+            throw new IllegalStateException("could not delete: " +
+                    this.tempDir.toString());
+        }
         this.hadoopFS.close();
         this.mockedFileSystem.close();
     }
 
     @Test
     public void testGetAbsolutePath() throws Exception {
-        assertEquals(this.tempDir.getAbsolutePath().concat("/user01/file01"),
-                     this.hadoopSshFile.getAbsolutePath());
+        assertEquals(this.tempDir.getAbsolutePath().concat(USER01)
+                .concat("/file01"), this.hadoopSshFile.getAbsolutePath());
     }
 
     @Test

@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 /* ****************************************************************************
  *
@@ -13,8 +23,6 @@
  *
  *  Class used to parse a string into components in a non-intrusive way
  *  Original string is never modified
- *
- * COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
  *
  * ****************************************************************************/
 

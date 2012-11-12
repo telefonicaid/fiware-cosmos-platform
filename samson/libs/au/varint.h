@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 /* ****************************************************************************
  *
@@ -13,8 +23,6 @@
  *
  *  Serialization and Deserializarion methods for variable-length integer codificiation
  *  It can codify a 64 bits unsigned integer into a 1,2,3,4,5,6,8 bytes length number
- *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *
  * ****************************************************************************/
 

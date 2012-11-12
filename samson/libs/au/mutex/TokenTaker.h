@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 /* ****************************************************************************
  *
@@ -14,8 +24,6 @@
  *      Automatic management of a mutex
  *      Classical trick of retaining a mutex in the contructor and releasing in destructor
  *      Used in collaboration with au::Token class
- *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *
  * ****************************************************************************/
 

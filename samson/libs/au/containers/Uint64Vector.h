@@ -20,6 +20,7 @@
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/console/ConsoleAutoComplete.h"
+#include "au/containers/StringVector.h"
 #include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
 #include "au/string/StringUtilities.h"         // au::str(...)
@@ -100,6 +101,11 @@ public:
     return output.str();
   }
 };
+
+// Handy methods to manipulate vector of strings and numbers
+std::vector<int> GetVectorOfInts(au::StringVector& v);
+int GetLargest(std::vector<int>& vector);
+std::vector<int> GetVectorOfElementsLowerThan(std::vector<int> & vector, int limit);
 }
 
 #endif  // ifndef _H_AU_STRING_UINT64_VECTOR

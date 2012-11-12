@@ -11,3 +11,4 @@ test/**/*.expect
 BUILD_*
 *.pb.cc
 *.pb.h
+unc.script

@@ -16,8 +16,9 @@
 #include <vector>
 
 #include "au/ErrorManager.h"
-#include "au/containers/StringVector.h"
 #include "au/containers/SharedPointer.h"
+#include "au/containers/StringVector.h"
+#include "samson/common/BlockKVInfo.h"
 #include "samson/common/FullKVInfo.h"
 #include "samson/common/KVInfo.h"
 #include "samson/common/KVRange.h"
@@ -27,17 +28,16 @@
 
 namespace samson {
 namespace gpb {
-  
-typedef au::SharedPointer<Collection> CollectionPointer;
-  
+typedef au::SharedPointer<Collection>   CollectionPointer;
+
 // Get all blocks in a datamodel
-void AddBlockIds( gpb::Data* data , std::set<size_t>& block_ids );
-void AddBlockIds( gpb::Data* data , const std::vector<samson::KVRange>&ranges , std::set<size_t>& block_ids );
-FullKVInfo GetFullKVInfo( gpb::Data* data );
-  
+void AddBlockIds(gpb::Data *data, std::set<size_t>& block_ids);
+void AddBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std::set<size_t>& block_ids);
+FullKVInfo GetFullKVInfo(gpb::Data *data);
+
 // Operations over gpb::StreamOperations
 gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& name);
-gpb::StreamOperation * getStreamOperation(gpb::Data *data, size_t stream_operation_id);
+gpb::StreamOperation *getStreamOperation(gpb::Data *data, size_t stream_operation_id);
 void removeStreamOperation(gpb::Data *data, const std::string& name);
 void reset_stream_operations(gpb::Data *data);
 
@@ -63,6 +63,7 @@ void removeQueue(Data *data, const std::string& name);
 // Operations over Queue
 void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size_t *size);
 ::samson::FullKVInfo getKVInfoForQueue(const gpb::Queue& queue);
+::samson::BlockKVInfo getBlockKVInfoForQueue(const gpb::Queue& queue, ::samson::KVRange range);
 
 // Add and Remove ranges in block references
 void add_block(Data *data, const std::string& queue_name, size_t block_id, size_t block_size, KVFormat format,
@@ -84,35 +85,31 @@ void remove_finished_operation(gpb::Data *data, bool all_flag);
 
 // Compute information for a queue in a set of ranges
 class DataInfoForRanges {
-  public:
-    DataInfoForRanges() {
-      data_size = 0;
-      data_kvs_in_ranges = 0;
-      data_size_in_ranges = 0;
-      max_memory_size_for_a_range = 0;
-      max_data_size_for_a_range = 0;
-      defrag_factor = 0;
-    }
+public:
+  DataInfoForRanges() {
+    data_size = 0;
+    data_kvs_in_ranges = 0;
+    data_size_in_ranges = 0;
+    max_memory_size_for_a_range = 0;
+    max_data_size_for_a_range = 0;
+    defrag_factor = 0;
+  }
 
-    size_t data_size;
-    size_t data_kvs_in_ranges;
-    size_t data_size_in_ranges;
-    size_t max_memory_size_for_a_range;
-    size_t max_data_size_for_a_range;
-    double defrag_factor;
+  size_t data_size;
+  size_t data_kvs_in_ranges;
+  size_t data_size_in_ranges;
+  size_t max_memory_size_for_a_range;
+  size_t max_data_size_for_a_range;
+  double defrag_factor;
 };
 
-DataInfoForRanges get_data_info_for_ranges(gpb::Data*data
+DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
                                            , const std::vector<std::string>& queues
                                            , const std::vector<samson::KVRange>& ranges);
-DataInfoForRanges get_data_info_for_ranges(gpb::Data*data
+DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
                                            , const std::string& queue
                                            , const std::vector<samson::KVRange>& ranges);
-  
 }
-
-  size_t GetMaxMemoryPerTask();
-
 }   // End of namespace samson::gpb
 
 #endif  // ifndef _H_SAMOSN_GPB_OPERATIONS

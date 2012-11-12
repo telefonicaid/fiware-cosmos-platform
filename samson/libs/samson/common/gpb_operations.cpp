@@ -14,13 +14,13 @@
 #include <string>
 #include <vector>
 
+#include "au/log/LogMain.h"
+#include "au/string/StringUtilities.h"
+#include "au/utils.h"
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
 #include "samson/stream/Block.h"
-#include "au/log/LogMain.h"
-#include "au/string/StringUtilities.h"
-#include "au/utils.h"
 
 
 
@@ -35,7 +35,7 @@ gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& nam
   return NULL;
 }
 
-gpb::StreamOperation * getStreamOperation(gpb::Data *data, size_t stream_operation_id) {
+gpb::StreamOperation *getStreamOperation(gpb::Data *data, size_t stream_operation_id) {
   for (int i = 0; i < data->operations_size(); i++) {
     if (stream_operation_id == data->operations(i).stream_operation_id()) {
       return data->mutable_operations(i);
@@ -56,7 +56,7 @@ void reset_stream_operations(gpb::Data *data) {
   }
 
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::BatchOperation > *batch_operations =
-      data->mutable_batch_operations();
+    data->mutable_batch_operations();
   while (batch_operations->size() > 0) {
     batch_operations->RemoveLast();
   }
@@ -204,15 +204,15 @@ Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au:
 
       if (queue->key_format() != format.keyFormat) {
         error.set(
-                   au::str("Wrong key-format for queue %s (%s vs %s)", queue_name.c_str(), queue->key_format().c_str(),
-                           format.keyFormat.c_str()));
+          au::str("Wrong key-format for queue %s (%s vs %s)", queue_name.c_str(), queue->key_format().c_str(),
+                  format.keyFormat.c_str()));
         return NULL;
       }
 
       if (queue->value_format() != format.valueFormat) {
         error.set(
-                   au::str("Wrong value-format for queue %s (%s vs %s)", queue_name.c_str(),
-                           queue->value_format().c_str(), format.valueFormat.c_str()));
+          au::str("Wrong value-format for queue %s (%s vs %s)", queue_name.c_str(),
+                  queue->value_format().c_str(), format.valueFormat.c_str()));
         return NULL;
       }
 
@@ -262,6 +262,15 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
   return info;
 }
 
+::samson::BlockKVInfo getBlockKVInfoForQueue(const gpb::Queue& queue, ::samson::KVRange range) {
+  ::samson::BlockKVInfo info;
+  for (int i = 0; i < queue.blocks_size(); i++) {
+    double factor = range.GetOverlapFactor(queue.blocks(i).range());
+    info.AppendBlock(::samson::FullKVInfo(factor * queue.blocks(i).size(), factor * queue.blocks(i).kvs()));
+  }
+  return info;
+}
+
 void add_block(Data *data, const std::string& queue_name, size_t block_id, size_t block_size, KVFormat format,
                ::samson::KVRange range, ::samson::KVInfo info, int version, au::ErrorManager&error) {
   // Get or create this queue
@@ -281,7 +290,7 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
   block->set_size(info.size);
   block->set_time(time(NULL));
   block->set_commit_id(version);
-  
+
   // Add range to this block
   KVRange *gpb_range = block->mutable_range();
   gpb_range->set_hg_begin(range.hg_begin_);
@@ -308,26 +317,23 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
   // Remove the first time ( and probably the only one ) this block is in the queue
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block > *blocks = queue->mutable_blocks();
   for (int i = 0; i < blocks->size(); i++) {
-    if (blocks->Get(i).block_id() == block_id)
-    {
+    if (blocks->Get(i).block_id() == block_id) {
       // Check information is correct
-      if( blocks->Get(i).size() != info.size )
-      {
+      if (blocks->Get(i).size() != info.size) {
         error.set(au::str("Error removing block %s in queue %s ( size mismatch %lu != %lu"
-                           , str_block_id(block_id).c_str()
-                           , queue_name.c_str()
-                           , blocks->Get(i).size()
-                           , info.size ));
+                          , str_block_id(block_id).c_str()
+                          , queue_name.c_str()
+                          , blocks->Get(i).size()
+                          , info.size));
       }
-      if( blocks->Get(i).kvs() != info.kvs )
-      {
+      if (blocks->Get(i).kvs() != info.kvs) {
         error.set(au::str("Error removing block %s in queue %s ( #kvs mismatch %lu != %lu"
                           , str_block_id(block_id).c_str()
-                           , queue_name.c_str()
-                           , blocks->Get(i).kvs()
-                           , info.kvs ));
+                          , queue_name.c_str()
+                          , blocks->Get(i).kvs()
+                          , info.kvs));
       }
-      
+
       // The only options is moving this element until the end of the vector and remove it!
       for (int j = i; j < (blocks->size() - 1); j++) {
         blocks->SwapElements(j, j + 1);
@@ -400,7 +406,7 @@ bool batch_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& bat
   std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
 
   // @andreu: We should check all inputs since it is a batch operation
-  for (int i = 0; i < batch_operation.inputs_size() ; ++i) {
+  for (int i = 0; i < batch_operation.inputs_size(); ++i) {
     std::string queue_name = prefix + batch_operation.inputs(i);
     Queue *queue = get_queue(data, queue_name);
     if ((queue) && (getKVInfoForQueue(*queue).size > 0)) {
@@ -412,8 +418,9 @@ bool batch_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& bat
 }
 
 bool string_starts_with(const std::string& s, const std::string& prefix) {
-  if (s.length() < prefix.length())
+  if (s.length() < prefix.length()) {
     return false;
+  }
 
   return (s.substr(0, prefix.length()) == prefix);
 }
@@ -423,11 +430,12 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
 
   int i = 0;
   while (i < operations->size()) {
-    if (!all_flag)
+    if (!all_flag) {
       if (!operations->Get(i).finished()) {
         i++;
         continue;
       }
+    }
 
     // Remove associated stream operation and queues
     size_t delilah_id = operations->Get(i).delilah_id();
@@ -448,7 +456,7 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
 
     // Remove all queues and stream operations starting with this....
     ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *stream_operations =
-        data->mutable_operations();
+      data->mutable_operations();
     for (int j = 0; j < stream_operations->size(); j++) {
       std::string name = stream_operations->Get(j).name();
       if (string_starts_with(name, prefix)) {
@@ -463,59 +471,56 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
     operations->RemoveLast();
   }
 }
-  
-  void AddBlockIds( gpb::Data* data , const std::vector<samson::KVRange>&ranges , std::set<size_t>& block_ids )
-  {
-    // Loop all the queues
-    for (int q = 0; q < data->queue_size(); q++) {
-      const gpb::Queue& queue = data->queue(q);
-      for (int b = 0; b < queue.blocks_size(); b++) {
 
-        const gpb::Block& block = queue.blocks(b);
-        samson::KVRange range = block.range(); // Implicit conversion
-        
-        if (range.IsOverlapped(ranges)) {
-          block_ids.insert(block.block_id());
-        }
+void AddBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std::set<size_t>& block_ids) {
+  // Loop all the queues
+  for (int q = 0; q < data->queue_size(); q++) {
+    const gpb::Queue& queue = data->queue(q);
+    for (int b = 0; b < queue.blocks_size(); b++) {
+      const gpb::Block& block = queue.blocks(b);
+      samson::KVRange range = block.range();   // Implicit conversion
+
+      if (range.IsOverlapped(ranges)) {
+        block_ids.insert(block.block_id());
       }
     }
-    
-    // Loop all modules ( I should have all of them )
-    for ( int m = 0 ; m < data->modules_size() ; m++)
-      block_ids.insert(data->modules(m).block_id());
-    
-  }
-  
-  void AddBlockIds( gpb::Data* data , std::set<size_t>& block_ids )
-  {
-    // add all blocks from all queues
-    for (int q = 0; q < data->queue_size(); q++) {
-      const gpb::Queue& queue = data->queue(q);
-      for (int b = 0; b < queue.blocks_size(); b++) {
-        block_ids.insert(queue.blocks(b).block_id());
-      }
-    }
-    
-    // Add all blocks for modules
-    for ( int m = 0 ; m < data->modules_size() ; m++)
-      block_ids.insert( data->modules(m).block_id() );
-    
-  }
-  
-  FullKVInfo GetFullKVInfo( gpb::Data* data )
-  {
-    FullKVInfo info;
-    for ( int q = 0 ; q < data->queue_size() ; q++ )
-      for ( int b = 0 ; b < data->queue(q).blocks_size() ; b++ )
-      {
-        size_t size = data->queue(q).blocks(b).size();
-        size_t kvs = data->queue(q).blocks(b).kvs();
-        info.append(size, kvs);
-      }
-      return info;
   }
 
-DataInfoForRanges get_data_info_for_ranges(gpb::Data*data
+  // Loop all modules ( I should have all of them )
+  for (int m = 0; m < data->modules_size(); m++) {
+    block_ids.insert(data->modules(m).block_id());
+  }
+}
+
+void AddBlockIds(gpb::Data *data, std::set<size_t>& block_ids) {
+  // add all blocks from all queues
+  for (int q = 0; q < data->queue_size(); q++) {
+    const gpb::Queue& queue = data->queue(q);
+    for (int b = 0; b < queue.blocks_size(); b++) {
+      block_ids.insert(queue.blocks(b).block_id());
+    }
+  }
+
+  // Add all blocks for modules
+  for (int m = 0; m < data->modules_size(); m++) {
+    block_ids.insert(data->modules(m).block_id());
+  }
+}
+
+FullKVInfo GetFullKVInfo(gpb::Data *data) {
+  FullKVInfo info;
+
+  for (int q = 0; q < data->queue_size(); q++) {
+    for (int b = 0; b < data->queue(q).blocks_size(); b++) {
+      size_t size = data->queue(q).blocks(b).size();
+      size_t kvs = data->queue(q).blocks(b).kvs();
+      info.append(size, kvs);
+    }
+  }
+  return info;
+}
+
+DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
                                            , const std::string& queue
                                            , const std::vector<samson::KVRange>& ranges) {
   std::vector<std::string> queues;
@@ -523,15 +528,16 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data*data
   return get_data_info_for_ranges(data, queues, ranges);
 }
 
-DataInfoForRanges get_data_info_for_ranges(  gpb::Data*data
+DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
                                            , const std::vector<std::string>& queues
                                            , const std::vector<samson::KVRange>& ranges) {
   DataInfoForRanges info;
 
   for (size_t q = 0; q < queues.size(); q++) {
-    gpb::Queue* queue = gpb::get_queue(data, queues[q]);
-    if (!queue)
+    gpb::Queue *queue = gpb::get_queue(data, queues[q]);
+    if (!queue) {
       continue;
+    }
 
     for (int b = 0; b < queue->blocks_size(); b++) {
       const gpb::Block& block = queue->blocks(b);
@@ -548,7 +554,7 @@ DataInfoForRanges get_data_info_for_ranges(  gpb::Data*data
         const gpb::Block& block = queue->blocks(b);
         size_t memory_size = block.block_size();
         samson::KVRange block_range = block.range();   // Implicit conversion
-        
+
         double overlap_factor = block_range.GetOverlapFactor(ranges[r]);
         size_t data_size = overlap_factor * block.size();
         size_t kvs_size = overlap_factor * block.kvs();
@@ -563,35 +569,28 @@ DataInfoForRanges get_data_info_for_ranges(  gpb::Data*data
       }
 
       // Compute defrag factor
-      if (range_data_size > 0)
+      if (range_data_size > 0) {
         defrag_factors.push_back(static_cast<double>(range_data_size) / static_cast<double>(range_memory_size));
+      }
 
       // Collect maximum
-      if (range_memory_size > info.max_memory_size_for_a_range)
+      if (range_memory_size > info.max_memory_size_for_a_range) {
         info.max_memory_size_for_a_range = range_memory_size;
-      if (range_data_size > info.max_data_size_for_a_range)
+      }
+      if (range_data_size > info.max_data_size_for_a_range) {
         info.max_data_size_for_a_range = range_data_size;
+      }
     }
 
     // Compute average defrag_fractor
     double total_defrag_factor = 0;
-    for (size_t i = 0; i < defrag_factors.size(); i++)
+    for (size_t i = 0; i < defrag_factors.size(); i++) {
       total_defrag_factor += defrag_factors[i];
+    }
 
     info.defrag_factor = total_defrag_factor / static_cast<double>(defrag_factors.size());
   }
   return info;
 }
-
-
 }
-  size_t GetMaxMemoryPerTask()
-  {
-    // Memory size limits in this platform
-    size_t memory = engine::Engine::shared()->memory_manager()->memory();
-    size_t num_cores = engine::Engine::shared()->process_manager()->max_num_procesors();
-    return  0.7 * ((double) memory / num_cores);
-  }
-
-  
 }

@@ -12,6 +12,7 @@
 
 namespace samson {
 DelilahCommandCatalogue::DelilahCommandCatalogue() {
+  // ------------------------------------------------------------------
   // SETUP
   // ------------------------------------------------------------------
 
@@ -28,6 +29,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_local_connections", "management",
       "Show status of all connections of this delilah ( typically to all workers of the SAMSON cluster )");
 
+  // ------------------------------------------------------------------
   // DELILAH
   // ------------------------------------------------------------------
 
@@ -51,7 +53,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
       "In verbose mode, extra information is shown to the user");
   add_string_options_argument("verbose", "action", "Options::on:off");
 
-  
+
   add("send_alert", "delilah", "Send an alert to all connected delilahs using a random worker as sender");
   add_string_option("send_alert", "-worker", "", "Select broadcaster worker");
   add_bool_option("send_alert", "-error", "Mark message as an error");
@@ -83,6 +85,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("quit", "delilah", "Quit delilah console");
 
+  // ------------------------------------------------------------------
   // DATA MANIPULATION
   // ------------------------------------------------------------------
 
@@ -115,6 +118,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_mandatory_string_argument("unset_queue_property", "queue", "Queue to be updated");
   add_mandatory_string_argument("unset_queue_property", "property", "Name of the property we want to update");
 
+  // ------------------------------------------------------------------
   // Debug
   // ------------------------------------------------------------------
 
@@ -122,7 +126,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("ls_blocks", "debug", "Show a list of data blocks managed by SAMSON nodes");
   add_string_argument("ls_blocks", "pattern", "*", "Pattern to find specific blocks");
-  add_uint64_option("ls_blocks", "-w", (size_t) -1, "Specify a worker to request the list of blocks");
+  add_uint64_option("ls_blocks", "-w", (size_t)-1, "Specify a worker to request the list of blocks");
   add_tag("ls_blocks", "send_to_all_workers");
 
   add("ls_queue_blocks", "debug", "Show detailed list of the blocks included in every queue");
@@ -136,25 +140,27 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("ls_block_defrags", "debug", "Show current block defrags operations in all SAMSON nodes");
   add_tag("ls_block_defrags", "send_to_all_workers");
-  
-  
+
+
   add("ls_last_data_commits", "debug", "Show last 100 commits on data model.");
   add_tag("ls_last_data_commits", "send_to_all_workers");
 
   add("ls_last_tasks", "debug", "Show last 100 tasks scheduled in workers");
-  add_bool_option("ls_last_tasks", "-times" , "Show times spent by tasks");
+  add_bool_option("ls_last_tasks", "-times", "Show times spent by tasks");
   add_tag("ls_last_tasks", "send_to_all_workers");
 
   add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
   add_mandatory_string_argument("ls_queue_ranges", "name", "Name of the queue we would like to scan");
 
-  add("data_model_status"  , "debug" , "Show frozen and current data model status");
-  add("data_model_commits" , "debug" , "Show on-the-fly commits pending to be consolidated");
-  add("data_model_freeze"  , "debug" , "Show frozen and current data model status");
-  add("data_model_cancel_freeze"  , "debug" , "Cancel candidate data model");
-  add("data_model_recover" , "debug" , "Show frozen and current data model status");
-  
-  
+  add("data_model_status", "debug", "Show frozen and current data model status");
+  add("data_model_commits", "debug", "Show on-the-fly commits pending to be consolidated");
+  add("data_model_freeze", "debug", "Show frozen and current data model status");
+  add("data_model_cancel_freeze", "debug", "Cancel candidate data model");
+  add("data_model_recover", "debug", "Show frozen and current data model status");
+
+
+  add("ls_kv_ranges", "debug", "Show a list of current KVRanges in this SAMSON cluster");
+
   // MODULES
   // ------------------------------------------------------------------
 
@@ -176,24 +182,24 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("clear_modules", "modules", "Remove all previously updated modules");
 
+  // ------------------------------------------------------------------
   // STREAM
   // ------------------------------------------------------------------
 
-
   add("ls_stream_operations", "stream", "Show a list of stream operations",
       "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
-        "They consist in applying a particular operation ( defined in a module ) to process data from\n"
-        "one or multiple input queues and send result to one or multiple output queues\n"
-        "Please, add new stream operations with add_stream_operations command");
+      "They consist in applying a particular operation ( defined in a module ) to process data from\n"
+      "one or multiple input queues and send result to one or multiple output queues\n"
+      "Please, add new stream operations with add_stream_operations command");
   add_bool_option("ls_stream_operations", "-a",
                   "Show hidden stream operations as well ( used internally by the platform )");
 
   add("ps_stream_operations", "stream", "Show a list of stream operations with information about execution planning");
   add_string_argument("ps_stream_operations", "pattern", "*", "Name of the stream operation");
-  add_bool_option("ps_stream_operations", "-state","Show state of this stream operations");
+  add_bool_option("ps_stream_operations", "-state", "Show state of this stream operations");
   add_tag("ps_stream_operations", "send_to_all_workers");
 
-  add("ps_stream_operations_ranges", "stream","Show a detailed list of a stream operation (for each range)");
+  add("ps_stream_operations_ranges", "stream", "Show a detailed list of a stream operation (for each range)");
   add_mandatory_string_argument("ps_stream_operations_ranges", "pattern", "Name of the stream operation");
   add_bool_option("ps_stream_operations_ranges", "-state",
                   "Show planning state ( paused, error, ready for scheduling...)");
@@ -201,13 +207,13 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ps_stream_operations_ranges", "-properties", "Information about properties of each stream opertion");
   add_bool_option("ps_stream_operations_ranges", "-data", "Show input and output data processed of each operation");
   add_bool_option("ps_stream_operations_ranges", "-rates", "Show input and output data rates of each operation");
-  add_uint64_option("ps_stream_operations_ranges", "-w", (size_t) -1, "Selected worker");
+  add_uint64_option("ps_stream_operations_ranges", "-w", (size_t)-1, "Selected worker");
   add_tag("ps_stream_operations_ranges", "send_to_all_workers");
 
   add("add_stream_operation", "stream", "Add a new stream operation to the current SAMSON cluster");
   add_mandatory_string_argument("add_stream_operation", "name", "Name of the new stream operation");
   add_mandatory_string_argument("add_stream_operation", "operation", "Name of the operation to run");
-  add_bool_option("add_stream_operation", "-paused" , "Start with the operation paused");
+  add_bool_option("add_stream_operation", "-paused", "Start with the operation paused");
 
   add_string_option("add_stream_operation", "-input", "", "Input queues to get data from");
   add_string_option("add_stream_operation", "-output", "", "Output queues to push data to");
@@ -254,7 +260,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ls_queue_connections", "-a", "Show hidden items as well ( used internally by the platform )");
 
   add("ps_tasks", "stream", "Get a list of current stream tasks currently running in all workers");
-  add_uint64_option("ps_tasks", "-w", (size_t) -1, "Specify worker to request list of tasks");
+  add_uint64_option("ps_tasks", "-w", (size_t)-1, "Specify worker to request list of tasks");
   add_bool_option("ps_tasks", "-data", "Get detailed information of input/output data");
   add_bool_option("ps_tasks", "-blocks", "Get detailed information of input/output blocks");
   add_tag("ps_tasks", "send_to_all_workers");
@@ -266,8 +272,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("init_stream", "stream", "Execute am initialization script to setup some automatic stream operations",
       "init_stream [prefix] <script_name>\n"
-        "          [prefix]         It is used to name operations and queues\n"
-        "          <script_name>    Name of the script (e.g. module.script)\n");
+      "          [prefix]         It is used to name operations and queues\n"
+      "          <script_name>    Name of the script (e.g. module.script)\n");
 
   add("ps_workers", "stream", "Show a list of commands being executed in each node of the cluster",
       "ps_workers <command pattern>\n");
@@ -288,6 +294,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("clear_batch_operations", "batch", "Clear finished batch operations");
   add_bool_option("clear_batch_operations", "-a", "Clear also unfinished tasks");
 
+  // ------------------------------------------------------------------
   // PUSH&POP
   // ------------------------------------------------------------------
 
@@ -324,71 +331,74 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("push_queue", "push&pop", "Push content of a queue to another queue/s");
   add_mandatory_string_argument("push_queue", "queue_from", "Source queue to get data from");
   add_mandatory_string_argument("push_queue", "queue_to", "Target queue to push data to");
-  
+
+  // ------------------------------------------------------------------
   // LOG
   // ------------------------------------------------------------------
-  
-  
-  add("wlog_show" , "log" , "Show logs received from workers (via logServer)");
+
+
+  add("wlog_show", "log", "Show logs received from workers (via logServer)");
   add_string_argument("wlog_show", "host", "localhost", "logServer hostname ( optional :port)");
   add_string_option("wlog_show", "format", LOG_DEFAULT_FORMAT_CONSOLE, "Format of the logs");
   add_string_option("wlog_show", "filter", "", "Filter of logs to show");
-  add("wlog_hide" , "debug" , "Not show logs received from workers (via logServer) anymore");
-  
-  add("wlog_status" , "log" , "Show current status of the logs from workers");
+  add("wlog_hide", "debug", "Not show logs received from workers (via logServer) anymore");
+
+  add("wlog_status", "log", "Show current status of the logs from workers");
   add_tag("wlog_status", "send_to_all_workers");
 
-  add("wlog_all_channels" , "log" , "Show all possible log channels to be activated");
-  
-  add("wlog_set_log_server" , "log" , "Set the host for log server in all workers");
+  add("wlog_all_channels", "log", "Show all possible log channels to be activated");
+
+  add("wlog_set_log_server", "log", "Set the host for log server in all workers");
   add_mandatory_string_argument("wlog_set_log_server", "host", "Log server host");
   add_tag("wlog_set_log_server", "send_to_all_workers");
-  
-  add("wlog_set" , "log" , "Set the lovel of logs for a particular channel");
+
+  add("wlog_set", "log", "Set the lovel of logs for a particular channel");
   add_mandatory_string_argument("wlog_set", "channel_pattern", "Channel ( or channel pattern )");
-  add_string_argument("wlog_set" , "log_level" , "*" , "Level of logs");
+  add_string_argument("wlog_set", "log_level", "*", "Level of logs");
   add_tag("wlog_set", "send_to_all_workers");
 
-  
+
   add("log_help", "log", "Show help about log_X commands to interact with the log system");
-  
+
   add("log_to_screen", "log", "Add a log plugin to emit logs to screen");
   add_string_option("log_to_screen", "-name", "screen", "Name of the plugin");
   add_string_option("log_to_screen", "-format", LOG_DEFAULT_FORMAT, "Format of logs on screen");
-  
+
   add("log_to_file", "log", "Add a log plugin to emit logs to a file");
   add_mandatory_string_argument("log_to_file", "filename", "File to be created to store logs");
   add_string_option("log_to_file", "name", "file", "Name of the plugin");
-  
+
   add("log_to_server", "log", "Add a log plugin to emit logs to a server");
   add_mandatory_string_argument("log_to_server", "host", "Host of the log server");
   add_mandatory_string_argument("log_to_server", "filename",
                                 "File to be created to store logs when connection is not available");
   add_string_option("log_to_server", "name", "server", "Name of the plugin");
-  
+
   // Show information
   add("log_show_fields", "log", "Show available fields for logs");
   add("log_show_plugins", "log", "Show current plugins for logs");
   add("log_show_channels", "log", "Show logs generatd for all channels and all plugins");
   add_bool_option("log_show_channels", "rates", "Show information about logs generated in bytes/second");
   add_bool_option("log_show_channels", "v", "Show more information about generated logs");
-  
+
   // Set level of log messages for a particular channel
-  add("log_set", "log", "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
+  add("log_set", "log",
+      "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
   add_mandatory_string_argument("log_set", "channel_pattern", "Name (or pattern) of log channel");
   add_mandatory_string_argument("log_set", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
   add_string_argument("log_set", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
-  
+
   // Set level of log messages for a particular channel
-  add("log_add", "log", "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
+  add("log_add", "log",
+      "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
   add_mandatory_string_argument("log_add", "channel_pattern", "Name (or pattern) of log channel");
   add_mandatory_string_argument("log_add", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
   add_string_argument("log_add", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
-  
+
   // Set level of log messages for a particular channel
   add("log_remove", "log", "Unset logs for some log-channels ( and for some log-plugins if specified )");
   add_mandatory_string_argument("log_remove", "channel_pattern", "Name (or pattern) of log channel");
-  add_string_argument("log_remove", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
-  
+  add_string_argument("log_remove", "plugin_pattern", "*",
+                      "Name (or pattern) of log-plugin (type * or nothing for all)");
 }
 }

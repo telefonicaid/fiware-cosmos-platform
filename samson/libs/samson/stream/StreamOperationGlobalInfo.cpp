@@ -80,7 +80,7 @@ void StreamOperationGlobalInfo::Review(gpb::Data *data) {
   ReviewIntern(data);
 
   // Review all ranges
-  for (size_t i = 0; i < stream_operations_range_info_.size(); i++) {
+  for (size_t i = 0; i < stream_operations_range_info_.size(); ++i) {
     stream_operations_range_info_[i]->Review(data);
   }
 }

@@ -92,44 +92,7 @@ public:
 
 private:
 
-  // Default path in ZK for this information
-  static const std::string kDefaultSamsonDataPath;
 
-  // Constant strings for valid commands
-  static const std::string kAdd;
-  static const std::string kAddQueueConnection;
-  static const std::string kAddStreamOperation;
-  static const std::string kBatch;
-  static const std::string kBlock;
-  static const std::string kClearBatchOPerations;
-  static const std::string kClearModules;
-  static const std::string kPushQueue;
-  static const std::string kRemoveAll;
-  static const std::string kRemoveAllData;
-  static const std::string kRemoveAllStreamOperations;
-  static const std::string kRemoveStreamOperation;
-  static const std::string kRm;
-  static const std::string kRmQueueConnection;
-  static const std::string kSetQueueProperty;
-  static const std::string kSetStreamOperationProperty;
-  static const std::string kUnsetStreamOperationProperty;
-  static const std::string kFreezeDataModel;
-  static const std::string kCancelFreezeDataModel;
-  static const std::string kRecoverDataModel;
-  static const std::string kConsolidateDataModel;
-
-  static const std::string commands[];
-  static const std::string recovery_commands[];
-
-  // Constant strings for item commands
-  static const std::string kAddItem;
-  static const std::string kRmItem;
-
-  // Groups the initialization of all flags to process command
-  static au::SharedPointer<au::CommandLine> GetCommandLine();
-
-  // Internal command to process individual commands
-  // Functions to process each command type
 
   void ProcessCommand(gpb::Data *data, const std::string command, au::ErrorManager& error) {
     au::SharedPointer<au::CommandLine> cmd = GetCommandLine();
@@ -164,16 +127,51 @@ private:
                                                 au::ErrorManager& error);
   void ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
                                                   au::ErrorManager& error);
-  void ProcessFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager&error);
-  void ProcessCancelFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager&error);
-  void ProcessRecoverDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager&error);
-  void ProcessConsolidateDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager&error);
+  void ProcessFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error);
+  void ProcessCancelFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error);
+  void ProcessRecoverDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error);
+  void ProcessConsolidateDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error);
 
   // Review batch operations
   void ReviewBatchOperations(gpb::Data *data, au::ErrorManager& error);
 
   // Check if it is necesssary to run this while recovering
   bool IsRecoveryCommand(const std::string& command);
+  // Default path in ZK for this information
+  static const std::string kDefaultSamsonDataPath;
+
+  // Groups the initialization of all flags to process command
+  static au::SharedPointer<au::CommandLine> GetCommandLine();
+
+  // Constant strings for valid commands
+  static const std::string kAdd;
+  static const std::string kAddQueueConnection;
+  static const std::string kAddStreamOperation;
+  static const std::string kBatch;
+  static const std::string kBlock;
+  static const std::string kClearBatchOPerations;
+  static const std::string kClearModules;
+  static const std::string kPushQueue;
+  static const std::string kRemoveAll;
+  static const std::string kRemoveAllData;
+  static const std::string kRemoveAllStreamOperations;
+  static const std::string kRemoveStreamOperation;
+  static const std::string kRm;
+  static const std::string kRmQueueConnection;
+  static const std::string kSetQueueProperty;
+  static const std::string kSetStreamOperationProperty;
+  static const std::string kUnsetStreamOperationProperty;
+  static const std::string kFreezeDataModel;
+  static const std::string kCancelFreezeDataModel;
+  static const std::string kRecoverDataModel;
+  static const std::string kConsolidateDataModel;
+
+  static const std::string commands[];
+  static const std::string recovery_commands[];
+
+  // Constant strings for item commands
+  static const std::string kAddItem;
+  static const std::string kRmItem;
 };
 }
 

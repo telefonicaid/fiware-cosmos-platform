@@ -36,7 +36,7 @@ bool ignoreCommand(std::string command) {
     return true;
   }
 
-  for (size_t i = 0; i < command.length(); i++) {
+  for (size_t i = 0; i < command.length(); ++i) {
     if (command[i] != ' ') {
       if (command[i] == '#') {
         return true;
@@ -60,7 +60,7 @@ public:
   std::string transform(std::string command) {
     au::simple_map<std::string, std::string>::iterator it_aliases;
 
-    for (it_aliases = aliases.begin(); it_aliases != aliases.end(); it_aliases++) {
+    for (it_aliases = aliases.begin(); it_aliases != aliases.end(); ++it_aliases) {
       au::FindAndReplaceInString(command, it_aliases->first, it_aliases->second);
     }
 
@@ -182,7 +182,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
 
     // Read code, execute it recursively
     au::ErrorManager sub_error;
-    for (size_t i = 0; i < op->code.size(); i++) {
+    for (size_t i = 0; i < op->code.size(); ++i) {
       std::string sub_command = op->code[i];
 
       au::CommandLine intern_cmdLine;
@@ -281,7 +281,7 @@ void WorkerCommand::Run() {
 
   // Add all bool flags like -v -state automatically to visualization
   const std::vector<au::console::CommandItem *> options = command_instance->command()->options();
-  for (size_t i = 0; i < options.size(); i++) {
+  for (size_t i = 0; i < options.size(); ++i) {
     if (options[i]->type() == au::console::options::option_bool) {
       std::string name = options[i]->name();
       visualization.set_flag(name, command_instance->get_bool_option(name));
@@ -691,7 +691,7 @@ void WorkerCommand::FinishWorkerTask() {
     p->to.id = delilah_id_;
 
     // Add collections as answers...
-    for (size_t i = 0; i < collections_.size(); i++) {
+    for (size_t i = 0; i < collections_.size(); ++i) {
       p->message->add_collection()->CopyFrom(*collections_[i]);
     }
 
@@ -750,10 +750,10 @@ au::SharedPointer<gpb::Collection> WorkerCommand::GetCollectionOfBuffers(const V
   // Debug
   // printf("%s\n" , table.str().c_str() );
 
-  for (size_t r = 0; r < table.getNumRows(); r++) {
+  for (size_t r = 0; r < table.getNumRows(); ++r) {
     gpb::CollectionRecord *record = collection->add_record();
 
-    for (size_t c = 0; c < table.getNumColumns(); c++) {
+    for (size_t c = 0; c < table.getNumColumns(); ++c) {
       std::string concept = table.getColumn(c);
       std::string value = table.getValue(r, c);
       ::samson::add(record, concept, value, "left");

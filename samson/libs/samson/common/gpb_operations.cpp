@@ -27,7 +27,7 @@
 namespace samson {
 namespace gpb {
 gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& name) {
-  for (int i = 0; i < data->operations_size(); i++) {
+  for (int i = 0; i < data->operations_size(); ++i) {
     if (name == data->operations(i).name()) {
       return data->mutable_operations(i);
     }
@@ -36,7 +36,7 @@ gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& nam
 }
 
 gpb::StreamOperation *getStreamOperation(gpb::Data *data, size_t stream_operation_id) {
-  for (int i = 0; i < data->operations_size(); i++) {
+  for (int i = 0; i < data->operations_size(); ++i) {
     if (stream_operation_id == data->operations(i).stream_operation_id()) {
       return data->mutable_operations(i);
     }
@@ -65,7 +65,7 @@ void reset_stream_operations(gpb::Data *data) {
 void removeStreamOperation(gpb::Data *data, const std::string& name) {
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *operations = data->mutable_operations();
 
-  for (int i = 0; i < operations->size(); i++) {
+  for (int i = 0; i < operations->size(); ++i) {
     if (name == operations->Get(i).name()) {
       // Swap with the last element to remove
       operations->SwapElements(i, operations->size() - 1);
@@ -77,7 +77,7 @@ void removeStreamOperation(gpb::Data *data, const std::string& name) {
 
 void setProperty(Environment *environment, const std::string& name, const std::string& value) {
   // Search for an existing variable
-  for (int i = 0; i < environment->variable_size(); i++) {
+  for (int i = 0; i < environment->variable_size(); ++i) {
     if (environment->variable(i).name() == name) {
       environment->mutable_variable(i)->set_value(value);
       return;
@@ -92,7 +92,7 @@ void setProperty(Environment *environment, const std::string& name, const std::s
 
 std::string getProperty(Environment *environment, const std::string& name, const std::string& default_value) {
   // Search for an existing variable
-  for (int i = 0; i < environment->variable_size(); i++) {
+  for (int i = 0; i < environment->variable_size(); ++i) {
     if (environment->variable(i).name() == name) {
       return environment->variable(i).name();
     }
@@ -103,7 +103,7 @@ std::string getProperty(Environment *environment, const std::string& name, const
 void unsetProperty(Environment *environment, const std::string& name) {
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::EnvironmentVariable > *e = environment->mutable_variable();
 
-  for (int i = 0; i < e->size(); i++) {
+  for (int i = 0; i < e->size(); ++i) {
     if (e->Get(i).name() == name) {
       e->SwapElements(i, e->size() - 1);
       e->RemoveLast();
@@ -129,14 +129,14 @@ int getPropertyInt(Environment *environment, const std::string& name, int defaul
 std::string str(const Environment& environment) {
   std::ostringstream output;
 
-  for (int i = 0; i < environment.variable_size(); i++) {
+  for (int i = 0; i < environment.variable_size(); ++i) {
     output << environment.variable(i).name() << "=" << environment.variable(i).value() << " ";
   }
   return output.str();
 }
 
 bool isWorkerIncluded(ClusterInfo *cluster_information, size_t worker_id) {
-  for (int i = 0; i < cluster_information->workers_size(); i++) {
+  for (int i = 0; i < cluster_information->workers_size(); ++i) {
     if (cluster_information->workers(i).worker_id() == worker_id) {
       return true;
     }
@@ -147,7 +147,7 @@ bool isWorkerIncluded(ClusterInfo *cluster_information, size_t worker_id) {
 size_t GetNumKVRanges(ClusterInfo *cluster_information, size_t worker_id) {
   size_t total = 0;
 
-  for (int i = 0; i < cluster_information->process_units_size(); i++) {
+  for (int i = 0; i < cluster_information->process_units_size(); ++i) {
     if (cluster_information->process_units(i).worker_id() == worker_id) {
       total++;
     }
@@ -175,7 +175,7 @@ void reset_data(Data *data) {
   }
 }
 
-Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager&error) {
+Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager& error) {
   Queue *queue = get_queue(data, queue_name, format, error);
 
   if (error.IsActivated()) {
@@ -196,8 +196,8 @@ Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat f
   return queue;
 }
 
-Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager&error) {
-  for (int i = 0; i < data->queue_size(); i++) {
+Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager& error) {
+  for (int i = 0; i < data->queue_size(); ++i) {
     if (data->queue(i).name() == queue_name) {
       // Check formatblo
       Queue *queue = data->mutable_queue(i);
@@ -224,7 +224,7 @@ Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au:
 }
 
 Queue *get_queue(Data *data, const std::string& queue_name) {
-  for (int i = 0; i < data->queue_size(); i++) {
+  for (int i = 0; i < data->queue_size(); ++i) {
     if (data->queue(i).name() == queue_name) {
       return data->mutable_queue(i);
     }
@@ -235,7 +235,7 @@ Queue *get_queue(Data *data, const std::string& queue_name) {
 void removeQueue(Data *data, const std::string& name) {
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::Queue > *queues = data->mutable_queue();
 
-  for (int i = 0; i < queues->size(); i++) {
+  for (int i = 0; i < queues->size(); ++i) {
     if (queues->Get(i).name() == name) {
       queues->SwapElements(i, queues->size() - 1);
       queues->RemoveLast();
@@ -248,7 +248,7 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
   *kvs = 0;
   *size = 0;
   *num_blocks = queue.blocks_size();
-  for (int i = 0; i < queue.blocks_size(); i++) {
+  for (int i = 0; i < queue.blocks_size(); ++i) {
     *kvs += queue.blocks(i).kvs();
     *size += queue.blocks(i).size();
   }
@@ -256,7 +256,7 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
 
 ::samson::FullKVInfo getKVInfoForQueue(const gpb::Queue& queue) {
   ::samson::FullKVInfo info;
-  for (int i = 0; i < queue.blocks_size(); i++) {
+  for (int i = 0; i < queue.blocks_size(); ++i) {
     info.append(::samson::FullKVInfo(queue.blocks(i).size(), queue.blocks(i).kvs()));
   }
   return info;
@@ -264,7 +264,7 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
 
 ::samson::BlockKVInfo getBlockKVInfoForQueue(const gpb::Queue& queue, ::samson::KVRange range) {
   ::samson::BlockKVInfo info;
-  for (int i = 0; i < queue.blocks_size(); i++) {
+  for (int i = 0; i < queue.blocks_size(); ++i) {
     double factor = range.GetOverlapFactor(queue.blocks(i).range());
     info.AppendBlock(::samson::FullKVInfo(factor * queue.blocks(i).size(), factor * queue.blocks(i).kvs()));
   }
@@ -272,7 +272,7 @@ void getQueueInfo(const gpb::Queue& queue, size_t *num_blocks, size_t *kvs, size
 }
 
 void add_block(Data *data, const std::string& queue_name, size_t block_id, size_t block_size, KVFormat format,
-               ::samson::KVRange range, ::samson::KVInfo info, int version, au::ErrorManager&error) {
+               ::samson::KVRange range, ::samson::KVInfo info, int version, au::ErrorManager& error) {
   // Get or create this queue
   gpb::Queue *queue = get_or_create_queue(data, queue_name, format, error);
 
@@ -298,7 +298,7 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
 }
 
 void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVFormat format, ::samson::KVRange range,
-              ::samson::KVInfo info, int version, au::ErrorManager&error) {
+              ::samson::KVInfo info, int version, au::ErrorManager& error) {
   // Get or create this queue
   gpb::Queue *queue = get_queue(data, queue_name, format, error);
 
@@ -474,7 +474,7 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
 
 void AddBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std::set<size_t>& block_ids) {
   // Loop all the queues
-  for (int q = 0; q < data->queue_size(); q++) {
+  for (int q = 0; q < data->queue_size(); ++q) {
     const gpb::Queue& queue = data->queue(q);
     for (int b = 0; b < queue.blocks_size(); b++) {
       const gpb::Block& block = queue.blocks(b);
@@ -487,14 +487,14 @@ void AddBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std
   }
 
   // Loop all modules ( I should have all of them )
-  for (int m = 0; m < data->modules_size(); m++) {
+  for (int m = 0; m < data->modules_size(); ++m) {
     block_ids.insert(data->modules(m).block_id());
   }
 }
 
 void AddBlockIds(gpb::Data *data, std::set<size_t>& block_ids) {
   // add all blocks from all queues
-  for (int q = 0; q < data->queue_size(); q++) {
+  for (int q = 0; q < data->queue_size(); ++q) {
     const gpb::Queue& queue = data->queue(q);
     for (int b = 0; b < queue.blocks_size(); b++) {
       block_ids.insert(queue.blocks(b).block_id());
@@ -502,7 +502,7 @@ void AddBlockIds(gpb::Data *data, std::set<size_t>& block_ids) {
   }
 
   // Add all blocks for modules
-  for (int m = 0; m < data->modules_size(); m++) {
+  for (int m = 0; m < data->modules_size(); ++m) {
     block_ids.insert(data->modules(m).block_id());
   }
 }
@@ -510,7 +510,7 @@ void AddBlockIds(gpb::Data *data, std::set<size_t>& block_ids) {
 FullKVInfo GetFullKVInfo(gpb::Data *data) {
   FullKVInfo info;
 
-  for (int q = 0; q < data->queue_size(); q++) {
+  for (int q = 0; q < data->queue_size(); ++q) {
     for (int b = 0; b < data->queue(q).blocks_size(); b++) {
       size_t size = data->queue(q).blocks(b).size();
       size_t kvs = data->queue(q).blocks(b).kvs();
@@ -539,7 +539,7 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
       continue;
     }
 
-    for (int b = 0; b < queue->blocks_size(); b++) {
+    for (int b = 0; b < queue->blocks_size(); ++b) {
       const gpb::Block& block = queue->blocks(b);
       info.data_size += block.size();
     }
@@ -550,7 +550,7 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
       size_t range_memory_size = 0;
       size_t range_data_size = 0;
 
-      for (int b = 0; b < queue->blocks_size(); b++) {
+      for (int b = 0; b < queue->blocks_size(); ++b) {
         const gpb::Block& block = queue->blocks(b);
         size_t memory_size = block.block_size();
         samson::KVRange block_range = block.range();   // Implicit conversion

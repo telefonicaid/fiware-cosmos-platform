@@ -126,7 +126,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("ls_blocks", "debug", "Show a list of data blocks managed by SAMSON nodes");
   add_string_argument("ls_blocks", "pattern", "*", "Pattern to find specific blocks");
-  add_uint64_option("ls_blocks", "-w", (size_t)-1, "Specify a worker to request the list of blocks");
+  add_uint64_option("ls_blocks", "-w", static_cast<size_t>(-1), "Specify a worker to request the list of blocks");
   add_tag("ls_blocks", "send_to_all_workers");
 
   add("ls_queue_blocks", "debug", "Show detailed list of the blocks included in every queue");
@@ -196,7 +196,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("ps_stream_operations", "stream", "Show a list of stream operations with information about execution planning");
   add_string_argument("ps_stream_operations", "pattern", "*", "Name of the stream operation");
-  add_bool_option("ps_stream_operations", "-state", "Show state of this stream operations");
+  add_bool_option("ps_stream_operations", "-state", "Show state of these stream operations");
   add_tag("ps_stream_operations", "send_to_all_workers");
 
   add("ps_stream_operations_ranges", "stream", "Show a detailed list of a stream operation (for each range)");
@@ -207,7 +207,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ps_stream_operations_ranges", "-properties", "Information about properties of each stream opertion");
   add_bool_option("ps_stream_operations_ranges", "-data", "Show input and output data processed of each operation");
   add_bool_option("ps_stream_operations_ranges", "-rates", "Show input and output data rates of each operation");
-  add_uint64_option("ps_stream_operations_ranges", "-w", (size_t)-1, "Selected worker");
+  add_uint64_option("ps_stream_operations_ranges", "-w", static_cast<size_t>(-1), "Selected worker");
   add_tag("ps_stream_operations_ranges", "send_to_all_workers");
 
   add("add_stream_operation", "stream", "Add a new stream operation to the current SAMSON cluster");
@@ -260,7 +260,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ls_queue_connections", "-a", "Show hidden items as well ( used internally by the platform )");
 
   add("ps_tasks", "stream", "Get a list of current stream tasks currently running in all workers");
-  add_uint64_option("ps_tasks", "-w", (size_t)-1, "Specify worker to request list of tasks");
+  add_uint64_option("ps_tasks", "-w", static_cast<size_t>(-1), "Specify worker to request list of tasks");
   add_bool_option("ps_tasks", "-data", "Get detailed information of input/output data");
   add_bool_option("ps_tasks", "-blocks", "Get detailed information of input/output blocks");
   add_tag("ps_tasks", "send_to_all_workers");

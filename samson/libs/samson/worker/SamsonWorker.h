@@ -122,7 +122,9 @@ public:
   // Reload modules
   void ReloadModulesIfNecessary();
 
-
+  int port() {
+    return port_;
+  }
 
 private:
 
@@ -130,15 +132,18 @@ private:
     unconnected, connected, ready
   };
 
-  State state_;     // Current state of this worker
-  std::string state_message_;     // Message of the last review of the state
-
   // Main function to review samson worker and all its elements
   // This function is preiodically called from engine
   void Review();
 
   void ResetToUnconnected();     // Reset when come back to unconnected
   void ResetToConnected();     // Reset when come back to connected ( change cluster setup )
+
+  // Visualitzation of current data model
+  void fill(gpb::CollectionRecord *record, const std::string& name, gpb::Data *data, const Visualization& visualization);
+
+  // State of this worker
+  std::string str_state();
 
   // Connection values ( to reconnect if connections fails down )
   std::string zoo_host_;
@@ -158,19 +163,14 @@ private:
   au::SharedPointer<stream::WorkerTaskManager> task_manager_;     // Manager for tasks
   au::SharedPointer<WorkerCommandManager> workerCommandManager_;     // Manager of the "Worker commands"
 
+  State state_;     // Current state of this worker
+  std::string state_message_;     // Message of the last review of the state
 
   bool modules_available_;          // Flag to determine if blocks for modules are available
   size_t last_modules_version_;     // Last version of the queue .modules observed so far
 
   // Cronometer for last candidate data model
   au::Cronometer cronometer_candidate_data_model_;
-
-  // Visualitzation of current data model
-  void fill(gpb::CollectionRecord *record, const std::string& name, gpb::Data *data, const Visualization& visualization);
-
-
-  // State of this worker
-  std::string str_state();
 };
 }
 

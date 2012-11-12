@@ -227,7 +227,7 @@ int SamsonWorkerController::GetAllWorkersFromZk() {
   return rc;   // OK
 }
 
-std::vector<KVRange> SamsonWorkerController::GetMyKVRanges() {
+std::vector<KVRange> SamsonWorkerController::GetMyKVRanges() const {
   au::TokenTaker tt(&token_);
 
   std::vector<KVRange> hg_ranges;
@@ -247,7 +247,7 @@ std::vector<KVRange> SamsonWorkerController::GetMyKVRanges() {
   return hg_ranges;
 }
 
-std::vector<KVRange> SamsonWorkerController::GetAllMyKVRanges() {
+std::vector<KVRange> SamsonWorkerController::GetAllMyKVRanges() const {
   au::TokenTaker tt(&token_);
 
   std::vector<KVRange> hg_ranges;
@@ -553,7 +553,7 @@ int SamsonWorkerController::CreateClusterInfo(size_t version) {
   return 0;     // OK
 }
 
-std::set<size_t> SamsonWorkerController::GetWorkerIds() {
+std::set<size_t> SamsonWorkerController::GetWorkerIds() const {
   std::set<size_t> worker_ids;
   for (int i = 0; i < cluster_info_->workers_size(); ++i) {
     worker_ids.insert(cluster_info_->workers(i).worker_id());
@@ -561,7 +561,7 @@ std::set<size_t> SamsonWorkerController::GetWorkerIds() {
   return worker_ids;
 }
 
-au::Uint64Set SamsonWorkerController::GetAllWorkerIdsForRange(KVRange range) {
+au::Uint64Set SamsonWorkerController::GetAllWorkerIdsForRange(KVRange range) const {
   // Set of identifier to return
   au::Uint64Set worker_ids;
 
@@ -582,7 +582,7 @@ au::Uint64Set SamsonWorkerController::GetAllWorkerIdsForRange(KVRange range) {
 }
 
 // Get workers that should have a copy of a block in this range
-au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) {
+au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) const {
   // Set of identifier to return
   au::Uint64Set worker_ids;
 
@@ -610,7 +610,7 @@ au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) {
   return worker_ids;
 }
 
-std::string SamsonWorkerController::get_local_ip() {
+std::string SamsonWorkerController::get_local_ip() const {
   struct ifaddrs *addrs;
   struct ifaddrs *iap;
   struct sockaddr_in *sa;
@@ -635,8 +635,8 @@ std::string SamsonWorkerController::get_local_ip() {
 }
 
 size_t SamsonWorkerController::get_new_block_id() {
-  if (worker_id_ == (size_t)-1) {
-    return (size_t)-1;
+  if (worker_id_ == static_cast<size_t>(-1)) {
+    return static_cast<size_t>(-1);
   }
 
   // [worker 32bits][Counter 32bits]

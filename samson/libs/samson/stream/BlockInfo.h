@@ -11,10 +11,11 @@
 #ifndef _H_BLOCK_INFO
 #define _H_BLOCK_INFO
 
+#include <string>           // std::string
+
 #include "samson/common/FullKVInfo.h"
 #include "samson/common/KVInfo.h"
 #include "samson/module/KVFormat.h"
-#include <string>           // std::string
 
 namespace samson {
 /**

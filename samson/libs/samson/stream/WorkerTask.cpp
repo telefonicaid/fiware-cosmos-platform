@@ -8,6 +8,9 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
+#include "samson/stream/WorkerTask.h"      // Own interface
+
 #include "samson/common/KVInputVector.h"
 #include "samson/common/Logs.h"
 #include "samson/common/coding.h"
@@ -15,7 +18,6 @@
 #include "samson/stream/BlockManager.h"       // samson::stream::BlockManager
 #include "samson/stream/BlockReaderCollection.h"
 #include "samson/stream/ProcessWriter.h"
-#include "samson/stream/WorkerTask.h"      // Own interface
 #include "samson/worker/CommitCommand.h"
 #include "samson/worker/SamsonWorker.h"
 
@@ -85,7 +87,7 @@ std::vector<size_t> WorkerTask::ProcessOutputBuffers() {
     }
 
     // Information for generated block
-    KVHeader *header = (KVHeader *)buffer->data();
+    KVHeader *header = reinterpret_cast<KVHeader *>( buffer->data());
 
     // Create a block ( and distribute it )
     size_t block_id = samson_worker_->worker_block_manager()->CreateBlock(buffer);
@@ -285,7 +287,7 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
     engine::BufferPointer buffer = block->buffer();
 
     // Check header for valid block
-    KVHeader *header = (KVHeader *)buffer->data();
+    KVHeader *header = reinterpret_cast<KVHeader *>( buffer->data());
     if (!header->Check()) {
       setUserError(("Not valid header in block refernce"));
       return;

@@ -27,11 +27,11 @@ namespace stream {
 class InputData {
 public:
 
-  InputData() {
-    num_blocks_ = 0;
+  InputData() :
+    num_blocks_(0) {
   }
 
-  std::string str() {
+  std::string str() const {
     // Build string to inform about this
     std::ostringstream output;
 
@@ -42,24 +42,24 @@ public:
     return output.str();
   }
 
-  void AppendToTotal(double factor, KVInfo info) {
+  void AppendToTotal(double factor, const KVInfo& info) {
     num_blocks_++;
     total_info_.Append(factor, info);
   }
 
-  void AppendToReady(double factor, KVInfo info) {
+  void AppendToReady(double factor, const KVInfo& info) {
     ready_info_.Append(factor, info);
   }
 
-  FullKVInfo total_info() {
+  FullKVInfo total_info() const {
     return total_info_;
   };
 
-  FullKVInfo ready_info() {
+  FullKVInfo ready_info() const {
     return ready_info_;
   }
 
-  bool IsFullyReady() {
+  bool IsFullyReady() const {
     return (total_info_.size == ready_info_.size);
   }
 
@@ -73,76 +73,76 @@ private:
 class InputsData {
 public:
 
-  InputsData(int num_inputs) {
-    for (int i = 0; i < num_inputs; i++) {
-      inputs_data.push_back(InputData());
+  explicit InputsData(int num_inputs) {
+    for (int i = 0; i < num_inputs; ++i) {
+      inputs_data_.push_back(InputData());
     }
   }
 
-  void AppendToTotal(int input,  double factor, KVInfo info) {
-    inputs_data[input].AppendToTotal(factor, info);
+  void AppendToTotal(int input,  double factor, const KVInfo& info) {
+    inputs_data_[input].AppendToTotal(factor, info);
   }
 
-  void AppendToReady(int input, double factor, KVInfo info) {
-    inputs_data[input].AppendToReady(factor, info);
+  void AppendToReady(int input, double factor, const KVInfo& info) {
+    inputs_data_[input].AppendToReady(factor, info);
   }
 
-  std::string str() {
+  std::string str() const {
     std::ostringstream output;
 
-    for (size_t i = 0; i < inputs_data.size(); i++) {
-      output << inputs_data[i].str();
+    for (size_t i = 0; i < inputs_data_.size(); i++) {
+      output << inputs_data_[i].str();
     }
     return output.str();
   }
 
-  size_t GetReadySize() {
+  size_t GetReadySize() const {
     size_t total = 0;
 
-    for (size_t i = 0; i < inputs_data.size(); ++i) {
-      total +=  inputs_data[i].ready_info().size;
+    for (size_t i = 0; i < inputs_data_.size(); ++i) {
+      total +=  inputs_data_[i].ready_info().size;
     }
     return total;
   }
 
-  size_t GetReadySizeForAllInputsExceptLastOne() {
+  size_t GetReadySizeForAllInputsExceptLastOne() const {
     size_t total = 0;
 
-    for (size_t i = 0; i < inputs_data.size() - 1; ++i) {
-      total +=  inputs_data[i].ready_info().size;
+    for (size_t i = 0; i < inputs_data_.size() - 1; ++i) {
+      total +=  inputs_data_[i].ready_info().size;
     }
     return total;
   }
 
-  size_t GetTotalSize() {
+  size_t GetTotalSize() const {
     size_t total = 0;
 
-    for (size_t i = 0; i < inputs_data.size(); ++i) {
-      total +=  inputs_data[i].total_info().size;
+    for (size_t i = 0; i < inputs_data_.size(); ++i) {
+      total +=  inputs_data_[i].total_info().size;
     }
     return total;
   }
 
-  size_t GetLastInputTotalSize() {
-    return inputs_data[inputs_data.size() - 1].total_info().size;
+  size_t GetLastInputTotalSize() const {
+    return inputs_data_[inputs_data_.size() - 1].total_info().size;
   }
 
   bool AreAllInputFullyReady() {
-    for (size_t i = 0; i < inputs_data.size(); ++i) {
-      if (!inputs_data[i].IsFullyReady()) {
+    for (size_t i = 0; i < inputs_data_.size(); ++i) {
+      if (!inputs_data_[i].IsFullyReady()) {
         return false;
       }
     }
     return true;
   }
 
-  bool IsLastInputFullyReady() {
-    return inputs_data[inputs_data.size() - 1].IsFullyReady();
+  bool IsLastInputFullyReady() const {
+    return inputs_data_[inputs_data_.size() - 1].IsFullyReady();
   }
 
 private:
 
-  std::vector<InputData> inputs_data;
+  std::vector<InputData> inputs_data_;
 };
 
 StreamOperationRangeInfo::StreamOperationRangeInfo(StreamOperationGlobalInfo *stream_operation_global_info,
@@ -277,7 +277,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
 
     // Take all the blocks intersecting block "range_"
     bool ready = true;     // Flag to indicate that data is ready so far
-    for (int b = 0; b < queue->blocks_size(); b++) {
+    for (int b = 0; b < queue->blocks_size(); ++b) {
       const gpb::Block& block = queue->blocks(b);
       KVRange range = block.range();     // Implicit conversion
       double overlap_factor = range.GetOverlapFactor(range_);
@@ -438,31 +438,29 @@ void StreamOperationRangeInfo::ReviewCurrentTask() {
 }
 
 au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t task_id, gpb::Data *data) {
-  size_t memory = engine::Engine::shared()->memory_manager()->memory();
-  // int num_cores = engine::Engine::shared()->process_manager()->max_num_procesors();
-  size_t max_memory_per_task = 0.5 * memory;
-
-  // Get information about the stream operation
-  gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);
-
-  // Get the operation to be executed
-  std::string operation_name = stream_operation->operation();
-  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
-
   // Everything is checked by Rreview command, so no error is accepted
   if (priority_rank_ == 0) {
     SetError("Scheduling a task with priority_rank=0");
     return au::SharedPointer<WorkerTask>(NULL);
   }
+
+  // Get information about the stream operation
+  gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);
   if (!stream_operation) {
     SetError(au::str("Error recovering stream operation %s", stream_operation_name_.c_str()));
     return au::SharedPointer<WorkerTask>(NULL);
   }
-  if (error_.IsActivated()) {
-    SetError("Error scheduling a task with a previous error");
+  if (!IsStreamOperationValid(data, *stream_operation, &error_)) {
     return au::SharedPointer<WorkerTask>(NULL);
   }
-  if (!IsStreamOperationValid(data, *stream_operation, &error_)) {
+
+  size_t memory = engine::Engine::shared()->memory_manager()->memory();
+  size_t max_memory_per_task = memory / 2;
+  std::string operation_name = stream_operation->operation();  // Get the operation to be executed
+  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+
+  if (error_.IsActivated()) {
+    SetError("Error scheduling a task with a previous error");
     return au::SharedPointer<WorkerTask>(NULL);
   }
 
@@ -561,7 +559,7 @@ std::string StreamOperationRangeInfo::str() const {
   return output.str();
 }
 
-void StreamOperationRangeInfo::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
+void StreamOperationRangeInfo::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) const {
   // Common columns
   ::samson::add(record, "id", stream_operation_id_, "different");
   ::samson::add(record, "name", stream_operation_name_, "different");
@@ -596,8 +594,9 @@ void StreamOperationRangeInfo::fill(samson::gpb::CollectionRecord *record, const
   ::samson::add(record, "state", state_, "different,left");
 }
 
-bool StreamOperationRangeInfo::IsStreamOperationValid(gpb::Data *data, const gpb::StreamOperation& stream_operation,
-                                                      au::ErrorManager *error) {
+bool StreamOperationRangeInfo::IsStreamOperationValid(gpb::Data *data
+                                                      , const gpb::StreamOperation& stream_operation
+                                                      , au::ErrorManager *error) {
   std::string operation_name = stream_operation.operation();
   Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
 

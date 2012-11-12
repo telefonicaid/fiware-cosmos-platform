@@ -187,7 +187,7 @@ public:
         std::vector<int> int_versions = GetVectorOfInts(str_versions);  // Get the int version of the same vector
 
         // Get the last version we have here
-        version_ = GetLargest(int_versions);
+        version_ = au::max_element(int_versions, 0);
         c_.Reset(new C());
         rc = zoo_connection_->Get(GetVersionPath(version_),  c_.shared_object());
         if (rc) {
@@ -343,7 +343,7 @@ private:
 
       // Remove old versions of data model
       std::vector<int> int_versions = au::GetVectorOfInts(str_versions);
-      int last_version = GetLargest(int_versions);
+      int last_version = au::max_element(int_versions, 0);
       std::vector<int> int_old_versions = au::GetVectorOfElementsLowerThan(int_versions, last_version);
 
       LOG_M(logs.zoo, ( "Last version of data model in %sis %d ", path_.c_str(), last_version ));

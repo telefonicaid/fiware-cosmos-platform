@@ -70,13 +70,11 @@ namespace samson {
  * Constructor
  */
 
-SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
-  zoo_host_ = zoo_host;
-  port_ = port;
-  web_port_ = web_port;
-
-  last_modules_version_ = 0;
-
+SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
+  zoo_host_(zoo_host)
+  , port_(port)
+  , web_port_(web_port)
+  , last_modules_version_(0) {
   // Random initialization
   srand(time(NULL));
 
@@ -85,8 +83,8 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
   workerCommandManager_ = new WorkerCommandManager(this);
   samson_worker_rest_ = new SamsonWorkerRest(this, web_port_);
   task_manager_ =  new stream::WorkerTaskManager(this);
-  // network_ will be properly initialized later
-  network_ = NULL;
+  network_ = NULL;  // network_ will be properly initialized later
+
 
   // Initial state of this worker ( unconnected )
   state_ = unconnected;
@@ -186,7 +184,7 @@ void SamsonWorker::Review() {
       // Request blocks I am suppouse to have
       std::vector<KVRange> my_ranges = worker_controller_->GetAllMyKVRanges();
       std::set<size_t> my_block_ids = data_model_->GetMyBlockIdsForPreviousAndCandidateDataModel(my_ranges);
-      for (std::set<size_t>::iterator it = my_block_ids.begin(); it != my_block_ids.end(); it++) {
+      for (std::set<size_t>::iterator it = my_block_ids.begin(); it != my_block_ids.end(); ++it) {
         if (stream::BlockManager::shared()->GetBlock(*it) != NULL) {
           continue;
         }
@@ -207,7 +205,7 @@ void SamsonWorker::Review() {
         }
       }
 
-      if (candidate_data_commit_id != (size_t)-1) {
+      if (candidate_data_commit_id != static_cast<size_t>(-1)) {
         if (candidate_data_commit_id > last_commit_id) {
           // Check I can confirm this level of data model
           std::set<size_t> block_ids = data_model_->GetMyBlockIdsForCandidateDataModel(my_ranges);
@@ -223,7 +221,7 @@ void SamsonWorker::Review() {
       if (worker_controller_->cluster_leader()) {
         size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
 
-        if (candidate_data_commit_id != (size_t)-1) {
+        if (candidate_data_commit_id != static_cast<size_t>(-1)) {
           // Checkk all workers satisfy this level of data model
           if (worker_controller_->CheckDataModelCommitId(candidate_data_commit_id)) {
             data_model_->FreezeCandidateDataModel();
@@ -302,7 +300,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
     size_t block_id  = packet->message->block_id();
-    size_t worker_id = packet->from.id;
 
     // Schedule operations to send this block to this worker
     if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
@@ -318,7 +315,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     // Add the task for this request
     std::vector<size_t> worker_ids;
-    worker_ids.push_back(worker_id);
+    worker_ids.push_back(packet->from.id);
     LOG_V(logs.block_request, ("Received block request for %s. Added to task manager!", str_block_id(block_id).c_str()));
     task_manager_->AddBlockRequestTask(block_id, worker_ids);
     return;
@@ -342,7 +339,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     size_t block_id = packet->message->block_id();
     size_t worker_id = packet->from.id;
 
-    if (block_id == (size_t)-1) {
+    if (block_id == static_cast<size_t>(-1)) {
       LM_W(("Received a Message::DuplicateBlock with incorrect block id"));
       return;
     }
@@ -451,7 +448,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     // Recover push_id and the list queue queues
     size_t push_id = packet->message->push_id();
     std::vector<std::string> queues;
-    for (int i = 0; i < packet->message->queue_size(); i++) {
+    for (int i = 0; i < packet->message->queue_size(); ++i) {
       queues.push_back(packet->message->queue(i));
     }
 
@@ -696,7 +693,7 @@ void SamsonWorker::notify(engine::Notification *notification) {
            , worker_id
            , cluster_info->workers_size()
            , au::str_time(cronometer_.seconds()).c_str()
-           , (int)GetNumKVRanges(cluster_info.shared_object(), worker_id)
+           , static_cast<int>(GetNumKVRanges(cluster_info.shared_object(), worker_id))
            , cluster_info->process_units_size()
            , au::str_percentage(num_processes, max_processes).c_str()
            , au::str_percentage(used_memory, max_memory).c_str()
@@ -714,8 +711,8 @@ void SamsonWorker::notify(engine::Notification *notification) {
     std::string context = notification->environment().Get("context", "?");
     std::string type    = notification->environment().Get("type", "message");
 
-    size_t delilah_id = notification->environment().Get("delilah_id", (size_t)-1);
-    if (delilah_id == (size_t)-1) {
+    size_t delilah_id = notification->environment().Get("delilah_id", static_cast<size_t>(-1));
+    if (delilah_id == static_cast<size_t>(-1)) {
       network_->SendAlertToAllDelilahs(type, context, message);
     } else {
       network_->SendAlertToDelilah(delilah_id, type, context, message);
@@ -815,7 +812,7 @@ std::string SamsonWorker::getPrompt() {
   }
 
   size_t worker_id = worker_controller_->worker_id();
-  if (worker_id == (size_t)-1) {
+  if (worker_id == static_cast<size_t>(-1)) {
     return "[Unconnected] SamsonWorker > ";
   }
 
@@ -838,7 +835,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerAllLogChannels(const V
 
   collection->set_name("wlog channels");
 
-  for (int i = 0; i < au::log_central.log_channels().num_channels(); i++) {
+  for (int i = 0; i < au::log_central.log_channels().num_channels(); ++i) {
     gpb::CollectionRecord *record = collection->add_record();
     std::string name = au::log_central.log_channels().channel_name(i);
     std::string description = au::log_central.log_channels().channel_description(i);
@@ -863,6 +860,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerLogStatus(const Visual
 
 au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_title("KVRanges collection");
   collection->set_name("kv_ranges");
 
   // Get current version of the cluster
@@ -875,7 +873,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Vis
     return collection;
   }
 
-  for (int i = 0; i < cluster_info->process_units_size(); i++) {
+  for (int i = 0; i < cluster_info->process_units_size(); ++i) {
     gpb::CollectionRecord *record = collection->add_record();
 
     KVRange range(cluster_info->process_units(i).hg_begin(), cluster_info->process_units(i).hg_end());
@@ -884,7 +882,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Vis
     add(record, "Worker", cluster_info->process_units(i).worker_id(), "different");
 
     std::ostringstream replica_workers;
-    for (int r = 0; r < cluster_info->process_units(i).replica_worker_id_size(); r++) {
+    for (int r = 0; r < cluster_info->process_units(i).replica_worker_id_size(); ++r) {
       replica_workers << cluster_info->process_units(i).replica_worker_id(r) << " ";
     }
     add(record, "Worker replicas",  replica_workers.str(), "different");
@@ -893,7 +891,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Vis
     BlockKVInfo info;
     BlockKVInfo max_info;
     const gpb::Data& data = data_model->current_data();
-    for (int q = 0; q < data.queue_size(); q++) {
+    for (int q = 0; q < data.queue_size(); ++q) {
       BlockKVInfo queue_info = gpb::getBlockKVInfoForQueue(data.queue(q), range);
 
       info.Append(queue_info);
@@ -1011,12 +1009,12 @@ void SamsonWorker::ReloadModulesIfNecessary() {
 
   // Check if we have all necesary blocks
   int missing_blocks = 0;
-  for (int b = 0; b < queue->blocks_size(); b++) {
+  for (int b = 0; b < queue->blocks_size(); ++b) {
     size_t block_id = queue->blocks(b).block_id();
     if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
       // Add this block to be requested to other workers
       worker_block_manager_->RequestBlock(block_id);
-      missing_blocks++;
+      ++missing_blocks;
     }
   }
 
@@ -1046,7 +1044,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   au::CreateDirectory(directory);
 
   // Write each loaded file
-  for (int i = 0; i < queue->blocks_size(); i++) {
+  for (int i = 0; i < queue->blocks_size(); ++i) {
     size_t block_id = queue->blocks(i).block_id();
 
     // Recover block
@@ -1132,7 +1130,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelCommit
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("data_model_commits");
 
-  for (int i = 0; i < data_model->commit_size(); i++) {
+  for (int i = 0; i < data_model->commit_size(); ++i) {
     gpb::CollectionRecord *record = collection->add_record();
     ::samson::add(record, "commit_id", data_model->commit(i).id(), "different");
     ::samson::add(record, "message", data_model->commit(i).message(), "different");

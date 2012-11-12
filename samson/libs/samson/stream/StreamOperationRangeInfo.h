@@ -95,7 +95,7 @@ public:
   /**
    * \brief Fill provided record with information about this element
    */
-  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization);
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) const;
 
   /**
    * \brief Get priority rank to be compare with the rest of pending tasks

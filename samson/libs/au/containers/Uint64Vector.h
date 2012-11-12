@@ -103,9 +103,17 @@ public:
 };
 
 // Handy methods to manipulate vector of strings and numbers
-std::vector<int> GetVectorOfInts(au::StringVector& v);
-int GetLargest(std::vector<int>& vector);
-std::vector<int> GetVectorOfElementsLowerThan(std::vector<int> & vector, int limit);
+std::vector<int> GetVectorOfInts(const au::StringVector& v);
+
+template<typename C>
+C max_element(const std::vector<C>& vector, C default_value) {
+  if (vector.size() == 0) {
+    return default_value;
+  }
+  return *std::max_element(vector.begin(), vector.end());
+}
+
+std::vector<int> GetVectorOfElementsLowerThan(const std::vector<int> & vector, int limit);
 }
 
 #endif  // ifndef _H_AU_STRING_UINT64_VECTOR

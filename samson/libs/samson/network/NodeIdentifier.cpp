@@ -15,7 +15,7 @@
 namespace samson {
 NodeIdentifier::NodeIdentifier() {
   node_type = UnknownNode;
-  id = (size_t)-1;
+  id = static_cast<size_t>(-1);
 }
 
 NodeIdentifier::NodeIdentifier(gpb::NodeIdentifier pb_node_identifier) {
@@ -86,7 +86,7 @@ bool NodeIdentifier::operator==(const NodeIdentifier&  other) {
 }
 
 std::string NodeIdentifier::str() {
-  if (id == (size_t)-1) {
+  if (id == static_cast<size_t>(-1)) {
     return au::str("%s:Unknown", ClusterNodeType2str(node_type));
   }
 

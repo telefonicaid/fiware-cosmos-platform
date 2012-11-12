@@ -49,17 +49,16 @@ void FullKVInfo::append(uint64 _size, uint64 _kvs) {
 
 #endif
 
-void FullKVInfo::append(FullKVInfo other) {
+void FullKVInfo::append(const FullKVInfo& other) {
   size += other.size;
   kvs += other.kvs;
 }
 
-void FullKVInfo::Append( double factor , KVInfo other)
-  {
-    size += factor * (double) other.size;
-    kvs += factor * (double) other.kvs;
-  }
-  
+void FullKVInfo::Append(double factor, const KVInfo& other) {
+  size += factor * (double)other.size;
+  kvs += factor * (double)other.kvs;
+}
+
 #ifdef __LP64__
 void FullKVInfo::remove(uint64 _size, uint64 _kvs) {
   size -= _size;
@@ -80,12 +79,12 @@ void FullKVInfo::append(uint32 _size, uint32 _kvs) {
   kvs += _kvs;
 }
 
-void FullKVInfo::append(KVInfo other) {
+void FullKVInfo::append(const KVInfo& other) {
   size += other.size;
   kvs += other.kvs;
 }
 
-void FullKVInfo::set(KVInfo other) {
+void FullKVInfo::set(const KVInfo& other) {
   size = other.size;
   kvs = other.kvs;
 }
@@ -95,12 +94,12 @@ void FullKVInfo::remove(uint32 _size, uint32 _kvs) {
   kvs -= _kvs;
 }
 
-void FullKVInfo::remove(KVInfo other) {
+void FullKVInfo::remove(const KVInfo& other) {
   size -= other.size;
   kvs -= other.kvs;
 }
 
-bool FullKVInfo::fitsInKVInfo() {
+bool FullKVInfo::fitsInKVInfo() const {
   if (size >= MAX_UINT_32) {
     return false;
   }
@@ -110,16 +109,15 @@ bool FullKVInfo::fitsInKVInfo() {
   return true;
 }
 
-KVInfo FullKVInfo::getKVInfo() {
+KVInfo FullKVInfo::getKVInfo() const {
   return KVInfo(size, kvs);
 }
 
-std::string FullKVInfo::str() {
+std::string FullKVInfo::str() const {
   return au::str(kvs, "kvs") + "/" + au::str(size, "B");
 }
 
-  
-std::string FullKVInfo::strDetailed() {
+std::string FullKVInfo::strDetailed() const {
   return au::str("( %lu kvs [%s] in %lu bytes [%s] )"
                  , kvs
                  , au::str(kvs).c_str()
@@ -128,14 +126,14 @@ std::string FullKVInfo::strDetailed() {
                  );
 }
 
-void FullKVInfo::getInfo(std::ostringstream& output) {
+void FullKVInfo::getInfo(std::ostringstream& output) const {
   au::xml_open(output, "kv_info");
   au::xml_simple(output, "kvs", kvs);
   au::xml_simple(output, "size", size);
   au::xml_close(output, "kv_info");
 }
 
-bool FullKVInfo::isEmpty() {
+bool FullKVInfo::isEmpty() const {
   return ((kvs == 0) && (size == 0));
 }
 }

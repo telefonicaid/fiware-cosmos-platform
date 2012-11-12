@@ -91,8 +91,8 @@ au::SharedPointer<au::CommandLine> DataModel::GetCommandLine() {
   cmd->SetFlagBoolean("batch_operation");
   // Prefix used to change names of queues and operations
   cmd->SetFlagString("prefix", "");
-  cmd->SetFlagUint64("delilah_id", (size_t)-1);
-  cmd->SetFlagUint64("delilah_component_id", (size_t)-1);
+  cmd->SetFlagUint64("delilah_id", static_cast<size_t>(-1));
+  cmd->SetFlagUint64("delilah_component_id", static_cast<size_t>(-1));
 
   return cmd;
 }
@@ -510,28 +510,31 @@ void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::C
 // All
 
 
-void DataModel::ProcessRemoveAllCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
-                                        au::ErrorManager&  /* error */) {
+void DataModel::ProcessRemoveAllCommand(gpb::Data *data
+                                        , au::SharedPointer<au::CommandLine>  /*cmd*/
+                                        , au::ErrorManager&  /* error */) {
   reset_stream_operations(data);
   reset_data(data);
   return;
 }
 
-void DataModel::ProcessRemoveAllDataCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd  /* cmd */,
-                                            au::ErrorManager&  /* error */) {
+void DataModel::ProcessRemoveAllDataCommand(gpb::Data *data
+                                            , au::SharedPointer<au::CommandLine>  /* cmd */
+                                            , au::ErrorManager&  /* error */) {
   reset_data(data);
   return;
 }
 
-void DataModel::ProcessRemoveAllStreamOperationsCommand(gpb::Data *data,
-                                                        au::SharedPointer<au::CommandLine> cmd  /* cmd */,
-                                                        au::ErrorManager&  /* error */) {
+void DataModel::ProcessRemoveAllStreamOperationsCommand(gpb::Data *data
+                                                        , au::SharedPointer<au::CommandLine>  /* cmd */
+                                                        , au::ErrorManager&  /* error */) {
   reset_stream_operations(data);
   return;
 }
 
-void DataModel::ProcessRemoveStreamOperationCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
-                                                    au::ErrorManager&error) {
+void DataModel::ProcessRemoveStreamOperationCommand(gpb::Data *data
+                                                    , au::SharedPointer<au::CommandLine> cmd
+                                                    , au::ErrorManager& error) {
   // Recover prefix
   std::string prefix = cmd->GetFlagString("prefix");
   std::string name = prefix + cmd->get_argument(1);
@@ -547,8 +550,9 @@ void DataModel::ProcessRemoveStreamOperationCommand(gpb::Data *data, au::SharedP
   return;
 }
 
-void DataModel::ProcessRmCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
-                                 au::ErrorManager&error) {
+void DataModel::ProcessRmCommand(gpb::Data *data
+                                 , au::SharedPointer<au::CommandLine> cmd
+                                 , au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 2) {
     error.set(au::str("Usage: rm queue_name queue_name2 ....", cmd->get_argument(0).c_str()));
     return;
@@ -568,8 +572,9 @@ void DataModel::ProcessRmCommand(gpb::Data *data, au::SharedPointer<au::CommandL
   return;
 }
 
-void DataModel::ProcessRmQueueConnectionCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
-                                                au::ErrorManager&error) {
+void DataModel::ProcessRmQueueConnectionCommand(gpb::Data *data
+                                                , au::SharedPointer<au::CommandLine> cmd
+                                                , au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 3) {
     error.set(au::str("Usage: rm_queue_connections source_queue target_queue", cmd->get_argument(0).c_str()));
     return;
@@ -577,22 +582,23 @@ void DataModel::ProcessRmQueueConnectionCommand(gpb::Data *data, au::SharedPoint
 
   std::vector<std::string> source_queues = au::split(cmd->get_argument(1), ' ');
   std::vector<std::string> target_queues = au::split(cmd->get_argument(2), ' ');
-  for (size_t i = 0; i < source_queues.size(); i++) {
-    for (size_t j = 0; j < target_queues.size(); j++) {
+  for (size_t i = 0; i < source_queues.size(); ++i) {
+    for (size_t j = 0; j < target_queues.size(); ++j) {
       data_remove_queue_connection(data, source_queues[i], target_queues[j]);
     }
   }
   return;
 }
 
-void DataModel::ProcessSetQueuePropertyCommand(gpb::Data *  /* data */, au::SharedPointer<au::CommandLine> cmd,
-                                               au::ErrorManager&error) {
+void DataModel::ProcessSetQueuePropertyCommand(gpb::Data *  /* data */
+                                               , au::SharedPointer<au::CommandLine> cmd
+                                               , au::ErrorManager& error) {
   error.set(au::str("Command:'%s', still not implemented", cmd->get_argument(0).c_str()));
   return;
 }
 
 void DataModel::ProcessSetStreamOperationPropertyCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
-                                                         au::ErrorManager&error) {
+                                                         au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 4) {
     error.set(au::str("Usage: set_stream_operation_property name property value", cmd->get_argument(0).c_str()));
     return;
@@ -628,7 +634,7 @@ void DataModel::ProcessSetStreamOperationPropertyCommand(gpb::Data *data, au::Sh
 
 void DataModel::ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data,
                                                            au::SharedPointer<au::CommandLine> cmd,
-                                                           au::ErrorManager&error) {
+                                                           au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 3) {
     error.set(au::str("Usage: unset_stream_operation_property name property", cmd->get_argument(0).c_str()));
     return;
@@ -650,7 +656,7 @@ void DataModel::ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data,
 }
 
 // All
-void DataModel::ProcessFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager&error) {
+void DataModel::ProcessFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error) {
   if (data_model->has_candidate_data()) {
     error.set("Still frozing a previous data model");
     return;
@@ -667,7 +673,7 @@ void DataModel::ProcessFreezeDataModel(au::SharedPointer<gpb::DataModel> data_mo
   error.AddMessage("Ok. Frozen data model state scheduled correcly");
 }
 
-void DataModel::ProcessCancelFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager&error) {
+void DataModel::ProcessCancelFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error) {
   if (!data_model->has_candidate_data()) {
     error.set("No candidate data-model to cancel");
     return;
@@ -690,7 +696,7 @@ bool DataModel::IsRecoveryCommand(const std::string& command) {
   return false;
 }
 
-void DataModel::ProcessRecoverDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager&error) {
+void DataModel::ProcessRecoverDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error) {
   // Recover previous version as current
   data_model->clear_candidate_data();
 
@@ -718,7 +724,7 @@ void DataModel::ProcessRecoverDataModel(au::SharedPointer<gpb::DataModel> data_m
   }
 }
 
-void DataModel::ProcessConsolidateDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager&error) {
+void DataModel::ProcessConsolidateDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error) {
   if (!data_model->has_candidate_data()) {
     error.set("No candidate state model to be consolidated");
     return;
@@ -1097,7 +1103,7 @@ size_t DataModel::GetLastCommitIdForCandidateDataModel() {
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
 
   if (!data_model->has_candidate_data()) {
-    return (size_t)-1;
+    return static_cast<size_t>(-1);
   }
   return data_model->candidate_data().commit_id();
 }
@@ -1194,7 +1200,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetLastCommitsCollection(const Vis
   return collection;
 }
 
-void DataModel::ReviewBatchOperations(gpb::Data *data, au::ErrorManager&error) {
+void DataModel::ReviewBatchOperations(gpb::Data *data, au::ErrorManager& error) {
   int operations_size = data->batch_operations_size();
 
   for (int i = 0; i < operations_size; ++i) {

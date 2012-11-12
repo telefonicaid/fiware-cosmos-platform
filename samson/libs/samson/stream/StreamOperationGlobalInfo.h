@@ -95,7 +95,7 @@ public:
   /**
    * \brief Get a vector of individual managers for each range
    */
-  const au::vector<StreamOperationRangeInfo>& stream_operations_range_info() {
+  const au::vector<StreamOperationRangeInfo>& stream_operations_range_info() const {
     return stream_operations_range_info_;
   }
 

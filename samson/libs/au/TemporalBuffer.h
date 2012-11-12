@@ -25,8 +25,6 @@
  *
  * Simple but usefull class to work with a temporary allocated buffer
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_TEMPORAL_BUFFER

@@ -23,8 +23,6 @@
  *
  *  Class used to mantain samples for monitorization
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 

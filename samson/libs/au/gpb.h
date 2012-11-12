@@ -23,8 +23,6 @@
  *
  *  read and write operations using google prototol buffer to comunicate using a pipe
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_GPB

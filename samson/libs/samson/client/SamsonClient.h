@@ -22,8 +22,6 @@
  * DESCRIPTION
  *
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_Samson_SamsonClient

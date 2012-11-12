@@ -23,8 +23,6 @@
  *
  *      Usefull functions to work with files
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_FILE

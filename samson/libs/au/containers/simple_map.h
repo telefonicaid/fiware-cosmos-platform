@@ -23,8 +23,6 @@
  *
  *      Wrapper of the std::map object with convenient methods for easy development
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_SIMPLE_MAP

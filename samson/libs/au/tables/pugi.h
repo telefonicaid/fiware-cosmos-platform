@@ -25,8 +25,6 @@
  *  Usefull functions to simplify development with pugi library
  *  Everything ready for running xpath queries over xml data
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_xml_Pugi

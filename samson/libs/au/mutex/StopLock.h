@@ -24,8 +24,6 @@
  *      Wrapper of the condition type included in the pthreat library.
  *      It simplifies development of stop conditions
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef SAMSON_STOP_LOCK_H

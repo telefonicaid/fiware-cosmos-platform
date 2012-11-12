@@ -24,8 +24,6 @@
  *
  *  Wrapper of the mutex included in the pthreadlibrary with usefull methods to simplify development
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef SAMSON_LOCK_H

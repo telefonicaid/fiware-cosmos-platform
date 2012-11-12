@@ -25,8 +25,6 @@
  *      In this case, we can return NULL if object is not found in the set
  *      It greatly simplifies development of objects managers in memory
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_SET

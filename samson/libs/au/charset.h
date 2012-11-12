@@ -26,8 +26,6 @@
  *
  * Handy functions to work with different charsets
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_CHARSET

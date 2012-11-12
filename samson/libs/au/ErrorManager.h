@@ -24,8 +24,6 @@
  * Simple but usefull error mesasage information
  * Whatever sistem that can report an error can activate this error providing a message
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_ERROR

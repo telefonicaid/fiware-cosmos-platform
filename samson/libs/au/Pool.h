@@ -23,8 +23,6 @@
  *
  *  Class used as a a pool of instances of particular class
  *
- * COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 

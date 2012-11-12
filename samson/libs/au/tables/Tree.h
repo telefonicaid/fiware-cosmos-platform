@@ -22,8 +22,6 @@
  *
  *      Usefull classes to get tree data-sets
  *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
- *
  * ****************************************************************************/
 
 #ifndef _H_AU_TREE

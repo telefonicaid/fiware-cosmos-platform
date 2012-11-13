@@ -109,9 +109,12 @@ SET (SOURCES
 	lib/samson/common/KVRangeTest.cpp
 	lib/samson/common/SamsonSetupTest.cpp 
 	lib/samson/common/SamsonFileTest.cpp
-
+	
 	lib/samson/common/EnvironmentOperationsTest.cpp
 	lib/samson/common/KVFileTest.cpp
+	lib/samson/common/KVInputVectorTest.cpp
+	lib/samson/common/LogsTest.cpp
+	lib/samson/common/MemoryCheckTest.cpp
 
 	# SAMSOM WORKER LIBRARY
 	lib/samson/worker/SamsonWorkerTest.cpp
@@ -148,6 +151,7 @@ SET (STATIC_LIBS
      pa
      lm
      engine
+	 zoo
      protobuf
      pthread
      samson_system
@@ -155,7 +159,6 @@ SET (STATIC_LIBS
      samsonWorkerLib
      samsonStream
      samsonNetwork
-     samsonZoo
      samsonCommon
      zookeeper_mt
      samson_comscore    

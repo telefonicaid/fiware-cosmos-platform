@@ -7,6 +7,7 @@
 #include <fcntl.h>
 
 #include "au/string/Pattern.h"
+#include "au/string/StringUtilities.h"
 #include "au/Status.h"
 #include "au/TemporalBuffer.h"
 #include "au/string/Tokenizer.h"
@@ -22,12 +23,12 @@
 namespace au {
 /*
  *
- * Known fields
+ * ---------------------------------------------------------------------------
+ * Fields of every log
  * ---------------------------------------------------------------------------
  *
- * channel        Number of channel emited ( example  0 )
- * channel_name   Name of channel emited ( example message )
- * channel_alias  Alias of channel emited ( example M )
+ * type        One letter describing severity of the log ( D,M,V,W,E,X )
+ * channel     Name of channel emited ( example message )
  *
  * host        Name of the host ( if recovered using LogServer )
  *
@@ -41,17 +42,18 @@ namespace au {
  * timestamp
  * time_unix   Integuer version of the time
  *
- * line
- * exec        Name of the executable ( progname )
  * file        Name of the source file
+ * line        Line inside the source file
+ * function    Function name
+ * exec        Name of the executable ( progname )
  * text        Message
  * text80      Message ( limited to 80 chars )
- * function    Function name
  */
 
 extern const char *log_reseved_words[];
 
 struct LogData {
+  char level;             // Level of the channel ( D , M , W , E .... )
   int channel;            // Channel where this log was emitted
   int line;               // Line number
   struct timeval tv;      // time since 1970
@@ -62,29 +64,27 @@ struct LogData {
 
 // Entry in the log
 class Log {
+  
 public:
 
-  Log() {
-  }
+  Log() {}
+  ~Log() {}
 
-  ~Log() {
-  }
-
-  // Main log data
-  LogData& log_data();
-
-  // Set and get methods
+  // Set methods
   void Set(const std::string& field_name, const std::string& field_value);
   template< typename T>
   inline void Set(const std::string& field_name, const T& t) {
     std::ostringstream output;
-
     output << t;
     Set(field_name, output.str());
   }
 
+  // Get methods
   std::string Get(const std::string& name, const std::string& default_value) const;
   std::string Get(std::string name) const;
+  LogData& log_data();
+  int channel() const;
+  int level() const;
 
   // Read and Write over a file descriptor ( network or disk )
   bool Read(au::FileDescriptor *fd);
@@ -97,27 +97,35 @@ public:
   size_t SerialitzationSize();
 
   // Match agains a particuar regular expression
-  bool match(Pattern *pattern) const;
-  int channel() const;
+  bool Match(Pattern& pattern) const;
+  bool Match(SimplePattern& pattern) const;
+  
   // Spetial log to define mark of new session
   void SetNewSession();
   bool IsNewSession() const;
+  
+  // Fancy functions to get the color of this log on screen
+  au::Color GetColor();
 
+  // transform level in letter
+  static int GetLogLevel( const std::string& str_log_level );
+  static std::string GetLogLevel( int log_level );
+  
 private:
 
   // Methods to serialize string-kind fields
-  size_t getStringsSize() const;
-  void copyStrings(char *data);
-  void addStrings(char *strings, size_t len);
+  size_t GetStringsSize() const;
+  void CopyStrings(char *data);
+  void AddStrings(char *strings, size_t len);
 
   LogData log_data_;
   std::map<std::string, std::string> fields_;
 };
 
+  std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error);
+au::SharedPointer<au::tables::Table> getTableOfFields();
 typedef au::SharedPointer<Log>   LogPointer;
 
-// Table of fields
-au::SharedPointer<au::tables::Table> getTableOfFields();
 }
 
 #endif  // ifndef _H_AU_LOG

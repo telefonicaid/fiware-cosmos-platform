@@ -36,10 +36,6 @@ const char *messageCode(MessageCode code) {
 
     case PushBlockResponse:                return "PushBlockResponse";
 
-    case PushBlockCommit:                  return "PushBlockCommit";
-
-    case PushBlockCommitResponse:          return "PushBlockCommitRensponse";
-
     case PopQueue:                         return "PopQueue";
 
     case PopQueueResponse:                 return "PopQueueResponse";
@@ -50,12 +46,10 @@ const char *messageCode(MessageCode code) {
 
     case PopBlockRequestResponse:          return "PopBlockRequestResponse";
 
-    case BlockDistribution:                return "BlockDistribution";
-
-    case BlockDistributionResponse:        return "BlockDistributionResponse";
-
     case BlockRequest:                     return "BlockRequest";
 
+    case BlockRequestResponse:             return "BlockRequestResponse";
+      
     case StreamOutQueue:                   return "StreamOutQueue";
 
     case WorkerCommand:                    return "WorkerCommand";

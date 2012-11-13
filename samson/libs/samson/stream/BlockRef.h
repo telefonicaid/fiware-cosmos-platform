@@ -80,9 +80,9 @@ namespace samson {
       
     private:
       
-      BlockPointer block_;         // Pointer to the block
+      BlockPointer block_;  // Pointer to the block
       KVRange range_;       // Range associated with this block
-      KVInfo info_;                // Size and # of kvs to be processed
+      KVInfo info_;         // Size and # of kvs to be processed
       
       // Extra information anout hg organitzation
       au::SharedPointer<KVFile> file_;

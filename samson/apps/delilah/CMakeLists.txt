@@ -20,9 +20,9 @@ SET (STATIC_LIBS
      samsonModule
      dl
      engine
+	 zoo
      samsonCommon	
-	   samsonZoo
-	   samson_system
+     samson_system
      au
      ${SOLARIS_LIBS}
      ${COMMON_SAMSON_LIBS}

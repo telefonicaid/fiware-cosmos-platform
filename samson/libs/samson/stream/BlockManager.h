@@ -39,7 +39,9 @@ class BlockList;
  */
 
 class BlockManager : public engine::NotificationListener {
+  
   public:
+  
     // Singleton
     static void init();
     static BlockManager *shared();
@@ -58,8 +60,7 @@ class BlockManager : public engine::NotificationListener {
     void Review();
 
     // Remove blocks not included in this list
-    void RemoveBlocksIfNecessary(const std::set<size_t>& all_blocks, const std::set<size_t>& my_blocks,
-                                 const std::set<size_t>& worker_ids);
+    void RemoveBlocksIfNecessary( const std::set<size_t>& all_blocks);
 
     // Notification interface
     virtual void notify(engine::Notification *notification);
@@ -78,6 +79,9 @@ class BlockManager : public engine::NotificationListener {
     // Get all block identifiers
     std::set<size_t> GetBlockIds();
 
+  // Check if all theses blocks are present
+  bool CheckBlocks( const std::set<size_t>& block_ids );
+  
   private:
     BlockManager();   // Private constructor & destructir for singleton implementation
     ~BlockManager();

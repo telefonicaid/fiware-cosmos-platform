@@ -11,7 +11,7 @@
 #include "samson/network/WorkerNetwork.h"  // Own interface
 
 #include "au/utils.h"
-
+#include "au/log/LogMain.h"
 #include "samson/network/NetworkConnection.h"
 
 namespace samson {
@@ -57,7 +57,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   }
 
   if (cluster_information_version() == (size_t) -1) {   // Still not part of any cluster..
-    LM_W(("Connection rejected since I am still not part of any cluster..."));
+    LOG_SW(("Connection rejected since I am still not part of any cluster..."));
     socket_connection->Close();
     delete socket_connection;
     return;

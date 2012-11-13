@@ -10,14 +10,14 @@
  */
 
 
-#include "au/log/LogPluginFile.h"  // Own interface
+#include "au/log/LogCentralPluginFile.h"  // Own interface
 
 namespace au {
-LogPluginFile::LogPluginFile(std::string file_name) : LogPlugin("file") {
+LogCentralPluginFile::LogCentralPluginFile(std::string file_name) : LogCentralPlugin("file") {
   set_local_file(file_name);
 }
 
-void LogPluginFile::set_local_file(const std::string& file_name) {
+void LogCentralPluginFile::set_local_file(const std::string& file_name) {
   // Close previous if any
   local_file_descriptor_ = NULL;
 
@@ -34,7 +34,7 @@ void LogPluginFile::set_local_file(const std::string& file_name) {
   }
 }
 
-void LogPluginFile::Emit(SharedPointer<Log> log) {
+void LogCentralPluginFile::Emit(SharedPointer<Log> log) {
   // It was not possible, so use disk
   if (local_file_descriptor_ != NULL) {
     if (!log->Write(local_file_descriptor_.shared_object())) {
@@ -43,7 +43,7 @@ void LogPluginFile::Emit(SharedPointer<Log> log) {
   }
 }
 
-std::string LogPluginFile::status() {
+std::string LogCentralPluginFile::status() {
   return au::str("LocalFile: %s", local_file_.c_str());
 }
 }

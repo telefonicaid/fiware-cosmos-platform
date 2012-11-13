@@ -54,10 +54,9 @@ class StreamManager;
  
  */
 
-class BlockDistributionTask : public WorkerTaskBase {
+class BlockRequestTask : public WorkerTaskBase {
   public:
-    BlockDistributionTask(SamsonWorker *samson_worker, size_t id, size_t block_id,
-                          const std::vector<size_t>& worker_ids);
+    BlockRequestTask(SamsonWorker *samson_worker, size_t id, size_t block_id,const std::vector<size_t>& worker_ids);
 
     // Virtual method from engine::ProcessItem
     virtual void run();
@@ -65,7 +64,7 @@ class BlockDistributionTask : public WorkerTaskBase {
     // Virtual method of WorkerTaskBase
     virtual std::string str() {
       std::ostringstream output;
-      output << au::str("Task %lu: Distributing block %lu to workers ", worker_task_id(), block_id_);
+      output << au::str("Task %lu: Distributing block %s to workers ", worker_task_id(), str_block_id( block_id_).c_str() );
       output << au::str(worker_ids_);
       return output.str();
     }
@@ -114,7 +113,7 @@ class DefragTask : public WorkerTaskBase {
       samson_worker_ = samson_worker;
         queue_name_ = queue_name;
         ranges_ = ranges;
-        AU_LM_W( ("DEFRAG over ranges %s" , ::samson::str(ranges_).c_str() ));
+        LOG_SW( ("DEFRAG over ranges %s" , ::samson::str(ranges_).c_str() ));
     }
 
     // Virtual method from engine::ProcessItem

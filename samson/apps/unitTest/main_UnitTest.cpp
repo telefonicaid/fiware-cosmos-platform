@@ -72,8 +72,10 @@ int main(int argC, char **argV) {
     paParse(paArgs, 3, (char **)argV, 3, false);
   } else {
     // Avoid parsing any argument
-    paParse(paArgs, 1, (char **)argV, 1, false);  // Set assert flag to true ro force asserts instead of exits
+    paParse(paArgs, 1, (char **)argV, 1, false);
   }
+  
+  // Set assert flag to true ro force asserts instead of exits
   lmAssertAtExit = true;
 
   // Run all tests

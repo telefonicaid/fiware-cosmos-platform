@@ -318,7 +318,7 @@ std::string DataBase::runCommand(std::string command) {
 
     if (save != "no_save") {
       addTable(save, table_result);
-      return au::str(au::purple, "Created table %s", save.c_str());
+      return au::str(au::magenta, "Created table %s", save.c_str());
     } else {
       addTable("result", table_result);
       return table_result->str();
@@ -401,7 +401,7 @@ std::string DataBase::runCommand(std::string command) {
 
     if (save != "no_save") {
       _addTable(save,  result);
-      return au::string_in_color(au::str("Created table %s", save.c_str()), "purple");
+      return au::string_in_color(au::str("Created table %s", save.c_str()), "magenta");
     } else {
       _addTable("result",  result);
       return result->str();

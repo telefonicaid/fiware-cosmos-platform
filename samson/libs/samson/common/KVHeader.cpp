@@ -17,7 +17,6 @@
 namespace samson {
 void KVHeader::Init(KVFormat format, KVInfo _info) {            // Complete init function
   magic_number =  4652783;
-  worker_id = (size_t)-1;
 
   SetKVFormat(format);
   info = _info;
@@ -31,7 +30,6 @@ void KVHeader::Init(KVFormat format, KVInfo _info) {            // Complete init
 
 void KVHeader::InitForModule(size_t size) {
   magic_number =  4652783;
-  worker_id = (size_t)-1;
   SetKVFormat(KVFormat("module", "module"));
 
   // Full range to make sure it is in all workers
@@ -46,7 +44,6 @@ void KVHeader::InitForModule(size_t size) {
 
 void KVHeader::InitForTxt(size_t size) {
   magic_number =  4652783;
-  worker_id = (size_t)-1;
   SetKVFormat(KVFormat("txt", "txt"));
 
   // Random hash-group

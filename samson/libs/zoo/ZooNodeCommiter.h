@@ -27,9 +27,9 @@
 #include "samson/common/samson.pb.h"
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/Visualitzation.h"
-#include "samson/zoo/CommitCommand.h"
-#include "samson/zoo/common.h"
-#include "samson/zoo/Connection.h"
+#include "samson/worker/CommitCommand.h"
+#include "zoo/common.h"
+#include "zoo/Connection.h"
 
 #define NODE_WORKER_BASE "/samson/workers/w"
 
@@ -43,7 +43,7 @@
 //
 // ------------------------------------------------------------------
 
-namespace samson {
+namespace au {
 struct CommitRecord {
     int id;
     std::string caller;
@@ -89,7 +89,7 @@ class ZooNodeCommiter : public engine::NotificationListener {
 
     // Virtual function to update internal state with a provided commit
     virtual void
-    PerformCommit(au::SharedPointer<C> c, std::string commit_command, int version, au::ErrorManager *error) = 0;
+    PerformCommit(au::SharedPointer<C> c, std::string commit_command, int version, au::ErrorManager& error) = 0;
 
     // Virtual method to be nofitied when and update comes up
     virtual void NotificationNewModel(int version, au::SharedPointer<C> c) {
@@ -108,7 +108,7 @@ class ZooNodeCommiter : public engine::NotificationListener {
     }
 
     // Commit a new commit_command
-    void Commit(const std::string& caller, const std::string& commit_command, au::ErrorManager *error) {
+    void Commit(const std::string& caller, const std::string& commit_command, au::ErrorManager& error) {
 
       // Perform real commit
       au::Cronometer cronometer;
@@ -116,8 +116,8 @@ class ZooNodeCommiter : public engine::NotificationListener {
       double time = cronometer.seconds();
       
       // Log activity for debugging
-      if (error->IsActivated()) {
-        last_commits_.push_front(CommitRecord(last_commits_id_++,caller, commit_command, error->GetMessage() , time));
+      if (error.IsActivated()) {
+        last_commits_.push_front(CommitRecord(last_commits_id_++,caller, commit_command, error.GetMessage() , time));
       } else {
         last_commits_.push_front(CommitRecord(last_commits_id_++,caller, commit_command, "OK" , time));
       }
@@ -127,48 +127,14 @@ class ZooNodeCommiter : public engine::NotificationListener {
       }
     }
 
-    au::SharedPointer<gpb::Collection> GetLastCommitsCollection(const Visualization& visualization) {
-      au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
-      collection->set_name("last_commits");
-
-      std::list<CommitRecord>::iterator it;
-      for (it = last_commits_.begin(); it != last_commits_.end(); it++) {
-        {
-          gpb::CollectionRecord *record = collection->add_record();
-          ::samson::add(record, "#commit", it->id, "different");
-          ::samson::add(record, "Concept", "Caller", "different");
-          ::samson::add(record, "Value", it->caller, "different");
-        }
-
-        std::vector<std::string> components = au::split(it->commit_command, ' ');
-        for (size_t i = 0; i < components.size(); i++) {
-          gpb::CollectionRecord *record = collection->add_record();
-          ::samson::add(record, "#commit", it->id, "different");
-          ::samson::add(record, "Concept", "Command", "different");
-          ::samson::add(record, "Value", components[i], "different");
-        }
-
-        {
-          gpb::CollectionRecord *record = collection->add_record();
-          ::samson::add(record, "#commit", it->id, "different");
-          ::samson::add(record, "Concept", "Result", "different");
-          ::samson::add(record, "Value", it->result, "different");
-        }
-        
-        {
-          gpb::CollectionRecord *record = collection->add_record();
-          ::samson::add(record, "#commit", it->id, "different");
-          ::samson::add(record, "Concept", "Time", "different");
-          ::samson::add(record, "Value", au::str(it->commit_time), "different");
-        }
-        
-      }
-
-      return collection;
-    }
+protected:
+  
+  std::list<CommitRecord> last_commits_;
 
   private:
+  
     int GetDataFromZooNode() {
+      
       // New candidate for data
       au::SharedPointer<C> c(new C());
 
@@ -186,7 +152,7 @@ class ZooNodeCommiter : public engine::NotificationListener {
       if (rc) {
         LM_W(("Not possible to get node %s from zk: %s"
                 , path_.c_str()
-                , samson::zoo::str_error(rc).c_str()));
+                , zoo::str_error(rc).c_str()));
         return rc;
       }
 
@@ -201,7 +167,8 @@ class ZooNodeCommiter : public engine::NotificationListener {
       return 0;   // Everything ok
     }
 
-    void InternCommit(std::string commit_command, au::ErrorManager *error) {
+    void InternCommit(std::string commit_command, au::ErrorManager& error) {
+
       // Mutex protection
       au::TokenTaker tt(&token_);
 
@@ -209,30 +176,42 @@ class ZooNodeCommiter : public engine::NotificationListener {
 
       while (true) {
         trial++;
-        int rc = GetDataFromZooNode();   // Get data from zk
-        if (rc) {
-          error->set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
-          return;
+
+        // If not previous data, load from ZK
+        if( c_ == NULL )
+        {
+          LOG_SW(("Getting data since no previous model" ));
+          int rc = GetDataFromZooNode();   // Get data from zk
+          if (rc) {
+            error.set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
+            return;
+          }
         }
 
         PerformCommit(c_, commit_command, stat_.version, error);   // Real changes on data model
 
-        if (error->IsActivated()) {
+        if (error.IsActivated()) {
           GetDataFromZooNode();   // Model is recovered from zk to make sure it is not affected
           return;   // No commit is done
         }
 
         // Try to commit
-        rc = zoo_connection_->Set(path_.c_str(), c_.shared_object(), stat_.version);
+        int rc = zoo_connection_->Set(path_.c_str(), c_.shared_object(), stat_.version);
 
         if (rc == ZBADVERSION) {
           // Wrong version ( this means another commit was accepted first )
-          LM_W(("Wrong version of zk path %s (%lu)", path_.c_str(), stat_.version));
+          int rc = GetDataFromZooNode();   // Get data from zk
+          
+          if (rc) {
+            error.set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
+            return;
+          }
+          
           continue;   // Loop to load again data model and commit
         }
 
         if (rc) {
-          error->set(au::str("Error with ZK: %s ", zoo::str_error(rc).c_str()));
+          error.set(au::str("Error with ZK: %s ", zoo::str_error(rc).c_str()));
           return;
         }
 
@@ -250,7 +229,6 @@ class ZooNodeCommiter : public engine::NotificationListener {
     zoo::Connection *zoo_connection_;   // zk conneciton to keep sync
     au::Token token_;   // Mutex protection
 
-    std::list<CommitRecord> last_commits_;
     int last_commits_id_;
 };
 }

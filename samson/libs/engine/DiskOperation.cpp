@@ -8,12 +8,16 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
+#include "logMsg/logMsg.h"              // LM_T
+#include "logMsg/traceLevels.h"         // LmtDisk
+
 #include "engine/DiskManager.h"         // engine::DiskManager
 #include "engine/DiskOperation.h"       // Own interface
 #include "engine/Engine.h"              // engine::Engine
 #include "engine/ReadFile.h"            // engine::ReadFile
-#include "logMsg/logMsg.h"              // LM_T
-#include "logMsg/traceLevels.h"         // LmtDisk
+#include "engine/Logs.h"
+
 
 namespace engine {
 DiskOperation::DiskOperation() {
@@ -156,13 +160,13 @@ void DiskOperation::run() {
   // double alarm_time_secs = std::max(  (double) size / 10000000.0 , 5.0 );
   // au::ExecesiveTimeAlarm alarm( au::str("Disk Operation '%s;",getDescription().c_str() , alarm_time_secs ) );
 
-  LM_T(LmtDisk,  ("START DiskManager: Running operation %s", getDescription().c_str()));
+  LOG_D( logs.disk_manager,  ("START DiskManager: Running operation %s", getDescription().c_str()));
 
   if (type == DiskOperation::write) {
     // Create a new file
 
 
-    LM_T(LmtDisk, ("DiskManager: Opening file %s to write", fileName.c_str()));
+    LOG_D( logs.disk_manager, ("DiskManager: Opening file %s to write", fileName.c_str()));
     FILE *file = fopen(fileName.c_str(), "w");
     if (!file) {
       LM_E(("Error opening file for writing, fileName:%s, errno:%d", fileName.c_str(), errno));
@@ -176,7 +180,7 @@ void DiskOperation::run() {
           setError("Error writing data to the file");
         }
       }
-      LM_T(LmtDisk, ("DiskManager: write operation on file %s completed", fileName.c_str()));
+      LOG_D( logs.disk_manager, ("DiskManager: write operation on file %s completed", fileName.c_str()));
       fclose(file);
     }
   }
@@ -185,7 +189,7 @@ void DiskOperation::run() {
     // Create a new file
 
 
-    LM_T(LmtDisk, ("DiskManager: Opening file %s to append", fileName.c_str()));
+    LOG_D( logs.disk_manager, ("DiskManager: Opening file %s to append", fileName.c_str()));
     FILE *file = fopen(fileName.c_str(), "a");
     if (!file) {
       setError("Error opening file");
@@ -207,7 +211,7 @@ void DiskOperation::run() {
 
 
   if (type == DiskOperation::read) {
-    LM_T(LmtDisk, ("DiskManager: Opening file %s to read", fileName.c_str()));
+    LOG_D( logs.disk_manager, ("DiskManager: Opening file %s to read", fileName.c_str()));
 
     // Get the Read file from the Manager
     ReadFile *rf = diskManager->fileManager_.GetReadFile(fileName);
@@ -230,7 +234,7 @@ void DiskOperation::run() {
   }
 
   if (type == DiskOperation::remove) {
-    LM_T(LmtDisk, ("DiskManager: Removing file %s", fileName.c_str()));
+    LOG_D( logs.disk_manager, ("DiskManager: Removing file %s", fileName.c_str()));
 
     // Remove the file
     int c = ::remove(fileName.c_str());
@@ -239,7 +243,7 @@ void DiskOperation::run() {
     }
   }
 
-  LM_T(LmtDisk, ("FINISH DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str()));
+  LOG_D( logs.disk_manager, ("FINISH DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str()));
   // Notify to the engine
 }
 

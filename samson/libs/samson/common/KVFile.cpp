@@ -14,6 +14,7 @@
 #include <stdlib.h>  // malloc
 
 #include "samson/module/Data.h"
+#include "samson/common/Logs.h"
 #include "samson/module/ModulesManager.h"
 
 
@@ -22,18 +23,25 @@
 namespace samson {
 au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::ErrorManager& error) {
 
+  au::Cronometer cronometer;
+  
   if (buffer == NULL) {
     error.set("NULL buffer provided");
+	LM_E(("NULL buffer provided"));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Candidate instance
   au::SharedPointer<KVFile> kv_file(new KVFile());
   kv_file->buffer_ = buffer;
+  kv_file->key_    = NULL;
+  kv_file->value_  = NULL;
+
   buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
   
   if (buffer->size() < sizeof(KVHeader)) {
     error.set(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
+	LM_E(("Too small size of buffer (less than sizeof(KVHeader))"));
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -41,6 +49,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   memcpy(&kv_file->header_, buffer->data(), sizeof(KVHeader));
   if (!kv_file->header_.Check()) {
     error.set("KVHeader error: wrong magic number");
+	LM_E(("KVHeader error: wrong magic number"));
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -62,11 +71,13 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   if (!key_data) {
     error.set(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
+	LM_E(("Unknown data type for key: %s", kv_file->header_.keyFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   if (!value_data) {
     error.set(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
+    LM_E(("Unknown data type for value: %s", kv_file->header_.valueFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -76,10 +87,18 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   DataInstance *key   = kv_file->key_;
   DataInstance *value = kv_file->value_;
 
-  // Alloc space for info and index vector
-  kv_file->kvs = (KV *)malloc(sizeof(KV) * kv_file->header_.info.kvs);
-  kv_file->info = (KVInfo *)malloc(sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS);
-  kv_file->kvs_index = (int *)malloc(sizeof(int) * KVFILE_NUM_HASHGROUPS);
+  // Create a unified buffer to hold all auxiliar data required
+  size_t size_for_kvs  = sizeof(KV) * kv_file->header_.info.kvs;
+  size_t size_for_info = sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
+  size_t size_for_kvs_idnex = sizeof(int) * KVFILE_NUM_HASHGROUPS;
+  size_t size_total = size_for_kvs + size_for_info + size_for_kvs_idnex;
+  
+  std::string buffer_name = au::str("Auxiliar buffer for KVFile for block %s" , buffer->str().c_str() );
+  kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, "KVFile", size_total );
+  
+  kv_file->kvs       = (KV *) kv_file->auxiliar_buffer_->data();
+  kv_file->info      = (KVInfo *) ( kv_file->auxiliar_buffer_->data() + size_for_kvs );
+  kv_file->kvs_index = (int *) ( kv_file->auxiliar_buffer_->data() + size_for_kvs + size_for_info );
 
   // Local pointer fo easy access
   KV *kvs = kv_file->kvs;
@@ -117,6 +136,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
                 , i
                 , hg
                 , previous_hg));
+
+	  LM_E(("Error parsing a block."));
       return au::SharedPointer<KVFile>(NULL);
     }
 
@@ -135,38 +156,38 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   if (( total_info.size != kv_file->header_.info.size ) || ( total_info.kvs != kv_file->header_.info.kvs )) {
     error.set(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
                       kv_file->header_.info.str().c_str()));
+	LM_E(("Error creating KVInfo vector."));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Check correct final offset
   if (offset != kv_file->header_.info.size) {
     error.set(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
+	LM_E(("Error parsing block."));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Everything correct, return generated kv_file
+  LOG_M(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
+                      , au::str( size_total ,  "B" ).c_str()
+                      , au::str(cronometer.seconds()).c_str()
+                      , kv_file->header_.keyFormat
+                      , kv_file->header_.valueFormat
+                      , buffer->str().c_str() ));
+  
   return kv_file;
 }
 
 KVFile::~KVFile() {
-  if (info) {
-    free(info);
-    info = NULL;
-  }
 
-  if (kvs) {
-    free(kvs);
-    kvs = NULL;
-  }
-
-  if (kvs_index) {
-    free(kvs_index);
-    kvs_index = NULL;
-  }
+  // Tag for debuggin
   if( buffer_ != NULL )
     buffer_->RemoveTag( au::str("kvfile_%p" , this ) );
 
-  
+  if( key_ )
+    delete key_;
+  if( value_ )
+    delete value_;
 }
 
 size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {

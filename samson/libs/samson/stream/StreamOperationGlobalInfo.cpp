@@ -90,11 +90,12 @@ void StreamOperationGlobalInfo::Review(gpb::Data *data) {
     // If division is necessary, break in two and push back to the original vector
     // Otherwise push to the new vector
 
-    if (info->range_division_necessary()) {
+    if ( info->range_division_necessary() ) {
       KVRange range = info->range();
       int range_size = range.size();
       if (range_size == 1) {
-        LM_X(1, ("Internal error, not possible to divide more this range"));
+        LM_W(("StreamOperationRange: %s" , info->str().c_str() ));
+        LM_X(1, ("Internal error, Range %s cannot be divided" , range.str().c_str() ));
       }
 
       KVRange range1(range.hg_begin_, range.hg_begin_ + range_size / 2);

@@ -39,7 +39,8 @@ class Block;
 class WorkerTask : public ::samson::ProcessIsolated {
   public:
     // Constructor
-    WorkerTask( SamsonWorker *samson_worker, size_t id
+    WorkerTask( SamsonWorker *samson_worker
+               , size_t id
                , const gpb::StreamOperation& stream_operation
                , Operation *operation
                , KVRange range );
@@ -84,42 +85,7 @@ class WorkerTask : public ::samson::ProcessIsolated {
     SamsonWorker *samson_worker_;
 };
 
-// Handy class to generate traces for operations
-// Andreu: To be removed since it adds more complecity to undestand everything.
 
-class OperationTraces {
-    std::string name;
-    au::Cronometer cronometer;
-    size_t input_size;
-
-  public:
-    OperationTraces(std::string _name, size_t _input_size) {
-      name = _name;
-      input_size = _input_size;
-      LM_T(LmtIsolatedOperations, ("%s starts with input %s", name.c_str(), au::str(input_size, "B").c_str()));
-    }
-
-    ~OperationTraces() {
-      size_t time = cronometer.seconds();
-      double rate = 0;
-
-      if (time > 0) {
-        rate = input_size / time;
-      }
-
-      LM_T(LmtIsolatedOperations, ("%s ( input size %s ) finish atfer %s. Aprox rate %s"
-              , name.c_str()
-              , au::str(input_size, "B").c_str()
-              , au::S(cronometer).str().c_str()
-              , au::str(rate, "B/s").c_str()));
-    }
-
-    void trace_block(size_t block_size) {
-      LM_T(LmtIsolatedOperations,
-          ("%s running a block of %s. Time since start %s", name.c_str(),
-              au::str(block_size, "B").c_str(), au::S(cronometer).str().c_str()));
-    }
-};
 }
 }
 

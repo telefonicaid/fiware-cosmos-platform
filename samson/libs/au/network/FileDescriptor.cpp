@@ -262,9 +262,11 @@ Status FileDescriptor::ReadLine(char *line, size_t max_size, int max_seconds) {
   }
 }
 
-Status FileDescriptor::partRead(void *vbuf, size_t bufLen, const char *what,
-                                int max_seconds,
-                                size_t *read_size) {
+Status FileDescriptor::partRead(void *vbuf
+                                , size_t bufLen
+                                , const char *what
+                                , int max_seconds
+                                , size_t *read_size) {
   size_t tot = 0;
   Status s;
   char *buf = (char *)vbuf;

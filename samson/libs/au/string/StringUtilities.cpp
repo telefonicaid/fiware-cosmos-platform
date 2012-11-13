@@ -298,9 +298,21 @@ std::string str(Color color, const char *format, ...) {
 
     case red:
       return std::string("\033[1;31m") + std::string(vmsg) + std::string("\033[0m");
-
-    case purple:
+    case magenta:
       return std::string("\033[1;35m") + std::string(vmsg) + std::string("\033[0m");
+    case blue:
+      return std::string("\033[1;34m") + std::string(vmsg) + std::string("\033[0m");
+    case black:
+      return std::string("\033[1;40m") + std::string(vmsg) + std::string("\033[0m");
+    case green:
+      return std::string("\033[1;42m") + std::string(vmsg) + std::string("\033[0m");
+    case brown:
+      return std::string("\033[1;43m") + std::string(vmsg) + std::string("\033[0m");
+    case cyan:
+      return std::string("\033[1;46m") + std::string(vmsg) + std::string("\033[0m");
+    case white:
+      return std::string("\033[1;47m") + std::string(vmsg) + std::string("\033[0m");
+       
   }
 
   // Default mode ( just in case )
@@ -331,6 +343,58 @@ std::string str(const std::vector<std::string>& hosts) {
   return output.str();
 }
 
+std::string str_grouped(const std::vector<std::string>& names)
+{
+  
+  au::map<std::string, std::vector<std::string> > grouped_names;
+
+  for ( size_t i = 0 ; i < names.size() ; i++ )
+  {
+    std::string category;
+    std::string name;
+    size_t pos = names[i].find("::");
+    if( pos == std::string::npos )
+      category = names[i];
+    else
+    {
+      category = names[i].substr( 0 , pos );
+      name = names[i].substr(pos+2);
+    }
+    grouped_names.findOrCreate( category )->push_back(name);
+  }
+  
+  std::ostringstream output;
+  au::map<std::string, std::vector<std::string> >::iterator iter;
+  for ( iter = grouped_names.begin() ; iter != grouped_names.end() ; iter++ )
+  {
+    if( iter->second->size() == 1 )
+    {
+      std::string name = iter->second->at(0);
+      if( name == "" )
+        output << iter->first;
+      else
+        output << iter->first << "::" << name;
+
+    }
+    else
+    {
+      output << iter->first << "::{ ";
+      
+      for ( size_t i = 0 ; i < iter->second->size() ; i++ )
+      {
+        std::string name = iter->second->at(i);
+        if( name == "" )
+          output << "_ ";
+        else
+          output << name << " ";
+      }
+      output << "}";
+    }
+    output << " ";
+  }
+  return output.str();
+}
+  
 std::string str(double value) {
   if (value == 0) {
     return "    0 ";
@@ -728,8 +792,8 @@ Color GetColor(const std::string color_name) {
   if (( color_name == "red" ) || ( color_name == "r" )) {
     return red;
   }
-  if (( color_name == "purple" ) || ( color_name == "p" )) {
-    return purple;
+  if (( color_name == "magenta" ) || ( color_name == "m" )) {
+    return magenta;
   }
 
   return normal;

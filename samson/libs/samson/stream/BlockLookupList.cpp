@@ -225,10 +225,13 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
 
     if (startIx > endIx) {
       // Not found
-      command->AppendFormatedError(
-                                   au::str("Key %s [HG %d  Index <%d:%d> ] not found inside block %lu [Size %lu]", key,
-                                           hashGroup, hashInfo[hashGroup].startIx, hashInfo[hashGroup].endIx,
-                                           block_id_, size));
+      command->AppendFormatedError( au::str("Key %s [HG %d  Index <%d:%d> ] not found inside block %s [Size %lu]"
+                                            , key
+                                            , hashGroup
+                                            , hashInfo[hashGroup].startIx
+                                            , hashInfo[hashGroup].endIx
+                                            , str_block_id( block_id_ ).c_str()
+                                            , size));
       return;
     }
   }

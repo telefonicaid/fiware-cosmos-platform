@@ -121,6 +121,7 @@ TEST(engine_DiskManager, addTest) {
       //   "Wrong number of disk operations";
 
       engine::Engine::disk_manager()->Cancel(operation);
+	  usleep(250000);  // Give the DiskManager thread timer to treat the cancel operation
       EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 0) <<
          "Wrong number of disk operations";
 

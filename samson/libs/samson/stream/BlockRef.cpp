@@ -108,7 +108,7 @@ namespace samson {
       }
       
       // Get complete information about how key-values are organized in this block
-      file_ = block_->getKVFile(error);
+      file_ = block_->getKVFile(error , false); // Do not retain KVFile in the block
       if (file_ == NULL) {
         error.set(au::str("Not possible to parse block %lu", block_id()));
       }

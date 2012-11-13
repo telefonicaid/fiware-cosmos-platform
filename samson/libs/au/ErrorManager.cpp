@@ -35,6 +35,13 @@ std::string ErrorMessage::GetMessage() const {
   return output.str();
 }
 
+std::string ErrorManager::GetErrorMessage( const std::string& message) const
+{
+  std::ostringstream output;
+  output << message << " ( " << GetMessage() << " )";
+  return output.str();
+}
+  
 std::string ErrorMessage::GetMultiLineMessage() const {
   std::ostringstream output;
 

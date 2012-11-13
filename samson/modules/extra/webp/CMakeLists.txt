@@ -113,11 +113,7 @@ MESSAGE( "----------------------------------------------------------------------
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS} )
 
 # Link agains samson_comscore library
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} au )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} json )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_system json)
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm au json samson_system samson_comscore )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

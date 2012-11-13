@@ -30,7 +30,7 @@
 #include "SharedMemoryItem.h"   // samson::SharedMemoryItem
 #include "engine/Buffer.h"                       // samson::Buffer
 #include "engine/Engine.h"                       // samson::Engine
-
+#include "engine/Logs.h"
 
 #include "samson/stream/SharedMemoryManager.h"  // Own interface
 
@@ -84,7 +84,7 @@ SharedMemoryManager::SharedMemoryManager(int _shared_memory_num_buffers, size_t 
   // Create the shared memory segments
   createSharedMemorySegments();
 
-  LM_T(LmtMemory, ("SharedMemoryManager init %d shared memory areas", shared_memory_num_buffers ));
+  LOG_D( logs.memory_manager, ("SharedMemoryManager init %d shared memory areas", shared_memory_num_buffers ));
 }
 
 SharedMemoryManager::~SharedMemoryManager() {
@@ -124,7 +124,7 @@ void SharedMemoryManager::remove_previous_shared_areas() {
   FILE *file = fopen(sharedMemoryIdsFileName.c_str(), "r");
   if (file) {
     if (fread(ids, length * sizeof(int), 1, file) == 1) {
-      LM_T(LmtMemory, ("Removing previous memory segments"));
+      LOG_D( logs.memory_manager, ("Removing previous memory segments"));
       removeSharedMemorySegments(ids, length);
     }
     fclose(file);
@@ -155,9 +155,10 @@ void SharedMemoryManager::createSharedMemorySegments() {
   // Create a new shared memory buffer
   shm_ids = (int *)malloc(sizeof(int) * shared_memory_num_buffers);
 
-  LM_T(LmtMemory, ("Creating shared memory buffers"));
+  LOG_D( logs.memory_manager, ("Creating shared memory buffers"));
 
   for (int i = 0; i < shared_memory_num_buffers; i++) {
+
     int shmflg;                 /* shmflg to be passed to shmget() */
 
     // shmflg  = 384;		// Permission to read / write ( only owner )
@@ -170,6 +171,7 @@ void SharedMemoryManager::createSharedMemorySegments() {
              "Error creating the shared memory buffer of %s ( %d / %d ). \
               Please review SAMSON documentation about shared memory usage",
              au::str(shared_memory_size_per_buffer, "B").c_str(), i, shared_memory_num_buffers ));
+      
       LM_X(1, ("Error creating shared memory buffers. shmid return -1 (%s)", strerror(errno)));
     }
     shm_ids[i] = shmid;
@@ -185,7 +187,7 @@ void SharedMemoryManager::createSharedMemorySegments() {
 }
 
 void SharedMemoryManager::removeSharedMemorySegments(int *ids, int length) {
-  LM_T(LmtMemory, ("Releasing %d shared memory buffers", length ));
+  LOG_D( logs.memory_manager, ("Releasing %d shared memory buffers", length ));
 
   for (int i = 0; i < length; i++) {
     // Remove the shared memory areas

@@ -158,8 +158,9 @@ class Buffer : public TagCollection {
     // Access to tags
 
   private:
-    char *data_;   // Buffer of data
-    size_t max_size_;   // Maximum size of this buffer
+  size_t buffer_id_;
+    char *data_;         // Buffer of data
+    size_t max_size_;    // Maximum size of this buffer
 
     std::string name_;   // Internal name for debugging
     std::string type_;   // Identifier of groups of blocks
@@ -179,6 +180,8 @@ class Buffer : public TagCollection {
     size_t offset_;
 
     au::Environment environment_;
+  
+  static size_t static_buffer_id_;
 
 };
 // Buffer Shared Pointer

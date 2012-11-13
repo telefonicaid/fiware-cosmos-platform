@@ -28,7 +28,6 @@ public:
 
   void Review();                // Review this item ( send again if worker is down....
   bool IsFinished();            // Is completed
-  bool IsReadyForCommit();      // Is ready for commit opertation
   void ResetPushItem();         // Reest this push operation
 
   // Accessors
@@ -50,9 +49,8 @@ private:
 
   typedef enum {
     init,
-    waiting_push_confirmation,
-    ready_for_commit,
-    waiting_commig_confirmation,
+    waiting_push_block_response,       // Waiting for a push response message
+    waiting_push_block_confirmation,   // Waiting for final confirmation to remove this block in delilah
     completed
   } PushItemState;
 

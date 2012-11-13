@@ -11,15 +11,27 @@
 #include "au/containers/list.h"
 #include "au/containers/map.h"
 #include "au/log/Log.h"
-#include "au/log/LogServerChannel.h"
+#include "au/log/LogServerService.h"
 #include "au/network/ConsoleService.h"
 #include "au/network/FileDescriptor.h"
 #include "au/network/Service.h"
 #include "au/string/StringUtilities.h"
 #include "au/tables/Table.h"
 
+/*
+ 
+ Main class of the logServer program
+ 
+ It is basically a Console-based remote server with a dedicated service to receive:
+ - log-providers
+ - log-probes
+ - log-queries
+ 
+ */
+
+
 namespace au {
-class LogServerChannel;
+class LogServerService;
 
 class LogServer : au::network::ConsoleService {
 public:
@@ -35,8 +47,7 @@ public:
   std::string getPrompt(au::Environment *environment);
 
 private:
-
-  LogServerChannel channel;   // Channel to accept connection with binary logs
+  LogServerService service_;   // Service to accept connection with binary logs ( providers, probes, queries...)
 };
 }
 #endif  // ifndef _H_LOG_SERVER

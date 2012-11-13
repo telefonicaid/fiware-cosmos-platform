@@ -84,5 +84,17 @@ void BlockListContainer::lock_content_in_memory() {
     block_list->lock_content_in_memory();
   }
 }
+  
+  std::string BlockListContainer::str_blocks()
+  {
+    std::ostringstream output;
+    au::map<std::string, BlockList>::iterator it;
+    for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
+      BlockList *block_list = it->second;
+      output << "<<" << it->first << " " << block_list->str_blocks() << ">> ";
+    }
+    return output.str();
+  }
+  
 }
 }

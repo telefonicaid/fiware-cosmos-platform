@@ -47,10 +47,6 @@ bool PushItem::IsFinished() {
   return ( state_ == completed );
 }
 
-bool PushItem::IsReadyForCommit() {
-  return (state_ == ready_for_commit );
-}
-
 void PushItem::Review() {
   if (state_ == completed) {
     return;   // Nothing to do
@@ -75,7 +71,7 @@ void PushItem::Review() {
     delilah_->network->Send(packet);
 
     // Change state to waiting push confirmation
-    state_ = waiting_push_confirmation;
+    state_ = waiting_push_block_response;
 
     return;
   }
@@ -112,6 +108,10 @@ void PushItem::ResetPushItem() {
 
 // A Push response has been received from worker
 void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::ErrorManager& error) {
+  
+  if (state_ == completed)
+    return; // This item is completed, nothing to do with me
+  
   if (worker_id != worker_id_) {
     LM_W(("Push[%lu] Received message %s from worker %lu in a push item while my worker id is %lu. Ignoring..."
           , push_id_
@@ -134,57 +134,24 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
     return;
   }
 
-  if (state_ == waiting_push_confirmation) {
+  if (state_ == waiting_push_block_response) {
     if (msgCode != Message::PushBlockResponse) {
       LM_W(("Push[%lu] Recieved wrong message (%s) from worker while waiting for distribution confirmation"
             , push_id_
             , Message::messageCode(msgCode)));
-      state_ = init;
+      ResetPushItem();
       return;
     }
 
     // Change state to ready for commit
-    state_ = ready_for_commit;
-
-    return;
-  }
-
-  if (state_ == ready_for_commit) {
-    LM_W(("Push[%lu] Recieved wrong message (%s) from worker while being ´ready for commit´"
-          , push_id_
-          , Message::messageCode(msgCode)));
-    state_ = init;
-    return;
-  }
-
-  if (state_ == waiting_commig_confirmation) {
-    if (msgCode != Message::PushBlockCommitResponse) {
-      LM_W(("Push[%lu] Recieved wrong message (%s) from worker while waiting for commit confirmation"
-            , push_id_
-            , Message::messageCode(msgCode)));
-      state_ = init;
-      return;
-    }
-
-    // Change state to completed
+    // In the future, here we should move to waiting_push_block_confirmation to keep this block until
+    // next data-model cicle
     state_ = completed;
-  }
-}
-
-void PushItem::SendCommit() {
-  if (state_ != ready_for_commit) {
     return;
   }
-
-  // Send the commit message
-  PacketPointer packet(new Packet(Message::PushBlockCommit));
-  packet->to = NodeIdentifier(WorkerNode, worker_id_);
-  packet->message->set_push_id(push_id_);
-  packet->set_buffer(buffer_);
-
-  delilah_->network->Send(packet);
-
-  state_ = waiting_commig_confirmation;
+ 
+  LM_X(1, ("Internal error"));
+  
 }
 
 size_t PushItem::push_id() {
@@ -207,12 +174,10 @@ std::string PushItem::str() {
   switch (state_) {
     case init: return au::str("[%lu] Uninitialized", push_id_);
 
-    case waiting_push_confirmation: return au::str("[%lu] Waiting distribution confirmation from worker %lu"
+    case waiting_push_block_response: return au::str("[%lu] Waiting push block response message from worker %lu"
                                                    , push_id_, worker_id_);
 
-    case ready_for_commit: return "[%lu] Ready for commit";
-
-    case waiting_commig_confirmation: return au::str("[%lu] Waiting commit confirmation from worker %lu"
+    case waiting_push_block_confirmation: return au::str("[%lu] Waiting push_commit confirmation from worker %lu"
                                                      , push_id_, worker_id_);
 
     case completed: return au::str("[%lu] Finalized", push_id_);
@@ -270,6 +235,7 @@ size_t PushManager::Push(engine::BufferPointer buffer, const std::vector<std::st
 }
 
 void PushManager::Review() {
+  
   au::map<size_t, PushItem>::iterator it;
   for (it = items_.begin(); it != items_.end(); ) {      // Review and remove finished items
     PushItem *item = it->second;
@@ -289,16 +255,6 @@ void PushManager::Review() {
     }
   }
 
-  // Commit in order
-  for (it = items_.begin(); it != items_.end(); it++) {
-    PushItem *item = it->second;
-
-    if (item->IsReadyForCommit()) {
-      item->SendCommit();
-    } else {
-      break;
-    }
-  }
 }
 
 void PushManager::ResetAllItems() {

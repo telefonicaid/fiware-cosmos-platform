@@ -67,6 +67,8 @@ namespace txt{
 
         void parseLine( char * line, samson::KVWriter *writer )
         {
+		   AU_OD(("Parsing line %s", line));
+		   
            size_t len = strlen( line );
            size_t pos = 0;
            for ( size_t i = 0 ; i < (len+1) ; i++ )
@@ -78,8 +80,9 @@ namespace txt{
                     // New word
                     key.value ="";
                     key.value.append( &line[pos] ,i-pos );
-
                     writer->emit( 0 , &key , &value );
+
+					AU_OD(("Emitting word %s" , key.value.c_str() ));
                  }
                  // Go to the next
                  pos = i+1;

@@ -15,13 +15,11 @@
 #include "au/TemporalBuffer.h"
 #include "engine/Engine.h"
 #include "engine/Notification.h"
-#include "samson/zoo/common.h"
+#include "zoo/common.h"
 
-namespace samson {
+namespace au {
 namespace zoo {
-Connection::Connection(const std::string& host
-                       , const std::string& user
-                       , const std::string& password)
+Connection::Connection(const std::string& host, const std::string& user, const std::string& password)
   : token_("zoo::Connection") {
   handler_ = NULL;
   Connect(host, user, password);
@@ -47,6 +45,7 @@ int Connection::Remove(const std::string&path, int version) {
     return rc;
   }
 
+  LOG_M( logs.zoo , ("Delete node %s (version %d)" , path.c_str() , version ));
   return zoo_delete(handler_, path.c_str(), version);
 }
 
@@ -61,6 +60,8 @@ int Connection::Set(const std::string& path, const char *value, int value_len, i
   }
 
   // Create a node
+  LOG_M( logs.zoo , ("Set node %s (value %d bytes ,version %d)" , path.c_str() , value_len, version ));
+  rate_write_.Push(value_len);
   return zoo_set(handler_, path.c_str(), value, value_len,  version);
 }
 
@@ -93,14 +94,20 @@ int Connection::Get(const std::string& path
     return Exists(path, engine_id, stat);
   }
 
+  LOG_M( logs.zoo , ("Get node %s (buffer %d bytes)" , path.c_str() , *buffer_len ));
 
-  return zoo_wget(handler_
+  int rc = zoo_wget(handler_
                   , path.c_str()
                   , static_watcher
                   , (void *)engine_id
                   , buffer
                   , buffer_len
                   , stat);
+  
+  if( !rc )
+    rate_read_.Push(*buffer_len);
+  return rc;
+
 }
 
 int Connection::Get(const std::string& path
@@ -165,11 +172,17 @@ int Connection::Get(const std::string& path, std::string& value) {
   return rc;
 }
 
-int Connection::Get(const std::string& path, char *buffer, int *buflen, struct Stat *stat) {
+int Connection::Get(const std::string& path, char *buffer, int *buffer_len, struct Stat *stat) {
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
-  return zoo_get(handler_, path.c_str(), 0, buffer, buflen, stat);
+  LOG_M( logs.zoo , ("Get node %s (buffer %d bytes)" , path.c_str() , buffer_len ));
+  int rc = zoo_get(handler_, path.c_str(), 0, buffer, buffer_len, stat);
+
+  if( !rc )
+    rate_read_.Push(*buffer_len);
+
+  return rc;
 }
 
 int Connection::Get(const std::string& path, engine::BufferPointer buffer) {
@@ -221,6 +234,7 @@ int Connection::Exists(const std::string& path, struct Stat *stat) {
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
+  LOG_M( logs.zoo , ("Check exist node %s" , path.c_str() ));
   return zoo_exists(handler_, path.c_str(), 0, stat);
 }
 
@@ -229,6 +243,7 @@ int Connection::Exists(const std::string& path, size_t engine_id,
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
+  LOG_M( logs.zoo , ("Check exist node %s" , path.c_str() ));
   return zoo_wexists(handler_
                      , path.c_str()
                      , static_watcher
@@ -260,6 +275,7 @@ int Connection::GetChildrens(const std::string& path, String_vector *vector) {
   if (rc) {
     return rc;
   }
+  LOG_M( logs.zoo , ("Get childrens of node %s" , path.c_str() ));
   return zoo_get_children(handler_, path.c_str(), 0, vector);
 }
 
@@ -381,10 +397,12 @@ int Connection::Create(std::string& path, int flags, const char *value, int valu
   struct ACL_vector ACL_VECTOR = { 1, ALL_ACL };
 
   // Create a node
-  rc = zoo_create(handler_,
-                  path.c_str(), value, value_len, &ACL_VECTOR, flags, buffer, buffer_length - 1);
+  LOG_M( logs.zoo , ("Create node %s (Value: %d bytes )" , path.c_str(), buffer_length ));
+  rc = zoo_create(handler_,path.c_str(), value, value_len, &ACL_VECTOR, flags, buffer, buffer_length - 1);
   if (!rc) {
     path = buffer;                     // Get the new name ( it is different when flag ZOO_SEQUETIAL is used )
+    rate_write_.Push(buffer_length);
+
   }
   return rc;
 }
@@ -409,6 +427,7 @@ int Connection::Connect(const std::string& host) {
   Close();
 
   // Init zookeerp
+  LOG_M( logs.zoo , ("Init connection to %s" , host.c_str() ));
   handler_ = zookeeper_init(host.c_str(), NULL, 5000, 0, NULL, 0);
   if (handler_) {
     return WaitUntilConnected(1000);
@@ -428,6 +447,7 @@ int Connection::AddAuth(const std::string& user, const std::string& password) {
   }
 
   std::string user_password = user + ":" + password;
+  LOG_M( logs.zoo , ("Add auth  user: %s" , user.c_str() ) );
   rc = zoo_add_auth(handler_, "digest", user_password.c_str(), user_password.length(), 0, 0);
 
   // If corect, just wait until connected
@@ -441,6 +461,7 @@ void Connection::Close() {
   au::TokenTaker tt(&token_);
 
   if (handler_) {
+    LOG_M( logs.zoo , ("Close connection"));
     zookeeper_close(handler_);
     handler_ = NULL;
   }
@@ -465,6 +486,7 @@ std::string Connection::GetStatusString() {
     return "Unconnected";
   }
 
+  LOG_M( logs.zoo , ("Get connection status"));
   rc = zoo_state(handler_);
 
   if (rc == ZOO_EXPIRED_SESSION_STATE) {

@@ -8,7 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-#include "samson/zoo/CommitCommand.h"  // Own interface
+#include "samson/worker/CommitCommand.h"  // Own interface
 
 #include "au/string/StringUtilities.h"
 
@@ -20,11 +20,11 @@ CommitCommandItem::CommitCommandItem(const std::string& command, const std::stri
       info_(info) {
 }
 
-CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au::ErrorManager *error) {
+CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au::ErrorManager&error) {
   std::vector<std::string> components = au::split(command, ':');
   if (components.size() != 10) {
     LM_W(("Wrong number of components (%lu!=10) in commit command component: '%s'", components.size(), command.c_str()));
-    error->set(
+    error.set(
                au::str("Wrong number of components (%lu!=10) in commit command component: '%s'", components.size(),
                        command.c_str()));
     return NULL;
@@ -34,7 +34,7 @@ CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au
 
   if ((sub_command != "add") && (sub_command != "rm")) {
     LM_W(("Wrong command (%s) in commit command component: '%s'", sub_command.c_str(), command.c_str()));
-    error->set(au::str("Wrong command (%s) in commit command component: '%s'", sub_command.c_str(), command.c_str()));
+    error.set(au::str("Wrong command (%s) in commit command component: '%s'", sub_command.c_str(), command.c_str()));
     return NULL;
   }
 
@@ -47,7 +47,7 @@ CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au
 
   size_t block_size = atoll(components[3].c_str());
   if (block_size == 0) {
-    error->set(au::str("Wrong block_size (%lu) in commit command component: '%s'", block_size, command.c_str()));
+    error.set(au::str("Wrong block_size (%lu) in commit command component: '%s'", block_size, command.c_str()));
     return NULL;
   }
 
@@ -55,7 +55,7 @@ CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au
 
   KVRange range(atoi(components[6].c_str()), atoi(components[7].c_str()));
   if (!range.isValid()) {
-    error->set(au::str("Wrong range (%s) in commit command component: '%s'", range.str().c_str(), command.c_str()));
+    error.set(au::str("Wrong range (%s) in commit command component: '%s'", range.str().c_str(), command.c_str()));
     return NULL;
   }
 
@@ -115,28 +115,28 @@ CommitCommand::~CommitCommand() {
   items_.clearVector();
 }
 
-void CommitCommand::ParseCommitCommand(const std::string& command, au::ErrorManager *error) {
+void CommitCommand::ParseCommitCommand(const std::string& command, au::ErrorManager& error) {
   au::CommandLine cmdLine(command);
   int num_arguments = cmdLine.get_num_arguments();
 
   if (num_arguments == 0) {
-    error->set("No command provided");
+    error.set("No command provided");
     return;
   }
 
   if (cmdLine.get_argument(0) != "block") {
-    error->set(au::str("Command %s not valid. Only block accepted", cmdLine.get_argument(0).c_str()));
+    error.set(au::str("Command %s not valid. Only block accepted", cmdLine.get_argument(0).c_str()));
     return;
   }
 
   if (num_arguments == 1) {
-    error->set("No command provided after code-word block");
+    error.set("No command provided after code-word block");
     return;
   }
 
   for (int i = 1; i < num_arguments; i++) {
     CommitCommandItem *item = CommitCommandItem::create_item(cmdLine.get_argument(i), error);
-    if (error->IsActivated()) {
+    if (error.IsActivated()) {
       return;
     }
 

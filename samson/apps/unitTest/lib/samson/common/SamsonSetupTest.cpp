@@ -15,9 +15,13 @@
 // Test void SamsonSetup();
 TEST(samson_common_SamsonSetup, SamsonSetup) {
 
+  
+  std::string samson_home_dir = au::GetRandomDirectory();
+  std::string samson_working_dir = au::GetRandomDirectory();
+
+  
   // Better not to set /opt/samson and /var/samson, so init() can get environment variables
-  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories("/tmp/testSamsonSetup_home",
-                                                                     "/tmp/testSamsonSetup_working");
+  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samson_home_dir,samson_working_dir);
 
   EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("isolated.timeout"),"300")
   << "Error in getValueForParameter for isolated.timeout";

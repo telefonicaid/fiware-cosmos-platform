@@ -87,6 +87,27 @@ public:
     }
   }
 };
+  
+  template <class C>
+  std::vector<C> vector_from_set( const std::set<C> set )
+  {
+    std::vector<C> vector;
+    typename std::set<C>::iterator it;
+    for ( it = set.begin() ; it != set.end() ; it++ )
+      vector.push_back( *it );
+    return vector;
+  }
+
+  template <class C>
+  std::set<C> set_from_vector( const std::vector<C> set )
+  {
+    std::set<C> vector;
+    for ( size_t i = 0 ; i < vector.size() ; ++i )
+      vector.insert( vector[i] );
+    return vector;
+  }
+  
+  
 }
 
 #endif  // ifndef _H_AU_VECTOR

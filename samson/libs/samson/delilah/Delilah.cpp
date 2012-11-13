@@ -289,7 +289,7 @@ void Delilah::receive(const PacketPointer& packet) {
   // --------------------------------------------------------------------
   // PushBlockResponse
   // --------------------------------------------------------------------
-  if ((msgCode == Message::PushBlockResponse) || (msgCode == Message::PushBlockCommitResponse)) {
+  if ( msgCode == Message::PushBlockResponse ) {
     if (!packet->message->has_push_id()) {
       LM_W(("Received a %s without a push_id", Message::messageCode(msgCode)));
       return;

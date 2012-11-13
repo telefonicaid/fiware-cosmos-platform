@@ -41,9 +41,9 @@
 
 namespace engine {
 class SharedMemoryItem;
-class SharedMemoryManager;
 
 class SharedMemoryManager {
+  
   au::Token token;                           // Token to protect this instance
 
   // Shared memory management

@@ -34,7 +34,7 @@
 #include "au/ThreadManager.h"
 #include "au/log/Log.h"
 #include "au/log/LogCentral.h"
-#include "au/log/LogPluginConsole.h"
+#include "au/log/LogCentralPluginConsole.h"
 #include "au/log/LogCommon.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/string/StringUtilities.h"
@@ -45,6 +45,7 @@
 #include "engine/ProcessManager.h"
 
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
+#include "samson/common/Logs.h"
 #include "samson/common/samsonDirectories.h"
 #include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
@@ -81,7 +82,7 @@ unsigned short log_port;
 char host[1024];
 
 #define LOC      "localhost"
-#define LOG_PORT AU_LOG_SERVER_PORT
+#define LOG_PORT LOG_SERVER_DEFAULT_PORT
 /* ****************************************************************************
  *
  * parse arguments
@@ -260,12 +261,14 @@ int main(int argC, const char *argV[]) {
   std::string str_log_server_file = std::string(paLogDir) + "delilah_" + log_server +  ".log";
   
   au::log_central.Init( argV[0] );
+  samson::RegisterLogChannels();   // Add all log channels for samson project ( au,engine libraries included )
+
   au::log_central.evalCommand("log_to_file " + str_log_file);
   if( str_log_server != "" )
     au::log_central.evalCommand("log_to_server " + str_log_server + " " + str_log_server_file );
   au::log_central.evalCommand(log_command);  // Command provided in command line
 
-  AU_LM_M(("Delilah starting..."));
+  LOG_M( samson::logs.delilah , ("Delilah starting..."));
 
   // working directories to find modules and stuff
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
@@ -296,9 +299,9 @@ int main(int argC, const char *argV[]) {
 
   // Change log to console
   au::log_central.evalCommand("screen off");   // Disable log to screen since we log to console
-  au::log_central.AddPlugin("console", new au::LogPluginConsole(delilahConsole));
+  au::log_central.AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole));
 
-  AU_LM_M(("Delilah running..."));
+  LOG_M( samson::logs.delilah , ("Delilah running..."));
 
   std::vector<std::string> hosts = au::split(host, ' ');
   for (size_t i = 0; i < hosts.size(); i++) {

@@ -58,6 +58,17 @@ void Rate::Push(size_t size) {
   hits_[0]++;
   size_[0] += size;
 }
+  
+  void Rate::Clear()
+  {
+    au::TokenTaker tt(&token_);
+    
+    num_samples_=0;
+    total_size_=0;
+    total_num_=0;
+    c.Reset();
+    last_time_correction = 0;
+  }
 
 std::string Rate::str() const {
   au::TokenTaker tt(&token_);

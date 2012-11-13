@@ -13,6 +13,7 @@
 
 #include "engine/EngineElement.h"
 #include "engine/EngineElementCollection.h"  // Own interface
+#include "engine/Logs.h"
 
 
 namespace engine {
@@ -32,7 +33,7 @@ void EngineElementCollection::Add(EngineElement *element) {
   au::TokenTaker tt(&token_);
 
   // Insert an element in the rigth queue
-  LM_T(LmtEngine, ("Adding Engineelement: %s", element->str().c_str()));
+  LOG_M(  logs.engine , ("Adding Engineelement: %s", element->str().c_str()));
 
   if (element->IsRepeated()) {
     repeated_elements_.insert(FindPositionForRepeatedEngineElement(element),  element);

@@ -49,6 +49,10 @@ namespace samson {
     AddUInt64Item("worker.period_check_finish_tasks"
                   , "5"
                   ,"Period to review finished tasks in samsonWorker, to be clean from memory");
+
+    AddUInt64Item("worker.period_to_freeze_data_model"
+                  , "10"
+                  , "Period to freeze data model. Every X seconds, workers exchange all necessary blocks");
     
     // Upload & Download operations
     AddUInt64Item("load.buffer_size", "67108864", "Size of the data block for load operations");
@@ -60,6 +64,8 @@ namespace samson {
     AddUInt64Item("stream.max_operation_input_size"
                   , "400000000"
                   ,"Maximum input data ( in bytes ) to run an automatic stream processing task");
+    
+    SetWorkerDirectories("",""); // Take default values if nothing is provided
   }
   
   void SamsonSetup::SetWorkerDirectories(const std::string& samson_home, const std::string& samson_working) {
@@ -131,7 +137,11 @@ namespace samson {
   }
   
   std::string SamsonSetup::block_filename(size_t block_id)const {
-    return samson_working_ + "/blocks/" + au::str("%block_%lu", block_id);
+    
+    BlockId b;
+    b.uint64 = block_id;
+    
+    return samson_working_ + "/blocks/block_" + au::str("%d_%d", b.uint32[0] , b.uint32[1] );
   }
   
   bool isNumber(std::string txt) {
@@ -147,13 +157,21 @@ namespace samson {
     std::string path = samson_working_ + "/blocks/block_";
     
     if (fileName.substr(0, path.size()) != path) {
-      return false;
+      return (size_t)-1;
     }
     
     // Take the rest of the name
     std::string res_path = fileName.substr(path.size());
+
+    std::vector<std::string> components = au::split( res_path , '_' );
+    if( components.size() != 2 )
+      return (size_t)-1;
     
-    return atoll(res_path.c_str());
+    BlockId b;
+    b.uint32[0] = atoll(components[0].c_str());
+    b.uint32[1] = atoll(components[1].c_str());
+
+    return b.uint64;
   }
   
   std::string SamsonSetup::stream_manager_log_filename() const {
@@ -167,5 +185,10 @@ namespace samson {
   bool SamsonSetup::Save() {
     return SetupItemCollection::Save( setup_filename() );
   }
-  
+ 
+  SamsonSetup* SharedSamsonSetup()
+  {
+    return au::Singleton<SamsonSetup>::shared();
+  }
+
 }

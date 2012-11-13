@@ -4,20 +4,20 @@
 
 #include "au/containers/SharedPointer.h"
 #include "au/log/Log.h"
-#include "au/log/LogChannelFilter.h"
+#include "au/log/LogCentralChannelsFilter.h"
 #include "au/log/LogFormatter.h"
-#include "au/log/LogPlugin.h"
+#include "au/log/LogCentralPlugin.h"
 
 namespace au {
-class LogPluginScreen : public LogPlugin {
+class LogCentralPluginScreen : public LogCentralPlugin {
 public:
-  LogPluginScreen(const std::string& format_definition = AU_LOG_DEFAULT_FORMAT, bool output_stderror = false)
-    : LogPlugin("Screen")
+  LogCentralPluginScreen(const std::string& format_definition = LOG_DEFAULT_FORMAT, bool output_stderror = false)
+    : LogCentralPlugin("Screen")
       , log_formatter_(format_definition) {
     output_stderror_ = output_stderror;
   }
 
-  virtual ~LogPluginScreen() {
+  virtual ~LogCentralPluginScreen() {
   }
 
   virtual void Emit(au::SharedPointer<Log> log) {
@@ -38,8 +38,8 @@ public:
     return output.str();
   }
 
-  void set_format(const std::string format) {
-    log_formatter_.set_format(format);
+  void SetFormat(const std::string format, bool color = false) {
+    log_formatter_.SetFormat(format , color);
   }
 
 private:

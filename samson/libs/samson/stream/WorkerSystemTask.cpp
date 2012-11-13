@@ -31,10 +31,15 @@ namespace stream {
 // ------------------------------------------------------------------------
 
 
-BlockDistributionTask::BlockDistributionTask(SamsonWorker *samson_worker, size_t id, size_t block_id,
-                                             const std::vector<size_t>& worker_ids)
-     : WorkerTaskBase(samson_worker, id,
-                      au::str("BlockDistribution %lu to workers %s", block_id, au::str(worker_ids).c_str())) {
+BlockRequestTask::BlockRequestTask(SamsonWorker *samson_worker
+                                   , size_t id
+                                   , size_t block_id
+                                   , const std::vector<size_t>& worker_ids)
+     : WorkerTaskBase(samson_worker
+                      , id
+                      , au::str("BlockDistribution %lu to workers %s", block_id, au::str(worker_ids).c_str())
+                      , true  // Defined as simple task to be executed at engine main thread
+                      ) {
   block_id_ = block_id;
   worker_ids_ = worker_ids;
 
@@ -51,7 +56,7 @@ BlockDistributionTask::BlockDistributionTask(SamsonWorker *samson_worker, size_t
 }
 
 // Virtual method from engine::ProcessItem
-void BlockDistributionTask::run() {
+void BlockRequestTask::run() {
   if (block_ == NULL) {
     return; // Nothing to distribute
   }
@@ -62,7 +67,7 @@ void BlockDistributionTask::run() {
 
   // Send a packet to all selected workers
   for (size_t i = 0; i < worker_ids_.size(); ++i) {
-    PacketPointer packet(new Packet(Message::BlockDistribution));
+    PacketPointer packet(new Packet(Message::BlockRequestResponse));
     packet->set_buffer(block_->buffer());
     packet->message->set_block_id(block_id_);
     packet->to = NodeIdentifier(WorkerNode, worker_ids_[i]);
@@ -134,7 +139,7 @@ void DefragTask::run() {
   list->ReviewBlockReferences(error_);
 
   if (error_.IsActivated()) {
-    AU_LM_W((">>>> Error in defrag operation: %s" , error_.GetMessage().c_str() ));
+    LOG_SW((">>>> Error in defrag operation: %s" , error_.GetMessage().c_str() ));
     return;
   }
 

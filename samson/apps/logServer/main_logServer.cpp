@@ -31,9 +31,9 @@
 
 #define LOC           "localhost"
 
-#define LS_PORT       AU_LOG_SERVER_PORT
-#define LS_QUERY_PORT AU_LOG_SERVER_QUERY_PORT
-#define LS_LOG_DIR    AU_LOG_SERVER_DIRECTORY
+#define LS_PORT       LOG_SERVER_DEFAULT_PORT
+#define LS_QUERY_PORT LOG_SERVER_DEFAULT_CLIENT_PORT
+#define LS_LOG_DIR    LOG_SERVER_DEFAULT_DIRECTORY
 
 bool fg;
 int query_port;

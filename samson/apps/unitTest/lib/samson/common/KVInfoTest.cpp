@@ -1,13 +1,3 @@
-/*
- * Telefónica Digital - Product Development and Innovation
- *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
- *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
- * All rights reserved.
- */
 /* ****************************************************************************
  *
  * FILE            common_test.cpp
@@ -16,23 +6,35 @@
  *
  * DATE            May 2012
  *
+ *
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ *
+ *
  * DESCRIPTION
  *
  * unit testing of the common class in the samson  library
  *
  */
-
-#include "samson/common/MemoryCheck.h"
-#include "samson/common/MessagesOperations.h"
-#include "samson/common/SamsonSetup.h"
-#include "samson/common/status.h"
-#include "samson/common/Rate.h"
-#include "samson/common/Visualitzation.h"
-#include "samson/common/KVRange.h"
-
 #include "gtest/gtest.h"
 
+#include "au/ErrorManager.h"
+
+#include "samson/common/KVHeader.h"
 #include "samson/common/KVInfo.h"
+#include "samson/common/KVRange.h"
+#include "samson/common/MemoryCheck.h"
+#include "samson/common/MessagesOperations.h"
+#include "samson/common/Rate.h"
+#include "samson/common/SamsonSetup.h"
+#include "samson/common/Visualitzation.h"
+#include "samson/common/status.h"
 
 // Test  KVInfo;
 TEST(samson_common_KVInfo, test1) {
@@ -57,3 +59,51 @@ TEST(samson_common_KVInfo, test1) {
   EXPECT_EQ(info_1.str(), "(  20.0 kvs in  2.00Kbytes )") << "Error in KVInfo append from KVInfo";
 }
 
+// -----------------------------------------------------------------------------
+// Test KVInfo.canAppend
+//
+TEST(samson_common_KVInfo, canAppend) {
+  samson::KVInfo toInfoWithHugeSize(0xFFFFFFFF, 5);
+  samson::KVInfo fromInfoWithHugeSize(0xFFFFFFFF, 5);
+  samson::KVInfo toInfoWithHugeKvs(5, 0xFFFFFFFF);
+  samson::KVInfo fromInfoWithHugeKvs(5, 0xFFFFFFFF);
+
+  EXPECT_EQ(false, toInfoWithHugeSize.canAppend(fromInfoWithHugeSize));
+  EXPECT_EQ(false, toInfoWithHugeKvs.canAppend(fromInfoWithHugeKvs));
+}
+
+// -----------------------------------------------------------------------------
+// Test append and remove
+//
+TEST(samson_common_KVInfo, appendRemove) {
+  samson::KVInfo to(0, 0);
+  samson::KVInfo from(1, 1);
+
+  to.append(from);
+  EXPECT_STREQ("(  1.00 kvs in  1.00 bytes )", to.str().c_str());
+
+  to.remove(from);
+  EXPECT_STREQ("(     0 kvs in     0 bytes )", to.str().c_str());
+}
+
+// -----------------------------------------------------------------------------
+// Test creation of info vectors
+//
+TEST(samson_common_KVInfo, createKVInfoVector) {
+  au::ErrorManager  errorMgr;  
+  samson::KVInfo*   infoP = samson::createKVInfoVector(NULL, &errorMgr);
+  EXPECT_EQ(NULL, infoP);
+
+  char*             data = (char*) "a:1, b:2, c:3";
+  infoP = samson::createKVInfoVector(data, &errorMgr);
+  EXPECT_EQ(NULL, infoP);
+
+  samson::KVFormat  format("samson:string", "system::string");
+  samson::KVInfo    info(10, 30);
+  samson::KVHeader  header;
+
+  header.Init(format, info);
+
+  infoP = samson::createKVInfoVector((char*) &header, &errorMgr);
+  EXPECT_TRUE(infoP == NULL);
+}

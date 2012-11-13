@@ -10,6 +10,8 @@
  */
 #include "au/network/RESTServiceCommand.h"  // Own interface
 
+#include "au/gpb.h"
+#include "au/au.pb.h"
 #include "au/string/xml.h"
 
 namespace au {

@@ -9,74 +9,86 @@
 #include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/console/CommandCatalogue.h"
-#include "au/log/LogChannelFilter.h"
-#include "au/log/LogChannels.h"
+#include "au/log/LogCentralChannelsFilter.h"
+#include "au/log/LogCentralChannels.h"
 #include "au/network/FileDescriptor.h"
 
+/*
+ 
+ LogCentral
+ 
+ Central element to emit logs using a secondary thread connected with a pipe
+ This strategy allow to recevie logs from fork-generated children processes
+ 
+ */ 
+ 
 namespace au {
 class Log;
-class LogPluginScreen;
-class LogPluginFile;
-class LogPluginServer;
+class LogCentralPluginScreen;
+class LogCentralPluginFile;
+class LogCentralPluginServer;
 
-void *run_LogCentral(void *p);
 
-//
 class LogCentral {
+  
 public:
 
   LogCentral();
 
-  // Init log system
-  void Init(const std::string& exec = "Unknown");
-
-  // Stop the loggin system
-  void Stop();
-
+  // General management
+  void Init(const std::string& exec = "Unknown");  // Init log system
+  void Stop();  // Stop the loggin system
+  void StopAndExit( int c);  // Stop and exit
+  
+  // Inline method to quickly check if a log has to be generated
+  inline bool IsLogAccepted( int channel , int level )
+  {
+    return main_log_channel_filter_.IsLogAccepted( channel , level );
+  }
+  
   // Emit a log thougth the pipe
   void Emit(Log *log);
 
-  // Console interface for this element
+  // Direct Console interface for this element
   void evalCommand(const std::string& command);
   void evalCommand(const std::string& command, au::ErrorManager& error);
 
+  // Plugins management
+  void AddPlugin(const std::string& name,  LogCentralPlugin *p);
+  void AddPlugin(const std::string& name,  LogCentralPlugin *p, au::ErrorManager& error);
+  void RemovePlugin(  const std::string& plugin_name );
+  void AddFilePlugin(  const std::string& plugin_name, const std::string& file_name );
+  void AddServerPlugin(  const std::string& plugin_name, const std::string& host , const std::string file_name );
+  std::string GetPluginStatus( const std::string& name );
+  std::string GetPluginChannels( const std::string& name );
+  
   // Accessors
-  inline LogChannels& log_channels();
-
-  // Add and remove plugins to the system
-  void AddPlugin(const std::string& name,  LogPlugin *p) {
-    au::ErrorManager error;
-
-    AddPlugin(name, p, error);
+  LogCentralChannels& log_channels(){
+    return log_channels_;
   }
-
-  void AddPlugin(const std::string& name,  LogPlugin *p, au::ErrorManager& error);
-
-  inline bool CheckLogChannel(int c) {
-    return main_log_channel_filter_.IsChannelActivated(c);
+  int GetLogChannelLevel( int c ) {
+    return main_log_channel_filter_.GetLevel(c);
   }
-
-  inline LogChannelFilter& main_log_channel_filter() {
+  LogCentralChannelsFilter& main_log_channel_filter() {
     return main_log_channel_filter_;
   }
-
-  //Return the file descriptor used to send traces
-  int log_fd() const
+  int log_fd() const  //Return the file descriptor used to send traces
   {
     return fds_[1];
   }
   
 private:
 
+  friend void *RunLogCentral(void *p);
+  
   // Main function for the background thread
-  void run();
+  void Run();
 
   // Review if channles are activated
-  void ReviewChannelsActivateion();
-
+  void ReviewChannelsLevels();
 
   // Channel registration
-  LogChannels log_channels_;
+  LogCentralChannels log_channels_;
 
   // Frind function to run in background
   friend void *run_LogCentral(void *p);
@@ -97,17 +109,16 @@ private:
   std::string exec_;
 
   // Set of Plugins for logs
-  au::map<std::string, LogPlugin> plugins_;
+  au::map<std::string, LogCentralPlugin> plugins_;
 
   // Main elements to emit or not logs
-  LogChannelFilter main_log_channel_filter_;
+  LogCentralChannelsFilter main_log_channel_filter_;
 
   // Counter of logs
   LogCounter log_counter_;
 };
 
 extern LogCentral log_central;
-
 
 class LogCentralCatalogue : public au::console::CommandCatalogue {
 public:

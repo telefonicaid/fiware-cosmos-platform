@@ -282,4 +282,12 @@ std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorMa
       return directory + "/" + file;
     }
   }
+  
+  std::string GetRandomDirectory()
+  {
+    char tmp_directory[100];
+    sprintf(tmp_directory, "/tmp/tmpXXXXXXX");
+    return mktemp( tmp_directory );
+  }
+
 }

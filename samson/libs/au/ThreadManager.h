@@ -111,6 +111,7 @@ public:
     thread_function f,
     void *__restrict p
     );
+  
 
   // Get name of all running threads
   au::StringVector getThreadNames();
@@ -134,6 +135,11 @@ public:
 
   std::string str();
 
+  static ThreadManager* shared()
+  {
+    return au::Singleton<au::ThreadManager>::shared();
+  }
+  
 private:
 
   // "Name" of the running threads

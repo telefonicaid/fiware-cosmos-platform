@@ -62,7 +62,6 @@ namespace samson {
     class WorkerCommand;
     class PopQueue;
     
-    
     class StreamOperationRangeInfo {
     public:
       
@@ -97,8 +96,9 @@ namespace samson {
     private:
       
       // Review this stream operation to compute priority rank
-      void ReviewCurrentTask(  );
-
+      void ReviewCurrentTask( );
+      void ReviewCurrentDefragTask();
+      
       // Set error and reset chronometer to count how much time since last error
       void SetError( const std::string error_message )
       {
@@ -116,7 +116,7 @@ namespace samson {
       std::string state_;                    // String describing the state of this stream operation ( good for debugging )
       std::string short_state_;
       
-      size_t pending_size_;                  // Size to be processes ( triggering task if > 0)
+      size_t pending_size_;                  // Pending size to be processed
       size_t priority_rank_;                 // Priority number to schedule a new task ( time * pending_size )
       bool range_division_necessary_;        // Is range division necessary
       

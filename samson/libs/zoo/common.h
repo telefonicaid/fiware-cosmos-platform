@@ -22,7 +22,7 @@
 #define ZC_ERROR_NO_CONNECTION      -2002    // No connection is established
 #define ZC_ERROR_CONNECTION_TIMEOUT -2003    // No connection is established
 
-namespace samson {
+namespace au {
   namespace zoo {
     class Connection;
     

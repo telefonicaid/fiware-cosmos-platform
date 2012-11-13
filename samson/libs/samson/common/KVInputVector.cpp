@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "logMsg/logMsg.h"
 #include "samson/module/ModulesManager.h"   // samson::ModulesManager
 namespace samson {
 #pragma mark KVInputVectorBase
@@ -45,6 +46,7 @@ void KVInputVectorBase::prepareInput(size_t _max_num_kvs) {
 KVInputVector::KVInputVector(Operation *operation) {
   // Take the number of inputs
   num_inputs_ = operation->getNumInputs();
+  LM_M(("num_inputs: %d", num_inputs_));
 
   _kv = NULL;
   kv = NULL;
@@ -56,6 +58,7 @@ KVInputVector::KVInputVector(Operation *operation) {
 
   if (inputFormats.size() == 0) {
     LM_W(("Operation %s has no inputs", operation->_name.c_str()));
+    inputStructs_ = NULL;
     return;
   }
 

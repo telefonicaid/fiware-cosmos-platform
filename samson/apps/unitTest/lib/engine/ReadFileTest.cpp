@@ -69,7 +69,8 @@ TEST(readfileTest, readTest) {
 // -----------------------------------------------------------------------------
 // seekTest - ok and not-ok seeks tested
 //
-TEST(engine_ReadFile, seekTest) {
+
+TEST(engine_ReadFile, DISABLED_seekTest) {
   engine::ReadFile file("test_data/testdata.txt");
 
   EXPECT_TRUE(file.IsValid());

@@ -9,11 +9,13 @@
  * All rights reserved.
  */
 
+#include "engine/NotificationElement.h"      // Own interface
+
 #include "engine/Engine.h"               // engine::Engine
 #include "engine/Notification.h"       // engine::Notification
 #include "engine/NotificationListener.h"  // engine::EngineNotification
+#include "engine/Logs.h"
 
-#include "engine/NotificationElement.h"      // Own interface
 
 
 namespace engine {
@@ -36,7 +38,7 @@ NotificationElement::NotificationElement(Notification *notification, int seconds
 }
 
 void NotificationElement::run() {
-  LM_T(LmtEngineNotification, ("Running notification %s", notification_->GetDescription().c_str()));
+  LOG_M( logs.notifications, ("Running notification %s", notification_->GetDescription().c_str()));
   Engine::shared()->Send(notification_);
 }
 }

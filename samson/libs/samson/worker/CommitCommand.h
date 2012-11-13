@@ -65,7 +65,7 @@ class CommitCommandItem {
                       , const KVInfo& info);
 
     // Parse a provided command to generate a new item
-    static CommitCommandItem *create_item(const std::string& command, au::ErrorManager *error);
+    static CommitCommandItem *create_item(const std::string& command, au::ErrorManager& error);
 
     // Member accessors
     std::string command() const;
@@ -88,7 +88,7 @@ class CommitCommand {
     ~CommitCommand();
 
     // Parse a received commit-command string to generate items
-    void ParseCommitCommand(const std::string& command, au::ErrorManager *error);
+    void ParseCommitCommand(const std::string& command, au::ErrorManager& error);
 
     // handy function to add items to this command
     void AddBlock(const std::string& queue, size_t block_id, size_t block_size, const KVFormat& format,

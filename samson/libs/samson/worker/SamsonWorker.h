@@ -27,6 +27,7 @@
 #include "au/containers/SharedPointer.h"
 #include "au/network/RESTService.h"
 #include "au/network/RESTServiceCommand.h"
+#include "zoo/Connection.h"
 
 #include "engine/EngineElement.h"               // samson::EngineElement
 #include "logMsg/logMsg.h"
@@ -42,13 +43,12 @@
 #include "samson/stream/BlockManager.h"
 #include "samson/stream/WorkerTaskManager.h"
 #include "samson/stream/WorkerTaskManager.h"     // samson::stream::WorkerTaskManager
-#include "samson/worker/PushOperation.h"
 #include "samson/worker/SamsonWorkerRest.h"
 #include "samson/worker/SamsonWorkerSamples.h"
 #include "samson/worker/WorkerBlockManager.h"
 #include "samson/worker/WorkerCommandManager.h"
-#include "samson/zoo/DataModel.h"
-#include "samson/zoo/SamsonWorkerController.h"
+#include "samson/worker/DataModel.h"
+#include "samson/worker/SamsonWorkerController.h"
 
 /*
  *
@@ -93,14 +93,18 @@ class SamsonWorker : public engine::NotificationListener, public au::Console {
     void evalCommand(std::string command);
     std::string getPrompt();
 
-    // Get a collection with a single record with information for this worker...
+    // Function to get information about current status
     au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization);
+    au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization);
+    au::SharedPointer<gpb::Collection> GetWorkerAllLogChannels(const Visualization& visualization);
+    au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
+    au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
 
     bool IsReady();   // Method to access if worker is ready
     bool IsConnected();   // Method to access if worker is ready
 
     // Accessors to individual components of this worker
-    au::SharedPointer<zoo::Connection> zoo_connection();
+    au::SharedPointer<au::zoo::Connection> zoo_connection();
     au::SharedPointer<SamsonWorkerController> worker_controller();
     au::SharedPointer<DataModel> data_model();
     au::SharedPointer<WorkerNetwork> network();
@@ -119,7 +123,7 @@ class SamsonWorker : public engine::NotificationListener, public au::Console {
   private:
 
     enum State {
-      unconnected, connected, included, ready, cluster_ready,
+      unconnected, connected, ready
     };
 
     State state_;   // Current state of this worker
@@ -141,7 +145,7 @@ class SamsonWorker : public engine::NotificationListener, public au::Console {
     au::Cronometer cronometer_;
 
     // Main elements of the worker
-    au::SharedPointer<zoo::Connection> zoo_connection_;   // Main connection with the zk
+    au::SharedPointer<au::zoo::Connection> zoo_connection_;   // Main connection with the zk
     au::SharedPointer<SamsonWorkerController> worker_controller_;   // Cluster setup controller
     au::SharedPointer<DataModel> data_model_;   // Data model
     au::SharedPointer<WorkerNetwork> network_;   // Network manager to manage connections
@@ -150,8 +154,17 @@ class SamsonWorker : public engine::NotificationListener, public au::Console {
     au::SharedPointer<stream::WorkerTaskManager> task_manager_;   // Manager for tasks
     au::SharedPointer<WorkerCommandManager> workerCommandManager_;   // Manager of the "Worker commands"
 
+  
+    bool modules_available_;        // Flag to determine if blocks for modules are available
     size_t last_modules_version_;   // Last version of the queue .modules observed so far
 
+  // Cronometer for last candidate data model
+  au::Cronometer cronometer_candidate_data_model_;
+  
+  // Visualitzation of current data model
+  void fill( gpb::CollectionRecord *record , const std::string& name, gpb::Data* data, const Visualization& visualization );
+  
+  
     // State of this worker
     std::string str_state();
 };

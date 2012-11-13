@@ -5,6 +5,32 @@ package samson.gpb;
 // Basic components
 //
 
+message EnvironmentVariable
+{
+	required string name	= 1;	// Name of the property
+	required string value	= 2;	// Value
+}
+
+message Environment
+{
+	repeated EnvironmentVariable variable=1;	// List of enrivonment variables
+}
+
+message Error
+{
+	// When Error is used inside another message, it is always optional
+	required string message = 2;	// String with the error definition ( if any )
+}
+
+message Alert
+{
+	
+	required string text     = 1; 
+	optional string type     = 2; // message , error , warning
+	optional string context  = 3; // Context where this was generated ( streaming , delilah , etc... ) 
+
+}
+
 message KVRange
 {
 	required int32  hg_begin = 1;
@@ -70,7 +96,7 @@ message BatchOperation
 
 message Block
 {
-	required uint64   block_id   = 1; // Identifier of this block
+	required uint64  block_id   = 1; // Identifier of this block
 	required uint64   block_size = 2; // Full size of this block
 	required KVRange  range      = 3; // Range for this particular block
 	required uint64   kvs        = 4; // Number of kvs
@@ -125,7 +151,29 @@ message Data
 
 	// Modules
 	repeated Module modules = 6;
-		
+
+	// Last commit seen so far ( and id for the next commit )
+	required uint64 commit_id = 7;
+}
+
+message DataCommit
+{
+	required uint64 id = 1;
+	required string message = 2;
+}
+
+message DataModel
+{
+	required Data previous_data  = 1;  // Previous "safe" data model
+	optional Data candidate_data = 2;  // Candidate for next "safe" model
+	required Data current_data   = 3;  // Current "on the fly" data model
+
+	// Commit history to recover commands ( mainly add_stream_operation or run )
+	repeated DataCommit commit = 5;    // List of commits from previous_data to current_data
+
+	// Replication factor
+	required int32 replication_factor = 10;      // Number of times data  should be replicated to be considered "save"
+
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -144,12 +192,10 @@ message WorkerInfo
 	required int32 cores = 5;
 	required uint64 memory = 6;
 
-	// Flag to indicate we are ready
-	required bool ready = 7;
-
-	// Information about the blocks in the block manager
-	repeated uint64 block_id = 10;
+	// Last "seen" complete data model
+	required uint64 last_commit_id = 10; // Method to confirm data model
 }
+
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -193,32 +239,6 @@ message ClusterInfo
 // Common 
 //
 
-message EnvironmentVariable
-{
-	required string name	=1;	// Name of the property
-	required string value	=2;	// Value
-}
-
-message Environment
-{
-	repeated EnvironmentVariable variable=1;	// List of enrivonment variables
-}
-
-
-message Error
-{
-	// When Error is used inside another message, it is always optional
-	required string message = 2;	// String with the error definition ( if any )
-}
-
-message Alert
-{
-	
-	required string text     = 1; 
-	optional string type     = 2; // message , error , warning
-	optional string context  = 3; // Context where this was generated ( streaming , delilah , etc... ) 
-
-}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
@@ -399,6 +419,9 @@ message Message
 
 	// Information about cluster ( sent from workers to delilahs )
 	optional ClusterInfo cluster_info = 15;
+
+	// Information about a log generated at workers to delilahs
+	optional Environment log = 16;
 
 }
 

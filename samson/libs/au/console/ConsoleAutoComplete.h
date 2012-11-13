@@ -32,8 +32,8 @@ class ConsoleAutoCompleteAlternative {
       }
 
       if (label.substr(0, last_word.length()) == last_word) {
-        return au::str(au::red, "%s", last_word.c_str()) + au::str(au::purple, "%s",
-                                                                   label.substr(last_word.length()).c_str());
+        return au::str(au::red, "%s", last_word.c_str())
+        + au::str(au::magenta, "%s",label.substr(last_word.length()).c_str());
       } else {
         return label;
       }

@@ -44,13 +44,15 @@ struct WorkerTaskLog {
     std::string result;    // Result of the operation
     std::string inputs;    // Information at the input of the operation
     std::string outputs;   // Information at output of the operation
-    std::string times;     // Information at output of the operation
+    std::string times;
+    std::string process_time;
     int waiting_time_seconds;   // Waiting time until execution starts
     int running_time_seconds;   // Running time
 };
 
 class WorkerTaskManager : public ::engine::NotificationListener {
   public:
+  
     explicit WorkerTaskManager(SamsonWorker *samson_worker);
 
     void Add(au::SharedPointer<WorkerTaskBase> task);   // Add new task to the manager
@@ -58,11 +60,10 @@ class WorkerTaskManager : public ::engine::NotificationListener {
     size_t getNewId();   // Get identifier for a new task
 
     // Add a system task to distribute a particular block to a set of workers
-    void AddBlockDistributionTask(size_t block_id, const std::vector<size_t>& worker_ids);
+    void AddBlockRequestTask(size_t block_id, const std::vector<size_t>& worker_ids);
 
     // Review schedules tasks
     void reviewPendingWorkerTasks();
-    bool runNextWorkerTasksIfNecessary();
 
     // Review stream operations to schedule new stuff
     void review_stream_operations();
@@ -85,6 +86,10 @@ class WorkerTaskManager : public ::engine::NotificationListener {
     gpb::CollectionPointer GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
 
   private:
+  
+    bool runNextWorkerTasksIfNecessary();
+
+  
     size_t id_;   // Id of the current task
     au::Queue<WorkerTaskBase> pending_tasks_;   // List of pending task to be executed
     au::Dictionary<size_t, WorkerTaskBase> running_tasks_;   // Map of running tasks

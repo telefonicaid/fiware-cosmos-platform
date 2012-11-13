@@ -25,7 +25,6 @@ struct KVHeader {
   // Information about the packet
   // ---------------------------------------------------------------
   int magic_number;             // Magic number to make sure reception is correct
-  size_t worker_id;             // Identifier of the worker that created this block
   char keyFormat[100];          // Format for the key
   char valueFormat[100];        // Format for the value
   KVInfo info;                  // Total information in this package ( in all hash-groups )

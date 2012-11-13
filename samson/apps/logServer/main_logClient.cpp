@@ -27,7 +27,7 @@ char format[1024];
 int target_port;
 
 #define LOC     "localhost"
-#define LS_PORT AU_LOG_SERVER_QUERY_PORT
+#define LS_PORT LOG_SERVER_DEFAULT_CLIENT_PORT
 
 
 PaArgument paArgs[] =

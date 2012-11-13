@@ -24,7 +24,7 @@
 #include "au/containers/set.h"
 #include "au/log/Log.h"
 #include "au/log/LogCommon.h"
-#include "au/log/LogPlugin.h"
+#include "au/log/LogCentralPlugin.h"
 #include "au/network/SocketConnection.h"
 #include "au/string/StringUtilities.h"
 
@@ -33,15 +33,15 @@ namespace au {
  * Plugin to connect to a log server
  */
 
-class LogPluginServer : public LogPlugin {
+class LogCentralPluginServer : public LogCentralPlugin {
 public:
 
-  LogPluginServer() : LogPlugin("Server") {
+  LogCentralPluginServer() : LogCentralPlugin("Server") {
     set_activated(false);
   }
 
-  LogPluginServer(const std::string& host, int port, const std::string& local_file);
-  virtual ~LogPluginServer();
+  LogCentralPluginServer(const std::string& host, int port, const std::string& local_file);
+  virtual ~LogCentralPluginServer();
 
   void set_host(const std::string& host, int port, const std::string& local_file);
 

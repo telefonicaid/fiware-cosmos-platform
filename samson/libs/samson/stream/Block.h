@@ -44,10 +44,12 @@
 #include "samson/stream/BlockInfo.h"                              // struct BlockInfo
 #include "samson/stream/BlockLookupList.h"
 
+
 namespace samson {
 namespace stream {
 class BlockList;
 
+  
 class Block {
   public:
     typedef enum {
@@ -64,7 +66,7 @@ class Block {
 
     // Get Accessorrs
     BlockState state();
-    au::SharedPointer<KVFile> getKVFile(au::ErrorManager& error);
+    au::SharedPointer<KVFile> getKVFile(au::ErrorManager& error , bool retain );
     std::string file_name();
     int priority();
     size_t creation_time();
@@ -77,9 +79,6 @@ class Block {
     size_t block_id();
     KVRange getKVRange();   // Working with KVRanges
     KVInfo getKVInfo();
-    size_t worker_id();
-    bool temporal();
-    void set_no_temporal();
     size_t min_task_id() {
       return min_task_id_;
     }
@@ -166,9 +165,11 @@ class Block {
     friend class BlockManager;
     friend class BlockLookupList;
 };
-
+  
 typedef au::SharedPointer<Block> BlockPointer;
+  
 }
+
 }
 
 #endif  // ifndef _H_BLOCK

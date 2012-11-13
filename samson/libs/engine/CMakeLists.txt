@@ -1,4 +1,5 @@
 SET (HEADERS
+Logs.h
 NotificationListener.h
 NotificationListenersManager.h
 Buffer.h
@@ -18,6 +19,7 @@ DiskOperation.h
 )
 
 SET (SOURCES
+Logs.cpp
 NotificationListener.cpp
 NotificationListenersManager.cpp
 Buffer.cpp
@@ -43,7 +45,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(engine STATIC ${SOURCES} ${HEADERS} )
-
+ADD_LIBRARY(engine SHARED ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES( engine  lm pa au )
+INSTALL( TARGETS engine DESTINATION lib )
 
 

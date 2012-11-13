@@ -4,11 +4,12 @@ SET (HEADERS
 	WorkerCommand.h
 	SamsonWorker.h
 	WorkerBlockManager.h
-	PushOperation.h
-	DistributionOperation.h
 	BlockRequest.h
 	SamsonWorkerSamples.h
 	SamsonWorkerRest.h
+	DataModel.h
+	SamsonWorkerController.h
+	CommitCommand.h
 )
 
 SET (SOURCES
@@ -16,11 +17,12 @@ SET (SOURCES
 	WorkerCommand.cpp
 	SamsonWorker.cpp
 	WorkerBlockManager.cpp
-	PushOperation.cpp
-	DistributionOperation.cpp
 	BlockRequest.cpp
 	SamsonWorkerSamples.cpp
 	SamsonWorkerRest.cpp
+	DataModel.cpp
+	SamsonWorkerController.cpp
+	CommitCommand.cpp
 )
 
 # Include directories
@@ -33,5 +35,6 @@ include_directories("/usr/include/json")
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonWorkerLib STATIC ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES( samsonWorkerLib ${QT_LIBRARIES} json )
+
 
 

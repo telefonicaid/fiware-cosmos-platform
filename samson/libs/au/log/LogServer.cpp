@@ -16,16 +16,16 @@
 
 namespace au {
 LogServer::LogServer()
-  : au::network::ConsoleService(AU_LOG_SERVER_QUERY_PORT)
-    , channel(AU_LOG_SERVER_PORT, AU_LOG_SERVER_DIRECTORY) {
+  : au::network::ConsoleService(LOG_SERVER_DEFAULT_CLIENT_PORT)
+    , service_(LOG_SERVER_DEFAULT_PORT, LOG_SERVER_DEFAULT_DIRECTORY) {
   // Init service to receive queries
   Status s = InitService();
 
   if (s != OK) {
-    LM_X(1, ( "Not possible to open query channel on port %d\n", AU_LOG_SERVER_QUERY_PORT ));  // Init channel to receive binrary logs
+    LM_X(1, ( "Not possible to open query channel on port %d\n", LOG_SERVER_DEFAULT_CLIENT_PORT ));  // Init channel to receive binrary logs
   }
   au::ErrorManager error;
-  channel.initLogServerChannel(&error);
+  service_.initLogServerService(&error);
 
   if (error.IsActivated()) {
     LM_X(1, ( "Not possible to open channel for logs %s\n", error.GetMessage().c_str()));
@@ -35,7 +35,7 @@ LogServer::LogServer()
 void LogServer::runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {
   CommandLine cmdLine;
 
-  cmdLine.SetFlagString("format", AU_LOG_DEFAULT_FORMAT_LOG_CLIENT);    // Format of each log
+  cmdLine.SetFlagString("format", LOG_DEFAULT_FORMAT_LOG_CLIENT);    // Format of each log
   cmdLine.SetFlagInt("limit", 0);                           // Max number of logs
   cmdLine.SetFlagString("pattern", "");                     // Pattern for strings...
   cmdLine.SetFlagString("time", "");                        // time for logs
@@ -87,8 +87,6 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
       "\n \n" \
       " * show_connections: Show current connections with this logServer" \
       "\n \n" \
-      " * show_format_fiels : Show available format fields to be used in show command\n" \
-      "\n\n" \
       " * new_session: Create a mark in the logs, so future show commands only show logs starting here.\n" \
       "\n \n" \
       "------------------------------------------------------------------------------------------------------------------\n" \
@@ -99,13 +97,8 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
     return;
   }
 
-  if (main_command == "show_format_fiels") {
-    au::SharedPointer<au::tables::Table> table = getTableOfFields();
-    error->AddMessage(table->str() + "\n");
-  }
-
   if (main_command == "new_session") {
-    channel.addNewSession();
+    service_.addNewSession();
     error->AddMessage("OK");
     return;
   }
@@ -120,7 +113,7 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
 
     output << "\n";
 
-    table = channel.getConnectionsTable();
+    table = service_.getConnectionsTable();
     table->setTitle("Log connections");
     output << table->str();
     delete table;
@@ -130,19 +123,13 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
 
 
   if (main_command == "info") {
-    error->AddMessage(channel.getInfo());
+    error->AddMessage(service_.GetInfoTable());
     return;
   }
 
   // Show channels
   if (main_command == "show_channels") {
-    error->AddMessage(channel.getChannelsTable(&cmdLine));
-    return;
-  }
-
-  // Show logs
-  if (main_command == "show") {
-    error->AddMessage(channel.getTable(&cmdLine));
+    error->AddMessage(service_.GetChannelsTable());
     return;
   }
 
@@ -153,11 +140,7 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
 void LogServer::autoComplete(ConsoleAutoComplete *info, au::Environment *environment) {
   if (info->completingFirstWord()) {
     info->add("help");
-    info->add("show_format_fiels");
-
     info->add("info");
-
-    info->add("show");
     info->add("show_channels");
     info->add("show_connections");
     info->add("new_session");
@@ -166,25 +149,10 @@ void LogServer::autoComplete(ConsoleAutoComplete *info, au::Environment *environ
   if (info->completingSecondWord("connect")) {
     info->setHelpMessage("Provide hostname where logServer is located...");
   }
-  if (info->firstWord() == "show") {
-    std::string message =
-      " * show: Show logs on screen\n" \
-      "\n \n" \
-      "        [-format str_format]   Define format of how logs are displayed on screes   \n" \
-      "        [-limit N]             Define the maximum number of logs to be displayed ( default 10000 ) \n" \
-      "        [-type T]              Show only logs of a certain type: W M T X V ...\n" \
-      "        [-time HH:MM::SS]      Show only logs generated before given time stamp\n" \
-      "        [-date DD/MM/YY]       Show only logs generated before given date\n" \
-      "        [-pattern str_pattern] Show only logs that match a particular regular experssion\n" \
-      "        [-reverse]             Show records in reverse order\n" \
-      "        [-multi_session]       Show logs from any session\n" \
-      "        [-table]               Show records in a table instead on line by line\n";
 
-    info->setHelpMessage(message);
-  }
 }
 
 std::string LogServer::getPrompt(au::Environment *environment) {
-  return au::str("LogServer [%lu logs] >> ", channel.log_container.size());
+  return au::str("LogServer [%lu logs] >> ", service_.log_container_.size());
 }
 }

@@ -1,5 +1,6 @@
 SET (HEADERS
 	common.h
+	Logs.h
 	KVInfo.h
 	FullKVInfo.h
 	KVRange.h
@@ -26,6 +27,8 @@ SET (HEADERS
 )
 
 SET (SOURCES
+	common.cpp
+	Logs.cpp
 	KVInfo.cpp
 	FullKVInfo.cpp
 	KVRange.cpp
@@ -63,3 +66,5 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonCommon STATIC ${SOURCES} ${HEADERS})
+ADD_DEPENDENCIES(samsonCommon samson.pb.h)
+ADD_DEPENDENCIES(samsonCommon samson.pb.cc)

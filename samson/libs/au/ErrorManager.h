@@ -71,6 +71,9 @@ public:
   // Get the last error message
   std::string GetMessage() const;
 
+  // Complete message error
+  std::string GetErrorMessage( const std::string& message) const;
+  
   // Get the all errors message in multiple lines
   std::string GetCompleteMessage();
 

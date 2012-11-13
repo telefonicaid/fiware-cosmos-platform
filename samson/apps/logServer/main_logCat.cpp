@@ -13,53 +13,31 @@
 #include "parseArgs/parseArgs.h"
 
 #include "au/log/LogCommon.h"
-#include "au/log/LogFile.h"
+#include "au/log/LogProbe.h"
 #include "au/log/LogFormatter.h"
 #include "au/log/LogServer.h"
-#include "au/log/TableLogFormatter.h"
+
 
 
 char format[1024];
-char pattern[1024];
-char type[1024];
+char filter[1024];
 char target_file[1024];
-int limit;
-bool is_table;
 bool is_reverse;
-bool is_multi_session;
+bool show_fields;
 char str_time[1024];
 char str_date[1024];
+char file_name[1024];
+bool count;
 
 PaArgument paArgs[] =
 {
-  { "-format",        format,                   "",                     PaString,                     PaOpt,
-    _i AU_LOG_DEFAULT_FORMAT,    PaNL,
-    PaNL,
-    "Log file to scan"                         },
-  { "-pattern",       pattern,                  "",                     PaString,                     PaOpt,
-    _i "",     PaNL,            PaNL,
-    "Pattern to be found in logs"         },
-  { "-limit",         &limit,                   "",                     PaInt,                        PaOpt,
-    10000,     0,               100000000,
-    "Max number of logs to be displayed"  },
-  { "-table",         &is_table,                "",                     PaBool,                       PaOpt,
-    false,     false,           true,                "Show in table format"                      },
-  { "-reverse",       &is_reverse,              "",                     PaBool,                       PaOpt,
-    false,     false,           true,
-    "Show in reverse temporal order"      },
-  { "-multi_session", &is_reverse,              "",                     PaBool,                       PaOpt,
-    false,     false,           true,                "Skip new_session marks"                    },
-  { "-time",          &str_time,                "",                     PaString,                     PaOpt,
-    _i "",     PaNL,            PaNL,
-    "Show only logs older that this time" },
-  { "-date",          &str_date,                "",                     PaString,                     PaOpt,
-    _i "",     PaNL,            PaNL,
-    "Show only logs older that this date" },
-  { "-type",          type,                     "",                     PaString,                     PaOpt,
-    _i "",     PaNL,            PaNL,
-    "Filter a particular type of logs"    },
-  { " ",              target_file,              "",                     PaString,                     PaReq,
-    _i "",     PaNL,            PaNL,                "Log file to scan"                          },
+  { "-format", format,   "",  PaString, PaOpt, _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL, "Formats of the logs at the output" },
+  { "-filter", filter,   "",  PaString, PaOpt, _i "", PaNL,  PaNL, "Filter for logs"                   },
+  { "-save"  , file_name,"", PaString, PaOpt, _i "",  PaNL, PaNL,"Save received logs to file" },
+  { "-count" , &count,   "", PaBool,   PaOpt,false, false, true, "Show possible fields for format argument" },
+  { "-reverse", &is_reverse, "", PaBool, PaOpt,false, false, true, "Show in reverse temporal order" },
+  { "-show_fields",&show_fields, "",PaBool,PaOpt,false,false, true, "Show possible fields for format argument" },
+  { " ", target_file, "", PaString, PaReq,_i "", PaNL, PaNL, "Log file to scan"  },
   PA_END_OF_ARGS
 };
 
@@ -101,46 +79,66 @@ int main(int argC, const char *argV[]) {
   // lmAux((char*) "father");
   logFd = lmFirstDiskFileDescriptor();
 
-  LM_V(("LogCat %s", target_file));
-
-  // Log formmatter
-  LM_V(("Using format %s", format));
-
-  // Open teh log file
+  // Check format for filter
   au::ErrorManager error;
-  std::vector<au::SharedPointer<au::Log> > logs = au::readLogFile(target_file, error);
+  au::LogFilterPointer log_filter = au::LogFilter::Create( filter , error);
+  if( error.IsActivated() )
+  {
+    std::cerr << error.GetErrorMessage("Error in filter definition");
+    exit(1);
+  }
 
+  if( show_fields )
+  {
+    au::SharedPointer<au::tables::Table> table = au::getTableOfFields();
+    std::cout << table->str();
+    return 0;
+  }
+  
+  // Open provided log file
+  std::vector<au::SharedPointer<au::Log> > logs = au::readLogFile(target_file, error);
   if (error.IsActivated()) {
     LM_X(1, ("ERROR: %s", error.GetMessage().c_str()));  // Formatter to create table
   }
-  au::TableLogFormatter table_log_formater(format);
 
-  // Setup of the table log formatter
-  table_log_formater.set_pattern(pattern);
-  table_log_formater.set_time(str_time);
-  table_log_formater.set_date(str_date);
-  table_log_formater.set_as_table(is_table);
-  table_log_formater.set_reverse(is_reverse);
-  table_log_formater.set_as_multi_session(is_multi_session);
-  table_log_formater.set_limit(limit);
-
-  table_log_formater.init(error);
-
-  if (error.IsActivated()) {
-    LM_X(1, ("Error: %s", error.GetMessage().c_str()));
+  // Log Probe
+  au::LogProbe log_probe;
+  if(count)
+    log_probe.AddPlugin("count", new au::LogProbeCounter() );
+  else
+    log_probe.AddPlugin("printer", new au::LogProbePriter(format , false) );
+  if( strlen( file_name) > 0 )
+  {
+    au::ErrorManager error;
+    log_probe.AddFilePlugin("file", file_name , error );
+    if( error.IsActivated())
+      std::cerr << error.GetErrorMessage(au::str("Error login to file %s" , file_name)) << std::endl;
   }
-  size_t num_logs = logs.size();
-  for (size_t i = 0; i <  num_logs; i++) {
-    // Add log to the table formatter
-    table_log_formater.add(logs[ num_logs - i - 1 ]);
 
-    // Check if we have enougth
-    if (table_log_formater.enougthRecords()) {
-      break;
+  // Flush logs to probe
+  size_t n_logs = logs.size();
+  if ( is_reverse )
+  {
+    for ( size_t i = 0 ; i < n_logs ; ++i )
+    {
+      au::LogPointer log = logs[n_logs-i-1 ];
+      if( log_filter->Accept(log ) )
+        log_probe.Process( log );
+    }
+  }
+  else
+  {
+    for ( size_t i = 0 ; i < n_logs ; ++i )
+    {
+      au::LogPointer log = logs[i];
+      if( log_filter->Accept(log ) )
+        log_probe.Process( log );
     }
   }
 
-  // Emit output to the stdout
-  std::cout << table_log_formater.str();
+  // Clear content of the probe
+  log_probe.Clear();
+
+  
 }
 

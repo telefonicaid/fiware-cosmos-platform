@@ -68,6 +68,14 @@ public:
     return path_;
   }
 
+  char *data() {
+    return data_;
+  }
+
+  size_t data_size() {
+    return data_size_;
+  }
+
   // Method to lock execution until it is done
   void WaitUntilFinished();
   void NotifyFinish();

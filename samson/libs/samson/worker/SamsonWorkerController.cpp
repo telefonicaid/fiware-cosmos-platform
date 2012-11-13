@@ -581,6 +581,22 @@ au::Uint64Set SamsonWorkerController::GetAllWorkerIdsForRange(KVRange range) con
   return worker_ids;
 }
 
+size_t SamsonWorkerController::GetMainWorkerForHashGroup(int hg) const {
+  for (int i = 0; i < cluster_info_->process_units_size(); ++i) {
+    const gpb::ProcessUnit& process_unit = cluster_info_->process_units(i);
+
+    // Get range for this process unit
+    KVRange process_unit_range(process_unit.hg_begin(), process_unit.hg_end());
+
+    if (process_unit_range.Contains(hg)) {
+      return process_unit.worker_id();
+    }
+  }
+
+  LM_X(1, ("Internal error"));
+  return static_cast<size_t>(-1);
+}
+
 // Get workers that should have a copy of a block in this range
 au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) const {
   // Set of identifier to return

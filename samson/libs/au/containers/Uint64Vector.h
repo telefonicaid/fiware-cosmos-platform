@@ -11,11 +11,13 @@
 #ifndef _H_AU_STRING_UINT64_VECTOR
 #define _H_AU_STRING_UINT64_VECTOR
 
-#include "logMsg/logMsg.h"     // LM_W
+#include <algorithm>
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
 #include <string>              // std::string
 #include <sys/time.h>          // struct timeval
+
+#include "logMsg/logMsg.h"     // LM_W
 
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager

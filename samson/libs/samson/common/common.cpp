@@ -25,6 +25,11 @@ std::string str_block_id(size_t block_id) {
 au::SharedPointer<au::tables::Table> GetTableFromCollection(au::SharedPointer<gpb::Collection> collection) {
   std::string table_definition;
 
+
+  if (collection->record_size() == 0) {
+    return au::SharedPointer<au::tables::Table>(NULL);
+  }
+
   for (int i = 0; i < collection->record(0).item_size(); i++) {
     std::string name = collection->record(0).item(i).name();
     std::string format = collection->record(0).item(i).format();
@@ -39,7 +44,6 @@ au::SharedPointer<au::tables::Table> GetTableFromCollection(au::SharedPointer<gp
       table_definition.append("|");
     }
   }
-
   au::SharedPointer<au::tables::Table> table(new au::tables::Table(table_definition));
 
   std::string title = collection->title();

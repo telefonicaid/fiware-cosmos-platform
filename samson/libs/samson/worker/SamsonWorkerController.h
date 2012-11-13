@@ -67,6 +67,9 @@ public:
     return cluster_info_;
   }
 
+  // Get main worker for a particular range
+  size_t GetMainWorkerForHashGroup(int hg) const;
+
   // Get workers that should have a copy of a block in this range ( I am excluded from the list )
   au::Uint64Set GetWorkerIdsForRange(KVRange range) const;
 
@@ -151,7 +154,7 @@ private:
 
   // Data of the cluster
   std::vector<size_t> worker_ids_;                           // List of workers ids in this cluster
-  au::SharedPointer<samson::gpb::ClusterInfo> cluster_info_; // Information about current cluster setup
+  au::SharedPointer<samson::gpb::ClusterInfo> cluster_info_;  // Information about current cluster setup
   au::Dictionary<size_t, samson::gpb::WorkerInfo > workers_info_;       // Information observed from workers
 
   // Mutex protection

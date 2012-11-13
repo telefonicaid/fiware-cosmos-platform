@@ -45,11 +45,13 @@ private:
 
 
   // Auxiliar functions to satisfy Rest queries
-  void process_intern(au::SharedPointer<au::network::RESTServiceCommand> command);
+  void ProcessIntern(au::SharedPointer<au::network::RESTServiceCommand> command);
   void ProcessDelilahCommand(std::string delilah_command, au::SharedPointer<au::network::RESTServiceCommand> cmd);
   void process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command);
-  void process_synchronized(au::SharedPointer<au::network::RESTServiceCommand> command);
+  void ProcessLookupSynchronized(au::SharedPointer<au::network::RESTServiceCommand> command);
 
+  // Handy method to add a collection to the output
+  // The same collections are generated to be sent to delilahs
   void Append(au::SharedPointer<au::network::RESTServiceCommand> command,
               au::SharedPointer<gpb::Collection> collection);
 

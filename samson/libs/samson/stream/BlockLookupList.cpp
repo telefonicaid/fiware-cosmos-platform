@@ -27,9 +27,9 @@
 #include "samson/module/KVFormat.h"
 #include "samson/module/ModulesManager.h"           // ModulesManager
 #include "samson/stream/Block.h"
-#include "samson/stream/BlockList.h"                              // BlockList
+#include "samson/stream/BlockList.h"                // BlockList
 
-#include "samson/stream/BlockManager.h"                           // BlockManager
+#include "samson/stream/BlockManager.h"             // BlockManager
 
 namespace samson {
 namespace stream {
@@ -60,17 +60,18 @@ BlockLookupList::BlockLookupList(Block *block) {
 
   if (head == NULL) {
     LM_X(1,
-        ("Error allocating lookupList.head of %d bytes", block->header.info.kvs *
-            sizeof(BlockLookupRecord)));
+         ("Error allocating lookupList.head of %d bytes", block->header.info.kvs *
+          sizeof(BlockLookupRecord)));
   }
   hashInfo = reinterpret_cast<BlockHashLookupRecord *>(calloc(KVFILE_NUM_HASHGROUPS, sizeof(BlockHashLookupRecord)));
   if (hashInfo == NULL) {
     LM_X(1,
-        ("Error allocating lookupList.hashInfo of %d bytes", KVFILE_NUM_HASHGROUPS *
-            sizeof(BlockHashLookupRecord)));
-  } LM_T(LmtRest,
-      ("Created a lookup list for %d records",
-          block->header.info.kvs));
+         ("Error allocating lookupList.hashInfo of %d bytes", KVFILE_NUM_HASHGROUPS *
+          sizeof(BlockHashLookupRecord)));
+  }
+  LM_T(LmtRest,
+       ("Created a lookup list for %d records",
+        block->header.info.kvs));
 
   unsigned int hashIx;
   unsigned int kvIx;
@@ -94,10 +95,10 @@ BlockLookupList::BlockLookupList(Block *block) {
       }
 
       LM_T(LmtRest,
-          ("setting hashInfo[%d]: %d-%d (%d entries in hashgroup - max entries is %d)", hashIx,
-              noOfKvs, noOfKvs +
-              kvInfoV[hashIx].kvs,
-              entries, maxEntries));
+           ("setting hashInfo[%d]: %d-%d (%d entries in hashgroup - max entries is %d)", hashIx,
+            noOfKvs, noOfKvs +
+            kvInfoV[hashIx].kvs,
+            entries, maxEntries));
     }
 
     hashInfo[hashIx].startIx = noOfKvs;
@@ -180,20 +181,19 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
   keySize = keyDataInstance->serialize(keyName);
   hashGroup = keyDataInstance->hash(KVFILE_NUM_HASHGROUPS);
   LM_T(LmtRest,
-      ("looking up key '%s'(keyDataInstance:name:%s, val:%s) in hashgroup:%d", key,
-          keyDataInstance->getName().c_str(),
-          keyDataInstance->str().c_str(), hashGroup));
+       ("looking up key '%s'(keyDataInstance:name:%s, val:%s) in hashgroup:%d", key,
+        keyDataInstance->getName().c_str(),
+        keyDataInstance->str().c_str(), hashGroup));
 
   int startIx = hashInfo[hashGroup].startIx;
   int endIx = hashInfo[hashGroup].endIx;
   int testIx = (endIx - startIx) / 2 + startIx;
 
   while (true) {
-    LM_T(LmtRest,
-        ("looking up key '%s' - comparing with ix %d (from ix %d to %d)", key, testIx, startIx,
-            endIx));
-    // Andreu: We compare key and values only looking at the binary representation
-    // compare = keyDataInstance->serial_compare(keyName, head[testIx].keyP);
+    LM_T(LmtRest, ("looking up key '%s' - comparing with ix %d (from ix %d to %d)"
+                   , key, testIx, startIx, endIx));
+
+    // We compare key and values only looking at the binary representation
     compare = compare_binary_keys(keyName, keySize, head[testIx].keyP, head[testIx].keyS);
 
     if (compare == 0) {
@@ -206,13 +206,14 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
       valueDataInstance->parse(valueP);
 
       LM_T(LmtRest,
-          ("Match key '%s' - at ix %d (testKeySize:%d, name:%s, path:%s)", key, testIx, testKeySize,
-              valueDataInstance->getName().c_str(),
-              valueDataInstance->getType()));
+           ("Match key '%s' - at ix %d (testKeySize:%d, name:%s, path:%s)", key, testIx, testKeySize,
+            valueDataInstance->getName().c_str(),
+            valueDataInstance->getType()));
 
       // Output key and Value
       command->AppendFormatedElement("key", keyDataInstance->strFormatted(command->format()));
       command->AppendFormatedElement("value", valueDataInstance->strFormatted(command->format()));
+      return;
     }
 
     if (compare < 0) {
@@ -225,13 +226,13 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
 
     if (startIx > endIx) {
       // Not found
-      command->AppendFormatedError( au::str("Key %s [HG %d  Index <%d:%d> ] not found inside block %s [Size %lu]"
-                                            , key
-                                            , hashGroup
-                                            , hashInfo[hashGroup].startIx
-                                            , hashInfo[hashGroup].endIx
-                                            , str_block_id( block_id_ ).c_str()
-                                            , size));
+      command->AppendFormatedError(au::str("Key %s [HG %d  Index <%d:%d> ] not found inside block %s [Size %lu]"
+                                           , key
+                                           , hashGroup
+                                           , hashInfo[hashGroup].startIx
+                                           , hashInfo[hashGroup].endIx
+                                           , str_block_id(block_id_).c_str()
+                                           , size));
       return;
     }
   }

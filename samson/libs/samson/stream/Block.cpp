@@ -335,8 +335,6 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
 void Block::lookup(const char *key, au::SharedPointer<au::network::RESTServiceCommand> command) {
   au::TokenTaker tt(&token_lookupList);       // Mutex protection
 
-  // We should check if the block can be locked in memory...
-
   if (!lookupList) {
     lookupList = new BlockLookupList(this);
 

@@ -31,7 +31,7 @@ SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) :
   rest_service_->InitService();
 
   // Listen synchronized rest commands
-  listen("synch_rest_operation");   // Notification with rest commands
+  listen("notification_process_lookup_synchronized");   // Notification with rest commands
 
   // Take samples for the REST interface
   listen(notification_samson_worker_take_sample);
@@ -59,11 +59,12 @@ void SamsonWorkerRest::StopRestService() {
 
 void SamsonWorkerRest::notify(engine::Notification *notification) {
   if (notification->isName(notification_samson_worker_take_sample)) {
-    // Take samples every second to check current status
-    samson_worker_samples_.take_samples();
+    samson_worker_samples_.take_samples();    // Take samples every second to check current status
+    return;
   }
 
-  if (notification->isName("synch_rest_operation")) {
+  if (notification->isName("notification_process_lookup_synchronized")) {
+    // Get RestServiceCommand from the notification
     au::SharedPointer<au::network::RESTServiceCommand> command;
     command = notification->dictionary().Get<au::network::RESTServiceCommand> ("command");
 
@@ -73,19 +74,20 @@ void SamsonWorkerRest::notify(engine::Notification *notification) {
     }
 
     // Process this command ( now it is synchronized with engine )
-    process_synchronized(command);
+    ProcessLookupSynchronized(command);
 
     // Mark as finish and wake up thread to answer this connection
     command->NotifyFinish();
-
     return;
   }
 }
 
 void SamsonWorkerRest::process(au::SharedPointer<au::network::RESTServiceCommand> command) {
+  // Set XML ( default format ) if no format is specified
   if (command->format() == "") {
-    command->set_format("xml");   // XML is the default format
+    command->set_format("xml");
   }
+
   // Init message
   // ---------------------------------------------------
   if (command->format() == "xml") {
@@ -98,7 +100,7 @@ void SamsonWorkerRest::process(au::SharedPointer<au::network::RESTServiceCommand
   }
 
   // Internal process of the command
-  process_intern(command);
+  ProcessIntern(command);
 
   // Close data content
   // ---------------------------------------------------
@@ -111,15 +113,21 @@ void SamsonWorkerRest::process(au::SharedPointer<au::network::RESTServiceCommand
 
 void SamsonWorkerRest::Append(au::SharedPointer<au::network::RESTServiceCommand> command,
                               au::SharedPointer<gpb::Collection> collection) {
-  command->Append(GetTableFromCollection(collection)->strFormatted(command->format()));
+  au::SharedPointer<au::tables::Table> table = GetTableFromCollection(collection);
+
+  if (table == NULL) {
+    command->AppendFormatedError("No data");
+  } else {
+    command->Append(table->strFormatted(command->format()));
+  }
 }
 
 std::string GetCommandAndLink(const std::string& command) {
   return au::str("%s <a href=\"%s.html\">link</a>", command.c_str(), command.c_str());
 }
 
-void SamsonWorkerRest::process_intern(au::SharedPointer<au::network::RESTServiceCommand> command) {
-  Visualization v;   // Common visualitzation options
+void SamsonWorkerRest::ProcessIntern(au::SharedPointer<au::network::RESTServiceCommand> command) {
+  Visualization v;   // Common visualitzation options to generate all collections
 
   // Get and check number of components
   size_t components = command->path_components().size();
@@ -139,14 +147,10 @@ void SamsonWorkerRest::process_intern(au::SharedPointer<au::network::RESTService
   std::string verb = command->command();
   std::string path = command->path();
 
-  if ((path == "/samson/version") && (verb == "GET")) {
-    command->AppendFormatedElement("version", au::str("SAMSON v %s", SAMSON_VERSION));
-    return;
-  }
-
   if ((path == "/samson/help") && (verb == "GET")) {
     au::tables::Table table("command|description");
     table.setTitle("REST commands");
+    table.addRow(au::StringVector(GetCommandAndLink("/samson/help"), "Show this help message"));
     table.addRow(au::StringVector(GetCommandAndLink("/samson/version"), "Get SAMSON version for this worker"));
     table.addRow(au::StringVector(GetCommandAndLink("/samson/cluster"),
                                   "Show information about all workers in this SAMSON cluster"));
@@ -161,6 +165,11 @@ void SamsonWorkerRest::process_intern(au::SharedPointer<au::network::RESTService
     table.addRow(au::StringVector(GetCommandAndLink("/samson/tasks"),
                                   "Show tasks scheduled and executing in this worker"));
     command->Append(table.strFormatted(command->format()));
+    return;
+  }
+
+  if ((path == "/samson/version") && (verb == "GET")) {
+    command->AppendFormatedElement("version", au::str("SAMSON v %s", SAMSON_VERSION));
     return;
   }
 
@@ -210,13 +219,12 @@ void SamsonWorkerRest::process_intern(au::SharedPointer<au::network::RESTService
   }
 
   // General command
-
+  // This command is for debugging only and should be removed in official releases
   if (main_command == "command") {
     if (components < 3) {
       command->AppendFormatedError(400, "Only /samson/command/X paths are valid");
       return;
     }
-
     std::string delilah_command = command->path_components()[2];
     ProcessDelilahCommand(delilah_command, command);
     return;
@@ -251,31 +259,38 @@ void SamsonWorkerRest::process_intern(au::SharedPointer<au::network::RESTService
     return;
   }
 
-#if 0
-  else if (( main_command == "state" ) || ( main_command == "queue" )) {
+  if (( main_command == "state" ) || ( main_command == "queue" )) {
     /* /samson/state/queue/key */
     if (components < 4) {
       command->AppendFormatedError(400, "Only /samson/state/queue/key paths are valid");
     } else {
-      streamManager->Process(command);   // Get this from the stream manager
-    }
-  } else if (main_command == "data_test") {
-    command->AppendFormatedElement("data_size", au::str("%lu", command->data_size));
+      engine::Notification *notification = new engine::Notification("notification_process_lookup_synchronized");
+      notification->dictionary().Set<au::network::RESTServiceCommand> ("command", command);
+      engine::Engine::shared()->notify(notification);
 
-    if (command->data_size == 0) {
+      // Wait until completed
+      command->WaitUntilFinished();
+      return;
+    }
+  }
+
+  // Test to verify uploaded data
+  if (main_command == "data_test") {
+    command->AppendFormatedElement("data_size", au::str("%lu", command->data_size()));
+
+    if (command->data_size() == 0) {
       command->AppendFormatedElement("Data", "No data provided in the REST request");
     } else {
       // Return with provided data
       std::string data;
-      data.append(command->data, command->data_size);
+      data.append(command->data(), command->data_size());
       command->AppendFormatedElement("data", data);
     }
   }
-#endif
 
 
   // Unknown command so far
-  command->AppendFormatedError(404, au::str("Bad VERB or PATH"));
+  command->AppendFormatedError(404, au::str("Bad VERB (%s) or PATH (%s)", verb.c_str(), path.c_str()));
 }
 
 void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
@@ -563,10 +578,10 @@ void SamsonWorkerRest::process_ilogging(au::SharedPointer<au::network::RESTServi
   }
 }
 
-void SamsonWorkerRest::process_synchronized(au::SharedPointer<au::network::RESTServiceCommand> command) {
+void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::RESTServiceCommand> command) {
   // Get queue and key specified
   std::string queue_name = command->path_components()[2];
-  std::string key = command->path_components()[4];
+  std::string key = command->path_components()[3];
 
   LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key.c_str(), queue_name.c_str()));
 
@@ -619,32 +634,28 @@ void SamsonWorkerRest::process_synchronized(au::SharedPointer<au::network::RESTS
   LM_T(LmtRest, ("Hash group: %d", hg));
 
   // Get the worker for this hash.group
-  au::Uint64Set workers = samson_worker_->worker_controller()->GetAllWorkerIdsForRange(KVRange(hg, hg + 1));
+  size_t worker_id = samson_worker_->worker_controller()->GetMainWorkerForHashGroup(hg);
   size_t my_worker_id = samson_worker_->worker_controller()->worker_id();
 
-  if (workers.size() == 0) {
-    command->AppendFormatedError(au::str("Internal error: No workers for hg %d", hg));
-    return;
-  }
-
-  if (!workers.contains(my_worker_id)) {
-    LM_X(1, ("Redirect not implemented"));
+  if (my_worker_id != worker_id) {
+    LM_X(1, ("Redirection not implemented"));
     /*
-     * std::string     host = worker->network->getHostForWorker( worker_id );
+     * std::string  host = worker->network->getHostForWorker( worker_id );
      * //unsigned short  port = worker->network->getPortForWorker( worker_id );
      * unsigned short  port = web_port;   // We have to use to REST port, not the connections port
      *
      * LM_T(LmtRest, ("Redirect to the right server (%s:%d)", host.c_str(), port));
      * command->set_redirect( au::str("http://%s:%d%s", host.c_str(), port , command->resource.c_str() ) );
+     * return;
      */
-    return;
   }
 
   // Search for the correct block
   for (int b = 0; b < queue->blocks_size(); ++b) {
     const gpb::Block& block = queue->blocks(b);
-    size_t block_id = block.block_id();
-    KVRange range = block.range();   // Implicit conversion
+
+    size_t block_id = block.block_id();  // Identifier of this block
+    KVRange range = block.range();       // Implicit conversion
 
     if (range.Contains(hg)) {
       // This is the block
@@ -657,18 +668,14 @@ void SamsonWorkerRest::process_synchronized(au::SharedPointer<au::network::RESTS
       }
 
       if (!block_ptr->is_content_in_memory()) {
-        LM_T(LmtRest, ("Sorry, block not in memory ..."));
         command->AppendFormatedError(au::str("Block %lu not in memory for queue %s", block_id, queue_name.c_str()));
         return;
       }
 
       block_ptr->lookup(key.c_str(), command);
       return;
-    } else {
-      command->AppendFormatedElement("block", au::str("%lu %s\n", block_id, range.str().c_str()));
     }
   }
-
   command->AppendFormatedError(au::str("Key ´%s´ not found in the queue %s", key.c_str(), queue_name.c_str()));
 }
 }

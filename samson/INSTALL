@@ -57,9 +57,9 @@ The installation process requires root access via the sudo command. Once you
 have downloaded the source code run through the following setups to compile and
 install SAMSON: 
 
-1. enter the directory created by the SVN command: 
+1. enter the directory created by the Git command: 
 
-    cd samson
+    cd cosmos-platform/samson
 
 2. compile and install SAMSON and all the modules 
 

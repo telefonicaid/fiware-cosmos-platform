@@ -11,17 +11,14 @@
 
 package es.tid.cosmos.platform.injection.server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.StringWriter;
-import java.net.URI;
+import java.io.*;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.AccessControlException;
+import org.apache.hadoop.thirdparty.guava.common.io.Files;
 import org.apache.sshd.server.SshFile;
 import org.junit.After;
 import org.junit.Before;
@@ -40,12 +37,14 @@ public class HadoopSshFileTest extends BaseSftpTest {
 
     private static final org.apache.log4j.Logger LOGGER =
             Logger.get(HadoopSshFile.class);
+    public static final String USER01 = "/user01";
 
     private HadoopSshFile hadoopSshFile;
     private HadoopSshFile hadoopSshDir;
     private FileSystem hadoopFS;
     private FileSystem mockedFileSystem;
     private HadoopSshFile neverExists;
+    private File tempDir;
 
     public HadoopSshFileTest() {
         super(LOGGER);
@@ -54,13 +53,18 @@ public class HadoopSshFileTest extends BaseSftpTest {
     @Before
     public void setUp() throws IOException, InterruptedException{
         Configuration configuration = new Configuration();
-        String foodir = "/tmp/user01";
-        String foofile = "/tmp/user01/file01";
-        this.hadoopFS = FileSystem.get(
-                URI.create(configuration.get("fs.default.name")),
-                configuration, "user01");
-        this.hadoopSshFile = new HadoopSshFile(foofile, "user01", this.hadoopFS);
+        this.tempDir = Files.createTempDir();
+        boolean success = this.tempDir.setWritable(true, false);
+        if (!success) {
+            throw new IllegalStateException("could not set to writable: " +
+                    this.tempDir.toString());
+        }
+        String foodir = this.tempDir.getAbsolutePath().concat(USER01);
+        configuration.set("fs.default.name", "file:///" + this.tempDir.toString());
+        this.hadoopFS = FileSystem.get(configuration);
         this.hadoopSshDir = new HadoopSshFile(foodir, "user01", this.hadoopFS);
+        this.hadoopSshFile = new HadoopSshFile(foodir + "/file01",
+                "user01", this.hadoopFS);
 
         this.mockedFileSystem = mock(FileSystem.class);
 
@@ -76,13 +80,19 @@ public class HadoopSshFileTest extends BaseSftpTest {
         if (this.hadoopSshDir.doesExist()) {
             this.hadoopSshDir.delete();
         }
+        boolean success = this.tempDir.delete();
+        if (!success) {
+            throw new IllegalStateException("could not delete: " +
+                    this.tempDir.toString());
+        }
         this.hadoopFS.close();
         this.mockedFileSystem.close();
     }
 
     @Test
     public void testGetAbsolutePath() throws Exception {
-        assertEquals("/tmp/user01/file01", this.hadoopSshFile.getAbsolutePath());
+        assertEquals(this.tempDir.getAbsolutePath().concat(USER01)
+                .concat("/file01"), this.hadoopSshFile.getAbsolutePath());
     }
 
     @Test
@@ -310,7 +320,8 @@ public class HadoopSshFileTest extends BaseSftpTest {
 
     @Test
     public void testMove() throws Exception {
-        String newsubdir = "/tmp/user01/new/file01";
+        String newsubdir = this.tempDir.getAbsolutePath()
+                .concat("/user01/new/file01");
         HadoopSshFile newfoo = new HadoopSshFile(newsubdir, "user01",
                 this.hadoopFS);
         this.hadoopSshFile.create();

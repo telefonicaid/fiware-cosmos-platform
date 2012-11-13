@@ -14,6 +14,7 @@ package es.tid.cosmos.platform.injection.server;
 import java.io.File;
 import java.sql.*;
 
+import com.google.common.io.Files;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +40,7 @@ public class FrontendPasswordTest extends BaseSftpTest {
     private String fileName;
     private String frontendDbUrl;
     private Connection connection;
+    private File tempDir;
 
     public FrontendPasswordTest() {
         super(LOGGER);
@@ -47,8 +49,10 @@ public class FrontendPasswordTest extends BaseSftpTest {
     @Before
     public void setUp() throws Exception {
         this.instance = new FrontendPassword();
+        this.tempDir = Files.createTempDir();
         this.fileName = "test.db";
-        this.frontendDbUrl = "jdbc:sqlite:" + fileName;
+        this.frontendDbUrl = "jdbc:sqlite:" + this.tempDir.toString() +
+                fileName;
         Class.forName("org.sqlite.JDBC").newInstance();
         this.connection = DriverManager.getConnection(this.frontendDbUrl);
         Statement stat = this.connection.createStatement();
@@ -98,13 +102,13 @@ public class FrontendPasswordTest extends BaseSftpTest {
 
     private void deleteDbFile() {
         boolean deleted = false;
-        File f = new File(this.fileName);
+        File f = new File(this.tempDir.toString() + this.fileName);
         if (f.exists() && f.canWrite() && !f.isDirectory()) {
             deleted = f.delete();
         }
         if (!deleted) {
-            TEST_LOGGER.error("test DB at " + this.fileName + "could not be " +
-                    "deleted");
+            TEST_LOGGER.error("test DB at " + this.tempDir.toString() +
+                    this .fileName +  "could not be deleted");
         }
     }
 

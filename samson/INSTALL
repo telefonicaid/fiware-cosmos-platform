@@ -5,7 +5,7 @@
 The following packages are required to be able to build SAMSON against Ubuntu
 11.04: 
 
-* subversion 
+* git 
 * boost-dev 
 * ncurses-dev 
 * make 
@@ -23,7 +23,7 @@ The following packages are required to be able to build SAMSON against Ubuntu
 
 To install them use the following command: 
 
-    sudo apt-get install subversion libboost-dev ncurses-dev \
+    sudo apt-get install git-core libboost-dev ncurses-dev \
     make gcc g++ cmake libedit-dev libprotobuf-dev \
     protobuf-compiler mongodb libboost-filesystem-dev \
     libboost-thread-dev help2man libqt4-dev
@@ -47,11 +47,11 @@ using yum (assumes you have root access):
 
 ## Building SAMSON 
 
-In order to build SAMSON you first must download the source from SAMSON’s SVN
+In order to build SAMSON you first must download the source from SAMSON’s Git
 repository. The complete source tree, including modules can be checked out
 using: 
 
-    svn co https://barricada.hi.inet/repositorio/samson/trunk samson-trunk 
+    git clone git@pdihub.hi.inet:Cosmos/cosmos-platform.git
 
 The installation process requires root access via the sudo command. Once you
 have downloaded the source code run through the following setups to compile and
@@ -59,11 +59,11 @@ install SAMSON:
 
 1. enter the directory created by the SVN command: 
 
-    cd samson-trunk
+    cd samson
 
 2. compile and install SAMSON and all the modules 
 
-    make install 
+    sudo make install 
 
 Apart from compiling the source code for the SAMSON platform and its modules
 the install step performs the following additional tasks: 

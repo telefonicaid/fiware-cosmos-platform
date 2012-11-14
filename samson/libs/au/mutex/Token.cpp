@@ -84,10 +84,9 @@ void Token::Retain() {
 
 void Token::Release() {
 
-
   // You are supposed to be retaining this lock
   if (!IsRetainedByMe()) {
-    LM_X(1,("Internal error: au::Token %s not locked by me ()", name_.c_str() ));
+    LM_X(1,("Internal error: Release called in a au::Token while not locked by me (%s)", name_.c_str() , str_debug().c_str() ));
   }
 
   --counter_;
@@ -126,7 +125,7 @@ void Token::Stop() {
 
   // You are supposed to be retaining this lock
   if (!IsRetainedByMe()) {
-    LM_X(1,("Internal error: Stop called in a au::Token not locked by me", name_.c_str()));
+    LM_X(1,("Internal error: Stop called in a au::Token while not locked by me (%s)", name_.c_str() , str_debug().c_str() ));
   }
 
   // information about my retain
@@ -153,4 +152,10 @@ bool Token::IsRetainedByMe() const {
     return false;
   }
 }
+  
+  std::string Token::str_debug() const{
+    return au::str("Locked %s / Thread %s" , locked_?"yes":"no" , GetThreadId(token_owner_thread_t_).c_str() );
+    
+  }
+  
 }

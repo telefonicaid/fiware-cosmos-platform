@@ -34,6 +34,10 @@
 #include <sys/types.h>
 
 namespace au {
+
+  // Handy method to identify threads with strings
+  std::string GetThreadId(pthread_t t);
+  
 class Token {
 public:
 
@@ -71,8 +75,9 @@ private:
   // syscall(SYS_gettid) is not supported on mac, so we come back to pthread_t
   // Specific implementation for solaris may be necessary.
   
+  std::string str_debug() const;
+  
 };
-  std::string GetThreadId(pthread_t t);
 
 }
 

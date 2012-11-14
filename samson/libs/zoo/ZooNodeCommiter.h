@@ -89,6 +89,7 @@ public:
     path_ = path;
 
     // Create sub-directories for commits and versions
+    zoo_connection_->Create(path);
     zoo_connection_->Create(path + "/versions");
     zoo_connection_->Create(path + "/commits");
 

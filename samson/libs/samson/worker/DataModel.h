@@ -18,9 +18,9 @@
 #include "au/containers/SharedPointer.h"
 #include "au/containers/Uint64Vector.h"
 
+#include "samson/common/Visualitzation.h"
 #include "samson/common/gpb_operations.h"
 #include "samson/common/samson.pb.h"
-#include "samson/common/Visualitzation.h"
 #include "zoo/Connection.h"
 #include "zoo/ZooNodeCommiter.h"
 
@@ -38,64 +38,105 @@
 // ------------------------------------------------------------------
 
 namespace samson {
+class WorkerBlockData;
 
-  class WorkerBlockData;
-  
-  class DataModel : public au::ZooNodeCommiter<gpb::DataModel> {
-  
-  public:
-  
-    explicit DataModel(au::zoo::Connection *zoo_connection) :
-    au::ZooNodeCommiter<gpb::DataModel> (zoo_connection, kDefaultSamsonDataPath ) {
-    }
-    virtual ~DataModel() {}
+class DataModel : public au::StringDataModel<gpb::DataModel> {
+public:
 
+  explicit DataModel(au::zoo::Connection *zoo_connection) :
+    au::StringDataModel<gpb::DataModel> (zoo_connection, kDefaultSamsonDataPath) {
+  }
 
-    // ZooNodeCommiter<gpb::DataModel>
-    virtual void NotificationNewModel(int previous_version
-                                      , au::SharedPointer<gpb::DataModel> previous_data
-                                      , int version
-                                      , au::SharedPointer<gpb::DataModel> new_data );
-    
-    virtual void PerformCommit(au::SharedPointer<gpb::DataModel>, std::string command, int version, au::ErrorManager&);
-  
-    // Check if this command can be process by this element
-    static bool isValidCommand(const std::string& main_command);
+  virtual ~DataModel() {
+  }
 
-    // Get collection to be displayed on delilah console
-    au::SharedPointer<gpb::Collection> GetCollectionForQueues(const Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetCollectionForQueueRanges(const Visualization& v,const std::string& queue_name);
-    au::SharedPointer<gpb::Collection> GetCollectionForQueuesWithBlocks(const Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetCollectionForStreamOperations(const Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetCollectionForBatchOperations(const Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetCollectionForQueueConnections(const Visualization& visualization);
+  virtual void Init(au::SharedPointer<gpb::DataModel> c);
+  virtual void PerformCommit(au::SharedPointer<gpb::DataModel>, std::string command, int version, au::ErrorManager&);
 
-    // Get list of all block_ids in the current data ( previous, candidate and current )
-    std::set<size_t> GetAllBlockIds();
+  // Check if this command can be process by this element
+  static bool isValidCommand(const std::string& main_command);
 
-    // Get list of all block_ids I should have
-    std::set<size_t> GetMyBlockIdsForPreviousAndCandidateDataModel(const std::vector<KVRange>& ranges );
-    std::set<size_t> GetMyBlockIdsForPreviousDataModel(const std::vector<KVRange>& ranges );
-    std::set<size_t> GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges );
-    size_t GetLastCommitIdForPreviousDataModel();
-    size_t GetLastCommitIdForCandidateDataModel();
+  // Get collection to be displayed on delilah console
+  au::SharedPointer<gpb::Collection> GetCollectionForQueues(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForQueueRanges(const Visualization& v, const std::string& queue_name);
+  au::SharedPointer<gpb::Collection> GetCollectionForQueuesWithBlocks(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForStreamOperations(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForBatchOperations(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForQueueConnections(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForReplication(const Visualization& visualization);
 
-    // Method to discover if all operations have finished ( see wait command in delilah )
-    bool CheckForAllOperationsFinished();
-  
+  // Get list of all block_ids in the current data ( previous, candidate and current )
+  std::set<size_t> GetAllBlockIds();
+
+  // Get list of all block_ids I should have
+  std::set<size_t> GetMyBlockIdsForPreviousAndCandidateDataModel(const std::vector<KVRange>& ranges);
+  std::set<size_t> GetMyBlockIdsForPreviousDataModel(const std::vector<KVRange>& ranges);
+  std::set<size_t> GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges);
+  std::set<size_t> GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges);
+  size_t GetLastCommitIdForPreviousDataModel();
+  size_t GetLastCommitIdForCandidateDataModel();
+
+  // Method to discover if all operations have finished ( see wait command in delilah )
+  bool CheckForAllOperationsFinished();
+
   // Frezze data model if necessary
   void FreezeCandidateDataModel();
 
-    // Get list of the last commits
-    au::SharedPointer<gpb::Collection> GetLastCommitsCollection(const Visualization& visualization);
-  
+  // Get list of the last commits
+  au::SharedPointer<gpb::Collection> GetLastCommitsCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetLastCommitsDebugCollection(const Visualization& visualization);
 
-    
-  private:
-  
+private:
+
+  void ProcessCommand(gpb::Data *data, const std::string command, au::ErrorManager& error) {
+    au::SharedPointer<au::CommandLine> cmd = GetCommandLine();
+    cmd->Parse(command);
+
+    ProcessCommand(data, cmd, error);
+  }
+
+  void ProcessCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+
+  void ProcessAddCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessAddQueueConnectionCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
+                                        au::ErrorManager& error);
+  void ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
+                                        au::ErrorManager& error);
+  void ProcessBatchCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessBlockCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessClearBatchOPerationsCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
+                                          au::ErrorManager& error);
+  void ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessRemoveAllCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessRemoveAllDataCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessRemoveAllStreamOperationsCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
+                                               au::ErrorManager& error);
+  void ProcessRemoveStreamOperationCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
+                                           au::ErrorManager& error);
+  void ProcessRmCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessRmQueueConnectionCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessSetQueuePropertyCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessSetStreamOperationPropertyCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
+                                                au::ErrorManager& error);
+  void ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
+                                                  au::ErrorManager& error);
+  void ProcessFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error);
+  void ProcessCancelFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error);
+  void ProcessRecoverDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error);
+  void ProcessConsolidateDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error);
+
+  // Review batch operations
+  void ReviewBatchOperations(gpb::Data *data, au::ErrorManager& error);
+
+  // Check if it is necesssary to run this while recovering
+  bool IsRecoveryCommand(const std::string& command);
   // Default path in ZK for this information
   static const std::string kDefaultSamsonDataPath;
-  
+
+  // Groups the initialization of all flags to process command
+  static au::SharedPointer<au::CommandLine> GetCommandLine();
+
   // Constant strings for valid commands
   static const std::string kAdd;
   static const std::string kAddQueueConnection;
@@ -112,64 +153,20 @@ namespace samson {
   static const std::string kRm;
   static const std::string kRmQueueConnection;
   static const std::string kSetQueueProperty;
+  static const std::string kSetReplicationFactor;
   static const std::string kSetStreamOperationProperty;
   static const std::string kUnsetStreamOperationProperty;
   static const std::string kFreezeDataModel;
   static const std::string kCancelFreezeDataModel;
   static const std::string kRecoverDataModel;
   static const std::string kConsolidateDataModel;
-  
+
   static const std::string commands[];
   static const std::string recovery_commands[];
-  
+
   // Constant strings for item commands
   static const std::string kAddItem;
   static const std::string kRmItem;
-  
-  // Groups the initialization of all flags to process command
-  static au::SharedPointer<au::CommandLine> GetCommandLine();
-  
-  // Internal command to process individual commands
-  // Functions to process each command type
- 
-  void ProcessCommand(gpb::Data* data , const std::string command, au::ErrorManager& error)
-  {
-    au::SharedPointer<au::CommandLine> cmd = GetCommandLine();
-    cmd->Parse(command);
-    
-    ProcessCommand(data, cmd, error);
-  }
-  
-  void ProcessCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  
-  void ProcessAddCommand( gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error );
-  void ProcessAddQueueConnectionCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessAddStreamOperationCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessBatchCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessBlockCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessClearBatchOPerationsCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessClearModulesCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessPushQueueCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessRemoveAllCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessRemoveAllDataCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessRemoveAllStreamOperationsCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessRemoveStreamOperationCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessRmCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessRmQueueConnectionCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessSetQueuePropertyCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessSetStreamOperationPropertyCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessUnsetStreamOperationPropertyCommand(gpb::Data* data , au::SharedPointer<au::CommandLine> cmd , au::ErrorManager& error);
-  void ProcessFreezeDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error);
-  void ProcessCancelFreezeDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error);
-  void ProcessRecoverDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error);
-  void ProcessConsolidateDataModel( au::SharedPointer<gpb::DataModel> data_model ,au::ErrorManager&error);
-  
-  // Review batch operations
-  void ReviewBatchOperations(gpb::Data* data, au::ErrorManager& error);
-  
-  // Check if it is necesssary to run this while recovering
-  bool IsRecoveryCommand( const std::string& command );
-
 };
 }
 

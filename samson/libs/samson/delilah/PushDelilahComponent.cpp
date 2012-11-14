@@ -121,7 +121,8 @@ void PushDelilahComponent::run_in_background() {
     au::Cronometer cronometer;
     current_status_ = "Waiting until used memory is under 70%";
     while (engine::Engine::memory_manager()->memory_usage() > 0.7) {
-      LM_T(LmtDelilahComponent, ("Waiting until used memory(%d) is under 70%", engine::Engine::memory_manager()->memory_usage()));
+      LM_T(LmtDelilahComponent,
+           ("Waiting until used memory(%d) is under 70%", engine::Engine::memory_manager()->memory_usage()));
       usleep(10000);
     }
 
@@ -141,7 +142,7 @@ void PushDelilahComponent::run_in_background() {
     }
 
     // Set the header
-    KVHeader *header = (KVHeader *)buffer->data();
+    KVHeader *header = reinterpret_cast<KVHeader *>( buffer->data());
     if (uploading_module_) {
       header->InitForModule(buffer->size() - sizeof(KVHeader));
     } else {
@@ -169,7 +170,7 @@ void PushDelilahComponent::notify(engine::Notification *notification) {
   // Remove confirmed push operations
   if (notification->isName("push_operation_finished")) {
     au::TokenTaker tt(&token);
-    size_t push_id = notification->environment().Get("push_id", (size_t)-1);
+    size_t push_id = notification->environment().Get("push_id", static_cast<size_t>(-1));
     size_t size    = notification->environment().Get("size", 0);
     uploaded_size_ += size;
 

@@ -19,7 +19,6 @@
 #include "au/log/LogFormatter.h"
 
 namespace au {
-
 class LogCentralPlugin {
 public:
 
@@ -27,7 +26,9 @@ public:
     name_ = name;
     activated_ = true;
   }
-  virtual ~LogCentralPlugin() {};  // Virtual destructor for abstract class
+
+  virtual ~LogCentralPlugin() {
+  };                               // Virtual destructor for abstract class
 
   void Process(au::SharedPointer<Log> log) {
     log_counter_.Process(log);
@@ -35,12 +36,13 @@ public:
   }
 
   // Pure virtual interface to be implemented by plugins
-  void virtual Emit(au::SharedPointer<Log> log) = 0;  // Main function to process incoming log
+  void virtual Emit(au::SharedPointer<Log> log) {
+  };                                                // Main function to process incoming log
   std::string virtual status() = 0;  // Status function
-  
+
   // Function to check if a log is accepted based on the channels filter for this plugin
   bool IsLogAccepted(au::SharedPointer<Log> log) const;
-  bool IsLogAccepted( int channel , int level );  // Handy method to know if we have to emit this log here
+  bool IsLogAccepted(int channel, int level);  // Handy method to know if we have to emit this log here
 
   // Manipulate channel filter
   LogCentralChannelsFilter& log_channel_filter() {

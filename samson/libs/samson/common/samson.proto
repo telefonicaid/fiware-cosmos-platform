@@ -108,10 +108,12 @@ message Block
 message Queue
 {
 	required string name         = 1;  // Name of this queue
-	required uint64 version      = 2;  // Version number of this queue ( updated when modified )
 	repeated Block  blocks       = 3;  // Blocks contained in this queue
 	required string key_format   = 4;  // Format for the key
 	required string value_format = 5;  // Format for the value
+
+	required uint64 commit_id    = 2;  // Version number of this queue ( updated when modified )
+	
 }
 
 message QueueConnection
@@ -154,6 +156,9 @@ message Data
 
 	// Last commit seen so far ( and id for the next commit )
 	required uint64 commit_id = 7;
+
+	// Last commits for debug
+	repeated string last_commits = 8;
 }
 
 message DataCommit

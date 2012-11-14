@@ -41,7 +41,6 @@ typedef enum TraceLevels {
   LmtNetworkInterface       = 22,    // Network interface
 
   LmtHost                   = 30,    // Host & HostManager
-  LmtRest                   = 31,    // REST Interface
   LmtCleanup                = 32,    // Valgrind ...
   LmtCleanup2               = 33,    // SharePointer destructor
   LmtRestData               = 34,

@@ -13,15 +13,15 @@
 
 #include <string>
 
+#include "au/Environment.h"
+#include "au/Status.h"
 #include "au/console/Console.h"
 #include "au/containers/set.h"
-#include "au/Environment.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/Service.h"
 #include "au/network/SocketConnection.h"
-#include "au/Status.h"
 #include "au/string/StringUtilities.h"
 #include "au/tables/Table.h"
 #include "au/utils.h"
@@ -35,28 +35,58 @@ public:
   ~RESTServiceCommand();
 
   // Read& write over a socket connection
-  au::Status Read(SocketConnection *socket_connection,
-                  au::ErrorManager& error);
+  au::Status Read(SocketConnection *socket_connection, au::ErrorManager& error);
   au::Status Write(SocketConnection *socket_connection);
 
   // Command to append something at the output
   void Append(const std::string& txt);
-  void AppendFormatedElement(const std::string& name,
-                             const std::string& value);
+  void AppendFormatedElement(const std::string& name, const std::string& value);
   void AppendFormatedError(const std::string& message);
-  void AppendFormatedError(int _http_state,
-                           const std::string& message);
+  void AppendFormatedError(int _http_state, const std::string& message);
 
   // Set a redicrect
   void SetRedirect(const std::string& redirect_resource);
 
   // Accessorts
-  void set_http_state(int s);
-  int http_state();
-  std::string format();
-  void set_format(const std::string format);
-  const StringVector& path_components();
-  std::string command();
+  void set_http_state(int s) {
+    http_state_ = s;
+  }
+
+  void set_format(const std::string& format) {
+    format_ = format;  // Force a particular output format
+  }
+
+  int http_state() const {
+    return http_state_;
+  }
+
+  std::string format() const {
+    return format_;
+  }
+
+  const StringVector& path_components() const {
+    return path_components_;
+  }
+
+  std::string command() const {
+    return command_;
+  }
+
+  std::string resource() const {
+    return resource_;
+  }
+
+  std::string path() const {
+    return path_;
+  }
+
+  const char *data() const {
+    return data_;
+  }
+
+  size_t data_size() const {
+    return data_size_;
+  }
 
   // Method to lock execution until it is done
   void WaitUntilFinished();
@@ -71,6 +101,7 @@ private:
   // Command fields
   std::string command_;                 // GET, PUT, ...
   std::string resource_;                // url...
+  std::string path_;                    // path...
   StringVector path_components_;        // Paths in the url
   std::string format_;                  // Extension of the resource (.xml , .json , .html )
 

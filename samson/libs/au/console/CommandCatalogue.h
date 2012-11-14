@@ -21,10 +21,10 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/string/Tokenizer.h"
 #include "au/console/Console.h"
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/mutex/TokenTaker.h"
+#include "au/string/Tokenizer.h"
 #include "au/tables/Select.h"
 #include "au/tables/Table.h"
 
@@ -480,6 +480,10 @@ public:
                                    , const std::string& help);
 
   CommandItem *add_mandatory_string_argument(const std::string& command_name
+                                             , const std::string& name
+                                             , const std::string& help);
+
+  CommandItem *add_mandatory_uint64_argument(const std::string& command_name
                                              , const std::string& name
                                              , const std::string& help);
 

@@ -14,6 +14,10 @@
 #include "au/console/CommandCatalogue.h"
 
 namespace samson {
+/**
+ * \brief \ref DelilahCommandCatalogue is the catalogue of valid commands for delilah console
+ */
+
 class DelilahCommandCatalogue : public au::console::CommandCatalogue {
 public:
 

@@ -164,7 +164,7 @@ public:
     return table;
   }
 
-  void evalCommand(std::string command) {
+  void evalCommand(const std::string& command) {
     au::CommandLine cmdLine;
 
     cmdLine.Parse(command);

@@ -3,6 +3,7 @@ SET (HEADERS
 	Logs.h
 	KVInfo.h
 	FullKVInfo.h
+	BlockKVInfo.h
 	KVRange.h
 	KVRangeDivision.h
 	KVHeader.h
@@ -31,6 +32,7 @@ SET (SOURCES
 	Logs.cpp
 	KVInfo.cpp
 	FullKVInfo.cpp
+	BlockKVInfo.cpp
 	KVRange.cpp
     KVRangeDivision.cpp 
 	KVHeader.cpp

@@ -10,10 +10,10 @@
  */
 
 
-#include "au/string/S.h"
-#include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/network/RESTServiceCommand.h"
+#include "au/singleton/Singleton.h"
+#include "au/string/S.h"
 #include "au/string/StringUtilities.h"
 #include "parseArgs/paConfig.h"
 
@@ -279,7 +279,7 @@ std::string StreamConnector::getPrompt() {
   return "SC console> ";
 }
 
-void StreamConnector::evalCommand(std::string command) {
+void StreamConnector::evalCommand(const std::string& command) {
   // Log activity
   Log("Console", "Message", command);
 

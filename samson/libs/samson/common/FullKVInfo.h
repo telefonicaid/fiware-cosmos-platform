@@ -27,36 +27,35 @@ struct FullKVInfo {
   FullKVInfo(uint32 _size, uint32 _kvs);
   FullKVInfo();
 
-  void set(KVInfo other);
+  void set(const KVInfo& other);
   void set(uint32 _size, uint32 _kvs);
   void set(uint64 _size, uint64 _kvs);
 
   void clear();
 
   void append(uint64 _size, uint64 _kvs);
-  void append(FullKVInfo other);
+  void append(const FullKVInfo& other);
   void append(uint32 _size, uint32 _kvs);
-  void append(KVInfo other);
+  void append(const KVInfo& other);
 
-  void Append( double factor , KVInfo other);
-  
+  void Append(double factor, const KVInfo& other);
+
   void remove(uint64 _size, uint64 _kvs);
   void remove(FullKVInfo other);
   void remove(uint32 _size, uint32 _kvs);
-  void remove(KVInfo other);
+  void remove(const KVInfo& other);
 
-  bool fitsInKVInfo();
+  bool fitsInKVInfo() const;
 
-  KVInfo getKVInfo();
+  KVInfo getKVInfo() const;
 
-  std::string str();
-  std::string strDetailed();
+  std::string str() const;
+  std::string strDetailed() const;
 
-  void getInfo(std::ostringstream& output);
+  void getInfo(std::ostringstream& output) const;
 
-  bool isEmpty();
+  bool isEmpty() const;
 };
-  
 }
 
 #endif  // ifndef _H_SAMSON_FULLKVINFO

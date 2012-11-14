@@ -129,7 +129,7 @@ public:
 
   // au::Console interface
   std::string getPrompt();
-  void evalCommand(std::string command);
+  void evalCommand(const std::string& command);
   void autoComplete(au::ConsoleAutoComplete *info);
   void autoCompleteWithChannelNames(au::ConsoleAutoComplete *info);
   void autoCompleteWithAdaptorsNames(au::ConsoleAutoComplete *info);

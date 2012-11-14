@@ -84,16 +84,12 @@ void Token::Retain() {
 
 void Token::Release() {
 
-  if (!locked_) {
-    LM_X(1,("Internal error: Releasing a non-locked au::Token:'%s'", name_.c_str()));
+
+  // You are supposed to be retaining this lock
+  if (!IsRetainedByMe()) {
+    LM_X(1,("Internal error: au::Token %s not locked by me ()", name_.c_str() ));
   }
 
-  pthread_t my_own_pthread_t = pthread_self();
-
-  if (!pthread_equal(my_own_pthread_t, token_owner_thread_t_)) {
-    LM_X(1,("Internal error: Releasing an au::Token '%s' not locked by me (%s), owner:%s", name_.c_str(),
-           GetThreadId(my_own_pthread_t).c_str(), GetThreadId(token_owner_thread_t_).c_str()));
-  }
   --counter_;
   if (counter_ > 0) {
     return;
@@ -129,25 +125,22 @@ void Token::WakeUp() {
 void Token::Stop() {
 
   // You are supposed to be retaining this lock
-  if (!locked_) {
-    LM_X(1,("Internal error: Stop called in a non-locked au::Token:'%s'", name_.c_str()));
+  if (!IsRetainedByMe()) {
+    LM_X(1,("Internal error: Stop called in a au::Token not locked by me", name_.c_str()));
   }
 
+  // information about my retain
   pthread_t my_own_pthread_t = pthread_self();
+  int tmp_counter = counter_;
 
-  if (!pthread_equal(my_own_pthread_t, token_owner_thread_t_)) {
-    LM_X(1,("Internal error: Stopping an au::Token '%s' not locked by me, owner:%s, me:%s",
-            name_.c_str(), GetThreadId(token_owner_thread_t_).c_str(), GetThreadId(my_own_pthread_t).c_str()));
-  }
-  int tmp_counter = counter_;                                                     // Keep counter of retains
   locked_ = false;    // We are temporally releasing this token
 
   // This unlock the mutex and froze the process in the condition
   if (pthread_cond_wait(&block_, &lock_) != 0) {
-    LM_X(1, ("Internal error at au::TokenTaker"));
+    LM_X(1, ("Internal error at au::TokenTaker  pthread_cond_wait error"));
   }
   
-  // Now you are retaining again
+  // Now you are retaining again ( recover previous information about this lock )
   locked_ = true;
   token_owner_thread_t_ = my_own_pthread_t;
   counter_ = tmp_counter;

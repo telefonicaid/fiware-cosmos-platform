@@ -47,19 +47,31 @@ public:
   // Set a redicrect
   void SetRedirect(const std::string& redirect_resource);
 
-  // Set http state for the output
-  void set_http_state(int s);
-
-  // Force a particular output format
-  void set_format(const std::string& format) {
-    format_ = format;
+  // Accessorts
+  void set_http_state(int s) {
+    http_state_ = s;
   }
 
-  // Accessorts
-  int http_state() const;
-  std::string format() const;
-  const StringVector& path_components() const;
-  std::string command() const;
+  void set_format(const std::string& format) {
+    format_ = format;  // Force a particular output format
+  }
+
+  int http_state() const {
+    return http_state_;
+  }
+
+  std::string format() const {
+    return format_;
+  }
+
+  const StringVector& path_components() const {
+    return path_components_;
+  }
+
+  std::string command() const {
+    return command_;
+  }
+
   std::string resource() const {
     return resource_;
   }
@@ -68,11 +80,11 @@ public:
     return path_;
   }
 
-  char *data() {
+  const char *data() const {
     return data_;
   }
 
-  size_t data_size() {
+  size_t data_size() const {
     return data_size_;
   }
 

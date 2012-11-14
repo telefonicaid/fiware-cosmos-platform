@@ -189,7 +189,7 @@ Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat f
   // Create a new one with the rigth format
   queue = data->add_queue();
   queue->set_name(queue_name);
-  queue->set_version(1);
+  queue->set_commit_id(data->commit_id());
   queue->set_key_format(format.keyFormat);
   queue->set_value_format(format.valueFormat);
   queue->mutable_blocks();   // Just to force the creation of this element
@@ -276,7 +276,7 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
   // Get or create this queue
   gpb::Queue *queue = get_or_create_queue(data, queue_name, format, error);
 
-  queue->set_version(version);
+  queue->set_commit_id(data->commit_id());
 
   if (error.IsActivated()) {
     return;
@@ -311,7 +311,7 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
     return;
   }
 
-  queue->set_version(version);
+  queue->set_commit_id(data->commit_id());
 
 
   // Remove the first time ( and probably the only one ) this block is in the queue
@@ -472,18 +472,43 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
   }
 }
 
+void AddBlockIds(const gpb::Queue&  queue, const std::vector<samson::KVRange>&ranges, std::set<size_t>& block_ids) {
+  for (int b = 0; b < queue.blocks_size(); b++) {
+    const gpb::Block& block = queue.blocks(b);
+    samson::KVRange range = block.range();     // Implicit conversion
+    if (range.IsOverlapped(ranges)) {
+      block_ids.insert(block.block_id());
+    }
+  }
+}
+
+void AddStateBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std::set<size_t>& block_ids) {
+  // Search all operations to detect states
+  for (int i = 0; i < data->operations_size(); i++) {
+    if (data->operations(i).batch_operation()) {
+      continue;
+    }
+    if (data->operations(i).reduce_forward()) {
+      continue;
+    }
+    if (data->operations(i).inputs_size() < 2) {
+      continue;
+    }
+
+    // State is the last one
+    std::string queue_name = data->operations(data->operations_size() - 1).name();
+    gpb::Queue *queue = get_queue(data, queue_name);
+    if (queue) {
+      AddBlockIds(*queue, ranges, block_ids);
+    }
+  }
+}
+
 void AddBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std::set<size_t>& block_ids) {
   // Loop all the queues
   for (int q = 0; q < data->queue_size(); ++q) {
     const gpb::Queue& queue = data->queue(q);
-    for (int b = 0; b < queue.blocks_size(); b++) {
-      const gpb::Block& block = queue.blocks(b);
-      samson::KVRange range = block.range();   // Implicit conversion
-
-      if (range.IsOverlapped(ranges)) {
-        block_ids.insert(block.block_id());
-      }
-    }
+    AddBlockIds(queue, ranges, block_ids);
   }
 
   // Loop all modules ( I should have all of them )
@@ -591,6 +616,23 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
     info.defrag_factor = total_defrag_factor / static_cast<double>(defrag_factors.size());
   }
   return info;
+}
+
+void limit_last_commits(gpb::Data *data) {
+  if (data->last_commits_size() < 20) {
+    return;
+  }
+
+  std::vector<std::string> messages;
+  int size = data->last_commits_size();
+  for (int i = size - 20; i < size; i++) {
+    messages.push_back(data->last_commits(i));
+  }
+
+  data->clear_last_commits();
+  for (size_t i = 0; i < messages.size(); i++) {
+    data->add_last_commits(messages[i]);
+  }
 }
 }
 }

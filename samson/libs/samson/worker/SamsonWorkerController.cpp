@@ -684,6 +684,24 @@ size_t SamsonWorkerController::GetMyLastCommitId() {
   return worker_info_.last_commit_id();
 }
 
+std::string SamsonWorkerController::getHostForWorker(size_t worker_id) {
+  for (int i = 0; i < cluster_info_->workers_size(); i++) {
+    if (cluster_info_->workers(i).worker_id() == worker_id) {
+      return cluster_info_->workers(i).worker_info().host();
+    }
+  }
+  return "";
+}
+
+unsigned short SamsonWorkerController::getWebPortForWorker(size_t worker_id) {
+  for (int i = 0; i < cluster_info_->workers_size(); i++) {
+    if (cluster_info_->workers(i).worker_id() == worker_id) {
+      return cluster_info_->workers(i).worker_info().port_web();
+    }
+  }
+  return 0;
+}
+
 bool SamsonWorkerController::CheckDataModelCommitId(size_t last_commit_id) {
   if (worker_ids_.size() == 0) {
     return false;   // Check for secutrity

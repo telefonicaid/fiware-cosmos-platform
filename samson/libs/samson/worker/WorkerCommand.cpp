@@ -342,7 +342,15 @@ void WorkerCommand::Run() {
     return;
   }
 
-  if (main_command == "ls_last_data_commits") {
+  if (main_command == "ls_last_commits_debug") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetLastCommitsDebugCollection(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
+
+  if (main_command == "ls_last_commits") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetLastCommitsCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);

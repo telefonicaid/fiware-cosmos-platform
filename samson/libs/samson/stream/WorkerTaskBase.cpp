@@ -61,6 +61,7 @@ void WorkerTaskBase::AddInput(int channel, BlockPointer block, KVRange range, KV
   BlockList *block_list = block_list_container_.getBlockList(block_list_name);
 
   block_list->add(new BlockRef(block, range, info));
+  input_block_ids_.push_back(block->block_id());
 }
 
 void WorkerTaskBase::AddOutput(int channel, BlockPointer block, KVRange range, KVInfo info) {
@@ -68,8 +69,6 @@ void WorkerTaskBase::AddOutput(int channel, BlockPointer block, KVRange range, K
   BlockList *block_list = block_list_container_.getBlockList(block_list_name);
 
   block_list->add(new BlockRef(block, range, info));
-
-  // Keep the list of generated output blocks
   output_block_ids_.push_back(block->block_id());
 }
 

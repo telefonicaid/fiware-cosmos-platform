@@ -56,10 +56,13 @@ void WorkerTaskManager::Add(au::SharedPointer<WorkerTaskBase> task) {
   reviewPendingWorkerTasks();
 }
 
-void WorkerTaskManager::AddBlockRequestTask(size_t block_id, const std::vector<size_t>& worker_ids) {
+size_t WorkerTaskManager::AddBlockRequestTask(size_t block_id, const std::vector<size_t>& worker_ids) {
   // Add a new block request task...
-  au::SharedPointer<WorkerTaskBase> task(new BlockRequestTask(samson_worker_, getNewId(), block_id, worker_ids));
+  size_t task_id = getNewId();
+
+  au::SharedPointer<WorkerTaskBase> task(new BlockRequestTask(samson_worker_, task_id, block_id, worker_ids));
   Add(task);
+  return task_id;
 }
 
 void WorkerTaskManager::notify(engine::Notification *notification) {
@@ -407,6 +410,32 @@ gpb::CollectionPointer WorkerTaskManager::GetCollectionForStreamOperations(const
   }
 
   return collection;
+}
+
+void WorkerTaskManager::Update(BlocksSortInfo *info) const {
+  // Review pending tasks
+  {
+    std::vector< au::SharedPointer<WorkerTaskBase> > items  = pending_tasks_.items();
+    for (size_t i = 0; i < items.size(); i++) {
+      size_t task_id =  items[i]->id();
+      const std::vector<size_t>& block_ids = items[i]->input_block_ids();
+      for (size_t j = 0; j < block_ids.size(); j++) {
+        info->NotifyInputForTask(block_ids[j], task_id);
+      }
+    }
+  }
+
+  // Review runnning tasks
+  {
+    std::vector< au::SharedPointer<WorkerTaskBase> > items = running_tasks_.items();
+    for (size_t i = 0; i < items.size(); i++) {
+      size_t task_id =  items[i]->id();
+      const std::vector<size_t>& block_ids = items[i]->input_block_ids();
+      for (size_t j = 0; j < block_ids.size(); j++) {
+        info->NotifyInputForTask(block_ids[j], task_id);
+      }
+    }
+  }
 }
 }
 }

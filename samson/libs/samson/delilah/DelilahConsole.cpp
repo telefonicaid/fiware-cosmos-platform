@@ -51,7 +51,6 @@
 #include "samson/module/ModulesManager.h"        // samson::ModulesManager
 #include "samson/module/samsonVersion.h"         // SAMSON_VERSION
 #include "samson/network/Packet.h"               // ss:Packet
-#include "samson/stream/BlockManager.h"          // samson::stream::BlockManager
 
 #define DEF1 "TYPE:EXEC/FUNC: TEXT"
 

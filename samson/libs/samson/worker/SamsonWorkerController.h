@@ -109,6 +109,10 @@ public:
   size_t GetMyLastCommitId();
   bool CheckDataModelCommitId(size_t last_commit_id);
 
+  // Get host and port of a particular worker
+  std::string  getHostForWorker(size_t worker_id);
+  unsigned short getWebPortForWorker(size_t worker_id);
+
 private:
 
   // Get all worker identifiers

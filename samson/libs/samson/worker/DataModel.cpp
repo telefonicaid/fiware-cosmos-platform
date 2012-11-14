@@ -97,13 +97,6 @@ au::SharedPointer<au::CommandLine> DataModel::GetCommandLine() {
   return cmd;
 }
 
-void DataModel::NotificationNewModel(int previous_version
-                                     , au::SharedPointer<gpb::DataModel> previous_data
-                                     , int version
-                                     , au::SharedPointer<gpb::DataModel> new_data) {
-  LOG_M(logs.data_model, ("Update DataModel from ZK from version %d to version %d", previous_version, version));
-}
-
 void DataModel::Init(au::SharedPointer<gpb::DataModel> data_model) {
   // Create an empty node
   LOG_M(logs.data_model, ("Init a new instance of data model"));
@@ -151,6 +144,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
     return;
   }
 
+
   // Process whatever opertion on current data model
   ProcessCommand(data->mutable_current_data(), cmd, error);
 
@@ -158,11 +152,15 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
     return;
   }
 
-  // update the commit_id
   size_t commit_id = data->mutable_current_data()->commit_id();
-  LOG_M(logs.data_model,
-        ("Trying to perform commit over Data model [candidate for %lu] %s (data version  %d)", commit_id, command.c_str(),
-         version ));
+  LOG_M(logs.data_model, ("Trying to perform commit over Data model [candidate for %lu] %s (data version  %d)"
+                          , commit_id, command.c_str(), version ));
+
+  // add to the list of last_commits
+  data->mutable_current_data()->add_last_commits(au::str("Commit %lu : %s", commit_id, command.c_str()));
+  gpb::limit_last_commits(data->mutable_current_data());
+
+  // Update the commit_id counter
   data->mutable_current_data()->set_commit_id(commit_id + 1);
 
   // Add the commit to the global data model and increase the counter
@@ -414,6 +412,7 @@ void DataModel::ProcessBlockCommand(gpb::Data *data, au::SharedPointer<au::Comma
 
   commit_command.ParseCommitCommand(cmd->command(), error);
   if (error.IsActivated()) {
+    LOG_W(logs.data_model, ("Error comitting to data model %s", error.GetMessage().c_str()));
     return;
   }
 
@@ -491,7 +490,7 @@ void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::C
     LOG_W(logs.data_model, ("queue '%s' not found", cmd->get_argument(1).c_str()));
     return;     // nothing to do
   }
-  queue->set_version(data->commit_id());       // Update version where this queue was updated
+  queue->set_commit_id(data->commit_id());       // Update version where this queue was updated
   KVFormat format(queue->key_format(), queue->value_format());
   samson::gpb::Queue *target_queue = get_or_create_queue(data, cmd->get_argument(2), format, error);
 
@@ -914,6 +913,11 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueuesWithBlocks(c
   for (int q = 0; q < data->queue_size(); ++q) {
     const gpb::Queue& queue = data->queue(q);
     const std::string queue_name = queue.name();
+
+    if (!visualization.match(queue_name)) {
+      continue;
+    }
+
     if ((queue_name.length() == 0) || (!all_flag && (queue_name[0] == '.'))) {
       continue;
     }
@@ -1000,6 +1004,8 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueues(const Visua
     ::samson::add(record, "#blocks", num_blocks, "different,f=uint64");
     ::samson::add(record, "#kvs", kvs, "different,f=uint64");
     ::samson::add(record, "size", size, "different,f=uint64");
+
+    ::samson::add(record, "last_commit", queue.commit_id(), "different,f=uint64");
   }
   return collection;
 }
@@ -1078,6 +1084,14 @@ std::set<size_t> DataModel::GetAllBlockIds() {
 size_t DataModel::GetLastCommitIdForPreviousDataModel() {
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   return data_model->previous_data().commit_id();
+}
+
+std::set<size_t> DataModel::GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges) {
+  std::set<size_t> block_ids;      // Prepare list of ids to be returned
+
+  au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
+  gpb::AddStateBlockIds(data_model->mutable_current_data(), ranges, block_ids);
+  return block_ids;
 }
 
 std::set<size_t> DataModel::GetMyBlockIdsForPreviousAndCandidateDataModel(const std::vector<KVRange>& ranges) {
@@ -1163,12 +1177,11 @@ bool DataModel::CheckForAllOperationsFinished() {
   return true;
 }
 
-au::SharedPointer<gpb::Collection> DataModel::GetLastCommitsCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> DataModel::GetLastCommitsDebugCollection(const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("last_commits");
 
-  // Get a copy of the last commits
-  std::vector<au::StringCommitRecord> my_last_commits =  last_commits();
+  std::vector<au::StringCommitRecord> my_last_commits =  last_commits();    // Get a copy of the last commits
 
   for (size_t i = 0; i < my_last_commits.size(); i++) {
     gpb::CollectionRecord *record = collection->add_record();
@@ -1195,6 +1208,21 @@ au::SharedPointer<gpb::Collection> DataModel::GetLastCommitsCollection(const Vis
       ::samson::add(record, "Concept", "Time", "different");
       ::samson::add(record, "Value", au::str(my_last_commits[i].commit_time()), "different");
     }
+  }
+
+  return collection;
+}
+
+au::SharedPointer<gpb::Collection> DataModel::GetLastCommitsCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("last_commits");
+
+  au::SharedPointer<gpb::DataModel> data = getCurrentModel();
+
+  // Last commits in data model
+  for (int i = 0; i < data->current_data().last_commits_size(); i++) {
+    gpb::CollectionRecord *record = collection->add_record();
+    ::samson::add(record, "commit",  data->current_data().last_commits(i), "left,different");
   }
 
   return collection;

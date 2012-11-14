@@ -28,6 +28,7 @@
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
 #include "samson/stream/Block.h"
 #include "samson/stream/BlockList.h"
+#include "samson/worker/SamsonWorker.h"
 
 
 /*
@@ -39,22 +40,6 @@
 
 namespace samson {
 namespace stream {
-class BlockSorter {
-  const au::Dictionary<size_t, Block>& blocks_;
-
-public:
-  BlockSorter(const au::Dictionary<size_t, Block>& blocks) :
-    blocks_(blocks) {
-  }
-
-  bool operator()(size_t block_id1, size_t block_id2) const {
-    au::SharedPointer<Block> block_1 = blocks_.Get(block_id1);
-    au::SharedPointer<Block> block_2 = blocks_.Get(block_id2);
-
-    return Block::compare(block_1.shared_object(), block_2.shared_object());
-  }
-};
-
 BlockManager *blockManager = NULL;
 
 void BlockManager::init() {
@@ -80,6 +65,9 @@ BlockManager::BlockManager() :
   // Notification to review block manager
   listen(notification_review_block_manager);
   engine::Engine::shared()->notify(new engine::Notification(notification_review_block_manager), 1);
+
+  // By default not connected to samson worker
+  samson_worker_ = NULL;
 }
 
 BlockManager::~BlockManager() {
@@ -223,7 +211,7 @@ void BlockManager::Review() {
   size_t max_scheduled_write_size = au::Singleton<SamsonSetup>::shared()->GetUInt64("stream.max_scheduled_write_size");
   size_t max_scheduled_read_size = au::Singleton<SamsonSetup>::shared()->GetUInt64("stream.max_scheduled_read_size");
 
-  // No schedule new operations until all the previous one have finished
+  // No schedule new operations until all the previous ones have finished
   if (scheduled_read_size_ > 0) {
     return;
   }
@@ -395,10 +383,10 @@ void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
   size_t block_id = au::Singleton<SamsonSetup>::shared()->block_id_from_filename(fileName);
 
   if (block_id == static_cast<size_t>(-1)) {
-    LOG_W(logs.block_manager,
-          ("Error recovering block from file %s (Not possible to get block id correctly)", fileName.c_str()));
+    LOG_W(logs.worker, ("Error recovering block from file %s ( wrong block id format )", fileName.c_str()));
     return;
   }
+
 
   FILE *file = fopen(fileName.c_str(), "r");
   if (!file) {
@@ -462,7 +450,7 @@ void BlockManager::RecoverBlocksFromDisks() {
     closedir(dp);
   }
   for (size_t i = 0; i < file_names.size(); i++) {
-    LOG_M(logs.block_manager, ("Recovering data from file %lu/%lu %s", i + 1, file_names.size(), file_names[i].c_str()));
+    LOG_M(logs.worker, ("[File #%lu/%lu] Recovering data from file %s", i + 1, file_names.size(), file_names[i].c_str()));
 
     struct ::stat info;
     stat(file_names[i].c_str(), &info);
@@ -561,27 +549,45 @@ void BlockManager::ResetBlockManager() {
   LM_TODO(("Remove all files at BlockManager"));
 }
 
-void BlockManager::Sort() {
-  // au::ExecesiveTimeAlarm alarm("BlockManager::_review");
-  {
-    au::ExecesiveTimeAlarm alarm("BlockManager::sort", 0.10);
-
-    // Sort list of blocks according to a defined criteria
-    block_ids_.sort(BlockSorter(blocks_));
-
-    // Check sort
-    size_t previous_task = 0;
-    std::list<size_t>::iterator iterator;
-    for (iterator = block_ids_.begin(); iterator != block_ids_.end(); iterator++) {
-      BlockPointer block = blocks_.Get(*iterator);
-      size_t task = block->min_task_id();
-      if (task < previous_task) {
-        LM_X(1, ("Error sorting blocks in blcok manager"));
-      }
-      previous_task = task;
-    }
-    // std::sort( block_ids_.begin() , block_ids_.end(), BlockSorter(blocks_) );
+class Sorter {
+public:
+  Sorter(BlocksSortInfo *info) :
+    info_(info) {
   }
+
+  bool operator()(size_t block_id1, size_t block_id2) const {
+    return info_->CompareBlocks(block_id1, block_id2);
+  }
+
+private:
+  BlocksSortInfo *info_;
+};
+
+void BlockManager::Sort() {
+  if (!samson_worker_) {
+    return;    // Still not connected to worker, nothing to sort
+  }
+
+  au::ExecesiveTimeAlarm alarm("BlockManager::sort", 0.10);
+
+  // Get information for blocks in this woker
+  au::SharedPointer<BlocksSortInfo> info = samson_worker_->GetBlocksSortInfo();
+  if (info == NULL) {
+    return;  // Still not prepare to provide information about block-order
+  }
+  // Update state of all workers
+  au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
+
+  std::list<size_t>::iterator it;
+  for (it = block_ids_.begin(); it != block_ids_.end(); ++it) {
+    size_t block_id = *it;
+    BlockPointer block = blocks_.Get(block_id);
+    block->set_info_state(info->GetStateForBlock(block_id));
+  }
+
+  // Sort list of blocks according to a defined criteria
+  // block_ids_.sort(BlockSorter(blocks_));
+  block_ids_.sort(Sorter(info.shared_object()));
 }
 
 bool BlockManager::CheckBlocks(const std::set<size_t>& block_ids) {

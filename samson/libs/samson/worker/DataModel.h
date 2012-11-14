@@ -50,11 +50,6 @@ public:
   virtual ~DataModel() {
   }
 
-  // NodeCommiter<gpb::DataModel>
-  virtual void NotificationNewModel(int previous_version
-                                    , au::SharedPointer<gpb::DataModel> previous_data
-                                    , int version
-                                    , au::SharedPointer<gpb::DataModel> new_data);
   virtual void Init(au::SharedPointer<gpb::DataModel> c);
   virtual void PerformCommit(au::SharedPointer<gpb::DataModel>, std::string command, int version, au::ErrorManager&);
 
@@ -76,6 +71,7 @@ public:
   std::set<size_t> GetMyBlockIdsForPreviousAndCandidateDataModel(const std::vector<KVRange>& ranges);
   std::set<size_t> GetMyBlockIdsForPreviousDataModel(const std::vector<KVRange>& ranges);
   std::set<size_t> GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges);
+  std::set<size_t> GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges);
   size_t GetLastCommitIdForPreviousDataModel();
   size_t GetLastCommitIdForCandidateDataModel();
 
@@ -87,12 +83,9 @@ public:
 
   // Get list of the last commits
   au::SharedPointer<gpb::Collection> GetLastCommitsCollection(const Visualization& visualization);
-
-
+  au::SharedPointer<gpb::Collection> GetLastCommitsDebugCollection(const Visualization& visualization);
 
 private:
-
-
 
   void ProcessCommand(gpb::Data *data, const std::string command, au::ErrorManager& error) {
     au::SharedPointer<au::CommandLine> cmd = GetCommandLine();

@@ -10,6 +10,7 @@
  */
 #include "samson/worker/SamsonWorkerRest.h"  // Own interface
 
+#include "samson/common/Logs.h"
 #include "samson/common/ports.h"          // SAMSON_WORKER_PORT
 #include "samson/common/samsonVersion.h"
 #include "samson/delilah/WorkerCommandDelilahComponent.h"
@@ -342,7 +343,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
     return;
   }
 
-  LM_T(LmtRest, ("appending delilah output to command: '%s'", table->str().c_str()));
+  LOG_M(logs.rest, ("appending delilah output to command: '%s'", table->str().c_str()));
   command->Append(table->strFormatted(command->format()));
   delete table;
 }
@@ -583,7 +584,7 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
   std::string queue_name = command->path_components()[2];
   std::string key = command->path_components()[3];
 
-  LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key.c_str(), queue_name.c_str()));
+  LOG_M(logs.rest, ("looking up key '%s' in queue '%s'", key.c_str(), queue_name.c_str()));
 
   // Get  copy of the current data model
   au::SharedPointer<gpb::DataModel> data_model = samson_worker_->data_model()->getCurrentModel();
@@ -624,31 +625,35 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
 
   // Get all the information from the reference key
   reference_key_data_instance->setFromString(key.c_str());
-  LM_T(LmtRest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
+  LOG_M(logs.rest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
 
-  // Append key in all cases
-  command->AppendFormatedElement("key", reference_key_data_instance->strFormatted(command->format()));
 
   // Get hashgroup
   int hg = reference_key_data_instance->hash(KVFILE_NUM_HASHGROUPS);
-  LM_T(LmtRest, ("Hash group: %d", hg));
+  LOG_M(logs.rest, ("Hash group: %d", hg));
 
   // Get the worker for this hash.group
   size_t worker_id = samson_worker_->worker_controller()->GetMainWorkerForHashGroup(hg);
   size_t my_worker_id = samson_worker_->worker_controller()->worker_id();
 
   if (my_worker_id != worker_id) {
-    LM_X(1, ("Redirection not implemented"));
-    /*
-     * std::string  host = worker->network->getHostForWorker( worker_id );
-     * //unsigned short  port = worker->network->getPortForWorker( worker_id );
-     * unsigned short  port = web_port;   // We have to use to REST port, not the connections port
-     *
-     * LM_T(LmtRest, ("Redirect to the right server (%s:%d)", host.c_str(), port));
-     * command->set_redirect( au::str("http://%s:%d%s", host.c_str(), port , command->resource.c_str() ) );
-     * return;
-     */
+    std::string host = samson_worker_->worker_controller()->getHostForWorker(worker_id);
+    unsigned short port = samson_worker_->worker_controller()->getWebPortForWorker(worker_id);
+
+    command->SetRedirect(au::str("http://%s:%d%s", host.c_str(), port, command->resource().c_str()));
   }
+
+
+  // Information about the query
+  command->AppendFormatedElement("search_key", key);
+  command->AppendFormatedElement("search_queue", queue_name);
+
+  // Inform about the hash-group
+  command->AppendFormatedElement("hash_group", au::str("%d", hg));
+
+  // Inform about the worker
+  command->AppendFormatedElement("worker", au::str("%lu", worker_id));
+
 
   // Search for the correct block
   for (int b = 0; b < queue->blocks_size(); ++b) {
@@ -668,15 +673,21 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
       }
 
       if (!block_ptr->is_content_in_memory()) {
-        command->AppendFormatedError(au::str("Block %lu not in memory for queue %s", block_id, queue_name.c_str()));
+        command->AppendFormatedError(au::str("Block %s not in memory for queue %s"
+                                             , str_block_id(block_id).c_str()
+                                             , queue_name.c_str()));
         return;
       }
+
+      // Extra information about the block
+      command->AppendFormatedElement("block",  str_block_id(block_id));
+      command->AppendFormatedElement("block_range",  range.str());
 
       block_ptr->lookup(key.c_str(), command);
       return;
     }
   }
-  command->AppendFormatedError(au::str("Key ´%s´ not found in the queue %s", key.c_str(), queue_name.c_str()));
+  command->AppendFormatedError("Key not found");
 }
 }
 

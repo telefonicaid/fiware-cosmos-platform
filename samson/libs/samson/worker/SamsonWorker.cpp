@@ -192,6 +192,9 @@ void SamsonWorker::Review() {
         worker_block_manager_->RequestBlock(*it);
       }
 
+      // Get my blocks included in states
+      std::set<size_t> my_state_block_ids = data_model_->GetMyStateBlockIdsForCurrentDataModel(my_ranges);
+
       // Check my last commit id to update my_worker info if necessary
       size_t last_commit_id = worker_controller_->GetMyLastCommitId();
       size_t previous_data_commit_id = data_model_->GetLastCommitIdForPreviousDataModel();
@@ -301,10 +304,14 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     size_t block_id  = packet->message->block_id();
 
-    // Schedule operations to send this block to this worker
-    if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
+    stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
+
+    if (block == NULL) {
       // Received a Message::BlockRequest for unknown block
-      LOG_V(logs.block_request, ("Received block request for %s. Unknown block!", str_block_id(block_id).c_str()));
+      LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Unknown block... returning error"
+                                 , str_block_id(block_id).c_str()
+                                 , packet->from.id ));
+
       PacketPointer p(new Packet(Message::BlockRequestResponse));
       p->to = packet->from;
       p->message->set_block_id(block_id);
@@ -313,11 +320,35 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    // Add the task for this request
+    // If block is in memory, we can anser rigth now
+    if (block->is_content_in_memory()) {
+      engine::BufferPointer buffer = block->buffer();
+      if (buffer == NULL) {
+        LM_X(1, ("Internal error"));
+      }
+
+      LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Answering now since block is in mem"
+                                 , str_block_id(block_id).c_str()
+                                 , packet->from.id ));
+
+      PacketPointer p(new Packet(Message::BlockRequestResponse));
+      p->to = packet->from;
+      p->message->set_block_id(block_id);
+      p->set_buffer(buffer);
+      network_->Send(p);
+      return;
+    }
+
+    // Schedule a task to make to answer this block request ( loading block in memory when possible )
     std::vector<size_t> worker_ids;
     worker_ids.push_back(packet->from.id);
-    LOG_V(logs.block_request, ("Received block request for %s. Added to task manager!", str_block_id(block_id).c_str()));
-    task_manager_->AddBlockRequestTask(block_id, worker_ids);
+    size_t task_id = task_manager_->AddBlockRequestTask(block_id, worker_ids);
+
+    LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Scheduling task W%lu"
+                               , str_block_id(block_id).c_str()
+                               , packet->from.id
+                               , task_id ));
+
     return;
   }
 
@@ -482,7 +513,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     gpb_queue->set_name(original_queue);
     gpb_queue->set_key_format("?");           // It is necessary to fill this fields
     gpb_queue->set_value_format("?");
-    gpb_queue->set_version(1);
+    gpb_queue->set_commit_id(gpb_queue->commit_id());
 
 
     // Get a copy of the entire data model
@@ -818,7 +849,10 @@ std::string SamsonWorker::getPrompt() {
 
   std::ostringstream output;
   if (data_model_ != NULL) {
-    output << "[ DM " << data_model_->version() << " ]";
+    size_t commit_id = data_model_->getCurrentModel()->current_data().commit_id();
+    if (commit_id > 0) {
+      output << "[ DM Commit " << (commit_id - 1) << " ]";
+    }
   }
 
   if (network_ != NULL) {
@@ -1026,13 +1060,13 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   }
 
   modules_available_ = true;
-  size_t version = queue->version();
-  if (version == last_modules_version_) {
+  size_t commit_id = queue->commit_id();
+  if (commit_id <= last_modules_version_) {
     return;     // Not necessary to update
   }
 
   // Update this version
-  last_modules_version_ = version;
+  last_modules_version_ = commit_id;
 
   // Clear modules
   au::Singleton<ModulesManager>::shared()->clearModulesManager();
@@ -1137,5 +1171,93 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelCommit
   }
 
   return collection;
+}
+
+au::SharedPointer<BlocksSortInfo> SamsonWorker::GetBlocksSortInfo() {
+  if (( worker_controller_ == NULL ) || ( data_model_ == NULL )) {
+    return au::SharedPointer<BlocksSortInfo>(NULL);
+  }
+
+  au::SharedPointer<BlocksSortInfo> blocks_sort_info(new BlocksSortInfo());
+
+  // Update with task manager
+  task_manager_->Update(blocks_sort_info.shared_object());
+
+  // Get ranges of this worker
+  std::vector<KVRange> ranges = worker_controller_->GetMyKVRanges();
+
+  // Update with Data model information
+  au::SharedPointer<gpb::DataModel> data = data_model_->getCurrentModel();
+  if (data != NULL) {
+    const gpb::Data& current_data =  data->current_data();   // Get current data model
+    for (int q = 0; q < current_data.queue_size(); q++) {
+      const gpb::Queue& queue = current_data.queue(q);
+      for (int b = 0; b < queue.blocks_size(); b++) {
+        blocks_sort_info->NotifyQueue(queue.blocks(b).block_id(), queue.name());
+      }
+    }
+
+    // Past data models
+    for (int q = 0; q < data->previous_data().queue_size(); q++) {
+      const gpb::Queue& queue = data->previous_data().queue(q);
+      for (int b = 0; b < queue.blocks_size(); b++) {
+        blocks_sort_info->NotifyPreviousDataModel(queue.blocks(b).block_id());
+      }
+    }
+
+    if (data->has_candidate_data()) {
+      for (int q = 0; q < data->candidate_data().queue_size(); q++) {
+        const gpb::Queue& queue = data->candidate_data().queue(q);
+        for (int b = 0; b < queue.blocks_size(); b++) {
+          blocks_sort_info->NotifyPreviousDataModel(queue.blocks(b).block_id());
+        }
+      }
+    }
+
+
+
+
+    for (int r = 0; r < ranges.size(); r++) {
+      for (int o = 0; o < current_data.operations_size(); o++) {
+        std::string name = au::str("%s%s", current_data.operations(o).name().c_str(), ranges[r].str().c_str());
+
+        for (int i = 0; i < current_data.operations(o).inputs_size(); i++) {
+          std::string queue_name = current_data.operations(o).inputs(i);
+          // Consider only blocks of data for this worker
+          gpb::Queue *queue = gpb::get_queue(data->mutable_current_data(), queue_name);
+          if (!queue) {
+            continue;
+          }
+
+          bool state = false;
+          if (current_data.operations(o).inputs_size() > 1) {
+            if (!current_data.operations(o).batch_operation()) {
+              if (!current_data.operations(o).reduce_forward()) {
+                if (i == (current_data.operations(o).inputs_size() - 1)) {
+                  state = true;
+                }
+              }
+            }
+          }
+
+          size_t total = 0;
+          for (int b = 0; b < queue->blocks_size(); b++) {
+            const gpb::Block& block = queue->blocks(b);
+            KVRange range = block.range();
+            if (range.IsOverlapped(ranges[r])) {
+              blocks_sort_info->NotifyInputForStreamOperation(block.block_id()
+                                                              , name
+                                                              , queue_name
+                                                              , state
+                                                              , total);
+              total += block.size();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return blocks_sort_info;
 }
 }

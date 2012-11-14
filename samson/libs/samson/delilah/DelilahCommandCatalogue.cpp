@@ -160,9 +160,14 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("data_model_cancel_freeze", "debug", "Cancel candidate data model");
   add("data_model_recover", "debug", "Show frozen and current data model status");
 
-
   add("ls_kv_ranges", "debug", "Show a list of current KVRanges in this SAMSON cluster");
 
+  add("set_replication_factor", "debug", "Show a list of current KVRanges in this SAMSON cluster");
+  add_mandatory_uint64_argument("set_replication_factor", "factor", "Number of times each block is present in cluster");
+  add("get_replication_factor", "debug", "Show a list of current KVRanges in this SAMSON cluster");
+
+
+  // ------------------------------------------------------------------
   // MODULES
   // ------------------------------------------------------------------
 

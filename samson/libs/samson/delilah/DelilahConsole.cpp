@@ -114,7 +114,7 @@ std::string DelilahConsole::getPrompt() {
   return au::str("[%s] Delilah>", getClusterConnectionSummary().c_str());
 }
 
-void DelilahConsole::evalCommand(std::string command) {
+void DelilahConsole::evalCommand(const std::string& command) {
   // Run this command
   size_t _delilah_id = runAsyncCommand(command);
 

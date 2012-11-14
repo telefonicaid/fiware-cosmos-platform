@@ -21,8 +21,8 @@
 #include "au/console/ConsoleEscapeSequence.h"
 
 #include "au/ErrorManager.h"
-#include "au/log/LogFormatter.h"
 #include "au/log/LogCentralPlugin.h"
+#include "au/log/LogFormatter.h"
 #include "au/mutex/Token.h"
 
 namespace au {
@@ -61,26 +61,25 @@ public:
   void quitConsole();
 
   /* Methods to write things on screen */
-  void writeWarningOnConsole(std::string message);
-  void writeErrorOnConsole(std::string message);
-  void writeOnConsole(std::string message);
+  void writeWarningOnConsole(const std::string& message);
+  void writeErrorOnConsole(const std::string& message);
+  void writeOnConsole(const std::string& message);
 
   void write(au::ErrorManager *error);
 
   // Customize console
   virtual std::string getPrompt();
-  virtual void evalCommand(std::string command);
+  virtual void evalCommand(const std::string& command);
   virtual void autoComplete(ConsoleAutoComplete *info);
 
-  void addEspaceSequence(std::string sequence);
-  virtual void process_escape_sequence(std::string sequence) {
-    sequence = "SEQ";
+  void addEspaceSequence(const std::string& sequence);
+  virtual void process_escape_sequence(const std::string& sequence) {
   };
 
   void refresh();
 
   // Wait showing a message on screen.... ( background message works )
-  int waitWithMessage(std::string message, double sleep_time, ConsoleEntry *entry);
+  int waitWithMessage(const std::string& message, double sleep_time, ConsoleEntry *entry);
 
   // Make sure all messages are shown
   void flush();
@@ -89,7 +88,7 @@ public:
   bool isQuitting();
 
   // Append to current command
-  void appendToCommand(std::string txt);
+  void appendToCommand(const std::string& txt);
 
   // Get the history string
   std::string str_history(int limit);
@@ -102,12 +101,12 @@ private:
   void process_char(char c);
 
   void internal_process_escape_sequence(std::string sequence);
-  void internal_command(std::string sequence);
+  void internal_command(const std::string& sequence);
 
   void process_background();
   bool isNormalChar(char c);
 
-  void write(std::string message);
+  void write(const std::string& message);
 
   // Get the next entry from console
   void getEntry(ConsoleEntry *entry);

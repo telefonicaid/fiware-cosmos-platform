@@ -175,9 +175,6 @@ void SamsonWorker::Review() {
       // Take a list of all the blocks considered in data model
       std::set<size_t> all_block_ids = data_model_->GetAllBlockIds();
 
-      // Remove all blocks that are not part of data model
-      stream::BlockManager::shared()->RemoveBlocksIfNecessary(all_block_ids);
-
       // Remove all block request for blocks not belonging to data model
       worker_block_manager_->RemoveRequestIfNecessary(all_block_ids);
 
@@ -785,7 +782,7 @@ void SamsonWorker::autoComplete(au::ConsoleAutoComplete *info) {
   }
 }
 
-void SamsonWorker::evalCommand(std::string command) {
+void SamsonWorker::evalCommand(const std::string& command) {
   au::CommandLine cmdLine;
 
   cmdLine.Parse(command);
@@ -1173,12 +1170,12 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelCommit
   return collection;
 }
 
-au::SharedPointer<BlocksSortInfo> SamsonWorker::GetBlocksSortInfo() {
+au::SharedPointer<GlobalBlockSortInfo> SamsonWorker::GetGlobalBlockSortInfo() {
   if (( worker_controller_ == NULL ) || ( data_model_ == NULL )) {
-    return au::SharedPointer<BlocksSortInfo>(NULL);
+    return au::SharedPointer<GlobalBlockSortInfo>(NULL);
   }
 
-  au::SharedPointer<BlocksSortInfo> blocks_sort_info(new BlocksSortInfo());
+  au::SharedPointer<GlobalBlockSortInfo> blocks_sort_info(new GlobalBlockSortInfo());
 
   // Update with task manager
   task_manager_->Update(blocks_sort_info.shared_object());
@@ -1201,25 +1198,22 @@ au::SharedPointer<BlocksSortInfo> SamsonWorker::GetBlocksSortInfo() {
     for (int q = 0; q < data->previous_data().queue_size(); q++) {
       const gpb::Queue& queue = data->previous_data().queue(q);
       for (int b = 0; b < queue.blocks_size(); b++) {
-        blocks_sort_info->NotifyPreviousDataModel(queue.blocks(b).block_id());
+        blocks_sort_info->NotifyQueueInPreviousDataModel(queue.blocks(b).block_id(), queue.name());
       }
     }
-
     if (data->has_candidate_data()) {
       for (int q = 0; q < data->candidate_data().queue_size(); q++) {
         const gpb::Queue& queue = data->candidate_data().queue(q);
         for (int b = 0; b < queue.blocks_size(); b++) {
-          blocks_sort_info->NotifyPreviousDataModel(queue.blocks(b).block_id());
+          blocks_sort_info->NotifyQueueInPreviousDataModel(queue.blocks(b).block_id(), queue.name());
         }
       }
     }
 
-
-
-
-    for (int r = 0; r < ranges.size(); r++) {
+    // Inform about stream operations in ther worker or in exterior workers
+    for (size_t r = 0; r < ranges.size(); r++) {
       for (int o = 0; o < current_data.operations_size(); o++) {
-        std::string name = au::str("%s%s", current_data.operations(o).name().c_str(), ranges[r].str().c_str());
+        std::string name = au::str("%s %s", current_data.operations(o).name().c_str(), ranges[r].str().c_str());
 
         for (int i = 0; i < current_data.operations(o).inputs_size(); i++) {
           std::string queue_name = current_data.operations(o).inputs(i);
@@ -1240,7 +1234,8 @@ au::SharedPointer<BlocksSortInfo> SamsonWorker::GetBlocksSortInfo() {
             }
           }
 
-          size_t total = 0;
+          size_t total = 0;  // Total accumulated size for stream operation in this worker
+          size_t extern_total = 0;  // Total accumuated size for strema operations in other workers
           for (int b = 0; b < queue->blocks_size(); b++) {
             const gpb::Block& block = queue->blocks(b);
             KVRange range = block.range();
@@ -1251,6 +1246,12 @@ au::SharedPointer<BlocksSortInfo> SamsonWorker::GetBlocksSortInfo() {
                                                               , state
                                                               , total);
               total += block.size();
+            } else {
+              blocks_sort_info->NotifyInputForExternStreamOperation(block.block_id()
+                                                                    , name
+                                                                    , queue_name
+                                                                    , extern_total);
+              extern_total += block.size();
             }
           }
         }

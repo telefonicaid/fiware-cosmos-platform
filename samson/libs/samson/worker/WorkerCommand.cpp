@@ -333,6 +333,17 @@ void WorkerCommand::Run() {
     return;
   }
 
+  if (main_command == "get_replication_factor") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForReplication(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+
+    return;
+  }
+
+
   if (main_command == "ls_queue_blocks") {
     au::SharedPointer<gpb::Collection> c =
       samson_worker_->data_model()->GetCollectionForQueuesWithBlocks(visualization);

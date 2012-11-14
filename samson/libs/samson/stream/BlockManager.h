@@ -27,6 +27,7 @@
 
 namespace samson {
 class SamsonWorker;
+class GlobalBlockSortInfo;
 namespace stream {
 class BlockList;
 
@@ -60,9 +61,6 @@ public:
   // Function to review pending read / free / write operations
   void Review();
 
-  // Remove blocks not included in this list
-  void RemoveBlocksIfNecessary(const std::set<size_t>& all_blocks);
-
   // Notification interface
   virtual void notify(engine::Notification *notification);
 
@@ -95,6 +93,9 @@ private:
   void Sort();     // Sort blocks
   void CreateBlockFromDisk(const std::string& path);
   void RecoverBlocksFromDisks();
+
+  // Remove blocks not included in this list
+  void RemoveBlocksIfNecessary(GlobalBlockSortInfo *info);
 
   void ScheduleRemoveOperation(BlockPointer block);
   void ScheduleReadOperation(BlockPointer block);

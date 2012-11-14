@@ -412,7 +412,7 @@ gpb::CollectionPointer WorkerTaskManager::GetCollectionForStreamOperations(const
   return collection;
 }
 
-void WorkerTaskManager::Update(BlocksSortInfo *info) const {
+void WorkerTaskManager::Update(GlobalBlockSortInfo *info) const {
   // Review pending tasks
   {
     std::vector< au::SharedPointer<WorkerTaskBase> > items  = pending_tasks_.items();

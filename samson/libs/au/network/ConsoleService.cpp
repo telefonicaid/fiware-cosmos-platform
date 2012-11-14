@@ -74,7 +74,7 @@ void ConsoleServiceClientBase::FillMessage(au::gpb::ConsolePacket *message, au::
 
 void ConsoleServiceClientBase::Disconnect(au::ErrorManager *error) {
   if (socket_connection_) {
-    error->AddWarning(au::str("Closing connection with %s\n", socket_connection_->host_and_port() .c_str()));
+    error->AddWarning(au::str("Closing connection with %s\n", socket_connection_->host_and_port().c_str()));
 
     socket_connection_->Close();
     delete socket_connection_;
@@ -101,15 +101,16 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
 }
 
 std::string ConsoleServiceClientBase::getPrompt() {
-
   // If not connected....
-  if( !socket_connection_ )
+  if (!socket_connection_) {
     return "Disconnected > ";
-  
-  if( current_prompt_ != "" )
+  }
+
+  if (current_prompt_ != "") {
     if (cronometer_prompt_request_.seconds() < 2) {
       return current_prompt_;
     }
+  }
 
   // Prepare message to be send to server
   au::gpb::ConsolePacket m;
@@ -135,7 +136,7 @@ std::string ConsoleServiceClientBase::getPrompt() {
   return current_prompt_;
 }
 
-void ConsoleServiceClientBase::evalCommand(std::string command, au::ErrorManager *error) {
+void ConsoleServiceClientBase::evalCommand(const std::string& command, au::ErrorManager *error) {
   // Establish connection
   au::CommandLine cmdLine;
 
@@ -213,7 +214,7 @@ void ConsoleServiceClientBase::autoComplete(ConsoleAutoComplete *info) {
   for (int i = 0; i < answer->auto_completion_alternatives_size(); i++) {
     std::string label = answer->auto_completion_alternatives(i).label();
     std::string command = answer->auto_completion_alternatives(i).command();
-    bool add_space = answer->auto_completion_alternatives(i). add_space_if_unique();
+    bool add_space = answer->auto_completion_alternatives(i).add_space_if_unique();
     info->add(label, command, add_space);
   }
 }
@@ -226,7 +227,7 @@ ConsoleServiceClient::ConsoleServiceClient(int port) :
 }
 
 // Write all messages on console
-void ConsoleServiceClient::evalCommand(std::string command) {
+void ConsoleServiceClient::evalCommand(const std::string& command) {
   au::ErrorManager error;
 
   ConsoleServiceClientBase::evalCommand(command, &error);
@@ -321,4 +322,4 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
   }
 }
 }
-} // end of namespace
+}  // end of namespace

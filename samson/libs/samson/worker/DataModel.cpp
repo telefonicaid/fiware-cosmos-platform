@@ -46,6 +46,9 @@ const std::string DataModel::kFreezeDataModel("data_model_freeze");
 const std::string DataModel::kCancelFreezeDataModel("data_model_cancel_freeze");
 const std::string DataModel::kRecoverDataModel("data_model_recover");
 const std::string DataModel::kConsolidateDataModel("consolidate_data_model");
+const std::string DataModel::kSetReplicationFactor("set_replication_factor");
+
+
 
 const std::string DataModel::commands[] =
 { DataModel::kAdd,             DataModel::kAddQueueConnection,
@@ -57,7 +60,7 @@ const std::string DataModel::commands[] =
   kSetQueueProperty,
   kSetStreamOperationProperty, kUnsetStreamOperationProperty,
   kFreezeDataModel,            kCancelFreezeDataModel,                    kRecoverDataModel,
-  kConsolidateDataModel };
+  kConsolidateDataModel,       kSetReplicationFactor };
 
 const std::string DataModel::recovery_commands[] =
 { DataModel::kAdd,            DataModel::kAddQueueConnection,            kAddStreamOperation,
@@ -144,6 +147,14 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
     return;
   }
 
+  if (main_command == kSetReplicationFactor) {
+    if (cmd->get_num_arguments() < 2) {
+      return;
+    }
+    size_t replication_factor = atoll(cmd->get_argument(1).c_str());
+    data->set_replication_factor(replication_factor);
+    return;
+  }
 
   // Process whatever opertion on current data model
   ProcessCommand(data->mutable_current_data(), cmd, error);
@@ -766,6 +777,14 @@ bool DataModel::isValidCommand(const std::string& main_command) {
   return false;
 }
 
+au::SharedPointer<gpb::Collection> DataModel::GetCollectionForReplication(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  gpb::CollectionRecord *record = collection->add_record();
+  ::samson::add(record, "Replication factor", getCurrentModel()->replication_factor(), "different");
+  collection->set_name("replication_factor");
+  return collection;
+}
+
 // Get collections for all the operations
 au::SharedPointer<gpb::Collection> DataModel::GetCollectionForStreamOperations(const Visualization& visualization) {
   // Get a copy of the current version
@@ -1005,7 +1024,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueues(const Visua
     ::samson::add(record, "#kvs", kvs, "different,f=uint64");
     ::samson::add(record, "size", size, "different,f=uint64");
 
-    ::samson::add(record, "last_commit", queue.commit_id(), "different,f=uint64");
+    ::samson::add(record, "last_commit", queue.commit_id(), "different");
   }
   return collection;
 }

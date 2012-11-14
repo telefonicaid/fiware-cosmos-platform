@@ -94,7 +94,7 @@ void BlockManager::CreateBlock(size_t block_id, engine::BufferPointer buffer) {
   blocks_.Set(block_id, block);
 }
 
-void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids) {
+void BlockManager::RemoveBlocksIfNecessary(GlobalBlockSortInfo *info) {
   au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
 
   std::list<size_t>::iterator it;
@@ -103,7 +103,7 @@ void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids
     BlockPointer block = blocks_.Get(block_id);
 
     // Check if it is included in data model
-    if (all_block_ids.find(block_id) != all_block_ids.end()) {
+    if (info->IsBlockIsNecessary(block_id)) {
       it++;
       continue;
     }
@@ -551,7 +551,7 @@ void BlockManager::ResetBlockManager() {
 
 class Sorter {
 public:
-  Sorter(BlocksSortInfo *info) :
+  Sorter(GlobalBlockSortInfo *info) :
     info_(info) {
   }
 
@@ -560,7 +560,7 @@ public:
   }
 
 private:
-  BlocksSortInfo *info_;
+  GlobalBlockSortInfo *info_;
 };
 
 void BlockManager::Sort() {
@@ -571,10 +571,14 @@ void BlockManager::Sort() {
   au::ExecesiveTimeAlarm alarm("BlockManager::sort", 0.10);
 
   // Get information for blocks in this woker
-  au::SharedPointer<BlocksSortInfo> info = samson_worker_->GetBlocksSortInfo();
+  au::SharedPointer<GlobalBlockSortInfo> info = samson_worker_->GetGlobalBlockSortInfo();
   if (info == NULL) {
     return;  // Still not prepare to provide information about block-order
   }
+
+  // Remove all blocks not present in the provided info
+  RemoveBlocksIfNecessary(info.shared_object());
+
   // Update state of all workers
   au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
 

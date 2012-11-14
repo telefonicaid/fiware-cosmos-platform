@@ -32,7 +32,7 @@
 
 namespace samson {
 class SamsonWorker;
-class BlocksSortInfo;
+class GlobalBlockSortInfo;
 
 namespace stream {
 class StreamOperationRangeInfo;
@@ -87,7 +87,7 @@ public:
   gpb::CollectionPointer GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
 
   // Update information about blocks
-  void Update(BlocksSortInfo *info) const;
+  void Update(GlobalBlockSortInfo *info) const;
 
 private:
 

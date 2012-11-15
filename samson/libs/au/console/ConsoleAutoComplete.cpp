@@ -114,7 +114,7 @@ void ConsoleAutoComplete::add(const std::string& command) {
 }
 
 void ConsoleAutoComplete::add(std::vector<std::string> commands) {
-  for (size_t i = 0; i <  commands.size(); i++) {
+  for (size_t i = 0; i < commands.size(); ++i) {
     add(commands[i]);
   }
 }
@@ -128,7 +128,7 @@ void ConsoleAutoComplete::add(ConsoleAutoCompleteAlternative alternative) {
     return;   // Not valid candidate
   }
   // Check if it was previously included...
-  for (size_t i = 0; i < last_word_alternatives.size(); i++) {
+  for (size_t i = 0; i < last_word_alternatives.size(); ++i) {
     if (last_word_alternatives[i].command == alternative.command) {
       return;
     }
@@ -154,17 +154,19 @@ void ConsoleAutoComplete::auto_complete_files(std::string file_selector) {
   }
   while ((dirp = readdir(dp)) != NULL) {
     std::string fileName = dirp->d_name;
-
-    // Skip ".files"
-    if (fileName.length() > 0) {
-      if (fileName[0] == '.') {
-        continue;  // Full path of the file
-      }
-    }
+    // Full path of the file
     std::string path = path_from_directory(directory, dirp->d_name);
 
     struct ::stat info;
     stat(path.c_str(), &info);
+
+    // Skip ".files"
+    // But not directories (SAMSON environment is sometimes created as ~/.samson-HEAD
+    if (fileName.length() > 0) {
+      if ((fileName[0] == '.') && (!S_ISDIR(info.st_mode))) {
+        continue;
+      }
+    }
 
     if (S_ISREG(info.st_mode)) {
       if (CheckIfStringsEndsWith(path, file_selector)) {
@@ -172,11 +174,7 @@ void ConsoleAutoComplete::auto_complete_files(std::string file_selector) {
         size_t size = info.st_size;
 
 
-        add(
-          au::str("%s (%s)", fileName.c_str(), au::str(size, "B").c_str())
-          , base + fileName
-          , true
-          );
+        add(au::str("%s (%s)", fileName.c_str(), au::str(size, "B").c_str()), base + fileName, true);
       }
     } else if (S_ISDIR(info.st_mode)) {
       add(fileName + "/", base + fileName + "/", false);
@@ -267,8 +265,7 @@ void ConsoleAutoComplete::print_last_words_alternatives() {
   if (num_words_per_row == 0) {
     num_words_per_row = 1;
   }
-  for (size_t i = 0; i < last_word_alternatives.size(); i++)
-  {
+  for (size_t i = 0; i < last_word_alternatives.size(); ++i) {
     
     std::ostringstream output;
     

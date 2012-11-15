@@ -125,15 +125,19 @@ void LogCentral::Stop() {
   // Set the quit flag
   quit_ = true;
 
+  if (fd_write_logs_ != NULL) {
   // Close write file descriptor
   fd_write_logs_->Close();
+  }
   
   // Wait for the background threads
   void *return_code;   // Return code to be ignored
   pthread_join(t_, &return_code);
   
+  if (fd_read_logs_ != NULL) {
   fd_read_logs_->Close();
 
+  }
 }
   
   void LogCentral::StopAndExit( int c)
@@ -147,6 +151,9 @@ void LogCentral::Stop() {
 
 void LogCentral::Emit(Log *log) {
   // Write to the pipe
+  if (fd_write_logs_ == NULL) {
+    return;
+  }
   log->Write(fd_write_logs_);
 }
 

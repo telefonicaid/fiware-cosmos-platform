@@ -275,7 +275,7 @@ void CommonNetwork::SendToAllWorkers(const PacketPointer& packet, std::set<size_
 
 // Receive a packet from a connection
 void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& packet) {
-  LM_T(LmtNetworkConnection, ("RECEIVED from %s: PACKET %s\n", connection->getName().c_str(), packet->str().c_str()));
+  LM_T(LmtNetworkConnection, ("RECEIVED from %s: PACKET %s\n", connection->name().c_str(), packet->str().c_str()));
 
   if (packet->msgCode == Message::Hello) {
     LM_W(("Received a hello packet once connection is identified. Ignoring..."));

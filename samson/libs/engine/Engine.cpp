@@ -135,8 +135,15 @@ void Engine::Stop() {
     running_thread_ = false;
   }
 }
-
-void Engine::RunElement(EngineElement *running_element) {
+  void Engine::RunElement(EngineElement *running_element) {
+    au::Cronometer cronometer;
+    InternRunElement(running_element);
+    if( cronometer.seconds() > 1 )
+      LOG_W(logs.engine, ("EngineElement %s has being running for %s"
+                          , running_element->str().c_str() , au::str_time(cronometer.seconds()).c_str()));
+  }
+  
+void Engine::InternRunElement(EngineElement *running_element) {
   activity_monitor_.StartActivity(running_element->name());
 
   // Execute the item selected as running_element

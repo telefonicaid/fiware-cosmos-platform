@@ -118,6 +118,7 @@ private:
 
   // Run a particular engine element
   void RunElement(EngineElement *running_element);
+  void InternRunElement(EngineElement *running_element);
 
   // Common engine instance
   static Engine *engine_;

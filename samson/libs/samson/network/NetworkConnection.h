@@ -42,11 +42,11 @@ public:
   // Close connection ( if still open ) and wait until threads are gone
   void CloseAndStopBackgroundThreads();
 
-  // Wake up the writer thrad
-  void WakeUpWriter();
-
   // Close socket ( no waiting for backgroud threads )
   void Close();
+
+  // Wake up the writer thrad
+  void WakeUpWriter();
 
   // Check if the socket is closed
   bool isDisconnectd();
@@ -55,14 +55,13 @@ public:
   std::string str();
 
   // Get some information
-  std::string getName();
-  std::string getHost();
-  int getPort();
-  size_t get_rate_in();
-  size_t get_rate_out();
-  NodeIdentifier node_identifier();
-  std::string host_and_port();
-
+  std::string name() const;
+  std::string host() const;
+  int port() const;
+  size_t rate_in() const;
+  size_t rate_out() const;
+  NodeIdentifier node_identifier()  const;
+  std::string host_and_port()  const;
 
   // Function to generate lists of items in delilah console
   void fill(gpb::CollectionRecord *record, const Visualization& visualization);
@@ -80,13 +79,16 @@ private:
   // Identifier of the node ( if available )
   NodeIdentifier node_identifier_;
 
-  // User and password for this connection
-  std::string user;
-  std::string password;
-  std::string connection_type;
+  friend class NetworkManager;
+  friend class CommonNetwork;
 
   // Socket Connection
   au::SocketConnection *socket_connection_;
+  
+  // User and password for this connection
+  std::string user_;
+  std::string password_;
+  std::string connection_type_;
 
   // Token to block write thread when more packets have to be sent
   au::Token token_;
@@ -96,16 +98,13 @@ private:
   NetworkManager *network_manager_;
 
   // Threads for reading and writing packets to this socket
-  pthread_t t_read, t_write;
-  bool running_t_read;        // Flag to indicate that there is a thread using this endpoint writing data
-  bool running_t_write;       // Flag to indicate that there is a thread using this endpoint reading data
-
-  friend class NetworkManager;
-  friend class CommonNetwork;
+  pthread_t t_read_, t_write_;
+  bool running_t_read_;        // Flag to indicate that there is a thread using this endpoint writing data
+  bool running_t_write_;       // Flag to indicate that there is a thread using this endpoint reading data
 
   // Information about rate
-  au::rate::Rate rate_in;
-  au::rate::Rate rate_out;
+  au::rate::Rate rate_in_;
+  au::rate::Rate rate_out_;
 };
 }
 

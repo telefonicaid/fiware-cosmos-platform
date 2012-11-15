@@ -105,8 +105,8 @@ au::tables::Table *NetworkManager::getConnectionsTable() {
     NetworkConnection *connection = it_connections->second;
     au::SocketConnection *socket_connection = connection->socket_connection_;
     values.push_back(socket_connection->host_and_port());
-    values.push_back(au::str(connection->get_rate_in(), "B/s"));
-    values.push_back(au::str(connection->get_rate_out(), "B/s"));
+    values.push_back(au::str(connection->rate_in(), "B/s"));
+    values.push_back(au::str(connection->rate_out(), "B/s"));
 
     table->addRow(values);
   }
@@ -216,13 +216,11 @@ void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
 }
 
 au::SharedPointer<gpb::Collection> NetworkManager::GetConnectionsCollection(const Visualization& visualization) {
+  au::TokenTaker tt(&token_connections_);
+  
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("connections");
-
-  au::TokenTaker tt(&token_connections_);
-
   au::map<std::string, NetworkConnection>::iterator it_connections;
-
   for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
     gpb::CollectionRecord *record = collection->add_record();
     it_connections->second->fill(record, visualization);
@@ -253,7 +251,7 @@ size_t NetworkManager::get_rate_in() {
 
   au::map<std::string, NetworkConnection>::iterator it_connections;
   for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
-    total += it_connections->second->get_rate_in();
+    total += it_connections->second->rate_in();
   }
 
   return total;
@@ -266,7 +264,7 @@ size_t NetworkManager::get_rate_out() {
 
   au::map<std::string, NetworkConnection>::iterator it_connections;
   for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
-    total += it_connections->second->get_rate_out();
+    total += it_connections->second->rate_out();
   }
 
   return total;
@@ -283,8 +281,8 @@ std::string NetworkManager::getStatusForConnection(std::string connection_name) 
   } else if (connection->isDisconnectd()) {
     return "Disconnected";
   } else {
-    return au::str("Connected In: %s Out: %s ", au::str(connection->get_rate_in(), "B/s").c_str(),
-                   au::str(connection->get_rate_out(), "B/s").c_str());
+    return au::str("Connected In: %s Out: %s ", au::str(connection->rate_in(), "B/s").c_str(),
+                   au::str(connection->rate_out(), "B/s").c_str());
   }
 }
 

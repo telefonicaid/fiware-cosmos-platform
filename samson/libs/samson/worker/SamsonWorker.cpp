@@ -265,6 +265,7 @@ void SamsonWorker::ResetToConnected() {
 void SamsonWorker::receive(const PacketPointer& packet) {
   LM_T(LmtNetworkNodeMessages, ("SamsonWorker received %s ", packet->str().c_str()));
 
+  LOG_M(logs.in_messages, ("Received packet from %s : %s" , packet->from.str().c_str(), packet->str().c_str() ));
 
   if (!IsConnected()) {
     LM_W(("Ignoring packet %s since we are not connected any more", packet->str().c_str()));

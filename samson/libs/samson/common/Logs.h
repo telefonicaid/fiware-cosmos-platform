@@ -32,7 +32,9 @@ public:
     }
     registered_ = true;
 
-    samson                 = LOG_REGISTER_CHANNEL("samson", "samson library : General channel");
+    samson                 = LOG_REGISTER_CHANNEL("samson::G", "samson library : General channel");
+    in_messages            = LOG_REGISTER_CHANNEL("samson::IM", "samson library : Input network messages");
+    out_messages           = LOG_REGISTER_CHANNEL("samson::OM", "samson library : Output network messages");
     worker                 = LOG_REGISTER_CHANNEL("samson::W", "samson library : Worker");
     block_manager          = LOG_REGISTER_CHANNEL("samson::BM", "samson library : Block Manager");
     task_manager           = LOG_REGISTER_CHANNEL("samson::TM", "samson library : Task Manager");
@@ -50,7 +52,7 @@ public:
     data_model             = LOG_REGISTER_CHANNEL("samson::DM", "samson library : Data model");
     rest                   = LOG_REGISTER_CHANNEL("samson::R", "samson library : Rest interface");
 
-    delilah                = LOG_REGISTER_CHANNEL("delilah", "delilah library : General channel");
+    delilah                = LOG_REGISTER_CHANNEL("delilah::G", "delilah library : General channel");
   }
 
   // Channels definied in this library
@@ -70,7 +72,8 @@ public:
   int reduce_operation;
   int kv_file;
   int rest;
-
+  int in_messages;
+  int out_messages;
   int delilah;
 
 private:

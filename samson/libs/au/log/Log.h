@@ -16,17 +16,17 @@
 
 #include <fcntl.h>
 
-#include "au/string/Pattern.h"
-#include "au/string/StringUtilities.h"
 #include "au/Status.h"
 #include "au/TemporalBuffer.h"
-#include "au/string/Tokenizer.h"
 #include "au/containers/SharedPointer.h"
 #include "au/containers/StringVector.h"
 #include "au/containers/vector.h"
 #include "au/log/LogCommon.h"
 #include "au/network/FileDescriptor.h"
+#include "au/string/Pattern.h"
 #include "au/string/StringUtilities.h"
+#include "au/string/StringUtilities.h"
+#include "au/string/Tokenizer.h"
 #include "au/tables/Table.h"
 #include "au/tables/Table.h"
 
@@ -44,6 +44,8 @@ namespace au {
  *
  * pid         Number of process that generated this
  * tid         Identifier of the thread
+ *
+ * node Name of the node ( assigned with set_node(X) ) to identify the node in a distributed system
  *
  * DATE        Date and time formats
  * date
@@ -74,17 +76,20 @@ struct LogData {
 
 // Entry in the log
 class Log {
-  
 public:
 
-  Log() {}
-  ~Log() {}
+  Log() {
+  }
+
+  ~Log() {
+  }
 
   // Set methods
   void Set(const std::string& field_name, const std::string& field_value);
   template< typename T>
   inline void Set(const std::string& field_name, const T& t) {
     std::ostringstream output;
+
     output << t;
     Set(field_name, output.str());
   }
@@ -109,18 +114,18 @@ public:
   // Match agains a particuar regular expression
   bool Match(Pattern& pattern) const;
   bool Match(SimplePattern& pattern) const;
-  
+
   // Spetial log to define mark of new session
   void SetNewSession();
   bool IsNewSession() const;
-  
+
   // Fancy functions to get the color of this log on screen
   au::Color GetColor();
 
   // transform level in letter
-  static int GetLogLevel( const std::string& str_log_level );
-  static std::string GetLogLevel( int log_level );
-  
+  static int GetLogLevel(const std::string& str_log_level);
+  static std::string GetLogLevel(int log_level);
+
 private:
 
   // Methods to serialize string-kind fields
@@ -132,10 +137,9 @@ private:
   std::map<std::string, std::string> fields_;
 };
 
-  std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error);
+std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error);
 au::SharedPointer<au::tables::Table> getTableOfFields();
 typedef au::SharedPointer<Log>   LogPointer;
-
 }
 
 #endif  // ifndef _H_AU_LOG

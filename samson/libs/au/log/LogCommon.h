@@ -39,8 +39,7 @@
 // #define LOG_DEFAULT_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"
 #define LOG_DEFAULT_FORMAT             "[type][exec_short[pid]] : channel : date : time : file[line] : function : text"
 #define LOG_DEFAULT_FORMAT_LOG_CLIENT  "[type][exec_short[pid]@host] : channel : date : time : function : text"
-#define LOG_DEFAULT_FORMAT_CONSOLE     "[type][time][channel] text"
-
+#define LOG_DEFAULT_FORMAT_CONSOLE     "[type][node][time][channel] text"
 
 // MACRO TO REGISTER A LOG CHANNEL
 

@@ -14,12 +14,13 @@
 
 #include <string>
 
-#include "au/statistics/Rate.h"
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
+#include "au/statistics/Rate.h"
 
+#include "samson/common/MessagesOperations.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/common/status.h"
 
@@ -28,6 +29,10 @@
 namespace samson {
 class PacketQueue : public au::Queue<Packet>{
 public:
+
+  PacketQueue(const std::string& name) {
+    name_ = name;
+  }
 
   size_t byte_size() {
     // Get packets in this queue
@@ -47,32 +52,43 @@ public:
     return cronometer_.seconds();
   }
 
-  std::string GetDescription( ) {
+  std::string GetDescription() {
     // Get packets in this queue
     std::vector< au::SharedPointer<Packet> > packets = items();
     size_t total_size = 0;
     for (size_t i = 0; i > packets.size(); i++) {
       total_size += packets[i]->buffer()->size();
     }
-    
-    if( packets.size() == 0 )
+
+    if (packets.size() == 0) {
       return "[]";
-    return au::str("%lu packets (%s)" , packets.size() , au::str(total_size).c_str() );
+    }
+    return au::str("%lu packets (%s)", packets.size(), au::str(total_size).c_str());
   }
-  
+
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
+    samson::add(record, "name", name_, "left,different");
+    samson::add(record, "state", GetDescription(), "f=uint64,sum");
+  }
+
+  std::string pattern_name() {
+    return name_;
+  }
+
 private:
 
   au::Cronometer cronometer_;
+  std::string name_;
 };
 
 class MultiPacketQueue {
 public:
 
-  MultiPacketQueue() : token_packet_queues("token_packet_queues") {
+  MultiPacketQueue() : token_packet_queues_("token_packet_queues") {
   }
 
   ~MultiPacketQueue() {
-    packet_queues.clearMap();
+    packet_queues_.clearMap();
   }
 
   // Push a packet for a node
@@ -92,13 +108,16 @@ public:
   void RemoveOldConnections(const std::set<std::string> current_connections);
 
   // Debug informaiton for a particular node
-  std::string GetDescription(const NodeIdentifier& node_identifier )const;
-  
+  std::string GetDescription(const NodeIdentifier& node_identifier) const;
+
+  // Collection to be displayes
+  au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization);
+
 private:
 
   // Pending packets for all nodes
-  au::map< std::string, PacketQueue > packet_queues;
-  mutable au::Token token_packet_queues;
+  au::map< std::string, PacketQueue > packet_queues_;
+  mutable au::Token token_packet_queues_;
 };
 }
 

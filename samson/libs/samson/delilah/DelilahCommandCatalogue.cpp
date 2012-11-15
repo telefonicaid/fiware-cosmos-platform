@@ -22,11 +22,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("show_cluster_assignation", "setup", "Show cluster assignment",
       "Get information about what hash-groups are assigned to what workers\n");
 
-  add("ls_connections", "management", "Show status of all connections in the cluster");
-  add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
-  add_tag("ls_connections", "send_to_all_workers");
-
-  add("ls_local_connections", "management",
+  add("ls_local_connections", "delilah",
       "Show status of all connections of this delilah ( typically to all workers of the SAMSON cluster )");
 
   // ------------------------------------------------------------------
@@ -118,6 +114,15 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // ------------------------------------------------------------------
   // Debug
   // ------------------------------------------------------------------
+
+  add("ls_connections", "debug", "Show status of all connections in the cluster");
+  add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
+  add_tag("ls_connections", "send_to_all_workers");
+
+  add("ls_network_queues", "debug", "Show status of all connections in the cluster");
+  add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
+  add_tag("ls_connections", "send_to_all_workers");
+
 
   add("threads", "debug", "Show current threads in this delilah");
 

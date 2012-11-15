@@ -49,6 +49,11 @@ public:
   void Stop();  // Stop the loggin system
   void StopAndExit(int c);  // Stop and exit
 
+  // Set name of this node
+  void set_node(const std::string& node) {
+    node_ = node;
+  }
+
   // Inline method to quickly check if a log has to be generated
   inline bool IsLogAccepted(int channel, int level) {
     return main_log_channel_filter_.IsLogAccepted(channel, level);
@@ -119,6 +124,9 @@ private:
 
   // Name of the main executalbe
   std::string exec_;
+
+  // Name of this node in a distirbuted environment
+  std::string node_;
 
   // Set of Plugins for logs
   au::map<std::string, LogCentralPlugin> plugins_;

@@ -563,6 +563,16 @@ void WorkerCommand::Run() {
     return;
   }
 
+  if (main_command == "ls_network_queues") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->network()->GetQueuesCollection(visualization);
+    if (c != NULL) {
+      c->set_title(command_);
+      collections_.push_back(c);
+    }
+    FinishWorkerTask();
+    return;
+  }
+
   if (main_command == "ps_workers") {
     au::SharedPointer<gpb::Collection> c =
       samson_worker_->workerCommandManager()->GetCollection(visualization);

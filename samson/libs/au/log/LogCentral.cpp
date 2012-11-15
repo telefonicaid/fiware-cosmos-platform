@@ -39,6 +39,8 @@ LogCentral::LogCentral() {
   fd_read_logs_ = NULL;
   fd_write_logs_ = NULL;
 
+  node_ = "Unknown";  // No default name for this
+
   quit_ = false;
 }
 
@@ -172,6 +174,7 @@ void LogCentral::Run() {
     int channel = log->log_data().channel;
     log->Set("channel_name", log_channels_.channel_name(channel));
     log->Set("exec",  exec_);
+    log->Set("node",  node_);
 
     // Total count of logs
     log_counter_.Process(log);

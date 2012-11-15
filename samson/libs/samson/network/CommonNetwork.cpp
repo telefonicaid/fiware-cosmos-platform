@@ -341,10 +341,6 @@ au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
   return table;
 }
 
-au::SharedPointer<gpb::Collection> CommonNetwork::GetConnectionsCollection(const Visualization& visualization) {
-  return NetworkManager::GetConnectionsCollection(visualization);
-}
-
 size_t CommonNetwork::get_rate_in() {
   return NetworkManager::get_rate_in();
 }

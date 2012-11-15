@@ -120,9 +120,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_tag("ls_connections", "send_to_all_workers");
 
   add("ls_network_queues", "debug", "Show status of all connections in the cluster");
-  add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
-  add_tag("ls_connections", "send_to_all_workers");
-
+  add_uint64_option("ls_network_queues", "-w", 0, "Specify a particular worker");
+  add_tag("ls_network_queues", "send_to_all_workers");
 
   add("threads", "debug", "Show current threads in this delilah");
 

@@ -68,7 +68,7 @@ public:
 
   void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
     samson::add(record, "name", name_, "left,different");
-    samson::add(record, "state", GetDescription(), "f=uint64,sum");
+    samson::add(record, "state", GetDescription(), "different");
   }
 
   std::string pattern_name() {

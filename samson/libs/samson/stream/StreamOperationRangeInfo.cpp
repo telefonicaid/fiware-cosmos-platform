@@ -583,10 +583,10 @@ void StreamOperationRangeInfo::fill(samson::gpb::CollectionRecord *record, const
 
   ::samson::add(record, "inputs", state_input_queues_, "different");
   ::samson::add(record, "time", au::str_time(last_task_cronometer_.seconds()), "different");
-  ::samson::add(record, "priority rank", priority_rank(), "f=uint64,different");
+  ::samson::add(record, "priority", priority_rank(), "f=uint64,different");
 
   if (worker_task_ != NULL) {
-    ::samson::add(record, "tasks", worker_task_->str_short(), "different");
+    ::samson::add(record, "tasks", worker_task_->id(), "different");
   } else {
     ::samson::add(record, "tasks", "none", "different");
   }

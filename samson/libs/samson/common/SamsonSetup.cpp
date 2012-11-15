@@ -143,7 +143,7 @@ std::string SamsonSetup::block_filename(size_t block_id) const {
   return samson_working_ + "/blocks/block_" + au::str("%d_%d", b.uint32[0], b.uint32[1]);
 }
 
-bool isNumber(std::string txt) {
+bool isNumber(const std::string& txt) {
   for (size_t i = 0; i < txt.length(); i++) {
     if (!au::IsCharInRange(txt[i], 48, 57)) {
       return false;

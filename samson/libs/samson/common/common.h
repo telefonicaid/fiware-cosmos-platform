@@ -21,6 +21,8 @@
 #define KVFILE_MAX_KV_SIZE    64 * 1024 * 1024                                            // Max size for an individual key-value
 #define KVFILE_NUM_HASHGROUPS 64 * 1024                                                   // Number of hash-groups
 
+#define SIZE_T_UNDEFINED      static_cast<size_t>(-1)
+
 namespace samson {
 // Unsigned types with different bits lengths
 

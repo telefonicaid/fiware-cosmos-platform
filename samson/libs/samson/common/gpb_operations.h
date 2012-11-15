@@ -31,6 +31,7 @@ namespace gpb {
 typedef au::SharedPointer<Collection>   CollectionPointer;
 
 // Get all blocks in a datamodel
+void AddStateBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std::set<size_t>& block_ids);
 void AddBlockIds(gpb::Data *data, std::set<size_t>& block_ids);
 void AddBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std::set<size_t>& block_ids);
 FullKVInfo GetFullKVInfo(gpb::Data *data);
@@ -108,6 +109,8 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
 DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
                                            , const std::string& queue
                                            , const std::vector<samson::KVRange>& ranges);
+
+void limit_last_commits(gpb::Data *data);
 }
 }   // End of namespace samson::gpb
 

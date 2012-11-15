@@ -50,11 +50,6 @@ public:
   virtual ~DataModel() {
   }
 
-  // NodeCommiter<gpb::DataModel>
-  virtual void NotificationNewModel(int previous_version
-                                    , au::SharedPointer<gpb::DataModel> previous_data
-                                    , int version
-                                    , au::SharedPointer<gpb::DataModel> new_data);
   virtual void Init(au::SharedPointer<gpb::DataModel> c);
   virtual void PerformCommit(au::SharedPointer<gpb::DataModel>, std::string command, int version, au::ErrorManager&);
 
@@ -68,6 +63,7 @@ public:
   au::SharedPointer<gpb::Collection> GetCollectionForStreamOperations(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetCollectionForBatchOperations(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetCollectionForQueueConnections(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForReplication(const Visualization& visualization);
 
   // Get list of all block_ids in the current data ( previous, candidate and current )
   std::set<size_t> GetAllBlockIds();
@@ -76,6 +72,7 @@ public:
   std::set<size_t> GetMyBlockIdsForPreviousAndCandidateDataModel(const std::vector<KVRange>& ranges);
   std::set<size_t> GetMyBlockIdsForPreviousDataModel(const std::vector<KVRange>& ranges);
   std::set<size_t> GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges);
+  std::set<size_t> GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges);
   size_t GetLastCommitIdForPreviousDataModel();
   size_t GetLastCommitIdForCandidateDataModel();
 
@@ -87,12 +84,9 @@ public:
 
   // Get list of the last commits
   au::SharedPointer<gpb::Collection> GetLastCommitsCollection(const Visualization& visualization);
-
-
+  au::SharedPointer<gpb::Collection> GetLastCommitsDebugCollection(const Visualization& visualization);
 
 private:
-
-
 
   void ProcessCommand(gpb::Data *data, const std::string command, au::ErrorManager& error) {
     au::SharedPointer<au::CommandLine> cmd = GetCommandLine();
@@ -159,6 +153,7 @@ private:
   static const std::string kRm;
   static const std::string kRmQueueConnection;
   static const std::string kSetQueueProperty;
+  static const std::string kSetReplicationFactor;
   static const std::string kSetStreamOperationProperty;
   static const std::string kUnsetStreamOperationProperty;
   static const std::string kFreezeDataModel;

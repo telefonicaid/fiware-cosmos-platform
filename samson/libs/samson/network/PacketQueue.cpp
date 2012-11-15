@@ -43,6 +43,16 @@ au::SharedPointer<Packet> MultiPacketQueue::Front(const NodeIdentifier& node_ide
   // Get next packet
   return paquet_queue->Front();
 }
+  
+  std::string MultiPacketQueue::GetDescription(const NodeIdentifier& node_identifier ) const{
+    au::TokenTaker tt(&token_packet_queues);
+    std::string name = node_identifier.getCodeName();
+    PacketQueue *paquet_queue = packet_queues.findInMap(name);
+    if( !paquet_queue )
+      return "[No queue]";
+    return paquet_queue->GetDescription();
+  }
+  
 
 void MultiPacketQueue::Pop(const NodeIdentifier& node_identifier) {
   au::TokenTaker tt(&token_packet_queues);

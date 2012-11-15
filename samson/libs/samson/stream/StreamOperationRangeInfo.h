@@ -151,10 +151,10 @@ private:
    * \brief Set error and reset chronometer to count how much time since last error
    */
   void SetError(const std::string error_message) {
-    state_ = "Error: " + error_message;
-    short_state_ = "[E]";
     error_.set(error_message);
     cronometer_error_.Reset();
+    state_ = au::str("Error [%s]: %s", cronometer_error_.str().c_str(), error_.GetMessage().c_str());
+    short_state_ = "[E]";
   }
 
   /**

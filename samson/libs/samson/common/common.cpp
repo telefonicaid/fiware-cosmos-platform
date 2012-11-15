@@ -30,7 +30,7 @@ au::SharedPointer<au::tables::Table> GetTableFromCollection(au::SharedPointer<gp
     return au::SharedPointer<au::tables::Table>(NULL);
   }
 
-  for (int i = 0; i < collection->record(0).item_size(); i++) {
+  for (int i = 0; i < collection->record(0).item_size(); ++i) {
     std::string name = collection->record(0).item(i).name();
     std::string format = collection->record(0).item(i).format();
 
@@ -49,7 +49,7 @@ au::SharedPointer<au::tables::Table> GetTableFromCollection(au::SharedPointer<gp
   std::string title = collection->title();
   table->setTitle(title);
 
-  for (int r = 0; r < collection->record_size(); r++) {
+  for (int r = 0; r < collection->record_size(); ++r) {
     au::StringVector values;
     for (int i = 0; i < collection->record(r).item_size(); i++) {
       values.push_back(collection->record(r).item(i).value());

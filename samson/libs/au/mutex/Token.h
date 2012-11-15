@@ -34,6 +34,10 @@
 #include <sys/types.h>
 
 namespace au {
+
+  // Handy method to identify threads with strings
+  std::string GetThreadId(pthread_t t);
+  
 class Token {
 public:
 
@@ -41,8 +45,8 @@ public:
   ~Token();
 
   std::string name() const { return name_; }
-  // Check if I am retaining this token
-  bool IsRetainedByMe() const;
+
+  bool IsRetainedByMe() const;  // Check if I am retaining this token
 
 private:
 
@@ -55,6 +59,7 @@ private:
   void WakeUpAll();
   void WakeUp();
 
+
   pthread_mutex_t lock_;   // Mutex to protect this token
   pthread_cond_t block_;   // Condition to block threads that call stop
 
@@ -63,15 +68,17 @@ private:
   // Mechanism to discover if you have locked this mutex
   // Allowing multiple Retains from the same thread
 
-  // syscall(SYS_gettid) is not supported on mac, so we come back to pthread_t
-  // Specific implementation for solaris may be necessary.
-  pthread_t token_owner_thread_t_;
+  volatile pthread_t token_owner_thread_t_;
   volatile bool locked_;
   volatile int counter_;   // Number of times this token is taken
-
-  // Method to get a unique identifier for the threads
-  size_t GetMyThreadId();
+  
+  // syscall(SYS_gettid) is not supported on mac, so we come back to pthread_t
+  // Specific implementation for solaris may be necessary.
+  
+  std::string str_debug() const;
+  
 };
+
 }
 
 #endif  // ifndef _H_AU_TOCKEN

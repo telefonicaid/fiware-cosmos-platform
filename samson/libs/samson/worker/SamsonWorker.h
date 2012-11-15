@@ -27,6 +27,7 @@
 #include "au/containers/SharedPointer.h"
 #include "au/network/RESTService.h"
 #include "au/network/RESTServiceCommand.h"
+#include "au/string/StringUtilities.h"
 #include "zoo/Connection.h"
 
 #include "engine/EngineElement.h"               // samson::EngineElement
@@ -44,15 +45,19 @@
 #include "samson/stream/WorkerTaskManager.h"
 #include "samson/stream/WorkerTaskManager.h"     // samson::stream::WorkerTaskManager
 #include "samson/worker/DataModel.h"
+#include "samson/worker/GlobalBlockSortInfo.h"
 #include "samson/worker/SamsonWorkerController.h"
 #include "samson/worker/SamsonWorkerRest.h"
 #include "samson/worker/SamsonWorkerSamples.h"
 #include "samson/worker/WorkerBlockManager.h"
 #include "samson/worker/WorkerCommandManager.h"
 
-/*
+/**
  *
  * SamsonWorker
+ *
+ * \brief Main class in a node of a SAMSON worker cluster
+ *
  *
  * Status
  *
@@ -64,16 +69,15 @@
  */
 
 namespace samson {
+// Forward declarations
 class NetworkInterface;
 class Info;
 class DistributionOperation;
-
+class PushOperation;
+class SamsonWorkerRest;
 namespace stream {
 class WorkerTaskManager;
 }
-
-class PushOperation;
-class SamsonWorkerRest;
 
 class SamsonWorker : public engine::NotificationListener, public au::Console {
 public:
@@ -92,7 +96,7 @@ public:
 
   // au::Console ( debug mode with fg )
   void autoComplete(au::ConsoleAutoComplete *info);
-  void evalCommand(std::string command);
+  void evalCommand(const std::string& command);
   std::string getPrompt();
 
   // Function to get information about current status
@@ -125,6 +129,9 @@ public:
   int port() {
     return port_;
   }
+
+  // Get complete information about blocks in the system for this worker
+  au::SharedPointer<GlobalBlockSortInfo> GetGlobalBlockSortInfo();
 
 private:
 

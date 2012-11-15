@@ -58,11 +58,11 @@ void KVHeader::InitForTxt(size_t size) {
 }
 
 bool KVHeader::IsTxt() {
-  return KVFormat( keyFormat , valueFormat).isEqual(KVFormat("txt", "txt"));
+  return KVFormat(keyFormat, valueFormat).isEqual(KVFormat("txt", "txt"));
 }
 
 bool KVHeader::IsModule() {
-  return KVFormat( keyFormat , valueFormat).isEqual(KVFormat("module", "module"));
+  return KVFormat(keyFormat, valueFormat).isEqual(KVFormat("module", "module"));
 }
 
 bool KVHeader::CheckTotalSize(size_t total_size) {
@@ -74,11 +74,10 @@ void KVHeader::SetKVFormat(KVFormat format) {
   snprintf(valueFormat, 100, "%s", format.valueFormat.c_str());
 }
 
-
 // Format operations
 // ---------------------------------------------------------------
 
-KVFormat KVHeader::GetKVFormat() {
+KVFormat KVHeader::GetKVFormat() const {
   return KVFormat(keyFormat, valueFormat);
 }
 
@@ -95,5 +94,4 @@ std::string KVHeader::str() const {
   output << "KVHeader: " << info.str() << "(" << range.str() << ") (" << keyFormat << "-" << valueFormat << ")";
   return output.str();
 }
-
 }

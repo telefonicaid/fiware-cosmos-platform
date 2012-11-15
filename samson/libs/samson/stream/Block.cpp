@@ -51,12 +51,6 @@ Block::Block(size_t block_id, engine::BufferPointer buffer) :
   // No lookup list by default
   lookupList = NULL;
 
-  // First idea of sort information
-  update_sort_information();
-
-  // Temporal flag
-  temporal_ = true;       // By default we consider blocks are temporal
-
   LOG_M(logs.block_manager, ("Block created from buffer: %s", str().c_str()));
 }
 
@@ -73,12 +67,6 @@ Block::Block(size_t block_id, KVHeader *_header) :
 
   // No llokup list by default
   lookupList = NULL;
-
-  // First idea of sort information
-  update_sort_information();
-
-  // reading from file, we consider blocks non-temporal
-  temporal_ = false;
 
   // Put cronometer to 1 hour before to remove blocks not included in the data model rigth now
   cronometer.AddOffset(-24 * 60 * 60);
@@ -101,9 +89,9 @@ au::SharedPointer<KVFile> Block::getKVFile(au::ErrorManager& error, bool retain)
     return file_;
   }
 
-  if (buffer_ == NULL) {   // Not possible to compute the KVFile
+  if (buffer_ == NULL) {       // Not possible to compute the KVFile
     error.set(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str()));
-    return file_;     // Return NULL;
+    return file_;         // Return NULL;
   }
 
   if (retain) {
@@ -115,31 +103,11 @@ au::SharedPointer<KVFile> Block::getKVFile(au::ErrorManager& error, bool retain)
   }
 }
 
-Block::BlockState Block::state() {
+Block::BlockState Block::state() const {
   return state_;
 }
 
-void Block::update_sort_information() {
-  min_task_id_ = static_cast<size_t>(-1);
-  max_priority_ = 0;
-
-  au::set<BlockList>::iterator it;
-  for (it = block_lists_.begin(); it != block_lists_.end(); it++) {
-    BlockList *block_list = *it;
-
-    size_t task_id = block_list->task_id();
-    int priority = block_list->priority();
-
-    if ((min_task_id_ == static_cast<size_t>(-1)) || (min_task_id_ > task_id)) {
-      min_task_id_ = task_id;
-    }
-    if (priority > max_priority_) {
-      max_priority_ = priority;
-    }
-  }
-}
-
-std::string Block::file_name() {
+std::string Block::file_name() const {
   return au::Singleton<SamsonSetup>::shared()->block_filename(block_id_);
 }
 
@@ -244,19 +212,19 @@ bool Block::canBeRemoved() {
   return true;
 }
 
-bool Block::is_content_in_memory() {
+bool Block::is_content_in_memory() const {
   return ((state_ == ready) || (state_ == on_memory) || (state_ == writing));
 }
 
-bool Block::is_content_in_disk() {
+bool Block::is_content_in_disk() const {
   return ((state_ == ready) || (state_ == on_disk) || (state_ == reading));
 }
 
-size_t Block::getSize() {
+size_t Block::getSize() const {
   return header.info.size + sizeof(KVHeader);
 }
 
-size_t Block::getSizeOnMemory() {
+size_t Block::getSizeOnMemory() const {
   if (is_content_in_memory()) {
     return getSize();
   } else {
@@ -264,7 +232,7 @@ size_t Block::getSizeOnMemory() {
   }
 }
 
-size_t Block::getSizeOnDisk() {
+size_t Block::getSizeOnDisk() const {
   if (is_content_in_disk()) {
     return getSize();
   } else {
@@ -272,23 +240,23 @@ size_t Block::getSizeOnDisk() {
   }
 }
 
-KVRange Block::getKVRange() {
+KVRange Block::getKVRange() const {
   return header.range;
 }
 
-KVInfo Block::getKVInfo() {
+KVInfo Block::getKVInfo() const {
   return header.info;
 }
 
-size_t Block::block_id() {
+size_t Block::block_id() const {
   return block_id_;
 }
 
-KVFormat Block::getKVFormat() {
+KVFormat Block::getKVFormat() const {
   return header.GetKVFormat();
 }
 
-size_t Block::getTime() {
+size_t Block::getTime() const {
   return header.time;
 }
 
@@ -299,6 +267,13 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
 
   samson::add(record, "tsize", accumulated_size, "f=uint64,sum");
 
+  if (visualization.get_flag("-info")) {
+    samson::add(record, "state", str_state(), "left,different");
+    samson::add(record, "info", info_state_, "left,different");
+    return;
+  }
+
+  // Normal flags
   if (file_ == NULL) {
     samson::add(record, "Aux", "-", "f=uint64,sum");
   } else {
@@ -316,24 +291,30 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
 
   samson::add(record, "locked", is_content_locked_in_memory() ? "yes" : "no", "left,different");
 
-  // Next task
-  if (min_task_id_ == (size_t)(-1)) {
-    samson::add(record, "next task", "none", "left,different");
-  } else {
-    samson::add(record, "next task", min_task_id_, "left,different");       // Priority level
-  }
+  samson::add(record, "info", info_state_, "left,different");
 
-  samson::add(record, "priority", max_priority_, "left,different");
 
-  // Lists
-  samson::add(record, "lists", block_lists_.size(), "left,different");
+  /*
+   * // Next task
+   * if (min_task_id_ == (size_t)(-1)) {
+   * samson::add(record, "next task", "none", "left,different");
+   * } else {
+   * samson::add(record, "next task", min_task_id_, "left,different");       // Priority level
+   * }
+   *
+   * samson::add(record, "priority", max_priority_, "left,different");
+   *
+   * // Lists
+   * samson::add(record, "lists", block_lists_.size(), "left,different");
+   *
+   */
 }
 
 // au::Token token_lookupList;
 // BlockLookupList* lookupList;
 
 void Block::lookup(const char *key, au::SharedPointer<au::network::RESTServiceCommand> command) {
-  au::TokenTaker tt(&token_lookupList);       // Mutex protection
+  au::TokenTaker tt(&token_lookupList);           // Mutex protection
 
   if (!lookupList) {
     lookupList = new BlockLookupList(this);
@@ -351,7 +332,7 @@ void Block::lookup(const char *key, au::SharedPointer<au::network::RESTServiceCo
   lookupList->lookup(key, command);
 }
 
-std::string Block::str_state() {
+std::string Block::str_state() const {
   std::ostringstream output;
 
   // Memory status
@@ -362,7 +343,7 @@ std::string Block::str_state() {
   } else if (state_ == reading) {
     output << "R";
   } else {
-    output << " ";       // Disk status
+    output << " ";           // Disk status
   }
   if (is_content_in_disk()) {
     output << "D";
@@ -375,67 +356,38 @@ std::string Block::str_state() {
 }
 
 // Get the header
-KVHeader Block::getHeader() {
+KVHeader Block::getHeader() const {
   return header;
 }
 
-bool Block::is_content_locked_in_memory() {
+bool Block::is_content_locked_in_memory() const {
   return (block_lists_lock_.size() > 0);
 }
 
 void Block::add_block_list(BlockList *list) {
   block_lists_.insert(list);
-  update_sort_information();
 }
 
 void Block::remove_block_list(BlockList *list) {
   // Remove from all the lists
   block_lists_.erase(list);
   block_lists_lock_.erase(list);
-  update_sort_information();
 }
 
 // lock content of this block in memory
 void Block::lock_content_in_memory(BlockList *list) {
   block_lists_lock_.insert(list);
-  update_sort_information();
 }
 
 void Block::unlock_content_in_memory(BlockList *list) {
   block_lists_lock_.erase(list);
-  update_sort_information();
-}
-
-// Function to compare 2 blocks
-bool Block::compare(Block *b1, Block *b2) {
-  size_t min_task_id_1 = b1->min_task_id_;
-  size_t min_task_id_2 = b2->min_task_id_;
-
-  if (min_task_id_1 == min_task_id_2) {
-    // Comapre by priority
-    int p1 = b1->max_priority_;
-    int p2 = b2->max_priority_;
-
-    if (p1 == p2) {
-      // Sort by time
-      double t1 = b1->cronometer.seconds();
-      double t2 = b2->cronometer.seconds();
-
-      return (t1 < t2);
-    }
-
-    return p1 > p2;
-  } else {
-    bool ans = (min_task_id_1 < min_task_id_2);
-    return ans;
-  }
 }
 
 engine::BufferPointer Block::buffer() {
   return buffer_;
 }
 
-size_t Block::creation_time() {
+size_t Block::creation_time() const {
   return cronometer.seconds();
 }
 }

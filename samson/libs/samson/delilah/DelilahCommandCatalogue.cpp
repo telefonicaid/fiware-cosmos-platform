@@ -91,9 +91,6 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("ls", "data", "Show a list of all data queues in the system");
   add_string_argument("ls", "pattern", "*", "Pattern of the queues to show");
-  add_bool_option("ls", "-rates", "Show information about data rate in queues (data movement)");
-  add_bool_option("ls", "-blocks", "Show information about blocks contained at each queue");
-  add_bool_option("ls", "-properties", "Show information about properties at each queue");
   add_bool_option("ls", "-a", "Show hidden queues as well ( used internally by the platform )");
   add_string_option("ls", "-group", "", "Group results by a particular column");
 
@@ -128,22 +125,27 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_string_argument("ls_blocks", "pattern", "*", "Pattern to find specific blocks");
   add_uint64_option("ls_blocks", "-w", static_cast<size_t>(-1), "Specify a worker to request the list of blocks");
   add_tag("ls_blocks", "send_to_all_workers");
+  add_bool_option("ls_blocks", "-info", "Show more information about priority of this block");
 
   add("ls_queue_blocks", "debug", "Show detailed list of the blocks included in every queue");
+  add_string_argument("ls_queue_blocks", "pattern", "*", "Pattern to find specific queues");
   add_bool_option("ls_queue_blocks", "-a", "Show hiden queues as well ( used internally by the platform )");
 
   add("ls_buffers", "debug", "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool");
+  add_uint64_option("ls_buffers", "-w", 0, "Specify a particular worker");
   add_tag("ls_buffers", "send_to_all_workers");
 
   add("ls_block_requests", "debug", "Show current block requests operations in SAMSON nodes");
+  add_string_argument("ls_block_requests", "pattern", "*", "Select pattern for blocks");
   add_tag("ls_block_requests", "send_to_all_workers");
 
   add("ls_block_defrags", "debug", "Show current block defrags operations in all SAMSON nodes");
   add_tag("ls_block_defrags", "send_to_all_workers");
 
+  add("ls_last_commits", "debug", "Show last commits on data model");
 
-  add("ls_last_data_commits", "debug", "Show last 100 commits on data model.");
-  add_tag("ls_last_data_commits", "send_to_all_workers");
+  add("ls_last_commits_debug", "debug", "Show last commits trials at all workers on data model.");
+  add_tag("ls_last_commits_debug", "send_to_all_workers");
 
   add("ls_last_tasks", "debug", "Show last 100 tasks scheduled in workers");
   add_bool_option("ls_last_tasks", "-times", "Show times spent by tasks");
@@ -158,9 +160,14 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("data_model_cancel_freeze", "debug", "Cancel candidate data model");
   add("data_model_recover", "debug", "Show frozen and current data model status");
 
-
   add("ls_kv_ranges", "debug", "Show a list of current KVRanges in this SAMSON cluster");
 
+  add("set_replication_factor", "debug", "Show a list of current KVRanges in this SAMSON cluster");
+  add_mandatory_uint64_argument("set_replication_factor", "factor", "Number of times each block is present in cluster");
+  add("get_replication_factor", "debug", "Show a list of current KVRanges in this SAMSON cluster");
+
+
+  // ------------------------------------------------------------------
   // MODULES
   // ------------------------------------------------------------------
 
@@ -200,13 +207,12 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_tag("ps_stream_operations", "send_to_all_workers");
 
   add("ps_stream_operations_ranges", "stream", "Show a detailed list of a stream operation (for each range)");
-  add_mandatory_string_argument("ps_stream_operations_ranges", "pattern", "Name of the stream operation");
+  add_string_argument("ps_stream_operations_ranges", "pattern", "*", "Name of the stream operation");
   add_bool_option("ps_stream_operations_ranges", "-state",
                   "Show planning state ( paused, error, ready for scheduling...)");
   add_bool_option("ps_stream_operations_ranges", "-tasks", "Show tasks associated to stream_operations");
   add_bool_option("ps_stream_operations_ranges", "-properties", "Information about properties of each stream opertion");
   add_bool_option("ps_stream_operations_ranges", "-data", "Show input and output data processed of each operation");
-  add_bool_option("ps_stream_operations_ranges", "-rates", "Show input and output data rates of each operation");
   add_uint64_option("ps_stream_operations_ranges", "-w", static_cast<size_t>(-1), "Selected worker");
   add_tag("ps_stream_operations_ranges", "send_to_all_workers");
 

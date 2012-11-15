@@ -47,6 +47,19 @@ public:
     return cronometer_.seconds();
   }
 
+  std::string GetDescription( ) {
+    // Get packets in this queue
+    std::vector< au::SharedPointer<Packet> > packets = items();
+    size_t total_size = 0;
+    for (size_t i = 0; i > packets.size(); i++) {
+      total_size += packets[i]->buffer()->size();
+    }
+    
+    if( packets.size() == 0 )
+      return "[]";
+    return au::str("%lu packets (%s)" , packets.size() , au::str(total_size).c_str() );
+  }
+  
 private:
 
   au::Cronometer cronometer_;
@@ -78,11 +91,14 @@ public:
   // Check old messages to be removes
   void RemoveOldConnections(const std::set<std::string> current_connections);
 
+  // Debug informaiton for a particular node
+  std::string GetDescription(const NodeIdentifier& node_identifier )const;
+  
 private:
 
   // Pending packets for all nodes
   au::map< std::string, PacketQueue > packet_queues;
-  au::Token token_packet_queues;
+  mutable au::Token token_packet_queues;
 };
 }
 

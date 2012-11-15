@@ -17,43 +17,37 @@
 #include "au/log/LogMain.h"
 
 namespace au {
-  
-  class AULogChannels
-  {
-    
-  public:
-    
-    AULogChannels()
-    {
-      // By default, channels are not registered
-      registered_ = false;
-      
-      // Default to -1 to do not emit if not registered
-      zoo = -1;
-      
-    };
+class AULogChannels {
+public:
 
-    void RegisterChannels()
-    {
-      if( registered_ )
-        return;
-      registered_ = true;
-      zoo = LOG_REGISTER_CHANNEL( "au::ZOO" , "au library : Zookeeper wrapper" );
-      gpb = LOG_REGISTER_CHANNEL( "au::GPB" , "au library : Google Protocol Buffers wrapper");
-    }
-    
-    // Channels definied in this library
-    int zoo;
-    int gpb;
+  AULogChannels() {
+    // By default, channels are not registered
+    registered_ = false;
 
-  private:
-    bool registered_;
-    
+    // Default to -1 to do not emit if not registered
+    zoo = -1;
   };
 
-  // Extern variable to logeverything
-  extern AULogChannels logs;
-  
+  void RegisterChannels() {
+    if (registered_) {
+      return;
+    }
+    registered_ = true;
+    zoo  = LOG_REGISTER_CHANNEL("au::ZOO", "au library : Zookeeper wrapper");
+    gpb  = LOG_REGISTER_CHANNEL("au::GPB", "au library : Google Protocol Buffers wrapper");
+    rest = LOG_REGISTER_CHANNEL("au::R", "au library : Rest interface");
+  }
+
+  // Channels definied in this library
+  int zoo;
+  int gpb;
+  int rest;
+private:
+  bool registered_;
+};
+
+// Extern variable to logeverything
+extern AULogChannels logs;
 }
 
-#endif
+#endif  // ifndef AU_LOG_H

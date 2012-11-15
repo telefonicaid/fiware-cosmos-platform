@@ -247,9 +247,7 @@ void CommonNetwork::Send(const PacketPointer& packet) {
 
   // Add more info to buffer name for debugging
   engine::BufferPointer buffer = packet->buffer();
-  if (buffer != NULL) {
-    buffer->add_to_name(au::str(" [in packet to %s]", packet->to.str().c_str()));   // Set me as from identifier
-  }
+  // Set me as from identifier
   packet->from = node_identifier_;
 
   if (packet->to == node_identifier_) {
@@ -277,7 +275,7 @@ void CommonNetwork::SendToAllWorkers(const PacketPointer& packet, std::set<size_
 
 // Receive a packet from a connection
 void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& packet) {
-  LM_T(LmtNetworkConnection, ("RECEIVED from %s: PACKET %s\n", connection->getName().c_str(), packet->str().c_str()));
+  LM_T(LmtNetworkConnection, ("RECEIVED from %s: PACKET %s\n", connection->name().c_str(), packet->str().c_str()));
 
   if (packet->msgCode == Message::Hello) {
     LM_W(("Received a hello packet once connection is identified. Ignoring..."));
@@ -374,9 +372,9 @@ std::string CommonNetwork::getClusterConnectionStr() {
   if (cluster_information_ == NULL) {
     return "Disconnected";
   } else {
-    return au::str("%d nodes / v %d",
-                   static_cast<int>(cluster_information_->workers_size()),
-                   static_cast<int>(cluster_information_->version()));
+    return au::str("Cluster v %d / %d nodes"
+                   , static_cast<int>(cluster_information_->version())
+                   , static_cast<int>(cluster_information_->workers_size()));
   }
 }
 

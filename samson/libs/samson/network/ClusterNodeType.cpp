@@ -17,9 +17,7 @@ namespace samson {
 const char *ClusterNodeType2str(ClusterNodeType type) {
   switch (type) {
     case DelilahNode: return "delilah";
-
     case WorkerNode:  return "worker";
-
     case UnknownNode: return "unknown";
   }
 

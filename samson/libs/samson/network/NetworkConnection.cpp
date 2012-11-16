@@ -110,12 +110,6 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
   // Make sure connection is close
   socket_connection_->Close();
 
-  // Wake up writing thread if necessary
-  {
-    au::TokenTaker tt(&token_);
-    tt.WakeUpAll();
-  }
-
   // Wait until both thread are gone
   au::Cronometer cronometer;
   while (true) {
@@ -125,6 +119,12 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
       }
     }
 
+    {
+      // Wake up writing thread if necessary
+      au::TokenTaker tt(&token_);
+      tt.WakeUpAll();
+    }
+    
     usleep(100000);
     if (cronometer.seconds() > 1) {
       LM_W(("Waiting for background threads of connection %s", node_identifier_.getCodeName().c_str()));

@@ -108,6 +108,14 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
       last_tasks_.pop_back();
     }
 
+    // Take statistics about process rate
+    std::string stream_operation_name = worker_task->stream_operation_name();
+    if (stream_operation_name[0] != '.') {
+      double rate = worker_task->GetInputSize() / worker_task->GetProcessTime();
+      averages_per_task_.findOrCreate(stream_operation_name)->Push(rate);
+    }
+
+
     // Mark the task as finished
     if (notification->environment().IsSet("error")) {
       std::string error = notification->environment().Get("error", "???");
@@ -215,6 +223,20 @@ void WorkerTaskManager::Reset() {
       pending_tasks_.Push(pending_task[i]);
     }
   }
+}
+
+gpb::CollectionPointer WorkerTaskManager::GetSOStatisticsCollection(const ::samson::Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("Stream Operation statistics");
+  au::map<std::string, au::Averager >::iterator it;;
+  for (it = averages_per_task_.begin(); it != averages_per_task_.end(); ++it) {
+    gpb::CollectionRecord *record = collection->add_record();
+    add(record, "Stream Operation", it->first, "different,left");
+    add(record, "Average", au::str(it->second->GetAverage(), "B/s"), "left,different");
+    add(record, "Deviation", au::str(it->second->GetDeviation(), "B/s"), "left,different");
+    add(record, "Last values", it->second->GetLastValues(), "left,different");
+  }
+  return collection;
 }
 
 au::SharedPointer<gpb::Collection> WorkerTaskManager::GetLastTasksCollection(

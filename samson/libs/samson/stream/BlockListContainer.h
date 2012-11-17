@@ -149,6 +149,45 @@ public:
     return output.str();
   }
 
+  size_t inputs_size() const {
+    int num_inputs = 0;
+
+    for (int i = 0; i < 10; i++) {
+      if (blockLists_.findInMap(au::str("input_%d", i))) {
+        num_inputs = i + 1;
+      }
+    }
+    size_t total = 0;
+    for (int i = 0; i < num_inputs; ++i) {
+      BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
+      if (block_list) {
+        BlockInfo block_info = block_list->getBlockInfo();
+        total += block_info.size;
+      }
+    }
+    return total;
+  }
+
+  size_t outputs_size() const {
+    int num_outputs = 0;
+
+    for (int i = 0; i < 10; i++) {
+      if (blockLists_.findInMap(au::str("output_%d", i))) {
+        num_outputs = i + 1;
+      }
+    }
+
+    size_t total = 0;
+    for (int i = 0; i < num_outputs; i++) {
+      BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
+      if (block_list) {
+        BlockInfo block_info = block_list->getBlockInfo();
+        total += block_info.size;
+      }
+    }
+    return total;
+  }
+
 private:
   size_t task_id_;
   std::string container_name_;

@@ -34,7 +34,7 @@ Descriptors::~Descriptors() {
   concepts_.clearMap();
 }
 
-size_t Descriptors::size() {
+size_t Descriptors::size() const {
   return concepts_.size();
 }
 
@@ -49,7 +49,7 @@ void Descriptors::Add(const std::string& txt) {
   counter->Increase();
 }
 
-std::string Descriptors::str() {
+std::string Descriptors::str()  const {
   std::ostringstream output;
 
   output << *this;

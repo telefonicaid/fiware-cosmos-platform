@@ -53,9 +53,18 @@
 #include "samson/worker/WorkerCommandManager.h"
 #include "samson/worker/WorkerOverloadAlert.h"
 
+namespace samson {
+// Forward declarations
+class NetworkInterface;
+class Info;
+class DistributionOperation;
+class PushOperation;
+class SamsonWorkerRest;
+namespace stream {
+class WorkerTaskManager;
+}
+
 /**
- *
- * SamsonWorker
  *
  * \brief Main class in a node of a SAMSON worker cluster
  *
@@ -69,18 +78,7 @@
  * cluster_ready  --> All elements in the cluster are ready
  */
 
-namespace samson {
-// Forward declarations
-class NetworkInterface;
-class Info;
-class DistributionOperation;
-class PushOperation;
-class SamsonWorkerRest;
-namespace stream {
-class WorkerTaskManager;
-}
-
-class SamsonWorker : public engine::NotificationListener, public au::Console {
+class SamsonWorker : public engine::NotificationListener, public au::console::Console {
 public:
 
   SamsonWorker(std::string zoo_host, int port, int web_port);
@@ -95,8 +93,8 @@ public:
   // Notification from the engine about finished tasks
   void notify(engine::Notification *notification);
 
-  // au::Console ( debug mode with fg )
-  void autoComplete(au::ConsoleAutoComplete *info);
+  // au::console::Console ( debug mode with fg )
+  void autoComplete(au::console::ConsoleAutoComplete *info);
   void evalCommand(const std::string& command);
   std::string getPrompt();
 

@@ -14,6 +14,27 @@
 #include "au/log/LogCentral.h"
 
 namespace au {
+void SimpleLogCounter::Process(au::LogPointer log) {
+  num_++;
+  size_ += log->SerialitzationSize();
+  types_.Add(log->Get("type"));
+  // Min-max time
+  time_t time = log->log_data().tv.tv_sec;
+  if (( min_time == (time_t)-1 ) || ( time < min_time )) {
+    min_time = time;
+  }
+  if (( max_time == (time_t)-1 ) || ( time > max_time )) {
+    max_time = time;
+  }
+}
+
+std::string SimpleLogCounter::GetTimeRange() {
+  if (min_time == (time_t)-1) {
+    return "-";
+  }
+  return au::GetTimeStampString(min_time) + " " + au::GetTimeStampString(max_time);
+}
+
 void LogCounter::Process(LogPointer log) {
   // Size of the log in bytes
   size_t size = log->SerialitzationSize();
@@ -21,7 +42,7 @@ void LogCounter::Process(LogPointer log) {
   rate_.Push(size);     // Global rate counter
 
   // Rate per channel channel
-  au::rate::Rate *rate = rates.findOrCreate(log->channel());
+  au::Rate *rate = rates.findOrCreate(log->channel());
   rate->Push(size);     // Individual rate counter
 
   // Type of messages per channel
@@ -126,7 +147,7 @@ std::string LogCounter::str_global() const {
 }
 
 std::string LogCounter::str(int c) const {
-  au::rate::Rate *rate = rates.findInMap(c);
+  au::Rate *rate = rates.findInMap(c);
 
   if (!rate) {
     return "";
@@ -139,7 +160,7 @@ std::string LogCounter::str(int c) const {
 }
 
 std::string LogCounter::str_rate(int c) const {
-  au::rate::Rate *rate = rates.findInMap(c);
+  au::Rate *rate = rates.findInMap(c);
 
   if (!rate) {
     return "";

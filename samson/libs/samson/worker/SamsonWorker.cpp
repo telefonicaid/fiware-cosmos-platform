@@ -791,7 +791,7 @@ std::string getFormatedError(std::string message, std::string& format) {
   return getFormatedElement("error", message, format);
 }
 
-void SamsonWorker::autoComplete(au::ConsoleAutoComplete *info) {
+void SamsonWorker::autoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("quit");
     info->add("exit");

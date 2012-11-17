@@ -22,7 +22,7 @@
 * DESCRIPTION
 *
 *
-
+*
 *
 * ****************************************************************************/
 
@@ -38,12 +38,12 @@
 
 #include "samson/common/ports.h"
 
-#include "au/statistics/Cronometer.h"               // au::Cro
-#include "au/statistics/Rate.h"                     // au::rate::Rate
 #include "au/containers/list.h"     // au::list
 #include "au/containers/map.h"      // au::map
 #include "au/mutex/Token.h"              // au::Token
 #include "au/mutex/TokenTaker.h"    // au::TokenTaker
+#include "au/statistics/Cronometer.h"    // au::Cro
+#include "au/statistics/Rate.h"          // au::Rate
 
 #include "engine/Buffer.h"               // engine::Buffer
 #include "engine/MemoryManager.h"   // engine::MemoryManager
@@ -66,7 +66,6 @@
 
 namespace  samson {
 class SamsonClient : public DelilahLiveDataReceiverInterface {
-
 public:
 
   // General static init ( Init engine )
@@ -104,27 +103,23 @@ public:
   // Wait until everything is finished
   void waitUntilFinish();
 
-  const au::rate::Rate& push_rate()
-  {
+  const au::Rate& push_rate() {
     return push_rate_;
   };
-  const au::rate::Rate& pop_rate()
-  {
+  const au::Rate& pop_rate() {
     return pop_rate_;
   }
 
 private:
 
   void init(std::string connection_type, const std::vector<std::string>& hosts);
-  
-  std::string connection_type_;                 // String to describe connection with SAMSON (pop, push, console, ...)
-  samson::Delilah *delilah_;                    // Delilah client
-  BufferContainer buffer_container_;            // Blocks of data received so far ( live data )
-  
-  au::rate::Rate push_rate_;                     // Statistics about rate
-  au::rate::Rate pop_rate_;                      // Statistics about rate
 
+  std::string connection_type_;            // String to describe connection with SAMSON (pop, push, console, ...)
+  samson::Delilah *delilah_;               // Delilah client
+  BufferContainer buffer_container_;       // Blocks of data received so far ( live data )
 
+  au::Rate push_rate_;                     // Statistics about rate
+  au::Rate pop_rate_;                      // Statistics about rate
 };
 }
 #endif  // ifndef _H_Samson_SamsonClient

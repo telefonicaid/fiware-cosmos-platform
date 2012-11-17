@@ -21,7 +21,7 @@
 #include <string>
 
 #include "au/console/CommandCatalogue.h"
-#include "au/console/Console.h"     // au::Console
+#include "au/console/Console.h"     // au::console::Console
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/log/LogProbe.h"
 #include "au/mutex/TokenTaker.h"    // au::TokenTake
@@ -40,7 +40,7 @@ namespace samson {
  *     Main class for the DelilahConsole program
  */
 
-class DelilahConsole : public au::Console, public Delilah {
+class DelilahConsole : public au::console::Console, public Delilah {
 public:
 
   explicit DelilahConsole(size_t delilah_id = 1);
@@ -64,12 +64,14 @@ public:
   // Console related methods
   virtual std::string getPrompt();
   virtual void evalCommand(const std::string& command);
-  virtual void autoComplete(au::ConsoleAutoComplete *info);
-  void autoCompleteOperations(au::ConsoleAutoComplete *info);
-  void autoCompleteOperations(au::ConsoleAutoComplete *info, std::string type);
-  void autoCompleteQueueForOperation(au::ConsoleAutoComplete *info, std::string operation_name, int argument_pos);
-  void autoCompleteQueueWithFormat(au::ConsoleAutoComplete *info, std::string key_format, std::string value_format);
-  void autoCompleteQueues(au::ConsoleAutoComplete *info);
+  virtual void autoComplete(au::console::ConsoleAutoComplete *info);
+  void autoCompleteOperations(au::console::ConsoleAutoComplete *info);
+  void autoCompleteOperations(au::console::ConsoleAutoComplete *info, std::string type);
+  void autoCompleteQueueForOperation(au::console::ConsoleAutoComplete *info, std::string operation_name,
+                                     int argument_pos);
+  void autoCompleteQueueWithFormat(au::console::ConsoleAutoComplete *info, std::string key_format,
+                                   std::string value_format);
+  void autoCompleteQueues(au::console::ConsoleAutoComplete *info);
   virtual void process_escape_sequence(const std::string& sequence) {
     if (sequence == "samson") {
       writeWarningOnConsole("SAMSON's cool ;)");

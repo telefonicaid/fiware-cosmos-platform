@@ -62,7 +62,6 @@ namespace au {
  * text80      Message ( limited to 80 chars )
  */
 
-extern const char *log_reseved_words[];
 
 struct LogData {
   char level;             // Level of the channel ( D , M , W , E .... )
@@ -136,6 +135,12 @@ private:
   LogData log_data_;
   std::map<std::string, std::string> fields_;
 };
+
+/**
+ * \brief List of reserved words to specify fields in the log format
+ */
+extern const char *log_reseved_words[];
+
 
 std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error);
 au::SharedPointer<au::tables::Table> getTableOfFields();

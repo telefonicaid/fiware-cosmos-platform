@@ -26,10 +26,27 @@
 #include "au/mutex/Token.h"
 
 namespace au {
+namespace console {
 class Console;
 class ConsoleAutoComplete;
 class ConsoleCommandHistory;
 
+/**
+ * \brief Full-featured console for easy interaction with user
+ *
+ * Subclasses should implement "evalCommand" to respond to a command introduced by user:
+ * virtual void evalCommand(const std::string& command);
+ *
+ * Optional method to get custom prompts:
+ * virtual std::string getPrompt();
+ *
+ * Optional method to autocomplete user command entry with "tab" key:
+ * virtual void autoComplete(ConsoleAutoComplete *info);
+ *
+ * Optional, subclasses could implement following method for escape sequence handling:
+ * virtual void process_escape_sequence(const std::string& sequence);
+ *
+ */
 
 class Console {
   // History information ( all commands introduced before )
@@ -111,6 +128,7 @@ private:
   // Get the next entry from console
   void getEntry(ConsoleEntry *entry);
 };
+}
 }
 #endif  // ifndef _AU_CONSOLE
 

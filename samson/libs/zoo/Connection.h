@@ -132,8 +132,8 @@ private:
   au::Cronometer cronometer_;
 
   // Rate measurements
-  au::rate::Rate rate_read_;
-  au::rate::Rate rate_write_;
+  au::Rate rate_read_;
+  au::Rate rate_write_;
 };
 }
 }                       // End of namespace samson::zoo

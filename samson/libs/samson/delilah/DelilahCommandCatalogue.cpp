@@ -155,6 +155,9 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ls_last_tasks", "-times", "Show times spent by tasks");
   add_tag("ls_last_tasks", "send_to_all_workers");
 
+  add("ls_stream_operations_statistics", "debug", "Show statistics about stream operations");
+  add_tag("ls_stream_operations_statistics", "send_to_all_workers");
+
   add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
   add_mandatory_string_argument("ls_queue_ranges", "name", "Name of the queue we would like to scan");
 

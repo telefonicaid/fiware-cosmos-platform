@@ -11,20 +11,20 @@
 #ifndef _H_AU_TABLE_DATABASE
 #define _H_AU_TABLE_DATABASE
 
-#include "logMsg/logMsg.h"     // LM_W
-#include <sstream>             // std::ostringstream
-#include <stdio.h>             /* sprintf */
-#include <string>              // std::string
-#include <sys/time.h>          // struct timeval
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/containers/map.h"  // au::map
 #include "au/mutex/Token.h"
-#include "au/string/StringUtilities.h"         // au::str(...)
+#include "au/string/StringUtilities.h"  // au::str(...)
 #include "au/tables/Collection.h"
 #include "au/tables/Table.h"
 #include "au/tables/Tree.h"
+#include "logMsg/logMsg.h"     // LM_W
+#include <sstream>                     // std::ostringstream
+#include <stdio.h>                     /* sprintf */
+#include <string>                      // std::string
+#include <sys/time.h>                  // struct timeval
 
 namespace au {
 namespace tables {
@@ -56,7 +56,7 @@ public:
   std::string runCommand(std::string command);
 
   // Main autocomplete function
-  void autoComplete(au::ConsoleAutoComplete *info);
+  void autoComplete(au::console::ConsoleAutoComplete *info);
 
   // Get duplicate of tables, trees or collections
   Table *getTable(std::string name);
@@ -81,10 +81,10 @@ private:
   void _addCollection(std::string name, Collection *collection);
 
   // Specific Autocomplete
-  void autoCompleteTables(au::ConsoleAutoComplete *info);
-  void autoCompleteTrees(au::ConsoleAutoComplete *info);
-  void autoCompleteCollections(au::ConsoleAutoComplete *info);
-  void autoCompleteFieldsOfTable(std::string table_name, au::ConsoleAutoComplete *info);
+  void autoCompleteTables(au::console::ConsoleAutoComplete *info);
+  void autoCompleteTrees(au::console::ConsoleAutoComplete *info);
+  void autoCompleteCollections(au::console::ConsoleAutoComplete *info);
+  void autoCompleteFieldsOfTable(std::string table_name, au::console::ConsoleAutoComplete *info);
 
 
   // Get spetial tables

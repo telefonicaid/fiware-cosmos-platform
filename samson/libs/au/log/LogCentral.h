@@ -23,20 +23,21 @@
 #include "au/network/FileDescriptor.h"
 #include "au/singleton/Singleton.h"
 
-/*
- *
- * LogCentral
- *
- * Central element to emit logs using a secondary thread connected with a pipe
- * This strategy allow to recevie logs from fork-generated children processes
- *
- */
-
 namespace au {
 class Log;
 class LogCentralPluginScreen;
 class LogCentralPluginFile;
 class LogCentralPluginServer;
+
+/**
+ *
+ * LogCentral
+ *
+ * \brief Central element to emit logs using a secondary thread connected with a pipe
+ *
+ * Note: This strategy allow to receive logs from fork-generated children processes without any problem  with mutexes
+ *
+ */
 
 
 class LogCentral {

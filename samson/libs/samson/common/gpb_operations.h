@@ -27,6 +27,9 @@
 #include "samson/common/samson.pb.h"
 
 namespace samson {
+/**
+ * \brief Namespace for GoogleProtocolBuffer objects in SAMSON library
+ */
 namespace gpb {
 typedef au::SharedPointer<Collection>   CollectionPointer;
 

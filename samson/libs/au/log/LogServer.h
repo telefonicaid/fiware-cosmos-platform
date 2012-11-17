@@ -29,14 +29,14 @@
 #include "au/tables/Table.h"
 
 /*
- 
- Main class of the logServer program
- 
- It is basically a Console-based remote server with a dedicated service to receive:
- - log-providers
- - log-probes
- - log-queries
- 
+ *
+ * Main class of the logServer program
+ *
+ * It is basically a Console-based remote server with a dedicated service to receive:
+ * - log-providers
+ * - log-probes
+ * - log-queries
+ *
  */
 
 
@@ -53,7 +53,7 @@ public:
 
   // au::network::ConsoleService
   void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error);
-  void autoComplete(ConsoleAutoComplete *info, au::Environment *environment);
+  void autoComplete(console::ConsoleAutoComplete *info, au::Environment *environment);
   std::string getPrompt(au::Environment *environment);
 
 private:

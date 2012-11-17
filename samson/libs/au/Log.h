@@ -12,9 +12,14 @@
 #ifndef AU_LOG_H
 #define AU_LOG_H
 
+#include "au/log/LogMain.h"
 #include <string>
 
-#include "au/log/LogMain.h"
+/**
+ * \namespace au
+ * \brief Namespace for au library
+ * \auth Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ */
 
 namespace au {
 class AULogChannels {

@@ -56,6 +56,7 @@ void init_console_mode() {
 }
 
 namespace au {
+namespace console {
 Console *current_console = NULL;
 void handle_winch(int sig);
 void handle_tstp(int sig);
@@ -332,7 +333,8 @@ void *run_console(void *p) {
 void Console::runConsoleInBackground() {
   pthread_t t;
 
-  au::Singleton<au::ThreadManager>::shared()->addThread("au::Console::runConsoleInBackground", &t, NULL, run_console,
+  au::Singleton<au::ThreadManager>::shared()->addThread("au::console::Console::runConsoleInBackground", &t, NULL,
+                                                        run_console,
                                                         this);
 }
 
@@ -682,5 +684,6 @@ void handle_tstp(int sig) {
     // Re init console
     init_console_mode();
   }
+}
 }
 }

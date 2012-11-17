@@ -15,9 +15,9 @@
 
 #include <string>
 
-#include "au/statistics/Rate.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
+#include "au/statistics/Rate.h"
 
 #include "au/network/SocketConnection.h"
 
@@ -84,7 +84,7 @@ private:
 
   // Socket Connection
   au::SocketConnection *socket_connection_;
-  
+
   // User and password for this connection
   std::string user_;
   std::string password_;
@@ -103,8 +103,8 @@ private:
   bool running_t_write_;       // Flag to indicate that there is a thread using this endpoint reading data
 
   // Information about rate
-  au::rate::Rate rate_in_;
-  au::rate::Rate rate_out_;
+  au::Rate rate_in_;
+  au::Rate rate_out_;
 };
 }
 

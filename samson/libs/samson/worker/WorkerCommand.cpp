@@ -377,6 +377,14 @@ void WorkerCommand::Run() {
     return;
   }
 
+  if (main_command == "ls_stream_operations_statistics") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->task_manager()->GetSOStatisticsCollection(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
+
   if (main_command == "ls_block_requests") {
     au::SharedPointer<gpb::Collection> c =
       samson_worker_->worker_block_manager()->GetCollectionForBlockRequests(visualization);

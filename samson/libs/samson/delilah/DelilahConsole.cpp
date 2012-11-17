@@ -122,7 +122,7 @@ void DelilahConsole::evalCommand(const std::string& command) {
   if (_delilah_id != 0) {
     au::Cronometer cronometer;
     while (true) {
-      au::ConsoleEntry entry;
+      au::console::ConsoleEntry entry;
       std::string message;
       if (cronometer.seconds() > 1) {
         message = au::str("[ %s ] Waiting process %lu : %s ... [ b: background c: cancel ]",
@@ -154,7 +154,7 @@ void DelilahConsole::evalCommand(const std::string& command) {
   }
 }
 
-void DelilahConsole::autoCompleteOperations(au::ConsoleAutoComplete *info) {
+void DelilahConsole::autoCompleteOperations(au::console::ConsoleAutoComplete *info) {
   std::vector<std::string> operation_names = getOperationNames();
 
   for (size_t i = 0; i < operation_names.size(); i++) {
@@ -162,7 +162,7 @@ void DelilahConsole::autoCompleteOperations(au::ConsoleAutoComplete *info) {
   }
 }
 
-void DelilahConsole::autoCompleteOperations(au::ConsoleAutoComplete *info, std::string type) {
+void DelilahConsole::autoCompleteOperations(au::console::ConsoleAutoComplete *info, std::string type) {
   std::vector<std::string> operation_names = getOperationNames(type);
 
   for (size_t i = 0; i < operation_names.size(); i++) {
@@ -170,7 +170,7 @@ void DelilahConsole::autoCompleteOperations(au::ConsoleAutoComplete *info, std::
   }
 }
 
-void DelilahConsole::autoCompleteQueues(au::ConsoleAutoComplete *info) {
+void DelilahConsole::autoCompleteQueues(au::console::ConsoleAutoComplete *info) {
   au::tables::Table *table = database.getTable("queues");
 
   if (!table) {
@@ -182,7 +182,7 @@ void DelilahConsole::autoCompleteQueues(au::ConsoleAutoComplete *info) {
   delete table;
 }
 
-void DelilahConsole::autoCompleteQueueWithFormat(au::ConsoleAutoComplete *info, std::string key_format,
+void DelilahConsole::autoCompleteQueueWithFormat(au::console::ConsoleAutoComplete *info, std::string key_format,
                                                  std::string value_format) {
   au::tables::Table *table = database.getTable("queues");
 
@@ -201,7 +201,7 @@ void DelilahConsole::autoCompleteQueueWithFormat(au::ConsoleAutoComplete *info, 
   delete table;
 }
 
-void DelilahConsole::autoCompleteQueueForOperation(au::ConsoleAutoComplete *info, std::string operation_name,
+void DelilahConsole::autoCompleteQueueForOperation(au::console::ConsoleAutoComplete *info, std::string operation_name,
                                                    int argument_pos) {
   // Search in the operations
   Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
@@ -222,7 +222,7 @@ void DelilahConsole::autoCompleteQueueForOperation(au::ConsoleAutoComplete *info
   }
 }
 
-void DelilahConsole::autoComplete(au::ConsoleAutoComplete *info) {
+void DelilahConsole::autoComplete(au::console::ConsoleAutoComplete *info) {
   // Use catalogue for auto-completion
   delilah_command_catalogue.autoComplete(info);
   return;

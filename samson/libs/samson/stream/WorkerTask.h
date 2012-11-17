@@ -31,7 +31,7 @@ namespace stream {
 class Block;
 
 /**
- * \brief WorkerTask Main class fot all tasks based on third party operations (map, reduce, parse, ...)
+ * \brief Main class fot all tasks based on third party operations (map, reduce, parse, ...)
  */
 
 class WorkerTask : public ::samson::ProcessIsolated {
@@ -61,6 +61,11 @@ public:
 
   // Virtual methods from WorkerTaskBase
   virtual std::string str();
+
+  // Name of the stream operation
+  std::string stream_operation_name() const {
+    return stream_operation_->name();
+  }
 
   // Commit to data model
   void commit();

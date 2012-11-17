@@ -23,10 +23,10 @@
 #include <string>                      // std::string
 #include <vector>                      // std::vector
 
-#include "au/statistics/Cronometer.h"             // au::Cronometer
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/containers/map.h"
 #include "au/mutex/Token.h"            // au::Token
+#include "au/statistics/Cronometer.h"  // au::Cronometer
 
 #include "au/tables/DataBase.h"
 
@@ -107,7 +107,7 @@ public:
   std::string runDatabaseCommand(std::string command);
 
   // Autocomplete for database mode
-  void autoCompleteForDatabaseCommand(au::ConsoleAutoComplete *info);
+  void autoCompleteForDatabaseCommand(au::console::ConsoleAutoComplete *info);
 };
 }
 

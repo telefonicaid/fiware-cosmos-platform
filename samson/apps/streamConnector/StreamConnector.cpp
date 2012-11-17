@@ -288,7 +288,7 @@ void StreamConnector::evalCommand(const std::string& command) {
   write(&error);
 }
 
-void StreamConnector::autoCompleteWithChannelNames(au::ConsoleAutoComplete *info) {
+void StreamConnector::autoCompleteWithChannelNames(au::console::ConsoleAutoComplete *info) {
   // Mutex protection
   au::TokenTaker tt(&token);
 
@@ -298,7 +298,7 @@ void StreamConnector::autoCompleteWithChannelNames(au::ConsoleAutoComplete *info
   }
 }
 
-void StreamConnector::autoCompleteWithAdaptorsNames(au::ConsoleAutoComplete *info) {
+void StreamConnector::autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComplete *info) {
   // Mutex protection
   au::TokenTaker tt(&token);
 
@@ -309,7 +309,7 @@ void StreamConnector::autoCompleteWithAdaptorsNames(au::ConsoleAutoComplete *inf
   }
 }
 
-void StreamConnector::autoComplete(au::ConsoleAutoComplete *info) {
+void StreamConnector::autoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("quit");
     info->add("help");
@@ -955,7 +955,7 @@ void StreamConnector::log(au::SharedPointer<Log> log) {
   } else {
     error.AddMessage(log->getNameAndMessage());
   } if (interactive) {
-    au::Console::write(&error);
+    au::console::Console::write(&error);
   } else if (run_as_daemon) {
     // Nothing here
   } else {

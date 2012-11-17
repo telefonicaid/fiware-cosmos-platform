@@ -113,6 +113,10 @@ public:
   // Collection to be displayes
   au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization);
 
+  // Get information about output queues
+  size_t GetAllQueuesSize();
+  size_t GetQueueSize(const std::string& name);
+
 private:
 
   // Pending packets for all nodes

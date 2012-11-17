@@ -10,7 +10,9 @@
  */
 
 #include "PacketQueue.h"  // Own interface
+
 #include "au/log/LogMain.h"
+#include "samson/common/Logs.h"
 
 namespace samson {
 void MultiPacketQueue::Clear() {
@@ -31,6 +33,10 @@ void MultiPacketQueue::Push(const au::SharedPointer<Packet>& packet) {
 
   // Select the correct queue and push the new packet
   std::string name = node_identifier.getCodeName();
+
+  LOG_M(logs.out_messages, ("Scheduling packet %s in otuput queue %s", packet->str().c_str(), name.c_str()));
+
+  au::TokenTaker tt(&token_packet_queues_);
   packet_queues_.findOrCreate(name, name)->Push(packet);
 }
 
@@ -56,22 +62,24 @@ std::string MultiPacketQueue::GetDescription(const NodeIdentifier& node_identifi
 
 void MultiPacketQueue::Pop(const NodeIdentifier& node_identifier) {
   au::TokenTaker tt(&token_packet_queues_);
+
   std::string name = node_identifier.getCodeName();
   PacketQueue *paquet_queue = packet_queues_.findInMap(name);
 
   // Pop packet
-  paquet_queue->Pop();
+  PacketPointer packet = paquet_queue->Pop();
+
+  LOG_M(logs.out_messages, ("Removed packet %s from otuput queue %s", packet->str().c_str(), name.c_str()));
 }
 
 au::tables::Table *MultiPacketQueue::getPendingPacketsTable() {
+  au::TokenTaker tt(&token_packet_queues_);
+
   au::tables::Table *table = new au::tables::Table(au::StringVector("Connection", "#Packets", "Size"));
 
-
   au::map<std::string, PacketQueue>::iterator it;
-
   for (it = packet_queues_.begin(); it != packet_queues_.end(); it++) {
     au::StringVector values;
-
     values.push_back(it->first);     // Name of the connection
     PacketQueue *packet_queue = it->second;
     values.push_back(au::str(packet_queue->size()));
@@ -111,5 +119,26 @@ au::SharedPointer<gpb::Collection> MultiPacketQueue::GetQueuesCollection(const V
   au::TokenTaker tt(&token_packet_queues_);
 
   return GetCollectionForMap("network_queues", packet_queues_, visualization);
+}
+
+size_t MultiPacketQueue::GetAllQueuesSize() {
+  au::TokenTaker tt(&token_packet_queues_);
+  size_t total = 0;
+
+  au::map< std::string, PacketQueue >::iterator it;
+  for (it = packet_queues_.begin(); it != packet_queues_.end(); it++) {
+    total += it->second->byte_size();
+  }
+  return total;
+}
+
+size_t MultiPacketQueue::GetQueueSize(const std::string& name) {
+  au::TokenTaker tt(&token_packet_queues_);
+  PacketQueue *queue = packet_queues_.findInMap(name);
+
+  if (!queue) {
+    return 0;
+  }
+  return queue->byte_size();
 }
 }

@@ -131,6 +131,12 @@ public:
     return output_block_ids_;
   }
 
+  bool ContainsBlockAtInput(int input, size_t block_id) {
+    BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", input));
+
+    return block_list->ContainsBlock(block_id);
+  }
+
 protected:
   // Container for all input/output blocks
   BlockListContainer block_list_container_;

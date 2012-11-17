@@ -51,6 +51,7 @@
 #include "samson/worker/SamsonWorkerSamples.h"
 #include "samson/worker/WorkerBlockManager.h"
 #include "samson/worker/WorkerCommandManager.h"
+#include "samson/worker/WorkerOverloadAlert.h"
 
 /**
  *
@@ -123,6 +124,10 @@ public:
   au::SharedPointer<stream::WorkerTaskManager> task_manager();
   au::SharedPointer<WorkerCommandManager> workerCommandManager();
 
+  WorkerOverloadAlerts& worker_alert() {
+    return worker_alert_;
+  };
+
   // Reload modules
   void ReloadModulesIfNecessary();
 
@@ -134,6 +139,9 @@ public:
   au::SharedPointer<GlobalBlockSortInfo> GetGlobalBlockSortInfo();
 
 private:
+
+  // Check if this worker is overloaded to answer a block resquest
+  bool IsWorkerReadyForBlockRequest(size_t worker_id);
 
   enum State {
     unconnected, connected, ready
@@ -169,6 +177,8 @@ private:
   au::SharedPointer<WorkerBlockManager> worker_block_manager_;     // Map of blocks recently created
   au::SharedPointer<stream::WorkerTaskManager> task_manager_;     // Manager for tasks
   au::SharedPointer<WorkerCommandManager> workerCommandManager_;     // Manager of the "Worker commands"
+
+  WorkerOverloadAlerts worker_alert_;  // Information about overload-alerts received from other workers
 
   State state_;     // Current state of this worker
   std::string state_message_;     // Message of the last review of the state

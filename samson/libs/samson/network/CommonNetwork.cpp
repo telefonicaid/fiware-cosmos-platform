@@ -255,6 +255,9 @@ void CommonNetwork::Send(const PacketPointer& packet) {
   }
 
   // Push a packet to a connection or eventually keep in queue to see if it connects back soon ;)
+  LOG_V(logs.out_messages, ("Sending packet %s to %s"
+                            , packet->str().c_str()
+                            , packet->to.str().c_str()));
   NetworkManager::Send(packet);
 }
 

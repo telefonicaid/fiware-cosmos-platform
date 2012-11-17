@@ -152,8 +152,9 @@ void LogCentral::StopAndExit(int c) {
 }
 
 void LogCentral::Emit(Log *log) {
-  // Write to the pipe
-  log->Write(fd_write_logs_);
+  if (fd_write_logs_) {
+    log->Write(fd_write_logs_);   // Write to the pipe
+  }
 }
 
 void LogCentral::Run() {

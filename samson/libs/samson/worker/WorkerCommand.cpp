@@ -442,7 +442,7 @@ void WorkerCommand::Run() {
   if (main_command == "ps_stream_operations_ranges") {
     au::SharedPointer<gpb::Collection> c =
       samson_worker_->task_manager()->GetCollectionForStreamOperationsRanges(visualization);
-    c->set_title(command_);
+    c->set_title("List of stream-operation ranges ( R= Ready // P: Processing )");
     collections_.push_back(c);
     FinishWorkerTask();
     return;

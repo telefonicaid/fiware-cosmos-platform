@@ -166,9 +166,8 @@ void SamsonWorkerController::notify(engine::Notification *notification) {
 
     if (type != ZOO_DELETED_EVENT) {  // If this is the preivous worker, maybe it is a delete
       if (au::CheckIfStringsBeginWith(path, NODE_WORKER_BASE)) {
-        // Just update information about worker
+        // Just update information about a worker
         size_t worker_id = worker_from_node(path);
-
         au::SharedPointer<samson::gpb::WorkerInfo> worker_info(new samson::gpb::WorkerInfo());
         int rc = zoo_connection_->Get(path, engine_id(), worker_info.shared_object());
         if (rc) {
@@ -283,7 +282,7 @@ int SamsonWorkerController::UpdateWorkerNode(size_t last_commit_id) {
   au::TokenTaker tt(&token_);
 
   if (worker_info_.last_commit_id() == last_commit_id) {
-    return 0;
+    return 0;  // No real update
   }
 
   // Keep previous value, just in case we cannot update in ZK
@@ -713,7 +712,7 @@ bool SamsonWorkerController::CheckDataModelCommitId(size_t last_commit_id) {
   for (size_t w = 0; w < worker_ids_.size(); ++w) {
     au::SharedPointer<gpb::WorkerInfo> info = workers_info_.Get(worker_ids_[w]);
     if (info == NULL) {
-      return false;   // no information, no commitment
+      return false;   // no information for this worker, no commitment
     }
 
     if (info->last_commit_id() < last_commit_id) {

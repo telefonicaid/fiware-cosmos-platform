@@ -110,6 +110,14 @@ public:
   size_t get_rate_out();
   std::string getStatusForConnection(std::string connection_name);
 
+  size_t GetAllQueuesSize() {
+    return multi_packet_queue.GetAllQueuesSize();
+  }
+
+  size_t GetQueueSizeForWorker(size_t worker_id) {
+    return multi_packet_queue.GetQueueSize(au::str("worker_%lu", worker_id));
+  }
+
 private:
 
   // Multi queue for all unconnected connections

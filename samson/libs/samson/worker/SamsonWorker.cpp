@@ -64,6 +64,9 @@
 
 #include "samson/worker/SamsonWorker.h"  // Own interfce
 
+#define SAMSON_ERROR_OVERLOADED    "Overloaded worker"
+#define SAMSON_ERROR_UNKNOWN_BLOCK "Unknown block"
+
 namespace samson {
 /* ****************************************************************************
  *
@@ -178,22 +181,18 @@ void SamsonWorker::Review() {
       // Remove all block request for blocks not belonging to data model
       worker_block_manager_->RemoveRequestIfNecessary(all_block_ids);
 
-      // Request blocks I am suppouse to have
+      // Request blocks I am suppouse to have for previous and possible candidate data-models
       std::vector<KVRange> my_ranges = worker_controller_->GetAllMyKVRanges();
       std::set<size_t> my_block_ids = data_model_->GetMyBlockIdsForPreviousAndCandidateDataModel(my_ranges);
       for (std::set<size_t>::iterator it = my_block_ids.begin(); it != my_block_ids.end(); ++it) {
         if (stream::BlockManager::shared()->GetBlock(*it) != NULL) {
-          continue;
+          continue;  // This block is contained in the local manager
         }
-        // Add block request
-        worker_block_manager_->RequestBlock(*it);
+        worker_block_manager_->RequestBlock(*it);        // Add block request
       }
 
-      // Get my blocks included in states
-      std::set<size_t> my_state_block_ids = data_model_->GetMyStateBlockIdsForCurrentDataModel(my_ranges);
-
-      // Check my last commit id to update my_worker info if necessary
-      size_t last_commit_id = worker_controller_->GetMyLastCommitId();
+      // Check what commit_id can guarantee this worker
+      size_t last_commit_id = worker_controller_->GetMyLastCommitId();  // This is the currently guanrantee commit_id
       size_t previous_data_commit_id = data_model_->GetLastCommitIdForPreviousDataModel();
       size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
 
@@ -214,8 +213,9 @@ void SamsonWorker::Review() {
           }
         }
       }
-      worker_controller_->UpdateWorkerNode(last_commit_id);
 
+      // Update if necessary my current information
+      worker_controller_->UpdateWorkerNode(last_commit_id);
 
       // If I am the cluster leader, consolidate next frozen data model if necessary
       if (worker_controller_->cluster_leader()) {
@@ -264,8 +264,7 @@ void SamsonWorker::ResetToConnected() {
 
 void SamsonWorker::receive(const PacketPointer& packet) {
   LM_T(LmtNetworkNodeMessages, ("SamsonWorker received %s ", packet->str().c_str()));
-
-  LOG_M(logs.in_messages, ("Received packet from %s : %s" , packet->from.str().c_str(), packet->str().c_str() ));
+  LOG_M(logs.in_messages, ("Received packet from %s : %s", packet->from.str().c_str(), packet->str().c_str()));
 
   if (!IsConnected()) {
     LM_W(("Ignoring packet %s since we are not connected any more", packet->str().c_str()));
@@ -274,6 +273,14 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
   // Type of message received
   Message::MessageCode msgCode = packet->msgCode;
+
+
+  // If an overload-error is received, add an alert to not send more request to this worker in the next seconds....
+  if (packet->from.node_type == WorkerNode) {
+    if (packet->message->has_error() && ( packet->message->error().message() == SAMSON_ERROR_OVERLOADED )) {
+      worker_alert_.AddAlert(packet->from.id, 5);  // 5 seconds of peace for this worker
+    }
+  }
 
   // --------------------------------------------------------------------
   // StatusReport
@@ -300,22 +307,31 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
+    // Collect information for this request
     size_t block_id  = packet->message->block_id();
-
     stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
+    size_t worker_id = packet->from.id;
 
+    // Check if we have this block
     if (block == NULL) {
-      // Received a Message::BlockRequest for unknown block
       LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Unknown block... returning error"
                                  , str_block_id(block_id).c_str()
                                  , packet->from.id ));
-
       PacketPointer p(new Packet(Message::BlockRequestResponse));
       p->to = packet->from;
       p->message->set_block_id(block_id);
-      p->message->mutable_error()->set_message("Unknown block");
+      p->message->mutable_error()->set_message(SAMSON_ERROR_UNKNOWN_BLOCK);
       network_->Send(p);
       return;
+    }
+
+    // Check if this request has to be rejected because I am overloaded
+    if (!IsWorkerReadyForBlockRequest(worker_id)) {
+      PacketPointer p(new Packet(Message::BlockRequestResponse));
+      p->to = packet->from;
+      p->message->set_block_id(block_id);
+      p->message->mutable_error()->set_message(SAMSON_ERROR_OVERLOADED);
+      network_->Send(p);
     }
 
     // If block is in memory, we can anser rigth now
@@ -333,6 +349,10 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       p->to = packet->from;
       p->message->set_block_id(block_id);
       p->set_buffer(buffer);
+
+      LOG_V(logs.block_request, ("Sending packet %s to %s"
+                                 , p->str().c_str()
+                                 , p->to.str().c_str()));
       network_->Send(p);
       return;
     }
@@ -341,12 +361,10 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     std::vector<size_t> worker_ids;
     worker_ids.push_back(packet->from.id);
     size_t task_id = task_manager_->AddBlockRequestTask(block_id, worker_ids);
-
     LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Scheduling task W%lu"
                                , str_block_id(block_id).c_str()
                                , packet->from.id
                                , task_id ));
-
     return;
   }
 
@@ -374,13 +392,13 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
     if (packet->message->has_error()) {
-      // If error, notify ....
+      std::string error_message = packet->message->error().message();
       LOG_M(logs.block_request, ("Received block request response for %s from worker %lu with error %s"
                                  , str_block_id(block_id).c_str()
                                  , worker_id
-                                 , packet->message->error().message().c_str()
+                                 , error_message.c_str()
                                  ));
-      worker_block_manager_->ReceivedBlockRequestResponse(block_id, worker_id, true);
+      worker_block_manager_->ReceivedBlockRequestResponse(block_id, worker_id, error_message);
       return;
     }
 
@@ -398,7 +416,9 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
       stream::BlockManager::shared()->CreateBlock(block_id, packet->buffer());
     }
-    worker_block_manager_->ReceivedBlockRequestResponse(block_id, worker_id, false);       // Correct reception of block
+
+    // Notify about the correct reception of this block
+    worker_block_manager_->ReceivedBlockRequestResponse(block_id, worker_id);
     return;
   }
 
@@ -1261,5 +1281,34 @@ au::SharedPointer<GlobalBlockSortInfo> SamsonWorker::GetGlobalBlockSortInfo() {
   }
 
   return blocks_sort_info;
+}
+
+bool SamsonWorker::IsWorkerReadyForBlockRequest(size_t worker_id) {
+  // Reject for memory ?
+  double mem_usage = engine::Engine::memory_manager()->memory_usage();
+
+  if (mem_usage >= 1.0) {
+    LOG_W(logs.worker, ("Rejecting block request since memory usage is %s", au::str_percentage(mem_usage).c_str()));
+    return false;
+  }
+
+  // Reject for output network queues
+  size_t memory = engine::Engine::memory_manager()->memory();
+  size_t all_queue_size = network_->GetAllQueuesSize();
+  if (all_queue_size > (0.25 * (double)memory )) {
+    LOG_W(logs.worker, ("Rejecting block request: Size of all output-queue %s", au::str(all_queue_size).c_str()));
+    return false;
+  }
+
+  size_t queue_size = network_->GetQueueSizeForWorker(worker_id);
+  if (queue_size > (0.2 * (double)memory )) {
+    LOG_W(logs.worker, ("Rejecting block request: Size of output-queue %s", au::str(queue_size).c_str()));
+    return false;
+  }
+
+  // If number of scheduled block_request task is excesive, also stop
+  // TODO
+
+  return true;
 }
 }

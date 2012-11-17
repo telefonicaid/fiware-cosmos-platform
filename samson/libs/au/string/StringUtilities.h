@@ -68,7 +68,9 @@ std::string str_timestamp(time_t t);
 
 // String with percentdge information
 std::string str_percentage(double value, double total);
+std::string str_simple_percentage(double value, double total);
 std::string str_percentage(double p);
+std::string str_simple_percentage(double p);
 
 // Getting strings with format
 std::string str(const char *format, ...);
@@ -194,6 +196,19 @@ std::string str(const std::set<C>& elements) {
 
   output << "[ ";
   typename std::set<C>::const_iterator it;
+  for (it = elements.begin(); it != elements.end(); it++) {
+    output << *it << " ";
+  }
+  output << "]";
+  return output.str();
+}
+
+template<typename C>
+std::string str(const std::list<C>& elements) {
+  std::ostringstream output;
+
+  output << "[ ";
+  typename std::list<C>::const_iterator it;
   for (it = elements.begin(); it != elements.end(); it++) {
     output << *it << " ";
   }

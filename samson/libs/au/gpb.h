@@ -41,14 +41,18 @@
 
 #include <assert.h>
 
-#include "au/Status.h"  // au::Status
 #include "au/Log.h"
-
+#include "au/Status.h"  // au::Status
 
 
 namespace au {
-Status iomMsgAwait(int fd, int secs);
+/**
+ * Namespace for Google Protocol Buffer objects used in au library
+ */
+namespace gpb {
+}
 
+Status iomMsgAwait(int fd, int secs);
 
 // Header used for frame-control and size definition
 struct GPBHeader {

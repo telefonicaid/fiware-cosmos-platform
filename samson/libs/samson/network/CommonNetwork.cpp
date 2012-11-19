@@ -16,6 +16,7 @@
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 
+#include "samson/common/Logs.h"
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/gpb_operations.h"
 #include "samson/network/NetworkConnection.h"
@@ -241,22 +242,22 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
 
 void CommonNetwork::Send(const PacketPointer& packet) {
   if (packet->msgCode == Message::Hello) {
-    LM_W(("Not allowed to send hello message outside initial handshake"));
+    LOG_W(logs.worker, ("Not allowed to send hello message outside initial handshake"));
     return;
   }
 
-  // Add more info to buffer name for debugging
-  engine::BufferPointer buffer = packet->buffer();
-  // Set me as from identifier
+  // Set me as "from" identifier
   packet->from = node_identifier_;
 
   if (packet->to == node_identifier_) {
-    // Local loop
-    schedule_receive(packet);
+    schedule_receive(packet);    // Local loop
     return;
   }
 
   // Push a packet to a connection or eventually keep in queue to see if it connects back soon ;)
+  LOG_V(logs.out_messages, ("Sending packet %s to %s"
+                            , packet->str().c_str()
+                            , packet->to.str().c_str()));
   NetworkManager::Send(packet);
 }
 
@@ -339,10 +340,6 @@ au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
   }
 
   return table;
-}
-
-au::SharedPointer<gpb::Collection> CommonNetwork::GetConnectionsCollection(const Visualization& visualization) {
-  return NetworkManager::GetConnectionsCollection(visualization);
 }
 
 size_t CommonNetwork::get_rate_in() {

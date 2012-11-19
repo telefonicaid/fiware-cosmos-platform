@@ -16,11 +16,15 @@
 #include <string>
 #include <termios.h>                // termios
 
-#include "au/mutex/Token.h"
 #include "au/console/ConsoleEscapeSequence.h"
+#include "au/mutex/Token.h"
 
 namespace au {
-// Class used to get something from the entry
+namespace console {
+/**
+ * \brief Class used to get something from the entry from the user
+ */
+
 class ConsoleEntry {
   typedef enum {
     normal_char,
@@ -129,6 +133,7 @@ public:
     return ( seq == "[C" );
   }
 };
+}
 }
 
 #endif  // ifndef _AU_CONSOLE_ENTRY

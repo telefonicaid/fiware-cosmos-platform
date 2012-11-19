@@ -186,7 +186,7 @@ void ConsoleServiceClientBase::evalCommand(const std::string& command, au::Error
   }
 }
 
-void ConsoleServiceClientBase::autoComplete(ConsoleAutoComplete *info) {
+void ConsoleServiceClientBase::autoComplete(console::ConsoleAutoComplete *info) {
   // Options for connection and disconnection...
   if (info->completingFirstWord()) {
     info->add("connect");
@@ -234,7 +234,7 @@ void ConsoleServiceClient::evalCommand(const std::string& command) {
   Console::write(&error);
 }
 
-void ConsoleServiceClient::autoComplete(ConsoleAutoComplete *info) {
+void ConsoleServiceClient::autoComplete(console::ConsoleAutoComplete *info) {
   ConsoleServiceClientBase::autoComplete(info);
 }
 
@@ -290,12 +290,12 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
 
     if (message->has_auto_complettion_command()) {
       // Auto completion request....
-      ConsoleAutoComplete info(message->auto_complettion_command());
+      console::ConsoleAutoComplete info(message->auto_complettion_command());
       autoComplete(&info, &environment);
 
       // Fill answer message with alternatives
       for (size_t i = 0; i < info.getNumAlternatives(); i++) {
-        ConsoleAutoCompleteAlternative alternative = info.getAlternative(i);
+        console::ConsoleAutoCompleteAlternative alternative = info.getAlternative(i);
         au::gpb::AutoCompletionAlternative *a = answer_message.add_auto_completion_alternatives();
         a->set_command(alternative.command);
         a->set_label(alternative.label);

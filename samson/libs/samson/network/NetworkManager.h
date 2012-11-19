@@ -15,8 +15,8 @@
 #include <string>
 #include <vector>
 
-#include "au/containers/map.h"
 #include "au/containers/SharedPointer.h"
+#include "au/containers/map.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/network/NetworkListener.h"
@@ -38,85 +38,98 @@ class NetworkConnection;
 class NetworkListener;
 
 class NetworkManager {
-    // Multi queue for all unconnected connections
-    MultiPacketQueue multi_packet_queue;
+public:
 
-    // All managed connection ( name = code name of node identifier )
-    au::map<std::string, NetworkConnection> connections;
+  NetworkManager() :
+    token_connections_("token_connections_") {
+  }
 
-    // Token to block add and move operations on connections
-    au::Token token_connections_;
+  virtual ~NetworkManager();
 
-    friend class NetworkConnection;
+  // Unique method to add connections
+  void AddConnection(NodeIdentifier new_node_identifier, au::SocketConnection *socket_connection);
 
-  public:
-    NetworkManager() :
-      token_connections_("token_connections_") {
+  // Interface to inform about a received packet from a network connection
+  virtual void receive(NetworkConnection *connection, const PacketPointer& packet) {
+    LM_W(("NetworkManager::receive not implemented"));
+  }
+
+  // Push a packet to a connection
+  void Send(const PacketPointer& packet);
+  void SendToAllDelilahs(const PacketPointer& packet);
+
+  // Review
+  //  --> Remove packets sent to long unconnected nodes
+  //  --> Remove disconnected connections
+  void Review();
+
+  // Remove this connection ( whatever name it has )
+  void Remove(NetworkConnection *network_connection);
+  void Remove(const std::string& connection_name);
+
+  // Remove all unconnected connections
+  void RemoveDisconnectedConnections();
+
+  // Remove all connections hold.
+  void ClearConnections() {
+    std::vector<std::string> connections = getAllConnectionNames();
+    for (size_t i = 0; (i < connections.size()); ++i) {
+      Remove(connections[i]);
     }
-    virtual ~NetworkManager();
+  }
 
-    // Unique method to add connections
-    void AddConnection(NodeIdentifier new_node_identifier, au::SocketConnection *socket_connection);
+  // Check connection
+  bool isConnected(std::string connection_name);
 
-    // Interface to inform about a received packet from a network connection
-    virtual void receive(NetworkConnection *connection, const PacketPointer& packet) {
-      LM_W(("NetworkManager::receive not implemented"));
-    }
+  // Get table with connection information
+  au::tables::Table *getConnectionsTable();
 
-    // Push a packet to a connection
-    void Send(const PacketPointer& packet);
-    void SendToAllDelilahs(const PacketPointer& packet);
+  // Get pending packets table
+  au::tables::Table *getPendingPacketsTable();
 
-    // Review
-    //  --> Remove packets sent to long unconnected nodes
-    //  --> Remove disconnected connections
-    void Review();
+  // Get delilah ids
+  std::vector<size_t> getDelilahIds();
 
-    // Remove this connection ( whatever name it has )
-    void Remove(NetworkConnection *network_connection);
-    void Remove(const std::string& connection_name);
+  // Get all connections
+  std::vector<std::string> getAllConnectionNames();
 
-    // Remove all unconnected connections
-    void RemoveDisconnectedConnections();
+  // Debug str
+  std::string str();
 
-    // Remove all connections hold.
-    void ClearConnections() {
-      std::vector<std::string> connections = getAllConnectionNames();
-      for (size_t i = 0; (i < connections.size()); ++i) {
-        Remove(connections[i]);
-      }
-    }
+  // Get a collection for all connections
+  au::SharedPointer<gpb::Collection> GetConnectionsCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization);
 
-    // Check connection
-    bool isConnected(std::string connection_name);
+  // Reset all connections
+  void reset();
 
-    // Get table with connection information
-    au::tables::Table *getConnectionsTable();
+  // Get number of connections
+  size_t getNumConnections();
 
-    // Get pending packets table
-    au::tables::Table *getPendingPacketsTable();
+  size_t get_rate_in();
+  size_t get_rate_out();
+  std::string getStatusForConnection(std::string connection_name);
 
-    // Get delilah ids
-    std::vector<size_t> getDelilahIds();
+  size_t GetAllQueuesSize() {
+    return multi_packet_queue.GetAllQueuesSize();
+  }
 
-    // Get all connections
-    std::vector<std::string> getAllConnectionNames();
+  size_t GetQueueSizeForWorker(size_t worker_id) {
+    return multi_packet_queue.GetQueueSize(au::str("worker_%lu", worker_id));
+  }
 
-    // Debug str
-    std::string str();
+private:
 
-    // Get a collection for all connections
-    au::SharedPointer<gpb::Collection> GetConnectionsCollection(const Visualization& visualization);
+  // Multi queue for all unconnected connections
+  MultiPacketQueue multi_packet_queue;
 
-    // Reset all connections
-    void reset();
+  // All managed connection ( name = code name of node identifier )
+  au::map<std::string, NetworkConnection> connections;
 
-    // Get number of connections
-    size_t getNumConnections();
+  // Token to block add and move operations on connections
+  au::Token token_connections_;
 
-    size_t get_rate_in();
-    size_t get_rate_out();
-    std::string getStatusForConnection(std::string connection_name);
+  friend class NetworkConnection;
 };
 }
 

@@ -19,6 +19,7 @@
 #include "au/containers/Dictionary.h"
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
+#include "au/statistics/Averager.h"
 
 #include "engine/NotificationListener.h"  // engine::NotificationListener
 
@@ -55,6 +56,9 @@ class WorkerTaskManager : public ::engine::NotificationListener {
 public:
 
   explicit WorkerTaskManager(SamsonWorker *samson_worker);
+  ~WorkerTaskManager() {
+    averages_per_task_.clearMap();
+  }
 
   void Add(au::SharedPointer<WorkerTaskBase> task);     // Add new task to the manager
 
@@ -85,6 +89,7 @@ public:
   // Get collection to list in delilah
   gpb::CollectionPointer GetCollectionForStreamOperationsRanges(const ::samson::Visualization& visualization);
   gpb::CollectionPointer GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
+  gpb::CollectionPointer GetSOStatisticsCollection(const ::samson::Visualization& visualization);
 
   // Update information about blocks
   void Update(GlobalBlockSortInfo *info) const;
@@ -106,6 +111,9 @@ private:
 
   // Log of last tasks...
   std::list<WorkerTaskLog> last_tasks_;
+
+  // Statistics about tasks
+  au::map<std::string, au::Averager > averages_per_task_;
 
   // Get the number of current running tasks for a particular stream operation
   int GetRunningTasks(size_t stream_operation_id);

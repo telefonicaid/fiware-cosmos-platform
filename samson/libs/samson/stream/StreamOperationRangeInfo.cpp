@@ -37,7 +37,8 @@ public:
 
     output << "[ " << au::str(num_blocks_, "Bl") << " ";
     output << total_info_.str() << " ";
-    output << "Ready: " << au::str_percentage(ready_info_.size, total_info_.size);
+    output << "R: " << au::str_simple_percentage(ready_info_.size, total_info_.size) << " ";
+    output << "P: " << au::str_simple_percentage(processing_info_.size, total_info_.size) << " ";
     output << " ]";
     return output.str();
   }
@@ -49,6 +50,10 @@ public:
 
   void AppendToReady(double factor, const KVInfo& info) {
     ready_info_.Append(factor, info);
+  }
+
+  void AppendToProcessing(double factor, const KVInfo& info) {
+    processing_info_.Append(factor, info);
   }
 
   FullKVInfo total_info() const {
@@ -68,6 +73,7 @@ private:
   int num_blocks_;
   FullKVInfo total_info_;
   FullKVInfo ready_info_;
+  FullKVInfo processing_info_;
 };
 
 class InputsData {
@@ -85,6 +91,10 @@ public:
 
   void AppendToReady(int input, double factor, const KVInfo& info) {
     inputs_data_[input].AppendToReady(factor, info);
+  }
+
+  void AppendToProcessing(int input, double factor, const KVInfo& info) {
+    inputs_data_[input].AppendToProcessing(factor, info);
   }
 
   std::string str() const {
@@ -297,13 +307,20 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
         }
 
         if (stream::BlockManager::shared()->GetBlock(block.block_id()) == NULL) {
-          // Block not local ( data has not been requested )
+          // Block not local ( data has not been requested? )
           ready = false;
           samson_worker_->worker_block_manager()->RequestBlock(block.block_id());
         }
 
         if (ready) {
           inputs_data.AppendToReady(i, overlap_factor, block_info);
+        }
+
+        // See if we are processing this data
+        if (worker_task_ != NULL) {
+          if (worker_task_->ContainsBlockAtInput(i, block.block_id())) {
+            inputs_data.AppendToProcessing(i, overlap_factor, block_info);
+          }
         }
       }
     }
@@ -580,13 +597,12 @@ void StreamOperationRangeInfo::fill(samson::gpb::CollectionRecord *record, const
   }
 
   // Default view
-
   ::samson::add(record, "inputs", state_input_queues_, "different");
   ::samson::add(record, "time", au::str_time(last_task_cronometer_.seconds()), "different");
-  ::samson::add(record, "priority rank", priority_rank(), "f=uint64,different");
+  ::samson::add(record, "priority", priority_rank(), "f=uint64,different");
 
   if (worker_task_ != NULL) {
-    ::samson::add(record, "tasks", worker_task_->str_short(), "different");
+    ::samson::add(record, "tasks", worker_task_->id(), "different");
   } else {
     ::samson::add(record, "tasks", "none", "different");
   }

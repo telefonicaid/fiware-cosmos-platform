@@ -22,11 +22,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("show_cluster_assignation", "setup", "Show cluster assignment",
       "Get information about what hash-groups are assigned to what workers\n");
 
-  add("ls_connections", "management", "Show status of all connections in the cluster");
-  add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
-  add_tag("ls_connections", "send_to_all_workers");
-
-  add("ls_local_connections", "management",
+  add("ls_local_connections", "delilah",
       "Show status of all connections of this delilah ( typically to all workers of the SAMSON cluster )");
 
   // ------------------------------------------------------------------
@@ -119,6 +115,14 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // Debug
   // ------------------------------------------------------------------
 
+  add("ls_connections", "debug", "Show status of all connections in the cluster");
+  add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
+  add_tag("ls_connections", "send_to_all_workers");
+
+  add("ls_network_queues", "debug", "Show status of all connections in the cluster");
+  add_uint64_option("ls_network_queues", "-w", 0, "Specify a particular worker");
+  add_tag("ls_network_queues", "send_to_all_workers");
+
   add("threads", "debug", "Show current threads in this delilah");
 
   add("ls_blocks", "debug", "Show a list of data blocks managed by SAMSON nodes");
@@ -150,6 +154,9 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_last_tasks", "debug", "Show last 100 tasks scheduled in workers");
   add_bool_option("ls_last_tasks", "-times", "Show times spent by tasks");
   add_tag("ls_last_tasks", "send_to_all_workers");
+
+  add("ls_stream_operations_statistics", "debug", "Show statistics about stream operations");
+  add_tag("ls_stream_operations_statistics", "send_to_all_workers");
 
   add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
   add_mandatory_string_argument("ls_queue_ranges", "name", "Name of the queue we would like to scan");

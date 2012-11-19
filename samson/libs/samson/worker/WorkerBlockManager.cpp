@@ -30,6 +30,7 @@ void WorkerBlockManager::Review() {
 
       // Remove if necessary...
       if (it->second->finished()) {
+        delete it->second;
         block_requests_.erase(it++);
       } else {
         ++it;
@@ -90,35 +91,42 @@ void WorkerBlockManager::Review() {
 }
 
 size_t WorkerBlockManager::CreateBlock(engine::BufferPointer buffer) {
+  // Get a new id for this block ( identifiers are unique cluster-wide )
   size_t block_id = samson_worker_->worker_controller()->get_new_block_id();
 
+  // Add to the block manager
   stream::BlockManager::shared()->CreateBlock(block_id, buffer);
 
   LOG_M(logs.worker_block_manager, ("Create block from buffer %s --> %s"
                                     , buffer->str().c_str()
                                     , str_block_id(block_id).c_str()));
 
-  return block_id;
+  return block_id;  // Return the identifier of the new block
 }
 
 // Messages received from other workers
-void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t worker_id, bool error) {
+void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t worker_id) {
+  LOG_M(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu )"
+                                    , str_block_id(block_id).c_str()
+                                    , worker_id ));
+
+  BlockRequest *block_request = block_requests_.extractFromMap(block_id);
+  if (block_request) {
+    delete block_request;
+  }
+}
+
+void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t worker_id,
+                                                      const std::string& error_message) {
   LOG_M(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu error %s)"
                                     , str_block_id(block_id).c_str()
                                     , worker_id
-                                    , error ? "yes" : "no" ));
+                                    , error_message.c_str()));
 
-  if (error) {
-    BlockRequest *block_request = block_requests_.findInMap(block_id);
-    if (block_request) {
-      block_request->NotifyErrorMessage(worker_id);
-    }
-    return;
+  BlockRequest *block_request = block_requests_.findInMap(block_id);
+  if (block_request) {
+    block_request->NotifyErrorMessage(worker_id, error_message);
   }
-
-  // If no error, just remove the request...
-  BlockRequest *block_request = block_requests_.extractFromMap(block_id);
-  delete block_request;
 }
 
 au::SharedPointer<gpb::Collection> WorkerBlockManager::GetCollectionForBlockRequests(const Visualization& visualization)
@@ -305,6 +313,7 @@ void WorkerBlockManager::RemoveRequestIfNecessary(const std::set<size_t>& all_bl
   au::map<size_t, BlockRequest>::iterator iter;
   for (iter = block_requests_.begin(); iter != block_requests_.end(); ) {
     if (all_block_ids.find(iter->second->block_id()) == all_block_ids.end()) {
+      delete iter->second;  // Remove the request itself
       block_requests_.erase(iter++);          // Remove this request
     } else {
       ++iter;   // keep request

@@ -45,10 +45,10 @@ public:
   bool Write(au::gpb::ConsolePacket *packet, au::ErrorManager *error);
   bool Read(au::gpb::ConsolePacket **packet, au::ErrorManager *error);
 
-  // Methods related with au::Console
+  // Methods related with au::console::Console
   std::string getPrompt();
   void evalCommand(const std::string& command, au::ErrorManager *error);
-  virtual void autoComplete(ConsoleAutoComplete *info);
+  virtual void autoComplete(console::ConsoleAutoComplete *info);
   void addEspaceSequence(std::string sequence);
   virtual void process_escape_sequence(std::string sequence) {
   };
@@ -68,14 +68,14 @@ private:
 
 // Simple console to interact with the client
 
-class ConsoleServiceClient : public ConsoleServiceClientBase, public Console {
+class ConsoleServiceClient : public ConsoleServiceClientBase, public console::Console {
 public:
 
   ConsoleServiceClient(int port);
 
   // Virtual methods of console
   virtual void evalCommand(const std::string& command);
-  virtual void autoComplete(ConsoleAutoComplete *info);
+  virtual void autoComplete(console::ConsoleAutoComplete *info);
   virtual std::string getPrompt();
 };
 
@@ -92,7 +92,7 @@ public:
   virtual void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {
   }
 
-  virtual void autoComplete(ConsoleAutoComplete *info, au::Environment *environment) {
+  virtual void autoComplete(console::ConsoleAutoComplete *info, au::Environment *environment) {
   }
 
   virtual std::string getPrompt(au::Environment *environment) {

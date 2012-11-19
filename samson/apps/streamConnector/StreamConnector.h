@@ -88,7 +88,7 @@ class Channel;
 class StreamConnectorService;
 class InputInterChannelConnection;
 
-class StreamConnector : public au::Console
+class StreamConnector : public au::console::Console
                         , public au::network::RESTServiceInterface
                         , public au::NetworkListenerInterface {
   // Mutex protection for streamConnector( REST / Console / Review / ... )
@@ -127,12 +127,12 @@ public:
   // General process command line ( from rest / console / remote connections / .... )
   void process_command(std::string command, au::ErrorManager *error);
 
-  // au::Console interface
+  // au::console::Console interface
   std::string getPrompt();
   void evalCommand(const std::string& command);
-  void autoComplete(au::ConsoleAutoComplete *info);
-  void autoCompleteWithChannelNames(au::ConsoleAutoComplete *info);
-  void autoCompleteWithAdaptorsNames(au::ConsoleAutoComplete *info);
+  void autoComplete(au::console::ConsoleAutoComplete *info);
+  void autoCompleteWithChannelNames(au::console::ConsoleAutoComplete *info);
+  void autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComplete *info);
 
   // Review
   void review();

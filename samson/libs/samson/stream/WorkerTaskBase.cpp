@@ -201,5 +201,17 @@ std::string WorkerTaskBase::GetProcessSummary() {
   activity_monitor_.StopActivity();
   return au::str(activity_monitor_.GetTotalTimeForActivity("process"), "s");
 }
+
+double WorkerTaskBase::GetProcessTime() const {
+  return activity_monitor_.GetTotalTimeForActivity("process");
+}
+
+size_t WorkerTaskBase::GetInputSize() const {
+  return block_list_container_.inputs_size();
+}
+
+size_t WorkerTaskBase::GetOutputSize() const {
+  return block_list_container_.inputs_size();
+}
 }
 }

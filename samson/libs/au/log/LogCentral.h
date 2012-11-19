@@ -23,20 +23,21 @@
 #include "au/network/FileDescriptor.h"
 #include "au/singleton/Singleton.h"
 
-/*
- *
- * LogCentral
- *
- * Central element to emit logs using a secondary thread connected with a pipe
- * This strategy allow to recevie logs from fork-generated children processes
- *
- */
-
 namespace au {
 class Log;
 class LogCentralPluginScreen;
 class LogCentralPluginFile;
 class LogCentralPluginServer;
+
+/**
+ *
+ * LogCentral
+ *
+ * \brief Central element to emit logs using a secondary thread connected with a pipe
+ *
+ * Note: This strategy allow to receive logs from fork-generated children processes without any problem  with mutexes
+ *
+ */
 
 
 class LogCentral {
@@ -48,6 +49,11 @@ public:
   void Init(const std::string& exec = "Unknown");  // Init log system
   void Stop();  // Stop the loggin system
   void StopAndExit(int c);  // Stop and exit
+
+  // Set name of this node
+  void set_node(const std::string& node) {
+    node_ = node;
+  }
 
   // Inline method to quickly check if a log has to be generated
   inline bool IsLogAccepted(int channel, int level) {
@@ -119,6 +125,9 @@ private:
 
   // Name of the main executalbe
   std::string exec_;
+
+  // Name of this node in a distirbuted environment
+  std::string node_;
 
   // Set of Plugins for logs
   au::map<std::string, LogCentralPlugin> plugins_;

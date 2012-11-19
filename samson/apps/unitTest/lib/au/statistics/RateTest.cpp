@@ -14,7 +14,7 @@
 #include "gtest/gtest.h"
 
 TEST(au_Rate, basic) {
-  au::rate::Rate rate;
+  au::Rate rate;
 
   rate.Push(1);
   rate.Push(2);

@@ -30,7 +30,7 @@
 #include "au/containers/map.h"       // au::map
 #include "au/statistics/Cronometer.h"      // au::cronometer
 #include "engine/Buffer.h"      // engine::Buffer
-#include "engine/NotificationListener.h" // engine::NotificationListener
+#include "engine/NotificationListener.h"  // engine::NotificationListener
 #include "samson/common/KVFile.h"
 #include "samson/common/coding.h"    // FullKVInfo
 #include "samson/common/samson.pb.h"  // network::
@@ -85,6 +85,9 @@ public:
 
   // string for debug blocks
   std::string str_blocks();
+
+  // Check if it contains a particular block
+  bool ContainsBlock(size_t block_id);
 
 private:
   std::string name_;     // Name of this block list ( for debugging )

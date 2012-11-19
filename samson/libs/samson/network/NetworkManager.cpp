@@ -52,7 +52,7 @@ void NetworkManager::Remove(const std::string& connection_name) {
     return;
   } else {
     LM_W(("trying to remove connection %s that is not present in this connection manager"
-            , connection_name.c_str()));
+          , connection_name.c_str()));
   }
 }
 
@@ -118,7 +118,7 @@ au::tables::Table *NetworkManager::getConnectionsTable() {
 
 void NetworkManager::RemoveDisconnectedConnections() {
   au::map<std::string, NetworkConnection>::iterator it;
-  for (it = connections.begin(); it != connections.end();) {
+  for (it = connections.begin(); it != connections.end(); ) {
     NetworkConnection *connection = it->second;
 
     if (connection->isDisconnectd()) {
@@ -150,9 +150,9 @@ std::vector<size_t> NetworkManager::getDelilahIds() {
         ids.push_back(id);
       } else {
         LM_W(("Delilah %lu (%s) connected using wrong connection name %s",
-                _node_identifier.id,
-                _node_identifier.getCodeName().c_str(),
-                it_connections->first.c_str()));
+              _node_identifier.id,
+              _node_identifier.getCodeName().c_str(),
+              it_connections->first.c_str()));
       }
     }
   }
@@ -215,9 +215,13 @@ void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
   }
 }
 
+au::SharedPointer<gpb::Collection> NetworkManager::GetQueuesCollection(const Visualization& visualization) {
+  return multi_packet_queue.GetQueuesCollection(visualization);
+}
+
 au::SharedPointer<gpb::Collection> NetworkManager::GetConnectionsCollection(const Visualization& visualization) {
   au::TokenTaker tt(&token_connections_);
-  
+
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("connections");
   au::map<std::string, NetworkConnection>::iterator it_connections;

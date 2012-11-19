@@ -377,6 +377,14 @@ void WorkerCommand::Run() {
     return;
   }
 
+  if (main_command == "ls_stream_operations_statistics") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->task_manager()->GetSOStatisticsCollection(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
+
   if (main_command == "ls_block_requests") {
     au::SharedPointer<gpb::Collection> c =
       samson_worker_->worker_block_manager()->GetCollectionForBlockRequests(visualization);
@@ -442,7 +450,7 @@ void WorkerCommand::Run() {
   if (main_command == "ps_stream_operations_ranges") {
     au::SharedPointer<gpb::Collection> c =
       samson_worker_->task_manager()->GetCollectionForStreamOperationsRanges(visualization);
-    c->set_title(command_);
+    c->set_title("List of stream-operation ranges ( R= Ready // P: Processing )");
     collections_.push_back(c);
     FinishWorkerTask();
     return;
@@ -555,6 +563,16 @@ void WorkerCommand::Run() {
 
   if (main_command == "ls_connections") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->network()->GetConnectionsCollection(visualization);
+    if (c != NULL) {
+      c->set_title(command_);
+      collections_.push_back(c);
+    }
+    FinishWorkerTask();
+    return;
+  }
+
+  if (main_command == "ls_network_queues") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->network()->GetQueuesCollection(visualization);
     if (c != NULL) {
       c->set_title(command_);
       collections_.push_back(c);

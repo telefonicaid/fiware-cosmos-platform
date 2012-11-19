@@ -221,20 +221,20 @@ std::string Packet::str() {
   if (msgCode == Message::WorkerCommand) {
     output << "(W-Command: " << message->worker_command().command() << ")";
   }
-  if (msgCode ==Message::WorkerCommandResponse) {
+  if (msgCode == Message::WorkerCommandResponse) {
     output << "(W-CommandResponse: " << message->worker_command_response().worker_command().command() << ")";
   }
-  if (msgCode ==Message::ClusterInfoUpdate) {
+  if (msgCode == Message::ClusterInfoUpdate) {
     output << "(ClusterInfoUpdate version " << message->cluster_info().version() << " )";
   }
-  if( ( msgCode == Message::BlockRequest ) || ( msgCode == Message::BlockRequestResponse ) ) {
-    output << "(Block id " << message->block_id() << ")";
+  if (( msgCode == Message::BlockRequest ) || ( msgCode == Message::BlockRequestResponse )) {
+    output << "(Block id " << str_block_id(message->block_id()) << ")";
   }
 
-  if( message->has_error() ) {
+  if (message->has_error()) {
     output << "[Error " << message->error().message() << "]";
   }
-  
+
   if (buffer_ != NULL) {
     output << " [Buffer " << au::str(buffer_->size()) <<  "]";
   }

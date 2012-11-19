@@ -27,7 +27,7 @@
 #include "parseArgs/parseArgs.h"
 
 #include "au/CommandLine.h"                     // au::CommandLine
-#include "au/console/Console.h"                 // au::Console
+#include "au/console/Console.h"                 // au::console::Console
 #include "au/console/ConsoleAutoComplete.h"
 
 #include "samson/common/MemoryCheck.h"          // samson::MemoryCheck
@@ -86,14 +86,14 @@ std::string getHelpMessage() {
   return output.str();
 }
 
-class SamsonConfigConsole : public au::Console {
+class SamsonConfigConsole : public au::console::Console {
 public:
 
   std::string getPrompt() {
     return "samsonSetup > ";
   }
 
-  void autoComplete(au::ConsoleAutoComplete *info) {
+  void autoComplete(au::console::ConsoleAutoComplete *info) {
     if (info->completingFirstWord()) {
       info->add("show");
       info->add("help");

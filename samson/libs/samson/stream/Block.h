@@ -46,6 +46,9 @@
 
 
 namespace samson {
+/**
+ * Namespace for stream operations management in SAMSON library
+ */
 namespace stream {
 class BlockList;
 

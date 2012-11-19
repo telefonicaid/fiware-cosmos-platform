@@ -13,9 +13,9 @@
 #include "NetworkConnection.h"  // Own interface
 
 #include "au/ThreadManager.h"
-#include "samson/network/NetworkManager.h"
-#include "samson/common/MessagesOperations.h"
 #include "samson/common/Logs.h"
+#include "samson/common/MessagesOperations.h"
+#include "samson/network/NetworkManager.h"
 
 
 namespace samson {
@@ -93,6 +93,7 @@ NetworkConnection::~NetworkConnection() {
 // Wake up writer thread
 void NetworkConnection::WakeUpWriter() {
   au::TokenTaker tt(&token_);  // Wake up writing thread if necessary
+
   tt.WakeUpAll();
 }
 
@@ -109,12 +110,6 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
   // Make sure connection is close
   socket_connection_->Close();
 
-  // Wake up writing thread if necessary
-  {
-    au::TokenTaker tt(&token_);
-    tt.WakeUpAll();
-  }
-
   // Wait until both thread are gone
   au::Cronometer cronometer;
   while (true) {
@@ -124,6 +119,12 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
       }
     }
 
+    {
+      // Wake up writing thread if necessary
+      au::TokenTaker tt(&token_);
+      tt.WakeUpAll();
+    }
+    
     usleep(100000);
     if (cronometer.seconds() > 1) {
       LM_W(("Waiting for background threads of connection %s", node_identifier_.getCodeName().c_str()));
@@ -162,7 +163,6 @@ void NetworkConnection::readerThread() {
 }
 
 void NetworkConnection::writerThread() {
-  
   while (true) {
     if (socket_connection_->IsClosed()) {
       return;     // Quit if this connection is closed
@@ -172,9 +172,8 @@ void NetworkConnection::writerThread() {
     PacketPointer packet = network_manager_->multi_packet_queue.Front(node_identifier_);
 
     if (packet != NULL) {
-      
-      LOG_M(logs.out_messages, ("Sent packet to %s : %s" , packet->to.str().c_str() , packet->str().c_str() ));
-      
+      LOG_M(logs.out_messages, ("Sent packet to %s : %s", packet->to.str().c_str(), packet->str().c_str()));
+
       size_t total_write = 0;
 
       // Write the packet over this socket
@@ -228,7 +227,6 @@ std::string NetworkConnection::host_and_port()  const {
 }
 
 void NetworkConnection::fill(gpb::CollectionRecord *record, const Visualization& visualization) {
-  
   ::samson::add(record, "name", node_identifier_.getCodeName(), "different,left");
   ::samson::add(record, "user", user_, "different,left");
   ::samson::add(record, "connection", connection_type_, "different,left");
@@ -237,18 +235,17 @@ void NetworkConnection::fill(gpb::CollectionRecord *record, const Visualization&
     ::samson::add(record, "status", "disconnected", "different,left");
   } else {
     ::samson::add(record, "status", "connected", "different,left");
-  } ::samson::add(record, "host",socket_connection_->host_and_port(),"different");
+  } ::samson::add(record, "host", socket_connection_->host_and_port(), "different");
 
-  ::samson::add(record, "In (B)", rate_in_.size(), "f=uint64,sum");
-  ::samson::add(record, "Out (B)", rate_out_.size(), "f=uint64,sum");
+  ::samson::add(record, "In", au::str(rate_in_.hits(), "Ps") + " " + au::str(rate_in_.size(), "B"), "different");
+  ::samson::add(record, "Out", au::str(rate_out_.hits(), "Ps") + " " + au::str(rate_out_.size(), "B"), "different");
 
   ::samson::add(record, "In (B/s)", (size_t)rate_in_.rate(), "f=uint64,sum");
   ::samson::add(record, "Out (B/s)", (size_t)rate_out_.rate(), "f=uint64,sum");
-  
+
   // Pending data to be sent
   std::string queue_description = network_manager_->multi_packet_queue.GetDescription(node_identifier_);
   ::samson::add(record, "Output queue", queue_description, "different");
-  
 }
 
 std::string NetworkConnection::name() const {

@@ -51,6 +51,9 @@ void BlockManager::init() {
 
 BlockManager::BlockManager() :
   token_("BlockManager") {
+  // By default not connected to samson worker
+  samson_worker_ = NULL;
+
   // Default values for read/write scheduling
   scheduled_write_size_ = 0;
   scheduled_read_size_ = 0;
@@ -65,9 +68,6 @@ BlockManager::BlockManager() :
   // Notification to review block manager
   listen(notification_review_block_manager);
   engine::Engine::shared()->notify(new engine::Notification(notification_review_block_manager), 1);
-
-  // By default not connected to samson worker
-  samson_worker_ = NULL;
 }
 
 BlockManager::~BlockManager() {

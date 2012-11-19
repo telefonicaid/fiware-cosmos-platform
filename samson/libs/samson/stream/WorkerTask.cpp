@@ -400,7 +400,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   }
 
   // Counters for statistics
-  int total_hgs = range_.hg_end_ - range_.hg_begin_;
+  // int total_hgs = range_.hg_end_ - range_.hg_begin_;
   int processed_hds = 0;
 
   int transfered_states = 0;
@@ -421,7 +421,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
     // Report progress to show in the lists
     processed_hds++;
-    reportProgress((double)processed_hds / (double)total_hgs);
+    // reportProgress((double)processed_hds / (double)total_hgs);
 
     // Prepare the blockReaderCollection for thi hash-group
     size_t num_kvs = blockreaderCollection.PrepareProcessingHashGroup(hg);

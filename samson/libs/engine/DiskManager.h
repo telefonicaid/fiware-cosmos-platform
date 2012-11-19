@@ -33,9 +33,9 @@
 #include <string>
 
 #include "au/containers/Box.h"
+#include "au/containers/ListMap.h"  // au::ListMap
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
-#include "au/containers/ListMap.h"  // au::ListMap
 #include "au/mutex/Token.h"         // au::Token
 
 #include "au/statistics/OnOffMonitor.h"
@@ -56,7 +56,7 @@ class Notification;
 
 
 class DiskManager {
- public:
+public:
   ~DiskManager();
 
   // Add a disk operation to be executed in the background
@@ -86,7 +86,7 @@ class DiskManager {
   void set_max_num_disk_operations(int _num_disk_operations);
   int num_disk_manager_workers() const;  // Get the number of workers running on the background
 
- private:
+private:
   // Private constructor ( see engine::Engine::InitEngine() )
   explicit DiskManager(int max_num_disk_operations);
 
@@ -116,8 +116,8 @@ class DiskManager {
   au::Box<DiskOperation>   running_operations_;    // Box of running operations
 
   // Information about rate and activity
-  au::rate::Rate rate_in_;
-  au::rate::Rate rate_out_;
+  au::Rate rate_in_;
+  au::Rate rate_out_;
 
   // Monitor to count how much time we are on
   au::OnOffMonitor on_off_monitor_;

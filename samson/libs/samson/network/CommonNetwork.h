@@ -64,9 +64,6 @@ public:
   void Send(const PacketPointer& packet);     // Bypass to avoid sending data to myself
   void SendToAllWorkers(const PacketPointer& packet, std::set<size_t>& workers);
 
-  // Get a collection of current network to show a list of them on a console/ rest / etc..
-  au::SharedPointer<gpb::Collection> GetConnectionsCollection(const Visualization& visualization);
-
   // Get my node identifier
   NodeIdentifier getMynodeIdentifier();
 

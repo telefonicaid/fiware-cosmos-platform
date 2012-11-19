@@ -56,6 +56,9 @@ Delilah::Delilah(std::string connection_type, size_t delilah_id) :
   } else {
     delilah_id_ = delilah_id;   // Network interface for all the workers ( included in the cluster selected )
   }
+
+  au::log_central.set_node(au::str("D%lu", delilah_id_));
+
   network = new DelilahNetwork(connection_type, delilah_id_);
 
   // we start with process 2 because 0 is no process & 1 is global_update messages

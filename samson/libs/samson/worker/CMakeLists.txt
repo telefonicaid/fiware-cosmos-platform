@@ -11,6 +11,7 @@ SET (HEADERS
 	SamsonWorkerController.h
 	CommitCommand.h
 	GlobalBlockSortInfo.h
+	WorkerOverloadAlert.h
 )
 
 SET (SOURCES
@@ -25,6 +26,7 @@ SET (SOURCES
 	SamsonWorkerController.cpp
 	CommitCommand.cpp
 	GlobalBlockSortInfo.cpp
+	WorkerOverloadAlert.cpp
 )
 
 # Include directories

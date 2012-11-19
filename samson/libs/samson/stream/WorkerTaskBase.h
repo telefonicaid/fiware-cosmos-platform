@@ -121,6 +121,9 @@ public:
   void setActivity(const std::string& name);
   std::string GetActivitySummary();
   std::string GetProcessSummary();
+  double GetProcessTime() const;
+  size_t GetInputSize() const;
+  size_t GetOutputSize() const;
 
   // For block ordering
   const std::vector<size_t>& input_block_ids() {
@@ -129,6 +132,12 @@ public:
 
   const std::vector<size_t>& output_block_ids() {
     return output_block_ids_;
+  }
+
+  bool ContainsBlockAtInput(int input, size_t block_id) {
+    BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", input));
+
+    return block_list->ContainsBlock(block_id);
   }
 
 protected:

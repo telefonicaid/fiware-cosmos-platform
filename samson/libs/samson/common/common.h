@@ -23,6 +23,10 @@
 
 #define SIZE_T_UNDEFINED      static_cast<size_t>(-1)
 
+/**
+ * \brief Namespace for samson library
+ * \auth Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ */
 namespace samson {
 // Unsigned types with different bits lengths
 

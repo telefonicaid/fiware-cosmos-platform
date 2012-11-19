@@ -37,6 +37,9 @@
 #include "au/string/StringUtilities.h"
 
 namespace au {
+/**
+ * Name space for au::token library ( Generic tokenizer for simple language interpretation )
+ */
 namespace token {
 class Token {
 public:
@@ -119,7 +122,7 @@ public:
       if (token->content == limiter) {
         return result_tokens;
       }
-      
+
       result_tokens.push_back(Token(token->content, token->type, token->position));
     }
   }

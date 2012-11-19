@@ -15,49 +15,35 @@
 #include <stdlib.h>     // exit
 #include <string.h>     // memcpy
 
-#include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
-#include "parseArgs/paConfig.h"         // paConfig()
-#include "parseArgs/paIsSet.h"
-#include "parseArgs/parseArgs.h"
-
-#include "logMsg/logMsg.h"
 
 #include "au/ThreadManager.h"
 #include "au/daemonize.h"
-#include "au/log/Log.h"
-#include "au/log/LogCentral.h"
-#include "au/log/LogCentralPluginConsole.h"
-#include "au/log/LogCommon.h"
+#include "au/network/NetworkListener.h"
+#include "au/network/SocketConnection.h"
 #include "au/string/StringUtilities.h"                  // au::str()
 
+#include "logMsg/logMsg.h"
+#include "parseArgs/paBuiltin.h"  // paLsHost, paLsPort
+#include "parseArgs/paConfig.h"
+#include "parseArgs/parseArgs.h"
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
 
+#include "samson/common/Logs.h"
 #include "samson/common/coding.h"       // KVHeader
-#include "samson/common/samsonVars.h"
 
-#include "au/network/NetworkListener.h"
-#include "au/network/SocketConnection.h"
 
 #include "LogManager.h"
 #include "StreamConnector.h"
 #include "StreamConnectorService.h"
 #include "common.h"
 
-/* ****************************************************************************
- *
- * Option variables
- */
-SAMSON_ARG_VARS;
 size_t buffer_size;
 char input[1024];
 char output[1024];
 char input_splitter_name[1024];
 char file_name[1024];
 char working_directory[1024];
-char log_command[1024];
-char log_server[1024];
-unsigned short log_port;
 
 bool interactive;
 bool run_as_daemon;
@@ -107,26 +93,41 @@ int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
 
 
 PaArgument paArgs[] =
-{ SAMSON_ARGS,
-  { "-log", log_command, "", PaString, PaOpt, _i "", PaNL, PaNL, "log server host" },
-  { "-log_server", log_server, "", PaString, PaOpt, _i "", PaNL, PaNL, "log server host" },
-  { "-input", input, "", PaString, PaOpt, _i "stdin", PaNL, PaNL, "Input sources " },
-  { "-output", output, "", PaString, PaOpt, _i "stdout", PaNL, PaNL, "Output sources " },
-  { "-buffer_size", &buffer_size, "", PaInt, PaOpt, default_buffer_size, 1, default_buffer_size,
-                    "Buffer size in bytes" },
-  { "-splitter", input_splitter_name, "", PaString, PaOpt, _i "", PaNL, PaNL,
+{
+  { "-input",        input,                   "",                   PaString,                   PaOpt,
+    _i "stdin",
+    PaNL,
+    PaNL,
+    "Input sources "                                                          },
+  { "-output",       output,                  "",                   PaString,                   PaOpt,
+    _i "stdout",              PaNL,                PaNL,
+    "Output sources "                                                         },
+  { "-buffer_size",  &buffer_size,            "",                   PaInt,                      PaOpt,
+    default_buffer_size,      1,
+    default_buffer_size, "Buffer size in bytes"                                                    },
+  { "-splitter",     input_splitter_name,     "",                   PaString,                   PaOpt,
+    _i "",                    PaNL,                PaNL,
     "Splitter to be used ( only valid for the default channel )"              },
-  { "-i", &interactive, "", PaBool, PaOpt, false, false, true, "Interactive console" },
-  { "-daemon", &run_as_daemon, "", PaBool, PaOpt, false, false, true,
+  { "-i",            &interactive,            "",                   PaBool,                     PaOpt,
+    false,                    false,               true,
+    "Interactive console"                                                     },
+  { "-daemon",       &run_as_daemon,          "",                   PaBool,                     PaOpt,
+    false,                    false,               true,
     "Run in background. Remove connection & REST interface activated"         },
-  { "-console_port", &sc_console_port, "", PaInt, PaOpt, SC_CONSOLE_PORT, 1, 9999,
+  { "-console_port", &sc_console_port,        "",                   PaInt,                      PaOpt,
+    SC_CONSOLE_PORT,          1,                   9999,
     "Port to receive new console connections"                                 },
-  { "-web_port", &sc_web_port, "", PaInt, PaOpt, SC_WEB_PORT, 1, 9999,
+  { "-web_port",     &sc_web_port,            "",                   PaInt,                      PaOpt,
+    SC_WEB_PORT,              1,                   9999,
     "Port to receive REST connections"                                        },
-  { "-f", file_name, "", PaString, PaOpt, _i "", PaNL, PaNL,
+  { "-f",            file_name,               "",                   PaString,                   PaOpt,
+    _i "",                    PaNL,                PaNL,
     "Input file with commands to setup channels and adapters"                 },
-  { "-working", working_directory, "", PaString, PaOpt, _i ".", PaNL, PaNL,
-                "Directory to store persistance data if necessary" }, PA_END_OF_ARGS };
+  { "-working",      working_directory,       "",                   PaString,                   PaOpt,
+    _i ".",                   PaNL,                PaNL,
+    "Directory to store persistance data if necessary"                        },
+  PA_END_OF_ARGS
+};
 
 // Log fg for traces
 int logFd = -1;
@@ -161,6 +162,14 @@ int main(int argC, const char *argV[]) {
 
   // Random initialization
   srand(time(NULL));
+  // Init log system
+  au::log_central.Init(argV[0]);
+  samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
+
+  // Add plugins to report lgos to file, server and console
+  au::log_central.AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
+  au::log_central.AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
+  au::log_central.AddScreenPlugin("screen", "[type] text");  // Temporal plugin
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
@@ -173,16 +182,6 @@ int main(int argC, const char *argV[]) {
     Daemonize();
     Deamonize_close_all();
   }
-  // New log system
-  std::string str_log_file = std::string(paLogDir) + "streamConnector.log";
-  std::string str_log_server =  log_server;
-  std::string str_log_server_file = std::string(paLogDir) + "streamConnector_" + log_server +  ".log";
-
-  au::log_central.Init( argV[0] );
-  au::log_central.evalCommand("log_to_file " + str_log_file);
-  if( str_log_server != "" )
-    au::log_central.evalCommand("log_to_server " + str_log_server + " " + str_log_server_file );
-  au::log_central.evalCommand(log_command);  // Command provided in command line
 
   // Engine and its associated elements
   engine::Engine::InitEngine(2, 10000000000, 1);

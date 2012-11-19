@@ -17,14 +17,10 @@
 
 
 namespace au {
+namespace console {
 class ConsoleCommand;
 
 class ConsoleCommandHistory {
-  std::vector<ConsoleCommand *> commands;
-  size_t pos;
-
-  std::string file_name;
-
 public:
 
   ConsoleCommandHistory();
@@ -58,7 +54,13 @@ public:
 
     return output.str();
   }
+
+private:
+
+  std::string file_name;
+  size_t pos;
+  std::vector<ConsoleCommand *> commands;
 };
 }
-
+}
 #endif  // ifndef _AU_CONSOLE_COMMAND_HISTORY

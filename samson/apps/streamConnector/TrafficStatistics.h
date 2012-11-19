@@ -14,16 +14,16 @@
 #define _H_STREAM_CONNECTOR_TRAFFIC_STATISTICS
 
 
-#include "au/statistics/Rate.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
+#include "au/statistics/Rate.h"
 
 namespace stream_connector {
 class TrafficStatistics {
   // Rate statistics
   au::Token token;
-  au::rate::Rate input_rate;
-  au::rate::Rate output_rate;
+  au::Rate input_rate;
+  au::Rate output_rate;
 
 public:
 

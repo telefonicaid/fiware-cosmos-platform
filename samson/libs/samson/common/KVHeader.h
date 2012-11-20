@@ -21,7 +21,6 @@ namespace samson {
  */
 
 struct KVHeader {
-
   // Information about the packet
   // ---------------------------------------------------------------
   int magic_number;             // Magic number to make sure reception is correct
@@ -48,7 +47,7 @@ struct KVHeader {
 
   // Format operations
   // ---------------------------------------------------------------
-  KVFormat GetKVFormat();
+  KVFormat GetKVFormat() const;
 
   // Check operations ( magic number and other conditions )
   // ---------------------------------------------------------------

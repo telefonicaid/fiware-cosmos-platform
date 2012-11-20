@@ -19,16 +19,16 @@
 
 namespace samson {
 namespace stream {
-WorkerTaskBase::WorkerTaskBase(::samson::SamsonWorker* samson_worker, size_t id, const std::string& concept , bool simple_task ) :
+WorkerTaskBase::WorkerTaskBase(::samson::SamsonWorker *samson_worker, size_t id, const std::string& concept,
+                               bool simple_task) :
   block_list_container_(au::str("block lists for task %lu", id), id), activity_monitor_("definition") {
   samson_worker_ = samson_worker;
-  id_ = id; // Not assigned at the moment
-  ready_ = false; // By default it is not ready
-  task_state_ = "Init"; // Set initial state
+  id_ = id;  // Not assigned at the moment
+  ready_ = false;  // By default it is not ready
+  task_state_ = "Init";  // Set initial state
   concept_ = concept;
   worker_task_finished_ = false;
-    simple_task_ = simple_task;
-
+  simple_task_ = simple_task;
   // Environment for this tasks
   environment_.Set("system.task_id", id);
 }
@@ -52,7 +52,6 @@ bool WorkerTaskBase::is_ready() {
   return ready_;
 }
 
-
 void WorkerTaskBase::SetTaskState(const std::string& task_state) {
   task_state_ = task_state;
 }
@@ -62,6 +61,7 @@ void WorkerTaskBase::AddInput(int channel, BlockPointer block, KVRange range, KV
   BlockList *block_list = block_list_container_.getBlockList(block_list_name);
 
   block_list->add(new BlockRef(block, range, info));
+  input_block_ids_.push_back(block->block_id());
 }
 
 void WorkerTaskBase::AddOutput(int channel, BlockPointer block, KVRange range, KVInfo info) {
@@ -69,8 +69,6 @@ void WorkerTaskBase::AddOutput(int channel, BlockPointer block, KVRange range, K
   BlockList *block_list = block_list_container_.getBlockList(block_list_name);
 
   block_list->add(new BlockRef(block, range, info));
-
-  // Keep the list of generated output blocks
   output_block_ids_.push_back(block->block_id());
 }
 
@@ -143,6 +141,7 @@ bool WorkerTaskBase::IsWorkerTaskFinished() const {
 std::string WorkerTaskBase::str_inputs()  const {
   return block_list_container_.str_inputs();
 }
+
 std::string WorkerTaskBase::str_outputs() const {
   return block_list_container_.str_outputs();
 }
@@ -158,7 +157,6 @@ void WorkerTaskBase::SetWorkerTaskFinishedWithError(const std::string& error_mes
 
 std::string WorkerTaskBase::generate_commit_command(const std::vector<std::string>& inputs,
                                                     const std::vector<std::string>& outputs) {
-
   // Get the commit command for this stream operation
   CommitCommand commit_command;
 
@@ -189,6 +187,7 @@ std::string WorkerTaskBase::generate_commit_command(const std::vector<std::strin
   // Gerate the commit command
   return commit_command.GetCommitCommand();
 }
+
 void WorkerTaskBase::setActivity(const std::string& name) {
   activity_monitor_.StartActivity(name);
 }
@@ -198,11 +197,21 @@ std::string WorkerTaskBase::GetActivitySummary() {
   return activity_monitor_.GetSummary();
 }
 
-  std::string WorkerTaskBase::GetProcessSummary() {
-    activity_monitor_.StopActivity();
-    return au::str(activity_monitor_.GetTotalTimeForActivity("process") , "s" );
-  }
-  
-  
+std::string WorkerTaskBase::GetProcessSummary() {
+  activity_monitor_.StopActivity();
+  return au::str(activity_monitor_.GetTotalTimeForActivity("process"), "s");
+}
+
+double WorkerTaskBase::GetProcessTime() const {
+  return activity_monitor_.GetTotalTimeForActivity("process");
+}
+
+size_t WorkerTaskBase::GetInputSize() const {
+  return block_list_container_.inputs_size();
+}
+
+size_t WorkerTaskBase::GetOutputSize() const {
+  return block_list_container_.inputs_size();
+}
 }
 }

@@ -61,7 +61,7 @@ PaArgument paArgs[] =
 int logFd = -1;
 
 
-class SamsonModuleEditor : public au::Console {
+class SamsonModuleEditor : public au::console::Console {
   // List of modules defined in this directory...
   au::map<std::string, samson::ModuleInformation> modules;
 
@@ -164,7 +164,7 @@ public:
     return table;
   }
 
-  void evalCommand(std::string command) {
+  void evalCommand(const std::string& command) {
     au::CommandLine cmdLine;
 
     cmdLine.Parse(command);
@@ -281,7 +281,7 @@ public:
     return false;
   }
 
-  void autoComplete(au::ConsoleAutoComplete *info) {
+  void autoComplete(au::console::ConsoleAutoComplete *info) {
     if (info->completingFirstWord()) {
       info->add("ls_modules");
       info->add("quit");

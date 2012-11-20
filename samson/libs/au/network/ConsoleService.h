@@ -25,9 +25,9 @@
 #include "au/gpb.h"
 #include "au/network/Service.h"
 namespace au {
-  namespace gpb {
-    class ConsolePacket;
-  }
+namespace gpb {
+class ConsolePacket;
+}
 }
 
 namespace au {
@@ -35,73 +35,77 @@ namespace network {
 class Service;
 
 class ConsoleServiceClientBase {
-  public:
+public:
 
-    ConsoleServiceClientBase(int port);
+  ConsoleServiceClientBase(int port);
 
-    void Connect(std::string host, au::ErrorManager *error);
-    void Disconnect(au::ErrorManager *error);
+  void Connect(std::string host, au::ErrorManager *error);
+  void Disconnect(au::ErrorManager *error);
 
-    bool Write(au::gpb::ConsolePacket *packet, au::ErrorManager *error);
-    bool Read(au::gpb::ConsolePacket **packet, au::ErrorManager *error);
+  bool Write(au::gpb::ConsolePacket *packet, au::ErrorManager *error);
+  bool Read(au::gpb::ConsolePacket **packet, au::ErrorManager *error);
 
-    // Methods related with au::Console
-    std::string getPrompt();
-    void evalCommand(std::string command, au::ErrorManager *error);
-    virtual void autoComplete(ConsoleAutoComplete *info);
-    void addEspaceSequence(std::string sequence);
-    virtual void process_escape_sequence(std::string sequence) {};
+  // Methods related with au::console::Console
+  std::string getPrompt();
+  void evalCommand(const std::string& command, au::ErrorManager *error);
+  virtual void autoComplete(console::ConsoleAutoComplete *info);
+  void addEspaceSequence(std::string sequence);
+  virtual void process_escape_sequence(std::string sequence) {
+  };
 
-  private:
+private:
 
-    // Full a message to be sent
-    void FillMessage(au::gpb::ConsolePacket *message, au::ErrorManager *error);
+  // Full a message to be sent
+  void FillMessage(au::gpb::ConsolePacket *message, au::ErrorManager *error);
 
-    int port_;
-    SocketConnection *socket_connection_;
+  int port_;
+  SocketConnection *socket_connection_;
 
-    // Prompt request delayed
-    au::Cronometer cronometer_prompt_request_;
-    std::string current_prompt_;
+  // Prompt request delayed
+  au::Cronometer cronometer_prompt_request_;
+  std::string current_prompt_;
 };
 
 // Simple console to interact with the client
 
-class ConsoleServiceClient : public ConsoleServiceClientBase, public Console {
-  public:
+class ConsoleServiceClient : public ConsoleServiceClientBase, public console::Console {
+public:
 
-    ConsoleServiceClient(int port);
+  ConsoleServiceClient(int port);
 
-    // Virtual methods of console
-    virtual void evalCommand(std::string command);
-    virtual void autoComplete(ConsoleAutoComplete *info);
-    virtual std::string getPrompt();
+  // Virtual methods of console
+  virtual void evalCommand(const std::string& command);
+  virtual void autoComplete(console::ConsoleAutoComplete *info);
+  virtual std::string getPrompt();
 };
 
 // Service based on a remote console
 
 class ConsoleService : public Service {
-  public:
+public:
 
-    ConsoleService(int port) :
-      Service(port) {
-    }
+  ConsoleService(int port) :
+    Service(port) {
+  }
 
-    // Virtual methods to be implemented by subclasses
-    virtual void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {}
-    virtual void autoComplete(ConsoleAutoComplete *info, au::Environment *environment) {}
-    virtual std::string getPrompt(au::Environment *environment) {
-      return ">>";
-    }
+  // Virtual methods to be implemented by subclasses
+  virtual void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {
+  }
 
-  private:
+  virtual void autoComplete(console::ConsoleAutoComplete *info, au::Environment *environment) {
+  }
+
+  virtual std::string getPrompt(au::Environment *environment) {
+    return ">>";
+  }
+
+private:
 
   // main function executed by all threads
   virtual void run(SocketConnection *socket_connection, bool *quit);
-  
-    // Fill message to be sent to client
-    void fill_message(au::ErrorManager *error, au::gpb::ConsolePacket* message);
 
+  // Fill message to be sent to client
+  void fill_message(au::ErrorManager *error, au::gpb::ConsolePacket *message);
 };
 }
 }

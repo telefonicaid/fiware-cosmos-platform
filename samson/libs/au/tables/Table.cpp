@@ -15,8 +15,8 @@
 #include <string>
 #include <vector>
 
-#include "au/tables/Select.h"
 #include "au/string/xml.h"
+#include "au/tables/Select.h"
 
 /*
  * #define AU_TABLE_H        "-"
@@ -125,8 +125,8 @@ int TableCell::compare(std::string v1, std::string v2, TableColumnFormat format)
     case format_timestamp:
     case format_double:
     case format_percentadge: {
-      double _v1 = strtof(v1.c_str(), (char **) NULL);
-      double _v2 = strtof(v2.c_str(), (char **) NULL);
+      double _v1 = strtof(v1.c_str(), (char **)NULL);
+      double _v2 = strtof(v2.c_str(), (char **)NULL);
 
       if (_v1 < _v2) {
         return -1;
@@ -404,16 +404,16 @@ std::string TableColumn::simple_transform(std::string value) {
       return value;
 
     case format_uint64:
-      return au::str((size_t) strtoll(value.c_str(), (char **) NULL, 10));
+      return au::str((size_t)strtoll(value.c_str(), (char **)NULL, 10));
 
     case format_double:
-      return au::str(strtof(value.c_str(), (char **) NULL));
+      return au::str(strtof(value.c_str(), (char **)NULL));
 
     case format_time:
-      return au::str_time(strtoll(value.c_str(), (char **) NULL, 10));
+      return au::str_time(strtoll(value.c_str(), (char **)NULL, 10));
 
     case format_timestamp:
-      return au::str_timestamp(strtoll(value.c_str(), (char **) NULL, 10));
+      return au::str_timestamp(strtoll(value.c_str(), (char **)NULL, 10));
 
     case format_percentadge:
       return au::str_percentage(atof(value.c_str()));
@@ -488,7 +488,7 @@ void TableColumn::sort(StringVector& values) {
   if ((format == format_uint) || (format == format_uint64) || (format == format_time)) {
     std::vector<size_t> _values;
     for (size_t i = 0; i < values.size(); i++) {
-      _values.push_back(strtoll(values[i].c_str(), (char **) NULL, 10));
+      _values.push_back(strtoll(values[i].c_str(), (char **)NULL, 10));
     }
     std::sort(_values.begin(), _values.end());
 
@@ -501,7 +501,7 @@ void TableColumn::sort(StringVector& values) {
   if ((format == format_double) || (format == format_percentadge)) {
     std::vector<double> _values;
     for (size_t i = 0; i < values.size(); i++) {
-      _values.push_back(strtof(values[i].c_str(), (char **) NULL));
+      _values.push_back(strtof(values[i].c_str(), (char **)NULL));
     }
     std::sort(_values.begin(), _values.end());
 
@@ -516,7 +516,7 @@ std::string TableColumn::str_sum(StringVector& values) {
   if ((format == format_uint64) || (format == format_time)) {
     size_t total = 0;
     for (size_t i = 0; i < values.size(); i++) {
-      total += strtoll(values[i].c_str(), (char **) NULL, 10);
+      total += strtoll(values[i].c_str(), (char **)NULL, 10);
     }
     return simple_transform(au::str("%lu", total));
   }
@@ -524,7 +524,7 @@ std::string TableColumn::str_sum(StringVector& values) {
   if ((format == format_double) || (format == format_percentadge)) {
     size_t total = 0;
     for (size_t i = 0; i < values.size(); i++) {
-      total += strtof(values[i].c_str(), (char **) NULL);
+      total += strtof(values[i].c_str(), (char **)NULL);
     }
     return simple_transform(au::str(total));
   }
@@ -570,7 +570,7 @@ Table::~Table() {
 }
 
 std::string Table::getValue(size_t r, size_t c) {
-  if ((r == (size_t) -1) || (c == (size_t) -1)) {
+  if ((r == static_cast<size_t>(-1)) || (c == static_cast<size_t>(-1))) {
     return "";
   }
 
@@ -602,7 +602,7 @@ size_t Table::getColumn(std::string title) {
     }
   }
 
-  return (size_t) -1;
+  return static_cast<size_t>(-1);
 }
 
 std::string Table::getColumn(size_t pos) {
@@ -645,7 +645,7 @@ std::string Table::str() {
   int pos = 0;
   while (title.length() > title_length) {
     column_width[pos++]++;
-    if (pos >= (int) column_width.size()) {
+    if (pos >= (int)column_width.size()) {
       pos = 0;
     }
     title_length++;
@@ -820,7 +820,8 @@ std::string Table::str_html() {
 
   // Add style to the table
   output
-      << "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#table-5 tbody tr:hover td{color:#009;}</style>";
+  <<
+  "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#table-5 tbody tr:hover td{color:#009;}</style>";
 
   output << "<table id=\"table-5\">";
 
@@ -946,7 +947,8 @@ Table *Table::selectTable(SelectTableInformation *select) {
       // Determine the end of this group of rows
       size_t row_end = row_begin + 1;
       while ((row_end < rows.size()) && (table->rows[row_begin]->compare(table->rows[row_end], select->group_columns)
-          == 0)) {
+                                         == 0))
+      {
         row_end++;
       }
 
@@ -1058,10 +1060,10 @@ void Table::sort(StringVector &sort_columns) {
       int c = 0;
 
       int pos_sort_columns = 0;
-      while ((c == 0) && (pos_sort_columns < (int) sort_columns.size())) {
+      while ((c == 0) && (pos_sort_columns < (int)sort_columns.size())) {
         std::string column_name = sort_columns[pos_sort_columns];
         size_t column_id = getColumn(column_name);
-        if (column_id != (size_t) -1) {
+        if (column_id != static_cast<size_t>(-1)) {
           TableCell *cell1 = rows[r]->get(column_name);
           TableCell *cell2 = rows[rr]->get(column_name);
 

@@ -137,7 +137,7 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
   error->AddError(au::str("Unknown command %s\n", main_command.c_str()));
 }
 
-void LogServer::autoComplete(ConsoleAutoComplete *info, au::Environment *environment) {
+void LogServer::autoComplete(console::ConsoleAutoComplete *info, au::Environment *environment) {
   if (info->completingFirstWord()) {
     info->add("help");
     info->add("info");
@@ -149,7 +149,6 @@ void LogServer::autoComplete(ConsoleAutoComplete *info, au::Environment *environ
   if (info->completingSecondWord("connect")) {
     info->setHelpMessage("Provide hostname where logServer is located...");
   }
-
 }
 
 std::string LogServer::getPrompt(au::Environment *environment) {

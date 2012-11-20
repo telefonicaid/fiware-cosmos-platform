@@ -21,8 +21,8 @@
 
 namespace samson {
 class Rate {
-  au::rate::Rate rate_kvs;          // Rate for key values
-  au::rate::Rate rate_size;         // Rate for size
+  au::Rate rate_kvs;          // Rate for key values
+  au::Rate rate_size;         // Rate for size
 
 public:
 

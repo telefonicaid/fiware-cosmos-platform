@@ -13,10 +13,6 @@
 
 namespace au {
 namespace console {
-//
-// CommandItem
-//
-
 CommandItem::CommandItem(const std::string& name
                          , options::Type type
                          , bool optional
@@ -32,7 +28,7 @@ CommandItem::CommandItem(const std::string& name
   min_value_ = min_value;
   max_value_ = max_value;
 
-  options_group_ = "";      // No group by default
+  options_group_ = "";          // No group by default
 }
 
 CommandItem::CommandItem(const CommandItem& command_item) {
@@ -91,7 +87,7 @@ std::string CommandItem::str_help() {
 
   // Add help
   if (help_ != "") {
-    output << help_ << "\n";      // Spetial case in group options
+    output << help_ << "\n";          // Spetial case in group options
   }
   if (options_group_values.size() > 0) {
     std::ostringstream str_options;
@@ -198,7 +194,7 @@ std::string CommandItem::str_usage_argument() {
   return output.str();
 }
 
-void CommandItem::autoComplete(au::ConsoleAutoComplete *info) {
+void CommandItem::autoComplete(au::console::ConsoleAutoComplete *info) {
   /*
    * if( help_ != "" )
    * info->setHelpMessage( au::str("Seting option '%s': (%s) %s" , name_.c_str() , str_type() , help_.c_str() ) );
@@ -208,7 +204,7 @@ void CommandItem::autoComplete(au::ConsoleAutoComplete *info) {
   if (options_group_values.size() > 0) {
     for (size_t i = 0; i < options_group_values.size(); i++) {
       info->add(options_group_values[i]);
-    }      // Auto complete for files
+    }          // Auto complete for files
   }
   if (options_group_ == "#file") {
     info->auto_complete_files("");
@@ -319,7 +315,7 @@ void Command::add_option(CommandItem *item) {
   options_.push_back(item);
 }
 
-void Command::autoComplete(au::ConsoleAutoComplete *info) {
+void Command::autoComplete(au::console::ConsoleAutoComplete *info) {
   // Identify if it is completing a particular item ( argument or option )
   if (!info->completingSecondWord()) {
     // Get the last work
@@ -351,12 +347,12 @@ void Command::autoComplete(au::ConsoleAutoComplete *info) {
     if (( previous_words[i].length() > 0 ) && ( previous_words[i][0] == '-' )) {
       CommandItem *item = get_option(previous_words[i]);
       if (!item) {
-        return;      // Not possible to autocomplete since this error is wrong.
+        return;       // Not possible to autocomplete since this error is wrong.
       }
       if (item->type() == options::option_bool) {
         continue;
       } else {
-        i++;      // skip the value
+        i++;          // skip the value
       }
     } else {
       argument_pos++;
@@ -364,7 +360,7 @@ void Command::autoComplete(au::ConsoleAutoComplete *info) {
   }
 
   if (arguments_.size() <= (size_t)argument_pos) {
-    return;      // Not possible to autocomplete
+    return;          // Not possible to autocomplete
   }
   arguments_[argument_pos]->autoComplete(info);
 
@@ -438,16 +434,16 @@ CommandItem *CommandCatalogue::add_option(const std::string& command_name
           , name.c_str(), command_name.c_str()));
     return NULL;
   }
-  
+
   // Robust for asking without "-"
   std::string final_name;
   if (( name.length() > 0 ) && ( name[0] != '-' )) {
     final_name = "-" + name;
-  }
-  else
+  } else {
     final_name = name;
-  
-  
+  }
+
+
   CommandItem *item = new CommandItem(final_name, type, optional, help, default_value, min_value, max_value);
   c->add_option(item);
   return item;
@@ -542,6 +538,17 @@ CommandItem *CommandCatalogue::add_mandatory_string_argument(const std::string& 
                       );
 }
 
+CommandItem *CommandCatalogue::add_mandatory_uint64_argument(const std::string& command_name
+                                                             , const std::string& name
+                                                             , const std::string& help) {
+  return add_argument(command_name
+                      , name
+                      , options::option_uint64
+                      , false
+                      , help
+                      );
+}
+
 CommandItem *CommandCatalogue::add_string_options_argument(const std::string& command_name
                                                            , const std::string& name
                                                            , const std::string& options_group
@@ -556,7 +563,7 @@ CommandItem *CommandCatalogue::add_string_options_argument(const std::string& co
   return item;
 }
 
-void CommandCatalogue::autoComplete(au::ConsoleAutoComplete *info) {
+void CommandCatalogue::autoComplete(au::console::ConsoleAutoComplete *info) {
   // Autocomplete with the names
   if (info->completingFirstWord()) {
     info->add("help: Show help for commands or categories", "help", true);
@@ -570,8 +577,8 @@ void CommandCatalogue::autoComplete(au::ConsoleAutoComplete *info) {
   // Spetial help auto-completion
   if (info->firstWord() == "help") {
     if (info->completingSecondWord()) {
-      info->add("all");      // To view help for all categories
-      info->add("categories");      // To view available categories
+      info->add("all");          // To view help for all categories
+      info->add("categories");   // To view available categories
 
       // Add all commands
       for (size_t i = 0; i < commands_.size(); i++) {
@@ -764,7 +771,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
 
   CommandInstance *command_instance = new CommandInstance(command, command_line);
 
-  int pos_argument = 0;      // Position of the argument we are parsing
+  int pos_argument = 0;          // Position of the argument we are parsing
 
   for (size_t i = 1; i < components.size(); i++) {
     // Check if we are at the begining of a -option element
@@ -776,7 +783,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
         CommandItem *item = command->get_option(option_name);
         if (!item) {
           error.set(au::str("Option %s is not defined for command %s", option_name.c_str(),
-                             main_command.c_str()));
+                            main_command.c_str()));
           error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
           error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
           delete command_instance;
@@ -788,7 +795,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
           } else {
             if (i == (components.size() - 1)) {
               error.set(au::str("No value provided for option %s in command %s"
-                                 , option_name.c_str(), main_command.c_str()));
+                                , option_name.c_str(), main_command.c_str()));
               error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
               error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
               delete command_instance;
@@ -799,7 +806,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
 
               if (!item->isValidValue(value)) {
                 error.set(au::str("%s is not a valid value for option %s in command %s",
-                                   value.c_str(), option_name.c_str(), main_command.c_str()));
+                                  value.c_str(), option_name.c_str(), main_command.c_str()));
                 error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
                 error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
                 delete command_instance;
@@ -811,12 +818,12 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
             }
           }
         }
-      }      // A new argument is obtained
+      }          // A new argument is obtained
     }
     if (command->arguments().size() <= (size_t)pos_argument) {
       error.set(au::str("Extra non-defined argument (%s) provided for Command %s"
-                         , components[i].c_str()
-                         , main_command.c_str(), command->usage().c_str()));
+                        , components[i].c_str()
+                        , main_command.c_str(), command->usage().c_str()));
       error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
       error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
       delete command_instance;
@@ -829,7 +836,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
 
     if (!item->isValidValue(value)) {
       error.set(au::str("%s is not a valid value for argument %s in command %s",
-                         value.c_str(), item->name().c_str(), main_command.c_str()));
+                        value.c_str(), item->name().c_str(), main_command.c_str()));
       error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
       error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
       delete command_instance;
@@ -844,7 +851,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
     if (!command->options()[i]->optional()) {
       if (!command_instance->hasValueFor(command->options()[i]->name())) {
         error.set(au::str("Missing mandatory option %s in command %s",
-                           command->options()[i]->name().c_str(), main_command.c_str()));
+                          command->options()[i]->name().c_str(), main_command.c_str()));
         error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
         error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
         delete command_instance;
@@ -857,7 +864,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
     if (!command->arguments()[i]->optional()) {
       if (!command_instance->hasValueFor(command->arguments()[i]->name())) {
         error.set(au::str("Missing mandatory argument %s in command %s",
-                           command->arguments()[i]->name().c_str(), main_command.c_str()));
+                          command->arguments()[i]->name().c_str(), main_command.c_str()));
         error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
         error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
         delete command_instance;
@@ -881,4 +888,4 @@ void CommandCatalogue::add_tag(const std::string& command_name, const std::strin
   c->set_tag(tag);
 }
 }
-}      // End of namespace au::console
+}      // End of namespace au::console::Console

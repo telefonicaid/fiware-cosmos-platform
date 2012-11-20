@@ -27,12 +27,12 @@
 #include "logMsg/logMsg.h"                   // lmInit, LM_*
 
 #include "au/CommandLine.h"                  // au::CommandLine
-#include "au/statistics/CounterCollection.h"            // au::CounterCollection
-#include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/containers/map.h"               // au::map
 #include "au/mutex/Token.h"                  // au::Token
 #include "au/mutex/TokenTaker.h"             // au::TokenTaker
-#include "au/string/StringUtilities.h"                       // au::Table
+#include "au/statistics/CounterCollection.h"  // au::CounterCollection
+#include "au/statistics/Cronometer.h"      // au::Cronometer
+#include "au/string/StringUtilities.h"       // au::Table
 
 #include "au/tables/pugi.h"                  // pugi::...
 
@@ -109,7 +109,7 @@ public:
 
   Environment environment;                      // Environment properties to be sent in the next job
 
-  Delilah(std::string connection_type, size_t delilah_id = (size_t)-1);
+  Delilah(std::string connection_type, size_t delilah_id = static_cast<size_t>(-1));
   ~Delilah();
 
   // Stop all threads ( just before calling delete )

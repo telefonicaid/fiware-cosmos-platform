@@ -8,7 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-#include "samson/delilah/Delilah.h"           // Own interfce
+#include "samson/delilah/Delilah.h"    // Own interfce
 
 #include <dirent.h>                    // DIR directory header
 #include <fnmatch.h>
@@ -19,8 +19,8 @@
 #include <map>
 
 #include "au/CommandLine.h"            // CommandLine
-#include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/mutex/TokenTaker.h"       // au::TokenTake
+#include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/tables/Table.h"
 #include "engine/Buffer.h"      // engine::Buffer
 #include "engine/DiskManager.h"
@@ -28,10 +28,10 @@
 #include "engine/Notification.h"    // engine::Notificaiton
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 #include "samson/common/EnvironmentOperations.h"
-#include "samson/common/Macros.h"             // EXIT, ...
+#include "samson/common/Macros.h"      // EXIT, ...
 #include "samson/common/NotificationMessages.h"  // notification_network_diconnected
 #include "samson/common/SamsonDataSet.h"       // samson::SamsonDataSet
-#include "samson/common/SamsonSetup.h"        // samson::SamsonSetup
+#include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
 #include "samson/delilah/DataSource.h"
 #include "samson/delilah/DelilahConsole.h"      // samson::DelilahConsole
 #include "samson/delilah/PopDelilahComponent.h"
@@ -51,11 +51,14 @@ namespace samson {
 Delilah::Delilah(std::string connection_type, size_t delilah_id) :
   token("Delilah_token") {
   // Random identifier for this delilah
-  if (delilah_id == (size_t) -1) {
+  if (delilah_id == static_cast<size_t>(-1)) {
     delilah_id_ = au::code64_rand();
   } else {
     delilah_id_ = delilah_id;   // Network interface for all the workers ( included in the cluster selected )
   }
+
+  au::log_central.set_node(au::str("D%lu", delilah_id_));
+
   network = new DelilahNetwork(connection_type, delilah_id_);
 
   // we start with process 2 because 0 is no process & 1 is global_update messages
@@ -149,8 +152,8 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
 
   if (packet->msgCode != Message::ClusterInfoUpdate) {
     error->set(
-               au::str("Error receiving cluster information. Received %s instead",
-                       Message::messageCode(packet->msgCode)));
+      au::str("Error receiving cluster information. Received %s instead",
+              Message::messageCode(packet->msgCode)));
     if (socket_connection) {
       delete socket_connection;
     }
@@ -163,8 +166,8 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   cluster_info->CopyFrom(packet->message->cluster_info());
 
   LM_V(("ClusterSetup retreived correctly from %s ( version %lu )"
-          , host.c_str()
-          , cluster_info->version()));
+        , host.c_str()
+        , cluster_info->version()));
 
   network->set_cluster_information(cluster_info);
 
@@ -180,7 +183,7 @@ void Delilah::disconnect() {
 
 bool Delilah::isConnected() {
   // Check if have received an update from any worker
-  return (network->cluster_information_version() != (size_t) -1);
+  return (network->cluster_information_version() != static_cast<size_t>(-1));
 }
 
 void Delilah::notify(engine::Notification *notification) {
@@ -257,7 +260,7 @@ void Delilah::receive(const PacketPointer& packet) {
   if (packet->msgCode == Message::ClusterInfoUpdate) {
     if (!packet->message->has_cluster_info()) {
       LM_W(("Received a cluster info update message without cluster information from connection %s. Ignoring..."
-              , packet->from.str().c_str()));
+            , packet->from.str().c_str()));
       return;
     }
 
@@ -289,7 +292,7 @@ void Delilah::receive(const PacketPointer& packet) {
   // --------------------------------------------------------------------
   // PushBlockResponse
   // --------------------------------------------------------------------
-  if ( msgCode == Message::PushBlockResponse ) {
+  if (msgCode == Message::PushBlockResponse) {
     if (!packet->message->has_push_id()) {
       LM_W(("Received a %s without a push_id", Message::messageCode(msgCode)));
       return;
@@ -407,7 +410,7 @@ size_t Delilah::push_txt(engine::BufferPointer buffer, const std::string& queue)
 
 size_t Delilah::push_txt(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
   if (buffer == NULL) {
-    return (size_t) -1;
+    return static_cast<size_t>(-1);
   }
 
   // Create a new buffer containing a header
@@ -621,7 +624,7 @@ int Delilah::_receive(const PacketPointer& packet) {
 }
 
 // Get information for monitorization
-void Delilah::getInfo(std::ostringstream& /* output */) {
+void Delilah::getInfo(std::ostringstream&  /* output */) {
   // Engine
   // engine::Engine::shared()->getInfo( output );
 
@@ -670,8 +673,8 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
               }
             } else {
               table.addRow(
-                           au::StringVector(pent->d_name, "SAMSON queue", samson_data_set->info().strDetailed(),
-                                            samson_data_set->format().str(), "-"));
+                au::StringVector(pent->d_name, "SAMSON queue", samson_data_set->info().strDetailed(),
+                                 samson_data_set->format().str(), "-"));
             }
           }
         }

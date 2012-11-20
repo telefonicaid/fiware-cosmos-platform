@@ -44,20 +44,9 @@ void KVInfo::append(uint32 _size, uint32 _kvs) {
   kvs += _kvs;
 }
 
-void KVInfo::append(KVInfo other) {
+void KVInfo::append(const KVInfo& other) {
   size += other.size;
   kvs += other.kvs;
-}
-
-bool KVInfo::canAppend(KVInfo other) {
-  if (((uint64)size + (uint64)other.size ) >= MAX_UINT_32) {
-    return false;
-  }
-  if (((uint64)kvs + (uint64)other.kvs ) >= MAX_UINT_32) {
-    return false;
-  }
-
-  return true;
 }
 
 void KVInfo::remove(uint32 _size, uint32 _kvs) {
@@ -65,7 +54,7 @@ void KVInfo::remove(uint32 _size, uint32 _kvs) {
   kvs -= _kvs;
 }
 
-void KVInfo::remove(KVInfo other) {
+void KVInfo::remove(const KVInfo& other) {
   size -= other.size;
   kvs -= other.kvs;
 }
@@ -77,7 +66,7 @@ std::string KVInfo::str() const {
   return o.str();
 }
 
-bool KVInfo::isEmpty() {
+bool KVInfo::isEmpty() const {
   return ((kvs == 0) && (size == 0));
 }
 
@@ -89,7 +78,7 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
     return NULL;
   }
 
-  KVHeader *header = (KVHeader *)_data;
+  KVHeader *header = reinterpret_cast<KVHeader *>(_data);
   char *data = _data + sizeof(KVHeader);
 
   Data *key_data = au::Singleton<ModulesManager>::shared()->getData(header->keyFormat);
@@ -159,5 +148,4 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
   }
   return info;
 }
-
 }

@@ -446,7 +446,7 @@ void Channel::report_input_size(size_t size) {
   connector_->report_input_size(size);
 }
 
-void Channel::autoCompleteWithAdaptorsNames(au::ConsoleAutoComplete *info) {
+void Channel::autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComplete *info) {
   au::TokenTaker tt(&token);
 
   au::map<std::string, Adaptor>::iterator it_items;

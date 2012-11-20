@@ -17,16 +17,16 @@ CommitCommandItem::CommitCommandItem(const std::string& command, const std::stri
                                      size_t block_size, const KVFormat& format, const KVRange& range,
                                      const KVInfo& info) :
   command_(command), queue_(queue), block_id_(block_id), block_size_(block_size), format_(format), range_(range),
-      info_(info) {
+  info_(info) {
 }
 
-CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au::ErrorManager&error) {
+CommitCommandItem *CommitCommandItem::create_item(const std::string& command, au::ErrorManager& error) {
   std::vector<std::string> components = au::split(command, ':');
   if (components.size() != 10) {
     LM_W(("Wrong number of components (%lu!=10) in commit command component: '%s'", components.size(), command.c_str()));
     error.set(
-               au::str("Wrong number of components (%lu!=10) in commit command component: '%s'", components.size(),
-                       command.c_str()));
+      au::str("Wrong number of components (%lu!=10) in commit command component: '%s'", components.size(),
+              command.c_str()));
     return NULL;
   }
 

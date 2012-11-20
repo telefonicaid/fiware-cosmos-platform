@@ -29,7 +29,7 @@
 #include "parseArgs/parseArgs.h"
 
 #include "au/CommandLine.h"                     // au::CommandLine
-#include "au/console/Console.h"                 // au::Console
+#include "au/console/Console.h"                 // au::console::Console
 
 #include "samson/common/MemoryCheck.h"
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup

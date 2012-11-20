@@ -53,7 +53,7 @@ void PushItem::Review() {
   }
   if (state_ == init) {
     worker_id_ = delilah_->network->getRandomWorkerId();        // Get a random worker id to push content
-    if (worker_id_ == (size_t)-1) {
+    if (worker_id_ == static_cast<size_t>(-1)) {
       return;     // no worker available...
     }
     cronometer_.Reset();
@@ -108,10 +108,9 @@ void PushItem::ResetPushItem() {
 
 // A Push response has been received from worker
 void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::ErrorManager& error) {
-  
-  if (state_ == completed)
-    return; // This item is completed, nothing to do with me
-  
+  if (state_ == completed) {
+    return;  // This item is completed, nothing to do with me
+  }
   if (worker_id != worker_id_) {
     LM_W(("Push[%lu] Received message %s from worker %lu in a push item while my worker id is %lu. Ignoring..."
           , push_id_
@@ -149,9 +148,8 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
     state_ = completed;
     return;
   }
- 
+
   LM_X(1, ("Internal error"));
-  
 }
 
 size_t PushItem::push_id() {
@@ -175,10 +173,10 @@ std::string PushItem::str() {
     case init: return au::str("[%lu] Uninitialized", push_id_);
 
     case waiting_push_block_response: return au::str("[%lu] Waiting push block response message from worker %lu"
-                                                   , push_id_, worker_id_);
+                                                     , push_id_, worker_id_);
 
     case waiting_push_block_confirmation: return au::str("[%lu] Waiting push_commit confirmation from worker %lu"
-                                                     , push_id_, worker_id_);
+                                                         , push_id_, worker_id_);
 
     case completed: return au::str("[%lu] Finalized", push_id_);
   }
@@ -235,7 +233,6 @@ size_t PushManager::Push(engine::BufferPointer buffer, const std::vector<std::st
 }
 
 void PushManager::Review() {
-  
   au::map<size_t, PushItem>::iterator it;
   for (it = items_.begin(); it != items_.end(); ) {      // Review and remove finished items
     PushItem *item = it->second;
@@ -254,7 +251,6 @@ void PushManager::Review() {
       ++it;
     }
   }
-
 }
 
 void PushManager::ResetAllItems() {

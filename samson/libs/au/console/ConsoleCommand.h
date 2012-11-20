@@ -18,6 +18,7 @@
 
 
 namespace au {
+namespace console {
 class ConsoleCommand {
   std::string command;      // Command we are currently reading from the user
   int pos;                  // Current position in the command
@@ -50,5 +51,5 @@ public:
   void setCommand(std::string _command);
 };
 }
-
+}
 #endif  // ifndef _AU_CONSOLE_COMMAND

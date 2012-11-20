@@ -21,14 +21,17 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/string/Tokenizer.h"
 #include "au/console/Console.h"
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/mutex/TokenTaker.h"
+#include "au/string/Tokenizer.h"
 #include "au/tables/Select.h"
 #include "au/tables/Table.h"
 
 namespace au {
+/**
+ * \brief namespace for au::console::Console library : Generic full-featured console
+ */
 namespace console {
 namespace options {
 // Class used to store a valid command in delilah console
@@ -40,19 +43,18 @@ typedef enum {
   option_string,
 } Type;
 }
-
 class CommandItem {
-  std::string name_;       // Name of the option -l , -name
-  options::Type type_;      // Type of value accepting this element
-  bool optional_;          // Flag to indicate that this parameter is optional
-  std::string help_;       // Help for this parameter
+  std::string name_;                             // Name of the option -l , -name
+  options::Type type_;                           // Type of value accepting this element
+  bool optional_;                                // Flag to indicate that this parameter is optional
+  std::string help_;                             // Help for this parameter
 
-  std::string min_value_;      // Min value ( if any )
-  std::string max_value_;      // Max value ( if any )
-  std::string default_value_;      // Default parameter
+  std::string min_value_;                        // Min value ( if any )
+  std::string max_value_;                        // Max value ( if any )
+  std::string default_value_;                    // Default parameter
 
-  std::string options_group_;      // Options group to get possible values ( autocomplete )
-  std::vector<std::string> options_group_values;      // Possible values ( from options_group_ )
+  std::string options_group_;                    // Options group to get possible values ( autocomplete )
+  std::vector<std::string> options_group_values; // Possible values ( from options_group_ )
 
 public:
 
@@ -79,7 +81,7 @@ public:
   std::string str_usage_option();
   std::string str_usage_argument();
 
-  void autoComplete(au::ConsoleAutoComplete *info);
+  void autoComplete(au::console::ConsoleAutoComplete *info);
 
   // Check valid valie
   bool isValidValue(const std::string& value) {
@@ -133,7 +135,7 @@ public:
     return ( tags_.find(tag) != tags_.end());
   }
 
-  void autoComplete(au::ConsoleAutoComplete *info);
+  void autoComplete(au::console::ConsoleAutoComplete *info);
 
   const std::vector<CommandItem *>& options();
   const std::vector<CommandItem *>& arguments();
@@ -143,34 +145,34 @@ public:
 
 private:
 
-  std::string name_;                  // Command itself ( first word in the line )
-  std::string category_;              // Category for this command
+  std::string name_;                                // Command itself ( first word in the line )
+  std::string category_;                            // Category for this command
 
-  std::string short_description_;      // One line description of the command
-  std::string help_;                  // Full help for this command
+  std::string short_description_;                   // One line description of the command
+  std::string help_;                                // Full help for this command
 
-  std::vector<CommandItem *> options_;      // List of options for this command
-  std::vector<CommandItem *> arguments_;      // List of arguments for this command
+  std::vector<CommandItem *> options_;              // List of options for this command
+  std::vector<CommandItem *> arguments_;            // List of arguments for this command
 
-  std::set<std::string> tags_;     // Generic tags for clasifying commands
+  std::set<std::string> tags_;                      // Generic tags for clasifying commands
 };
 
 
 // CommandInstance
 
 class CommandInstance {
-  au::ErrorManager error_;      // Error during parse operation
+  au::ErrorManager error_;                          // Error during parse operation
 
-  Command *command_;      // Duplicate command definition
-  std::string command_line_;      // Copy of the original command line
+  Command *command_;                                // Duplicate command definition
+  std::string command_line_;                        // Copy of the original command line
 
-  au::simple_map<std::string, std::string> values_;      // Values assigned to each item
+  au::simple_map<std::string, std::string> values_; // Values assigned to each item
 
 public:
 
   CommandInstance(Command *command, const std::string& command_line) {
-    command_ = new Command(*command);      // duplicate command information
-    command_line_ = command_line;      // Copy of the origina command line
+    command_ = new Command(*command);               // duplicate command information
+    command_line_ = command_line;                   // Copy of the origina command line
   }
 
   const std::string& main_command() {
@@ -206,7 +208,7 @@ public:
       return false;
     }
 
-    if (values_.isInMap(name)) {      // If it is present, it is true
+    if (values_.isInMap(name)) {          // If it is present, it is true
       return true;
     } else {
       return false;
@@ -239,7 +241,7 @@ public:
 
     // Get default value or the provided value
     std::string value = item->default_value();
-    if (values_.isInMap(name)) {      // If it is present, it is true
+    if (values_.isInMap(name)) {          // If it is present, it is true
       value = values_.findInMap(name);
     }
 
@@ -273,7 +275,7 @@ public:
 
     // Get default value or the provided value
     std::string value = item->default_value();
-    if (values_.isInMap(name)) {      // If it is present, it is true
+    if (values_.isInMap(name)) {          // If it is present, it is true
       value = values_.findInMap(name);
     }
 
@@ -307,7 +309,7 @@ public:
 
     // Get default value or the provided value
     std::string value = item->default_value();
-    if (values_.isInMap(name)) {      // If it is present, it is true
+    if (values_.isInMap(name)) {          // If it is present, it is true
       value = values_.findInMap(name);
     }
 
@@ -337,7 +339,7 @@ public:
 
     // Get default value or the provided value
     std::string value = item->default_value();
-    if (values_.isInMap(name)) {      // If it is present, it is true
+    if (values_.isInMap(name)) {          // If it is present, it is true
       value = values_.findInMap(name);
     }
 
@@ -384,7 +386,7 @@ public:
 
     // Get default value or the provided value
     std::string value = item->default_value();
-    if (values_.isInMap(name)) {      // If it is present, it is true
+    if (values_.isInMap(name)) {          // If it is present, it is true
       value = values_.findInMap(name);
     }
 
@@ -483,14 +485,18 @@ public:
                                              , const std::string& name
                                              , const std::string& help);
 
+  CommandItem *add_mandatory_uint64_argument(const std::string& command_name
+                                             , const std::string& name
+                                             , const std::string& help);
+
 
   CommandItem *add_string_options_argument(const std::string& command_name
                                            , const std::string& name
                                            , const std::string& group_value
                                            , const std::string& help = "");
 
-  // Autocompletion functionality for this command catalogue ( see au::Console )
-  void autoComplete(au::ConsoleAutoComplete *info);
+  // Autocompletion functionality for this command catalogue ( see au::console::Console )
+  void autoComplete(au::console::ConsoleAutoComplete *info);
 
   // Get a table with available command ( optional filter per category )
   std::string getCommandsTable(const std::string& category = "");
@@ -516,6 +522,6 @@ private:
   Command *get_command(const std::string& name);
 };
 }
-}      // End of namespace au::console
+}
 
 #endif  // ifndef _H_AU_COMMAND_CATALOGUE

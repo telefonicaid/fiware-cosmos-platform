@@ -14,6 +14,8 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include "au/log/LogCommon.h"
+#include "engine/Logs.h"
 #include "au/containers/SharedPointer.h"
 #include "au/string/Descriptors.h"        // au::Descriptors
 #include "au/mutex/TokenTaker.h"   // au::TokenTake
@@ -33,14 +35,19 @@ namespace engine {
 void *ProcessManager_run_worker(void *p) {
   ProcessManager *process_manager = reinterpret_cast<ProcessManager *>(p);
 
+  std::string thread_description = au::GetThreadId( pthread_self() );
+  LOG_D( logs.process_manager ,  ("Thread for ProcessManager worker %s" , thread_description.c_str() ));
+
   process_manager->run_worker();
   return NULL;
 }
 
 ProcessManager::ProcessManager(int max_num_procesors) :
-  token_("engine::ProcessManager"), num_procesors_(0), max_num_procesors_(max_num_procesors), stopped_(false) {}
+  token_("engine::ProcessManager"), num_procesors_(0), max_num_procesors_(max_num_procesors), stopped_(false) {
+  }
 
-ProcessManager::~ProcessManager() {}
+ProcessManager::~ProcessManager() {
+}
 
 void ProcessManager::Stop() {
   {

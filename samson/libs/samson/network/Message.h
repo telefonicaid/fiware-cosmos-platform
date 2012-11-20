@@ -20,6 +20,9 @@
  */
 
 namespace samson {
+/**
+ * \brief Namespace for messages used in SAMSON library
+ */
 namespace Message {
 /* ****************************************************************************
  *
@@ -40,14 +43,14 @@ typedef enum MessageCode {
 
   PopBlockRequest,              // Request from delilah for a block and range
   PopBlockRequestConfirmation,      // Confirmation this block can be served
-  PopBlockRequestResponse,          // Block response from worker
+  PopBlockRequestResponse,      // Block response from worker
 
-  StreamOutQueue,                   // Unused message?
+  StreamOutQueue,               // Unused message?
 
   Message,
 
-  BlockRequest,                     // Request a particular block to a worker
-  BlockRequestResponse,             // Answer to the block
+  BlockRequest,                 // Request a particular block to a worker
+  BlockRequestResponse,         // Answer to the block
 
   Unknown,
 } MessageCode;

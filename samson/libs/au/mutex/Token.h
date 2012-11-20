@@ -34,15 +34,47 @@
 #include <sys/types.h>
 
 namespace au {
+// Handy method to identify threads with strings
+std::string GetThreadId(pthread_t t);
+
+class TokenOwner {
+public:
+
+  TokenOwner();
+
+  void SetMe();
+  bool IsMe();
+  void ClearMe();
+  bool HasOwner();
+
+  // Debug string
+  std::string str();
+
+private:
+
+  pthread_mutex_t lock_;     // Mutex to protect this token
+
+  volatile pthread_t token_owner_thread_t_;
+  std::string token_owner_thread_description_;
+  volatile bool locked_;
+};
+
 class Token {
 public:
 
   Token(const std::string& name = "no name");
   ~Token();
 
-  std::string name() const { return name_; }
-  // Check if I am retaining this token
-  bool IsRetainedByMe() const;
+  std::string name() const {
+    return name_;
+  }
+
+  bool IsRetainedByMe() {
+    return owner_.IsMe();
+  }
+
+  void WakeUpAll();
+  void WakeUp();
 
 private:
 
@@ -52,25 +84,21 @@ private:
   void Retain();
   void Release();
   void Stop();
-  void WakeUpAll();
-  void WakeUp();
 
-  pthread_mutex_t lock_;   // Mutex to protect this token
-  pthread_cond_t block_;   // Condition to block threads that call stop
 
-  std::string name_;  // Name of the token for debugging
+  pthread_mutex_t lock_;   // Main mutex
+  pthread_cond_t block_;   // Condition to block threads that call "Stop"
 
-  // Mechanism to discover if you have locked this mutex
-  // Allowing multiple Retains from the same thread
+  std::string name_;       // Name of the token for debugging
+
+  TokenOwner owner_;  // Owner of this mutex
+
+  volatile int counter_;   // Number of times this token is taken
 
   // syscall(SYS_gettid) is not supported on mac, so we come back to pthread_t
   // Specific implementation for solaris may be necessary.
-  pthread_t token_owner_thread_t_;
-  volatile bool locked_;
-  volatile int counter_;   // Number of times this token is taken
 
-  // Method to get a unique identifier for the threads
-  size_t GetMyThreadId();
+  std::string str_debug();
 };
 }
 

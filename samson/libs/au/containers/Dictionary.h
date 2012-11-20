@@ -166,9 +166,9 @@ public:
     return v;
   }
 
-  std::vector< SharedPointer<V> > items() {
+  std::vector< SharedPointer<V> > items() const {
     std::vector< SharedPointer<V> > vector;
-    typename std::map<K, SharedPointer<V>, _Compare >::iterator iter;
+    typename std::map<K, SharedPointer<V>, _Compare >::const_iterator iter;
     for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
          iter++)
     {

@@ -28,6 +28,9 @@
 #include "au/string/StringUtilities.h"         // au::str(...)
 
 namespace au {
+/**
+ * \brief Namespace for au::tables library ( generic table management for console displaying )
+ */
 namespace tables {
 class Table;
 class SelectTableInformation;

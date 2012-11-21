@@ -393,7 +393,7 @@ public:
 private:
   static const size_t kValueCode;
   // Pool of Value instances for vector and map
-  // The pool of values i sno longer used
+  // The static pool of values is no longer used
 
   // Global value type
   // ------------------------------------------------------------

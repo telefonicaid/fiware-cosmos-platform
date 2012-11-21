@@ -46,7 +46,9 @@ public:
   };
 
   ErrorMessage(ErrorType type, std::list<std::string> &contexts, std::string message);
-  ~ErrorMessage();
+  ~ErrorMessage() {
+    contexts_.clear();
+  }
 
   std::string GetMessage() const;
   std::string GetMultiLineMessage() const;
@@ -65,8 +67,6 @@ public:
 
   ErrorManager();
   ~ErrorManager() {
-    // TODO(@jges): REmove log message
-    LM_W(("Calling destructor for ErrorManager"));
     errors_.clearVector();
     contexts_.clear();
   };

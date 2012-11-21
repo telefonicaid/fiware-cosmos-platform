@@ -570,9 +570,16 @@ void WorkerTask::commit() {
     } else {
       // Check new blocks are included in data model, just now
       std::set<size_t> all_blocks = samson_worker_->data_model()->GetAllBlockIds();
-      for (size_t i = 0; i < new_block_ids.size(); i++) {
+      for (size_t i = 0; i < new_block_ids.size(); ++i) {
         if (all_blocks.find(new_block_ids[i]) == all_blocks.end()) {
-          LM_X(1, ("Internal error since a new block is not in the current data model"));
+          LM_E(("Internal error since a new block(%lu at pos %d) is not in the current data model",
+                   new_block_ids[i], i));
+          LM_E(("Blocks in the data_model:"));
+          std::set<size_t>::const_iterator block_it;
+          for (block_it = all_blocks.begin(); block_it != all_blocks.end(); ++block_it) {
+            LM_E(("Block:%lu", *block_it));
+          }
+          LM_X(1,("Unrecoverable error. Exiting"));
         }
       }
     }

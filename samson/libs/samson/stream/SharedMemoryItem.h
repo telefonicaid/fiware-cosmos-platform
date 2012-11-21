@@ -64,10 +64,21 @@ public:
     // Attach to local-space memory
     data = (char *)shmat(shmid, 0, 0);
     if (data == (char *)-1) {
-      LM_X(1,
-           (
-             "Error with shared memory while attaching to local memory ( %s )( shared memory id %d shmid %d size %lu )\n"
-             , strerror(errno),  id, shmid, size ));
+      if (errno == EMFILE) {
+        LM_X(1,
+          ("Error with shared memory while attaching to local memory, "
+           "the number of shared memory segments has reached the system-wide limit.\n"
+           "Use 'ipcs' to check the allocated shared memory segments."
+           "(shmat error %d:%s)(shared memory id %d shmid %d size %lu)\n",
+           errno, strerror(errno), id, shmid, size));
+
+      } else {
+        LM_X(1,
+          ("Error with shared memory while attaching to local memory "
+           "(shmat error %d:%s)(shared memory id %d shmid %d size %lu)\n", 
+           errno, strerror(errno), id, shmid, size));
+      }
+
     }
   }
 

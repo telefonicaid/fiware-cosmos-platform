@@ -41,9 +41,6 @@ namespace system {
 const std::string Value::kSystemValueName("system.Value");
 const size_t Value::kValueCode = 1219561887489248771ULL;
 
-// Static pool for object reuse
-au::Pool<Value> *samson::system::Value::pool_values_;
-
 bool IsValidDouble(const char *data) {
   bool found_sign = false;
   bool found_dot = false;

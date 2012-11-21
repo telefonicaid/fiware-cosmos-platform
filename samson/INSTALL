@@ -3,9 +3,8 @@
 ## Ubuntu Package dependencies 
 
 The following packages are required to be able to build SAMSON against Ubuntu
-11.04: 
+12.04: 
 
-* subversion 
 * boost-dev 
 * ncurses-dev 
 * make 
@@ -16,17 +15,18 @@ The following packages are required to be able to build SAMSON against Ubuntu
 * mongodb 
 * libboost-filesystem-dev 
 * libboost-thread-dev 
-* qt4-qmake 
-* libqt4-dev 
 * help2man 
-* libedit-dev 
+* libjson0-dev
+* libzookeeper-dev
+* git
 
 To install them use the following command: 
 
-    sudo apt-get install subversion libboost-dev ncurses-dev \
+    sudo apt-get install git libboost-dev ncurses-dev \
     make gcc g++ cmake libedit-dev libprotobuf-dev \
     protobuf-compiler mongodb libboost-filesystem-dev \
-    libboost-thread-dev help2man libqt4-dev
+    libboost-thread-dev help2man libjson0-dev libjson0-dev \
+    libzookeeper-mt-dev git
 
 ## RedHat Package dependencies 
 
@@ -42,28 +42,32 @@ using yum (assumes you have root access):
 
     sudo yum install protobuf-compiler protobuf-devel \
     cmake boost-devel libedit-devel ncurses-devel \
-    gcc gcc-c++ make qt-devel help2man tid-mongodb-devel \
-    qtwebkit-devel expect rpm-build
+    gcc gcc-c++ make help2man mongodb-devel \
+    expect rpm-build
 
 ## Building SAMSON 
 
-In order to build SAMSON you first must download the source from SAMSON’s SVN
+In order to build SAMSON you first must download the source from SAMSON's GIT
 repository. The complete source tree, including modules can be checked out
 using: 
 
-    svn co https://barricada.hi.inet/repositorio/samson/trunk samson-trunk 
+    git clone git@pdihub.hi.inet:Cosmos/cosmos-platform.git
 
 The installation process requires root access via the sudo command. Once you
 have downloaded the source code run through the following setups to compile and
 install SAMSON: 
 
-1. enter the directory created by the SVN command: 
+1. enter the directory created by the GIT clone command: 
 
-    cd samson-trunk
+    cd cosmos-platform/samson
+
+2. Setup the local environment variables:
+
+    . scripts/buildenv.sh
 
 2. compile and install SAMSON and all the modules 
 
-    make install 
+    make install_all 
 
 Apart from compiling the source code for the SAMSON platform and its modules
 the install step performs the following additional tasks: 
@@ -73,10 +77,6 @@ the install step performs the following additional tasks:
   SAMSON_WORKING to each shell environment 
 * Installs an init.d script that will start up the SAMSON platform, in
   particular the samsonSpawner process when the server restarts 
-
-To start the SAMSON platform either reboot the server or execute 
-
-sudo /etc/init.d/samson start 
 
 For information on administering the SAMSON platform see the SAMSON Users Manual 
 

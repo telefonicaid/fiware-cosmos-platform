@@ -75,7 +75,7 @@ public:
     // Detach data if it was previously attached
     if (data) {
       if (shmdt(data) == -1) {
-        LM_X(1, ("Error calling shmdt"));
+        LM_X(1, ("Error (%s) calling shmdt in destructor", strerror(errno)));
       }
     }
   }

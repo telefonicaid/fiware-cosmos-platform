@@ -71,22 +71,15 @@ public:
 
   uint find_one(uint key) {
     uint begin = 0;
-    uint end = size;
+    uint end = size - 1;
 
     if (v[begin].first == key) {
       return begin;
     }
 
-
-
-
     if (v[end].first == key) {
       return end;
     }
-
-
-
-
 
     return find_one(key, begin, end);
   }

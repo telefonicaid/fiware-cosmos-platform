@@ -87,6 +87,7 @@ void ModulesManager::addModulesFromDirectory(std::string dir_name) {
     }
 
     if (S_ISREG(info.st_mode)) {
+      LM_T(LmtModuleManager, ("Adding module from path:'%s'!", path.c_str()));
       addModule(path);
     }
   }
@@ -148,12 +149,13 @@ void ModulesManager::addModule(std::string path) {
       return;
     }
 
-    LM_T(LmtModuleManager, ("Module %s compiled for version %s ... OK!", module->name.c_str(), platform_version.c_str())); LM_T(LmtModuleManager, ("Adding module %s (%s) %d ops & %d data-types",
-            module->name.c_str(),
-            path.c_str(),
-            (int)module->operations.size(),
-            (int)module->datas.size()
-        ));
+    LM_T(LmtModuleManager, ("Module %s compiled for version %s ... OK!",
+                            module->name.c_str(), platform_version.c_str()));
+    LM_T(LmtModuleManager, ("Adding module %s (%s) with %d ops & %d data-types",
+                            module->name.c_str(),
+                            path.c_str(),
+                            static_cast<int>(module->operations.size()),
+                            static_cast<int>(module->datas.size())));
 
     // Insert in the modules map
     modules.insertInMap(module->name, module);
@@ -199,6 +201,13 @@ Status ModulesManager::loadModule(std::string path, Module **module, std::string
   // Get module and get version
   *module = f();
   *version_string = fv();
+
+  LM_T(LmtModuleManager, ("Module %s compiled for version %s ... OK!", (*module)->name.c_str(), version_string->c_str()));
+  LM_T(LmtModuleManager, ("Adding module %s with %d ops & %d data-types",
+                          (*module)->name.c_str(),
+                          static_cast<int>((*module)->operations.size()),
+                          static_cast<int>((*module)->datas.size())));
+
 
   return OK;
 }

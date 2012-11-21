@@ -192,8 +192,8 @@ void SharedMemoryManager::removeSharedMemorySegments(int *ids, int length) {
   for (int i = 0; i < length; i++) {
     // Remove the shared memory areas
     if (shmctl(ids[i], IPC_RMID, NULL) == -1) {
-      LM_W((
-             "Error trying to release a shared memory buffer Please review shared-memory problems in SAMSON documentation"));
+      LM_W(("Error ('%s') trying to release a shared memory buffer(%d). Please review shared-memory problems in SAMSON documentation"
+          , strerror(errno), ids[i]));
     }
   }
 }

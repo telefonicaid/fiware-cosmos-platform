@@ -84,7 +84,7 @@ TEST(engine_DiskManager, times) {
     EXPECT_EQ(on_time, 0);
 
     double off_time = engine::Engine::disk_manager()->off_time();
-    EXPECT_EQ(off_time, 0);
+    EXPECT_LT(off_time, 1);
 
     int workers = engine::Engine::disk_manager()->num_disk_manager_workers();
     EXPECT_EQ(1, workers);
@@ -121,6 +121,7 @@ TEST(engine_DiskManager, addTest) {
          "Wrong number of disk operations";
 
       engine::Engine::disk_manager()->Cancel(operation);
+      usleep(50000);
       EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 0) <<
          "Wrong number of disk operations";
 

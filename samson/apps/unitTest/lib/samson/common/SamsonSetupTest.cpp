@@ -24,9 +24,7 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samson_home_dir,samson_working_dir);
 
   // The following value (300) for 'isolated.timeout' depends on an external setup-file
-  // Commenting out the test for now, until we have a way of assuring it will work
-  // EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("isolated.timeout"), "300")
-  //
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("isolated.timeout"), "300");
 
   au::Singleton<samson::SamsonSetup>::shared()->AddItem("unit_test.samsonSetupTest"
                                                         , "initial"

@@ -44,6 +44,11 @@ WorkerTaskManager::WorkerTaskManager(SamsonWorker *samson_worker) {
   engine::Engine::shared()->notify(notification, 1);
 }
 
+WorkerTaskManager::~WorkerTaskManager() {
+  stream_operations_statistics_.clearMap();
+  stream_operations_global_info_.clearMap();
+}
+
 size_t WorkerTaskManager::getNewId() {
   return ++id_;
 }
@@ -109,8 +114,7 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     }
 
     // Take statistics about stream operations
-    if( worker_task != NULL )
-    {
+    if (worker_task != NULL) {
       std::string stream_operation_name = worker_task->stream_operation_name();
       if (stream_operation_name[0] != '.') {
         size_t input_size = worker_task->getInputDataSize();
@@ -336,14 +340,10 @@ void WorkerTaskManager::review_stream_operations() {
     keys_stream_operation_ids.insert(stream_operation_id);
   }
 
-  // Remove elements in the map not considered
-  stream_operations_global_info_.RemoveKeysNotIncludedIn(keys_stream_operation_ids);
+  // Remove elements in the map not considered so far ( old elements after a reasignation )
+  stream_operations_global_info_.removeInMapIfNotIncludedIn(keys_stream_operation_ids);
 
   // If enough tasks have been scheduled, do not schedule more.
-  // This is for two reasons:
-  // Scheduled tasks cannot be canceled, so for flexibility is better to do that
-  // Memory is lock unnecessary with too many tasks scheduled ahead
-
   size_t num_tasks = get_num_tasks();
   if (num_tasks > (1.5 * num_processors)) {
     return;

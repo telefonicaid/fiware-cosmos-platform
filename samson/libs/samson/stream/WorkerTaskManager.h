@@ -104,9 +104,7 @@ class WorkerTaskManager : public ::engine::NotificationListener {
 public:
 
   explicit WorkerTaskManager(SamsonWorker *samson_worker);
-  ~WorkerTaskManager() {
-    stream_operations_statistics_.clearMap();
-  }
+  ~WorkerTaskManager();
 
   void Add(au::SharedPointer<WorkerTaskBase> task);     // Add new task to the manager
 

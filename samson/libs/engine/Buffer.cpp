@@ -27,18 +27,15 @@
 #include "au/string/StringUtilities.h"  // au::Format
 #include "au/string/xml.h"              // au::xml...
 
-#include "engine/Logs.h"
 #include "engine/Buffer.h"              // Own interface
+#include "engine/Logs.h"
 #include "engine/MemoryManager.h"       // MemoryManager
 
 namespace engine {
-  
-  size_t Buffer::static_buffer_id_ = 0;
-  
-Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_size) {
+size_t Buffer::static_buffer_id_ = 0;
 
+Buffer::Buffer(const std::string& name,  size_t max_size) {
   name_ = name;
-  type_ = type;
   size_ = 0;
   offset_ = 0;
   max_size_ = max_size;
@@ -48,16 +45,16 @@ Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_siz
     data_ = reinterpret_cast<char *>(malloc(max_size));
 
     if (!data_) {
-      LM_X(1, ("Error (errno:%d) allocating memory for %d bytes for name:'%s' type:'%s'"
-               , errno, max_size, name.c_str(), type.c_str()));
+      LM_X(1, ("Error (errno:%d) allocating memory for %d bytes for name:'%s'"
+               , errno, max_size, name.c_str()));
     }
   } else {
-    LOG_W( logs.buffer, ("Buffer request of max_size(%lu) <= 0, for name:'%s' type:'%s'",
-          max_size, name.c_str(), type.c_str()));
+    LOG_W(logs.buffer, ("Buffer request of max_size(%lu) <= 0, for name:'%s'",
+                        max_size, name.c_str()));
     data_ = NULL;
   }
 
-  LOG_M( logs.buffer , ("Creating buffer %s", str().c_str()));
+  LOG_M(logs.buffer, ("Creating buffer %s", str().c_str()));
 
   // Register in the memory manager to track allocated memory
   Engine::memory_manager()->Add(this);
@@ -65,20 +62,18 @@ Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_siz
 
 au::SharedPointer<Buffer> Buffer::Create(
   const std::string&  name,
-  const std::string&  type,
-  size_t              max_size
-) {
+  size_t max_size
+  ) {
   if (max_size > 1024 * 1024 * 1024) {
     LOG_E(logs.buffer, ("Excessive size for buffer %s", au::str(max_size).c_str()));
     return au::SharedPointer<Buffer>(NULL);
   }
-  return au::SharedPointer<Buffer>(new Buffer(name, type, max_size));
+  return au::SharedPointer<Buffer>(new Buffer(name, max_size));
 }
 
 Buffer::~Buffer() {
-  
-  LOG_M( logs.buffer , ("Destroying buffer %s", str().c_str()));
-  
+  LOG_M(logs.buffer, ("Destroying buffer %s", str().c_str()));
+
   // Unregister in the memory manager
   Engine::memory_manager()->Remove(this);
 
@@ -89,12 +84,11 @@ Buffer::~Buffer() {
 }
 
 std::string Buffer::str()  const {
-  return au::str("[ %s (type: %s Size: %s/%s Read %s) ]"
+  return au::str("[ %s ( Size: %s/%s Read %s ) ]"
                  , name_.c_str()
-                 , type_.c_str()
-                 , au::str(size_,"B").c_str()
-                 , au::str(max_size_,"B").c_str()
-                 , au::str(offset_,"B").c_str() );
+                 , au::str(size_, "B").c_str()
+                 , au::str(max_size_, "B").c_str()
+                 , au::str(offset_, "B").c_str());
 }
 
 /**
@@ -219,23 +213,13 @@ SimpleBuffer Buffer::GetSimpleBufferAtOffset(size_t offset) {
   return SimpleBuffer(data_ + offset, max_size_ - offset);
 }
 
-void Buffer::set_name_and_type(const std::string& name, const std::string& type) {
+void Buffer::set_name(const std::string& name) {
   name_ = name;
-  type_ = type;
-}
-
-void Buffer::add_to_name(const std::string& description) {
-  name_.append(description);
 }
 
 // Get internal name for debuggin
 std::string Buffer::name() const {
   return name_;
-}
-
-// Get internal type for debuggin
-std::string Buffer::type() const {
-  return type_;
 }
 
 void Buffer::WriteFile(const std::string& file_name, au::ErrorManager& error) {

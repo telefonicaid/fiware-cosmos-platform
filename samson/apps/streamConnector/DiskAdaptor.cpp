@@ -208,7 +208,6 @@ void DiskConnection::run_as_input() {
     if (file_descriptor) {
       // Still reading from a file...
       engine::BufferPointer buffer = engine::Buffer::Create("stdin"
-                                                            , "connector"
                                                             , input_buffer_size);
 
       // Read the entire buffer

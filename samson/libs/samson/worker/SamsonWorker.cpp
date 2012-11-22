@@ -1114,7 +1114,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
       std::string source_file_name = block->file_name();
       size_t file_size = au::sizeOfFile(source_file_name);
 
-      buffer = engine::Buffer::Create("module", "module", file_size);
+      buffer = engine::Buffer::Create(au::str("Module %s", source_file_name.c_str()), file_size);
       au::ErrorManager error_writing_file;
       buffer->WriteFile(source_file_name, error_writing_file);
 

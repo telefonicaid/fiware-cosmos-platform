@@ -143,9 +143,7 @@ void FileDescriptorConnection::run_as_input() {
     if (!file_descriptor_) {
       LM_X(1, ("Internal error"));  // Get a buffer
     }
-    engine::BufferPointer buffer = engine::Buffer::Create("stdin"
-                                                          , "connector"
-                                                          , input_buffer_size);
+    engine::BufferPointer buffer = engine::Buffer::Create("stdin buffer", input_buffer_size);
 
 
     size_t read_size = 0;

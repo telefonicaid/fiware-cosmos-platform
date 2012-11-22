@@ -209,7 +209,7 @@ void DefragTask::run() {
 
     // Create output buffer ( hg_begin hg_end )
     size_t buffer_size = sizeof(KVHeader) + info.size;
-    engine::BufferPointer buffer = engine::Buffer::Create("defrag", "normal", buffer_size);
+    engine::BufferPointer buffer = engine::Buffer::Create("Defrag buffer", buffer_size);
     buffer->set_size(buffer_size);
 
     // Copy header and modify info

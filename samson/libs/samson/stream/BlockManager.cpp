@@ -80,8 +80,7 @@ void BlockManager::CreateBlock(size_t block_id, engine::BufferPointer buffer) {
     LM_X(1, ("Internal error"));
   }
 
-  buffer->set_name_and_type(au::str("Buffer for block %s", str_block_id(block_id).c_str()), "block");
-  buffer->SetTag("block_manager");
+  buffer->set_name(au::str("Buffer for block %s", str_block_id(block_id).c_str()));
 
   BlockPointer block(new Block(block_id, buffer));
 
@@ -122,9 +121,6 @@ void BlockManager::RemoveBlocksIfNecessary(GlobalBlockSortInfo *info) {
     ScheduleRemoveOperation(block);
 
     engine::BufferPointer buffer = block->buffer();
-    if (buffer != NULL) {
-      buffer->RemoveTag("block_manager");
-    }
     LOG_D(logs.block_manager, ("Block %s is removed since it is not part of data model", str_block_id(block_id).c_str()));
   }
 }
@@ -274,8 +270,6 @@ void BlockManager::Review() {
       if (block->state() == Block::ready) {
         // Both on disk and on memory
         LOG_D(logs.block_manager, ("Free block:'%s'", block->str().c_str()));
-
-        block->buffer()->RemoveTag("block_manager");
 
         // Free block
         block->freeBlock();
@@ -486,9 +480,8 @@ void BlockManager::ScheduleReadOperation(BlockPointer block) {
   size_t size = block->getSize();
 
   // Alloc the buffer for the read operation
-  block->buffer_ = engine::Buffer::Create(au::str("Buffer for block %s", str_block_id(block_id).c_str()), "block", size);
+  block->buffer_ = engine::Buffer::Create(au::str("Buffer for block %s", str_block_id(block_id).c_str()), size);
   block->buffer_->set_size(size);
-  block->buffer_->SetTag("block_manager");
 
   // Read operation over this buffer
   std::string fileName = block->file_name();

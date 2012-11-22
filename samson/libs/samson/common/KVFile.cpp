@@ -32,7 +32,6 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   // Candidate instance
   au::SharedPointer<KVFile> kv_file(new KVFile());
   kv_file->buffer_ = buffer;
-  buffer->SetTag(au::str("kvfile_%p", kv_file.shared_object()));
 
   if (buffer->size() < sizeof(KVHeader)) {
     error.set(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
@@ -84,8 +83,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   size_t size_for_kvs_idnex = sizeof(int) * KVFILE_NUM_HASHGROUPS;
   size_t size_total = size_for_kvs + size_for_info + size_for_kvs_idnex;
 
-  std::string buffer_name = au::str("Buffer-KVFile for block %s", buffer->name().c_str());
-  kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, "KVFile", size_total);
+  std::string buffer_name = au::str("KVFile for block %s", buffer->name().c_str());
+  kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, size_total);
 
   kv_file->kvs       = (KV *)kv_file->auxiliar_buffer_->data();
   kv_file->info      = (KVInfo *)( kv_file->auxiliar_buffer_->data() + size_for_kvs );
@@ -166,11 +165,6 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 }
 
 KVFile::~KVFile() {
-  // Tag for debuggin
-  if (buffer_ != NULL) {
-    buffer_->RemoveTag(au::str("kvfile_%p", this));
-  }
-
   if (key_) {
     delete key_;
   }

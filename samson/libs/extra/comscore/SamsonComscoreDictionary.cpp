@@ -190,17 +190,17 @@ bool SamsonComscoreDictionary::find_pattern_range(const char *core_domain, uint 
 }
 
 uint SamsonComscoreDictionary::find_one_pattern(const char *core_domain) {
-  uint begin = 0;
-  uint end = dictionary_entries.size;
+  uint first = 0;
+  uint last = dictionary_entries.size - 1;
 
-  if (strcmp(core_domain, get_domain_for_pattern(begin)) == 0) {
-    return begin;
+  if (strcmp(core_domain, get_domain_for_pattern(first)) == 0) {
+    return first;
   }
-  if (strcmp(core_domain, get_domain_for_pattern(end)) == 0) {
-    return end;
+  if (strcmp(core_domain, get_domain_for_pattern(last)) == 0) {
+    return last;
   }
 
-  return find_one_pattern(core_domain, begin, end);
+  return find_one_pattern(core_domain, first, last);
 }
 
 const char *SamsonComscoreDictionary::get_domain_for_pattern(uint pos) {
@@ -297,6 +297,10 @@ size_t SamsonComscoreDictionary::getNumEntries() {
 size_t SamsonComscoreDictionary::getPatternIdForEnty(size_t i) {
   if (i > dictionary_entries.size) {
     return 0;
+  }
+  // TODO(@jges): Remove if
+  if (i == dictionary_entries.size) {
+    LM_M(("Detected pattern(%lu) == dictionary_entries.size", i));
   }
   return dictionary_entries.v[i].id;
 }

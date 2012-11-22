@@ -15,19 +15,23 @@
 #include <stdlib.h>     // exit
 #include <string.h>     // memcpy
 
+
 #include "au/ThreadManager.h"
 #include "au/daemonize.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 #include "au/string/StringUtilities.h"                  // au::str()
+
 #include "logMsg/logMsg.h"
 #include "parseArgs/paBuiltin.h"  // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"
 #include "parseArgs/parseArgs.h"
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
+
 #include "samson/common/Logs.h"
 #include "samson/common/coding.h"       // KVHeader
+
 
 #include "LogManager.h"
 #include "StreamConnector.h"
@@ -158,8 +162,6 @@ int main(int argC, const char *argV[]) {
 
   // Random initialization
   srand(time(NULL));
-
-
   // Init log system
   au::log_central.Init(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
@@ -168,7 +170,6 @@ int main(int argC, const char *argV[]) {
   au::log_central.AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
   au::log_central.AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
   au::log_central.AddScreenPlugin("screen", "[type] text");  // Temporal plugin
-
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {

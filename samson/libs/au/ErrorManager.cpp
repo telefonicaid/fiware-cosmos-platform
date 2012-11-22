@@ -21,9 +21,6 @@ ErrorMessage::ErrorMessage(ErrorType type, std::list<std::string> &contexts, std
   }
 }
 
-ErrorMessage::~ErrorMessage() {
-}
-
 // Get message in one line
 std::string ErrorMessage::GetMessage() const {
   std::ostringstream output;

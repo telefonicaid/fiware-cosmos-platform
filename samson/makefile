@@ -409,8 +409,8 @@ reset:
 	rm -Rf BUILD_RELEASE_ALL
 	rm -Rf BUILD_COVERAGE
 	rm -Rf coverage
-	rm -f libs/common/samson.pb.*
-	rm -f libs/data/data.pb.*
+	rm -f libs/samson/common/samson.pb.*
+	rm -f libs/au/au.pb.*
 	rm -Rf /usr/local/include/samson || true
 	rm -f testing/module_test/Module.*
 	rm -f /etc/init/samson.conf || true

@@ -118,6 +118,19 @@ public:
 
   Command(const Command& command);
 
+  ~Command() {
+    for (size_t i = 0; i < options_.size(); ++i) {
+      delete options_[i];
+    }
+    options_.clear();
+    for (size_t i = 0; i < arguments_.size(); ++i) {
+      delete arguments_[i];
+    }
+    arguments_.clear();
+
+    tags_.clear();
+  }
+
   const std::string& name();
   const std::string& category();
   const std::string& short_description();
@@ -426,6 +439,10 @@ public:
 
   // Construtor
   CommandCatalogue();
+
+  ~CommandCatalogue() {
+    commands_.clearVector();
+  }
 
   // Add elements adn extra description
   Command *add(const std::string& name

@@ -43,13 +43,11 @@ namespace au {
   }
   
   
-  bool SetupItemCollection::Save( const std::string& fileName )
-  {
-    
+  bool SetupItemCollection::Save( const std::string& fileName ) {
     FILE *file = fopen(fileName.c_str(), "w");
     
-    if (!file) {
-      LM_W(("Impossible to open setup file %s", fileName.c_str()));
+    if (file == NULL) {
+      LM_W(("Impossible to open setup file '%s': error:'%s'", fileName.c_str(), strerror(errno)));
       return false;
     }
     
@@ -58,15 +56,13 @@ namespace au {
     fprintf(file, "# ----------------------------------------------------------------------------------------\n");
     fprintf(file, "# File auto-generated using the samsonConfig tool.\n");
     fprintf(file, "# Edit manually, or use samsonConfig to regenerate.\n\n\n");
-    
-    
-    
+
     au::map< std::string, SetupItem >::iterator i;
     
     // First concept
     std::string concept = "Z";
     
-    for (i = items_.begin(); i != items_.end(); i++) {
+    for (i = items_.begin(); i != items_.end(); ++i) {
       std::string tmp_concept = i->second->category();
       
       if (tmp_concept != concept) {
@@ -81,9 +77,7 @@ namespace au {
               , i->second->value().c_str()
               , i->second->description().c_str());
     }
-    
     fclose(file);
-    
     return true;
   }
   

@@ -9,12 +9,12 @@
  * All rights reserved.
  */
 
+#include "samson/worker/BlockRequest.h"  // Own interface
+
 #include "au/string/StringUtilities.h"
 #include "samson/common/Logs.h"
 #include "samson/stream/BlockManager.h"
 #include "samson/worker/SamsonWorker.h"
-
-#include "BlockRequest.h"  // Own interface
 
 namespace samson {
 size_t pick_random(std::set<size_t>& elements) {
@@ -69,12 +69,14 @@ void BlockRequest::fill(gpb::CollectionRecord *record, const Visualization& visu
   add(record, "state", state_, "different");
 }
 
-BlockRequest::BlockRequest(SamsonWorker *samson_worker, size_t block_id) {
+BlockRequest::BlockRequest(SamsonWorker *samson_worker, size_t block_id)
+    : samson_worker_(samson_worker)
+    , block_id_(block_id)
+    , worker_id_(SIZE_T_UNDEFINED)
+    , finished_(false)
+    , state_("Created") {
   LOG_M(logs.block_request, ("New block request %s", str_block_id(block_id).c_str()));
 
-  samson_worker_ = samson_worker;
-  block_id_ = block_id;
-  worker_id_ = SIZE_T_UNDEFINED;
   Review();
 }
 

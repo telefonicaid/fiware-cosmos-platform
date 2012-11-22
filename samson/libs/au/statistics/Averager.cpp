@@ -37,6 +37,10 @@ std::string Averager::str(const std::string& unit) const {
   }
 }
 
+std::string Averager::str_mean(const std::string& unit) const {
+  return au::str(mean_, unit).c_str();
+}
+
 std::string Averager::GetLastValues() const {
   return au::str(last_values_);
 }

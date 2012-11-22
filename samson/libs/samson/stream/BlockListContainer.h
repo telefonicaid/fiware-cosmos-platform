@@ -74,8 +74,9 @@ public:
   std::string str_block_ids() const;
   std::string str_inputs() const;
   std::string str_outputs() const;
-  size_t inputs_size() const;
-  size_t outputs_size() const;
+
+  FullKVInfo GetInputsInfo() const;
+  FullKVInfo GetOutputsInfo() const;
 
 private:
   size_t task_id_;

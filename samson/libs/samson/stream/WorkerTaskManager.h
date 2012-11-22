@@ -58,45 +58,77 @@ public:
   /**
    * \brief Inform about a finished task to update statistics
    */
-  void Update(int num_hgs, size_t input_size, size_t state_size, double time) {
-    input_.Push(input_size);
-    state_.Push(state_size);
-    process_.Push((double)( input_size + state_size ) / time);
 
-    num_hgs_ = num_hgs;   // Just keep the number of divisions to compute erlangs
+  void UpdateTaskInformation(int num_hgs, FullKVInfo input, FullKVInfo state, double process_time) {
+    // Update information about input
+    input_size_.Push(input.size);
+    input_kvs_.Push(input.kvs);
+
+    // Update information about state
+    state_size_.Push(state.size);
+    state_kvs_.Push(state.kvs);
+
+    // Update information about process
+    real_process_rate_.Push((double)( input.size ) / process_time);
+    process_rate_.Push((double)( input.size + state.size ) / process_time);
+
+    // Just keep the number of divisions to compute erlangs
+    num_hgs_ = num_hgs;
   }
 
-  std::string GetInputRate() const {
-    return input_.str() + "B/s";
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) const {
+    add(record, "Input", GetInputRateStr(), "left,different");
+    add(record, "#Ops/s", GetOperationsRateStr(), "left,different");
+
+    add(record, "Total input", GetInputTotalStr(), "left,different");
+    add(record, "Total #Ops", GetOperationsTotalStr(), "left,different");
+
+    add(record, "#hgs", num_hgs_, "left,different");
+    add(record, "State", GetStateStr(), "left,different");
+
+    add(record, "Process", GetProcessRateStr(), "left,different");
   }
 
-  std::string  GetProcessRate() const {
-    return process_.str("B/s");
-  }
-
-  std::string GetStateSize() const {
-    return state_.str("B");
-  }
-
-  int num_hgs() {
+  int num_hgs() const {
     return num_hgs_;
   }
 
-  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
-    add(record, "#hgs", num_hgs_, "left,different");
-    add(record, "#Ops", input_.hits(), "left,different");
-    add(record, "#Ops/s", au::str(input_.hit_rate()), "left,different");
-    add(record, "Input", au::str(input_.rate(), "B/s"), "left,different");
-    add(record, "State", au::str(state_.GetAverage(), "B"), "left,different");
-    add(record, "Process", au::str(process_.GetAverage(), "B/s"), "left,different");
+  std::string GetStateStr() const {
+    return state_kvs_.str_mean("kvs") + " " + state_size_.str_mean("B");
+  }
+
+  std::string GetInputRateStr() const {
+    return au::str(input_kvs_.rate(), "kvs/s") + " " + au::str(input_size_.rate(), "B/s");
+  }
+
+  std::string GetOperationsRateStr() const {
+    return au::str(input_kvs_.hit_rate(), "ops/s");
+  }
+
+  std::string GetInputTotalStr() const {
+    return au::str(input_kvs_.size(), "kvs") + " " + au::str(input_size_.size(), "B");
+  }
+
+  std::string GetOperationsTotalStr() const {
+    return au::str(input_kvs_.hits(), "ops");
+  }
+
+  std::string GetProcessRateStr() const {
+    return au::str(real_process_rate_.GetAverage(), "B/s") + " " + au::str(process_rate_.GetAverage(), "B/s");
   }
 
 private:
 
   int num_hgs_;
-  au::Rate input_;
-  au::Averager state_;
-  au::Averager process_;
+
+  au::Rate input_size_;
+  au::Rate input_kvs_;
+
+  au::Averager state_size_;
+  au::Averager state_kvs_;
+
+  au::Averager real_process_rate_;
+  au::Averager process_rate_;
 };
 
 

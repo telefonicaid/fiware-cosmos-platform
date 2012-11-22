@@ -67,8 +67,8 @@ public:
     return stream_operation_->name();
   }
 
-  size_t getStateDataSize() const;
-  size_t getInputDataSize() const;
+  FullKVInfo GetStateDataInfo() const;
+  FullKVInfo GetInputDataInfo() const;
 
   // Commit to data model
   void commit();

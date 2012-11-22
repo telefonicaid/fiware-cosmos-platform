@@ -73,6 +73,13 @@ public:
   std::string str(const std::string& unit = "") const;
 
   /**
+   * \brief string verion of average
+   */
+
+  std::string str_mean(const std::string& unit = "") const;
+
+
+  /**
    * \brief Get string containing the last observed values
    */
   std::string GetLastValues() const;

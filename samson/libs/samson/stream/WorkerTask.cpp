@@ -579,34 +579,31 @@ void WorkerTask::commit() {
   }
 }
 
-size_t WorkerTask::getStateDataSize() const {
+FullKVInfo WorkerTask::GetStateDataInfo() const {
   if (!operation_ || !stream_operation_) {
-    return 0;
+    return FullKVInfo();
   }
   if ((operation_->getType() == Operation::reduce) && (!stream_operation_->batch_operation())) {
     int num_input_channels = operation_->getNumInputs();
-    return GetInputSize(num_input_channels - 1);
+    return GetInputInfo(num_input_channels - 1);
   }
-  return 0;
+  return FullKVInfo();
 }
 
-size_t WorkerTask::getInputDataSize() const {
-  if (!operation_) {
-    return 0;
-  }
-  if (!stream_operation_) {
-    return 0;
+FullKVInfo WorkerTask::GetInputDataInfo() const {
+  if (!operation_ || !stream_operation_) {
+    return FullKVInfo();
   }
 
-  size_t total = 0;
+  FullKVInfo info;
   int num_input_channels = operation_->getNumInputs();
   if (( operation_->getType() == Operation::reduce ) && ( !stream_operation_->batch_operation())) {
     --num_input_channels;
   }
   for (int i = 0; i < num_input_channels; i++) {
-    total += GetInputSize(i);
+    info.append(GetInputInfo(i));
   }
-  return total;
+  return info;
 }
 }
 }

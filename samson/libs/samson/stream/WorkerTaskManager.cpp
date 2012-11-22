@@ -117,12 +117,14 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     if (worker_task != NULL) {
       std::string stream_operation_name = worker_task->stream_operation_name();
       if (stream_operation_name[0] != '.') {
-        size_t input_size = worker_task->getInputDataSize();
-        size_t state_size = worker_task->getStateDataSize();
+        FullKVInfo input_info = worker_task->GetInputDataInfo();
+        FullKVInfo state_info = worker_task->GetStateDataInfo();
+
         double time = worker_task->GetProcessTime();
         int num_ranges = samson_worker_->worker_controller()->GetKVRanges().size();
+
         StreamOperationStatistics *statistics =  stream_operations_statistics_.findOrCreate(stream_operation_name);
-        statistics->Update(num_ranges, input_size, state_size, time);
+        statistics->UpdateTaskInformation(num_ranges, input_info, state_info, time);
       }
     }
 

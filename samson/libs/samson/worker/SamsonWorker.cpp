@@ -77,7 +77,7 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
   zoo_host_(zoo_host)
   , port_(port)
   , web_port_(web_port)
-  , last_modules_version_(0) {
+  , last_modules_version_(SIZE_T_UNDEFINED) {
   // Random initialization
   srand(time(NULL));
 
@@ -247,7 +247,7 @@ void SamsonWorker::ResetToUnconnected() {
   // Reset internal components
   worker_block_manager_->Reset();
   task_manager_->Reset();         // Reset current tasks
-  last_modules_version_ = 0;      // Reset version of the modules
+  last_modules_version_ = SIZE_T_UNDEFINED;      // Reset version of the modules
 }
 
 void SamsonWorker::ResetToConnected() {
@@ -1054,7 +1054,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   if (!queue) {
     // Clear modules
     au::Singleton<ModulesManager>::shared()->clearModulesManager();
-    last_modules_version_ = 0;
+    last_modules_version_ = SIZE_T_UNDEFINED;
     modules_available_ = true;
     return;
   }
@@ -1073,7 +1073,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
 
   if (missing_blocks > 0) {
     modules_available_ = false;
-    last_modules_version_ = 0;
+    last_modules_version_ = SIZE_T_UNDEFINED;
     LM_T(LmtModuleManager, ("Returns because %d missing_blocks", missing_blocks));
     au::Singleton<ModulesManager>::shared()->clearModulesManager();
     return;
@@ -1081,7 +1081,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
 
   modules_available_ = true;
   size_t commit_id = queue->commit_id();
-  if (commit_id <= last_modules_version_) {
+  if ((last_modules_version_ != SIZE_T_UNDEFINED) && (commit_id <= last_modules_version_)) {
     return;     // Not necessary to update
   }
 

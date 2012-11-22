@@ -213,5 +213,13 @@ size_t WorkerTaskBase::GetInputSize() const {
 size_t WorkerTaskBase::GetOutputSize() const {
   return block_list_container_.inputs_size();
 }
+
+size_t WorkerTaskBase::GetInputSize(int c) {
+  return block_list_container_.getBlockList(au::str("input_%d", c))->getBlockInfo().size;
+}
+
+size_t WorkerTaskBase::GetOutputSize(int c) {
+  return block_list_container_.getBlockList(au::str("output_%d", c))->getBlockInfo().size;
+}
 }
 }

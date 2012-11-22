@@ -52,12 +52,60 @@ struct WorkerTaskLog {
   int running_time_seconds;     // Running time
 };
 
+class StreamOperationStatistics {
+public:
+
+  /**
+   * \brief Inform about a finished task to update statistics
+   */
+  void Update(int num_hgs, size_t input_size, size_t state_size, double time) {
+    input_.Push(input_size);
+    state_.Push(state_size);
+    process_.Push((double)( input_size + state_size ) / time);
+
+    num_hgs_ = num_hgs;   // Just keep the number of divisions to compute erlangs
+  }
+
+  std::string GetInputRate() const {
+    return input_.str() + "B/s";
+  }
+
+  std::string  GetProcessRate() const {
+    return process_.str("B/s");
+  }
+
+  std::string GetStateSize() const {
+    return state_.str("B");
+  }
+
+  int num_hgs() {
+    return num_hgs_;
+  }
+
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
+    add(record, "#hgs", num_hgs_, "left,different");
+    add(record, "#Ops", input_.hits(), "left,different");
+    add(record, "#Ops/s", au::str(input_.hit_rate()), "left,different");
+    add(record, "Input", au::str(input_.rate(), "B/s"), "left,different");
+    add(record, "State", au::str(state_.GetAverage(), "B"), "left,different");
+    add(record, "Process", au::str(process_.GetAverage(), "B/s"), "left,different");
+  }
+
+private:
+
+  int num_hgs_;
+  au::Rate input_;
+  au::Averager state_;
+  au::Averager process_;
+};
+
+
 class WorkerTaskManager : public ::engine::NotificationListener {
 public:
 
   explicit WorkerTaskManager(SamsonWorker *samson_worker);
   ~WorkerTaskManager() {
-    averages_per_task_.clearMap();
+    stream_operations_statistics_.clearMap();
   }
 
   void Add(au::SharedPointer<WorkerTaskBase> task);     // Add new task to the manager
@@ -113,7 +161,7 @@ private:
   std::list<WorkerTaskLog> last_tasks_;
 
   // Statistics about tasks
-  au::map<std::string, au::Averager > averages_per_task_;
+  au::map<std::string, StreamOperationStatistics > stream_operations_statistics_;
 
   // Get the number of current running tasks for a particular stream operation
   int GetRunningTasks(size_t stream_operation_id);

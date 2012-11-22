@@ -67,6 +67,9 @@ public:
     return stream_operation_->name();
   }
 
+  size_t getStateDataSize();
+  size_t getInputDataSize();
+
   // Commit to data model
   void commit();
 

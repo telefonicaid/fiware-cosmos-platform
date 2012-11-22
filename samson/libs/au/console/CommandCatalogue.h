@@ -30,9 +30,12 @@
 
 namespace au {
 /**
- * \brief namespace for au::console::Console library : Generic full-featured console
+ * \brief namespace for au::console library : Generic full-featured console
  */
 namespace console {
+/**
+ * \brief Namespace to protect scope of enum inside au::console library
+ */
 namespace options {
 // Class used to store a valid command in delilah console
 typedef enum {
@@ -54,7 +57,7 @@ class CommandItem {
   std::string default_value_;                    // Default parameter
 
   std::string options_group_;                    // Options group to get possible values ( autocomplete )
-  std::vector<std::string> options_group_values; // Possible values ( from options_group_ )
+  std::vector<std::string> options_group_values;  // Possible values ( from options_group_ )
 
 public:
 
@@ -166,7 +169,7 @@ class CommandInstance {
   Command *command_;                                // Duplicate command definition
   std::string command_line_;                        // Copy of the original command line
 
-  au::simple_map<std::string, std::string> values_; // Values assigned to each item
+  au::simple_map<std::string, std::string> values_;  // Values assigned to each item
 
 public:
 

@@ -111,8 +111,12 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     // Take statistics about process rate
     std::string stream_operation_name = worker_task->stream_operation_name();
     if (stream_operation_name[0] != '.') {
-      double rate = worker_task->GetInputSize() / worker_task->GetProcessTime();
-      averages_per_task_.findOrCreate(stream_operation_name)->Push(rate);
+      size_t input_size = worker_task->getInputDataSize();
+      size_t state_size = worker_task->getStateDataSize();
+      double time = worker_task->GetProcessTime();
+      int num_ranges = samson_worker_->worker_controller()->GetKVRanges().size();
+      StreamOperationStatistics *statistics =  stream_operations_statistics_.findOrCreate(stream_operation_name);
+      statistics->Update(num_ranges, input_size, state_size, time);
     }
 
 
@@ -228,13 +232,11 @@ void WorkerTaskManager::Reset() {
 gpb::CollectionPointer WorkerTaskManager::GetSOStatisticsCollection(const ::samson::Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("Stream Operation statistics");
-  au::map<std::string, au::Averager >::iterator it;;
-  for (it = averages_per_task_.begin(); it != averages_per_task_.end(); ++it) {
+  au::map<std::string, StreamOperationStatistics >::iterator it;;
+  for (it = stream_operations_statistics_.begin(); it != stream_operations_statistics_.end(); ++it) {
     gpb::CollectionRecord *record = collection->add_record();
     add(record, "Stream Operation", it->first, "different,left");
-    add(record, "Average", au::str(it->second->GetAverage(), "B/s"), "left,different");
-    add(record, "Deviation", au::str(it->second->GetDeviation(), "B/s"), "left,different");
-    add(record, "Last values", it->second->GetLastValues(), "left,different");
+    it->second->fill(record, visualization);
   }
   return collection;
 }

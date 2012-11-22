@@ -67,6 +67,12 @@ public:
   double GetDeviation() const;
 
   /**
+   * \brief string verion of average + deviation
+   */
+
+  std::string str(const std::string& unit = "") const;
+
+  /**
    * \brief Get string containing the last observed values
    */
   std::string GetLastValues() const;

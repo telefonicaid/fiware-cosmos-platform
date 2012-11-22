@@ -27,6 +27,16 @@ double Averager::GetDeviation() const {
   }
 }
 
+std::string Averager::str(const std::string& unit) const {
+  double deviation = GetDeviation();
+
+  if (deviation > 0) {
+    return au::str("%s +- %s", au::str(mean_, unit).c_str(), au::str(deviation, unit).c_str());
+  } else {
+    return au::str(mean_, unit);
+  }
+}
+
 std::string Averager::GetLastValues() const {
   return au::str(last_values_);
 }

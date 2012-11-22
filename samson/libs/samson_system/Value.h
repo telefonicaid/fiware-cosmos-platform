@@ -146,20 +146,7 @@ public:
   }
 
   ~Value() {
-    // This instance will be never reused but the internal values will be reused
     clear();
-  }
-
-  static Value *getInstance() {
-    // reusing instances caused some problems in the past,
-    // so it is disabled
-    return new Value();
-  }
-
-  static void reuseInstance(Value *value) {
-    // reusing instances caused some problems in the past,
-    // so it is disabled
-    delete value;
   }
 
   // Return the name of this data type ( system.Value )

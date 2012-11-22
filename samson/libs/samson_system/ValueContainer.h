@@ -28,11 +28,11 @@ class ValueContainer {
     Value *value;   // Instance of value retained in this class
 
     ValueContainer() {
-      value = Value::getInstance();
+      value = new Value();
     }
 
     ~ValueContainer() {
-      Value::reuseInstance(value);
+      delete value;
     }
 };
 }

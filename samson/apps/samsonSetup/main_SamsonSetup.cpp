@@ -31,10 +31,10 @@
 #include "logMsg/traceLevels.h"
 #include "parseArgs/parseArgs.h"
 
-#include "samson/common/coding.h"               // samson::FormatHeader
 #include "samson/common/MemoryCheck.h"          // samson::MemoryCheck
-#include "samson/common/ports.h"
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
+#include "samson/common/coding.h"               // samson::FormatHeader
+#include "samson/common/ports.h"
 #include "samson/common/samsonVars.h"           // SAMSON_ARG_VARS SAMSON_ARGS
 #include "samson/common/samsonVersion.h"
 #include "samson/module/KVFormat.h"             // samson::KVFormat

@@ -35,8 +35,9 @@ class ValueVector {
 
     ~ValueVector() {
       clear();   // Clear the vector reusing all component
-      if (values_) {
+      if (values_ != NULL) {
         free(values_);   // Free allocated memory for the vector
+        values_ = NULL;
       }
     }
 
@@ -72,14 +73,14 @@ class ValueVector {
 
     void clear() {
       for (size_t i = 0; i < num_values_; ++i) {
-        Value::reuseInstance(values_[i]);   // Reuse this element
+        delete values_[i];
         values_[i] = NULL;
       }
       num_values_ = 0;
     }
 
     void add(char *data) {
-      Value *value = Value::getInstance();   // Get a new instance of value from the common pool
+      Value *value = new Value();
 
       value->parse(data);   // Parse data
 

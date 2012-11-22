@@ -262,31 +262,25 @@ void ConsoleAutoComplete::print_last_words_alternatives() {
     }
   }
 
-  int num_words_per_row = columns / ( max_length + 1 );
+  int num_words_per_row = columns / (max_length + 1);
   if (num_words_per_row == 0) {
     num_words_per_row = 1;
   }
   for (size_t i = 0; i < last_word_alternatives.size(); ++i) {
-    
-    std::ostringstream output;
-    
-    output << last_word_alternatives[i].bold_label( last_word );
-    for (int j = 0; j < (int)( max_length  - last_word_alternatives[i].label.length()); j++) {
-      output << " ";
+    std::cout << last_word_alternatives[i].bold_label(last_word);
+    for (int j = 0; j < static_cast<int>((max_length - last_word_alternatives[i].label.length())); ++j) {
+      std::cout << " ";
     }
-    output << " ";
-    
-    // Print command and help
-    printf("%s",output.str().c_str());
-    
-    if ((i % num_words_per_row) == (size_t)(num_words_per_row - 1)) {
-      printf("\n");
+    std::cout << " ";
+
+    if ((i % num_words_per_row) == static_cast<size_t>((num_words_per_row - 1))) {
+      std::cout << std::endl;
     }
   }
 
-  if (((last_word_alternatives.size() - 1) % num_words_per_row) != (size_t)(num_words_per_row - 1)) {
-    printf("\n");
+  if (((last_word_alternatives.size() - 1) % num_words_per_row) != static_cast<size_t>((num_words_per_row - 1))) {
+    std::cout << std::endl;
   }
-  }
+}
 }
 }

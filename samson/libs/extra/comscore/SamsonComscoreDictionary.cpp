@@ -197,8 +197,6 @@ uint SamsonComscoreDictionary::find_one_pattern(const char *core_domain) {
     return first;
   }
   if (strcmp(core_domain, get_domain_for_pattern(last)) == 0) {
-    // TODO(@jges); Remove log message
-    LM_M(("Found core_domain:'%s' at pos end(%lu)", core_domain, last));
     return last;
   }
 
@@ -311,10 +309,6 @@ const char *SamsonComscoreDictionary::getDomainForEntry(size_t i) {
   if (i > dictionary_entries.size) {
     return "Unknown";
   }
-  // TODO(@jges): Remove if
-  if (i == dictionary_entries.size) {
-    LM_M(("Detected domain(%lu) == dictionary_entries.size", i));
-  }
   return string_collection.Get(dictionary_entries.v[i].domain);
 }
 
@@ -322,20 +316,12 @@ const char *SamsonComscoreDictionary::getPreDomainPatternForEntry(size_t i) {
   if (i > dictionary_entries.size) {
     return "Unknown";
   }
-  // TODO(@jges): Remove if
-  if (i == dictionary_entries.size) {
-    LM_M(("Detected pre_domain(%lu) == dictionary_entries.size", i));
-  }
   return string_collection.Get(dictionary_entries.v[i].pre_domain_pattern);
 }
 
 const char *SamsonComscoreDictionary::getPathPatternForEntry(size_t i) {
   if (i > dictionary_entries.size) {
     return "Unknown";
-  }
-  // TODO(@jges): Remove if
-  if (i == dictionary_entries.size) {
-    LM_M(("Detected path(%lu) == dictionary_entries.size", i));
   }
   return string_collection.Get(dictionary_entries.v[i].path_pattern);
 }

@@ -1651,14 +1651,14 @@ void Value::clear() {
   au::map<std::string, Value>::iterator it;
   for (it = value_map_.begin(); it != value_map_.end(); ++it) {
     it->second->clear();   // Recursive reuse
-    reuseInstance(it->second);
+    delete it->second;
   }
   value_map_.clear();
 
   // Clear elements in the vector
   for (size_t i = 0; i < value_vector_.size(); ++i) {
     value_vector_[i]->clear();   // Recursive reuse
-    reuseInstance(value_vector_[i]);
+    delete value_vector_[i];
   }
   value_vector_.clear();
 }
@@ -1668,7 +1668,7 @@ void Value::SetAsVector() {
 }
 
 void Value::Vectorize() {
-  Value *value = getInstance();
+  Value *value = new Value();
 
   value->copyFrom(this);
 
@@ -1704,8 +1704,7 @@ void Value::PopBackFromVector() {
     return;
   }
 
-  // Reuse the last element and remove it
-  reuseInstance(value_vector_[value_vector_.size() - 1]);
+  delete value_vector_[value_vector_.size() - 1];
   value_vector_.pop_back();
 }
 
@@ -1716,7 +1715,7 @@ Value *Value::AddValueToVector() {
   }
 
   // Get a new instance of Value and push it to the vector
-  Value *value = getInstance();
+  Value *value = new Value();
   value_vector_.push_back(value);
 
   // Always return a void object
@@ -1731,7 +1730,7 @@ Value *Value::AddValueToVector(size_t pos) {
   }
 
   // Get a new instance of Value and push it to the vector
-  Value *value = getInstance();
+  Value *value = new Value();
   value_vector_.insert(value_vector_.begin() + pos, value);
 
   // Always return a void object
@@ -1934,7 +1933,7 @@ Value *Value::AddValueToMap(const std::string& key) {
     SetAsMap();
   }
   // Get a new instance of Value and insert it in the map
-  Value *value = getInstance();
+  Value *value = new Value();
   value_map_.insertInMap(key, value);
 
   // Always return a void object

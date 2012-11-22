@@ -11,15 +11,12 @@
 
 #include "au/log/LogCentral.h"  // Own interface
 
-
 #include <assert.h>
 
 #include "au/log/LogCentralPluginFile.h"
 #include "au/log/LogCentralPluginScreen.h"
 #include "au/log/LogCentralPluginServer.h"
 #include "au/log/LogCommon.h"
-
-
 
 namespace au {
 // Global instance of LogCentral
@@ -133,17 +130,18 @@ void LogCentral::Stop() {
   quit_ = true;
 
   if (fd_write_logs_ != NULL) {
-  // Close write file descriptor
-  fd_write_logs_->Close();
+    // Close write file descriptor
+    fd_write_logs_->Close();
   }
 
   // Wait for the background threads
-  void *return_code;   // Return code to be ignored
+  void *return_code; // Return code to be ignored
   pthread_join(t_, &return_code);
 
   if (fd_read_logs_ != NULL) {
-  fd_read_logs_->Close();
-}
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
+  }
 }
 
 void LogCentral::StopAndExit(int c) {

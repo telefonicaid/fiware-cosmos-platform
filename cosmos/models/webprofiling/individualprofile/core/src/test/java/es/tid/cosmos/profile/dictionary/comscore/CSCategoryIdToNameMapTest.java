@@ -14,8 +14,8 @@ package es.tid.cosmos.profile.dictionary.comscore;
 import java.io.StringReader;
 import java.util.Collection;
 
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;

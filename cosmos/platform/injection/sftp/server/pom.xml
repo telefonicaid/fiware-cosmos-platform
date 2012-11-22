@@ -44,7 +44,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -56,7 +55,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>1.5</version>
                 <configuration>
                     <transformers>
                         <transformer
@@ -65,14 +63,6 @@
                         </transformer>
                     </transformers>
                 </configuration>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
@@ -105,7 +95,6 @@
         <dependency>
             <groupId>es.tid.cosmos</groupId>
             <artifactId>cosmos-common</artifactId>
-            <version>${cosmos.common.version}</version>
         </dependency>
     </dependencies>
 </project>

@@ -19,7 +19,6 @@
         <dependency>
             <groupId>es.tid.cosmos</groupId>
             <artifactId>cosmos-common</artifactId>
-            <version>${cosmos.common.version}</version>
         </dependency>
     </dependencies>
 </project>

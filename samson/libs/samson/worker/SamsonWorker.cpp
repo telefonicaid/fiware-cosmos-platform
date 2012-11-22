@@ -1050,7 +1050,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   // Get .modules queue
   gpb::Queue *queue = get_queue(data, ".modules");
 
-  // If no .modules queue, remove local directory and clesr ModuleManager
+  // If no .modules queue, remove local directory and clear ModuleManager
   if (!queue) {
     // Clear modules
     au::Singleton<ModulesManager>::shared()->clearModulesManager();
@@ -1059,13 +1059,14 @@ void SamsonWorker::ReloadModulesIfNecessary() {
     return;
   }
 
-  // Check if we have all necesary blocks
+  // Check if we have all necessary blocks
   int missing_blocks = 0;
   for (int b = 0; b < queue->blocks_size(); ++b) {
     size_t block_id = queue->blocks(b).block_id();
     if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
       // Add this block to be requested to other workers
       worker_block_manager_->RequestBlock(block_id);
+      LM_T(LmtModuleManager, ("Missing block(%lu) detected and requested, pos(%d)", block_id, b));
       ++missing_blocks;
     }
   }
@@ -1073,6 +1074,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   if (missing_blocks > 0) {
     modules_available_ = false;
     last_modules_version_ = 0;
+    LM_T(LmtModuleManager, ("Returns because %d missing_blocks", missing_blocks));
     au::Singleton<ModulesManager>::shared()->clearModulesManager();
     return;
   }

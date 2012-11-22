@@ -41,9 +41,6 @@ namespace system {
 const std::string Value::kSystemValueName("system.Value");
 const size_t Value::kValueCode = 1219561887489248771ULL;
 
-// Static pool for object reuse
-au::Pool<Value> *samson::system::Value::pool_values_;
-
 bool IsValidDouble(const char *data) {
   bool found_sign = false;
   bool found_dot = false;
@@ -230,75 +227,57 @@ inline int Value::ParseNumber(const char *data) {
     case ser_int_value_0:
       value_double_ = 0;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_1:
-      // TODO: @jges remove log messages
-      // LM_W(("In ser_int_value_1, &tmp:%p, tmp:%lu", &tmp, tmp));
       value_double_ = 1;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_2:
       value_double_ = 2;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_3:
       value_double_ = 3;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_4:
       value_double_ = 4;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_5:
       value_double_ = 5;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_6:
       value_double_ = 6;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_7:
       value_double_ = 7;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_8:
       value_double_ = 8;
       return 1;  // Codified in the serialization code
-
       break;
     case ser_int_value_9:
       value_double_ = 9;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_10:
       value_double_ = 10;
       return 1;  // Codified in the serialization code
-
     case ser_int_value_minus_1:
       value_double_ = -1;
       return 1;  // Codified in the serialization code
-
     case ser_int_positive:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp);
       return total;
-
     case ser_int_negative:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       // The sign change must be done outside the static cast, otherwise error happens
       value_double_ = -static_cast<double> (tmp);
       return total;
-
     case ser_double_positive_1_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 10.0;
       return total;
-
     case ser_double_positive_2_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 100.0;
       return total;
-
     case ser_double_positive_3_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 1000.0;
@@ -309,46 +288,38 @@ inline int Value::ParseNumber(const char *data) {
       value_double_ = static_cast<double> (tmp) / 10000.0;
       return total;
       break;
-
     case ser_double_positive_5_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 100000.0;
       return total;
       break;
-
     case ser_double_negative_1_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       // The sign change must be done outside the static cast, otherwise error happens
       value_double_ = -1.0 * static_cast<double> (tmp) / 10.0;
       return total;
-
     case ser_double_negative_2_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = -1.0 * static_cast<double> (tmp) / 100.0;
       return total;
-
     case ser_double_negative_3_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = -1.0 * static_cast<double> (tmp) / 1000.0;
       return total;
-
     case ser_double_negative_4_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = -1.0 * static_cast<double> (tmp) / 10000.0;
       return total;
-
     case ser_double_negative_5_decimal:
       size_t tmp;
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = -1.0 * static_cast<double> (tmp) / 100000.0;
       return total;
-
     case ser_double:
       value_double_ = *(reinterpret_cast<const double *> (data + 1));
       return 1 + sizeof(value_double_);
-
     default:
-      LM_X(1, ("Internal error, unknown number serialization_code:%d", static_cast<int>(code)));
+      LM_E(("Internal error, unknown number serialization_code:%d", static_cast<int>(code)));
       return 0;
   }
   // Impossible condition to silent valgrind
@@ -885,8 +856,6 @@ int Value::HashMap(int max_num_partitions) {
   for (it = value_map_.begin(); it != value_map_.end(); ++it) {
     accumulated_hash ^= (au::HashString(it->first, kNoPartitions) * it->second->hash(kNoPartitions));
   }
-  // TODO: @jges remove log message
-  // LM_M(("HashMap for key:'%s', hash:%d", str().c_str(), accumulated_hash % max_num_partitions));
   return accumulated_hash % max_num_partitions;
 }
 
@@ -1679,23 +1648,19 @@ bool Value::IsVector() const {
 
 void Value::clear() {
   // Clear elements in the map
-  // TODO: @jges remove log message
-  //LM_M(("clear called for key:'%s', this:%p", str().c_str(), this));
   au::map<std::string, Value>::iterator it;
   for (it = value_map_.begin(); it != value_map_.end(); ++it) {
     it->second->clear();   // Recursive reuse
-    reuseInstance(it->second);
+    delete it->second;
   }
   value_map_.clear();
 
   // Clear elements in the vector
   for (size_t i = 0; i < value_vector_.size(); ++i) {
     value_vector_[i]->clear();   // Recursive reuse
-    reuseInstance(value_vector_[i]);
+    delete value_vector_[i];
   }
   value_vector_.clear();
-  // TODO: @jges remove log message
-  //LM_M(("ends clear for key:'%s', this:%p", str().c_str(), this));
 }
 
 void Value::SetAsVector() {
@@ -1703,7 +1668,7 @@ void Value::SetAsVector() {
 }
 
 void Value::Vectorize() {
-  Value *value = getInstance();
+  Value *value = new Value();
 
   value->copyFrom(this);
 
@@ -1739,8 +1704,7 @@ void Value::PopBackFromVector() {
     return;
   }
 
-  // Reuse the last element and remove it
-  reuseInstance(value_vector_[value_vector_.size() - 1]);
+  delete value_vector_[value_vector_.size() - 1];
   value_vector_.pop_back();
 }
 
@@ -1751,7 +1715,7 @@ Value *Value::AddValueToVector() {
   }
 
   // Get a new instance of Value and push it to the vector
-  Value *value = getInstance();
+  Value *value = new Value();
   value_vector_.push_back(value);
 
   // Always return a void object
@@ -1766,7 +1730,7 @@ Value *Value::AddValueToVector(size_t pos) {
   }
 
   // Get a new instance of Value and push it to the vector
-  Value *value = getInstance();
+  Value *value = new Value();
   value_vector_.insert(value_vector_.begin() + pos, value);
 
   // Always return a void object
@@ -1969,7 +1933,7 @@ Value *Value::AddValueToMap(const std::string& key) {
     SetAsMap();
   }
   // Get a new instance of Value and insert it in the map
-  Value *value = getInstance();
+  Value *value = new Value();
   value_map_.insertInMap(key, value);
 
   // Always return a void object
@@ -2181,14 +2145,8 @@ const Value Value::operator++(int /* just to distinguish prefix and postfix incr
 // Comparison operators (mainly for numbers and strings)
 bool Value::Less(const Value* const left, const Value* const right) {
   if (left->value_type_ < right->value_type_) {
-    // TODO: @jges remove log messages
-    LM_W(("Comparing different types of values: left->value_type_:%d, right->value_type_:%d",
-          left->value_type_, right->value_type_));
     return true;
   } else if (left->value_type_ < right->value_type_) {
-    // TODO: @jges remove log messages
-    LM_W(("Comparing different types of values: left->value_type_:%d, right->value_type_:%d",
-          left->value_type_, right->value_type_));
     return true;
   } else {
     switch (left->value_type_) {

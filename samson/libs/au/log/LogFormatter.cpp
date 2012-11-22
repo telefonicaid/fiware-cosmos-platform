@@ -58,10 +58,10 @@ std::string LogFormatter::GetIntern(au::SharedPointer<Log> log) const {
   if (definition_ == "all") {
     return log->str();
   }
-  std::string output;
+  std::ostringstream output;
   for (size_t i = 0; i < fields_.size(); i++) {
-    output.append(log->Get(fields_[i]));
+    output << log->Get(fields_[i]);
   }
-  return output;
+  return output.str();
 }
 }

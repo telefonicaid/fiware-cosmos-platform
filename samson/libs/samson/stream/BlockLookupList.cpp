@@ -177,8 +177,13 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
   DataInstance *keyDataInstance = reinterpret_cast<DataInstance *>(keyData->getInstance());
   int compare;
 
-  // Set instance from provided string
-  keyDataInstance->setFromString(key);
+  // Set instance from provided string ( detect possible error in this convertion )
+  std::string error_message;
+  if( !keyDataInstance->setContentFromString(key , error_message ) ) {
+    command->AppendFormatedError(au::str("Error converting %s into a valid %s (%s)"
+                                         , key , kvFormat.keyFormat.c_str() , error_message.c_str() ));
+    return;
+  }
 
   keySize = keyDataInstance->serialize(keyName);
   hashGroup = keyDataInstance->hash(KVFILE_NUM_HASHGROUPS);

@@ -48,11 +48,12 @@ public:
   virtual const char *getType() = 0;
   virtual bool checkType(const char *type) = 0;
   virtual int serial_compare(char *data1, char *data2) = 0;
+  virtual bool setContentFromString(const char *str , std::string& error_message) {
+    setFromString(str);    // Overload this method if you would like to emit errors while seting content
+    return true;
+  }
   virtual void setFromString(const char *str) {
-    if (str == NULL) {
-      return;
-    }
-    // Set value from a char* ( used to lookup by key )
+    // Simple method to give value from a string
   }
 
   // Hash type check to avoid errors

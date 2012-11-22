@@ -20,6 +20,8 @@ extern size_t buffer_size;
 extern size_t input_buffer_size;  // Size of the chunks to read
 
 namespace stream_connector {
+const size_t FileDescriptorConnection::kMaxInputbufferSize = 100 * 1024 * 1024;
+
 void *run_FileDescriptorConnection(void *p) {
   // Recover the correct pointer
   FileDescriptorConnection *connection = ( FileDescriptorConnection * )p;
@@ -159,6 +161,10 @@ void FileDescriptorConnection::run_as_input() {
         input_buffer_size *= 2;
       } else if (c.seconds() > 3) {
         input_buffer_size /= 2;
+      }
+
+      if (input_buffer_size > kMaxInputbufferSize) {
+        input_buffer_size = kMaxInputbufferSize;
       }
     }
 

@@ -124,8 +124,8 @@ public:
   double GetProcessTime() const;
   size_t GetInputSize() const;
   size_t GetOutputSize() const;
-  size_t GetInputSize(int channel);
-  size_t GetOutputSize(int channel);
+  size_t GetInputSize(int channel) const;
+  size_t GetOutputSize(int channel) const;
 
   // For block ordering
   const std::vector<size_t>& input_block_ids() {

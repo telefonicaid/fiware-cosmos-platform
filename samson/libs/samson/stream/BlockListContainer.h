@@ -51,6 +51,9 @@ public:
   // Get a particular block list
   BlockList *getBlockList(std::string name);
 
+  // Return NULL if not found
+  BlockList *findBlockList(std::string name) const;
+
   // Remove all block lists contained here
   void clearBlockListcontainer();
 
@@ -67,126 +70,12 @@ public:
   void lock_content_in_memory();
 
   // Get a string will all blocks involved here
-  std::string str_blocks();
-
-  std::string str_block_ids() const {
-    std::ostringstream output;
-
-    int num_inputs = 0;
-
-    for (int i = 0; i < 10; i++) {
-      if (blockLists_.findInMap(au::str("input_%d", i))) {
-        num_inputs = i + 1;
-      }
-    }
-    int num_outputs = 0;
-    for (int i = 0; i < 10; i++) {
-      if (blockLists_.findInMap(au::str("output_%d", i))) {
-        num_outputs = i + 1;
-      }
-    }
-
-    for (int i = 0; i < num_inputs; ++i) {
-      BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
-      if (!block_list) {
-        output << "-";
-      } else {
-        output << block_list->str_blocks();
-      }
-    }
-
-    for (int i = 0; i < num_outputs; i++) {
-      BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
-      if (!block_list) {
-        output << "-";
-      } else {
-        output << block_list->str_blocks();
-      }
-    }
-
-    return output.str();
-  }
-
-  std::string str_inputs() const {
-    int num_inputs = 0;
-
-    for (int i = 0; i < 10; i++) {
-      if (blockLists_.findInMap(au::str("input_%d", i))) {
-        num_inputs = i + 1;
-      }
-    }
-
-    std::ostringstream output;
-    for (int i = 0; i < num_inputs; ++i) {
-      BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
-      if (!block_list) {
-        output << "-";
-      }
-      BlockInfo block_info = block_list->getBlockInfo();
-      output << "[" << block_info.strShortInfo() << "]";
-    }
-    return output.str();
-  }
-
-  std::string str_outputs() const {
-    int num_outputs = 0;
-
-    for (int i = 0; i < 10; i++) {
-      if (blockLists_.findInMap(au::str("output_%d", i))) {
-        num_outputs = i + 1;
-      }
-    }
-
-    std::ostringstream output;
-    for (int i = 0; i < num_outputs; i++) {
-      BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
-      if (!block_list) {
-        output << "-";
-      }
-      BlockInfo block_info = block_list->getBlockInfo();
-      output << "[" << block_info.strShortInfo() << "]";
-    }
-    return output.str();
-  }
-
-  size_t inputs_size() const {
-    int num_inputs = 0;
-
-    for (int i = 0; i < 10; i++) {
-      if (blockLists_.findInMap(au::str("input_%d", i))) {
-        num_inputs = i + 1;
-      }
-    }
-    size_t total = 0;
-    for (int i = 0; i < num_inputs; ++i) {
-      BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
-      if (block_list) {
-        BlockInfo block_info = block_list->getBlockInfo();
-        total += block_info.size;
-      }
-    }
-    return total;
-  }
-
-  size_t outputs_size() const {
-    int num_outputs = 0;
-
-    for (int i = 0; i < 10; i++) {
-      if (blockLists_.findInMap(au::str("output_%d", i))) {
-        num_outputs = i + 1;
-      }
-    }
-
-    size_t total = 0;
-    for (int i = 0; i < num_outputs; i++) {
-      BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
-      if (block_list) {
-        BlockInfo block_info = block_list->getBlockInfo();
-        total += block_info.size;
-      }
-    }
-    return total;
-  }
+  std::string str_blocks() const;
+  std::string str_block_ids() const;
+  std::string str_inputs() const;
+  std::string str_outputs() const;
+  size_t inputs_size() const;
+  size_t outputs_size() const;
 
 private:
   size_t task_id_;

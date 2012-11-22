@@ -214,12 +214,22 @@ size_t WorkerTaskBase::GetOutputSize() const {
   return block_list_container_.inputs_size();
 }
 
-size_t WorkerTaskBase::GetInputSize(int c) {
-  return block_list_container_.getBlockList(au::str("input_%d", c))->getBlockInfo().size;
+size_t WorkerTaskBase::GetInputSize(int c) const {
+  BlockList *block_list = block_list_container_.findBlockList(au::str("input_%d", c));
+
+  if (block_list) {
+    return block_list->getBlockInfo().size;
+  }
+  return 0;
 }
 
-size_t WorkerTaskBase::GetOutputSize(int c) {
-  return block_list_container_.getBlockList(au::str("output_%d", c))->getBlockInfo().size;
+size_t WorkerTaskBase::GetOutputSize(int c) const {
+  BlockList *block_list = block_list_container_.findBlockList(au::str("output_%d", c));
+
+  if (block_list) {
+    return block_list->getBlockInfo().size;
+  }
+  return 0;
 }
 }
 }

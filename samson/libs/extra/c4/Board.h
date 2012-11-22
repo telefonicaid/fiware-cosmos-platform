@@ -37,7 +37,7 @@
 
 namespace au {
 /**
- * \brief Namespace for connect4 library : Solving connect-4 problem
+ * \brief Namespace for connect4 library: Solving connect-4 problem
  */
 
 namespace c4 {

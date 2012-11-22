@@ -579,21 +579,18 @@ void WorkerTask::commit() {
   }
 }
 
-size_t WorkerTask::getStateDataSize() {
-  if (!operation_) {
+size_t WorkerTask::getStateDataSize() const {
+  if (!operation_ || !stream_operation_) {
     return 0;
   }
-  if (!stream_operation_) {
-    return 0;
-  }
-  if (( operation_->getType() == Operation::reduce ) && ( !stream_operation_->batch_operation())) {
+  if ((operation_->getType() == Operation::reduce) && (!stream_operation_->batch_operation())) {
     int num_input_channels = operation_->getNumInputs();
     return GetInputSize(num_input_channels - 1);
   }
   return 0;
 }
 
-size_t WorkerTask::getInputDataSize() {
+size_t WorkerTask::getInputDataSize() const {
   if (!operation_) {
     return 0;
   }

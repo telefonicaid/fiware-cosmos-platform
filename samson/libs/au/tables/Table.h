@@ -29,7 +29,7 @@
 
 namespace au {
 /**
- * \brief Namespace for au::tables library ( generic table management for console displaying )
+ * \brief Namespace for au::tables library (generic table management for console displaying)
  */
 namespace tables {
 class Table;

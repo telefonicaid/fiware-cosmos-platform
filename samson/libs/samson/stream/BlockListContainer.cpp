@@ -26,6 +26,10 @@ BlockListContainer::~BlockListContainer() {
   blockLists_.clearMap();   // Remove all BlockList instances
 }
 
+BlockList *BlockListContainer::findBlockList(std::string name) const {
+  return blockLists_.findInMap(name);
+}
+
 BlockList *BlockListContainer::getBlockList(std::string name) {
   BlockList *blockList = blockLists_.findInMap(name);
 
@@ -84,17 +88,135 @@ void BlockListContainer::lock_content_in_memory() {
     block_list->lock_content_in_memory();
   }
 }
-  
-  std::string BlockListContainer::str_blocks()
-  {
-    std::ostringstream output;
-    au::map<std::string, BlockList>::iterator it;
-    for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
-      BlockList *block_list = it->second;
-      output << "<<" << it->first << " " << block_list->str_blocks() << ">> ";
-    }
-    return output.str();
+
+std::string BlockListContainer::str_blocks() const {
+  std::ostringstream output;
+
+  au::map<std::string, BlockList>::const_iterator it;
+  for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
+    BlockList *block_list = it->second;
+    output << "<<" << it->first << " " << block_list->str_blocks() << ">> ";
   }
-  
+  return output.str();
+}
+
+std::string BlockListContainer::str_block_ids() const {
+  std::ostringstream output;
+
+  int num_inputs = 0;
+
+  for (int i = 0; i < 10; i++) {
+    if (blockLists_.findInMap(au::str("input_%d", i))) {
+      num_inputs = i + 1;
+    }
+  }
+  int num_outputs = 0;
+  for (int i = 0; i < 10; i++) {
+    if (blockLists_.findInMap(au::str("output_%d", i))) {
+      num_outputs = i + 1;
+    }
+  }
+
+  for (int i = 0; i < num_inputs; ++i) {
+    BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
+    if (!block_list) {
+      output << "-";
+    } else {
+      output << block_list->str_blocks();
+    }
+  }
+
+  for (int i = 0; i < num_outputs; i++) {
+    BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
+    if (!block_list) {
+      output << "-";
+    } else {
+      output << block_list->str_blocks();
+    }
+  }
+
+  return output.str();
+}
+
+std::string BlockListContainer::str_inputs() const {
+  int num_inputs = 0;
+
+  for (int i = 0; i < 10; i++) {
+    if (blockLists_.findInMap(au::str("input_%d", i))) {
+      num_inputs = i + 1;
+    }
+  }
+
+  std::ostringstream output;
+  for (int i = 0; i < num_inputs; ++i) {
+    BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
+    if (!block_list) {
+      output << "-";
+    }
+    BlockInfo block_info = block_list->getBlockInfo();
+    output << "[" << block_info.strShortInfo() << "]";
+  }
+  return output.str();
+}
+
+std::string BlockListContainer::str_outputs() const {
+  int num_outputs = 0;
+
+  for (int i = 0; i < 10; i++) {
+    if (blockLists_.findInMap(au::str("output_%d", i))) {
+      num_outputs = i + 1;
+    }
+  }
+
+  std::ostringstream output;
+  for (int i = 0; i < num_outputs; i++) {
+    BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
+    if (!block_list) {
+      output << "-";
+    }
+    BlockInfo block_info = block_list->getBlockInfo();
+    output << "[" << block_info.strShortInfo() << "]";
+  }
+  return output.str();
+}
+
+size_t BlockListContainer::inputs_size() const {
+  int num_inputs = 0;
+
+  for (int i = 0; i < 10; i++) {
+    if (blockLists_.findInMap(au::str("input_%d", i))) {
+      num_inputs = i + 1;
+    }
+  }
+  size_t total = 0;
+  for (int i = 0; i < num_inputs; ++i) {
+    BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
+    if (block_list) {
+      BlockInfo block_info = block_list->getBlockInfo();
+      total += block_info.size;
+    }
+  }
+  return total;
+}
+
+size_t BlockListContainer::outputs_size() const {
+  int num_outputs = 0;
+
+  for (int i = 0; i < 10; i++) {
+    if (blockLists_.findInMap(au::str("output_%d", i))) {
+      num_outputs = i + 1;
+    }
+  }
+
+  size_t total = 0;
+  for (int i = 0; i < num_outputs; i++) {
+    BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
+    if (block_list) {
+      BlockInfo block_info = block_list->getBlockInfo();
+      total += block_info.size;
+    }
+  }
+  return total;
+}
 }
 }

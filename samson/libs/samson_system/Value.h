@@ -44,7 +44,7 @@
 
 namespace samson {
 /**
- * \brief Namespace for samson::system library ( Generic data type for SAMSON system )
+ * \brief Namespace for samson::system library (Generic data type for SAMSON system)
  */
 namespace system {
 // Constant word serialization

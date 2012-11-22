@@ -585,4 +585,4 @@ gcovr:
 	scripts/gcovr --object-directory=$(PWD)/BUILD_COVERAGE -f $(PWD)/ -e BUILD_COVERAGE/modules -e modules
 
 docs:
-	doxygen doxygen.setup 2>&1 
+	doxygen doc/doxygen.setup 2>&1 

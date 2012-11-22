@@ -85,6 +85,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   std::string buffer_name = au::str("KVFile for block %s", buffer->name().c_str());
   kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, size_total);
+  kv_file->auxiliar_buffer_->set_size(size_total);  // Set total size for statistics about used memory
 
   kv_file->kvs       = (KV *)kv_file->auxiliar_buffer_->data();
   kv_file->info      = (KVInfo *)( kv_file->auxiliar_buffer_->data() + size_for_kvs );

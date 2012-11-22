@@ -30,7 +30,7 @@
 
 namespace au {
 /**
- * \brief namespace for au::console library : Generic full-featured console
+ * \brief namespace for au::console library: Generic full-featured console
  */
 namespace console {
 /**

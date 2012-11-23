@@ -71,7 +71,7 @@ void BufferProcessor::emit(char *data, size_t length) {
   // Recover buffer to write output
   if (output_buffer_ == NULL) {
     size_t output_buffer_size = std::max(length, (size_t)64000000 - sizeof(samson::KVHeader));       // Minimum 64Mbytes buffer
-    output_buffer_ = engine::Buffer::Create("output_splitter", "connector", output_buffer_size);
+    output_buffer_ = engine::Buffer::Create("output_splitter", output_buffer_size);
   }
 
   // Write in the buffer
@@ -120,7 +120,7 @@ void BufferProcessor::process_intenal_buffer(bool finish) {
         size_t skip_size = nextData - buffer;
 
         // Move data at the begining of the buffer
-        memmove(buffer , buffer + skip_size, size - skip_size);
+        memmove(buffer, buffer + skip_size, size - skip_size);
         size -= skip_size;
       }
     } else {

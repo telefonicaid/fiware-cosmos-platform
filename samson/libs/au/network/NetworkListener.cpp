@@ -115,15 +115,15 @@ Status NetworkListener::InitNetworkListener(int port) {
   if (bind(rFd_, reinterpret_cast<struct sockaddr *>(&sock), sizeof(struct sockaddr_in)) == -1) {
     ::close(rFd_);
     rFd_ = -1;
-    // LM_RP(BindError, ("bind to port %d: %s", port, strerror(errno)));
-    return BindError;
+    // LM_RP() makes the return of Status BindError and it also prints strerror(errno)
+    LM_RP(BindError, ("Error in bind to port %d", port));
   }
 
   if (listen(rFd_, 10) == -1) {
     ::close(rFd_);
     rFd_ = -1;
-    // LM_RP(ListenError, ("listen to port %d", port));
-    return ListenError;
+    // LM_RP() makes the return of Status ListenError and it also prints strerror(errno)
+    LM_RP(ListenError, ("Error listening on port %d", port));
   }
 
 
@@ -139,6 +139,7 @@ Status NetworkListener::InitNetworkListener(int port) {
     background_thread_running_ = true;
     return OK;
   } else {
+    LM_E(("Error creating thread on port %d: %s", port, strerror(errno)));
     return au::Error;
   }
 }

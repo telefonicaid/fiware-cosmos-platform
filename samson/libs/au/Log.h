@@ -22,6 +22,12 @@
  */
 
 namespace au {
+/**
+ * \brief Namespace for Google Protocol Buffers objects in au lirbary
+ */
+namespace gpb {
+}
+
 class AULogChannels {
 public:
 

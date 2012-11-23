@@ -624,7 +624,13 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
   au::SharedPointer<DataInstance> value_data_instance(reinterpret_cast<DataInstance *>(value_data->getInstance()));
 
   // Get all the information from the reference key
-  reference_key_data_instance->setFromString(key.c_str());
+  std::string error_message;
+  if( !reference_key_data_instance->setContentFromString(key.c_str() , error_message ) ) {
+    // Error decoding key
+    command->AppendFormatedError(au::str("Not possible to convert %s into a valid %s (%s)"
+                                         , key.c_str() , key_data->getName().c_str() , error_message.c_str() ));
+    return;
+  }
   LOG_M(logs.rest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
 
 

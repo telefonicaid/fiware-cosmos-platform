@@ -76,9 +76,8 @@ public:
                            , const std::string& string_operation_name
                            , const KVRange& range);
   ~StreamOperationRangeInfo() {
-    // Make sure current task is never commited
     if (worker_task_ != NULL) {
-      worker_task_->environment().Set("system.canceled_task", "yes");
+      worker_task_->environment().Set("system.canceled_task", "yes");  // Make sure current task is never commited
     }
   }
 

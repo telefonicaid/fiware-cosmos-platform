@@ -344,8 +344,12 @@ int main(int argC, const char *argV[]) {
   valgrindExit(12);
 
   // Instance of SamsonWorker object
-  // -----------------------------------------------------------------------------------
-  worker = new samson::SamsonWorker(zoo_host, port, web_port);
+  std::string my_zoo_host = zoo_host;
+  if (my_zoo_host.find(':') == std::string::npos) {
+    my_zoo_host += ":2181";
+  }
+
+  worker = new samson::SamsonWorker(my_zoo_host, port, web_port);
 
   // At the moment BlockManager is still an isolated singleton
   samson::stream::BlockManager::shared()->set_samson_worker(worker);

@@ -145,7 +145,7 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
   if (size) {
     *size += sizeof(Message::Header);  // Check header
   }
-  if (!header.check()) {
+  if (!header.Check()) {
     fd->Close();   // Close connection ( We close here since it is not a io error, is a protocol error )
     LM_E(("Error checking received header from %s", fd->name().c_str()));
     return au::Error;   // Generic error
@@ -186,8 +186,7 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
   if (header.kvDataLen != 0) {
     // Alloc a buffer to read buffer of data
     std::string buffer_name = au::str("Network Buffer from %s", fd->name().c_str());
-
-    buffer_ = engine::Buffer::Create(buffer_name, "network", header.kvDataLen);
+    buffer_ = engine::Buffer::Create(buffer_name, header.kvDataLen);
 
     char *kvBuf  = buffer_->data();
     s = fd->partRead(kvBuf, header.kvDataLen, "Key-Value Data", 300);

@@ -184,6 +184,7 @@ private:
   bool modules_available_;          // Flag to determine if blocks for modules are available
   size_t last_modules_version_;     // Last version of the queue .modules observed so far
 
+
   // Cronometer for last candidate data model
   au::Cronometer cronometer_candidate_data_model_;
 };

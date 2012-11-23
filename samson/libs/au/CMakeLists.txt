@@ -59,6 +59,8 @@ TARGET_LINK_LIBRARIES( au protobuf pa lm )
 IF (CMAKE_PROJECT_NAME STREQUAL "Samson")
   INSTALL(TARGETS au DESTINATION lib)
 
+  INSTALL(FILES ${EXTRA_HEADERS}         DESTINATION include/au )
+  INSTALL(FILES ${headers_au}            DESTINATION include/au )
   INSTALL(FILES ${headers_au_console}    DESTINATION include/au/console )
   INSTALL(FILES ${headers_au_containers} DESTINATION include/au/containers )
   INSTALL(FILES ${headers_au_log}        DESTINATION include/au/log )

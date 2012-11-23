@@ -25,7 +25,7 @@ SamsonPushBuffer::SamsonPushBuffer(SamsonClient *client, std::string queue) : to
   queue_ = queue;
 
   // Init buffer
-  buffer_ = engine::Buffer::Create("SamsonPushBuffer", "push", 64 * 1024 * 1024);
+  buffer_ = engine::Buffer::Create("SamsonPushBuffer", 64 * 1024 * 1024);
 }
 
 SamsonPushBuffer::~SamsonPushBuffer() {
@@ -47,7 +47,7 @@ void SamsonPushBuffer::push(const char *data, size_t size, bool flushing) {
   if (size > buffer_->size()) {
     flush();   // Flush current buffer
     // Create another buffer to meet the size
-    buffer_ = engine::Buffer::Create("SamsonPushBuffer", "push", size);
+    buffer_ = engine::Buffer::Create("SamsonPushBuffer", size);
   }
 
   buffer_->Write(data, size);
@@ -72,7 +72,7 @@ void SamsonPushBuffer::flush() {
     samson_client_->push(buffer_, queue_);
 
     // Create a new buffer to continue
-    buffer_ = engine::Buffer::Create("SamsonPushBuffer", "push", 64 * 1024 * 1024);
+    buffer_ = engine::Buffer::Create("SamsonPushBuffer", 64 * 1024 * 1024);
   } else {
     LM_V(("Not flishing since no data accumulated in push_buffer "));
   }

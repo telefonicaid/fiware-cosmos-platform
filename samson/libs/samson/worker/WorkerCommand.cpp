@@ -592,7 +592,7 @@ void WorkerCommand::Run() {
 
   if (main_command == "wait") {
     // Recovering old wait command
-    if (samson_worker_->data_model()->CheckForAllOperationsFinished() == false) {
+    if (samson_worker_->data_model()->CheckForAllStreamOperationsFinished() == false) {
       pending_to_be_executed_ = true;
       return;
     }
@@ -601,6 +601,32 @@ void WorkerCommand::Run() {
     FinishWorkerTask();
     return;
   }
+
+  if (main_command == "wait_batch_tasks") {
+    // Recovering old wait command
+    if (samson_worker_->data_model()->CheckForAllBatchOperationsFinished() == false) {
+      pending_to_be_executed_ = true;
+      return;
+    }
+
+    // Nothing else to be waited
+    FinishWorkerTask();
+    return;
+  }
+
+  if (main_command == "wait_my_batch_tasks") {
+    // Recovering old wait command
+    if (samson_worker_->data_model()->CheckForAllBatchOperationsFinished(delilah_id_) == false) {
+      pending_to_be_executed_ = true;
+      return;
+    }
+
+    // Nothing else to be waited
+    FinishWorkerTask();
+    return;
+  }
+
+
 
   if (main_command == "send_alert") {
     std::string message = command_instance->get_string_argument("message");

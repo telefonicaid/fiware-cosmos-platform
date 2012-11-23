@@ -415,7 +415,7 @@ size_t Delilah::push_txt(engine::BufferPointer buffer, const std::vector<std::st
 
   // Create a new buffer containing a header
   size_t new_buffer_size = buffer->size() + sizeof(KVHeader);
-  engine::BufferPointer new_buffer = engine::Buffer::Create("push_txt", "push", new_buffer_size);
+  engine::BufferPointer new_buffer = engine::Buffer::Create("Push txt data", new_buffer_size);
   // new_buffer->set_size(new_buffer_size);
 
   // Set the header

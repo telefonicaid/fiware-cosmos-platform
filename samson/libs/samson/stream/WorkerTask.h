@@ -67,6 +67,9 @@ public:
     return stream_operation_->name();
   }
 
+  FullKVInfo GetStateDataInfo() const;
+  FullKVInfo GetInputDataInfo() const;
+
   // Commit to data model
   void commit();
 

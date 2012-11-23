@@ -77,7 +77,8 @@ public:
   size_t GetLastCommitIdForCandidateDataModel();
 
   // Method to discover if all operations have finished ( see wait command in delilah )
-  bool CheckForAllOperationsFinished();
+  bool CheckForAllStreamOperationsFinished();
+  bool CheckForAllBatchOperationsFinished(size_t delilah_id = SIZE_T_UNDEFINED);
 
   // Frezze data model if necessary
   void FreezeCandidateDataModel();

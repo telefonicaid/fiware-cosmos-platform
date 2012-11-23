@@ -45,6 +45,10 @@ StreamOperationGlobalInfo::StreamOperationGlobalInfo(SamsonWorker *samson_worker
   }
 }
 
+StreamOperationGlobalInfo::~StreamOperationGlobalInfo() {
+  stream_operations_range_info_.clearVector();
+}
+
 void StreamOperationGlobalInfo::ReviewIntern(gpb::Data *data) {
   // Review all data to be processed ( just debug information )
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);

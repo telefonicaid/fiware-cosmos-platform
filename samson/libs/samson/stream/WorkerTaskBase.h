@@ -122,8 +122,10 @@ public:
   std::string GetActivitySummary();
   std::string GetProcessSummary();
   double GetProcessTime() const;
-  size_t GetInputSize() const;
-  size_t GetOutputSize() const;
+  FullKVInfo GetInputsInfo() const;
+  FullKVInfo GetOutputsInfo() const;
+  FullKVInfo GetInputInfo(int channel) const;
+  FullKVInfo GetOutputInfo(int channel) const;
 
   // For block ordering
   const std::vector<size_t>& input_block_ids() {

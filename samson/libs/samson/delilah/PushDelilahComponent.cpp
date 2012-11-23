@@ -128,7 +128,7 @@ void PushDelilahComponent::run_in_background() {
 
     // Create a buffer to be filled
     size_t buffer_max_size = (64 * 1024 * 1024) + sizeof(KVHeader);
-    engine::BufferPointer buffer = engine::Buffer::Create("PushDelilahComponent", "push", buffer_max_size);
+    engine::BufferPointer buffer = engine::Buffer::Create("PushDelilahComponent", buffer_max_size);
 
     // Skip KVHeader to write the header at the end
     buffer->SkipWrite(sizeof(KVHeader));

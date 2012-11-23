@@ -11,15 +11,12 @@
 
 #include "au/log/LogCentral.h"  // Own interface
 
-
 #include <assert.h>
 
 #include "au/log/LogCentralPluginFile.h"
 #include "au/log/LogCentralPluginScreen.h"
 #include "au/log/LogCentralPluginServer.h"
 #include "au/log/LogCommon.h"
-
-
 
 namespace au {
 // Global instance of LogCentral
@@ -40,7 +37,6 @@ LogCentral::LogCentral() {
   fd_write_logs_ = NULL;
 
   node_ = "Unknown";  // No default name for this
-
   quit_ = false;
 }
 
@@ -133,14 +129,19 @@ void LogCentral::Stop() {
   // Set the quit flag
   quit_ = true;
 
-  // Close write file descriptor
-  fd_write_logs_->Close();
+  if (fd_write_logs_ != NULL) {
+    // Close write file descriptor
+    fd_write_logs_->Close();
+  }
 
   // Wait for the background threads
-  void *return_code;   // Return code to be ignored
+  void *return_code; // Return code to be ignored
   pthread_join(t_, &return_code);
 
-  fd_read_logs_->Close();
+  if (fd_read_logs_ != NULL) {
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
+  }
 }
 
 void LogCentral::StopAndExit(int c) {
@@ -152,9 +153,11 @@ void LogCentral::StopAndExit(int c) {
 }
 
 void LogCentral::Emit(Log *log) {
-  if (fd_write_logs_) {
-    log->Write(fd_write_logs_);   // Write to the pipe
+  // Write to the pipe
+  if (fd_write_logs_ == NULL) {
+    return;
   }
+  log->Write(fd_write_logs_);
 }
 
 void LogCentral::Run() {

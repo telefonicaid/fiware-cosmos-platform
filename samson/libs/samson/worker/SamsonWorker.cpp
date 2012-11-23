@@ -77,7 +77,7 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
   zoo_host_(zoo_host)
   , port_(port)
   , web_port_(web_port)
-  , last_modules_version_(0) {
+  , last_modules_version_(SIZE_T_UNDEFINED) {
   // Random initialization
   srand(time(NULL));
 
@@ -247,7 +247,7 @@ void SamsonWorker::ResetToUnconnected() {
   // Reset internal components
   worker_block_manager_->Reset();
   task_manager_->Reset();         // Reset current tasks
-  last_modules_version_ = 0;      // Reset version of the modules
+  last_modules_version_ = SIZE_T_UNDEFINED;      // Reset version of the modules
 }
 
 void SamsonWorker::ResetToConnected() {
@@ -1050,36 +1050,38 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   // Get .modules queue
   gpb::Queue *queue = get_queue(data, ".modules");
 
-  // If no .modules queue, remove local directory and clesr ModuleManager
+  // If no .modules queue, remove local directory and clear ModuleManager
   if (!queue) {
     // Clear modules
     au::Singleton<ModulesManager>::shared()->clearModulesManager();
-    last_modules_version_ = 0;
+    last_modules_version_ = SIZE_T_UNDEFINED;
     modules_available_ = true;
     return;
   }
 
-  // Check if we have all necesary blocks
+  // Check if we have all necessary blocks
   int missing_blocks = 0;
   for (int b = 0; b < queue->blocks_size(); ++b) {
     size_t block_id = queue->blocks(b).block_id();
     if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
       // Add this block to be requested to other workers
       worker_block_manager_->RequestBlock(block_id);
+      LM_T(LmtModuleManager, ("Missing block(%lu) detected and requested, pos(%d)", block_id, b));
       ++missing_blocks;
     }
   }
 
   if (missing_blocks > 0) {
     modules_available_ = false;
-    last_modules_version_ = 0;
+    last_modules_version_ = SIZE_T_UNDEFINED;
+    LM_T(LmtModuleManager, ("Returns because %d missing_blocks", missing_blocks));
     au::Singleton<ModulesManager>::shared()->clearModulesManager();
     return;
   }
 
   modules_available_ = true;
   size_t commit_id = queue->commit_id();
-  if (commit_id <= last_modules_version_) {
+  if ((last_modules_version_ != SIZE_T_UNDEFINED) && (commit_id <= last_modules_version_)) {
     return;     // Not necessary to update
   }
 
@@ -1114,7 +1116,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
       std::string source_file_name = block->file_name();
       size_t file_size = au::sizeOfFile(source_file_name);
 
-      buffer = engine::Buffer::Create("module", "module", file_size);
+      buffer = engine::Buffer::Create(au::str("Module %s", source_file_name.c_str()), file_size);
       au::ErrorManager error_writing_file;
       buffer->WriteFile(source_file_name, error_writing_file);
 

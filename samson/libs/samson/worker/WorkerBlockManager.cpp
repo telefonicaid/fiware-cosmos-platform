@@ -265,6 +265,12 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
         all_hgs.push_back(j);
       }
     }
+    
+    if( all_hgs.size() == 0 ) {
+      LOG_W(logs.worker_block_manager, ("Push message rejected. No hash group assigned to me"));
+      return;
+    }
+    
     int hg =  all_hgs[ rand() % all_hgs.size()];
     header->range.set(hg, hg + 1);
   } else if (header->IsModule()) {

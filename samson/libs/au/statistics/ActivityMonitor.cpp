@@ -15,7 +15,7 @@
 
 namespace au {
 /**
- * \brief Namespace for au::statistics library ( Handy classes for statistics )
+ * \brief Namespace for au::statistics library (Handy classes for statistics)
  */
 namespace statistics {
 ActivityStatistics::ActivityStatistics(const std::string& name) {

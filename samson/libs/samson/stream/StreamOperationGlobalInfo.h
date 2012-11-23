@@ -80,6 +80,8 @@ public:
                             , const std::string& stream_operation_name
                             , const std::vector<KVRange>& ranges);
 
+  ~StreamOperationGlobalInfo();
+
   /**
    * \brief Unique method to review everything related with this stream operation
    */

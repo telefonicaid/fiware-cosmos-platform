@@ -11,8 +11,8 @@
 #ifndef _H_STREAM_CONNECTOR_CONNECTION_FileDescriptorConnection
 #define _H_STREAM_CONNECTOR_CONNECTION_FileDescriptorConnection
 
-#include "au/statistics/Cronometer.h"
 #include "au/mutex/TokenTaker.h"
+#include "au/statistics/Cronometer.h"
 
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
@@ -64,6 +64,8 @@ public:
 private:
 
   void connect();
+
+  static const size_t kMaxInputbufferSize;
 };
 
 

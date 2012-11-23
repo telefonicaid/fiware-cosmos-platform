@@ -31,25 +31,6 @@ namespace stream_connector {
 // ------------------------------------------------------------------------------------
 
 class BufferListItem : public engine::NotificationListener {
-  engine::BufferPointer buffer_;      // Buffer if it is on memory
-  std::string file_name_;                         // Full name of the file if it is necessary to persist on disk
-
-  size_t buffer_size;
-  std::string buffer_name;
-  std::string buffer_type;
-
-  au::Token token;
-
-  typedef enum {
-    on_memory,
-    writing,
-    on_memory_and_disk,
-    reading,
-    on_disk,
-  } State;
-
-  State state;
-
 public:
 
   BufferListItem(engine::BufferPointer buffer, const std::string& file_name);
@@ -68,6 +49,25 @@ public:
   virtual void notify(engine::Notification *notification);
   void flush_to_disk();
   void load_from_disk();
+
+private:
+
+  engine::BufferPointer buffer_;      // Buffer pointer ( if it is on memory )
+  std::string file_name_;             // Full name of the file ( if it is necessary to persist on disk )
+  size_t buffer_size;
+  std::string buffer_name;
+
+  au::Token token;
+
+  typedef enum {
+    on_memory,
+    writing,
+    on_memory_and_disk,
+    reading,
+    on_disk,
+  } State;
+
+  State state;
 };
 
 

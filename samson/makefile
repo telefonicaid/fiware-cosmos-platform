@@ -410,8 +410,8 @@ reset:
 	rm -Rf BUILD_RELEASE_ALL
 	rm -Rf BUILD_COVERAGE
 	rm -Rf coverage
-	rm -f libs/common/samson.pb.*
-	rm -f libs/data/data.pb.*
+	rm -f libs/samson/common/samson.pb.*
+	rm -f libs/au/au.pb.*
 	rm -Rf /usr/local/include/samson || true
 	rm -f testing/module_test/Module.*
 	rm -f /etc/init/samson.conf || true
@@ -587,4 +587,4 @@ gcovr:
 	scripts/gcovr --object-directory=$(PWD)/BUILD_COVERAGE -f $(PWD)/ -e BUILD_COVERAGE/modules -e modules
 
 docs:
-	doxygen doxygen.setup 2>&1 | less
+	doxygen doc/doxygen.setup 2>&1 

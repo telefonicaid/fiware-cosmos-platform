@@ -66,6 +66,9 @@ Console::Console() :
   command_history = new ConsoleCommandHistory();
   counter = 0;
 
+  // Pending to be assigned at runConsole()
+  t_running = 0;
+
   // By default, background messages are not blocked ( esc - b )
   block_background_messages = false;
 }
@@ -205,6 +208,11 @@ void Console::addEspaceSequence(const std::string& sequence) {
 
 void Console::internal_process_escape_sequence(std::string sequence) {
   if (sequence == au::str("b")) {
+    if (t_running == 0) {
+      LM_W(("Console thread is not yet running"));
+      return;
+    }
+
     // It is theoretically impossible, but just in case
     if (pthread_self() != t_running) {
       return;
@@ -524,6 +532,11 @@ int Console::waitWithMessage(const std::string& message, double sleep_time, Cons
 }
 
 void Console::writeOnConsole(const std::string& message) {
+  if (t_running == 0) {
+    LM_W(("Console thread is not yet running"));
+    return;
+  }
+
   if (pthread_self() == t_running) {
     clearTerminalLine();
 
@@ -602,6 +615,11 @@ void Console::writeOnConsole(const std::string& message) {
 }
 
 void Console::write(const std::string& message) {
+  if (t_running == 0) {
+    LM_W(("Console thread is not yet running"));
+    return;
+  }
+
   if (pthread_self() != t_running) {
     // Accumulate message
     au::TokenTaker tt(&token_pending_messages);
@@ -625,8 +643,6 @@ void Console::evalCommand(const std::string& command) {
 
   // Simple quit function...
   if (command == "quit") {
-    // TODO(@jges): Remove log messages
-    LM_M(("command:'%s'", command.c_str()));
     quit_console = true;
   }
 }

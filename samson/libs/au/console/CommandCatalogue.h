@@ -30,9 +30,12 @@
 
 namespace au {
 /**
- * \brief namespace for au::console::Console library : Generic full-featured console
+ * \brief namespace for au::console library: Generic full-featured console
  */
 namespace console {
+/**
+ * \brief Namespace to protect scope of enum inside au::console library
+ */
 namespace options {
 // Class used to store a valid command in delilah console
 typedef enum {
@@ -54,7 +57,7 @@ class CommandItem {
   std::string default_value_;                    // Default parameter
 
   std::string options_group_;                    // Options group to get possible values ( autocomplete )
-  std::vector<std::string> options_group_values; // Possible values ( from options_group_ )
+  std::vector<std::string> options_group_values;  // Possible values ( from options_group_ )
 
 public:
 
@@ -115,6 +118,19 @@ public:
 
   Command(const Command& command);
 
+  ~Command() {
+    for (size_t i = 0; i < options_.size(); ++i) {
+      delete options_[i];
+    }
+    options_.clear();
+    for (size_t i = 0; i < arguments_.size(); ++i) {
+      delete arguments_[i];
+    }
+    arguments_.clear();
+
+    tags_.clear();
+  }
+
   const std::string& name();
   const std::string& category();
   const std::string& short_description();
@@ -166,7 +182,7 @@ class CommandInstance {
   Command *command_;                                // Duplicate command definition
   std::string command_line_;                        // Copy of the original command line
 
-  au::simple_map<std::string, std::string> values_; // Values assigned to each item
+  au::simple_map<std::string, std::string> values_;  // Values assigned to each item
 
 public:
 
@@ -423,6 +439,10 @@ public:
 
   // Construtor
   CommandCatalogue();
+
+  ~CommandCatalogue() {
+    commands_.clearVector();
+  }
 
   // Add elements adn extra description
   Command *add(const std::string& name

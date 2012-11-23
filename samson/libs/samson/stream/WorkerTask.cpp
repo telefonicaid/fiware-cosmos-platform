@@ -570,13 +570,47 @@ void WorkerTask::commit() {
     } else {
       // Check new blocks are included in data model, just now
       std::set<size_t> all_blocks = samson_worker_->data_model()->GetAllBlockIds();
-      for (size_t i = 0; i < new_block_ids.size(); i++) {
+      for (size_t i = 0; i < new_block_ids.size(); ++i) {
         if (all_blocks.find(new_block_ids[i]) == all_blocks.end()) {
-          LM_X(1, ("Internal error since a new block is not in the current data model"));
+          LM_E(("Internal error since a new block(%lu at pos %d) is not in the current data model",
+                   new_block_ids[i], i));
+          LM_E(("Blocks in the data_model:"));
+          std::set<size_t>::const_iterator block_it;
+          for (block_it = all_blocks.begin(); block_it != all_blocks.end(); ++block_it) {
+            LM_E(("Block:%lu", *block_it));
+          }
+          LM_X(1,("Unrecoverable error. Exiting"));
         }
       }
     }
   }
+}
+
+FullKVInfo WorkerTask::GetStateDataInfo() const {
+  if (!operation_ || !stream_operation_) {
+    return FullKVInfo();
+  }
+  if ((operation_->getType() == Operation::reduce) && (!stream_operation_->batch_operation())) {
+    int num_input_channels = operation_->getNumInputs();
+    return GetInputInfo(num_input_channels - 1);
+  }
+  return FullKVInfo();
+}
+
+FullKVInfo WorkerTask::GetInputDataInfo() const {
+  if (!operation_ || !stream_operation_) {
+    return FullKVInfo();
+  }
+
+  FullKVInfo info;
+  int num_input_channels = operation_->getNumInputs();
+  if (( operation_->getType() == Operation::reduce ) && ( !stream_operation_->batch_operation())) {
+    --num_input_channels;
+  }
+  for (int i = 0; i < num_input_channels; i++) {
+    info.append(GetInputInfo(i));
+  }
+  return info;
 }
 }
 }

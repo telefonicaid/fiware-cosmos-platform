@@ -20,7 +20,6 @@ BufferListItem::BufferListItem(engine::BufferPointer buffer, const std::string& 
 
   buffer_size = buffer->size();
   buffer_name = buffer->name();
-  buffer_type = buffer->type();
 
   // Initial state
   state = on_memory;
@@ -130,9 +129,8 @@ void BufferListItem::load_from_disk() {
   switch (state) {
     case on_disk:
     {
-      // Squedule reading
       // Create the buffer
-      buffer_ = engine::Buffer::Create(buffer_name, buffer_type, buffer_size);
+      buffer_ = engine::Buffer::Create(buffer_name, buffer_size);
 
       engine::DiskOperation::newReadOperation(buffer_->data(), file_name_, 0, buffer_size, engine_id());
 

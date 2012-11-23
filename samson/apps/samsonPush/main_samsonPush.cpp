@@ -225,7 +225,7 @@ int main(int argc, const char *argv[]) {
   LM_V(("Input parameter break_sequence '%s' ( length %d ) ", tmp_separator.c_str(), strlen(breaker_sequence)));
 
   // Statistics about stdin rate ( it also controls max rate )
-  au::rate::Rate rate_stdin;
+  au::Rate rate_stdin;
 
   while (true) {
     // --------------------------------------------------------------------

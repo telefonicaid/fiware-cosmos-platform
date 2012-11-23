@@ -93,7 +93,7 @@ public:
   void report_input_size(size_t size);
 
   // Auto complete
-  void autoCompleteWithAdaptorsNames(au::ConsoleAutoComplete *info);
+  void autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComplete *info);
 };
 }
 

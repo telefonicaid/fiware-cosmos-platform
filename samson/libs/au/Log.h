@@ -1,49 +1,58 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 #ifndef AU_LOG_H
 #define AU_LOG_H
 
+#include "au/log/LogMain.h"
 #include <string>
 
-#include "au/log/LogMain.h"
+/**
+ * \namespace au
+ * \brief Namespace for au library
+ * \auth Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ */
 
 namespace au {
-  
-  class AULogChannels
-  {
-    
-  public:
-    
-    AULogChannels()
-    {
-      // By default, channels are not registered
-      registered_ = false;
-      
-      // Default to -1 to do not emit if not registered
-      zoo = -1;
-      
-    };
+class AULogChannels {
+public:
 
-    void RegisterChannels()
-    {
-      if( registered_ )
-        return;
-      registered_ = true;
-      zoo = LOG_REGISTER_CHANNEL( "au::ZOO" , "au library : Zookeeper wrapper" );
-      gpb = LOG_REGISTER_CHANNEL( "au::GPB" , "au library : Google Protocol Buffers wrapper");
-    }
-    
-    // Channels definied in this library
-    int zoo;
-    int gpb;
+  AULogChannels() {
+    // By default, channels are not registered
+    registered_ = false;
 
-  private:
-    bool registered_;
-    
+    // Default to -1 to do not emit if not registered
+    zoo = -1;
   };
 
-  // Extern variable to logeverything
-  extern AULogChannels logs;
-  
+  void RegisterChannels() {
+    if (registered_) {
+      return;
+    }
+    registered_ = true;
+    zoo  = LOG_REGISTER_CHANNEL("au::ZOO", "au library : Zookeeper wrapper");
+    gpb  = LOG_REGISTER_CHANNEL("au::GPB", "au library : Google Protocol Buffers wrapper");
+    rest = LOG_REGISTER_CHANNEL("au::R", "au library : Rest interface");
+  }
+
+  // Channels definied in this library
+  int zoo;
+  int gpb;
+  int rest;
+private:
+  bool registered_;
+};
+
+// Extern variable to logeverything
+extern AULogChannels logs;
 }
 
-#endif
+#endif  // ifndef AU_LOG_H

@@ -10,6 +10,8 @@ SET (HEADERS
 	DataModel.h
 	SamsonWorkerController.h
 	CommitCommand.h
+	GlobalBlockSortInfo.h
+	WorkerOverloadAlert.h
 )
 
 SET (SOURCES
@@ -23,6 +25,8 @@ SET (SOURCES
 	DataModel.cpp
 	SamsonWorkerController.cpp
 	CommitCommand.cpp
+	GlobalBlockSortInfo.cpp
+	WorkerOverloadAlert.cpp
 )
 
 # Include directories

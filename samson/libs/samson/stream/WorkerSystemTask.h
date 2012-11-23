@@ -113,7 +113,6 @@ class DefragTask : public WorkerTaskBase {
       samson_worker_ = samson_worker;
         queue_name_ = queue_name;
         ranges_ = ranges;
-        LOG_SW( ("DEFRAG over ranges %s" , ::samson::str(ranges_).c_str() ));
     }
 
     // Virtual method from engine::ProcessItem
@@ -124,7 +123,7 @@ class DefragTask : public WorkerTaskBase {
 
     // Virtual method of WorkerTaskBase
     virtual std::string str() {
-      return au::str("Task %lu: Defrag.. ", worker_task_id());
+      return au::str("Task %lu: Defrag", worker_task_id());
     }
 
   private:

@@ -1,12 +1,13 @@
-
 /*
- * class LogCentralChannelsFilter
+ * Telefónica Digital - Product Development and Innovation
  *
- * Filter to select what channels are activated or not
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
  */
-
 
 #ifndef _H_LogCentralChannelsFilter
 #define _H_LogCentralChannelsFilter
@@ -16,47 +17,53 @@
 #include "au/log/LogCommon.h"
 
 namespace au {
+/**
+ * \brief LogCentralChannelsFilter : Filter to set the log-level for each registered channel
+ *
+ */
+
 class LogCentralChannelsFilter {
 public:
 
   LogCentralChannelsFilter() {
     for (int i = 0; i < LOG_MAX_CHANNELS; i++) {
-      channels_level_[i] = LOG_LEVEL_WARNING; // Warning and Errors by default
+      channels_level_[i] = LOG_LEVEL_WARNING;  // Warning and Errors by default
     }
   }
 
-  inline int GetLevel(int channel ) const {
+  inline int GetLevel(int channel) const {
     if (channel < 0) {
       return 0;
     }
-    if( channel >= LOG_MAX_CHANNELS )
+    if (channel >= LOG_MAX_CHANNELS) {
       return 0;
-    
+    }
+
     return channels_level_[channel];
   }
 
-  inline void SetLevel(int channel , int level ) {
+  inline void SetLevel(int channel, int level) {
     if (channel < 0) {
       return;
     }
-    if( channel >= LOG_MAX_CHANNELS )
+    if (channel >= LOG_MAX_CHANNELS) {
       return;
+    }
     channels_level_[channel] = level;
   }
-  
-  inline void Set(const std::vector<int>& channels , int level ) {
+
+  inline void Set(const std::vector<int>& channels, int level) {
     for (size_t i = 0; i  < channels.size(); i++) {
-      SetLevel( channels[i] , level );
+      SetLevel(channels[i], level);
     }
   }
 
-  inline bool IsLogAccepted( int channel , int level )
-  {
+  inline bool IsLogAccepted(int channel, int level) {
     return ( GetLevel(channel) >= level );
   }
-  
+
   std::string description();
-  
+
 private:
 
   int channels_level_[LOG_MAX_CHANNELS];

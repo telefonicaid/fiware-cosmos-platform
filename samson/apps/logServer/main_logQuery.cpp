@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 
 #include "parseArgs/parseArgs.h"
@@ -17,6 +27,7 @@ char file_name[1024];
 char host[1024];
 char filter[1024];
 bool count;
+bool no_color;
 
 #define LOC     "localhost"
 #define LS_PORT LOG_SERVER_DEFAULT_CLIENT_PORT
@@ -28,6 +39,7 @@ PaArgument paArgs[] =
   { "-filter", filter,   "", PaString, PaOpt, _i "", PaNL, PaNL, "Command to execute" },
   { "-save"  , file_name,"", PaString, PaOpt, _i "",  PaNL, PaNL,"Save received logs to file" },
   { "-count" , &count,   "", PaBool,   PaOpt,false, false, true, "Show possible fields for format argument" },
+  { "-no_color" , &no_color,"", PaBool, PaOpt, false,  false, true,"No colored output" },
   PA_END_OF_ARGS
 };
 
@@ -82,7 +94,7 @@ int logFd = -1;
     if(count)
       log_probe.AddPlugin("count", new au::LogProbeCounter() );
     else
-      log_probe.AddPlugin("printer", new au::LogProbePriter(format) );
+      log_probe.AddPlugin("printer", new au::LogProbePriter(format , !no_color , false ) );
     if( strlen( file_name) > 0 )
     {
       au::ErrorManager error;

@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 #ifndef _AU_CONSOLE_COMMAND_HISTORY
 #define _AU_CONSOLE_COMMAND_HISTORY
 
@@ -7,14 +17,10 @@
 
 
 namespace au {
+namespace console {
 class ConsoleCommand;
 
 class ConsoleCommandHistory {
-  std::vector<ConsoleCommand *> commands;
-  size_t pos;
-
-  std::string file_name;
-
 public:
 
   ConsoleCommandHistory();
@@ -48,7 +54,13 @@ public:
 
     return output.str();
   }
+
+private:
+
+  std::string file_name;
+  size_t pos;
+  std::vector<ConsoleCommand *> commands;
 };
 }
-
+}
 #endif  // ifndef _AU_CONSOLE_COMMAND_HISTORY

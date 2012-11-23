@@ -8,11 +8,13 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-#include "samson/common/Visualitzation.h"
 
 #include <fnmatch.h>
-
 #include <string>
+
+#include "au/log/LogMain.h"
+
+#include "samson/common/Visualitzation.h"
 
 namespace samson {
   
@@ -44,15 +46,16 @@ bool Visualization::get_flag(const std::string& name) const {
 }
 
 void Visualization::set_pattern(const std::string& pattern) {
-  pattern_ = pattern;
+  pattern_.set_pattern( pattern );
 }
 
-const std::string& Visualization::pattern() const {
-  return pattern_;
+std::string Visualization::pattern() const {
+  return pattern_.pattern();
 }
 
 bool Visualization::match(const std::string& value) const {
-  return (::fnmatch(pattern_.c_str(), value.c_str(), FNM_PATHNAME) == 0);
+  bool ans = pattern_.match(value);
+  return ans;
 }
 
 const au::Environment& Visualization::environment() {

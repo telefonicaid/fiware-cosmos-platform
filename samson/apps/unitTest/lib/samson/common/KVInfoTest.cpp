@@ -28,13 +28,6 @@
 
 #include "samson/common/KVHeader.h"
 #include "samson/common/KVInfo.h"
-#include "samson/common/KVRange.h"
-#include "samson/common/MemoryCheck.h"
-#include "samson/common/MessagesOperations.h"
-#include "samson/common/Rate.h"
-#include "samson/common/SamsonSetup.h"
-#include "samson/common/Visualitzation.h"
-#include "samson/common/status.h"
 
 // Test  KVInfo;
 TEST(samson_common_KVInfo, test1) {
@@ -54,7 +47,6 @@ TEST(samson_common_KVInfo, test1) {
 
   samson::KVInfo info_2(2000, 20);
   EXPECT_EQ(info_2.str(), "(  20.0 kvs in  2.00Kbytes )") << "Error in KVInfo for initialised constructor";
-  EXPECT_EQ(info_1.canAppend(info_2), true) << "Error in KVInfo str() for canAppend";
   info_1.append(info_2);
   EXPECT_EQ(info_1.str(), "(  20.0 kvs in  2.00Kbytes )") << "Error in KVInfo append from KVInfo";
 }

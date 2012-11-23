@@ -13,8 +13,8 @@
 #include "logMsg/logMsg.h"
 #include <stdlib.h>  // malloc
 
-#include "samson/module/Data.h"
 #include "samson/common/Logs.h"
+#include "samson/module/Data.h"
 #include "samson/module/ModulesManager.h"
 
 
@@ -22,9 +22,8 @@
 
 namespace samson {
 au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::ErrorManager& error) {
-
   au::Cronometer cronometer;
-  
+
   if (buffer == NULL) {
     error.set("NULL buffer provided");
 	LM_E(("NULL buffer provided"));
@@ -92,13 +91,13 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   size_t size_for_info = sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
   size_t size_for_kvs_idnex = sizeof(int) * KVFILE_NUM_HASHGROUPS;
   size_t size_total = size_for_kvs + size_for_info + size_for_kvs_idnex;
-  
-  std::string buffer_name = au::str("Auxiliar buffer for KVFile for block %s" , buffer->str().c_str() );
-  kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, "KVFile", size_total );
-  
-  kv_file->kvs       = (KV *) kv_file->auxiliar_buffer_->data();
-  kv_file->info      = (KVInfo *) ( kv_file->auxiliar_buffer_->data() + size_for_kvs );
-  kv_file->kvs_index = (int *) ( kv_file->auxiliar_buffer_->data() + size_for_kvs + size_for_info );
+
+  std::string buffer_name = au::str("Buffer-KVFile for block %s", buffer->name().c_str());
+  kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, "KVFile", size_total);
+
+  kv_file->kvs       = (KV *)kv_file->auxiliar_buffer_->data();
+  kv_file->info      = (KVInfo *)( kv_file->auxiliar_buffer_->data() + size_for_kvs );
+  kv_file->kvs_index = (int *)( kv_file->auxiliar_buffer_->data() + size_for_kvs + size_for_info );
 
   // Local pointer fo easy access
   KV *kvs = kv_file->kvs;
@@ -169,30 +168,30 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   // Everything correct, return generated kv_file
   LOG_M(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
-                      , au::str( size_total ,  "B" ).c_str()
-                      , au::str(cronometer.seconds()).c_str()
-                      , kv_file->header_.keyFormat
-                      , kv_file->header_.valueFormat
-                      , buffer->str().c_str() ));
-  
+                       , au::str(size_total,  "B").c_str()
+                       , au::str(cronometer.seconds()).c_str()
+                       , kv_file->header_.keyFormat
+                       , kv_file->header_.valueFormat
+                       , buffer->str().c_str()));
+
   return kv_file;
 }
 
 KVFile::~KVFile() {
-
   // Tag for debuggin
-  if( buffer_ != NULL )
-    buffer_->RemoveTag( au::str("kvfile_%p" , this ) );
+  if (buffer_ != NULL) {
+    buffer_->RemoveTag(au::str("kvfile_%p", this));
+  }
 
-  if( key_ )
+  if (key_) {
     delete key_;
-  if( value_ )
+  }
+  if (value_) {
     delete value_;
+  }
 }
 
 size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
-
-
   if (header_.IsTxt()) {
     size_t line_begin = 0;
     size_t num_lines = 0;
@@ -246,7 +245,4 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
 KVHeader KVFile::header() {
   return header_;
 }
-  
-  
-
 }

@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 #ifndef _H_AU_LOG_PLUGIN
 #define _H_AU_LOG_PLUGIN
@@ -9,7 +19,6 @@
 #include "au/log/LogFormatter.h"
 
 namespace au {
-
 class LogCentralPlugin {
 public:
 
@@ -17,7 +26,9 @@ public:
     name_ = name;
     activated_ = true;
   }
-  virtual ~LogCentralPlugin() {};  // Virtual destructor for abstract class
+
+  virtual ~LogCentralPlugin() {
+  };                               // Virtual destructor for abstract class
 
   void Process(au::SharedPointer<Log> log) {
     log_counter_.Process(log);
@@ -25,12 +36,13 @@ public:
   }
 
   // Pure virtual interface to be implemented by plugins
-  void virtual Emit(au::SharedPointer<Log> log) = 0;  // Main function to process incoming log
+  void virtual Emit(au::SharedPointer<Log> log) {
+  };                                                // Main function to process incoming log
   std::string virtual status() = 0;  // Status function
-  
+
   // Function to check if a log is accepted based on the channels filter for this plugin
   bool IsLogAccepted(au::SharedPointer<Log> log) const;
-  bool IsLogAccepted( int channel , int level );  // Handy method to know if we have to emit this log here
+  bool IsLogAccepted(int channel, int level);  // Handy method to know if we have to emit this log here
 
   // Manipulate channel filter
   LogCentralChannelsFilter& log_channel_filter() {

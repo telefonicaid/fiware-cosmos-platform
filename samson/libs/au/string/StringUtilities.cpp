@@ -39,6 +39,23 @@ std::string str_percentage(double p) {
   return std::string(line);
 }
 
+std::string str_simple_percentage(double value, double total) {
+  if (total == 0) {
+    return str_simple_percentage(0);
+  } else {
+    return str_simple_percentage(value / total);
+  }
+}
+
+std::string str_simple_percentage(double p) {
+  if (p > 1) {
+    return au::str(p);
+  }
+  char line[2000];
+  sprintf(line, "%03.0f%%", p * 100);
+  return std::string(line);
+}
+
 std::string str_percentage(double value, double total) {
   if (total == 0) {
     return str_percentage(0);
@@ -298,21 +315,27 @@ std::string str(Color color, const char *format, ...) {
 
     case red:
       return std::string("\033[1;31m") + std::string(vmsg) + std::string("\033[0m");
+
     case magenta:
       return std::string("\033[1;35m") + std::string(vmsg) + std::string("\033[0m");
+
     case blue:
       return std::string("\033[1;34m") + std::string(vmsg) + std::string("\033[0m");
+
     case black:
       return std::string("\033[1;40m") + std::string(vmsg) + std::string("\033[0m");
+
     case green:
       return std::string("\033[1;42m") + std::string(vmsg) + std::string("\033[0m");
+
     case brown:
       return std::string("\033[1;43m") + std::string(vmsg) + std::string("\033[0m");
+
     case cyan:
       return std::string("\033[1;46m") + std::string(vmsg) + std::string("\033[0m");
+
     case white:
       return std::string("\033[1;47m") + std::string(vmsg) + std::string("\033[0m");
-       
   }
 
   // Default mode ( just in case )
@@ -343,50 +366,42 @@ std::string str(const std::vector<std::string>& hosts) {
   return output.str();
 }
 
-std::string str_grouped(const std::vector<std::string>& names)
-{
-  
+std::string str_grouped(const std::vector<std::string>& names) {
   au::map<std::string, std::vector<std::string> > grouped_names;
 
-  for ( size_t i = 0 ; i < names.size() ; i++ )
-  {
+  for (size_t i = 0; i < names.size(); i++) {
     std::string category;
     std::string name;
     size_t pos = names[i].find("::");
-    if( pos == std::string::npos )
+    if (pos == std::string::npos) {
       category = names[i];
-    else
-    {
-      category = names[i].substr( 0 , pos );
-      name = names[i].substr(pos+2);
+    } else {
+      category = names[i].substr(0, pos);
+      name = names[i].substr(pos + 2);
     }
-    grouped_names.findOrCreate( category )->push_back(name);
+    grouped_names.findOrCreate(category)->push_back(name);
   }
-  
+
   std::ostringstream output;
   au::map<std::string, std::vector<std::string> >::iterator iter;
-  for ( iter = grouped_names.begin() ; iter != grouped_names.end() ; iter++ )
-  {
-    if( iter->second->size() == 1 )
-    {
+  for (iter = grouped_names.begin(); iter != grouped_names.end(); iter++) {
+    if (iter->second->size() == 1) {
       std::string name = iter->second->at(0);
-      if( name == "" )
+      if (name == "") {
         output << iter->first;
-      else
+      } else {
         output << iter->first << "::" << name;
-
-    }
-    else
-    {
+      }
+    } else {
       output << iter->first << "::{ ";
-      
-      for ( size_t i = 0 ; i < iter->second->size() ; i++ )
-      {
+
+      for (size_t i = 0; i < iter->second->size(); i++) {
         std::string name = iter->second->at(i);
-        if( name == "" )
+        if (name == "") {
           output << "_ ";
-        else
+        } else {
           output << name << " ";
+        }
       }
       output << "}";
     }
@@ -394,7 +409,7 @@ std::string str_grouped(const std::vector<std::string>& names)
   }
   return output.str();
 }
-  
+
 std::string str(double value) {
   if (value == 0) {
     return "    0 ";

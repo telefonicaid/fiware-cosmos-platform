@@ -55,7 +55,7 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   cmdLine.SetFlagBoolean("hidden");
   cmdLine.SetFlagBoolean("save");       // Flag to identify if is necessary to save it locally
   cmdLine.SetFlagBoolean("connected_workers");      // Flag to run the operation only with connected workers
-  cmdLine.SetFlagUint64("w", (size_t)-1);
+  cmdLine.SetFlagUint64("w", static_cast<size_t>(-1));
   cmdLine.SetFlagString("group", "");
   cmdLine.SetFlagString("filter", "");
   cmdLine.SetFlagString("sort", "");
@@ -75,7 +75,6 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   if (cmdLine.get_num_arguments() > 0) {
     main_command = cmdLine.get_argument(0);
   }
-
 }
 
 WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent() {
@@ -88,9 +87,9 @@ WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent() {
 
 void WorkerCommandDelilahComponent::run() {
   // Get a random worker id to send the command (excep command that requires all workers involved )
-  if ((worker_id == (size_t)-1) && (!send_to_all_workers)) {
+  if ((worker_id == static_cast<size_t>(-1)) && (!send_to_all_workers)) {
     worker_id = delilah->network->getRandomWorkerId();
-    if (worker_id == (size_t)-1) {
+    if (worker_id == static_cast<size_t>(-1)) {
       setComponentFinishedWithError("It seems there is no samson worker up in this cluster");
     }
   }
@@ -118,7 +117,7 @@ void WorkerCommandDelilahComponent::run() {
   // Set buffer to be sent
   p->set_buffer(buffer_);
 
-  if (worker_id != (size_t)-1) {
+  if (worker_id != static_cast<size_t>(-1)) {
     p->to = NodeIdentifier(WorkerNode, worker_id);
     workers.insert(worker_id);
     delilah->network->Send(p);
@@ -129,8 +128,9 @@ void WorkerCommandDelilahComponent::run() {
 
 void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
   if (packet->from.node_type != WorkerNode) {
-    LM_X(1, ("Samson protocol error"));
+    return;
   }
+
   size_t worker_id = packet->from.id;
 
   if (packet->msgCode == Message::WorkerCommandResponse) {
@@ -227,50 +227,12 @@ au::tables::Table *WorkerCommandDelilahComponent::getMainTable() {
   return getTable(collection);
 }
 
-au::tables::Table *WorkerCommandDelilahComponent::getStaticTable(au::SharedPointer<gpb::Collection> collection) {
-  std::string table_definition;
-
-  for (int i = 0; i < collection->record(0).item_size(); i++) {
-    std::string name = collection->record(0).item(i).name();
-    std::string format = collection->record(0).item(i).format();
-
-    table_definition.append(name);
-    if (format.length() != 0) {
-      table_definition.append(",");
-      table_definition.append(format);
-    }
-
-    if (i != (collection->record(0).item_size() - 1)) {
-      table_definition.append("|");
-    }
-  }
-
-  au::tables::Table *table = new au::tables::Table(table_definition);
-
-  std::string title = collection->title();
-  table->setTitle(title);
-
-  for (int r = 0; r < collection->record_size(); r++) {
-    au::StringVector values;
-    for (int i = 0; i < collection->record(r).item_size(); i++) {
-      values.push_back(collection->record(r).item(i).value());
-    }
-    table->addRow(values);
-  }
-
-  return table;
-}
-
 au::tables::Table *WorkerCommandDelilahComponent::getTable(au::SharedPointer<gpb::Collection> collection) {
-  // Get static transformation of table
-  au::tables::Table *table = getStaticTable(collection);
+  au::SharedPointer<au::tables::Table> table = GetTableFromCollection(collection);
 
   // Select the table with the common criteria
   std::string title = collection->title();
-  LOG_SW(("getTable with %s %s %s %s" , title.c_str() , group_field.c_str() , sort_field.c_str() , filter_field.c_str() ));
   au::tables::Table *selected_table = table->selectTable(title, group_field, sort_field, filter_field, limit);
-
-  delete table;
 
   return selected_table;
 }

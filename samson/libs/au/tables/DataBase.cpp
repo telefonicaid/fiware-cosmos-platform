@@ -85,7 +85,7 @@ Collection *DataBase::getCollection(std::string name) {
   }
 }
 
-void DataBase::autoComplete(au::ConsoleAutoComplete *info) {
+void DataBase::autoComplete(au::console::ConsoleAutoComplete *info) {
   au::TokenTaker tt(&token);   // Mutex protection for public methods
 
   if (info->completingFirstWord()) {
@@ -569,7 +569,7 @@ void DataBase::_addCollection(std::string name, Collection *collection) {
   collections.insertInMap(name, collection);
 }
 
-void DataBase::autoCompleteTables(au::ConsoleAutoComplete *info) {
+void DataBase::autoCompleteTables(au::console::ConsoleAutoComplete *info) {
   au::map<std::string, Table>::iterator it_tables;
   for (it_tables = tables.begin(); it_tables != tables.end(); it_tables++) {
     std::string name = it_tables->first;
@@ -577,7 +577,7 @@ void DataBase::autoCompleteTables(au::ConsoleAutoComplete *info) {
   }
 }
 
-void DataBase::autoCompleteTrees(au::ConsoleAutoComplete *info) {
+void DataBase::autoCompleteTrees(au::console::ConsoleAutoComplete *info) {
   au::map<std::string, TreeItem>::iterator it_trees;
   for (it_trees = trees.begin(); it_trees != trees.end(); it_trees++) {
     std::string name = it_trees->first;
@@ -585,7 +585,7 @@ void DataBase::autoCompleteTrees(au::ConsoleAutoComplete *info) {
   }
 }
 
-void DataBase::autoCompleteCollections(au::ConsoleAutoComplete *info) {
+void DataBase::autoCompleteCollections(au::console::ConsoleAutoComplete *info) {
   au::map<std::string, Collection>::iterator it_collections;
   for (it_collections = collections.begin(); it_collections != collections.end(); it_collections++) {
     std::string name = it_collections->first;
@@ -593,7 +593,7 @@ void DataBase::autoCompleteCollections(au::ConsoleAutoComplete *info) {
   }
 }
 
-void DataBase::autoCompleteFieldsOfTable(std::string table_name, au::ConsoleAutoComplete *info) {
+void DataBase::autoCompleteFieldsOfTable(std::string table_name, au::console::ConsoleAutoComplete *info) {
   Table *table = tables.findInMap(table_name);
 
   if (table) {

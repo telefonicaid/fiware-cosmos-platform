@@ -27,15 +27,16 @@
 #include "au/containers/SharedPointer.h"
 #include "au/network/RESTService.h"
 #include "au/network/RESTServiceCommand.h"
+#include "au/string/StringUtilities.h"
 #include "zoo/Connection.h"
 
 #include "engine/EngineElement.h"               // samson::EngineElement
 #include "logMsg/logMsg.h"
 
 #include "samson/common/KVHeader.h"
-#include "samson/common/Macros.h"                       // exit(.)
+#include "samson/common/Macros.h"               // exit(.)
 #include "samson/common/NotificationMessages.h"
-#include "samson/common/samson.pb.h"                    // samson::network::
+#include "samson/common/samson.pb.h"            // samson::network::
 #include "samson/common/samsonDirectories.h"    // SAMSON_WORKER_DEFAULT_PORT
 #include "samson/delilah/Delilah.h"
 #include "samson/module/Operation.h"
@@ -43,16 +44,30 @@
 #include "samson/stream/BlockManager.h"
 #include "samson/stream/WorkerTaskManager.h"
 #include "samson/stream/WorkerTaskManager.h"     // samson::stream::WorkerTaskManager
+#include "samson/worker/DataModel.h"
+#include "samson/worker/GlobalBlockSortInfo.h"
+#include "samson/worker/SamsonWorkerController.h"
 #include "samson/worker/SamsonWorkerRest.h"
 #include "samson/worker/SamsonWorkerSamples.h"
 #include "samson/worker/WorkerBlockManager.h"
 #include "samson/worker/WorkerCommandManager.h"
-#include "samson/worker/DataModel.h"
-#include "samson/worker/SamsonWorkerController.h"
+#include "samson/worker/WorkerOverloadAlert.h"
 
-/*
+namespace samson {
+// Forward declarations
+class NetworkInterface;
+class Info;
+class DistributionOperation;
+class PushOperation;
+class SamsonWorkerRest;
+namespace stream {
+class WorkerTaskManager;
+}
+
+/**
  *
- * SamsonWorker
+ * \brief Main class in a node of a SAMSON worker cluster
+ *
  *
  * Status
  *
@@ -63,110 +78,114 @@
  * cluster_ready  --> All elements in the cluster are ready
  */
 
-namespace samson {
-class NetworkInterface;
-class Info;
-class DistributionOperation;
+class SamsonWorker : public engine::NotificationListener, public au::console::Console {
+public:
 
-namespace stream {
-class WorkerTaskManager;
-}
+  SamsonWorker(std::string zoo_host, int port, int web_port);
+  ~SamsonWorker() {
+  }
 
-class PushOperation;
-class SamsonWorkerRest;
+  // All internal components are shared pointers
 
-class SamsonWorker : public engine::NotificationListener, public au::Console {
-  public:
+  // Interface to receive Packets
+  void receive(const PacketPointer& packet);
 
-    SamsonWorker(std::string zoo_host, int port, int web_port);
-    ~SamsonWorker() {}
-    // All internal components are shared pointers
+  // Notification from the engine about finished tasks
+  void notify(engine::Notification *notification);
 
-    // Interface to receive Packets
-    void receive(const PacketPointer& packet);
+  // au::console::Console ( debug mode with fg )
+  void autoComplete(au::console::ConsoleAutoComplete *info);
+  void evalCommand(const std::string& command);
+  std::string getPrompt();
 
-    // Notification from the engine about finished tasks
-    void notify(engine::Notification *notification);
+  // Function to get information about current status
+  au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetWorkerAllLogChannels(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetKVRangesCollection(const Visualization& visualization);
 
-    // au::Console ( debug mode with fg )
-    void autoComplete(au::ConsoleAutoComplete *info);
-    void evalCommand(std::string command);
-    std::string getPrompt();
 
-    // Function to get information about current status
-    au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetWorkerAllLogChannels(const Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
-    au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
+  bool IsReady();     // Method to access if worker is ready
+  bool IsConnected();     // Method to access if worker is ready
 
-    bool IsReady();   // Method to access if worker is ready
-    bool IsConnected();   // Method to access if worker is ready
+  // Accessors to individual components of this worker
+  au::SharedPointer<au::zoo::Connection> zoo_connection();
+  au::SharedPointer<SamsonWorkerController> worker_controller();
+  au::SharedPointer<DataModel> data_model();
+  au::SharedPointer<WorkerNetwork> network();
 
-    // Accessors to individual components of this worker
-    au::SharedPointer<au::zoo::Connection> zoo_connection();
-    au::SharedPointer<SamsonWorkerController> worker_controller();
-    au::SharedPointer<DataModel> data_model();
-    au::SharedPointer<WorkerNetwork> network();
+  // Accessors to individual components of this worker
+  au::SharedPointer<SamsonWorkerRest> samson_worker_rest();
+  au::SharedPointer<WorkerBlockManager> worker_block_manager();
+  au::SharedPointer<stream::WorkerTaskManager> task_manager();
+  au::SharedPointer<WorkerCommandManager> workerCommandManager();
 
-    // Accessors to individual components of this worker
-    au::SharedPointer<SamsonWorkerRest> samson_worker_rest();
-    au::SharedPointer<WorkerBlockManager> worker_block_manager();
-    au::SharedPointer<stream::WorkerTaskManager> task_manager();
-    au::SharedPointer<WorkerCommandManager> workerCommandManager();
+  WorkerOverloadAlerts& worker_alert() {
+    return worker_alert_;
+  };
 
-    // Reload modules
-    void ReloadModulesIfNecessary();
+  // Reload modules
+  void ReloadModulesIfNecessary();
 
-  
-  
-  private:
+  int port() {
+    return port_;
+  }
 
-    enum State {
-      unconnected, connected, ready
-    };
+  // Get complete information about blocks in the system for this worker
+  au::SharedPointer<GlobalBlockSortInfo> GetGlobalBlockSortInfo();
 
-    State state_;   // Current state of this worker
-    std::string state_message_;   // Message of the last review of the state
+private:
 
-    // Main function to review samson worker and all its elements
-    // This function is preiodically called from engine
-    void Review();
+  // Check if this worker is overloaded to answer a block resquest
+  bool IsWorkerReadyForBlockRequest(size_t worker_id);
 
-    void ResetToUnconnected();   // Reset when come back to unconnected
-    void ResetToConnected();   // Reset when come back to connected ( change cluster setup )
+  enum State {
+    unconnected, connected, ready
+  };
 
-    // Connection values ( to reconnect if connections fails down )
-    std::string zoo_host_;
-    int port_;
-    int web_port_;
+  // Main function to review samson worker and all its elements
+  // This function is preiodically called from engine
+  void Review();
 
-    // Initial time stamp for this worker
-    au::Cronometer cronometer_;
+  void ResetToUnconnected();     // Reset when come back to unconnected
+  void ResetToConnected();     // Reset when come back to connected ( change cluster setup )
 
-    // Main elements of the worker
-    au::SharedPointer<au::zoo::Connection> zoo_connection_;   // Main connection with the zk
-    au::SharedPointer<SamsonWorkerController> worker_controller_;   // Cluster setup controller
-    au::SharedPointer<DataModel> data_model_;   // Data model
-    au::SharedPointer<WorkerNetwork> network_;   // Network manager to manage connections
-    au::SharedPointer<SamsonWorkerRest> samson_worker_rest_;   // REST Service
-    au::SharedPointer<WorkerBlockManager> worker_block_manager_;   // Map of blocks recently created
-    au::SharedPointer<stream::WorkerTaskManager> task_manager_;   // Manager for tasks
-    au::SharedPointer<WorkerCommandManager> workerCommandManager_;   // Manager of the "Worker commands"
+  // Visualitzation of current data model
+  void fill(gpb::CollectionRecord *record, const std::string& name, gpb::Data *data, const Visualization& visualization);
 
-  
-    bool modules_available_;        // Flag to determine if blocks for modules are available
-    size_t last_modules_version_;   // Last version of the queue .modules observed so far
+  // State of this worker
+  std::string str_state();
+
+  // Connection values ( to reconnect if connections fails down )
+  std::string zoo_host_;
+  int port_;
+  int web_port_;
+
+  // Initial time stamp for this worker
+  au::Cronometer cronometer_;
+
+  // Main elements of the worker
+  au::SharedPointer<au::zoo::Connection> zoo_connection_;     // Main connection with the zk
+  au::SharedPointer<SamsonWorkerController> worker_controller_;     // Cluster setup controller
+  au::SharedPointer<DataModel> data_model_;     // Data model
+  au::SharedPointer<WorkerNetwork> network_;     // Network manager to manage connections
+  au::SharedPointer<SamsonWorkerRest> samson_worker_rest_;     // REST Service
+  au::SharedPointer<WorkerBlockManager> worker_block_manager_;     // Map of blocks recently created
+  au::SharedPointer<stream::WorkerTaskManager> task_manager_;     // Manager for tasks
+  au::SharedPointer<WorkerCommandManager> workerCommandManager_;     // Manager of the "Worker commands"
+
+  WorkerOverloadAlerts worker_alert_;  // Information about overload-alerts received from other workers
+
+  State state_;     // Current state of this worker
+  std::string state_message_;     // Message of the last review of the state
+
+  bool modules_available_;          // Flag to determine if blocks for modules are available
+  size_t last_modules_version_;     // Last version of the queue .modules observed so far
 
   // Cronometer for last candidate data model
   au::Cronometer cronometer_candidate_data_model_;
-  
-  // Visualitzation of current data model
-  void fill( gpb::CollectionRecord *record , const std::string& name, gpb::Data* data, const Visualization& visualization );
-  
-  
-    // State of this worker
-    std::string str_state();
 };
 }
 

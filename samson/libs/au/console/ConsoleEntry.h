@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 #ifndef _AU_CONSOLE_ENTRY
 #define _AU_CONSOLE_ENTRY
@@ -6,11 +16,15 @@
 #include <string>
 #include <termios.h>                // termios
 
-#include "au/mutex/Token.h"
 #include "au/console/ConsoleEscapeSequence.h"
+#include "au/mutex/Token.h"
 
 namespace au {
-// Class used to get something from the entry
+namespace console {
+/**
+ * \brief Class used to get something from the entry from the user
+ */
+
 class ConsoleEntry {
   typedef enum {
     normal_char,
@@ -119,6 +133,7 @@ public:
     return ( seq == "[C" );
   }
 };
+}
 }
 
 #endif  // ifndef _AU_CONSOLE_ENTRY

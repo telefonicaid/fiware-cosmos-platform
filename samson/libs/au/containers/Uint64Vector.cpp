@@ -52,4 +52,22 @@ std::string Uint64Vector::str() {
   }
   return output.str();
 }
+
+std::vector<int> GetVectorOfInts(const au::StringVector& vector) {
+  std::vector<int> output_vector;
+  for (size_t i = 0; i < vector.size(); i++) {
+    output_vector.push_back(atoi(vector[i].c_str()));
+  }
+  return output_vector;
+}
+
+std::vector<int> GetVectorOfElementsLowerThan(const std::vector<int> & vector, int limit) {
+  std::vector<int> output_vector;
+  for (size_t i = 0; i < vector.size(); i++) {
+    if (vector[i] < limit) {
+      output_vector.push_back(vector[i]);
+    }
+  }
+  return output_vector;
+}
 }

@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 /* ****************************************************************************
 *
@@ -36,7 +46,6 @@
 
 
 namespace au {
-namespace rate {
 class Rate {
 public:
 
@@ -49,7 +58,7 @@ public:
 
   // Clear data
   void Clear();
-  
+
   // Get totals
   size_t hits() const;
   size_t size() const;
@@ -78,7 +87,6 @@ private:
   au::Cronometer c;
   mutable size_t last_time_correction;
 };
-}
-}                     // end of namespace au::rate
+}  // end of namespace au::rate
 
 #endif  // ifndef _H_AU_RATE

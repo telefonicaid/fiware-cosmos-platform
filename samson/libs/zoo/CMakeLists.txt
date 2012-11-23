@@ -18,6 +18,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(zoo SHARED ${SOURCES})
+ADD_LIBRARY(zoo SHARED ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES( zoo zookeeper_mt lm pa au engine)
 INSTALL(TARGETS zoo DESTINATION lib)

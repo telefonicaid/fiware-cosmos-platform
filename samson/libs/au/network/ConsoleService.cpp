@@ -74,7 +74,7 @@ void ConsoleServiceClientBase::FillMessage(au::gpb::ConsolePacket *message, au::
 
 void ConsoleServiceClientBase::Disconnect(au::ErrorManager *error) {
   if (socket_connection_) {
-    error->AddWarning(au::str("Closing connection with %s\n", socket_connection_->host_and_port() .c_str()));
+    error->AddWarning(au::str("Closing connection with %s\n", socket_connection_->host_and_port().c_str()));
 
     socket_connection_->Close();
     delete socket_connection_;
@@ -101,15 +101,16 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
 }
 
 std::string ConsoleServiceClientBase::getPrompt() {
-
   // If not connected....
-  if( !socket_connection_ )
+  if (!socket_connection_) {
     return "Disconnected > ";
-  
-  if( current_prompt_ != "" )
+  }
+
+  if (current_prompt_ != "") {
     if (cronometer_prompt_request_.seconds() < 2) {
       return current_prompt_;
     }
+  }
 
   // Prepare message to be send to server
   au::gpb::ConsolePacket m;
@@ -135,7 +136,7 @@ std::string ConsoleServiceClientBase::getPrompt() {
   return current_prompt_;
 }
 
-void ConsoleServiceClientBase::evalCommand(std::string command, au::ErrorManager *error) {
+void ConsoleServiceClientBase::evalCommand(const std::string& command, au::ErrorManager *error) {
   // Establish connection
   au::CommandLine cmdLine;
 
@@ -185,7 +186,7 @@ void ConsoleServiceClientBase::evalCommand(std::string command, au::ErrorManager
   }
 }
 
-void ConsoleServiceClientBase::autoComplete(ConsoleAutoComplete *info) {
+void ConsoleServiceClientBase::autoComplete(console::ConsoleAutoComplete *info) {
   // Options for connection and disconnection...
   if (info->completingFirstWord()) {
     info->add("connect");
@@ -213,7 +214,7 @@ void ConsoleServiceClientBase::autoComplete(ConsoleAutoComplete *info) {
   for (int i = 0; i < answer->auto_completion_alternatives_size(); i++) {
     std::string label = answer->auto_completion_alternatives(i).label();
     std::string command = answer->auto_completion_alternatives(i).command();
-    bool add_space = answer->auto_completion_alternatives(i). add_space_if_unique();
+    bool add_space = answer->auto_completion_alternatives(i).add_space_if_unique();
     info->add(label, command, add_space);
   }
 }
@@ -226,14 +227,14 @@ ConsoleServiceClient::ConsoleServiceClient(int port) :
 }
 
 // Write all messages on console
-void ConsoleServiceClient::evalCommand(std::string command) {
+void ConsoleServiceClient::evalCommand(const std::string& command) {
   au::ErrorManager error;
 
   ConsoleServiceClientBase::evalCommand(command, &error);
   Console::write(&error);
 }
 
-void ConsoleServiceClient::autoComplete(ConsoleAutoComplete *info) {
+void ConsoleServiceClient::autoComplete(console::ConsoleAutoComplete *info) {
   ConsoleServiceClientBase::autoComplete(info);
 }
 
@@ -289,12 +290,12 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
 
     if (message->has_auto_complettion_command()) {
       // Auto completion request....
-      ConsoleAutoComplete info(message->auto_complettion_command());
+      console::ConsoleAutoComplete info(message->auto_complettion_command());
       autoComplete(&info, &environment);
 
       // Fill answer message with alternatives
       for (size_t i = 0; i < info.getNumAlternatives(); i++) {
-        ConsoleAutoCompleteAlternative alternative = info.getAlternative(i);
+        console::ConsoleAutoCompleteAlternative alternative = info.getAlternative(i);
         au::gpb::AutoCompletionAlternative *a = answer_message.add_auto_completion_alternatives();
         a->set_command(alternative.command);
         a->set_label(alternative.label);
@@ -321,4 +322,4 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
   }
 }
 }
-} // end of namespace
+}  // end of namespace

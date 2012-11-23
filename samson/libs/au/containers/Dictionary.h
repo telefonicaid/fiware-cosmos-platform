@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 /* ****************************************************************************
 *
@@ -156,9 +166,9 @@ public:
     return v;
   }
 
-  std::vector< SharedPointer<V> > items() {
+  std::vector< SharedPointer<V> > items() const {
     std::vector< SharedPointer<V> > vector;
-    typename std::map<K, SharedPointer<V>, _Compare >::iterator iter;
+    typename std::map<K, SharedPointer<V>, _Compare >::const_iterator iter;
     for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
          iter++)
     {

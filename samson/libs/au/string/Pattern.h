@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 
 #ifndef _H_AU_PATTERN
@@ -32,13 +42,23 @@ private:
 class SimplePattern {
 public:
 
-  explicit SimplePattern(const std::string& pattern);
+  explicit SimplePattern(const std::string& pattern = "*" );
   ~SimplePattern() {
   };
 
   // Main function to check match
   bool match(const std::string& value) const;
 
+  void set_pattern( const std::string pattern )
+  {
+    pattern_ = pattern;
+  }
+  
+  std::string pattern() const
+  {
+    return pattern_;
+  }
+  
 private:
 
   std::string pattern_;

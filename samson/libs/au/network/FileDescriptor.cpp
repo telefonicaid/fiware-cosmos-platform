@@ -50,11 +50,11 @@ std::string FileDescriptor::name() const {
   return name_;
 }
 
-au::rate::Rate& FileDescriptor::rate_in() {
+au::Rate& FileDescriptor::rate_in() {
   return rate_in_;
 }
 
-au::rate::Rate& FileDescriptor::rate_out() {
+au::Rate& FileDescriptor::rate_out() {
   return rate_out_;
 }
 

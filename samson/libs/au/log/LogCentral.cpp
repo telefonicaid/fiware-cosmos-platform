@@ -14,10 +14,10 @@
 
 #include <assert.h>
 
-#include "au/log/LogCommon.h"
 #include "au/log/LogCentralPluginFile.h"
 #include "au/log/LogCentralPluginScreen.h"
 #include "au/log/LogCentralPluginServer.h"
+#include "au/log/LogCommon.h"
 
 
 
@@ -27,61 +27,69 @@ LogCentral log_central;
 
 void *RunLogCentral(void *p) {
   LogCentral *log_central = (LogCentral *)p;
+
   log_central->Run();
   return NULL;
 }
 
 LogCentral::LogCentral() {
-  
   fds_[0] = -1;
   fds_[1] = -1;
 
   fd_read_logs_ = NULL;
   fd_write_logs_ = NULL;
 
+  node_ = "Unknown";  // No default name for this
+
   quit_ = false;
 }
-  
-  void LogCentral::AddFilePlugin(  const std::string& plugin_name, const std::string& file_name )
-  {
-    evalCommand("log_to_file " + file_name  + " -name " + plugin_name );
-  }
-  
-  void LogCentral::RemovePlugin(  const std::string& plugin_name )
-  {
-    LogCentralPlugin* plugin = plugins_.extractFromMap(plugin_name);
-    if( plugin )
-      delete plugin;
-  }
-  
-  void LogCentral::AddServerPlugin(  const std::string& plugin_name, const std::string& host , const std::string file_name )
-  {
-    evalCommand("log_to_server " + host + " " + file_name  + " -name " + plugin_name );
-  }
-  
-  std::string LogCentral::GetPluginStatus( const std::string& name )
-  {
-    LogCentralPlugin *plugin = plugins_.findInMap(name);
-    if( !plugin )
-      return "-";
-    else
-      return plugin->status();
-  }
-  
-  std::string LogCentral::GetPluginChannels( const std::string& name )
-  {
-    LogCentralPlugin *plugin = plugins_.findInMap(name);
-    if( !plugin )
-      return "-";
-    else
-      return plugin->log_channel_filter().description();
-  }
-  
-  void LogCentral::AddPlugin(const std::string& name,  LogCentralPlugin *p) {
-    au::ErrorManager error;
-    AddPlugin(name, p, error);
-  }
 
+void LogCentral::AddFilePlugin(const std::string& plugin_name, const std::string& file_name) {
+  evalCommand("log_to_file " + file_name  + " -name " + plugin_name);
+}
+
+void LogCentral::AddScreenPlugin(const std::string& plugin_name, const std::string& format) {
+  evalCommand("log_to_screen -name " + plugin_name + " -format \"" + format + "\"");
+}
+
+void LogCentral::RemovePlugin(const std::string& plugin_name) {
+  LogCentralPlugin *plugin = plugins_.extractFromMap(plugin_name);
+
+  if (plugin) {
+    delete plugin;
+  }
+}
+
+void LogCentral::AddServerPlugin(const std::string& plugin_name, const std::string& host,
+                                 const std::string file_name) {
+  evalCommand("log_to_server " + host + " " + file_name  + " -name " + plugin_name);
+}
+
+std::string LogCentral::GetPluginStatus(const std::string& name) {
+  LogCentralPlugin *plugin = plugins_.findInMap(name);
+
+  if (!plugin) {
+    return "-";
+  } else {
+    return plugin->status();
+  }
+}
+
+std::string LogCentral::GetPluginChannels(const std::string& name) {
+  LogCentralPlugin *plugin = plugins_.findInMap(name);
+
+  if (!plugin) {
+    return "-";
+  } else {
+    return plugin->log_channel_filter().description();
+  }
+}
+
+void LogCentral::AddPlugin(const std::string& name,  LogCentralPlugin *p) {
+  au::ErrorManager error;
+
+  AddPlugin(name, p, error);
+}
 
 void LogCentral::AddPlugin(const std::string& name, LogCentralPlugin *log_plugin, au::ErrorManager& error) {
   if (plugins_.findInMap(name) != NULL) {
@@ -127,27 +135,26 @@ void LogCentral::Stop() {
 
   // Close write file descriptor
   fd_write_logs_->Close();
-  
+
   // Wait for the background threads
   void *return_code;   // Return code to be ignored
   pthread_join(t_, &return_code);
-  
+
   fd_read_logs_->Close();
-
 }
-  
-  void LogCentral::StopAndExit( int c)
-  {
-    Stop();
-    if( paAssertAtExit)
-      assert(false);
-    exit(c);
-  }
 
+void LogCentral::StopAndExit(int c) {
+  Stop();
+  if (paAssertAtExit) {
+    assert(false);
+  }
+  exit(c);
+}
 
 void LogCentral::Emit(Log *log) {
-  // Write to the pipe
-  log->Write(fd_write_logs_);
+  if (fd_write_logs_) {
+    log->Write(fd_write_logs_);   // Write to the pipe
+  }
 }
 
 void LogCentral::Run() {
@@ -167,7 +174,8 @@ void LogCentral::Run() {
     // Additional information for logs
     int channel = log->log_data().channel;
     log->Set("channel_name", log_channels_.channel_name(channel));
-    log->Set("exec",  exec_ );
+    log->Set("exec",  exec_);
+    log->Set("node",  node_);
 
     // Total count of logs
     log_counter_.Process(log);
@@ -184,19 +192,18 @@ void LogCentral::Run() {
 }
 
 void LogCentral::ReviewChannelsLevels() {
-  
   for (int c = 0; c < LOG_MAX_CHANNELS; c++) {
     int max_level = 0;
 
     if (log_channels_.IsRegistered(c)) {
-      
       // Go to all plugins...
-      
+
       au::map<std::string, LogCentralPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); it++) {
         int level = it->second->log_channel_filter().GetLevel(c);
-        if( level > max_level )
+        if (level > max_level) {
           max_level = level;
+        }
       }
     }
     main_log_channel_filter_.SetLevel(c, max_level);
@@ -205,11 +212,11 @@ void LogCentral::ReviewChannelsLevels() {
 
 void LogCentral::evalCommand(const std::string& command) {
   au::ErrorManager error;
+
   evalCommand(command, error);
 }
 
 void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error) {
-
   // Catalogue to parse input commands ( separated by commas )
   LogCentralCatalogue log_central_catalogue;
 
@@ -231,7 +238,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
 
     // "show_fields"
     if (command_instance->main_command() == "log_show_fields") {
-      error.AddMessage( au::getTableOfFields()->str());
+      error.AddMessage(au::getTableOfFields()->str());
       return;
     }
 
@@ -288,20 +295,18 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
     // Add or remove channels
 
     if (command_instance->main_command() == "log_set") {
-      
       std::string channel_pattern_string = command_instance->get_string_argument("channel_pattern");
       std::string str_log_level = command_instance->get_string_argument("log_level");
       std::string plugin_pattern_string = command_instance->get_string_argument("plugin_pattern");
-      int log_level = Log::GetLogLevel( str_log_level );
-      
+      int log_level = Log::GetLogLevel(str_log_level);
+
       au::SimplePattern channel_pattern(channel_pattern_string);
       au::SimplePattern plugin_pattern(plugin_pattern_string);
 
       // Count elements
       bool no_elements = true;
 
-      for (int c = 0; c < LOG_MAX_CHANNELS; c++) { // Loop channels
-        
+      for (int c = 0; c < LOG_MAX_CHANNELS; c++) {  // Loop channels
         if (!log_channels_.IsRegistered(c)) {
           continue;
         }
@@ -311,17 +316,16 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
           continue;
         }
 
-        au::map<std::string, LogCentralPlugin>::iterator it; // Loop plugins
+        au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
         for (it = plugins_.begin(); it != plugins_.end(); it++) {
           std::string plugin_name = it->first;
-          
+
           if (plugin_pattern.match(plugin_name)) {
-            
             LogCentralChannelsFilter& log_channel_filter = it->second->log_channel_filter();
             error.AddMessage(au::str("Plugin %s : Channel %s is activated for this log level (%s)"
                                      , plugin_name.c_str()
                                      , channel_name.c_str()
-                                     , str_log_level.c_str() ));
+                                     , str_log_level.c_str()));
             no_elements = false;
             log_channel_filter.SetLevel(c, log_level);
           }
@@ -336,56 +340,53 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       }
       return;
     }
-    
+
     if (command_instance->main_command() == "log_add") {
-      
       std::string channel_pattern_string = command_instance->get_string_argument("channel_pattern");
       std::string str_log_level = command_instance->get_string_argument("log_level");
       std::string plugin_pattern_string = command_instance->get_string_argument("plugin_pattern");
-      int log_level = Log::GetLogLevel( str_log_level );
-      
+      int log_level = Log::GetLogLevel(str_log_level);
+
       au::SimplePattern channel_pattern(channel_pattern_string);
       au::SimplePattern plugin_pattern(plugin_pattern_string);
-      
+
       // Count elements
       bool no_elements = true;
-      
-      for (int c = 0; c < LOG_MAX_CHANNELS; c++) { // Loop channels
-        
+
+      for (int c = 0; c < LOG_MAX_CHANNELS; c++) {  // Loop channels
         if (!log_channels_.IsRegistered(c)) {
           continue;
         }
-        
+
         std::string channel_name = log_channels_.channel_name(c);
         if (!channel_pattern.match(channel_name)) {
           continue;
         }
-        
-        au::map<std::string, LogCentralPlugin>::iterator it; // Loop plugins
+
+        au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
         for (it = plugins_.begin(); it != plugins_.end(); it++) {
           std::string plugin_name = it->first;
-          
+
           if (plugin_pattern.match(plugin_name)) {
-            
             LogCentralChannelsFilter& log_channel_filter = it->second->log_channel_filter();
             int current_level = log_channel_filter.GetLevel(c);
-            if ( current_level >= log_level ) {
+            if (current_level >= log_level) {
               error.AddWarning(au::str("Plugin %s : Channel %s is already activated for this log level"
                                        , plugin_name.c_str()
                                        , channel_name.c_str()
-                                       , str_log_level.c_str() ));
+                                       , str_log_level.c_str()));
             } else {
               error.AddMessage(au::str("Plugin %s : Channel %s is activatd for this log level (%s)"
                                        , channel_name.c_str()
                                        , it->first.c_str()
-                                       , str_log_level.c_str() ));
+                                       , str_log_level.c_str()));
               no_elements = false;
               log_channel_filter.SetLevel(c, log_level);
             }
           }
         }
       }
-      
+
       // Review channels
       if (no_elements) {
         error.AddWarning("No channel updated in any plugin ");
@@ -396,41 +397,38 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
     }
 
     if (command_instance->main_command() == "log_remove") {
-      
       std::string channel_pattern_string = command_instance->get_string_argument("channel_pattern");
       std::string plugin_pattern_string = command_instance->get_string_argument("plugin_pattern");
-      
+
       au::SimplePattern channel_pattern(channel_pattern_string);
       au::SimplePattern plugin_pattern(plugin_pattern_string);
-      
+
       // Count elements
       bool no_elements = true;
-      
-      for (int c = 0; c < LOG_MAX_CHANNELS; c++) { // Loop channels
-        
+
+      for (int c = 0; c < LOG_MAX_CHANNELS; c++) {  // Loop channels
         if (!log_channels_.IsRegistered(c)) {
           continue;
         }
-        
+
         std::string channel_name = log_channels_.channel_name(c);
         if (!channel_pattern.match(channel_name)) {
           continue;
         }
-        
-        au::map<std::string, LogCentralPlugin>::iterator it; // Loop plugins
+
+        au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
         for (it = plugins_.begin(); it != plugins_.end(); it++) {
           std::string plugin_name = it->first;
-          
+
           if (plugin_pattern.match(plugin_name)) {
-            
             LogCentralChannelsFilter& log_channel_filter = it->second->log_channel_filter();
             int current_level = log_channel_filter.GetLevel(c);
-            
-            if( current_level == 0 ) {
-              error.AddWarning( au::str("Plugin %s: Channel %s : logs already deativated "
-                                        , plugin_name.c_str()
-                                        , channel_name.c_str()
-                                        ));
+
+            if (current_level == 0) {
+              error.AddWarning(au::str("Plugin %s: Channel %s : logs already deativated "
+                                       , plugin_name.c_str()
+                                       , channel_name.c_str()
+                                       ));
             } else {
               error.AddMessage(au::str("Plugin %s : Channel %s : logs are deactivated"
                                        , channel_name.c_str()
@@ -442,7 +440,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
           }
         }
       }
-      
+
       // Review channels
       if (no_elements) {
         error.AddWarning("No channel updated in any plugin ");
@@ -451,10 +449,9 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       }
       return;
     }
-    
-    
-    if (command_instance->main_command() == "log_show_channels") {
 
+
+    if (command_instance->main_command() == "log_show_channels") {
       bool rates = command_instance->get_bool_option("rates");
       bool verbose = command_instance->get_bool_option("v");
 
@@ -465,7 +462,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         table_definition += ( "|" + it->first + " (" +  it->second->str_info() + ")" + ",left" );
       }
       table_definition += "|Description,left";
-      
+
       au::tables::Table table(table_definition);
       table.setTitle("Channels for logging");
 
@@ -475,8 +472,8 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
 
         au::StringVector values;
         values.Push(name);
-        values.Push( Log::GetLogLevel( main_log_channel_filter_.GetLevel(i) ) );
-        
+        values.Push(Log::GetLogLevel(main_log_channel_filter_.GetLevel(i)));
+
         if (rates) {
           values.Push(log_counter_.str_rate(i));
         } else if (verbose) {
@@ -484,25 +481,24 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         } else {
           values.Push(log_counter_.str(i));
         }
-        
+
         au::map<std::string, LogCentralPlugin>::iterator it;
         for (it = plugins_.begin(); it != plugins_.end(); it++) {
-          
           LogCentralPlugin *log_plugin = it->second;
 
           std::ostringstream info;
           info << "[" << Log::GetLogLevel(log_plugin->log_channel_filter().GetLevel(i)) << "] ";
           if (rates) {
             info << log_plugin->log_counter().str_rate(i);
-          } else if ( verbose ) {
+          } else if (verbose) {
             info << log_plugin->log_counter().str_types_per_channel(i);
           } else {
             info << log_plugin->log_counter().str(i);
           }
-          
+
           values.Push(info.str());
         }
-        
+
         values.Push(description);
         table.addRow(values);
       }
@@ -514,9 +510,8 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
 }
 
 LogCentralCatalogue::LogCentralCatalogue() {
-
   add("log_help", "general", "Show help about log_X commands to interact with the log system");
-  
+
   add("log_to_screen", "general", "Add a log plugin to emit logs to screen");
   add_string_option("log_to_screen", "-name", "screen", "Name of the plugin");
   add_string_option("log_to_screen", "-format", LOG_DEFAULT_FORMAT, "Format of logs on screen");
@@ -539,13 +534,15 @@ LogCentralCatalogue::LogCentralCatalogue() {
   add_bool_option("log_show_channels", "v", "Show more information about generated logs");
 
   // Set level of log messages for a particular channel
-  add("log_set", "general", "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
+  add("log_set", "general",
+      "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
   add_mandatory_string_argument("log_set", "channel_pattern", "Name (or pattern) of log channel");
   add_mandatory_string_argument("log_set", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
   add_string_argument("log_set", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
 
   // Set level of log messages for a particular channel
-  add("log_add", "general", "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
+  add("log_add", "general",
+      "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
   add_mandatory_string_argument("log_add", "channel_pattern", "Name (or pattern) of log channel");
   add_mandatory_string_argument("log_add", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
   add_string_argument("log_add", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
@@ -553,10 +550,7 @@ LogCentralCatalogue::LogCentralCatalogue() {
   // Set level of log messages for a particular channel
   add("log_remove", "general", "Unset logs for some log-channels ( and for some log-plugins if specified )");
   add_mandatory_string_argument("log_remove", "channel_pattern", "Name (or pattern) of log channel");
-  add_string_argument("log_remove", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
-  
-  
-  
-  
+  add_string_argument("log_remove", "plugin_pattern", "*",
+                      "Name (or pattern) of log-plugin (type * or nothing for all)");
 }
 }

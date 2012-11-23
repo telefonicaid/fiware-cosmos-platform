@@ -89,8 +89,7 @@ Buffer::~Buffer() {
 }
 
 std::string Buffer::str()  const {
-  return au::str("[ Buffer %lu %s (type: %s Size: %s/%s Read %s) ]"
-                 , buffer_id_
+  return au::str("[ %s (type: %s Size: %s/%s Read %s) ]"
                  , name_.c_str()
                  , type_.c_str()
                  , au::str(size_,"B").c_str()

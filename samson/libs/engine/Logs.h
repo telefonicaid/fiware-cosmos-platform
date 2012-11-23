@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 #ifndef ENGINE_LOG_H
 #define ENGINE_LOG_H
@@ -29,7 +39,7 @@ namespace engine {
         return;
       registered_ = true;
       
-      engine = LOG_REGISTER_CHANNEL( "engine"    , "engine lib: General channel");;
+      engine = LOG_REGISTER_CHANNEL( "engine::G"    , "engine lib: General channel");;
       buffer = LOG_REGISTER_CHANNEL( "engine::B" , "engine lib: Memory Buffer");
       notifications = LOG_REGISTER_CHANNEL( "engine::N" , "engine lib: Notifications" );;
       disk_manager = LOG_REGISTER_CHANNEL( "engine::DM" , "engine lib: Disk Manager");;

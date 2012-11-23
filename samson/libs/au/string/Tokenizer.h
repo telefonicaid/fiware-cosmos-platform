@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 /* ****************************************************************************
 *
@@ -27,6 +37,9 @@
 #include "au/string/StringUtilities.h"
 
 namespace au {
+/**
+ * Name space for au::token library ( Generic tokenizer for simple language interpretation )
+ */
 namespace token {
 class Token {
 public:
@@ -109,7 +122,7 @@ public:
       if (token->content == limiter) {
         return result_tokens;
       }
-      
+
       result_tokens.push_back(Token(token->content, token->type, token->position));
     }
   }

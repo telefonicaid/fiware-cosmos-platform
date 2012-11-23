@@ -19,7 +19,7 @@
 
 #include "au/containers/StringVector.h"
 #include "au/mutex/TokenTaker.h"      // au::TokenTaker
-#include "au/string/xml.h"             // au::xml...
+#include "au/string/xml.h"      // au::xml...
 
 #include "au/tables/Select.h"
 
@@ -123,7 +123,7 @@ std::string DelilahBase::runDatabaseCommand(std::string command) {
 }
 
 // Autocomplete for database mode
-void DelilahBase::autoCompleteForDatabaseCommand(au::ConsoleAutoComplete *info) {
+void DelilahBase::autoCompleteForDatabaseCommand(au::console::ConsoleAutoComplete *info) {
   database.autoComplete(info);
 }
 

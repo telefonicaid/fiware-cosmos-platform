@@ -24,10 +24,11 @@
 #include "logMsg/traceLevels.h"
 
 #include "samson/common/KVHeader.h"
+#include "samson/common/Logs.h"
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
 #include "samson/stream/Block.h"
 #include "samson/stream/BlockList.h"
-#include "samson/common/Logs.h"
+#include "samson/worker/SamsonWorker.h"
 
 
 /*
@@ -39,22 +40,6 @@
 
 namespace samson {
 namespace stream {
-class BlockSorter {
-    const au::Dictionary<size_t, Block>& blocks_;
-
-  public:
-    BlockSorter(const au::Dictionary<size_t, Block>& blocks) :
-      blocks_(blocks) {
-    }
-
-    bool operator()(size_t block_id1, size_t block_id2) const {
-      au::SharedPointer<Block> block_1 = blocks_.Get(block_id1);
-      au::SharedPointer<Block> block_2 = blocks_.Get(block_id2);
-
-      return Block::compare(block_1.shared_object(), block_2.shared_object());
-    }
-};
-
 BlockManager *blockManager = NULL;
 
 void BlockManager::init() {
@@ -66,6 +51,9 @@ void BlockManager::init() {
 
 BlockManager::BlockManager() :
   token_("BlockManager") {
+  // By default not connected to samson worker
+  samson_worker_ = NULL;
+
   // Default values for read/write scheduling
   scheduled_write_size_ = 0;
   scheduled_read_size_ = 0;
@@ -92,47 +80,52 @@ void BlockManager::CreateBlock(size_t block_id, engine::BufferPointer buffer) {
     LM_X(1, ("Internal error"));
   }
 
-  buffer->set_name_and_type(au::str("Buffer for block %s", str_block_id(block_id).c_str() ) , "block");
+  buffer->set_name_and_type(au::str("Buffer for block %s", str_block_id(block_id).c_str()), "block");
   buffer->SetTag("block_manager");
 
   BlockPointer block(new Block(block_id, buffer));
 
-  if( blocks_.Get(block_id) != NULL )
-    LM_X(1, ("Internal error. Trying to add block %lu twice" , block_id ));
-  
+  if (blocks_.Get(block_id) != NULL) {
+    LM_X(1, ("Internal error. Trying to add block %lu twice", block_id ));
+  }
+
   // Add this block
   block_ids_.push_back(block_id);
   blocks_.Set(block_id, block);
 }
 
-void BlockManager::RemoveBlocksIfNecessary(const std::set<size_t>& all_block_ids ) {
+void BlockManager::RemoveBlocksIfNecessary(GlobalBlockSortInfo *info) {
   au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
 
   std::list<size_t>::iterator it;
-  for (it = block_ids_.begin(); it != block_ids_.end();) {
+  for (it = block_ids_.begin(); it != block_ids_.end(); ) {
     size_t block_id = *it;
     BlockPointer block = blocks_.Get(block_id);
 
     // Check if it is included in data model
-    if (all_block_ids.find(block_id) != all_block_ids.end()) {
+    if (info->IsBlockIsNecessary(block_id)) {
       it++;
       continue;
     }
 
     // Do not remove blocks while reading or writing...
     if (!block->canBeRemoved()) {
+      LOG_D(logs.block_manager,
+            ("Block %s is not removed althougth it is not part of current data-model", str_block_id(block_id).c_str()));
       it++;
       continue;
     }
-    
+
     // Remove this block
     it = block_ids_.erase(it);
     blocks_.Extract(block_id);
     ScheduleRemoveOperation(block);
 
     engine::BufferPointer buffer = block->buffer();
-    if (buffer != NULL)
+    if (buffer != NULL) {
       buffer->RemoveTag("block_manager");
+    }
+    LOG_D(logs.block_manager, ("Block %s is removed since it is not part of data model", str_block_id(block_id).c_str()));
   }
 }
 
@@ -170,7 +163,7 @@ void BlockManager::notify(engine::Notification *notification) {
   } else if (notification->isName(notification_disk_operation_request_response)) {
     std::string type = notification->environment().Get("type", "-");
     size_t operation_size = notification->environment().Get("operation_size", 0);
-    size_t block_id = notification->environment().Get("block_id", (size_t) 0);
+    size_t block_id = notification->environment().Get("block_id", (size_t)0);
 
     if (type == "remove") {
       return;   // nothing to do ( this avoid warning of block not found
@@ -179,15 +172,15 @@ void BlockManager::notify(engine::Notification *notification) {
     BlockPointer block = blocks_.Get(block_id);
 
     if (block == NULL) {
-      LOG_W( logs.block_manager , ("Notification for non existing block %lu.Ignoring...", block_id));
+      LOG_W(logs.block_manager, ("Notification for non existing block %lu.Ignoring...", block_id));
       return;
     }
 
     LOG_M(logs.block_manager, ("Received a disk notification ( type %s size %s block_id %s )"
-                              , type.c_str()
-                              , au::str(operation_size).c_str()
-                              , str_block_id(block_id).c_str()
-                              ));
+                               , type.c_str()
+                               , au::str(operation_size).c_str()
+                               , str_block_id(block_id).c_str()
+                               ));
 
     if (type == "write") {
       scheduled_write_size_ -= operation_size;
@@ -199,23 +192,26 @@ void BlockManager::notify(engine::Notification *notification) {
       Review();
     }
   } else {
-    LOG_W(logs.block_manager ,("Unknown notification at BlockManager"));
+    LOG_W(logs.block_manager, ("Unknown notification at BlockManager"));
   }
 }
 
 void BlockManager::Review() {
   au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
 
+  LOG_D(logs.block_manager, ("Review starts...."));
+
   // Internal consistency
-  if (blocks_.size() != block_ids_.size())
+  if (blocks_.size() != block_ids_.size()) {
     LM_X(1, ("Internal error in BLockManager: Different number of blocks and blocks ids (%lu != %lu)"
-            , blocks_.size(), block_ids_.size()));
+             , blocks_.size(), block_ids_.size()));
+  }
 
   // Get setup parameter to control review of BlockManager...
   size_t max_scheduled_write_size = au::Singleton<SamsonSetup>::shared()->GetUInt64("stream.max_scheduled_write_size");
   size_t max_scheduled_read_size = au::Singleton<SamsonSetup>::shared()->GetUInt64("stream.max_scheduled_read_size");
 
-  // No schedule new operations until all the previous one have finished
+  // No schedule new operations until all the previous ones have finished
   if (scheduled_read_size_ > 0) {
     return;
   }
@@ -258,7 +254,7 @@ void BlockManager::Review() {
     last_block_id_in_memory = block_id;
   }
 
-  LOG_D(logs.block_manager, ("Block limit set for block %s", str_block_id( last_block_id_in_memory).c_str() ));
+  LOG_D(logs.block_manager, ("Block limit set for block %s", str_block_id(last_block_id_in_memory).c_str()));
 
   // --------------------------------------------------------------------------------
   // Free memory of blocks that are not suppouse to be on memory
@@ -329,13 +325,12 @@ void BlockManager::Review() {
       BlockPointer block = blocks_.Get(block_id);
 
       if (block->state() == Block::on_disk) {
-        
         // Needed to be loaded...
         LOG_M(logs.block_manager, ("Scheduling read block'%s'", block->str().c_str()));
-        
+
         // Read the block
         ScheduleReadOperation(block);
-      
+
         // No continue for more writes
         if (scheduled_read_size_ > max_scheduled_read_size) {
           break;
@@ -370,6 +365,11 @@ au::SharedPointer<gpb::Collection> BlockManager::GetCollectionOfBlocks(const Vis
   for (b = block_ids_.begin(); b != block_ids_.end(); b++) {
     // Considering this block
     size_t block_id = *b;
+
+    if (!visualization.match(str_block_id(block_id))) {
+      continue;
+    }
+
     BlockPointer block = blocks_.Get(block_id);
 
     accumulated_size += block->getSize();
@@ -382,10 +382,11 @@ au::SharedPointer<gpb::Collection> BlockManager::GetCollectionOfBlocks(const Vis
 void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
   size_t block_id = au::Singleton<SamsonSetup>::shared()->block_id_from_filename(fileName);
 
-  if (block_id == (size_t) -1 ) {
-    LOG_W( logs.block_manager , ("Error recovering block from file %s (Not possible to get block id correctly)", fileName.c_str()));
+  if (block_id == static_cast<size_t>(-1)) {
+    LOG_W(logs.worker, ("Error recovering block from file %s ( wrong block id format )", fileName.c_str()));
     return;
   }
+
 
   FILE *file = fopen(fileName.c_str(), "r");
   if (!file) {
@@ -449,7 +450,7 @@ void BlockManager::RecoverBlocksFromDisks() {
     closedir(dp);
   }
   for (size_t i = 0; i < file_names.size(); i++) {
-    LOG_M( logs.block_manager, ("Recovering data from file %lu/%lu %s", i + 1, file_names.size(), file_names[i].c_str()));
+    LOG_M(logs.worker, ("[File #%lu/%lu] Recovering data from file %s", i + 1, file_names.size(), file_names[i].c_str()));
 
     struct ::stat info;
     stat(file_names[i].c_str(), &info);
@@ -464,8 +465,8 @@ void BlockManager::RecoverBlocksFromDisks() {
 
 void BlockManager::ScheduleRemoveOperation(BlockPointer block) {
   au::SharedPointer<engine::DiskOperation> operation(
-                                                     engine::DiskOperation::newRemoveOperation(block->file_name(),
-                                                                                               engine_id()));
+    engine::DiskOperation::newRemoveOperation(block->file_name(),
+                                              engine_id()));
   operation->environment.Set("block_id", block->block_id());
 
   engine::Engine::disk_manager()->Add(operation);
@@ -475,7 +476,7 @@ void BlockManager::ScheduleReadOperation(BlockPointer block) {
   // Only make sense if block is only on disk
   if (block->state() != Block::on_disk) {
     LM_W(("Called schedule_read_operation for a block (%lu) that is in another state %s"
-            , block->block_id(), block->str_state().c_str()));
+          , block->block_id(), block->str_state().c_str()));
   }
   if (block->buffer() != NULL) {
     // No problem since previous buffer is auytomatically released in buffer_container
@@ -485,7 +486,7 @@ void BlockManager::ScheduleReadOperation(BlockPointer block) {
   size_t size = block->getSize();
 
   // Alloc the buffer for the read operation
-  block->buffer_ = engine::Buffer::Create(au::str("Buffer for block %s", str_block_id(block_id).c_str() ), "block", size);
+  block->buffer_ = engine::Buffer::Create(au::str("Buffer for block %s", str_block_id(block_id).c_str()), "block", size);
   block->buffer_->set_size(size);
   block->buffer_->SetTag("block_manager");
 
@@ -512,7 +513,7 @@ void BlockManager::ScheduleWriteOperation(BlockPointer block) {
   // Only make sense if block is only on memory
   if (block->state() != Block::on_memory) {
     LM_W(("Called schedule_read_operation for a block (%lu) that is in another state %s"
-            , block->block_id(), block->str_state().c_str()));   // Operation for writing
+          , block->block_id(), block->str_state().c_str()));     // Operation for writing
   }
   engine::BufferPointer buffer = block->buffer();
   size_t block_id = block->block_id();
@@ -548,37 +549,59 @@ void BlockManager::ResetBlockManager() {
   LM_TODO(("Remove all files at BlockManager"));
 }
 
+class Sorter {
+public:
+  Sorter(GlobalBlockSortInfo *info) :
+    info_(info) {
+  }
+
+  bool operator()(size_t block_id1, size_t block_id2) const {
+    return info_->CompareBlocks(block_id1, block_id2);
+  }
+
+private:
+  GlobalBlockSortInfo *info_;
+};
+
 void BlockManager::Sort() {
-  // au::ExecesiveTimeAlarm alarm("BlockManager::_review");
-  {
-    au::ExecesiveTimeAlarm alarm("BlockManager::sort", 0.10);
-
-    // Sort list of blocks according to a defined criteria
-    block_ids_.sort(BlockSorter(blocks_));
-
-    // Check sort
-    size_t previous_task = 0;
-    std::list<size_t>::iterator iterator;
-    for (iterator = block_ids_.begin(); iterator != block_ids_.end(); iterator++) {
-      BlockPointer block = blocks_.Get(*iterator);
-      size_t task = block->min_task_id();
-      if (task < previous_task) {
-        LM_X(1, ("Error sorting blocks in blcok manager"));
-      }
-      previous_task = task;
-    }
-    // std::sort( block_ids_.begin() , block_ids_.end(), BlockSorter(blocks_) );
+  if (!samson_worker_) {
+    return;    // Still not connected to worker, nothing to sort
   }
+
+  au::ExecesiveTimeAlarm alarm("BlockManager::sort", 0.10);
+
+  // Get information for blocks in this woker
+  au::SharedPointer<GlobalBlockSortInfo> info = samson_worker_->GetGlobalBlockSortInfo();
+  if (info == NULL) {
+    return;  // Still not prepare to provide information about block-order
+  }
+
+  // Remove all blocks not present in the provided info
+  RemoveBlocksIfNecessary(info.shared_object());
+
+  // Update state of all workers
+  au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
+
+  std::list<size_t>::iterator it;
+  for (it = block_ids_.begin(); it != block_ids_.end(); ++it) {
+    size_t block_id = *it;
+    BlockPointer block = blocks_.Get(block_id);
+    block->set_info_state(info->GetStateForBlock(block_id));
+  }
+
+  // Sort list of blocks according to a defined criteria
+  // block_ids_.sort(BlockSorter(blocks_));
+  block_ids_.sort(Sorter(info.shared_object()));
 }
-  
-  bool BlockManager::CheckBlocks( const std::set<size_t>& block_ids )
-  {
-    std::set<size_t>::const_iterator it;
-    for (it = block_ids.begin() ; it != block_ids.end() ; it++ )
-      if( GetBlock(*it) == NULL )
-        return false;
-    return true;
-  }
 
+bool BlockManager::CheckBlocks(const std::set<size_t>& block_ids) {
+  std::set<size_t>::const_iterator it;
+  for (it = block_ids.begin(); it != block_ids.end(); it++) {
+    if (GetBlock(*it) == NULL) {
+      return false;
+    }
+  }
+  return true;
+}
 }
 }

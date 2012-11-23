@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 #ifndef _H_AU_NETWORK_REST_SERVICE
 #define _H_AU_NETWORK_REST_SERVICE
@@ -22,22 +32,21 @@ class RESTServiceCommand;
 
 class RESTServiceInterface {
 public:
-  virtual void process(
-    au::SharedPointer<RESTServiceCommand> command) = 0;
+  virtual void process(au::SharedPointer<RESTServiceCommand> command) = 0;
 };
 
 class RESTService : public Service {
-  // Interface to build response for the request
-  RESTServiceInterface *interface;
-
 public:
 
-  RESTService(int port, RESTServiceInterface *_interface);
+  RESTService(int port, RESTServiceInterface *interface);
   virtual ~RESTService();
 
-  // Virtual methods of Service
-  virtual void run(SocketConnection *socket_connection,
-                   bool *quit);
+  // Virtual methods of au::Service
+  virtual void run(SocketConnection *socket_connection, bool *quit);
+
+private:
+
+  RESTServiceInterface *interface_;  // Interface to build response for the request
 };
 }
 }  // end of namespace

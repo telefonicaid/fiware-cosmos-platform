@@ -15,7 +15,6 @@
 #include "Rate.h"        // Own interface
 
 namespace au {
-namespace rate {
 Rate::Rate(int num_samples)
   : token_("Rate")
     , num_samples_(num_samples)
@@ -58,17 +57,16 @@ void Rate::Push(size_t size) {
   hits_[0]++;
   size_[0] += size;
 }
-  
-  void Rate::Clear()
-  {
-    au::TokenTaker tt(&token_);
-    
-    num_samples_=0;
-    total_size_=0;
-    total_num_=0;
-    c.Reset();
-    last_time_correction = 0;
-  }
+
+void Rate::Clear() {
+  au::TokenTaker tt(&token_);
+
+  num_samples_ = 0;
+  total_size_ = 0;
+  total_num_ = 0;
+  c.Reset();
+  last_time_correction = 0;
+}
 
 std::string Rate::str() const {
   au::TokenTaker tt(&token_);
@@ -156,6 +154,5 @@ void Rate::UpdateTime() const {
 
   // Set the new reference
   last_time_correction = time;
-}
 }
 }                   // end of namespace au::rate

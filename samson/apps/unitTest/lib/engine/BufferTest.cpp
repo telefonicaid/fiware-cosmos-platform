@@ -131,8 +131,8 @@ TEST(bufferTest, ifstreamWriteTest) {
 
     std::ifstream file(fileName.c_str());
     EXPECT_EQ(file.is_open(), true) <<
-       "Error opening test file test_data/testdata.txt at execution path. "
-       "Copy it from the source directory.";
+    "Error opening test file test_data/testdata.txt at execution path. "
+    "Copy it from the source directory.";
     buffer1->Write(file);
 
     EXPECT_EQ(buffer1->size(), 15ULL);
@@ -256,7 +256,7 @@ TEST(bufferTest, set_sizeTest) {
     readBuffer[11] = '\0';
     // the string "01234..." should start at position 1 instead of 0
     EXPECT_EQ(strcmp(readBuffer + 1, "0123456789"), 0) <<
-       "wrong data after manually setting used size";
+    "wrong data after manually setting used size";
   }
 
   close_engine_test();
@@ -300,7 +300,7 @@ TEST(bufferTest, getSimpleBufferAtOffsetTest) {
     // create the SimpleBuffer
     engine::SimpleBuffer simple = buffer1->GetSimpleBufferAtOffset(2);
     EXPECT_TRUE(simple.checkSize(buffer1->size() - 2)) <<
-       "SimpleBuffer's size should be equal to the original Buffer's one minus 2";
+    "SimpleBuffer's size should be equal to the original Buffer's one minus 2";
 
     char readBuffer[5];
     memcpy(readBuffer, simple.data(), 4);
@@ -330,7 +330,7 @@ TEST(bufferTest, removeLastUnfinishedLineTest) {
     buffer1->RemoveLastUnfinishedLine(readBuffer, bufferSize);
     // Check that data in the result buffer is okay
     EXPECT_EQ(strcmp(readBuffer, "012"), 0) <<
-       "removeLastUnfinishedLine() returned wrong data in buffer";
+    "removeLastUnfinishedLine() returned wrong data in buffer";
     EXPECT_EQ(bufferSize, 5ULL) << "removeLastUnfinishedLine() returned wrong buffer size";
 
     // Check that the original buffer's data has been correctly modified
@@ -339,9 +339,9 @@ TEST(bufferTest, removeLastUnfinishedLineTest) {
     readBuffer2[buffer1->size()] = '\0';
 
     EXPECT_EQ(strcmp(readBuffer2, "0123\n0123\n"), 0) <<
-       "Wrong data in buffer after removeLastUnfinishedLine call";
+    "Wrong data in buffer after removeLastUnfinishedLine call";
     EXPECT_EQ(buffer1->size(), 10ULL) <<
-       "Wrong buffer size after removeLastUnfinishedLine call";
+    "Wrong buffer size after removeLastUnfinishedLine call";
 
     if (readBuffer != NULL) {
       free(readBuffer);
@@ -368,7 +368,7 @@ TEST(bufferTest, tagCollection) {
 
     buffer->RemoveTag("aTag");
     EXPECT_FALSE(buffer->contains_tag("aTag")) <<
-       "Found 'aTag', which is an error - 'aTag' was just removed!";
+    "Found 'aTag', which is an error - 'aTag' was just removed!";
   }
 
   close_engine_test();
@@ -418,8 +418,8 @@ TEST(bufferTest, WriteFile) {
   init_engine_test();
 
   {
-    au::ErrorManager       em;
-    engine::BufferPointer  buf = engine::Buffer::Create("buf", "test", 150);
+    au::ErrorManager em;
+    engine::BufferPointer buf = engine::Buffer::Create("buf", "test", 150);
 
     buf->WriteFile("test_data/testdata.txt", em);
     EXPECT_EQ(93, buf->size());
@@ -435,8 +435,8 @@ TEST(bufferTest, badMaxSize) {
   init_engine_test();
 
   {
-    au::ErrorManager       em;
-    engine::BufferPointer  buf = engine::Buffer::Create("buf", "test", 0);
+    au::ErrorManager em;
+    engine::BufferPointer buf = engine::Buffer::Create("buf", "test", 0);
 
     EXPECT_EQ(0, buf->max_size());
     EXPECT_EQ(0, buf->size());
@@ -444,7 +444,7 @@ TEST(bufferTest, badMaxSize) {
     buf->WriteFile("test_data/testdata.txt", em);
     EXPECT_EQ(0, buf->size());
 
-    engine::BufferPointer  buf2 = engine::Buffer::Create("buf", "test", 2 * 1024ULL * 1024 * 1024);
+    engine::BufferPointer buf2 = engine::Buffer::Create("buf", "test", 2 * 1024ULL * 1024 * 1024);
     EXPECT_TRUE(buf2 == NULL);
   }
 

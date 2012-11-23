@@ -30,6 +30,7 @@
 #include <string>
 
 #include "au/Environment.h"
+#include "au/string/Pattern.h"
 #include "logMsg/logMsg.h"
 
 namespace samson {
@@ -39,7 +40,6 @@ class Visualization {
   public:
   
     Visualization() {
-      pattern_ = "*";   // Default pattern
     }
 
   // Check a string match provided pattern
@@ -51,7 +51,7 @@ class Visualization {
 
   // Pattern operations
     void set_pattern(const std::string& pattern);
-    const std::string& pattern() const;
+    std::string pattern() const;
 
   // Environment properties
     const au::Environment& environment();
@@ -60,7 +60,7 @@ private:
   
   std::set<std::string> flags_activated_;
   std::set<std::string> flags_not_activated_;
-  std::string pattern_;
+  au::SimplePattern pattern_;
   au::Environment environment_;
   
 };

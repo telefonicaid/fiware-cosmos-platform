@@ -22,7 +22,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/console/Console.h"     // au::Console
+#include "au/console/Console.h"     // au::console::Console
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/mutex/TokenTaker.h"    // au::TokenTake
 

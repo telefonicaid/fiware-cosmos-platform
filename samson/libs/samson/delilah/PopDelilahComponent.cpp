@@ -39,7 +39,7 @@ PopDelilahComponent::PopDelilahComponent(std::string queue
   show_flag_ = show_flag;
 
   // Main request information
-  worker_id_ = (size_t)-1;
+  worker_id_ = static_cast<size_t>(-1);
   commit_id_ = -1;   // No previous commit observed
 
   // Init counter of items to be poped
@@ -176,10 +176,12 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
 
     // Add all element to the list
     const gpb::Queue& queue = packet->message->pop_queue_response().queue();
-    LM_T(LmtDelilahComponent, ("Received a pop request response for queue:'%s', with correct information. blocks_size:%d, num_pop_queue_responses_:%d",
-          queue.name().c_str(), queue.blocks_size(), num_pop_queue_responses_));
+    LM_T(LmtDelilahComponent,
+         (
+           "Received a pop request response for queue:'%s', with correct information. blocks_size:%d, num_pop_queue_responses_:%d",
+           queue.name().c_str(), queue.blocks_size(), num_pop_queue_responses_));
     LM_T(LmtDelilahComponent, ("Message:'%s'", packet->message->ShortDebugString().c_str()));
-    for (int i = 0; i < queue.blocks_size(); i++) {
+    for (int i = 0; i < queue.blocks_size(); ++i) {
       int commit_id = queue.blocks(i).commit_id();
       if (commit_id > commit_id_) {
         commit_id_ = commit_id;
@@ -200,7 +202,8 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
       num_blocks_downloaded_++;
     }
 
-    LM_T(LmtDelilahComponent, ("pop request response received (num_pop_queue_responses_:%d). Ready to check()", num_pop_queue_responses_));
+    LM_T(LmtDelilahComponent,
+         ("pop request response received (num_pop_queue_responses_:%d). Ready to check()", num_pop_queue_responses_));
     check();
     return;
   }
@@ -242,7 +245,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     // Search for this item
     PopDelilahComponentItem *item = items_.findInMap(pop_id);
     if (!item) {
-      LM_W(("Unknown pop item %lu in a PopBlockRequestResponse for delilah component %lu" , pop_id , id ));
+      LM_W(("Unknown pop item %lu in a PopBlockRequestResponse for delilah component %lu", pop_id, id ));
       return;
     }
 
@@ -313,11 +316,14 @@ void PopDelilahComponent::check() {
   if (file_name_ != "") {
     // Adding stated() to avoid finishing a component before started
     if (started() && (num_pending_write_operations_ == 0) && (items_.size() == 0)) {
-      LM_T(LmtDelilahComponent, ("pop operation finished on file '%s' because started:%d, num_pending_write_operations_:%d && items_.size():%lu",
-            file_name_.c_str(), started_, num_pending_write_operations_, items_.size()));
+      LM_T(LmtDelilahComponent,
+           (
+             "pop operation finished on file '%s' because started:%d, num_pending_write_operations_:%d && items_.size():%lu",
+             file_name_.c_str(), started_, num_pending_write_operations_, items_.size()));
       setComponentFinished();
     } else {
-      LM_T(LmtDelilahComponent, ("Waiting for pop component started:%d with num_pending_write_operations_:%d, items.size():%lu",
+      LM_T(LmtDelilahComponent,
+           ("Waiting for pop component started:%d with num_pending_write_operations_:%d, items.size():%lu",
             started_, num_pending_write_operations_, items_.size()));
     }
   } else {

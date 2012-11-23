@@ -19,6 +19,7 @@
 
 
 namespace au {
+namespace console {
 ConsoleCommandHistory::ConsoleCommandHistory() {
   // Default name
   file_name = getenv("HOME");
@@ -118,5 +119,6 @@ void ConsoleCommandHistory::new_command() {
     commands.push_back(new ConsoleCommand());
   }
   pos = commands.size() - 1;
+}
 }
 }

@@ -22,6 +22,7 @@
 
 
 namespace au {
+namespace console {
 char get_last_char(std::string txt) {
   if (txt.length() == 0) {
     return 0;
@@ -267,19 +268,18 @@ void ConsoleAutoComplete::print_last_words_alternatives() {
   if (num_words_per_row == 0) {
     num_words_per_row = 1;
   }
-  for (size_t i = 0; i < last_word_alternatives.size(); i++)
-  {
-    
+  for (size_t i = 0; i < last_word_alternatives.size(); i++) {
     std::ostringstream output;
-    
-    output << last_word_alternatives[i].bold_label( last_word );
-    for ( int j = 0 ; j < (int)( max_length  - last_word_alternatives[i].label.length() ) ; j++ )
+
+    output << last_word_alternatives[i].bold_label(last_word);
+    for (int j = 0; j < (int)( max_length  - last_word_alternatives[i].label.length()); j++) {
       output << " ";
+    }
     output << " ";
-    
+
     // Print command and help
-    printf("%s",output.str().c_str());
-    
+    printf("%s", output.str().c_str());
+
     if ((i % num_words_per_row) == (size_t)(num_words_per_row - 1)) {
       printf("\n");
     }
@@ -288,5 +288,6 @@ void ConsoleAutoComplete::print_last_words_alternatives() {
   if (((last_word_alternatives.size() - 1) % num_words_per_row) != (size_t)(num_words_per_row - 1)) {
     printf("\n");
   }
+}
 }
 }

@@ -28,6 +28,7 @@ char str_time[1024];
 char str_date[1024];
 char file_name[1024];
 bool count;
+bool no_color;
 
 PaArgument paArgs[] =
 {
@@ -37,6 +38,7 @@ PaArgument paArgs[] =
   { "-count" , &count,   "", PaBool,   PaOpt,false, false, true, "Show possible fields for format argument" },
   { "-reverse", &is_reverse, "", PaBool, PaOpt,false, false, true, "Show in reverse temporal order" },
   { "-show_fields",&show_fields, "",PaBool,PaOpt,false,false, true, "Show possible fields for format argument" },
+  { "-no_color" , &no_color,"", PaBool, PaOpt, false,  false, true,"No colored output" },
   { " ", target_file, "", PaString, PaReq,_i "", PaNL, PaNL, "Log file to scan"  },
   PA_END_OF_ARGS
 };
@@ -106,7 +108,7 @@ int main(int argC, const char *argV[]) {
   if(count)
     log_probe.AddPlugin("count", new au::LogProbeCounter() );
   else
-    log_probe.AddPlugin("printer", new au::LogProbePriter(format , false) );
+    log_probe.AddPlugin("printer", new au::LogProbePriter(format , !no_color , false) );
   if( strlen( file_name) > 0 )
   {
     au::ErrorManager error;

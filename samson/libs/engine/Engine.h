@@ -36,9 +36,9 @@
 #include "au/statistics/ActivityMonitor.h"
 #include "au/tables/Table.h"
 
-#include "au/statistics/Cronometer.h"                       // au::Cronometer
 #include "au/containers/list.h"                  // au::list
 #include "au/mutex/Token.h"                      // au::Token
+#include "au/statistics/Cronometer.h"            // au::Cronometer
 // NAMESPACE_BEGIN & }
 #include "au/containers/vector.h"
 #include "au/mutex/Token.h"
@@ -53,6 +53,11 @@ namespace au {
 class Error;
 class Token;
 }
+
+/**
+ * \brief Namespace for engine library
+ * \auth Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ */
 
 namespace engine {
 class EngineElement;
@@ -118,6 +123,7 @@ private:
 
   // Run a particular engine element
   void RunElement(EngineElement *running_element);
+  void InternRunElement(EngineElement *running_element);
 
   // Common engine instance
   static Engine *engine_;

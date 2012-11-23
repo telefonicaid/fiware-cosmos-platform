@@ -13,17 +13,17 @@
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
+#include "samson/common/Logs.h"
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/NotificationMessages.h"
 #include "samson/network/Packet.h"                  // network::Packet
-#include "samson/stream/Block.h"                                  // samson::stream::Block
-#include "samson/stream/BlockList.h"                              // samson::stream::BlockList
+#include "samson/stream/Block.h"                    // samson::stream::Block
+#include "samson/stream/BlockList.h"                // samson::stream::BlockList
 #include "samson/stream/BlockManager.h"
 #include "samson/worker/SamsonWorker.h"
 
 namespace samson {
 namespace stream {
-
 // ------------------------------------------------------------------------
 //
 // BlockRequestTask
@@ -35,11 +35,11 @@ BlockRequestTask::BlockRequestTask(SamsonWorker *samson_worker
                                    , size_t id
                                    , size_t block_id
                                    , const std::vector<size_t>& worker_ids)
-     : WorkerTaskBase(samson_worker
-                      , id
-                      , au::str("BlockDistribution %lu to workers %s", block_id, au::str(worker_ids).c_str())
-                      , true  // Defined as simple task to be executed at engine main thread
-                      ) {
+  : WorkerTaskBase(samson_worker
+                   , id
+                   , au::str("BlockDistribution %lu to workers %s", block_id, au::str(worker_ids).c_str())
+                   , true     // Defined as simple task to be executed at engine main thread
+                   ) {
   block_id_ = block_id;
   worker_ids_ = worker_ids;
 
@@ -47,7 +47,7 @@ BlockRequestTask::BlockRequestTask(SamsonWorker *samson_worker
   block_ = stream::BlockManager::shared()->GetBlock(block_id);
 
   if (block_ == NULL) {
-    LM_W(("DistributeBlockTask for unknown block %lu", block_id));
+    LOG_W(logs.worker, ("Created a distribution task for block unknown %s", str_block_id(block_id_).c_str()));
   }
   AddInput(0, block_, block_->getKVRange(), block_->getKVInfo());
 
@@ -58,12 +58,17 @@ BlockRequestTask::BlockRequestTask(SamsonWorker *samson_worker
 // Virtual method from engine::ProcessItem
 void BlockRequestTask::run() {
   if (block_ == NULL) {
-    return; // Nothing to distribute
+    LOG_W(logs.worker, ("Running distribution task for block unknown %s", str_block_id(block_id_).c_str()));
+    return;  // Nothing to distribute
   }
   // Block is supposed to be on memory since this is a task
   if (!block_->is_content_in_memory()) {
     LM_X(1, ("Internal error"));
   }
+
+  LOG_M(logs.block_request, ("Answering block request for %s to workers %s"
+                             , str_block_id(block_id_).c_str()
+                             , au::str(worker_ids_).c_str()));
 
   // Send a packet to all selected workers
   for (size_t i = 0; i < worker_ids_.size(); ++i) {
@@ -103,7 +108,7 @@ PopBlockRequestTask::PopBlockRequestTask(SamsonWorker *samson_worker, size_t id,
 // Virtual method from engine::ProcessItem
 void PopBlockRequestTask::run() {
   if (!block_->is_content_in_memory()) {
-    LM_X(1, ("Internal error")); // Get kv file for this block
+    LM_X(1, ("Internal error"));  // Get kv file for this block
   }
 
   // Send a packet to delilah with contents of this buffer
@@ -136,10 +141,11 @@ void DefragTask::AddOutputBuffer(engine::BufferPointer buffer) {
 void DefragTask::run() {
   // Review input blocks
   BlockList *list = block_list_container_.getBlockList("input_0");
+
   list->ReviewBlockReferences(error_);
 
   if (error_.IsActivated()) {
-    LOG_SW((">>>> Error in defrag operation: %s" , error_.GetMessage().c_str() ));
+    LOG_SW((">>>> Error in defrag operation: %s", error_.GetMessage().c_str()));
     return;
   }
 
@@ -186,20 +192,20 @@ void DefragTask::run() {
   KVHeader header = kv_files[0]->header();
 
   for (size_t r = 0; r < ranges_.size(); ++r) {
-
     // Generate block ( if any data is present for this range )
     KVRange range = ranges_[r];
 
     // Compute info for this range
     KVInfo info;
     for (int hg = range.hg_begin_; hg < range.hg_end_; ++hg) {
-      for (int i = 0; i < (int) kv_files.size(); ++i) {
+      for (int i = 0; i < (int)kv_files.size(); ++i) {
         info.append(kv_files[i]->info[hg]);
       }
     }
 
-    if (info.size == 0)
+    if (info.size == 0) {
       continue;
+    }
 
     // Create output buffer ( hg_begin hg_end )
     size_t buffer_size = sizeof(KVHeader) + info.size;
@@ -207,19 +213,19 @@ void DefragTask::run() {
     buffer->set_size(buffer_size);
 
     // Copy header and modify info
-    KVHeader* buffer_header = reinterpret_cast<KVHeader*> (buffer->data());
+    KVHeader *buffer_header = reinterpret_cast<KVHeader *> (buffer->data());
     memcpy(buffer_header, &header, sizeof(KVHeader));
     buffer_header->info = info;
-    buffer_header->range = range; // Set this range ( it could be better adjusted )
+    buffer_header->range = range;  // Set this range ( it could be better adjusted )
 
     // Copy data
-    char* buffer_data = buffer->data();
+    char *buffer_data = buffer->data();
     size_t offset = sizeof(KVHeader);
     for (int hg = range.hg_begin_; hg < range.hg_end_; ++hg) {
       for (size_t i = 0; i < kv_files.size(); ++i) {
         size_t size = kv_files[i]->info[hg].size;
         if (size > 0) {
-          char* data = kv_files[i]->data_for_hg(hg);
+          char *data = kv_files[i]->data_for_hg(hg);
           memcpy(buffer_data + offset, data, size);
           offset += size;
         }

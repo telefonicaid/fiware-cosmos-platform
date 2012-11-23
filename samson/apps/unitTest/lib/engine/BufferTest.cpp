@@ -65,7 +65,7 @@ TEST(bufferTest, basic) {
     buffer1->set_size(5);
     EXPECT_EQ(5ULL, buffer1->size()) << "Error in set_size()";
 
-#define RETURN_STRING "[ buffer1 (type: test Size:  5.00 B/ 15.0 B Read     0 B) ]"
+#define RETURN_STRING "[ Buffer 11 buffer1 (type: test Size:  5.00 B/ 15.0 B Read     0 B) ]"
     EXPECT_EQ(RETURN_STRING, buffer1->str());
 #undef RETURN_STRING
   }
@@ -83,7 +83,7 @@ TEST(bufferTest, writeTest) {
   init_engine_test();
 
   {
-    engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1", "test", 15);
+    engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1", "test", 1024);
     char data[21] = "01234567890123456789";
     buffer1->Write(data, 10);
 
@@ -93,7 +93,7 @@ TEST(bufferTest, writeTest) {
     buffer1->Read(&readChar, 1);
     EXPECT_EQ(readChar, '0') << "read error after writing";
     // if we try to write past the buffer size, it will return false
-    EXPECT_EQ(buffer1->Write(data, 20), false) << "should not write if size goes beyond size";
+    EXPECT_EQ(buffer1->Write(data, 1025), false) << "should not write if size goes beyond size";
   }
   close_engine_test();
 }

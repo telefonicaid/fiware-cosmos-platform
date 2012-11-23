@@ -39,8 +39,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
   
   if (buffer->size() < sizeof(KVHeader)) {
-    error.set(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
-	LM_E(("Too small size of buffer (less than sizeof(KVHeader))"));
+    error.set(au::str("Incorrect buffer size (%lu) < header size (%d)", buffer->size(), sizeof(KVHeader)));
+    LM_E(("Too small size of buffer (%d is less than sizeof(KVHeader) (%d))", buffer->size(), sizeof(KVHeader)));
     return au::SharedPointer<KVFile>(NULL);
   }
 

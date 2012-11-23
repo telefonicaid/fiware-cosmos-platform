@@ -102,6 +102,7 @@ TEST(samson_common_FullKVInfo, appendRemove2) {
 // -----------------------------------------------------------------------------
 // Test append(KVInfo other)
 // Test remove(KVInfo other)
+// Test Append(double factor, KVInfo other)
 //
 TEST(samson_common_FullKVInfo, appendRemove3) {
   samson::KVInfo     from(12, 3);
@@ -113,6 +114,9 @@ TEST(samson_common_FullKVInfo, appendRemove3) {
 
   to.remove(from);
   EXPECT_EQ(to.str(), "    0 kvs/    0 B") << "Error removing from samson::FullKVInfo";
+
+  to.Append(0.1, from);
+  EXPECT_EQ(to.str(), "    0 kvs/ 1.00 B") << "Error Appending to samson::FullKVInfo";
 }
 
 // -----------------------------------------------------------------------------

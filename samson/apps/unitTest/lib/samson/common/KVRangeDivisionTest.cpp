@@ -8,9 +8,6 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-
-
-
 #include "gtest/gtest.h"
 
 #include "samson/common/KVRangeDivision.h"
@@ -38,4 +35,22 @@ TEST(samson_common_KVRangeDivision, test1) {
   EXPECT_TRUE( range_divisionY.ranges()[1] == samson::KVRange(1024, 2048 ) );
   EXPECT_TRUE( range_divisionY.ranges()[2] == samson::KVRange(2048, KVFILE_NUM_HASHGROUPS ) );
 
+}
+
+// -----------------------------------------------------------------------------
+// AddDivision - 
+//
+TEST(samson_common_KVRangeDivision, AddDivision) {
+  samson::KVRangeDivision          div(4);
+  std::vector<samson::KVRange>     rangeV = div.ranges();
+
+  EXPECT_EQ(4, rangeV.size());
+
+  div.AddDivision(-1);
+  div.AddDivision(KVFILE_NUM_HASHGROUPS + 1);
+  EXPECT_EQ(4, rangeV.size());
+
+  div.AddDivision(rangeV);
+  rangeV = div.ranges();
+  EXPECT_EQ(4, rangeV.size());
 }

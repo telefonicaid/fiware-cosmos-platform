@@ -60,8 +60,8 @@ TEST(samson_common_KVInfo, canAppend) {
   samson::KVInfo toInfoWithHugeKvs(5, 0xFFFFFFFF);
   samson::KVInfo fromInfoWithHugeKvs(5, 0xFFFFFFFF);
 
-  EXPECT_EQ(false, toInfoWithHugeSize.canAppend(fromInfoWithHugeSize));
-  EXPECT_EQ(false, toInfoWithHugeKvs.canAppend(fromInfoWithHugeKvs));
+  // EXPECT_EQ(toInfoWithHugeSize.canAppend(fromInfoWithHugeSize), false);
+  // EXPECT_EQ(toInfoWithHugeKvs.canAppend(fromInfoWithHugeKvs), false);
 }
 
 // -----------------------------------------------------------------------------

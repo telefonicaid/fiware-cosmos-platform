@@ -12,6 +12,10 @@
 #include "gtest/gtest.h"
 #include "samson/common/SamsonSetup.h"
 
+namespace samson {
+  extern bool isNumber(std::string txt);
+}
+
 // Test void SamsonSetup();
 TEST(samson_common_SamsonSetup, SamsonSetup) {
 
@@ -68,6 +72,37 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
   au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
   
   EXPECT_TRUE( au::Singleton<samson::SamsonSetup>::shared()->Save()) << "Error in save SamsonSetup";
+
+  samson::SamsonSetup* setup                    = au::Singleton<samson::SamsonSetup>::shared();
+  char*                modules_directory        = (char*) setup->modules_directory().c_str();
+  char*                worker_modules_directory = (char*) setup->worker_modules_directory().c_str();
+  char*                blocks_directory         = (char*) setup->blocks_directory().c_str();
+  char*                block_filename           = (char*) setup->block_filename(0).c_str();
+
+  EXPECT_TRUE(strncpy(modules_directory,        "/tmp/", 5));
+  EXPECT_TRUE(strncpy(worker_modules_directory, "/tmp/", 5));
+  EXPECT_TRUE(strncpy(blocks_directory,         "/tmp/", 5));
+  EXPECT_TRUE(strncpy(block_filename,           "/tmp/", 5));
+
+  EXPECT_NE(0, setup->block_id_from_filename("xxx"));
+
+  std::string path = setup->samson_working() + "/blocks/block_0";
+  EXPECT_NE(0, setup->block_id_from_filename(path));
+
+  path = setup->samson_working() + "/blocks/block_1_2";
+  EXPECT_NE(0, setup->block_id_from_filename(path));
+
+  std::string stream_mgr_log_file = setup->samson_working() + "/log/log_stream_state.txt";
+  std::string cluster_info_file   = setup->samson_working() + "/log/log_cluster_information.txt";
+  EXPECT_STREQ(stream_mgr_log_file.c_str(), setup->stream_manager_log_filename().c_str());
+  EXPECT_STREQ(cluster_info_file.c_str(),   setup->cluster_information_filename().c_str());
+  
+  EXPECT_TRUE(samson::SharedSamsonSetup() != NULL);
+  // EXPECT_TRUE(samson::isNumber(std::string("24")));
+  // EXPECT_FALSE(samson::isNumber(std::string("24a")));
+
+  // bool oneTwoThree = samson::isNumber(std::string("123"));
+  // EXPECT_EQ(true, oneTwoThree);
 
   // Destroy singletons ( SamsonSetup )
   au::singleton_manager.DestroySingletons();

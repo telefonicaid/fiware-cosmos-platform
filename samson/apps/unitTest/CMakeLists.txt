@@ -102,6 +102,7 @@ SET (SOURCES
     # -----------------------------------------------------------
 
 	# SAMSON COMMON LIBRARY
+	lib/samson/common/EnvironmentOperationsTest.cpp
 	lib/samson/common/FullKVInfoTest.cpp
 	lib/samson/common/KVHeaderTest.cpp
 	lib/samson/common/KVInfoTest.cpp
@@ -115,6 +116,11 @@ SET (SOURCES
 	lib/samson/common/KVInputVectorTest.cpp
 	lib/samson/common/LogsTest.cpp
 	lib/samson/common/MemoryCheckTest.cpp
+	lib/samson/common/RateTest.cpp
+	lib/samson/common/SamsonDataSetTest.cpp
+	lib/samson/common/VisualizationTest.cpp
+	lib/samson/common/statusTest.cpp
+	lib/samson/common/codingTest.cpp
 
 	# SAMSOM WORKER LIBRARY
 	lib/samson/worker/SamsonWorkerTest.cpp
@@ -179,11 +185,13 @@ include_directories("${PROJECT_SOURCE_DIR}/apps")
 include_directories("${PROJECT_SOURCE_DIR}/extern")
 include_directories("/usr/include")
 
+link_directories("/usr/lib/x86_64-linux-gnu")
+
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} )
+ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} /usr/lib/x86_64-linux-gnu/libdl.so)
 
 #INSTALL(TARGETS               unitTest
 #        RUNTIME DESTINATION   bin)

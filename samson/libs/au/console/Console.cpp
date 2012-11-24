@@ -95,7 +95,7 @@ void Console::print_command() {
   int command_end = command_len;
 
   // Modify this if command is too large
-  if (_command.length() > w_available) {
+  if (command_len > w_available) {
     if (_pos > command_len - w_available) {
       command_begin = command_end - w_available;  // End of the command
     } else {

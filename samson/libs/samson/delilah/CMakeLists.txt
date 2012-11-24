@@ -29,11 +29,11 @@ SET(SOURCES
 
 
 # Include directories
-# -- ---------------------------------------------------------------
+# -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 
 # Library declaration
 # -- ---------------------------------------------------------------
-ADD_LIBRARY(delilahLib $ { SOURCES } $ { HEADERS })
+ADD_LIBRARY(delilahLib ${SOURCES}  ${HEADERS})
 ADD_DEPENDENCIES(delilahLib samsonCommon)

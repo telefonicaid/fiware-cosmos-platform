@@ -21,7 +21,7 @@
 #include "au/string/StringUtilities.h"  // au::Format
 #include "engine/ProcessItem.h"      // engine::ProcessItem
 #include "samson/common/MessagesOperations.h"
-#include "samson/common/samson.pb.h"
+
 #include "samson/stream/Block.h"     // samson::Stream::Block
 #include "samson/stream/BlockList.h"  // stream::BlockList
 #include "samson/stream/BlockListContainer.h"

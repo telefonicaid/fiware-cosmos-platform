@@ -19,7 +19,7 @@
 #include "engine/Notification.h"                // engine::Notification
 
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
-#include "samson/common/samson.pb.h"  // network::...
+// network::...
 #include "samson/delilah/Delilah.h"  // samson::Delilah
 #include "samson/network/Message.h"  // samson::Message
 #include "samson/network/Packet.h"  // samson::Packet

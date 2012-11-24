@@ -31,7 +31,7 @@
 #include "engine/NotificationListener.h"  // engine::NotificationListener
 
 #include "samson/common/Logs.h"
-#include "samson/common/samson.pb.h"  // samson::network
+// samson::network
 
 #include "DelilahComponent.h"  // samson::DelilahComponent
 #include "samson/delilah/Delilah.h"  // samson::Delilah

@@ -21,12 +21,12 @@
 
 #include "logMsg/logMsg.h"              // LM_X
 
-#include "au/string/StringUtilities.h"                  // au::Format
-#include "au/string/xml.h"                     // au::xml...
+#include "au/string/StringUtilities.h"  // au::Format
+#include "au/string/xml.h"              // au::xml...
 
 #include "engine/SimpleBuffer.h"        // engine::SimpleBuffer
 
-#include "samson/common/samson.pb.h"    // network:...
+// network:...
 
 #include "samson/module/KVFormat.h"     // samson::KVFormat
 #include <samson/module/Data.h>

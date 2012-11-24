@@ -39,6 +39,6 @@ include_directories("/usr/include/json")
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonWorkerLib STATIC ${SOURCES} ${HEADERS} )
 TARGET_LINK_LIBRARIES( samsonWorkerLib ${QT_LIBRARIES} json )
-
+ADD_DEPENDENCIES(samsonWorkerLib samsonCommon)
 
 

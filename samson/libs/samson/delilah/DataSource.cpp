@@ -12,7 +12,7 @@
 #include "engine/Buffer.h"                                              // samson::Buffer
 #include "engine/MemoryManager.h"                                       // samson::MemoryManager
 #include "samson/common/SamsonSetup.h"                                  // samson::SamsonSetup
-#include "samson/common/samson.pb.h"                                    // network::...
+// network::...
 #include "samson/delilah/Delilah.h"                                     // samson::Delilah
 #include "samson/network/Message.h"                                     // samson::Message
 #include "samson/network/Packet.h"                                      // samson::Packet

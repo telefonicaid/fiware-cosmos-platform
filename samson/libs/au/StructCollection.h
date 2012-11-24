@@ -13,7 +13,7 @@
 #ifndef _H_AU_STRUCT_COLLECTION
 #define _H_AU_STRUCT_COLLECTION
 
-#include "au/Log/LogMain.h"
+#include "au/log/LogMain.h"
 
 namespace au {
 template <typename C>

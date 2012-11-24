@@ -20,7 +20,7 @@
 #include "au/containers/SharedPointer.h"
 #include "au/statistics/Cronometer.h"  // au::CronometerSystem
 
-#include "samson/common/samson.pb.h"
+
 #include "samson/delilah/DelilahComponent.h"
 #include "samson/network/Message.h"  // Message::MessageCode
 #include "samson/network/Packet.h"  // samson::Packet

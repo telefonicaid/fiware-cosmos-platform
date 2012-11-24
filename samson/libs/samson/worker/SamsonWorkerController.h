@@ -28,7 +28,7 @@
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/common/gpb_operations.h"
-#include "samson/common/samson.pb.h"
+
 #include "samson/worker/CommitCommand.h"
 #include "zoo/Connection.h"
 

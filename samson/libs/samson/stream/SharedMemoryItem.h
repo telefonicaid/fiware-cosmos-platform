@@ -33,16 +33,15 @@
 
 #include "au/containers/map.h"               // au::map
 #include "au/mutex/Token.h"                  // au::Token
-#include "au/string/StringUtilities.h"                       // au::Format
+#include "au/string/StringUtilities.h"       // au::Format
 
 #include "engine/Buffer.h"                   // samson::Buffer
 
-#include "samson/common/samson.pb.h"         // network::..
+// network::..
 #include "samson/common/samsonDirectories.h"  // SAMSON_SETUP_FILE
 
 
 namespace engine {
-
 /*
  * SharedMemoryItem is a class that contains information about a region of memory shared between different processes
  * Memory manager singleton provides pointers to these objects
@@ -66,19 +65,17 @@ public:
     if (data == (char *)-1) {
       if (errno == EMFILE) {
         LM_X(1,
-          ("Error with shared memory while attaching to local memory, "
-           "the number of shared memory segments has reached the system-wide limit.\n"
-           "Use 'ipcs' to check the allocated shared memory segments."
-           "(shmat error %d:%s)(shared memory id %d shmid %d size %lu)\n",
-           errno, strerror(errno), id, shmid, size));
-
+             ("Error with shared memory while attaching to local memory, "
+              "the number of shared memory segments has reached the system-wide limit.\n"
+              "Use 'ipcs' to check the allocated shared memory segments."
+              "(shmat error %d:%s)(shared memory id %d shmid %d size %lu)\n",
+              errno, strerror(errno), id, shmid, size));
       } else {
         LM_X(1,
-          ("Error with shared memory while attaching to local memory "
-           "(shmat error %d:%s)(shared memory id %d shmid %d size %lu)\n", 
-           errno, strerror(errno), id, shmid, size));
+             ("Error with shared memory while attaching to local memory "
+              "(shmat error %d:%s)(shared memory id %d shmid %d size %lu)\n",
+              errno, strerror(errno), id, shmid, size));
       }
-
     }
   }
 

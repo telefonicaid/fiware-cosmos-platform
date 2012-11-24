@@ -25,7 +25,7 @@
 
 #include "samson/common/Macros.h"               // exit(.)
 #include "samson/common/NotificationMessages.h"
-#include "samson/common/samson.pb.h"            // samson::network::
+// samson::network::
 #include "samson/common/samsonDirectories.h"    // SAMSON_WORKER_DEFAULT_PORT
 
 #include "samson/worker/SamsonWorkerController.h"

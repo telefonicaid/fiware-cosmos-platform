@@ -11,20 +11,20 @@
 #ifndef SAMSON_MODULES_MANAGER_H
 #define SAMSON_MODULES_MANAGER_H
 
-#include <map>                       /* std::map */
-#include <string>                    /* std::string */
+#include <map>                         /* std::map */
+#include <string>                      /* std::string */
 
-#include "au/CommandLine.h"          /* AUCommandLine                            */
-#include "au/containers/map.h"       // au::map
+#include "au/CommandLine.h"            /* AUCommandLine                            */
+#include "au/ErrorManager.h"           /* Lock                            */
 #include "au/containers/SharedPointer.h"
-#include "au/ErrorManager.h"         /* Lock                            */
-#include "au/mutex/Token.h"          /* Lock                            */
+#include "au/containers/map.h"       // au::map
+#include "au/mutex/Token.h"            /* Lock                            */
 #include "au/singleton/Singleton.h"
-#include "au/string/StringUtilities.h"               // au::xml_...
+#include "au/string/StringUtilities.h" // au::xml_...
 #include "samson/common/coding.h"    // ss:KVInfo
-#include "samson/common/samson.pb.h"  // samson::network::...
-#include "samson/common/status.h"
+// samson::network::...
 #include "samson/common/Visualitzation.h"
+#include "samson/common/status.h"
 #include "samson/module/Factory.h"      // au::Factory
 #include "samson/module/KVFormat.h"     // samson::KVFormat
 #include "samson/module/Module.h"    // samson::Module
@@ -34,42 +34,42 @@ class DataInstance;
 class Operation;
 
 class ModulesManager {
-  public:
+public:
 
-    ~ModulesManager();
+  ~ModulesManager();
 
-    void addModulesFromDefaultDirectory();
-    void addModulesFromDirectory(std::string dir_name);
-    void clearModulesManager();
+  void addModulesFromDefaultDirectory();
+  void addModulesFromDirectory(std::string dir_name);
+  void clearModulesManager();
 
-    // Get collection for queries
-    au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualitzation);
-    au::SharedPointer<gpb::Collection> GetDatasCollection(const Visualization& visualitzation);
-    au::SharedPointer<gpb::Collection> GetOperationsCollection(const Visualization& visualitzation);
+  // Get collection for queries
+  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualitzation);
+  au::SharedPointer<gpb::Collection> GetDatasCollection(const Visualization& visualitzation);
+  au::SharedPointer<gpb::Collection> GetOperationsCollection(const Visualization& visualitzation);
 
-    // Local table of modules
-    std::string GetTableOfModules();
+  // Local table of modules
+  std::string GetTableOfModules();
 
-    // Unique interface to get data and operations
-    Data *getData(std::string name);
-    Operation *getOperation(std::string name);
+  // Unique interface to get data and operations
+  Data *getData(std::string name);
+  Operation *getOperation(std::string name);
 
-    // Static method to analyze module files
-    static Status loadModule(std::string path, Module **module, std::string *version_string);
+  // Static method to analyze module files
+  static Status loadModule(std::string path, Module **module, std::string *version_string);
 
-  private:
+private:
 
-    ModulesManager();   // !< Private constructor to implement singleton
-    friend class au::Singleton<ModulesManager>;
+  ModulesManager();     // !< Private constructor to implement singleton
+  friend class au::Singleton<ModulesManager>;
 
-    void closeHandlers();
+  void closeHandlers();
 
-    // Add Modules functions
-    void addModule(std::string path);
-    void addModules();
+  // Add Modules functions
+  void addModule(std::string path);
+  void addModules();
 
-    au::map<std::string, Module> modules;   // Individual modules ( just for listing )
-    std::vector<void *> handlers;   // Open handlers
+  au::map<std::string, Module> modules;     // Individual modules ( just for listing )
+  std::vector<void *> handlers;     // Open handlers
 };
 }
 

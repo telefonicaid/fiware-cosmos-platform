@@ -36,7 +36,7 @@
 #include "samson/common/EnvironmentOperations.h"
 #include "samson/common/NotificationMessages.h"
 #include "samson/common/Rate.h"
-#include "samson/common/samson.pb.h"        // network::...
+// network::...
 #include "samson/module/Environment.h"      // samson::Environment
 #include "samson/stream/BlockInfo.h"        // struct BlockInfo
 #include "samson/stream/BlockList.h"        // BlockList

@@ -19,7 +19,7 @@
 #include "au/utils.h"
 
 #include "samson/common/EnvironmentOperations.h"  // str( gpb::Message* )
-#include "samson/common/samson.pb.h"     // google protocol buffers
+// google protocol buffers
 
 #include "Message.h"                             // samson::MessageType
 #include "engine/Buffer.h"                       // engine::Buffer

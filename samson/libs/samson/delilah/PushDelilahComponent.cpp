@@ -24,7 +24,7 @@
 #include "samson/common/KVHeader.h"
 #include "samson/common/Logs.h"
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
-#include "samson/common/samson.pb.h"   // network::...
+// network::...
 #include "samson/delilah/Delilah.h"    // samson::Delilah
 #include "samson/network/Message.h"    // samson::Message
 #include "samson/network/Packet.h"     // samson::Packet

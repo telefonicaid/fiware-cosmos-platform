@@ -20,7 +20,7 @@
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/gpb_operations.h"
-#include "samson/common/samson.pb.h"
+
 #include "zoo/Connection.h"
 #include "zoo/ZooNodeCommiter.h"
 

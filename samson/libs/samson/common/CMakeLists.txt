@@ -68,5 +68,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonCommon STATIC ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonCommon engine)
 ADD_DEPENDENCIES(samsonCommon samson.pb.h)
 ADD_DEPENDENCIES(samsonCommon samson.pb.cc)

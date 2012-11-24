@@ -117,11 +117,11 @@ public:
 
   void showWarningMessage(std::string message) {
     if (no_output) {
-      LM_V(("%s", au::str(au::magenta, "%s", message.c_str()).c_str()));
+      LM_V(("%s", au::str(au::BoldMagenta, "%s", message.c_str()).c_str()));
       return;
     }
     if (simple_output) {
-      std::cout << au::str(au::magenta, "%s", message.c_str());
+      std::cout << au::str(au::BoldMagenta, "%s", message.c_str());
       return;
     }
     writeWarningOnConsole(au::StringInConsole(message));
@@ -129,11 +129,11 @@ public:
 
   void showErrorMessage(std::string message) {
     if (no_output) {
-      LM_V(("%s", au::str(au::red, "%s", message.c_str()).c_str()));
+      LM_V(("%s", au::str(au::BoldRed, "%s", message.c_str()).c_str()));
       return;
     }
     if (simple_output) {
-      std::cout << au::str(au::red, "%s", message.c_str());
+      std::cout << au::str(au::BoldRed, "%s", message.c_str());
       return;
     }
     writeErrorOnConsole(au::StringInConsole(message));

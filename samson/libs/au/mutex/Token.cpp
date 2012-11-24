@@ -14,7 +14,7 @@
 
 #include "LockDebugger.h"       // LockDebugger
 #include "au/string/StringUtilities.h"
-#include "logMsg/logMsg.h"      // LM_M()
+#include "logMsg/logMsg.h"      // LOG_SM()
 #include <assert.h>
 #include <sys/syscall.h>
 #include <sys/time.h>           // gettimeofday()

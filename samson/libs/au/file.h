@@ -30,7 +30,7 @@
 
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/containers/map.h"  // au::map
-#include "logMsg/logMsg.h"     // LM_W
+#include "logMsg/logMsg.h"     // LOG_SW
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
 #include <string>              // std::string
@@ -53,8 +53,8 @@ bool isRegularFile(char path[]);
 // Get the list of regular files contained in a directory
 std::vector<std::string> getRegularFilesFromDirectory(std::string directory);
 
-  // Create a random tmp direcotry
-  std::string GetRandomDirectory();
+// Create a random tmp direcotry
+std::string GetRandomDirectory();
 
 // Working with paths
 std::string path_remove_last_component(std::string path);
@@ -65,10 +65,10 @@ std::string get_directory_from_path(std::string path);
 Status CreateDirectory(std::string path);
 Status CreateFullDirectory(std::string path);
 std::string GetCannonicalPath(const std::string& path);
-  
+
 // Get a fill path from a directory and file name
 std::string path_from_directory(const std::string& directory, const std::string& file);
-  
+
 // Get list of files from a file_name ( directory --> all included files )
 std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorManager& error);
 }

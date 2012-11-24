@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "logMsg/logMsg.h"         // LM_M ...
+#include "logMsg/logMsg.h"         // LOG_SM ...
 
 #include "./ReadFile.h"            // Own interface
 
@@ -22,11 +22,11 @@ ReadFile::ReadFile(const std::string& file_name) {
   offset_    = 0;
 
   if (file_ != NULL) {
-     fseek(file_, 0, SEEK_END);
-     file_size_ = ftell(file_);
-     fseek(file_, 0, SEEK_SET);
+    fseek(file_, 0, SEEK_END);
+    file_size_ = ftell(file_);
+    fseek(file_, 0, SEEK_SET);
   } else {
-     LM_E(("The file '%s' doesn't exist", file_name.c_str()));
+    LM_E(("The file '%s' doesn't exist", file_name.c_str()));
   }
 }
 
@@ -44,7 +44,7 @@ int ReadFile::Seek(size_t offset) {
   }
 
   if (offset > file_size_) {
-     return 2;
+    return 2;
   }
 
   if (fseek(file_, offset, SEEK_SET) != 0) {

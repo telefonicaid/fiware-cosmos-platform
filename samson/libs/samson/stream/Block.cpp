@@ -20,7 +20,7 @@
 #include "engine/Notification.h"                    // engine::Notification
 #include "engine/ProcessManager.h"
 
-#include "logMsg/logMsg.h"                          // LM_W
+#include "logMsg/logMsg.h"                          // LOG_SW
 
 #include "samson/common/KVHeader.h"
 #include "samson/common/Logs.h"
@@ -124,14 +124,14 @@ void Block::freeBlock() {
   }
 
   if (state_ != ready) {
-    LM_W(("No sense to call free to a Block that state != ready "));
+    LOG_SW(("No sense to call free to a Block that state != ready "));
     return;
   }
 
   state_ = on_disk;
 
   if (buffer_ == NULL) {
-    LM_W(("Buffer not present in a ready block"));
+    LOG_SW(("Buffer not present in a ready block"));
     return;
   }
 

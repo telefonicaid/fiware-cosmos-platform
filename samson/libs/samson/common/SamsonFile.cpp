@@ -96,7 +96,7 @@ public:
 
     nb = fread(data, filestatus.st_size, 1, file);
     if (nb == 0) {
-      LM_W(("No data read from file:'%s'", fileName.c_str()));
+      LOG_SW(("No data read from file:'%s'", fileName.c_str()));
     }
     fclose(file);
   }

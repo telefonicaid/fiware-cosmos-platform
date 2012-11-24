@@ -23,6 +23,7 @@
 #include <sys/types.h>          // pid_t
 #include <unistd.h>             // getppid, fork, setsid
 
+#include "au/log/LogMain.h"
 #include "daemonize.h"          // Own interface
 #include "logMsg/logMsg.h"      // LM_*
 
@@ -33,6 +34,9 @@ extern "C" void exit(int status);
  * daemonize -
  */
 void Daemonize(void) {
+  // Pause log system ( this finish background thread temporary )
+  au::log_central->Pause();
+
   pid_t pid;
   pid_t sid;
 
@@ -65,6 +69,9 @@ void Daemonize(void) {
   if (chdir("/") == -1) {
     LM_X(1, ("chdir: %s", strerror(errno)));
   }
+
+  // Create again the background thread ( same setup )
+  au::log_central->Play();
 }
 
 void Deamonize_close_all(void) {

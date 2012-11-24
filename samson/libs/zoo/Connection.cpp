@@ -229,7 +229,7 @@ int Connection::Get(const std::string& path, ::google::protobuf::Message *value)
     } else {
       LOG_E(logs.zoo, ("GPB Serialitzation error for node %s: %s"
                        , path.c_str(), value->InitializationErrorString().c_str()));
-      LM_W(("GPB Serialitzation error for node %s: %s", path.c_str(), value->InitializationErrorString().c_str()));
+      LOG_SW(("GPB Serialitzation error for node %s: %s", path.c_str(), value->InitializationErrorString().c_str()));
       return ZC_ERROR_GPB;
     }
   }
@@ -272,7 +272,7 @@ int Connection::Get(const std::string& path
     if (value->ParseFromArray(buffer.data(), buffer_size)) {
       return 0;    // OK
     } else {
-      LM_W(("GPB error when ParseFromArray for node %s with a buffer of %d bytes", path.c_str(), buffer_size ));
+      LOG_SW(("GPB error when ParseFromArray for node %s with a buffer of %d bytes", path.c_str(), buffer_size ));
       return ZC_ERROR_GPB;
     }
   }
@@ -403,16 +403,16 @@ void Connection::static_watcher(zhandle_t *zzh,
   }
 
   if (type == ZOO_SESSION_EVENT) {
-    LM_W(("Zoo connection is probably disconnected"));
+    LOG_SW(("Zoo connection is probably disconnected"));
     return;
   }
 
   if (type == ZOO_NOTWATCHING_EVENT) {
-    LM_W(("ZOO_NOTWATCHING_EVENT received. Not handeled"));
+    LOG_SW(("ZOO_NOTWATCHING_EVENT received. Not handeled"));
     return;
   }
 
-  LM_W(("Unknown event received for a zoo::Connection %d", type));
+  LOG_SW(("Unknown event received for a zoo::Connection %d", type));
 }
 
 int Connection::Create(const std::string& path, int flags, const char *value, int value_len) {

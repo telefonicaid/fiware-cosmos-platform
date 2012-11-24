@@ -142,7 +142,7 @@ public:
   // Get the vector of values
   int getVector(double *v, int max_v_length) {
     if (max_v_length < get_num_values()) {
-      LM_W(("Not enougth length for FullSampleVector::getVector"));
+      LOG_SW(("Not enougth length for FullSampleVector::getVector"));
       return 0;
     }
 

@@ -59,7 +59,7 @@ int logFd             = -1;
 
 int main(int argC, char **argV) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void*) "only errors");
+  paConfig("log to screen",                 (void *)"only errors");
   paConfig("log to screen",                 (void *)false);
   paConfig("log to file",                   (void *)true);
   paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
@@ -74,9 +74,13 @@ int main(int argC, char **argV) {
     // Avoid parsing any argument
     paParse(paArgs, 1, (char **)argV, 1, false);
   }
-  
+
   // Set assert flag to true ro force asserts instead of exits
   lmAssertAtExit = true;
+
+  // Init log sytem
+  au::log_central = new au::LogCentral();
+  au::log_central->Init(argV[0]);
 
   // Run all tests
   ::testing::InitGoogleTest(&argC, argV);

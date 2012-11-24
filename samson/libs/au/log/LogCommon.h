@@ -43,13 +43,18 @@
 
 // MACRO TO REGISTER A LOG CHANNEL
 
-#define LOG_REGISTER_CHANNEL(name, description) ::au::log_central.log_channels().RegisterChannel(name, description)
+#define LOG_REGISTER_CHANNEL(name, \
+                             description) ::au::log_central ? (::au::log_central->log_channels().RegisterChannel(name, \
+                                                                                                                 description)) \
+  : -1
 
 // MACROS TO EMIT LOGS
 
-#define LOG_GENERATE(l, c, s)                                                              \
+#define LOG_GENERATE(l, c, s)                                                               \
   do {                                                                                      \
-    if (au::log_central.IsLogAccepted(c, l))                                                 \
+    if (!au::log_central) {                                                                  \
+      break; }                                                                                  \
+    if (au::log_central->IsLogAccepted(c, l))                                               \
     {                                                                                       \
       au::Log log;                                                                          \
       log.Set("text", au::str s);                                                           \
@@ -66,35 +71,37 @@
       log_data.level = l;                                                                   \
       log_data.line = __LINE__;                                                             \
       log_data.channel = c;                                                                 \
-      log_data.tv.tv_sec = time(NULL);                                                      \
+      log_data.tv.tv_sec = ::time(NULL);                                                    \
       log_data.tv.tv_usec = 0;                                                              \
       log_data.timezone = 0;                                                                \
       log_data.pid = getpid();                                                              \
                                                                                             \
       ::pthread_t t = ::pthread_self();                                                     \
       log_data.tid = 0;                                                                     \
-      ::memcpy(&log_data.tid, &t, std::min(sizeof(log_data.tid), sizeof( pthread_t))); \
+      ::memcpy(&log_data.tid, &t, std::min(sizeof(log_data.tid), sizeof( pthread_t)));      \
                                                                                             \
-      au::log_central.Emit(&log);                                                           \
+      au::log_central->Emit(&log);                                                          \
     }                                                                                       \
   } while (0)                                                                               \
 
 // General macros to emit logs for a channel
 
-// #define AU_X(c,e,s) LOG_GENERATEAU_LOG_ERROR_EXIT,c,s); au::log_central.StopAndExit(e);
-#define LOG_E(c, s)                             LOG_GENERATE(LOG_LEVEL_ERROR, c, s)
-#define LOG_W(c, s)                             LOG_GENERATE(LOG_LEVEL_WARNING, c, s)
-#define LOG_V(c, s)                             LOG_GENERATE(LOG_LEVEL_VERBOSE, c, s)
-#define LOG_M(c, s)                             LOG_GENERATE(LOG_LEVEL_MESSAGE, c, s)
-#define LOG_D(c, s)                             LOG_GENERATE(LOG_LEVEL_DEBUG, c, s)
+#define LOG_E(c, s)                       LOG_GENERATE(LOG_LEVEL_ERROR, c, s)
+#define LOG_W(c, s)                       LOG_GENERATE(LOG_LEVEL_WARNING, c, s)
+#define LOG_V(c, s)                       LOG_GENERATE(LOG_LEVEL_VERBOSE, c, s)
+#define LOG_M(c, s)                       LOG_GENERATE(LOG_LEVEL_MESSAGE, c, s)
+#define LOG_D(c, s)                       LOG_GENERATE(LOG_LEVEL_DEBUG, c, s)
 
 // Macros to emit logs for system channel (0)
 
-// #define AU_SX(e,s) LOG_GENERATEAU_LOG_ERROR_EXIT,0,s); au::log_central.StopAndExit(e);
-#define LOG_SE(s)                               LOG_GENERATE(LOG_LEVEL_ERROR, 0, s)
-#define LOG_SW(s)                               LOG_GENERATE(LOG_LEVEL_WARNING, 0, s)
-#define LOG_SV(s)                               LOG_GENERATE(LOG_LEVEL_VERBOSE, 0, s)
-#define LOG_SM(s)                               LOG_GENERATE(LOG_LEVEL_MESSAGE, 0, s)
-#define LOG_SD(s)                               LOG_GENERATE(LOG_LEVEL_DEBUG, 0, s)
+#define LOG_SE(s)                         LOG_GENERATE(LOG_LEVEL_ERROR, 0, s)
+#define LOG_SW(s)                         LOG_GENERATE(LOG_LEVEL_WARNING, 0, s)
+#define LOG_SV(s)                         LOG_GENERATE(LOG_LEVEL_VERBOSE, 0, s)
+#define LOG_SM(s)                         LOG_GENERATE(LOG_LEVEL_MESSAGE, 0, s)
+#define LOG_SD(s)                         LOG_GENERATE(LOG_LEVEL_DEBUG, 0, s)
+
+
+// Macro to emit a log, stop the log system, and exit
+#define LOG_X(c, s)                       LOG_GENERATE(LOG_LEVEL_ERROR_EXIT, 0, s); au::log_central->Stop(); exit(c);
 
 #endif  // ifndef _H_LOG_SERVER_COMMON

@@ -35,7 +35,7 @@
 #include <set>             // std::set
 #include <vector>       // std::vector
 
-#include "logMsg/logMsg.h"  // LM_M()
+#include "logMsg/logMsg.h"  // LOG_SM()
 
 
 
@@ -73,18 +73,19 @@ public:
     return result;
   }
 
-  V* extract_back()
-  {
+  V *extract_back() {
     size_t size = std::vector<V *>::size();
-    if( size == 0 )
+
+    if (size == 0) {
       return NULL;
-    
-    V*v = (*this)[size-1];
+    }
+
+    V *v = (*this)[size - 1];
     std::vector<V *>::pop_back();
-    
+
     return v;
   }
-  
+
   void reverse() {
     std::vector<V *> tmp;
     size_t num = std::vector<V *>::size();
@@ -97,27 +98,25 @@ public:
     }
   }
 };
-  
-  template <class C>
-  std::vector<C> vector_from_set( const std::set<C> set )
-  {
-    std::vector<C> vector;
-    typename std::set<C>::iterator it;
-    for ( it = set.begin() ; it != set.end() ; it++ )
-      vector.push_back( *it );
-    return vector;
-  }
 
-  template <class C>
-  std::set<C> set_from_vector( const std::vector<C> set )
-  {
-    std::set<C> vector;
-    for ( size_t i = 0 ; i < vector.size() ; ++i )
-      vector.insert( vector[i] );
-    return vector;
+template <class C>
+std::vector<C> vector_from_set(const std::set<C> set) {
+  std::vector<C> vector;
+  typename std::set<C>::iterator it;
+  for (it = set.begin(); it != set.end(); it++) {
+    vector.push_back(*it);
   }
-  
-  
+  return vector;
+}
+
+template <class C>
+std::set<C> set_from_vector(const std::vector<C> set) {
+  std::set<C> vector;
+  for (size_t i = 0; i < vector.size(); ++i) {
+    vector.insert(vector[i]);
+  }
+  return vector;
+}
 }
 
 #endif  // ifndef _H_AU_VECTOR

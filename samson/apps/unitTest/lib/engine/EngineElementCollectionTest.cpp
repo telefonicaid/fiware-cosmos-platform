@@ -32,25 +32,39 @@
  */
 #include <string>
 
-#include "gtest/gtest.h"
-
+#include "au/log/LogMain.h"
 #include "engine/EngineElementCollection.h"
 #include "engine/Notification.h"
 #include "engine/NotificationElement.h"
+#include "gtest/gtest.h"
 
 class EngineElementTest1 : public engine::EngineElement {
- public:
-  explicit EngineElementTest1(const std::string& name) : EngineElement(name) {}
-  virtual ~EngineElementTest1() { LM_M(("engine element of type 1 is destroyed")); }
-  void run() { LM_M(("running ...")); }
+public:
+  explicit EngineElementTest1(const std::string& name) : EngineElement(name) {
+  }
+
+  virtual ~EngineElementTest1() {
+    LOG_SM(("engine element of type 1 is destroyed"));
+  }
+
+  void run() {
+    LOG_SM(("running ..."));
+  }
 };
 
 class EngineElementTest2 : public engine::EngineElement {
- public:
+public:
   explicit EngineElementTest2(const std::string& name, int seconds) :
-    EngineElement(name, seconds) {}
-  virtual ~EngineElementTest2() { LM_M(("engine element of type 2 is destroyed")); }
-  void run() { LM_M(("running ...")); }
+    EngineElement(name, seconds) {
+  }
+
+  virtual ~EngineElementTest2() {
+    LOG_SM(("engine element of type 2 is destroyed"));
+  }
+
+  void run() {
+    LOG_SM(("running ..."));
+  }
 };
 
 // -----------------------------------------------------------------------------
@@ -64,8 +78,8 @@ TEST(engine_EngineElementCollection, engine_idTest) {
   EXPECT_EQ(0ULL, engine_element_collection.GetNumNormalEngineElements());
 
   engine_element_collection.Add(
-     new engine::NotificationElement(
-        new engine::Notification("notification_name")));
+    new engine::NotificationElement(
+      new engine::Notification("notification_name")));
 
   EXPECT_FALSE(engine_element_collection.IsEmpty());
   EXPECT_EQ(1ULL, engine_element_collection.GetNumNormalEngineElements());
@@ -80,8 +94,8 @@ TEST(engine_EngineElementCollection, engine_idTest) {
   EXPECT_EQ(0ULL, engine_element_collection.ExtraElements().size());
 
   // Add extra element
-  engine::NotificationElement* element2 =
-     new engine::NotificationElement(new engine::Notification("notification_name"));
+  engine::NotificationElement *element2 =
+    new engine::NotificationElement(new engine::Notification("notification_name"));
 
   element2->SetAsExtra();
   engine_element_collection.Add(element2);
@@ -90,9 +104,9 @@ TEST(engine_EngineElementCollection, engine_idTest) {
   EXPECT_EQ(1ULL, engine_element_collection.GetNumEngineElements());
   EXPECT_EQ(0ULL, engine_element_collection.GetNumNormalEngineElements());
 
-  EngineElementTest1* engine_element1 = new EngineElementTest1("Engine Element Test 1");
-  EngineElementTest2* engine_element2 = new EngineElementTest2("Engine Element Test 2", 10);
-  EngineElementTest1* engine_element3 = new EngineElementTest1("Engine Element Test 3");
+  EngineElementTest1 *engine_element1 = new EngineElementTest1("Engine Element Test 1");
+  EngineElementTest2 *engine_element2 = new EngineElementTest2("Engine Element Test 2", 10);
+  EngineElementTest1 *engine_element3 = new EngineElementTest1("Engine Element Test 3");
   engine_element3->SetAsExtra();
 
   EXPECT_TRUE(engine_element1 != NULL);

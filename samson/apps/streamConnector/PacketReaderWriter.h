@@ -54,21 +54,17 @@ public:
     interface_ = interface;
 
     // Start me as a thread
-    start_thread();
+    StartThread();
   }
 
   virtual ~PacketReader() {
   }
 
-  virtual void run() {
+  virtual void RunThread() {
     while (true) {
-      if (thread_should_quit()) {
+      if (IsThreadQuiting()) {
         return;
       }
-
-
-
-
 
       if (fd_->IsClosed()) {
         return;                 // End of thread since socket is disconnected
@@ -107,15 +103,15 @@ public:
     buffered_size = 0;
 
     // Start me as a thread
-    start_thread();
+    StartThread();
   }
 
   virtual ~PacketWriter() {
   }
 
-  virtual void run() {
+  virtual void RunThread() {
     while (true) {
-      if (thread_should_quit()) {
+      if (IsThreadQuiting()) {
         return;
       }
 
@@ -154,10 +150,6 @@ public:
 
   void extract_pending_packets(Queue<P>& queue) {
     queue.Push(packets_);
-  }
-
-  virtual void cancel_thread() {
-    // TODO: This will wake up thread when implemented correctly using a blocking mechanism
   }
 
   void push(au::SharedPointer<P> packet) {
@@ -221,17 +213,17 @@ public:
   }
 
   void stop_threads() {
-    packet_reader_->stop_thread();
-    packet_writer_->stop_thread();
+    packet_reader_->StopThread();
+    packet_writer_->StopThread();
   }
 
   bool isRunning() {
-    if (packet_reader_->isRunning()) {
+    if (packet_reader_->IsThreadRunning()) {
       return true;
     }
 
 
-    if (packet_writer_->isRunning()) {
+    if (packet_writer_->IsThreadRunning()) {
       return true;
     }
 

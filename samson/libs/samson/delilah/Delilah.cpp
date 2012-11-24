@@ -12,13 +12,13 @@
 
 #include <dirent.h>                    // DIR directory header
 #include <fnmatch.h>
-#include <sys/stat.h>                  // stat(.)
-
 #include <iomanip>
 #include <iostream>                    // std::cout ...
 #include <map>
+#include <sys/stat.h>                  // stat(.)
 
 #include "au/CommandLine.h"            // CommandLine
+#include "au/log/LogMain.h"
 #include "au/mutex/TokenTaker.h"       // au::TokenTake
 #include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/tables/Table.h"
@@ -28,6 +28,7 @@
 #include "engine/Notification.h"    // engine::Notificaiton
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 #include "samson/common/EnvironmentOperations.h"
+#include "samson/common/Logs.h"
 #include "samson/common/Macros.h"      // EXIT, ...
 #include "samson/common/NotificationMessages.h"  // notification_network_diconnected
 #include "samson/common/SamsonDataSet.h"       // samson::SamsonDataSet
@@ -57,7 +58,7 @@ Delilah::Delilah(std::string connection_type, size_t delilah_id) :
     delilah_id_ = delilah_id;   // Network interface for all the workers ( included in the cluster selected )
   }
 
-  au::log_central.set_node(au::str("D%lu", delilah_id_));
+  au::log_central->set_node(au::str("D%lu", delilah_id_));
 
   network = new DelilahNetwork(connection_type, delilah_id_);
 
@@ -190,7 +191,7 @@ void Delilah::notify(engine::Notification *notification) {
   if (notification->isName(notification_packet_received)) {
     au::SharedPointer<Packet> packet = notification->dictionary().Get<Packet> ("packet");
     if (packet == NULL) {
-      LM_W(("Received a notification to receive a packet without a packet"));
+      LOG_SW(("Received a notification to receive a packet without a packet"));
     }
     receive(packet);
     return;
@@ -237,7 +238,7 @@ void Delilah::notify(engine::Notification *notification) {
  * receive -
  */
 void Delilah::receive(const PacketPointer& packet) {
-  LM_T(LmtNetworkNodeMessages, ("Delilah received packet type:%s", packet->str().c_str()));
+  LM_T(logs.in_messages, ("Delilah received packet type:%s", packet->str().c_str()));
 
   // Message received
   Message::MessageCode msgCode = packet->msgCode;
@@ -259,8 +260,8 @@ void Delilah::receive(const PacketPointer& packet) {
 
   if (packet->msgCode == Message::ClusterInfoUpdate) {
     if (!packet->message->has_cluster_info()) {
-      LM_W(("Received a cluster info update message without cluster information from connection %s. Ignoring..."
-            , packet->from.str().c_str()));
+      LOG_SW(("Received a cluster info update message without cluster information from connection %s. Ignoring..."
+              , packet->from.str().c_str()));
       return;
     }
 
@@ -282,7 +283,7 @@ void Delilah::receive(const PacketPointer& packet) {
     if (worker_id != -1) {
       updateWorkerXMLString(worker_id, packet->message->info());
     } else {
-      LM_W(("Status report received from an unknown endpoint"));
+      LOG_SW(("Status report received from an unknown endpoint"));
       return;
     }
 
@@ -294,12 +295,12 @@ void Delilah::receive(const PacketPointer& packet) {
   // --------------------------------------------------------------------
   if (msgCode == Message::PushBlockResponse) {
     if (!packet->message->has_push_id()) {
-      LM_W(("Received a %s without a push_id", Message::messageCode(msgCode)));
+      LOG_SW(("Received a %s without a push_id", Message::messageCode(msgCode)));
       return;
     }
 
     if (packet->from.node_type != WorkerNode) {
-      LM_W(("Received a %s from a non-worker nodeid", Message::messageCode(msgCode)));
+      LOG_SW(("Received a %s from a non-worker nodeid", Message::messageCode(msgCode)));
       return;
     }
 
@@ -571,7 +572,7 @@ bool Delilah::isActive(size_t id) {
   DelilahComponent *c = components_.findInMap(id);
 
   if (!c) {
-    LM_W(("Unknown delilah component for id:%lu", id));
+    LOG_SW(("Unknown delilah component for id:%lu", id));
     return false;
   }
   return (!c->isComponentFinished());
@@ -584,7 +585,7 @@ bool Delilah::hasError(size_t id) {
 
   // No process, no error ;)
   if (!c) {
-    LM_W(("Unknown delilah component for id:%lu", id));
+    LOG_SW(("Unknown delilah component for id:%lu", id));
     return false;
   }
 

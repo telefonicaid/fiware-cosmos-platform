@@ -12,6 +12,7 @@
 
 #include <sys/stat.h>                  // mkdir
 
+#include "au/log/LogMain.h"
 #include "au/string/S.h"
 
 #include "engine/MemoryManager.h"      // samson::MemoryManager
@@ -20,13 +21,13 @@
 #include "engine/Buffer.h"             // engine::Buffer
 #include "engine/Notification.h"       // engine::Notificaiton
 
+#include "samson/common/KVHeader.h"
+#include "samson/common/Logs.h"
+#include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
+#include "samson/common/samson.pb.h"   // network::...
 #include "samson/delilah/Delilah.h"    // samson::Delilah
 #include "samson/network/Message.h"    // samson::Message
 #include "samson/network/Packet.h"     // samson::Packet
-
-#include "samson/common/KVHeader.h"
-#include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
-#include "samson/common/samson.pb.h"   // network::...
 // samson::MemoryInput , samson::MemoryOutput...
 
 #include "PushDelilahComponent.h"      // Own interface
@@ -108,11 +109,11 @@ void PushDelilahComponent::run_in_background() {
       current_status_ = "Waiting to finish scheduled push items...";
       while (true) {
         if (push_ids_.size() == 0) {
-          LM_T(LmtDelilahComponent, ("push is finished"));
+          LOG_M(logs.delilah_components, ("push is finished"));
           setComponentFinished();
           return;
         }
-        LM_T(LmtDelilahComponent, ("data_source is finished, sleeping with %lu push_ids", push_ids_.size()));
+        LOG_M(logs.delilah_components, ("data_source is finished, sleeping with %lu push_ids", push_ids_.size()));
         usleep(10000);
       }
     }
@@ -121,8 +122,8 @@ void PushDelilahComponent::run_in_background() {
     au::Cronometer cronometer;
     current_status_ = "Waiting until used memory is under 70%";
     while (engine::Engine::memory_manager()->memory_usage() > 0.7) {
-      LM_T(LmtDelilahComponent,
-           ("Waiting until used memory(%d) is under 70%", engine::Engine::memory_manager()->memory_usage()));
+      LOG_M(logs.delilah_components,
+            ("Waiting until used memory(%d) is under 70%", engine::Engine::memory_manager()->memory_usage()));
       usleep(10000);
     }
 

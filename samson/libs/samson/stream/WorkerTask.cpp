@@ -179,7 +179,7 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
       break;
 
     default:
-      LM_W(("Operation still not implemented"));
+      LOG_SW(("Operation still not implemented"));
       break;
   }
 }
@@ -464,7 +464,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
             writer->internal_emit(state_output, hg, key_data, key_size + value_size);
             transfered_states++;
           } else {
-            LM_W(("Interal error. No input and no state?"));
+            LOG_SW(("Interal error. No input and no state?"));
           }
         } else {
           // Call the reduce operation to generate output
@@ -573,13 +573,13 @@ void WorkerTask::commit() {
       for (size_t i = 0; i < new_block_ids.size(); ++i) {
         if (all_blocks.find(new_block_ids[i]) == all_blocks.end()) {
           LM_E(("Internal error since a new block(%lu at pos %d) is not in the current data model",
-                   new_block_ids[i], i));
+                new_block_ids[i], i));
           LM_E(("Blocks in the data_model:"));
           std::set<size_t>::const_iterator block_it;
           for (block_it = all_blocks.begin(); block_it != all_blocks.end(); ++block_it) {
             LM_E(("Block:%lu", *block_it));
           }
-          LM_X(1,("Unrecoverable error. Exiting"));
+          LM_X(1, ("Unrecoverable error. Exiting"));
         }
       }
     }

@@ -55,7 +55,7 @@ KVInputVector::KVInputVector(Operation *operation) {
   std::vector<KVFormat> inputFormats = operation->getInputFormats();
 
   if (inputFormats.size() == 0) {
-    LM_W(("Operation %s has no inputs", operation->_name.c_str()));
+    LOG_SW(("Operation %s has no inputs", operation->_name.c_str()));
     return;
   }
 
@@ -93,6 +93,11 @@ KVInputVector::KVInputVector(int num_inputs) {
   num_kvs = 0;   // Current number of key-values pairs
 
   inputStructs_ = NULL;
+
+  for (size_t i = 0; i < valueDataInstances_.size(); i++) {
+    delete valueDataInstances_[i];
+  }
+  valueDataInstances_.clear();
 }
 
 KVInputVector::~KVInputVector() {
@@ -117,7 +122,7 @@ void KVInputVector::addKVs(int input, KVInfo info, KV *kvs) {
 
 void KVInputVector::addKVs(int input, KVInfo info, char *data) {
   if (input >= static_cast<int>(valueDataInstances_.size())) {
-    LM_W(("Error adding key-values to a KVInputVector. Ignoring..."));
+    LOG_SW(("Error adding key-values to a KVInputVector. Ignoring..."));
     return;
   }
 
@@ -149,9 +154,9 @@ void KVInputVector::addKVs(int input, KVInfo info, char *data) {
   // Make sure the parsing is OK!
   if (offset != info.size) {
     LM_X(1,
-        (
-         "Error adding key-values to a KVInputVector for input %d (%s). (Offset %lu != info.size %lu) KVS num_kvs:%lu / max_num_kvs:%lu ",
-         input, info.str().c_str(), offset, info.size, num_kvs, max_num_kvs));
+         (
+           "Error adding key-values to a KVInputVector for input %d (%s). (Offset %lu != info.size %lu) KVS num_kvs:%lu / max_num_kvs:%lu ",
+           input, info.str().c_str(), offset, info.size, num_kvs, max_num_kvs));
   }
 }
 

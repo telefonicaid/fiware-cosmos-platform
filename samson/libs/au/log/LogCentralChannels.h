@@ -40,6 +40,8 @@ public:
   std::string channel_description(int c);
   std::string GetAllChannels() const;
 
+  void Clear();
+
 private:
 
   // Names for each channel

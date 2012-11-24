@@ -25,7 +25,7 @@
 
 #include "au/file.h"                             // au::sizeOfFile
 #include "au/mutex/TokenTaker.h"                 // au::TokenTake
-#include "au/string/StringUtilities.h"                           // au::Format
+#include "au/string/StringUtilities.h"           // au::Format
 
 #include "SharedMemoryItem.h"   // samson::SharedMemoryItem
 #include "engine/Buffer.h"                       // samson::Buffer
@@ -41,7 +41,7 @@ SharedMemoryManager *sharedMemoryManager = NULL;      // Unique shared memory ma
 
 void SharedMemoryManager::init(int _shared_memory_num_buffers, size_t _shared_memory_size_per_buffer) {
   if (sharedMemoryManager) {
-    LM_W(("Init Shared memory manager only once"));
+    LOG_SW(("Init Shared memory manager only once"));
     return;
   }
 
@@ -84,7 +84,7 @@ SharedMemoryManager::SharedMemoryManager(int _shared_memory_num_buffers, size_t 
   // Create the shared memory segments
   createSharedMemorySegments();
 
-  LOG_D( logs.memory_manager, ("SharedMemoryManager init %d shared memory areas", shared_memory_num_buffers ));
+  LOG_D(logs.memory_manager, ("SharedMemoryManager init %d shared memory areas", shared_memory_num_buffers ));
 }
 
 SharedMemoryManager::~SharedMemoryManager() {
@@ -124,7 +124,7 @@ void SharedMemoryManager::remove_previous_shared_areas() {
   FILE *file = fopen(sharedMemoryIdsFileName.c_str(), "r");
   if (file) {
     if (fread(ids, length * sizeof(int), 1, file) == 1) {
-      LOG_D( logs.memory_manager, ("Removing previous memory segments"));
+      LOG_D(logs.memory_manager, ("Removing previous memory segments"));
       removeSharedMemorySegments(ids, length);
     }
     fclose(file);
@@ -138,13 +138,13 @@ void SharedMemoryManager::write_current_shared_areas_to_file() {
 
   if (file) {
     if (!fwrite(shm_ids, shared_memory_num_buffers * sizeof(int), 1, file) == 1) {
-      LM_W(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes.",
-            sharedMemoryIdsFileName.c_str()));
+      LOG_SW(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes.",
+              sharedMemoryIdsFileName.c_str()));
     }
     fclose(file);
   } else {
-    LM_W(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes.",
-          sharedMemoryIdsFileName.c_str()));
+    LOG_SW(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes.",
+            sharedMemoryIdsFileName.c_str()));
   }
 }
 
@@ -155,10 +155,9 @@ void SharedMemoryManager::createSharedMemorySegments() {
   // Create a new shared memory buffer
   shm_ids = (int *)malloc(sizeof(int) * shared_memory_num_buffers);
 
-  LOG_D( logs.memory_manager, ("Creating shared memory buffers"));
+  LOG_D(logs.memory_manager, ("Creating shared memory buffers"));
 
   for (int i = 0; i < shared_memory_num_buffers; i++) {
-
     int shmflg;                 /* shmflg to be passed to shmget() */
 
     // shmflg  = 384;		// Permission to read / write ( only owner )
@@ -171,7 +170,7 @@ void SharedMemoryManager::createSharedMemorySegments() {
              "Error creating the shared memory buffer of %s ( %d / %d ). \
               Please review SAMSON documentation about shared memory usage",
              au::str(shared_memory_size_per_buffer, "B").c_str(), i, shared_memory_num_buffers ));
-      
+
       LM_X(1, ("Error creating shared memory buffers. shmid return -1 (%s)", strerror(errno)));
     }
     shm_ids[i] = shmid;
@@ -187,13 +186,14 @@ void SharedMemoryManager::createSharedMemorySegments() {
 }
 
 void SharedMemoryManager::removeSharedMemorySegments(int *ids, int length) {
-  LOG_D( logs.memory_manager, ("Releasing %d shared memory buffers", length ));
+  LOG_D(logs.memory_manager, ("Releasing %d shared memory buffers", length ));
 
   for (int i = 0; i < length; i++) {
     // Remove the shared memory areas
     if (shmctl(ids[i], IPC_RMID, NULL) == -1) {
-      LM_W(("Error ('%s') trying to release a shared memory buffer(%d). Please review shared-memory problems in SAMSON documentation"
-          , strerror(errno), ids[i]));
+      LOG_SW((
+               "Error ('%s') trying to release a shared memory buffer(%d). Please review shared-memory problems in SAMSON documentation"
+               , strerror(errno), ids[i]));
     }
   }
 }
@@ -208,7 +208,7 @@ int SharedMemoryManager::RetainSharedMemoryArea() {
     }
   }
 
-  LM_W(("Not possible to retain a shared memory area since all %d are busy", shared_memory_num_buffers ));
+  LOG_SW(("Not possible to retain a shared memory area since all %d are busy", shared_memory_num_buffers ));
   return -1;                    // There are no available memory buffers, so we will never get this point
 }
 

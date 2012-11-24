@@ -77,7 +77,7 @@ ProcessTXTWriter *ProcessIsolated::getTXTWriter() {
 }
 
 void ProcessIsolated::runCode(int c) {
-  // LM_M(("Isolated process Running code %d",c));
+  // LOG_SM(("Isolated process Running code %d",c));
 
   switch (c) {
     case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
@@ -95,14 +95,14 @@ void ProcessIsolated::runCode(int c) {
       break;
   }
 
-  // LM_M(("Finish Isolated process Running code %d",c));
+  // LOG_SM(("Finish Isolated process Running code %d",c));
 }
 
 void ProcessIsolated::flushBuffer(bool finish) {
   au::Cronometer cronometer;
 
-  LM_T(LmtIsolatedOutputs,
-       ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id, process_item_description().c_str()));
+  LOG_M(logs.isolated_process,
+        ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id, process_item_description().c_str()));
 
   switch (type) {
     case key_value:
@@ -113,8 +113,8 @@ void ProcessIsolated::flushBuffer(bool finish) {
       break;
   }
 
-  LM_T(LmtIsolatedOutputs, ("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s "
-                            , shm_id, process_item_description().c_str(), au::S(cronometer).str().c_str()));
+  LOG_M(logs.isolated_process, ("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s "
+                                , shm_id, process_item_description().c_str(), au::S(cronometer).str().c_str()));
 }
 
 void ProcessIsolated::flushKVBuffer(bool finish) {
@@ -190,8 +190,8 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
         uint32 node_id = _hgOutput->first_node;
         while (node_id != KV_NODE_UNASIGNED) {
           if (node_id > _hgOutput->last_node) {
-            LM_W(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
-                  _hgOutput->first_node, _hgOutput->last_node, node_id));
+            LOG_SW(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
+                    _hgOutput->first_node, _hgOutput->last_node, node_id));
           }
           bool ans = buffer->Write(reinterpret_cast<char *>(node[node_id].data), node[node_id].size);
           if (!ans) {

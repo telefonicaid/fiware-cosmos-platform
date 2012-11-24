@@ -11,9 +11,9 @@
 
 #include "Service.h"  // Own interface
 
-#include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/au.pb.h"
+#include "au/singleton/Singleton.h"
 
 namespace au {
 namespace network {
@@ -121,9 +121,9 @@ void Service::StopService() {
 
       if (c.seconds() > 1) {
         c.Reset();
-        LM_W((
-               "Still %lu ServiceItems do not finish after closing its associated sockets in Server %s",
-               num_items, str().c_str()));
+        LOG_SW((
+                 "Still %lu ServiceItems do not finish after closing its associated sockets in Server %s",
+                 num_items, str().c_str()));
       }
 
       usleep(10000);

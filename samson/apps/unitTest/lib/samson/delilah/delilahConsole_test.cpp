@@ -226,16 +226,16 @@
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("ps clear wrong_job"), 0) << "Wrong result from runAsyncCommand(ps clear wrong_job)";
  *
- *  LM_W(("Before push"));
+ *  LOG_SW(("Before push"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("push"), 0) << "Wrong result from runAsyncCommand(push)";
  *
- *  LM_W(("Before push /bin/bash"));
+ *  LOG_SW(("Before push /bin/bash"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("push /bin/bash"), 0) << "Wrong result from runAsyncCommand(push /bin/bash)";
  *
- *  LM_W(("Before push /bin/bash a"));
+ *  LOG_SW(("Before push /bin/bash a"));
  *  EXPECT_NE(delilah_console->runAsyncCommand("push /bin/bash a"), 0) << "Wrong result from runAsyncCommand(push /bin/bash a)";
  *
- *  LM_W(("Before push /tmp/dir_test a"));
+ *  LOG_SW(("Before push /tmp/dir_test a"));
  *  EXPECT_NE(delilah_console->runAsyncCommand("push /tmp/dir_test a"), 0) << "Wrong result from runAsyncCommand(push /tmp/dir_test a)";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("pop"), 0) << "Wrong result from runAsyncCommand(pop)";
@@ -250,22 +250,22 @@
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("rm_local /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(rm_local /tmp/traces)";
  *
- *  //LM_W(("Before ls_local"));
+ *  //LOG_SW(("Before ls_local"));
  *  //EXPECT_EQ(delilah_console->runAsyncCommand("ls_local"), 0) << "Wrong result from runAsyncCommand(ls_local)";
  *
- *  LM_W(("Before show_local_queue"));
+ *  LOG_SW(("Before show_local_queue"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue"), 0) << "Wrong result from runAsyncCommand(show_local_queue)";
  *
- *  LM_W(("Before show_local_queue /tmp/traces"));
+ *  LOG_SW(("Before show_local_queue /tmp/traces"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces)";
  *
- *  LM_W(("Before show_local_queue /tmp/traces -header"));
+ *  LOG_SW(("Before show_local_queue /tmp/traces -header"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces -header)";
  *
- *  LM_W(("Before show_local_queue /tmp/dir_test -header"));
+ *  LOG_SW(("Before show_local_queue /tmp/dir_test -header"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/dir_test -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/dir_test -header)";
  *
- *  LM_W(("Before push_module"));
+ *  LOG_SW(("Before push_module"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("push_module"), 0) << "Wrong result from runAsyncCommand(push_module)";
  *
  *  //EXPECT_NE(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /tmp/libtxt.so txt)";
@@ -312,17 +312,17 @@
  *
  *  EXPECT_NE(delilah_console->runAsyncCommand("ls -group name -rates"), 0) << "Wrong result from runAsyncCommand(ls -group name -rates)";
  *
- *  LM_W(("Before disconnect"));
+ *  LOG_SW(("Before disconnect"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("disconnect"), 0) << "Wrong result from runAsyncCommand(disconnect)";
  *
- *  LM_W(("Before quit"));
+ *  LOG_SW(("Before quit"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
  *
  * //    au::ErrorManager error;
  * //    delilah_console->delilah_disconnect( &error );
  * //    //EXPECT_TRUE(error.isActivated() == false);
  *
- *  LM_W(("Before close_delilah_test()"));
+ *  LOG_SW(("Before close_delilah_test()"));
  *  close_delilah_test(delilah_console);
  * }
  *
@@ -342,7 +342,7 @@
  *  }
  *  char *user = strdup("anonymous");
  *  char *password = strdup("anonymous");
- *  LM_M(("delilah_console->connect"));
+ *  LOG_SM(("delilah_console->connect"));
  *  delilah_console->connect( host , port , user , password );
  *
  *  sleep(1);
@@ -940,7 +940,7 @@
  *  }
  *  char *user = strdup("anonymous");
  *  char *password = strdup("anonymous");
- *  LM_M(("delilah_console->connect"));
+ *  LOG_SM(("delilah_console->connect"));
  *  delilah_console->connect( host , port , user , password );
  *
  *  char expected_result[1024];

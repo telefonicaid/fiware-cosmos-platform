@@ -19,7 +19,7 @@
 #include "engine/Notification.h"                    // engine::Notification
 #include "engine/ProcessManager.h"
 
-#include "logMsg/logMsg.h"                          // LM_W
+#include "logMsg/logMsg.h"                          // LOG_SW
 
 #include "samson/common/KVHeader.h"
 #include "samson/common/Logs.h"
@@ -179,9 +179,10 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
 
   // Set instance from provided string ( detect possible error in this convertion )
   std::string error_message;
-  if( !keyDataInstance->setContentFromString(key , error_message ) ) {
+
+  if (!keyDataInstance->setContentFromString(key, error_message)) {
     command->AppendFormatedError(au::str("Error converting %s into a valid %s (%s)"
-                                         , key , kvFormat.keyFormat.c_str() , error_message.c_str() ));
+                                         , key, kvFormat.keyFormat.c_str(), error_message.c_str()));
     return;
   }
 

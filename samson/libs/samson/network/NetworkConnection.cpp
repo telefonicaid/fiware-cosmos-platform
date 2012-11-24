@@ -124,10 +124,10 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
       au::TokenTaker tt(&token_);
       tt.WakeUpAll();
     }
-    
+
     usleep(100000);
     if (cronometer.seconds() > 1) {
-      LM_W(("Waiting for background threads of connection %s", node_identifier_.getCodeName().c_str()));
+      LOG_SW(("Waiting for background threads of connection %s", node_identifier_.getCodeName().c_str()));
       cronometer.Reset();
     }
   }
@@ -185,7 +185,7 @@ void NetworkConnection::writerThread() {
       if (s == au::OK) {
         network_manager_->multi_packet_queue.Pop(node_identifier_);
       } else {
-        LM_W(("Problem writing packet on socket_connection_:'%s'", socket_connection_->str().c_str()));
+        LOG_SW(("Problem writing packet on socket_connection_:'%s'", socket_connection_->str().c_str()));
       }
     } else {
       // Block this thread until new packets are pushed or connection is restablish...

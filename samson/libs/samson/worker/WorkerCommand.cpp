@@ -518,7 +518,7 @@ void WorkerCommand::Run() {
     std::string channel_pattern_string = command_instance->get_string_argument("channel_pattern");
     std::string str_log_level = command_instance->get_string_argument("log_level");
 
-    au::log_central.evalCommand("log_set " + channel_pattern_string + " " + str_log_level + " server");
+    au::log_central->evalCommand("log_set " + channel_pattern_string + " " + str_log_level + " server");
     FinishWorkerTask();
     return;
   }
@@ -526,11 +526,11 @@ void WorkerCommand::Run() {
   if (main_command == "wlog_set_log_server") {
     std::string host = command_instance->get_string_argument("host");
 
-    au::log_central.RemovePlugin("server");
-    au::log_central.AddServerPlugin("server", host, host + "_local_log.log");
-    au::log_central.evalCommand("log_set * X server");
-    au::log_central.evalCommand("log_set samson::W M server");
-    au::log_central.evalCommand("log_set samson::OP W server");
+    au::log_central->RemovePlugin("server");
+    au::log_central->AddServerPlugin("server", host, host + "_local_log.log");
+    au::log_central->evalCommand("log_set * X server");
+    au::log_central->evalCommand("log_set samson::W M server");
+    au::log_central->evalCommand("log_set samson::OP W server");
 
 
     FinishWorkerTask();

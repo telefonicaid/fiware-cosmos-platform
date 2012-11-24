@@ -277,7 +277,7 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
 
     // Finish connection if not possible to read a message
     if (s != OK) {
-      LM_W(("ConsoleService: Could not read message from client correctly (%s).Closing connection", status(s)));
+      LOG_SW(("ConsoleService: Could not read message from client correctly (%s).Closing connection", status(s)));
       socket_connection->Close();
       if (message) {
         delete message;
@@ -315,7 +315,7 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
     s = writeGPB(socket_connection->fd(), &answer_message);
     // Finish connection if not possible to read a message
     if (s != OK) {
-      LM_W(("ConsoleService: Could not send message back to client correctly (%s).Closing connection", status(s)));
+      LOG_SW(("ConsoleService: Could not send message back to client correctly (%s).Closing connection", status(s)));
       socket_connection->Close();
       return;
     }

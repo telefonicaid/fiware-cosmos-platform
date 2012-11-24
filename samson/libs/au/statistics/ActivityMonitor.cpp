@@ -11,6 +11,8 @@
 
 
 #include "ActivityMonitor.h"  // Own interface
+
+#include "au/log/LogMain.h"
 #include <math.h>
 
 namespace au {
@@ -30,7 +32,7 @@ ActivityStatistics::ActivityStatistics(const std::string& name) {
 
 void ActivityStatistics::Push(double t) {
   if (time < 0) {
-    LM_W(("Reported negative time (%d) for item %s", t,  name_.c_str()));
+    LOG_SW(("Reported negative time (%d) for item %s", t,  name_.c_str()));
     return;
   }
 
@@ -88,7 +90,7 @@ double ActivityStatistics::GetStdDeviation() const {
   double average = GetAverage();
   double tmp = ( total_square_ / (double)counter_ ) - average * average;
   if (tmp < 0) {
-    LM_W(("Error computing std deviation in ActivityStatistics"));
+    LOG_SW(("Error computing std deviation in ActivityStatistics"));
     return 0;
   }
   return sqrt(tmp);

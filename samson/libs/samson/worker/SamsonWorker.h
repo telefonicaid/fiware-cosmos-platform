@@ -166,6 +166,10 @@ private:
   // Initial time stamp for this worker
   au::Cronometer cronometer_;
 
+  // Last try to connect with ZK
+  au::Cronometer zk_connection_cronometer_;
+  bool zk_first_connection_;
+
   // Main elements of the worker
   au::SharedPointer<au::zoo::Connection> zoo_connection_;     // Main connection with the zk
   au::SharedPointer<SamsonWorkerController> worker_controller_;     // Cluster setup controller

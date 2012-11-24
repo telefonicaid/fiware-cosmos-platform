@@ -13,6 +13,8 @@
 #ifndef _H_AU_STRUCT_COLLECTION
 #define _H_AU_STRUCT_COLLECTION
 
+#include "au/Log/LogMain.h"
+
 namespace au {
 template <typename C>
 class StructCollection {
@@ -94,7 +96,7 @@ public:
     // Read content from file
     size_t s = fread(v, _size, 1, file);
     if (s != 1) {
-      LM_W(("Error reading StructColleciton"));
+      LOG_SW(("Error reading StructColleciton"));
     }
   }
 };

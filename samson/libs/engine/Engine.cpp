@@ -55,7 +55,7 @@ void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
   LM_VV(("Engine init"));
 
   if (engine_) {
-    LM_W(("Init engine twice... just ignoring"));
+    LOG_SW(("Init engine twice... just ignoring"));
     return;
   }
 
@@ -86,7 +86,7 @@ void Engine::DestroyEngine() {
 
 
   if (!engine_) {
-    LM_W(("Stopping engine that was never initialized. Ignoring..."));
+    LOG_SW(("Stopping engine that was never initialized. Ignoring..."));
     return;
   }
 
@@ -135,14 +135,17 @@ void Engine::Stop() {
     running_thread_ = false;
   }
 }
-  void Engine::RunElement(EngineElement *running_element) {
-    au::Cronometer cronometer;
-    InternRunElement(running_element);
-    if( cronometer.seconds() > 1 )
-      LOG_W(logs.engine, ("EngineElement %s has being running for %s"
-                          , running_element->str().c_str() , au::str_time(cronometer.seconds()).c_str()));
+
+void Engine::RunElement(EngineElement *running_element) {
+  au::Cronometer cronometer;
+
+  InternRunElement(running_element);
+  if (cronometer.seconds() > 1) {
+    LOG_W(logs.engine, ("EngineElement %s has being running for %s"
+                        , running_element->str().c_str(), au::str_time(cronometer.seconds()).c_str()));
   }
-  
+}
+
 void Engine::InternRunElement(EngineElement *running_element) {
   activity_monitor_.StartActivity(running_element->name());
 
@@ -152,7 +155,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
   // Print traces for debugging strange situations
   int waiting_time = running_element->GetWaitingTime();
   if (waiting_time > 10) {
-    LM_W(("Engine is running an element that has been waiting %d seconds", waiting_time ));
+    LOG_SW(("Engine is running an element that has been waiting %d seconds", waiting_time ));
 
     if (waiting_time > 100) {
       // Print all elements with traces for debuggin...
@@ -170,8 +173,8 @@ void Engine::InternRunElement(EngineElement *running_element) {
 
     int execution_time = c.seconds();
     if (execution_time > 10) {
-      LM_W(("Engine has executed an item in %d seconds.", execution_time ));
-      LM_W(("Engine Executed item: %s",  running_element->str().c_str()));
+      LOG_SW(("Engine has executed an item in %d seconds.", execution_time ));
+      LOG_SW(("Engine Executed item: %s",  running_element->str().c_str()));
     }
   }
 
@@ -217,7 +220,7 @@ void Engine::RunMainLoop() {
     LOG_D(logs.engine, ("Number of elements in the engine stack %lu", num_engine_elements ));
 
     if (num_engine_elements > 10000) {
-      LM_W(("Execesive number of elements in the engine stack %lu", num_engine_elements ));
+      LOG_SW(("Execesive number of elements in the engine stack %lu", num_engine_elements ));
     }
 
     // Try if next repeated element is ready to be executed

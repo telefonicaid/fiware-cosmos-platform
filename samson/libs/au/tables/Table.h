@@ -12,7 +12,7 @@
 #ifndef _H_AU_TABLE_TABLE
 #define _H_AU_TABLE_TABLE
 
-#include "logMsg/logMsg.h"     // LM_W
+#include "logMsg/logMsg.h"     // LOG_SW
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
 #include <string>              // std::string

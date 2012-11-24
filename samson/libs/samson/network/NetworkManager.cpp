@@ -12,8 +12,10 @@
 
 #include <set>
 
+#include "au/log/LogMain.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
+#include "samson/common/Logs.h"
 #include "samson/network/NetworkConnection.h"
 
 namespace samson {
@@ -41,7 +43,7 @@ void NetworkManager::Remove(NetworkConnection *network_connection) {
     }
   }
 
-  LM_W(("Removing a network connection that is not part of this manager"));
+  LOG_SW(("Removing a network connection that is not part of this manager"));
 }
 
 void NetworkManager::Remove(const std::string& connection_name) {
@@ -51,8 +53,8 @@ void NetworkManager::Remove(const std::string& connection_name) {
     delete connection;
     return;
   } else {
-    LM_W(("trying to remove connection %s that is not present in this connection manager"
-          , connection_name.c_str()));
+    LOG_SW(("trying to remove connection %s that is not present in this connection manager"
+            , connection_name.c_str()));
   }
 }
 
@@ -63,7 +65,7 @@ void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::Socke
   // Name of this connection
   std::string name = new_node_identifier.getCodeName();
 
-  LM_T(LmtNetworkConnection, ("Adding network_connection:%s", name.c_str()));
+  LOG_M(logs.network_connection, ("Adding network_connection:%s", name.c_str()));
 
   if (connections.findInMap(name) != NULL) {
     LOG_SW(("Rejecting an incomming connection (%s) since it already exists", name.c_str()));
@@ -72,7 +74,7 @@ void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::Socke
   }
 
   // Add to the map of connections
-  LM_T(LmtNetworkConnection, ("Inserted new connection %s", name.c_str()));
+  LOG_M(logs.network_connection, ("Inserted new connection %s", name.c_str()));
   NetworkConnection *network_connection = new NetworkConnection(new_node_identifier, socket_connection, this);
   connections.insertInMap(name, network_connection);
 }
@@ -149,10 +151,10 @@ std::vector<size_t> NetworkManager::getDelilahIds() {
         // Add this id to the list
         ids.push_back(id);
       } else {
-        LM_W(("Delilah %lu (%s) connected using wrong connection name %s",
-              _node_identifier.id,
-              _node_identifier.getCodeName().c_str(),
-              it_connections->first.c_str()));
+        LOG_SW(("Delilah %lu (%s) connected using wrong connection name %s",
+                _node_identifier.id,
+                _node_identifier.getCodeName().c_str(),
+                it_connections->first.c_str()));
       }
     }
   }

@@ -47,12 +47,12 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole) {
   engine::Engine::StopEngine();
 
   if (delilahConsole) {
-    LM_M(("delilahConsole->stop()"));
+    LOG_SM(("delilahConsole->stop()"));
     delilahConsole->stop();
   }
 
   // Wait all threads to finish
-  LM_M(("From close_delilah_test, waiting all threads to finish"));
+  LOG_SM(("From close_delilah_test, waiting all threads to finish"));
   au::Singleton<au::ThreadManager>::shared()->wait("Delilah test");
 
   // Clear google protocol buffers library
@@ -65,9 +65,9 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole) {
 
   engine::Engine::DestroyEngine();
 
-  LM_W(("Finishing delilah"));
+  LOG_SW(("Finishing delilah"));
 
-  LM_W(("Calling to destroy ModulesManager"));
+  LOG_SW(("Calling to destroy ModulesManager"));
   lmCleanProgName();
 }
 

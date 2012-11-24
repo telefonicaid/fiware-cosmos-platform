@@ -106,14 +106,14 @@ int main(int argC, const char *argV[]) {
 
 
   if (fg == false) {
-    LM_M(("logServer running in background"));
+    LOG_SM(("logServer running in background"));
     Daemonize();
   } else {
-    LM_M(("logServer running in foreground"));
+    LOG_SM(("logServer running in foreground"));
   }
 
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
-    LM_W(("SIGPIPE cannot be handled"));
+    LOG_SW(("SIGPIPE cannot be handled"));
   }
 
   // Log server

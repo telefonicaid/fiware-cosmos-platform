@@ -11,7 +11,7 @@
 #include "samson/stream/WorkerTaskBase.h"      // Own interface
 #include <list>
 
-#include "logMsg/logMsg.h"      // LM_M
+#include "logMsg/logMsg.h"      // LOG_SM
 #include "samson/common/coding.h"
 #include "samson/stream/Block.h"              // samson::Stream::Block
 #include "samson/stream/BlockManager.h"       // samson::stream::BlockManager

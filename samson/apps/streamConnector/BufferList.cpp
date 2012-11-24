@@ -11,6 +11,7 @@
 
 
 #include "BufferList.h"
+#include "au/log/LogMain.h"
 #include "engine/Notification.h"
 
 namespace stream_connector {
@@ -69,14 +70,14 @@ void BufferListItem::notify(engine::Notification *notification) {
 
     if (type == "write") {
       if (state != writing) {
-        LM_W(("Unexpected state in BufferListItem"  ));
+        LOG_SW(("Unexpected state in BufferListItem"  ));
         return;
       }
       state = on_memory_and_disk;
       return;
     } else if (type == "read") {
       if (state != reading) {
-        LM_W(("Unexpected state in BufferListItem"  ));
+        LOG_SW(("Unexpected state in BufferListItem"  ));
         return;
       }
       state = on_memory_and_disk;
@@ -88,7 +89,7 @@ void BufferListItem::notify(engine::Notification *notification) {
     return;
   }
 
-  LM_W(("Unknown notification received in BufferListItem"));
+  LOG_SW(("Unknown notification received in BufferListItem"));
 }
 
 void BufferListItem::flush_to_disk() {

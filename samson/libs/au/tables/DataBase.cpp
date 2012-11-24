@@ -280,7 +280,7 @@ std::string DataBase::runCommand(std::string command) {
 
       // Print first record if any ....
       if (_table->getNumRows() == 0) {
-        return au::str(au::red, "No records to print");
+        return au::str(au::BoldRed, "No records to print");
       }
 
       Table *record_table = _table->rows[0]->getTable();
@@ -297,13 +297,13 @@ std::string DataBase::runCommand(std::string command) {
 
   if (mainCommand == "table_from_table") {
     if (cmdLine.get_num_arguments() < 3) {
-      return au::str(au::red, "Usage: table_from_table table <fields> [-save new_table]");
+      return au::str(au::BoldRed, "Usage: table_from_table table <fields> [-save new_table]");
     }
 
     std::string table_name = cmdLine.get_argument(1);
     Table *table = tables.findInMap(table_name);
     if (!table) {
-      return au::str(au::red, "Unknown table %s", table_name.c_str());
+      return au::str(au::BoldRed, "Unknown table %s", table_name.c_str());
     }
 
     SelectTableInformation select;
@@ -318,7 +318,7 @@ std::string DataBase::runCommand(std::string command) {
 
     if (save != "no_save") {
       addTable(save, table_result);
-      return au::str(au::magenta, "Created table %s", save.c_str());
+      return au::str(au::BoldMagenta, "Created table %s", save.c_str());
     } else {
       addTable("result", table_result);
       return table_result->str();
@@ -426,7 +426,7 @@ std::string DataBase::runCommand(std::string command) {
 
     if (result->getNumTrees() == 0) {
       delete result;
-      return au::str(au::red, "No result for path %s over tree %s", tree_name.c_str(), path.c_str());
+      return au::str(au::BoldRed, "No result for path %s over tree %s", tree_name.c_str(), path.c_str());
     }
 
     TreeItem *result_tree = result->getTree(0);        // Get first tree

@@ -163,17 +163,18 @@ int main(int argC, const char *argV[]) {
   // Random initialization
   srand(time(NULL));
   // Init log system
-  au::log_central.Init(argV[0]);
+  au::log_central = new au::LogCentral();
+  au::log_central->Init(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
 
   // Add plugins to report lgos to file, server and console
-  au::log_central.AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
-  au::log_central.AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
-  au::log_central.AddScreenPlugin("screen", "[type] text");  // Temporal plugin
+  au::log_central->AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
+  au::log_central->AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
+  au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
-    LM_W(("SIGPIPE cannot be handled"));
+    LOG_SW(("SIGPIPE cannot be handled"));
   }
   if (buffer_size == 0) {
     LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Run in background if required
@@ -217,7 +218,7 @@ int main(int argC, const char *argV[]) {
         line[ strlen(line) - 1] = '\0';
       }
 
-      // LM_M(("Processing line: %s", line ));
+      // LOG_SM(("Processing line: %s", line ));
       num_line++;
 
       if (( line[0] != '#' ) && ( strlen(line) > 0)) {

@@ -14,17 +14,17 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "au/log/LogCommon.h"
-#include "engine/Logs.h"
+#include "au/ThreadManager.h"
 #include "au/containers/SharedPointer.h"
-#include "au/string/Descriptors.h"        // au::Descriptors
+#include "au/log/LogCommon.h"
 #include "au/mutex/TokenTaker.h"   // au::TokenTake
 #include "au/singleton/Singleton.h"
-#include "au/ThreadManager.h"
-#include "au/string/xml.h"                // au::xml...
+#include "au/string/Descriptors.h"  // au::Descriptors
+#include "au/string/xml.h"         // au::xml...
 #include "engine/DiskOperation.h"  // engine::DiskOperation
 #include "engine/Engine.h"         // engine::Engine
 #include "engine/EngineElement.h"  // engine::EngineElement
+#include "engine/Logs.h"
 #include "engine/Notification.h"   // engine::Notification
 #include "engine/NotificationElement.h"       // engine::EngineNotificationElement
 #include "engine/ProcessItem.h"    // engine::ProcessItem
@@ -35,8 +35,9 @@ namespace engine {
 void *ProcessManager_run_worker(void *p) {
   ProcessManager *process_manager = reinterpret_cast<ProcessManager *>(p);
 
-  std::string thread_description = au::GetThreadId( pthread_self() );
-  LOG_D( logs.process_manager ,  ("Thread for ProcessManager worker %s" , thread_description.c_str() ));
+  std::string thread_description = au::GetThreadId(pthread_self());
+
+  LOG_D(logs.process_manager,  ("Thread for ProcessManager worker %s", thread_description.c_str()));
 
   process_manager->run_worker();
   return NULL;
@@ -44,7 +45,7 @@ void *ProcessManager_run_worker(void *p) {
 
 ProcessManager::ProcessManager(int max_num_procesors) :
   token_("engine::ProcessManager"), num_procesors_(0), max_num_procesors_(max_num_procesors), stopped_(false) {
-  }
+}
 
 ProcessManager::~ProcessManager() {
 }
@@ -70,14 +71,14 @@ void ProcessManager::Stop() {
     }
     if (cronometer.seconds() > 1) {
       cronometer.Reset();
-      LM_W(("Waiting for background threads of engine::ProcessManager, still %d num_procesors_", num_procesors_));
+      LOG_SW(("Waiting for background threads of engine::ProcessManager, still %d num_procesors_", num_procesors_));
     }
   }
 }
 
 void ProcessManager::notify(Notification *notification) {
   LM_E(("Wrong notification at ProcessManager [Listener %lu] %s",
-          engine_id(), notification->GetDescription().c_str()));
+        engine_id(), notification->GetDescription().c_str()));
 }
 
 void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId) {
@@ -137,15 +138,12 @@ int ProcessManager::max_num_procesors() {
 }
 
 void ProcessManager::run_worker() {
-  LM_T(LmtCleanup, ("run_worker() started"));
   while (true) {
     // Check if too many background workers are running
     {
       au::TokenTaker tt(&token_);
       if (stopped_ || (num_procesors_ > max_num_procesors_)) {
         num_procesors_--;
-        LM_T(LmtCleanup, ("run_worker exits because stopped or num_processors(%d) > max_num_procesors(%d)",
-                num_procesors_, max_num_procesors_));
         return;
       }
     }
@@ -158,7 +156,6 @@ void ProcessManager::run_worker() {
       if (item != NULL) {
         running_items_.Insert(item);
       } else {
-        LM_T(LmtCleanup, ("run_worker() sleeps on tt waiting to be woken up"));
         tt.Stop();   // Block until main thread wake me up
         continue;
       }

@@ -29,7 +29,7 @@
 #define _H_AU_TIME
 
 
-#include "logMsg/logMsg.h"     // LM_W
+#include "logMsg/logMsg.h"     // LOG_SW
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
 #include <string>              // std::string
@@ -54,9 +54,8 @@ timeval secs_to_timeval(double s);
 
 size_t seconds_to_microseconds(double time);
 size_t seconds_to_nanoseconds(double time);
-  
-  std::string GetTimeStampString( time_t time );
 
+std::string GetTimeStampString(time_t time);
 }
 
 #endif  // ifndef _H_AU_TIME

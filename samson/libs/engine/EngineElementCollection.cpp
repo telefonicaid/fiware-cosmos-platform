@@ -33,7 +33,7 @@ void EngineElementCollection::Add(EngineElement *element) {
   au::TokenTaker tt(&token_);
 
   // Insert an element in the rigth queue
-  LOG_M(  logs.engine , ("Adding Engineelement: %s", element->str().c_str()));
+  LOG_M(logs.engine, ("Adding Engineelement: %s", element->str().c_str()));
 
   if (element->IsRepeated()) {
     repeated_elements_.insert(FindPositionForRepeatedEngineElement(element),  element);
@@ -178,17 +178,17 @@ void EngineElementCollection::PrintElements() {
   au::list<EngineElement>::iterator it_elements;
   for (it_elements = repeated_elements_.begin(); it_elements != repeated_elements_.end(); it_elements++) {
     EngineElement *element = *it_elements;
-    LM_M(("ENGINE REPEATED ELEMENT: %s", element->str().c_str()));
+    LOG_SM(("ENGINE REPEATED ELEMENT: %s", element->str().c_str()));
   }
 
   for (it_elements = normal_elements_.begin(); it_elements != normal_elements_.end(); it_elements++) {
     EngineElement *element = *it_elements;
-    LM_M(("ENGINE NORMAL ELEMENT: %s", element->str().c_str()));
+    LOG_SM(("ENGINE NORMAL ELEMENT: %s", element->str().c_str()));
   }
 
   for (size_t i = 0; i < extra_elements_.size(); i++) {
     EngineElement *element = extra_elements_[i];
-    LM_M(("ENGINE EXTRA ELEMENT: %s", element->str().c_str()));
+    LOG_SM(("ENGINE EXTRA ELEMENT: %s", element->str().c_str()));
   }
 }
 

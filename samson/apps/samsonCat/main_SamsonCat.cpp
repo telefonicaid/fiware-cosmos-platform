@@ -163,6 +163,6 @@ int main(int argC, const char *argV[]) {
     LM_X(1, ("%s is not a file or a directory", file_name));
   }
 
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 }
 

@@ -41,14 +41,11 @@ void init_samson_setup() {
 }
 
 void init_engine_test() {
-  // Init engine
-  engine::Engine::InitEngine(4, 1000000, 1);
+  engine::Engine::InitEngine(4, 1000000, 1);  // Init engine
 }
 
 void close_engine_test() {
-  // Close engine simultion
-  engine::Engine::DestroyEngine();                      // Destroy engine
-  au::ThreadManager::wait_all_threads("EngineTest");    // Wait all threads to finsih
+  engine::Engine::StopEngine();                      // Destroy engine  // Close engine simultion
 }
 
 samson::SamsonClient *init_samson_client_test() {
@@ -81,7 +78,7 @@ void close_samson_client_test(samson::SamsonClient *samson_client) {
   LOG_SM(("client disconnected"));
 
   // Stop engine to avoid references to samson_client
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 
   LOG_SM(("engine  stopped"));
 

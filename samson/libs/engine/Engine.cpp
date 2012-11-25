@@ -52,10 +52,9 @@ DiskManager *Engine::disk_manager_ = NULL;
 ProcessManager *Engine::process_manager_ = NULL;
 
 void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
-  LM_VV(("Engine init"));
-
+  LOG_M(logs.engine, ("Engine init"));
   if (engine_) {
-    LOG_SW(("Init engine twice... just ignoring"));
+    LOG_W(logs.engine, ("Init engine twice... just ignoring"));
     return;
   }
 
@@ -64,76 +63,46 @@ void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
   disk_manager_ = new DiskManager(num_disk_operations);
   memory_manager_ = new MemoryManager(memory);
   process_manager_ = new ProcessManager(num_cores);
+
+  engine_->StartThread();  // Start thread in background
+}
+
+bool Engine::IsEngineWorking() {
+  return ( engine_ != NULL );
 }
 
 void Engine::StopEngine() {
+  if (engine_) {
+    engine_->StopThread();  // Stop background thread if necessary
+  }
   if (disk_manager_ != NULL) {
     disk_manager_->Stop();
+    delete disk_manager_;
+    disk_manager_ = NULL;
   }
-
   if (process_manager_ != NULL) {
     process_manager_->Stop();
+    delete process_manager_;
+    process_manager_ = NULL;
   }
-
+  if (memory_manager_ != NULL) {
+    delete memory_manager_;
+    memory_manager_ = NULL;
+  }
   if (engine_ != NULL) {
-    engine_->Stop();
+    delete engine_;
+    engine_ = NULL;
   }
 }
 
-void Engine::DestroyEngine() {
-  // Make sure, engine is completely stoped
-  Engine::StopEngine();
-
-
-  if (!engine_) {
-    LOG_SW(("Stopping engine that was never initialized. Ignoring..."));
-    return;
-  }
-
-  // Remove instances
-  delete memory_manager_;
-  delete disk_manager_;
-  delete process_manager_;
-  delete engine_;
-
-  memory_manager_ = NULL;
-  disk_manager_ = NULL;
-  process_manager_ = NULL;
-  engine_ = NULL;
-}
-
-void *runEngineBackground(void *e) {
-  Engine::shared()->RunMainLoop();
-  return e;
-}
-
-Engine::Engine() {
+Engine::Engine() : au::Thread("engine") {
   // Add a simple periodic element to not die inmediatelly
   EngineElement *element = new NotificationElement(new Notification("alive"), 10);
 
   engine_element_collection_.Add(element);
-
-  quitting_thread_ = false;
-  if (au::Singleton<au::ThreadManager>::shared()->addNonDetachedThread("Engine", &thread_id_, 0, runEngineBackground,
-                                                                       NULL) == 0)
-  {
-    running_thread_ = true;
-  } else {
-    running_thread_ = false;
-  }
 }
 
 Engine::~Engine() {
-  Stop();
-}
-
-void Engine::Stop() {
-  if (running_thread_) {
-    void *ans;
-    quitting_thread_ = true;
-    pthread_join(thread_id_, &ans);
-    running_thread_ = false;
-  }
 }
 
 void Engine::RunElement(EngineElement *running_element) {
@@ -197,7 +166,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
  */
 
 
-void Engine::RunMainLoop() {
+void Engine::RunThread() {
   LOG_M(logs.engine, ("Engine run"));
 
   counter_ = 0;  // Init the counter to elements managed by this run-time
@@ -205,8 +174,8 @@ void Engine::RunMainLoop() {
   while (true) {
     counter_++;  // Keep a total counter of loops
 
-    if (quitting_thread_) {
-      return;    // Finish this thread if necessary
+    if (IsThreadQuiting()) {
+      return;    // Finish this thread if necessary ( a call to StopThread is done )
     }
 
     // Check if there are elements in the list

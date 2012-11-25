@@ -129,7 +129,7 @@ void SamsonClient::general_close() {
   au::Singleton<ModulesManager>::DestroySingleton();
 
   // Close engine
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 }
 
 void SamsonClient::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {

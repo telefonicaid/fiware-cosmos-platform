@@ -51,21 +51,15 @@ int NetworkListenerInterfaceImpl::num_connections_ = 0;
 
 
 TEST(au_network_NetworkListener, basic) {
-  // No background threads check
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
-
   NetworkListenerInterfaceImpl impl;
+
   NetworkListenerInterfaceImpl::clear_connections();  // just in case we execute repeated tests
   au::NetworkListener network_listener(&impl);
-
 
   srand(time(NULL));
   int port = 14567 + rand() % 100;
 
-
-  EXPECT_EQ(au::OK,
-            network_listener.InitNetworkListener(port)) <<
-  "Error starting au::NetworkListener";
+  EXPECT_EQ(au::OK, network_listener.InitNetworkListener(port)) << "Error starting au::NetworkListener";
   EXPECT_EQ(0, NetworkListenerInterfaceImpl::num_connections());
   EXPECT_EQ(port, network_listener.port());
   EXPECT_TRUE(network_listener.IsNetworkListenerRunning());
@@ -93,7 +87,4 @@ TEST(au_network_NetworkListener, basic) {
 
   // Expect one connection after all
   EXPECT_EQ(1, NetworkListenerInterfaceImpl::num_connections());
-
-  // No background threads check
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }

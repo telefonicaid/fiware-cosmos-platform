@@ -81,6 +81,7 @@ int main(int argC, char **argV) {
   // Init log sytem
   au::log_central = new au::LogCentral();
   au::log_central->Init(argV[0]);
+  au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin to show messages on screen before really running the worker
 
   // Run all tests
   ::testing::InitGoogleTest(&argC, argV);

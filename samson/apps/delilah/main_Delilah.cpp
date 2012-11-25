@@ -192,7 +192,7 @@ void cleanup(void) {
   lmCleanProgName();
   LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
 
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 }
 
 // Handy function to find a flag in command line without starting paParse

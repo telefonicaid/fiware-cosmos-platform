@@ -458,7 +458,7 @@ int main(int argC, const char *argV[]) {
   LOG_M(samson::logs.cleanup, ("destroying ModulesManager"));
 
   LOG_M(samson::logs.cleanup, ("destroying Engine"));
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 
   LOG_M(samson::logs.cleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();

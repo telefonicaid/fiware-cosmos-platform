@@ -36,6 +36,7 @@
 #include "au/statistics/ActivityMonitor.h"
 #include "au/tables/Table.h"
 
+#include "au/ThreadManager.h"
 #include "au/containers/list.h"                  // au::list
 #include "au/mutex/Token.h"                      // au::Token
 #include "au/statistics/Cronometer.h"            // au::Cronometer
@@ -76,15 +77,15 @@ class Notification;
 // ---------------------------------------------------
 
 
-class Engine {
+class Engine : public au::Thread {
 public:
 
-  ~Engine();
+  virtual ~Engine();
 
   // Static methods to init and close engine ( all included )
   static void InitEngine(int num_cores, size_t memory, int num_disk_operations);
   static void StopEngine();
-  static void DestroyEngine();
+  static bool IsEngineWorking();
 
   // Accessorts to main components
   static Engine *shared();
@@ -109,9 +110,8 @@ public:
 private:
 
   Engine();     // Private constructor ( see Init static method )
-  void Stop();  // Stop backgroudn threads
 
-  void RunMainLoop();  // Run main loop ( in a separate thread )
+  void RunThread();  // Run method for background thread
 
   // Methods to register and unregister listsners ( used from class NotificationListener )
   void AddListener(NotificationListener *object);
@@ -143,15 +143,11 @@ private:
   // Internal counter for debuggin
   size_t counter_;
 
-  pthread_t thread_id_;       // Thread to run the engine in background ( if necessary )
-  bool running_thread_;       // Flag to indicate that background thread is running
-  bool quitting_thread_;      // Flag to indicate to the backgroudn thread to quit
-
-  au::Cronometer uptime_;                              // Total up time
+  // Total up time
+  au::Cronometer uptime_;
 
   friend class NotificationListener;
   friend class NotificationElement;
-  friend void *runEngineBackground(void *);   // Backgrount function
 };
 
 // Handy methods to add notifications

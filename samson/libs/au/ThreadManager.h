@@ -186,6 +186,10 @@ public:
     pthread_running_ = false;
   }
 
+  ~Thread() {
+    StopThread();  // make sure background thread is stoped
+  }
+
   // Main functions to control this thread ( from outputside the thread )
   void StartThread();
   void StopThread();

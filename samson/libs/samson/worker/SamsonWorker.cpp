@@ -57,7 +57,7 @@
 #include "samson/stream/Block.h"                  // samson::stream::Block
 #include "samson/stream/BlockList.h"              // samson::stream::BlockList
 #include "samson/stream/BlockManager.h"           // samson::stream::BlockManager
-#include "samson/stream/SharedMemoryManager.h"  // engine::SharedMemoryManager
+#include "samson/stream/SharedMemoryManager.h"  // samson::SharedMemoryManager
 #include "samson/stream/WorkerTaskManager.h"
 #include "samson/worker/SamsonWorkerRest.h"
 #include "samson/worker/WorkerCommand.h"  // samson::stream::WorkerCommand

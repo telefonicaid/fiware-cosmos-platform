@@ -18,7 +18,7 @@
  *
  * DESCRIPTION
  *
- * Unit tests for the engine::SharedMemoryManager class
+ * Unit tests for the samson::SharedMemoryManager class
  *
  */
 
@@ -38,11 +38,9 @@
 #include "unitTest/common_engine_test.h"
 
 
-TEST(samson_stream_SharedMemoryManager , init) {
-  
-  engine::SharedMemoryManager::init(1, 64000000);        // Allocate a single 64MB buffer
-  engine::SharedMemoryManager *sharedMemoryManager = engine::SharedMemoryManager::shared();
+TEST(samson_stream_SharedMemoryManager, init) {
+  samson::SharedMemoryManager::Init(1, 64000000);        // Allocate a single 64MB buffer
+  samson::SharedMemoryManager *sharedMemoryManager = samson::SharedMemoryManager::Shared();
   EXPECT_TRUE(sharedMemoryManager != NULL) << "Error initializing the shared memory segment";
-  engine::SharedMemoryManager::destroy();
-  
+  samson::SharedMemoryManager::Destroy();
 }

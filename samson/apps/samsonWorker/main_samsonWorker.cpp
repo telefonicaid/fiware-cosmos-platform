@@ -163,8 +163,26 @@ static const char *manVersion = SAMSON_VERSION;
 
 // Andreu: All logs in signal handlers should be local.
 
+
+void SamsonWorkerCleanUp() {
+  LOG_M(samson::logs.worker, ("Cleaning up samsonWorker"));
+
+  // Remove pid file
+  std::string pid_file_name = au::str("%s/samsond.pid", paLogDir);
+  if (remove(pid_file_name.c_str()) != 0) {
+    LM_LW(("Error deleting the pid file %s", pid_file_name.c_str()));
+  }
+
+  // Destroy creatd shared memory segments
+  samson::SharedMemoryManager::Destroy();
+
+  // Push logs
+  au::log_central->Flush();
+}
+
 void captureSIGINT(int s) {
   LM_LM(("Signal SIGINT %d", s));
+  SamsonWorkerCleanUp();  // Clean up all worker setup
   _exit(1);
 }
 
@@ -173,14 +191,8 @@ void captureSIGPIPE(int s) {
 }
 
 void captureSIGTERM(int s) {
-  s = 3;
   LM_LM(("Captured SIGTERM"));
-
-  LM_LM(("Cleaning up"));
-  std::string pid_file_name = au::str("%s/samsond.pid", paLogDir);
-  if (remove(pid_file_name.c_str()) != 0) {
-    LM_LW(("Error deleting the pid file %s", pid_file_name.c_str()));
-  }
+  SamsonWorkerCleanUp();  // Clean up all worker setup
   _exit(1);
 }
 
@@ -358,9 +370,9 @@ int main(int argC, const char *argV[]) {
   int num_processors = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
 
   valgrindExit(5);
-  LM_D(("engine::SharedMemoryManager::init"));
+  LM_D(("samson::SharedMemoryManager::init"));
   size_t shm_size = au::Singleton<samson::SamsonSetup>::shared()->GetUInt64("general.shared_memory_size_per_buffer");
-  engine::SharedMemoryManager::init(num_processors, shm_size);
+  samson::SharedMemoryManager::Init(num_processors, shm_size);
 
   // Global init of engine
   engine::Engine::InitEngine(num_processors, memory, 1);
@@ -454,6 +466,8 @@ int main(int argC, const char *argV[]) {
   lmCleanProgName();
   LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
 
+  // Clean up all worker setup
+  SamsonWorkerCleanUp();
   return 0;
 }
 

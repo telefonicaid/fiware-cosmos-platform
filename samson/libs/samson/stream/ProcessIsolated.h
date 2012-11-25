@@ -142,7 +142,7 @@ private:
 
 
   int shm_id;     // Shared memory area used in this operation
-  engine::SharedMemoryItem *item;     // Share memory item
+  samson::SharedMemoryItem *item;     // Share memory item
 
   ProcessWriter *writer;     // Object used to emit key-values if type=key_value
   ProcessTXTWriter *txtWriter;     // Object used to emit txt content if type=txt

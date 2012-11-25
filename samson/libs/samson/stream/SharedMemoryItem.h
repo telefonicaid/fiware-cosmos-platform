@@ -41,7 +41,7 @@
 #include "samson/common/samsonDirectories.h"  // SAMSON_SETUP_FILE
 
 
-namespace engine {
+namespace samson {
 /*
  * SharedMemoryItem is a class that contains information about a region of memory shared between different processes
  * Memory manager singleton provides pointers to these objects
@@ -50,19 +50,14 @@ namespace engine {
 class SharedMemoryItem {
 public:
 
-  int id;                                               /* Identifier of the shared memory area 0 .. N-1 */
-  int shmid;                                            /* return value from shmget() */
-  char *data;                                           /* Shared memory data */
-  size_t size;                                          /* Information about the size of this shared memory item */
-
-  SharedMemoryItem(int _id, int _shmid, size_t _size) {
-    id = _id;
-    shmid = _shmid;
-    size = _size;
+  SharedMemoryItem(int id, int shmid, size_t size) {
+    id_ = id;
+    shmid_ = shmid;
+    size_ = size;
 
     // Attach to local-space memory
-    data = (char *)shmat(shmid, 0, 0);
-    if (data == (char *)-1) {
+    data_ = (char *)shmat(shmid, 0, 0);
+    if (data_ == (char *)-1) {
       if (errno == EMFILE) {
         LM_X(1,
              ("Error with shared memory while attaching to local memory, "
@@ -81,8 +76,8 @@ public:
 
   ~SharedMemoryItem() {
     // Detach data if it was previously attached
-    if (data) {
-      if (shmdt(data) == -1) {
+    if (data_) {
+      if (shmdt(data_) == -1) {
         LM_X(1, ("Error (%s) calling shmdt in destructor", strerror(errno)));
       }
     }
@@ -92,20 +87,43 @@ public:
   // Interfaces to get SimpleBuffer elements in order to read or write to them
   // --------------------------------------------------------------------------------
 
-  SimpleBuffer getSimpleBuffer() {
-    return SimpleBuffer(data, size);
+  engine::SimpleBuffer getSimpleBuffer() {
+    return engine::SimpleBuffer(data_, size_);
   }
 
-  SimpleBuffer getSimpleBufferAtOffset(size_t offset) {
-    return SimpleBuffer(data + offset, size - offset);
+  engine::SimpleBuffer getSimpleBufferAtOffset(size_t offset) {
+    return engine::SimpleBuffer(data_ + offset, size_ - offset);
   }
 
-  SimpleBuffer getSimpleBufferAtOffsetWithMaxSize(size_t offset, size_t _size) {
-    if (_size > ( size - offset )) {
+  engine::SimpleBuffer getSimpleBufferAtOffsetWithMaxSize(size_t offset, size_t size) {
+    if (size > ( size_ - offset )) {
       LM_X(1, ("Error cheking size of a simple Buffer"));
     }
-    return SimpleBuffer(data + offset, _size);
+    return engine::SimpleBuffer(data_ + offset, size_ - offset);
   }
+
+  int id() {
+    return id_;
+  }
+
+  int shmid() {
+    return shmid_;
+  }
+
+  char *data() {
+    return data_;
+  }
+
+  size_t size() {
+    return size_;
+  }
+
+private:
+
+  int id_;                                               /* Identifier of the shared memory area 0 .. N-1 */
+  int shmid_;                                            /* return value from shmget() */
+  char *data_;                                           /* Shared memory data */
+  size_t size_;                                          /* Information about the size of this shared memory item */
 };
 };
 

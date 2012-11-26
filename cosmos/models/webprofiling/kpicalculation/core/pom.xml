@@ -18,12 +18,6 @@
         <dependency>
             <groupId>es.tid.cosmos</groupId>
             <artifactId>cosmos-common</artifactId>
-            <version>${cosmos.common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>es.tid.cosmos.tests</groupId>
-            <artifactId>cosmos-tests-base</artifactId>
-            <version>${cosmos.tests.base.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.nutch</groupId>

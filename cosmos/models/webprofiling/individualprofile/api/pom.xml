@@ -10,19 +10,19 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <jersey-version>1.11</jersey-version>
+    </properties>
+
     <artifactId>individualprofile-api</artifactId>
     <name>individualprofile-api</name>
     <packaging>war</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.9.0</version>
-            <scope>test</scope>
-            <type>jar</type>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-hadoop</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
@@ -50,16 +50,6 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>3.0-beta-3</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -96,10 +86,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <distributionManagement>
-        <site>
-            <url>${repoSiteUrl}/${project.groupId}/individualprofile-api</url>
-        </site>
-    </distributionManagement>
 </project>

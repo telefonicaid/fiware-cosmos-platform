@@ -13,7 +13,7 @@ package es.tid.cosmos.profile.dictionary.comscore;
 
 import static java.util.Arrays.asList;
 
-import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.CoreMatchers.hasItems;
 import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;

@@ -14,7 +14,7 @@ package es.tid.cosmos.profile.userprofile;
 import static java.util.Arrays.asList;
 import java.util.Collections;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import org.junit.Before;

@@ -19,13 +19,10 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-hadoop</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>es.tid.cosmos</groupId>
             <artifactId>cosmos-common</artifactId>
-            <version>${cosmos.common.version}</version>
         </dependency>
     </dependencies>
     <build>

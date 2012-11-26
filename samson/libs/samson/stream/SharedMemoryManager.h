@@ -45,7 +45,6 @@ class SharedMemoryItem;
 class SharedMemoryManager {
 public:
 
-  // Destructor to release created shared memory segments
   ~SharedMemoryManager();
 
   // Init
@@ -66,13 +65,13 @@ public:
   void ReleaseSharedMemoryArea(int id);
 
   /**
-   * \brief Get a sharted memory segment ( in main platform process )
+   * \brief Get a shared memory segment ( in main platform process )
    */
 
-  SharedMemoryItem *GetSharedMemoryPlatform(int i);
+  SharedMemoryItem *GetSharedMemoryPlatform(int i) const;
 
   /**
-   * \brief Get a sharted memory segment ( in main any backgroudn process )
+   * \brief Get a shared memory segment ( in main any background process )
    */
 
   SharedMemoryItem *GetSharedMemoryChild(int i);

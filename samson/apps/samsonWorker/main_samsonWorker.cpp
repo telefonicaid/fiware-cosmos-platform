@@ -176,8 +176,8 @@ void SamsonWorkerCleanUp() {
   // Destroy creatd shared memory segments
   samson::SharedMemoryManager::Destroy();
 
-  // Push logs
-  au::log_central->Flush();
+  // Close log system
+  au::LogCentral::StopLogSystem();
 }
 
 void captureSIGINT(int s) {
@@ -285,11 +285,10 @@ int main(int argC, const char *argV[]) {
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
 
   // AU Log system
-  au::log_central = new au::LogCentral();
-  au::log_central->Init(argV[0]);
+  au::LogCentral::InitLogSystem(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
 
-  // Add plugins to report lgos to file, server and console
+  // Add plugins to report logs to file, server and console
   au::log_central->AddFilePlugin("file2", std::string(paLogDir) + "/samsonWorker.log");
 
   std::string log_file_name = samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log";
@@ -435,8 +434,6 @@ int main(int argC, const char *argV[]) {
   LOG_M(samson::logs.cleanup, ("log_central marked to stop"));
   LOG_M(samson::logs.worker, ("log_central stopping..."));
 
-  // Stopping the new log_central thread
-  au::log_central->Stop();
 
   LOG_M(samson::logs.cleanup, ("Waiting for threads (worker at %p)", worker));
   au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");

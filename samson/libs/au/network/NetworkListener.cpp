@@ -69,7 +69,7 @@ void NetworkListener::StopNetworkListener() {
   // Close the open file descriptor
   int rc = ::close(rFd_);
   if (rc) {
-    LOG_W(logs.listener, ("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc ));
+    LOG_W(logs.listener, ("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc));
   }
   rFd_ = -1;
 
@@ -132,7 +132,7 @@ Status NetworkListener::InitNetworkListener(int port) {
 
   // Create thread
   std::string name = au::str("NetworkListener on port %d", port);
-  int s = au::Singleton<au::ThreadManager>::shared()->addNonDetachedThread(name
+  int s = au::Singleton<au::ThreadManager>::shared()->AddNonDetachedThread(name
                                                                            , &t
                                                                            , NULL
                                                                            , NetworkListener_run

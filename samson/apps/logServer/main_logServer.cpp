@@ -110,11 +110,10 @@ int main(int argC, const char *argV[]) {
   logFd = lmFirstDiskFileDescriptor();
 
   // Init new log system
-  au::log_central = new au::LogCentral();
-  au::log_central->Init(argV[0]);
+  au::LogCentral::InitLogSystem(argV[0]);
   au::logs.RegisterChannels();
 
-  // Add plugins to report lgos to file, server and console
+  // Add plugins to report logs to file, server and console
   std::string log_file_name = au::path_from_directory(std::string(paLogDir), "/samsonWorker.log");
   au::log_central->AddFilePlugin("file", log_file_name);
   au::log_central->AddScreenPlugin("screen", "[type] text");  // Only to show first messages if process is not in foreground
@@ -140,6 +139,9 @@ int main(int argC, const char *argV[]) {
   while (true) {
     sleep(1);
   }
+
+  // Cleanup log system
+  au::LogCentral::StopLogSystem();
 
   return 0;
 }

@@ -58,7 +58,7 @@ void ServiceItem::Stop() {
 
 void ServiceItem::RunInBackground() {
   // Run a separate thread for this connection
-  au::Singleton<ThreadManager>::shared()->addThread("ServiceItem", &t_, NULL, run_service_item, this);
+  au::Singleton<ThreadManager>::shared()->AddThread("ServiceItem", &t_, NULL, run_service_item, this);
 }
 
 Service::Service(int port) : token_("Service"), listener_(this) {

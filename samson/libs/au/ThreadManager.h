@@ -36,16 +36,13 @@
 #include <string>       //  std::string
 #include <vector>       // std::vector
 
+#include "au/containers/StringVector.h"
+#include "au/containers/map.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/singleton/Singleton.h"
 #include "au/statistics/Cronometer.h"
 #include "au/string/StringUtilities.h"
-
-#include "logMsg/logMsg.h"                                       // LOG_SM()
-
-#include "au/containers/StringVector.h"
-#include "au/containers/map.h"
 
 #define AU_MAX_NUM_THREADS 100
 
@@ -64,6 +61,10 @@ public:
     name_ = name;
     f_ = f;
     p_ = p;
+  }
+
+  std::string str() {
+    return au::str("%s:%s", name_.c_str(), cronometer_.str().c_str());
   }
 
 private:
@@ -95,7 +96,7 @@ public:
   static void wait_all_threads(std::string title);
 
   // Add a thread to the manager
-  int addThread(
+  int AddThread(
     std::string thread_name,
     pthread_t *__restrict t,
     const pthread_attr_t *__restrict attr_t,
@@ -104,7 +105,7 @@ public:
     );
 
   // Add a thread to the manager
-  int addNonDetachedThread(
+  int AddNonDetachedThread(
     std::string thread_name,
     pthread_t *__restrict t,
     const pthread_attr_t *__restrict attr_t,
@@ -122,19 +123,13 @@ public:
   // Internal function used to notify that a particular threads has finished
   void notify_finish_thread(ThreadInfo *thread_info);
 
-  int num_threads() {
-    int total = 0;
+  // Get the number of active threads
+  int num_threads() const;
 
-    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
-      if (threads_[i] != NULL) {
-        total++;
-      }
-    }
-    return total;
-  }
-
+  // Debug string
   std::string str();
 
+  // Singleton access handy function
   static ThreadManager *shared() {
     return au::Singleton<au::ThreadManager>::shared();
   }
@@ -144,27 +139,8 @@ private:
   // "Name" of the running threads
   ThreadInfo *threads_[AU_MAX_NUM_THREADS];
 
-  void AddThreads(ThreadInfo *thread_info) {
-    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
-      if (threads_[i] == NULL) {
-        threads_[i] = thread_info;
-        return;
-      }
-    }
-
-    LM_X(1, ("No space for more threads"));
-  }
-
-  void RemoveThreads(ThreadInfo *thread_info) {
-    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
-      if (threads_[i] == thread_info) {
-        threads_[i] = NULL;
-        return;
-      }
-    }
-
-    LM_X(1, ("Thread not found"));
-  }
+  void AddThread(ThreadInfo *thread_info);
+  void RemoveThread(ThreadInfo *thread_info);
 
   // Mutex protection
   au::Token token_;

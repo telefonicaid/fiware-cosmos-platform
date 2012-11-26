@@ -84,7 +84,7 @@ DiskConnection::DiskConnection(Adaptor *_item
   } else {
     // Create directory...
     int s = mkdir(file_name.c_str(), 0755);
-    if (( s != 0 ) && ( errno != EEXIST)) {
+    if ((s != 0) && (errno != EEXIST)) {
       error.set(au::str("Problems creating directory %s (%s)", file_name.c_str(), strerror(errno)));
     }
   }
@@ -110,7 +110,7 @@ void DiskConnection::start_connection() {
   // Create the background thread
   thread_running = true;
   pthread_t t;
-  au::Singleton<au::ThreadManager>::shared()->addThread("DiskConnection", &t, NULL, run_DiskConnection, this);
+  au::Singleton<au::ThreadManager>::shared()->AddThread("DiskConnection", &t, NULL, run_DiskConnection, this);
 }
 
 void DiskConnection::stop_connection() {
@@ -151,7 +151,7 @@ void DiskConnection::run_as_output() {
       return;
     }
 
-    if (( accumulated_size + current_size ) > max_size) {
+    if ((accumulated_size + current_size) > max_size) {
       file_descriptor->Close();
       delete file_descriptor;
       file_descriptor = NULL;

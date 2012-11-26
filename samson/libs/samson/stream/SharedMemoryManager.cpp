@@ -73,19 +73,19 @@ SharedMemoryManager::SharedMemoryManager(int shared_memory_num_buffers, size_t s
   sharedMemoryIdsFileName_ = au::Singleton<samson::SamsonSetup>::shared()->shared_memory_log_filename();
 
   if (shared_memory_size_per_buffer_ == 0) {
-    LM_X(1, ("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));  // Boolean vector showing if a buffer is used
+    LM_X(1, ("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer));  // Boolean vector showing if a buffer is used
   }
 
   // Vector to flag used bufers
   shared_memory_used_buffers_ = (bool *)malloc(shared_memory_num_buffers * sizeof(bool));
-  for (int i = 0; i < shared_memory_num_buffers; i++) {
+  for (int i = 0; i < shared_memory_num_buffers; ++i) {
     shared_memory_used_buffers_[i] = false;
   }
 
   // Create the shared memory segments
   CreateSharedMemorySegments();
 
-  LOG_D(logs.shared_memory, ("SharedMemoryManager init %d shared memory areas", shared_memory_num_buffers ));
+  LOG_D(logs.shared_memory, ("SharedMemoryManager init %d shared memory areas", shared_memory_num_buffers));
 }
 
 SharedMemoryManager::~SharedMemoryManager() {
@@ -152,7 +152,7 @@ void SharedMemoryManager::CreateSharedMemorySegments() {
   RemovePreviousSharedAreas();
 
   // Create a new shared memory buffer
-  shm_ids_ = (int *)malloc(sizeof(int) * shared_memory_num_buffers_);
+  shm_ids_ = static_cast<int *>(malloc(sizeof(int) * shared_memory_num_buffers_));
 
   LOG_D(logs.shared_memory, ("Creating shared memory buffers"));
 
@@ -168,7 +168,7 @@ void SharedMemoryManager::CreateSharedMemorySegments() {
       LM_E((
              "Error creating the shared memory buffer of %s ( %d / %d ). \
               Please review SAMSON documentation about shared memory usage",
-             au::str(shared_memory_size_per_buffer_, "B").c_str(), i, shared_memory_num_buffers_ ));
+             au::str(shared_memory_size_per_buffer_, "B").c_str(), i, shared_memory_num_buffers_));
 
       LM_X(1, ("Error creating shared memory buffers. shmid return -1 (%s)", strerror(errno)));
     }
@@ -179,18 +179,18 @@ void SharedMemoryManager::CreateSharedMemorySegments() {
 
 
   // Create the SharedMemoryItem's
-  for (int i = 0; i < shared_memory_num_buffers_; i++) {
+  for (int i = 0; i < shared_memory_num_buffers_; ++i) {
     shared_memory_items_.push_back(CreateSharedMemory(i));
   }
 }
 
 void SharedMemoryManager::RemoveSharedMemorySegments(int *ids, int length) {
-  LOG_D(logs.shared_memory, ("Releasing %d shared memory buffers", length ));
+  LOG_D(logs.shared_memory, ("Releasing %d shared memory buffers", length));
 
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < length; ++i) {
     // Remove the shared memory areas
     if (shmctl(ids[i], IPC_RMID, NULL) == -1) {
-      LOG_SD(( "Error ('%s') trying to release a shared memory buffer(%d)", strerror(errno), ids[i]));
+      LOG_SD(("Error ('%s') trying to release a shared memory buffer(%d)", strerror(errno), ids[i]));
     }
   }
 }
@@ -198,14 +198,14 @@ void SharedMemoryManager::RemoveSharedMemorySegments(int *ids, int length) {
 int SharedMemoryManager::RetainSharedMemoryArea() {
   au::TokenTaker tk(&token_);
 
-  for (int i = 0; i < shared_memory_num_buffers_; i++) {
+  for (int i = 0; i < shared_memory_num_buffers_; ++i) {
     if (!shared_memory_used_buffers_[i]) {
       shared_memory_used_buffers_[i] = true;
       return i;
     }
   }
 
-  LOG_SW(("Not possible to retain a shared memory area since all %d are busy", shared_memory_num_buffers_ ));
+  LOG_SW(("Not possible to retain a shared memory area since all %d are busy", shared_memory_num_buffers_));
   return -1;                    // There are no available memory buffers, so we will never get this point
 }
 
@@ -213,14 +213,14 @@ void SharedMemoryManager::ReleaseSharedMemoryArea(int id) {
   au::TokenTaker tk(&token_);
 
 
-  if ((id < 0) || ( id > shared_memory_num_buffers_)) {
+  if ((id < 0) || (id > shared_memory_num_buffers_)) {
     LM_X(1, ("Releaseing a wrong Shared Memory Id %d", id));
   }
   shared_memory_used_buffers_[id] = false;
 }
 
-SharedMemoryItem *SharedMemoryManager::GetSharedMemoryPlatform(int i) {
-  if (( i < 0 ) || ( i >= (int)shared_memory_items_.size())) {
+SharedMemoryItem *SharedMemoryManager::GetSharedMemoryPlatform(int i) const {
+  if ((i < 0) || (i >= (int)shared_memory_items_.size())) {
     return NULL;
   }
 
@@ -244,7 +244,7 @@ std::string SharedMemoryManager::_str() {
 
   int used_shared_memory_num_buffers = 0;
 
-  for (int i = 0; i < shared_memory_num_buffers_; i++) {
+  for (int i = 0; i < shared_memory_num_buffers_; ++i) {
     if (shared_memory_used_buffers_[i]) {
       used_shared_memory_num_buffers++;
     }

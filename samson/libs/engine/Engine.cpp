@@ -68,7 +68,7 @@ void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
 }
 
 bool Engine::IsEngineWorking() {
-  return ( engine_ != NULL );
+  return (engine_ != NULL);
 }
 
 void Engine::StopEngine() {
@@ -124,7 +124,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
   // Print traces for debugging strange situations
   int waiting_time = running_element->GetWaitingTime();
   if (waiting_time > 10) {
-    LOG_SW(("Engine is running an element that has been waiting %d seconds", waiting_time ));
+    LOG_SW(("Engine is running an element that has been waiting %d seconds", waiting_time));
 
     if (waiting_time > 100) {
       // Print all elements with traces for debuggin...
@@ -142,7 +142,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
 
     int execution_time = c.seconds();
     if (execution_time > 10) {
-      LOG_SW(("Engine has executed an item in %d seconds.", execution_time ));
+      LOG_SW(("Engine has executed an item in %d seconds.", execution_time));
       LOG_SW(("Engine Executed item: %s",  running_element->str().c_str()));
     }
   }
@@ -186,10 +186,10 @@ void Engine::RunThread() {
 
     // Warning if we have a lot of elements in the engine stack
     size_t num_engine_elements = engine_element_collection_.GetNumEngineElements();
-    LOG_D(logs.engine, ("Number of elements in the engine stack %lu", num_engine_elements ));
+    LOG_D(logs.engine, ("Number of elements in the engine stack %lu", num_engine_elements));
 
     if (num_engine_elements > 10000) {
-      LOG_SW(("Execesive number of elements in the engine stack %lu", num_engine_elements ));
+      LOG_SW(("Execesive number of elements in the engine stack %lu", num_engine_elements));
     }
 
     // Try if next repeated element is ready to be executed

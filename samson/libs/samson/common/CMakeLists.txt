@@ -71,3 +71,5 @@ ADD_LIBRARY(samsonCommon STATIC ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(samsonCommon engine)
 ADD_DEPENDENCIES(samsonCommon samson.pb.h)
 ADD_DEPENDENCIES(samsonCommon samson.pb.cc)
+
+INSTALL(FILES Logs.h DESTINATION include/samson/common)

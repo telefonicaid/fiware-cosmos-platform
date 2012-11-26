@@ -192,7 +192,7 @@ void cleanup(void) {
   lmCleanProgName();
   LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
 
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 }
 
 // Handy function to find a flag in command line without starting paParse
@@ -259,8 +259,7 @@ int main(int argC, const char *argV[]) {
   std::string str_log_server =  log_server;
   std::string str_log_server_file = std::string(paLogDir) + "delilah_" + log_server +  ".log";
 
-  au::log_central = new au::LogCentral();
-  au::log_central->Init(argV[0]);
+  au::LogCentral::InitLogSystem(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,engine libraries included )
 
   au::log_central->evalCommand("log_to_file " + str_log_file);
@@ -350,7 +349,7 @@ int main(int argC, const char *argV[]) {
       LOG_SM(("Command activity is finished for command:'%s', id:%d", command, id));
 
       if (delilahConsole->hasError(id)) {
-        LM_E(("Error running '%s' \n", command ));
+        LM_E(("Error running '%s' \n", command));
         LM_E(("Error: %s",  delilahConsole->errorMessage(id).c_str()));
       } else {
         printf("%s", delilahConsole->getOutputForComponent(id).c_str());
@@ -367,8 +366,7 @@ int main(int argC, const char *argV[]) {
 
     // Stopping the new log_central thread
     LOG_SM(("Calling au::log_central->Stop()"));
-    au::log_central->Stop();
-
+    au::LogCentral::StopLogSystem();
     exit(0);
   }
 
@@ -434,16 +432,9 @@ int main(int argC, const char *argV[]) {
 
     delilahConsole->disconnect();
 
-    // Stopping network connections
-    delilahConsole->stop();
-
-    // Stopping the new log_central thread
-    LOG_SM(("Calling au::log_central->Stop()"));
-    au::log_central->Stop();
-
-    // Flush content of console
-    // delilahConsole->flush();
     LOG_SM(("delilah exit correctly"));
+    au::LogCentral::StopLogSystem();    // Stopping the new log_central thread
+
     exit(0);
   }
 
@@ -460,15 +451,14 @@ int main(int argC, const char *argV[]) {
 
   // Stopping the new log_central thread
   LOG_SM(("Calling au::log_central->Stop()"));
-  au::log_central->Stop();
+  au::LogCentral::StopLogSystem();
 
   // Flush content of console
   // delilahConsole->flush();
   LOG_SM(("delilah exit correctly"));
 
   // Stop log system
-  au::log_central->Stop();
-
+  au::LogCentral::StopLogSystem();
 
   return 0;
 }

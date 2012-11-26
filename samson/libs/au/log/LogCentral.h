@@ -27,7 +27,8 @@ namespace au {
 class Log;
 class LogCentralPluginScreen;
 class LogCentralPluginFile;
-class LogCentralPluginServer;
+class LogCentralPluginScerver;
+class LogCentral;
 
 /**
  *
@@ -39,17 +40,23 @@ class LogCentralPluginServer;
  *
  */
 
+extern LogCentral *log_central;   // Unique log_central variable
 
 class LogCentral : public au::Thread {
 public:
 
-  LogCentral();
+  virtual ~LogCentral() {
+    Stop();
+  }
 
-  // General management
-  void Init(const std::string& exec = "Unknown");  // Init log system
-  void Stop();                                     // Stop the loggin system unregistering all channels
+  static void InitLogSystem(const std::string& exec_name);
+  static void StopLogSystem();
+  static LogCentral *Shared();
+
+  // Flush pending logs to all plugins
   void Flush();
 
+  // Pause an play background thread
   void Pause();
   void Play();
 
@@ -100,6 +107,12 @@ public:
 
 private:
 
+  LogCentral();
+
+  // General management
+  void Init(const std::string& exec = "Unknown");  // Init log system
+  void Stop();                                     // Stop the loggin system unregistering all channels
+
   friend void *RunLogCentral(void *p);
 
   // Init pipe and file descriptors to comunicate all threads with background thread to process logs
@@ -137,7 +150,6 @@ private:
   LogCounter log_counter_;
 };
 
-extern LogCentral *log_central;
 
 class LogCentralCatalogue : public au::console::CommandCatalogue {
 public:

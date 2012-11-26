@@ -54,7 +54,7 @@ public:
     rest                   = LOG_REGISTER_CHANNEL("samson::R",   "samson library : Rest interface");
     modules_manager        = LOG_REGISTER_CHANNEL("samson::MM",  "samson library : Modules manager");
     cleanup                = LOG_REGISTER_CHANNEL("samson::C",  "samson library : Clenaup");
-
+    shared_memory          = LOG_REGISTER_CHANNEL("samson::SH",  "samson library : Shared memory");
 
     delilah                = LOG_REGISTER_CHANNEL("delilah::G", "delilah library : General channel");
     delilah_components     = LOG_REGISTER_CHANNEL("delilah::C", "delilah library : Components");
@@ -82,6 +82,7 @@ public:
   int modules_manager;
   int network_connection;
   int cleanup;
+  int shared_memory;
 
   int delilah;
   int delilah_components;

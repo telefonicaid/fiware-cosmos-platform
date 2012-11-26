@@ -63,11 +63,9 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole) {
     delilahConsole = NULL;
   }
 
-  engine::Engine::DestroyEngine();
-
   LOG_SW(("Finishing delilah"));
-
   LOG_SW(("Calling to destroy ModulesManager"));
+
   lmCleanProgName();
 }
 

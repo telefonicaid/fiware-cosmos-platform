@@ -78,7 +78,7 @@ void FileDescriptorConnection::connect() {
     // Create the thread
     thread_running_ = true;
     pthread_t t;
-    au::Singleton<au::ThreadManager>::shared()->addThread("StreamConnectorConnection", &t, NULL,
+    au::Singleton<au::ThreadManager>::shared()->AddThread("StreamConnectorConnection", &t, NULL,
                                                           run_FileDescriptorConnection,
                                                           this);
   }

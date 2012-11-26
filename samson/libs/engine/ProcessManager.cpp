@@ -95,7 +95,7 @@ void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId)
   if (!stopped_) {
     while (num_procesors_ < max_num_procesors_) {
       pthread_t t;
-      au::Singleton<au::ThreadManager>::shared()->addThread("background_worker", &t, 0, ProcessManager_run_worker, this);
+      au::Singleton<au::ThreadManager>::shared()->AddThread("background_worker", &t, 0, ProcessManager_run_worker, this);
       num_procesors_++;
     }
   }

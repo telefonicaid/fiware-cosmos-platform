@@ -207,7 +207,7 @@ void ProcessItemIsolated::run() {
   if (isolated_process_as_tread) {
     ProcessItemIsolated *tmp = (this);
     pthread_t t;
-    au::Singleton<au::ThreadManager>::shared()->addThread("ProcessItemIsolated::run", &t, NULL,
+    au::Singleton<au::ThreadManager>::shared()->AddThread("ProcessItemIsolated::run", &t, NULL,
                                                           run_ProcessItemIsolated, tmp);
   } else {
     LOG_M(logs.isolated_process, ("Isolated process %s: father about to fork", str().c_str()));
@@ -664,7 +664,7 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
 
     int au_log_fd = au::log_central->log_fd();
     for (int i = 3; i < 1014; i++) {
-      if (( i != pipeFdPair1[1] ) && ( i != pipeFdPair2[0] ) && ( i != logFd ) && ( i != au_log_fd)) {
+      if ((i != pipeFdPair1[1]) && (i != pipeFdPair2[0]) && (i != logFd) && (i != au_log_fd)) {
         // Trazas Goyo
         LOG_D(logs.isolated_process,
               ("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d, au_log:%d fd:%d\n"

@@ -121,8 +121,8 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
 #pragma mark ---
 
   // General output buffer
-  char *buffer = item->data;
-  size_t size = item->size;
+  char *buffer = item->data();
+  size_t size = item->size();
 
   // Make sure everything is correct
   if (!buffer) {
@@ -228,10 +228,10 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
 #pragma mark ---
 
   // Size if the firt thing in the buffer
-  size_t size = *(reinterpret_cast<size_t *>(item->data));
+  size_t size = *(reinterpret_cast<size_t *>(item->data()));
 
   // Init the data buffer used here
-  char *data = item->data + sizeof(size_t);
+  char *data = item->data() + sizeof(size_t);
 
 #pragma mark ---
 
@@ -267,9 +267,9 @@ void ProcessIsolated::initProcessItemIsolated() {
   }
 
   // Init the shared memory segment
-  shm_id = engine::SharedMemoryManager::shared()->RetainSharedMemoryArea();
+  shm_id = samson::SharedMemoryManager::Shared()->RetainSharedMemoryArea();
   if (shm_id != -1) {
-    item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform(shm_id);
+    item = samson::SharedMemoryManager::Shared()->GetSharedMemoryPlatform(shm_id);
   } else {
     error_.set(au::str("Error getting shared memory for %s", process_item_description().c_str()));
   }
@@ -277,7 +277,7 @@ void ProcessIsolated::initProcessItemIsolated() {
 
 void ProcessIsolated::finishProcessItemIsolated() {
   if (shm_id != -1) {
-    engine::SharedMemoryManager::shared()->ReleaseSharedMemoryArea(shm_id);
+    samson::SharedMemoryManager::Shared()->ReleaseSharedMemoryArea(shm_id);
     item = NULL;
     shm_id = -1;
   }

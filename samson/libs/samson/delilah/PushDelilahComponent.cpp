@@ -93,7 +93,7 @@ std::string PushDelilahComponent::getShortDescription() {
 void PushDelilahComponent::run() {
   pthread_t t;
 
-  au::Singleton<au::ThreadManager>::shared()->addThread("PushDelilahComponent", &t, NULL, run_PushDelilahComponent,
+  au::Singleton<au::ThreadManager>::shared()->AddThread("PushDelilahComponent", &t, NULL, run_PushDelilahComponent,
                                                         this);
 }
 
@@ -143,7 +143,7 @@ void PushDelilahComponent::run_in_background() {
     }
 
     // Set the header
-    KVHeader *header = reinterpret_cast<KVHeader *>( buffer->data());
+    KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
     if (uploading_module_) {
       header->InitForModule(buffer->size() - sizeof(KVHeader));
     } else {

@@ -302,9 +302,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_tag("ls_workers", "send_to_all_workers");
 
   add("init_stream", "stream", "Execute am initialization script to setup some automatic stream operations",
-      "init_stream [prefix] <script_name>\n"
-      "          [prefix]         It is used to name operations and queues\n"
+      "init_stream [-prefix pref] <script_name>\n"
+      "          [-prefix pref_string]         It is used to name operations and queues\n"
       "          <script_name>    Name of the script (e.g. module.script)\n");
+  add_string_option("init_stream", "-prefix", "", "Prefix to name operations and queues");
+  add_mandatory_string_argument("init_stream", "operation", "Name of the stream script to be installed");
 
   add("ps_workers", "stream", "Show a list of commands being executed in each node of the cluster",
       "ps_workers <command pattern>\n");

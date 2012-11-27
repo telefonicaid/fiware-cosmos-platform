@@ -3,7 +3,7 @@
 #
 
 # Define the name of the module. This name should be unique for any given Samson installation
-SET( MODULE_NAME moduletemplate )
+SET( MODULE_NAME fiware_pos )
 
 cmake_minimum_required(VERSION 2.6)
 
@@ -53,7 +53,8 @@ FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 add_definitions(-fPIC)
 
 #Baseline compiler flags
-set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
+#Adding -fno-strict-aliasing because of mongoclient. In samson09 we have a problem when compiling optimized
+set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -fno-strict-aliasing")
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
@@ -88,17 +89,22 @@ ELSE (NOT SVN_BUILD)
     include_directories("${CMAKE_INSTALL_PREFIX}/include/samson")
     link_directories("${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF (SVN_BUILD)
+include_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 
+link_directories("/opt/mongodb/mongo-cxx-driver-v2.0")
 
 MESSAGE( "----------------------------------------------------------------------------")
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES})
+target_link_libraries(${MODULE_NAME} -lmongoclient -lboost_thread-mt -lboost_filesystem-mt -lboost_system-mt )
 TARGET_LINK_LIBRARIES(${MODULE_NAME}  samsonModule lm au) 
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
+
+ADD_SUBDIRECTORY(gen_ticks)
 
 
 #ENABLE_TESTING()

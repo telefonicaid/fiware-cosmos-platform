@@ -165,11 +165,11 @@ script init_stream
         # Definitions
         # ----------------------------------------------------------------
 
-        add_stream_operation [pl] fiware_pos.ParserLogs [logs.txt] [logs];
-        add_stream_operation [ri] fiware_pos.AddPositionInfo [logs] [sensors_pos] [user_ticks] -forward; 
-        add_stream_operation [rp] fiware_pos.UpdateLastKnownPosition [user_ticks] [users_last_position] [user_flow] [users_last_position]; 
-        add_stream_operation [rs] fiware_pos.UpdateUsersList [user_flow] [users_per_sensor] [users_list] [users_per_sensor];    
-        add_stream_operation [xm] fiware_pos.ExportSensorsInfoToMongo [users_list];
+        add_stream_operation [pl] fiware_pos.ParserLogs -input [logs.txt] -output [logs];
+        add_stream_operation [ri] fiware_pos.AddPositionInfo -input '[logs] [sensors_pos]' -output [user_ticks] -forward; 
+        add_stream_operation [rp] fiware_pos.UpdateLastKnownPosition -input '[user_ticks users_last_position' -output '[user_flow] [users_last_position]'; 
+        add_stream_operation [rs] fiware_pos.UpdateUsersList -input '[user_flow] [users_per_sensor]' -output '[users_list] [users_per_sensor]';    
+        add_stream_operation [xm] fiware_pos.ExportSensorsInfoToMongo -input [users_list];
         set_stream_operation_property [xm] mongo.ip         localhost;
         #set_stream_operation_property [xm] mongo.ip         bigdata-mongo;
         set_stream_operation_property [xm] mongo.db         FIWARE;

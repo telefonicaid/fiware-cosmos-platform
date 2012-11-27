@@ -20,7 +20,7 @@
 #include "au/containers/map.h"       // au::map
 #include "au/mutex/Token.h"            /* Lock                            */
 #include "au/singleton/Singleton.h"
-#include "au/string/StringUtilities.h" // au::xml_...
+#include "au/string/StringUtilities.h"  // au::xml_...
 #include "samson/common/coding.h"    // ss:KVInfo
 // samson::network::...
 #include "samson/common/Visualitzation.h"
@@ -38,9 +38,9 @@ public:
 
   ~ModulesManager();
 
-  void addModulesFromDefaultDirectory();
-  void addModulesFromDirectory(std::string dir_name);
-  void clearModulesManager();
+  void AddModulesFromDefaultDirectory(au::ErrorManager & error);
+  void AddModulesFromDirectory(const std::string& dir_name, au::ErrorManager & error);
+  void ClearModulesManager();
 
   // Get collection for queries
   au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualitzation);
@@ -51,25 +51,22 @@ public:
   std::string GetTableOfModules();
 
   // Unique interface to get data and operations
-  Data *getData(std::string name);
-  Operation *getOperation(std::string name);
+  Data *getData(const std::string& name);
+  Operation *getOperation(const std::string& name);
 
   // Static method to analyze module files
-  static Status loadModule(std::string path, Module **module, std::string *version_string);
+  static Module *LoadModule(const std::string& path, au::ErrorManager & error);
 
 private:
 
   ModulesManager();     // !< Private constructor to implement singleton
   friend class au::Singleton<ModulesManager>;
 
-  void closeHandlers();
-
   // Add Modules functions
-  void addModule(std::string path);
-  void addModules();
+  void AddModules();
+  void AddModule(const std::string& path, au::ErrorManager & error);
 
-  au::map<std::string, Module> modules;     // Individual modules ( just for listing )
-  std::vector<void *> handlers;     // Open handlers
+  au::map<std::string, Module> modules_;     // Individual modules ( just for listing )
 };
 }
 

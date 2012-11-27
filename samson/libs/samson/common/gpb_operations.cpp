@@ -510,11 +510,12 @@ void AddBlockIds(gpb::Data *data, const std::vector<samson::KVRange>&ranges, std
     const gpb::Queue& queue = data->queue(q);
     AddBlockIds(queue, ranges, block_ids);
   }
-
-  // Loop all modules ( I should have all of them )
-  for (int m = 0; m < data->modules_size(); ++m) {
-    block_ids.insert(data->modules(m).block_id());
-  }
+/*
+ * // Loop all modules ( I should have all of them )
+ * for (int m = 0; m < data->modules_size(); ++m) {
+ *  block_ids.insert(data->modules(m).block_id());
+ * }
+ */
 }
 
 void AddBlockIds(gpb::Data *data, std::set<size_t>& block_ids) {
@@ -525,11 +526,12 @@ void AddBlockIds(gpb::Data *data, std::set<size_t>& block_ids) {
       block_ids.insert(queue.blocks(b).block_id());
     }
   }
-
-  // Add all blocks for modules
-  for (int m = 0; m < data->modules_size(); ++m) {
-    block_ids.insert(data->modules(m).block_id());
-  }
+/*
+ * // Add all blocks for modules
+ * for (int m = 0; m < data->modules_size(); ++m) {
+ *  block_ids.insert(data->modules(m).block_id());
+ * }
+ */
 }
 
 FullKVInfo GetFullKVInfo(gpb::Data *data) {
@@ -632,6 +634,29 @@ void limit_last_commits(gpb::Data *data) {
   data->clear_last_commits();
   for (size_t i = 0; i < messages.size(); i++) {
     data->add_last_commits(messages[i]);
+  }
+}
+
+std::string Get(const gpb::CollectionRecord& record, const std::string& field) {
+  for (int i = 0; i < record.item_size(); i++) {
+    if (record.item(i).name() == field) {
+      return record.item(i).value();
+    }
+  }
+  return "";
+}
+
+void Sort(gpb::Collection *collection, const std::string& field) {
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::CollectionRecord > *records = collection->mutable_record();
+
+  for (int i = 0; i < records->size(); i++) {
+    for (int j = i + 1; j < records->size(); j++) {
+      std::string f1 = Get(records->Get(i), field);
+      std::string f2 = Get(records->Get(j), field);
+      if (f1 > f2) {
+        records->SwapElements(i, j);
+      }
+    }
   }
 }
 }

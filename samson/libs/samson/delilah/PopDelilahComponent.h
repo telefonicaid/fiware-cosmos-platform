@@ -148,7 +148,6 @@ private:
 
   // Send request for a particular item
   void send_request(PopDelilahComponentItem *item) {
-    LOG_SW(("******** Sent PopBlockRequest"));
     item->ResetRequest();            // Reset request
 
     // Select a worker

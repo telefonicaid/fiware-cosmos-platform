@@ -141,6 +141,7 @@ private:
   std::string node_;
 
   // Set of Plugins for logs
+  au::Token token_plugins_;
   au::map<std::string, LogCentralPlugin> plugins_;
 
   // Main elements to emit or not logs

@@ -17,6 +17,7 @@
 #include <list>
 #include <string>
 
+#include "au/ThreadManager.h"
 #include "au/console/ConsoleEntry.h"
 #include "au/console/ConsoleEscapeSequence.h"
 
@@ -48,85 +49,93 @@ class ConsoleCommandHistory;
  *
  */
 
-class Console {
-  // History information ( all commands introduced before )
-  ConsoleCommandHistory *command_history;
-
-  // Pending messages to be displayed
-  pthread_t t_running;
-  std::list< std::string > pending_messages;
-  au::Token token_pending_messages;
-
-  // Flag to block background messages
-  bool block_background_messages;
-
-  // Flag to quit internal loop
-  bool quit_console;
-
-  // Counter used only for testing
-  int counter;
-
-  // Detector of escape sequences
-  ConsoleEscapeSequence escape_sequence;
-
+class Console : public au::Thread {
 public:
+
   Console();
   virtual ~Console();
 
-  void runConsole();
-  void runConsoleInBackground();
-  void quitConsole();
+  // Customize console
+  virtual std::string getPrompt();
+  virtual void evalCommand(const std::string& command);
+  virtual void autoComplete(ConsoleAutoComplete *info);
+  virtual void process_escape_sequence(const std::string& sequence) {
+  };
+
+
+  // Methods to run and stop the console in background
+  void StartConsole(bool block_thread = false);
+  void StopConsole();
 
   /* Methods to write things on screen */
   void writeWarningOnConsole(const std::string& message);
   void writeErrorOnConsole(const std::string& message);
   void writeOnConsole(const std::string& message);
 
+  /*
+   * \brief General write function for all content inside a ErrorManager instance
+   */
+
   void write(au::ErrorManager *error);
+  void Write(au::ErrorManager& error);
 
-  // Customize console
-  virtual std::string getPrompt();
-  virtual void evalCommand(const std::string& command);
-  virtual void autoComplete(ConsoleAutoComplete *info);
+  /*
+   * \brief Add a escape sequence to be considered in this console
+   */
 
-  void addEspaceSequence(const std::string& sequence);
-  virtual void process_escape_sequence(const std::string& sequence) {
-  };
+  void AddEspaceSequence(const std::string& sequence);
 
-  void refresh();
+  void Refresh();
 
-  // Wait showing a message on screen.... ( background message works )
-  int waitWithMessage(const std::string& message, double sleep_time, ConsoleEntry *entry);
+  /*
+   * \brief Wait showing a message on screen.... ( background message works )
+   */
+
+  int WaitWithMessage(const std::string& message, double sleep_time, ConsoleEntry *entry);
 
   // Make sure all messages are shown
-  void flush();
-
-  /* ask about Console quit status */
-  bool isQuitting();
+  void Flush();
 
   // Append to current command
-  void appendToCommand(const std::string& txt);
+  void AppendToCommand(const std::string& txt);
 
   // Get the history string
   std::string str_history(int limit);
 
 private:
-  void print_command();
-  bool isImputReady();
 
-  void process_auto_complete(ConsoleAutoComplete *info);
-  void process_char(char c);
+  void RunThread();     // Main routine for background process
 
-  void internal_process_escape_sequence(std::string sequence);
-  void internal_command(const std::string& sequence);
+  void PrintCommand();
+  bool IsInputReady();
 
-  void process_background();
-  bool isNormalChar(char c);
+  void ProcessAutoComplete(ConsoleAutoComplete *info);
+  void ProcessInternalCommand(const std::string& sequence);
+  void ProcessChar(char c);
+  void ProcessEscapeSequenceInternal(std::string sequence);
 
-  void write(const std::string& message);
+  void ProcessBackgroundMessages();
+  bool IsNormalChar(char c) const;
 
-  // Get the next entry from console
-  void getEntry(ConsoleEntry *entry);
+  void Write(const std::string& message);
+
+  void GetEntry(ConsoleEntry *entry);        // Get the next entry from console
+
+  // History information ( all commands introduced before )
+  ConsoleCommandHistory *command_history_;
+
+  // Pending messages to be displayed in background
+  au::Token token_pending_messages_;
+  std::list< std::string > pending_messages_;
+
+  // Flag to block background messages
+  bool block_background_messages_;
+
+  // Detector of escape sequences
+  ConsoleEscapeSequence escape_sequence_;
+
+  // Flag to finish the background thread
+  bool quit_console_;
 };
 }
 }

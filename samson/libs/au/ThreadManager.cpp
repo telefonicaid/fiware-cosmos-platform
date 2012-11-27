@@ -236,6 +236,11 @@ void *run_Thread(void *p) {
 
   t->RunThread();
   t->pthread_running_ = false;
+
+  // Wake up joining threads
+  au::TokenTaker tt(&t->token_);
+  tt.WakeUpAll();
+
   return NULL;
 }
 
@@ -279,5 +284,14 @@ void Thread::StopThread() {
 
     usleep(100000);
   }
+}
+
+void Thread::JoinThread() {
+  au::TokenTaker tt(&token_);
+
+  if (!pthread_running_) {
+    return;   // It is not running, it is not necessary to wait
+  }
+  tt.Stop();
 }
 }

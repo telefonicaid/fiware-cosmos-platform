@@ -65,6 +65,7 @@ void LogCentral::AddScreenPlugin(const std::string& plugin_name, const std::stri
 }
 
 void LogCentral::RemovePlugin(const std::string& plugin_name) {
+  au::TokenTaker tt(&token_plugins_);
   LogCentralPlugin *plugin = plugins_.extractFromMap(plugin_name);
 
   if (plugin) {
@@ -78,6 +79,7 @@ void LogCentral::AddServerPlugin(const std::string& plugin_name, const std::stri
 }
 
 std::string LogCentral::GetPluginStatus(const std::string& name) {
+  au::TokenTaker tt(&token_plugins_);
   LogCentralPlugin *plugin = plugins_.findInMap(name);
 
   if (!plugin) {
@@ -88,6 +90,7 @@ std::string LogCentral::GetPluginStatus(const std::string& name) {
 }
 
 std::string LogCentral::GetPluginChannels(const std::string& name) {
+  au::TokenTaker tt(&token_plugins_);
   LogCentralPlugin *plugin = plugins_.findInMap(name);
 
   if (!plugin) {
@@ -104,6 +107,8 @@ void LogCentral::AddPlugin(const std::string& name,  LogCentralPlugin *p) {
 }
 
 void LogCentral::AddPlugin(const std::string& name, LogCentralPlugin *log_plugin, au::ErrorManager& error) {
+  au::TokenTaker tt(&token_plugins_);
+
   if (plugins_.findInMap(name) != NULL) {
     error.set(au::str("Plugin %s already exists", name.c_str()));
     return;   // Plugin already included with this name
@@ -160,7 +165,10 @@ void LogCentral::Stop() {
   }
 
   // Remove plugins
-  plugins_.clearMap();
+  {
+    au::TokenTaker tt(&token_plugins_);
+    plugins_.clearMap();
+  }
 
   // Reset channels registered so far
   log_channels_.Clear();
@@ -243,17 +251,22 @@ void LogCentral::RunThread() {
     log_counter_.Process(log);
 
     // Process log to different plugins
-    au::map<std::string, LogCentralPlugin>::iterator it;
-    for (it = plugins_.begin(); it != plugins_.end(); it++) {
-      LogCentralPlugin *log_plugin = it->second;
-      if (log_plugin->IsLogAccepted(log)) {
-        log_plugin->Process(log);
+    {
+      au::TokenTaker tt(&token_plugins_);
+      au::map<std::string, LogCentralPlugin>::iterator it;
+      for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        LogCentralPlugin *log_plugin = it->second;
+        if (log_plugin->IsLogAccepted(log)) {
+          log_plugin->Process(log);
+        }
       }
     }
   }
 }
 
 void LogCentral::ReviewChannelsLevels() {
+  au::TokenTaker tt(&token_plugins_);
+
   for (int c = 0; c < LOG_MAX_CHANNELS; c++) {
     int max_level = 0;
 
@@ -277,6 +290,8 @@ void LogCentral::evalCommand(const std::string& command) {
 }
 
 void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error) {
+  au::TokenTaker tt(&token_plugins_);
+
   // Catalogue to parse input commands ( separated by commas )
   LogCentralCatalogue log_central_catalogue;
 

@@ -39,7 +39,6 @@ bool Visualization::get_flag(const std::string& name) const {
     return false;
   }
 
-  LOG_SW(("Flag %s not defined for this visualitzation", name.c_str()));
   return false;   // Default value
 }
 

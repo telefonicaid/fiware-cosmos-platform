@@ -166,15 +166,9 @@ static const char *manVersion       = SAMSON_VERSION;
 samson::DelilahConsole *delilahConsole = NULL;
 
 void cleanup(void) {
-  // Stop engine
-  engine::Engine::StopEngine();
-
   if (delilahConsole) {
-    delilahConsole->stop();
+    delilahConsole->StopConsole();
   }
-
-  // Wait all threads to finish
-  au::Singleton<au::ThreadManager>::shared()->wait("Delilah");
 
   // Clear google protocol buffers library
   google::protobuf::ShutdownProtobufLibrary();
@@ -192,7 +186,12 @@ void cleanup(void) {
   lmCleanProgName();
   LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
 
+  // Stop engine
   engine::Engine::StopEngine();
+
+  // Stopping the new log_central thread
+  LOG_SM(("Calling au::log_central->Stop()"));
+  au::LogCentral::StopLogSystem();
 }
 
 // Handy function to find a flag in command line without starting paParse
@@ -292,7 +291,11 @@ int main(int argC, const char *argV[]) {
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
   engine::Engine::InitEngine(num_cores, _memory, 1);
 
-  au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
+  au::ErrorManager error;
+  au::Singleton<samson::ModulesManager>::shared()->AddModulesFromDefaultDirectory(error);
+  if (error.IsActivated()) {
+    LOG_W(samson::logs.delilah, ("Error loading modules: %s", error.GetMessage().c_str()));
+  }
 
   // Create a DelilahControler once network is ready
   delilahConsole = new samson::DelilahConsole(delilah_random_code);
@@ -316,19 +319,22 @@ int main(int argC, const char *argV[]) {
   }
 
   if (!delilahConsole->isConnected()) {
-    delilahConsole->writeWarningOnConsole("Delilah client not connected to any SAMSON cluster. ( see help connect )");  // ----------------------------------------------------------------
+    LOG_SW(("Delilah client not connected to any SAMSON cluster. ( see help connect )"));
   }
+
   // Special mode with one command line command
   // ----------------------------------------------------------------
 
   if (strcmp(command, "") != 0) {
+    au::log_central->AddScreenPlugin("screen", "[type][channel] text");    // Activate logs at screen
+
     {
       au::Cronometer cronometer;
       while (!delilahConsole->isConnected()) {
         usleep(100000);
         if (cronometer.seconds() > 1) {
           LOG_SW(("delilahConsoleConnection is not ready, waiting to connect to all workers"));
-          LM_V(("Waiting delilah to connect to all workers"));
+          LOG_SV(("Waiting delilah to connect to all workers"));
           cronometer.Reset();
         }
       }
@@ -349,8 +355,8 @@ int main(int argC, const char *argV[]) {
       LOG_SM(("Command activity is finished for command:'%s', id:%d", command, id));
 
       if (delilahConsole->hasError(id)) {
-        LM_E(("Error running '%s' \n", command));
-        LM_E(("Error: %s",  delilahConsole->errorMessage(id).c_str()));
+        LOG_E(samson::logs.delilah, ("Error running '%s'", command));
+        LOG_E(samson::logs.delilah, ("Error: %s",  delilahConsole->errorMessage(id).c_str()));
       } else {
         printf("%s", delilahConsole->getOutputForComponent(id).c_str());
         fflush(stdout);
@@ -361,12 +367,6 @@ int main(int argC, const char *argV[]) {
     LOG_SM(("Calling delilahConsole->disconnect()"));
     delilahConsole->disconnect();
 
-    // Stopping network connections
-    delilahConsole->stop();
-
-    // Stopping the new log_central thread
-    LOG_SM(("Calling au::log_central->Stop()"));
-    au::LogCentral::StopLogSystem();
     exit(0);
   }
 
@@ -377,6 +377,8 @@ int main(int argC, const char *argV[]) {
   // ----------------------------------------------------------------
 
   if (strcmp(commandFileName, "") != 0) {
+    au::log_central->AddScreenPlugin("screen", "[type][channel] text");    // Activate logs at screen
+
     delilahConsole->setSimpleOutput();
 
     {
@@ -438,16 +440,11 @@ int main(int argC, const char *argV[]) {
     exit(0);
   }
 
-  delilahConsole->run();
+  // Start delilah console blockign this thread
+  delilahConsole->StartConsole(true);
 
-
-  // The same stuff
-  // TODO(@andreu): Could it be moved to cleanup()?
-
+  // Disconnect delilah
   delilahConsole->disconnect();
-
-  // Stopping network connections
-  delilahConsole->stop();
 
   // Stopping the new log_central thread
   LOG_SM(("Calling au::log_central->Stop()"));

@@ -240,7 +240,7 @@ public:
         }
       }
 
-      quitConsole();
+      StopConsole();
       return;
     }
 
@@ -322,9 +322,6 @@ int main(int argC, const char *argV[]) {
 
   std::cout << "\nType help to get a list of valid command\n\n";
   SamsonConfigConsole console;
-  console.runConsole();
-
-  // Show samson setup
-  // std::cout << au::Singleton<samson::SamsonSetup>::shared()->str();
+  console.StartConsole(true);
 }
 

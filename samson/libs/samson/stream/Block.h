@@ -126,6 +126,11 @@ public:
     info_state_ = value;
   }
 
+  /**
+   * \brief Direct load file from disk
+   */
+  engine::BufferPointer GetBufferFromDisk();
+
 private:
 
   // Identifiers of this block

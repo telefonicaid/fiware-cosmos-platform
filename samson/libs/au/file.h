@@ -44,7 +44,7 @@ namespace au {
 size_t sizeOfFile(std::string fileName);
 
 // Remove a directory ( get a string error if something happens )
-void removeDirectory(std::string fileName, au::ErrorManager & error);
+void RemoveDirectory(std::string fileName, au::ErrorManager & error);
 
 // Check type of file
 bool isDirectory(char path[]);

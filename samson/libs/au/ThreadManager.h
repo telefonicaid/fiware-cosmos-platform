@@ -170,6 +170,9 @@ public:
   void StartThread();
   void StopThread();
 
+  // Method to block this thread until background thread is finisd
+  void JoinThread();
+
   // Overload this method to implement whatever is necessary to unlock background thread
   virtual void UnlockThread() {
   };
@@ -180,6 +183,17 @@ public:
 
   bool IsThreadRunning() {
     return pthread_running_;
+  }
+
+  /**
+   * \brief Check if I am the background thread
+   */
+
+  bool isBackgroundThread() {
+    if (!pthread_running_) {
+      return false;
+    }
+    return pthread_equal(pthread_self(), t_);
   }
 
 private:
@@ -193,6 +207,8 @@ private:
   bool stoping_;            // Flag to indicate background thread to stop
 
   friend void *run_Thread(void *p);
+
+  au::Token token_;  // Mutex to stop threads until background thread is finished
 };
 }
 

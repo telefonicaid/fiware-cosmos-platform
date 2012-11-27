@@ -87,7 +87,7 @@ int main(int argC, const char *argV[]) {
   }
 
   if (strcmp(command, "") != 0) {
-    LM_V(("Executing single command %s", command ));
+    LM_V(("Executing single command %s", command));
 
     au::ErrorManager error;
     console.ConsoleServiceClientBase::evalCommand(command, &error);
@@ -96,8 +96,7 @@ int main(int argC, const char *argV[]) {
     return 0;
   }
 
-
-
-  // Run console
-  console.runConsole();
+  // Run console blocking this thread
+  console.StartConsole(true);
 }
+

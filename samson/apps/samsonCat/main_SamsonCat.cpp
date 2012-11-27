@@ -107,7 +107,12 @@ int main(int argC, const char *argV[]) {
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
 
   // Load modules
-  au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
+  au::ErrorManager error;
+  au::Singleton<samson::ModulesManager>::shared()->AddModulesFromDefaultDirectory(error);
+
+  if (error.IsActivated()) {
+    std::cerr << error.str();  // Do not stop the process
+  }
 
   struct stat filestatus;
   int error_stat;
@@ -145,7 +150,7 @@ int main(int argC, const char *argV[]) {
     au::SharedPointer<samson::SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name, error);
 
     if (error.IsActivated()) {
-      LM_X(1, ( error.GetMessage().c_str()));
+      LM_X(1, (error.GetMessage().c_str()));
     }
     if (show_header) {
       std::cout << "Total: " << samson_data_set->info().strDetailed() << "\n";

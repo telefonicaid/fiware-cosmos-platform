@@ -40,6 +40,7 @@ public:
 
   // Command to append something at the output
   void Append(const std::string& txt);
+  void AppendFormatedLiteral(const std::string& name, const std::string& value);
   void AppendFormatedElement(const std::string& name, const std::string& value);
   void AppendFormatedError(const std::string& message);
   void AppendFormatedError(int _http_state, const std::string& message);

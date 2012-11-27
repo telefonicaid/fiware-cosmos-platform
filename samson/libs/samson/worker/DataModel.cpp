@@ -51,7 +51,7 @@ const std::string DataModel::kSetReplicationFactor("set_replication_factor");
 
 
 const std::string DataModel::commands[] =
-{ DataModel::kAdd,               DataModel::kAddQueueConnection,
+{ DataModel::kAdd,             DataModel::kAddQueueConnection,
   kAddStreamOperation,         kBatch,                                    kBlock,
   kClearBatchOPerations,       kClearModules,                             kPushQueue,
   kRemoveAll,
@@ -63,7 +63,7 @@ const std::string DataModel::commands[] =
   kConsolidateDataModel,       kSetReplicationFactor };
 
 const std::string DataModel::recovery_commands[] =
-{ DataModel::kAdd,              DataModel::kAddQueueConnection,            kAddStreamOperation,
+{ DataModel::kAdd,            DataModel::kAddQueueConnection,            kAddStreamOperation,
   kBatch,
   kClearBatchOPerations,      kClearModules,
   kPushQueue,                 kRemoveAll,                                kRemoveAllData,
@@ -165,7 +165,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
 
   size_t commit_id = data->mutable_current_data()->commit_id();
   LOG_M(logs.data_model, ("Trying to perform commit over Data model [candidate for %lu] %s (data version  %d)"
-                          , commit_id, command.c_str(), version ));
+                          , commit_id, command.c_str(), version));
 
   // add to the list of last_commits
   data->mutable_current_data()->add_last_commits(au::str("Commit %lu : %s", commit_id, command.c_str()));
@@ -1020,12 +1020,18 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueues(const Visua
     ::samson::add(record, "name", queue.name(), "different");
     std::string format = au::str("%s-%s", queue.key_format().c_str(), queue.value_format().c_str());
     ::samson::add(record, "format", format, "different");
-    ::samson::add(record, "#blocks", num_blocks, "different,f=uint64");
+    if (visualization.get_flag("blocks")) {
+      ::samson::add(record, "#blocks", num_blocks, "different,f=uint64");
+    }
     ::samson::add(record, "#kvs", kvs, "different,f=uint64");
     ::samson::add(record, "size", size, "different,f=uint64");
 
-    ::samson::add(record, "last_commit", queue.commit_id(), "different");
+    // add last commit information if required
+    if (visualization.get_flag("commit")) {
+      ::samson::add(record, "last_commit", queue.commit_id(), "different");
+    }
   }
+  gpb::Sort(collection.shared_object(), "name");
   return collection;
 }
 
@@ -1154,11 +1160,7 @@ std::set<size_t> DataModel::GetMyBlockIdsForCandidateDataModel(const std::vector
 // (if no operations has pending data in its first input queue)
 bool DataModel::CheckForAllStreamOperationsFinished() {
   gpb::Data *data = getCurrentModel()->mutable_current_data();      // Get a copy of the current version
-
   int operations_size = data->operations_size();
-
-  // TODO(@jges): Remove log message
-  LOG_D(logs.data_model, ("operations.size(%d)", operations_size));
 
   for (int i = 0; i < operations_size; ++i) {
     const gpb::StreamOperation & stream_operation = data->operations(i);
@@ -1192,7 +1194,7 @@ bool DataModel::CheckForAllBatchOperationsFinished(size_t delilah_id) {
 
   for (int i = 0; i < data->batch_operations_size(); ++i) {
     gpb::BatchOperation *batch_operation = data->mutable_batch_operations(i);
-    if (( delilah_id != SIZE_T_UNDEFINED ) && ( delilah_id != batch_operation->delilah_id())) {
+    if ((delilah_id != SIZE_T_UNDEFINED) && (delilah_id != batch_operation->delilah_id())) {
       continue;   // Not my batch operation
     }
     if (gpb::batch_operation_is_finished(data, *batch_operation) == false) {
@@ -1265,15 +1267,16 @@ void DataModel::ReviewBatchOperations(gpb::Data *data, au::ErrorManager& error) 
 
     bool finished = gpb::batch_operation_is_finished(data, *batch_operation);
 
-    if (finished) {
+    if (finished && !batch_operation->finished()) {
       // Set finished and move data
       batch_operation->set_finished(true);
 
       // Send a message to original delilah
       engine::Notification *notification = new engine::Notification(notification_samson_worker_send_message);
-      std::string message = au::str("Batch operation %s_%lu has finished correctly",
-                                    au::code64_str(batch_operation->delilah_id()).c_str(),
-                                    batch_operation->delilah_component_id());
+      std::string message = au::str("Batch operation %s_%lu has finished correctly ( commit %lu )"
+                                    , au::code64_str(batch_operation->delilah_id()).c_str()
+                                    , batch_operation->delilah_component_id()
+                                    , data->commit_id());
       notification->environment().Set("message", message);
       notification->environment().Set("context", "system");
       notification->environment().Set("type", "warning");

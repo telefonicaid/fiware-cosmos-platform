@@ -306,7 +306,7 @@ au::statistics::ActivityMonitor *Engine::activity_monitor() {
 
 Engine *Engine::shared() {
   if (!engine_) {
-    LM_E(("Engine was not initialised. Calling Engine::init()"));
+    LOG_W(logs.engine, ("Engine was not initialised. Calling Engine::init()"));
   }
   return engine_;
 }

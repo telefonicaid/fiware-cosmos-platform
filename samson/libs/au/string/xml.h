@@ -9,20 +9,20 @@
  * All rights reserved.
  */
 /* ****************************************************************************
- *
- * FILE            xml.h
- *
- * AUTHOR          Andreu Urruela
- *
- * PROJECT         au library
- *
- * DATE            Septembre 2011
- *
- * DESCRIPTION
- *
- *      Usefull functions to generate xml tags
- *
- * ****************************************************************************/
+*
+* FILE            xml.h
+*
+* AUTHOR          Andreu Urruela
+*
+* PROJECT         au library
+*
+* DATE            Septembre 2011
+*
+* DESCRIPTION
+*
+*      Usefull functions to generate xml tags
+*
+* ****************************************************************************/
 
 #ifndef _H_AU_XML
 #define _H_AU_XML
@@ -54,9 +54,14 @@ void xml_simple_literal(std::ostringstream& output, std::string name, T value) {
   output << "</" << name << ">";
 }
 
-template<typename T>
+template<typename T>  // Expected to be inside a {} block
 void json_simple(std::ostringstream& output, std::string name, T value) {
-  output << "{\"" << name << "\":\"" << value << "\"}";
+  output << "\"" << name << "\":" << value << ",";
+}
+
+template<typename T>   // Expected to be inside a {} block
+void json_simple_literal(std::ostringstream& output, std::string name, T value) {
+  output << "\"" << name << "\":\"" << value << "\"" << ",";
 }
 
 template<typename T>

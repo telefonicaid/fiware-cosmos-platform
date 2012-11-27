@@ -14,6 +14,7 @@
 
 #include "au/log/LogMain.h"
 #include "engine/Engine.h"                 // register_object
+#include "engine/Logs.h"
 #include "engine/Notification.h"    // engine::Notification
 
 namespace engine {
@@ -23,16 +24,19 @@ size_t NotificationListener::engine_id() {
 
 NotificationListener::NotificationListener() {
   // Add myself as an engine_objects receiving my id
-  Engine::shared()->AddListener(this);
-
-  if (engine_id_ == 0) {
-    LM_X(1, ("Wrong notification listener id"));
+  if (engine::Engine::IsEngineWorking()) {
+    Engine::shared()->AddListener(this);
+  } else {
+    LOG_W(logs.engine, ("Created a notification listener while engine is not working"));
+    engine_id_ = 0;
   }
 }
 
 NotificationListener::~NotificationListener() {
-  // Unregister this object
-  Engine::shared()->RemoveListener(this);
+  // Unregister this object if engine is still working
+  if (engine::Engine::IsEngineWorking()) {
+    Engine::shared()->RemoveListener(this);
+  }
 }
 
 void NotificationListener::notify(Notification *notification) {

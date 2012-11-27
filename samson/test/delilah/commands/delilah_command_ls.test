@@ -1,15 +1,15 @@
 --NAME--
-ls_queues - fetch the current queue list
---DELILAH-INIT--
+ls_queue - fetch the current queue list
+-- DELILAH - INIT--
 remove_all
 push input.txt input
---COMMAND--
+-- COMMAND--
 ls
---EXPECT--
-/---------------------------------------------\
-| ls                                                |
-|---------------------------------------------|
-|  name |  format | #blocks |   #kvs |   size |
-|-------+---------+---------+--------+--------|
-| input | txt-txt |   1.00  |     0  |   100  |
-\---------------------------------------------/
+-- EXPECT--
+/ -------------------------------------------- - \
+  | ls                                                |
+| -------------------------------------------- - |
+|  name |  format | # blocks |   # kvs |   size |
+| ------ - +-------- - +-------- - +-------- + -------- |
+| input | txt - txt |   1.00  |     0  |   100  |
+\-------------------------------------------- - /

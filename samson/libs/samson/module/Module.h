@@ -31,13 +31,16 @@ public:
   std::string author;                             // Author of this module (mail included to report bugs)
 
   std::map<std::string, Operation *>  operations;  // Vector containing operations (map, generate, reduce)
-  std::map<std::string, Data *>      datas;  // Vector containing data
+  std::map<std::string, Data *>      datas;       // Vector containing data
 
   friend class ModulesManager;
 
+  // Information assigned during loading of this module
   std::string file_name;
+  void *hndl;
 
   Module() {
+    hndl = NULL;
   }
 
   Module(std::string _name, std::string _version, std::string _author) {
@@ -48,6 +51,9 @@ public:
 
   ~Module() {
     clearModule();
+    if (hndl) {
+      dlclose(hndl);
+    }
   }
 
 public:

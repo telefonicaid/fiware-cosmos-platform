@@ -88,6 +88,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls", "data", "Show a list of all data queues in the system");
   add_string_argument("ls", "pattern", "*", "Pattern of the queues to show");
   add_bool_option("ls", "-a", "Show hidden queues as well ( used internally by the platform )");
+  add_bool_option("ls", "-commit", "Add commit id information for each queue");
+  add_bool_option("ls", "-blocks", "Add #blocks information for each queue");
   add_string_option("ls", "-group", "", "Group results by a particular column");
 
   add("add", "data", "Create a new queue");
@@ -178,11 +180,10 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // MODULES
   // ------------------------------------------------------------------
 
-
   add("ls_modules", "modules", "Show a list of modules installed in SAMSON node workers");
   add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
 
-  add("ls_local_modules", "modules", "Show a list of modules installed available at this delilah");
+  add("ls_modules_information", "modules", "Show information about loading module process");
 
   add("ls_operations", "modules", "Shows a list of available operations");
   add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
@@ -190,6 +191,21 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("ls_datas", "modules", "Shows a list of available data-types.");
   add_string_argument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
+
+  add("ls_modules", "modules", "Show a list of modules installed in SAMSON node workers");
+  add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
+  add_tag("ls_modules", "send_to_all_workers");
+
+  add("ls_operations", "modules", "Shows a list of available operations");
+  add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
+  add_bool_option("ls_operations", "-v", "Show more details about input/output parameters");
+  add_tag("ls_operations", "send_to_all_workers");
+
+  add("ls_datas", "modules", "Shows a list of available data-types.");
+  add_string_argument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
+  add_tag("ls_datas", "send_to_all_workers");
+
+  add("ls_local_modules", "modules", "Show a list of modules installed available at this delilah");
 
   add("push_module", "modules", "Push a module to the cluster.");
   add_mandatory_string_argument("push_module", "file", "Local file or directory")->set_options_group("#file");

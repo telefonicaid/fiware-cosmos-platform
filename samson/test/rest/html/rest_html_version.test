@@ -1,0 +1,6 @@
+--NAME--
+REST HTML version
+--SHELL--
+curl -s http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/version.html
+--EXPECT--
+<html><body><h1>version</h1>SAMSON v 0.7.0</body></html>

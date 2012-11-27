@@ -23,9 +23,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "parseArgs/paBuiltin.h"
+#include "parseArgs/paConfig.h"
+#include "parseArgs/paIsSet.h"
 #include "parseArgs/parseArgs.h"
 
+#include "au/Log.h"
 #include "au/daemonize.h"
+#include "au/file.h"
 #include "au/log/LogCommon.h"
 #include "au/log/LogServer.h"
 
@@ -104,6 +109,17 @@ int main(int argC, const char *argV[]) {
   // lmAux((char*) "father");
   logFd = lmFirstDiskFileDescriptor();
 
+  // Init new log system
+  au::LogCentral::InitLogSystem(argV[0]);
+  au::logs.RegisterChannels();
+
+  // Add plugins to report logs to file, server and console
+  std::string log_file_name = au::path_from_directory(std::string(paLogDir), "/samsonWorker.log");
+  au::log_central->AddFilePlugin("file", log_file_name);
+  au::log_central->AddScreenPlugin("screen", "[type] text");  // Only to show first messages if process is not in foreground
+  au::log_central->evalCommand("log_set system M");         // Set message level for the log channel system
+
+  LOG_SM(("Please, review logs of this log server at %s", log_file_name.c_str()));
 
   if (fg == false) {
     LOG_SM(("logServer running in background"));
@@ -123,6 +139,9 @@ int main(int argC, const char *argV[]) {
   while (true) {
     sleep(1);
   }
+
+  // Cleanup log system
+  au::LogCentral::StopLogSystem();
 
   return 0;
 }

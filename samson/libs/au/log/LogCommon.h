@@ -78,7 +78,7 @@
                                                                                             \
       ::pthread_t t = ::pthread_self();                                                     \
       log_data.tid = 0;                                                                     \
-      ::memcpy(&log_data.tid, &t, std::min(sizeof(log_data.tid), sizeof( pthread_t)));      \
+      ::memcpy(&log_data.tid, &t, std::min(sizeof(log_data.tid), sizeof(pthread_t)));      \
                                                                                             \
       au::log_central->Emit(&log);                                                          \
     }                                                                                       \
@@ -102,6 +102,8 @@
 
 
 // Macro to emit a log, stop the log system, and exit
-#define LOG_X(c, s)                       LOG_GENERATE(LOG_LEVEL_ERROR_EXIT, 0, s); au::log_central->Stop(); exit(c);
+#define LOG_X(c, s) \
+  LOG_GENERATE(LOG_LEVEL_ERROR_EXIT, 0, s); au::LogCentral::StopLogSystem(); \
+  exit(c);
 
 #endif  // ifndef _H_LOG_SERVER_COMMON

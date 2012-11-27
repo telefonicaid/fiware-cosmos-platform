@@ -16,13 +16,14 @@
 
 namespace au {
 const char *log_reseved_words[] =
-{ "node",       "host",             "type",                "channel",              "pid",                  "tid",
+{ "node",       "host",             "type",               "channel",               "pid",                        "tid",
   "DATE"
-  ,             "date",             "TIME",                "time",                 "timestamp",            "time_unix",
+  ,             "date",             "TIME",               "time",                  "timestamp",
+  "time_unix",
   "line",       "exec",
   "exec_short",
   "file"
-  ,             "text",             "text80",              "function",             NULL };
+  ,             "text",             "text80",             "function",              NULL };
 
 
 void Log::Set(const std::string& field_name, const std::string& field_value) {
@@ -338,7 +339,7 @@ au::SharedPointer<au::tables::Table> getTableOfFields() {
 
 // Fancy functions to get the color of this log on screen
 au::Color Log::GetColor() {
-  if (log_data_.level < LOG_LEVEL_ERROR) {
+  if (log_data_.level <= LOG_LEVEL_ERROR) {
     return au::BoldRed;
   }
 

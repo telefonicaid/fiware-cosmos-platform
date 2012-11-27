@@ -28,11 +28,11 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   processIsolated = _processIsolated;
 
   // Get the assignated shared memory region
-  item = engine::SharedMemoryManager::shared()->getSharedMemoryChild(processIsolated->get_shm_id());
+  item = samson::SharedMemoryManager::Shared()->GetSharedMemoryChild(processIsolated->get_shm_id());
 
   // General output buffer
-  buffer = item->data;
-  size = item->size;
+  buffer = item->data();
+  size = item->size();
 
   if (!buffer) {
     LM_X(1, ("Internal error: No buffer in a ProcessWriter"));
@@ -297,14 +297,14 @@ ProcessTXTWriter::ProcessTXTWriter(ProcessIsolated *_workerTaskItem) {
   workerTaskItem = _workerTaskItem;
 
   // Get the assignated shared memory region
-  item = engine::SharedMemoryManager::shared()->getSharedMemoryChild(workerTaskItem->get_shm_id());
+  item = samson::SharedMemoryManager::Shared()->GetSharedMemoryChild(workerTaskItem->get_shm_id());
 
   // Size if the firt position in the buffer
-  size = reinterpret_cast<size_t *>(item->data);
+  size = reinterpret_cast<size_t *>(item->data());
 
   // Init the data buffer used here
-  data = item->data + sizeof(size_t);
-  max_size = item->size - sizeof(size_t);   // This is the available space int he buffer
+  data = item->data() + sizeof(size_t);
+  max_size = item->size() - sizeof(size_t);   // This is the available space int he buffer
 
   // Init the size of the output
   *size = 0;

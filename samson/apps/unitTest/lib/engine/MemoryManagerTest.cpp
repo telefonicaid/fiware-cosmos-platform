@@ -84,7 +84,7 @@ TEST(memoryManagerTest, table) {
       engine::Engine::memory_manager()->getTableOfBuffers();
 
     EXPECT_EQ(1, table.getNumRows());
-    EXPECT_EQ(5, table.getNumColumns());
+    EXPECT_EQ(3, table.getNumColumns());
   }
 
   close_engine_test();

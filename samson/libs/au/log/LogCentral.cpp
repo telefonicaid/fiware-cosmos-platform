@@ -28,6 +28,24 @@ namespace au {
 // Global instance of LogCentral
 LogCentral *log_central = NULL;
 
+void LogCentral::InitLogSystem(const std::string& exec_name) {
+  StopLogSystem();   // Just in case it was previously added
+  log_central = new LogCentral();
+  log_central->Init(exec_name);
+}
+
+void LogCentral::StopLogSystem() {
+  if (log_central) {
+    log_central->Stop();
+    delete log_central;
+    log_central = NULL;
+  }
+}
+
+LogCentral *LogCentral::Shared() {
+  return log_central;
+}
+
 LogCentral::LogCentral() : au::Thread("LogCentral") {
   fds_[0] = -1;
   fds_[1] = -1;
@@ -501,7 +519,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
 
       au::map<std::string, LogCentralPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); it++) {
-        table_definition += ( "|" + it->first + " (" +  it->second->str_info() + ")" + ",left" );
+        table_definition += ("|" + it->first + " (" +  it->second->str_info() + ")" + ",left");
       }
       table_definition += "|Description,left";
 

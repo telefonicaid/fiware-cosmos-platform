@@ -370,7 +370,7 @@ void *run_console(void *p) {
 void Console::runConsoleInBackground() {
   pthread_t t;
 
-  au::Singleton<au::ThreadManager>::shared()->addThread("au::console::Console::runConsoleInBackground", &t, NULL,
+  au::Singleton<au::ThreadManager>::shared()->AddThread("au::console::Console::runConsoleInBackground", &t, NULL,
                                                         run_console,
                                                         this);
 }

@@ -163,11 +163,10 @@ int main(int argC, const char *argV[]) {
   // Random initialization
   srand(time(NULL));
   // Init log system
-  au::log_central = new au::LogCentral();
-  au::log_central->Init(argV[0]);
+  au::LogCentral::InitLogSystem(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
 
-  // Add plugins to report lgos to file, server and console
+  // Add plugins to report logs to file, server and console
   au::log_central->AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
   au::log_central->AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
   au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin
@@ -177,7 +176,7 @@ int main(int argC, const char *argV[]) {
     LOG_SW(("SIGPIPE cannot be handled"));
   }
   if (buffer_size == 0) {
-    LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Run in background if required
+    LM_X(1, ("Wrong buffer size %lu", buffer_size));  // Run in background if required
   }
   if (run_as_daemon) {
     Daemonize();
@@ -214,14 +213,14 @@ int main(int argC, const char *argV[]) {
 
     while (fgets(line, sizeof(line), f)) {
       // Remove the last return of a string
-      while (( strlen(line) > 0 ) && ( line[ strlen(line) - 1] == '\n') > 0) {
+      while ((strlen(line) > 0) && (line[ strlen(line) - 1] == '\n') > 0) {
         line[ strlen(line) - 1] = '\0';
       }
 
       // LOG_SM(("Processing line: %s", line ));
       num_line++;
 
-      if (( line[0] != '#' ) && ( strlen(line) > 0)) {
+      if ((line[0] != '#') && (strlen(line) > 0)) {
         message = au::str("%s ( File %s )", line, file_name);
         main_stream_connector->log("StreamConnector", "Message", message);
 
@@ -342,7 +341,8 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-
+  // Stop the log system
+  au::LogCentral::StopLogSystem();
 
   return 0;
 }

@@ -65,7 +65,7 @@ TEST(bufferTest, basic) {
     buffer1->set_size(5);
     EXPECT_EQ(5ULL, buffer1->size()) << "Error in set_size()";
 
-#define RETURN_STRING "[ buffer1 (type: test Size:  5.00 B/ 15.0 B Read     0 B) ]"
+#define RETURN_STRING "[ buffer1 ( Size:  5.00 B/ 15.0 B Read     0 B ) ]"
     EXPECT_EQ(RETURN_STRING, buffer1->str());
 #undef RETURN_STRING
   }

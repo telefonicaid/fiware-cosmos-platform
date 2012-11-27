@@ -33,25 +33,26 @@
 #include "samson_system/Value.h"
 #include "samson_system/ValueContainer.h"
 
-void check_serialization(samson::system::Value *value, char *line, size_t max_size) {
+void check_serialization(samson::system::Value *value, char *line, size_t expected_size) {
   size_t s = value->serialize(line);
 
-  EXPECT_EQ(max_size, s) << au::str("Excesive size to serialize value %s ( used %lu when max is %lu) ",
-                                         value->str().c_str(), s, max_size).c_str();
+  EXPECT_EQ(expected_size, s) << au::str("Excesive size to serialize value %s ( used %lu when expected is %lu) ",
+                                         value->str().c_str(), s, expected_size).c_str();
 
   samson::system::Value *value2 = new samson::system::Value();
   size_t s2 = value2->parse(line);
 
   EXPECT_EQ(s, s2) << au::str("Different serialization size for value %s (write %lu read %lu)",
-                                   value->str().c_str(), s, s2).c_str();
+                              value->str().c_str(), s, s2).c_str();
   EXPECT_EQ(*value, *value2) << au::str("Different write and read value %s != %s",
-                                   value->str().c_str(), value2->str().c_str()).c_str();
+                                        value->str().c_str(), value2->str().c_str()).c_str();
 
   delete value2;
 }
 
 TEST(samson_system_Value, basic) {
   samson::system::ValueContainer value_container;
+
   value_container.value->SetAsVoid();
   EXPECT_TRUE(value_container.value->IsVoid()) << "Wrong type assignment for void";
   EXPECT_FALSE(value_container.value->IsVector()) << "Wrong type detection for void";
@@ -114,16 +115,16 @@ TEST(samson_system_Value, ser_string) {
   check_serialization(value_container.value, line, 8);
 
   value_container.value->SetDouble(1);
-  check_serialization(value_container.value, line, 6);
+  check_serialization(value_container.value, line, 1);
 
   value_container.value->SetDouble(1.5);
-  check_serialization(value_container.value, line, 6);
+  check_serialization(value_container.value, line, 2);
 
   value_container.value->SetStringForMap("app", "top");
-  check_serialization(value_container.value, line, 100);
+  check_serialization(value_container.value, line, 7);
 
   value_container.value->SetStringForMap("bones", "esternocleidomastoideo");
-  check_serialization(value_container.value, line, 100);
+  check_serialization(value_container.value, line, 26);
 
   value_container.value->SetAsVector();
   value_container.value->AddValueToVector()->SetString("item 1");
@@ -131,7 +132,7 @@ TEST(samson_system_Value, ser_string) {
   value_container.value->AddValueToVector()->SetString("item 3");
   value_container.value->AddValueToVector()->SetString("item 4");
   value_container.value->AddValueToVector()->SetString("last item");
-  check_serialization(value_container.value, line, 100);
+  check_serialization(value_container.value, line, 40);
 
   free(line);
 }
@@ -144,7 +145,7 @@ TEST(samson_system_Value, ser_full) {
   value_container.value->SetAsVector();
   value_container.value->AddValueToVector()->SetString("item 1");
   value_container.value->AddValueToVector()->SetString("last item");
-  check_serialization(value_container.value, line, 100);
+  check_serialization(value_container.value, line, 16);
 
   value_container.value->SetAsVector();
 
@@ -171,7 +172,7 @@ TEST(samson_system_Value, ser_full) {
   value_container.value->AddValueToVector()->SetDouble(-2.0);
   value_container.value->AddValueToVector()->SetDouble(-25.7);
 
-  check_serialization(value_container.value, line, 100);
+  check_serialization(value_container.value, line, 90);
 
   free(line);
 }
@@ -198,25 +199,31 @@ TEST(samson_system_Value, str) {
   value_container.value->AddValueToVector()->SetDouble(-25.7);
 
   std::string string_value = value_container.value->str();
-  const char *exp_str1 = "[\"item 1\",\"last item\",{\"map1\":\"value\",\"map2\":\"value2\"},{\"map1\":\"value\",\"map2\":\"value2\"},\"New item\",18446744073709551614,-25.7]";
+  const char *exp_str1 =
+    "[\"item 1\",\"last item\",{\"map1\":\"value\",\"map2\":\"value2\"},{\"map1\":\"value\",\"map2\":\"value2\"},\"New item\",18446744073709551614,-25.7]";
   EXPECT_STREQ(exp_str1, string_value.c_str());
 
   std::string string_value_JSON = value_container.value->strJSON();
-  const char *exp_str2 = "[\"item 1\",\"last item\",{map1:\"value\",map2:\"value2\"},{map1:\"value\",map2:\"value2\"},\"New item\",18446744073709551614,-25.7]";
+  const char *exp_str2 =
+    "[\"item 1\",\"last item\",{map1:\"value\",map2:\"value2\"},{map1:\"value\",map2:\"value2\"},\"New item\",18446744073709551614,-25.7]";
   EXPECT_STREQ(exp_str2, string_value_JSON.c_str());
 
   std::string string_value_XML = value_container.value->strXML();
-  const char *exp_str3 = "<values><![CDATA[item 1]]>\n</values>\n<values><![CDATA[last item]]>\n</values>\n<values><value first=\"map1\" second=\"\"value\"\"/>\n<value first=\"map2\" second=\"\"value2\"\"/>\n</values>\n<values><value first=\"map1\" second=\"\"value\"\"/>\n<value first=\"map2\" second=\"\"value2\"\"/>\n</values>\n<values><![CDATA[New item]]>\n</values>\n<values>18446744073709551614</values>\n<values>-25.7</values>\n";
+  const char *exp_str3 =
+    "<values><![CDATA[item 1]]>\n</values>\n<values><![CDATA[last item]]>\n</values>\n<values><value first=\"map1\" second=\"\"value\"\"/>\n<value first=\"map2\" second=\"\"value2\"\"/>\n</values>\n<values><value first=\"map1\" second=\"\"value\"\"/>\n<value first=\"map2\" second=\"\"value2\"\"/>\n</values>\n<values><![CDATA[New item]]>\n</values>\n<values>18446744073709551614</values>\n<values>-25.7</values>\n";
   EXPECT_STREQ(exp_str3, string_value_XML.c_str());
 
   std::string string_value_HTML = value_container.value->strHTML(1);
-  const char *exp_str4 = "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}#table-5 tbody tr:hover td{color:#009;}</style><table id=\"table-5\"><tr><td>1 / 7</td><td>\"item 1\"</tr></td><tr><td>2 / 7</td><td>\"last item\"</tr></td><tr><td>3 / 7</td><td><table id=\"table-5\"><tr><td>map1</td><td>\"value\"</tr></td><tr><td>map2</td><td>\"value2\"</tr></td></table></tr></td><tr><td>4 / 7</td><td><table id=\"table-5\"><tr><td>map1</td><td>\"value\"</tr></td><tr><td>map2</td><td>\"value2\"</tr></td></table></tr></td><tr><td>5 / 7</td><td>\"New item\"</tr></td><tr><td>6 / 7</td><td>18446744073709551614</tr></td><tr><td>7 / 7</td><td>-25.7</tr></td></table>";
+  const char *exp_str4 =
+    "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}#table-5 tbody tr:hover td{color:#009;}</style><table id=\"table-5\"><tr><td>1 / 7</td><td>\"item 1\"</tr></td><tr><td>2 / 7</td><td>\"last item\"</tr></td><tr><td>3 / 7</td><td><table id=\"table-5\"><tr><td>map1</td><td>\"value\"</tr></td><tr><td>map2</td><td>\"value2\"</tr></td></table></tr></td><tr><td>4 / 7</td><td><table id=\"table-5\"><tr><td>map1</td><td>\"value\"</tr></td><tr><td>map2</td><td>\"value2\"</tr></td></table></tr></td><tr><td>5 / 7</td><td>\"New item\"</tr></td><tr><td>6 / 7</td><td>18446744073709551614</tr></td><tr><td>7 / 7</td><td>-25.7</tr></td></table>";
   EXPECT_STREQ(exp_str4, string_value_HTML.c_str());
 
   std::string string_value_HTMLTable = value_container.value->strHTMLTable("test");
-  const char *exp_str5 = "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}#table-5 tbody tr:hover td{color:#009;}</style><table id=\"table-5\">\n<caption>test</caption>\n<tr>\n<th colspan=1>values</th>\n</tr>\n<tr>\n<th>values</th>\n</tr>\n<tr>\n<td>\"item 1\"</td>\n</tr>\n</table>\n";
+  const char *exp_str5 =
+    "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}#table-5 tbody tr:hover td{color:#009;}</style><table id=\"table-5\">\n<caption>test</caption>\n<tr>\n<th colspan=1>values</th>\n</tr>\n<tr>\n<th>values</th>\n</tr>\n<tr>\n<td>\"item 1\"</td>\n</tr>\n</table>\n";
   EXPECT_STREQ(exp_str5, string_value_HTMLTable.c_str()) << "Error printing Value: "
-      << string_value_HTMLTable << " vector: " << value_container.value->str();
+                                                         << string_value_HTMLTable << " vector: " <<
+  value_container.value->str();
 }
 
 TEST(samson_system_Value, copy) {
@@ -247,7 +254,7 @@ TEST(samson_system_Value, copy) {
   EXPECT_EQ(6, value_container_copy.value->GetVectorSize());
   std::string string_value = value_container_copy.value->GetValueFromVector(4)->GetString();
   EXPECT_STREQ("New item", string_value.c_str()) << "Error copying Value: "
-      << string_value << " vector: " << value_container_copy.value->str();
+                                                 << string_value << " vector: " << value_container_copy.value->str();
 }
 
 TEST(samson_system_Value, hash) {
@@ -297,6 +304,7 @@ TEST(samson_system_Value, hash) {
 
 TEST(samson_system_Value, sort) {
   samson::system::ValueContainer value_container;
+
   value_container.value->SetAsVector();
   value_container.value->AddValueToVector()->SetDouble(3.0);
   value_container.value->AddValueToVector()->SetDouble(9.0);
@@ -307,12 +315,12 @@ TEST(samson_system_Value, sort) {
   EXPECT_EQ(4, value_container.value->GetVectorSize());
   double double_value = value_container.value->GetValueFromVector(1)->GetDouble();
   EXPECT_EQ(3.0, double_value) << "Error sorting doubles, second element: " << double_value
-      << " vector: " << value_container.value->str();
+                               << " vector: " << value_container.value->str();
   value_container.value->SortVectorInDescendingOrder();
   EXPECT_EQ(4, value_container.value->GetVectorSize());
   double_value = value_container.value->GetValueFromVector(1)->GetDouble();
   EXPECT_EQ(7.0, double_value) << "Error sorting doubles, second element: " << double_value
-      << " vector: " << value_container.value->str();
+                               << " vector: " << value_container.value->str();
 
   value_container.value->SetAsVoid();
   value_container.value->SetAsVector();
@@ -325,12 +333,12 @@ TEST(samson_system_Value, sort) {
   EXPECT_EQ(4, value_container.value->GetVectorSize());
   std::string string_value = value_container.value->GetValueFromVector(1)->GetString();
   EXPECT_STREQ("b", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                          << string_value << " vector: " << value_container.value->str();
   value_container.value->SortVectorInDescendingOrder();
   EXPECT_EQ(4, value_container.value->GetVectorSize());
   string_value = value_container.value->GetValueFromVector(1)->GetString();
   EXPECT_STREQ("c", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                          << string_value << " vector: " << value_container.value->str();
 
   value_container.value->SetAsVoid();
   value_container.value->SetAsVector();
@@ -351,19 +359,19 @@ TEST(samson_system_Value, sort) {
   EXPECT_EQ(4, value_container.value->GetVectorSize());
   string_value = value_container.value->GetValueFromVector(1)->GetStringFromMap("name");
   EXPECT_STREQ("Andreu", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                               << string_value << " vector: " << value_container.value->str();
   value_container.value->SortVectorOfMapsInAscendingOrder("name");
   string_value = value_container.value->GetValueFromVector(1)->GetStringFromMap("name");
   EXPECT_STREQ("Goyo", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                             << string_value << " vector: " << value_container.value->str();
   value_container.value->SortVectorOfMapsInDescendingOrder("age");
   string_value = value_container.value->GetValueFromVector(1)->GetStringFromMap("name");
   EXPECT_STREQ("Ken", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                            << string_value << " vector: " << value_container.value->str();
   value_container.value->SortVectorOfMapsInDescendingOrder("name");
   string_value = value_container.value->GetValueFromVector(1)->GetStringFromMap("name");
   EXPECT_STREQ("Grant", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                              << string_value << " vector: " << value_container.value->str();
 
   value_container.value->SetAsVoid();
   value_container.value->SetAsVector();
@@ -378,12 +386,12 @@ TEST(samson_system_Value, sort) {
   EXPECT_EQ(6, value_container.value->GetVectorSize());
   double_value = value_container.value->GetValueFromVector(1)->GetDouble();
   EXPECT_EQ(3.0, double_value) << "Error sorting doubles, second element: " << double_value
-      << " vector: " << value_container.value->str();
+                               << " vector: " << value_container.value->str();
   value_container.value->PartialSortVectorInDescendingOrder(2);
   EXPECT_EQ(6, value_container.value->GetVectorSize());
   double_value = value_container.value->GetValueFromVector(1)->GetDouble();
   EXPECT_EQ(21.0, double_value) << "Error sorting doubles, second element: " << double_value
-      << " vector: " << value_container.value->str();
+                                << " vector: " << value_container.value->str();
 
   value_container.value->SetAsVoid();
   value_container.value->SetAsVector();
@@ -397,12 +405,12 @@ TEST(samson_system_Value, sort) {
   EXPECT_EQ(5, value_container.value->GetVectorSize());
   string_value = value_container.value->GetValueFromVector(1)->GetString();
   EXPECT_STREQ("b", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                          << string_value << " vector: " << value_container.value->str();
   value_container.value->PartialSortVectorInDescendingOrder(2);
   EXPECT_EQ(5, value_container.value->GetVectorSize());
   string_value = value_container.value->GetValueFromVector(1)->GetString();
   EXPECT_STREQ("d", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                          << string_value << " vector: " << value_container.value->str();
 
   value_container.value->SetAsVoid();
   value_container.value->SetAsVector();
@@ -423,17 +431,17 @@ TEST(samson_system_Value, sort) {
   EXPECT_EQ(4, value_container.value->GetVectorSize());
   string_value = value_container.value->GetValueFromVector(1)->GetStringFromMap("name");
   EXPECT_STREQ("Andreu", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                               << string_value << " vector: " << value_container.value->str();
   value_container.value->PartialSortVectorOfMapsInAscendingOrder("name", 2);
   string_value = value_container.value->GetValueFromVector(1)->GetStringFromMap("name");
   EXPECT_STREQ("Goyo", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                             << string_value << " vector: " << value_container.value->str();
   value_container.value->PartialSortVectorOfMapsInDescendingOrder("age", 2);
   string_value = value_container.value->GetValueFromVector(1)->GetStringFromMap("name");
   EXPECT_STREQ("Ken", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                            << string_value << " vector: " << value_container.value->str();
   value_container.value->PartialSortVectorOfMapsInDescendingOrder("name", 2);
   string_value = value_container.value->GetValueFromVector(1)->GetStringFromMap("name");
   EXPECT_STREQ("Grant", string_value.c_str()) << "Error sorting strings, second element: "
-      << string_value << " vector: " << value_container.value->str();
+                                              << string_value << " vector: " << value_container.value->str();
 }

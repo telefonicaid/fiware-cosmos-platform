@@ -35,7 +35,10 @@ extern "C" void exit(int status);
  */
 void Daemonize(void) {
   // Pause log system ( this finish background thread temporary )
-  au::log_central->Pause();
+
+  if (au::log_central) {
+    au::log_central->Pause();
+  }
 
   pid_t pid;
   pid_t sid;
@@ -71,7 +74,9 @@ void Daemonize(void) {
   }
 
   // Create again the background thread ( same setup )
-  au::log_central->Play();
+  if (au::log_central) {
+    au::log_central->Play();
+  }
 }
 
 void Deamonize_close_all(void) {

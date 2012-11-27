@@ -58,7 +58,7 @@ void DiskManager::CreateThreads() {
     num_disk_manager_workers_++;
 
     pthread_t t;
-    int rc = au::Singleton<au::ThreadManager>::shared()->addThread("DiskManager_worker", &t, NULL,
+    int rc = au::Singleton<au::ThreadManager>::shared()->AddThread("DiskManager_worker", &t, NULL,
                                                                    run_disk_manager_worker, this);
     if (rc) {
       LOG_SW(("Error creating background thread for disk operations..."));

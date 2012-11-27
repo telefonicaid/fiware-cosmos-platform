@@ -12,7 +12,9 @@ Packager:  Samson Development <samson-dev@tid.es>
 URL:       http://wikis.hi.inet/samson
 Source:    http://www.tid.es/%{name}-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-buildroot
-Requires:  protobuf, json-c
+Requires:  protobuf, json-c, libzookeeper
+Buildrequires: protobuf-compiler protobuf-devel cmake boost-devel libedit-devel ncurses-devel gcc gcc-c++ make help2man libzookeeper-devel json-c-devel
+
 Requires(pre): shadow-utils
 
 %description

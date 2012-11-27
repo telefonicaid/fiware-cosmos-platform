@@ -53,7 +53,8 @@ FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 add_definitions(-fPIC)
 
 #Baseline compiler flags
-set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
+#Adding -fno-strict-aliasing because of mongoclient. In samson09 we have a problem when compiling optimized
+set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror -fno-strict-aliasing")
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 

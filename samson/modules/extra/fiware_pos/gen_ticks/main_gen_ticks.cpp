@@ -1,14 +1,26 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>               /* time, gmtime_r, ...                       */
+#include <time.h>               /* time, gmtime_r, ...    */
+#include <unistd.h>             /* getopt()               */
 
+#define TIME_FORMAT  "%Y-%m-%d:%H:%M:%S"
+const int kRandModulus = 10;
+const int kProbToKeepSensor = 8; // of kRandModulus
 
 int main(int argc, char *argv[]) {
-  void exit();
-  int getopt();
-
   int i;
 
   int num_users = 100000;
@@ -25,11 +37,7 @@ int main(int argc, char *argv[]) {
   int num_pos_X;
   int *last_position;
 
-#define TIME_FORMAT  "%Y-%m-%d:%H:%M:%S"
-  time_t secondsNow = time(NULL);
-
   extern char *optarg;
-  extern int optind;
   int c;
 
   strncpy(info_pos_filename, "info_pos_sensors.tab", sizeof(info_pos_filename));
@@ -72,27 +80,27 @@ int main(int argc, char *argv[]) {
     perror(info_pos_filename);
     exit(2);
   }
-  for (i = 0; (i < num_sensors); ++i) {
+  for (i = 0; i < num_sensors; ++i) {
     fprintf(info_pos, "%d|%d,%d\n", i, (int)((i/num_pos_X)*incX), (int)((i%num_pos_X)*incY));
   }
   fclose(info_pos);
 
-  last_position = malloc(num_users * sizeof(*last_position));
-  for (i = 0; (i < num_users); ++i) {
+  last_position = static_cast<int *>(malloc(num_users * sizeof(*last_position)));
+  for (i = 0; i < num_users; ++i) {
     last_position[i] = rand()%num_sensors;
   }
 
-  while(1) {
+  while (1) {
     char time_string[81];
     time_t secondsNow = time(NULL);
     struct tm  time_calendar;
     gmtime_r(&secondsNow, &time_calendar);
     strftime(time_string, sizeof(time_string), TIME_FORMAT, &time_calendar);
 
-    for (i = 0; (i < num_users); ++i) {
+    for (i = 0; i < num_users; ++i) {
       fprintf(stdout, "%d|%d|%s\n", i, last_position[i], time_string);
-      int jump = rand()%10;
-      if (jump > 8) {
+      int jump = rand()%kRandModulus;
+      if (jump > kProbToKeepSensor) {
         last_position[i] = rand()%num_sensors;
       }
     }

@@ -42,6 +42,7 @@ reset:
 	rm -f samson/modules/*/*_base.h
 	rm -Rf $(SAMSON_HOME)/include/samson/modules/$(MODULE)
 	rm -f $(SAMSON_HOME)/modules/lib$(MODULE).so
+	rm gen_ticks/gen_ticks
 
 clean: clean_release
 clean_release:

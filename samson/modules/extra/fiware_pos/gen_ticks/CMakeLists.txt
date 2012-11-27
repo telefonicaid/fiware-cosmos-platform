@@ -12,3 +12,5 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 # Executable declaration
 # ------------------------------------------------------------
 ADD_EXECUTABLE(gen_ticks ${SOURCES} ${HEADERS} )
+
+INSTALL(TARGETS gen_ticks DESTINATION ${PROJECT_SOURCE_DIR})

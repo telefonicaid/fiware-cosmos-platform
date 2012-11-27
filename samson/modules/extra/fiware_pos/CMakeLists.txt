@@ -7,8 +7,6 @@ SET( MODULE_NAME fiware_pos )
 
 cmake_minimum_required(VERSION 2.6)
 
-ADD_SUBDIRECTORY(gen_ticks)
-
 # Locate samsonModuleParser
 if (SAMSONMODULEPARSER)
     MESSAGE ("Using ${SAMSONMODULEPARSER} to parse the module file")
@@ -104,6 +102,8 @@ TARGET_LINK_LIBRARIES(${MODULE_NAME}  samsonModule lm au)
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
+
+ADD_SUBDIRECTORY(gen_ticks)
 
 
 #ENABLE_TESTING()

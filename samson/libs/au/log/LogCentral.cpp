@@ -254,7 +254,7 @@ void LogCentral::RunThread() {
     {
       au::TokenTaker tt(&token_plugins_);
       au::map<std::string, LogCentralPlugin>::iterator it;
-      for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      for (it = plugins_.begin(); it != plugins_.end(); ++it) {
         LogCentralPlugin *log_plugin = it->second;
         if (log_plugin->IsLogAccepted(log)) {
           log_plugin->Process(log);
@@ -272,7 +272,7 @@ void LogCentral::ReviewChannelsLevels() {
 
     if (log_channels_.IsRegistered(c)) {
       au::map<std::string, LogCentralPlugin>::iterator it;
-      for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      for (it = plugins_.begin(); it != plugins_.end(); ++it) {
         int level = it->second->log_channel_filter().GetLevel(c);
         if (level > max_level) {
           max_level = level;
@@ -322,7 +322,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       table.setTitle("Log Plugins");
 
       au::map<std::string, LogCentralPlugin>::iterator it;
-      for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      for (it = plugins_.begin(); it != plugins_.end(); ++it) {
         LogCentralPlugin *log_plugin = it->second;
 
         au::StringVector values;
@@ -392,7 +392,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         }
 
         au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        for (it = plugins_.begin(); it != plugins_.end(); ++it) {
           std::string plugin_name = it->first;
 
           if (plugin_pattern.match(plugin_name)) {
@@ -439,7 +439,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         }
 
         au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        for (it = plugins_.begin(); it != plugins_.end(); ++it) {
           std::string plugin_name = it->first;
 
           if (plugin_pattern.match(plugin_name)) {
@@ -492,7 +492,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         }
 
         au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        for (it = plugins_.begin(); it != plugins_.end(); ++it) {
           std::string plugin_name = it->first;
 
           if (plugin_pattern.match(plugin_name)) {
@@ -533,7 +533,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       std::string table_definition = "Channel,left|Level|Count";
 
       au::map<std::string, LogCentralPlugin>::iterator it;
-      for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      for (it = plugins_.begin(); it != plugins_.end(); ++it) {
         table_definition += ("|" + it->first + " (" +  it->second->str_info() + ")" + ",left");
       }
       table_definition += "|Description,left";
@@ -558,7 +558,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         }
 
         au::map<std::string, LogCentralPlugin>::iterator it;
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        for (it = plugins_.begin(); it != plugins_.end(); ++it) {
           LogCentralPlugin *log_plugin = it->second;
 
           std::ostringstream info;

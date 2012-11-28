@@ -177,11 +177,11 @@ public:
   virtual void UnlockThread() {
   };
 
-  bool IsThreadQuiting() {
+  bool IsThreadQuiting() const {
     return stoping_;
   }
 
-  bool IsThreadRunning() {
+  bool IsThreadRunning() const {
     return pthread_running_;
   }
 
@@ -189,7 +189,7 @@ public:
    * \brief Check if I am the background thread
    */
 
-  bool isBackgroundThread() {
+  bool IsBackgroundThread() const {
     if (!pthread_running_) {
       return false;
     }

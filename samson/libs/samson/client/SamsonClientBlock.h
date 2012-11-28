@@ -57,10 +57,10 @@ public:
     size_t expected_size;
 
     if (format.isTxt()) {
-      expected_size =   (size_t)( sizeof(samson::KVHeader)  + header->info.size );
+      expected_size =   (size_t)(sizeof(samson::KVHeader)  + header->info.size);
       data = buffer->data() + sizeof(samson::KVHeader);
     } else {
-      expected_size =   (size_t)( sizeof(samson::KVHeader) + header->info.size );
+      expected_size =   (size_t)(sizeof(samson::KVHeader) + header->info.size);
       data = buffer->data() + sizeof(samson::KVHeader);
     }
 
@@ -70,8 +70,8 @@ public:
 
     // Check if we have data types installed here
     samson::ModulesManager *modulesManager = au::Singleton<samson::ModulesManager>::shared();
-    samson::Data *keyData = modulesManager->getData(format.keyFormat);
-    samson::Data *valueData = modulesManager->getData(format.valueFormat);
+    samson::Data *keyData = modulesManager->GetData(format.keyFormat);
+    samson::Data *valueData = modulesManager->GetData(format.valueFormat);
 
     if (!format.isTxt()) {
       if (!keyData) {
@@ -92,7 +92,7 @@ public:
   }
 
   size_t getTXTBufferSize() {
-    return buffer_->size() - sizeof( samson::KVHeader );
+    return buffer_->size() - sizeof(samson::KVHeader);
   }
 
   char *getData() {

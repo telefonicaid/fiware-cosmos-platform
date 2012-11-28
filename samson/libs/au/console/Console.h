@@ -107,12 +107,12 @@ private:
   void RunThread();     // Main routine for background process
 
   void PrintCommand();
-  bool IsInputReady();
+  bool IsInputReady() const;
 
   void ProcessAutoComplete(ConsoleAutoComplete *info);
   void ProcessInternalCommand(const std::string& sequence);
   void ProcessChar(char c);
-  void ProcessEscapeSequenceInternal(std::string sequence);
+  void ProcessEscapeSequenceInternal(const std::string& sequence);
 
   void ProcessBackgroundMessages();
   bool IsNormalChar(char c) const;
@@ -126,7 +126,7 @@ private:
 
   // Pending messages to be displayed in background
   au::Token token_pending_messages_;
-  std::list< std::string > pending_messages_;
+  std::list<std::string> pending_messages_;
 
   // Flag to block background messages
   bool block_background_messages_;

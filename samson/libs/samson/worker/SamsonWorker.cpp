@@ -1127,7 +1127,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
       continue;
     }
 
-    std::string target_file_name = au::str("%s/module_%d", directory.c_str(), i);
+    std::string target_file_name = au::str("%s/module_%05d", directory.c_str(), i);
     FILE *target_file = fopen(target_file_name.c_str(), "w");
     fwrite(buffer->data() + sizeof(KVHeader), buffer->size() - sizeof(KVHeader), 1, target_file);
     fclose(target_file);
@@ -1173,7 +1173,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visu
   std::string directory = au::GetRandomDirectory();
   au::CreateDirectory(directory);
 
-  // Detect colision name...
+  // Set of names used so far to detect colision name...
   std::set<std::string> module_names;
 
   if (queue) {
@@ -1201,7 +1201,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visu
         continue;
       }
 
-      std::string target_file_name = au::str("%s/modules_%d", directory.c_str(), i);
+      std::string target_file_name = au::str("%s/modules_%05d", directory.c_str(), i);
       FILE *target_file = fopen(target_file_name.c_str(), "w");
       fwrite(buffer->data() + sizeof(KVHeader), buffer->size() - sizeof(KVHeader), 1, target_file);
       fclose(target_file);

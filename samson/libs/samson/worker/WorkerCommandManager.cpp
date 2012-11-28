@@ -51,7 +51,7 @@ bool WorkerCommandManager::Cancel(std::string worker_command_id) {
   bool found = false;
   au::map<size_t, WorkerCommand>::iterator it_workerCommands;
   for (it_workerCommands = worker_commands_.begin(); it_workerCommands != worker_commands_.end();
-       it_workerCommands++)
+       ++it_workerCommands)
   {
     std::string my_worker_command_id = it_workerCommands->second->worker_command_id_;
     if (my_worker_command_id == worker_command_id) {
@@ -77,7 +77,7 @@ void WorkerCommandManager::notify(engine::Notification *notification) {
     // Review all WorkerCommand is necessary
     au::map<size_t, WorkerCommand>::iterator it_workerCommands;
     for (it_workerCommands = worker_commands_.begin(); it_workerCommands != worker_commands_.end();
-         it_workerCommands++)
+         ++it_workerCommands)
     {
       it_workerCommands->second->Run();   // Execute if necessary
     }

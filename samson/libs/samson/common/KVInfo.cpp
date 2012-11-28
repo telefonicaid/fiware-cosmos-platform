@@ -81,8 +81,8 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
   KVHeader *header = reinterpret_cast<KVHeader *>(_data);
   char *data = _data + sizeof(KVHeader);
 
-  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(header->keyFormat);
-  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(header->valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(header->keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(header->valueFormat);
 
   if (!key_data) {
     LM_E(("Unknown data type %s", header->keyFormat));
@@ -143,7 +143,7 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
     total_info.append(info[hg]);
   }
 
-  if (( total_info.size != header->info.size ) || ( total_info.kvs != header->info.kvs )) {
+  if ((total_info.size != header->info.size) || (total_info.kvs != header->info.kvs)) {
     LM_X(1, ("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(), header->info.str().c_str()));
   }
   return info;

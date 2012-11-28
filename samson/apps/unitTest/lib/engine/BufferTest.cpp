@@ -378,7 +378,7 @@ TEST(bufferTest, WriteFile) {
     au::ErrorManager em;
     engine::BufferPointer buf = engine::Buffer::Create("buf",  150);
 
-    buf->WriteFile("test_data/testdata.txt", em);
+    buf->WriteFromFile("test_data/testdata.txt", em);
     EXPECT_EQ(93, buf->size());
   }
 
@@ -398,7 +398,7 @@ TEST(bufferTest, badMaxSize) {
     EXPECT_EQ(0, buf->max_size());
     EXPECT_EQ(0, buf->size());
 
-    buf->WriteFile("test_data/testdata.txt", em);
+    buf->WriteFromFile("test_data/testdata.txt", em);
     EXPECT_EQ(0, buf->size());
 
     engine::BufferPointer buf2 = engine::Buffer::Create("buf",  2 * 1024ULL * 1024 * 1024);

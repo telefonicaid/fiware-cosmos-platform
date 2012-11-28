@@ -111,7 +111,7 @@ int main(int argC, const char *argV[]) {
   au::Singleton<samson::ModulesManager>::shared()->AddModulesFromDefaultDirectory(error);
 
   if (error.IsActivated()) {
-    std::cerr << error.str();  // Do not stop the process
+    std::cerr << error.str() << std::endl;  // Do not stop the process
   }
 
   struct stat filestatus;

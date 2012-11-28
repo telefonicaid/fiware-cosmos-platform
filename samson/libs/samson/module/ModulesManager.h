@@ -43,16 +43,16 @@ public:
   void ClearModulesManager();
 
   // Get collection for queries
-  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualitzation);
-  au::SharedPointer<gpb::Collection> GetDatasCollection(const Visualization& visualitzation);
-  au::SharedPointer<gpb::Collection> GetOperationsCollection(const Visualization& visualitzation);
+  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualitzation) const;
+  au::SharedPointer<gpb::Collection> GetDatasCollection(const Visualization& visualitzation) const;
+  au::SharedPointer<gpb::Collection> GetOperationsCollection(const Visualization& visualitzation) const;
 
   // Local table of modules
-  std::string GetTableOfModules();
+  std::string GetTableOfModules() const;
 
   // Unique interface to get data and operations
-  Data *getData(const std::string& name);
-  Operation *getOperation(const std::string& name);
+  Data *GetData(const std::string& name) const;
+  Operation *GetOperation(const std::string& name) const;
 
   // Static method to analyze module files
   static Module *LoadModule(const std::string& path, au::ErrorManager & error);

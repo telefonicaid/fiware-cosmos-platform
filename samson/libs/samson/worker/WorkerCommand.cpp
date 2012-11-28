@@ -164,7 +164,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
       operation_name = cmd.get_argument(1);
     }
 
-    Operation *op = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+    Operation *op = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
     if (!op) {
       error.set(au::str("Unknown operation:'%s' in command arguments to init_stream", operation_name.c_str()));
       return;

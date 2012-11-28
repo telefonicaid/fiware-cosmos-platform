@@ -172,17 +172,17 @@ Module *ModulesManager::LoadModule(const std::string& path, au::ErrorManager & e
   }
 
   // Extra information for this module
-  module->file_name = path;
-  module->hndl = hndl;  // Deleting the module, close this handler
+  module->set_file_name(path);
+  module->set_hndl(hndl);  // Deleting the module, close this handler
 
   return module;
 }
 
-std::string ModulesManager::GetTableOfModules() {
+std::string ModulesManager::GetTableOfModules() const {
   au::tables::Table table("Name,left|Version|#Operations|#Datas|Author,left");
 
   table.setTitle("Modules");
-  au::map<std::string, Module>::iterator it;
+  au::map<std::string, Module>::const_iterator it;
   for (it = modules_.begin(); it != modules_.end(); it++) {
     std::string name = it->second->name;
 
@@ -198,10 +198,10 @@ std::string ModulesManager::GetTableOfModules() {
   return table.str();
 }
 
-au::SharedPointer<gpb::Collection> ModulesManager::GetModulesCollection(const Visualization& visualitzation) {
+au::SharedPointer<gpb::Collection> ModulesManager::GetModulesCollection(const Visualization& visualitzation) const {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("modules");
-  au::map<std::string, Module>::iterator it;
+  au::map<std::string, Module>::const_iterator it;
   for (it = modules_.begin(); it != modules_.end(); it++) {
     std::string name = it->second->name;
     if (::fnmatch(visualitzation.pattern().c_str(), name.c_str(), FNM_PATHNAME) == 0) {
@@ -220,10 +220,10 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetModulesCollection(const Vi
   return collection;
 }
 
-au::SharedPointer<gpb::Collection> ModulesManager::GetDatasCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> ModulesManager::GetDatasCollection(const Visualization& visualization) const {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("datas");
-  au::map<std::string, Module>::iterator it;
+  au::map<std::string, Module>::const_iterator it;
   for (it = modules_.begin(); it != modules_.end(); it++) {
     Module *module = it->second;
 
@@ -243,10 +243,10 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetDatasCollection(const Visu
   return collection;
 }
 
-au::SharedPointer<gpb::Collection> ModulesManager::GetOperationsCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> ModulesManager::GetOperationsCollection(const Visualization& visualization) const {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("operations");
-  au::map<std::string, Module>::iterator it;
+  au::map<std::string, Module>::const_iterator it;
   for (it = modules_.begin(); it != modules_.end(); it++) {
     Module *module = it->second;
 
@@ -272,10 +272,10 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetOperationsCollection(const
   return collection;
 }
 
-Data *ModulesManager::getData(const std::string& name) {
+Data *ModulesManager::GetData(const std::string& name) const {
   // Search in all modules ( inefficient but generic )
 
-  au::map<std::string, Module>::iterator it_modules;
+  au::map<std::string, Module>::const_iterator it_modules;
   for (it_modules = modules_.begin(); it_modules != modules_.end(); it_modules++) {
     Data *data = it_modules->second->getData(name);
     if (data) {
@@ -285,10 +285,10 @@ Data *ModulesManager::getData(const std::string& name) {
   return NULL;
 }
 
-Operation *ModulesManager::getOperation(const std::string& name) {
+Operation *ModulesManager::GetOperation(const std::string& name) const {
   // Search in all modules ( inefficient but generic )
 
-  au::map<std::string, Module>::iterator it_modules;
+  au::map<std::string, Module>::const_iterator it_modules;
   for (it_modules = modules_.begin(); it_modules != modules_.end(); it_modules++) {
     Operation *operation = it_modules->second->getOperation(name);
     if (operation) {

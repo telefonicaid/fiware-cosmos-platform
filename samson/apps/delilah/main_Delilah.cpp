@@ -186,7 +186,6 @@ void cleanup(void) {
   lmCleanProgName();
   LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
 
-  // Stop engine
   engine::Engine::StopEngine();
 
   // Stopping the new log_central thread
@@ -327,7 +326,6 @@ int main(int argC, const char *argV[]) {
 
   if (strcmp(command, "") != 0) {
     au::log_central->AddScreenPlugin("screen", "[type][channel] text");    // Activate logs at screen
-
     {
       au::Cronometer cronometer;
       while (!delilahConsole->isConnected()) {

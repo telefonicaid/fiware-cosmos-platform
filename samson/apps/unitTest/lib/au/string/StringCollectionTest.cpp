@@ -67,4 +67,5 @@ TEST(au_string_StringCollection, write_and_read) {
 
   au::ErrorManager error;
   au::RemoveDirectory(test_dir, error);
+  EXPECT_FALSE(error.IsActivated());
 }

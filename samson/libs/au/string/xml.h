@@ -54,10 +54,19 @@ void xml_simple_literal(std::ostringstream& output, std::string name, T value) {
   output << "</" << name << ">";
 }
 
-template<typename T>  // Expected to be inside a {} block
+/**
+ * \brief Method to generate json key-value pairs inside a json object element.
+ */
+
+template<typename T>
 void json_simple(std::ostringstream& output, std::string name, T value) {
   output << "\"" << name << "\":" << value << ",";
 }
+
+/**
+ * \brief Method to generate json key-value pairs inside a json object element.
+ * The value is expected to be a literal so "'s will be added
+ */
 
 template<typename T>   // Expected to be inside a {} block
 void json_simple_literal(std::ostringstream& output, std::string name, T value) {

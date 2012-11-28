@@ -35,12 +35,8 @@ public:
 
   friend class ModulesManager;
 
-  // Information assigned during loading of this module
-  std::string file_name;
-  void *hndl;
-
   Module() {
-    hndl = NULL;
+    hndl_ = NULL;
   }
 
   Module(std::string _name, std::string _version, std::string _author) {
@@ -51,12 +47,10 @@ public:
 
   ~Module() {
     clearModule();
-    if (hndl) {
-      dlclose(hndl);
+    if (hndl_) {
+      dlclose(hndl_);
     }
   }
-
-public:
 
   void getInfo(std::ostringstream& output) {
     output << "<module>\n";
@@ -99,9 +93,6 @@ public:
     if (!o) {
       return Operation::unknown;
     }
-
-
-
 
     return o->getType();
   }
@@ -202,6 +193,28 @@ public:
     datas.clear();
     operations.clear();
   }
+
+  std::string file_name() const {
+    return file_name_;
+  }
+
+  void set_file_name(const std::string& file_name) {
+    file_name_ = file_name;
+  }
+
+  void set_hndl(void *hndl) {
+    if (hndl_) {
+      fprintf(stderr, "Major error in Module handler");
+      exit(0);
+    }
+    hndl_ = hndl;
+  }
+
+private:
+
+  // Information assigned during loading of this module
+  std::string file_name_;
+  void *hndl_;
 };
 }
 

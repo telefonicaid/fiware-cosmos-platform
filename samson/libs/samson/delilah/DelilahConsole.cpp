@@ -199,7 +199,7 @@ void DelilahConsole::autoCompleteQueueWithFormat(au::console::ConsoleAutoComplet
 void DelilahConsole::autoCompleteQueueForOperation(au::console::ConsoleAutoComplete *info, std::string operation_name,
                                                    int argument_pos) {
   // Search in the operations
-  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+  Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
 
   if (!operation) {
     return;

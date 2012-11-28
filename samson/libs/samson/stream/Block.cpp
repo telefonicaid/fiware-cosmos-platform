@@ -399,7 +399,7 @@ engine::BufferPointer Block::GetBufferFromDisk() {
                                                                 source_file_name.c_str()), file_size);
   au::ErrorManager error_writing_file;
 
-  buffer->WriteFile(source_file_name, error_writing_file);
+  buffer->WriteFromFile(source_file_name, error_writing_file);
 
   if (error_writing_file.IsActivated()) {
     return engine::BufferPointer(NULL);

@@ -39,8 +39,8 @@ std::string GetEscapeSequenceDescription(const std::string& sequece) {
   std::ostringstream output;
 
   output << "( " << sequece << " ";
-  for (size_t i = 0; i < sequece.length(); i++) {
-    output << au::str("[%d]", (int)sequece[i]);
+  for (size_t i = 0; i < sequece.length(); ++i) {
+    output << au::str("[%d]", static_cast<int>(sequece[i]));
   }
   output << " )";
   return output.str();
@@ -73,14 +73,12 @@ Console *current_console = NULL;
 void handle_winch(int sig);
 void handle_tstp(int sig);
 
-Console::Console() : au::Thread("Console"), token_pending_messages_("token_pending_messages") {
-  command_history_ = new ConsoleCommandHistory();
-
-  // By default, background messages are not blocked ( esc - b for toogle )
-  block_background_messages_ = false;
-
-  // Internal flag to quit console ( i.e. the user has tiped command quit )
-  quit_console_ = false;
+Console::Console()
+  : au::Thread("Console")
+    , command_history_(new ConsoleCommandHistory())
+    , token_pending_messages_("token_pending_messages")
+    , block_background_messages_(false)  // By default, background messages are not blocked ( esc - b for toogle )
+    , quit_console_(false) {  // Internal flag to quit console ( i.e. the user has tiped command quit )
 }
 
 Console::~Console() {
@@ -98,7 +96,7 @@ void Console::StartConsole(bool block_thread) {
 }
 
 void Console::StopConsole() {
-  if (isBackgroundThread()) {
+  if (IsBackgroundThread()) {
     quit_console_ = true;   // Interal flag to make sure background thread is finished
   } else {
     StopThread();   // Stop background thread directly
@@ -115,7 +113,7 @@ void Console::PrintCommand() {
   // Compute terminal width and available space for the command
   int w = GetTerminalWidth();
   int w_available = w - prompt.length() - 7;
-  int command_len = (int)_command.length();
+  int command_len = static_cast<int>(_command.length());
 
   ClearTerminalLine();
   int command_begin = 0;
@@ -137,7 +135,7 @@ void Console::PrintCommand() {
   if (command_begin > 0) {
     printf("...");
   }
-  for (int i = command_begin; i < command_end; i++) {
+  for (int i = command_begin; i < command_end; ++i) {
     printf("%c", _command[i]);
   }
   if (command_end < command_len) {
@@ -151,7 +149,7 @@ void Console::PrintCommand() {
     if (command_begin > 0) {
       printf("...");
     }
-    for (int i = command_begin; i < _pos; i++) {
+    for (int i = command_begin; i < _pos; ++i) {
       printf("%c", _command[i]);
     }
   }
@@ -159,7 +157,7 @@ void Console::PrintCommand() {
   fflush(stdout);
 }
 
-bool Console::IsInputReady() {
+bool Console::IsInputReady() const {
   struct timeval timeVal;
 
   timeVal.tv_sec = 0;
@@ -259,18 +257,23 @@ void Console::AddEspaceSequence(const std::string& sequence) {
   escape_sequence_.addSequence(sequence);
 }
 
-void Console::ProcessEscapeSequenceInternal(std::string sequence) {
+void Console::ProcessEscapeSequenceInternal(const std::string& sequence) {
   if (sequence == au::str("b")) {
+    // When esc-b is typed, we toggle value of block_background_messages_
+    // When block_background_messages_ is true, messages sent to the console from other threads are displayed.
+    // When block_background_messages_ is false, these messages are retained until block_background_messages_ is true
+
     if (!IsThreadRunning()) {
       LOG_SW(("Console thread is not yet running"));
       return;
     }
 
-    // It is theoretically impossible, but just in case
-    if (!isBackgroundThread()) {
+    // This method can only be called from background thread while processing escalpe sequences
+    if (!IsBackgroundThread()) {
       return;
     }
 
+    // Toggle value of block_background_messages_ flag
     block_background_messages_ = !block_background_messages_;
 
     if (block_background_messages_) {
@@ -445,26 +448,40 @@ void Console::RunThread() {
 
       if (IsNormalChar(c)) {
         ProcessChar(c);
-      } else if (c == '\n') {
-        ProcessInternalCommand("return");
-      } else if (c == '\t') {
-        ProcessInternalCommand("tab");
-      } else if (c == 127) {
-        ProcessInternalCommand("del");
-      } else if (c == 11) {
-        ProcessInternalCommand("del_rest_line");
-      } else if (c == 1) {
-        ProcessInternalCommand("move_home");
-      } else if (c == 5) {
-        ProcessInternalCommand("move_end");
-      } else if (c == 23) {  // CTRL-W
-        ProcessInternalCommand("delete_word");
-      } else if (c == 20) {  // CTRL-W
-        ProcessInternalCommand("toogle");
-      } else if (c == 7) {  // bell
-        printf("%c", c);
       } else {
-        writeWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
+        switch (c) {
+          case '\n':
+            ProcessInternalCommand("return");
+            break;
+          case '\t':
+            ProcessInternalCommand("tab");
+            break;
+          case 127:
+            ProcessInternalCommand("del");
+            break;
+          case 11:
+            ProcessInternalCommand("del_rest_line");
+            break;
+          case 1:
+            ProcessInternalCommand("move_home");
+            break;
+          case 5:
+            ProcessInternalCommand("move_end");
+            break;
+          case 23:
+            ProcessInternalCommand("delete_word");
+            break;
+          case 20:
+            ProcessInternalCommand("toogle");
+            break;
+          case 7:
+            printf("%c", c);  // bell
+            break;
+
+          default:
+            writeWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
+            break;
+        }
       }
     } else if (entry.isEscapeSequence()) {
       std::string seq = entry.getEscapeSequece();
@@ -485,7 +502,7 @@ void Console::RunThread() {
 void Console::Write(au::ErrorManager& error) {
   const au::vector<ErrorMessage>& messages = error.errors();
 
-  for (size_t i = 0; i < messages.size(); i++) {
+  for (size_t i = 0; i < messages.size(); ++i) {
     ErrorMessage *item = messages[i];
 
     switch (item->type()) {
@@ -552,7 +569,7 @@ int Console::WaitWithMessage(const std::string& message, double sleep_time, Cons
 }
 
 void Console::writeOnConsole(const std::string& message) {
-  if (isBackgroundThread()) {
+  if (IsBackgroundThread()) {
     ClearTerminalLine();
 
     // Divide input message in lines
@@ -570,7 +587,7 @@ void Console::writeOnConsole(const std::string& message) {
       // Print all of them and return
       ClearTerminalLine();
       size_t max_pos = pos + num_lines_on_screen;
-      for (size_t i = pos; i < std::min(lines.size(), max_pos); i++) {
+      for (size_t i = pos; i < std::min(lines.size(), max_pos); ++i) {
         std::string line_to_print;
         if (lines[i].length() <= (size_t)x) {
           line_to_print = lines[i];
@@ -588,9 +605,11 @@ void Console::writeOnConsole(const std::string& message) {
         double p1 = (double)(pos) / (double)lines.size();
         double p2 = (double)(pos + num_lines_on_screen) / (double)lines.size();
 
-        printf("Lines %d-%d / %d [ %s ] [ space: next page c: continue q: quit ]", (int)(pos + 1),
-               (int)(pos + num_lines_on_screen), (int)lines.size(),
-               au::str_double_progress_bar(p1, p2, '.', '*', '.', 15).c_str());
+        printf("Lines %d-%d / %d [ %s ] [ space: next page c: continue q: quit ]"
+               , static_cast<int>(pos + 1)
+               , static_cast<int>(pos + num_lines_on_screen)
+               , static_cast<int>(lines.size())
+               , au::str_double_progress_bar(p1, p2, '.', '*', '.', 15).c_str());
         fflush(stdout);
 
         ConsoleEntry entry;
@@ -631,7 +650,7 @@ void Console::writeOnConsole(const std::string& message) {
 
 void Console::Write(const std::string& message) {
   // Accumulate message if necessary
-  if (!isBackgroundThread()) {
+  if (!IsBackgroundThread()) {
     au::TokenTaker tt(&token_pending_messages_);
     pending_messages_.push_back(message);
     return;

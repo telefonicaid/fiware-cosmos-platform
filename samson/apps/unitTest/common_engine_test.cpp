@@ -77,7 +77,6 @@ void close_samson_client_test(samson::SamsonClient *samson_client) {
 
   LOG_SM(("client disconnected"));
 
-  // Stop engine to avoid references to samson_client
   engine::Engine::StopEngine();
 
   LOG_SM(("engine  stopped"));

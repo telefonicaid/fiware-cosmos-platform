@@ -147,7 +147,7 @@ void LogProbe::Run() {
 
 void LogProbe::Process(au::SharedPointer<au::Log> log) {
   au::map<std::string, LogProbePlugin>::iterator it;
-  for (it = plugins_.begin(); it != plugins_.end(); it++) {
+  for (it = plugins_.begin(); it != plugins_.end(); ++it) {
     it->second->Process(log);
   }
 }

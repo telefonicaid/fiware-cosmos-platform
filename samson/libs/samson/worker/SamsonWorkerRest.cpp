@@ -97,7 +97,7 @@ void SamsonWorkerRest::process(au::SharedPointer<au::network::RESTServiceCommand
   } else if (command->format() == "html") {
     command->Append("<html><body>");
   } else if (command->format() == "json") {
-    command->Append("{");  // Returning an object
+    command->Append("{");  // Returning always a json-object
   }
 
   // Internal process of the command
@@ -409,8 +409,8 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
   }
 
   // Data instances
-  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(format.keyFormat);
-  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(format.valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(format.keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(format.valueFormat);
 
   if (!key_data || !value_data) {
     LM_E(("Queue '%s' has wrong format for REST query", queue_name.c_str()));

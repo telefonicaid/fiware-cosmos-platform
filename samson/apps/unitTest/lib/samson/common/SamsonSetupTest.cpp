@@ -72,5 +72,7 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
 
   au::ErrorManager error;
   au::RemoveDirectory(samson_home_dir, error);
+  EXPECT_FALSE(error.IsActivated());
   au::RemoveDirectory(samson_working_dir, error);
+  EXPECT_FALSE(error.IsActivated());
 }

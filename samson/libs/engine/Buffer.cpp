@@ -222,7 +222,7 @@ std::string Buffer::name() const {
   return name_;
 }
 
-void Buffer::WriteFile(const std::string& file_name, au::ErrorManager& error) {
+void Buffer::WriteFromFile(const std::string& file_name, au::ErrorManager& error) {
   size_t file_size = au::sizeOfFile(file_name);
 
   if (GetAvailableSizeToWrite() < file_size) {

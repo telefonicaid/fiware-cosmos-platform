@@ -79,8 +79,8 @@ BlockLookupList::BlockLookupList(Block *block) {
   unsigned int offset = 0;
   unsigned int noOfKvs = 0;
   char *kvsStart = data + sizeof(KVHeader);
-  Data *keyData = au::Singleton<ModulesManager>::shared()->getData(kvFormat.keyFormat);
-  Data *valueData = au::Singleton<ModulesManager>::shared()->getData(kvFormat.valueFormat);
+  Data *keyData = au::Singleton<ModulesManager>::shared()->GetData(kvFormat.keyFormat);
+  Data *valueData = au::Singleton<ModulesManager>::shared()->GetData(kvFormat.valueFormat);
   DataInstance *keyDataInstance = reinterpret_cast<DataInstance *>(keyData->getInstance());
   DataInstance *valueDataInstance = reinterpret_cast<DataInstance *>(valueData->getInstance());
   int maxEntries = 0;
@@ -173,7 +173,7 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
   int keySize;
   int testKeySize;
   char keyName[1024];
-  Data *keyData = au::Singleton<ModulesManager>::shared()->getData(kvFormat.keyFormat);
+  Data *keyData = au::Singleton<ModulesManager>::shared()->GetData(kvFormat.keyFormat);
   DataInstance *keyDataInstance = reinterpret_cast<DataInstance *>(keyData->getInstance());
   int compare;
 
@@ -207,7 +207,7 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
     if (compare == 0) {
       testKeySize = keyDataInstance->parse(head[testIx].keyP);
 
-      Data *valueData = au::Singleton<ModulesManager>::shared()->getData(kvFormat.valueFormat);
+      Data *valueData = au::Singleton<ModulesManager>::shared()->GetData(kvFormat.valueFormat);
       char *valueP = head[testIx].keyP + testKeySize;
       DataInstance *valueDataInstance = reinterpret_cast<DataInstance *>(valueData->getInstance());
 
@@ -235,7 +235,7 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
     testIx = (endIx - startIx) / 2 + startIx;
 
     if (startIx > endIx) {
-      LOG_M(logs.rest, ("Key '%s' not found", key ));
+      LOG_M(logs.rest, ("Key '%s' not found", key));
       command->AppendFormatedError("Key not found");
       return;
     }

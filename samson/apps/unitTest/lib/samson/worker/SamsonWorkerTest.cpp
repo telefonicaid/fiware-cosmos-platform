@@ -25,7 +25,6 @@ TEST(DISABLED_samson_worker_SamsonWorker, basic) {
   // Create a worker
   samson::SamsonWorker *worker = new samson::SamsonWorker("no_zk_host", 9000, 9001);
 
-  // Stop engine
   engine::Engine::StopEngine();
 
   // Remove worker

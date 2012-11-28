@@ -18,7 +18,7 @@ TEST(au_file, simple) {
   EXPECT_EQ(au::CreateDirectory(test_dir), au::OK)
   << "Error in createDirectory test";
 
-  EXPECT_EQ(au::CreateFullDirectory(test_dir + "/a/b/c/"), au::OK)
+  EXPECT_EQ(au::OK, au::CreateFullDirectory(test_dir + "/a/b/c/"))
   << "Error in createFullDirectory test";
 
   EXPECT_EQ(test_dir + "/a/b/c", au::GetCannonicalPath(test_dir + "/a/b/c/"))
@@ -30,4 +30,5 @@ TEST(au_file, simple) {
 
   au::ErrorManager error;
   au::RemoveDirectory(test_dir, error);
+  EXPECT_FALSE(error.IsActivated());
 }

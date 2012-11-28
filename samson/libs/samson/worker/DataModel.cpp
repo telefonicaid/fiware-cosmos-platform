@@ -715,7 +715,7 @@ void DataModel::ProcessRecoverDataModel(au::SharedPointer<gpb::DataModel> data_m
   data_model->mutable_current_data()->CopyFrom(data_model->previous_data());
 
   // Apply some selected data commits based on history
-  std::vector< std::pair<size_t, std::string> > commits;
+  std::vector<std::pair<size_t, std::string> > commits;
   for (int i = 0; i < data_model->commit_size(); i++) {
     if (IsRecoveryCommand(data_model->commit(i).message())) {
       commits.push_back(std::pair<size_t, std::string>(data_model->commit(i).id(), data_model->commit(i).message()));
@@ -745,7 +745,7 @@ void DataModel::ProcessConsolidateDataModel(au::SharedPointer<gpb::DataModel> da
 
   // Remove preivous commits
   size_t commit_id = data_model->previous_data().commit_id();
-  std::vector< std::pair<size_t, std::string> > commits;
+  std::vector<std::pair<size_t, std::string> > commits;
   for (int i = 0; i < data_model->commit_size(); i++) {
     if (data_model->commit(i).id() > commit_id) {    // Keep this commit since it is posterior
       commits.push_back(std::pair<size_t, std::string>(data_model->commit(i).id(), data_model->commit(i).message()));

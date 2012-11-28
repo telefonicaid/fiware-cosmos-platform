@@ -420,7 +420,6 @@ int main(int argC, const char *argV[]) {
   // Run worker console ( -fg is activated ) blocking this thread
   worker->StartConsole(true);
 
-  // Stop engine to clean up
   engine::Engine::StopEngine();
 
   LOG_M(samson::logs.cleanup, ("Engine stopped (worker at %p)", worker));

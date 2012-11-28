@@ -45,17 +45,17 @@ gpb::StreamOperation *getStreamOperation(gpb::Data *data, size_t stream_operatio
 }
 
 void reset_stream_operations(gpb::Data *data) {
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::StreamOperation> *operations = data->mutable_operations();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation> *operations = data->mutable_operations();
   while (operations->size() > 0) {
     operations->RemoveLast();
   }
 
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::QueueConnection> *connections = data->mutable_queue_connections();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::QueueConnection> *connections = data->mutable_queue_connections();
   while (connections->size() > 0) {
     connections->RemoveLast();
   }
 
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::BatchOperation> *batch_operations =
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::BatchOperation> *batch_operations =
     data->mutable_batch_operations();
   while (batch_operations->size() > 0) {
     batch_operations->RemoveLast();
@@ -63,7 +63,7 @@ void reset_stream_operations(gpb::Data *data) {
 }
 
 void removeStreamOperation(gpb::Data *data, const std::string& name) {
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::StreamOperation> *operations = data->mutable_operations();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation> *operations = data->mutable_operations();
 
   for (int i = 0; i < operations->size(); ++i) {
     if (name == operations->Get(i).name()) {
@@ -101,7 +101,7 @@ std::string getProperty(Environment *environment, const std::string& name, const
 }
 
 void unsetProperty(Environment *environment, const std::string& name) {
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::EnvironmentVariable> *e = environment->mutable_variable();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::EnvironmentVariable> *e = environment->mutable_variable();
 
   for (int i = 0; i < e->size(); ++i) {
     if (e->Get(i).name() == name) {
@@ -164,7 +164,7 @@ void reset_data(Data *data) {
     modules_queue->CopyFrom(*current_modules_queue);
   }
 
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::Queue> *queues = data->mutable_queue();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::Queue> *queues = data->mutable_queue();
   while (queues->size() > 0) {
     queues->RemoveLast();
   }
@@ -233,7 +233,7 @@ Queue *get_queue(Data *data, const std::string& queue_name) {
 }
 
 void removeQueue(Data *data, const std::string& name) {
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::Queue> *queues = data->mutable_queue();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::Queue> *queues = data->mutable_queue();
 
   for (int i = 0; i < queues->size(); ++i) {
     if (queues->Get(i).name() == name) {
@@ -315,7 +315,7 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
 
 
   // Remove the first time ( and probably the only one ) this block is in the queue
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::Block> *blocks = queue->mutable_blocks();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block> *blocks = queue->mutable_blocks();
   for (int i = 0; i < blocks->size(); ++i) {
     if (blocks->Get(i).block_id() == block_id) {
       // Check information is correct
@@ -426,7 +426,7 @@ bool string_starts_with(const std::string& s, const std::string& prefix) {
 }
 
 void remove_finished_operation(gpb::Data *data, bool all_flag) {
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::BatchOperation> *operations = data->mutable_batch_operations();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::BatchOperation> *operations = data->mutable_batch_operations();
 
   int i = 0;
   while (i < operations->size()) {
@@ -444,7 +444,7 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
     std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
 
     // Remove all queues and stream operations starting with this....
-    ::google::protobuf::RepeatedPtrField<::samson::gpb::Queue> *queues = data->mutable_queue();
+    ::google::protobuf::RepeatedPtrField< ::samson::gpb::Queue> *queues = data->mutable_queue();
     for (int j = 0; j < queues->size(); ++j) {
       std::string name = queues->Get(j).name();
       if (string_starts_with(name, prefix)) {
@@ -455,7 +455,7 @@ void remove_finished_operation(gpb::Data *data, bool all_flag) {
     }
 
     // Remove all queues and stream operations starting with this....
-    ::google::protobuf::RepeatedPtrField<::samson::gpb::StreamOperation> *stream_operations =
+    ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation> *stream_operations =
       data->mutable_operations();
     for (int j = 0; j < stream_operations->size(); ++j) {
       std::string name = stream_operations->Get(j).name();
@@ -635,7 +635,7 @@ std::string Get(const gpb::CollectionRecord& record, const std::string& field) {
 }
 
 void Sort(gpb::Collection *collection, const std::string& field) {
-  ::google::protobuf::RepeatedPtrField<::samson::gpb::CollectionRecord> *records = collection->mutable_record();
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::CollectionRecord> *records = collection->mutable_record();
 
   for (int i = 0; i < records->size(); ++i) {
     std::string f1 = Get(records->Get(i), field);

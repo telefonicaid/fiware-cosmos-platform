@@ -13,7 +13,7 @@ URL:       http://wikis.hi.inet/samson
 Source:    http://www.tid.es/%{name}-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-buildroot
 Requires:  protobuf, json-c, libzookeeper
-Buildrequires: protobuf-compiler protobuf-devel cmake boost-devel libedit-devel ncurses-devel gcc gcc-c++ make help2man libzookeeper-devel json-c-devel
+Buildrequires: protobuf-compiler protobuf-devel cmake boost-devel libedit-devel ncurses-devel gcc gcc-c++ make help2man libzookeeper-devel json-c-devel mongo-devel
 
 Requires(pre): shadow-utils
 
@@ -88,7 +88,7 @@ grep -v "samsonLevelMonitor\|samsonTopicMonitor\|delilah_graph\|samsonLocal\|inc
 %package server
 Summary: SAMSON Platform server component
 Group: Applications/Engineering
-Requires: %{name} = %{version}-%{release}, %{name}-logserver == %{version}-%{release}, protobuf, ntp,tid-mongodb, json-c
+Requires: %{name} = %{version}-%{release}, %{name}-logserver == %{version}-%{release}, protobuf, ntp, json-c
 %description server
 
 %post server
@@ -107,6 +107,7 @@ bash /opt/samson/bin/samsonInitSetup
 Summary: SAMSON Platform analytical modules
 Group: Applications/Engineering
 %description modules
+Requires: %{name} = %{version}-%{release}, mongo
 
 %files modules -f MANIFEST.samson-modules
 

@@ -99,7 +99,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
     path_ = "/";
     for (size_t i = 0; i < path_components_.size(); ++i) {
       path_ += path_components_[i];
-      if (i != (path_components_.size() - 1 )) {
+      if (i != (path_components_.size() - 1)) {
         path_ += "/";
       }
     }
@@ -252,13 +252,28 @@ void RESTServiceCommand::AppendFormatedElement(const std::string& name, const st
   Append(output.str());
 }
 
+void RESTServiceCommand::AppendFormatedLiteral(const std::string& name, const std::string& value) {
+  std::ostringstream output;
+
+  if (format_ == "xml") {
+    au::xml_simple_literal(output, name, value);
+  } else if (format_ == "json") {
+    au::json_simple_literal(output, name, value);
+  } else if (format_ == "html") {
+    output << "<h1>" << name << "</h1>" << value;
+  } else {
+    output << name << ":\n" << value;
+  }
+  Append(output.str());
+}
+
 void RESTServiceCommand::AppendFormatedError(const std::string& message) {
-  AppendFormatedElement("error", message);
+  AppendFormatedLiteral("error", message);
 }
 
 void RESTServiceCommand::AppendFormatedError(int _http_state, const std::string& message) {
   set_http_state(_http_state);
-  AppendFormatedElement("error", message);
+  AppendFormatedLiteral("error", message);
 }
 
 void RESTServiceCommand::SetRedirect(const std::string& redirect_resource) {

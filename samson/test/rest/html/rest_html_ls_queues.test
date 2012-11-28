@@ -1,0 +1,11 @@
+--NAME--
+REST HTML ls_queues
+--SHELL--
+delilah  ${SAMSON_LOG_LEVELS} -command remove_all 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "add_stream_operation o1 txt.parser_words -input input -output words" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "add_stream_operation o2 txt.word_count_accumulate -input 'words words_count' -output  words_count" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "push input.txt input" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command wait 2>/dev/null
+curl -s http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/queues.html
+--EXPECT--
+<html><body><style>#table-5{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#table-5 tbody tr:hover td{color:#009;}</style><table id="table-5"><th>name</th><th>format</th><th>#kvs</th><th>size</th><tr><td>input</td><td>txt-txt</td><td>    0 </td><td>    0 </td></tr><tr><td>words</td><td>system.String-system.UInt</td><td>    0 </td><td>    0 </td></tr><tr><td>words_count</td><td>system.String-system.UInt</td><td> 10.0 </td><td>  110 </td></tr></table></body></html>

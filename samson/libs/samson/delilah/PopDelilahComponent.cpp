@@ -65,7 +65,7 @@ void PopDelilahComponent::run() {
   if (file_name_ != "") {
     if (force_flag_) {
       au::ErrorManager error;
-      au::removeDirectory(file_name_, error);
+      au::RemoveDirectory(file_name_, error);
     }
 
     if (mkdir(file_name_.c_str(), 0755)) {
@@ -82,8 +82,8 @@ void PopDelilahComponent::run() {
 
 void PopDelilahComponent::review() {
   if (file_name_ == "") {
-    send_main_request();       // If continuous, ask for more data
-  } else if (( commit_id_ = -1) && ( num_pop_queue_responses_ == 0 ) && ( cronometer_.seconds() > 5 )) {
+    send_main_request();  // If continuous, ask for more data
+  } else if ((commit_id_ == -1) && (num_pop_queue_responses_ == 0) && (cronometer_.seconds() > 5)) {
     send_main_request();
   }
 }
@@ -103,7 +103,7 @@ std::string PopDelilahComponent::getExtraStatus() {
 
   table.setTitle("Items for this pop operation");
 
-  au::map< size_t, PopDelilahComponentItem >::iterator it;
+  au::map<size_t, PopDelilahComponentItem>::iterator it;
   for (it = items_.begin(); it != items_.end(); it++) {
     PopDelilahComponentItem *item = it->second;
 
@@ -245,7 +245,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     // Search for this item
     PopDelilahComponentItem *item = items_.findInMap(pop_id);
     if (!item) {
-      LOG_SW(("Unknown pop item %lu in a PopBlockRequestResponse for delilah component %lu", pop_id, id ));
+      LOG_SW(("Unknown pop item %lu in a PopBlockRequestResponse for delilah component %lu", pop_id, id));
       return;
     }
 
@@ -266,7 +266,7 @@ void PopDelilahComponent::notify(engine::Notification *notification) {
 
 void PopDelilahComponent::check() {
   // Resent to other workers if necessary
-  au::map< size_t, PopDelilahComponentItem >::iterator it;
+  au::map<size_t, PopDelilahComponentItem>::iterator it;
   for (it = items_.begin(); it != items_.end(); it++) {
     PopDelilahComponentItem *item = it->second;
     if (item->buffer() == NULL) {
@@ -287,7 +287,6 @@ void PopDelilahComponent::check() {
     // Get buffer for this item ( if available )
     engine::BufferPointer buffer = item->buffer();
     if (buffer == NULL) {
-      LOG_SW(("No buffer available in response to pop request"));
       return;
     }
 
@@ -297,8 +296,8 @@ void PopDelilahComponent::check() {
                                       , file_name_.c_str()
                                       , item->pop_id());
 
-      au::SharedPointer< engine::DiskOperation> operation(engine::DiskOperation::newWriteOperation(buffer, file_name,
-                                                                                                   engine_id()));
+      au::SharedPointer<engine::DiskOperation> operation(engine::DiskOperation::newWriteOperation(buffer, file_name,
+                                                                                                  engine_id()));
       LOG_M(logs.delilah_components, ("Add write operation on file:'%s'", file_name.c_str()));
       engine::Engine::disk_manager()->Add(operation);
       num_pending_write_operations_++;

@@ -82,6 +82,7 @@ Delilah::Delilah(std::string connection_type, size_t delilah_id) :
 }
 
 Delilah::~Delilah() {
+  network->ClearConnections();
   clearAllComponents();
 }
 

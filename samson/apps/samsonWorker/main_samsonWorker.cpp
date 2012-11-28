@@ -417,10 +417,9 @@ int main(int argC, const char *argV[]) {
   // Add samson::W M
   au::log_central->evalCommand("log_set samson::W M");
 
-  // Run worker console ( -fg is activated )
-  worker->runConsole();
+  // Run worker console ( -fg is activated ) blocking this thread
+  worker->StartConsole(true);
 
-  // Stop engine to clean up
   engine::Engine::StopEngine();
 
   LOG_M(samson::logs.cleanup, ("Engine stopped (worker at %p)", worker));

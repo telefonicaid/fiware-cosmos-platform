@@ -44,27 +44,19 @@ samson::DelilahConsole *init_delilah_test() {
 }
 
 void close_delilah_test(samson::DelilahConsole *delilahConsole) {
-  engine::Engine::StopEngine();
-
+  // Stop delilah console
   if (delilahConsole) {
     LOG_SM(("delilahConsole->stop()"));
-    delilahConsole->stop();
-  }
-
-  // Wait all threads to finish
-  LOG_SM(("From close_delilah_test, waiting all threads to finish"));
-  au::Singleton<au::ThreadManager>::shared()->wait("Delilah test");
-
-  // Clear google protocol buffers library
-  // google::protobuf::ShutdownProtobufLibrary();
-
-  if (delilahConsole != NULL) {
+    delilahConsole->StopConsole();
     delete delilahConsole;
     delilahConsole = NULL;
   }
 
-  LOG_SW(("Finishing delilah"));
-  LOG_SW(("Calling to destroy ModulesManager"));
+  engine::Engine::StopEngine();
+
+  // Wait all threads to finish
+  LOG_SM(("From close_delilah_test, waiting all threads to finish"));
+  au::Singleton<au::ThreadManager>::shared()->wait("Delilah test");
 
   lmCleanProgName();
 }

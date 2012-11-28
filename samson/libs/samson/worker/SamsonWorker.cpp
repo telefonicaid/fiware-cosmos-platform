@@ -114,7 +114,7 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
 
 void SamsonWorker::Review() {
   // If zoo connection is not valid, come back to unconnected
-  if ((zoo_connection_ != NULL) && ( zoo_connection_->GetConnectionTime() > 5 )  && !zoo_connection_->IsConnected()) {
+  if ((zoo_connection_ != NULL) && (zoo_connection_->GetConnectionTime() > 5)  && !zoo_connection_->IsConnected()) {
     ResetToUnconnected();
   }
 
@@ -283,7 +283,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
   // If an overload-error is received, add an alert to not send more request to this worker in the next seconds....
   if (packet->from.node_type == WorkerNode) {
-    if (packet->message->has_error() && ( packet->message->error().message() == SAMSON_ERROR_OVERLOADED )) {
+    if (packet->message->has_error() && (packet->message->error().message() == SAMSON_ERROR_OVERLOADED)) {
       worker_alert_.AddAlert(packet->from.id, 5);  // 5 seconds of peace for this worker
     }
   }
@@ -322,7 +322,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     if (block == NULL) {
       LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Unknown block... returning error"
                                  , str_block_id(block_id).c_str()
-                                 , packet->from.id ));
+                                 , packet->from.id));
       PacketPointer p(new Packet(Message::BlockRequestResponse));
       p->to = packet->from;
       p->message->set_block_id(block_id);
@@ -349,7 +349,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
       LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Answering now since block is in mem"
                                  , str_block_id(block_id).c_str()
-                                 , packet->from.id ));
+                                 , packet->from.id));
 
       PacketPointer p(new Packet(Message::BlockRequestResponse));
       p->to = packet->from;
@@ -370,7 +370,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Scheduling task W%lu"
                                , str_block_id(block_id).c_str()
                                , packet->from.id
-                               , task_id ));
+                               , task_id));
     return;
   }
 
@@ -491,7 +491,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
     if (packet->from.id == 0) {
-      LOG_SW(("Received a push packet from a delilah_id = 0. Rejected" ));
+      LOG_SW(("Received a push packet from a delilah_id = 0. Rejected"));
       return;
     }
 
@@ -828,10 +828,10 @@ void SamsonWorker::evalCommand(const std::string& command) {
   }
 
   if (main_command == "quit") {
-    quitConsole();
+    StopConsole();
   }
   if (main_command == "exit") {
-    quitConsole();
+    StopConsole();
   }
   if (main_command == "threads") {
     writeOnConsole(au::Singleton<au::ThreadManager>::shared()->str());
@@ -927,7 +927,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Vis
   // Get current data model
   au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
 
-  if (( cluster_info == NULL ) || ( data_model == NULL)) {
+  if ((cluster_info == NULL) || (data_model == NULL)) {
     return collection;
   }
 
@@ -996,7 +996,8 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
   } else {
     ::samson::add(record, "Status", state_message_, "different");
-    ::samson::add(record, "Modules",  modules_available_ ? "Yes" : "No", "different");
+    ::samson::add(record, "Modules",  modules_available_ ? au::str("Yes(%lu)",
+                                                                   last_modules_version_) : "No", "different");
     ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
     ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
     ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
@@ -1059,7 +1060,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   // If no .modules queue, remove local directory and clear ModuleManager
   if (!queue) {
     // Clear modules
-    au::Singleton<ModulesManager>::shared()->clearModulesManager();
+    au::Singleton<ModulesManager>::shared()->ClearModulesManager();
     last_modules_version_ = SIZE_T_UNDEFINED;
     modules_available_ = true;
     return;
@@ -1080,27 +1081,29 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   if (missing_blocks > 0) {
     modules_available_ = false;
     last_modules_version_ = SIZE_T_UNDEFINED;
-    LOG_M(logs.modules_manager, ("Returns because %d missing_blocks", missing_blocks));
-    au::Singleton<ModulesManager>::shared()->clearModulesManager();
+    LOG_W(logs.modules_manager, ("Not possible to load modules because there are %d missing_blocks", missing_blocks));
+    au::Singleton<ModulesManager>::shared()->ClearModulesManager();
     return;
   }
 
   modules_available_ = true;
   size_t commit_id = queue->commit_id();
   if ((last_modules_version_ != SIZE_T_UNDEFINED) && (commit_id <= last_modules_version_)) {
-    return;     // Not necessary to update
+    LOG_V(logs.modules_manager,
+          ("Not necessary to reaload modules since we have the last version %lu", last_modules_version_));
+    return;     // Not necessary to update since we have the last version
   }
 
   // Update this version
   last_modules_version_ = commit_id;
 
   // Clear modules
-  au::Singleton<ModulesManager>::shared()->clearModulesManager();
+  au::Singleton<ModulesManager>::shared()->ClearModulesManager();
 
   // Clear directory
-  au::ErrorManager error;
+  au::ErrorManager error_rm_directory;
   std::string directory = au::Singleton<SamsonSetup>::shared()->worker_modules_directory();
-  au::removeDirectory(directory, error);
+  au::RemoveDirectory(directory, error_rm_directory);
   au::CreateDirectory(directory);
 
   // Write each loaded file
@@ -1116,31 +1119,26 @@ void SamsonWorker::ReloadModulesIfNecessary() {
     }
 
     engine::BufferPointer buffer = block->buffer();
-
     if (buffer == NULL) {
-      // Write file
-      std::string source_file_name = block->file_name();
-      size_t file_size = au::sizeOfFile(source_file_name);
-
-      buffer = engine::Buffer::Create(au::str("Module %s", source_file_name.c_str()), file_size);
-      au::ErrorManager error_writing_file;
-      buffer->WriteFile(source_file_name, error_writing_file);
-
-      if (error_writing_file.IsActivated()) {
-        LOG_SW(("Error reading module file %s", source_file_name.c_str()));
-        continue;
-      }
+      buffer = block->GetBufferFromDisk();
+    }
+    if (buffer == NULL) {
+      LOG_SW(("Error reading module from block %lu file %s", block->block_id(), block->file_name().c_str()));
+      continue;
     }
 
-    std::string target_file_name = au::str("%s/module_%d", directory.c_str(), i);
+    std::string target_file_name = au::str("%s/module_%05d", directory.c_str(), i);
     FILE *target_file = fopen(target_file_name.c_str(), "w");
     fwrite(buffer->data() + sizeof(KVHeader), buffer->size() - sizeof(KVHeader), 1, target_file);
-
     fclose(target_file);
   }
 
   // Reload modules from this directory
-  au::Singleton<ModulesManager>::shared()->addModulesFromDirectory(directory);
+  au::ErrorManager error;
+  au::Singleton<ModulesManager>::shared()->AddModulesFromDirectory(directory, error);
+  if (error.IsActivated()) {
+    LOG_W(logs.worker, ("Error reloading modules: %s", error.GetMessage().c_str()));
+  }
 }
 
 bool SamsonWorker::IsReady() {
@@ -1160,6 +1158,83 @@ void SamsonWorker::fill(gpb::CollectionRecord *record
   ::samson::add(record, "ZK size", data->ByteSize(), "uint64,different");
   ::samson::add(record, "data", info.str(), "different");
   ::samson::add(record, "#commit", data->commit_id(), "different");
+}
+
+au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visualization& visualization) {
+  // Get a copy of the current version
+  au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
+
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("modules");
+
+  gpb::Queue *queue = gpb::get_queue(data_model->mutable_current_data(), ".modules");
+
+  // Create a tmp directory
+  std::string directory = au::GetRandomDirectory();
+  au::CreateDirectory(directory);
+
+  // Set of names used so far to detect colision name...
+  std::set<std::string> module_names;
+
+  if (queue) {
+    for (int i = 0; i < queue->blocks_size(); i++) {
+      size_t block_id = queue->blocks(i).block_id();
+
+      gpb::CollectionRecord *record = collection->add_record();
+      ::samson::add(record, "block_id", str_block_id(block_id), "different");
+
+      stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
+      if (block == NULL) {
+        ::samson::add(record, "description", "", "left,diferent");
+        ::samson::add(record, "error", "Block not found in this worker. Waiting for it!", "left,different");
+        continue;
+      }
+
+      // Save to a temporal file
+      engine::BufferPointer buffer = block->buffer();
+      if (buffer == NULL) {
+        buffer = block->GetBufferFromDisk();
+      }
+      if (buffer == NULL) {
+        ::samson::add(record, "description", "", "left,diferent");
+        ::samson::add(record, "error", "Not possible to load content of this block", "left,different");
+        continue;
+      }
+
+      std::string target_file_name = au::str("%s/modules_%05d", directory.c_str(), i);
+      FILE *target_file = fopen(target_file_name.c_str(), "w");
+      fwrite(buffer->data() + sizeof(KVHeader), buffer->size() - sizeof(KVHeader), 1, target_file);
+      fclose(target_file);
+
+      au::ErrorManager error;
+      Module *module = ModulesManager::LoadModule(target_file_name, error);
+
+      if (error.IsActivated()) {
+        ::samson::add(record, "description", "", "left,diferent");
+        ::samson::add(record, "error", au::str("Error: %s", error.GetMessage().c_str()), "left,different");
+        continue;
+      }
+
+      std::string description = au::str("Module %s / %lu operations / %lu datas"
+                                        , module->name.c_str()
+                                        , module->operations.size()
+                                        , module->datas.size());
+      ::samson::add(record, "description", description, "left,diferent");
+
+      if (module_names.find(module->name) != module_names.end()) {
+        ::samson::add(record, "error", "Previous module with the same name", "left,diferent");
+      } else {
+        ::samson::add(record, "error", "", "left,diferent");
+        module_names.insert(module->name);
+      }
+      delete module;
+    }
+  }
+
+  au::ErrorManager error;
+  au::RemoveDirectory(directory, error);
+
+  return collection;
 }
 
 au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelStatus(const Visualization& visualization) {
@@ -1200,7 +1275,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelCommit
 }
 
 au::SharedPointer<GlobalBlockSortInfo> SamsonWorker::GetGlobalBlockSortInfo() {
-  if (( worker_controller_ == NULL ) || ( data_model_ == NULL )) {
+  if ((worker_controller_ == NULL) || (data_model_ == NULL)) {
     return au::SharedPointer<GlobalBlockSortInfo>(NULL);
   }
 
@@ -1303,13 +1378,13 @@ bool SamsonWorker::IsWorkerReadyForBlockRequest(size_t worker_id) {
   // Reject for output network queues
   size_t memory = engine::Engine::memory_manager()->memory();
   size_t all_queue_size = network_->GetAllQueuesSize();
-  if (all_queue_size > (0.25 * (double)memory )) {
+  if (all_queue_size > (0.25 * (double)memory)) {
     LOG_W(logs.worker, ("Rejecting block request: Size of all output-queue %s", au::str(all_queue_size).c_str()));
     return false;
   }
 
   size_t queue_size = network_->GetQueueSizeForWorker(worker_id);
-  if (queue_size > (0.2 * (double)memory )) {
+  if (queue_size > (0.2 * (double)memory)) {
     LOG_W(logs.worker, ("Rejecting block request: Size of output-queue %s", au::str(queue_size).c_str()));
     return false;
   }

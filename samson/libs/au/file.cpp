@@ -62,7 +62,7 @@ bool isRegularFile(std::string fileName) {
   return S_ISREG(buf.st_mode);
 }
 
-void removeDirectory(std::string fileName, au::ErrorManager & error) {
+void RemoveDirectory(std::string fileName, au::ErrorManager & error) {
   if (isRegularFile(fileName)) {
     // Just remove
     int s = remove(fileName.c_str());
@@ -93,7 +93,7 @@ void removeDirectory(std::string fileName, au::ErrorManager & error) {
         std::ostringstream localFileName;
         localFileName << fileName << "/" << pent->d_name;
 
-        removeDirectory(localFileName.str(), error);
+        RemoveDirectory(localFileName.str(), error);
       }
     }
     // finally, let's close the directory
@@ -151,7 +151,7 @@ std::vector<std::string> getRegularFilesFromDirectory(std::string directory) {
 }
 
 std::string get_directory_from_path(std::string path) {
-  if (( path == "") || ( path == ".") || ( path == "./")) {
+  if ((path == "") || (path == ".") || (path == "./")) {
     return "./";
   }
 

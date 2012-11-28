@@ -36,9 +36,9 @@ BufferProcessor::BufferProcessor(Channel *_channel) {
   splitter = NULL;
 
   if (splitter_name != "") {
-    samson::Operation *operation = au::Singleton<samson::ModulesManager>::shared()->getOperation(splitter_name);
+    samson::Operation *operation = au::Singleton<samson::ModulesManager>::shared()->GetOperation(splitter_name);
 
-    if (!operation || ( operation->getType() != samson::Operation::splitter )) {
+    if (!operation || (operation->getType() != samson::Operation::splitter)) {
       LOG_SW(("Non valid splitter %s. Not using any splitter", splitter_name.c_str()));
     } else {
       // Get instace of the operation
@@ -111,7 +111,7 @@ void BufferProcessor::process_intenal_buffer(bool finish) {
 
     // Data to be skip after process
     if (nextData) {
-      if (( nextData < buffer ) || (nextData > ( buffer + size))) {
+      if ((nextData < buffer) || (nextData > (buffer + size))) {
         LOG_SW((
                  "Splitter %s has returned a wrong nextData pointer when processing a buffer of %s. Skipping this buffer",
                  splitter_name.c_str(),
@@ -155,7 +155,7 @@ void BufferProcessor::push(engine::BufferPointer input_buffer) {
 
 
     // Process internal buffer every 2 seconds or when internal buffer is full
-    if (( size == max_size ) || ( cronometer.seconds() > 2 )) {
+    if ((size == max_size) || (cronometer.seconds() > 2)) {
       // Reset cronometer
       cronometer.Reset();
 

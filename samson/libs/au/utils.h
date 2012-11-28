@@ -16,10 +16,9 @@
 
 
 namespace au {
-  
 // Information about terminal
 int getTerminalColumns();
-void clearTerminalLine();
+void ClearTerminalLine();
 
 // Random 64 bit number
 size_t code64_rand();
@@ -30,4 +29,4 @@ std::string code64_str(size_t);
 void remove_return_chars(char *line);
 }
 
-#endif
+#endif  // ifndef _H_AU_UTILS

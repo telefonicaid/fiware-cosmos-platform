@@ -122,20 +122,6 @@ message QueueConnection
 	required string queue_target = 2; // Target queu
 }
 
-message Operation
-{
-	required string name = 1; // Name of the operation
-	required string type = 2; // map, reduce, etc...
-	required string help = 3; // Some help message for this operation	
-}
-
-message Module
-{
-	required string name = 1;          // Name of the module
-	required uint64 block_id = 2;      // Block where this module is stored
-	repeated Operation operations = 3; // Operations included in this module
-}
-
 message Data
 {
 	// Queues included in the model
@@ -150,9 +136,6 @@ message Data
 
 	// Queue connections ( to duplicate data automatically when added to a queue )
 	repeated QueueConnection queue_connections = 5;
-
-	// Modules
-	repeated Module modules = 6;
 
 	// Last commit seen so far ( and id for the next commit )
 	required uint64 commit_id = 7;

@@ -9,13 +9,11 @@
  * All rights reserved.
  */
 
+#include "au/file.h"
 #include "au/string/StringCollection.cpp"
 #include "gtest/gtest.h"
-#include "au/file.h"
 
 TEST(au_string_StringCollection, basic) {
-  
-  
   au::StringCollection string_collection;
 
   int a = string_collection.Add("a");
@@ -37,11 +35,11 @@ TEST(au_string_StringCollection, basic) {
 
 
 TEST(au_string_StringCollection, write_and_read) {
-  
   std::string test_dir = au::GetRandomDirectory();
+
   au::CreateDirectory(test_dir);
   std::string test_file = test_dir + "/string_collection_test";
-  
+
   au::StringCollection string_collection;
 
   int a = string_collection.Add("a");
@@ -50,9 +48,9 @@ TEST(au_string_StringCollection, write_and_read) {
 
   // Write to file
   size_t s = string_collection.GetSize();
-  FILE *file = fopen( test_file.c_str(), "w");
+  FILE *file = fopen(test_file.c_str(), "w");
   EXPECT_TRUE(file != NULL);
-  
+
   EXPECT_EQ(string_collection.Write(file), s);
   fclose(file);
 
@@ -62,8 +60,12 @@ TEST(au_string_StringCollection, write_and_read) {
   EXPECT_TRUE(file2 != NULL);
   string_collection2.Read(file2, s);
   fclose(file2);
-  
+
   EXPECT_TRUE(strcmp(string_collection2.Get(a), "a") == 0);
   EXPECT_TRUE(strcmp(string_collection2.Get(b), "b") == 0);
   EXPECT_TRUE(strcmp(string_collection2.Get(c), "ccc") == 0);
+
+  au::ErrorManager error;
+  au::RemoveDirectory(test_dir, error);
+  EXPECT_FALSE(error.IsActivated());
 }

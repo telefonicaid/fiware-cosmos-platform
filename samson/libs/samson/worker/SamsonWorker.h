@@ -105,7 +105,7 @@ public:
   au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetKVRangesCollection(const Visualization& visualization);
-
+  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualization);
 
   bool IsReady();     // Method to access if worker is ready
   bool IsConnected();     // Method to access if worker is ready

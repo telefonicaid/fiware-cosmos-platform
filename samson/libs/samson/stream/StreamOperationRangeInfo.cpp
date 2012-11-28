@@ -191,7 +191,7 @@ StreamOperationRangeInfo::StreamOperationRangeInfo(StreamOperationGlobalInfo *st
 // Get number of inputs that can be taken in small blocks
 int GetNumberOfDynamicInputs(gpb::StreamOperation *stream_operation) {
   std::string operation_name = stream_operation->operation();
-  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+  Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
 
   if (!operation) {
     LM_X(1, ("Internal error"));
@@ -215,7 +215,7 @@ int GetNumberOfDynamicInputs(gpb::StreamOperation *stream_operation) {
 // Get the number of inputs to take into account for triggering tasks
 int GetNumberOfInputsForThrigering(gpb::StreamOperation *stream_operation) {
   std::string operation_name = stream_operation->operation();
-  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+  Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
 
   if (!operation) {
     LM_X(1, ("Internal error"));
@@ -264,7 +264,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
 
   // Get operation to be executed
   std::string operation_name = stream_operation->operation();
-  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+  Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
   if (!operation) {
     SetError(au::str("Operation %s not found", operation_name.c_str()));
     return;
@@ -348,7 +348,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
   }
 
   // If state is too large, do not process it
-  if (( worker_task_ == NULL)) {
+  if ((worker_task_ == NULL)) {
     size_t total_input_size = inputs_data.GetTotalSize();
     size_t total_input_state_size = inputs_data.GetLastInputTotalSize();
 
@@ -357,7 +357,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
     size_t max_memory = 0.5 * memory;
 
     // In batch reduce operations, range will be divided if all data (all inputs) for this range is larger than max memory size per task
-    if (reduce_operation && batch_operation && ( total_input_size > max_memory )) {
+    if (reduce_operation && batch_operation && (total_input_size > max_memory)) {
       SetError(au::str("Not possible to process this range (%s)", au::str(total_input_size).c_str()));
       return;
     }
@@ -474,7 +474,7 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
   size_t memory = engine::Engine::shared()->memory_manager()->memory();
   size_t max_memory_per_task = memory / 2;
   std::string operation_name = stream_operation->operation();  // Get the operation to be executed
-  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+  Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
 
   if (error_.IsActivated()) {
     SetError("Error scheduling a task with a previous error");
@@ -614,7 +614,7 @@ bool StreamOperationRangeInfo::IsStreamOperationValid(gpb::Data *data
                                                       , const gpb::StreamOperation& stream_operation
                                                       , au::ErrorManager *error) {
   std::string operation_name = stream_operation.operation();
-  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+  Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
 
   if (!operation) {
     error->set(au::str("Operation %s not found", operation_name.c_str()));

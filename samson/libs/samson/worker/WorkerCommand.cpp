@@ -164,7 +164,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
       operation_name = cmd.get_argument(1);
     }
 
-    Operation *op = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
+    Operation *op = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
     if (!op) {
       error.set(au::str("Unknown operation:'%s' in command arguments to init_stream", operation_name.c_str()));
       return;
@@ -313,8 +313,6 @@ void WorkerCommand::Run() {
     return;
   }
 
-
-
   if (main_command == "data_model_commits") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->GetCollectionForDataModelCommits(visualization);
     c->set_title(command_);
@@ -339,10 +337,7 @@ void WorkerCommand::Run() {
     collections_.push_back(c);
     FinishWorkerTask();
     return;
-
-    return;
   }
-
 
   if (main_command == "ls_queue_blocks") {
     au::SharedPointer<gpb::Collection> c =
@@ -537,6 +532,14 @@ void WorkerCommand::Run() {
     return;
   }
 
+  if (main_command == "ls_modules_information") {
+    // Show information about loading process
+    au::SharedPointer<gpb::Collection> c = samson_worker_->GetModulesCollection(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
 
   if (main_command == "ls_modules") {
     au::SharedPointer<gpb::Collection> c = au::Singleton<ModulesManager>::shared()->GetModulesCollection(visualization);

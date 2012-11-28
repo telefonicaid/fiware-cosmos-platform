@@ -58,8 +58,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     return kv_file;
   }
 
-  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(kv_file->header_.keyFormat);
-  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(kv_file->header_.valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.valueFormat);
 
   if (!key_data) {
     error.set(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
@@ -88,8 +88,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   kv_file->auxiliar_buffer_->set_size(size_total);  // Set total size for statistics about used memory
 
   kv_file->kvs       = (KV *)kv_file->auxiliar_buffer_->data();
-  kv_file->info      = (KVInfo *)( kv_file->auxiliar_buffer_->data() + size_for_kvs );
-  kv_file->kvs_index = (int *)( kv_file->auxiliar_buffer_->data() + size_for_kvs + size_for_info );
+  kv_file->info      = (KVInfo *)(kv_file->auxiliar_buffer_->data() + size_for_kvs);
+  kv_file->kvs_index = (int *)(kv_file->auxiliar_buffer_->data() + size_for_kvs + size_for_info);
 
   // Local pointer fo easy access
   KV *kvs = kv_file->kvs;
@@ -142,7 +142,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   // Check correct formatted block
 
-  if (( total_info.size != kv_file->header_.info.size ) || ( total_info.kvs != kv_file->header_.info.kvs )) {
+  if ((total_info.size != kv_file->header_.info.size) || (total_info.kvs != kv_file->header_.info.kvs)) {
     error.set(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
                       kv_file->header_.info.str().c_str()));
     return au::SharedPointer<KVFile>(NULL);
@@ -180,7 +180,7 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
     size_t num_lines = 0;
     while (true) {
       size_t line_size = 0;
-      while (( data[line_begin + line_size ] != '\n') && ((line_begin + line_size) < data_size)) {
+      while ((data[line_begin + line_size ] != '\n') && ((line_begin + line_size) < data_size)) {
         line_size++;
       }
 

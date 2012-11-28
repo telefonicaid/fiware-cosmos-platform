@@ -112,11 +112,6 @@ public:
   Delilah(std::string connection_type, size_t delilah_id = static_cast<size_t>(-1));
   ~Delilah();
 
-  // Stop all threads ( just before calling delete )
-  void stop() {
-    network->ClearConnections();
-  }
-
   // Connect and disconnect to a cluster
   bool connect(std::string host, au::ErrorManager *error);      // Return true if it was possible to connect
   void disconnect();

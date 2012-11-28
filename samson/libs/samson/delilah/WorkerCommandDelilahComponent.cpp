@@ -193,7 +193,7 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
       size_t worker_id = it_responses->first;
       WorkerResponese *response = it_responses->second;
       if (response->error().IsActivated()) {
-        general_error_message.append(au::str("[Worker %lu] ", worker_id) + response->error().GetMessage() + "\n");
+        general_error_message.append(au::str("[Worker %lu] ", worker_id) + response->error().GetMessage());
         general_error = true;
       }
     }

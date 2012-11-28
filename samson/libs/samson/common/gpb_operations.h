@@ -114,6 +114,17 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
                                            , const std::vector<samson::KVRange>& ranges);
 
 void limit_last_commits(gpb::Data *data);
+
+/**
+ * \brief Get a particular field in a collection record
+ */
+
+std::string Get(const gpb::CollectionRecord&, const std::string& field);
+
+/**
+ * Sort a collection following a particular field
+ */
+void Sort(gpb::Collection *collection, const std::string& field);
 }
 }   // End of namespace samson::gpb
 

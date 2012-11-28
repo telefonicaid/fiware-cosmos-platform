@@ -187,7 +187,12 @@ int main(int argC, const char *argV[]) {
   engine::Engine::InitEngine(2, 10000000000, 1);
 
   // Load modules
-  au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
+  au::ErrorManager error;
+  au::Singleton<samson::ModulesManager>::shared()->AddModulesFromDefaultDirectory(error);
+  if (error.IsActivated()) {
+    LOG_SW(("Error loading modules: %s", error.GetMessage().c_str()));
+    // Do not stop the process for this error
+  }
 
   // Ignore verbose mode if interactive is activated
   if (interactive) {
@@ -299,7 +304,7 @@ int main(int argC, const char *argV[]) {
     // Add service to accept inter-channel connections
     main_stream_connector->init_inter_channel_connections_service();
 
-    main_stream_connector->runConsole();
+    main_stream_connector->StartConsole();
   } else {
     au::Cronometer cronometer_notification;
     while (true) {

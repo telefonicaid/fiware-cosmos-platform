@@ -47,8 +47,11 @@ private:
   // Auxiliar functions to satisfy Rest queries
   void ProcessIntern(au::SharedPointer<au::network::RESTServiceCommand> command);
   void ProcessDelilahCommand(std::string delilah_command, au::SharedPointer<au::network::RESTServiceCommand> cmd);
-  void process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command);
   void ProcessLookupSynchronized(au::SharedPointer<au::network::RESTServiceCommand> command);
+
+
+  // Commit to data model
+  void ProcessCommitToDatamodel(const std::string& c, au::SharedPointer<au::network::RESTServiceCommand> command);
 
   // Handy method to add a collection to the output
   // The same collections are generated to be sent to delilahs

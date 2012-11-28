@@ -474,7 +474,7 @@ std::string Delilah::getOutputForComponent(size_t _id) {
   if (!component) {
     return au::str("Delilah component %lu not found", _id);
   }
-  return component->output.str();
+  return component->output_component.str();
 }
 
 void Delilah::setBackgroundComponent(size_t _id) {

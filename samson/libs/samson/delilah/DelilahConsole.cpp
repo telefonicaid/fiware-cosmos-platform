@@ -841,12 +841,12 @@ void DelilahConsole::delilahComponentStartNotification(DelilahComponent *compone
   if (verbose_) {
     std::ostringstream o;
 
-    o << "Process started: " << au::code64_str(get_delilah_id()) << "_" << component->getId() << " "
-      << component->getConcept() << "\n";
+    o << "[ " << au::code64_str(get_delilah_id()) << "_" << component->getId() << " ] Process started: ";
+    o << component->getConcept();
     if (component->error.IsActivated()) {
       showErrorMessage(o.str());
     } else {
-      showWarningMessage(o.str());
+      showMessage(au::str(au::Yellow, "%s", o.str().c_str()));
     }
   }
 }
@@ -856,15 +856,18 @@ void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *compon
     return;   // No notification for hidden processes
   }
   if (verbose_) {
+    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(get_delilah_id()).c_str(), component->getId());
+
+    // Write all messages, warnings and errors for this worker task
+    Show(component->error, component_id);
+
     if (!component->error.IsActivated()) {
-      showWarningMessage(
-        au::str("Process finished: %s_%lu %s\n", au::code64_str(get_delilah_id()).c_str(),
-                component->getId(), component->getConcept().c_str()));
+      showMessage(au::str(au::Yellow, "[ %s_%lu ] Process finished: %s", au::code64_str(get_delilah_id()).c_str(),
+                          component->getId(), component->getConcept().c_str()));
     } else {
       showErrorMessage(
-        au::str("Process finished with error: %s_%lu %s\nERROR: %s\n",
-                au::code64_str(get_delilah_id()).c_str(), component->getId(),
-                component->getConcept().c_str(), component->error.GetMessage().c_str()));
+        au::str("[ %s_%lu ] Process finished with error: %s\n",
+                au::code64_str(get_delilah_id()).c_str(), component->getId(), component->getConcept().c_str()));
     }
   }
 }

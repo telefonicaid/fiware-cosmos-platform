@@ -53,7 +53,7 @@ public:
     return worker_id_;
   }
 
-  const au::ErrorManager& error() {
+  au::ErrorManager& error() {
     return error_;
   }
 

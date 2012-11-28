@@ -99,7 +99,7 @@ void DelilahComponent::setComponentFinished() {
 
   // Show output on screen
   if (print_output_at_finish) {
-    delilah->showMessage(output.str());
+    delilah->showMessage(output_component.str());
   }
   delilah->delilahComponentFinishNotification(this);
 }

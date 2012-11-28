@@ -112,7 +112,7 @@ std::string CommandItem::str_help() {
     std::ostringstream str_options;
     for (size_t i = 0; i < options_group_values.size(); i++) {
       str_options << options_group_values[i];
-      if (i != (options_group_values.size() - 1 )) {
+      if (i != (options_group_values.size() - 1)) {
         str_options << ",";
       }
     }
@@ -169,11 +169,11 @@ std::string CommandItem::str_usage_option() {
   }
 
   // Set of possible values
-  if (( options_group_values.size() > 0 ) && ( options_group_values.size() < 5 )) {
+  if ((options_group_values.size() > 0) && (options_group_values.size() < 5)) {
     output << "(";
     for (size_t i = 0; i < options_group_values.size(); i++) {
       output << options_group_values[i];
-      if (i != ( options_group_values.size() - 1 )) {
+      if (i != (options_group_values.size() - 1)) {
         output << "/";
       }
     }
@@ -196,11 +196,11 @@ std::string CommandItem::str_usage_argument() {
   output << name_;
 
   // Set of possible values
-  if (( options_group_values.size() > 0 ) && ( options_group_values.size() < 5 )) {
+  if ((options_group_values.size() > 0) && (options_group_values.size() < 5)) {
     output << "(";
     for (size_t i = 0; i < options_group_values.size(); i++) {
       output << options_group_values[i];
-      if (i != ( options_group_values.size() - 1 )) {
+      if (i != (options_group_values.size() - 1)) {
         output << "/";
       }
     }
@@ -354,11 +354,11 @@ void Command::autoComplete(au::console::ConsoleAutoComplete *info) {
     std::string last_word = info->lastCompletedWord();
 
     // Autocomplete if we are filling an option
-    if ((last_word.length() > 0) && ( last_word[0] == '-' )) {
+    if ((last_word.length() > 0) && (last_word[0] == '-')) {
       // Try to identify the options it is filling
       CommandItem *item = get_option(last_word);
 
-      if (item && ( item->type() != options::option_bool )) {
+      if (item && (item->type() != options::option_bool)) {
         // We are completing this item
         item->autoComplete(info);
         return;
@@ -376,7 +376,7 @@ void Command::autoComplete(au::console::ConsoleAutoComplete *info) {
   int argument_pos = 0;
   const std::vector<std::string>& previous_words = info->get_previous_words();
   for (size_t i = 1; i < previous_words.size(); i++) {
-    if (( previous_words[i].length() > 0 ) && ( previous_words[i][0] == '-' )) {
+    if ((previous_words[i].length() > 0) && (previous_words[i][0] == '-')) {
       CommandItem *item = get_option(previous_words[i]);
       if (!item) {
         return;           // Not possible to autocomplete since this error is wrong.
@@ -410,7 +410,7 @@ const std::vector<CommandItem *>& Command::arguments() {
 
 CommandItem *Command::get_option(const std::string& name) {
   // Robust for asking without "-"
-  if (( name.length() > 0 ) && ( name[0] != '-' )) {
+  if ((name.length() > 0) && (name[0] != '-')) {
     return get_option("-" + name);
   }
 
@@ -469,7 +469,7 @@ CommandItem *CommandCatalogue::add_option(const std::string& command_name
 
   // Robust for asking without "-"
   std::string final_name;
-  if (( name.length() > 0 ) && ( name[0] != '-' )) {
+  if ((name.length() > 0) && (name[0] != '-')) {
     final_name = "-" + name;
   } else {
     final_name = name;
@@ -646,7 +646,7 @@ std::string CommandCatalogue::getCommandsTable(const std::string& category) {
   au::tables::Table table(columns);
 
   for (size_t i = 0; i < commands_.size(); i++) {
-    if (category == "" || (commands_[i]->category() == category )) {
+    if (category == "" || (commands_[i]->category() == category)) {
       table.addRow(au::StringVector(commands_[i]->name(), commands_[i]->category(),
                                     commands_[i]->short_description()));
     }
@@ -775,15 +775,15 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   // Tokenize provided line
   token::Tokenizer tokenizer;
 
-  tokenizer.addSingleCharTokens(" \t\n");
-  token::TokenVector token_vector = tokenizer.parse(command_line);
+  tokenizer.AddSingleCharTokens(" \t\n");
+  token::TokenVector token_vector = tokenizer.Parse(command_line);
 
   // Get component eliminating spaces ( literals are placed toguether )
   std::vector<std::string> components;
   while (!token_vector.eof()) {
-    token::Token *token = token_vector.popToken();
-    if (!token->isSeparator()) {
-      components.push_back(token->content);
+    token::Token *token = token_vector.PopToken();
+    if (!token->IsSeparator()) {
+      components.push_back(token->content());
     }
   }
 
@@ -936,7 +936,7 @@ const std::string CommandInstance::command_line() {
 // Handy function to check content
 bool CommandInstance::get_bool_option(const std::string& name) {
   // Robust for asking without "-"
-  if (( name.length() > 0 ) && ( name[0] != '-' )) {
+  if ((name.length() > 0) && (name[0] != '-')) {
     return get_bool_option("-" + name);
   }
 
@@ -963,7 +963,7 @@ bool CommandInstance::get_bool_option(const std::string& name) {
 
 int CommandInstance::get_int_option(const std::string& name) {
   // Robust for asking without "-"
-  if (( name.length() > 0 ) && ( name[0] != '-' )) {
+  if ((name.length() > 0) && (name[0] != '-')) {
     return get_int_option("-" + name);
   }
 
@@ -997,7 +997,7 @@ int CommandInstance::get_int_option(const std::string& name) {
 
 size_t CommandInstance::get_uint64_option(const std::string& name) {
   // Robust for asking without "-"
-  if (( name.length() > 0 ) && ( name[0] != '-' )) {
+  if ((name.length() > 0) && (name[0] != '-')) {
     return get_uint64_option("-" + name);
   }
 
@@ -1028,7 +1028,7 @@ size_t CommandInstance::get_uint64_option(const std::string& name) {
 
 double CommandInstance::get_double_option(const std::string& name) {
   // Robust for asking without "-"
-  if (( name.length() > 0 ) && ( name[0] != '-' )) {
+  if ((name.length() > 0) && (name[0] != '-')) {
     return get_double_option("-" + name);
   }
 
@@ -1062,7 +1062,7 @@ double CommandInstance::get_double_option(const std::string& name) {
 
 std::string CommandInstance::get_string_option(const std::string& name) {
   // Robust for asking without "-"
-  if (( name.length() > 0 ) && ( name[0] != '-' )) {
+  if ((name.length() > 0) && (name[0] != '-')) {
     return get_string_option("-" + name);
   }
 
@@ -1135,7 +1135,7 @@ void CommandInstance::set_value(const std::string& name, const std::string& valu
 }
 
 bool CommandInstance::hasValueFor(const std::string& name) {
-  return ( values_.isInMap(name));
+  return (values_.isInMap(name));
 }
 
 std::string CommandInstance::ErrorMessage(const std::string error_message) {

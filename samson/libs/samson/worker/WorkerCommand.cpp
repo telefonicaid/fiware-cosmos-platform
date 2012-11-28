@@ -684,14 +684,26 @@ void WorkerCommand::Run() {
     return;
   }
 
+  /**
+   * "run" calls are transformed into "batch" to add extra information about delilah client
+   * "batch" command cannot be called directly from delilah
+   */
+
+  if (main_command == "batch") {
+    FinishWorkerTaskWithError("batch command cannot be called from delilah");
+    return;
+  }
+
   if (main_command == "run") {
     std::string operation = command_instance->get_string_argument("operation");
     std::string inputs = command_instance->get_string_option("input");
     std::string outputs = command_instance->get_string_option("output");
+    std::string env = command_instance->get_string_option("env");
 
-    std::string command = au::str("batch %s -input \"%s\" -output \"%s\" -delilah_id %lu -delilah_component_id %lu ",
-                                  operation.c_str(), inputs.c_str(), outputs.c_str(), delilah_id_,
-                                  delilah_component_id_);
+    std::string command = au::str(
+      "batch %s -input \"%s\" -output \"%s\" -delilah_id %lu -delilah_component_id %lu -env \"%s\"",
+      operation.c_str(), inputs.c_str(), outputs.c_str(), delilah_id_,
+      delilah_component_id_, env.c_str());
 
     au::ErrorManager error;
     std::string caller = au::str("run_deliah_%s_%lu", au::code64_str(delilah_id_).c_str(), delilah_component_id_);
@@ -707,16 +719,13 @@ void WorkerCommand::Run() {
     return;
   }
 
-  // Simple commands
-  au::ErrorManager error;
+  // Simple commands directly to data model
   RunCommand(command_, error_);
-  if (error.IsActivated()) {
+  if (error_.IsActivated()) {
     LOG_E(logs.worker_command,
-          ("Error in Commit for command:'%s', error:'%s'", command_.c_str(), error.GetMessage().c_str()));
-    FinishWorkerTaskWithError(error.GetMessage());
-  } else {
-    FinishWorkerTask();
+          ("Error in Commit for command:'%s', error:'%s'", command_.c_str(), error_.GetMessage().c_str()));
   }
+  FinishWorkerTask();
 }
 
 void WorkerCommand::FinishWorkerTaskWithError(std::string error_message) {
@@ -745,10 +754,25 @@ void WorkerCommand::FinishWorkerTask() {
     gpb::WorkerCommandResponse *c = p->message->mutable_worker_command_response();
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand_);
 
-    // Put the error if any
-    if (error_.IsActivated()) {
-      c->mutable_error()->set_message(error_.GetMessage());
+    // Put warnings and errors ( if any ) into the message for delilah client
+    for (size_t i = 0; i < error_.errors().size(); i++) {
+      switch (error_.errors()[i]->type()) {
+        case au::ErrorMessage::item_error:
+          c->add_error(error_.errors()[i]->GetMessage());
+          break;
+
+        case au::ErrorMessage::item_warning:
+          c->add_warning(error_.errors()[i]->GetMessage());
+          break;
+
+        case au::ErrorMessage::item_message:
+          // Currently not transmitted to delilah
+          break;
+        default:
+          break;
+      }
     }
+
     // Set delilah id
     p->message->set_delilah_component_id(delilah_component_id_);
 

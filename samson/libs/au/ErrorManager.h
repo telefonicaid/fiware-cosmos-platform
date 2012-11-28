@@ -79,17 +79,26 @@ public:
   void AddWarning(std::string message);
   void AddMessage(std::string message);
 
+  // Add all elements from another Error manager adding some string to the messages
+  void Add(const ErrorManager& error, const std::string& prefix_message);
+
   // Check if there is at least one error
   bool IsActivated() const;
+
+  // Check if there are warnings
+  bool HasWarnings() const;
 
   // Get the last error message
   std::string GetMessage() const;
 
   // Complete message error
-  std::string GetErrorMessage( const std::string& message) const;
-  
+  std::string GetErrorMessage(const std::string& message) const;
+
   // Get the all errors message in multiple lines
   std::string GetCompleteMessage();
+
+  // Get first warning
+  std::string GetLastWarning() const;
 
   // Reset messages and errors.
   void Reset();

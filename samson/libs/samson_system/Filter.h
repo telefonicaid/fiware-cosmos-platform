@@ -180,14 +180,14 @@ public:
     }
 
     // Get next token
-    au::token::Token *token = token_vector->popToken();
+    au::token::Token *token = token_vector->PopToken();
 
-    if (!token->isNormal()) {
-      error->set(au::str("Not valid element name for xml extraction (%s)", token->content.c_str()));
+    if (!token->IsNormal()) {
+      error->set(au::str("Not valid element name for xml extraction (%s)", token->content().c_str()));
       return NULL;
     }
 
-    return new FilterXMLElement(token->content);
+    return new FilterXMLElement(token->content());
   }
 
   virtual void run(KeyValue kv) {
@@ -329,7 +329,7 @@ public:
   FilterEmitTxt(samson::TXTWriter *writer, au::token::TokenVector *token_vector, au::ErrorManager *error) :
     writer_(writer), fields_(), separator_("|") {
     while (!token_vector->eof()) {
-      if (token_vector->getNextTokenContent() == "|") {
+      if (token_vector->GetNextTokenContent() == "|") {
         break;
       }
 
@@ -411,9 +411,9 @@ public:
 
     // Fields ( if any )
     while (!token_vector->eof()) {
-      if (token_vector->popNextTokensIfTheyAre("-", "separator")) {
+      if (token_vector->PopNextTwoTokensContentsAre("-", "separator")) {
         // Extract separator
-        au::token::Token *separator_token = token_vector->popToken();
+        au::token::Token *separator_token = token_vector->PopToken();
 
         if (!separator_token) {
           error->set("Wrong separator in filter command");
@@ -421,34 +421,34 @@ public:
           return NULL;
         }
 
-        if (separator_token->content.length() != 1) {
+        if (separator_token->content().length() != 1) {
           error->set(
             au::str("%s is a wrong separator in filter command ( only 1 char separators supported )",
-                    separator_token->content.c_str()));
+                    separator_token->content().c_str()));
           delete filter;
           return NULL;
         }
 
-        filter->separator_ = separator_token->content[0];
+        filter->separator_ = separator_token->content()[0];
         continue;
       }
 
-      au::token::Token *token = token_vector->popToken();
+      au::token::Token *token = token_vector->PopToken();
 
-      if (!token->isNormal()) {
-        error->set(au::str("Incorrect field definition %s", token->content.c_str()));
+      if (!token->IsNormal()) {
+        error->set(au::str("Incorrect field definition %s", token->content().c_str()));
         delete filter;
         return NULL;
       }
 
-      std::string field_definition = token->content;
+      std::string field_definition = token->content();
 
       if ((field_definition == "number") || (field_definition == "num") || (field_definition == "n")) {
         filter->fields_.push_back(number);
       } else if ((field_definition == "string") || (field_definition == "s")) {
         filter->fields_.push_back(string);
-      } else if (!token->isNormal()) {
-        error->set(au::str("Incorrect field definition %s", token->content.c_str()));
+      } else if (!token->IsNormal()) {
+        error->set(au::str("Incorrect field definition %s", token->content().c_str()));
         delete filter;
         return NULL;
       }

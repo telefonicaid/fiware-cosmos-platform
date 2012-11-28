@@ -122,9 +122,15 @@ void limit_last_commits(gpb::Data *data);
 std::string Get(const gpb::CollectionRecord&, const std::string& field);
 
 /**
- * Sort a collection following a particular field
+ * \brief Sort a collection following a particular field
  */
 void Sort(gpb::Collection *collection, const std::string& field);
+
+/**
+ * \brief Update environment varialbe with string provided by user ( typically from -env XXX option )
+ */
+
+void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au::ErrorManager &error);
 }
 }   // End of namespace samson::gpb
 

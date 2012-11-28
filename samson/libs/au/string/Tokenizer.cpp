@@ -14,69 +14,69 @@
 
 namespace au {
 namespace token {
-Token::Token(std::string _content, Type _type,  int _position) {
-  content = _content;
-  position = _position;
-  type  = _type;
+Token::Token(const std::string& content, Type type,  int position)
+  : content_(content)
+    , position_(position)
+    , type_(type) {
 }
 
-bool Token::is(std::string _content) {
-  return content == _content;
+bool Token::IsContent(const std::string& content) const {
+  return content_ == content;
 }
 
-bool Token::isLiteral() {
-  return (type == literal);
+bool Token::IsLiteral() const {
+  return (type_ == literal);
 }
 
-bool Token::isSeparator() {
-  return (type == separator);
+bool Token::IsSeparator() const {
+  return (type_ == separator);
 }
 
-bool Token::isNormal() {
-  return (type == normal);
+bool Token::IsNormal() const {
+  return (type_ == normal);
 }
 
-bool Token::isOperation() {
-  if (content == "+") {
+bool Token::IsOperation() const {
+  if (content_ == "+") {
     return true;
   }
-  if (content == "-") {
+  if (content_ == "-") {
     return true;
   }
-  if (content == "*") {
+  if (content_ == "*") {
     return true;
   }
-  if (content == "/") {
+  if (content_ == "/") {
     return true;
   }
   return false;
 }
 
-bool Token::isComparator() {
-  if (content == "==") {
+bool Token::IsComparator() const {
+  if (content_ == "==") {
     return true;
   }
-  if (content == "!=") {
+  if (content_ == "!=") {
     return true;
   }
-  if (content == "<=") {
+  if (content_ == "<=") {
     return true;
   }
-  if (content == ">=") {
+  if (content_ == ">=") {
     return true;
   }
-  if (content == "<") {
+  if (content_ == "<") {
     return true;
   }
-  if (content == ">") {
+  if (content_ == ">") {
     return true;
   }
 
   return false;
 }
 
-bool Token::isNumber() {
-  const char *data = content.c_str();
+bool Token::IsNumber() const {
+  const char *data = content_.c_str();
 
   bool found_sign  = false;
   bool found_dot   = false;
@@ -99,7 +99,7 @@ bool Token::isNumber() {
     }
 
     // Signs
-    if (( c == '-' ) || ( c == '+' )) {
+    if ((c == '-') || (c == '+')) {
       if (found_dot) {
         return false;                 // sign after dot
       }
@@ -125,16 +125,16 @@ bool Token::isNumber() {
   return true;
 }
 
-std::string Token::str() {
-  switch (type) {
+std::string Token::str() const {
+  switch (type_) {
     case normal:
-      return au::str("%s", content.c_str(), position);
+      return au::str("%s", content_.c_str(), position_);
 
     case literal:
-      return au::str("\"%s\"", content.c_str(), position);
+      return au::str("\"%s\"", content_.c_str(), position_);
 
     case separator:
-      return au::str("<%s>", content.c_str(), position);
+      return au::str("<%s>", content_.c_str(), position_);
   }
 
   LM_X(1, ("Internal error"));
@@ -143,154 +143,167 @@ std::string Token::str() {
 
 #pragma mark TokenVector
 
-TokenVector::TokenVector() {
-  // Init position
-  position = 0;
+TokenVector::TokenVector() : position_(0) {
 }
 
 bool compare_string_by_length(const std::string& s1, const std::string& s2) {
   return s1.length() > s2.length();
 }
 
-std::string TokenVector::getNextTokenContent() {
-  Token *token = getNextToken();
+std::string TokenVector::GetNextTokenContent() {
+  Token *token = GetNextToken();
 
   if (!token) {
     return "<empty>";
   } else {
-    return token->content;
+    return token->content();
   }
 }
 
-Token *TokenVector::getNextToken() {
-  if (position >= size()) {
+Token *TokenVector::GetNextToken() {
+  if (position_ >= size()) {
     return NULL;
   } else {
-    return &(*this)[position];
+    return &(*this)[position_];
   }
 }
 
-Token *TokenVector::popToken() {
-  if (position >= size()) {
+Token *TokenVector::PopToken() {
+  if (position_ >= size()) {
     return NULL;
   }
 
-  Token *t = &(*this)[position];
-  position++;
+  Token *t = &(*this)[position_];
+  position_++;
   return t;
 }
 
-bool TokenVector::popNextTokensIfTheyAre(std::string content, std::string content2) {
-  if ((size() == 0) || (size() == 1)) {
+bool TokenVector::PopNextTokenIfContentIs(const std::string& content) {
+  Token *t = GetNextToken();
+
+  if (!t) {
+    return false;
+  }
+  if (t->IsContent(content)) {
+    PopToken();
+    return true;
+  }
+  return false;
+}
+
+bool TokenVector::PopNextTwoTokensContentsAre(const std::string& content, const std::string&content2) {
+  if (!CheckNextTokenContentIs(content)) {
+    return false;
+  }
+  if (!CheckNextNextTokenContentIs(content2)) {
     return false;
   }
 
-  if (position >= ( size() - 1 )) {
-    return false;
-  }
-
-  if ((*this)[position].content != content) {
-    return false;
-  }
-
-  if ((*this)[position + 1].content != content2) {
-    return false;
-  }
-
-  // Extract both tokens
-  getNextToken();
-  getNextToken();
-
+  PopToken();
+  PopToken();
   return true;
 }
 
-bool TokenVector::popNextTokenIfItIs(std::string content) {
-  Token *t = getNextToken();
+bool TokenVector::CheckNextTokenContentIs(const std::string& content) {
+  Token *t = GetNextToken();
 
   if (!t) {
     return false;
   }
 
-  if (t->is(content)) {
-    // pop component
-    popToken();
-    return true;
-  }
-
-  return false;
-}
-
-bool TokenVector::checkNextTokenIs(std::string content) {
-  Token *t = getNextToken();
-
-  if (!t) {
-    return false;
-  }
-
-  if (t->is(content)) {
+  if (t->IsContent(content)) {
     return true;
   }
   return false;
 }
 
-bool TokenVector::checkNextNextTokenIs(std::string content) {
+bool TokenVector::CheckNextNextTokenContentIs(const std::string& content) {
   if ((size() == 0) || (size() == 1)) {
     return false;
   }
 
-  if (position >= ( size() - 1 )) {
+  if (position_ >= (size() - 1)) {
     return false;
   }
 
-  return ((*this)[position + 1].content == content );
+  return ((*this)[position_ + 1].content() == content);
 }
 
-std::string TokenVector::str() {
+std::string TokenVector::str() const {
   std::ostringstream output;
 
   output << "( " << size() << " tokens ) ";
-  for (size_t i = 0; i < size(); i++) {
+  for (size_t i = 0; i < size(); ++i) {
     output << (*this)[i].str() << " ";
   }
   return output.str();
 }
 
-void TokenVector::set_error(au::ErrorManager *error, std::string error_message) {
-  if (position < size()) {
-    error->set(au::str("%s at postition %d", error_message.c_str(), (*this)[position].position));
+void TokenVector::set_error(au::ErrorManager& error, const std::string& error_message) {
+  if (position_ < size()) {
+    error.set(au::str("%s at postition %d", error_message.c_str(), (*this)[position_].position()));
+  } else {
+    error.set(au::str("%s at the end of the command", error_message.c_str()));
+  }
+}
+
+void TokenVector::set_error(au::ErrorManager *error, const std::string& error_message) {
+  if (position_ < size()) {
+    error->set(au::str("%s at postition %d", error_message.c_str(), (*this)[position_].position()));
   } else {
     error->set(au::str("%s at the end of the command", error_message.c_str()));
   }
 }
 
-bool TokenVector::eof() {
-  return ( position >= size());
+bool TokenVector::eof() const {
+  return (position_ >= size());
 }
 
 // Add spetial tokens
-void Tokenizer::addSingleCharTokens(std::string char_tokens) {
-  for (size_t i = 0; i < char_tokens.length(); i++) {
+void Tokenizer::AddSingleCharTokens(const std::string& char_tokens) {
+  for (size_t i = 0; i < char_tokens.length(); ++i) {
     std::string token = char_tokens.substr(i, 1);
-    tokens.push_back(token);
+    tokens_.push_back(token);
   }
+
+  // Sort tokens so longer tokens come first
+  std::sort(tokens_.begin(), tokens_.end(), compare_string_by_length);
 }
 
 // General function to add spetial tokens
-void Tokenizer::addToken(std::string token) {
-  tokens.push_back(token);
+void Tokenizer::AddToken(const std::string& token) {
+  tokens_.push_back(token);
+
+  // Sort tokens so longer tokens come first
+  std::sort(tokens_.begin(), tokens_.end(), compare_string_by_length);
+}
+
+TokenVector TokenVector::GetTokensUntil(std::string limiter) {
+  TokenVector result_tokens;
+
+  while (true) {
+    Token *token = PopToken();
+
+    if (!token) {
+      return result_tokens;
+    }
+
+    if (token->content() == limiter) {
+      return result_tokens;
+    }
+
+    result_tokens.push_back(Token(token->content(), token->type(), token->position()));
+  }
 }
 
 // ------------------------------------------------
 // Tokenizer
 // ------------------------------------------------
 
-TokenVector Tokenizer::parse(std::string txt) {
+TokenVector Tokenizer::Parse(const std::string& txt) const {
   TokenVector token_vector;
 
-  // Sort tokens so longer tokens come first
-  std::sort(tokens.begin(), tokens.end(), compare_string_by_length);
-
-  size_t pos = 0;           // Begin of the considered "token"
+  size_t pos = 0;
   size_t i = 0;
 
   size_t len = txt.length();
@@ -306,7 +319,7 @@ TokenVector Tokenizer::parse(std::string txt) {
       }
       size_t pos_literal_begin = i + 1;
       size_t pos_literal_end = i + 1;
-      while ((pos_literal_end < txt.length()) && (txt[pos_literal_end] != '"' )) {
+      while ((pos_literal_end < txt.length()) && (txt[pos_literal_end] != '"')) {
         pos_literal_end++;
       }
 
@@ -331,7 +344,7 @@ TokenVector Tokenizer::parse(std::string txt) {
       }
       size_t pos_literal_begin = i + 1;
       size_t pos_literal_end = i + 1;
-      while ((pos_literal_end < txt.length()) && (txt[pos_literal_end] != '\'' )) {
+      while ((pos_literal_end < txt.length()) && (txt[pos_literal_end] != '\'')) {
         pos_literal_end++;
       }
 
@@ -352,8 +365,8 @@ TokenVector Tokenizer::parse(std::string txt) {
 
     std::string separator;
     bool separator_found = false;
-    for (size_t t = 0; t < tokens.size(); t++) {
-      std::string token = tokens[t];
+    for (size_t t = 0; t < tokens_.size(); ++t) {
+      std::string token = tokens_[t];
       if (i + token.length() <= txt.length()) {
         if (txt.substr(i, token.length()) == token) {
           separator_found = true;

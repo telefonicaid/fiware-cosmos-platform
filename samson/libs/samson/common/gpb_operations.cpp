@@ -16,6 +16,7 @@
 
 #include "au/log/LogMain.h"
 #include "au/string/StringUtilities.h"
+#include "au/string/Tokenizer.h"
 #include "au/utils.h"
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
@@ -645,6 +646,44 @@ void Sort(gpb::Collection *collection, const std::string& field) {
         records->SwapElements(i, j);
       }
     }
+  }
+}
+
+void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au::ErrorManager &error) {
+  au::token::Tokenizer tokenizer(",=");
+  au::token::TokenVector token_vector = tokenizer.Parse(env);
+
+  while (!token_vector.eof()) {
+    au::token::Token *token = token_vector.PopToken();
+    std::string concept = token->content();
+
+    if (!token_vector.CheckNextTokenContentIs("=")) {
+      token_vector.set_error(error, au::str("Not found '=' when processing %s", env.c_str()));
+      return;
+    }
+
+    // Remove "="
+    token_vector.PopToken();
+
+    token = token_vector.PopToken();
+    if (!token) {
+      token_vector.set_error(error, au::str("Not found '=' when processing %s", env.c_str()));
+      return;
+    }
+    std::string value = token->content();
+
+    if (!token_vector.eof()) {
+      if (!token_vector.CheckNextTokenContentIs(",")) {
+        token_vector.set_error(error, au::str("Not found ',' when processing %s", env.c_str()));
+        return;
+      }
+
+      // Remove ","
+      token_vector.PopToken();
+    }
+
+    // Set the value in the provided environment variable
+    setProperty(environment, concept, value);
   }
 }
 }

@@ -32,13 +32,13 @@ std::string ErrorMessage::GetMessage() const {
   return output.str();
 }
 
-std::string ErrorManager::GetErrorMessage( const std::string& message) const
-{
+std::string ErrorManager::GetErrorMessage(const std::string& message) const {
   std::ostringstream output;
+
   output << message << " ( " << GetMessage() << " )";
   return output.str();
 }
-  
+
 std::string ErrorMessage::GetMultiLineMessage() const {
   std::ostringstream output;
 
@@ -77,6 +77,13 @@ void ErrorManager::AddMessage(std::string message) {
   errors_.push_back(new ErrorMessage(ErrorMessage::item_message, contexts_, message));
 }
 
+void ErrorManager::Add(const ErrorManager& error, const std::string& prefix_message) {
+  for (size_t i = 0; i < error.errors_.size(); i++) {
+    std::string message = prefix_message + " " + error.errors_[i]->GetMessage();
+    errors_.push_back(new ErrorMessage(error.errors_[i]->type(), contexts_, message));
+  }
+}
+
 void ErrorManager::operator<<(const std::string& error_message) {
   AddError(error_message);
 }
@@ -90,6 +97,15 @@ bool ErrorManager::IsActivated() const {
   return false;
 }
 
+bool ErrorManager::HasWarnings() const {
+  for (size_t i = 0; i < errors_.size(); i++) {
+    if (errors_[i]->type() == ErrorMessage::item_warning) {
+      return true;
+    }
+  }
+  return false;
+}
+
 std::string ErrorManager::GetMessage() const {
   // Get one line of the last error
   if (errors_.size() == 0) {
@@ -97,6 +113,17 @@ std::string ErrorManager::GetMessage() const {
   } else {
     return errors_.back()->GetMessage();
   }
+}
+
+std::string ErrorManager::GetLastWarning() const {
+  size_t s = errors_.size();
+
+  for (size_t i = 0; i < s; i++) {
+    if (errors_[s - 1 - i]->type() == ErrorMessage::item_warning) {
+      return errors_[s - 1 - i]->GetMessage();
+    }
+  }
+  return "";
 }
 
 std::string ErrorManager::GetCompleteMessage() {

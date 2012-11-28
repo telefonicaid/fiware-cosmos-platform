@@ -996,8 +996,16 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
   } else {
     ::samson::add(record, "Status", state_message_, "different");
-    ::samson::add(record, "Modules",  modules_available_ ? au::str("Yes(%lu)",
-                                                                   last_modules_version_) : "No", "different");
+
+    if (modules_available_) {
+      if (last_modules_version_ != SIZE_T_UNDEFINED) {
+        ::samson::add(record, "Modules",  au::str("Yes (commit %lu)", last_modules_version_), "different");
+      } else {
+        ::samson::add(record, "Modules",  "No modules", "different");
+      }
+    } else {
+      ::samson::add(record, "Modules",  "No", "different");
+    }
     ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
     ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
     ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");

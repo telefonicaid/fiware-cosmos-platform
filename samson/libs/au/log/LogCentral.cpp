@@ -11,28 +11,42 @@
 
 #include "au/log/LogCentral.h"  // Own interface
 
-
 #include <assert.h>
 
+#include "au/ThreadManager.h"
+#include "au/console/CommandCatalogue.h"
+#include "au/log/LogCentralChannels.h"
+#include "au/log/LogCentralChannelsFilter.h"
 #include "au/log/LogCentralPluginFile.h"
 #include "au/log/LogCentralPluginScreen.h"
 #include "au/log/LogCentralPluginServer.h"
 #include "au/log/LogCommon.h"
-
-
+#include "au/network/FileDescriptor.h"
+#include "au/singleton/Singleton.h"
 
 namespace au {
 // Global instance of LogCentral
-LogCentral log_central;
+LogCentral *log_central = NULL;
 
-void *RunLogCentral(void *p) {
-  LogCentral *log_central = (LogCentral *)p;
-
-  log_central->Run();
-  return NULL;
+void LogCentral::InitLogSystem(const std::string& exec_name) {
+  StopLogSystem();   // Just in case it was previously added
+  log_central = new LogCentral();
+  log_central->Init(exec_name);
 }
 
-LogCentral::LogCentral() {
+void LogCentral::StopLogSystem() {
+  if (log_central) {
+    log_central->Stop();
+    delete log_central;
+    log_central = NULL;
+  }
+}
+
+LogCentral *LogCentral::Shared() {
+  return log_central;
+}
+
+LogCentral::LogCentral() : au::Thread("LogCentral") {
   fds_[0] = -1;
   fds_[1] = -1;
 
@@ -40,8 +54,6 @@ LogCentral::LogCentral() {
   fd_write_logs_ = NULL;
 
   node_ = "Unknown";  // No default name for this
-
-  quit_ = false;
 }
 
 void LogCentral::AddFilePlugin(const std::string& plugin_name, const std::string& file_name) {
@@ -99,16 +111,14 @@ void LogCentral::AddPlugin(const std::string& name, LogCentralPlugin *log_plugin
   plugins_.insertInMap(name, log_plugin);
 }
 
-void LogCentral::Init(const std::string& exec) {
-  // Flag to indicate background thread to quit
-  quit_ = false;
-
-  // keep the name of the executable
-  exec_ = exec;
-
-  if (fds_[0] != -1) {
-    // Already init
-    return;
+void LogCentral::CreatePipeAndFileDescriptors() {
+  if (fd_write_logs_ != NULL) {
+    fd_write_logs_->Close();
+    fd_write_logs_ = NULL;
+  }
+  if (fd_read_logs_ != NULL) {
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
   }
 
   int r = pipe(fds_);
@@ -120,53 +130,105 @@ void LogCentral::Init(const std::string& exec) {
   // Create file descriptor to write logs
   fd_write_logs_ = new au::FileDescriptor("fd for writting logs", fds_[1]);
   fd_read_logs_ = new au::FileDescriptor("fd for reading logs", fds_[0]);
+}
 
-  // Create background process for logs
-  au::ThreadManager *tm = au::Singleton<au::ThreadManager>::shared();
-  tm->addThread("log_thread", &t_, NULL, RunLogCentral, this);
+void LogCentral::Init(const std::string& exec) {
+  // keep the name of the executable
+  exec_ = exec;
+
+  if (fd_read_logs_) {
+    return;  // Already initialized
+  }
+  CreatePipeAndFileDescriptors();
+  StartThread();  // Start background thread to handle logs
 }
 
 void LogCentral::Stop() {
-  // Flush all pending logs
-  // Stop the background thread
-
-  // Set the quit flag
-  quit_ = true;
-
   // Close write file descriptor
-  fd_write_logs_->Close();
+  if (fd_write_logs_ != NULL) {
+    fd_write_logs_->Close();
+    fd_write_logs_ = NULL;
+  }
 
-  // Wait for the background threads
-  void *return_code;   // Return code to be ignored
-  pthread_join(t_, &return_code);
+  // Stop background thread
+  StopThread();
 
-  fd_read_logs_->Close();
+  // Close read pipe for logs
+  if (fd_read_logs_ != NULL) {
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
+  }
+
+  // Remove plugins
+  plugins_.clearMap();
+
+  // Reset channels registered so far
+  log_channels_.Clear();
+  ReviewChannelsLevels();
+
+  // Clear counter of logs
+  log_counter_.Clear();
 }
 
-void LogCentral::StopAndExit(int c) {
-  Stop();
-  if (paAssertAtExit) {
-    assert(false);
+void LogCentral::Flush() {
+  // Close write file descriptor
+  if (fd_write_logs_ != NULL) {
+    fd_write_logs_->Close();
+    fd_write_logs_ = NULL;
   }
-  exit(c);
+
+  // Stop background thread
+  StopThread();
+
+  // Close read pipe for logs
+  if (fd_read_logs_ != NULL) {
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
+  }
+
+  CreatePipeAndFileDescriptors();
+  StartThread();    // Start background thread to handle logs
+}
+
+void LogCentral::Pause() {
+  // Close write file descriptor
+  if (fd_write_logs_ != NULL) {
+    fd_write_logs_->Close();
+    fd_write_logs_ = NULL;
+  }
+
+  // Stop background thread
+  StopThread();
+
+  // Close read pipe for logs
+  if (fd_read_logs_ != NULL) {
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
+  }
+}
+
+void LogCentral::Play() {
+  CreatePipeAndFileDescriptors();
+  StartThread();    // Start background thread to handle logs
 }
 
 void LogCentral::Emit(Log *log) {
-  if (fd_write_logs_) {
-    log->Write(fd_write_logs_);   // Write to the pipe
+  // Write to the pipe
+  if (fd_write_logs_ == NULL) {
+    return;
   }
+  log->Write(fd_write_logs_);
 }
 
-void LogCentral::Run() {
+void LogCentral::RunThread() {
   // Background thread
-
   while (true) {
     LogPointer log(new Log());
     bool real_log = log->Read(fd_read_logs_);
 
     if (!real_log) {
-      if (quit_) {
-        return;  // Finish this thread
+      if (IsThreadQuiting()) {
+        return;  // Finish this thread if I am suppoused to do so
       }
       continue;
     }
@@ -196,8 +258,6 @@ void LogCentral::ReviewChannelsLevels() {
     int max_level = 0;
 
     if (log_channels_.IsRegistered(c)) {
-      // Go to all plugins...
-
       au::map<std::string, LogCentralPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); it++) {
         int level = it->second->log_channel_filter().GetLevel(c);
@@ -459,7 +519,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
 
       au::map<std::string, LogCentralPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); it++) {
-        table_definition += ( "|" + it->first + " (" +  it->second->str_info() + ")" + ",left" );
+        table_definition += ("|" + it->first + " (" +  it->second->str_info() + ")" + ",left");
       }
       table_definition += "|Description,left";
 

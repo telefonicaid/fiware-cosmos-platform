@@ -20,7 +20,7 @@
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/gpb_operations.h"
-#include "samson/common/samson.pb.h"
+
 #include "zoo/Connection.h"
 #include "zoo/ZooNodeCommiter.h"
 
@@ -77,7 +77,8 @@ public:
   size_t GetLastCommitIdForCandidateDataModel();
 
   // Method to discover if all operations have finished ( see wait command in delilah )
-  bool CheckForAllOperationsFinished();
+  bool CheckForAllStreamOperationsFinished();
+  bool CheckForAllBatchOperationsFinished(size_t delilah_id = SIZE_T_UNDEFINED);
 
   // Frezze data model if necessary
   void FreezeCandidateDataModel();

@@ -518,7 +518,7 @@ void WorkerCommand::Run() {
     std::string channel_pattern_string = command_instance->get_string_argument("channel_pattern");
     std::string str_log_level = command_instance->get_string_argument("log_level");
 
-    au::log_central.evalCommand("log_set " + channel_pattern_string + " " + str_log_level + " server");
+    au::log_central->evalCommand("log_set " + channel_pattern_string + " " + str_log_level + " server");
     FinishWorkerTask();
     return;
   }
@@ -526,11 +526,11 @@ void WorkerCommand::Run() {
   if (main_command == "wlog_set_log_server") {
     std::string host = command_instance->get_string_argument("host");
 
-    au::log_central.RemovePlugin("server");
-    au::log_central.AddServerPlugin("server", host, host + "_local_log.log");
-    au::log_central.evalCommand("log_set * X server");
-    au::log_central.evalCommand("log_set samson::W M server");
-    au::log_central.evalCommand("log_set samson::OP W server");
+    au::log_central->RemovePlugin("server");
+    au::log_central->AddServerPlugin("server", host, host + "_local_log.log");
+    au::log_central->evalCommand("log_set * X server");
+    au::log_central->evalCommand("log_set samson::W M server");
+    au::log_central->evalCommand("log_set samson::OP W server");
 
 
     FinishWorkerTask();
@@ -592,7 +592,7 @@ void WorkerCommand::Run() {
 
   if (main_command == "wait") {
     // Recovering old wait command
-    if (samson_worker_->data_model()->CheckForAllOperationsFinished() == false) {
+    if (samson_worker_->data_model()->CheckForAllStreamOperationsFinished() == false) {
       pending_to_be_executed_ = true;
       return;
     }
@@ -601,6 +601,32 @@ void WorkerCommand::Run() {
     FinishWorkerTask();
     return;
   }
+
+  if (main_command == "wait_batch_tasks") {
+    // Recovering old wait command
+    if (samson_worker_->data_model()->CheckForAllBatchOperationsFinished() == false) {
+      pending_to_be_executed_ = true;
+      return;
+    }
+
+    // Nothing else to be waited
+    FinishWorkerTask();
+    return;
+  }
+
+  if (main_command == "wait_my_batch_tasks") {
+    // Recovering old wait command
+    if (samson_worker_->data_model()->CheckForAllBatchOperationsFinished(delilah_id_) == false) {
+      pending_to_be_executed_ = true;
+      return;
+    }
+
+    // Nothing else to be waited
+    FinishWorkerTask();
+    return;
+  }
+
+
 
   if (main_command == "send_alert") {
     std::string message = command_instance->get_string_argument("message");

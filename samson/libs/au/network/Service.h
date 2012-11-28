@@ -43,9 +43,8 @@
 
 namespace au {
 /**
- * Namespace for au::network library ( Handy classes for socket connections management )
+ * \brief Namespace for au::network library (Handy classes for socket connections management)
  */
-
 namespace network {
 class Service;
 

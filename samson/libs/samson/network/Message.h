@@ -13,6 +13,7 @@
 
 #include <cstring>
 
+#include "logMsg/logMsg.h"
 /* ****************************************************************************
  *
  * FILE                     Message.h - message definitions for all Samson IPC
@@ -68,23 +69,28 @@ typedef struct Header {
   size_t gbufLen;
   size_t kvDataLen;
 
-  bool check() {
-    if (magic != 4050769273219470657) {
-      return false;
-    }
+  static const size_t kMagicNumber = 4050769273219470657;
+  static const size_t kMaxBufLen = 10000000;
+  static const size_t kMaxKvDataLen = 200 * 1024 * 1024;
 
-    if (gbufLen > 10000000) {
+  bool Check() const {
+    if (magic != kMagicNumber) {
+      LM_E(("Error checking received header, wrong magic number header(%lu) != MagicNumber(%lu)", magic, kMagicNumber));
       return false;
     }
-    if (kvDataLen > ( 200 * 1024 * 1024 )) {
+    if (gbufLen > kMaxBufLen) {
+      LM_E(("Error checking received header, wrong length(%lu) > MaxBufLen(%lu)", gbufLen, kMaxBufLen));
       return false;
     }
-
+    if (kvDataLen > kMaxKvDataLen) {
+      LM_E(("Error checking received header, wrong kvDataLen(%lu) > MaxKvDataLen(%lu)", kvDataLen, kMaxKvDataLen));
+      return false;
+    }
     return true;
   }
 
   void setMagicNumber() {
-    magic = 4050769273219470657;
+    magic = kMagicNumber;
   }
 } Header;
 

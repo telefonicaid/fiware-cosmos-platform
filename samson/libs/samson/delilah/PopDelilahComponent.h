@@ -18,17 +18,20 @@
 #include <sstream>  // std::ostringstream
 #include <vector>  // std::vector
 
+
+#include "au/ErrorManager.h"  // au::ErrorManager
+#include "au/log/LogMain.h"
 #include "au/statistics/CounterCollection.h"   // au::CounterCollection
 #include "au/statistics/Cronometer.h"      // au::Cronometer
-#include "au/string/Descriptors.h"              // au::CounterCollection
-#include "au/ErrorManager.h"  // au::ErrorManager
+#include "au/string/Descriptors.h"       // au::CounterCollection
 #include "au/string/StringUtilities.h"  // au::Format
 
 #include "engine/DiskManager.h"     // engine::DiskManager
 #include "engine/Engine.h"               // engine::NotificationListener
 #include "engine/NotificationListener.h"  // engine::NotificationListener
 
-#include "samson/common/samson.pb.h"  // samson::network
+#include "samson/common/Logs.h"
+// samson::network
 
 #include "DelilahComponent.h"  // samson::DelilahComponent
 #include "samson/delilah/Delilah.h"  // samson::Delilah
@@ -44,14 +47,14 @@ class Buffer;
 class PopDelilahComponentItem {
 public:
 
-  PopDelilahComponentItem(size_t pop_id, size_t block_id ) {
+  PopDelilahComponentItem(size_t pop_id, size_t block_id) {
     pop_id_ = pop_id;
     block_id_ = block_id;
   }
 
   void SetContent(engine::BufferPointer buffer) {
     if (buffer_ != NULL) {
-      LM_W(("Ignoring data received at PopDelilahComponentItem. Already received"));
+      LOG_SW(("Ignoring data received at PopDelilahComponentItem. Already received"));
       return;
     }
     buffer_ = buffer;
@@ -130,8 +133,13 @@ public:
   // Function to check what to do with finish items
   void check();
 
-  bool started() const { return started_; }
-  void set_started(bool value) { started_ = value; }
+  bool started() const {
+    return started_;
+  }
+
+  void set_started(bool value) {
+    started_ = value;
+  }
 
 private:
 
@@ -140,8 +148,7 @@ private:
 
   // Send request for a particular item
   void send_request(PopDelilahComponentItem *item) {
-    
-    LM_W(("******** Sent PopBlockRequest"));
+    LOG_SW(("******** Sent PopBlockRequest"));
     item->ResetRequest();            // Reset request
 
     // Select a worker
@@ -155,8 +162,8 @@ private:
     packet->message->set_delilah_component_id(id);
     packet->message->set_pop_id(item->pop_id());
     packet->message->set_block_id(item->block_id());
-    
-    LM_T(LmtDelilahComponent, ("pop request packet sent to worker_id_:%lu", worker_id_));
+
+    LOG_M(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
     delilah->network->Send(packet);
   }
 

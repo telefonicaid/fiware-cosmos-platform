@@ -25,7 +25,7 @@
 
 #include "samson/common/Logs.h"
 #include "samson/common/Visualitzation.h"
-#include "samson/common/samson.pb.h"
+
 
 #include "samson/worker/BlockRequest.h"
 

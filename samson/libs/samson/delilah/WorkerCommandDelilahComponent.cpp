@@ -135,12 +135,12 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
 
   if (packet->msgCode == Message::WorkerCommandResponse) {
     if (workers.find(worker_id) == workers.end()) {
-      LM_W(("WorkerCommandResponse received from worker %lu not involved in this operation. Ignoring...", worker_id));
+      LOG_SW(("WorkerCommandResponse received from worker %lu not involved in this operation. Ignoring...", worker_id));
       return;
     }
 
     if (responses.findInMap(worker_id) != NULL) {
-      LM_W(("Duplicated WorkerCommandResponse received from worker %lu.Ignoring...", worker_id));
+      LOG_SW(("Duplicated WorkerCommandResponse received from worker %lu.Ignoring...", worker_id));
       return;
     }
 

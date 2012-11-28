@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "au/file.h"        // Own interface
+#include "au/log/LogMain.h"
 #include "au/string/StringUtilities.h"
 
 namespace au {
@@ -187,7 +188,7 @@ std::string get_directory_from_path(std::string path) {
 Status CreateDirectory(std::string path) {
   if (mkdir(path.c_str(), 0755) == -1) {
     if (errno != EEXIST) {
-      LM_W(("Error creating directory %s (%s)", path.c_str(), strerror(errno)));
+      LOG_SW(("Error creating directory %s (%s)", path.c_str(), strerror(errno)));
       return Error;
     }
   }
@@ -210,7 +211,7 @@ Status CreateFullDirectory(std::string path) {
     accumulated_path += components[i];
     Status s = CreateDirectory(accumulated_path);
     if (s != OK) {
-      LM_W(("Error creating directory %s (%s)", accumulated_path.c_str(), status(s)));
+      LOG_SW(("Error creating directory %s (%s)", accumulated_path.c_str(), status(s)));
       return s;
     }
 
@@ -219,14 +220,15 @@ Status CreateFullDirectory(std::string path) {
 
   return OK;
 }
- 
-  std::string GetCannonicalPath(const std::string& path) {
 
-    size_t pos = path.size()-1;
-    while ( (pos>0) && path[pos]=='/')
-      pos--;
-    return path.substr( 0 , pos+1);
+std::string GetCannonicalPath(const std::string& path) {
+  size_t pos = path.size() - 1;
+
+  while ((pos > 0) && path[pos] == '/') {
+    pos--;
   }
+  return path.substr(0, pos + 1);
+}
 
 std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorManager& error) {
   std::vector<std::string> file_names;
@@ -270,24 +272,23 @@ std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorMa
 
   return file_names;
 }
-  
-  std::string path_from_directory(const std::string& directory, const std::string& file) {
-    if (directory.length() == 0) {
-      return file;
-    }
-    
-    if (directory[ directory.length() - 1 ] == '/') {
-      return directory + file;
-    } else {
-      return directory + "/" + file;
-    }
-  }
-  
-  std::string GetRandomDirectory()
-  {
-    char tmp_directory[100];
-    sprintf(tmp_directory, "/tmp/tmpXXXXXXX");
-    return mktemp( tmp_directory );
+
+std::string path_from_directory(const std::string& directory, const std::string& file) {
+  if (directory.length() == 0) {
+    return file;
   }
 
+  if (directory[ directory.length() - 1 ] == '/') {
+    return directory + file;
+  } else {
+    return directory + "/" + file;
+  }
+}
+
+std::string GetRandomDirectory() {
+  char tmp_directory[100];
+
+  sprintf(tmp_directory, "/tmp/tmpXXXXXXX");
+  return mktemp(tmp_directory);
+}
 }

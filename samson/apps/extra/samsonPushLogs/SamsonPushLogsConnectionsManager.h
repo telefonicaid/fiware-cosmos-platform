@@ -73,10 +73,10 @@ public:
     for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
       SamsonPushLogsConnection *connection = *it_connections;
       if (connection->IsFinished()) {
-        LM_M(("Dataset:%s finished", connection->GetQueueName()));
+        LOG_SM(("Dataset:%s finished", connection->GetQueueName()));
         delete connection;
         connections_.erase(it_connections);
-        LM_M(("New connections_.size():%d", connections_.size()));
+        LOG_SM(("New connections_.size():%d", connections_.size()));
         return;
       }
     }

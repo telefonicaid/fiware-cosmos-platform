@@ -38,7 +38,7 @@
 
 namespace au {
 /**
- * Name space for au::token library ( Generic tokenizer for simple language interpretation )
+ * \brief Name space for au::token library ( Generic tokenizer for simple language interpretation )
  */
 namespace token {
 class Token {

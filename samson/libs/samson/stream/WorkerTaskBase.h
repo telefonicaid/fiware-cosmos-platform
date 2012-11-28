@@ -21,7 +21,7 @@
 #include "au/string/StringUtilities.h"  // au::Format
 #include "engine/ProcessItem.h"      // engine::ProcessItem
 #include "samson/common/MessagesOperations.h"
-#include "samson/common/samson.pb.h"
+
 #include "samson/stream/Block.h"     // samson::Stream::Block
 #include "samson/stream/BlockList.h"  // stream::BlockList
 #include "samson/stream/BlockListContainer.h"
@@ -122,8 +122,10 @@ public:
   std::string GetActivitySummary();
   std::string GetProcessSummary();
   double GetProcessTime() const;
-  size_t GetInputSize() const;
-  size_t GetOutputSize() const;
+  FullKVInfo GetInputsInfo() const;
+  FullKVInfo GetOutputsInfo() const;
+  FullKVInfo GetInputInfo(int channel) const;
+  FullKVInfo GetOutputInfo(int channel) const;
 
   // For block ordering
   const std::vector<size_t>& input_block_ids() {

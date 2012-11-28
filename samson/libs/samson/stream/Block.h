@@ -39,7 +39,7 @@
 #include "samson/common/KVHeader.h"
 #include "samson/common/KVInfo.h"
 #include "samson/common/Visualitzation.h"
-#include "samson/common/samson.pb.h"
+
 #include "samson/module/KVSetStruct.h"              // samson::KVSetStruct
 #include "samson/stream/BlockInfo.h"                // struct BlockInfo
 #include "samson/stream/BlockLookupList.h"
@@ -47,7 +47,7 @@
 
 namespace samson {
 /**
- * Namespace for stream operations management in SAMSON library
+ * \brief Namespace for stream operations management in SAMSON library
  */
 namespace stream {
 class BlockList;

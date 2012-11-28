@@ -12,17 +12,18 @@
 
 #include <sys/time.h>                   // gettimeofday()
 
-#include "logMsg/logMsg.h"              // LM_M()
+#include "logMsg/logMsg.h"              // LOG_SM()
 
 #include "LockDebugger.h"               // LockDebugger
 #include "TokenTaker.h"                 // Own interface
-#include "au/statistics/Cronometer.h"              // au::Cronometer
 #include "au/ExecesiveTimeAlarm.h"
 #include "au/mutex/Token.h"             // au::Token
+#include "au/statistics/Cronometer.h"   // au::Cronometer
 
 namespace au {
-TokenTaker::TokenTaker(Token *token, const std::string& name) : name_(name) , token_(token) {
+TokenTaker::TokenTaker(Token *token, const std::string& name) : name_(name), token_(token) {
   au::ExecesiveTimeAlarm alarm("TokenTaker::TokenTaker");
+
   token->Retain();
 }
 

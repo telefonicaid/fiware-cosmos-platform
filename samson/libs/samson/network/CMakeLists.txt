@@ -44,4 +44,4 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonNetwork STATIC ${SOURCES} ${HEADERS} )
-
+ADD_DEPENDENCIES(samsonNetwork samsonCommon)

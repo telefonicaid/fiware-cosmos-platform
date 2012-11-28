@@ -16,19 +16,20 @@
  *
  * AUTHOR: Andreu Urruela
  */
-#include <iostream>
-#include <string>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "logMsg/logMsg.h"
-#include "logMsg/traceLevels.h"
-#include "parseArgs/parseArgs.h"
+#include <iostream>
+#include <string>
 
 #include "au/CommandLine.h"                     // au::CommandLine
 #include "au/console/Console.h"                 // au::console::Console
 #include "au/console/ConsoleAutoComplete.h"
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
+#include "parseArgs/parseArgs.h"
 
 #include "samson/common/MemoryCheck.h"          // samson::MemoryCheck
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
@@ -38,9 +39,6 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/module/KVFormat.h"             // samson::KVFormat
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
-
-
-
 
 /* ****************************************************************************
  *
@@ -214,23 +212,19 @@ public:
       return;
     }
 
-
     if (main_command == "save") {
-      int res = au::Singleton<samson::SamsonSetup>::shared()->Save();        // Save a new file with the current setup
-
+      bool saved_ok = au::Singleton<samson::SamsonSetup>::shared()->Save();        // Save a new file with the current setup
       std::string fileName = au::Singleton<samson::SamsonSetup>::shared()->setup_filename();
 
-      if (!res) {
+      if (saved_ok) {
         writeWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
         modified = false;
       } else {
         writeErrorOnConsole(au::str("Error saving file at %s", fileName.c_str()));
       }
 
-
       return;
     }
-
 
     if (main_command == "quit") {
       if (modified) {

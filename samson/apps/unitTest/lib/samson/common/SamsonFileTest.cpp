@@ -58,5 +58,5 @@ TEST(samson_common_SamsonFile, basic) {
     EXPECT_EQ(error.GetMessage(), "KVHeader error: wrong magic number") << "Wrong error message";
   }
 
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 }

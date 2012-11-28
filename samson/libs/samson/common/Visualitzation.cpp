@@ -17,8 +17,6 @@
 #include "samson/common/Visualitzation.h"
 
 namespace samson {
-  
-
 void Visualization::set_flag(const std::string& name, bool value) {
   if (value) {
     flags_activated_.insert(name);
@@ -41,12 +39,12 @@ bool Visualization::get_flag(const std::string& name) const {
     return false;
   }
 
-  LM_W(("Flag %s not defined for this visualitzation", name.c_str()));
+  LOG_SW(("Flag %s not defined for this visualitzation", name.c_str()));
   return false;   // Default value
 }
 
 void Visualization::set_pattern(const std::string& pattern) {
-  pattern_.set_pattern( pattern );
+  pattern_.set_pattern(pattern);
 }
 
 std::string Visualization::pattern() const {
@@ -55,6 +53,7 @@ std::string Visualization::pattern() const {
 
 bool Visualization::match(const std::string& value) const {
   bool ans = pattern_.match(value);
+
   return ans;
 }
 

@@ -16,9 +16,14 @@
 
 namespace au {
 const char *log_reseved_words[] =
-{ "node", "host", "type",   "channel",  "pid",       "tid",       "DATE"
-  ,       "date", "TIME",   "time",     "timestamp", "time_unix", "line","exec", "exec_short", "file"
-  ,       "text", "text80", "function", NULL };
+{ "node",       "host",             "type",               "channel",               "pid",                        "tid",
+  "DATE"
+  ,             "date",             "TIME",               "time",                  "timestamp",
+  "time_unix",
+  "line",       "exec",
+  "exec_short",
+  "file"
+  ,             "text",             "text80",             "function",              NULL };
 
 
 void Log::Set(const std::string& field_name, const std::string& field_value) {
@@ -36,8 +41,6 @@ bool Log::Read(au::FileDescriptor *fd) {
     return false;   // Just quit
   }
   if (!header.checkMagicNumber()) {
-    LM_E(("Wrong log header.Expected magic number %d but received %d. Closing connection..."
-          , _LM_MAGIC, header.magic ));
     return false;
   }
 
@@ -336,19 +339,23 @@ au::SharedPointer<au::tables::Table> getTableOfFields() {
 
 // Fancy functions to get the color of this log on screen
 au::Color Log::GetColor() {
-  if (log_data_.level < LOG_LEVEL_ERROR) {
-    return au::red;
+  if (log_data_.level <= LOG_LEVEL_ERROR) {
+    return au::BoldRed;
   }
 
   if (log_data_.level == LOG_LEVEL_WARNING) {
-    return au::magenta;
+    return au::BoldMagenta;
+  }
+
+  if (log_data_.level == LOG_LEVEL_VERBOSE) {
+    return au::Blue;
   }
 
   if (log_data_.level == LOG_LEVEL_MESSAGE) {
-    return au::blue;
+    return au::Yellow;
   }
 
-  return au::normal;
+  return au::Normal;
 }
 
 int Log::GetLogLevel(const std::string& str_log_level) {
@@ -405,7 +412,6 @@ std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::Err
   std::vector< au::SharedPointer<Log> > logs;
   int fd = open(file_name.c_str(), O_RDONLY);
 
-  LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
   if (fd < 0) {
     error.set(au::str("Not possible to open file %s", file_name.c_str()));
     return logs;

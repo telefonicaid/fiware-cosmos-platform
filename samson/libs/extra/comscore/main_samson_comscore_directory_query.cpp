@@ -92,7 +92,7 @@ int main(int argC, const char *argV[]) {
     printf("Enter URL> ");
     fflush(stdout);
     if (scanf("%s", nativeURL) == 0) {
-      LM_W(("Error reading url"));  // Get categories for this URL
+      LOG_SW(("Error reading url"));  // Get categories for this URL
     }
     std::vector<uint> categories = samson_comscore_dictionary.getCategories(nativeURL);
 

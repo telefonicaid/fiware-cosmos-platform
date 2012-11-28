@@ -39,12 +39,12 @@ BufferProcessor::BufferProcessor(Channel *_channel) {
     samson::Operation *operation = au::Singleton<samson::ModulesManager>::shared()->getOperation(splitter_name);
 
     if (!operation || ( operation->getType() != samson::Operation::splitter )) {
-      LM_W(("Non valid splitter %s. Not using any splitter", splitter_name.c_str()));
+      LOG_SW(("Non valid splitter %s. Not using any splitter", splitter_name.c_str()));
     } else {
       // Get instace of the operation
       splitter = (samson::Splitter *)operation->getInstance();
       if (!splitter) {
-        LM_W(("Error getting instance of the splitter %s. Not using any splitter", splitter_name.c_str()));
+        LOG_SW(("Error getting instance of the splitter %s. Not using any splitter", splitter_name.c_str()));
       }
     }
   }
@@ -71,7 +71,7 @@ void BufferProcessor::emit(char *data, size_t length) {
   // Recover buffer to write output
   if (output_buffer_ == NULL) {
     size_t output_buffer_size = std::max(length, (size_t)64000000 - sizeof(samson::KVHeader));       // Minimum 64Mbytes buffer
-    output_buffer_ = engine::Buffer::Create("output_splitter", "connector", output_buffer_size);
+    output_buffer_ = engine::Buffer::Create("output_splitter", output_buffer_size);
   }
 
   // Write in the buffer
@@ -112,15 +112,16 @@ void BufferProcessor::process_intenal_buffer(bool finish) {
     // Data to be skip after process
     if (nextData) {
       if (( nextData < buffer ) || (nextData > ( buffer + size))) {
-        LM_W(("Splitter %s has returned a wrong nextData pointer when processing a buffer of %s. Skipping this buffer",
-              splitter_name.c_str(),
-              au::str(max_size).c_str()));
+        LOG_SW((
+                 "Splitter %s has returned a wrong nextData pointer when processing a buffer of %s. Skipping this buffer",
+                 splitter_name.c_str(),
+                 au::str(max_size).c_str()));
         size = 0;
       } else {
         size_t skip_size = nextData - buffer;
 
         // Move data at the begining of the buffer
-        memmove(buffer , buffer + skip_size, size - skip_size);
+        memmove(buffer, buffer + skip_size, size - skip_size);
         size -= skip_size;
       }
     } else {
@@ -128,8 +129,8 @@ void BufferProcessor::process_intenal_buffer(bool finish) {
     }
   } else {
     if (size >= max_size) {
-      LM_W(("Splitter %s is not able to split a full buffer %s. Skipping this buffer", splitter_name.c_str(),
-            au::str(max_size).c_str()));
+      LOG_SW(("Splitter %s is not able to split a full buffer %s. Skipping this buffer", splitter_name.c_str(),
+              au::str(max_size).c_str()));
       size = 0;
     } else {
       return;   // Not enoutght data for splitter... this is OK if the buffer is not full

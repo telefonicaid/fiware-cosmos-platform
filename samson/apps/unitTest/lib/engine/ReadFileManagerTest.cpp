@@ -8,6 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 /* ****************************************************************************
  *
  * FILE            ReadFileManagerTest.cpp
@@ -20,27 +21,20 @@
  *
  * unit testing of the ReadFileManager class in the engine library
  *
- *
- * Telefónica Digital - Product Development and Innovation
- *
- * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
- * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
- *
- * Copyright (c) Telefonica Investigacion y Desarrollo S.A.U.
- * All rights reserved.
  */
+
+#include "engine/ReadFileManager.h"  // Own interface
+
+
 #include <fcntl.h>
 
 #include <string>
 #include <vector>
 
-#include "gtest/gtest.h"
-
-#include "logMsg/logMsg.h"
-
+#include "au/log/LogMain.h"
 #include "engine/ReadFile.h"
-#include "engine/ReadFileManager.h"
+#include "gtest/gtest.h"
+#include "logMsg/logMsg.h"
 
 // -----------------------------------------------------------------------------
 // dataFilesCreate - create X data files in the directory indicated by 'base'
@@ -86,22 +80,23 @@ static void dataFilesRemove(std::string base, int numberOfFiles) {
 // idTest
 //
 TEST(engine_ReadFileManager, engine_idTest) {
-  engine::ReadFileManager  read_file_manager;
-  std::string              file_name  = "/path/to/nowhere";
-  engine::ReadFile*        rfP;
-  LM_M(("Here"));
+  engine::ReadFileManager read_file_manager;
+  std::string file_name  = "/path/to/nowhere";
+  engine::ReadFile *rfP;
+
+  LOG_SM(("Here"));
 
   rfP = read_file_manager.GetReadFile(file_name);
   EXPECT_EQ(NULL, rfP) << "'/path/to/nowhere' should not be OK ...";
 
   rfP = read_file_manager.GetReadFile("does_not_exist");
   EXPECT_EQ(NULL, rfP) << "'does_not_exist' should not be found";
-  LM_M(("Here"));
+  LOG_SM(("Here"));
 
   rfP = read_file_manager.GetReadFile("test_data/testdata.txt");
-  EXPECT_NE((engine::ReadFile*) NULL, rfP) << "'test_data/testdata.txt' should be found!";
+  EXPECT_NE((engine::ReadFile *)NULL, rfP) << "'test_data/testdata.txt' should be found!";
 
-  LM_M(("Here"));
+  LOG_SM(("Here"));
 
   // Create data files
   bool testFilesOk = dataFilesCreate("test_data/testdata", "012345678901234567890123456789\n", 102);
@@ -118,7 +113,7 @@ TEST(engine_ReadFileManager, engine_idTest) {
     snprintf(suffix, sizeof(suffix), "%03d", i);
     rfP = read_file_manager.GetReadFile(file_name + suffix);
 
-    EXPECT_NE((engine::ReadFile*) NULL, rfP);
+    EXPECT_NE((engine::ReadFile *)NULL, rfP);
   }
 
   //

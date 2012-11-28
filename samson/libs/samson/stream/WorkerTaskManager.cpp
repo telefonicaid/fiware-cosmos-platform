@@ -44,6 +44,11 @@ WorkerTaskManager::WorkerTaskManager(SamsonWorker *samson_worker) {
   engine::Engine::shared()->notify(notification, 1);
 }
 
+WorkerTaskManager::~WorkerTaskManager() {
+  stream_operations_statistics_.clearMap();
+  stream_operations_global_info_.clearMap();
+}
+
 size_t WorkerTaskManager::getNewId() {
   return ++id_;
 }
@@ -108,13 +113,20 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
       last_tasks_.pop_back();
     }
 
-    // Take statistics about process rate
-    std::string stream_operation_name = worker_task->stream_operation_name();
-    if (stream_operation_name[0] != '.') {
-      double rate = worker_task->GetInputSize() / worker_task->GetProcessTime();
-      averages_per_task_.findOrCreate(stream_operation_name)->Push(rate);
-    }
+    // Take statistics about stream operations
+    if (worker_task != NULL) {
+      std::string stream_operation_name = worker_task->stream_operation_name();
+      if (stream_operation_name[0] != '.') {
+        FullKVInfo input_info = worker_task->GetInputDataInfo();
+        FullKVInfo state_info = worker_task->GetStateDataInfo();
 
+        double time = worker_task->GetProcessTime();
+        int num_ranges = samson_worker_->worker_controller()->GetKVRanges().size();
+
+        StreamOperationStatistics *statistics =  stream_operations_statistics_.findOrCreate(stream_operation_name);
+        statistics->UpdateTaskInformation(num_ranges, input_info, state_info, time);
+      }
+    }
 
     // Mark the task as finished
     if (notification->environment().IsSet("error")) {
@@ -143,7 +155,7 @@ void WorkerTaskManager::reviewPendingWorkerTasks() {
   int max_running_operations = static_cast<int> (num_processors);
 
   while (num_running_tasks < max_running_operations) {
-    // LM_M(("Scheduling since running rask %d < %d", (int) num_running_tasks , (int) max_running_operations));
+    // LOG_SM(("Scheduling since running rask %d < %d", (int) num_running_tasks , (int) max_running_operations));
 
     bool runReturn = runNextWorkerTasksIfNecessary();
 
@@ -228,13 +240,11 @@ void WorkerTaskManager::Reset() {
 gpb::CollectionPointer WorkerTaskManager::GetSOStatisticsCollection(const ::samson::Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("Stream Operation statistics");
-  au::map<std::string, au::Averager >::iterator it;;
-  for (it = averages_per_task_.begin(); it != averages_per_task_.end(); ++it) {
+  au::map<std::string, StreamOperationStatistics >::iterator it;;
+  for (it = stream_operations_statistics_.begin(); it != stream_operations_statistics_.end(); ++it) {
     gpb::CollectionRecord *record = collection->add_record();
     add(record, "Stream Operation", it->first, "different,left");
-    add(record, "Average", au::str(it->second->GetAverage(), "B/s"), "left,different");
-    add(record, "Deviation", au::str(it->second->GetDeviation(), "B/s"), "left,different");
-    add(record, "Last values", it->second->GetLastValues(), "left,different");
+    it->second->fill(record, visualization);
   }
   return collection;
 }
@@ -332,14 +342,10 @@ void WorkerTaskManager::review_stream_operations() {
     keys_stream_operation_ids.insert(stream_operation_id);
   }
 
-  // Remove elements in the map not considered
-  stream_operations_global_info_.RemoveKeysNotIncludedIn(keys_stream_operation_ids);
+  // Remove elements in the map not considered so far ( old elements after a reasignation )
+  stream_operations_global_info_.removeInMapIfNotIncludedIn(keys_stream_operation_ids);
 
   // If enough tasks have been scheduled, do not schedule more.
-  // This is for two reasons:
-  // Scheduled tasks cannot be canceled, so for flexibility is better to do that
-  // Memory is lock unnecessary with too many tasks scheduled ahead
-
   size_t num_tasks = get_num_tasks();
   if (num_tasks > (1.5 * num_processors)) {
     return;
@@ -380,7 +386,7 @@ void WorkerTaskManager::review_stream_operations() {
     StreamOperationRangeInfo *stream_operation = stream_operation_range_info[pos];
     au::SharedPointer<WorkerTask> queue_task = stream_operation->schedule_new_task(getNewId(), data);
     if (queue_task == NULL) {
-      LM_W(("Worker task finally not scheduled for stream operation"));
+      LOG_SW(("Worker task finally not scheduled for stream operation"));
     } else {
       Add(queue_task.static_pointer_cast<WorkerTaskBase> ());
     }

@@ -24,7 +24,7 @@
 #include "samson/common/KVRange.h"
 #include "samson/module/KVFormat.h"
 
-#include "samson/common/samson.pb.h"
+
 
 namespace samson {
 /**

@@ -9,11 +9,13 @@
  * All rights reserved.
  */
 
+#include "ThreadManager.h"  // Own interface
+
 #include <iomanip>
 #include <iostream>
 
-
-#include "ThreadManager.h"  // Own interface
+#include "au/Log.h"
+#include "au/log/LogMain.h"
 #include "au/string/S.h"
 
 
@@ -28,7 +30,7 @@ ThreadManager::ThreadManager() : token_("ThreadManager") {
   }
 }
 
-int ThreadManager::addThread(std::string thread_name, pthread_t *__restrict t, const pthread_attr_t *__restrict attr_t,
+int ThreadManager::AddThread(std::string thread_name, pthread_t *__restrict t, const pthread_attr_t *__restrict attr_t,
                              thread_function f,
                              void *__restrict p) {
   // Mutex protection
@@ -44,23 +46,21 @@ int ThreadManager::addThread(std::string thread_name, pthread_t *__restrict t, c
   thread_info->t_ = *t;
 
   if (s == 0) {
-    LM_T(LmtThreadManager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
-    AddThreads(thread_info);
+    LOG_M(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
+    AddThread(thread_info);
   } else {
-    LM_W(("Not possible to create thread %s %d ", thread_name.c_str(), s));
+    LOG_SW(("Not possible to create thread %s %d ", thread_name.c_str(), s));
     delete thread_info;
   }
 
   return s;
 }
 
-  
-  
-int ThreadManager::addNonDetachedThread(  std::string thread_name
+int ThreadManager::AddNonDetachedThread(std::string thread_name
                                         , pthread_t *__restrict t
                                         , const pthread_attr_t *__restrict attr_t
                                         , thread_function f
-                                        , void *__restrict p ) {
+                                        , void *__restrict p) {
   // Mutex protection
   au::TokenTaker tt(&token_);
 
@@ -74,22 +74,32 @@ int ThreadManager::addNonDetachedThread(  std::string thread_name
   thread_info->t_ = *t;
 
   if (s == 0) {
-    LM_T(LmtThreadManager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
-    AddThreads(thread_info);
+    LOG_M(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
+    AddThread(thread_info);
   } else {
-    LM_W(("Not possible to create thread %s %d ", thread_name.c_str(), s));
+    LOG_SW(("Not possible to create thread %s %d ", thread_name.c_str(), s));
     delete thread_info;
   }
 
   return s;
 }
 
+int ThreadManager::num_threads() const {
+  int total = 0;
+
+  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+    if (threads_[i] != NULL) {
+      total++;
+    }
+  }
+  return total;
+}
+
 void ThreadManager::notify_finish_thread(ThreadInfo *thread_info) {
   // Mutex protection
   au::TokenTaker tt(&token_);
 
-  LM_T(LmtThreadManager, ("Thread '%s' extracted from map", thread_info->name_.c_str()));
-  RemoveThreads(thread_info);
+  RemoveThread(thread_info);
 }
 
 au::StringVector ThreadManager::getThreadNames() {
@@ -140,15 +150,40 @@ void ThreadManager::wait(std::string title) {
       }
 
       if (cronometer.seconds() > 5) {
-        LM_W(("%s: Waiting all threads to finish", title.c_str()));
-        LM_W(("Stll running %d threads", num_threads()));
-        LM_W((str().c_str()));
+        LOG_SW(("%s: Waiting all threads to finish", title.c_str()));
+        LOG_SW(("Stll running %d threads", num_threads()));
+        LOG_SW((str().c_str()));
         cronometer.Reset();
       }
     }
 
     usleep(100000);
   }
+}
+
+void ThreadManager::AddThread(ThreadInfo *thread_info) {
+  LOG_M(logs.thread_manager, ("Adding  Thread '%s'", thread_info->str().c_str()));
+
+  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+    if (threads_[i] == NULL) {
+      threads_[i] = thread_info;
+      return;
+    }
+  }
+
+  LM_X(1, ("No space for more threads"));
+}
+
+void ThreadManager::RemoveThread(ThreadInfo *thread_info) {
+  LOG_M(logs.thread_manager, ("Remove thead %s ", thread_info->str().c_str()));
+  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+    if (threads_[i] == thread_info) {
+      threads_[i] = NULL;
+      return;
+    }
+  }
+
+  LOG_W(logs.thread_manager, ("Not possible to remove thread. Possibly singleton has been reset"));
 }
 
 // --------------------------------------------------------------------------------
@@ -199,8 +234,50 @@ void *run_NonDetachedThreadInfo(void *p) {
 void *run_Thread(void *p) {
   Thread *t = (Thread *)p;
 
-  t->run();
+  t->RunThread();
   t->pthread_running_ = false;
   return NULL;
+}
+
+void Thread::StartThread() {
+  if (pthread_running_) {
+    return;       // If already running, nothing to do
+  }
+  pthread_running_ = true;      // Mark as running
+
+  // Run the thread in background
+  au::Singleton<au::ThreadManager>::shared()->AddThread(name_, &t_, NULL, run_Thread, this);
+}
+
+void Thread::StopThread() {
+  stoping_ = true;
+  if (!pthread_running_) {
+    return;
+  }
+  if (pthread_self() == t_) {
+    LOG_SW(("Not possible to stop a thread from itself"));
+    return;
+  }
+
+  // Set the flag
+  stoping_ = true;
+
+  // Execute cutom cancel cunfion
+  UnlockThread();
+
+  // Wait until thread is finished
+  au::Cronometer c;
+  while (true) {
+    if (!pthread_running_) {
+      return;
+    }
+
+    if (c.seconds() > 2) {
+      LOG_SW(("Too mush time waiting for thread %s", name_.c_str()));
+      c.Reset();
+    }
+
+    usleep(100000);
+  }
 }
 }

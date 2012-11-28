@@ -82,7 +82,7 @@ au::Status InterChannelPacket::read(au::FileDescriptor *fd) {
 
   // Create buffer and read it
   if (header_.buffer_size > 0) {
-    buffer_ = engine::Buffer::Create("InterChannelPacket", "streamConnector", header_.buffer_size);
+    buffer_ = engine::Buffer::Create("InterChannelPacket", header_.buffer_size);
     s = fd->partRead(buffer_->data()
                      , header_.buffer_size
                      , "data"

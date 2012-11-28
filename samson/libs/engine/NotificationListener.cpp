@@ -10,10 +10,11 @@
  */
 
 
-#include "Engine.h"                 // register_object
-#include "engine/Notification.h"    // engine::Notification
-
 #include "NotificationListener.h"   // Own interface
+
+#include "au/log/LogMain.h"
+#include "engine/Engine.h"                 // register_object
+#include "engine/Notification.h"    // engine::Notification
 
 namespace engine {
 size_t NotificationListener::engine_id() {
@@ -35,8 +36,8 @@ NotificationListener::~NotificationListener() {
 }
 
 void NotificationListener::notify(Notification *notification) {
-  LM_W(("Notification %s not handled since it has not been overwritted method notify",
-        notification->GetDescription().c_str()));
+  LOG_SW(("Notification %s not handled since it has not been overwritted method notify",
+          notification->GetDescription().c_str()));
 }
 
 void NotificationListener::listen(const char *notification_name) {

@@ -79,5 +79,5 @@ TEST(engine_NotificationListenersManager, engine_idTest) {
     ids = listener_manager.GetEndgineIdsForChannel("channel_name");
     EXPECT_EQ(2ULL, ids.size());
   }
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 }

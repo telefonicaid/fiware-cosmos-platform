@@ -43,7 +43,7 @@ SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) :
 }
 
 SamsonWorkerRest::~SamsonWorkerRest() {
-  LM_T(LmtCleanup, ("Calling ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
+  LOG_M(logs.cleanup, ("Calling ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
   rest_service_->StopService();
   if (delilah_) {
     delete delilah_;
@@ -54,7 +54,7 @@ SamsonWorkerRest::~SamsonWorkerRest() {
 }
 
 void SamsonWorkerRest::StopRestService() {
-  LM_T(LmtCleanup, ("Calling rest_service->StopService()"));
+  LOG_M(logs.cleanup, ("Calling rest_service->StopService()"));
   rest_service_->StopService();
 }
 
@@ -70,7 +70,7 @@ void SamsonWorkerRest::notify(engine::Notification *notification) {
     command = notification->dictionary().Get<au::network::RESTServiceCommand> ("command");
 
     if (command == NULL) {
-      LM_W(("rest_connection notification without a command. This is probably an error..."));
+      LOG_SW(("rest_connection notification without a command. This is probably an error..."));
       return;
     }
 
@@ -309,7 +309,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
     }
   }
 
-  LM_T(LmtDelilahCommand, ("Sending delilah command: '%s'", delilah_command.c_str()));
+  LOG_M(logs.delilah, ("Sending delilah command: '%s'", delilah_command.c_str()));
   size_t command_id = delilah_->sendWorkerCommand(delilah_command);
 
   // Wait for the command to finish
@@ -624,7 +624,13 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
   au::SharedPointer<DataInstance> value_data_instance(reinterpret_cast<DataInstance *>(value_data->getInstance()));
 
   // Get all the information from the reference key
-  reference_key_data_instance->setFromString(key.c_str());
+  std::string error_message;
+  if (!reference_key_data_instance->setContentFromString(key.c_str(), error_message)) {
+    // Error decoding key
+    command->AppendFormatedError(au::str("Not possible to convert %s into a valid %s (%s)"
+                                         , key.c_str(), key_data->getName().c_str(), error_message.c_str()));
+    return;
+  }
   LOG_M(logs.rest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
 
 

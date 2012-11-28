@@ -103,7 +103,7 @@ std::map< uint, std::string > categories;
 
 
 void read_original_categories_file(const char *file_name) {
-  LM_M(("Reading original cageories file"));
+  LOG_SM(("Reading original cageories file"));
 
   FILE *file = fopen(file_name, "r");
 
@@ -129,7 +129,7 @@ void read_original_categories_file(const char *file_name) {
     categories.insert(std::pair< uint, std::string >(id, description));
 
     if ((++num % 100000) == 0) {
-      LM_M(("Readed %lu records", num));
+      LOG_SM(("Readed %lu records", num));
     }
   }
 }
@@ -144,7 +144,7 @@ bool isPatternIdUsed(size_t id) {
 }
 
 void read_original_pattern_to_category_file(const char *file_name) {
-  LM_M(("Reading original pattern to cageory file"));
+  LOG_SM(("Reading original pattern to cageory file"));
 
   FILE *file = fopen(file_name, "r");
 
@@ -171,11 +171,11 @@ void read_original_pattern_to_category_file(const char *file_name) {
     entry.second = atoll(fields[1]);
 
     if ((++num % 100000) == 0) {
-      LM_M(("Readed %lu records", num));
+      LOG_SM(("Readed %lu records", num));
     }
     if (( max_num_entries > 0 ) && ( max_num_entries < 1000 )) {
       if (!isPatternIdUsed(entry.first)) {
-        // LM_M(("Pattern %lu not used...", entry.first));
+        // LOG_SM(("Pattern %lu not used...", entry.first));
         continue;
       }
     }
@@ -183,16 +183,16 @@ void read_original_pattern_to_category_file(const char *file_name) {
   }
 
   // Sorting original records
-  LM_M(("Sorting entries..."));
+  LOG_SM(("Sorting entries..."));
 
   std::sort(original_pattern_to_category.begin(), original_pattern_to_category.end(), samson::comscore::compareId2Id);
 }
 
 void read_original_dictionary_file(const char *file_name, size_t max_num_records = 0) {
-  LM_M(("Reading original dictionary file '%s'", file_name ));
+  LOG_SM(("Reading original dictionary file '%s'", file_name ));
 
   if (max_num_records > 0) {
-    LM_M(("Max number records %d", max_num_records ));
+    LOG_SM(("Max number records %d", max_num_records ));
   }
   FILE *file = fopen(file_name, "r");
 
@@ -213,7 +213,7 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
     }
 
     if (atoi(fields[10]) == -1) {
-      LM_W(("Discarted element"));
+      LOG_SW(("Discarted element"));
       continue;
     }
 
@@ -234,11 +234,11 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
       ( strcmp(dictionary_entry.domain.c_str(), "") == 0 )
       )
     {
-      LM_W(("Discarting domain '%s' [%s][%s]"
-            , dictionary_entry.domain.c_str()
-            , dictionary_entry.pre_domain_pattern.c_str()
-            , dictionary_entry.path_pattern.c_str()
-            ));
+      LOG_SW(("Discarting domain '%s' [%s][%s]"
+              , dictionary_entry.domain.c_str()
+              , dictionary_entry.pre_domain_pattern.c_str()
+              , dictionary_entry.path_pattern.c_str()
+              ));
       continue;
     }
 
@@ -272,7 +272,7 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
       }
     }
     if ((++num % 100000) == 0) {
-      LM_M(("Readed %lu records", num));
+      LOG_SM(("Readed %lu records", num));
     }
   }
 
@@ -280,7 +280,7 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
   fclose(file);
 
   // Sorting original records
-  LM_M(("Sorting entries"));
+  LOG_SM(("Sorting entries"));
   std::sort(original_dictionary_entries.begin(),
             original_dictionary_entries.end(), samson::comscore::compareOriginalDictionaryEntry);
 }
@@ -305,33 +305,33 @@ int main(int argC, const char *argV[]) {
 
 
   // Creating the file
-  LM_M(("Creating samson comscore dictionary"));
+  LOG_SM(("Creating samson comscore dictionary"));
   samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
 
-  LM_M(("Adding main dictionary entries"));
+  LOG_SM(("Adding main dictionary entries"));
   for (size_t i = 0; i < original_dictionary_entries.size(); i++) {
     if ((i % 100000) == 0) {
-      LM_M(("Progress %lu records", i));
+      LOG_SM(("Progress %lu records", i));
     }
     samson_comscore_dictionary.push(original_dictionary_entries[i]);
   }
 
-  LM_M(("Adding pattern to dictionary mapping entries"));
+  LOG_SM(("Adding pattern to dictionary mapping entries"));
   for (size_t i = 0; i < original_pattern_to_category.size(); i++) {
     if ((i % 100000) == 0) {
-      LM_M(("Progress %lu records", i));
+      LOG_SM(("Progress %lu records", i));
     }
     samson_comscore_dictionary.push_pattern_to_category(
       original_pattern_to_category[i]);
   }
 
-  LM_M(("Adding category description"));
+  LOG_SM(("Adding category description"));
   std::map< uint, std::string >::iterator it_categories;
   for (it_categories = categories.begin(); it_categories != categories.end(); it_categories++) {
     samson_comscore_dictionary.push_category(it_categories->first, it_categories->second);
   }
 
-  LM_M(("Writing comscore dictionary to file %s", samson_comsore_dictionary_file_name));
+  LOG_SM(("Writing comscore dictionary to file %s", samson_comsore_dictionary_file_name));
   samson_comscore_dictionary.write(samson_comsore_dictionary_file_name);
 }
 

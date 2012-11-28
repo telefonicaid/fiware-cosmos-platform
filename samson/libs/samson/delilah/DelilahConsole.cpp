@@ -245,11 +245,11 @@ void DelilahConsole::run() {
         line[strlen(line) - 1] = '\0';
       }
 
-      // LM_M(("Processing line: %s", line ));
+      // LOG_SM(("Processing line: %s", line ));
       size_t id = runAsyncCommand(line);
 
       if (id != 0) {
-        // LM_M(("Waiting until delilah-component %ul finish", id ));
+        // LOG_SM(("Waiting until delilah-component %ul finish", id ));
         // Wait until this operation is finished
         while (isActive(id)) {
           sleep(1);
@@ -369,7 +369,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (au::CheckIfStringsBeginWith(mainCommand, "log_")) {
     au::ErrorManager error;
-    au::log_central.evalCommand(command_instance->command_line(), error);
+    au::log_central->evalCommand(command_instance->command_line(), error);
     write(&error);
     return 0;
   }
@@ -863,7 +863,7 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
     break;
 
     default:
-      LM_W(("Unknown message %s received at delilahConsole", Message::messageCode(packet->msgCode)));
+      LOG_SW(("Unknown message %s received at delilahConsole", Message::messageCode(packet->msgCode)));
       break;
   }
 
@@ -946,7 +946,7 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
 }
 
 void DelilahConsole::runAsyncCommandAndWait(std::string command) {
-  LM_M(("runAsyncCommandAndWait command:%s", command.c_str()));
+  LOG_SM(("runAsyncCommandAndWait command:%s", command.c_str()));
   size_t tmp_id = runAsyncCommand(command);
 
   if (tmp_id == 0) {

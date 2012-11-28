@@ -44,7 +44,7 @@
 
 namespace samson {
 /**
- * \brief Namespace for samson::system library ( Generic data type for SAMSON system )
+ * \brief Namespace for samson::system library (Generic data type for SAMSON system)
  */
 namespace system {
 // Constant word serialization
@@ -55,13 +55,11 @@ class Value : public samson::DataInstance {
 public:
   // Value types ( on memory )
   typedef enum {
-    value_void,     // No content
-
+    value_void,       // No content
     value_number,     // Generic number content  ( using value_double_ )
     value_string,     // Generic string content  ( using value_string_ )
     value_vector,     // A vector of values      ( using value_vector_ )
-    value_map,
-    // A map of values         ( using value_map_    )
+    value_map,        // A map of values         ( using value_map_    )
   } ValueType;
 
   // How data is serialized
@@ -141,39 +139,14 @@ public:
   static const std::string kWeightField;
   static const std::string kWordField;
 
-  Value() : samson::DataInstance() {
+  Value() : samson::DataInstance()
+          , value_type_(value_void)
+          , value_double_(0.0)
+          , value_string_("") {
   }
 
   ~Value() {
-    // This instance will be never reused but the internal values will be reused
     clear();
-  }
-
-  static Value *getInstance() {
-    // reusing instances caused some problems in the past,
-    // but perhaps they are solved in samson_0.7, so let's give it a chance
-//      if (!pool_values_)
-//        pool_values_ = new au::Pool<Value>();
-//
-//      Value * recovered_value = pool_values_->pop();
-//      // TODO: @jges delete log message
-//      LM_M(("Recovering value:%p from pool:%p size:%lu", recovered_value, pool_values_, pool_values_->size()));
-//      if (recovered_value) {
-//        return recovered_value;
-//      }
-    return new Value();
-  }
-
-  static void reuseInstance(Value *value) {
-    // reusing instances caused some problems in the past,
-    // but perhaps they are solved in samson_0.7, so let's give it a chance
-//      if (!pool_values_)
-//        pool_values_ = new au::Pool<Value>();
-//
-//      value->clear();
-//      // TODO: @jges delete log message
-//      LM_M(("Pushing value:%p to pool:%p size:%lu", value, pool_values_, pool_values_->size()));
-//      pool_values_->push(value);
   }
 
   // Return the name of this data type ( system.Value )
@@ -407,7 +380,8 @@ public:
 private:
   static const size_t kValueCode;
   // Pool of Value instances for vector and map
-  static au::Pool<Value> *pool_values_;
+  // The static pool of values is no longer used
+
   // Global value type
   // ------------------------------------------------------------
   ValueType value_type_;

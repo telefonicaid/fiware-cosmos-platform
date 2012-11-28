@@ -18,7 +18,7 @@
 #include <sstream>               /* std::ostringstream                       */
 #include <string>                /* std::string                              */
 
-#include "logMsg/logMsg.h"       // LM_M()
+#include "logMsg/logMsg.h"       // LOG_SM()
 
 #include "LockDebugger.h"        /* Own interface                            */
 
@@ -60,7 +60,7 @@ void LockDebugger::AddMutexLock(void *new_lock) {
     LM_X(1, ("Cross lock detected"));
   }
 
-  // LM_M(("Adding lock %p to lockVector %p" , new_lock , locksVector ));
+  // LOG_SM(("Adding lock %p to lockVector %p" , new_lock , locksVector ));
 
 
   // Add the new lock

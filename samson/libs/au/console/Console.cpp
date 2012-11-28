@@ -20,17 +20,18 @@
 #include <sstream>
 #include <vector>
 
+#include "au/ThreadManager.h"
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/console/ConsoleCommand.h"
 #include "au/console/ConsoleCommandHistory.h"
 #include "au/console/ConsoleEscapeSequence.h"
-
-#include "au/ThreadManager.h"
 #include "au/containers/list.h"
+#include "au/log/LogMain.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/statistics/Cronometer.h"
 #include "au/string/StringUtilities.h"
 #include "au/utils.h"
+
 
 struct termios old_tio, new_tio;
 
@@ -66,6 +67,9 @@ Console::Console() :
   command_history = new ConsoleCommandHistory();
   counter = 0;
 
+  // Pending to be assigned at runConsole()
+  t_running = 0;
+
   // By default, background messages are not blocked ( esc - b )
   block_background_messages = false;
 }
@@ -75,21 +79,52 @@ Console::~Console() {
 }
 
 void Console::print_command() {
+  // Get prompt
+  std::string prompt = getPrompt();
+  // Get command and position inside the command
   std::string _command = command_history->current()->getCommand();
   int _pos = command_history->current()->getPos();
 
+  // Compute terminal width and available space for the command
+  int w = GetTerminalWidth();
+  int w_available = w - prompt.length() - 7;
+  int command_len = (int)_command.length();
+
   clearTerminalLine();
-  // printf("[%d]",counter);   // debuggin
+  int command_begin = 0;
+  int command_end = command_len;
 
-  printf("%s %s", getPrompt().c_str(), _command.c_str());
+  // Modify this if command is too large
+  if (command_len > w_available) {
+    if (_pos > command_len - w_available) {
+      command_begin = command_end - w_available;  // End of the command
+    } else {
+      // Position at the middle
+      command_begin = std::max(_pos - w_available / 2, 0);
+      command_end = std::min(command_begin + w_available, command_len);
+    }
+  }
 
-  if (_pos != (int)_command.length()) {
+  // Print the entire command
+  printf("%s ", getPrompt().c_str());
+  if (command_begin > 0) {
+    printf("...");
+  }
+  for (int i = command_begin; i < command_end; i++) {
+    printf("%c", _command[i]);
+  }
+  if (command_end < command_len) {
+    printf("...");
+  }
+
+  // Put cursor in the rigth place ( printing again text )
+  if (_pos != command_end) {
     printf("\r");
-
-    // printf("[%d]",counter);   // debuggin
-
     printf("%s ", getPrompt().c_str());
-    for (int i = 0; i < _pos; i++) {
+    if (command_begin > 0) {
+      printf("...");
+    }
+    for (int i = command_begin; i < _pos; i++) {
       printf("%c", _command[i]);
     }
   }
@@ -134,14 +169,11 @@ void Console::process_auto_complete(ConsoleAutoComplete *info) {
 }
 
 void Console::process_char(char c) {
+  // Add char to the current command
   command_history->current()->add(c);
 
-  if (command_history->current()->isCursorAtEnd()) {
-    printf("%c", c);
-    fflush(stdout);
-  } else {
-    print_command();
-  }
+  // We always print command again to detect if command is larger than the console window
+  print_command();
 }
 
 void Console::internal_command(const std::string& command) {
@@ -205,6 +237,11 @@ void Console::addEspaceSequence(const std::string& sequence) {
 
 void Console::internal_process_escape_sequence(std::string sequence) {
   if (sequence == au::str("b")) {
+    if (t_running == 0) {
+      LOG_SW(("Console thread is not yet running"));
+      return;
+    }
+
     // It is theoretically impossible, but just in case
     if (pthread_self() != t_running) {
       return;
@@ -333,7 +370,7 @@ void *run_console(void *p) {
 void Console::runConsoleInBackground() {
   pthread_t t;
 
-  au::Singleton<au::ThreadManager>::shared()->addThread("au::console::Console::runConsoleInBackground", &t, NULL,
+  au::Singleton<au::ThreadManager>::shared()->AddThread("au::console::Console::runConsoleInBackground", &t, NULL,
                                                         run_console,
                                                         this);
 }
@@ -524,6 +561,11 @@ int Console::waitWithMessage(const std::string& message, double sleep_time, Cons
 }
 
 void Console::writeOnConsole(const std::string& message) {
+  if (t_running == 0) {
+    LOG_SW(("Console thread is not yet running"));
+    return;
+  }
+
   if (pthread_self() == t_running) {
     clearTerminalLine();
 
@@ -602,8 +644,8 @@ void Console::writeOnConsole(const std::string& message) {
 }
 
 void Console::write(const std::string& message) {
-  if (pthread_self() != t_running) {
-    // Accumulate message
+  // Accumulate message if necessary
+  if ((t_running == 0) || (pthread_self() != t_running)) {
     au::TokenTaker tt(&token_pending_messages);
     pending_messages.push_back(message);
     return;
@@ -625,8 +667,6 @@ void Console::evalCommand(const std::string& command) {
 
   // Simple quit function...
   if (command == "quit") {
-    // TODO(@jges): Remove log messages
-    LM_M(("command:'%s'", command.c_str()));
     quit_console = true;
   }
 }

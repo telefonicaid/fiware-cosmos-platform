@@ -47,7 +47,6 @@ public:
   }
 
   ~Module() {
-    LM_T(LmtModuleManager, ("Destructor for module:'%s'", name.c_str()));
     clearModule();
   }
 
@@ -140,7 +139,7 @@ public:
     }
 
     operations.insert(std::pair<std::string, Operation *>(operation->getName(), operation));
-    LM_T(LmtModuleManager, ("Module operation inserted: '%s' at operation:%p", operation->getName().c_str(), operation));
+    // LOG_M(logs.modules_manager, ("Module operation inserted: '%s' at operation:%p", operation->getName().c_str(), operation));
   }
 
   void add(Data *data) {
@@ -151,7 +150,7 @@ public:
     }
 
     datas.insert(std::pair<std::string, Data *> (data->getName(), data));
-    LM_T(LmtModuleManager, ("Module data inserted: '%s' at data:%p", data->getName().c_str(), data));
+    // LOG_M(logs.modules_manager, ("Module data inserted: '%s' at data:%p", data->getName().c_str(), data));
   }
 
   /*
@@ -185,12 +184,12 @@ public:
   void clearModule() {
     // Remove all operations and datas
     for (std::map<std::string, Operation *>::iterator o = operations.begin(); o != operations.end(); o++) {
-      LM_T(LmtModuleManager, ("delete operation:%s with val:%p", o->first.c_str(), o->second));
+      // LOG_M(logs.modules_manager, ("delete operation:%s with val:%p", o->first.c_str(), o->second));
       delete o->second;
     }
 
     for (std::map<std::string, Data *>::iterator d = datas.begin(); d != datas.end(); d++) {
-      LM_T(LmtModuleManager, ("delete data:%s with val:%p", d->first.c_str(), d->second));
+      // LOG_M(logs.modules_manager, ("delete data:%s with val:%p", d->first.c_str(), d->second));
       delete d->second;
     }
 

@@ -10,25 +10,25 @@
  */
 
 
-#include <iostream>             // std::cout
-#include <stdio.h>              // printf
-#include <stdlib.h>             // exit
-#include <stdlib.h>             // free
-#include <string.h>             // memcpy
-#include <sys/types.h>          // types needed by socket include files
-#include <time.h>               // strptime, struct tm
 #include <dirent.h>             // opendir, scandir
 #include <errno.h>              // errno
 #include <errno.h>              // errno
 #include <fcntl.h>              // O_RDONLY
 #include <inttypes.h>           // uint64_t etc.
+#include <iostream>             // std::cout
+#include <stdio.h>              // printf
+#include <stdlib.h>             // exit
+#include <stdlib.h>             // free
+#include <string.h>             // memcpy
 #include <sys/stat.h>           // stat
+#include <sys/types.h>          // types needed by socket include files
+#include <time.h>               // strptime, struct tm
 #include <unistd.h>             // close, lseek
 #include <vector>               // std::vector
 
 #include "LogsDataSet.h"  // Own interface
-#include "logMsg/logMsg.h"      // traces LM_E, LM_W....
 #include "au/string/StringUtilities.h"
+#include "logMsg/logMsg.h"      // traces LM_E, LOG_SW....
 
 char *fgetsFromFd(char *str, int line_max_size, int fd) {
   char *p_str = str;
@@ -43,13 +43,12 @@ char *fgetsFromFd(char *str, int line_max_size, int fd) {
 
     if (*p_str == '\n') {
       *(p_str + 1) = '\0';
-      // LM_M(("Logline:'%s'", str));
+      // LOG_SM(("Logline:'%s'", str));
       return str;
     }
   }
   return NULL;
 }
-
 
 #define  YEAR0    1900
 #define  EPOCH_YR 1970
@@ -406,7 +405,7 @@ bool LogsDataSet::InitDir() {
   LM_V(("%d files in vector", num_files_));
 
   if (num_files_ == 0) {
-    LM_W(("No file found at directory:%s with extension:%s", dir_path_, extension_));
+    LOG_SW(("No file found at directory:%s with extension:%s", dir_path_, extension_));
     finished_ = true;
   }
 
@@ -453,7 +452,7 @@ bool LogsDataSet::Synchronize(time_t time_init) {
     time_t timestamp;
 
     if ((GetLogLineEntry(&log_line, &timestamp)) == false) {
-      // LM_W(("Skipping wrong entry in dataset: %s", dataset_->GetQueueName()));
+      // LOG_SW(("Skipping wrong entry in dataset: %s", dataset_->GetQueueName()));
       if (finished_) {
         return false;
       }
@@ -470,7 +469,7 @@ bool LogsDataSet::Synchronize(time_t time_init) {
       return true;
     }
     if (count_skip % 100000000 == 0) {
-      LM_M(("Skipping %s with read_timestamp:%s and first_timestamp:%s", GetQueueName(), time_read_str, time_init_str));
+      LOG_SM(("Skipping %s with read_timestamp:%s and first_timestamp:%s", GetQueueName(), time_read_str, time_init_str));
     }
     free(time_read_str);
     free(log_line);
@@ -510,7 +509,7 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp) {
 
         if (static_cast<int>(fields.size()) < (timestamp_position_ + 1)) {
           temporal_buffer[strlen(temporal_buffer) - 1] = '\0';
-          // LM_W(("Error reading empty line:'%s' from fd:%d file_index:%d (%s)", temporal_buffer, file_vector_[file_index].fd, file_index, file_vector_[file_index].name));
+          // LOG_SW(("Error reading empty line:'%s' from fd:%d file_index:%d (%s)", temporal_buffer, file_vector_[file_index].fd, file_index, file_vector_[file_index].name));
           free(*log);
           *log = NULL;
           continue;
@@ -519,7 +518,7 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp) {
         int temporal_position = 0;
         if (strlen(fields[timestamp_position_]) < 6) {
           if (strlen(fields[timestamp_position_alt_]) < 6) {
-            // LM_W(("Error detecting timestamp in pos:%d and %d for line:%s", timestamp_position_, timestamp_position_alt_, temporal_buffer));
+            // LOG_SW(("Error detecting timestamp in pos:%d and %d for line:%s", timestamp_position_, timestamp_position_alt_, temporal_buffer));
             free(*log);
             *log = NULL;
             continue;
@@ -547,7 +546,7 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp) {
     file_vector_[file_index].fd = -1;
     file_vector_[file_index].already_read = true;
   }
-  LM_W(("End of files in directory '%s' reached after scanning %d valid files", dir_path_, num_files_));
+  LOG_SW(("End of files in directory '%s' reached after scanning %d valid files", dir_path_, num_files_));
   finished_ = true;
   return false;
 }
@@ -558,7 +557,7 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp) {
 
   for (int file_index = 0; file_index < num_files_; file_index++) {
     if (file_vector_[file_index].already_read == true) {
-      LM_M(("Skipping already read file:%d (%s)", file_index, file_vector_[file_index].name));
+      LOG_SM(("Skipping already read file:%d (%s)", file_index, file_vector_[file_index].name));
       continue;
     }
 
@@ -589,7 +588,7 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp) {
         }
 
         if (static_cast<int>(fields.size()) < (timestamp_position_ + 1)) {
-          // LM_W(("Error reading line:'%s' from fd:%d file_index:%d (%s)", temporal_buffer, file_vector_[file_index].fd, file_index, file_vector_[file_index].name));
+          // LOG_SW(("Error reading line:'%s' from fd:%d file_index:%d (%s)", temporal_buffer, file_vector_[file_index].fd, file_index, file_vector_[file_index].name));
           free(*log);
           continue;
         }
@@ -597,7 +596,7 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp) {
         int temporal_position = 0;
         if (strlen(fields[timestamp_position_]) < 6) {
           if (strlen(fields[timestamp_position_alt_]) < 6) {
-            // LM_W(("Error detecting timestamp in pos:%d(strlen:%d) and %d(strlen(%d) for line:%s", timestamp_position_, strlen(fields[timestamp_position_]), timestamp_position_alt_, strlen(fields[timestamp_position_alt_]), temporal_buffer));
+            // LOG_SW(("Error detecting timestamp in pos:%d(strlen:%d) and %d(strlen(%d) for line:%s", timestamp_position_, strlen(fields[timestamp_position_]), timestamp_position_alt_, strlen(fields[timestamp_position_alt_]), temporal_buffer));
             free(*log);
             *log = NULL;
             return false;
@@ -629,7 +628,7 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp) {
       LM_E(("Error rewinding file descriptor for file '%s'", file_vector_[file_index].name));
     }
   }
-  LM_W(("End of files in directory '%s' reached after scanning %d valid files", dir_path_, num_files_));
+  LOG_SW(("End of files in directory '%s' reached after scanning %d valid files", dir_path_, num_files_));
   finished_ = true;
   return false;
 }

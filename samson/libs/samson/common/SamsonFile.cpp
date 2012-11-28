@@ -45,8 +45,8 @@ au::SharedPointer<SamsonFile> SamsonFile::create(const std::string file_name, au
   }
 
   // Getting a buffer for this file
-  std::string name = au::str("Samson file %s", file_name.c_str());
-  engine::BufferPointer buffer = engine::Buffer::Create(name, "samson_file", file_size);
+  std::string buffer_name = au::str("Samson file %s", file_name.c_str());
+  engine::BufferPointer buffer = engine::Buffer::Create(buffer_name, file_size);
   buffer->set_size(file_size);
 
   // Read content of this file
@@ -96,7 +96,7 @@ public:
 
     nb = fread(data, filestatus.st_size, 1, file);
     if (nb == 0) {
-      LM_W(("No data read from file:'%s'", fileName.c_str()));
+      LOG_SW(("No data read from file:'%s'", fileName.c_str()));
     }
     fclose(file);
   }

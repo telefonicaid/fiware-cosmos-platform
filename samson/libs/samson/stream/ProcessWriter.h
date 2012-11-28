@@ -14,7 +14,7 @@
 #include <iostream>                     // std::cout
 
 #include "au/ErrorManager.h"            // au::ErrorManager
-#include "au/string/StringUtilities.h"                  // au::Format
+#include "au/string/StringUtilities.h"  // au::Format
 
 #include "engine/MemoryManager.h"
 
@@ -38,7 +38,7 @@ class ProcessIsolated;
 class ProcessWriter : public KVWriter {
   ProcessIsolated *processIsolated;     // Pointer to the processIsolated to emit codes through the pipe
 
-  engine::SharedMemoryItem *item;       // Shared memory item used at this side ( fork in the middle )
+  samson::SharedMemoryItem *item;       // Shared memory item used at this side ( fork in the middle )
 
   char *buffer;                         // General output buffer
   size_t size;                          // General output buffer size
@@ -105,7 +105,7 @@ public:
   size_t *size;
   size_t max_size;
 
-  engine::SharedMemoryItem *item;
+  samson::SharedMemoryItem *item;
 
 private:
 

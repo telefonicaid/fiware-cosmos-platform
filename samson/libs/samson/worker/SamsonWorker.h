@@ -36,7 +36,7 @@
 #include "samson/common/KVHeader.h"
 #include "samson/common/Macros.h"               // exit(.)
 #include "samson/common/NotificationMessages.h"
-#include "samson/common/samson.pb.h"            // samson::network::
+// samson::network::
 #include "samson/common/samsonDirectories.h"    // SAMSON_WORKER_DEFAULT_PORT
 #include "samson/delilah/Delilah.h"
 #include "samson/module/Operation.h"
@@ -166,6 +166,10 @@ private:
   // Initial time stamp for this worker
   au::Cronometer cronometer_;
 
+  // Last try to connect with ZK
+  au::Cronometer zk_connection_cronometer_;
+  bool zk_first_connection_;
+
   // Main elements of the worker
   au::SharedPointer<au::zoo::Connection> zoo_connection_;     // Main connection with the zk
   au::SharedPointer<SamsonWorkerController> worker_controller_;     // Cluster setup controller
@@ -183,6 +187,7 @@ private:
 
   bool modules_available_;          // Flag to determine if blocks for modules are available
   size_t last_modules_version_;     // Last version of the queue .modules observed so far
+
 
   // Cronometer for last candidate data model
   au::Cronometer cronometer_candidate_data_model_;

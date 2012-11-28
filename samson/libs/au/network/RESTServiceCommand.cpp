@@ -215,7 +215,7 @@ au::Status RESTServiceCommand::Write(SocketConnection *socket_connection) {
   } else if (format_ == "thtml") {
     header << "Content-Type: text/thtml\n";
   } else {
-    LM_W(("no format (does this mean its XML?"));
+    LOG_SW(("no format (does this mean its XML?"));
   }
   header << "Content-Length: " << data.length() << "\n";
   header << "Connection: close\n";

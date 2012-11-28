@@ -51,6 +51,6 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonStream STATIC ${SOURCES} ${HEADERS} )
-
+ADD_DEPENDENCIES(samsonStream samsonCommon)
 
 

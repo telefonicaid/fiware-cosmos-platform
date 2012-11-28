@@ -15,19 +15,23 @@
 #include <stdlib.h>     // exit
 #include <string.h>     // memcpy
 
+
 #include "au/ThreadManager.h"
 #include "au/daemonize.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 #include "au/string/StringUtilities.h"                  // au::str()
+
 #include "logMsg/logMsg.h"
 #include "parseArgs/paBuiltin.h"  // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"
 #include "parseArgs/parseArgs.h"
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
+
 #include "samson/common/Logs.h"
 #include "samson/common/coding.h"       // KVHeader
+
 
 #include "LogManager.h"
 #include "StreamConnector.h"
@@ -158,24 +162,21 @@ int main(int argC, const char *argV[]) {
 
   // Random initialization
   srand(time(NULL));
-
-
   // Init log system
-  au::log_central.Init(argV[0]);
+  au::LogCentral::InitLogSystem(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
 
-  // Add plugins to report lgos to file, server and console
-  au::log_central.AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
-  au::log_central.AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
-  au::log_central.AddScreenPlugin("screen", "[type] text");  // Temporal plugin
-
+  // Add plugins to report logs to file, server and console
+  au::log_central->AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
+  au::log_central->AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
+  au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
-    LM_W(("SIGPIPE cannot be handled"));
+    LOG_SW(("SIGPIPE cannot be handled"));
   }
   if (buffer_size == 0) {
-    LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Run in background if required
+    LM_X(1, ("Wrong buffer size %lu", buffer_size));  // Run in background if required
   }
   if (run_as_daemon) {
     Daemonize();
@@ -212,14 +213,14 @@ int main(int argC, const char *argV[]) {
 
     while (fgets(line, sizeof(line), f)) {
       // Remove the last return of a string
-      while (( strlen(line) > 0 ) && ( line[ strlen(line) - 1] == '\n') > 0) {
+      while ((strlen(line) > 0) && (line[ strlen(line) - 1] == '\n') > 0) {
         line[ strlen(line) - 1] = '\0';
       }
 
-      // LM_M(("Processing line: %s", line ));
+      // LOG_SM(("Processing line: %s", line ));
       num_line++;
 
-      if (( line[0] != '#' ) && ( strlen(line) > 0)) {
+      if ((line[0] != '#') && (strlen(line) > 0)) {
         message = au::str("%s ( File %s )", line, file_name);
         main_stream_connector->log("StreamConnector", "Message", message);
 
@@ -340,7 +341,8 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-
+  // Stop the log system
+  au::LogCentral::StopLogSystem();
 
   return 0;
 }

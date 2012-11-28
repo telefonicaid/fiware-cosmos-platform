@@ -20,6 +20,8 @@ extern size_t buffer_size;
 extern size_t input_buffer_size;  // Size of the chunks to read
 
 namespace stream_connector {
+const size_t FileDescriptorConnection::kMaxInputbufferSize = 100 * 1024 * 1024;
+
 void *run_FileDescriptorConnection(void *p) {
   // Recover the correct pointer
   FileDescriptorConnection *connection = ( FileDescriptorConnection * )p;
@@ -76,7 +78,7 @@ void FileDescriptorConnection::connect() {
     // Create the thread
     thread_running_ = true;
     pthread_t t;
-    au::Singleton<au::ThreadManager>::shared()->addThread("StreamConnectorConnection", &t, NULL,
+    au::Singleton<au::ThreadManager>::shared()->AddThread("StreamConnectorConnection", &t, NULL,
                                                           run_FileDescriptorConnection,
                                                           this);
   }
@@ -143,9 +145,7 @@ void FileDescriptorConnection::run_as_input() {
     if (!file_descriptor_) {
       LM_X(1, ("Internal error"));  // Get a buffer
     }
-    engine::BufferPointer buffer = engine::Buffer::Create("stdin"
-                                                          , "connector"
-                                                          , input_buffer_size);
+    engine::BufferPointer buffer = engine::Buffer::Create("stdin buffer", input_buffer_size);
 
 
     size_t read_size = 0;
@@ -161,6 +161,10 @@ void FileDescriptorConnection::run_as_input() {
         input_buffer_size *= 2;
       } else if (c.seconds() > 3) {
         input_buffer_size /= 2;
+      }
+
+      if (input_buffer_size > kMaxInputbufferSize) {
+        input_buffer_size = kMaxInputbufferSize;
       }
     }
 

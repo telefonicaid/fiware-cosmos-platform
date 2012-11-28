@@ -39,7 +39,7 @@
 #include <vector>       // std::vector
 
 #include "au/containers/SharedPointer.h"
-#include "logMsg/logMsg.h"  // LM_M()
+#include "logMsg/logMsg.h"  // LOG_SM()
 
 // Usefull define for full iteration over a map structure
 

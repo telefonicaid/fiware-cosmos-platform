@@ -99,21 +99,21 @@ void SamsonComscoreDictionary::write(const char *file_name) {
   if (fwrite(&header, sizeof(Header), 1, file) != 1) {
     LM_X(1, ("Error writin to file %s to create a SamsonComscoreDictionary", file_name ));
   }
-  LM_M(("Writing file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
-        , file_name
-        , au::str(header.
-                  size_string_collection)
-        .c_str()
-        , au::str(header.
-                  size_struct_collection_dictionary_entries)
-        .c_str()
-        , au::str(header.
-                  size_struct_collection_pattern_to_category)
-        .c_str()
-        , au::str(header.
-                  size_struct_collection_categories)
-        .c_str()
-        ));
+  LOG_SM(("Writing file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
+          , file_name
+          , au::str(header.
+                    size_string_collection)
+          .c_str()
+          , au::str(header.
+                    size_struct_collection_dictionary_entries)
+          .c_str()
+          , au::str(header.
+                    size_struct_collection_pattern_to_category)
+          .c_str()
+          , au::str(header.
+                    size_struct_collection_categories)
+          .c_str()
+          ));
 
 
   // Write String collection
@@ -152,13 +152,13 @@ void SamsonComscoreDictionary::read(const char *file_name) {
 
   fclose(file);
 
-  LM_M(("Read file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
-        , file_name
-        , au::str(header.size_string_collection).c_str()
-        , au::str(header.size_struct_collection_dictionary_entries).c_str()
-        , au::str(header.size_struct_collection_pattern_to_category).c_str()
-        , au::str(header.size_struct_collection_categories).c_str()
-        ));
+  LOG_SM(("Read file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
+          , file_name
+          , au::str(header.size_string_collection).c_str()
+          , au::str(header.size_struct_collection_dictionary_entries).c_str()
+          , au::str(header.size_struct_collection_pattern_to_category).c_str()
+          , au::str(header.size_struct_collection_categories).c_str()
+          ));
 }
 
 bool SamsonComscoreDictionary::find_pattern_range(const char *core_domain, uint *begin, uint *end) {
@@ -190,17 +190,17 @@ bool SamsonComscoreDictionary::find_pattern_range(const char *core_domain, uint 
 }
 
 uint SamsonComscoreDictionary::find_one_pattern(const char *core_domain) {
-  uint begin = 0;
-  uint end = dictionary_entries.size;
+  uint first = 0;
+  uint last = dictionary_entries.size - 1;
 
-  if (strcmp(core_domain, get_domain_for_pattern(begin)) == 0) {
-    return begin;
+  if (strcmp(core_domain, get_domain_for_pattern(first)) == 0) {
+    return first;
   }
-  if (strcmp(core_domain, get_domain_for_pattern(end)) == 0) {
-    return end;
+  if (strcmp(core_domain, get_domain_for_pattern(last)) == 0) {
+    return last;
   }
 
-  return find_one_pattern(core_domain, begin, end);
+  return find_one_pattern(core_domain, first, last);
 }
 
 const char *SamsonComscoreDictionary::get_domain_for_pattern(uint pos) {
@@ -254,7 +254,7 @@ bool SamsonComscoreDictionary::findURLPattern(const char *_url, uint *pattern) {
 
   // Find pattern range to evaluate
   if (find_pattern_range(url.core_domain.c_str(), &begin_pattern, &end_pattern)) {
-    // LM_M(("Domain %s has patterns in the range %d , %d" , url.core_domain.c_str() , begin_pattern, end_pattern ));
+    // LOG_SM(("Domain %s has patterns in the range %d , %d" , url.core_domain.c_str() , begin_pattern, end_pattern ));
 
     for (uint p = begin_pattern; p <= end_pattern; p++) {
       const char *pre_domain_pattern = get_pre_domain_for_pattern(p);
@@ -297,6 +297,10 @@ size_t SamsonComscoreDictionary::getNumEntries() {
 size_t SamsonComscoreDictionary::getPatternIdForEnty(size_t i) {
   if (i > dictionary_entries.size) {
     return 0;
+  }
+  // TODO(@jges): Remove if
+  if (i == dictionary_entries.size) {
+    LOG_SM(("Detected pattern(%lu) == dictionary_entries.size", i));
   }
   return dictionary_entries.v[i].id;
 }

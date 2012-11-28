@@ -11,7 +11,7 @@
 #include "samson/stream/WorkerTaskBase.h"      // Own interface
 #include <list>
 
-#include "logMsg/logMsg.h"      // LM_M
+#include "logMsg/logMsg.h"      // LOG_SM
 #include "samson/common/coding.h"
 #include "samson/stream/Block.h"              // samson::Stream::Block
 #include "samson/stream/BlockManager.h"       // samson::stream::BlockManager
@@ -206,12 +206,30 @@ double WorkerTaskBase::GetProcessTime() const {
   return activity_monitor_.GetTotalTimeForActivity("process");
 }
 
-size_t WorkerTaskBase::GetInputSize() const {
-  return block_list_container_.inputs_size();
+FullKVInfo WorkerTaskBase::GetInputsInfo() const {
+  return block_list_container_.GetInputsInfo();
 }
 
-size_t WorkerTaskBase::GetOutputSize() const {
-  return block_list_container_.inputs_size();
+FullKVInfo WorkerTaskBase::GetOutputsInfo() const {
+  return block_list_container_.GetOutputsInfo();
+}
+
+FullKVInfo WorkerTaskBase::GetInputInfo(int c) const {
+  BlockList *block_list = block_list_container_.findBlockList(au::str("input_%d", c));
+
+  if (block_list) {
+    return block_list->getBlockInfo().info;
+  }
+  return FullKVInfo();
+}
+
+FullKVInfo WorkerTaskBase::GetOutputInfo(int c) const {
+  BlockList *block_list = block_list_container_.findBlockList(au::str("output_%d", c));
+
+  if (block_list) {
+    return block_list->getBlockInfo().info;
+  }
+  return FullKVInfo();
 }
 }
 }

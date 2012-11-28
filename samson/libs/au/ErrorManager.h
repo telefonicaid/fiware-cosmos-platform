@@ -46,7 +46,9 @@ public:
   };
 
   ErrorMessage(ErrorType type, std::list<std::string> &contexts, std::string message);
-  ~ErrorMessage();
+  ~ErrorMessage() {
+    contexts_.clear();
+  }
 
   std::string GetMessage() const;
   std::string GetMultiLineMessage() const;
@@ -65,6 +67,8 @@ public:
 
   ErrorManager();
   ~ErrorManager() {
+    errors_.clearVector();
+    contexts_.clear();
   };
 
   // Old method to add an error

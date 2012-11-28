@@ -8,17 +8,19 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-#include "samson/delilah/DelilahComponent.h"                    // Own interface
+#include "samson/delilah/DelilahComponent.h"     // Own interface
 
 #include <map>
 #include <vector>
 
 #include "au/CommandLine.h"                      // samson::CommandLine
+#include "au/log/LogMain.h"
 
 #include "engine/Buffer.h"                       // engine::Buffer
 #include "engine/Notification.h"
 
 #include "samson/common/EnvironmentOperations.h"  // copyEnviroment()
+#include "samson/common/Logs.h"
 #include "samson/common/NotificationMessages.h"     // notification_delilah_review_repeat_tasks
 #include "samson/delilah/Delilah.h"              // samson::Delilah
 #include "samson/delilah/DelilahConsole.h"       // samson::DelilahConsole
@@ -91,7 +93,7 @@ void DelilahComponent::setComponentFinished() {
     return;
   }
 
-  LM_T(LmtDelilahComponent, ("component %d set to finished", id));
+  LOG_M(logs.delilah_components, ("component %d set to finished", id));
   component_finished = true;
   cronometer.Stop();
 
@@ -108,7 +110,7 @@ void DelilahComponent::setComponentFinishedWithError(std::string error_message) 
     return;
   }
 
-  LM_T(LmtDelilahComponent, ("component %d set to finished with error:'%s'", id, error_message.c_str()));
+  LOG_M(logs.delilah_components, ("component %d set to finished with error:'%s'", id, error_message.c_str()));
   component_finished = true;
   cronometer.Stop();
 

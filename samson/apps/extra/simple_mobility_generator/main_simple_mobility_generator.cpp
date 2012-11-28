@@ -16,14 +16,13 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "parseArgs/paConfig.h"
-#include "parseArgs/parseArgs.h"
-
-#include "logMsg/logMsg.h"
-
 #include "au/CommandLine.h"  // au::CommandLine
+#include "au/log/LogMain.h"
 #include "au/statistics/Cronometer.h"  // au::Cronometer
 #include "au/string/StringUtilities.h"  // au::str()
+#include "logMsg/logMsg.h"
+#include "parseArgs/paConfig.h"
+#include "parseArgs/parseArgs.h"
 
 
 
@@ -181,7 +180,7 @@ int main(int argC, const char *argV[]) {
       printf("%d AREA_CREATE work %f %f 200 \n", i, work.x, work.y);
     }
 
-    LM_M(("Generated %d messages", users ));
+    LOG_SM(("Generated %d messages", users ));
     return 0;
   }
 

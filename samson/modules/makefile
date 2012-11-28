@@ -4,6 +4,7 @@ CORE_MODULES=system \
 			 shop
 
 EXTRA_MODULES= webp \
+		fiware_pos \
 		wiki \
 		level \
 		hit \

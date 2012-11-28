@@ -24,7 +24,7 @@
 
 namespace au {
 /**
- * \brief Namespace for au::zoo library ( C++ wrapper for zookeeper c-lib using engine as asynchronous notifications )
+ * \brief Namespace for au::zoo library (C++ wrapper for zookeeper c-lib using engine as asynchronous notifications)
  */
 namespace zoo {
 class Connection;

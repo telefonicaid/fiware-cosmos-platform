@@ -20,7 +20,7 @@
 #include "au/tables/Collection.h"
 #include "au/tables/Table.h"
 #include "au/tables/Tree.h"
-#include "logMsg/logMsg.h"     // LM_W
+#include "logMsg/logMsg.h"     // LOG_SW
 #include <sstream>                     // std::ostringstream
 #include <stdio.h>                     /* sprintf */
 #include <string>                      // std::string

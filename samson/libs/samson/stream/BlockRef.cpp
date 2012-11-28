@@ -14,7 +14,7 @@
 
 #include <sstream>
 
-#include "logMsg/logMsg.h"         // LM_M
+#include "logMsg/logMsg.h"         // LOG_SM
 
 #include "au/file.h"               // au::sizeOfFile
 

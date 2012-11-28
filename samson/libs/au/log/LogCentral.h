@@ -27,7 +27,8 @@ namespace au {
 class Log;
 class LogCentralPluginScreen;
 class LogCentralPluginFile;
-class LogCentralPluginServer;
+class LogCentralPluginScerver;
+class LogCentral;
 
 /**
  *
@@ -39,16 +40,25 @@ class LogCentralPluginServer;
  *
  */
 
+extern LogCentral *log_central;   // Unique log_central variable
 
-class LogCentral {
+class LogCentral : public au::Thread {
 public:
 
-  LogCentral();
+  virtual ~LogCentral() {
+    Stop();
+  }
 
-  // General management
-  void Init(const std::string& exec = "Unknown");  // Init log system
-  void Stop();  // Stop the loggin system
-  void StopAndExit(int c);  // Stop and exit
+  static void InitLogSystem(const std::string& exec_name);
+  static void StopLogSystem();
+  static LogCentral *Shared();
+
+  // Flush pending logs to all plugins
+  void Flush();
+
+  // Pause an play background thread
+  void Pause();
+  void Play();
 
   // Set name of this node
   void set_node(const std::string& node) {
@@ -97,10 +107,19 @@ public:
 
 private:
 
+  LogCentral();
+
+  // General management
+  void Init(const std::string& exec = "Unknown");  // Init log system
+  void Stop();                                     // Stop the loggin system unregistering all channels
+
   friend void *RunLogCentral(void *p);
 
+  // Init pipe and file descriptors to comunicate all threads with background thread to process logs
+  void CreatePipeAndFileDescriptors();
+
   // Main function for the background thread
-  void Run();
+  void RunThread();
 
   // Review if channles are activated
   void ReviewChannelsLevels();
@@ -108,15 +127,7 @@ private:
   // Channel registration
   LogCentralChannels log_channels_;
 
-  // Frind function to run in background
-  friend void *run_LogCentral(void *p);
-
-
-  // Flag to indicate the backgroud thread to finish
-  bool quit_;
-
-  // Pipe and thread for the log process
-  pthread_t t_;
+  // Pipe to write and read logs
   int fds_[2];
 
   // File descriptor to emit logs
@@ -139,7 +150,6 @@ private:
   LogCounter log_counter_;
 };
 
-extern LogCentral log_central;
 
 class LogCentralCatalogue : public au::console::CommandCatalogue {
 public:

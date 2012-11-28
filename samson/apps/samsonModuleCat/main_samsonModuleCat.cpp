@@ -90,7 +90,7 @@ void consider_file(std::string _fileName, au::tables::Table *table) {
 
     delete module;
   } else {
-    LM_W(("Not possible to load file %s", _fileName.c_str()));
+    LOG_SW(("Not possible to load file %s", _fileName.c_str()));
   }
 }
 

@@ -33,7 +33,7 @@
 #include "engine/NotificationListener.h"  // engine::NotificationListener
 #include "samson/common/KVFile.h"
 #include "samson/common/coding.h"    // FullKVInfo
-#include "samson/common/samson.pb.h"  // network::
+// network::
 #include "samson/stream/Block.h"
 #include "samson/stream/BlockInfo.h"  // BlockInfo
 #include "samson/stream/BlockRef.h"

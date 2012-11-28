@@ -51,7 +51,7 @@ public:
 
   // Interface to inform about a received packet from a network connection
   virtual void receive(NetworkConnection *connection, const PacketPointer& packet) {
-    LM_W(("NetworkManager::receive not implemented"));
+    LOG_SW(("NetworkManager::receive not implemented"));
   }
 
   // Push a packet to a connection

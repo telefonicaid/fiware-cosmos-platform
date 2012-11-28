@@ -224,9 +224,9 @@ std::string str_double_progress_bar(double p1, double p2, char c1, char c2, char
 void FindAndReplaceInString(std::string &source, const std::string& find, const std::string& replace) {
   size_t pos = 0;
 
-  // LM_M(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
+  // LOG_SM(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
   pos = source.find(find, pos);
-  // LM_M(("Position found %lu bytes" , find.length() ));
+  // LOG_SM(("Position found %lu bytes" , find.length() ));
 
   while (pos != std::string::npos) {
     source.replace(pos, find.length(), replace);
@@ -234,9 +234,9 @@ void FindAndReplaceInString(std::string &source, const std::string& find, const 
     // Go forward in the input string
     pos += replace.length();
 
-    // LM_M(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
+    // LOG_SM(("Finding string of %d bytes at position %lu of a string with length %lu" , find.length() , pos , source.length() ));
     pos = source.find(find, pos);
-    // LM_M(("Position found %lu bytes" , find.length() ));
+    // LOG_SM(("Position found %lu bytes" , find.length() ));
   }
 }
 
@@ -297,6 +297,10 @@ std::string str(const char *format, ...) {
   return std::string(vmsg);
 }
 
+std::string str_color(int main_color_code, int color_code, const std::string message) {
+  return au::str("\033[%d;%dm", main_color_code, color_code) + message + std::string("\033[0m");
+}
+
 std::string str(Color color, const char *format, ...) {
   va_list args;
   char vmsg[2048];
@@ -309,37 +313,47 @@ std::string str(Color color, const char *format, ...) {
   // vmsg[2047] = 0;
   va_end(args);
 
+  // Real message to print
+  std::string message = std::string(vmsg);
+
   switch (color) {
-    case normal:
-      return std::string(vmsg);
+    case Normal: return message;
 
-    case red:
-      return std::string("\033[1;31m") + std::string(vmsg) + std::string("\033[0m");
+    case Black: return str_color(0, 30, message);
 
-    case magenta:
-      return std::string("\033[1;35m") + std::string(vmsg) + std::string("\033[0m");
+    case Red: return str_color(0, 31, message);
 
-    case blue:
-      return std::string("\033[1;34m") + std::string(vmsg) + std::string("\033[0m");
+    case Green: return str_color(0, 32, message);
 
-    case black:
-      return std::string("\033[1;40m") + std::string(vmsg) + std::string("\033[0m");
+    case Yellow: return str_color(0, 33, message);
 
-    case green:
-      return std::string("\033[1;42m") + std::string(vmsg) + std::string("\033[0m");
+    case Blue: return str_color(0, 34, message);
 
-    case brown:
-      return std::string("\033[1;43m") + std::string(vmsg) + std::string("\033[0m");
+    case Magenta: return str_color(0, 35, message);
 
-    case cyan:
-      return std::string("\033[1;46m") + std::string(vmsg) + std::string("\033[0m");
+    case Cyan: return str_color(0, 36, message);
 
-    case white:
-      return std::string("\033[1;47m") + std::string(vmsg) + std::string("\033[0m");
+    case White: return str_color(0, 37, message);
+
+    case BoldBlack: return str_color(1, 30, message);
+
+    case BoldRed: return str_color(1, 31, message);
+
+    case BoldGreen: return str_color(1, 32, message);
+
+    case BoldYellow: return str_color(1, 33, message);
+
+    case BoldBlue: return str_color(1, 34, message);
+
+    case BoldMagenta: return str_color(1, 35, message);
+
+    case BoldCyan: return str_color(1, 36, message);
+
+    case BoldWhite: return str_color(1, 37, message);
   }
 
   // Default mode ( just in case )
-  return std::string(vmsg);
+  return message;
 }
 
 std::string str_double(double value, char letter) {
@@ -624,9 +638,9 @@ std::string StringWithMaxLineLength(const std::string& txt, int max_line_length)
       line[max_line_length - 2] = '.';
       line[max_line_length - 1] = 0;
 
-      // LM_M(("Exesive line %d / %d ", line_length , max_line_length ));
+      // LOG_SM(("Exesive line %d / %d ", line_length , max_line_length ));
     } else {
-      // LM_M(("Normal line %d / %d", line_length , max_line_length ));
+      // LOG_SM(("Normal line %d / %d", line_length , max_line_length ));
     }
 
     output << line << "\n";
@@ -805,13 +819,13 @@ bool IsCharInRange(char c, char lower, char higher) {
 
 Color GetColor(const std::string color_name) {
   if (( color_name == "red" ) || ( color_name == "r" )) {
-    return red;
+    return BoldRed;
   }
   if (( color_name == "magenta" ) || ( color_name == "m" )) {
-    return magenta;
+    return BoldMagenta;
   }
 
-  return normal;
+  return Normal;
 }
 
 std::string string_in_color(const std::string& message, const std::string& color_name) {

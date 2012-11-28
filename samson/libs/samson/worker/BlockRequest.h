@@ -16,7 +16,7 @@
 #include "au/string/Descriptors.h"
 #include "samson/common/KVHeader.h"
 #include "samson/common/MessagesOperations.h"
-#include "samson/common/samson.pb.h"
+
 #include "samson/stream/Block.h"
 #include <set>
 #include <string>

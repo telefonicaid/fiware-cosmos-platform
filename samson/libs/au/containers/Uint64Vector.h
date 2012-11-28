@@ -17,7 +17,7 @@
 #include <string>              // std::string
 #include <sys/time.h>          // struct timeval
 
-#include "logMsg/logMsg.h"     // LM_W
+#include "logMsg/logMsg.h"     // LOG_SW
 
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager

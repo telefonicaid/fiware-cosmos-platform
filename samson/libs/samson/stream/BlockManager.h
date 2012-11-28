@@ -22,7 +22,7 @@
 #include "engine/NotificationListener.h"              // engine::NotificationListener
 
 #include "samson/common/Visualitzation.h"
-#include "samson/common/samson.pb.h"
+
 #include "samson/stream/Block.h"                      // samson::stream::Block
 
 namespace samson {

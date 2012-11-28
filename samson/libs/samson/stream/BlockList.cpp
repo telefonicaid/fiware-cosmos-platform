@@ -16,7 +16,7 @@
 
 #include "engine/ProcessManager.h"  // engine::ProcessManager
 
-#include "logMsg/logMsg.h"           // LM_M
+#include "logMsg/logMsg.h"           // LOG_SM
 
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
 #include "samson/common/SamsonSetup.h"

@@ -80,8 +80,7 @@ void BlockManager::CreateBlock(size_t block_id, engine::BufferPointer buffer) {
     LM_X(1, ("Internal error"));
   }
 
-  buffer->set_name_and_type(au::str("Buffer for block %s", str_block_id(block_id).c_str()), "block");
-  buffer->SetTag("block_manager");
+  buffer->set_name(au::str("Buffer for block %s", str_block_id(block_id).c_str()));
 
   BlockPointer block(new Block(block_id, buffer));
 
@@ -122,9 +121,6 @@ void BlockManager::RemoveBlocksIfNecessary(GlobalBlockSortInfo *info) {
     ScheduleRemoveOperation(block);
 
     engine::BufferPointer buffer = block->buffer();
-    if (buffer != NULL) {
-      buffer->RemoveTag("block_manager");
-    }
     LOG_D(logs.block_manager, ("Block %s is removed since it is not part of data model", str_block_id(block_id).c_str()));
   }
 }
@@ -142,7 +138,7 @@ std::set<size_t> BlockManager::GetBlockIds() {
 
 void BlockManager::destroy() {
   if (!blockManager) {
-    LM_W(("Error destroying a non-initialized BlockManager"));
+    LOG_SW(("Error destroying a non-initialized BlockManager"));
     return;
   }
 
@@ -275,8 +271,6 @@ void BlockManager::Review() {
         // Both on disk and on memory
         LOG_D(logs.block_manager, ("Free block:'%s'", block->str().c_str()));
 
-        block->buffer()->RemoveTag("block_manager");
-
         // Free block
         block->freeBlock();
       }
@@ -390,7 +384,7 @@ void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
 
   FILE *file = fopen(fileName.c_str(), "r");
   if (!file) {
-    LM_W(("Not possible to open file %s to recover block", fileName.c_str()));
+    LOG_SW(("Not possible to open file %s to recover block", fileName.c_str()));
     return;
   }
 
@@ -400,7 +394,7 @@ void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
   int r = fread(&header, sizeof(KVHeader), 1, file);
   if (r != 1) {
     fclose(file);
-    LM_W(("Not possible to read header for file %s", fileName.c_str()));
+    LOG_SW(("Not possible to read header for file %s", fileName.c_str()));
     return;
   }
 
@@ -408,10 +402,10 @@ void BlockManager::CreateBlockFromDisk(const std::string& fileName) {
 
   // Check file-size
   if (!header.CheckTotalSize(fileSize)) {
-    LM_W(("Not correct size (%lu) while recovering block_id %lu from file %s"
-          , fileSize
-          , block_id
-          , fileName.c_str()));
+    LOG_SW(("Not correct size (%lu) while recovering block_id %lu from file %s"
+            , fileSize
+            , block_id
+            , fileName.c_str()));
 
     fclose(file);
     return;
@@ -441,6 +435,10 @@ void BlockManager::RecoverBlocksFromDisks() {
   if ((dp = opendir(blocks_dir.c_str())) != NULL) {
     while ((dirp = readdir(dp)) != NULL) {
       std::string fileName = dirp->d_name;
+
+      if (( fileName.length() == 0 ) || ( fileName[0] == '.' )) {
+        continue;
+      }
 
       // Full path of the file
       std::string path = au::path_from_directory(blocks_dir, dirp->d_name);
@@ -475,20 +473,19 @@ void BlockManager::ScheduleRemoveOperation(BlockPointer block) {
 void BlockManager::ScheduleReadOperation(BlockPointer block) {
   // Only make sense if block is only on disk
   if (block->state() != Block::on_disk) {
-    LM_W(("Called schedule_read_operation for a block (%lu) that is in another state %s"
-          , block->block_id(), block->str_state().c_str()));
+    LOG_SW(("Called schedule_read_operation for a block (%lu) that is in another state %s"
+            , block->block_id(), block->str_state().c_str()));
   }
   if (block->buffer() != NULL) {
     // No problem since previous buffer is auytomatically released in buffer_container
-    LM_W(("There is an unused buffer of data in a block with state = on_disk"));   // Allocate a buffer ( it is retained since we are the creators )
+    LOG_SW(("There is an unused buffer of data in a block with state = on_disk"));   // Allocate a buffer ( it is retained since we are the creators )
   }
   size_t block_id = block->block_id();
   size_t size = block->getSize();
 
   // Alloc the buffer for the read operation
-  block->buffer_ = engine::Buffer::Create(au::str("Buffer for block %s", str_block_id(block_id).c_str()), "block", size);
+  block->buffer_ = engine::Buffer::Create(au::str("Buffer for block %s", str_block_id(block_id).c_str()), size);
   block->buffer_->set_size(size);
-  block->buffer_->SetTag("block_manager");
 
   // Read operation over this buffer
   std::string fileName = block->file_name();
@@ -512,8 +509,8 @@ void BlockManager::ScheduleReadOperation(BlockPointer block) {
 void BlockManager::ScheduleWriteOperation(BlockPointer block) {
   // Only make sense if block is only on memory
   if (block->state() != Block::on_memory) {
-    LM_W(("Called schedule_read_operation for a block (%lu) that is in another state %s"
-          , block->block_id(), block->str_state().c_str()));     // Operation for writing
+    LOG_SW(("Called schedule_read_operation for a block (%lu) that is in another state %s"
+            , block->block_id(), block->str_state().c_str()));   // Operation for writing
   }
   engine::BufferPointer buffer = block->buffer();
   size_t block_id = block->block_id();

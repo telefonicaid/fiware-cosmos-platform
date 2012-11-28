@@ -52,13 +52,91 @@ struct WorkerTaskLog {
   int running_time_seconds;     // Running time
 };
 
+class StreamOperationStatistics {
+public:
+
+  /**
+   * \brief Inform about a finished task to update statistics
+   */
+
+  void UpdateTaskInformation(int num_hgs, FullKVInfo input, FullKVInfo state, double process_time) {
+    // Update information about input
+    input_size_.Push(input.size);
+    input_kvs_.Push(input.kvs);
+
+    // Update information about state
+    state_size_.Push(state.size);
+    state_kvs_.Push(state.kvs);
+
+    // Update information about process
+    real_process_rate_.Push((double)( input.size ) / process_time);
+    process_rate_.Push((double)( input.size + state.size ) / process_time);
+
+    // Just keep the number of divisions to compute erlangs
+    num_hgs_ = num_hgs;
+  }
+
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) const {
+    add(record, "Input", GetInputRateStr(), "left,different");
+    add(record, "#Ops/s", GetOperationsRateStr(), "left,different");
+
+    add(record, "Total input", GetInputTotalStr(), "left,different");
+    add(record, "Total #Ops", GetOperationsTotalStr(), "left,different");
+
+    add(record, "#hgs", num_hgs_, "left,different");
+    add(record, "State", GetStateStr(), "left,different");
+
+    add(record, "Process", GetProcessRateStr(), "left,different");
+  }
+
+  int num_hgs() const {
+    return num_hgs_;
+  }
+
+  std::string GetStateStr() const {
+    return state_kvs_.str_mean("kvs") + " " + state_size_.str_mean("B");
+  }
+
+  std::string GetInputRateStr() const {
+    return au::str(input_kvs_.rate(), "kvs/s") + " " + au::str(input_size_.rate(), "B/s");
+  }
+
+  std::string GetOperationsRateStr() const {
+    return au::str(input_kvs_.hit_rate(), "ops/s");
+  }
+
+  std::string GetInputTotalStr() const {
+    return au::str(input_kvs_.size(), "kvs") + " " + au::str(input_size_.size(), "B");
+  }
+
+  std::string GetOperationsTotalStr() const {
+    return au::str(input_kvs_.hits(), "ops");
+  }
+
+  std::string GetProcessRateStr() const {
+    return au::str(real_process_rate_.GetAverage(), "B/s") + " " + au::str(process_rate_.GetAverage(), "B/s");
+  }
+
+private:
+
+  int num_hgs_;
+
+  au::Rate input_size_;
+  au::Rate input_kvs_;
+
+  au::Averager state_size_;
+  au::Averager state_kvs_;
+
+  au::Averager real_process_rate_;
+  au::Averager process_rate_;
+};
+
+
 class WorkerTaskManager : public ::engine::NotificationListener {
 public:
 
   explicit WorkerTaskManager(SamsonWorker *samson_worker);
-  ~WorkerTaskManager() {
-    averages_per_task_.clearMap();
-  }
+  ~WorkerTaskManager();
 
   void Add(au::SharedPointer<WorkerTaskBase> task);     // Add new task to the manager
 
@@ -113,7 +191,7 @@ private:
   std::list<WorkerTaskLog> last_tasks_;
 
   // Statistics about tasks
-  au::map<std::string, au::Averager > averages_per_task_;
+  au::map<std::string, StreamOperationStatistics > stream_operations_statistics_;
 
   // Get the number of current running tasks for a particular stream operation
   int GetRunningTasks(size_t stream_operation_id);

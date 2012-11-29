@@ -58,8 +58,8 @@ void WorkerBlockManager::Review() {
 
         defrag_tasks_names_remove.push_back(defrag_task_name);     // add key to be removed latter
 
-        if (defrag_task->error().IsActivated()) {
-          std::string error_message = defrag_task->error().GetMessage();
+        if (defrag_task->error().HasErrors()) {
+          std::string error_message = defrag_task->error().GetLastError();
           LOG_W(logs.worker_block_manager, ("Error in defrag task %lu:%s (%s)"
                                             , defrag_task->id()
                                             , defrag_task_name.c_str()
@@ -73,11 +73,11 @@ void WorkerBlockManager::Review() {
           au::ErrorManager error;
           samson_worker_->data_model()->Commit(caller, commit_command, error);
 
-          if (error.IsActivated()) {
+          if (error.HasErrors()) {
             LOG_W(logs.worker_block_manager, ("Error commiting defrag task %lu:%s (%s)"
                                               , defrag_task->id()
                                               , defrag_task_name.c_str()
-                                              , error.GetMessage().c_str()));
+                                              , error.GetLastError().c_str()));
           }
         }
       }
@@ -108,7 +108,7 @@ size_t WorkerBlockManager::CreateBlock(engine::BufferPointer buffer) {
 void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t worker_id) {
   LOG_M(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu )"
                                     , str_block_id(block_id).c_str()
-                                    , worker_id ));
+                                    , worker_id));
 
   BlockRequest *block_request = block_requests_.extractFromMap(block_id);
   if (block_request) {
@@ -265,12 +265,12 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
         all_hgs.push_back(j);
       }
     }
-    
-    if( all_hgs.size() == 0 ) {
+
+    if (all_hgs.size() == 0) {
       LOG_W(logs.worker_block_manager, ("Push message rejected. No hash group assigned to me"));
       return;
     }
-    
+
     int hg =  all_hgs[ rand() % all_hgs.size()];
     header->range.set(hg, hg + 1);
   } else if (header->IsModule()) {
@@ -302,8 +302,8 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
                                , push_id);
   samson_worker_->data_model()->Commit(caller, command, error);
 
-  if (error.IsActivated()) {
-    LOG_W(logs.worker_block_manager, ("Error comitting a push operation to data model: %s", error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_W(logs.worker_block_manager, ("Error comitting a push operation to data model: %s", error.GetLastError().c_str()));
     return;
   }
 

@@ -17,11 +17,6 @@ SET (AUX_HEADERS
 
 )			  
 
-SET( SOURCES_TEST
-	 main_system_test.cpp
-)
-
-
 cmake_minimum_required(VERSION 2.6)
 
 # Locate samsonModuleParser

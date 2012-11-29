@@ -16,14 +16,14 @@
 
 namespace au {
 const char *log_reseved_words[] =
-{ "node",       "host",             "type",               "channel",               "pid",                        "tid",
+{ "node",       "host", "type",   "channel",  "pid",       "tid",
   "DATE"
-  ,             "date",             "TIME",               "time",                  "timestamp",
+  ,             "date", "TIME",   "time",     "timestamp",
   "time_unix",
   "line",       "exec",
   "exec_short",
   "file"
-  ,             "text",             "text80",             "function",              NULL };
+  ,             "text", "text80", "function", NULL };
 
 
 void Log::Set(const std::string& field_name, const std::string& field_value) {
@@ -413,7 +413,7 @@ std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::Err
   int fd = open(file_name.c_str(), O_RDONLY);
 
   if (fd < 0) {
-    error.set(au::str("Not possible to open file %s", file_name.c_str()));
+    error.AddError(au::str("Not possible to open file %s", file_name.c_str()));
     return logs;
   }
 

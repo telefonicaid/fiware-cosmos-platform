@@ -54,7 +54,7 @@ public:
   Token(const std::string& content, Type type, int position);
 
   // Check if this component is a particular sequence
-  bool IsContent(const std::string& _content) const;
+  bool ContentMatch(const std::string& _content) const;
 
   // Check if this token is a numerical value
   bool IsNumber() const;

@@ -26,7 +26,7 @@ au::SharedPointer<SamsonDataSet> SamsonDataSet::create(const std::string& direct
   stat(directory.c_str(), &filestatus);
 
   if (!S_ISDIR(filestatus.st_mode)) {
-    error.set(au::str("%s is not a directory", directory.c_str()));
+    error.AddError(au::str("%s is not a directory", directory.c_str()));
     return au::SharedPointer<SamsonDataSet>(NULL);
   }
 
@@ -45,7 +45,7 @@ au::SharedPointer<SamsonDataSet> SamsonDataSet::create(const std::string& direct
         if (S_ISREG(buf2.st_mode)) {
           au::SharedPointer<SamsonFile> samson_file = SamsonFile::create(localFileName.str(), error);
 
-          if (error.IsActivated()) {
+          if (error.HasErrors()) {
             return au::SharedPointer<SamsonDataSet>(NULL);
           }
 
@@ -60,7 +60,7 @@ au::SharedPointer<SamsonDataSet> SamsonDataSet::create(const std::string& direct
 
   // Check content
   if (samson_data_set->samson_files.size() == 0) {
-    error.set("No content");
+    error.AddError("No content");
     return au::SharedPointer<SamsonDataSet>(NULL);
   }
 
@@ -69,7 +69,7 @@ au::SharedPointer<SamsonDataSet> SamsonDataSet::create(const std::string& direct
   samson_data_set->format_ = items[0]->header().GetKVFormat();
   for (size_t i = 1; i < items.size(); i++) {
     if (items[i]->header().GetKVFormat() != samson_data_set->format_) {
-      error.set("Different formats found in included files");
+      error.AddError("Different formats found in included files");
       return au::SharedPointer<SamsonDataSet>(NULL);
     }
   }
@@ -117,7 +117,7 @@ void SamsonDataSet::printContent(size_t limit, bool show_hg, std::ostream &outpu
   for (size_t i = 0; i < file_names.size(); i++) {
     au::SharedPointer<SamsonFile> samson_file = samson_files.Get(file_names[i]);
 
-    records += samson_file->printContent((limit == 0) ? 0 : (limit - records ), show_hg, output);
+    records += samson_file->printContent((limit == 0) ? 0 : (limit - records), show_hg, output);
 
     if (limit > 0) {
       if (records >= limit) {

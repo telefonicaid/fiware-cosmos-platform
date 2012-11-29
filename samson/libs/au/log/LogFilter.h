@@ -61,7 +61,7 @@ public:
   }
 
   virtual bool Accept(LogPointer log) {
-    return ( ++count_ <= limit_ );
+    return (++count_ <= limit_);
   }
 
 private:
@@ -83,7 +83,7 @@ public:
   }
 
   virtual bool Accept(LogPointer log) {
-    return (log->log_data().tv.tv_sec > time_ref_ );
+    return (log->log_data().tv.tv_sec > time_ref_);
   }
 
 private:
@@ -102,7 +102,7 @@ public:
   }
 
   virtual bool Accept(LogPointer log) {
-    return ( log->Match(simple_pattern_));
+    return (log->Match(simple_pattern_));
   }
 
 private:
@@ -157,7 +157,7 @@ public:
     std::vector<std::string> commands = au::split(definition, '|');        // Split in commands with "|" separator
     for (size_t i = 0; i < commands.size(); i++) {
       au::SharedPointer<LogFilterItem> item = LogFilterItem::Create(commands[i], error);
-      if (error.IsActivated()) {
+      if (error.HasErrors()) {
         return au::SharedPointer<LogFilter>(NULL);
       }
       log_filter->items_.push_back(item);

@@ -78,8 +78,8 @@ bool SamsonClient::connect(const std::string& host) {
   au::ErrorManager error;
   bool c = delilah_->connect(host, &error);
 
-  if (error.IsActivated()) {
-    LOG_SW(("Not possible to connect to %s: %s", host.c_str(), error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_SW(("Not possible to connect to %s: %s", host.c_str(), error.GetLastError().c_str()));
   }
   return c;
 }

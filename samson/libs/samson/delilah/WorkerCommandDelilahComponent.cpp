@@ -44,8 +44,8 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
 
   send_to_all_workers = command_instance_->command()->tag("send_to_all_workers");
 
-  if (error.IsActivated()) {
-    setComponentFinishedWithError(error.GetMessage());
+  if (error.HasErrors()) {
+    setComponentFinishedWithError(error.GetLastError());
     return;
   }
 
@@ -95,7 +95,7 @@ void WorkerCommandDelilahComponent::run() {
   }
 
   // Errors during contructor or selecting worker
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     setComponentFinished();
     return;
   }
@@ -146,7 +146,7 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
 
     WorkerResponese *response = new WorkerResponese(worker_id);
     for (int i = 0; i < packet->message->worker_command_response().error_size(); i++) {
-      response->error().set(packet->message->worker_command_response().error(i));
+      response->error().AddError(packet->message->worker_command_response().error(i));
     }
     for (int i = 0; i < packet->message->worker_command_response().warning_size(); i++) {
       response->error().AddWarning(packet->message->worker_command_response().warning(i));
@@ -295,9 +295,9 @@ std::string WorkerCommandDelilahComponent::getExtraStatus() {
       values.push_back("Pending");
       values.push_back("");
     } else {
-      if (response->error().IsActivated()) {
+      if (response->error().HasErrors()) {
         values.push_back("Error");
-        values.push_back(response->error().GetMessage());
+        values.push_back(response->error().GetLastError());
       } else {
         values.push_back("Finish");
         values.push_back("OK");

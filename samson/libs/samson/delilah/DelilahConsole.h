@@ -96,16 +96,16 @@ public:
   }
 
   void Show(au::ErrorManager& error, const std::string& prefix_message) {
-    for (size_t i = 0; i < error.errors().size(); i++) {
-      switch (error.errors()[i]->type()) {
-        case au::ErrorMessage::item_message:
-          showMessage(prefix_message + " " + error.errors()[i]->GetMessage());
+    for (size_t i = 0; i < error.items().size(); i++) {
+      switch (error.items()[i]->type()) {
+        case au::message:
+          showMessage(prefix_message + " " + error.items()[i]->message());
           break;
-        case au::ErrorMessage::item_warning:
-          showWarningMessage(prefix_message + " " + error.errors()[i]->GetMessage());
+        case au::warning:
+          showWarningMessage(prefix_message + " " + error.items()[i]->message());
           break;
-        case au::ErrorMessage::item_error:
-          showErrorMessage(prefix_message + " " + error.errors()[i]->GetMessage());
+        case au::error:
+          showErrorMessage(prefix_message + " " + error.items()[i]->message());
           break;
       }
     }

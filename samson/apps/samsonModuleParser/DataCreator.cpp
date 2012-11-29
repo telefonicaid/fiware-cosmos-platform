@@ -35,7 +35,7 @@ ModuleInformation *ModuleInformation::parse(std::string module_file, au::ErrorMa
   input.open(module_file.c_str());
 
   if (!input.is_open()) {
-    error->set(au::str("%s: Not possible to open file\n", module_file.c_str()));
+    error->AddError(au::str("%s: Not possible to open file\n", module_file.c_str()));
     delete module_information;
     return NULL;
   }
@@ -59,7 +59,7 @@ ModuleInformation *ModuleInformation::parse(std::string module_file, au::ErrorMa
   int pos = 0;
   while (pos < (int)t->items.size()) {
     if (t->isSpecial(pos)) {
-      error->set(
+      error->AddError(
         au::str("%s[%d]: Error parsing file ( found %s )\n",
                 module_file.c_str(),
                 t->items[pos].line,
@@ -72,7 +72,7 @@ ModuleInformation *ModuleInformation::parse(std::string module_file, au::ErrorMa
     std::string command = t->itemAtPos(pos++).str;
 
     if (t->isSpecial(pos)) {
-      error->set(
+      error->AddError(
         au::str("%s[%d]: Error parsing file ( found %s )\n",
                 module_file.c_str(),
                 t->items[pos].line,
@@ -89,7 +89,7 @@ ModuleInformation *ModuleInformation::parse(std::string module_file, au::ErrorMa
 
     if (command == "Module") {
       if (module_section_defined) {
-        error->set(
+        error->AddError(
           au::str("%s[%d]: Duplicated module section ( found %s )\n",
                   module_file.c_str(),
                   t->items[pos].line,
@@ -107,7 +107,7 @@ ModuleInformation *ModuleInformation::parse(std::string module_file, au::ErrorMa
       module_information->module.parse(t, position_start, position_finish);
     } else if (command == "data") {
       if (!module_section_defined) {
-        error->set(
+        error->AddError(
           au::str("%s[%d]: Module section should be the first one ( found %s )\n",
                   module_file.c_str(),
                   t->items[pos].line,
@@ -126,19 +126,19 @@ ModuleInformation *ModuleInformation::parse(std::string module_file, au::ErrorMa
       data_container.parse(t, position_start, position_finish);
       module_information->datas.push_back(data_container);
     } else if (
-      ( command == "script" )             ||
-      ( command == "generator" )          ||
-      ( command == "splitter" )           ||
-      ( command == "map" )                ||
-      ( command == "parser" )             ||
-      ( command == "simpleParser" )       ||
-      ( command == "parserOut" )          ||
-      ( command == "parserOutReduce" )        ||
-      ( command == "reduce" )
+      (command == "script")             ||
+      (command == "generator")          ||
+      (command == "splitter")           ||
+      (command == "map")                ||
+      (command == "parser")             ||
+      (command == "simpleParser")       ||
+      (command == "parserOut")          ||
+      (command == "parserOutReduce")        ||
+      (command == "reduce")
       )
     {
       if (!module_section_defined) {
-        error->set(
+        error->AddError(
           au::str("%s[%d]: Module section should be the first one ( found %s )\n",
                   module_file.c_str(),
                   t->items[pos].line,
@@ -272,7 +272,7 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
   std::set<std::string> includes;
   for (vector <OperationContainer>::iterator iter = operations.begin(); iter < operations.end(); iter++) {
     OperationContainer op = *iter;
-    if (( op.type == "reduce") || ( op.type == "parserOutReduce")) {
+    if ((op.type == "reduce") || (op.type == "parserOutReduce")) {
       op.getIncludes(includes);
     }
   }
@@ -338,7 +338,7 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
       op.module << "." << op.name <<
       "\" , samson::Operation::" << op.type << ");" << std::endl;  // Adding input and output of the parser and parserOut
     }
-    if (( op.type == "parser") || (op.type == "simpleParser")) {
+    if ((op.type == "parser") || (op.type == "simpleParser")) {
       output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );" << std::endl;
     }
     if (op.type == "parserOut") {
@@ -378,7 +378,7 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
       std::ostringstream command;
       for (size_t i = 0; i < op.code.length(); i++) {
         if (op.code[i] != '\t') {
-          if ((op.code[i] == '\n' ) || (op.code[i] == ';')) {
+          if ((op.code[i] == '\n') || (op.code[i] == ';')) {
             if (command.str().length() > 0) {
               output << "\t\t\toperation->code.push_back(\"" << command.str() <<  "\");\n";
             }

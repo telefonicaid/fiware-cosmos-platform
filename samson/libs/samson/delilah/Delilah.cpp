@@ -115,7 +115,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   au::Status s = au::SocketConnection::Create(host_name, port, &socket_connection);
 
   if (s != au::OK) {
-    error->set(au::str("Error creating socket: '%s'", au::status(s)));
+    error->AddError(au::str("Error creating socket: '%s'", au::status(s)));
     if (socket_connection) {
       delete socket_connection;
     }
@@ -133,7 +133,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   s = hello_packet->write(socket_connection, &size);
 
   if (s != au::OK) {
-    error->set(au::str("Error sending hello packet %s", au::status(s)));
+    error->AddError(au::str("Error sending hello packet %s", au::status(s)));
     if (socket_connection) {
       delete socket_connection;
     }
@@ -145,7 +145,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   s = packet->read(socket_connection, &total_read);
 
   if (s != au::OK) {
-    error->set(au::str("Error receiving cluster information %s", au::status(s)));
+    error->AddError(au::str("Error receiving cluster information %s", au::status(s)));
     if (socket_connection) {
       delete socket_connection;
     }
@@ -153,7 +153,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   }
 
   if (packet->msgCode != Message::ClusterInfoUpdate) {
-    error->set(
+    error->AddError(
       au::str("Error receiving cluster information. Received %s instead",
               Message::messageCode(packet->msgCode)));
     if (socket_connection) {
@@ -311,7 +311,7 @@ void Delilah::receive(const PacketPointer& packet) {
     // Redirect this message to push_manager
     au::ErrorManager error;
     if (packet->message->has_error()) {
-      error.set(packet->message->error().message());
+      error.AddError(packet->message->error().message());
     }
 
     push_manager->receive(msgCode, worker_id, push_id, error);
@@ -398,7 +398,7 @@ size_t Delilah::AddPopComponent(std::string queue_name, std::string fileName, bo
   PopDelilahComponent *d = new PopDelilahComponent(queue_name, fileName, force_flag, show_flag);
   size_t tmp_id = addComponent(d);
 
-  if (!d->error.IsActivated()) {
+  if (!d->error.HasErrors()) {
     d->run();
   }
   return tmp_id;
@@ -590,7 +590,7 @@ bool Delilah::hasError(size_t id) {
     return false;
   }
 
-  return c->error.IsActivated();
+  return c->error.HasErrors();
 }
 
 std::string Delilah::errorMessage(size_t id) {
@@ -600,10 +600,10 @@ std::string Delilah::errorMessage(size_t id) {
 
   // No process, no error ;)
   if (!c) {
-    return "Non valid delilah process";
+    return "Invalid delilah process";
   }
 
-  return c->error.GetMessage();
+  return c->error.GetLastError();
 }
 
 std::string Delilah::getDescription(size_t id) {
@@ -669,9 +669,9 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
             au::ErrorManager error;
             au::SharedPointer<SamsonDataSet> samson_data_set = SamsonDataSet::create(pent->d_name, error);
 
-            if (error.IsActivated()) {
+            if (error.HasErrors()) {
               if (!only_queues) {
-                table.addRow(au::StringVector(pent->d_name, "DIR", "", "", error.GetMessage()));
+                table.addRow(au::StringVector(pent->d_name, "DIR", "", "", error.GetLastError()));
               }
             } else {
               table.addRow(

@@ -85,7 +85,7 @@ public:
     }
   }
 
-  void AppendToTotal(int input,  double factor, const KVInfo& info) {
+  void AppendToTotal(int input, double factor, const KVInfo& info) {
     inputs_data_[input].AppendToTotal(factor, info);
   }
 
@@ -257,7 +257,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
   // Check if the operation is valid
   au::ErrorManager error;
   if (!IsStreamOperationValid(data, *stream_operation, &error)) {
-    SetError(au::str("Error validating stream operation: %s", error.GetMessage().c_str()));
+    SetError(au::str("Error validating stream operation: %s", error.GetLastError().c_str()));
     worker_task_ = NULL;       // Cancel task if any
     return;
   }
@@ -330,12 +330,12 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
   state_input_queues_ +=  inputs_data.str();
 
   // Reset error in timeout 60
-  if ((error_.IsActivated() && (cronometer_error_.seconds() > 10))) {
+  if ((error_.HasErrors() && (cronometer_error_.seconds() > 10))) {
     error_.Reset();
   }
-  if (error_.IsActivated()) {
+  if (error_.HasErrors()) {
     // If we had an error, wait some time...
-    state_ = au::str("Error [%s]: %s", cronometer_error_.str().c_str(), error_.GetMessage().c_str());
+    state_ = au::str("Error [%s]: %s", cronometer_error_.str().c_str(), error_.GetLastError().c_str());
     short_state_ = "[E]";
     return;
   }
@@ -447,8 +447,8 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
 
 void StreamOperationRangeInfo::ReviewCurrentTask() {
   if ((worker_task_ != NULL) && (worker_task_->IsWorkerTaskFinished())) {
-    if (worker_task_->error().IsActivated()) {
-      SetError(worker_task_->error().GetMessage());
+    if (worker_task_->error().HasErrors()) {
+      SetError(worker_task_->error().GetLastError());
     }
     worker_task_ = NULL;
   }
@@ -476,7 +476,7 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
   std::string operation_name = stream_operation->operation();  // Get the operation to be executed
   Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
 
-  if (error_.IsActivated()) {
+  if (error_.HasErrors()) {
     SetError("Error scheduling a task with a previous error");
     return au::SharedPointer<WorkerTask>(NULL);
   }
@@ -617,25 +617,25 @@ bool StreamOperationRangeInfo::IsStreamOperationValid(gpb::Data *data
   Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
 
   if (!operation) {
-    error->set(au::str("Operation %s not found", operation_name.c_str()));
+    error->AddError(au::str("Operation %s not found", operation_name.c_str()));
     return false;
   }
 
   // Check at least an input is defined
   if (stream_operation.inputs_size() == 0) {
-    error->set("No inputs defined for this operation");
+    error->AddError("No inputs defined for this operation");
     return false;
   }
 
   // Check number of inputs and outputs
   if (operation->getNumInputs() != stream_operation.inputs_size()) {
-    error->set(
+    error->AddError(
       au::str("Operation %s needs %d inputs and %d are provided", operation_name.c_str(),
               operation->getNumInputs(), stream_operation.inputs_size()));
     return false;
   }
   if (operation->getNumOutputs() != stream_operation.outputs_size()) {
-    error->set(
+    error->AddError(
       au::str("Operation %s needs %d output and %d are provided", operation_name.c_str(),
               operation->getNumOutputs(), stream_operation.outputs_size()));
     return false;
@@ -648,7 +648,7 @@ bool StreamOperationRangeInfo::IsStreamOperationValid(gpb::Data *data
     if (queue) {     // If queue does not exist, there is no problem. I will be automatically created
       KVFormat format(queue->key_format(), queue->value_format());
       if (format != operation->inputFormats[i]) {
-        error->set(
+        error->AddError(
           au::str("%d-th input for %s ( queue %s ) should be %s and it is %s ", i + 1, operation_name.c_str(),
                   queue_name.c_str(), operation->inputFormats[i].str().c_str(), format.str().c_str()));
         return false;
@@ -663,7 +663,7 @@ bool StreamOperationRangeInfo::IsStreamOperationValid(gpb::Data *data
     if (queue) {     // If queue does not exist, there is no problem. I will be automatically created
       KVFormat format(queue->key_format(), queue->value_format());
       if (format != operation->outputFormats[i]) {
-        error->set(
+        error->AddError(
           au::str("%d-th output for %s ( queue %s ) should be %s and it is %s ", i + 1,
                   operation_name.c_str(), queue_name.c_str(), operation->outputFormats[i].str().c_str(),
                   format.str().c_str()));

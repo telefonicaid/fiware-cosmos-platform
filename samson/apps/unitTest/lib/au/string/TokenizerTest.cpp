@@ -19,8 +19,8 @@ TEST(au_Tokenizer, simple) {
   au::token::Token token_num_wrong("+3.27.wrong", au::token::Token::literal, 2);
   au::token::Token token_separator_semicolon(";", au::token::Token::separator, 2);
 
-  EXPECT_TRUE(token.IsContent("test_token")) << "Error in token.is() true";
-  EXPECT_FALSE(token.IsContent("wrong_token")) << "Error in token.is() false";
+  EXPECT_TRUE(token.ContentMatch("test_token")) << "Error in token.is() true";
+  EXPECT_FALSE(token.ContentMatch("wrong_token")) << "Error in token.is() false";
 
   EXPECT_FALSE(token.IsLiteral()) << "Error in token.isLiteral() false";
   EXPECT_TRUE(token_op.IsLiteral()) << "Error in token.isLiteral() true";

@@ -90,49 +90,49 @@ char host[1024];
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-log",   log_command,           "",                    PaString,
+  { "-log",   log_command,           "",                 PaString,
     PaOpt,    _i "",                 PaNL,
     PaNL,     "log server host"                          },
-  { "-log_server",log_server,            "",                    PaString,
+  { "-log_server",log_server,            "",                 PaString,
     PaOpt,    _i "",                 PaNL,
     PaNL,     "log server host"                          },
-  { "-user",  user,                  "",                    PaString,
+  { "-user",  user,                  "",                 PaString,
     PaOpt,    _i "anonymous",        PaNL,
     PaNL,     "User to connect to SAMSON cluster"        },
-  { "-password",password,              "",                    PaString,
+  { "-password",password,              "",                 PaString,
     PaOpt,    _i "anonymous",        PaNL,
     PaNL,     "Password to connect to SAMSON cluster"    },
-  { "-memory",&memory_gb,            "MEMORY",              PaInt,
+  { "-memory",&memory_gb,            "MEMORY",           PaInt,
     PaOpt,    1,                     1,
     100,      "memory in GBytes"                         },
-  { "-load_buffer_size",&load_buffer_size_mb,  "LOAD_BUFFER_SIZE",    PaInt,
+  { "-load_buffer_size",&load_buffer_size_mb,  "LOAD_BUFFER_SIZE", PaInt,
     PaOpt,    64,                    64,
     2048,     "load buffer size in MBytes"               },
-  { "-f",     commandFileName,       "FILE_NAME",           PaString,
+  { "-f",     commandFileName,       "FILE_NAME",        PaString,
     PaOpt,    _i "",                 PaNL,
     PaNL,     "File with commands to run"                },
-  { "-command",command,               "",                    PaString,
+  { "-command",command,               "",                 PaString,
     PaOpt,    _i "",                 PaNL,
     PaNL,     "Single command to be executed"            },
-  { "-user",  user,                  "",                    PaString,
+  { "-user",  user,                  "",                 PaString,
     PaOpt,    _i "anonymous",        PaNL,
     PaNL,     "User to connect to SAMSON cluster"        },
-  { "-password",password,              "",                    PaString,
+  { "-password",password,              "",                 PaString,
     PaOpt,    _i "anonymous",        PaNL,
     PaNL,     "Password to connect to SAMSON cluster"    },
-  { "-memory",&memory_gb,            "MEMORY",              PaInt,
+  { "-memory",&memory_gb,            "MEMORY",           PaInt,
     PaOpt,    1,                     1,
     100,      "memory in GBytes"                         },
-  { "-load_buffer_size",&load_buffer_size_mb,  "LOAD_BUFFER_SIZE",    PaInt,
+  { "-load_buffer_size",&load_buffer_size_mb,  "LOAD_BUFFER_SIZE", PaInt,
     PaOpt,    64,                    64,
     2048,     "load buffer size in MBytes"               },
-  { "-f",     commandFileName,       "FILE_NAME",           PaString,
+  { "-f",     commandFileName,       "FILE_NAME",        PaString,
     PaOpt,    _i "",                 PaNL,
     PaNL,     "File with commands to run"                },
-  { "-command",command,               "",                    PaString,
+  { "-command",command,               "",                 PaString,
     PaOpt,    _i "",                 PaNL,
     PaNL,     "Single command to be executed"            },
-  { "",       host,                  "",                    PaString,
+  { "",       host,                  "",                 PaString,
     PaOpt,    _i "localhost",        PaNL,
     PaNL,     "host to be connected"                     },
 
@@ -292,8 +292,8 @@ int main(int argC, const char *argV[]) {
 
   au::ErrorManager error;
   au::Singleton<samson::ModulesManager>::shared()->AddModulesFromDefaultDirectory(error);
-  if (error.IsActivated()) {
-    LOG_W(samson::logs.delilah, ("Error loading modules: %s", error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_W(samson::logs.delilah, ("Error loading modules: %s", error.GetLastError().c_str()));
   }
 
   // Create a DelilahControler once network is ready
@@ -313,7 +313,7 @@ int main(int argC, const char *argV[]) {
       break;
     } else {
       delilahConsole->writeWarningOnConsole(au::str("Not possible to connect with %s: %s", hosts[i].c_str(),
-                                                    error.GetMessage().c_str()));
+                                                    error.GetLastError().c_str()));
     }
   }
 
@@ -354,7 +354,7 @@ int main(int argC, const char *argV[]) {
 
       if (delilahConsole->hasError(id)) {
         LOG_E(samson::logs.delilah, ("Error running '%s'", command));
-        LOG_E(samson::logs.delilah, ("Error: %s",  delilahConsole->errorMessage(id).c_str()));
+        LOG_E(samson::logs.delilah, ("Error: %s", delilahConsole->errorMessage(id).c_str()));
       } else {
         printf("%s", delilahConsole->getOutputForComponent(id).c_str());
         fflush(stdout);

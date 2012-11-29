@@ -132,7 +132,7 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     if (notification->environment().IsSet("error")) {
       std::string error = notification->environment().Get("error", "???");
       task_base->SetWorkerTaskFinishedWithError(error);
-      if (!task_base->error().IsActivated()) {
+      if (!task_base->error().HasErrors()) {
         LM_X(1, ("Internal error"));
       }
     } else {

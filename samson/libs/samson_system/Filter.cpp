@@ -67,7 +67,7 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
                                     TXTWriter *txt_writer, au::ErrorManager *error) {
   // Check if there are tokens to be read
   if (token_vector->eof()) {
-    error->set("Filter name not specified");
+    error->AddError("Filter name not specified");
     return NULL;
   }
 
@@ -76,19 +76,19 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
 
   if (token->content() == "select") {
     Source *key_source = GetSource(token_vector, error);
-    if (error->IsActivated()) {
+    if (error->HasErrors()) {
       return NULL;
     }
     // Expect a ","
     if (!token_vector->PopNextTokenIfContentIs(",")) {
-      error->set(au::str("Expected ',' to separate key and value in a select statement. Found '%s'",
-                         token_vector->GetNextTokenContent().c_str()));
+      error->AddError(au::str("Expected ',' to separate key and value in a select statement. Found '%s'",
+                              token_vector->GetNextTokenContent().c_str()));
       return NULL;
     }
     Source *value_source = NULL;
     if (!token_vector->eof()) {
       value_source = GetSource(token_vector, error);
-      if (error->IsActivated()) {
+      if (error->HasErrors()) {
         return NULL;
       }
     } else {
@@ -114,14 +114,15 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
       }
       au::token::Token *number = token_vector->PopToken();
       if (!number->IsNumber()) {
-        error->set(au::str("Channel '%s' not valid in emit command. It should be a number", number->content().c_str()));
+        error->AddError(au::str("Channel '%s' not valid in emit command. It should be a number",
+                                number->content().c_str()));
         return NULL;
       }
       int channel = atoi(number->content().c_str());
       return new FilterEmit(channel, writer);
     } else if (txt_writer) {
       FilterEmitTxt *filter_emit = new FilterEmitTxt(txt_writer, token_vector, error);
-      if (error->IsActivated()) {
+      if (error->HasErrors()) {
         delete filter_emit;
         return NULL;
       }
@@ -129,11 +130,11 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
     }
   } else if (token->content() == "filter") {
     Source *eval_source = GetSource(token_vector, error);
-    if (error->IsActivated()) {
+    if (error->HasErrors()) {
       return NULL;
     }
     if (!eval_source) {
-      error->set("Not valid condition statement in filter command");
+      error->AddError("Not valid condition statement in filter command");
       return NULL;
     }
     return new FilterCondition(eval_source);
@@ -157,7 +158,7 @@ Filter *FilterCollection::GetFilterChain(au::token::TokenVector *token_vector, s
     Filter *filter = GetFilter(&sub_token_vector, writer, txt_writer, error);
 
     // If there is an error, just return
-    if (error->IsActivated()) {
+    if (error->HasErrors()) {
       tmp_filters.clearVector();
       return NULL;
     } else {
@@ -195,7 +196,7 @@ void FilterCollection::AddFilters(std::string command, samson::KVWriter *const w
     Filter *filter = GetFilterChain(&sub_token_vector, writer, txt_writer, error);
 
     // If there is an error, just return
-    if (error->IsActivated()) {
+    if (error->HasErrors()) {
       filters_.clearVector();
       return;
     } else {

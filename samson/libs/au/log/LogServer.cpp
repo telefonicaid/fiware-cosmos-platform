@@ -29,8 +29,8 @@ LogServer::LogServer()
   au::ErrorManager error;
   service_.initLogServerService(&error);
 
-  if (error.IsActivated()) {
-    LM_X(1, ( "Not possible to open channel for logs %s", error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LM_X(1, ("Not possible to open channel for logs %s", error.GetLastError().c_str()));
   }
 }
 

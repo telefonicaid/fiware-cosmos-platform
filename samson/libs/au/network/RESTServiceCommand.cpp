@@ -62,7 +62,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
     cmdLine.Parse(request_line_);
 
     if (cmdLine.get_num_arguments() < 2) {
-      error.set(au::str("Unexpected format. Incomming line %s", request_line_));
+      error.AddError(au::str("Unexpected format. Incomming line %s", request_line_));
       return au::Error;
     }
 
@@ -120,7 +120,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
         size_t pos = header_line.find(":");
 
         if (pos == std::string::npos) {
-          error.set(au::str("No valid HTTP header field: %s", line));
+          error.AddError(au::str("No valid HTTP header field: %s", line));
           return au::Error;
         }
 
@@ -132,7 +132,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
               ("REST Head line: '%s' [%s=%s]", line,
                concept.c_str(), value.c_str()));
       } else {
-        error.set("No valid HTTP header");
+        error.AddError("No valid HTTP header");
         return au::Error;
       }
     }
@@ -152,7 +152,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
         s = socket_connection->readBuffer(data_, size, 10);
 
         if (s != au::OK) {
-          error.set(au::str("Error reading REST body (%lu bytes)", size));
+          error.AddError(au::str("Error reading REST body (%lu bytes)", size));
           return au::Error;
         }
       }
@@ -160,7 +160,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
 
     return au::OK;
   } else {
-    error.set("Error reading incomming command");
+    error.AddError("Error reading incomming command");
     return au::Error;
   }
 }

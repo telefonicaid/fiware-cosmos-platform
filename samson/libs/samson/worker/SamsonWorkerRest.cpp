@@ -316,7 +316,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
     au::ErrorManager error;
     delilah_->connect(au::str("localhost:%d", samson_worker_->port()), &error);
 
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       delete delilah_;
       delilah_ = NULL;
       command->AppendFormatedError(500, "Not possible to connect internal delilah client");
@@ -369,8 +369,8 @@ void SamsonWorkerRest::ProcessCommitToDatamodel(const std::string& c
   samson_worker_->data_model()->Commit("REST", c, error);
   command->AppendFormatedLiteral("command", c);
 
-  if (error.IsActivated()) {
-    command->AppendFormatedError(error.GetMessage());
+  if (error.HasErrors()) {
+    command->AppendFormatedError(error.GetLastError());
   } else {
     command->AppendFormatedLiteral("result", "OK");
   }
@@ -482,8 +482,8 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
       }
 
       if (debug) {
-        command->AppendFormatedLiteral("block",  str_block_id(block_id));
-        command->AppendFormatedLiteral("block_range",  range.str());
+        command->AppendFormatedLiteral("block", str_block_id(block_id));
+        command->AppendFormatedLiteral("block_range", range.str());
       }
 
       block_ptr->lookup(key.c_str(), command);

@@ -146,7 +146,7 @@ public:
     if (b->GetAvailableSizeToWrite() >= file_size) {
       au::ErrorManager error;
       b->WriteFromFile(file_names_[next_file_], error);
-      if (error.IsActivated()) {
+      if (error.HasErrors()) {
         return 1;   // Error reading this
       }
       next_file_++;

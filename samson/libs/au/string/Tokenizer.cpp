@@ -20,7 +20,7 @@ Token::Token(const std::string& content, Type type, int position)
     , type_(type) {
 }
 
-bool Token::IsContent(const std::string& content) const {
+bool Token::ContentMatch(const std::string& content) const {
   return content_ == content;
 }
 
@@ -164,7 +164,7 @@ bool TokenVector::PopNextTokenIfContentIs(const std::string& content) {
   if (t == NULL) {
     return false;
   }
-  if (t->IsContent(content)) {
+  if (t->ContentMatch(content)) {
     PopToken();
     return true;
   }
@@ -191,7 +191,7 @@ bool TokenVector::CheckNextTokenContentIs(const std::string& content) {
     return false;
   }
 
-  if (t->IsContent(content)) {
+  if (t->ContentMatch(content)) {
     return true;
   }
   return false;
@@ -221,17 +221,17 @@ std::string TokenVector::str() const {
 
 void TokenVector::set_error(au::ErrorManager& error, const std::string& error_message) {
   if (position_ < tokens_.size()) {
-    error.set(au::str("%s at postition %d", error_message.c_str(), tokens_[position_].position()));
+    error.AddError(au::str("%s at postition %d", error_message.c_str(), tokens_[position_].position()));
   } else {
-    error.set(au::str("%s at the end of the command", error_message.c_str()));
+    error.AddError(au::str("%s at the end of the command", error_message.c_str()));
   }
 }
 
 void TokenVector::set_error(au::ErrorManager *error, const std::string& error_message) {
   if (position_ < tokens_.size()) {
-    error->set(au::str("%s at position %d", error_message.c_str(), tokens_[position_].position()));
+    error->AddError(au::str("%s at position %d", error_message.c_str(), tokens_[position_].position()));
   } else {
-    error->set(au::str("%s at the end of the command", error_message.c_str()));
+    error->AddError(au::str("%s at the end of the command", error_message.c_str()));
   }
 }
 

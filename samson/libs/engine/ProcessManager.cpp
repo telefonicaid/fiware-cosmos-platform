@@ -37,7 +37,7 @@ void *ProcessManager_run_worker(void *p) {
 
   std::string thread_description = au::GetThreadId(pthread_self());
 
-  LOG_D(logs.process_manager,  ("Thread for ProcessManager worker %s", thread_description.c_str()));
+  LOG_D(logs.process_manager, ("Thread for ProcessManager worker %s", thread_description.c_str()));
 
   process_manager->run_worker();
   return NULL;
@@ -111,7 +111,7 @@ void ProcessManager::Cancel(au::SharedPointer<ProcessItem> item) {
     items_.ExtractAll(item);
 
     // Set this process with an error
-    item->error().set("ProcessItem canceled");
+    item->error().AddError("ProcessItem canceled");
 
     // Notify this using the notification Mechanism
     Notification *notification = new Notification(notification_process_request_response);
@@ -189,8 +189,8 @@ void ProcessManager::run_worker() {
     notification->environment().Add(item->environment());
 
     // Extra error environment if necessary
-    if (item->error().IsActivated()) {
-      notification->environment().Set("error", item->error().GetMessage());   // Add the notification to the main engine
+    if (item->error().HasErrors()) {
+      notification->environment().Set("error", item->error().GetLastError());   // Add the notification to the main engine
     }
     Engine::shared()->notify(notification);
   }

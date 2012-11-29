@@ -244,7 +244,7 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
   if (key_size != key_size_theoretical) {
     LOG_SW(("Error serializing [%s] '%s'", key->getType(), key->str().c_str()));
     LOG_SW(("Error serializing data. Different key size serializing key %lu vs %lu", key_size, key_size_theoretical));
-    LM_X(1, ("Non valid serialization key"));
+    LM_X(1, ("Invalid serialization key"));
   }
 
   size_t value_size = value->serialize(miniBuffer + key_size);
@@ -254,7 +254,7 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
     LOG_SW(("Error serializing [%s] '%s'", value->getType(), value->str().c_str()));
     LOG_SW(("Error serializing data. Different value size serializing key %lu vs %lu", value_size,
             value_size_theoretical));
-    LM_X(1, ("Non valid serialization value"));
+    LM_X(1, ("Invalid serialization value"));
   }
 
   // Total size including key & value

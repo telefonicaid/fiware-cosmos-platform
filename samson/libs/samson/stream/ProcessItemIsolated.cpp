@@ -170,12 +170,12 @@ void ProcessItemIsolated::run() {
 
   if (pipe(pipeFdPair1) != 0) {
     LOG_E(logs.isolated_process, ("System error: not possible to create pipes when running this process"));
-    error_.set("System error: not possible to create pipes when running this process");
+    error_.AddError("System error: not possible to create pipes when running this process");
     return;
   }
   if (pipe(pipeFdPair2) != 0) {
     LOG_E(logs.isolated_process, ("System error: not possible to create pipes when running this process"));
-    error_.set("System error: not possible to create pipes when running this process");
+    error_.AddError("System error: not possible to create pipes when running this process");
     LOG_D(logs.isolated_process,
           ("Isolated process %s: pipes closed: pipeFdPair1[0]:%d, pipeFdPair1[1]:%d\n", pipeFdPair1[0], pipeFdPair1[1]));
     close(pipeFdPair1[0]);
@@ -193,10 +193,10 @@ void ProcessItemIsolated::run() {
   // Init isolated stuff
   initProcessItemIsolated();
 
-  if (error_.IsActivated()) {
+  if (error_.HasErrors()) {
     LOG_W(logs.isolated_process, ("ProcessItemIsolated ´%s´ not executed since an error ´%s´ "
                                   , process_item_description().c_str()
-                                  , error_.GetMessage().c_str()));
+                                  , error_.GetLastError().c_str()));
     close(pipeFdPair1[0]);
     close(pipeFdPair1[1]);
     return;
@@ -335,9 +335,9 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
 
       // Set the error
       if (message->has_error()) {
-        error_.set(message->error());
+        error_.AddError(message->error());
       } else {
-        error_.set("Undefined user-defined error");
+        error_.AddError("Undefined user-defined error");
       }
       // Send an ok back, and return
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
@@ -347,7 +347,7 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
         LOG_E(logs.isolated_process,
               ("Error sending user error, code(%d),  (pipeFdPair2[1]:%d), error message:%s ", response->code(),
                pipeFdPair2[1],
-               error_.GetMessage().c_str()));
+               error_.GetLastError().c_str()));
       }
       delete response;
 
@@ -398,7 +398,7 @@ void ProcessItemIsolated::runExchangeMessages() {
       LOG_E(logs.isolated_process,
             ("Isolated process %s: Problems reading the 'begin' message [error code '%s'] ", str().c_str(),
              au::status(c)));
-      error_.set(au::str("Problems starting background process '%s'", au::status(c)));
+      error_.AddError(au::str("Problems starting background process '%s'", au::status(c)));
       return;   // Problem with this read
     }
 
@@ -406,7 +406,7 @@ void ProcessItemIsolated::runExchangeMessages() {
       LM_X(1, ("Internal error"));
     }
     if (message->code() != samson::gpb::MessageProcessPlatform_Code_code_begin) {
-      error_.set(
+      error_.AddError(
         au::str(
           "Problems starting background process since received code is not the expected 'protocol begin'"));
       return;
@@ -433,7 +433,7 @@ void ProcessItemIsolated::runExchangeMessages() {
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LOG_E(logs.isolated_process,
               ("Error sending exchange message, code(%d),  (pipeFdPair2[1]:%d) ", response->code(), pipeFdPair2[1]));
-        error_.set(au::str("Error in protocol between platform and background process (answering begin)"));
+        error_.AddError(au::str("Error in protocol between platform and background process (answering begin)"));
         return;
       }
       delete response;
@@ -463,10 +463,10 @@ void ProcessItemIsolated::runExchangeMessages() {
               "Isolated process op:'%s', %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' (time_out:%d)",
               concept().c_str(), str().c_str(), pipeFdPair1[0], au::status(c), timeout_setup));
 
-      error_.set("Process crashed");
+      error_.AddError("Process crashed");
 
       /*
-       * error_.set(au::str("Process crashed [%s] - [ Error code %s ]"
+       * error_.AddError(au::str("Process crashed [%s] - [ Error code %s ]"
        *                 , concept().c_str()
        *                 , au::status(c)));
        */

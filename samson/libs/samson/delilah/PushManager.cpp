@@ -44,7 +44,7 @@ PushItem::PushItem(Delilah *delilah, size_t push_id
 }
 
 bool PushItem::IsFinished() {
-  return ( state_ == completed );
+  return (state_ == completed);
 }
 
 void PushItem::Review() {
@@ -78,21 +78,21 @@ void PushItem::Review() {
 
   // Check if my worker is away and come back to init state if so
   if (!delilah_->network->IsWorkerConnected(worker_id_)) {
-    LOG_SW(("We are not connected to worker %lu anymore. Reseting push operation...", worker_id_ ));
+    LOG_SW(("We are not connected to worker %lu anymore. Reseting push operation...", worker_id_));
     state_ = init;
     return;
   }
 
   // Is worker is not part of the cluster
   if (!delilah_->network->IsWorkerInCluster(worker_id_)) {
-    LOG_SW(("Worker %lu is not part of the cluster anymore. Reseting push operation...", worker_id_ ));
+    LOG_SW(("Worker %lu is not part of the cluster anymore. Reseting push operation...", worker_id_));
     state_ = init;
     return;
   }
 
 
   if (cronometer_.seconds() > 30) {
-    LOG_SW(("[%lu] Push item timeout 30 seconds. Reseting...", push_id_ ));
+    LOG_SW(("[%lu] Push item timeout 30 seconds. Reseting...", push_id_));
     // Reset by time
     state_ = init;
   }
@@ -102,7 +102,7 @@ void PushItem::ResetPushItem() {
   if (state_ == completed) {
     return;
   }
-  LOG_SW(("[%lu] Reset Push item", push_id_ ));
+  LOG_SW(("[%lu] Reset Push item", push_id_));
   state_ = init;
 }
 
@@ -116,13 +116,13 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
             , push_id_
             , Message::messageCode(msgCode)
             , worker_id
-            , worker_id_ ));
+            , worker_id_));
     return;
   }
 
 
-  if (error.IsActivated()) {
-    LOG_SW(("Push[%lu] Error received in a push operation %s.Reseting...", push_id_, error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_SW(("Push[%lu] Error received in a push operation %s.Reseting...", push_id_, error.GetLastError().c_str()));
     ResetPushItem();
     return;
   }
@@ -209,7 +209,7 @@ void PushManager::receive(Message::MessageCode msgCode, size_t worker_id, size_t
   if (item) {
     item->receive(msgCode, worker_id, error);
   } else {
-    LOG_SW(("PushBlock response associated with an item (%lu) not found.", push_id ));    // Comit ready push operations and remove old connections
+    LOG_SW(("PushBlock response associated with an item (%lu) not found.", push_id));    // Comit ready push operations and remove old connections
   }
 
   Review();
@@ -242,7 +242,7 @@ void PushManager::Review() {
       // Notification to inform that this push_id has finished
       engine::Notification *notification  = new engine::Notification("push_operation_finished");
       notification->environment().Set("push_id", it->first);
-      notification->environment().Set("size",  item->size());
+      notification->environment().Set("size", item->size());
       engine::Engine::shared()->notify(notification);
 
       items_.erase(it++);

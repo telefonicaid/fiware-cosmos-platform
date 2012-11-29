@@ -1,3 +1,6 @@
+#ifndef _H_DELILAH_COMPONENT
+#define _H_DELILAH_COMPONENT
+
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -9,8 +12,6 @@
  * All rights reserved.
  */
 
-#ifndef _H_DELILAH_COMPONENT
-#define _H_DELILAH_COMPONENT
 
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/statistics/CronometerSystem.h"
@@ -55,7 +56,7 @@ public:
   virtual ~DelilahComponent() {
   };                           // Virtual destructor necessary in this class since subclasses are deleted using parent pointers
 
-  void setId(Delilah *_delilah,  size_t _id);
+  void setId(Delilah *_delilah, size_t _id);
   virtual void receive(const PacketPointer& packet) = 0;
   virtual void review() {
   };

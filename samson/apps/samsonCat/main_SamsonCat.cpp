@@ -59,22 +59,22 @@ SAMSON_ARG_VARS;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-limit", &show_limit,       "",          PaInt,             PaOpt,             0,
+  { "-limit", &show_limit,       "", PaInt,    PaOpt, 0,
     0,
     100000,
     "Limit in the number of records"           },
-  { "-header",&show_header,      "",          PaBool,            PaOpt,             false,
+  { "-header",&show_header,      "", PaBool,   PaOpt, false,
     false,
     true,     "Show only header"      },
-  { "-hg",    &show_hg,          "",          PaBool,            PaOpt,             false,
+  { "-hg",    &show_hg,          "", PaBool,   PaOpt, false,
     false,
     true,
     "Show only hash-group information"         },
-  { "-show_hg",&show_hg_per_kvs,  "",          PaBool,            PaOpt,             false,
+  { "-show_hg",&show_hg_per_kvs,  "", PaBool,   PaOpt, false,
     false,
     true,
     "Show hash-group for each key-value"       },
-  { " ",      file_name,         "",          PaString,          PaReq,             (long)"null",
+  { " ",      file_name,         "", PaString, PaReq, (long)"null",
     PaNL,
     PaNL,
     "name of the file or directory to scan"    },
@@ -92,11 +92,11 @@ int logFd = -1;
 
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)"only errors");
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
-  paConfig("log to file",                   (void *)true);
-  paConfig("log to stderr",         (void *)true);
+  paConfig("log to screen", (void *)"only errors");
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE: TEXT");
+  paConfig("log to file", (void *)true);
+  paConfig("log to stderr", (void *)true);
 
   paParse(paArgs, argC, (char **)argV, 1, false);      // No more pid in the log file name
   lmAux((char *)"father");
@@ -110,7 +110,7 @@ int main(int argC, const char *argV[]) {
   au::ErrorManager error;
   au::Singleton<samson::ModulesManager>::shared()->AddModulesFromDefaultDirectory(error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     std::cerr << error.str() << std::endl;  // Do not stop the process
   }
 
@@ -128,8 +128,8 @@ int main(int argC, const char *argV[]) {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonFile> samson_file = samson::SamsonFile::create(file_name, error);
 
-    if (error.IsActivated()) {
-      LM_X(1, ("%s", error.GetMessage().c_str()));  // Show header only
+    if (error.HasErrors()) {
+      LM_X(1, ("%s", error.GetLastError().c_str()));  // Show header only
     }
     if (show_header) {
       samson_file->printHeader(std::cout);
@@ -149,8 +149,8 @@ int main(int argC, const char *argV[]) {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name, error);
 
-    if (error.IsActivated()) {
-      LM_X(1, (error.GetMessage().c_str()));
+    if (error.HasErrors()) {
+      LM_X(1, (error.GetLastError().c_str()));
     }
     if (show_header) {
       std::cout << "Total: " << samson_data_set->info().strDetailed() << "\n";

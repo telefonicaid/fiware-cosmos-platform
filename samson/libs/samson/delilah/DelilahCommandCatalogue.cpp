@@ -324,9 +324,9 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add_string_option("run", "-env", "", "Environment variables separated by commas");
 
-  add("ls_batch_operations", "batch", "Show a list of current batch operations scheduled");
-  add_bool_option("ls_batch_operations", "-input", "Show real input pending to be process");
-  add_bool_option("ls_batch_operations", "-output", "Show output produces batch operations");
+  add("ls_batch_operations", "batch", "List scheduled batch operations");
+  add_bool_option("ls_batch_operations", "-input", "Show real input pending to be processed");
+  add_bool_option("ls_batch_operations", "-output", "Show output produced by batch operations");
 
   add("clear_batch_operations", "batch", "Clear finished batch operations");
   add_bool_option("clear_batch_operations", "-a", "Clear also unfinished tasks");

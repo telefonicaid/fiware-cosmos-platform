@@ -175,7 +175,7 @@ public:
 
   static FilterXMLElement *GetFilter(au::token::TokenVector *token_vector, au::ErrorManager *error) {
     if (token_vector->eof()) {
-      error->set("No name provided for xml element extraction");
+      error->AddError("No name provided for xml element extraction");
       return NULL;
     }
 
@@ -183,7 +183,7 @@ public:
     au::token::Token *token = token_vector->PopToken();
 
     if (!token->IsNormal()) {
-      error->set(au::str("Not valid element name for xml extraction (%s)", token->content().c_str()));
+      error->AddError(au::str("Invalid element name for xml extraction: '%s'", token->content().c_str()));
       return NULL;
     }
 
@@ -334,7 +334,7 @@ public:
       }
 
       Source *source = GetSource(token_vector, error);
-      if (error->IsActivated()) {
+      if (error->HasErrors()) {
         return;
       }
 
@@ -342,7 +342,7 @@ public:
     }
 
     if (fields_.size() == 0) {
-      error->set("No fields specified in emit command");
+      error->AddError("No fields specified in emit command");
     }
   }
 
@@ -402,7 +402,7 @@ public:
 
   static FilterParser *GetFilter(au::token::TokenVector *token_vector, au::ErrorManager *error) {
     if (token_vector->eof()) {
-      error->set("No command provided");
+      error->AddError("No command provided");
       return NULL;
     }
 
@@ -416,13 +416,13 @@ public:
         au::token::Token *separator_token = token_vector->PopToken();
 
         if (!separator_token) {
-          error->set("Wrong separator in filter command");
+          error->AddError("Wrong separator in filter command");
           delete filter;
           return NULL;
         }
 
         if (separator_token->content().length() != 1) {
-          error->set(
+          error->AddError(
             au::str("%s is a wrong separator in filter command ( only 1 char separators supported )",
                     separator_token->content().c_str()));
           delete filter;
@@ -436,7 +436,7 @@ public:
       au::token::Token *token = token_vector->PopToken();
 
       if (!token->IsNormal()) {
-        error->set(au::str("Incorrect field definition %s", token->content().c_str()));
+        error->AddError(au::str("Incorrect field definition %s", token->content().c_str()));
         delete filter;
         return NULL;
       }
@@ -448,7 +448,7 @@ public:
       } else if ((field_definition == "string") || (field_definition == "s")) {
         filter->fields_.push_back(string);
       } else if (!token->IsNormal()) {
-        error->set(au::str("Incorrect field definition %s", token->content().c_str()));
+        error->AddError(au::str("Incorrect field definition %s", token->content().c_str()));
         delete filter;
         return NULL;
       }

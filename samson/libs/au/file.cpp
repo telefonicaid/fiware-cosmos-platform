@@ -67,14 +67,14 @@ void RemoveDirectory(std::string fileName, au::ErrorManager & error) {
     // Just remove
     int s = remove(fileName.c_str());
     if (s != 0) {
-      error.set("Not possible to remove file " + fileName);
+      error.AddError("Not possible to remove file " + fileName);
     }
     return;
   }
 
   // Navigate in the directory
   if (!isDirectory(fileName)) {
-    error.set(au::str("%s is not a directory or a file", fileName.c_str()));
+    error.AddError(au::str("%s is not a directory or a file", fileName.c_str()));
     return;
   }
 
@@ -103,7 +103,7 @@ void RemoveDirectory(std::string fileName, au::ErrorManager & error) {
   // Remove the directory properly
   int s = rmdir(fileName.c_str());
   if (s != 0) {
-    error.set(au::str("Not possible to remove directory %s", fileName.c_str()));
+    error.AddError(au::str("Not possible to remove directory %s", fileName.c_str()));
   }
 }
 
@@ -237,7 +237,7 @@ std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorMa
   int rc = stat(file_name.c_str(), &buf);
 
   if (rc) {
-    error.set(au::str("%s is not a valid local file or dir ", file_name.c_str()));
+    error.AddError(au::str("%s is not a valid local file or dir ", file_name.c_str()));
     return file_names;
   }
 
@@ -267,7 +267,7 @@ std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorMa
       }
     }
   } else {
-    error.set(au::str("%s is not a valid local file or dir ", file_name.c_str()));
+    error.AddError(au::str("%s is not a valid local file or dir ", file_name.c_str()));
   }
 
   return file_names;

@@ -500,21 +500,21 @@ void Console::RunThread() {
 }
 
 void Console::Write(au::ErrorManager& error) {
-  const au::vector<ErrorMessage>& messages = error.errors();
+  const au::vector<ErrorManagerItem>& items = error.items();
 
-  for (size_t i = 0; i < messages.size(); ++i) {
-    ErrorMessage *item = messages[i];
+  for (size_t i = 0; i < items.size(); ++i) {
+    ErrorManagerItem *item = items[i];
 
     switch (item->type()) {
-      case ErrorMessage::item_message:
-        writeOnConsole(item->GetMultiLineMessage());
+      case au::message:
+        writeOnConsole(item->message());
         break;
 
-      case ErrorMessage::item_warning:
-        writeWarningOnConsole(item->GetMultiLineMessage());
+      case au::warning:
+        writeWarningOnConsole(item->message());
         break;
-      case ErrorMessage::item_error:
-        writeErrorOnConsole(item->GetMultiLineMessage());
+      case au::error:
+        writeErrorOnConsole(item->message());
         break;
     }
   }

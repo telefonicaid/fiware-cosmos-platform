@@ -34,7 +34,7 @@
 namespace engine {
 size_t Buffer::static_buffer_id_ = 0;
 
-Buffer::Buffer(const std::string& name,  size_t max_size) {
+Buffer::Buffer(const std::string& name, size_t max_size) {
   name_ = name;
   size_ = 0;
   offset_ = 0;
@@ -226,21 +226,21 @@ void Buffer::WriteFromFile(const std::string& file_name, au::ErrorManager& error
   size_t file_size = au::sizeOfFile(file_name);
 
   if (GetAvailableSizeToWrite() < file_size) {
-    error.set(au::str("Not enougth space in buffer to read file %s (%s)"
-                      , file_name.c_str(), au::str(file_size).c_str()));
+    error.AddError(au::str("Not enougth space in buffer to read file %s (%s)"
+                           , file_name.c_str(), au::str(file_size).c_str()));
     return;
   }
 
   FILE *file = fopen(file_name.c_str(), "r");
   if (!file) {
-    error.set(au::str("No possible of open file %s", file_name.c_str()));
+    error.AddError(au::str("No possible of open file %s", file_name.c_str()));
     return;
   }
 
   if (file_size > 0) {
     size_t n = fread(data_ + size_, file_size, 1, file);
     if (n != 1) {
-      error.set("Error reading");
+      error.AddError("Error reading");
     } else {
       size_ += file_size;
     }

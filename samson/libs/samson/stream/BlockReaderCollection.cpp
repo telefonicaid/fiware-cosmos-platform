@@ -13,7 +13,6 @@
 namespace samson {
 namespace stream {
 au::SharedPointer<BlockReader> BlockReader::create(BlockRef *block_ref, int channel, au::ErrorManager& error) {
-
   // Candidate instance
   au::SharedPointer<BlockReader> block_reader(new BlockReader());
 
@@ -23,14 +22,14 @@ au::SharedPointer<BlockReader> BlockReader::create(BlockRef *block_ref, int chan
   BlockPointer block = block_ref->block();
 
   if (!block->is_content_in_memory()) {
-    error.set("Content of block is not in memory");
+    error.AddError("Content of block is not in memory");
     return au::SharedPointer<BlockReader>(NULL);
   }
 
   // Get the KVFile
   block_reader->kv_file_ = block_ref->file();
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return au::SharedPointer<BlockReader>(NULL);
   }
 
@@ -44,9 +43,9 @@ void BlockReaderCollection::AddInputBlocks(BlockRef *block_ref, int channel) {
   au::ErrorManager error;
   au::SharedPointer<BlockReader> block_reader = BlockReader::create(block_ref, channel, error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     // Still not supported how to handle this error nicely
-    LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str()));
+    LM_X(1, ("Error crearing a block reader: %s", error.GetLastError().c_str()));
   }
   input_block_readers_.push_back(block_reader);
 }
@@ -58,15 +57,14 @@ void BlockReaderCollection::AddStateBlocks(BlockRef *block_ref, int channel) {
   au::ErrorManager error;
   au::SharedPointer<BlockReader> block_reader = BlockReader::create(block_ref, channel, error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     // Still not supported how to handle this error nicely
-    LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str()));
+    LM_X(1, ("Error crearing a block reader: %s", error.GetLastError().c_str()));
   }
   state_block_readers_.push_back(block_reader);
 }
 
 size_t BlockReaderCollection::PrepareProcessingHashGroup(int hg) {
-
   // Getting the number of key-values for input
   input_num_kvs_ = 0;
   for (size_t i = 0; i < input_block_readers_.size(); i++) {
@@ -105,9 +103,9 @@ size_t BlockReaderCollection::PrepareProcessingHashGroup(int hg) {
     // Sort and init KVVector
 
     if (state_num_kvs_ == 0) {
-      kvVector_.sort(); // General sort
+      kvVector_.sort();  // General sort
     } else if (input_num_kvs_ > 0) {
-      kvVector_.sortAndMerge(input_num_kvs_); // Sort first part, merge global
+      kvVector_.sortAndMerge(input_num_kvs_);  // Sort first part, merge global
     }
     kvVector_.Init();
   }

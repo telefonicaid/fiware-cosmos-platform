@@ -127,7 +127,7 @@ std::string Get(const gpb::CollectionRecord&, const std::string& field);
 void Sort(gpb::Collection *collection, const std::string& field);
 
 /**
- * \brief Update environment varialbe with string provided by user ( typically from -env XXX option )
+ * \brief Update environment variable with string provided by user ( typically from -env XXX option )
  */
 
 void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au::ErrorManager &error);

@@ -91,7 +91,7 @@ void ProcessIsolated::runCode(int c) {
 
       break;
     default:
-      error_.set("System error: Unknown code in the isolated process communication");
+      error_.AddError("System error: Unknown code in the isolated process communication");
       break;
   }
 
@@ -134,7 +134,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
   OutputChannel *channel = reinterpret_cast<OutputChannel *>(buffer);
 
   // NodeBuffers ( inodes in the shared memory buffer )
-  NodeBuffer *node = reinterpret_cast<NodeBuffer *>(buffer + sizeof(OutputChannel) * num_outputs );
+  NodeBuffer *node = reinterpret_cast<NodeBuffer *>(buffer + sizeof(OutputChannel) * num_outputs);
 
 #pragma mark ---
 
@@ -178,7 +178,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
       if (outputFormats.size() > (size_t)o) {
         header->Init(outputFormats[o], range_info);
       } else {
-        error_.set(au::str("No output format for output %d", o));
+        error_.AddError(au::str("No output format for output %d", o));
         return;
       }
 
@@ -259,10 +259,10 @@ void ProcessIsolated::initProcessItemIsolated() {
   initProcessIsolated();   // Init function in the foreground-process
 
   if (!CheckCompleteKVRanges(output_ranges_)) {
-    error_.set("Output ranges are not complete");
+    error_.AddError("Output ranges are not complete");
   }
 
-  if (error_.IsActivated()) {
+  if (error_.HasErrors()) {
     return;
   }
 
@@ -271,7 +271,7 @@ void ProcessIsolated::initProcessItemIsolated() {
   if (shm_id != -1) {
     item = samson::SharedMemoryManager::Shared()->GetSharedMemoryPlatform(shm_id);
   } else {
-    error_.set(au::str("Error getting shared memory for %s", process_item_description().c_str()));
+    error_.AddError(au::str("Error getting shared memory for %s", process_item_description().c_str()));
   }
 }
 

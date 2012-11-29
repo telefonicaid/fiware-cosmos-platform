@@ -22,7 +22,6 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
 
-        <jersey-version>1.11</jersey-version>
         <jvm.version>1.6</jvm.version>
         <org.apache.hadoop>0.20.2</org.apache.hadoop>
     </properties>
@@ -33,7 +32,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.0-beta-3</version>
+                    <version>3.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>

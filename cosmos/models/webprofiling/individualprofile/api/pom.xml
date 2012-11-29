@@ -11,7 +11,7 @@
     </parent>
 
     <properties>
-        <jersey-version>1.11</jersey-version>
+        <springframework.version>3.0.0.RELEASE</springframework.version>
     </properties>
 
     <artifactId>individualprofile-api</artifactId>
@@ -24,21 +24,19 @@
             <artifactId>mongo-hadoop</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>${jersey-version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-grizzly2</artifactId>
-            <version>${jersey-version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-spring</artifactId>
-            <version>${jersey-version}</version>
+            <version>1.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

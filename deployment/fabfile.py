@@ -297,19 +297,7 @@ def install_gmetad():
     other Ganglia daemons
     """
     with ctx.hide('stdout'):
-        repolist = run("yum repolist")
-        epel_installed = any([line.split()[0] == 'epel'
-                              for line in repolist.splitlines()])
-        if not epel_installed:
-            major_version = 6
-            minor_version = 7
-            repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
-                    major_version, minor_version)
-            base_url = (('http://download.fedoraproject.org/pub/'
-                         'epel/{0}/x86_64/'.format(major_version)))
-            repo_url = base_url + repo_rpm
-            run('wget %s' % repo_url)
-            run('rpm -Uvh %s' % repo_rpm)
+        install_epel()
         run("yum -y erase ganglia-gmetad")
         run("yum -y install ganglia-gmetad")
 
@@ -327,11 +315,16 @@ def install_gmetad():
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")
 
+def first_word(line):
+    words = line.split()
+    if len(words) > 0:
+        return words[0]
+
 def install_epel():
     with ctx.hide('stdout'):
         repolist = run("yum repolist")
-        epel_installed = any([line.split()[0] == 'epel'
-                              for line in repolist.splitlines()])
+        epel_installed = any(first_word(line) == 'epel'
+                             for line in repolist.splitlines()])
         if not epel_installed:
             major_version = 6
             minor_version = 7

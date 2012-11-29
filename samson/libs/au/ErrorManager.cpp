@@ -16,7 +16,7 @@ ErrorMessage::ErrorMessage(ErrorType type, std::list<std::string> &contexts, std
   : type_(type)
     , message_(message) {
   std::list<std::string>::iterator it_contexts;
-  for (it_contexts = contexts.begin(); it_contexts != contexts.end(); it_contexts++) {
+  for (it_contexts = contexts.begin(); it_contexts != contexts.end(); ++it_contexts) {
     contexts_.push_back(*it_contexts);
   }
 }
@@ -25,7 +25,7 @@ ErrorMessage::ErrorMessage(ErrorType type, std::list<std::string> &contexts, std
 std::string ErrorMessage::GetMessage() const {
   std::ostringstream output;
 
-  for (size_t i = 0; i < contexts_.size(); i++) {
+  for (size_t i = 0; i < contexts_.size(); ++i) {
     output << contexts_[i] << " >> ";
   }
   output << message_;
@@ -35,7 +35,7 @@ std::string ErrorMessage::GetMessage() const {
 std::string ErrorManager::GetErrorMessage(const std::string& message) const {
   std::ostringstream output;
 
-  output << message << " ( " << GetMessage() << " )";
+  output << message << " (" << GetMessage() << ")";
   return output.str();
 }
 
@@ -45,7 +45,7 @@ std::string ErrorMessage::GetMultiLineMessage() const {
   if (item_message == item_error) {
     output << "ERROR: ";
   }
-  for (size_t i = 0; i < contexts_.size(); i++) {
+  for (size_t i = 0; i < contexts_.size(); ++i) {
     output << ">> " << contexts_[i] << "\n";
   }
   output << message_ << "\n";
@@ -78,7 +78,7 @@ void ErrorManager::AddMessage(std::string message) {
 }
 
 void ErrorManager::Add(const ErrorManager& error, const std::string& prefix_message) {
-  for (size_t i = 0; i < error.errors_.size(); i++) {
+  for (size_t i = 0; i < error.errors_.size(); ++i) {
     std::string message = prefix_message + " " + error.errors_[i]->GetMessage();
     errors_.push_back(new ErrorMessage(error.errors_[i]->type(), contexts_, message));
   }
@@ -89,7 +89,7 @@ void ErrorManager::operator<<(const std::string& error_message) {
 }
 
 bool ErrorManager::IsActivated() const {
-  for (size_t i = 0; i < errors_.size(); i++) {
+  for (size_t i = 0; i < errors_.size(); ++i) {
     if (errors_[i]->type() == ErrorMessage::item_error) {
       return true;
     }
@@ -98,7 +98,7 @@ bool ErrorManager::IsActivated() const {
 }
 
 bool ErrorManager::HasWarnings() const {
-  for (size_t i = 0; i < errors_.size(); i++) {
+  for (size_t i = 0; i < errors_.size(); ++i) {
     if (errors_[i]->type() == ErrorMessage::item_warning) {
       return true;
     }
@@ -116,11 +116,11 @@ std::string ErrorManager::GetMessage() const {
 }
 
 std::string ErrorManager::GetLastWarning() const {
-  size_t s = errors_.size();
+  size_t num_errors = errors_.size();
 
-  for (size_t i = 0; i < s; i++) {
-    if (errors_[s - 1 - i]->type() == ErrorMessage::item_warning) {
-      return errors_[s - 1 - i]->GetMessage();
+  for (size_t i = 0; i < num_errors; ++i) {
+    if (errors_[num_errors - 1 - i]->type() == ErrorMessage::item_warning) {
+      return errors_[num_errors - 1 - i]->GetMessage();
     }
   }
   return "";
@@ -129,7 +129,7 @@ std::string ErrorManager::GetLastWarning() const {
 std::string ErrorManager::GetCompleteMessage() {
   std::ostringstream output;
 
-  for (size_t i = 0; i < errors_.size(); i++) {
+  for (size_t i = 0; i < errors_.size(); ++i) {
     output << errors_[i]->GetMultiLineMessage();
   }
   return output.str();
@@ -152,7 +152,7 @@ std::string ErrorManager::str() {
   std::ostringstream output;
 
   // Transform the error message in something to print on screen
-  for (size_t i = 0; i < errors_.size(); i++) {
+  for (size_t i = 0; i < errors_.size(); ++i) {
     ErrorMessage *item = errors_[i];
 
     switch (item->type()) {

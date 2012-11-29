@@ -47,7 +47,7 @@ void LogFormatter::SetFormat(const std::string& definition, bool color) {
 
 std::string LogFormatter::get(au::SharedPointer<Log> log) const {
   if (color_) {
-    return au::str(log->GetColor(),  "%s", GetIntern(log).c_str());
+    return au::str(log->GetColor(), "%s", GetIntern(log).c_str());
   } else {
     return GetIntern(log);
   }

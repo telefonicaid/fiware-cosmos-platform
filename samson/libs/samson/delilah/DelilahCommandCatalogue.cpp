@@ -250,7 +250,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("add_stream_operation", "-forward", "Forward reduce operations are scheduled. ( No state )");
   add_bool_option("add_stream_operation", "-update_only", "Only update state for keys with new input values");
 
-  add_string_option("add_stream_operation", "-env", "", "Environment variables separated by comas");
+  add_string_option("add_stream_operation", "-env", "", "Environment variables separated by commas");
 
   add("remove_stream_operation", "stream", "Remove a previously defined operation with add_stream_operation");
   add_mandatory_string_argument("remove_stream_operation", "name", "Name of the stream operations to remove");
@@ -322,7 +322,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_string_option("run", "-input", "", "Input queues to get data from");
   add_string_option("run", "-output", "", "Output queues to push data to");
 
-  add_string_option("run", "-env", "", "Environment variables separated by comas");
+  add_string_option("run", "-env", "", "Environment variables separated by commas");
 
   add("ls_batch_operations", "batch", "Show a list of current batch operations scheduled");
   add_bool_option("ls_batch_operations", "-input", "Show real input pending to be process");

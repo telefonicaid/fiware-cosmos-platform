@@ -43,6 +43,7 @@ public:
     name    = _name;
     version = _version;
     author  = _author;
+    hndl_ = NULL;
   }
 
   ~Module() {

@@ -92,7 +92,7 @@ private:
 };
 
 
-class TokenVector : public std::vector<Token>{
+class TokenVector {
 public:
 
   TokenVector();
@@ -116,7 +116,7 @@ public:
 
 
   bool PopNextTokenIfContentIs(const std::string& content);
-  bool PopNextTwoTokensContentsAre(const std::string& content, const std::string&content2);
+  bool PopNextTwoTokensIfContentsAre(const std::string& content, const std::string&content2);
 
   bool CheckNextTokenContentIs(const std::string& content);
   bool CheckNextNextTokenContentIs(const std::string& content);
@@ -136,7 +136,10 @@ public:
 
 private:
 
-  size_t position_;  // Position inside the vector
+  friend class Tokenizer;
+
+  size_t position_;              // Position inside the vector
+  std::vector<Token> tokens_;    // Vector of tokens
 };
 
 

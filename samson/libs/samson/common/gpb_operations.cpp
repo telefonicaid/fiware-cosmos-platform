@@ -658,7 +658,7 @@ void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au
     std::string concept = token->content();
 
     if (!token_vector.CheckNextTokenContentIs("=")) {
-      token_vector.set_error(error, au::str("Not found '=' when processing %s", env.c_str()));
+      token_vector.set_error(error, au::str("'=' not found when processing '%s'", env.c_str()));
       return;
     }
 
@@ -667,14 +667,15 @@ void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au
 
     token = token_vector.PopToken();
     if (!token) {
-      token_vector.set_error(error, au::str("Not found '=' when processing %s", env.c_str()));
+      token_vector.set_error(error,
+                             au::str("No value for property '%s' when processing '%s'", concept.c_str(), env.c_str()));
       return;
     }
     std::string value = token->content();
 
     if (!token_vector.eof()) {
       if (!token_vector.CheckNextTokenContentIs(",")) {
-        token_vector.set_error(error, au::str("Not found ',' when processing %s", env.c_str()));
+        token_vector.set_error(error, au::str("',' not found when processing '%s'", env.c_str()));
         return;
       }
 

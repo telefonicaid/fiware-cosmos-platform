@@ -1135,7 +1135,7 @@ void CommandInstance::set_value(const std::string& name, const std::string& valu
 }
 
 bool CommandInstance::hasValueFor(const std::string& name) {
-  return (values_.isInMap(name));
+  return values_.isInMap(name);
 }
 
 std::string CommandInstance::ErrorMessage(const std::string error_message) {

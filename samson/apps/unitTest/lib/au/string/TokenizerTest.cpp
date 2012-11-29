@@ -19,22 +19,22 @@ TEST(au_Tokenizer, simple) {
   au::token::Token token_num_wrong("+3.27.wrong", au::token::Token::literal, 2);
   au::token::Token token_separator_semicolon(";", au::token::Token::separator, 2);
 
-  EXPECT_EQ(token.IsContent("test_token"), true) << "Error in token.is() true";
-  EXPECT_EQ(token.IsContent("wrong_token"), false) << "Error in token.is() false";
+  EXPECT_TRUE(token.IsContent("test_token")) << "Error in token.is() true";
+  EXPECT_FALSE(token.IsContent("wrong_token")) << "Error in token.is() false";
 
-  EXPECT_EQ(token.IsLiteral(), false) << "Error in token.isLiteral() false";
-  EXPECT_EQ(token_op.IsLiteral(), true) << "Error in token.isLiteral() true";
-  EXPECT_EQ(token.IsSeparator(), false) << "Error in token.isSeparator() ";
-  EXPECT_EQ(token.IsNormal(), true) << "Error in token.isNormal() ";
+  EXPECT_FALSE(token.IsLiteral()) << "Error in token.isLiteral() false";
+  EXPECT_TRUE(token_op.IsLiteral()) << "Error in token.isLiteral() true";
+  EXPECT_FALSE(token.IsSeparator()) << "Error in token.isSeparator() ";
+  EXPECT_TRUE(token.IsNormal()) << "Error in token.isNormal() ";
 
-  EXPECT_EQ(token.IsOperation(), false) << "Error in token.isOperation() ";
-  EXPECT_EQ(token_op.IsOperation(), true) << "Error in token.isOperation() true";
+  EXPECT_FALSE(token.IsOperation()) << "Error in token.isOperation() ";
+  EXPECT_TRUE(token_op.IsOperation()) << "Error in token.isOperation() true";
 
-  EXPECT_EQ(token.IsComparator(), false) << "Error in token.isComparator() ";
+  EXPECT_FALSE(token.IsComparator()) << "Error in token.isComparator() ";
 
-  EXPECT_EQ(token.IsNumber(), false) << "Error in token.isNumber() false";
-  EXPECT_EQ(token_num.IsNumber(), true) << "Error in token.isNumber() true";
-  EXPECT_EQ(token_num_wrong.IsNumber(), false) << "Error in token.isNumber() false";
+  EXPECT_FALSE(token.IsNumber()) << "Error in token.isNumber() false";
+  EXPECT_TRUE(token_num.IsNumber()) << "Error in token.isNumber() true";
+  EXPECT_FALSE(token_num_wrong.IsNumber()) << "Error in token.isNumber() false";
 
   EXPECT_EQ(token.str(), "test_token") << "Error in token.str() normal";
   EXPECT_EQ(token_op.str(), "\"*\"") << "Error in token.str() literal";
@@ -43,11 +43,11 @@ TEST(au_Tokenizer, simple) {
   au::token::TokenVector token_vector;
 
   EXPECT_EQ(token_vector.GetNextTokenContent(), "<empty>") << "Error in GetNextTokenContent empty";
-  EXPECT_EQ(token_vector.PopNextTokenIfContentIs("token1"), false) << "Error in PopNextTokenIfContentIs false";
-  EXPECT_EQ(token_vector.PopNextTwoTokensContentsAre("token1",
-                                                     "token2"), false) << "Error in popNextTokensIfTheyAre false";
-  EXPECT_EQ(token_vector.CheckNextTokenContentIs("token1"), false) << "Error in CheckNextTokenContentIs false";
-  EXPECT_EQ(token_vector.CheckNextNextTokenContentIs("token1"), false) << "Error in CheckNextNextTokenContentIs false";
+  EXPECT_FALSE(token_vector.PopNextTokenIfContentIs("token1")) << "Error in PopNextTokenIfContentIs false";
+  EXPECT_FALSE(token_vector.PopNextTwoTokensIfContentsAre("token1",
+                                                          "token2")) << "Error in popNextTokensIfTheyAre false";
+  EXPECT_FALSE(token_vector.CheckNextTokenContentIs("token1")) << "Error in CheckNextTokenContentIs false";
+  EXPECT_FALSE(token_vector.CheckNextNextTokenContentIs("token1")) << "Error in CheckNextNextTokenContentIs false";
 
   au::token::Tokenizer tokenizer;
 
@@ -66,9 +66,9 @@ TEST(au_Tokenizer, simple) {
 
 
   EXPECT_EQ(token_vector.GetNextTokenContent(), "<empty>") << "Error in GetNextTokenContent non empty";
-  EXPECT_EQ(token_vector.PopNextTokenIfContentIs("next"), false) << "Error in PopNextTokenIfContentIs false";
-  EXPECT_EQ(token_vector.PopNextTwoTokensContentsAre("next",
-                                                     "previous"), false) << "Error in popNextTokensIfTheyAre false";
-  EXPECT_EQ(token_vector.CheckNextTokenContentIs("next"), false) << "Error in CheckNextTokenContentIs false";
-  EXPECT_EQ(token_vector.CheckNextNextTokenContentIs("next"), false) << "Error in CheckNextNextTokenContentIs false";
+  EXPECT_FALSE(token_vector.PopNextTokenIfContentIs("next")) << "Error in PopNextTokenIfContentIs false";
+  EXPECT_FALSE(token_vector.PopNextTwoTokensIfContentsAre("next",
+                                                          "previous")) << "Error in popNextTokensIfTheyAre false";
+  EXPECT_FALSE(token_vector.CheckNextTokenContentIs("next")) << "Error in CheckNextTokenContentIs false";
+  EXPECT_FALSE(token_vector.CheckNextNextTokenContentIs("next")) << "Error in CheckNextNextTokenContentIs false";
 }

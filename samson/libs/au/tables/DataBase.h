@@ -87,7 +87,7 @@ private:
   void autoCompleteFieldsOfTable(std::string table_name, au::console::ConsoleAutoComplete *info);
 
 
-  // Get spetial tables
+  // Get special tables
   Table *getTableOfTables();
   Table *getTableOfTrees();
   Table *getTableOfCollections();

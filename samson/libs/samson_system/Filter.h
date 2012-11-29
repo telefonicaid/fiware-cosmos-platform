@@ -411,7 +411,7 @@ public:
 
     // Fields ( if any )
     while (!token_vector->eof()) {
-      if (token_vector->PopNextTwoTokensContentsAre("-", "separator")) {
+      if (token_vector->PopNextTwoTokensIfContentsAre("-", "separator")) {
         // Extract separator
         au::token::Token *separator_token = token_vector->PopToken();
 

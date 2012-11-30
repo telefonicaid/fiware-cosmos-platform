@@ -13,9 +13,11 @@
 #include <vector>
 
 #include "au/log/LogMain.h"
+#include "au/singleton/Singleton.h"
 #include "samson/common/Logs.h"
 #include "samson/common/NotificationMessages.h"
 #include "samson/common/gpb_operations.h"
+#include "samson/module/ModulesManager.h"
 #include "samson/network/Packet.h"
 #include "samson/stream/Block.h"
 #include "samson/worker/SamsonWorkerController.h"
@@ -50,26 +52,28 @@ const std::string DataModel::kSetReplicationFactor("set_replication_factor");
 
 
 
-const std::string DataModel::commands[] =
-{ DataModel::kAdd,             DataModel::kAddQueueConnection,
-  kAddStreamOperation,         kBatch,                                    kBlock,
-  kClearBatchOPerations,       kClearModules,                             kPushQueue,
+const std::string DataModel::commands[] = {
+  DataModel::kAdd,             DataModel::kAddQueueConnection,
+  kAddStreamOperation,         kBatch,                        kBlock,
+  kClearBatchOPerations,       kClearModules,                 kPushQueue,
   kRemoveAll,
   kRemoveAllData,              kRemoveAllStreamOperations,
-  kRemoveStreamOperation,      kRm,                                       kRmQueueConnection,
+  kRemoveStreamOperation,      kRm,                           kRmQueueConnection,
   kSetQueueProperty,
   kSetStreamOperationProperty, kUnsetStreamOperationProperty,
-  kFreezeDataModel,            kCancelFreezeDataModel,                    kRecoverDataModel,
-  kConsolidateDataModel,       kSetReplicationFactor };
+  kFreezeDataModel,            kCancelFreezeDataModel,        kRecoverDataModel,
+  kConsolidateDataModel,       kSetReplicationFactor
+};
 
-const std::string DataModel::recovery_commands[] =
-{ DataModel::kAdd,            DataModel::kAddQueueConnection,            kAddStreamOperation,
+const std::string DataModel::recovery_commands[] = {
+  DataModel::kAdd,            DataModel::kAddQueueConnection, kAddStreamOperation,
   kBatch,
   kClearBatchOPerations,      kClearModules,
-  kPushQueue,                 kRemoveAll,                                kRemoveAllData,
+  kPushQueue,                 kRemoveAll,                     kRemoveAllData,
   kRemoveAllStreamOperations,
-  kRemoveStreamOperation,     kRm,                                       kRmQueueConnection,
-  kSetQueueProperty,          kSetStreamOperationProperty,               kUnsetStreamOperationProperty };
+  kRemoveStreamOperation,     kRm,                            kRmQueueConnection,
+  kSetQueueProperty,          kSetStreamOperationProperty,    kUnsetStreamOperationProperty
+};
 
 // Constant strings for item commands
 const std::string DataModel::kAddItem("add");
@@ -77,21 +81,17 @@ const std::string DataModel::kRmItem("rm");
 
 au::SharedPointer<au::CommandLine> DataModel::GetCommandLine() {
   au::SharedPointer<au::CommandLine> cmd(new au::CommandLine());
-  // Input output definition of queues
-  cmd->SetFlagString("input", "");
-  cmd->SetFlagString("output", "");
-  // Forward flag to indicate that this is a reduce forward operation ( no update if state )
-  cmd->SetFlagBoolean("forward");
-  // Paused
-  cmd->SetFlagBoolean("paused");
-  // -a flag
-  cmd->SetFlagBoolean("a");
-  // Number of divisions in state operations
-  cmd->SetFlagInt("divisions", au::Singleton<SamsonSetup>::shared()->GetInt("general.num_processess"));
-  // Flag to indicate that states with no inputs should be copied to output automatically
-  cmd->SetFlagBoolean("update_only");
-  // Flag to indicate that this is a batch operation
-  cmd->SetFlagBoolean("batch_operation");
+  cmd->SetFlagString("input", "");     // Input queues
+  cmd->SetFlagString("output", "");    // Output queues
+  cmd->SetFlagString("env", "");       // Environment for add_stream_operation and run commands
+
+  cmd->SetFlagBoolean("forward");   // Forward flag to indicate that this is a reduce forward operation ( no update if state )
+  cmd->SetFlagBoolean("paused");    // Paused
+  cmd->SetFlagBoolean("a");         // -a flag
+
+  cmd->SetFlagBoolean("update_only");    // Flag to indicate that states with no inputs should be copied to output automatically
+  cmd->SetFlagBoolean("batch_operation");    // Flag to indicate that this is a batch operation
+
   // Prefix used to change names of queues and operations
   cmd->SetFlagString("prefix", "");
   cmd->SetFlagUint64("delilah_id", static_cast<size_t>(-1));
@@ -124,7 +124,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
 
   // No command error
   if (cmd->get_num_arguments() == 0) {
-    error.set("No command specified");
+    error.AddError("No command specified");
     return;
   }
 
@@ -159,7 +159,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
   // Process whatever opertion on current data model
   ProcessCommand(data->mutable_current_data(), cmd, error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return;
   }
 
@@ -183,6 +183,9 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
 void DataModel::ProcessCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error) {
   // Get main command
   std::string main_command = cmd->get_argument(0);
+
+  // Reset error messages
+  error.Reset();
 
   LOG_M(logs.data_model, ("ProcessCommand %s", main_command.c_str()));
 
@@ -222,19 +225,19 @@ void DataModel::ProcessCommand(gpb::Data *data, au::SharedPointer<au::CommandLin
     ProcessUnsetStreamOperationPropertyCommand(data, cmd, error);
   } else {
     LOG_W(logs.data_model, ("Unknown command (%s) in the commit to data model", main_command.c_str()));
-    error.set(au::str("Unknown command (%s) in the commit to data model", main_command.c_str()));
+    error.AddError(au::str("Unknown command (%s) in the commit to data model", main_command.c_str()));
   }
   return;
 }
 
 void DataModel::ProcessAddCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 3) {
-    error.set(au::str("Usage: '%s' queue_name key_format value_format", cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: '%s' queue_name key_format value_format", cmd->get_argument(0).c_str()));
     return;
   }
   if ((cmd->get_num_arguments() == 3) && (cmd->get_argument(2) != "txt")) {
-    error.set(au::str("Usage: '%s' queue_name key_format value_format ( '%s' queue_name txt )",
-                      cmd->get_argument(0).c_str(), cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: '%s' queue_name key_format value_format ( '%s' queue_name txt )",
+                           cmd->get_argument(0).c_str(), cmd->get_argument(0).c_str()));
     return;
   }
 
@@ -244,10 +247,10 @@ void DataModel::ProcessAddCommand(gpb::Data *data, au::SharedPointer<au::Command
   if (cmd->get_num_arguments() == 3) {
     value_format = key_format;
   } else {
-    value_format = cmd->get_argument(3);       // Get or create this queue
+    value_format = cmd->get_argument(3);         // Get or create this queue
   }
   gpb::get_or_create_queue(data, name, KVFormat(key_format, value_format), error);
-  if (!error.IsActivated()) {
+  if (!error.HasErrors()) {
     error.AddMessage(au::str("Queue %s added correctly", name.c_str()));
   }
   return;
@@ -258,7 +261,7 @@ void DataModel::ProcessAddCommand(gpb::Data *data, au::SharedPointer<au::Command
 void DataModel::ProcessAddQueueConnectionCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
                                                  au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 3) {
-    error.set(au::str("Usage: '%s' source_queue target_queue", cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: '%s' source_queue target_queue", cmd->get_argument(0).c_str()));
     return;
   }
 
@@ -281,8 +284,8 @@ void DataModel::ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPoin
   if (cmd->get_num_arguments() < 3) {
     LOG_W(logs.data_model, ("Error in add_stream_operation, num_arguments < 3"));
     LOG_W(logs.data_model, ("Offending command: '%s'", cmd->command().c_str()));
-    error.set(au::str("Usage: '%s' name operation -input \"input1 input2\" -output \"outputs1 outputs2 output3\"",
-                      cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: '%s' name operation -input \"input1 input2\" -output \"outputs1 outputs2 output3\"",
+                           cmd->get_argument(0).c_str()));
     return;
   }
   // Recover prefix
@@ -292,6 +295,9 @@ void DataModel::ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPoin
   std::string operation = cmd->get_argument(2);
   std::string inputs = cmd->GetFlagString("input");
   std::string outputs = cmd->GetFlagString("output");
+
+  // Recover env variable
+  std::string env = cmd->GetFlagString("env");
 
   // Get a new stream operation and increase the global counter
   size_t stream_operation_id = data->next_stream_operation_id();
@@ -303,8 +309,14 @@ void DataModel::ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPoin
   if (stream_operation != NULL) {
     LOG_W(logs.data_model, ("Stream operation %s already exist", name.c_str()));
     LOG_W(logs.data_model, ("Offending command: '%s'", cmd->command().c_str()));
-    error.set(au::str("Stream operation %s already exist", name.c_str()));
+    error.AddError(au::str("Stream operation %s already exist", name.c_str()));
     return;
+  }
+
+  // Warning if operation is not found
+  Operation *operation_instance = au::Singleton<samson::ModulesManager>::shared()->GetOperation(operation);
+  if (operation_instance == NULL) {
+    error.AddWarning(au::str("Operation '%s' not found in this worker. Missing module?", operation.c_str()));
   }
 
   // Create a new stream operation
@@ -313,20 +325,80 @@ void DataModel::ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPoin
   so->set_name(name);
   so->set_operation(operation);
   so->set_paused(cmd->GetFlagBool("paused"));
+
   // Add input queues
   au::CommandLine cmd_inputs(inputs);
   for (int i = 0; i < cmd_inputs.get_num_arguments(); ++i) {
     so->add_inputs(cmd_inputs.get_argument(i));
   }
+
   // Add output queues
   au::CommandLine cmd_outputs(outputs);
   for (int i = 0; i < cmd_outputs.get_num_arguments(); ++i) {
     so->add_outputs(cmd_outputs.get_argument(i));
   }
+
+  // Warnings if input / output are not correct
+  if (operation_instance) {
+    if (operation_instance->getNumInputs() != cmd_inputs.get_num_arguments()) {
+      error.AddWarning(au::str("Operation '%s' requires %d inputs, but %d are provided.",
+                               operation.c_str(),
+                               operation_instance->getNumInputs(),
+                               cmd_inputs.get_num_arguments()
+                               ));
+    } else {
+      for (int i = 0; i < cmd_inputs.get_num_arguments(); ++i) {
+        KVFormat format = operation_instance->getInputFormats()[i];
+        std::string queue_name = cmd_inputs.get_argument(i);
+        gpb::Queue *queue = gpb::get_queue(data, queue_name);
+        if (queue) {
+          KVFormat format_queue(queue->key_format(), queue->value_format());
+          if (!format.isEqual(format_queue)) {
+            error.AddWarning(au::str("Queue %s (input %d) does not match the expected format %s != %s"
+                                     , queue_name.c_str()
+                                     , i + 1
+                                     , format_queue.str().c_str()
+                                     , format.str().c_str()));
+          }
+        }
+      }
+    }
+
+    if (operation_instance->getNumOutputs() != cmd_outputs.get_num_arguments()) {
+      error.AddWarning(au::str("Operation '%s' requires %d ouputs, but %d are provided.",
+                               operation.c_str(),
+                               operation_instance->getNumInputs(),
+                               cmd_inputs.get_num_arguments()));
+    } else {
+      for (int i = 0; i < cmd_outputs.get_num_arguments(); ++i) {
+        KVFormat format = operation_instance->getOutputFormats()[i];
+        std::string queue_name = cmd_outputs.get_argument(i);
+        gpb::Queue *queue = gpb::get_queue(data, queue_name);
+        if (queue) {
+          KVFormat format_queue(queue->key_format(), queue->value_format());
+          if (!format.isEqual(format_queue)) {
+            error.AddWarning(au::str("Queue %s (output %d) does not match the expected format %s != %s"
+                                     , queue_name.c_str()
+                                     , i + 1
+                                     , format_queue.str().c_str()
+                                     , format.str().c_str()));
+          }
+        }
+      }
+    }
+  }
+
   // Optional flags for the new operation
   so->set_reduce_forward(cmd->GetFlagBool("forward"));
   so->set_reduce_update_only(cmd->GetFlagBool("update_only"));
   so->set_batch_operation(cmd->GetFlagBool("batch_operation"));
+
+  au::ErrorManager error_env;
+  gpb::UpdateEnvironment(so->mutable_environment(), env, error_env);
+  if (error_env.HasErrors()) {
+    error.AddError(au::str("Error parsing environment: %s", error_env.GetLastError().c_str()));
+    return;
+  }
 
   error.AddMessage(au::str("StreamOperation %s added correctly", name.c_str()));
   return;
@@ -334,14 +406,15 @@ void DataModel::ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPoin
 
 void DataModel::ProcessBatchCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 2) {
-    error.set(au::str("Usage: '%s' -input \"input1 input2\" -output \"outputs1 outputs2 output3\"",
-                      cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: '%s' -input \"input1 input2\" -output \"outputs1 outputs2 output3\"",
+                           cmd->get_argument(0).c_str()));
     return;
   }
 
   std::string operation = cmd->get_argument(1);
   std::string inputs = cmd->GetFlagString("input");
   std::string outputs = cmd->GetFlagString("output");
+  std::string env = cmd->GetFlagString("env");
   size_t delilah_id = cmd->GetFlagUint64("delilah_id");
   size_t delilah_component_id = cmd->GetFlagUint64("delilah_component_id");
 
@@ -354,7 +427,7 @@ void DataModel::ProcessBatchCommand(gpb::Data *data, au::SharedPointer<au::Comma
     std::string new_command = au::str("push_queue %s %s%s", input_queues[i].c_str(), prefix.c_str(),
                                       input_queues[i].c_str());
     ProcessCommand(data, new_command, error);
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       return;
     }
   }
@@ -380,10 +453,11 @@ void DataModel::ProcessBatchCommand(gpb::Data *data, au::SharedPointer<au::Comma
     new_command << prefix << output_queues[i];
   }
   new_command << "\"";
-  new_command << " -batch_operation ";       // Add this flag to identify the stream
+  new_command << " -batch_operation";    // Add this flag to identify the stream
+  new_command << " -env " << env;        // Add env variables from "run" command
 
   ProcessCommand(data, new_command.str(), error);
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return;
   }
 
@@ -422,8 +496,8 @@ void DataModel::ProcessBlockCommand(gpb::Data *data, au::SharedPointer<au::Comma
   CommitCommand commit_command;
 
   commit_command.ParseCommitCommand(cmd->command(), error);
-  if (error.IsActivated()) {
-    LOG_W(logs.data_model, ("Error comitting to data model %s", error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_W(logs.data_model, ("Error comitting to data model %s", error.GetLastError().c_str()));
     return;
   }
 
@@ -437,9 +511,9 @@ void DataModel::ProcessBlockCommand(gpb::Data *data, au::SharedPointer<au::Comma
     if (item->command() == kAddItem) {
       add_block(data, item->queue(), item->block_id(), item->block_size(), item->format(),
                 item->range(), item->info(), version, error);
-      if (error.IsActivated()) {
+      if (error.HasErrors()) {
         LOG_W(logs.data_model,
-              ("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
+              ("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetLastError().c_str()));
         return;
       }
       // add also to the connected queues
@@ -451,9 +525,9 @@ void DataModel::ProcessBlockCommand(gpb::Data *data, au::SharedPointer<au::Comma
     } else if (item->command() == kRmItem) {
       rm_block(data, item->queue(), item->block_id(), item->format(), item->range(), item->info(),
                version, error);
-      if (error.IsActivated()) {
+      if (error.HasErrors()) {
         LOG_W(logs.data_model,
-              ("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
+              ("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetLastError().c_str()));
         return;
       }
     }
@@ -461,9 +535,9 @@ void DataModel::ProcessBlockCommand(gpb::Data *data, au::SharedPointer<au::Comma
 
   // Blocks have been added or removed... review batch operation
   ReviewBatchOperations(data, error);
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     LOG_W(logs.data_model,
-          ("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetMessage().c_str()));
+          ("Error in '%s' operation, error:'%s'", cmd->get_argument(0).c_str(), error.GetLastError().c_str()));
   }
   return;
 }
@@ -483,7 +557,7 @@ void DataModel::ProcessClearBatchOPerationsCommand(gpb::Data *data, au::SharedPo
 void DataModel::ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd  /* cmd */,
                                            au::ErrorManager &  /* error */) {
   // Remove queue .modules
-  au::ErrorManager error2;       // we are not interested in this error
+  au::ErrorManager error2;         // we are not interested in this error
 
   ProcessCommand(data, "rm .modules", error2);
   return;
@@ -492,22 +566,22 @@ void DataModel::ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au
 void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
                                         au::ErrorManager &error) {
   if (cmd->get_num_arguments() < 3) {
-    error.set(au::str("Usage: push_queue source_queue target_queues", cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: push_queue source_queue target_queues", cmd->get_argument(0).c_str()));
     return;
   }
 
   samson::gpb::Queue *queue = get_queue(data, cmd->get_argument(1));
   if (!queue) {
     LOG_W(logs.data_model, ("queue '%s' not found", cmd->get_argument(1).c_str()));
-    return;       // nothing to do
+    return;                                // nothing to do
   }
-  queue->set_commit_id(data->commit_id());         // Update version where this queue was updated
+  queue->set_commit_id(data->commit_id()); // Update version where this queue was updated
   KVFormat format(queue->key_format(), queue->value_format());
   samson::gpb::Queue *target_queue = get_or_create_queue(data, cmd->get_argument(2), format, error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     LOG_W(logs.data_model, ("Error for queue:'%s' in get_or_create_queue, error:%s",
-                            cmd->get_argument(2).c_str(), error.GetMessage().c_str()));
+                            cmd->get_argument(2).c_str(), error.GetLastError().c_str()));
     return;
   }
   // Copy all the content
@@ -521,7 +595,7 @@ void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::C
 
 
 void DataModel::ProcessRemoveAllCommand(gpb::Data *data
-                                        , au::SharedPointer<au::CommandLine>    /*cmd*/
+                                        , au::SharedPointer<au::CommandLine>      /* cmd */
                                         , au::ErrorManager&  /* error */) {
   reset_stream_operations(data);
   reset_data(data);
@@ -529,14 +603,14 @@ void DataModel::ProcessRemoveAllCommand(gpb::Data *data
 }
 
 void DataModel::ProcessRemoveAllDataCommand(gpb::Data *data
-                                            , au::SharedPointer<au::CommandLine>    /* cmd */
+                                            , au::SharedPointer<au::CommandLine>      /* cmd */
                                             , au::ErrorManager&  /* error */) {
   reset_data(data);
   return;
 }
 
 void DataModel::ProcessRemoveAllStreamOperationsCommand(gpb::Data *data
-                                                        , au::SharedPointer<au::CommandLine>    /* cmd */
+                                                        , au::SharedPointer<au::CommandLine>      /* cmd */
                                                         , au::ErrorManager&  /* error */) {
   reset_stream_operations(data);
   return;
@@ -552,7 +626,7 @@ void DataModel::ProcessRemoveStreamOperationCommand(gpb::Data *data
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, name);
 
   if (!stream_operation) {
-    error.set(au::str("Stream operation %s not found", name.c_str()));
+    error.AddError(au::str("Stream operation %s not found", name.c_str()));
     return;
   }
   gpb::removeStreamOperation(data, name);
@@ -564,7 +638,7 @@ void DataModel::ProcessRmCommand(gpb::Data *data
                                  , au::SharedPointer<au::CommandLine> cmd
                                  , au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 2) {
-    error.set(au::str("Usage: rm queue_name queue_name2 ....", cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: rm queue_name queue_name2 ....", cmd->get_argument(0).c_str()));
     return;
   }
 
@@ -586,7 +660,7 @@ void DataModel::ProcessRmQueueConnectionCommand(gpb::Data *data
                                                 , au::SharedPointer<au::CommandLine> cmd
                                                 , au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 3) {
-    error.set(au::str("Usage: rm_queue_connections source_queue target_queue", cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: rm_queue_connections source_queue target_queue", cmd->get_argument(0).c_str()));
     return;
   }
 
@@ -600,17 +674,17 @@ void DataModel::ProcessRmQueueConnectionCommand(gpb::Data *data
   return;
 }
 
-void DataModel::ProcessSetQueuePropertyCommand(gpb::Data *    /* data */
+void DataModel::ProcessSetQueuePropertyCommand(gpb::Data *      /* data */
                                                , au::SharedPointer<au::CommandLine> cmd
                                                , au::ErrorManager& error) {
-  error.set(au::str("Command:'%s', still not implemented", cmd->get_argument(0).c_str()));
+  error.AddError(au::str("Command:'%s', still not implemented", cmd->get_argument(0).c_str()));
   return;
 }
 
 void DataModel::ProcessSetStreamOperationPropertyCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
                                                          au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 4) {
-    error.set(au::str("Usage: set_stream_operation_property name property value", cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: set_stream_operation_property name property value", cmd->get_argument(0).c_str()));
     return;
   }
   // Recover prefix
@@ -621,7 +695,7 @@ void DataModel::ProcessSetStreamOperationPropertyCommand(gpb::Data *data, au::Sh
   std::string value = cmd->get_argument(3);
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, name);
   if (!stream_operation) {
-    error.set(au::str("Stream operation %s not found", name.c_str()));
+    error.AddError(au::str("Stream operation %s not found", name.c_str()));
     return;
   }
 
@@ -631,7 +705,7 @@ void DataModel::ProcessSetStreamOperationPropertyCommand(gpb::Data *data, au::Sh
     } else if (value == "no" || value == "n") {
       stream_operation->set_paused(false);
     } else {
-      error.set(au::str("Unknown value %d for paused. Say yes or no", value.c_str()));
+      error.AddError(au::str("Unknown value %d for paused. Say yes or no", value.c_str()));
     }
 
     return;
@@ -646,7 +720,7 @@ void DataModel::ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data,
                                                            au::SharedPointer<au::CommandLine> cmd,
                                                            au::ErrorManager& error) {
   if (cmd->get_num_arguments() < 3) {
-    error.set(au::str("Usage: unset_stream_operation_property name property", cmd->get_argument(0).c_str()));
+    error.AddError(au::str("Usage: unset_stream_operation_property name property", cmd->get_argument(0).c_str()));
     return;
   }
   // Recover prefix
@@ -657,7 +731,7 @@ void DataModel::ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data,
 
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, name);
   if (!stream_operation) {
-    error.set(au::str("Stream operation %s not found", name.c_str()));
+    error.AddError(au::str("Stream operation %s not found", name.c_str()));
     return;
   }
   unsetProperty(stream_operation->mutable_environment(), property);
@@ -668,13 +742,13 @@ void DataModel::ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data,
 // All
 void DataModel::ProcessFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error) {
   if (data_model->has_candidate_data()) {
-    error.set("Still frozing a previous data model");
+    error.AddError("Still frozing a previous data model");
     return;
   }
 
   // If data model has not changed, no update
   if (data_model->current_data().commit_id() == data_model->previous_data().commit_id()) {
-    error.set("Nothing to be updated");
+    error.AddError("Nothing to be updated");
     return;
   }
 
@@ -685,7 +759,7 @@ void DataModel::ProcessFreezeDataModel(au::SharedPointer<gpb::DataModel> data_mo
 
 void DataModel::ProcessCancelFreezeDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error) {
   if (!data_model->has_candidate_data()) {
-    error.set("No candidate data-model to cancel");
+    error.AddError("No candidate data-model to cancel");
     return;
   }
 
@@ -728,26 +802,26 @@ void DataModel::ProcessRecoverDataModel(au::SharedPointer<gpb::DataModel> data_m
     new_commit->set_message(commits[i].second);
 
     // Apply to current data model
-    au::ErrorManager error2;     // Ignore this erors
+    au::ErrorManager error2;       // Ignore these errors
     ProcessCommand(data_model->mutable_current_data(), commits[i].second, error2);
-    data_model->mutable_current_data()->set_commit_id(commits[i].first);       // Update to this commit_id
+    data_model->mutable_current_data()->set_commit_id(commits[i].first);         // Update to this commit_id
   }
 }
 
 void DataModel::ProcessConsolidateDataModel(au::SharedPointer<gpb::DataModel> data_model, au::ErrorManager& error) {
   if (!data_model->has_candidate_data()) {
-    error.set("No candidate state model to be consolidated");
+    error.AddError("No candidate state model to be consolidated");
     return;
   }
 
   data_model->mutable_previous_data()->CopyFrom(data_model->candidate_data());
-  data_model->clear_candidate_data();     // Remove candidate
+  data_model->clear_candidate_data();       // Remove candidate
 
   // Remove preivous commits
   size_t commit_id = data_model->previous_data().commit_id();
   std::vector<std::pair<size_t, std::string> > commits;
   for (int i = 0; i < data_model->commit_size(); i++) {
-    if (data_model->commit(i).id() > commit_id) {    // Keep this commit since it is posterior
+    if (data_model->commit(i).id() > commit_id) {      // Keep this commit since it is posterior
       commits.push_back(std::pair<size_t, std::string>(data_model->commit(i).id(), data_model->commit(i).message()));
     }
   }
@@ -763,8 +837,8 @@ void DataModel::FreezeCandidateDataModel() {
   au::ErrorManager error;
 
   Commit("SAMSON system", "consolidate_data_model", error);
-  if (error.IsActivated()) {
-    LOG_W(logs.data_model, ("Error in data-model commit to consolidate data model:  %s ", error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_W(logs.data_model, ("Error in data-model commit to consolidate data model:  %s ", error.GetLastError().c_str()));
   }
 }
 
@@ -949,7 +1023,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueuesWithBlocks(c
       ::samson::add(record, "queue", queue_name, "different");
       ::samson::add(record, "block", str_block_id(block.block_id()), "different");
       ::samson::add(record, "block_size", block.block_size(), "f=uint64,different");
-      KVRange range = block.range();       // Implicit conversion
+      KVRange range = block.range();         // Implicit conversion
       ::samson::add(record, "ranges", range.str(), "different");
       KVInfo info(block.size(), block.kvs());
       ::samson::add(record, "info", info.str(), "different");
@@ -1061,7 +1135,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForQueueRanges(const 
 
   // Compute size in each range
   for (int i = 0; i < queue->blocks_size(); ++i) {
-    KVRange range = queue->blocks(i).range();       // Implicit conversion
+    KVRange range = queue->blocks(i).range();         // Implicit conversion
 
     for (int r = 0; r < num_ranges; ++r) {
       double overlap = range.GetOverlapFactor(ranges[r]);
@@ -1112,7 +1186,7 @@ size_t DataModel::GetLastCommitIdForPreviousDataModel() {
 }
 
 std::set<size_t> DataModel::GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges) {
-  std::set<size_t> block_ids;        // Prepare list of ids to be returned
+  std::set<size_t> block_ids;          // Prepare list of ids to be returned
 
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   gpb::AddStateBlockIds(data_model->mutable_current_data(), ranges, block_ids);
@@ -1120,7 +1194,7 @@ std::set<size_t> DataModel::GetMyStateBlockIdsForCurrentDataModel(const std::vec
 }
 
 std::set<size_t> DataModel::GetMyBlockIdsForPreviousAndCandidateDataModel(const std::vector<KVRange>& ranges) {
-  std::set<size_t> block_ids;      // Prepare list of ids to be returned
+  std::set<size_t> block_ids;        // Prepare list of ids to be returned
 
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   gpb::AddBlockIds(data_model->mutable_previous_data(), ranges, block_ids);
@@ -1131,7 +1205,7 @@ std::set<size_t> DataModel::GetMyBlockIdsForPreviousAndCandidateDataModel(const 
 }
 
 std::set<size_t> DataModel::GetMyBlockIdsForPreviousDataModel(const std::vector<KVRange>& ranges) {
-  std::set<size_t> block_ids;      // Prepare list of ids to be returned
+  std::set<size_t> block_ids;        // Prepare list of ids to be returned
 
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   gpb::AddBlockIds(data_model->mutable_previous_data(), ranges, block_ids);
@@ -1148,7 +1222,7 @@ size_t DataModel::GetLastCommitIdForCandidateDataModel() {
 }
 
 std::set<size_t> DataModel::GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges) {
-  std::set<size_t> block_ids;      // Prepare list of ids to be returned
+  std::set<size_t> block_ids;        // Prepare list of ids to be returned
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   if (data_model->has_candidate_data()) {
     gpb::AddBlockIds(getCurrentModel()->mutable_candidate_data(), ranges, block_ids);
@@ -1159,7 +1233,7 @@ std::set<size_t> DataModel::GetMyBlockIdsForCandidateDataModel(const std::vector
 // method trying to discover if all operations have finished
 // (if no operations has pending data in its first input queue)
 bool DataModel::CheckForAllStreamOperationsFinished() {
-  gpb::Data *data = getCurrentModel()->mutable_current_data();      // Get a copy of the current version
+  gpb::Data *data = getCurrentModel()->mutable_current_data();        // Get a copy of the current version
   int operations_size = data->operations_size();
 
   for (int i = 0; i < operations_size; ++i) {
@@ -1190,12 +1264,12 @@ bool DataModel::CheckForAllStreamOperationsFinished() {
 }
 
 bool DataModel::CheckForAllBatchOperationsFinished(size_t delilah_id) {
-  gpb::Data *data = getCurrentModel()->mutable_current_data();      // Get a copy of the current version
+  gpb::Data *data = getCurrentModel()->mutable_current_data();        // Get a copy of the current version
 
   for (int i = 0; i < data->batch_operations_size(); ++i) {
     gpb::BatchOperation *batch_operation = data->mutable_batch_operations(i);
     if ((delilah_id != SIZE_T_UNDEFINED) && (delilah_id != batch_operation->delilah_id())) {
-      continue;   // Not my batch operation
+      continue;     // Not my batch operation
     }
     if (gpb::batch_operation_is_finished(data, *batch_operation) == false) {
       return false;
@@ -1208,7 +1282,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetLastCommitsDebugCollection(cons
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("last_commits");
 
-  std::vector<au::StringCommitRecord> my_last_commits =  last_commits();      // Get a copy of the last commits
+  std::vector<au::StringCommitRecord> my_last_commits =  last_commits();        // Get a copy of the last commits
 
   for (size_t i = 0; i < my_last_commits.size(); i++) {
     gpb::CollectionRecord *record = collection->add_record();
@@ -1249,7 +1323,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetLastCommitsCollection(const Vis
   // Last commits in data model
   for (int i = 0; i < data->current_data().last_commits_size(); i++) {
     gpb::CollectionRecord *record = collection->add_record();
-    ::samson::add(record, "commit",  data->current_data().last_commits(i), "left,different");
+    ::samson::add(record, "commit", data->current_data().last_commits(i), "left,different");
   }
 
   return collection;
@@ -1295,9 +1369,9 @@ void DataModel::ReviewBatchOperations(gpb::Data *data, au::ErrorManager& error) 
         std::string command = au::str("push_queue %s %s", final_queue_name.c_str(), queue_name.c_str());
 
         ProcessCommand(data, command, error);
-        if (error.IsActivated()) {
+        if (error.HasErrors()) {
           LOG_W(logs.data_model,
-                ("Error performing commit command:'%s'  error:'%s'", command.c_str(), error.GetMessage().c_str()));
+                ("Error performing commit command:'%s'  error:'%s'", command.c_str(), error.GetLastError().c_str()));
           return;
         }
       }

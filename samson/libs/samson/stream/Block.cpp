@@ -90,7 +90,7 @@ au::SharedPointer<KVFile> Block::getKVFile(au::ErrorManager& error, bool retain)
   }
 
   if (buffer_ == NULL) {       // Not possible to compute the KVFile
-    error.set(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str()));
+    error.AddError(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str()));
     return file_;         // Return NULL;
   }
 
@@ -320,8 +320,8 @@ void Block::lookup(const char *key, au::SharedPointer<au::network::RESTServiceCo
     lookupList = new BlockLookupList(this);
 
     // Detect error during creating
-    if (lookupList->error.IsActivated()) {
-      LM_E(("Error creating BlockLookupList (%s)", lookupList->error.GetMessage().c_str()));
+    if (lookupList->error.HasErrors()) {
+      LM_E(("Error creating BlockLookupList (%s)", lookupList->error.GetLastError().c_str()));
       delete lookupList;
       lookupList = NULL;
       command->AppendFormatedError("Error creating BlockLookupList");
@@ -401,7 +401,7 @@ engine::BufferPointer Block::GetBufferFromDisk() {
 
   buffer->WriteFromFile(source_file_name, error_writing_file);
 
-  if (error_writing_file.IsActivated()) {
+  if (error_writing_file.HasErrors()) {
     return engine::BufferPointer(NULL);
   }
   return buffer;

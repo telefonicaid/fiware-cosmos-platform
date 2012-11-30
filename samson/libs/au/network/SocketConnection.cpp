@@ -28,7 +28,7 @@
 namespace au {
 SocketConnection::SocketConnection(int fd, std::string host, int port) :
   FileDescriptor((port == -1) ? host : au::str("%s:%d", host.c_str(),
-                                               port),  fd) {
+                                               port), fd) {
   host_ = host;
   port_ = port;
 }
@@ -76,17 +76,17 @@ SharedPointer<SocketConnection> SocketConnection::Create(const std::string& host
   };
 
   if (real_port == 0) {
-    error.set(au::str("No valid port (%d) in ´%s´", real_port,  host.c_str()));
+    error.AddError(au::str("No valid port (%d) in ´%s´", real_port, host.c_str()));
     return SharedPointer<SocketConnection>(NULL);
   }
 
   if ((hp = gethostbyname(real_host.c_str())) == NULL) {
-    error.set(au::str("Unknown host %s (gethostbyname returned error)", host.c_str()));
+    error.AddError(au::str("Unknown host %s (gethostbyname returned error)", host.c_str()));
     return SharedPointer<SocketConnection>(NULL);
   }
 
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-    error.set(au::str("Error creating socket, errno(%d): %s", errno, strerror(errno)));
+    error.AddError(au::str("Error creating socket, errno(%d): %s", errno, strerror(errno)));
     return SharedPointer<SocketConnection>(NULL);
   }
 
@@ -105,7 +105,7 @@ SharedPointer<SocketConnection> SocketConnection::Create(const std::string& host
       if (tri > retries) {
         ::close(fd);
         // Traces canceled since we are using this to connect to log server
-        error.set(au::str("Cannot connect to %s (even after %d retries)", host.c_str(), retries));
+        error.AddError(au::str("Cannot connect to %s (even after %d retries)", host.c_str(), retries));
         return SharedPointer<SocketConnection>(NULL);
       }
       ++tri;

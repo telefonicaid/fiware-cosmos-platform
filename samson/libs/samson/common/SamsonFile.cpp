@@ -32,15 +32,15 @@ au::SharedPointer<SamsonFile> SamsonFile::create(const std::string file_name, au
   // Get the size of the file
   struct ::stat info;
   if (stat(file_name.c_str(), &info) != 0) {
-    error.set(au::str("Error reading file %s (%s)", file_name.c_str(), strerror(errno)));
+    error.AddError(au::str("Error reading file %s (%s)", file_name.c_str(), strerror(errno)));
     return au::SharedPointer<SamsonFile>(NULL);
   }
   size_t file_size = info.st_size;
 
   if (file_size > 1024 * 1024 * 1024) {
-    error.set(au::str("Excesive file size %s (%s)"
-                      , file_name.c_str()
-                      , au::str(file_size, "B").c_str()));
+    error.AddError(au::str("Excesive file size %s (%s)"
+                           , file_name.c_str()
+                           , au::str(file_size, "B").c_str()));
     return au::SharedPointer<SamsonFile>(NULL);
   }
 
@@ -52,12 +52,12 @@ au::SharedPointer<SamsonFile> SamsonFile::create(const std::string file_name, au
   // Read content of this file
   FILE *file = fopen(file_name.c_str(), "r");
   if (!file) {
-    error.set(au::str("Error reading file %s (%s)", file_name.c_str(), strerror(errno)));
+    error.AddError(au::str("Error reading file %s (%s)", file_name.c_str(), strerror(errno)));
     return au::SharedPointer<SamsonFile>(NULL);
   }
 
   if (fread(buffer->data(), file_size, 1, file) != 1) {
-    error.set(au::str("Error reading file %s (%s)", file_name.c_str(), strerror(errno)));
+    error.AddError(au::str("Error reading file %s (%s)", file_name.c_str(), strerror(errno)));
     return au::SharedPointer<SamsonFile>(NULL);
   }
 
@@ -66,7 +66,7 @@ au::SharedPointer<SamsonFile> SamsonFile::create(const std::string file_name, au
   // Create File from the buffer
   samson_file->kv_file_ = KVFile::create(buffer, error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return au::SharedPointer<SamsonFile>(NULL);
   }
 

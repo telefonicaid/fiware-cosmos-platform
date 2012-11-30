@@ -68,7 +68,7 @@ void LogProbe::ConnectAsProbe(const std::string& host, const std::string& filter
 
   // Create a socket connection with the provided host
   socket_connection_ = au::SocketConnection::Create(str_host, error);
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     socket_connection_ = NULL;
     return;
   }
@@ -79,7 +79,7 @@ void LogProbe::ConnectAsProbe(const std::string& host, const std::string& filter
   hello.set_filter(filter);
   au::Status s = au::writeGPB(socket_connection_->fd(), &hello);
   if (s != au::OK) {
-    error.set("Error writing hello message");
+    error.AddError("Error writing hello message");
     socket_connection_->Close();
     return;
   }
@@ -102,7 +102,7 @@ void LogProbe::ConnectAsQuery(const std::string& host, const std::string& filter
 
   // Create a socket connection with the provided host
   socket_connection_ = au::SocketConnection::Create(str_host, error);
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     socket_connection_ = NULL;
     return;
   }
@@ -113,7 +113,7 @@ void LogProbe::ConnectAsQuery(const std::string& host, const std::string& filter
   hello.set_filter(filter);
   au::Status s = au::writeGPB(socket_connection_->fd(), &hello);
   if (s != au::OK) {
-    error.set("Error writing hello message");
+    error.AddError("Error writing hello message");
     socket_connection_->Close();
     return;
   }
@@ -132,14 +132,14 @@ void LogProbe::Run() {
     if (real_log) {
       Process(log);
     } else {
-      error_.set("Error reading log");
+      error_.AddError("Error reading log");
       socket_connection_ = NULL;
       return;
     }
 
     if (socket_connection_->IsClosed()) {
       socket_connection_ = NULL;
-      error_.set("Socket connection is closed");
+      error_.AddError("Socket connection is closed");
       return;
     }
   }
@@ -167,7 +167,7 @@ void LogProbe::AddFilePlugin(const std::string& plugin_name, const std::string& 
   if (fd > 0) {
     AddPlugin(plugin_name, new LogProbeFileDescriptor(fd));
   } else {
-    error.set(au::str("Not possible to open file (%s)", strerror(errno)));
+    error.AddError(au::str("Not possible to open file (%s)", strerror(errno)));
   }
 }
 }

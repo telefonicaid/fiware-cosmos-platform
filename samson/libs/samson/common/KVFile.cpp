@@ -25,7 +25,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   au::Cronometer cronometer;
 
   if (buffer == NULL) {
-    error.set("NULL buffer provided");
+    error.AddError("NULL buffer provided");
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -34,14 +34,14 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   kv_file->buffer_ = buffer;
 
   if (buffer->size() < sizeof(KVHeader)) {
-    error.set(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
+    error.AddError(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Copy & check header of this packet
   memcpy(&kv_file->header_, buffer->data(), sizeof(KVHeader));
   if (!kv_file->header_.Check()) {
-    error.set("KVHeader error: wrong magic number");
+    error.AddError("KVHeader error: wrong magic number");
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -62,12 +62,12 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.valueFormat);
 
   if (!key_data) {
-    error.set(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
+    error.AddError(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   if (!value_data) {
-    error.set(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
+    error.AddError(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -122,7 +122,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     info[hg].append(kvs[i].key_size + kvs[i].value_size, 1);
     // Check hg value
     if (hg < previous_hg) {
-      error.set(
+      error.AddError(
         au::str("Error parsing a block. Key-value #%lu belongs to hash-group %d and previous hg was %d"
                 , i
                 , hg
@@ -143,20 +143,20 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   // Check correct formatted block
 
   if ((total_info.size != kv_file->header_.info.size) || (total_info.kvs != kv_file->header_.info.kvs)) {
-    error.set(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
-                      kv_file->header_.info.str().c_str()));
+    error.AddError(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
+                           kv_file->header_.info.str().c_str()));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Check correct final offset
   if (offset != kv_file->header_.info.size) {
-    error.set(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
+    error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Everything correct, return generated kv_file
   LOG_M(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
-                       , au::str(size_total,  "B").c_str()
+                       , au::str(size_total, "B").c_str()
                        , au::str(cronometer.seconds()).c_str()
                        , kv_file->header_.keyFormat
                        , kv_file->header_.valueFormat

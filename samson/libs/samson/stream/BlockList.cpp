@@ -103,7 +103,7 @@ void BlockList::ReviewBlockReferences(au::ErrorManager& error) {
   au::list<BlockRef>::iterator it;
   for (it = blocks.begin(); it != blocks.end(); it++) {
     (*it)->review(error);
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       return;
     }
   }

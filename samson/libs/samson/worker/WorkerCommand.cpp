@@ -138,7 +138,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
   std::string prefix = cmd.GetFlagString("prefix");
 
   if (cmd.get_num_arguments() == 0) {
-    error.set("No command provided");
+    error.AddError("No command provided");
     return;
   }
 
@@ -147,7 +147,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
 
   if (main_command == "init_stream") {
     if (cmd.get_num_arguments() < 2) {
-      error.set(
+      error.AddError(
         au::str("Not enough parameters for command 'init_stream' ( only %d argument provided )",
                 cmd.get_num_arguments()));
       return;
@@ -166,13 +166,13 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
 
     Operation *op = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
     if (!op) {
-      error.set(au::str("Unknown operation:'%s' in command arguments to init_stream", operation_name.c_str()));
+      error.AddError(au::str("Unknown operation:'%s' in command arguments to init_stream", operation_name.c_str()));
       return;
     }
 
     if (op->getType() != Operation::script) {
-      error.set(
-        au::str("Non valid operation %d. Only script operations supported for init_stream command",
+      error.AddError(
+        au::str("Invalid operation %d. Only script operations supported for init_stream command",
                 operation_name.c_str()));
       return;
     }
@@ -190,7 +190,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
 
       if (intern_cmdLine.get_argument(0) == "alias") {
         if (intern_cmdLine.get_num_arguments() < 3) {
-          error.set(au::str("Not enough parameters for command %s", main_command.c_str()));
+          error.AddError(au::str("Not enough parameters for command %s", main_command.c_str()));
           return;
         }
 
@@ -207,8 +207,8 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
         RunCommand(full_command, sub_error);
       }
 
-      if (sub_error.IsActivated()) {
-        error.set(au::str("[%s:%d]%s", operation_name.c_str(), i, sub_error.GetMessage().c_str()));
+      if (sub_error.HasErrors()) {
+        error.AddError(au::str("[%s:%d]%s", operation_name.c_str(), i, sub_error.GetLastError().c_str()));
         return;
       }
     }
@@ -225,7 +225,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
 
   // Unknown command error message
   LOG_E(logs.worker_command, ("Unknown command %s", main_command.c_str()));
-  error.set(au::str("Unknown command %s", main_command.c_str()));
+  error.AddError(au::str("Unknown command %s", main_command.c_str()));
 }
 
 bool compare_blocks_defrag(stream::Block *b, stream::Block *b2) {
@@ -273,7 +273,7 @@ void WorkerCommand::Run() {
   // Parse a delilah command
   DelilahCommandCatalogue delilah_command_catalogue;
   au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command_, error_);
-  if (error_.IsActivated()) {
+  if (error_.HasErrors()) {
     return;   // Finish with this error
   }
   // General visualization options
@@ -420,7 +420,7 @@ void WorkerCommand::Run() {
      * c->set_title( command  );
      * collections_.push_back( c );
      */
-    error_.set("Unimplemented");
+    error_.AddError("Unimplemented");
     FinishWorkerTask();
     return;
   }
@@ -653,7 +653,7 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "cancel_stream_operation") {
-    error_.set("Unimplemented");
+    error_.AddError("Unimplemented");
     FinishWorkerTask();
     return;
 
@@ -684,45 +684,54 @@ void WorkerCommand::Run() {
     return;
   }
 
+  /**
+   * "run" calls are transformed into "batch" to add extra information about delilah client
+   * the "batch" command cannot be called directly from delilah
+   */
+
+  if (main_command == "batch") {
+    FinishWorkerTaskWithError("the 'batch' command cannot be called from delilah");
+    return;
+  }
+
   if (main_command == "run") {
     std::string operation = command_instance->get_string_argument("operation");
     std::string inputs = command_instance->get_string_option("input");
     std::string outputs = command_instance->get_string_option("output");
+    std::string env = command_instance->get_string_option("env");
 
-    std::string command = au::str("batch %s -input \"%s\" -output \"%s\" -delilah_id %lu -delilah_component_id %lu ",
-                                  operation.c_str(), inputs.c_str(), outputs.c_str(), delilah_id_,
-                                  delilah_component_id_);
+    std::string command = au::str(
+      "batch %s -input \"%s\" -output \"%s\" -delilah_id %lu -delilah_component_id %lu -env \"%s\"",
+      operation.c_str(), inputs.c_str(), outputs.c_str(), delilah_id_,
+      delilah_component_id_, env.c_str());
 
     au::ErrorManager error;
     std::string caller = au::str("run_deliah_%s_%lu", au::code64_str(delilah_id_).c_str(), delilah_component_id_);
     samson_worker_->data_model()->Commit(caller, command, error);
 
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       LOG_E(logs.worker_command,
-            ("Error in Commit for command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
-      FinishWorkerTaskWithError(error.GetMessage());
+            ("Error in Commit for command:'%s', error: '%s'", command.c_str(), error.GetLastError().c_str()));
+      FinishWorkerTaskWithError(error.GetLastError());
     } else {
       FinishWorkerTask();
     }
     return;
   }
 
-  // Simple commands
-  au::ErrorManager error;
+  // Simple commands directly to data model
   RunCommand(command_, error_);
-  if (error.IsActivated()) {
+  if (error_.HasErrors()) {
     LOG_E(logs.worker_command,
-          ("Error in Commit for command:'%s', error:'%s'", command_.c_str(), error.GetMessage().c_str()));
-    FinishWorkerTaskWithError(error.GetMessage());
-  } else {
-    FinishWorkerTask();
+          ("Error in Commit for command:'%s', error: '%s'", command_.c_str(), error_.GetLastError().c_str()));
   }
+  FinishWorkerTask();
 }
 
 void WorkerCommand::FinishWorkerTaskWithError(std::string error_message) {
   LOG_D(logs.worker_command, ("[%s] Finished with error %s ", worker_command_id_.c_str(), error_message.c_str()));
 
-  error_.set(error_message);
+  error_.AddError(error_message);
   FinishWorkerTask();
 
   // Notify everything so it is automatically canceled
@@ -745,10 +754,26 @@ void WorkerCommand::FinishWorkerTask() {
     gpb::WorkerCommandResponse *c = p->message->mutable_worker_command_response();
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand_);
 
-    // Put the error if any
-    if (error_.IsActivated()) {
-      c->mutable_error()->set_message(error_.GetMessage());
+    // Put warnings and errors ( if any ) into the message for delilah client
+    for (size_t i = 0; i < error_.items().size(); ++i) {
+      switch (error_.items()[i]->type()) {
+        case au::error:
+          c->add_error(error_.items()[i]->message());
+          break;
+
+        case au::warning:
+          c->add_warning(error_.items()[i]->message());
+          break;
+
+        case au::message:
+          // Currently not transmitted to delilah
+          break;
+
+        default:
+          break;
+      }
     }
+
     // Set delilah id
     p->message->set_delilah_component_id(delilah_component_id_);
 
@@ -774,7 +799,7 @@ void WorkerCommand::notify(engine::Notification *notification) {
     LOG_D(logs.worker_command, ("Notification about finished process"));
     --num_pending_processes_;
     if (notification->environment().IsSet("error")) {
-      error_.set(notification->environment().Get("error", "no_error"));
+      error_.AddError(notification->environment().Get("error", "no_error"));
     }
     CheckFinish();
     return;
@@ -784,7 +809,7 @@ void WorkerCommand::notify(engine::Notification *notification) {
 }
 
 void WorkerCommand::CheckFinish() {
-  if (error_.IsActivated()) {
+  if (error_.HasErrors()) {
     FinishWorkerTask();
   } else if ((num_pending_processes_ <= 0) && (num_pending_disk_operations_ <= 0)) {
     FinishWorkerTask();
@@ -804,7 +829,7 @@ void WorkerCommand::fill(samson::gpb::CollectionRecord *record, const Visualizat
   add(record, "command", command_, "left,different");
   add(record, "#operations", num_pending_processes_, "left,uint64,sum");
   add(record, "#disk_operations", num_pending_disk_operations_, "left,uint64,sum");
-  add(record, "error", error_.GetMessage(), "left,different");
+  add(record, "error", error_.GetLastError(), "left,different");
 }
 
 au::SharedPointer<gpb::Collection> WorkerCommand::GetCollectionOfBuffers(const Visualization& visualization) {

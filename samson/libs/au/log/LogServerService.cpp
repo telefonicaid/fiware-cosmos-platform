@@ -61,7 +61,7 @@ void LogServerService::openFileDescriptor(au::ErrorManager *error) {
       int _fd = open(current_file_name.c_str(), O_CREAT | O_WRONLY, 0644);
 
       if (_fd < 0) {
-        error->set(au::str("Error opening file %s (%s)", current_file_name.c_str(), strerror(errno)));
+        error->AddError(au::str("Error opening file %s (%s)", current_file_name.c_str(), strerror(errno)));
         return;
       }
 
@@ -79,21 +79,21 @@ void LogServerService::openFileDescriptor(au::ErrorManager *error) {
 
 void LogServerService::initLogServerService(au::ErrorManager *error) {
   // Create directory
-  if (( mkdir(directory.c_str(), 0755) != 0 ) && ( errno != EEXIST )) {
-    error->set(au::str("Error creating directory %s (%s)", directory.c_str(), strerror(errno)));
+  if ((mkdir(directory.c_str(), 0755) != 0) && (errno != EEXIST)) {
+    error->AddError(au::str("Error creating directory %s (%s)", directory.c_str(), strerror(errno)));
     return;
   }
 
   // Open the first file-descriptor
   openFileDescriptor(error);
 
-  if (error->IsActivated()) {
+  if (error->HasErrors()) {
     return;
   }
 
   au::Status s = InitService();
   if (s != au::OK) {
-    error->set(au::str("Error initializing server (%s)", au::status(s)));
+    error->AddError(au::str("Error initializing server (%s)", au::status(s)));
     return;
   }
 }
@@ -238,7 +238,7 @@ void LogServerService::add(au::SharedPointer<Log> log) {
 
     au::ErrorManager error;
     openFileDescriptor(&error);
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       LOG_SW(("Not possible to open local file to save logs. Logs will be deninitelly lost"));
       return;
     }

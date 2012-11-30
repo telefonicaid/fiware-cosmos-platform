@@ -16,6 +16,7 @@
 
 #include "au/log/LogMain.h"
 #include "au/string/StringUtilities.h"
+#include "au/string/Tokenizer.h"
 #include "au/utils.h"
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"
@@ -178,7 +179,7 @@ void reset_data(Data *data) {
 Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager& error) {
   Queue *queue = get_queue(data, queue_name, format, error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return NULL;
   }
 
@@ -203,14 +204,14 @@ Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au:
       Queue *queue = data->mutable_queue(i);
 
       if (queue->key_format() != format.keyFormat) {
-        error.set(
+        error.AddError(
           au::str("Wrong key-format for queue %s (%s vs %s)", queue_name.c_str(), queue->key_format().c_str(),
                   format.keyFormat.c_str()));
         return NULL;
       }
 
       if (queue->value_format() != format.valueFormat) {
-        error.set(
+        error.AddError(
           au::str("Wrong value-format for queue %s (%s vs %s)", queue_name.c_str(),
                   queue->value_format().c_str(), format.valueFormat.c_str()));
         return NULL;
@@ -278,7 +279,7 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
 
   queue->set_commit_id(data->commit_id());
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return;
   }
 
@@ -302,12 +303,12 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
   // Get or create this queue
   gpb::Queue *queue = get_queue(data, queue_name, format, error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return;
   }
 
   if (!queue) {
-    error.set(au::str("Queue %s does not exist", queue_name.c_str()));
+    error.AddError(au::str("Queue %s does not exist", queue_name.c_str()));
     return;
   }
 
@@ -320,18 +321,18 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
     if (blocks->Get(i).block_id() == block_id) {
       // Check information is correct
       if (blocks->Get(i).size() != info.size) {
-        error.set(au::str("Error removing block %s in queue %s ( size mismatch %lu != %lu"
-                          , str_block_id(block_id).c_str()
-                          , queue_name.c_str()
-                          , blocks->Get(i).size()
-                          , info.size));
+        error.AddError(au::str("Error removing block %s in queue %s ( size mismatch %lu != %lu"
+                               , str_block_id(block_id).c_str()
+                               , queue_name.c_str()
+                               , blocks->Get(i).size()
+                               , info.size));
       }
       if (blocks->Get(i).kvs() != info.kvs) {
-        error.set(au::str("Error removing block %s in queue %s ( #kvs mismatch %lu != %lu"
-                          , str_block_id(block_id).c_str()
-                          , queue_name.c_str()
-                          , blocks->Get(i).kvs()
-                          , info.kvs));
+        error.AddError(au::str("Error removing block %s in queue %s ( #kvs mismatch %lu != %lu"
+                               , str_block_id(block_id).c_str()
+                               , queue_name.c_str()
+                               , blocks->Get(i).kvs()
+                               , info.kvs));
       }
 
       // The only options is moving this element until the end of the vector and remove it!
@@ -645,6 +646,45 @@ void Sort(gpb::Collection *collection, const std::string& field) {
         records->SwapElements(i, j);
       }
     }
+  }
+}
+
+void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au::ErrorManager &error) {
+  au::token::Tokenizer tokenizer(",=");
+  au::token::TokenVector token_vector = tokenizer.Parse(env);
+
+  while (!token_vector.eof()) {
+    au::token::Token *token = token_vector.PopToken();
+    std::string concept = token->content();
+
+    if (!token_vector.CheckNextTokenContentIs("=")) {
+      token_vector.set_error(error, au::str("'=' not found when processing '%s'", env.c_str()));
+      return;
+    }
+
+    // Remove "="
+    token_vector.PopToken();
+
+    token = token_vector.PopToken();
+    if (!token) {
+      token_vector.set_error(error,
+                             au::str("No value for property '%s' when processing '%s'", concept.c_str(), env.c_str()));
+      return;
+    }
+    std::string value = token->content();
+
+    if (!token_vector.eof()) {
+      if (!token_vector.CheckNextTokenContentIs(",")) {
+        token_vector.set_error(error, au::str("',' not found when processing '%s'", env.c_str()));
+        return;
+      }
+
+      // Remove ","
+      token_vector.PopToken();
+    }
+
+    // Set the value in the provided environment variable
+    setProperty(environment, concept, value);
   }
 }
 }

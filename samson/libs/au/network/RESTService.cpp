@@ -37,7 +37,7 @@ void RESTService::run(SocketConnection *socket_connection, bool *quit) {
   au::Status s = command->Read(socket_connection, error);
 
   if (s != au::OK) {
-    LOG_SW(("Error in REST interface ( %s / %s )", status(s), error.GetMessage().c_str()));
+    LOG_SW(("Error in REST interface ( %s / %s )", status(s), error.GetLastError().c_str()));
     socket_connection->Close();
     return;
   }
@@ -49,7 +49,7 @@ void RESTService::run(SocketConnection *socket_connection, bool *quit) {
   s = command->Write(socket_connection);
 
   if (s != au::OK) {
-    LOG_SW(("Error in REST interface ( %s / %s )", status(s), error.GetMessage().c_str()));
+    LOG_SW(("Error in REST interface ( %s / %s )", status(s), error.GetLastError().c_str()));
     socket_connection->Close();
     return;
   }

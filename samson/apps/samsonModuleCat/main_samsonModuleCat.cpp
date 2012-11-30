@@ -72,8 +72,8 @@ void consider_file(std::string _fileName, au::tables::Table *table) {
   au::ErrorManager error;
   samson::Module *module = samson::ModulesManager::LoadModule(_fileName, error);
 
-  if (error.IsActivated()) {
-    LOG_SW(("Not possible to load file %s (%s)", _fileName.c_str(), error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_SW(("Not possible to load file %s (%s)", _fileName.c_str(), error.GetLastError().c_str()));
     return;
   }
 
@@ -116,11 +116,11 @@ void consider_directory(std::string directory, au::tables::Table *table) {
 
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)"only errors");
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
-  paConfig("log to file",                   (void *)true);
-  paConfig("log to stderr",         (void *)true);
+  paConfig("log to screen", (void *)"only errors");
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE: TEXT");
+  paConfig("log to file", (void *)true);
+  paConfig("log to stderr", (void *)true);
 
   paParse(paArgs, argC, (char **)argV, 1, false);      // No more pid in the log file name
   lmAux((char *)"father");

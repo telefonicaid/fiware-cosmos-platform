@@ -95,6 +95,22 @@ public:
     showWarningMessage(output.str());
   }
 
+  void Show(au::ErrorManager& error, const std::string& prefix_message) {
+    for (size_t i = 0; i < error.items().size(); i++) {
+      switch (error.items()[i]->type()) {
+        case au::message:
+          showMessage(prefix_message + " " + error.items()[i]->message());
+          break;
+        case au::warning:
+          showWarningMessage(prefix_message + " " + error.items()[i]->message());
+          break;
+        case au::error:
+          showErrorMessage(prefix_message + " " + error.items()[i]->message());
+          break;
+      }
+    }
+  }
+
   // Show a message on screen
   void showMessage(std::string message) {
     if (no_output_) {

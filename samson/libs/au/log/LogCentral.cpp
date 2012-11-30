@@ -100,7 +100,7 @@ std::string LogCentral::GetPluginChannels(const std::string& name) {
   }
 }
 
-void LogCentral::AddPlugin(const std::string& name,  LogCentralPlugin *p) {
+void LogCentral::AddPlugin(const std::string& name, LogCentralPlugin *p) {
   au::ErrorManager error;
 
   AddPlugin(name, p, error);
@@ -110,7 +110,7 @@ void LogCentral::AddPlugin(const std::string& name, LogCentralPlugin *log_plugin
   au::TokenTaker tt(&token_plugins_);
 
   if (plugins_.findInMap(name) != NULL) {
-    error.set(au::str("Plugin %s already exists", name.c_str()));
+    error.AddError(au::str("Plugin %s already exists", name.c_str()));
     return;   // Plugin already included with this name
   }
   plugins_.insertInMap(name, log_plugin);
@@ -244,8 +244,8 @@ void LogCentral::RunThread() {
     // Additional information for logs
     int channel = log->log_data().channel;
     log->Set("channel_name", log_channels_.channel_name(channel));
-    log->Set("exec",  exec_);
-    log->Set("node",  node_);
+    log->Set("exec", exec_);
+    log->Set("node", node_);
 
     // Total count of logs
     log_counter_.Process(log);
@@ -302,7 +302,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
     au::console::CommandInstance *command_instance = log_central_catalogue.parse(command, error);
 
     // If error parsing the command, just return the error
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       return;
     }
 

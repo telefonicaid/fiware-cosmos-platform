@@ -266,8 +266,8 @@ size_t DelilahConsole::runAsyncCommand(std::string command) {
   au::ErrorManager error;
   au::console::CommandInstance *command_instance = delilah_command_catalogue_.parse(command, error);
 
-  if (error.IsActivated()) {
-    LM_E(("Error parsing command:'%s', error:'%s'", command.c_str(), error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LM_E(("Error parsing command:'%s', error: '%s'", command.c_str(), error.GetLastError().c_str()));
     write(&error);   // Write errors and messages
     return 0;
   }
@@ -304,7 +304,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     au::ErrorManager error;
     log_probe->ConnectAsProbe(host, filter, error);
 
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       write(&error);
       log_probe = NULL;
     } else {
@@ -350,7 +350,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
         writeOnConsole("OK\n");
         return 0;
       } else {
-        writeErrorOnConsole(error.GetMessage());
+        writeErrorOnConsole(error.GetLastError());
       }
     }
 
@@ -386,7 +386,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     au::ErrorManager error;
     au::Singleton<ModulesManager>::shared()->AddModulesFromDefaultDirectory(error);
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       Write(error);
     } else {
       writeWarningOnConsole("Modules at delilah client have been reloaded.");
@@ -597,8 +597,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
         } else {
           table.addRow(au::StringVector("Finished", "No. Running " + au::str_time(component->cronometer.seconds())));
         }
-        if (component->error.IsActivated()) {
-          table.addRow(au::StringVector("Error", component->error.GetMessage()));
+        if (component->error.HasErrors()) {
+          table.addRow(au::StringVector("Error", component->error.GetLastError()));
         }
         table.addRow(au::StringVector("Status", component->getStatus()));
 
@@ -627,7 +627,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     au::ErrorManager error;
     std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       write(&error);
       return -1;
     }
@@ -641,7 +641,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     au::ErrorManager error;
     std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       write(&error);
       return -1;
     }
@@ -692,8 +692,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     au::ErrorManager error;
     au::RemoveDirectory(file, error);
 
-    if (error.IsActivated()) {
-      writeErrorOnConsole(error.GetMessage());
+    if (error.HasErrors()) {
+      writeErrorOnConsole(error.GetLastError());
     } else {
       writeWarningOnConsole("OK");
     }
@@ -735,8 +735,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       au::ErrorManager error;
       au::SharedPointer<samson::SamsonFile> samson_file = samson::SamsonFile::create(file_name, error);
 
-      if (error.IsActivated()) {
-        writeErrorOnConsole(au::str("%s", error.GetMessage().c_str()));
+      if (error.HasErrors()) {
+        writeErrorOnConsole(au::str("%s", error.GetLastError().c_str()));
         return 0;
       }
 
@@ -755,8 +755,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       au::ErrorManager error;
       au::SharedPointer<samson::SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name, error);
 
-      if (error.IsActivated()) {
-        writeErrorOnConsole(au::str("%s", error.GetMessage().c_str()));
+      if (error.HasErrors()) {
+        writeErrorOnConsole(au::str("%s", error.GetLastError().c_str()));
         return 0;
       }
 
@@ -841,12 +841,12 @@ void DelilahConsole::delilahComponentStartNotification(DelilahComponent *compone
   if (verbose_) {
     std::ostringstream o;
 
-    o << "Process started: " << au::code64_str(get_delilah_id()) << "_" << component->getId() << " "
-      << component->getConcept() << "\n";
-    if (component->error.IsActivated()) {
+    o << "[ " << au::code64_str(get_delilah_id()) << "_" << component->getId() << " ] Process started: ";
+    o << component->getConcept();
+    if (component->error.HasErrors()) {
       showErrorMessage(o.str());
     } else {
-      showWarningMessage(o.str());
+      showMessage(au::str(au::Yellow, "%s", o.str().c_str()));
     }
   }
 }
@@ -856,15 +856,18 @@ void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *compon
     return;   // No notification for hidden processes
   }
   if (verbose_) {
-    if (!component->error.IsActivated()) {
-      showWarningMessage(
-        au::str("Process finished: %s_%lu %s\n", au::code64_str(get_delilah_id()).c_str(),
-                component->getId(), component->getConcept().c_str()));
+    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(get_delilah_id()).c_str(), component->getId());
+
+    // Write all messages, warnings and errors for this worker task
+    Show(component->error, component_id);
+
+    if (!component->error.HasErrors()) {
+      showMessage(au::str(au::Yellow, "[ %s_%lu ] Process finished: %s", au::code64_str(get_delilah_id()).c_str(),
+                          component->getId(), component->getConcept().c_str()));
     } else {
       showErrorMessage(
-        au::str("Process finished with error: %s_%lu %s\nERROR: %s\n",
-                au::code64_str(get_delilah_id()).c_str(), component->getId(),
-                component->getConcept().c_str(), component->error.GetMessage().c_str()));
+        au::str("[ %s_%lu ] Process finished with error: %s\n",
+                au::code64_str(get_delilah_id()).c_str(), component->getId(), component->getConcept().c_str()));
     }
   }
 }

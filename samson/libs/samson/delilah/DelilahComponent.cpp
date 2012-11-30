@@ -41,7 +41,7 @@ DelilahComponent::DelilahComponent(DelilaComponentType _type) {
   print_output_at_finish = false;          // By default, foreground process waits for component to finish
 }
 
-void DelilahComponent::setId(Delilah *_delilah,  size_t _id) {
+void DelilahComponent::setId(Delilah *_delilah, size_t _id) {
   delilah = _delilah;
   id = _id;
 }
@@ -62,7 +62,7 @@ std::string DelilahComponent::getTypeName() {
 std::string DelilahComponent::getStatusDescription() {
   std::ostringstream output;
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     output << "ERROR";
   } else {
     if (component_finished) {
@@ -99,7 +99,7 @@ void DelilahComponent::setComponentFinished() {
 
   // Show output on screen
   if (print_output_at_finish) {
-    delilah->showMessage(output.str());
+    delilah->showMessage(output_component.str());
   }
   delilah->delilahComponentFinishNotification(this);
 }
@@ -114,7 +114,7 @@ void DelilahComponent::setComponentFinishedWithError(std::string error_message) 
   component_finished = true;
   cronometer.Stop();
 
-  error.set(error_message);
+  error.AddError(error_message);
   delilah->delilahComponentFinishNotification(this);
 }
 

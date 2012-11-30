@@ -46,15 +46,15 @@ TEST(au_network_ConsoleService, DISABLED_basic) {
   au::network::ConsoleServiceClientBase client(au_network_ConsoleService_TEST_PORT);
   au::ErrorManager error;
   client.Connect("localhost", &error);
-  EXPECT_FALSE(error.IsActivated());
+  EXPECT_FALSE(error.HasErrors());
 
   client.evalCommand("repeat this", &error);
-  EXPECT_EQ("repeat this\n", error.GetMessage());
+  EXPECT_EQ("repeat this\n", error.GetLastError());
 
   au::console::ConsoleAutoComplete info("start");
   au::ErrorManager error_auto_complete;
   client.autoComplete(&info);
-  EXPECT_EQ(2,  info.getNumAlternatives());
+  EXPECT_EQ(2, info.getNumAlternatives());
 
   EXPECT_EQ("My prompt>>", client.getPrompt());
 

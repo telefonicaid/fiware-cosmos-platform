@@ -39,7 +39,7 @@ BufferProcessor::BufferProcessor(Channel *_channel) {
     samson::Operation *operation = au::Singleton<samson::ModulesManager>::shared()->GetOperation(splitter_name);
 
     if (!operation || (operation->getType() != samson::Operation::splitter)) {
-      LOG_SW(("Non valid splitter %s. Not using any splitter", splitter_name.c_str()));
+      LOG_SW(("Invalid splitter %s. Not using any splitter", splitter_name.c_str()));
     } else {
       // Get instace of the operation
       splitter = (samson::Splitter *)operation->getInstance();

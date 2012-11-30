@@ -83,10 +83,8 @@ void ModulesManager::AddModulesFromDirectory(const std::string& dir_name, au::Er
       au::ErrorManager error_module;
       AddModule(path, error_module);
 
-      if (error_module.IsActivated()) {
-        // Do not stop loading the rest of modules
-        error.AddError(au::str("Error loading %s (%s)", path.c_str(), error_module.GetMessage().c_str()));
-      }
+      // Propagate messages, warnings and errors
+      error.Add(error_module, au::str("Loading %s:", path.c_str()));
     }
   }
   closedir(dp);
@@ -102,7 +100,7 @@ void ModulesManager::AddModule(const std::string& path, au::ErrorManager & error
   }
   // Load module from path
   Module *module = LoadModule(path, error);
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return;
   }
 
@@ -110,7 +108,7 @@ void ModulesManager::AddModule(const std::string& path, au::ErrorManager & error
   au::map<std::string, Module>::iterator it;
   for (it = modules_.begin(); it != modules_.end(); ++it) {
     if (module->name == it->second->name) {
-      error.set(au::str("There is a previously laoded module with the same name %s", module->name.c_str()));
+      error.AddError(au::str("There is a previously laoded module with the same name %s", module->name.c_str()));
       delete module;
       return;
     }
@@ -131,14 +129,14 @@ Module *ModulesManager::LoadModule(const std::string& path, au::ErrorManager & e
 
   void *hndl = dlopen(path.c_str(), RTLD_NOW);
   if (hndl == NULL) {
-    error.set("Wrong format. Unable to 'dlopen' file.");
+    error.AddError("Wrong format. Unable to 'dlopen' file.");
     LOG_W(logs.modules_manager, ("Unable to 'dlopen' file '%s'. dlerror: '%s'", path.c_str(), dlerror()));
     return NULL;
   }
 
   void *mkr = dlsym(hndl, "moduleCreator");
   if (mkr == NULL) {
-    error.set("Wrong format. Unable to do 'dlsym' ");
+    error.AddError("Wrong format. Unable to do 'dlsym' ");
     LOG_W(logs.modules_manager, ("Unable to do 'dlsym' for file '%s'. dlerror: '%s'", path.c_str(), dlerror()));
     dlclose(hndl);
     return NULL;
@@ -146,7 +144,7 @@ Module *ModulesManager::LoadModule(const std::string& path, au::ErrorManager & e
 
   void *getVersionPointer = dlsym(hndl, "getSamsonVersion");
   if (getVersionPointer == NULL) {
-    error.set("Wrong format. Unable to do 'dlsym' ");
+    error.AddError("Wrong format. Unable to do 'dlsym' ");
     LOG_W(logs.modules_manager, ("Not possible to dlsym for file '%s' with dlerror():'%s'", path.c_str(), dlerror()));
     dlclose(hndl);
     return NULL;
@@ -157,7 +155,7 @@ Module *ModulesManager::LoadModule(const std::string& path, au::ErrorManager & e
 
   std::string version_string = fv();
   if (version_string != SAMSON_VERSION) {
-    error.set(au::str("Wrong version string ( %s != %s )", version_string.c_str(), SAMSON_VERSION));
+    error.AddError(au::str("Wrong version string ( %s != %s )", version_string.c_str(), SAMSON_VERSION));
     dlclose(hndl);
     return NULL;
   }
@@ -166,7 +164,7 @@ Module *ModulesManager::LoadModule(const std::string& path, au::ErrorManager & e
   Module *module = f();
 
   if (!module) {
-    error.set("Error running module method to get a general instance");
+    error.AddError("Error running module method to get a general instance");
     dlclose(hndl);
     return NULL;
   }

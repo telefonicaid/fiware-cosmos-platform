@@ -41,7 +41,7 @@ std::string nameDiskConnection(ConnectionType type, std::string fileName) {
 DiskConnection::DiskConnection(Adaptor *_item
                                , ConnectionType _type
                                , std::string _file_name)
-  : Connection(_item, _type, nameDiskConnection(_type,  _file_name))
+  : Connection(_item, _type, nameDiskConnection(_type, _file_name))
     , token("DiskConnection") {
   // Keep  copy of the file name
   file_name = _file_name;
@@ -85,7 +85,7 @@ DiskConnection::DiskConnection(Adaptor *_item
     // Create directory...
     int s = mkdir(file_name.c_str(), 0755);
     if ((s != 0) && (errno != EEXIST)) {
-      error.set(au::str("Problems creating directory %s (%s)", file_name.c_str(), strerror(errno)));
+      error.AddError(au::str("Problems creating directory %s (%s)", file_name.c_str(), strerror(errno)));
     }
   }
 
@@ -145,9 +145,9 @@ void DiskConnection::run_as_output() {
     size_t current_size = current_buffer->size();
 
     if (current_size > max_size) {
-      error.set(au::str("Received a block with size %s. Max file size %s."
-                        , au::str(current_size, "B").c_str()
-                        , au::str(max_size, "B").c_str()));
+      error.AddError(au::str("Received a block with size %s. Max file size %s."
+                             , au::str(current_size, "B").c_str()
+                             , au::str(max_size, "B").c_str()));
       return;
     }
 
@@ -175,7 +175,7 @@ void DiskConnection::run_as_output() {
         int _fd = open(current_file_name.c_str(), O_CREAT | O_WRONLY, 0644);
 
         if (_fd < 0) {
-          error.set(au::str("Not possible to open file %s (%s)", current_file_name.c_str(), strerror(errno)));
+          error.AddError(au::str("Not possible to open file %s (%s)", current_file_name.c_str(), strerror(errno)));
           return;
         }
 
@@ -189,9 +189,9 @@ void DiskConnection::run_as_output() {
                                               current_buffer->size(), "streamConnectorConnection");
 
     if (s != au::OK) {
-      error.set(au::str("Not possible to write buffer with %s to file %s"
-                        , au::str(current_buffer->size()).c_str()
-                        , current_file_name.c_str()));
+      error.AddError(au::str("Not possible to write buffer with %s to file %s"
+                             , au::str(current_buffer->size()).c_str()
+                             , current_file_name.c_str()));
       return;
     }
 
@@ -261,7 +261,7 @@ void DiskConnection::run_as_input() {
 }
 
 void DiskConnection::run() {
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     return;
   }
 
@@ -281,8 +281,8 @@ std::string DiskConnection::getStatus() {
     output << "Running";
   } else {
     output << "Stoped";
-  } if (error.IsActivated()) {
-    output << au::str(" [Error:%s]", error.GetMessage().c_str());
+  } if (error.HasErrors()) {
+    output << au::str(" [Error:%s]", error.GetLastError().c_str());
   }
   if (getType() == connection_input) {
     output << au::str(" [Buffer:%s]", au::str(input_buffer_size).c_str());
@@ -298,7 +298,7 @@ void DiskConnection::review_connection() {
   }
 }
 
-DiskAdaptor::DiskAdaptor(Channel *_channel, ConnectionType _type,  std::string _directory) :
+DiskAdaptor::DiskAdaptor(Channel *_channel, ConnectionType _type, std::string _directory) :
   Adaptor(_channel, _type, au::str("FILE(%s)", _directory.c_str())) {
   // Information for connection
   directory = _directory;

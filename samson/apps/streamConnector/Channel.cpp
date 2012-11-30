@@ -51,7 +51,7 @@ void Channel::remove_finished_items_and_connections(au::ErrorManager *error) {
     // Remove finished connections
     item->remove_finished_connections(error);
 
-    if ((item->getNumConnections() == 0 ) && ( item->is_finished())) {
+    if ((item->getNumConnections() == 0) && (item->is_finished())) {
       log("Message", au::str("Removing adaptor %s", item->getFullName().c_str()));
 
       item->cancel_item();
@@ -83,8 +83,8 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
   Adaptor *previous_item = items.findInMap(name);
 
   if (previous_item) {
-    error->set(au::str("Item %s already exist (%s)", previous_item->getFullName().c_str(),
-                       previous_item->getDescription().c_str()));
+    error->AddError(au::str("Item %s already exist (%s)", previous_item->getFullName().c_str(),
+                            previous_item->getDescription().c_str()));
     return;
   }
 
@@ -92,20 +92,20 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
 
   if (components[0] == "stdout") {
     if (!interactive && !run_as_daemon) {
-      add(name,  new StdoutItem(this));
+      add(name, new StdoutItem(this));
     } else {
       // Non using stdout in interactive mode
       return;
     }
   } else if (components[0] == "port") {
     if (components.size() < 2) {
-      error->set("Output port without number. Please specifiy port to open (ex port:10000)");
+      error->AddError("Output port without number. Please specifiy port to open (ex port:10000)");
       return;
     }
 
     int port = atoi(components[1].c_str());
     if (port == 0) {
-      error->set("Wrong output port");
+      error->AddError("Wrong output port");
       return;
     }
 
@@ -116,25 +116,25 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
     return;
   } else if (components[0] == "disk") {
     if (components.size() < 2) {
-      error->set("Usage disk:file_name_or_dir");
+      error->AddError("Usage disk:file_name_or_dir");
       return;
     }
 
     add(name, new DiskAdaptor(this, connection_output, components[1]));
   } else if (components[0] == "connection") {
     if (components.size() < 3) {
-      error->set("Output connection without host and port. Please specifiy as connection:host:port)");
+      error->AddError("Output connection without host and port. Please specifiy as connection:host:port)");
       return;
     }
 
     std::string host = components[1];
     int port = atoi(components[2].c_str());
     if (port == 0) {
-      error->set(au::str("Wrong connection port for %s", host.c_str()));
+      error->AddError(au::str("Wrong connection port for %s", host.c_str()));
       return;
     }
 
-    add(name,  new ConnectionItem(this, connection_output, host, port));
+    add(name, new ConnectionItem(this, connection_output, host, port));
   } else if (components[0] == "samson") {
     std::string host = "localhost";
     std::string queue = "input";
@@ -151,20 +151,20 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
       queue = components[3];
     }
 
-    add(name,  new SamsonAdaptor(this, connection_output, host, port, queue));
+    add(name, new SamsonAdaptor(this, connection_output, host, port, queue));
   } else if (components[0] == "channel") {
     if (components.size() < 3) {
-      error->set("Output connection without host and channel. Please specifiy as channel:host:channel)");
+      error->AddError("Output connection without host and channel. Please specifiy as channel:host:channel)");
       return;
     }
 
     std::string host = components[1];
     std::string channel = components[2];
 
-    add(name,  new OutputChannelAdaptor(this, host, channel));
+    add(name, new OutputChannelAdaptor(this, host, channel));
   } else if (components[0] == "hdfs") {
     if (components.size() < 3) {
-      error->set("Wrong format: hdfs:host:directory");
+      error->AddError("Wrong format: hdfs:host:directory");
       return;
     }
 
@@ -184,7 +184,7 @@ void Channel::add_input(std::string name, std::string input_string, au::ErrorMan
   Adaptor *previous_item = items.findInMap(name);
 
   if (previous_item) {
-    error->set(au::str("Item %s already exist (%s)", name.c_str(), previous_item->getDescription().c_str()));
+    error->AddError(au::str("Item %s already exist (%s)", name.c_str(), previous_item->getDescription().c_str()));
     return;
   }
 
@@ -200,13 +200,13 @@ void Channel::add_input(std::string name, std::string input_string, au::ErrorMan
     }
   } else if (components[0] == "port") {
     if (components.size() < 2) {
-      error->set("Input port without number. Please specifiy port to open (ex port:10000)");
+      error->AddError("Input port without number. Please specifiy port to open (ex port:10000)");
       return;
     }
 
     int port = atoi(components[1].c_str());
     if (port == 0) {
-      error->set("Wrong input port");
+      error->AddError("Wrong input port");
       return;
     }
 
@@ -217,21 +217,21 @@ void Channel::add_input(std::string name, std::string input_string, au::ErrorMan
     return;
   } else if (components[0] == "disk") {
     if (components.size() < 2) {
-      error->set("Usage disk:file_name_or_dir");
+      error->AddError("Usage disk:file_name_or_dir");
       return;
     }
 
     add(name, new DiskAdaptor(this, connection_input, components[1]));
   } else if (components[0] == "connection") {
     if (components.size() < 3) {
-      error->set("Input connection without host and port. Please specifiy as connection:host:port)");
+      error->AddError("Input connection without host and port. Please specifiy as connection:host:port)");
       return;
     }
 
     std::string host = components[1];
     int port = atoi(components[2].c_str());
     if (port == 0) {
-      error->set(au::str("Wrong connection port for %s", host.c_str()));
+      error->AddError(au::str("Wrong connection port for %s", host.c_str()));
       return;
     }
 
@@ -258,7 +258,7 @@ void Channel::add_input(std::string name, std::string input_string, au::ErrorMan
     add(name, new InputChannelAdaptor(this));
   } else if (components[0] == "hdfs") {
     if (components.size() < 3) {
-      error->set("Wrong format: hdfs:host:directory");
+      error->AddError("Wrong format: hdfs:host:directory");
       return;
     }
 
@@ -302,7 +302,7 @@ void Channel::remove_item(std::string name, au::ErrorManager *error) {
   Adaptor *item = items.extractFromMap(name);
 
   if (!item) {
-    error->set(au::str("Adaptor %s.%s not found", getName().c_str(), name.c_str()));
+    error->AddError(au::str("Adaptor %s.%s not found", getName().c_str(), name.c_str()));
     return;
   }
 

@@ -15,8 +15,8 @@
 #include "engine/DiskManager.h"         // engine::DiskManager
 #include "engine/DiskOperation.h"       // Own interface
 #include "engine/Engine.h"              // engine::Engine
-#include "engine/ReadFile.h"            // engine::ReadFile
 #include "engine/Logs.h"
+#include "engine/ReadFile.h"            // engine::ReadFile
 
 
 namespace engine {
@@ -61,7 +61,7 @@ DiskOperation *DiskOperation::newReadOperation(std::string fileName, size_t offs
   return o;
 }
 
-DiskOperation *DiskOperation::newWriteOperation(BufferPointer buffer,  std::string fileName, size_t _listenerId) {
+DiskOperation *DiskOperation::newWriteOperation(BufferPointer buffer, std::string fileName, size_t _listenerId) {
   DiskOperation *o = new DiskOperation();
 
   o->fileName = fileName;
@@ -76,7 +76,7 @@ DiskOperation *DiskOperation::newWriteOperation(BufferPointer buffer,  std::stri
   return o;
 }
 
-DiskOperation *DiskOperation::newAppendOperation(BufferPointer buffer,  std::string fileName, size_t _listenerId) {
+DiskOperation *DiskOperation::newAppendOperation(BufferPointer buffer, std::string fileName, size_t _listenerId) {
   DiskOperation *o = new DiskOperation();
 
   o->fileName = fileName;
@@ -152,7 +152,7 @@ void DiskOperation::setError(std::string message) {
   std::ostringstream o;
 
   o << message << " ( " << getDescription() << " )";
-  error.set(o.str());
+  error.AddError(o.str());
 }
 
 void DiskOperation::run() {
@@ -160,13 +160,13 @@ void DiskOperation::run() {
   // double alarm_time_secs = std::max(  (double) size / 10000000.0 , 5.0 );
   // au::ExecesiveTimeAlarm alarm( au::str("Disk Operation '%s;",getDescription().c_str() , alarm_time_secs ) );
 
-  LOG_D( logs.disk_manager,  ("START DiskManager: Running operation %s", getDescription().c_str()));
+  LOG_D(logs.disk_manager, ("START DiskManager: Running operation %s", getDescription().c_str()));
 
   if (type == DiskOperation::write) {
     // Create a new file
 
 
-    LOG_D( logs.disk_manager, ("DiskManager: Opening file %s to write", fileName.c_str()));
+    LOG_D(logs.disk_manager, ("DiskManager: Opening file %s to write", fileName.c_str()));
     FILE *file = fopen(fileName.c_str(), "w");
     if (!file) {
       LM_E(("Error opening file for writing, fileName:%s, errno:%d", fileName.c_str(), errno));
@@ -180,7 +180,7 @@ void DiskOperation::run() {
           setError("Error writing data to the file");
         }
       }
-      LOG_D( logs.disk_manager, ("DiskManager: write operation on file %s completed", fileName.c_str()));
+      LOG_D(logs.disk_manager, ("DiskManager: write operation on file %s completed", fileName.c_str()));
       fclose(file);
     }
   }
@@ -189,7 +189,7 @@ void DiskOperation::run() {
     // Create a new file
 
 
-    LOG_D( logs.disk_manager, ("DiskManager: Opening file %s to append", fileName.c_str()));
+    LOG_D(logs.disk_manager, ("DiskManager: Opening file %s to append", fileName.c_str()));
     FILE *file = fopen(fileName.c_str(), "a");
     if (!file) {
       setError("Error opening file");
@@ -211,7 +211,7 @@ void DiskOperation::run() {
 
 
   if (type == DiskOperation::read) {
-    LOG_D( logs.disk_manager, ("DiskManager: Opening file %s to read", fileName.c_str()));
+    LOG_D(logs.disk_manager, ("DiskManager: Opening file %s to read", fileName.c_str()));
 
     // Get the Read file from the Manager
     ReadFile *rf = diskManager->fileManager_.GetReadFile(fileName);
@@ -234,7 +234,7 @@ void DiskOperation::run() {
   }
 
   if (type == DiskOperation::remove) {
-    LOG_D( logs.disk_manager, ("DiskManager: Removing file %s", fileName.c_str()));
+    LOG_D(logs.disk_manager, ("DiskManager: Removing file %s", fileName.c_str()));
 
     // Remove the file
     int c = ::remove(fileName.c_str());
@@ -243,7 +243,7 @@ void DiskOperation::run() {
     }
   }
 
-  LOG_D( logs.disk_manager, ("FINISH DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str()));
+  LOG_D(logs.disk_manager, ("FINISH DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str()));
   // Notify to the engine
 }
 

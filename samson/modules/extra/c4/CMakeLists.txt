@@ -93,7 +93,7 @@ MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm au au_c4 )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm au au_c4 samsonModule )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

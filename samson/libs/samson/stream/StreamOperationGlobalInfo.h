@@ -118,7 +118,7 @@ private:
   std::vector<KVRange> GetActiveRanges();
 
   void SetError(const std::string& error) {
-    error_.set(error);
+    error_.AddError(error);
     cronometer_error_.Reset();
   }
 

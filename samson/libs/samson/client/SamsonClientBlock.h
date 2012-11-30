@@ -47,7 +47,7 @@ public:
 
     // Check header
     if (!header->Check()) {
-      error.set("Header check failed");
+      error.AddError("Header check failed");
       return;
     }
 
@@ -65,7 +65,7 @@ public:
     }
 
     if (expected_size != buffer->size()) {
-      error.set("Wrong file format");
+      error.AddError("Wrong file format");
     }
 
     // Check if we have data types installed here
@@ -75,11 +75,11 @@ public:
 
     if (!format.isTxt()) {
       if (!keyData) {
-        error.set(au::str("Unknown data type %s", format.keyFormat.c_str()));
+        error.AddError(au::str("Unknown data type %s", format.keyFormat.c_str()));
       }
 
       if (!valueData) {
-        error.set(au::str("Unknown data type %s", format.valueFormat.c_str()));
+        error.AddError(au::str("Unknown data type %s", format.valueFormat.c_str()));
       }
     }
   }
@@ -104,8 +104,8 @@ public:
   }
 
   std::string get_header_content() {
-    if (error.IsActivated()) {
-      return au::str("ERROR: %s\n", error.GetMessage().c_str());
+    if (error.HasErrors()) {
+      return au::str("ERROR: %s\n", error.GetLastError().c_str());
     }
 
 

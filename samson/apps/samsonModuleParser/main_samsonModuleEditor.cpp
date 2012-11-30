@@ -99,8 +99,8 @@ public:
         au::ErrorManager error;
         samson::ModuleInformation *module_information = samson::ModuleInformation::parse(module_fileName, &error);
 
-        if (error.IsActivated()) {
-          writeErrorOnConsole(error.GetMessage());
+        if (error.HasErrors()) {
+          writeErrorOnConsole(error.GetLastError());
         } else {
           if (module_information->module.name != fileName) {
             writeErrorOnConsole(
@@ -290,10 +290,10 @@ public:
 
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)false);
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
-  paConfig("log to file",                   (void *)true);
+  paConfig("log to screen", (void *)false);
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE: TEXT");
+  paConfig("log to file", (void *)true);
 
   paParse(paArgs, argC, (char **)argV, 1, false);      // No more pid in the log file name
   lmAux((char *)"father");

@@ -92,7 +92,6 @@ private:
   void ProcessCommand(gpb::Data *data, const std::string command, au::ErrorManager& error) {
     au::SharedPointer<au::CommandLine> cmd = GetCommandLine();
     cmd->Parse(command);
-
     ProcessCommand(data, cmd, error);
   }
 

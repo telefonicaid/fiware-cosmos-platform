@@ -128,7 +128,7 @@ void SamsonWorker::Review() {
       zk_first_connection_ = false;
 
       // Try to connect with ZK
-      LOG_M(logs.worker_controller,  ("Trying to connect with zk at %s", zoo_host_.c_str()));
+      LOG_M(logs.worker_controller, ("Trying to connect with zk at %s", zoo_host_.c_str()));
       zoo_connection_ = new au::zoo::Connection(zoo_host_, "samson", "samson");
       int rc = zoo_connection_->WaitUntilConnected(20000);
       if (rc) {
@@ -550,8 +550,8 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       std::string command = au::str("add_queue_connection %s %s", original_queue.c_str(), pop_queue.c_str());
       data_model_->Commit("pop", command, error);
 
-      if (error.IsActivated()) {
-        LOG_SW(("Internal error with add_queue_connection command in pop request: %s", error.GetMessage().c_str()));
+      if (error.HasErrors()) {
+        LOG_SW(("Internal error with add_queue_connection command in pop request: %s", error.GetLastError().c_str()));
         return;
       }
 
@@ -936,14 +936,14 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Vis
 
     KVRange range(cluster_info->process_units(i).hg_begin(), cluster_info->process_units(i).hg_end());
 
-    add(record, "KVRange",  range.str(), "different");
+    add(record, "KVRange", range.str(), "different");
     add(record, "Worker", cluster_info->process_units(i).worker_id(), "different");
 
     std::ostringstream replica_workers;
     for (int r = 0; r < cluster_info->process_units(i).replica_worker_id_size(); ++r) {
       replica_workers << cluster_info->process_units(i).replica_worker_id(r) << " ";
     }
-    add(record, "Worker replicas",  replica_workers.str(), "different");
+    add(record, "Worker replicas", replica_workers.str(), "different");
 
     // Information about data for this range
     BlockKVInfo info;
@@ -990,14 +990,21 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     double off_time = engine::Engine::disk_manager()->off_time();
     ::samson::add(record, "On time", on_time, "f=double,differet");
     ::samson::add(record, "Off time", off_time, "f=double,differet");
-    ::samson::add(record, "BM writing",  stream::BlockManager::shared()->scheduled_write_size(), "f=uint64,sum");
-    ::samson::add(record, "BM reading",  stream::BlockManager::shared()->scheduled_read_size(), "f=uint64,sum");
+    ::samson::add(record, "BM writing", stream::BlockManager::shared()->scheduled_write_size(), "f=uint64,sum");
+    ::samson::add(record, "BM reading", stream::BlockManager::shared()->scheduled_read_size(), "f=uint64,sum");
     double usage =  engine::Engine::disk_manager()->on_off_activity();
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
   } else {
     ::samson::add(record, "Status", state_message_, "different");
-    ::samson::add(record, "Modules",  modules_available_ ? au::str("Yes(%lu)",
-                                                                   last_modules_version_) : "No", "different");
+
+    if (!modules_available_) {
+      ::samson::add(record, "Modules", "No", "different");
+    } else if (last_modules_version_ != SIZE_T_UNDEFINED) {
+      ::samson::add(record, "Modules", au::str("Yes (commit %lu)", last_modules_version_), "different");
+    } else {
+      ::samson::add(record, "Modules", "No modules", "different");
+    }
+
     ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
     ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
     ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
@@ -1011,7 +1018,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "ZK in B/s", zoo_connection_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "ZK out B/s", zoo_connection_->get_rate_out(), "f=uint64,sum");
 
-    ::samson::add(record, "DataModel",  worker_controller_->GetMyLastCommitId(), "different");
+    ::samson::add(record, "DataModel", worker_controller_->GetMyLastCommitId(), "different");
   }
 
   return collection;
@@ -1136,8 +1143,8 @@ void SamsonWorker::ReloadModulesIfNecessary() {
   // Reload modules from this directory
   au::ErrorManager error;
   au::Singleton<ModulesManager>::shared()->AddModulesFromDirectory(directory, error);
-  if (error.IsActivated()) {
-    LOG_W(logs.worker, ("Error reloading modules: %s", error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_W(logs.worker, ("Error reloading modules: %s", error.GetLastError().c_str()));
   }
 }
 
@@ -1209,9 +1216,9 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visu
       au::ErrorManager error;
       Module *module = ModulesManager::LoadModule(target_file_name, error);
 
-      if (error.IsActivated()) {
+      if (error.HasErrors()) {
         ::samson::add(record, "description", "", "left,diferent");
-        ::samson::add(record, "error", au::str("Error: %s", error.GetMessage().c_str()), "left,different");
+        ::samson::add(record, "error", au::str("Error: %s", error.GetLastError().c_str()), "left,different");
         continue;
       }
 

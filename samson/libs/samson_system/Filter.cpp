@@ -28,21 +28,20 @@
 
 namespace samson {
 namespace system {
-
 SamsonTokenizer::SamsonTokenizer() {
-  addSingleCharTokens("()[]{}<> ;&|?:,+-*/'|.");
-  addToken(":[");
-  addToken("<=");
-  addToken(">=");
-  addToken("==");
-  addToken("!=");
+  AddSingleCharTokens("()[]{}<> ;&|?:,+-*/'|.");
+  AddToken(":[");
+  AddToken("<=");
+  AddToken(">=");
+  AddToken("==");
+  AddToken("!=");
 
-  addToken(" -only_key ");
-  addToken("select");
-  addToken("parse_words");
-  addToken("xml_element");
-  addToken("parse");
-  addToken("emit");
+  AddToken(" -only_key ");
+  AddToken("select");
+  AddToken("parse_words");
+  AddToken("xml_element");
+  AddToken("parse");
+  AddToken("emit");
 }
 
 // --------------------------------------------------------
@@ -64,77 +63,78 @@ std::string FilterCollection::str() {
   return output.str();
 }
 
-Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson::KVWriter* const writer,
+Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson::KVWriter *const writer,
                                     TXTWriter *txt_writer, au::ErrorManager *error) {
   // Check if there are tokens to be read
   if (token_vector->eof()) {
-    error->set("Filter name not specified");
+    error->AddError("Filter name not specified");
     return NULL;
   }
 
   // Get the next token
-  au::token::Token *token = token_vector->popToken();
+  au::token::Token *token = token_vector->PopToken();
 
-  if (token->content == "select") {
+  if (token->content() == "select") {
     Source *key_source = GetSource(token_vector, error);
-    if (error->IsActivated()) {
+    if (error->HasErrors()) {
       return NULL;
     }
     // Expect a ","
-    if (!token_vector->popNextTokenIfItIs(",")) {
-      error->set(au::str("Expected ',' to separate key and value in a select statement. Found '%s'",
-                         token_vector->getNextTokenContent().c_str()));
+    if (!token_vector->PopNextTokenIfContentIs(",")) {
+      error->AddError(au::str("Expected ',' to separate key and value in a select statement. Found '%s'",
+                              token_vector->GetNextTokenContent().c_str()));
       return NULL;
     }
     Source *value_source = NULL;
     if (!token_vector->eof()) {
       value_source = GetSource(token_vector, error);
-      if (error->IsActivated()) {
+      if (error->HasErrors()) {
         return NULL;
       }
     } else {
       value_source = new SourceVoid();
     }
     return new FilterSelect(key_source, value_source);
-  } else if (token->content == "parse_words") {
+  } else if (token->content() == "parse_words") {
     return new FilterParserWords();
-  } else if (token->content == "json") {
+  } else if (token->content() == "json") {
     return new FilterJSONLine();
-  } else if (token->content == "xml_element") {
+  } else if (token->content() == "xml_element") {
     // Parse kind of filter
     return FilterXMLElement::GetFilter(token_vector, error);
-  } else if (token->content == "parse_chars") {
+  } else if (token->content() == "parse_chars") {
     return new FilterParserChars();
-  } else if (token->content == "parse") {
+  } else if (token->content() == "parse") {
     // Parse kind of filter
     return FilterParser::GetFilter(token_vector, error);
-  } else if (token->content == "emit") {
+  } else if (token->content() == "emit") {
     if (writer) {
       if (token_vector->eof()) {
         return new FilterEmit(0, writer);   // Default channel "0"
       }
-      au::token::Token *number = token_vector->popToken();
-      if (!number->isNumber()) {
-        error->set(au::str("Channel '%s' not valid in emit command. It should be a number", number->content.c_str()));
+      au::token::Token *number = token_vector->PopToken();
+      if (!number->IsNumber()) {
+        error->AddError(au::str("Channel '%s' not valid in emit command. It should be a number",
+                                number->content().c_str()));
         return NULL;
       }
-      int channel = atoi(number->content.c_str());
+      int channel = atoi(number->content().c_str());
       return new FilterEmit(channel, writer);
     } else if (txt_writer) {
       FilterEmitTxt *filter_emit = new FilterEmitTxt(txt_writer, token_vector, error);
-      if (error->IsActivated()) {
+      if (error->HasErrors()) {
         delete filter_emit;
         return NULL;
       }
       return filter_emit;
     }
-  } else if (token->content == "filter") {
+  } else if (token->content() == "filter") {
     Source *eval_source = GetSource(token_vector, error);
-    if (error->IsActivated()) {
+    if (error->HasErrors()) {
       return NULL;
     }
     if (!eval_source) {
-      error->set("Not valid condition statement in filter command");
+      error->AddError("Not valid condition statement in filter command");
       return NULL;
     }
     return new FilterCondition(eval_source);
@@ -144,7 +144,7 @@ Filter *FilterCollection::GetFilter(au::token::TokenVector *token_vector, samson
 
 // filter key = 67 | select key:1,value | emit 0 / filter key = 56 | select key:1,value | emit 1
 
-Filter *FilterCollection::GetFilterChain(au::token::TokenVector *token_vector, samson::KVWriter* const writer,
+Filter *FilterCollection::GetFilterChain(au::token::TokenVector *token_vector, samson::KVWriter *const writer,
                                          TXTWriter *txt_writer, au::ErrorManager *error) {
   // Line of filters for this command...
   // Remeber au::vector works on pointers
@@ -152,13 +152,13 @@ Filter *FilterCollection::GetFilterChain(au::token::TokenVector *token_vector, s
 
   while (!token_vector->eof()) {
     // Get the "sub" token vector for each line
-    au::token::TokenVector sub_token_vector = token_vector->getTokensUntil("|");
+    au::token::TokenVector sub_token_vector = token_vector->GetTokensUntil("|");
 
     // Get a filter from this token_vector
     Filter *filter = GetFilter(&sub_token_vector, writer, txt_writer, error);
 
     // If there is an error, just return
-    if (error->IsActivated()) {
+    if (error->HasErrors()) {
       tmp_filters.clearVector();
       return NULL;
     } else {
@@ -181,22 +181,22 @@ Filter *FilterCollection::GetFilterChain(au::token::TokenVector *token_vector, s
 }
 
 // General command to parse
-void FilterCollection::AddFilters(std::string command, samson::KVWriter* const writer, TXTWriter *txt_writer,
+void FilterCollection::AddFilters(std::string command, samson::KVWriter *const writer, TXTWriter *txt_writer,
                                   au::ErrorManager *error) {
   // Tokenize the entire command
   // --------------------------------------------------------------------
   SamsonTokenizer tokenizer;
-  au::token::TokenVector token_vector = tokenizer.parse(command);
+  au::token::TokenVector token_vector = tokenizer.Parse(command);
 
   while (!token_vector.eof()) {
     // Get the "sub" token vector for each line
-    au::token::TokenVector sub_token_vector = token_vector.getTokensUntil(";");
+    au::token::TokenVector sub_token_vector = token_vector.GetTokensUntil(";");
 
     // Get a filter from this token_vector
     Filter *filter = GetFilterChain(&sub_token_vector, writer, txt_writer, error);
 
     // If there is an error, just return
-    if (error->IsActivated()) {
+    if (error->HasErrors()) {
       filters_.clearVector();
       return;
     } else {

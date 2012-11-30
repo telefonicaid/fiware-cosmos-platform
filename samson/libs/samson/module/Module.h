@@ -43,6 +43,7 @@ public:
     name    = _name;
     version = _version;
     author  = _author;
+    hndl_ = NULL;
   }
 
   ~Module() {
@@ -204,8 +205,7 @@ public:
 
   void set_hndl(void *hndl) {
     if (hndl_) {
-      fprintf(stderr, "Major error in Module handler");
-      exit(0);
+      LOG_SW(("Major error in Module handler: Previous handler to be deallocated"));
     }
     hndl_ = hndl;
   }

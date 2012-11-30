@@ -94,7 +94,7 @@ MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm samsonModule )
 
 # Link agains samson_comscore library
 TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )

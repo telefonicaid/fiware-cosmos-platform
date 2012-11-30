@@ -18,7 +18,7 @@
 
 #include "samson/common/NotificationMessages.h"
 #include "samson/common/ports.h"
-#include "samson/common/samson.pb.h"
+
 #include "samson/common/status.h"
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/NetworkManager.h"

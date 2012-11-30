@@ -50,98 +50,121 @@ public:
     literal
   } Type;
 
-
-  std::string content;                // Content of the token
-  int position;                       // Position in the string
-  Type type;
-
   // Constructor
-  Token(std::string _content, Type _type, int _position);
+  Token(const std::string& content, Type type, int position);
 
   // Check if this component is a particular sequence
-  bool is(std::string _content);
+  bool ContentMatch(const std::string& _content) const;
 
   // Check if this token is a numerical value
-  bool isNumber();
+  bool IsNumber() const;
 
   // Check type
-  bool isNormal();
-  bool isSeparator();
-  bool isLiteral();
+  bool IsNormal() const;
+  bool IsSeparator() const;
+  bool IsLiteral() const;
+
+  // Handy function to check token
+  bool IsOperation() const;
+  bool IsComparator() const;
 
   // Debug str
-  std::string str();
+  std::string str() const;
 
-  // Other interesting informations
-  bool isOperation();
-  bool isComparator();
+  // Accessors
+  std::string content() const {
+    return content_;
+  }
+
+  int position() const {
+    return position_;
+  }
+
+  Type type() const {
+    return type_;
+  }
+
+private:
+
+  std::string content_;  // Content of the token
+  int position_;        // Position in the string
+  Type type_;           // Type of token
 };
 
 
-class TokenVector : public std::vector<Token>{
-  size_t position;                            // Position inside the vector ( when retrieving for using... )
-
-
+class TokenVector {
 public:
 
   TokenVector();
 
-  // Functions to deserialize the provided command
-  Token *getNextToken();
-  Token *popToken();
+  /**
+   * \brief Get next token ( read-position inside vector is not advanced )
+   */
+  Token *GetNextToken();
 
-  // Simple function to recover text ( to show error )
-  std::string getNextTokenContent();
+  /**
+   * \brief Get the next token ( read-position inside vector is advanced )
+   */
 
-  bool popNextTokenIfItIs(std::string content);
-  bool popNextTokensIfTheyAre(std::string content, std::string content2);
-  bool checkNextTokenIs(std::string content);
-  bool checkNextNextTokenIs(std::string content);
+  Token *PopToken();
+
+  /**
+   * \brief ( read-position inside vector is not advanced )
+   */
+
+  std::string GetNextTokenContent();
+
+
+  bool PopNextTokenIfContentIs(const std::string& content);
+  bool PopNextTwoTokensIfContentsAre(const std::string& content, const std::string&content2);
+
+  bool CheckNextTokenContentIs(const std::string& content);
+  bool CheckNextNextTokenContentIs(const std::string& content);
 
   // Check end of the provided command
-  bool eof();
+  bool eof() const;
 
   // Debug function
-  std::string str();
+  std::string str() const;
 
-  // Auxiliary function to set the error.
-  void set_error(au::ErrorManager *error, std::string error_message);
+  // Auxiliary function to set the error with additional information about the token position
+  void set_error(au::ErrorManager *error, const std::string& error_message);
+  void set_error(au::ErrorManager &error, const std::string& error_message);
 
+  // Extract a TokenVector until a particular token ( removing this as well )
+  TokenVector GetTokensUntil(std::string limiter);
 
-  // Extract a TokenVector until a particular token ( removing this )
-  TokenVector getTokensUntil(std::string limiter) {
-    TokenVector result_tokens;
+private:
 
-    while (true) {
-      Token *token = popToken();
+  friend class Tokenizer;
 
-      if (!token) {
-        return result_tokens;
-      }
-
-      if (token->content == limiter) {
-        return result_tokens;
-      }
-
-      result_tokens.push_back(Token(token->content, token->type, token->position));
-    }
-  }
+  size_t position_;              // Position inside the vector
+  std::vector<Token> tokens_;    // Vector of tokens
 };
 
 
 class Tokenizer {
-  std::vector<std::string> tokens;            // Vector with the considered tokens
-
 public:
 
+  Tokenizer() {
+  };
+  explicit Tokenizer(const std::string& tokens) {
+    AddSingleCharTokens(tokens);
+  };
+
   // Add special tokens
-  void addSingleCharTokens(std::string tokens);
+  void AddSingleCharTokens(const std::string& tokens);
 
   // General function to add special tokens
-  void addToken(std::string token);
+  void AddToken(const std::string& token);
 
-  // Main function to parse the provided command
-  TokenVector parse(std::string command);
+  // Main function to parse the provided command into a vector of tokens
+  TokenVector Parse(const std::string& command) const;
+
+private:
+
+  // Vector of tokens to be used in calls to Parse()
+  std::vector<std::string> tokens_;
 };
 }
 }

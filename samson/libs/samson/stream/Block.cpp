@@ -20,7 +20,7 @@
 #include "engine/Notification.h"                    // engine::Notification
 #include "engine/ProcessManager.h"
 
-#include "logMsg/logMsg.h"                          // LM_W
+#include "logMsg/logMsg.h"                          // LOG_SW
 
 #include "samson/common/KVHeader.h"
 #include "samson/common/Logs.h"
@@ -90,7 +90,7 @@ au::SharedPointer<KVFile> Block::getKVFile(au::ErrorManager& error, bool retain)
   }
 
   if (buffer_ == NULL) {       // Not possible to compute the KVFile
-    error.set(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str()));
+    error.AddError(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str()));
     return file_;         // Return NULL;
   }
 
@@ -124,14 +124,14 @@ void Block::freeBlock() {
   }
 
   if (state_ != ready) {
-    LM_W(("No sense to call free to a Block that state != ready "));
+    LOG_SW(("No sense to call free to a Block that state != ready "));
     return;
   }
 
   state_ = on_disk;
 
   if (buffer_ == NULL) {
-    LM_W(("Buffer not present in a ready block"));
+    LOG_SW(("Buffer not present in a ready block"));
     return;
   }
 
@@ -320,8 +320,8 @@ void Block::lookup(const char *key, au::SharedPointer<au::network::RESTServiceCo
     lookupList = new BlockLookupList(this);
 
     // Detect error during creating
-    if (lookupList->error.IsActivated()) {
-      LM_E(("Error creating BlockLookupList (%s)", lookupList->error.GetMessage().c_str()));
+    if (lookupList->error.HasErrors()) {
+      LM_E(("Error creating BlockLookupList (%s)", lookupList->error.GetLastError().c_str()));
       delete lookupList;
       lookupList = NULL;
       command->AppendFormatedError("Error creating BlockLookupList");
@@ -389,6 +389,22 @@ engine::BufferPointer Block::buffer() {
 
 size_t Block::creation_time() const {
   return cronometer.seconds();
+}
+
+engine::BufferPointer Block::GetBufferFromDisk() {
+  std::string source_file_name = file_name();
+  size_t file_size = au::sizeOfFile(source_file_name);
+
+  engine::BufferPointer buffer = engine::Buffer::Create(au::str("Block at file %s",
+                                                                source_file_name.c_str()), file_size);
+  au::ErrorManager error_writing_file;
+
+  buffer->WriteFromFile(source_file_name, error_writing_file);
+
+  if (error_writing_file.HasErrors()) {
+    return engine::BufferPointer(NULL);
+  }
+  return buffer;
 }
 }
 }

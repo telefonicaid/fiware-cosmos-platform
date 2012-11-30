@@ -47,7 +47,7 @@ StreamConnector::StreamConnector() : token("StreamConnector::token_channels") {
 
   // Create a thread to review
   pthread_t t;
-  au::Singleton<au::ThreadManager>::shared()->addThread("SamsonConector:review", &t, NULL, review_samson_connector,
+  au::Singleton<au::ThreadManager>::shared()->AddThread("SamsonConector:review", &t, NULL, review_samson_connector,
                                                         this);
 }
 
@@ -203,15 +203,15 @@ void StreamConnector::process(au::SharedPointer<au::network::RESTServiceCommand>
     }
     au::ErrorManager error;
     process_command(au::str("add_channel %s %s", channel_name.c_str(), splitter_name.c_str()), &error);
-    if (error.IsActivated()) {
-      command->AppendFormatedError(error.GetMessage());
+    if (error.HasErrors()) {
+      command->AppendFormatedError(error.GetLastError());
     } else {
       command->AppendFormatedElement("Result", "OK");
     } return;
   }
 
-  if (( command->path_components()[0] == "add_input_adaptor" ) ||
-      ( command->path_components()[0] == "add_output_adaptor" ))
+  if ((command->path_components()[0] == "add_input_adaptor") ||
+      (command->path_components()[0] == "add_output_adaptor"))
   {
     if (command->path_components().size() < 3) {
       command->AppendFormatedError("Wrong format. /add_[ input or output ]_adaptor/channel.adaptor_name/format");
@@ -224,8 +224,8 @@ void StreamConnector::process(au::SharedPointer<au::network::RESTServiceCommand>
 
     au::ErrorManager error;
     process_command(au::str("%s %s %s", operation.c_str(), name.c_str(), format.c_str()), &error);
-    if (error.IsActivated()) {
-      command->AppendFormatedError(error.GetMessage());
+    if (error.HasErrors()) {
+      command->AppendFormatedError(error.GetLastError());
     } else {
       command->AppendFormatedElement("Result", "OK");
     } return;
@@ -340,9 +340,9 @@ void StreamConnector::autoComplete(au::console::ConsoleAutoComplete *info) {
     info->add("summary");
   }
 
-  if (( info->completingSecondWord("add_input_adaptor"))
-      || ( info->completingSecondWord("add_output_adaptor"))
-      || ( info->completingSecondWord("remove_channel")))
+  if ((info->completingSecondWord("add_input_adaptor"))
+      || (info->completingSecondWord("add_output_adaptor"))
+      || (info->completingSecondWord("remove_channel")))
   {
     // Autocomplete with channel names
     autoCompleteWithChannelNames(info);
@@ -360,7 +360,7 @@ void StreamConnector::autoComplete(au::console::ConsoleAutoComplete *info) {
     // Autocomplete with channel names
     autoCompleteWithAdaptorsNames(info);
   }
-  if (( info->firstWord() == "add_input_to_channel" ) &&
+  if ((info->firstWord() == "add_input_to_channel") &&
       info->completingThirdWord())
   {
     info->setHelpMessage("add_input_to_channel channel [port:8888] [connection:host:port] [samson:host:queue]");
@@ -370,7 +370,7 @@ void StreamConnector::autoComplete(au::console::ConsoleAutoComplete *info) {
     info->add("inter_channel");
   }
 
-  if (( info->firstWord() == "add_output_to_channel" ) && info->completingThirdWord()) {
+  if ((info->firstWord() == "add_output_to_channel") && info->completingThirdWord()) {
     info->setHelpMessage("add_output [port:8888] [connection:host:port] [samson:host:queue]");
     info->add("connection:", "connection:", false);
     info->add("port:", "port:", false);
@@ -548,7 +548,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
   if (main_command == "add_channel") {
     if (cmdLine.get_num_arguments() < 2) {
-      error->set("Usage: add_channel name splitter");
+      error->AddError("Usage: add_channel name splitter");
       return;
     }
 
@@ -558,7 +558,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
       splitter = cmdLine.get_argument(2);
     }
     if (channels_.findInMap(name) != NULL) {
-      error->set(au::str("Channel %s already exist", name.c_str()));
+      error->AddError(au::str("Channel %s already exist", name.c_str()));
       return;
     }
 
@@ -571,7 +571,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
   if (main_command == "add_input_adaptor") {
     if (cmdLine.get_num_arguments() < 3) {
-      error->set("Usage: add_input_adaptor channel.name adapter_definition");
+      error->AddError("Usage: add_input_adaptor channel.name adapter_definition");
       return;
     }
 
@@ -582,7 +582,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     // Split full name in channel.name
     std::vector<std::string> full_name_components = au::split(full_name, '.');
     if (full_name_components.size() != 2) {
-      error->set("Usage: add_input_adaptor channel.name adapter_definition");
+      error->AddError("Usage: add_input_adaptor channel.name adapter_definition");
       return;
     }
 
@@ -593,13 +593,13 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     Channel *channel = channels_.findInMap(channel_name);
 
     if (!channel) {
-      error->set(au::str("Unknown channel %s", channel_name.c_str()));
+      error->AddError(au::str("Unknown channel %s", channel_name.c_str()));
       return;
     }
 
     channel->add_input(name, adapter_definition, error);
 
-    if (!error->IsActivated()) {
+    if (!error->HasErrors()) {
       error->AddMessage(au::str("Input adapter %s.%s (%s) added correctly"
                                 , channel_name.c_str()
                                 , name.c_str()
@@ -610,7 +610,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
   if (main_command == "add_output_adaptor") {
     if (cmdLine.get_num_arguments() < 3) {
-      error->set("Usage: add_output_adaptor channel.name adapter_definition");
+      error->AddError("Usage: add_output_adaptor channel.name adapter_definition");
       return;
     }
 
@@ -621,7 +621,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     // Split full name in channel.name
     std::vector<std::string> full_name_components = au::split(full_name, '.');
     if (full_name_components.size() != 2) {
-      error->set("Usage: add_output_adaptor channel.name adapter_definition");
+      error->AddError("Usage: add_output_adaptor channel.name adapter_definition");
       return;
     }
 
@@ -631,12 +631,12 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     Channel *channel = channels_.findInMap(channel_name);
 
     if (!channel) {
-      error->set(au::str("Unknown channel %s", channel_name.c_str()));
+      error->AddError(au::str("Unknown channel %s", channel_name.c_str()));
       return;
     }
 
     channel->add_output(name, adapter_definition, error);
-    if (!error->IsActivated()) {
+    if (!error->HasErrors()) {
       error->AddMessage(au::str("Output adapter %s.%s (%s) added correctly"
                                 , channel_name.c_str()
                                 , name.c_str()
@@ -647,7 +647,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
   if (main_command == "remove_channel") {
     if (cmdLine.get_num_arguments() < 2) {
-      error->set("Usage: remove_channel channel_name");
+      error->AddError("Usage: remove_channel channel_name");
       return;
     }
 
@@ -656,7 +656,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     Channel *channel = channels_.extractFromMap(channel_name);
 
     if (!channel) {
-      error->set(au::str("Unknown channel %s", channel_name.c_str()));
+      error->AddError(au::str("Unknown channel %s", channel_name.c_str()));
       return;
     }
 
@@ -664,7 +664,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     channel->cancel_channel();
     delete channel;
 
-    if (!error->IsActivated()) {
+    if (!error->HasErrors()) {
       error->AddMessage(au::str("Channel %s removed correclty", channel_name.c_str()));
     }
     return;
@@ -672,15 +672,15 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
   if (main_command == "remove_adapter") {
     if (cmdLine.get_num_arguments() < 2) {
-      error->set("Usage: remove_adaptor channel.adapter");
+      error->AddError("Usage: remove_adaptor channel.adapter");
       return;
     }
 
     std::string full_name = cmdLine.get_argument(1);
     std::vector<std::string> full_path_components = au::split(full_name, '.');
 
-    if (( full_path_components.size() == 0 ) || ( full_path_components.size() > 2 )) {
-      error->set("Usage: remove_adaptor channel.adapter");
+    if ((full_path_components.size() == 0) || (full_path_components.size() > 2)) {
+      error->AddError("Usage: remove_adaptor channel.adapter");
       return;
     }
 
@@ -689,13 +689,13 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     Channel *channel = channels_.findInMap(channel_name);
 
     if (!channel) {
-      error->set(au::str("Unknown channel %s", channel_name.c_str()));
+      error->AddError(au::str("Unknown channel %s", channel_name.c_str()));
       return;
     }
 
     channel->remove_item(full_path_components[1], error);
 
-    if (!error->IsActivated()) {
+    if (!error->HasErrors()) {
       error->AddMessage(au::str("Adaptor %s removed correclty", full_name.c_str()));
     }
     return;
@@ -709,7 +709,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   }
 
   // Unknown command error
-  error->set(au::str("Unknown command %s", main_command.c_str()));
+  error->AddError(au::str("Unknown command %s", main_command.c_str()));
 }
 
 void StreamConnector::remove_finished_items_and_connections(au::ErrorManager *error) {
@@ -814,7 +814,7 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
         Connection *connection = it_connections->second;
 
         // Draw separation line if necessary
-        if (( previous_channel ) && ( previous_channel != channel )) {
+        if ((previous_channel) && (previous_channel != channel)) {
           table->addSeparator();
         }
         previous_channel = channel;
@@ -992,7 +992,7 @@ void StreamConnector::select_channel(InputInterChannelConnection *connection, st
   Channel *channel = channels_.findInMap(target_channel);
 
   if (!channel) {
-    error->set(au::str("Channel %s not found", target_channel.c_str()));
+    error->AddError(au::str("Channel %s not found", target_channel.c_str()));
     return;
   }
 
@@ -1017,7 +1017,7 @@ void StreamConnector::select_channel(InputInterChannelConnection *connection, st
     }
   }
 
-  error->set(au::str("Channel %s do not accept this connection", target_channel.c_str()));
+  error->AddError(au::str("Channel %s do not accept this connection", target_channel.c_str()));
   return;
 }
 

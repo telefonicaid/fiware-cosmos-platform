@@ -36,7 +36,7 @@
 #include "samson/common/KVHeader.h"
 #include "samson/common/Macros.h"               // exit(.)
 #include "samson/common/NotificationMessages.h"
-#include "samson/common/samson.pb.h"            // samson::network::
+// samson::network::
 #include "samson/common/samsonDirectories.h"    // SAMSON_WORKER_DEFAULT_PORT
 #include "samson/delilah/Delilah.h"
 #include "samson/module/Operation.h"
@@ -105,7 +105,7 @@ public:
   au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetKVRangesCollection(const Visualization& visualization);
-
+  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualization);
 
   bool IsReady();     // Method to access if worker is ready
   bool IsConnected();     // Method to access if worker is ready
@@ -165,6 +165,10 @@ private:
 
   // Initial time stamp for this worker
   au::Cronometer cronometer_;
+
+  // Last try to connect with ZK
+  au::Cronometer zk_connection_cronometer_;
+  bool zk_first_connection_;
 
   // Main elements of the worker
   au::SharedPointer<au::zoo::Connection> zoo_connection_;     // Main connection with the zk

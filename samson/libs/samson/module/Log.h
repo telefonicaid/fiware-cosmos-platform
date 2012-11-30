@@ -44,35 +44,35 @@ typedef enum {
  * MACROS for logging
  */
 
-
-#define OLM_TIME_FORMAT "%A %d %h %H:%M:%S %Y"
-
-
-#define OLM_G(_type,  _tLev, s)                                   \
-  do {                                                               \
-    LogLineData l;                                                     \
-    char *text = Tracer::print s;                                      \
-    strncpy(l.text, text, sizeof(l.text));                          \
-    free(text);                                                      \
-                                                                   \
-    time_t t = time(NULL);                                             \
-    struct tm timeinfo;                                                \
-    localtime_r(&t, &timeinfo);                                    \
-    strftime(l.date, sizeof(l.date), OLM_TIME_FORMAT, &timeinfo);        \
-    l.type = _type;                                                    \
-    l.tLev = _tLev;                                                    \
-    strncpy(l.file, __FILE__, sizeof(l.file));                    \
-    strncpy(l.fName,  __FUNCTION__, sizeof(l.fName));                 \
-    l.lineNo = __LINE__;                                               \
-    l.stre[0] = 0;                                                     \
-    tracer->trace(&l);                                               \
-  } while (0)
-
-#define OLM_T(_tLev, s) OLM_G('T', _tLev, s)
-#define OLM_D(s)        OLM_G('D', 0, s)
-#define OLM_M(s)        OLM_G('M', 0, s)
-#define OLM_W(s)        OLM_G('W', 0, s)
-#define OLM_E(s)        OLM_G('E', 0, s)
-
+/*
+ * #define OLM_TIME_FORMAT "%A %d %h %H:%M:%S %Y"
+ *
+ *
+ * #define OLM_G(_type,  _tLev, s)                                   \
+ * do {                                                               \
+ *  LogLineData l;                                                     \
+ *  char *text = Tracer::print s;                                      \
+ *  strncpy(l.text, text, sizeof(l.text));                          \
+ *  free(text);                                                      \
+ \
+ \  time_t t = time(NULL);                                             \
+ \  struct tm timeinfo;                                                \
+ \  localtime_r(&t, &timeinfo);                                    \
+ \  strftime(l.date, sizeof(l.date), OLM_TIME_FORMAT, &timeinfo);        \
+ \  l.type = _type;                                                    \
+ \  l.tLev = _tLev;                                                    \
+ \  strncpy(l.file, __FILE__, sizeof(l.file));                    \
+ \  strncpy(l.fName,  __FUNCTION__, sizeof(l.fName));                 \
+ \  l.lineNo = __LINE__;                                               \
+ \  l.stre[0] = 0;                                                     \
+ \  tracer->trace(&l);                                               \
+ \ } while (0)
+ \
+ \\\#define OLM_T(_tLev, s) OLM_G('T', _tLev, s)
+ \\\#define OLM_D(s)        OLM_G('D', 0, s)
+ \\\#define OLM_M(s)        OLM_G('M', 0, s)
+ \\\#define OLM_W(s)        OLM_G('W', 0, s)
+ \\\#define OLM_E(s)        OLM_G('E', 0, s)
+ */
 
 #endif  // ifndef _H_SAMSON_LOG

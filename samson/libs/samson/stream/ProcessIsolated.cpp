@@ -77,7 +77,7 @@ ProcessTXTWriter *ProcessIsolated::getTXTWriter() {
 }
 
 void ProcessIsolated::runCode(int c) {
-  // LM_M(("Isolated process Running code %d",c));
+  // LOG_SM(("Isolated process Running code %d",c));
 
   switch (c) {
     case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
@@ -91,18 +91,18 @@ void ProcessIsolated::runCode(int c) {
 
       break;
     default:
-      error_.set("System error: Unknown code in the isolated process communication");
+      error_.AddError("System error: Unknown code in the isolated process communication");
       break;
   }
 
-  // LM_M(("Finish Isolated process Running code %d",c));
+  // LOG_SM(("Finish Isolated process Running code %d",c));
 }
 
 void ProcessIsolated::flushBuffer(bool finish) {
   au::Cronometer cronometer;
 
-  LM_T(LmtIsolatedOutputs,
-       ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id, process_item_description().c_str()));
+  LOG_M(logs.isolated_process,
+        ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id, process_item_description().c_str()));
 
   switch (type) {
     case key_value:
@@ -113,16 +113,16 @@ void ProcessIsolated::flushBuffer(bool finish) {
       break;
   }
 
-  LM_T(LmtIsolatedOutputs, ("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s "
-                            , shm_id, process_item_description().c_str(), au::S(cronometer).str().c_str()));
+  LOG_M(logs.isolated_process, ("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s "
+                                , shm_id, process_item_description().c_str(), au::S(cronometer).str().c_str()));
 }
 
 void ProcessIsolated::flushKVBuffer(bool finish) {
 #pragma mark ---
 
   // General output buffer
-  char *buffer = item->data;
-  size_t size = item->size;
+  char *buffer = item->data();
+  size_t size = item->size();
 
   // Make sure everything is correct
   if (!buffer) {
@@ -134,7 +134,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
   OutputChannel *channel = reinterpret_cast<OutputChannel *>(buffer);
 
   // NodeBuffers ( inodes in the shared memory buffer )
-  NodeBuffer *node = reinterpret_cast<NodeBuffer *>(buffer + sizeof(OutputChannel) * num_outputs );
+  NodeBuffer *node = reinterpret_cast<NodeBuffer *>(buffer + sizeof(OutputChannel) * num_outputs);
 
 #pragma mark ---
 
@@ -178,7 +178,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
       if (outputFormats.size() > (size_t)o) {
         header->Init(outputFormats[o], range_info);
       } else {
-        error_.set(au::str("No output format for output %d", o));
+        error_.AddError(au::str("No output format for output %d", o));
         return;
       }
 
@@ -190,8 +190,8 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
         uint32 node_id = _hgOutput->first_node;
         while (node_id != KV_NODE_UNASIGNED) {
           if (node_id > _hgOutput->last_node) {
-            LM_W(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
-                  _hgOutput->first_node, _hgOutput->last_node, node_id));
+            LOG_SW(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
+                    _hgOutput->first_node, _hgOutput->last_node, node_id));
           }
           bool ans = buffer->Write(reinterpret_cast<char *>(node[node_id].data), node[node_id].size);
           if (!ans) {
@@ -228,10 +228,10 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
 #pragma mark ---
 
   // Size if the firt thing in the buffer
-  size_t size = *(reinterpret_cast<size_t *>(item->data));
+  size_t size = *(reinterpret_cast<size_t *>(item->data()));
 
   // Init the data buffer used here
-  char *data = item->data + sizeof(size_t);
+  char *data = item->data() + sizeof(size_t);
 
 #pragma mark ---
 
@@ -259,25 +259,25 @@ void ProcessIsolated::initProcessItemIsolated() {
   initProcessIsolated();   // Init function in the foreground-process
 
   if (!CheckCompleteKVRanges(output_ranges_)) {
-    error_.set("Output ranges are not complete");
+    error_.AddError("Output ranges are not complete");
   }
 
-  if (error_.IsActivated()) {
+  if (error_.HasErrors()) {
     return;
   }
 
   // Init the shared memory segment
-  shm_id = engine::SharedMemoryManager::shared()->RetainSharedMemoryArea();
+  shm_id = samson::SharedMemoryManager::Shared()->RetainSharedMemoryArea();
   if (shm_id != -1) {
-    item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform(shm_id);
+    item = samson::SharedMemoryManager::Shared()->GetSharedMemoryPlatform(shm_id);
   } else {
-    error_.set(au::str("Error getting shared memory for %s", process_item_description().c_str()));
+    error_.AddError(au::str("Error getting shared memory for %s", process_item_description().c_str()));
   }
 }
 
 void ProcessIsolated::finishProcessItemIsolated() {
   if (shm_id != -1) {
-    engine::SharedMemoryManager::shared()->ReleaseSharedMemoryArea(shm_id);
+    samson::SharedMemoryManager::Shared()->ReleaseSharedMemoryArea(shm_id);
     item = NULL;
     shm_id = -1;
   }

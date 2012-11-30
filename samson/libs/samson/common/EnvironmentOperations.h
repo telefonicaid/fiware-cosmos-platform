@@ -14,7 +14,7 @@
 
 
 #include "samson/common/coding.h"                     // KVInfo
-#include "samson/common/samson.pb.h"                  // samson::network::...
+// samson::network::...
 #include "samson/module/Environment.h"                // samson::Environment
 
 namespace samson {

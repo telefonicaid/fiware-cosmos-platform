@@ -26,7 +26,7 @@
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/common/gpb_operations.h"
-#include "samson/common/samson.pb.h"
+
 #include "samson/worker/CommitCommand.h"
 #include "zoo/Connection.h"
 #include "zoo/common.h"
@@ -154,8 +154,8 @@ public:
     double time = cronometer.seconds();
 
     // Log activity for debugging
-    if (error.IsActivated()) {
-      last_commits_.push_front(StringCommitRecord(caller, commit_command, error.GetMessage(), time));
+    if (error.HasErrors()) {
+      last_commits_.push_front(StringCommitRecord(caller, commit_command, error.GetLastError(), time));
     } else {
       last_commits_.push_front(StringCommitRecord(caller, commit_command, "OK", time));
     }
@@ -190,7 +190,7 @@ public:
         // Get the last version we have here
         version_ = au::max_element(int_versions, 0);
         c_.Reset(new C());
-        rc = zoo_connection_->Get(GetVersionPath(version_),  c_.shared_object());
+        rc = zoo_connection_->Get(GetVersionPath(version_), c_.shared_object());
         if (rc) {
           Reset();
           return rc;
@@ -218,7 +218,7 @@ public:
       // Apply this commit to our data model ( errors are not expected since they are supposued to be tested by committer )
       au::ErrorManager error;
       PerformCommit(c_, commit_command, version_, error);
-      if (error.IsActivated()) {
+      if (error.HasErrors()) {
         LOG_E(logs.zoo, ("Error in commit %s", commit_command.c_str()));
       }
       version_++;
@@ -269,7 +269,7 @@ private:
       if (version_ == -1) {
         int rc = UpdateToLastVersion();
         if (rc) {
-          error.set(au::str("Internal error in DataModelCommiter with ZK: %s", zoo::str_error(rc).c_str()));
+          error.AddError(au::str("Internal error in DataModelCommiter with ZK: %s", zoo::str_error(rc).c_str()));
           return;
         }
       }
@@ -279,7 +279,7 @@ private:
 
       LOG_M(logs.zoo, ("trying to performing commit %s over path %s", commit_command.c_str(), path_.c_str()));
       PerformCommit(c, commit_command, version_, error);     // Change on a duplicated data model
-      if (error.IsActivated()) {          // If error in the operation itself, No commit is done at all
+      if (error.HasErrors()) {          // If error in the operation itself, No commit is done at all
         return;
       }
 
@@ -294,14 +294,14 @@ private:
 
         int rc = UpdateToLastVersion();
         if (rc) {
-          error.set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
+          error.AddError(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
           return;
         }
         continue;     // Loop to load again data model and commit
       }
 
       if (rc) {
-        error.set(au::str("Error with ZK: %s ", zoo::str_error(rc).c_str()));  // Any other error cancel this operation
+        error.AddError(au::str("Error with ZK: %s ", zoo::str_error(rc).c_str()));  // Any other error cancel this operation
         return;
       }
 
@@ -314,7 +314,7 @@ private:
   }
 
   void ReviewInternalCommit() {
-    if (( version_ > 0 ) && (version_ % node_commiter_num_commits_to_save_ == 0)) {
+    if ((version_ > 0) && (version_ % node_commiter_num_commits_to_save_ == 0)) {
       // Save this version to stable
       LOG_M(logs.zoo, ("Review of version %d for path %s... saving data to do %s"
                        , version_
@@ -324,7 +324,7 @@ private:
       int rc = zoo_connection_->Create(GetVersionPath(version_), 0, c_.shared_object());
       if (rc) {
         LOG_E(logs.zoo,
-              ( "Not possible to create path %s: %s ", GetVersionPath(version_).c_str(), zoo::str_error(rc).c_str()));
+              ("Not possible to create path %s: %s ", GetVersionPath(version_).c_str(), zoo::str_error(rc).c_str()));
         return;
       }
 
@@ -333,7 +333,7 @@ private:
       rc = zoo_connection_->GetChildrens(GetVersionsPath(), str_versions);
       if (rc) {
         LOG_E(logs.zoo,
-              ( "Not possible to get childrens of %s: %s ", GetVersionsPath().c_str(), zoo::str_error(rc).c_str()));
+              ("Not possible to get childrens of %s: %s ", GetVersionsPath().c_str(), zoo::str_error(rc).c_str()));
         return;
       }
 
@@ -347,8 +347,8 @@ private:
       int last_version = au::max_element(int_versions, 0);
       std::vector<int> int_old_versions = au::GetVectorOfElementsLowerThan(int_versions, last_version);
 
-      LOG_M(logs.zoo, ( "Last version of data model in %sis %d ", path_.c_str(), last_version ));
-      LOG_M(logs.zoo, ( "Removing %lu old versions of data model in %s ", int_old_versions.size(), path_.c_str()));
+      LOG_M(logs.zoo, ("Last version of data model in %sis %d ", path_.c_str(), last_version));
+      LOG_M(logs.zoo, ("Removing %lu old versions of data model in %s ", int_old_versions.size(), path_.c_str()));
 
       for (size_t i = 0; i < int_old_versions.size(); i++) {
         zoo_connection_->Remove(GetVersionPath(int_old_versions[i]));    // We are not interested in errores
@@ -359,7 +359,7 @@ private:
       rc = zoo_connection_->GetChildrens(GetCommitsPath(), str_commits);
       if (rc) {
         LOG_E(logs.zoo,
-              ( "Not possible to get childrens of %s: %s ", GetCommitsPath().c_str(), zoo::str_error(rc).c_str()));
+              ("Not possible to get childrens of %s: %s ", GetCommitsPath().c_str(), zoo::str_error(rc).c_str()));
         return;
       }
 

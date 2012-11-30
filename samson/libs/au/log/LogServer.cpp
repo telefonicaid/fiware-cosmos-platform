@@ -22,15 +22,15 @@ LogServer::LogServer()
   Status s = InitService();
 
   if (s != OK) {
-    LM_X(1, ("Not possible to open query channel on port %d, error:'%s'",
-             LOG_SERVER_DEFAULT_CLIENT_PORT, au::status(s)));
+    LOG_X(1, ("Not possible to open query channel on port %d, error:'%s'",
+              LOG_SERVER_DEFAULT_CLIENT_PORT, au::status(s)));
   }
   // Init channel to receive binary logs
   au::ErrorManager error;
   service_.initLogServerService(&error);
 
-  if (error.IsActivated()) {
-    LM_X(1, ( "Not possible to open channel for logs %s", error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LM_X(1, ("Not possible to open channel for logs %s", error.GetLastError().c_str()));
   }
 }
 

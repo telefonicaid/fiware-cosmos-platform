@@ -86,7 +86,7 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
   // Disconnect from previos one if any...
   Disconnect(error);
 
-  if (error->IsActivated()) {
+  if (error->HasErrors()) {
     return;
   }
 
@@ -244,21 +244,21 @@ std::string ConsoleServiceClient::getPrompt() {
 
 // Fill message to be sent to client
 void ConsoleService::fill_message(au::ErrorManager *error, au::gpb::ConsolePacket *message) {
-  const au::vector<au::ErrorMessage>& error_messages = error->errors();
-  for (size_t i = 0; i < error_messages.size(); i++) {
-    ErrorMessage *error_message = error_messages[i];
+  const au::vector<au::ErrorManagerItem>& items = error->items();
+  for (size_t i = 0; i < items.size(); i++) {
+    ErrorManagerItem *item = items[i];
 
     au::gpb::Message *m = message->add_message();
-    m->set_txt(error_message->GetMultiLineMessage());
+    m->set_txt(item->message());
 
-    switch (error_message->type()) {
-      case ErrorMessage::item_message:
+    switch (item->type()) {
+      case au::message:
         m->set_type(au::gpb::Message::message);
         break;
-      case ErrorMessage::item_warning:
+      case au::warning:
         m->set_type(au::gpb::Message::warning);
         break;
-      case ErrorMessage::item_error:
+      case au::error:
         m->set_type(au::gpb::Message::error);
         break;
     }
@@ -277,7 +277,7 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
 
     // Finish connection if not possible to read a message
     if (s != OK) {
-      LM_W(("ConsoleService: Could not read message from client correctly (%s).Closing connection", status(s)));
+      LOG_SW(("ConsoleService: Could not read message from client correctly (%s).Closing connection", status(s)));
       socket_connection->Close();
       if (message) {
         delete message;
@@ -315,7 +315,7 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
     s = writeGPB(socket_connection->fd(), &answer_message);
     // Finish connection if not possible to read a message
     if (s != OK) {
-      LM_W(("ConsoleService: Could not send message back to client correctly (%s).Closing connection", status(s)));
+      LOG_SW(("ConsoleService: Could not send message back to client correctly (%s).Closing connection", status(s)));
       socket_connection->Close();
       return;
     }

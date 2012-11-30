@@ -11,6 +11,8 @@
 
 #include "LogManager.h"
 
+#include "au/log/LogMain.h"
+
 namespace stream_connector {
 Log::Log(std::string name, std::string type, std::string message) {
   time_ = ::time(NULL);
@@ -29,11 +31,11 @@ std::string Log::getType() {
 
 void Log::writeOnScreen() {
   if (type_ == "Warning") {
-    LM_W(( getNameAndMessage().c_str()));
+    LOG_SW(( getNameAndMessage().c_str()));
   } else if (type_ == "Error") {
     LM_E(( getNameAndMessage().c_str()));
   } else {
-    LM_M(( getNameAndMessage().c_str()));
+    LOG_SM(( getNameAndMessage().c_str()));
   }
 }
 

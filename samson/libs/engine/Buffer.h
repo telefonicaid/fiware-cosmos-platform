@@ -111,7 +111,7 @@ public:
   int RemoveLastUnfinishedLine(char *& buffer, size_t& buffer_size);
 
   // Read a file and write to this buffer
-  void WriteFile(const std::string& file_name, au::ErrorManager& error);
+  void WriteFromFile(const std::string& file_name, au::ErrorManager& error);
 
   // Access to tags
 

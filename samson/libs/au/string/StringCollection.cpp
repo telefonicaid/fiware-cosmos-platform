@@ -9,9 +9,10 @@
  * All rights reserved.
  */
 
-#include "logMsg/logMsg.h"
 
 #include "StringCollection.h"  // Own interface
+
+#include "au/log/LogMain.h"
 
 namespace au {
 StringCollection::StringCollection() {
@@ -89,7 +90,7 @@ void StringCollection::Read(FILE *file, size_t _size) {
   // Read content from file
   size_t r = fread(v_, _size, 1, file);
   if (r != 1) {
-    LM_W(("Error reading StringCollection"));
+    LOG_SW(("Error reading StringCollection"));
   }
 }
 

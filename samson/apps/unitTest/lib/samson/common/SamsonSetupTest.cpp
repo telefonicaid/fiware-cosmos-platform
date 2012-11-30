@@ -18,14 +18,12 @@ namespace samson {
 
 // Test void SamsonSetup();
 TEST(samson_common_SamsonSetup, SamsonSetup) {
-
-  
   std::string samson_home_dir = au::GetRandomDirectory();
   std::string samson_working_dir = au::GetRandomDirectory();
 
-  
+
   // Better not to set /opt/samson and /var/samson, so init() can get environment variables
-  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samson_home_dir,samson_working_dir);
+  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samson_home_dir, samson_working_dir);
 
   // The following value (300) for 'isolated.timeout' depends on an external setup-file
   EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("isolated.timeout"), "300");
@@ -34,44 +32,44 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
                                                         , "initial"
                                                         , "dummy for testing");
 
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined("unit_test.samsonSetupTest"),true)
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined("unit_test.samsonSetupTest"), true)
   << "Error in isParameterDefined positive test";
-  
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("unit_test.samsonSetupTest"),"initial")
+
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("unit_test.samsonSetupTest"), "initial")
   << "Error in getValueForParameter for unit_test.samsonSetupTest";
 
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Set("unit_test.samsonSetupTest","successful"),true)
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Set("unit_test.samsonSetupTest", "successful"), true)
   << "Error in setValueForParameter for unit_test.samsonSetupTest";
-  
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("unit_test.samsonSetupTest"),"successful")
+
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("unit_test.samsonSetupTest"), "successful")
   << "Error in getValueForParameter for unit_test.samsonSetupTest";
 
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Set("isolated.timeout","1000"),true)
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Set("isolated.timeout", "1000"), true)
   << "Error in setValueForParameter for isolated.timeout";
-  
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("isolated.timeout"),"1000")
+
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("isolated.timeout"), "1000")
   << "Error in getValueForParameter for isolated.timeout";
 
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined("non_existing_entry"),false)
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined("non_existing_entry"), false)
   << "Error in isParameterDefined for non_existing_entry";
-  
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("non_existing_entry"),"")
+
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("non_existing_entry"), "")
   << "Error in getValueForParameter for non_existing_entry";
 
   au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
 
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined("unit_test.samsonSetupTest"),true)
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined("unit_test.samsonSetupTest"), true)
   << "Error in isParameterDefined negative test";
-  
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("unit_test.samsonSetupTest"),"initial")
+
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("unit_test.samsonSetupTest"), "initial")
   << "Error in getValueForParameter for unit_test.samsonSetupTest";
 
-  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("isolated.timeout"),"300")
+  EXPECT_EQ(au::Singleton<samson::SamsonSetup>::shared()->Get("isolated.timeout"), "300")
   << "Error in getValueForParameter for isolated.timeout";
 
   au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
-  
-  EXPECT_TRUE( au::Singleton<samson::SamsonSetup>::shared()->Save()) << "Error in save SamsonSetup";
+
+  EXPECT_TRUE(au::Singleton<samson::SamsonSetup>::shared()->Save()) << "Error in save SamsonSetup";
 
   samson::SamsonSetup* setup                    = au::Singleton<samson::SamsonSetup>::shared();
   char*                modules_directory        = (char*) setup->modules_directory().c_str();
@@ -103,4 +101,10 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
 
   // Destroy singletons (SamsonSetup)
   au::singleton_manager.DestroySingletons();
+
+  au::ErrorManager error;
+  au::RemoveDirectory(samson_home_dir, error);
+  EXPECT_FALSE(error.HasErrors());
+  au::RemoveDirectory(samson_working_dir, error);
+  EXPECT_FALSE(error.HasErrors());
 }

@@ -41,8 +41,8 @@ TEST(samson_common_SamsonFile, basic) {
   {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonFile> samon_file = samson::SamsonFile::create("/tmp/non_existing_file", error);
-    EXPECT_EQ(error.IsActivated(), true) << "Non detected missing file in SamsonFile";
-    EXPECT_EQ(error.GetMessage(),
+    EXPECT_EQ(error.HasErrors(), true) << "Non detected missing file in SamsonFile";
+    EXPECT_EQ(error.GetLastError(),
               "Error reading file /tmp/non_existing_file (No such file or directory)") <<
     "Wrong error message for /tmp/non_existing_file";
   }
@@ -54,18 +54,9 @@ TEST(samson_common_SamsonFile, basic) {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonFile> samon_file = samson::SamsonFile::create("/bin/bash", error);
 
-    EXPECT_EQ(error.IsActivated(), true) << "Non detected missing file in SamsonFile";
-    EXPECT_EQ(error.GetMessage(), "KVHeader error: wrong magic number") << "Wrong error message";
+    EXPECT_EQ(error.HasErrors(), true) << "Non detected missing file in SamsonFile";
+    EXPECT_EQ(error.GetLastError(), "KVHeader error: wrong magic number") << "Wrong error message";
   }
 
-  // Check a correct file
-  // ------------------------------------------------------------
-  {
-	au::ErrorManager                      error;
-	au::SharedPointer<samson::SamsonFile> samson_file = samson::SamsonFile::create("test_data/sample_samson_file", error);
-
-    EXPECT_FALSE(samson_file != NULL);
-  }
-
-  close_engine_test();
+  engine::Engine::StopEngine();
 }

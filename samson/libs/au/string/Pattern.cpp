@@ -18,8 +18,8 @@ Pattern::Pattern(const std::string& pattern, au::ErrorManager& error) {
 
   if (r != 0) {
     char buffer[1024];
-    regerror(errno, &preg, buffer, sizeof( buffer ));
-    error.set(buffer);
+    regerror(errno, &preg, buffer, sizeof(buffer));
+    error.AddError(buffer);
   }
 }
 
@@ -42,6 +42,6 @@ SimplePattern::SimplePattern(const std::string& pattern) {
 }
 
 bool SimplePattern::match(const std::string& value) const {
-  return ( 0 == ::fnmatch(pattern_.c_str(), value.c_str(), 0));
+  return (0 == ::fnmatch(pattern_.c_str(), value.c_str(), 0));
 }
 }

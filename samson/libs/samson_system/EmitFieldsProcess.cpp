@@ -27,14 +27,15 @@
 
 #include "samson_system/EmitFieldsProcess.h"   // Own interface
 
+#include "au/log/LogMain.h"
+
 namespace samson {
 namespace system {
-
 const std::string EmitFieldsProcess::kNullField("null_field");
 const std::string EmitFieldsProcess::kNullDest("null");
 
 bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
-                               samson::KVWriter* const writer) {
+                               samson::KVWriter *const writer) {
   if (key->CheckMapValue(Value::kAppField.c_str(), name().c_str())) {
     Value *additional_field_value = NULL;
     if (include_field_) {
@@ -73,7 +74,7 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
     for (size_t i = 0; (i < concepts_.size()); ++i) {
       Value *p_value = key->GetValueFromMap(concepts_[i].c_str());
       if (p_value == NULL) {
-        LM_W(("Error, no key concept field:'%s'", concepts_[i].c_str()));
+        LOG_SW(("Error, no key concept field:'%s'", concepts_[i].c_str()));
         EmitLog("Error", au::str("Error, no key concept field:'%s'", concepts_[i].c_str()).c_str(), writer);
         continue;
       }
@@ -99,13 +100,13 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
             for (size_t k = 0; (k < independent_size); ++k) {
               new_key.AddValueToMap("member")->copyFrom(independent_values[k]);
               for (size_t j = 0; (j < num_values); j++) {
-                // LM_M(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
+                // LOG_SM(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
                 EmitFeedback(&new_key, &new_value, writer);
               }
             }
           } else {
             for (size_t j = 0; (j < num_values); j++) {
-              // LM_M(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
+              // LOG_SM(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
               EmitFeedback(&new_key, &new_value, writer);
             }
           }
@@ -124,13 +125,13 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
             // We add the values to the key to have a state profile per user, or category...
             new_key.AddValueToMap("member")->copyFrom(independent_values[k]);
             for (size_t j = 0; (j < num_values); j++) {
-              // LM_M(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
+              // LOG_SM(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
               EmitFeedback(&new_key, &new_value, writer);
             }
           }
         } else {
           for (size_t j = 0; (j < num_values); j++) {
-            // LM_M(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
+            // LOG_SM(("Emit output, key:'%s', value:'%s'", new_key.str().c_str(), new_value.str().c_str()));
             EmitFeedback(&new_key, &new_value, writer);
           }
         }
@@ -141,7 +142,7 @@ bool EmitFieldsProcess::Update(Value *key, Value *state, Value **values, size_t 
       // Just reemit key-value pairs to the default output stream
       key->SetStringForMap(Value::kAppField.c_str(), out_def_name().c_str());
       for (size_t j = 0; (j < num_values); j++) {
-        // LM_M(("Emit feedback, key:'%s', value:'%s'", key->str().c_str(), values[j]->str().c_str()));
+        // LOG_SM(("Emit feedback, key:'%s', value:'%s'", key->str().c_str(), values[j]->str().c_str()));
         EmitFeedback(key, values[j], writer);
       }
     }

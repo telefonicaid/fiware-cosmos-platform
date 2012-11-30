@@ -67,10 +67,9 @@ void FileDescriptor::Close() {
   au::TokenTaker tt(&token_);
 
   if (fd_ != -1) {
-    LM_LT(LmtFileDescriptors, ("Closing FileDescriptor fd:%d", fd_));
     int r = ::close(fd_);
     if (r != 0) {
-      LM_W(("Error closing fd %d in au::FileDescriptor %s", fd_, name_.c_str()));
+      // Error closing au::FileDescriptor... not possible to log it
     }
     fd_ = -1;
   }

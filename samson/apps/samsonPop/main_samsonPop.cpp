@@ -53,40 +53,40 @@ int max_size;  // Max size downloading in bytes ( just for testing )
 
 PaArgument paArgs[] =
 {
-  { "-node",      host,                "",                PaString,                PaOpt,
+  { "-node",      host,         "", PaString, PaOpt,
     _i "localhost",
     PaNL,
     PaNL,
     "SAMSON Worker node"                                },
-  { "-port_node", &port_node,          "",                PaInt,                   PaOpt,
-    SAMSON_WORKER_PORT,            1,                 99999,
+  { "-port_node", &port_node,   "", PaInt,    PaOpt,
+    SAMSON_WORKER_PORT, 1, 99999,
     "SAMSON server port"                                },
-  { "-user",      user,                "",                PaString,                PaOpt,
+  { "-user",      user,         "", PaString, PaOpt,
     _i "anonymous",
-    PaNL,              PaNL,
+    PaNL, PaNL,
     "User to connect to SAMSON cluster"           },
-  { "-password",  password,            "",                PaString,                PaOpt,
+  { "-password",  password,     "", PaString, PaOpt,
     _i "anonymous",
-    PaNL,              PaNL,
+    PaNL, PaNL,
     "Password to connect to SAMSON cluster"       },
-  { "-header",    &show_header,        "",                PaBool,                  PaOpt,                  false,
-    false,             true,
+  { "-header",    &show_header, "", PaBool,   PaOpt,false,
+    false, true,
     "Show only header of blocks"                  },
-  { "-remove",    &flag_remove,        "",                PaBool,                  PaOpt,                  false,
-    false,             true,
+  { "-remove",    &flag_remove, "", PaBool,   PaOpt,false,
+    false, true,
     "Remove downloaded stuff"                     },
-  { "-new",       &flag_new,           "",                PaBool,                  PaOpt,                  false,
-    false,             true,               "Get only new data"                             },
-  { "-limit",     &limit,              "",                PaInt,                   PaOpt,                  0,
-    0,                 10000,
+  { "-new",       &flag_new,    "", PaBool,   PaOpt,false,
+    false, true, "Get only new data"                             },
+  { "-limit",     &limit,       "", PaInt,    PaOpt,0,
+    0, 10000,
     "number of kvs to be shown for each block"    },
-  { "-format",    format,              "",                PaString,                PaOpt,                  _i "plain",
-    PaNL,              PaNL,
+  { "-format",    format,       "", PaString, PaOpt,_i "plain",
+    PaNL, PaNL,
     "type of output format: [plain|json|xml]"     },
-  { "-max_size",  &max_size,           "",                PaInt,                   PaOpt,                  0,
-    0,                 100000000,          "Max size to download"                          },
-  { " ",          queue_name,          "",                PaString,                PaReq,                  (long)"null",
-    PaNL,              PaNL,
+  { "-max_size",  &max_size,    "", PaInt,    PaOpt,0,
+    0, 100000000, "Max size to download"                          },
+  { " ",          queue_name,   "", PaString, PaReq,(long)"null",
+    PaNL, PaNL,
     "name of the queue to pop data from"          },
   PA_END_OF_ARGS
 };
@@ -137,12 +137,12 @@ size_t full_read(int fd, char *data, size_t size) {
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
 
-  paConfig("log to screen",         (void *)true);
-  paConfig("log to file",           (void *)true);
-  paConfig("screen line format",    (void *)"TYPE:EXEC: TEXT");
-  paConfig("man shortdescription",  (void *)manShortDescription);
-  paConfig("man synopsis",          (void *)manSynopsis);
-  paConfig("log to stderr",         (void *)true);
+  paConfig("log to screen", (void *)true);
+  paConfig("log to file", (void *)true);
+  paConfig("screen line format", (void *)"TYPE:EXEC: TEXT");
+  paConfig("man shortdescription", (void *)manShortDescription);
+  paConfig("man synopsis", (void *)manSynopsis);
+  paConfig("log to stderr", (void *)true);
 
 
   // Parse input arguments
@@ -167,19 +167,19 @@ int main(int argC, const char *argV[]) {
   samson::SamsonClient client("pop");
 
   if (!client.connect(host)) {
-    LM_X(1, ("Not possible to connect with %s", host ));  // Init connection
+    LM_X(1, ("Not possible to connect with %s", host));  // Init connection
   }
   au::ErrorManager error;
-  if (error.IsActivated()) {
-    fprintf(stderr, "Error connecting with samson cluster: %s\n", error.GetMessage().c_str());
+  if (error.HasErrors()) {
+    fprintf(stderr, "Error connecting with samson cluster: %s\n", error.GetLastError().c_str());
     exit(0);
   }
 
 
   // Connect to a particular queue
-  LM_V(("Connecting to queue %s", queue_name ));
+  LM_V(("Connecting to queue %s", queue_name));
   client.connect_to_queue(queue_name, flag_new, flag_remove);
-  LM_V(("Connected to queue %s", queue_name ));
+  LM_V(("Connected to queue %s", queue_name));
 
   size_t downloaded_content = 0;
 

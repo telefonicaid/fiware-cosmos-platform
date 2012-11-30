@@ -59,7 +59,7 @@ int logFd             = -1;
 
 int main(int argC, char **argV) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void*) "only errors");
+  paConfig("log to screen",                 (void *)"only errors");
   paConfig("log to screen",                 (void *)false);
   paConfig("log to file",                   (void *)true);
   paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
@@ -74,18 +74,24 @@ int main(int argC, char **argV) {
     // Avoid parsing any argument
     paParse(paArgs, 1, (char **)argV, 1, false);
   }
-  
+
   // Set assert flag to true ro force asserts instead of exits
   lmAssertAtExit = true;
+
+  // Init log sytem
+  au::LogCentral::InitLogSystem(argV[0]);
+  au::log_central->AddScreenPlugin("screen", "[type][channel] text");
+
+  // Set Error level for this channel to avoid unnecessary warning messages when testing stuff
+  au::log_central->evalCommand("log_set system E");
 
   // Run all tests
   LM_M(("calling ::testing::InitGoogleTest"));
   ::testing::InitGoogleTest(&argC, argV);
-  LM_M(("::testing::InitGoogleTest done"));
+  int r = RUN_ALL_TESTS();
 
-  LM_M(("Running all unit tests"));
-  int x = RUN_ALL_TESTS();
-  LM_M(("All unit tests done (RUN_ALL_TESTS returned %d)", x));
-  // return x;
+  au::LogCentral::StopLogSystem();
+
+  return r;
 }
 

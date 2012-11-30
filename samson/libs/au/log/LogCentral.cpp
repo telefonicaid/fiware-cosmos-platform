@@ -13,23 +13,40 @@
 
 #include <assert.h>
 
+#include "au/ThreadManager.h"
+#include "au/console/CommandCatalogue.h"
+#include "au/log/LogCentralChannels.h"
+#include "au/log/LogCentralChannelsFilter.h"
 #include "au/log/LogCentralPluginFile.h"
 #include "au/log/LogCentralPluginScreen.h"
 #include "au/log/LogCentralPluginServer.h"
 #include "au/log/LogCommon.h"
+#include "au/network/FileDescriptor.h"
+#include "au/singleton/Singleton.h"
 
 namespace au {
 // Global instance of LogCentral
-LogCentral log_central;
+LogCentral *log_central = NULL;
 
-void *RunLogCentral(void *p) {
-  LogCentral *log_central = (LogCentral *)p;
-
-  log_central->Run();
-  return NULL;
+void LogCentral::InitLogSystem(const std::string& exec_name) {
+  StopLogSystem();   // Just in case it was previously added
+  log_central = new LogCentral();
+  log_central->Init(exec_name);
 }
 
-LogCentral::LogCentral() {
+void LogCentral::StopLogSystem() {
+  if (log_central) {
+    log_central->Stop();
+    delete log_central;
+    log_central = NULL;
+  }
+}
+
+LogCentral *LogCentral::Shared() {
+  return log_central;
+}
+
+LogCentral::LogCentral() : au::Thread("LogCentral") {
   fds_[0] = -1;
   fds_[1] = -1;
 
@@ -37,7 +54,6 @@ LogCentral::LogCentral() {
   fd_write_logs_ = NULL;
 
   node_ = "Unknown";  // No default name for this
-  quit_ = false;
 }
 
 void LogCentral::AddFilePlugin(const std::string& plugin_name, const std::string& file_name) {
@@ -49,6 +65,7 @@ void LogCentral::AddScreenPlugin(const std::string& plugin_name, const std::stri
 }
 
 void LogCentral::RemovePlugin(const std::string& plugin_name) {
+  au::TokenTaker tt(&token_plugins_);
   LogCentralPlugin *plugin = plugins_.extractFromMap(plugin_name);
 
   if (plugin) {
@@ -62,6 +79,7 @@ void LogCentral::AddServerPlugin(const std::string& plugin_name, const std::stri
 }
 
 std::string LogCentral::GetPluginStatus(const std::string& name) {
+  au::TokenTaker tt(&token_plugins_);
   LogCentralPlugin *plugin = plugins_.findInMap(name);
 
   if (!plugin) {
@@ -72,6 +90,7 @@ std::string LogCentral::GetPluginStatus(const std::string& name) {
 }
 
 std::string LogCentral::GetPluginChannels(const std::string& name) {
+  au::TokenTaker tt(&token_plugins_);
   LogCentralPlugin *plugin = plugins_.findInMap(name);
 
   if (!plugin) {
@@ -81,30 +100,30 @@ std::string LogCentral::GetPluginChannels(const std::string& name) {
   }
 }
 
-void LogCentral::AddPlugin(const std::string& name,  LogCentralPlugin *p) {
+void LogCentral::AddPlugin(const std::string& name, LogCentralPlugin *p) {
   au::ErrorManager error;
 
   AddPlugin(name, p, error);
 }
 
 void LogCentral::AddPlugin(const std::string& name, LogCentralPlugin *log_plugin, au::ErrorManager& error) {
+  au::TokenTaker tt(&token_plugins_);
+
   if (plugins_.findInMap(name) != NULL) {
-    error.set(au::str("Plugin %s already exists", name.c_str()));
+    error.AddError(au::str("Plugin %s already exists", name.c_str()));
     return;   // Plugin already included with this name
   }
   plugins_.insertInMap(name, log_plugin);
 }
 
-void LogCentral::Init(const std::string& exec) {
-  // Flag to indicate background thread to quit
-  quit_ = false;
-
-  // keep the name of the executable
-  exec_ = exec;
-
-  if (fds_[0] != -1) {
-    // Already init
-    return;
+void LogCentral::CreatePipeAndFileDescriptors() {
+  if (fd_write_logs_ != NULL) {
+    fd_write_logs_->Close();
+    fd_write_logs_ = NULL;
+  }
+  if (fd_read_logs_ != NULL) {
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
   }
 
   int r = pipe(fds_);
@@ -116,40 +135,89 @@ void LogCentral::Init(const std::string& exec) {
   // Create file descriptor to write logs
   fd_write_logs_ = new au::FileDescriptor("fd for writting logs", fds_[1]);
   fd_read_logs_ = new au::FileDescriptor("fd for reading logs", fds_[0]);
+}
 
-  // Create background process for logs
-  au::ThreadManager *tm = au::Singleton<au::ThreadManager>::shared();
-  tm->addThread("log_thread", &t_, NULL, RunLogCentral, this);
+void LogCentral::Init(const std::string& exec) {
+  // keep the name of the executable
+  exec_ = exec;
+
+  if (fd_read_logs_) {
+    return;  // Already initialized
+  }
+  CreatePipeAndFileDescriptors();
+  StartThread();  // Start background thread to handle logs
 }
 
 void LogCentral::Stop() {
-  // Flush all pending logs
-  // Stop the background thread
-
-  // Set the quit flag
-  quit_ = true;
-
+  // Close write file descriptor
   if (fd_write_logs_ != NULL) {
-    // Close write file descriptor
     fd_write_logs_->Close();
+    fd_write_logs_ = NULL;
   }
 
-  // Wait for the background threads
-  void *return_code; // Return code to be ignored
-  pthread_join(t_, &return_code);
+  // Stop background thread
+  StopThread();
 
+  // Close read pipe for logs
+  if (fd_read_logs_ != NULL) {
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
+  }
+
+  // Remove plugins
+  {
+    au::TokenTaker tt(&token_plugins_);
+    plugins_.clearMap();
+  }
+
+  // Reset channels registered so far
+  log_channels_.Clear();
+  ReviewChannelsLevels();
+
+  // Clear counter of logs
+  log_counter_.Clear();
+}
+
+void LogCentral::Flush() {
+  // Close write file descriptor
+  if (fd_write_logs_ != NULL) {
+    fd_write_logs_->Close();
+    fd_write_logs_ = NULL;
+  }
+
+  // Stop background thread
+  StopThread();
+
+  // Close read pipe for logs
+  if (fd_read_logs_ != NULL) {
+    fd_read_logs_->Close();
+    fd_read_logs_ = NULL;
+  }
+
+  CreatePipeAndFileDescriptors();
+  StartThread();    // Start background thread to handle logs
+}
+
+void LogCentral::Pause() {
+  // Close write file descriptor
+  if (fd_write_logs_ != NULL) {
+    fd_write_logs_->Close();
+    fd_write_logs_ = NULL;
+  }
+
+  // Stop background thread
+  StopThread();
+
+  // Close read pipe for logs
   if (fd_read_logs_ != NULL) {
     fd_read_logs_->Close();
     fd_read_logs_ = NULL;
   }
 }
 
-void LogCentral::StopAndExit(int c) {
-  Stop();
-  if (paAssertAtExit) {
-    assert(false);
-  }
-  exit(c);
+void LogCentral::Play() {
+  CreatePipeAndFileDescriptors();
+  StartThread();    // Start background thread to handle logs
 }
 
 void LogCentral::Emit(Log *log) {
@@ -160,16 +228,15 @@ void LogCentral::Emit(Log *log) {
   log->Write(fd_write_logs_);
 }
 
-void LogCentral::Run() {
+void LogCentral::RunThread() {
   // Background thread
-
   while (true) {
     LogPointer log(new Log());
     bool real_log = log->Read(fd_read_logs_);
 
     if (!real_log) {
-      if (quit_) {
-        return;  // Finish this thread
+      if (IsThreadQuiting()) {
+        return;  // Finish this thread if I am suppoused to do so
       }
       continue;
     }
@@ -177,32 +244,35 @@ void LogCentral::Run() {
     // Additional information for logs
     int channel = log->log_data().channel;
     log->Set("channel_name", log_channels_.channel_name(channel));
-    log->Set("exec",  exec_);
-    log->Set("node",  node_);
+    log->Set("exec", exec_);
+    log->Set("node", node_);
 
     // Total count of logs
     log_counter_.Process(log);
 
     // Process log to different plugins
-    au::map<std::string, LogCentralPlugin>::iterator it;
-    for (it = plugins_.begin(); it != plugins_.end(); it++) {
-      LogCentralPlugin *log_plugin = it->second;
-      if (log_plugin->IsLogAccepted(log)) {
-        log_plugin->Process(log);
+    {
+      au::TokenTaker tt(&token_plugins_);
+      au::map<std::string, LogCentralPlugin>::iterator it;
+      for (it = plugins_.begin(); it != plugins_.end(); ++it) {
+        LogCentralPlugin *log_plugin = it->second;
+        if (log_plugin->IsLogAccepted(log)) {
+          log_plugin->Process(log);
+        }
       }
     }
   }
 }
 
 void LogCentral::ReviewChannelsLevels() {
+  au::TokenTaker tt(&token_plugins_);
+
   for (int c = 0; c < LOG_MAX_CHANNELS; c++) {
     int max_level = 0;
 
     if (log_channels_.IsRegistered(c)) {
-      // Go to all plugins...
-
       au::map<std::string, LogCentralPlugin>::iterator it;
-      for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      for (it = plugins_.begin(); it != plugins_.end(); ++it) {
         int level = it->second->log_channel_filter().GetLevel(c);
         if (level > max_level) {
           max_level = level;
@@ -220,6 +290,8 @@ void LogCentral::evalCommand(const std::string& command) {
 }
 
 void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error) {
+  au::TokenTaker tt(&token_plugins_);
+
   // Catalogue to parse input commands ( separated by commas )
   LogCentralCatalogue log_central_catalogue;
 
@@ -230,7 +302,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
     au::console::CommandInstance *command_instance = log_central_catalogue.parse(command, error);
 
     // If error parsing the command, just return the error
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       return;
     }
 
@@ -250,7 +322,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       table.setTitle("Log Plugins");
 
       au::map<std::string, LogCentralPlugin>::iterator it;
-      for (it = plugins_.begin(); it != plugins_.end(); it++) {
+      for (it = plugins_.begin(); it != plugins_.end(); ++it) {
         LogCentralPlugin *log_plugin = it->second;
 
         au::StringVector values;
@@ -320,7 +392,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         }
 
         au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        for (it = plugins_.begin(); it != plugins_.end(); ++it) {
           std::string plugin_name = it->first;
 
           if (plugin_pattern.match(plugin_name)) {
@@ -367,7 +439,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         }
 
         au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        for (it = plugins_.begin(); it != plugins_.end(); ++it) {
           std::string plugin_name = it->first;
 
           if (plugin_pattern.match(plugin_name)) {
@@ -420,7 +492,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         }
 
         au::map<std::string, LogCentralPlugin>::iterator it;  // Loop plugins
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        for (it = plugins_.begin(); it != plugins_.end(); ++it) {
           std::string plugin_name = it->first;
 
           if (plugin_pattern.match(plugin_name)) {
@@ -461,8 +533,8 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
       std::string table_definition = "Channel,left|Level|Count";
 
       au::map<std::string, LogCentralPlugin>::iterator it;
-      for (it = plugins_.begin(); it != plugins_.end(); it++) {
-        table_definition += ( "|" + it->first + " (" +  it->second->str_info() + ")" + ",left" );
+      for (it = plugins_.begin(); it != plugins_.end(); ++it) {
+        table_definition += ("|" + it->first + " (" +  it->second->str_info() + ")" + ",left");
       }
       table_definition += "|Description,left";
 
@@ -486,7 +558,7 @@ void LogCentral::evalCommand(const std::string& command, au::ErrorManager& error
         }
 
         au::map<std::string, LogCentralPlugin>::iterator it;
-        for (it = plugins_.begin(); it != plugins_.end(); it++) {
+        for (it = plugins_.begin(); it != plugins_.end(); ++it) {
           LogCentralPlugin *log_plugin = it->second;
 
           std::ostringstream info;

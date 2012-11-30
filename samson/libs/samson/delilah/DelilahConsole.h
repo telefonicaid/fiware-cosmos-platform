@@ -46,19 +46,12 @@ public:
   explicit DelilahConsole(size_t delilah_id = 1);
   ~DelilahConsole();
 
-  // Main run command
-  void run();
-
-  void setCommandfileName(std::string _commandFileName) {
-    commandFileName = _commandFileName;
-  }
-
   void setSimpleOutput() {
-    simple_output = true;
+    simple_output_ = true;
   }
 
   void setNoOutput() {
-    no_output = true;
+    no_output_ = true;
   }
 
   // Console related methods
@@ -102,13 +95,29 @@ public:
     showWarningMessage(output.str());
   }
 
+  void Show(au::ErrorManager& error, const std::string& prefix_message) {
+    for (size_t i = 0; i < error.items().size(); i++) {
+      switch (error.items()[i]->type()) {
+        case au::message:
+          showMessage(prefix_message + " " + error.items()[i]->message());
+          break;
+        case au::warning:
+          showWarningMessage(prefix_message + " " + error.items()[i]->message());
+          break;
+        case au::error:
+          showErrorMessage(prefix_message + " " + error.items()[i]->message());
+          break;
+      }
+    }
+  }
+
   // Show a message on screen
   void showMessage(std::string message) {
-    if (no_output) {
+    if (no_output_) {
       LM_V(("%s", message.c_str()));
       return;
     }
-    if (simple_output) {
+    if (simple_output_) {
       std::cout << message;
       return;
     }
@@ -116,60 +125,54 @@ public:
   }
 
   void showWarningMessage(std::string message) {
-    if (no_output) {
-      LM_V(("%s", au::str(au::magenta, "%s", message.c_str()).c_str()));
+    if (no_output_) {
+      LOG_SV(("%s", au::str(au::BoldMagenta, "%s", message.c_str()).c_str()));
       return;
     }
-    if (simple_output) {
-      std::cout << au::str(au::magenta, "%s", message.c_str());
+    if (simple_output_) {
+      std::cout << au::str(au::BoldMagenta, "%s", message.c_str());
       return;
     }
     writeWarningOnConsole(au::StringInConsole(message));
   }
 
   void showErrorMessage(std::string message) {
-    if (no_output) {
-      LM_V(("%s", au::str(au::red, "%s", message.c_str()).c_str()));
+    if (no_output_) {
+      LOG_SV(("%s", au::str(au::BoldRed, "%s", message.c_str()).c_str()));
       return;
     }
-    if (simple_output) {
-      std::cout << au::str(au::red, "%s", message.c_str());
+    if (simple_output_) {
+      std::cout << au::str(au::BoldRed, "%s", message.c_str());
       return;
     }
     writeErrorOnConsole(au::StringInConsole(message));
   }
 
   virtual void showTrace(std::string message) {
-    if (show_alerts) {
+    if (show_alerts_) {
       writeWarningOnConsole(message);
     }
   }
 
 private:
 
-  std::string commandFileName;
+  DelilahCommandCatalogue delilah_command_catalogue_;
 
-  DelilahCommandCatalogue delilah_command_catalogue;
-
-  AlertCollection trace_colleciton;   // Collection of traces for monitoring
-  std::string trace_file_name;   // Name of the traces file ( if any )
-  FILE *trace_file;   // FILE to store traces if defined with save_traces
+  AlertCollection trace_colleciton_;   // Collection of traces for monitoring
+  std::string trace_file_name_;        // Name of the traces file ( if any )
+  FILE *trace_file_;                   // FILE to store traces if defined with save_traces
 
   // Counter for the received stream buffers
-  au::CounterCollection<std::string> stream_out_queue_counters;
+  au::CounterCollection<std::string> stream_out_queue_counters_;
 
   // Flag to indicate if we are shoing traces
-  bool show_alerts;
-  bool show_server_logs;
+  bool show_alerts_;
+  bool show_server_logs_;
 
-  // Flag to show on screen certain messages
-  bool verbose;
+  bool verbose_;        // Flag to show on screen certain messages
+  bool simple_output_;  // Flag to just visualize content on screen ( delilah -command  or -f XX )
+  bool no_output_;      // Flag to avoid any message visualization
 
-  // Flag to just visualize content on screen ( delilah -command  or -f XX )
-  bool simple_output;
-
-  // Flag to avoid any message visualization
-  bool no_output;
 
   // LogClient used when working in log_client mode
   au::SharedPointer<au::LogProbe> log_probe;

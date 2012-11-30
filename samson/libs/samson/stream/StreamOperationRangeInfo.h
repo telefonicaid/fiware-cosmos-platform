@@ -38,7 +38,7 @@
 #include "samson/common/EnvironmentOperations.h"
 #include "samson/common/NotificationMessages.h"
 #include "samson/common/Rate.h"
-#include "samson/common/samson.pb.h"        // network::...
+// network::...
 
 #include "samson/module/Environment.h"      // samson::Environment
 
@@ -150,9 +150,9 @@ private:
    * \brief Set error and reset chronometer to count how much time since last error
    */
   void SetError(const std::string error_message) {
-    error_.set(error_message);
+    error_.AddError(error_message);
     cronometer_error_.Reset();
-    state_ = au::str("Error [%s]: %s", cronometer_error_.str().c_str(), error_.GetMessage().c_str());
+    state_ = au::str("Error [%s]: %s", cronometer_error_.str().c_str(), error_.GetLastError().c_str());
     short_state_ = "[E]";
   }
 

@@ -11,6 +11,9 @@
 
 
 #include "ExecesiveTimeAlarm.h"  // Own interface
+
+#include "au/Log.h"
+#include "au/log/LogMain.h"
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
@@ -29,11 +32,11 @@ ExecesiveTimeAlarm::~ExecesiveTimeAlarm() {
   double t = cronometer_.seconds();
 
   if (t > max_time_) {
-    LM_T(LmtExcesiveTime, ("Excessive time ( %.4f > %.4f secs ) for '%s' "
-                           , t
-                           , max_time_
-                           , title_.c_str()
-                           ));
+    LM_T(logs.excessive_time, ("Excessive time ( %.4f > %.4f secs ) for '%s' "
+                               , t
+                               , max_time_
+                               , title_.c_str()
+                               ));
   }
 }
 }

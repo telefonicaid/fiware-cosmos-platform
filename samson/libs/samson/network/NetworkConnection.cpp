@@ -65,7 +65,7 @@ NetworkConnection::NetworkConnection(NodeIdentifier node_identifier
                                , socket_connection->host_and_port().c_str());
 
     running_t_read_ = true;
-    au::Singleton<au::ThreadManager>::shared()->addThread(name, &t_read_, NULL, NetworkConnection_readerThread, this);
+    au::Singleton<au::ThreadManager>::shared()->AddThread(name, &t_read_, NULL, NetworkConnection_readerThread, this);
   }
 
   if (!running_t_write_) {
@@ -73,7 +73,7 @@ NetworkConnection::NetworkConnection(NodeIdentifier node_identifier
                                , socket_connection->host_and_port().c_str());
 
     running_t_write_ = true;
-    au::Singleton<au::ThreadManager>::shared()->addThread(name, &t_write_, NULL, NetworkConnection_writerThread, this);
+    au::Singleton<au::ThreadManager>::shared()->AddThread(name, &t_write_, NULL, NetworkConnection_writerThread, this);
   }
 }
 
@@ -113,8 +113,8 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
   // Wait until both thread are gone
   au::Cronometer cronometer;
   while (true) {
-    if (!running_t_read_ || ( pthread_equal(pthread_self(), t_read_))) {
-      if (!running_t_write_ || ( pthread_equal(pthread_self(), t_write_))) {
+    if (!running_t_read_ || (pthread_equal(pthread_self(), t_read_))) {
+      if (!running_t_write_ || (pthread_equal(pthread_self(), t_write_))) {
         return;
       }
     }
@@ -124,10 +124,10 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
       au::TokenTaker tt(&token_);
       tt.WakeUpAll();
     }
-    
+
     usleep(100000);
     if (cronometer.seconds() > 1) {
-      LM_W(("Waiting for background threads of connection %s", node_identifier_.getCodeName().c_str()));
+      LOG_SW(("Waiting for background threads of connection %s", node_identifier_.getCodeName().c_str()));
       cronometer.Reset();
     }
   }
@@ -185,7 +185,7 @@ void NetworkConnection::writerThread() {
       if (s == au::OK) {
         network_manager_->multi_packet_queue.Pop(node_identifier_);
       } else {
-        LM_W(("Problem writing packet on socket_connection_:'%s'", socket_connection_->str().c_str()));
+        LOG_SW(("Problem writing packet on socket_connection_:'%s'", socket_connection_->str().c_str()));
       }
     } else {
       // Block this thread until new packets are pushed or connection is restablish...

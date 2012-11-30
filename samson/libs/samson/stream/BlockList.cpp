@@ -16,7 +16,7 @@
 
 #include "engine/ProcessManager.h"  // engine::ProcessManager
 
-#include "logMsg/logMsg.h"           // LM_M
+#include "logMsg/logMsg.h"           // LOG_SM
 
 #include "samson/common/EnvironmentOperations.h"    // getStatus()
 #include "samson/common/SamsonSetup.h"
@@ -103,7 +103,7 @@ void BlockList::ReviewBlockReferences(au::ErrorManager& error) {
   au::list<BlockRef>::iterator it;
   for (it = blocks.begin(); it != blocks.end(); it++) {
     (*it)->review(error);
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       return;
     }
   }

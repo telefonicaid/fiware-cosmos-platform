@@ -94,37 +94,37 @@ int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {
-  { "-input",        input,                   "",                   PaString,                   PaOpt,
+  { "-input",        input,               "", PaString, PaOpt,
     _i "stdin",
     PaNL,
     PaNL,
     "Input sources "                                                          },
-  { "-output",       output,                  "",                   PaString,                   PaOpt,
-    _i "stdout",              PaNL,                PaNL,
+  { "-output",       output,              "", PaString, PaOpt,
+    _i "stdout", PaNL, PaNL,
     "Output sources "                                                         },
-  { "-buffer_size",  &buffer_size,            "",                   PaInt,                      PaOpt,
-    default_buffer_size,      1,
+  { "-buffer_size",  &buffer_size,        "", PaInt,    PaOpt,
+    default_buffer_size, 1,
     default_buffer_size, "Buffer size in bytes"                                                    },
-  { "-splitter",     input_splitter_name,     "",                   PaString,                   PaOpt,
-    _i "",                    PaNL,                PaNL,
+  { "-splitter",     input_splitter_name, "", PaString, PaOpt,
+    _i "", PaNL, PaNL,
     "Splitter to be used ( only valid for the default channel )"              },
-  { "-i",            &interactive,            "",                   PaBool,                     PaOpt,
-    false,                    false,               true,
+  { "-i",            &interactive,        "", PaBool,   PaOpt,
+    false, false, true,
     "Interactive console"                                                     },
-  { "-daemon",       &run_as_daemon,          "",                   PaBool,                     PaOpt,
-    false,                    false,               true,
+  { "-daemon",       &run_as_daemon,      "", PaBool,   PaOpt,
+    false, false, true,
     "Run in background. Remove connection & REST interface activated"         },
-  { "-console_port", &sc_console_port,        "",                   PaInt,                      PaOpt,
-    SC_CONSOLE_PORT,          1,                   9999,
+  { "-console_port", &sc_console_port,    "", PaInt,    PaOpt,
+    SC_CONSOLE_PORT, 1, 9999,
     "Port to receive new console connections"                                 },
-  { "-web_port",     &sc_web_port,            "",                   PaInt,                      PaOpt,
-    SC_WEB_PORT,              1,                   9999,
+  { "-web_port",     &sc_web_port,        "", PaInt,    PaOpt,
+    SC_WEB_PORT, 1, 9999,
     "Port to receive REST connections"                                        },
-  { "-f",            file_name,               "",                   PaString,                   PaOpt,
-    _i "",                    PaNL,                PaNL,
+  { "-f",            file_name,           "", PaString, PaOpt,
+    _i "", PaNL, PaNL,
     "Input file with commands to setup channels and adapters"                 },
-  { "-working",      working_directory,       "",                   PaString,                   PaOpt,
-    _i ".",                   PaNL,                PaNL,
+  { "-working",      working_directory,   "", PaString, PaOpt,
+    _i ".", PaNL, PaNL,
     "Directory to store persistance data if necessary"                        },
   PA_END_OF_ARGS
 };
@@ -149,12 +149,12 @@ void captureSIGPIPE(int s) {
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
 
-  paConfig("log to screen",                 (void *)true);
-  paConfig("log to file",                   (void *)true);    // In production it will be false?
-  paConfig("screen line format",            (void *)"TYPE:EXEC: TEXT");
-  paConfig("man shortdescription",          (void *)manShortDescription);
-  paConfig("man synopsis",                  (void *)manSynopsis);
-  paConfig("log to stderr",                 (void *)true);
+  paConfig("log to screen", (void *)true);
+  paConfig("log to file", (void *)true);    // In production it will be false?
+  paConfig("screen line format", (void *)"TYPE:EXEC: TEXT");
+  paConfig("man shortdescription", (void *)manShortDescription);
+  paConfig("man synopsis", (void *)manSynopsis);
+  paConfig("log to stderr", (void *)true);
 
   // Parse input arguments
   paParse(paArgs, argC, (char **)argV, 1, false);
@@ -163,20 +163,20 @@ int main(int argC, const char *argV[]) {
   // Random initialization
   srand(time(NULL));
   // Init log system
-  au::log_central.Init(argV[0]);
+  au::LogCentral::InitLogSystem(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
 
-  // Add plugins to report lgos to file, server and console
-  au::log_central.AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
-  au::log_central.AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
-  au::log_central.AddScreenPlugin("screen", "[type] text");  // Temporal plugin
+  // Add plugins to report logs to file, server and console
+  au::log_central->AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
+  au::log_central->AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
+  au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
-    LM_W(("SIGPIPE cannot be handled"));
+    LOG_SW(("SIGPIPE cannot be handled"));
   }
   if (buffer_size == 0) {
-    LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Run in background if required
+    LM_X(1, ("Wrong buffer size %lu", buffer_size));  // Run in background if required
   }
   if (run_as_daemon) {
     Daemonize();
@@ -187,7 +187,12 @@ int main(int argC, const char *argV[]) {
   engine::Engine::InitEngine(2, 10000000000, 1);
 
   // Load modules
-  au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
+  au::ErrorManager error;
+  au::Singleton<samson::ModulesManager>::shared()->AddModulesFromDefaultDirectory(error);
+  if (error.HasErrors()) {
+    LOG_SW(("Error loading modules: %s", error.GetLastError().c_str()));
+    // Do not stop the process for this error
+  }
 
   // Ignore verbose mode if interactive is activated
   if (interactive) {
@@ -213,14 +218,14 @@ int main(int argC, const char *argV[]) {
 
     while (fgets(line, sizeof(line), f)) {
       // Remove the last return of a string
-      while (( strlen(line) > 0 ) && ( line[ strlen(line) - 1] == '\n') > 0) {
+      while ((strlen(line) > 0) && (line[ strlen(line) - 1] == '\n') > 0) {
         line[ strlen(line) - 1] = '\0';
       }
 
-      // LM_M(("Processing line: %s", line ));
+      // LOG_SM(("Processing line: %s", line ));
       num_line++;
 
-      if (( line[0] != '#' ) && ( strlen(line) > 0)) {
+      if ((line[0] != '#') && (strlen(line) > 0)) {
         message = au::str("%s ( File %s )", line, file_name);
         main_stream_connector->log("StreamConnector", "Message", message);
 
@@ -228,7 +233,7 @@ int main(int argC, const char *argV[]) {
         main_stream_connector->process_command(line, &error);
 
         // Show only if an error happen there
-        if (error.IsActivated()) {
+        if (error.HasErrors()) {
           std::cerr << error.str();
         }
       }
@@ -245,8 +250,8 @@ int main(int argC, const char *argV[]) {
     {
       au::ErrorManager error;
       main_stream_connector->process_command(au::str("add_channel default %s", input_splitter_name), &error);
-      if (error.IsActivated()) {
-        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      if (error.HasErrors()) {
+        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
       }
     }
 
@@ -260,8 +265,8 @@ int main(int argC, const char *argV[]) {
 
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
-      if (error.IsActivated()) {
-        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      if (error.HasErrors()) {
+        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
       }
     }
 
@@ -273,8 +278,8 @@ int main(int argC, const char *argV[]) {
 
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
-      if (error.IsActivated()) {
-        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      if (error.HasErrors()) {
+        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
       }
     }
   }
@@ -299,7 +304,7 @@ int main(int argC, const char *argV[]) {
     // Add service to accept inter-channel connections
     main_stream_connector->init_inter_channel_connections_service();
 
-    main_stream_connector->runConsole();
+    main_stream_connector->StartConsole();
   } else {
     au::Cronometer cronometer_notification;
     while (true) {
@@ -341,7 +346,8 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-
+  // Stop the log system
+  au::LogCentral::StopLogSystem();
 
   return 0;
 }

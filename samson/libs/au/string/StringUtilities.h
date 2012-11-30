@@ -28,7 +28,7 @@
 #ifndef _H_AU_STRING
 #define _H_AU_STRING
 
-#include "logMsg/logMsg.h"     // LM_W
+#include "logMsg/logMsg.h"     // LOG_SW
 #include <set>
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
@@ -43,15 +43,23 @@
 
 namespace au {
 enum Color {
-  normal,
-  blue,
-  red,
-  black,
-  green,
-  brown,
-  magenta,
-  cyan,
-  white,
+  Normal,
+  Black,
+  Red,
+  Green,
+  Yellow,
+  Blue,
+  Magenta,
+  Cyan,
+  White,
+  BoldBlack,
+  BoldRed,
+  BoldGreen,
+  BoldYellow,
+  BoldBlue,
+  BoldMagenta,
+  BoldCyan,
+  BoldWhite,
 };
 
 // ------------------------------------------------------------------

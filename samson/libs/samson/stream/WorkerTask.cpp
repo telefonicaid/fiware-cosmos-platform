@@ -87,7 +87,7 @@ std::vector<size_t> WorkerTask::ProcessOutputBuffers() {
     }
 
     // Information for generated block
-    KVHeader *header = reinterpret_cast<KVHeader *>( buffer->data());
+    KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
 
     // Create a block ( and distribute it )
     size_t block_id = samson_worker_->worker_block_manager()->CreateBlock(buffer);
@@ -100,7 +100,7 @@ std::vector<size_t> WorkerTask::ProcessOutputBuffers() {
                              , id()
                              , str_block_id(block_id).c_str()
                              , header->str().c_str()
-                             , output ));
+                             , output));
 
     new_block_ids.push_back(block_id);
 
@@ -179,7 +179,7 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
       break;
 
     default:
-      LM_W(("Operation still not implemented"));
+      LOG_SW(("Operation still not implemented"));
       break;
   }
 }
@@ -287,7 +287,7 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
     engine::BufferPointer buffer = block->buffer();
 
     // Check header for valid block
-    KVHeader *header = reinterpret_cast<KVHeader *>( buffer->data());
+    KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
     if (!header->Check()) {
       setUserError(("Not valid header in block refernce"));
       return;
@@ -430,7 +430,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
       LOG_D(logs.reduce_operation, ("Reduce WT%lu -  Process hg %d - %lu key-values"
                                     , worker_task_id()
                                     , hg
-                                    , num_kvs ));
+                                    , num_kvs));
 
       // Get data for the next reduce operation
       KVSetStruct *inputStructs = blockreaderCollection.GetNext();
@@ -464,7 +464,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
             writer->internal_emit(state_output, hg, key_data, key_size + value_size);
             transfered_states++;
           } else {
-            LM_W(("Interal error. No input and no state?"));
+            LOG_SW(("Interal error. No input and no state?"));
           }
         } else {
           // Call the reduce operation to generate output
@@ -551,8 +551,8 @@ void WorkerTask::commit() {
   // DataModel is updated to keep them in block manager
   std::vector<size_t> new_block_ids = ProcessOutputBuffers();
 
-  if (error_.IsActivated()) {
-    std::string error_message = error_.GetMessage();
+  if (error_.HasErrors()) {
+    std::string error_message = error_.GetLastError();
     LOG_M(logs.task_manager, ("Error in task %lu (%s)", id(), error_message.c_str()));
   } else {
     LOG_D(logs.task_manager, ("Task WT%lu blocks: %s", id(), str_block_ids().c_str()));
@@ -563,23 +563,23 @@ void WorkerTask::commit() {
     std::string caller = au::str("task WT%lu", worker_task_id());
     samson_worker_->data_model()->Commit(caller, my_commit_command, error_);
 
-    if (error_.IsActivated()) {
+    if (error_.HasErrors()) {
       LOG_W(logs.task_manager, ("Error commiting task W%lu : %s"
                                 , worker_task_id()
-                                , error().GetMessage().c_str()));
+                                , error().GetLastError().c_str()));
     } else {
       // Check new blocks are included in data model, just now
       std::set<size_t> all_blocks = samson_worker_->data_model()->GetAllBlockIds();
       for (size_t i = 0; i < new_block_ids.size(); ++i) {
         if (all_blocks.find(new_block_ids[i]) == all_blocks.end()) {
           LM_E(("Internal error since a new block(%lu at pos %d) is not in the current data model",
-                   new_block_ids[i], i));
+                new_block_ids[i], i));
           LM_E(("Blocks in the data_model:"));
           std::set<size_t>::const_iterator block_it;
           for (block_it = all_blocks.begin(); block_it != all_blocks.end(); ++block_it) {
             LM_E(("Block:%lu", *block_it));
           }
-          LM_X(1,("Unrecoverable error. Exiting"));
+          LM_X(1, ("Unrecoverable error. Exiting"));
         }
       }
     }
@@ -604,7 +604,7 @@ FullKVInfo WorkerTask::GetInputDataInfo() const {
 
   FullKVInfo info;
   int num_input_channels = operation_->getNumInputs();
-  if (( operation_->getType() == Operation::reduce ) && ( !stream_operation_->batch_operation())) {
+  if ((operation_->getType() == Operation::reduce) && (!stream_operation_->batch_operation())) {
     --num_input_channels;
   }
   for (int i = 0; i < num_input_channels; i++) {

@@ -36,7 +36,7 @@
 #include "samson/common/EnvironmentOperations.h"
 #include "samson/common/NotificationMessages.h"
 #include "samson/common/Rate.h"
-#include "samson/common/samson.pb.h"        // network::...
+// network::...
 #include "samson/module/Environment.h"      // samson::Environment
 #include "samson/stream/BlockInfo.h"        // struct BlockInfo
 #include "samson/stream/BlockList.h"        // BlockList
@@ -118,7 +118,7 @@ private:
   std::vector<KVRange> GetActiveRanges();
 
   void SetError(const std::string& error) {
-    error_.set(error);
+    error_.AddError(error);
     cronometer_error_.Reset();
   }
 

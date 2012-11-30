@@ -37,26 +37,24 @@ public:
 #define au_network_ConsoleService_TEST_PORT 9798
 
 TEST(au_network_ConsoleService, DISABLED_basic) {
-  // No preivous paralel threads
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
-
   // Start a console repetition server
   MyConsoleService console_service(au_network_ConsoleService_TEST_PORT);
+
   EXPECT_EQ(au::OK, console_service.InitService());
 
   // Connect with a client
   au::network::ConsoleServiceClientBase client(au_network_ConsoleService_TEST_PORT);
   au::ErrorManager error;
   client.Connect("localhost", &error);
-  EXPECT_FALSE(error.IsActivated());
+  EXPECT_FALSE(error.HasErrors());
 
   client.evalCommand("repeat this", &error);
-  EXPECT_EQ("repeat this\n", error.GetMessage());
+  EXPECT_EQ("repeat this\n", error.GetLastError());
 
   au::console::ConsoleAutoComplete info("start");
   au::ErrorManager error_auto_complete;
   client.autoComplete(&info);
-  EXPECT_EQ(2,  info.getNumAlternatives());
+  EXPECT_EQ(2, info.getNumAlternatives());
 
   EXPECT_EQ("My prompt>>", client.getPrompt());
 
@@ -65,7 +63,4 @@ TEST(au_network_ConsoleService, DISABLED_basic) {
 
   // Stop service
   console_service.StopService();
-
-  // No parallel threads at the end
-  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }

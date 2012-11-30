@@ -65,7 +65,6 @@ au::Status Packet::write(au::FileDescriptor *fd, size_t *size) {
   if (size) {
     *size = 0;
   }
-  LM_T(LmtSocketConnection, ("Sending Packet '%s' to %s ", str().c_str(), fd->name().c_str()));
 
   //
   // Preparing header
@@ -133,7 +132,6 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
   au::Status s;
   Message::Header header;
 
-  LM_T(LmtSocketConnection, ("SocketConnection %s: Reading packet", str().c_str()));
   if (size) {
     *size = 0;
   }
@@ -165,8 +163,6 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
     if (size) {
       *size += header.gbufLen;
     }
-    LM_T(LmtSocketConnection,
-         ("Read %d bytes of GOOGLE DATA from '%s'", header.gbufLen, fd->name().c_str()));
 
     // Decode the google protocol buffer message
     message->ParseFromArray(dataP, header.gbufLen);
@@ -195,7 +191,6 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
       return s;
     }
 
-    LM_T(LmtSocketConnection, ("Read %d bytes of KV DATA from '%s'", header.kvDataLen, fd->name().c_str()));
     if (size) {
       *size += header.kvDataLen;
     }

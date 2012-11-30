@@ -94,7 +94,7 @@ void InputInterChannelConnection::process_packet(au::SharedPointer<InterChannelP
     // New channel
     std::string target_channel = message->target_channel();
 
-    if (( target_channel_ != "" ) && ( target_channel_ != target_channel )) {
+    if ((target_channel_ != "") && (target_channel_ != target_channel)) {
       return close_connection("Not possible to select another channel");
     }
 
@@ -103,8 +103,8 @@ void InputInterChannelConnection::process_packet(au::SharedPointer<InterChannelP
     au::ErrorManager error;
     stream_connector_->select_channel(this, target_channel_, &error);
 
-    if (error.IsActivated()) {
-      return close_connection(error.GetMessage());
+    if (error.HasErrors()) {
+      return close_connection(error.GetLastError());
     }
 
     // Send ACK

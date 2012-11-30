@@ -20,19 +20,31 @@
 #include <sstream>
 #include <vector>
 
+#include "au/ThreadManager.h"
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/console/ConsoleCommand.h"
 #include "au/console/ConsoleCommandHistory.h"
 #include "au/console/ConsoleEscapeSequence.h"
-
-#include "au/ThreadManager.h"
 #include "au/containers/list.h"
+#include "au/log/LogMain.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/statistics/Cronometer.h"
 #include "au/string/StringUtilities.h"
 #include "au/utils.h"
 
+
 struct termios old_tio, new_tio;
+
+std::string GetEscapeSequenceDescription(const std::string& sequece) {
+  std::ostringstream output;
+
+  output << "( " << sequece << " ";
+  for (size_t i = 0; i < sequece.length(); ++i) {
+    output << au::str("[%d]", static_cast<int>(sequece[i]));
+  }
+  output << " )";
+  return output.str();
+}
 
 void finish_console_mode() {
   /* set the new settings immediately */
@@ -61,49 +73,91 @@ Console *current_console = NULL;
 void handle_winch(int sig);
 void handle_tstp(int sig);
 
-Console::Console() :
-  token_pending_messages("token_pending_messages") {
-  command_history = new ConsoleCommandHistory();
-  counter = 0;
-
-  // Pending to be assigned at runConsole()
-  t_running = 0;
-
-  // By default, background messages are not blocked ( esc - b )
-  block_background_messages = false;
+Console::Console()
+  : au::Thread("Console")
+    , command_history_(new ConsoleCommandHistory())
+    , token_pending_messages_("token_pending_messages")
+    , block_background_messages_(false)  // By default, background messages are not blocked ( esc - b for toogle )
+    , quit_console_(false) {  // Internal flag to quit console ( i.e. the user has tiped command quit )
 }
 
 Console::~Console() {
-  delete command_history;
+  command_history_->save_history();
+  delete command_history_;
 }
 
-void Console::print_command() {
-  std::string _command = command_history->current()->getCommand();
-  int _pos = command_history->current()->getPos();
+void Console::StartConsole(bool block_thread) {
+  quit_console_ = false;
+  StartThread();
 
-  clearTerminalLine();
-  // printf("[%d]",counter);   // debuggin
+  if (block_thread) {
+    JoinThread();  // Wait for background thread to finish
+  }
+}
 
-  printf("%s %s", getPrompt().c_str(), _command.c_str());
+void Console::StopConsole() {
+  if (IsBackgroundThread()) {
+    quit_console_ = true;   // Interal flag to make sure background thread is finished
+  } else {
+    StopThread();   // Stop background thread directly
+  }
+}
 
-  if (_pos != (int)_command.length()) {
+void Console::PrintCommand() {
+  // Get prompt
+  std::string prompt = getPrompt();
+  // Get command and position inside the command
+  std::string _command = command_history_->current()->getCommand();
+  int _pos = command_history_->current()->getPos();
+
+  // Compute terminal width and available space for the command
+  int w = GetTerminalWidth();
+  int w_available = w - prompt.length() - 7;
+  int command_len = static_cast<int>(_command.length());
+
+  ClearTerminalLine();
+  int command_begin = 0;
+  int command_end = command_len;
+
+  // Modify this if command is too large
+  if (command_len > w_available) {
+    if (_pos > command_len - w_available) {
+      command_begin = command_end - w_available;  // End of the command
+    } else {
+      // Position at the middle
+      command_begin = std::max(_pos - w_available / 2, 0);
+      command_end = std::min(command_begin + w_available, command_len);
+    }
+  }
+
+  // Print the entire command
+  printf("%s ", getPrompt().c_str());
+  if (command_begin > 0) {
+    printf("...");
+  }
+  for (int i = command_begin; i < command_end; ++i) {
+    printf("%c", _command[i]);
+  }
+  if (command_end < command_len) {
+    printf("...");
+  }
+
+  // Put cursor in the rigth place ( printing again text )
+  if (_pos != command_end) {
     printf("\r");
-
-    // printf("[%d]",counter);   // debuggin
-
     printf("%s ", getPrompt().c_str());
-    for (int i = 0; i < _pos; i++) {
+    if (command_begin > 0) {
+      printf("...");
+    }
+    for (int i = command_begin; i < _pos; ++i) {
       printf("%c", _command[i]);
     }
   }
 
-  counter++;
-
   fflush(stdout);
-  // At the moment we are not considering pos_command
 }
 
-bool Console::isImputReady() {
+bool Console::IsInputReady() const {
   struct timeval timeVal;
 
   timeVal.tv_sec = 0;
@@ -118,11 +172,11 @@ bool Console::isImputReady() {
   return (s == 1);
 }
 
-void Console::process_auto_complete(ConsoleAutoComplete *info) {
+void Console::ProcessAutoComplete(ConsoleAutoComplete *info) {
   std::string help_message = info->getHelpMessage();
 
   if ((help_message.length() > 0) || info->necessary_print_last_words_alternatives()) {
-    print_command();
+    PrintCommand();
     printf("\n");
   }
 
@@ -132,221 +186,198 @@ void Console::process_auto_complete(ConsoleAutoComplete *info) {
   if (help_message.length() > 0) {
     printf("Help: %s\n", help_message.c_str());   // Add necessary stuff...
   }
-  command_history->current()->add(info->stringToAppend());
-  print_command();
+  command_history_->current()->add(info->stringToAppend());
+  PrintCommand();
 }
 
-void Console::process_char(char c) {
-  command_history->current()->add(c);
+void Console::ProcessChar(char c) {
+  // Add char to the current command
+  command_history_->current()->add(c);
 
-  if (command_history->current()->isCursorAtEnd()) {
-    printf("%c", c);
-    fflush(stdout);
-  } else {
-    print_command();
-  }
+  // We always print command again to detect if command is larger than the console window
+  PrintCommand();
 }
 
-void Console::internal_command(const std::string& command) {
+void Console::ProcessInternalCommand(const std::string& command) {
   if (command == "tab") {
-    ConsoleAutoComplete *info = new ConsoleAutoComplete(command_history->current()->getCommandUntilPointer());
+    ConsoleAutoComplete *info = new ConsoleAutoComplete(command_history_->current()->getCommandUntilPointer());
     autoComplete(info);
-    process_auto_complete(info);
+    ProcessAutoComplete(info);
     delete info;
     return;
   }
 
   if (command == "return") {
-    std::string _command = command_history->current()->getCommand();
+    std::string _command = command_history_->current()->getCommand();
 
     // Print the command on screen...
-    print_command();
+    PrintCommand();
     printf("\n");
 
     // Eval the command....
     evalCommand(_command);
 
     // New command in history
-    command_history->new_command();
-    print_command();
+    command_history_->new_command();
+    PrintCommand();
   }
 
   if (command == "move_home") {
-    command_history->current()->move_home();
-    print_command();
+    command_history_->current()->move_home();
+    PrintCommand();
   }
 
   if (command == "move_end") {
-    command_history->current()->move_end();
-    print_command();
+    command_history_->current()->move_end();
+    PrintCommand();
   }
 
   if (command == "del_rest_line") {
-    command_history->current()->delete_rest_line();
-    print_command();
+    command_history_->current()->delete_rest_line();
+    PrintCommand();
   }
 
   if (command == "del") {
-    command_history->current()->delete_char();
-    print_command();
+    command_history_->current()->delete_char();
+    PrintCommand();
   }
 
   if (command == "delete_word") {
-    command_history->current()->delete_word();
-    print_command();
+    command_history_->current()->delete_word();
+    PrintCommand();
   }
 
   if (command == "toogle") {
-    command_history->current()->toogle();
-    print_command();
+    command_history_->current()->toogle();
+    PrintCommand();
   }
 }
 
-void Console::addEspaceSequence(const std::string& sequence) {
-  escape_sequence.addSequence(sequence);
+void Console::AddEspaceSequence(const std::string& sequence) {
+  escape_sequence_.addSequence(sequence);
 }
 
-void Console::internal_process_escape_sequence(std::string sequence) {
+void Console::ProcessEscapeSequenceInternal(const std::string& sequence) {
   if (sequence == au::str("b")) {
-    if (t_running == 0) {
-      LM_W(("Console thread is not yet running"));
+    // When esc-b is typed, we toggle value of block_background_messages_
+    // When block_background_messages_ is true, messages sent to the console from other threads are displayed.
+    // When block_background_messages_ is false, these messages are retained until block_background_messages_ is true
+
+    if (!IsThreadRunning()) {
+      LOG_SW(("Console thread is not yet running"));
       return;
     }
 
-    // It is theoretically impossible, but just in case
-    if (pthread_self() != t_running) {
+    // This method can only be called from background thread while processing escalpe sequences
+    if (!IsBackgroundThread()) {
       return;
     }
 
-    block_background_messages = !block_background_messages;
+    // Toggle value of block_background_messages_ flag
+    block_background_messages_ = !block_background_messages_;
 
-    if (block_background_messages) {
+    if (block_background_messages_) {
       writeWarningOnConsole("Background messages blocked ( press esc b to show again )\n");
     } else {
       writeWarningOnConsole("Background messages are shown again\n");
     }
-    clearTerminalLine();
-    flush();
-    print_command();
+
+    ClearTerminalLine();
+    Flush();
+    PrintCommand();
 
     return;
   }
 
   if (sequence == au::str("%c", 127)) {
     // Remove a word
-    command_history->current()->delete_word();
-    print_command();
+    command_history_->current()->delete_word();
+    PrintCommand();
     return;
   }
 
   if (sequence == "[A") {
     // Mode up
-    command_history->move_up();
-    print_command();
+    command_history_->move_up();
+    PrintCommand();
     return;
   }
   if (sequence == "[B") {
     // Move down
-    command_history->move_down();
-    print_command();
+    command_history_->move_down();
+    PrintCommand();
     return;
   }
   if (sequence == "[C") {
     // Move forward
-    command_history->current()->move_cursor(1);
-    print_command();
+    command_history_->current()->move_cursor(1);
+    PrintCommand();
     return;
   }
   if (sequence == "[D") {
     // Move backward
-    command_history->current()->move_cursor(-1);
-    print_command();
+    command_history_->current()->move_cursor(-1);
+    PrintCommand();
     return;
   }
 
   if (sequence == "au") {
-    command_history->current()->add("Andreu Urruela (andreu@tid.es,andreu@urruela.com)");
-    print_command();
+    command_history_->current()->add("Andreu Urruela (andreu@tid.es,andreu@urruela.com)");
+    PrintCommand();
     return;
   }
 
   if (sequence == "h") {
-    clearTerminalLine();
+    ClearTerminalLine();
 
     // Print history
     printf("---------------------------------------------\n");
     printf(" HISTORY\n");
     printf("---------------------------------------------\n");
-    printf("%s", command_history->str_history(10).c_str());
+    printf("%s", command_history_->str_history(10).c_str());
     printf("---------------------------------------------\n");
 
     // Print command again
-    print_command();
+    PrintCommand();
     return;
   }
 
   process_escape_sequence(sequence);
 }
 
-void Console::process_background() {
-  if (block_background_messages) {
+void Console::ProcessBackgroundMessages() {
+  if (block_background_messages_) {
     return;
   }
 
-  if (pending_messages.size() != 0) {
-    au::TokenTaker tt(&token_pending_messages);
+  if (pending_messages_.size() != 0) {
+    au::TokenTaker tt(&token_pending_messages_);
 
-    clearTerminalLine();
+    ClearTerminalLine();
 
-    while (pending_messages.size() != 0) {
-      std::string txt = pending_messages.front();
-      pending_messages.pop_front();
+    while (pending_messages_.size() != 0) {
+      std::string txt = pending_messages_.front();
+      pending_messages_.pop_front();
       printf("%s", txt.c_str());
     }
 
-    print_command();
+    PrintCommand();
     fflush(stdout);
   }
 }
 
-void Console::flush() {
-  process_background();
+void Console::Flush() {
+  ProcessBackgroundMessages();
 }
 
-bool Console::isNormalChar(char c) {
+bool Console::IsNormalChar(char c) const {
   if ((c >= 32) && (c <= 126)) {
     return true;
   }
   return false;
 }
 
-std::string getSequenceDescription(std::string sequece) {
-  std::ostringstream output;
-
-  output << "( " << sequece << " ";
-  for (size_t i = 0; i < sequece.length(); i++) {
-    output << au::str("[%d]", (int)sequece[i]);
-  }
-  output << " )";
-  return output.str();
-}
-
-void *run_console(void *p) {
-  Console *console = (Console *)p;
-
-  console->runConsole();
-  return NULL;
-}
-
-void Console::runConsoleInBackground() {
-  pthread_t t;
-
-  au::Singleton<au::ThreadManager>::shared()->addThread("au::console::Console::runConsoleInBackground", &t, NULL,
-                                                        run_console,
-                                                        this);
-}
-
-void Console::getEntry(ConsoleEntry *entry) {
+void Console::GetEntry(ConsoleEntry *entry) {
   char c;
 
   if (read(0, &c, 1) != 1) {
@@ -354,24 +385,24 @@ void Console::getEntry(ConsoleEntry *entry) {
   }
   if (c == 27) {
     // Escape sequence
-    escape_sequence.init();
+    escape_sequence_.init();
 
     while (true) {
       if (read(0, &c, 1) != 1) {
         LM_X(1, ("reading from stdin failed"));   // Add the new character
       }
-      escape_sequence.add(c);
+      escape_sequence_.add(c);
 
       // Detect if it is a valid sequence code
-      SequenceDetectionCode sequence_detection_code = escape_sequence.checkSequence();
+      SequenceDetectionCode sequence_detection_code = escape_sequence_.checkSequence();
 
       if (sequence_detection_code == sequence_finished) {
-        entry->setEscapeSequence(escape_sequence.getCurrentSequence());
+        entry->setEscapeSequence(escape_sequence_.getCurrentSequence());
         return;
       }
 
       if (sequence_detection_code == sequence_non_compatible) {
-        entry->setUnknownEscapeSequence(escape_sequence.getCurrentSequence());
+        entry->setUnknownEscapeSequence(escape_sequence_.getCurrentSequence());
         return;
       }
 
@@ -382,11 +413,9 @@ void Console::getEntry(ConsoleEntry *entry) {
   }
 }
 
-void Console::runConsole() {
+void Console::RunThread() {
   // Init console
   init_console_mode();
-
-  t_running = pthread_self();
 
   // Signal to handle terminal changes...
   current_console = this;
@@ -394,94 +423,105 @@ void Console::runConsole() {
   signal(SIGTSTP, handle_tstp);
 
   // First version with just the promtp
-  print_command();
+  PrintCommand();
 
-  quit_console = false;
-  while (!quit_console) {
-    while (!isImputReady()) {
+  while (true) {
+    if (IsThreadQuiting()) {
+      return;  // StopConsole has been called
+    }
+    if (quit_console_) {
+      return;
+    }
+
+    while (!IsInputReady()) {
       // Review background messages
-      process_background();
+      ProcessBackgroundMessages();
       usleep(20000);
     }
 
     // Read an entry or a escape sequence
     ConsoleEntry entry;
-    getEntry(&entry);
+    GetEntry(&entry);
 
     if (entry.isChar()) {
       char c = entry.getChar();
 
-      if (isNormalChar(c)) {
-        process_char(c);
-      } else if (c == '\n') {
-        internal_command("return");
-      } else if (c == '\t') {
-        internal_command("tab");
-      } else if (c == 127) {
-        internal_command("del");
-      } else if (c == 11) {
-        internal_command("del_rest_line");
-      } else if (c == 4) {
-        Console::quitConsole();
-      } else if (c == 1) {
-        internal_command("move_home");
-      } else if (c == 5) {
-        internal_command("move_end");
-      } else if (c == 23) {  // CTRL-W
-        internal_command("delete_word");
-      } else if (c == 20) {  // CTRL-W
-        internal_command("toogle");
-      } else if (c == 7) {  // bell
-        printf("%c", c);
+      if (IsNormalChar(c)) {
+        ProcessChar(c);
       } else {
-        writeWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
+        switch (c) {
+          case '\n':
+            ProcessInternalCommand("return");
+            break;
+          case '\t':
+            ProcessInternalCommand("tab");
+            break;
+          case 127:
+            ProcessInternalCommand("del");
+            break;
+          case 11:
+            ProcessInternalCommand("del_rest_line");
+            break;
+          case 1:
+            ProcessInternalCommand("move_home");
+            break;
+          case 5:
+            ProcessInternalCommand("move_end");
+            break;
+          case 23:
+            ProcessInternalCommand("delete_word");
+            break;
+          case 20:
+            ProcessInternalCommand("toogle");
+            break;
+          case 7:
+            printf("%c", c);  // bell
+            break;
+
+          default:
+            writeWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
+            break;
+        }
       }
     } else if (entry.isEscapeSequence()) {
       std::string seq = entry.getEscapeSequece();
-      internal_process_escape_sequence(escape_sequence.getCurrentSequence());
+      ProcessEscapeSequenceInternal(escape_sequence_.getCurrentSequence());
     } else if (entry.isUnknownEscapeSequence()) {
       std::string seq = entry.getEscapeSequece();
-      writeWarningOnConsole(au::str("Unknown escape sequence (%s)", getSequenceDescription(seq).c_str()));
+      writeWarningOnConsole(au::str("Unknown escape sequence (%s)", GetEscapeSequenceDescription(seq).c_str()));
     }
   }
 
   // Clear line to quit nicely...
-  clearTerminalLine();
+  ClearTerminalLine();
 
   // Remove the signal handler...
   signal(SIGWINCH, SIG_IGN);
 }
 
-void Console::quitConsole() {
-  command_history->save_history();
-  quit_console = true;
-}
+void Console::Write(au::ErrorManager& error) {
+  const au::vector<ErrorManagerItem>& items = error.items();
 
-/* ask about Console quit status */
-/* Goyo. Trying to protect against info reports after quitting delilah (SAMSON-312) */
-bool Console::isQuitting() {
-  return quit_console;
-}
-
-void Console::write(au::ErrorManager *error) {
-  const au::vector<ErrorMessage>& messages = error->errors();
-
-  for (size_t i = 0; i < messages.size(); i++) {
-    ErrorMessage *item = messages[i];
+  for (size_t i = 0; i < items.size(); ++i) {
+    ErrorManagerItem *item = items[i];
 
     switch (item->type()) {
-      case ErrorMessage::item_message:
-        writeOnConsole(item->GetMultiLineMessage());
+      case au::message:
+        writeOnConsole(item->message());
         break;
 
-      case ErrorMessage::item_warning:
-        writeWarningOnConsole(item->GetMultiLineMessage());
+      case au::warning:
+        writeWarningOnConsole(item->message());
         break;
-      case ErrorMessage::item_error:
-        writeErrorOnConsole(item->GetMultiLineMessage());
+      case au::error:
+        writeErrorOnConsole(item->message());
         break;
     }
   }
+}
+
+void Console::write(au::ErrorManager *error) {
+  Write(*error);
 }
 
 /* Methods to write things on screen */
@@ -490,7 +530,7 @@ void Console::writeWarningOnConsole(const std::string& message) {
   std::ostringstream output;
 
   output << "\033[1;35m" << message << (append_return ? "\n" : "") << "\033[0m";
-  write(output.str());
+  Write(output.str());
 }
 
 void Console::writeErrorOnConsole(const std::string& message) {
@@ -499,12 +539,12 @@ void Console::writeErrorOnConsole(const std::string& message) {
 
   output << "\033[1;31m" << message << (append_return ? "\n" : "") <<  "\033[0m";
   std::string txt = output.str();
-  write(txt);
+  Write(txt);
 }
 
-int Console::waitWithMessage(const std::string& message, double sleep_time, ConsoleEntry *entry) {
+int Console::WaitWithMessage(const std::string& message, double sleep_time, ConsoleEntry *entry) {
   // Clear line
-  clearTerminalLine();
+  ClearTerminalLine();
 
   // Print message
   printf("%s", message.c_str());
@@ -514,16 +554,13 @@ int Console::waitWithMessage(const std::string& message, double sleep_time, Cons
   size_t total_to_sleep = sleep_time * 1000000;
 
   while (total_slept < total_to_sleep) {
-    if (isImputReady()) {
-      getEntry(entry);
+    if (IsInputReady()) {
+      GetEntry(entry);
       return 0;
     }
 
     // Message in background
-    process_background();
-
-    // Review background messages
-    process_background();
+    ProcessBackgroundMessages();
     usleep(20000);
     total_slept += 20000;
   }
@@ -532,13 +569,8 @@ int Console::waitWithMessage(const std::string& message, double sleep_time, Cons
 }
 
 void Console::writeOnConsole(const std::string& message) {
-  if (t_running == 0) {
-    LM_W(("Console thread is not yet running"));
-    return;
-  }
-
-  if (pthread_self() == t_running) {
-    clearTerminalLine();
+  if (IsBackgroundThread()) {
+    ClearTerminalLine();
 
     // Divide input message in lines
     std::vector<std::string> lines = au::split(message, '\n');
@@ -553,9 +585,9 @@ void Console::writeOnConsole(const std::string& message) {
 
     while (true) {
       // Print all of them and return
-      clearTerminalLine();
+      ClearTerminalLine();
       size_t max_pos = pos + num_lines_on_screen;
-      for (size_t i = pos; i < std::min(lines.size(), max_pos); i++) {
+      for (size_t i = pos; i < std::min(lines.size(), max_pos); ++i) {
         std::string line_to_print;
         if (lines[i].length() <= (size_t)x) {
           line_to_print = lines[i];
@@ -573,13 +605,15 @@ void Console::writeOnConsole(const std::string& message) {
         double p1 = (double)(pos) / (double)lines.size();
         double p2 = (double)(pos + num_lines_on_screen) / (double)lines.size();
 
-        printf("Lines %d-%d / %d [ %s ] [ space: next page c: continue q: quit ]", (int)(pos + 1),
-               (int)(pos + num_lines_on_screen), (int)lines.size(),
-               au::str_double_progress_bar(p1, p2, '.', '*', '.', 15).c_str());
+        printf("Lines %d-%d / %d [ %s ] [ space: next page c: continue q: quit ]"
+               , static_cast<int>(pos + 1)
+               , static_cast<int>(pos + num_lines_on_screen)
+               , static_cast<int>(lines.size())
+               , au::str_double_progress_bar(p1, p2, '.', '*', '.', 15).c_str());
         fflush(stdout);
 
         ConsoleEntry entry;
-        getEntry(&entry);
+        GetEntry(&entry);
 
         if (entry.isChar('c')) {
           continue_flag = true;
@@ -604,33 +638,28 @@ void Console::writeOnConsole(const std::string& message) {
       }
     }
 
-    print_command();
+    PrintCommand();
     fflush(stdout);
     return;
   }
 
   // --------------------------------------------------------------------------------------------
 
-  write(message);
+  Write(message);
 }
 
-void Console::write(const std::string& message) {
-  if (t_running == 0) {
-    LM_W(("Console thread is not yet running"));
+void Console::Write(const std::string& message) {
+  // Accumulate message if necessary
+  if (!IsBackgroundThread()) {
+    au::TokenTaker tt(&token_pending_messages_);
+    pending_messages_.push_back(message);
     return;
   }
 
-  if (pthread_self() != t_running) {
-    // Accumulate message
-    au::TokenTaker tt(&token_pending_messages);
-    pending_messages.push_back(message);
-    return;
-  }
-
-  clearTerminalLine();
+  // Show directly on screen
+  ClearTerminalLine();
   printf("%s", message.c_str());
-
-  print_command();
+  PrintCommand();
   fflush(stdout);
 }
 
@@ -643,7 +672,7 @@ void Console::evalCommand(const std::string& command) {
 
   // Simple quit function...
   if (command == "quit") {
-    quit_console = true;
+    StopConsole();
   }
 }
 
@@ -651,17 +680,17 @@ void Console::autoComplete(ConsoleAutoComplete *info) {
   writeWarningOnConsole(au::str("Console::auto_complete not implemented (%p)", info));
 }
 
-void Console::refresh() {
-  print_command();
+void Console::Refresh() {
+  PrintCommand();
 }
 
-void Console::appendToCommand(const std::string& txt) {
-  command_history->current()->add(txt);
-  print_command();
+void Console::AppendToCommand(const std::string& txt) {
+  command_history_->current()->add(txt);
+  PrintCommand();
 }
 
 std::string Console::str_history(int limit) {
-  return command_history->str_history(limit);
+  return command_history_->str_history(limit);
 }
 
 void handle_winch(int sig) {
@@ -670,7 +699,7 @@ void handle_winch(int sig) {
   }
 
   // Rewrite current command
-  current_console->refresh();
+  current_console->Refresh();
 }
 
 //  SAMSON-1114 - Handle SIGTSTP so we can re-init the console allowing the

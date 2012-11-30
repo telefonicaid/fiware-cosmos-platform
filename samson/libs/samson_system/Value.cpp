@@ -27,17 +27,14 @@
 
 #include "samson_system/Value.h"  // Own interface
 
+#include <algorithm>
 #include <string.h>
 
-#include <algorithm>
-
-#include "samson_system/smaz.h"
-
 #include "samson_system/MapCompareFunctor.h"
+#include "samson_system/smaz.h"
 
 namespace samson {
 namespace system {
-
 const std::string Value::kSystemValueName("system.Value");
 const size_t Value::kValueCode = 1219561887489248771ULL;
 
@@ -58,8 +55,9 @@ bool IsValidDouble(const char *data) {
 
     // Dot
     if (c == '.') {
-      if (found_dot)
+      if (found_dot) {
         return false;
+      }
       found_dot = true;
       continue;
     }
@@ -227,57 +225,73 @@ inline int Value::ParseNumber(const char *data) {
     case ser_int_value_0:
       value_double_ = 0;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_1:
       value_double_ = 1;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_2:
       value_double_ = 2;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_3:
       value_double_ = 3;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_4:
       value_double_ = 4;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_5:
       value_double_ = 5;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_6:
       value_double_ = 6;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_7:
       value_double_ = 7;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_8:
       value_double_ = 8;
       return 1;  // Codified in the serialization code
+
       break;
     case ser_int_value_9:
       value_double_ = 9;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_10:
       value_double_ = 10;
       return 1;  // Codified in the serialization code
+
     case ser_int_value_minus_1:
       value_double_ = -1;
       return 1;  // Codified in the serialization code
+
     case ser_int_positive:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp);
       return total;
+
     case ser_int_negative:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       // The sign change must be done outside the static cast, otherwise error happens
       value_double_ = -static_cast<double> (tmp);
       return total;
+
     case ser_double_positive_1_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 10.0;
       return total;
+
     case ser_double_positive_2_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 100.0;
       return total;
+
     case ser_double_positive_3_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 1000.0;
@@ -287,37 +301,45 @@ inline int Value::ParseNumber(const char *data) {
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 10000.0;
       return total;
+
       break;
     case ser_double_positive_5_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = static_cast<double> (tmp) / 100000.0;
       return total;
+
       break;
     case ser_double_negative_1_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       // The sign change must be done outside the static cast, otherwise error happens
       value_double_ = -1.0 * static_cast<double> (tmp) / 10.0;
       return total;
+
     case ser_double_negative_2_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = -1.0 * static_cast<double> (tmp) / 100.0;
       return total;
+
     case ser_double_negative_3_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = -1.0 * static_cast<double> (tmp) / 1000.0;
       return total;
+
     case ser_double_negative_4_decimal:
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = -1.0 * static_cast<double> (tmp) / 10000.0;
       return total;
+
     case ser_double_negative_5_decimal:
       size_t tmp;
       total = 1 + samson::staticVarIntParse(data + 1, &tmp);
       value_double_ = -1.0 * static_cast<double> (tmp) / 100000.0;
       return total;
+
     case ser_double:
       value_double_ = *(reinterpret_cast<const double *> (data + 1));
       return 1 + sizeof(value_double_);
+
     default:
       LM_E(("Internal error, unknown number serialization_code:%d", static_cast<int>(code)));
       return 0;
@@ -481,9 +503,9 @@ inline int Value::ParseMap(const char *data) {
 
     Value *new_value = AddValueToMap(tmp_key.GetString());
     offset += new_value->parse(const_cast<char *> (data + offset));
-    // LM_M(("ParseMap component for first:'%s' value:'%s', offset:%d", tmp_key.str().c_str(), new_value->str().c_str(), offset));
+    // LOG_SM(("ParseMap component for first:'%s' value:'%s', offset:%d", tmp_key.str().c_str(), new_value->str().c_str(), offset));
   }
-  // LM_M(("ParseMap for value:'%s', offset:%d", this->str().c_str(), offset));
+  // LOG_SM(("ParseMap for value:'%s', offset:%d", this->str().c_str(), offset));
   return offset;
 }
 
@@ -546,6 +568,7 @@ int Value::parse(char *data) {
     case ser_map_len_4:
     case ser_map_len_5:
       return ParseMap(data);
+
     default:
       LM_X(1, ("Internal error, unknown serialization_code:%d", static_cast<int>(code)));
   }
@@ -703,7 +726,8 @@ int Value::SerializeString(char *data) {
     // Try compressed version
     const int kMaxLengthLine = 8192;
     char line[kMaxLengthLine];
-    size_t len = ::smaz_compress(const_cast<char *>(value_string_.c_str()), value_string_.length(), line, kMaxLengthLine);
+    size_t len = ::smaz_compress(const_cast<char *>(value_string_.c_str()),
+                                 value_string_.length(), line, kMaxLengthLine);
 
     if (len < value_string_.length()) {
       // Serialize using compression
@@ -786,9 +810,9 @@ int Value::SerializeMap(char *data) {
     Value *value = it->second;
     offset += tmp_key.serialize(data + offset);
     offset += value->serialize(data + offset);
-    // LM_M(("SerializeMap component for first:'%s' value:'%s', offset:%d", tmp_key.str().c_str(), value->str().c_str(), offset));
+    // LOG_SM(("SerializeMap component for first:'%s' value:'%s', offset:%d", tmp_key.str().c_str(), value->str().c_str(), offset));
   }
-  // LM_M(("SerializeMap for value:'%s', offset:%d", this->str().c_str(), offset));
+  // LOG_SM(("SerializeMap for value:'%s', offset:%d", this->str().c_str(), offset));
   return offset;
 }
 
@@ -798,14 +822,19 @@ int Value::serialize(char *data) {
   switch (value_type_) {
     case value_void:
       return SerializeVoid(data);
+
     case value_number:
       return SerializeNumber(data);
+
     case value_string:
       return SerializeString(data);
+
     case value_vector:
       return SerializeVector(data);
+
     case value_map:
       return SerializeMap(data);
+
     default:
       LM_X(1, ("Internal error, unknown value_type:%d", static_cast<int>(value_type_)));
   }
@@ -863,14 +892,19 @@ int Value::hash(int max_num_partitions) {
   switch (value_type_) {
     case value_void:
       return HashVoid(max_num_partitions);
+
     case value_number:
       return HashNumber(max_num_partitions);
+
     case value_string:
       return HashString(max_num_partitions);
+
     case value_vector:
       return HashVector(max_num_partitions);
+
     case value_map:
       return HashMap(max_num_partitions);
+
     default:
       LM_E(("Internal error, unknown value_type:%d", static_cast<int>(value_type_)));
   }
@@ -880,6 +914,7 @@ int Value::hash(int max_num_partitions) {
 int Value::size(char *data) {
   // Simple but crappy implementation...
   Value value;
+
   return value.parse(data);
 }
 
@@ -1286,7 +1321,7 @@ std::string Value::str() {
       // Create a compilation unit to avoid problems with the local variables
       output << "{";
       au::map<std::string, Value>::iterator it;
-      for (it = value_map_.begin(); it != value_map_.end();) {
+      for (it = value_map_.begin(); it != value_map_.end(); ) {
         output << "\"" << it->first << "\"" << ":";
         output << it->second->str();
         ++it;
@@ -1330,7 +1365,7 @@ void Value::_strJSON(std::ostream &output) {
       break;
     case value_vector:
       output << "[";
-      for (size_t i = 0; i < value_vector_.size();) {
+      for (size_t i = 0; i < value_vector_.size(); ) {
         value_vector_[i]->_strJSON(output);
         ++i;
         if (i != value_vector_.size()) {
@@ -1402,6 +1437,7 @@ void Value::_strXML(std::ostream &output) {
       break;
   }
 }
+
 void Value::_strHTML(int level_html_heading, std::ostream &output) {
   switch (value_type_) {
     case value_number:
@@ -1454,13 +1490,16 @@ std::string Value::strHTML(int level_html_heading) {
 
   output << "<style>";
   output
-      << "#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}";
+  <<
+  "#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}";
   output
-      << "#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}";
+  << "#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}";
   output
-      << "#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}";
+  <<
+  "#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}";
   output
-      << "#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}";
+  <<
+  "#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}";
   output << "#table-5 tbody tr:hover td{color:#009;}";
   output << "</style>";
 
@@ -1473,13 +1512,16 @@ std::string Value::strHTMLTable(std::string _varNameInternal) {
 
   output << "<style>";
   output
-      << "#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}";
+  <<
+  "#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}";
   output
-      << "#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}";
+  << "#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}";
   output
-      << "#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}";
+  <<
+  "#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}";
   output
-      << "#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}";
+  <<
+  "#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}";
   output << "#table-5 tbody tr:hover td{color:#009;}";
   output << "</style>";
 
@@ -1618,10 +1660,10 @@ bool Value::is_terminal() {
   return true;
 }
 
-
 Value::ValueType Value::GetValueType() const {
   return value_type_;
 }
+
 void Value::SetAsVoid() {
   ChangeValueType(value_void);
 }
@@ -1757,7 +1799,6 @@ Value *Value::GetValueFromVector(size_t pos) {
 size_t Value::GetVectorSize() const {
   return value_vector_.size();
 }
-
 
 bool StringCompareAscending(const std::string& left, const std::string& right) {
   if (strcmp(left.c_str(), right.c_str()) < 0) {
@@ -1963,7 +2004,7 @@ const char *Value::GetStringFromMap(const char *key) {
     return NULL;
   }
 
-  // LM_M(("OK looking for key in map, key:'%s' value:%p('%s')", key, value, value->c_str()));
+  // LOG_SM(("OK looking for key in map, key:'%s' value:%p('%s')", key, value, value->c_str()));
   return value->c_str();
 }
 
@@ -2136,14 +2177,15 @@ Value& Value::operator++() {
 }
 
 // postfix form
-const Value Value::operator++(int /* just to distinguish prefix and postfix increment */) {
+const Value Value::operator++(int  /* just to distinguish prefix and postfix increment */) {
   Value old_value = *this;
+
   ++(*this);
   return old_value;
 }
 
 // Comparison operators (mainly for numbers and strings)
-bool Value::Less(const Value* const left, const Value* const right) {
+bool Value::Less(const Value *const left, const Value *const right) {
   if (left->value_type_ < right->value_type_) {
     return true;
   } else if (left->value_type_ < right->value_type_) {
@@ -2152,15 +2194,19 @@ bool Value::Less(const Value* const left, const Value* const right) {
     switch (left->value_type_) {
       case value_number:
         return left->value_double_ < right->value_double_;
+
       case value_string:
         if (strcmp(left->value_string_.c_str(), right->value_string_.c_str()) < 0) {
           return true;
         }
         return false;
+
       case value_vector:
         return left->value_vector_.size() < right->value_vector_.size();
+
       case value_map:
         return left->value_vector_.size() < right->value_vector_.size();
+
       default:
         LM_E(("Internal Error, unknown value_type:%d", left->value_type_));
         std::abort();
@@ -2170,15 +2216,15 @@ bool Value::Less(const Value* const left, const Value* const right) {
   }
 }
 
-bool Value::Greater(const Value* const left, const Value* const right) {
+bool Value::Greater(const Value *const left, const Value *const right) {
   return Less(right, left);
 }
 
-bool Value::LessOrEqual(const Value* const left, const Value* const right) {
+bool Value::LessOrEqual(const Value *const left, const Value *const right) {
   return !Less(right, left);
 }
 
-bool Value::GreaterOrEqual(const Value* const left, const Value* const right) {
+bool Value::GreaterOrEqual(const Value *const left, const Value *const right) {
   return !Less(left, right);
 }
 
@@ -2254,8 +2300,6 @@ std::string Value::GetString() {  // const not possible because of str()
 // Access to the string char*
 const char *Value::c_str() const {
   if (value_type_ != value_string) {
-    LM_W(("Error recovering c_str() from Value; it is not a string, but value_type_:%d (value_string:%d)",
-          value_type_, value_string));
     return NULL;
   }
   return value_string_.c_str();
@@ -2271,88 +2315,130 @@ const char *Value::StrSerializationCode(SerializationCode code) {
   switch (code) {
     case ser_void:
       return "ser_void";
+
     case ser_int_positive:
       return "ser_int_positive";
+
     case ser_int_negative:
       return "ser_int_negative";
+
     case ser_int_value_0:
       return "ser_int_value_0";
+
     case ser_int_value_1:
       return "ser_int_value_1";
+
     case ser_int_value_2:
       return "ser_int_value_2";
+
     case ser_int_value_3:
       return "ser_int_value_3";
+
     case ser_int_value_4:
       return "ser_int_value_4";
+
     case ser_int_value_5:
       return "ser_int_value_5";
+
     case ser_int_value_6:
       return "ser_int_value_6";
+
     case ser_int_value_7:
       return "ser_int_value_7";
+
     case ser_int_value_8:
       return "ser_int_value_8";
+
     case ser_int_value_9:
       return "ser_int_value_9";
+
     case ser_int_value_10:
       return "ser_int_value_10";
+
     case ser_int_value_minus_1:
       return "ser_int_value_minus_1";
+
     case ser_double_positive_1_decimal:
       return "ser_double_positive_1_decimal";
+
     case ser_double_positive_2_decimal:
       return "ser_double_positive_2_decimal";
+
     case ser_double_positive_3_decimal:
       return "ser_double_positive_3_decimal";
+
     case ser_double_positive_4_decimal:
       return "ser_double_positive_4_decimal";
+
     case ser_double_positive_5_decimal:
       return "ser_double_positive_5_decimal";
+
     case ser_double_negative_1_decimal:
       return "ser_double_negative_1_decimal";
+
     case ser_double_negative_2_decimal:
       return "ser_double_negative_2_decimal";
+
     case ser_double_negative_3_decimal:
       return "ser_double_negative_3_decimal";
+
     case ser_double_negative_4_decimal:
       return "ser_double_negative_4_decimal";
+
     case ser_double_negative_5_decimal:
       return "ser_double_negative_5_decimal";
+
     case ser_double:
       return "ser_double";
+
     case ser_string:
       return "string";
+
     case ser_string_constant:
       return "string_constant";
+
     case ser_string_smaz:
       return "string_smaz";
+
     case ser_vector:
       return "vector";
+
     case ser_vector_len_0:
       return "ser_vector_len_0";
+
     case ser_vector_len_1:
       return "ser_vector_len_1";
+
     case ser_vector_len_2:
       return "ser_vector_len_2";
+
     case ser_vector_len_3:
       return "ser_vector_len_3";
+
     case ser_vector_len_4:
       return "ser_vector_len_4";
+
     case ser_vector_len_5:
       return "ser_vector_len_5";
+
     case ser_map:
       return "ser_map";
+
     case ser_map_len_0:
       return "ser_map_len_0";
+
     case ser_map_len_1:
       return "ser_map_len_1";
+
     case ser_map_len_2:
       return "ser_map_len_2";
+
     case ser_map_len_3:
       return "ser_map_len_3";
+
     case ser_map_len_4:
       return "ser_map_len_4";
+
     case ser_map_len_5:
       return "ser_map_len_5";
   }
@@ -2363,12 +2449,16 @@ const char *Value::StrType() {
   switch (value_type_) {
     case value_void:
       return "void";
+
     case value_string:
       return "string";
+
     case value_number:
       return "number";
+
     case value_vector:
       return "vector";
+
     case value_map:
       return "map";
   }

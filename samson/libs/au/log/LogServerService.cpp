@@ -15,15 +15,13 @@
 #include "logMsg/logMsg.h"                 // LM_T
 #include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
 
+#include "au/au.pb.h"
 #include "au/containers/vector.h"
 #include "au/log/LogQuery.h"
-#include "au/au.pb.h"
 
 #define Char_to_int(x) ((x) - 48)
 
 namespace au {
-  
-  
 LogServerService::LogServerService(int port, const std::string& _directory)
   : network::Service(port), token("LogServerService") {
   directory = _directory;
@@ -61,10 +59,9 @@ void LogServerService::openFileDescriptor(au::ErrorManager *error) {
         continue;             // File exist, so let's try the next number...
       }
       int _fd = open(current_file_name.c_str(), O_CREAT | O_WRONLY, 0644);
-      LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
 
       if (_fd < 0) {
-        error->set(au::str("Error opening file %s (%s)", current_file_name.c_str(), strerror(errno)));
+        error->AddError(au::str("Error opening file %s (%s)", current_file_name.c_str(), strerror(errno)));
         return;
       }
 
@@ -82,50 +79,52 @@ void LogServerService::openFileDescriptor(au::ErrorManager *error) {
 
 void LogServerService::initLogServerService(au::ErrorManager *error) {
   // Create directory
-  if (( mkdir(directory.c_str(), 0755) != 0 ) && ( errno != EEXIST )) {
-    error->set(au::str("Error creating directory %s (%s)", directory.c_str(), strerror(errno)));
+  if ((mkdir(directory.c_str(), 0755) != 0) && (errno != EEXIST)) {
+    error->AddError(au::str("Error creating directory %s (%s)", directory.c_str(), strerror(errno)));
     return;
   }
 
   // Open the first file-descriptor
   openFileDescriptor(error);
 
-  if (error->IsActivated()) {
+  if (error->HasErrors()) {
     return;
   }
 
   au::Status s = InitService();
   if (s != au::OK) {
-    error->set(au::str("Error initializing server (%s)", au::status(s)));
+    error->AddError(au::str("Error initializing server (%s)", au::status(s)));
     return;
   }
 }
 
-  void LogServerService::Process( LogQuery* log_query )
-  {
-    log_container_.Process( log_query );
-  }
-  
-void LogServerService::runLogProbe(gpb::LogConnectionHello* hello,au::SocketConnection *socket_connection, bool *quit) {
+void LogServerService::Process(LogQuery *log_query) {
+  log_container_.Process(log_query);
+}
+
+void LogServerService::runLogProbe(gpb::LogConnectionHello *hello, au::SocketConnection *socket_connection,
+                                   bool *quit) {
   // Prove connection
   std::string filter;
+
   if (hello->has_filter()) {
     filter = hello->filter();
   }
-  
+
   LogProbeConnection log_prove_connection(filter);
-  
+
   {
     au::TokenTaker tt(&token_log_probe_connections_);
     log_probe_connections_.insert(&log_prove_connection);
   }
-  
+
   while (!*quit) {
     LogPointer log = log_prove_connection.Pop();
-    
+
     if (log != NULL) {
-      if(!log->Write(socket_connection))
-        break; // Not possible to write to this channel
+      if (!log->Write(socket_connection)) {
+        break;  // Not possible to write to this channel
+      }
     } else {
       usleep(100000);
     }
@@ -133,7 +132,7 @@ void LogServerService::runLogProbe(gpb::LogConnectionHello* hello,au::SocketConn
       break;
     }
   }
-  
+
   // Remove connection from log_connections vector
   {
     au::TokenTaker tt(&token_log_probe_connections_);
@@ -141,81 +140,79 @@ void LogServerService::runLogProbe(gpb::LogConnectionHello* hello,au::SocketConn
   }
 }
 
-  void LogServerService::runLogQuery(gpb::LogConnectionHello* hello,au::SocketConnection *socket_connection, bool *quit) {
-    std::string query_definition = hello->filter(); // Definition of the query
-    
-    LogQuery log_query( hello->filter() );
-    
-    // Process all required logs
-    Process( &log_query );
-    
-    // Emit logs to the socket connection
-    log_query.Emit( socket_connection );
-  }
-  
-  void LogServerService::runLogProvider(gpb::LogConnectionHello* hello,au::SocketConnection *socket_connection, bool *quit) {
-    
-    // Provider
-    while (!*quit) {
-      // Read a log
-      au::SharedPointer<Log>log(new Log());
-      if (!log->Read(socket_connection)) {
-        LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
-        return;  // Not possible to read a log...
-      }
-      
-      std::string channel = au::str("%s_%s_%d"
-                                    , log->Get("EXEC").c_str()
-                                    , socket_connection->host_and_port().c_str()
-                                    
-                                    , log->log_data().pid);
-      // Additional information to the log
-      log->Set("channel", channel);
-      log->Set("host", socket_connection->host_and_port());  // Additional information to the log
-      
-      // Push logs to probes
-      {
-        au::TokenTaker tt(&token_log_probe_connections_);
-        std::set<LogProbeConnection *>::iterator iterator;
-        for (iterator = log_probe_connections_.begin(); iterator != log_probe_connections_.end(); iterator++) {
-          (*iterator)->Push(log);
-        }
-      }
-      
-      // Add log...
-      add(log);
+void LogServerService::runLogQuery(gpb::LogConnectionHello *hello, au::SocketConnection *socket_connection,
+                                   bool *quit) {
+  std::string query_definition = hello->filter();   // Definition of the query
+
+  LogQuery log_query(hello->filter());
+
+  // Process all required logs
+  Process(&log_query);
+
+  // Emit logs to the socket connection
+  log_query.Emit(socket_connection);
+}
+
+void LogServerService::runLogProvider(gpb::LogConnectionHello *hello, au::SocketConnection *socket_connection,
+                                      bool *quit) {
+  // Provider
+  while (!*quit) {
+    // Read a log
+    au::SharedPointer<Log>log(new Log());
+    if (!log->Read(socket_connection)) {
+      LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
+      return;    // Not possible to read a log...
     }
+
+    std::string channel = au::str("%s_%s_%d"
+                                  , log->Get("EXEC").c_str()
+                                  , socket_connection->host_and_port().c_str()
+
+                                  , log->log_data().pid);
+    // Additional information to the log
+    log->Set("channel", channel);
+    log->Set("host", socket_connection->host_and_port());    // Additional information to the log
+
+    // Push logs to probes
+    {
+      au::TokenTaker tt(&token_log_probe_connections_);
+      std::set<LogProbeConnection *>::iterator iterator;
+      for (iterator = log_probe_connections_.begin(); iterator != log_probe_connections_.end(); iterator++) {
+        (*iterator)->Push(log);
+      }
+    }
+
+    // Add log...
+    add(log);
   }
-  
-  
+}
+
 void LogServerService::run(au::SocketConnection *socket_connection, bool *quit) {
-  
   // Read initial "hello" packet to understand what type of connection we have
   // - log provider
   // - log probe
   // - log query
-  
+
   gpb::LogConnectionHello *hello;
   au::Status s = readGPB(socket_connection->fd(), &hello, 10);  // 10 seconds timeout to read hello message
 
   if (s != au::OK) {
-    LM_W(("Error reading hello message for incomming connection (%s)", au::status(s)));
+    LOG_SW(("Error reading hello message for incomming connection (%s)", au::status(s)));
     return;
   }
 
   if (hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogProbe) {
-    runLogProbe(hello,socket_connection, quit);
+    runLogProbe(hello, socket_connection, quit);
     return;
   }
   if (hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogQuery) {
-    runLogQuery(hello,socket_connection, quit);
+    runLogQuery(hello, socket_connection, quit);
     return;
   }
   if (hello->type() == au::gpb::LogConnectionHello_LogConnectionType_LogProvider) {
-    runLogProvider(hello,socket_connection, quit);
+    runLogProvider(hello, socket_connection, quit);
     return;
   }
-
 }
 
 void LogServerService::add(au::SharedPointer<Log> log) {
@@ -241,8 +238,8 @@ void LogServerService::add(au::SharedPointer<Log> log) {
 
     au::ErrorManager error;
     openFileDescriptor(&error);
-    if (error.IsActivated()) {
-      LM_W(("Not possible to open local file to save logs. Logs will be deninitelly lost"));
+    if (error.HasErrors()) {
+      LOG_SW(("Not possible to open local file to save logs. Logs will be deninitelly lost"));
       return;
     }
   }
@@ -301,12 +298,13 @@ public:
 
 std::string LogServerService::GetInfoTable() {
   au::TokenTaker tt(&token);
+
   return log_container_.log_counter().GetInfoTable();
 }
 
 std::string LogServerService::GetChannelsTable() {
   au::TokenTaker tt(&token);
+
   return log_container_.log_counter().GetChannelsTable();
 }
-
 }

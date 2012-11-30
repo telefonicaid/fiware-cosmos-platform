@@ -74,25 +74,26 @@ bool KVInfo::isEmpty() const {
 KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
   if (_data == NULL) {
     LM_E(("Null _data"));
-    error->set(au::str("NULL _data"));
+    error->AddError(au::str("NULL _data"));
     return NULL;
   }
 
   KVHeader *header = reinterpret_cast<KVHeader *>(_data);
   char *data = _data + sizeof(KVHeader);
 
-  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(header->keyFormat);
-  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(header->valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(header->keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(header->valueFormat);
 
   if (!key_data) {
     LM_E(("Unknown data type '%s' for 'key'", header->keyFormat));
+    error->AddError(au::str("Unknown data type %s", header->keyFormat));
     error->set(au::str("Unknown data type '%s' for 'key'", header->keyFormat));
     return NULL;
   }
 
   if (!value_data) {
     LM_E(("Unknown data type '%s' for data", header->valueFormat));
-    error->set(au::str("Unknown data type '%s' for 'data'", header->valueFormat));
+    error->AddError(au::str("Unknown data type %s", header->valueFormat));
     return NULL;
   }
 
@@ -122,7 +123,7 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
     if (hg < previous_hg) {
       free(info);
       info = NULL;
-      error->set(
+      error->AddError(
         au::str(
           "Error getting KVInfo vector pargins %lu key-value. Current (%s) belongs to hg=%d and previous hg is %d"
           , i
@@ -143,7 +144,7 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
     total_info.append(info[hg]);
   }
 
-  if (( total_info.size != header->info.size ) || ( total_info.kvs != header->info.kvs )) {
+  if ((total_info.size != header->info.size) || (total_info.kvs != header->info.kvs)) {
     LM_X(1, ("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(), header->info.str().c_str()));
   }
   return info;

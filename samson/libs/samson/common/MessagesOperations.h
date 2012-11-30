@@ -18,10 +18,10 @@
 #include "au/containers/Dictionary.h"
 #include "au/containers/SharedPointer.h"
 #include "au/containers/map.h"
-
 #include "samson/common/Visualitzation.h"
-#include "samson/common/samson.pb.h"    // network::
-#include "samson/module/KVFormat.h"     // KVFormat
+#include "samson/common/samson.pb.h"
+#include "samson/module/KVFormat.h"
+
 namespace samson {
 template<typename C>
 void add(samson::gpb::CollectionRecord *record, std::string name, C _value, std::string format) {

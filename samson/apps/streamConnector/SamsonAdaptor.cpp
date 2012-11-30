@@ -118,8 +118,8 @@ void SamsonConnection::receive_buffer_from_queue(std::string queue, engine::Buff
     // Push the new buffer
     pushInputBuffer(buffer);
   } else {
-    LM_W(("Received a binary buffer %s from %s. Still not implemented how to process this"
-          , au::str(buffer->size(), "B").c_str(), getFullName().c_str()));
+    LOG_SW(("Received a binary buffer %s from %s. Still not implemented how to process this"
+            , au::str(buffer->size(), "B").c_str(), getFullName().c_str()));
   }
 }
 

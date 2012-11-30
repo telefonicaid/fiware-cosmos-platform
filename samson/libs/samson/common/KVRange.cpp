@@ -19,8 +19,6 @@
 #include "samson/common/KVInfo.h"
 
 namespace samson {
-
-  
 void KVRange::set(int hg_begin, int hg_end) {
   hg_begin_ = hg_begin;
   hg_end_ = hg_end;
@@ -34,8 +32,8 @@ void KVRange::setFrom(KVInfo *info) {
   }
 
   if (i == KVFILE_NUM_HASHGROUPS) {
-    LM_W(("No content for generated block"));
-    set(0, 1); // Smaller set
+    LOG_SW(("No content for generated block"));
+    set(0, 1);  // Smaller set
     return;
   }
 
@@ -48,7 +46,7 @@ void KVRange::setFrom(KVInfo *info) {
 
   hg_end_ = j;
 
-  // LM_M(("KVRange for output block %s" , str().c_str()));
+  // LOG_SM(("KVRange for output block %s" , str().c_str()));
 }
 
 void KVRange::setFrom(FullKVInfo *info) {
@@ -59,8 +57,8 @@ void KVRange::setFrom(FullKVInfo *info) {
   }
 
   if (i == KVFILE_NUM_HASHGROUPS) {
-    LM_W(("No content for generated block"));
-    set(0, 1); // Smaller set
+    LOG_SW(("No content for generated block"));
+    set(0, 1);  // Smaller set
     return;
   }
 
@@ -73,7 +71,7 @@ void KVRange::setFrom(FullKVInfo *info) {
 
   hg_end_ = j;
 
-  // LM_M(("KVRange for output block %s" , str().c_str()));
+  // LOG_SM(("KVRange for output block %s" , str().c_str()));
 }
 
 void KVRange::add(KVRange range) {
@@ -123,23 +121,21 @@ bool KVRange::IsOverlapped(const KVRange& range) const {
 
   return true;
 }
-  
-  
-  double KVRange::GetOverlapFactor(const KVRange& range) const {
-    return (double) Intersection(range).size() / (double) size();
-  }
-  
-  
-  bool KVRange::IsOverlapped(const std::vector<KVRange>& ranges) {
-    size_t ranges_size = ranges.size();
-    for (size_t i = 0; i < ranges_size; ++i) {
-      if (IsOverlapped(ranges[i])) {
-        return true;
-      }
-    }
-    return false;
-  }
 
+double KVRange::GetOverlapFactor(const KVRange& range) const {
+  return (double)Intersection(range).size() / (double)size();
+}
+
+bool KVRange::IsOverlapped(const std::vector<KVRange>& ranges) {
+  size_t ranges_size = ranges.size();
+
+  for (size_t i = 0; i < ranges_size; ++i) {
+    if (IsOverlapped(ranges[i])) {
+      return true;
+    }
+  }
+  return false;
+}
 
 bool KVRange::Includes(KVRange range) const {
   if (range.hg_begin_ < hg_begin_) {
@@ -175,16 +171,16 @@ bool KVRange::Contains(KVRange range) const {
 }
 
 /*
- bool KVRange::check(KVInfo *info) const {
-  for (int i = 0; i < KVFILE_NUM_HASHGROUPS; ++i) {
-    if (!contains(i)) {
-      if (info[i].size != 0) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
+ * bool KVRange::check(KVInfo *info) const {
+ * for (int i = 0; i < KVFILE_NUM_HASHGROUPS; ++i) {
+ *  if (!contains(i)) {
+ *    if (info[i].size != 0) {
+ *      return false;
+ *    }
+ *  }
+ * }
+ * return true;
+ * }
  */
 
 KVRange GetKVRangeForDivision(int pos, int num_divisions) {
@@ -262,10 +258,10 @@ bool operator==(const KVRange & left, const KVRange & right) {
   return true;
 }
 
-
 std::string str(const std::vector<KVRange>& ranges) {
   std::ostringstream output;
   size_t ranges_size = ranges.size();
+
   for (size_t i = 0; i < ranges_size; ++i) {
     output << ranges[i].str() << " ";
   }
@@ -285,39 +281,37 @@ bool CheckCompleteKVRanges(const std::vector<KVRange>& ranges) {
     if (total != 1) {
       return false;
     }
-
   }
   return true;
 }
-  KVRange KVRange::Intersection(KVRange range) const {
-    // Disjoint ranges
-    if (range.hg_end_ <= hg_begin_) {
-      return KVRange(0, 0);
-    }
-    
-    if (range.hg_begin_ >= hg_end_) {
-      return KVRange(0, 0);
-    }
-    
-    return KVRange(std::max(hg_begin_, range.hg_begin_), std::min(hg_end_, range.hg_end_));
+
+KVRange KVRange::Intersection(KVRange range) const {
+  // Disjoint ranges
+  if (range.hg_end_ <= hg_begin_) {
+    return KVRange(0, 0);
   }
 
-  std::vector<KVRange> KVRange::divide(int factor) const {
-    // Max factor
-    if (factor > (hg_end_ - hg_begin_)) {
-      factor = hg_end_ - hg_begin_;
-    }
-    
-    // Divide range in a number of sub ranges
-    int length = (hg_end_ - hg_begin_) / factor;
-    
-    std::vector<KVRange> ranges;
-    for (int i = 0; i < (factor - 1); ++i) {
-      ranges.push_back(KVRange(hg_begin_ + i * length, hg_begin_ + (i + 1) * length));
-    }
-    ranges.push_back(KVRange(hg_begin_ + (factor - 1) * length, hg_end_));
-    return ranges;
+  if (range.hg_begin_ >= hg_end_) {
+    return KVRange(0, 0);
   }
 
-  
+  return KVRange(std::max(hg_begin_, range.hg_begin_), std::min(hg_end_, range.hg_end_));
+}
+
+std::vector<KVRange> KVRange::divide(int factor) const {
+  // Max factor
+  if (factor > (hg_end_ - hg_begin_)) {
+    factor = hg_end_ - hg_begin_;
+  }
+
+  // Divide range in a number of sub ranges
+  int length = (hg_end_ - hg_begin_) / factor;
+
+  std::vector<KVRange> ranges;
+  for (int i = 0; i < (factor - 1); ++i) {
+    ranges.push_back(KVRange(hg_begin_ + i * length, hg_begin_ + (i + 1) * length));
+  }
+  ranges.push_back(KVRange(hg_begin_ + (factor - 1) * length, hg_end_));
+  return ranges;
+}
 }

@@ -99,8 +99,8 @@ public:
         au::ErrorManager error;
         samson::ModuleInformation *module_information = samson::ModuleInformation::parse(module_fileName, &error);
 
-        if (error.IsActivated()) {
-          writeErrorOnConsole(error.GetMessage());
+        if (error.HasErrors()) {
+          writeErrorOnConsole(error.GetLastError());
         } else {
           if (module_information->module.name != fileName) {
             writeErrorOnConsole(
@@ -176,10 +176,7 @@ public:
     std::string main_command = cmdLine.get_argument(0);
 
     if (main_command == "quit") {
-      // TODO: Check everything is saved....
-
-      // Quit console to finish
-      quitConsole();
+      StopConsole();      // Quit console to finish
     }
     if (main_command == "ls_modules") {
       // Show information about modules
@@ -293,17 +290,17 @@ public:
 
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)false);
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
-  paConfig("log to file",                   (void *)true);
+  paConfig("log to screen", (void *)false);
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE: TEXT");
+  paConfig("log to file", (void *)true);
 
   paParse(paArgs, argC, (char **)argV, 1, false);      // No more pid in the log file name
   lmAux((char *)"father");
   logFd = lmFirstDiskFileDescriptor();
 
   SamsonModuleEditor samson_module_editor;
-  samson_module_editor.runConsole();
+  samson_module_editor.StartConsole(true);
 
   return 0;
 }

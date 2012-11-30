@@ -20,7 +20,7 @@
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/gpb_operations.h"
-#include "samson/common/samson.pb.h"
+
 #include "zoo/Connection.h"
 #include "zoo/ZooNodeCommiter.h"
 
@@ -92,7 +92,6 @@ private:
   void ProcessCommand(gpb::Data *data, const std::string command, au::ErrorManager& error) {
     au::SharedPointer<au::CommandLine> cmd = GetCommandLine();
     cmd->Parse(command);
-
     ProcessCommand(data, cmd, error);
   }
 

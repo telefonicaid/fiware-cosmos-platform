@@ -119,10 +119,10 @@ au::Status readGPB(int fd, T **t, int time_out) {
     return GPB_WrongReadSize;     // Error reading the size
   }
 
-  // LM_M(("Reading a GPB message from fd:%d (size:%d)", fd , (int) size ));
+  // LOG_SM(("Reading a GPB message from fd:%d (size:%d)", fd , (int) size ));
 
   if (header.size > 1000000) {
-    LM_W(("Large size %l for a background process message", header.size));
+    LOG_SW(("Large size %l for a background process message", header.size));
   }
   // return 3;    // Too much bytes to read
 
@@ -141,7 +141,7 @@ au::Status readGPB(int fd, T **t, int time_out) {
   free(data);
 
   if (!parse) {
-    LM_W(("Error parsing a GPB message of %d bytes", header.size));
+    LOG_SW(("Error parsing a GPB message of %d bytes", header.size));
     delete (*t);
     return GPB_ReadErrorParsing;   // Error parsing the document
   }
@@ -167,7 +167,7 @@ Status writeGPB(int fd, T *t) {
   header.init(t->ByteSize());
 
   if (header.size > 100000) {
-    LM_W(("Large size %l for a background process message", header.size));
+    LOG_SW(("Large size %l for a background process message", header.size));
   }
   // return 3;
 

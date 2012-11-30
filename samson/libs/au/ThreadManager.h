@@ -36,16 +36,13 @@
 #include <string>       //  std::string
 #include <vector>       // std::vector
 
-#include "au/statistics/Cronometer.h"
-#include "au/singleton/Singleton.h"
-#include "au/mutex/Token.h"
-#include "au/mutex/TokenTaker.h"
-#include "au/string/StringUtilities.h"
-
-#include "logMsg/logMsg.h"                                       // LM_M()
-
 #include "au/containers/StringVector.h"
 #include "au/containers/map.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
+#include "au/singleton/Singleton.h"
+#include "au/statistics/Cronometer.h"
+#include "au/string/StringUtilities.h"
 
 #define AU_MAX_NUM_THREADS 100
 
@@ -64,6 +61,10 @@ public:
     name_ = name;
     f_ = f;
     p_ = p;
+  }
+
+  std::string str() {
+    return au::str("%s:%s", name_.c_str(), cronometer_.str().c_str());
   }
 
 private:
@@ -95,7 +96,7 @@ public:
   static void wait_all_threads(std::string title);
 
   // Add a thread to the manager
-  int addThread(
+  int AddThread(
     std::string thread_name,
     pthread_t *__restrict t,
     const pthread_attr_t *__restrict attr_t,
@@ -104,14 +105,14 @@ public:
     );
 
   // Add a thread to the manager
-  int addNonDetachedThread(
+  int AddNonDetachedThread(
     std::string thread_name,
     pthread_t *__restrict t,
     const pthread_attr_t *__restrict attr_t,
     thread_function f,
     void *__restrict p
     );
-  
+
 
   // Get name of all running threads
   au::StringVector getThreadNames();
@@ -122,64 +123,35 @@ public:
   // Internal function used to notify that a particular threads has finished
   void notify_finish_thread(ThreadInfo *thread_info);
 
-  int num_threads() {
-    int total = 0;
+  // Get the number of active threads
+  int num_threads() const;
 
-    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
-      if (threads_[i] != NULL) {
-        total++;
-      }
-    }
-    return total;
-  }
-
+  // Debug string
   std::string str();
 
-  static ThreadManager* shared()
-  {
+  // Singleton access handy function
+  static ThreadManager *shared() {
     return au::Singleton<au::ThreadManager>::shared();
   }
-  
+
 private:
 
   // "Name" of the running threads
   ThreadInfo *threads_[AU_MAX_NUM_THREADS];
 
-  void AddThreads(ThreadInfo *thread_info) {
-    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
-      if (threads_[i] == NULL) {
-        threads_[i] = thread_info;
-        return;
-      }
-    }
-
-    LM_X(1, ("No space for more threads"));
-  }
-
-  void RemoveThreads(ThreadInfo *thread_info) {
-    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
-      if (threads_[i] == thread_info) {
-        threads_[i] = NULL;
-        return;
-      }
-    }
-
-    LM_X(1, ("Thread not found"));
-  }
+  void AddThread(ThreadInfo *thread_info);
+  void RemoveThread(ThreadInfo *thread_info);
 
   // Mutex protection
   au::Token token_;
 };
 
 
-// Class encapsulating a thread
+// Class to encapsulate a thread
 //
-// This thread is implemented in method run()
-//
-// Method run should return "quickly" after method cancel_thread is executed in a paralel thread
-// Method thread_should_quit() can be executed inside run() to check if I have to finish
+// The thread itself is implemented in the "run" method
+// Method thread_should_quit() should be periodically checked inside run() to return from "run"
 
-void *run_Thread(void *p);
 
 class Thread {
 public:
@@ -190,70 +162,53 @@ public:
     pthread_running_ = false;
   }
 
-  void start_thread() {
-    if (pthread_running_) {
-      return;     // Already running
-    }
-    // Mark as running
-    pthread_running_ = true;
-
-    // Run the thread in background
-    au::Singleton<au::ThreadManager>::shared()->addThread(name_, &t_, NULL, run_Thread, this);
+  ~Thread() {
+    StopThread();  // make sure background thread is stoped
   }
 
-  virtual void run() = 0;    // Main function of the thread to be overloaded
-  virtual void cancel_thread() {
-  };                                  // Paralel cancel function ( to wake up the thread for instance )
+  // Main functions to control this thread ( from outputside the thread )
+  void StartThread();
+  void StopThread();
 
-  void stop_thread() {
-    stoping_ = true;
-    if (!pthread_running_) {
-      return;
-    }
+  // Method to block this thread until background thread is finisd
+  void JoinThread();
 
-    if (pthread_self() == t_) {
-      LM_W(("Not possible to stop a thread from itself"));
-      return;
-    }
+  // Overload this method to implement whatever is necessary to unlock background thread
+  virtual void UnlockThread() {
+  };
 
-    // Set the flag
-    stoping_ = true;
-
-    // Execute cutom cancel cunfion
-    cancel_thread();
-
-    // Wait until thread is finished
-    au::Cronometer c;
-    while (true) {
-      if (!pthread_running_) {
-        return;
-      }
-
-      if (c.seconds() > 2) {
-        LM_W(("Too mush time waiting for thread %s", name_.c_str()));
-        c.Reset();
-      }
-
-      usleep(100000);
-    }
-  }
-
-  bool thread_should_quit() {
+  bool IsThreadQuiting() const {
     return stoping_;
   }
 
-  bool isRunning() {
+  bool IsThreadRunning() const {
     return pthread_running_;
+  }
+
+  /**
+   * \brief Check if I am the background thread
+   */
+
+  bool IsBackgroundThread() const {
+    if (!pthread_running_) {
+      return false;
+    }
+    return pthread_equal(pthread_self(), t_);
   }
 
 private:
 
-  std::string name_;
-  pthread_t t_;
-  bool pthread_running_;
-  bool stoping_;     // Flag to indicate
+  // Main function of the thread to be overloaded
+  virtual void RunThread() = 0;
+
+  std::string name_;        // Name of this thread for debugging
+  pthread_t t_;             // Identifier of backgroud thread
+  bool pthread_running_;    // Flag to indicate background thread is really running
+  bool stoping_;            // Flag to indicate background thread to stop
 
   friend void *run_Thread(void *p);
+
+  au::Token token_;  // Mutex to stop threads until background thread is finished
 };
 }
 

@@ -11,7 +11,7 @@
 #include "samson/stream/WorkerTaskBase.h"      // Own interface
 #include <list>
 
-#include "logMsg/logMsg.h"      // LM_M
+#include "logMsg/logMsg.h"      // LOG_SM
 #include "samson/common/coding.h"
 #include "samson/stream/Block.h"              // samson::Stream::Block
 #include "samson/stream/BlockManager.h"       // samson::stream::BlockManager
@@ -117,7 +117,7 @@ void WorkerTaskBase::fill(samson::gpb::CollectionRecord *record, const Visualiza
     add(record, "finished ", "No", "different");
   }
 
-  add(record, "error ", error().GetMessage(), "different");
+  add(record, "error ", error().GetLastError(), "different");
 
   if (ProcessItem::finished()) {
     add(record, "state", "finished", "left,different");
@@ -151,7 +151,7 @@ void WorkerTaskBase::SetWorkerTaskFinished() {
 }
 
 void WorkerTaskBase::SetWorkerTaskFinishedWithError(const std::string& error_message) {
-  error_.set(error_message);
+  error_.AddError(error_message);
   worker_task_finished_ = true;
 }
 

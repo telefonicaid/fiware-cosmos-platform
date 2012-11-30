@@ -144,8 +144,8 @@ void DefragTask::run() {
 
   list->ReviewBlockReferences(error_);
 
-  if (error_.IsActivated()) {
-    LOG_SW((">>>> Error in defrag operation: %s", error_.GetMessage().c_str()));
+  if (error_.HasErrors()) {
+    LOG_SW((">>>> Error in defrag operation: %s", error_.GetLastError().c_str()));
     return;
   }
 
@@ -159,14 +159,14 @@ void DefragTask::run() {
     engine::BufferPointer buffer = block->buffer();
 
     if (buffer == NULL) {
-      error_.set(au::str("Block %lu is apparently not in memory", block_ref->block_id()));
+      error_.AddError(au::str("Block %lu is apparently not in memory", block_ref->block_id()));
       return;
     }
 
     // Check header for valid block
     KVHeader *header = reinterpret_cast<KVHeader *> (buffer->data());
     if (!header->Check()) {
-      error_.set("Not valid header in block reference");
+      error_.AddError("Not valid header in block reference");
       return;
     }
 
@@ -174,7 +174,7 @@ void DefragTask::run() {
     au::SharedPointer<KVFile> file = block_ref->file();
 
     if (file == NULL) {
-      error_.set(au::str("Error getting KVFile for block %lu", block_ref->block_id()));
+      error_.AddError(au::str("Error getting KVFile for block %lu", block_ref->block_id()));
       return;
     }
 
@@ -182,7 +182,7 @@ void DefragTask::run() {
   }
 
   if (kv_files.size() == 0) {
-    error_.set("No data provided for defrag operation");
+    error_.AddError("No data provided for defrag operation");
     return;
   }
 
@@ -233,7 +233,7 @@ void DefragTask::run() {
     }
 
     if (offset != buffer_size) {
-      error_.set("Internal error in defrag operation");
+      error_.AddError("Internal error in defrag operation");
       return;
     }
 

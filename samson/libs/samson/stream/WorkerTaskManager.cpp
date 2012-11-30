@@ -132,7 +132,7 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     if (notification->environment().IsSet("error")) {
       std::string error = notification->environment().Get("error", "???");
       task_base->SetWorkerTaskFinishedWithError(error);
-      if (!task_base->error().IsActivated()) {
+      if (!task_base->error().HasErrors()) {
         LM_X(1, ("Internal error"));
       }
     } else {
@@ -155,7 +155,7 @@ void WorkerTaskManager::reviewPendingWorkerTasks() {
   int max_running_operations = static_cast<int> (num_processors);
 
   while (num_running_tasks < max_running_operations) {
-    // LM_M(("Scheduling since running rask %d < %d", (int) num_running_tasks , (int) max_running_operations));
+    // LOG_SM(("Scheduling since running rask %d < %d", (int) num_running_tasks , (int) max_running_operations));
 
     bool runReturn = runNextWorkerTasksIfNecessary();
 
@@ -386,7 +386,7 @@ void WorkerTaskManager::review_stream_operations() {
     StreamOperationRangeInfo *stream_operation = stream_operation_range_info[pos];
     au::SharedPointer<WorkerTask> queue_task = stream_operation->schedule_new_task(getNewId(), data);
     if (queue_task == NULL) {
-      LM_W(("Worker task finally not scheduled for stream operation"));
+      LOG_SW(("Worker task finally not scheduled for stream operation"));
     } else {
       Add(queue_task.static_pointer_cast<WorkerTaskBase> ());
     }

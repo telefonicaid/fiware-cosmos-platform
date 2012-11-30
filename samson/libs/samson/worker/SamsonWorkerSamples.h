@@ -25,7 +25,7 @@
 
 #include "samson/common/Macros.h"               // exit(.)
 #include "samson/common/NotificationMessages.h"
-#include "samson/common/samson.pb.h"            // samson::network::
+// samson::network::
 #include "samson/common/samsonDirectories.h"    // SAMSON_WORKER_DEFAULT_PORT
 
 #include "samson/worker/SamsonWorkerController.h"
@@ -142,7 +142,7 @@ public:
   // Get the vector of values
   int getVector(double *v, int max_v_length) {
     if (max_v_length < get_num_values()) {
-      LM_W(("Not enougth length for FullSampleVector::getVector"));
+      LOG_SW(("Not enougth length for FullSampleVector::getVector"));
       return 0;
     }
 

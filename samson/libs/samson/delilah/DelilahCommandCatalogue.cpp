@@ -88,6 +88,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls", "data", "Show a list of all data queues in the system");
   add_string_argument("ls", "pattern", "*", "Pattern of the queues to show");
   add_bool_option("ls", "-a", "Show hidden queues as well ( used internally by the platform )");
+  add_bool_option("ls", "-commit", "Add commit id information for each queue");
+  add_bool_option("ls", "-blocks", "Add #blocks information for each queue");
   add_string_option("ls", "-group", "", "Group results by a particular column");
 
   add("add", "data", "Create a new queue");
@@ -178,11 +180,10 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // MODULES
   // ------------------------------------------------------------------
 
-
   add("ls_modules", "modules", "Show a list of modules installed in SAMSON node workers");
   add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
 
-  add("ls_local_modules", "modules", "Show a list of modules installed available at this delilah");
+  add("ls_modules_information", "modules", "Show information about loading module process");
 
   add("ls_operations", "modules", "Shows a list of available operations");
   add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
@@ -190,6 +191,21 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add("ls_datas", "modules", "Shows a list of available data-types.");
   add_string_argument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
+
+  add("ls_modules", "modules", "Show a list of modules installed in SAMSON node workers");
+  add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
+  add_tag("ls_modules", "send_to_all_workers");
+
+  add("ls_operations", "modules", "Shows a list of available operations");
+  add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
+  add_bool_option("ls_operations", "-v", "Show more details about input/output parameters");
+  add_tag("ls_operations", "send_to_all_workers");
+
+  add("ls_datas", "modules", "Shows a list of available data-types.");
+  add_string_argument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
+  add_tag("ls_datas", "send_to_all_workers");
+
+  add("ls_local_modules", "modules", "Show a list of modules installed available at this delilah");
 
   add("push_module", "modules", "Push a module to the cluster.");
   add_mandatory_string_argument("push_module", "file", "Local file or directory")->set_options_group("#file");
@@ -233,6 +249,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   add_bool_option("add_stream_operation", "-forward", "Forward reduce operations are scheduled. ( No state )");
   add_bool_option("add_stream_operation", "-update_only", "Only update state for keys with new input values");
+
+  add_string_option("add_stream_operation", "-env", "", "Environment variables separated by commas");
 
   add("remove_stream_operation", "stream", "Remove a previously defined operation with add_stream_operation");
   add_mandatory_string_argument("remove_stream_operation", "name", "Name of the stream operations to remove");
@@ -286,9 +304,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_tag("ls_workers", "send_to_all_workers");
 
   add("init_stream", "stream", "Execute am initialization script to setup some automatic stream operations",
-      "init_stream [prefix] <script_name>\n"
-      "          [prefix]         It is used to name operations and queues\n"
+      "init_stream [-prefix pref] <script_name>\n"
+      "          [-prefix pref_string]         It is used to name operations and queues\n"
       "          <script_name>    Name of the script (e.g. module.script)\n");
+  add_string_option("init_stream", "-prefix", "", "Prefix to name operations and queues");
+  add_mandatory_string_argument("init_stream", "operation", "Name of the stream script to be installed");
 
   add("ps_workers", "stream", "Show a list of commands being executed in each node of the cluster",
       "ps_workers <command pattern>\n");
@@ -302,9 +322,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_string_option("run", "-input", "", "Input queues to get data from");
   add_string_option("run", "-output", "", "Output queues to push data to");
 
-  add("ls_batch_operations", "batch", "Show a list of current batch operations scheduled");
-  add_bool_option("ls_batch_operations", "-input", "Show real input pending to be process");
-  add_bool_option("ls_batch_operations", "-output", "Show output produces batch operations");
+  add_string_option("run", "-env", "", "Environment variables separated by commas");
+
+  add("ls_batch_operations", "batch", "List scheduled batch operations");
+  add_bool_option("ls_batch_operations", "-input", "Show real input pending to be processed");
+  add_bool_option("ls_batch_operations", "-output", "Show output produced by batch operations");
 
   add("clear_batch_operations", "batch", "Clear finished batch operations");
   add_bool_option("clear_batch_operations", "-a", "Clear also unfinished tasks");

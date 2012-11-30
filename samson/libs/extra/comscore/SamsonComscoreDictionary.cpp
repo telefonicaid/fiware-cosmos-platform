@@ -99,21 +99,21 @@ void SamsonComscoreDictionary::write(const char *file_name) {
   if (fwrite(&header, sizeof(Header), 1, file) != 1) {
     LM_X(1, ("Error writin to file %s to create a SamsonComscoreDictionary", file_name ));
   }
-  LM_M(("Writing file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
-        , file_name
-        , au::str(header.
-                  size_string_collection)
-        .c_str()
-        , au::str(header.
-                  size_struct_collection_dictionary_entries)
-        .c_str()
-        , au::str(header.
-                  size_struct_collection_pattern_to_category)
-        .c_str()
-        , au::str(header.
-                  size_struct_collection_categories)
-        .c_str()
-        ));
+  LOG_SM(("Writing file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
+          , file_name
+          , au::str(header.
+                    size_string_collection)
+          .c_str()
+          , au::str(header.
+                    size_struct_collection_dictionary_entries)
+          .c_str()
+          , au::str(header.
+                    size_struct_collection_pattern_to_category)
+          .c_str()
+          , au::str(header.
+                    size_struct_collection_categories)
+          .c_str()
+          ));
 
 
   // Write String collection
@@ -152,13 +152,13 @@ void SamsonComscoreDictionary::read(const char *file_name) {
 
   fclose(file);
 
-  LM_M(("Read file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
-        , file_name
-        , au::str(header.size_string_collection).c_str()
-        , au::str(header.size_struct_collection_dictionary_entries).c_str()
-        , au::str(header.size_struct_collection_pattern_to_category).c_str()
-        , au::str(header.size_struct_collection_categories).c_str()
-        ));
+  LOG_SM(("Read file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
+          , file_name
+          , au::str(header.size_string_collection).c_str()
+          , au::str(header.size_struct_collection_dictionary_entries).c_str()
+          , au::str(header.size_struct_collection_pattern_to_category).c_str()
+          , au::str(header.size_struct_collection_categories).c_str()
+          ));
 }
 
 bool SamsonComscoreDictionary::find_pattern_range(const char *core_domain, uint *begin, uint *end) {
@@ -254,7 +254,7 @@ bool SamsonComscoreDictionary::findURLPattern(const char *_url, uint *pattern) {
 
   // Find pattern range to evaluate
   if (find_pattern_range(url.core_domain.c_str(), &begin_pattern, &end_pattern)) {
-    // LM_M(("Domain %s has patterns in the range %d , %d" , url.core_domain.c_str() , begin_pattern, end_pattern ));
+    // LOG_SM(("Domain %s has patterns in the range %d , %d" , url.core_domain.c_str() , begin_pattern, end_pattern ));
 
     for (uint p = begin_pattern; p <= end_pattern; p++) {
       const char *pre_domain_pattern = get_pre_domain_for_pattern(p);
@@ -300,7 +300,7 @@ size_t SamsonComscoreDictionary::getPatternIdForEnty(size_t i) {
   }
   // TODO(@jges): Remove if
   if (i == dictionary_entries.size) {
-    LM_M(("Detected pattern(%lu) == dictionary_entries.size", i));
+    LOG_SM(("Detected pattern(%lu) == dictionary_entries.size", i));
   }
   return dictionary_entries.v[i].id;
 }

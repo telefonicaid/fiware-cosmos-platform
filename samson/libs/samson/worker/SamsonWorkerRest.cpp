@@ -43,7 +43,7 @@ SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) :
 }
 
 SamsonWorkerRest::~SamsonWorkerRest() {
-  LM_T(LmtCleanup, ("Calling ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
+  LOG_M(logs.cleanup, ("Calling ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
   rest_service_->StopService();
   if (delilah_) {
     delete delilah_;
@@ -54,7 +54,7 @@ SamsonWorkerRest::~SamsonWorkerRest() {
 }
 
 void SamsonWorkerRest::StopRestService() {
-  LM_T(LmtCleanup, ("Calling rest_service->StopService()"));
+  LOG_M(logs.cleanup, ("Calling rest_service->StopService()"));
   rest_service_->StopService();
 }
 
@@ -70,7 +70,7 @@ void SamsonWorkerRest::notify(engine::Notification *notification) {
     command = notification->dictionary().Get<au::network::RESTServiceCommand> ("command");
 
     if (command == NULL) {
-      LM_W(("rest_connection notification without a command. This is probably an error..."));
+      LOG_SW(("rest_connection notification without a command. This is probably an error..."));
       return;
     }
 
@@ -90,7 +90,6 @@ void SamsonWorkerRest::process(au::SharedPointer<au::network::RESTServiceCommand
   }
 
   // Init message
-  // ---------------------------------------------------
   if (command->format() == "xml") {
     command->Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     command->Append("<!-- SAMSON Rest interface -->\n");
@@ -98,17 +97,19 @@ void SamsonWorkerRest::process(au::SharedPointer<au::network::RESTServiceCommand
   } else if (command->format() == "html") {
     command->Append("<html><body>");
   } else if (command->format() == "json") {
+    command->Append("{");  // Returning always a json-object
   }
 
   // Internal process of the command
   ProcessIntern(command);
 
   // Close data content
-  // ---------------------------------------------------
   if (command->format() == "xml") {
     command->Append("\n</samson>\n");
   } else if (command->format() == "html") {
     command->Append("</body></html>");
+  } else if (command->format() == "json") {
+    command->Append("}");  // Returning an object
   }
 }
 
@@ -119,7 +120,12 @@ void SamsonWorkerRest::Append(au::SharedPointer<au::network::RESTServiceCommand>
   if (table == NULL) {
     command->AppendFormatedError("No data");
   } else {
-    command->Append(table->strFormatted(command->format()));
+    if (command->format() == "json") {
+      // Spetial case since json global element is always an object
+      command->Append(std::string("\"table\":") + table->strFormatted(command->format()) + ",");
+    } else {
+      command->Append(table->strFormatted(command->format()));
+    }
   }
 }
 
@@ -148,6 +154,19 @@ void SamsonWorkerRest::ProcessIntern(au::SharedPointer<au::network::RESTServiceC
   std::string verb = command->command();
   std::string path = command->path();
 
+
+  if ((main_command == "queues") && (verb == "DELETE")) {
+    // Remove a queue
+    if (command->path_components().size() < 3) {
+      command->AppendFormatedError("Only /samson/queues/queue_name paths accepted");
+      return;
+    }
+
+    std::string queue_name = command->path_components()[2];
+    ProcessCommitToDatamodel(au::str("rm %s", queue_name.c_str()), command);
+    return;
+  }
+
   if ((path == "/samson/help") && (verb == "GET")) {
     au::tables::Table table("command|description");
     table.setTitle("REST commands");
@@ -170,7 +189,7 @@ void SamsonWorkerRest::ProcessIntern(au::SharedPointer<au::network::RESTServiceC
   }
 
   if ((path == "/samson/version") && (verb == "GET")) {
-    command->AppendFormatedElement("version", au::str("SAMSON v %s", SAMSON_VERSION));
+    command->AppendFormatedLiteral("version", au::str("SAMSON v %s", SAMSON_VERSION));
     return;
   }
 
@@ -255,15 +274,10 @@ void SamsonWorkerRest::ProcessIntern(au::SharedPointer<au::network::RESTServiceC
     return;
   }
 
-  if (main_command == "ilogging") {
-    process_ilogging(command);
-    return;
-  }
-
-  if (( main_command == "state" ) || ( main_command == "queue" )) {
+  if (main_command == "queues") {
     /* /samson/state/queue/key */
-    if (components < 4) {
-      command->AppendFormatedError(400, "Only /samson/state/queue/key paths are valid");
+    if (components < 5) {
+      command->AppendFormatedError(400, "Only /samson/queues/queue_name/key/key paths are valid");
     } else {
       engine::Notification *notification = new engine::Notification("notification_process_lookup_synchronized");
       notification->dictionary().Set<au::network::RESTServiceCommand> ("command", command);
@@ -277,15 +291,15 @@ void SamsonWorkerRest::ProcessIntern(au::SharedPointer<au::network::RESTServiceC
 
   // Test to verify uploaded data
   if (main_command == "data_test") {
-    command->AppendFormatedElement("data_size", au::str("%lu", command->data_size()));
+    command->AppendFormatedLiteral("data_size", au::str("%lu", command->data_size()));
 
     if (command->data_size() == 0) {
-      command->AppendFormatedElement("Data", "No data provided in the REST request");
+      command->AppendFormatedLiteral("Data", "No data provided in the REST request");
     } else {
       // Return with provided data
       std::string data;
       data.append(command->data(), command->data_size());
-      command->AppendFormatedElement("data", data);
+      command->AppendFormatedLiteral("data", data);
     }
   }
 
@@ -302,14 +316,14 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
     au::ErrorManager error;
     delilah_->connect(au::str("localhost:%d", samson_worker_->port()), &error);
 
-    if (error.IsActivated()) {
+    if (error.HasErrors()) {
       delete delilah_;
       delilah_ = NULL;
       command->AppendFormatedError(500, "Not possible to connect internal delilah client");
     }
   }
 
-  LM_T(LmtDelilahCommand, ("Sending delilah command: '%s'", delilah_command.c_str()));
+  LOG_M(logs.delilah, ("Sending delilah command: '%s'", delilah_command.c_str()));
   size_t command_id = delilah_->sendWorkerCommand(delilah_command);
 
   // Wait for the command to finish
@@ -348,241 +362,27 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
   delete table;
 }
 
-void SamsonWorkerRest::process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command) {
-  std::ostringstream logdata;
-  std::string logCommand = "";
-  std::string sub = "";
-  std::string arg = "";
+void SamsonWorkerRest::ProcessCommitToDatamodel(const std::string& c
+                                                , au::SharedPointer<au::network::RESTServiceCommand> command) {
+  au::ErrorManager error;
 
-  command->set_http_state(200);
+  samson_worker_->data_model()->Commit("REST", c, error);
+  command->AppendFormatedLiteral("command", c);
 
-  if (command->path_components().size() > 2) {
-    logCommand = command->path_components()[2];
-  }
-  if (command->path_components().size() > 3) {
-    sub = command->path_components()[3];
-  }
-  if (command->path_components().size() > 4) {
-    arg = command->path_components()[4];   //
-  }
-  // Treat all possible errors
-  //
-
-  if (logCommand == "") {
-    command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("no ilogging subcommand"));
-  } else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand
-                                                                                                 != "verbose") &&
-             (logCommand != "debug"))
-  {
-    command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("bad ilogging command: '%s'", logCommand.c_str()));
-  } else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub
-                                                                                                                   !=
-                                                                                                                   "off"))
-  {
-    command->set_http_state(400);
-    command->AppendFormatedElement("message",
-                                   au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-  } else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off") && (sub != "")) {
-    command->set_http_state(400);
-    command->AppendFormatedElement("message",
-                                   au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-  } else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2")
-             && (arg != "3") && (arg != "4") && (arg != "5"))
-  {
-    command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("bad ilogging argument for 'verbose': %s", arg.c_str()));
-  } else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove")
-             && (sub != "off") && (sub != ""))
-  {
-    command->set_http_state(400);
-    command->AppendFormatedElement("message",
-                                   au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-  } else if ((logCommand == "traces") && ((sub != "set") || (sub != "add") || (sub != "remove"))) {
-    if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str())) {
-      command->set_http_state(400);
-      command->AppendFormatedElement("message",
-                                     au::str("bad ilogging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
-    }
-  }
-
-  //
-  // Checking the VERB
-  //
-  std::string verb = command->command();
-  std::string path = logCommand;
-
-  if (sub != "") {
-    path += '/' + sub;
-  }
-  if ((path == "debug/on") && (verb == "POST")) {
-    ;
-  } else if ((path == "debug/off") && (verb == "POST")) {
-    ;
-  } else if ((path == "reads/on") && (verb == "POST")) {
-    ;
-  } else if ((path == "reads/off") && (verb == "POST")) {
-    ;
-  } else if ((path == "writes/on") && (verb == "POST")) {
-    ;
-  } else if ((path == "writes/off") && (verb == "POST")) {
-    ;
-  } else if ((path == "traces") && (verb == "GET")) {
-    ;
-  } else if ((path == "traces/off") && (verb == "POST")) {
-    ;
-  } else if ((path == "traces/get") && (verb == "GET")) {
-    ;
-  } else if ((path == "traces/set") && (verb == "POST")) {
-    ;
-  } else if ((path == "traces/add") && (verb == "POST")) {
-    ;
-  } else if ((path == "traces/remove") && (verb == "DELETE")) {
-    ;
-  } else if ((path == "verbose") && (verb == "GET")) {
-    ;
-  } else if ((path == "verbose/off") && (verb == "POST")) {
-    ;
-  } else if ((path == "verbose/set") && (verb == "POST")) {
-    ;
+  if (error.HasErrors()) {
+    command->AppendFormatedError(error.GetLastError());
   } else {
-    command->set_http_state(404);
-    command->AppendFormatedElement("error", "BAD VERB");
-    return;
-  }
-
-  if (command->http_state() != 200) {
-    return;
-  }
-
-  //
-  // Treat the request
-  //
-  if (logCommand == "reads") {
-    if (sub == "on") {
-      lmReads = true;
-      command->AppendFormatedElement("reads", au::str("reads turned ON"));
-      LM_F(("Turned on READS for this node only"));
-    } else if (sub == "off") {
-      lmReads = false;
-      command->AppendFormatedElement("reads", au::str("reads turned OFF"));
-      LM_F(("Turned off READS for this node only"));
-    }
-  } else if (logCommand == "writes") {
-    if (sub == "on") {
-      lmWrites = true;
-      command->AppendFormatedElement("writes", au::str("writes turned ON"));
-      LM_F(("Turned on WRITES for this node only"));
-    } else if (sub == "off") {
-      lmWrites = false;
-      command->AppendFormatedElement("writes", au::str("writes turned OFF"));
-      LM_F(("Turned off WRITES for this node only"));
-    }
-  } else if (logCommand == "debug") {
-    if (sub == "on") {
-      lmDebug = true;
-      command->AppendFormatedElement("debug", au::str("debug turned ON"));
-      LM_F(("Turned on DEBUG for this node only"));
-      LM_D(("Turned on DEBUG for this node only"));
-    } else if (sub == "off") {
-      lmDebug = false;
-      command->AppendFormatedElement("debug", au::str("debug turned OFF"));
-      LM_F(("Turned off DEBUG for this node only"));
-      LM_D(("This line should not be seen ..."));
-    }
-  } else if (logCommand == "verbose") {
-    // /samson/ilogging/verbose
-    if (sub == "") {
-      sub = "get";
-    }
-    if ((sub == "set") && (arg == "0")) {
-      sub = "off";
-    }
-    if (sub == "get") {
-      int vLevel;
-
-      if (lmVerbose5 == true) {
-        vLevel = 5;
-      } else if (lmVerbose4 == true) {
-        vLevel = 4;
-      } else if (lmVerbose3 == true) {
-        vLevel = 3;
-      } else if (lmVerbose2 == true) {
-        vLevel = 2;
-      } else if (lmVerbose == true) {
-        vLevel = 1;
-      } else {
-        vLevel = 0;
-      }
-      command->AppendFormatedElement("verbose", au::str("verbosity level: %d", vLevel));
-    } else {
-      // Turn all verbose levels OFF
-      lmVerbose = false;
-      lmVerbose2 = false;
-      lmVerbose3 = false;
-      lmVerbose4 = false;
-      lmVerbose5 = false;
-
-      if (sub == "off") {
-        arg = "0";
-      }
-      int verboseLevel = arg[0] - '0';
-
-      // Turn on the desired verbose levels
-      switch (verboseLevel) {
-        case 5:
-          lmVerbose5 = true;
-        case 4:
-          lmVerbose4 = true;
-        case 3:
-          lmVerbose3 = true;
-        case 2:
-          lmVerbose2 = true;
-        case 1:
-          lmVerbose = true;
-      }
-
-      command->AppendFormatedElement("verbose", au::str("verbosity level: %d", verboseLevel));
-      LM_F(("New verbose level for this node only: %d", verboseLevel));
-    }
-  } else if (logCommand == "traces") {
-    if (sub == "") {
-      sub = "get";
-    }
-    if (sub == "set") {
-      lmTraceSet(arg.c_str());
-      command->AppendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
-      LM_F(("Set trace levels to '%s' for this node only", arg.c_str()));
-    } else if (sub == "get") {
-      // /samson/ilogging/trace/get
-      char traceLevels[1024];
-      lmTraceGet(traceLevels);
-
-      command->AppendFormatedElement("trace", au::str("trace level: %s", traceLevels));
-    } else if (sub == "off") {
-      // /samson/ilogging/trace/off
-      lmTraceSet(NULL);
-      command->AppendFormatedElement("trace", au::str("all trace levels turned off"));
-      LM_F(("Turned off trace levels for this node only"));
-    } else if (sub == "add") {
-      // /samson/ilogging/trace/add
-      lmTraceAdd(arg.c_str());
-      command->AppendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
-      LM_F(("Added trace levels '%s' for this node only", arg.c_str()));
-    } else if (sub == "remove") {
-      // /samson/ilogging/trace/remove
-      lmTraceSub(arg.c_str());
-      command->AppendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
-      LM_F(("Removed trace levels '%s' for this node only", arg.c_str()));
-    }
+    command->AppendFormatedLiteral("result", "OK");
   }
 }
 
 void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::RESTServiceCommand> command) {
   // Get queue and key specified
   std::string queue_name = command->path_components()[2];
-  std::string key = command->path_components()[3];
+  std::string key = command->path_components()[4];
+
+  // If debug is specified ( instead of "key" ) show more messages
+  bool debug = (command->path_components()[3] == "debug");
 
   LOG_M(logs.rest, ("looking up key '%s' in queue '%s'", key.c_str(), queue_name.c_str()));
 
@@ -609,8 +409,8 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
   }
 
   // Data instances
-  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(format.keyFormat);
-  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(format.valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(format.keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(format.valueFormat);
 
   if (!key_data || !value_data) {
     LM_E(("Queue '%s' has wrong format for REST query", queue_name.c_str()));
@@ -625,10 +425,10 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
 
   // Get all the information from the reference key
   std::string error_message;
-  if( !reference_key_data_instance->setContentFromString(key.c_str() , error_message ) ) {
+  if (!reference_key_data_instance->setContentFromString(key.c_str(), error_message)) {
     // Error decoding key
     command->AppendFormatedError(au::str("Not possible to convert %s into a valid %s (%s)"
-                                         , key.c_str() , key_data->getName().c_str() , error_message.c_str() ));
+                                         , key.c_str(), key_data->getName().c_str(), error_message.c_str()));
     return;
   }
   LOG_M(logs.rest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
@@ -649,16 +449,12 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
     command->SetRedirect(au::str("http://%s:%d%s", host.c_str(), port, command->resource().c_str()));
   }
 
-
-  // Information about the query
-  command->AppendFormatedElement("search_key", key);
-  command->AppendFormatedElement("search_queue", queue_name);
-
-  // Inform about the hash-group
-  command->AppendFormatedElement("hash_group", au::str("%d", hg));
-
-  // Inform about the worker
-  command->AppendFormatedElement("worker", au::str("%lu", worker_id));
+  if (debug) {
+    command->AppendFormatedLiteral("search_key", key);
+    command->AppendFormatedLiteral("search_queue", queue_name);
+    command->AppendFormatedLiteral("hash_group", au::str("%d", hg));    // Inform about the hash-group
+    command->AppendFormatedLiteral("worker", au::str("%lu", worker_id));    // Inform about the worker
+  }
 
 
   // Search for the correct block
@@ -685,9 +481,10 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
         return;
       }
 
-      // Extra information about the block
-      command->AppendFormatedElement("block",  str_block_id(block_id));
-      command->AppendFormatedElement("block_range",  range.str());
+      if (debug) {
+        command->AppendFormatedLiteral("block", str_block_id(block_id));
+        command->AppendFormatedLiteral("block_range", range.str());
+      }
 
       block_ptr->lookup(key.c_str(), command);
       return;

@@ -32,46 +32,66 @@
  */
 #include <string>
 
+#include "au/log/LogMain.h"
+#include "engine/EngineElement.h"
 #include "gtest/gtest.h"
 
-#include "engine/EngineElement.h"
-
 class EngineElementTest1 : public engine::EngineElement {
- public:
-  explicit EngineElementTest1(const std::string& name) : EngineElement(name) {}
-  virtual ~EngineElementTest1() { LM_M(("engine element of type 1 is destroyed")); }
-  void run() { LM_M(("running ...")); }
+public:
+  explicit EngineElementTest1(const std::string& name) : EngineElement(name) {
+  }
+
+  virtual ~EngineElementTest1() {
+    LOG_SM(("engine element of type 1 is destroyed"));
+  }
+
+  void run() {
+    LOG_SM(("running ..."));
+  }
 };
 
 class EngineElementTest2 : public engine::EngineElement {
- public:
+public:
   explicit EngineElementTest2(const std::string& name, int seconds) :
-  EngineElement(name, seconds) {}
+    EngineElement(name, seconds) {
+  }
 
-  virtual ~EngineElementTest2() { LM_M(("engine element of type 2 is destroyed")); }
-  void run() { LM_M(("running ...")); }
+  virtual ~EngineElementTest2() {
+    LOG_SM(("engine element of type 2 is destroyed"));
+  }
+
+  void run() {
+    LOG_SM(("running ..."));
+  }
 };
 
 class EngineElementTest3 : public engine::EngineElement {
- public:
+public:
   explicit EngineElementTest3(const std::string& name, int seconds) :
-  EngineElement(name, seconds) {}
+    EngineElement(name, seconds) {
+  }
 
-  virtual ~EngineElementTest3() { LM_M(("engine element of type 3 is destroyed")); }
-  void run() { LM_M(("running ...")); }
+  virtual ~EngineElementTest3() {
+    LOG_SM(("engine element of type 3 is destroyed"));
+  }
+
+  void run() {
+    LOG_SM(("running ..."));
+  }
 };
 
 // -----------------------------------------------------------------------------
 // engine_idTest - test of the Engine elements
 //
 TEST(engine_EngineElement, engine_idTest) {
-  EngineElementTest1  engine_element1("Engine Element Test 1");
-  EngineElementTest2  engine_element2("Engine Element Test 2", 10);
-  EngineElementTest3  engine_element3("Engine Element Test 3", 10);
+  EngineElementTest1 engine_element1("Engine Element Test 1");
+  EngineElementTest2 engine_element2("Engine Element Test 2", 10);
+  EngineElementTest3 engine_element3("Engine Element Test 3", 10);
 
   std::string elementString = engine_element1.str();
 
   std::string description = engine_element1.short_description();
+
   EXPECT_STREQ(description.c_str(), "Engine element to be executed once");
 
   description = engine_element2.short_description();

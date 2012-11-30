@@ -17,11 +17,6 @@ SET (AUX_HEADERS
 
 )			  
 
-SET( SOURCES_TEST
-	 main_system_test.cpp
-)
-
-
 cmake_minimum_required(VERSION 2.6)
 
 # Locate samsonModuleParser
@@ -123,7 +118,7 @@ link_directories( "$ENV{SAMSON_HOME}/lib" )
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS}  )
 TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME}  samson_system lm au json )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME}  samson_system lm au json samsonModule )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

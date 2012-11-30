@@ -24,7 +24,7 @@
 #include "samson/common/KVRange.h"
 #include "samson/module/KVFormat.h"
 
-#include "samson/common/samson.pb.h"
+
 
 namespace samson {
 /**
@@ -114,6 +114,23 @@ DataInfoForRanges get_data_info_for_ranges(gpb::Data *data
                                            , const std::vector<samson::KVRange>& ranges);
 
 void limit_last_commits(gpb::Data *data);
+
+/**
+ * \brief Get a particular field in a collection record
+ */
+
+std::string Get(const gpb::CollectionRecord&, const std::string& field);
+
+/**
+ * \brief Sort a collection following a particular field
+ */
+void Sort(gpb::Collection *collection, const std::string& field);
+
+/**
+ * \brief Update environment variable with string provided by user ( typically from -env XXX option )
+ */
+
+void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au::ErrorManager &error);
 }
 }   // End of namespace samson::gpb
 

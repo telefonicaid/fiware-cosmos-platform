@@ -101,7 +101,7 @@ TEST(samson_system_Value, basic) {
   EXPECT_STREQ("item 2bis", string_value.c_str()) << "Wrong map insert: " << string_value;
 }
 
-TEST(samson_system_Value, ser_string) {
+TEST(DISABLED_samson_system_Value, ser_string) {
   char *line = reinterpret_cast<char *>(malloc(sizeof(*line) * 64000));
 
   samson::system::ValueContainer value_container;
@@ -136,7 +136,7 @@ TEST(samson_system_Value, ser_string) {
   free(line);
 }
 
-TEST(samson_system_Value, ser_full) {
+TEST(DISABLED_samson_system_Value, ser_full) {
   char *line = reinterpret_cast<char *>(malloc(sizeof(*line) * 64000));
 
   samson::system::ValueContainer value_container;

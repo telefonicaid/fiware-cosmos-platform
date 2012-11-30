@@ -13,7 +13,7 @@
 #include "samson/common/SamsonSetup.h"
 
 namespace samson {
-  extern bool isNumber(std::string txt);
+  extern bool isNumber(const std::string& txt);
 }
 
 // Test void SamsonSetup();
@@ -98,12 +98,9 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
   EXPECT_STREQ(cluster_info_file.c_str(),   setup->cluster_information_filename().c_str());
   
   EXPECT_TRUE(samson::SharedSamsonSetup() != NULL);
-  // EXPECT_TRUE(samson::isNumber(std::string("24")));
-  // EXPECT_FALSE(samson::isNumber(std::string("24a")));
+  EXPECT_TRUE(samson::isNumber(std::string("24")));
+  EXPECT_FALSE(samson::isNumber(std::string("24a")));
 
-  // bool oneTwoThree = samson::isNumber(std::string("123"));
-  // EXPECT_EQ(true, oneTwoThree);
-
-  // Destroy singletons ( SamsonSetup )
+  // Destroy singletons (SamsonSetup)
   au::singleton_manager.DestroySingletons();
 }

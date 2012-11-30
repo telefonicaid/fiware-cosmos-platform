@@ -85,14 +85,14 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
   Data *value_data = au::Singleton<ModulesManager>::shared()->getData(header->valueFormat);
 
   if (!key_data) {
-    LM_E(("Unknown data type %s", header->keyFormat));
-    error->set(au::str("Unknown data type %s", header->keyFormat));
+    LM_E(("Unknown data type '%s' for 'key'", header->keyFormat));
+    error->set(au::str("Unknown data type '%s' for 'key'", header->keyFormat));
     return NULL;
   }
 
   if (!value_data) {
-    LM_E(("Unknown data type %s", header->valueFormat));
-    error->set(au::str("Unknown data type %s", header->valueFormat));
+    LM_E(("Unknown data type '%s' for data", header->valueFormat));
+    error->set(au::str("Unknown data type '%s' for 'data'", header->valueFormat));
     return NULL;
   }
 

@@ -26,8 +26,17 @@
 
 #include "au/ErrorManager.h"
 
+#include "engine/Buffer.h"
+#include "engine/Engine.h"
+#include "engine/MemoryManager.h"
+
+#include "samson/common/KVFile.h"
 #include "samson/common/KVHeader.h"
 #include "samson/common/KVInfo.h"
+#include "samson/module/Data.h"
+#include "samson/module/ModulesManager.h"
+
+#include "unitTest/common_engine_test.h"
 
 // Test  KVInfo;
 TEST(samson_common_KVInfo, test1) {
@@ -92,10 +101,57 @@ TEST(samson_common_KVInfo, createKVInfoVector) {
 
   samson::KVFormat  format("samson:string", "system::string");
   samson::KVInfo    info(10, 30);
-  samson::KVHeader  header;
+  samson::KVHeader  badHeader;
 
-  header.Init(format, info);
+  badHeader.Init(format, info);
 
-  infoP = samson::createKVInfoVector((char*) &header, &errorMgr);
+  infoP = samson::createKVInfoVector((char*) &badHeader, &errorMgr);
   EXPECT_TRUE(infoP == NULL);
+
+  init_engine_test();
+  {
+    samson::ModulesManager* mm = au::Singleton<samson::ModulesManager>::shared();
+    mm->addModulesFromDirectory("test_modules");
+
+    samson::Data*          dataKeyP   = mm->getData("system.String");
+    samson::Data*          dataValueP = mm->getData("system.UInt");
+
+    EXPECT_TRUE(dataKeyP   != NULL);
+    EXPECT_TRUE(dataValueP != NULL);
+
+    samson::KVFormat       format2("system.String", "system.UInt");
+    samson::KVInfo         info2(0, 0);
+    engine::BufferPointer  buffer         =
+       (engine::BufferPointer) engine::Buffer::Create("testbuffer",  10000);
+    samson::KVHeader*      goodHeader     = reinterpret_cast<samson::KVHeader*>(buffer->data());
+    samson::DataInstance*  keyInstanceP   = dataKeyP->getInstance();
+    samson::DataInstance*  valueInstanceP = dataValueP->getInstance();
+    char*                  dataPosition   = buffer->data();
+
+    EXPECT_TRUE(keyInstanceP != NULL);
+    EXPECT_TRUE(valueInstanceP != NULL);
+
+    size_t offset = sizeof(samson::KVHeader);
+    for (unsigned int ix = 0; ix < 100; ++ix) {
+       keyInstanceP->setFromString("123sss");
+       valueInstanceP->setFromString("12");
+
+       int size = keyInstanceP->serialize(&dataPosition[offset]);
+       offset     += size;
+       info2.size += size;
+
+       size = valueInstanceP->serialize(&dataPosition[offset]);
+       offset     += size;
+       info2.size += size;
+
+       ++info2.kvs;
+    }
+
+    goodHeader->Init(format2, info2);
+    infoP = samson::createKVInfoVector((char*) &goodHeader, &errorMgr);
+    LM_M(("Error: '%s'", errorMgr.GetMessage().c_str()));
+    EXPECT_TRUE(infoP == NULL);
+  }
+
+  close_engine_test();
 }

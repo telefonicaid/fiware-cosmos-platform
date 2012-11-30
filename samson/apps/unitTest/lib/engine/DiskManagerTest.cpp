@@ -201,10 +201,22 @@ TEST(engine_DiskManager, run_worker) {
   engine::DiskManager* disk_manager = engine::Engine::disk_manager();
 
   au::SharedPointer<engine::DiskOperation> operation1(
-     engine::DiskOperation::newReadOperation(buffer, "test_filename.txt", 0, 1, 0));
+  engine::DiskOperation::newReadOperation(buffer, "test_data/testdata.txt", 0, 10, 0));
 
   disk_manager->Add(operation1);
-  EXPECT_EQ(disk_manager->num_disk_operations(), 1) << "Wrong number of disk operations";
+  au::Cronometer c;
+  while( true ) {
+     if( disk_manager->num_disk_operations() == 0 )
+        break;
+     if( c.seconds() > 1 ) {
+        EXPECT_TRUE( false );
+        return;
+     }
+  }
+  buffer[10] = 0;
+
+  EXPECT_FALSE(operation1->error.IsActivated());
+  EXPECT_STREQ(buffer, "0123456789");
 
   free(buffer);
 

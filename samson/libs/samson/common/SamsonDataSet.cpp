@@ -23,7 +23,11 @@ au::SharedPointer<SamsonDataSet> SamsonDataSet::create(const std::string& direct
   au::SharedPointer<SamsonDataSet> samson_data_set(new SamsonDataSet());
 
   struct stat filestatus;
-  stat(directory.c_str(), &filestatus);
+  if (stat(directory.c_str(), &filestatus) == -1) {
+     error.set(au::str("%s doesn't exist", directory.c_str()));
+     return au::SharedPointer<SamsonDataSet>(NULL);
+  }
+
 
   if (!S_ISDIR(filestatus.st_mode)) {
     error.set(au::str("%s is not a directory", directory.c_str()));

@@ -67,7 +67,7 @@ int main(int argC, char **argV) {
   paConfig("default value", "-logDir",      (void *)"/var/log/samson");
   paConfig("man author",                    "Samson team");
 
-  // Parse incomming arguments without being alteres by google test library arguments
+  // Parse incoming arguments without being altered by google test library arguments
   if (( argC > 2 ) &&  (strcmp(argV[1], "-t") == 0)) {
     paParse(paArgs, 3, (char **)argV, 3, false);
   } else {
@@ -79,7 +79,13 @@ int main(int argC, char **argV) {
   lmAssertAtExit = true;
 
   // Run all tests
+  LM_M(("calling ::testing::InitGoogleTest"));
   ::testing::InitGoogleTest(&argC, argV);
-  return RUN_ALL_TESTS();
+  LM_M(("::testing::InitGoogleTest done"));
+
+  LM_M(("Running all unit tests"));
+  int x = RUN_ALL_TESTS();
+  LM_M(("All unit tests done (RUN_ALL_TESTS returned %d)", x));
+  // return x;
 }
 

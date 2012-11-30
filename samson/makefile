@@ -255,6 +255,8 @@ test_report:
 
 run_coverage: install_coverage setup_test_config test_init test_coverage test_report
 
+run_partial_coverage: install_coverage setup_test_config test_init test_coverage
+
 # There is a problem with coverage tool for mac.. please do use this output a mac environment
 
 run_mac_coverage: install_coverage setup_test_config

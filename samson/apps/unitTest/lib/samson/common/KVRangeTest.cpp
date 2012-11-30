@@ -253,7 +253,8 @@ TEST(samson_common_KVRange, str) {
   rangeV.push_back(range1);
   rangeV.push_back(range2);
 
-  // EXPECT_STREQ(range1.str(rangeV).c_str(), "XXX");
+  std::string s = str(rangeV);
+  EXPECT_STREQ(s.c_str(), "[00005 00010) [00011 00020) ");
 }
 
 // -----------------------------------------------------------------------------
@@ -266,8 +267,7 @@ TEST(samson_common_KVRange, CheckCompleteKVRanges) {
 
   rangeV.push_back(range1);
   rangeV.push_back(range2);
-
-  // EXPECT_TRUE(range1.CheckCompleteKVRanges(rangeV));
+  EXPECT_FALSE(CheckCompleteKVRanges(rangeV));
 }
 
 // -----------------------------------------------------------------------------

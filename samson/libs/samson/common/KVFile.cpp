@@ -36,7 +36,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   kv_file->key_    = NULL;
   kv_file->value_  = NULL;
 
-  buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
+  // buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
   
   if (buffer->size() < sizeof(KVHeader)) {
     error.set(au::str("Incorrect buffer size (%lu) < header size (%d)", buffer->size(), sizeof(KVHeader)));
@@ -167,6 +167,13 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     return au::SharedPointer<KVFile>(NULL);
   }
 
+  // Check correct offset
+  if ((sizeof(KVHeader) + offset) != buffer->size()) {
+    error.set(au::str("Error parsing block. Wrong buffer size %lu != %lu", buffer->size(), offset + sizeof(KVHeader)));
+    LM_E(("Error parsing block. Wrong buffer size %lu != %lu", buffer->size(), offset + sizeof(KVHeader)));
+    return au::SharedPointer<KVFile>(NULL);
+  }
+
   // Everything correct, return generated kv_file
   LOG_M(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
                        , au::str(size_total,  "B").c_str()
@@ -181,9 +188,11 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 KVFile::~KVFile() {
   if (key_) {
     delete key_;
+    key_ = NULL;
   }
   if (value_) {
     delete value_;
+    value_ = NULL;
   }
 }
 

@@ -28,12 +28,8 @@
 //
 TEST(samson_common_Visualization, constructor) {
   samson::Visualization  visualization;
-  samson::Visualization* visualizationP = new samson::Visualization();
 
   EXPECT_TRUE(visualization.match("a"));
-  EXPECT_TRUE(visualizationP != NULL);
-
-  delete visualizationP;
 }
 
 // ----------------------------------------------------------------------------

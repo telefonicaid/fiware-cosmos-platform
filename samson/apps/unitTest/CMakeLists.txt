@@ -121,6 +121,10 @@ SET (SOURCES
 	lib/samson/common/VisualizationTest.cpp
 	lib/samson/common/statusTest.cpp
 	lib/samson/common/codingTest.cpp
+    lib/samson/common/BlockKVInfoTest.cpp
+    lib/samson/common/MessageOperationsTest.cpp
+    lib/samson/common/commonTest.cpp
+    lib/samson/common/gpb_operationsTest.cpp
 
 	# SAMSOM WORKER LIBRARY
 	lib/samson/worker/SamsonWorkerTest.cpp

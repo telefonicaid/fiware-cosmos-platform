@@ -46,10 +46,14 @@ public:
 
   // Get key-values vector for a particular hash-group
   KV *kvs_for_hg(int hg) {
+    if (kvs_index[hg] == -1)
+      return NULL;
     return &kvs[kvs_index[hg]];
   }
 
   char *data_for_hg(int hg) {
+    if (kvs_index[hg] == -1)
+      return NULL;
     return kvs[kvs_index[hg]].key;
   }
 
@@ -70,6 +74,8 @@ public:
   char *data;
   size_t data_size;
 
+  void* key() { return key_; }
+  
 private:
 
   // Buffer of data ( retained by the shared reference counter )

@@ -36,8 +36,8 @@ void test(std::string txt) {
 
   printf("-----------------------------------\n");
 
-  if (error.IsActivated()) {
-    printf("Error %s\n", error.GetMessage().c_str());
+  if (error.HasErrors()) {
+    printf("Error %s\n", error.GetLastError().c_str());
   } else {
     printf("%s\n", source->str().c_str());
   }

@@ -34,15 +34,15 @@ bool no_color;
 
 PaArgument paArgs[] =
 {
-  { "-host",     host,          "",          PaString,      PaOpt,   _i "localhost",                     PaNL,
-    PaNL,  "Log server hostname"               },
-  { "-format",   format,        "",      PaString, PaOpt,   _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,
+  { "-host",     host,      "", PaString, PaOpt, _i "localhost",                   PaNL,
+    PaNL, "Log server hostname"               },
+  { "-format",   format,    "", PaString, PaOpt, _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,
     PaNL,
     "Formats of the logs at the output" },
-  { "-filter",   filter,    "", PaString, PaOpt, _i "",                            PaNL,  PaNL, "Filter for logs"                   },
-  { "-save",     file_name, "", PaString, PaOpt, _i "",                            PaNL,  PaNL,
+  { "-filter",   filter,    "", PaString, PaOpt, _i "",                            PaNL, PaNL,  "Filter for logs"                   },
+  { "-save",     file_name, "", PaString, PaOpt, _i "",                            PaNL, PaNL,
     "Save received logs to file"        },
-  { "-no_color", &no_color, "", PaBool,   PaOpt, false,                            false, true, "No colored output"                 },
+  { "-no_color", &no_color, "", PaBool,   PaOpt, false,                            false,true,  "No colored output"                 },
   PA_END_OF_ARGS
 };
 
@@ -114,8 +114,6 @@ int main(int argC, const char *argV[]) {
   while (true) {
     sleep(1);
     if (!log_probe.IsConnected()) {
-      // Show only if verbose is activated
-      // std::cerr << "Error receiving logs from " << host << " : " << log_probe_printer.error().GetMessage() << std::endl;
       exit(1);
     }
   }

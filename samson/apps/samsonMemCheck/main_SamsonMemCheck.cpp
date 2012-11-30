@@ -65,11 +65,11 @@ PaArgument paArgs[] = {
 
 int main(int argc, const char *argv[]) {
   paConfig("usage and exit on any warning", reinterpret_cast<void *>(true));
-  paConfig("log to screen",                 reinterpret_cast<void *>(true));
+  paConfig("log to screen", reinterpret_cast<void *>(true));
   paConfig("log file line format",
            reinterpret_cast<void *>(const_cast<char *>("TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT")));
-  paConfig("screen line format",            reinterpret_cast<void *>(const_cast<char *>("TYPE@TIME  EXEC: TEXT")));
-  paConfig("log to file",                   reinterpret_cast<void *>(true));
+  paConfig("screen line format", reinterpret_cast<void *>(const_cast<char *>("TYPE@TIME  EXEC: TEXT")));
+  paConfig("log to file", reinterpret_cast<void *>(true));
 
   paParse(paArgs, argc, (char **)argv, 1, false);
 
@@ -77,7 +77,7 @@ int main(int argc, const char *argv[]) {
 
   // Check to see if the current memory configuration is ok or not
   if (samson::MemoryCheck() == false) {
-    LM_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information."));
+    LOG_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information."));
   } else {
     LOG_SM(("samsonMemCheck ok"));
   }

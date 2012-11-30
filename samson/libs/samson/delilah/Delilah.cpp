@@ -58,7 +58,7 @@ Delilah::Delilah(std::string connection_type, size_t delilah_id) :
     delilah_id_ = delilah_id;   // Network interface for all the workers ( included in the cluster selected )
   }
 
-  au::log_central->set_node(au::str("D%lu", delilah_id_));
+  au::log_central->set_node(au::str("D%s", au::code64_str(delilah_id_).c_str()));
 
   network = new DelilahNetwork(connection_type, delilah_id_);
 
@@ -293,13 +293,13 @@ void Delilah::receive(const PacketPointer& packet) {
 
   // --------------------------------------------------------------------
   // PushBlockResponse
+  // PushBlockConfirmation
   // --------------------------------------------------------------------
-  if (msgCode == Message::PushBlockResponse) {
+  if ((msgCode == Message::PushBlockResponse) || (msgCode == Message::PushBlockConfirmation)) {
     if (!packet->message->has_push_id()) {
       LOG_SW(("Received a %s without a push_id", Message::messageCode(msgCode)));
       return;
     }
-
     if (packet->from.node_type != WorkerNode) {
       LOG_SW(("Received a %s from a non-worker nodeid", Message::messageCode(msgCode)));
       return;
@@ -313,10 +313,12 @@ void Delilah::receive(const PacketPointer& packet) {
     if (packet->message->has_error()) {
       error.AddError(packet->message->error().message());
     }
-
     push_manager->receive(msgCode, worker_id, push_id, error);
     return;
   }
+
+  // --------------------------------------------------------------------
+
 
   {
     au::TokenTaker tk(&token);

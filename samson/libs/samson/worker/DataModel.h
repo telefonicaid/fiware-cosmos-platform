@@ -73,8 +73,10 @@ public:
   std::set<size_t> GetMyBlockIdsForPreviousDataModel(const std::vector<KVRange>& ranges);
   std::set<size_t> GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges);
   std::set<size_t> GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges);
-  size_t GetLastCommitIdForPreviousDataModel();
+
+  size_t GetLastCommitIdForCurrentDataModel();
   size_t GetLastCommitIdForCandidateDataModel();
+  size_t GetLastCommitIdForPreviousDataModel();
 
   // Method to discover if all operations have finished ( see wait command in delilah )
   bool CheckForAllStreamOperationsFinished();

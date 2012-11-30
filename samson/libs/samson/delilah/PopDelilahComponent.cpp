@@ -294,10 +294,13 @@ void PopDelilahComponent::check() {
       // Write to disc
       std::string file_name = au::str("%s/file_%lu"
                                       , file_name_.c_str()
-                                      , item->pop_id());
+                                      , item->pop_id()
+                                      );
 
-      au::SharedPointer<engine::DiskOperation> operation(engine::DiskOperation::newWriteOperation(buffer, file_name,
-                                                                                                  engine_id()));
+      au::SharedPointer<engine::DiskOperation> operation
+      (
+        engine::DiskOperation::newWriteOperation(buffer, file_name, engine_id()));
+
       LOG_M(logs.delilah_components, ("Add write operation on file:'%s'", file_name.c_str()));
       engine::Engine::disk_manager()->Add(operation);
       num_pending_write_operations_++;
@@ -311,7 +314,7 @@ void PopDelilahComponent::check() {
     items_.erase(it++);
   }
 
-  // Set component as finish if everything is done
+  // Set component as finish if everything is done ( file_name is set in normal pop operations )
   if (file_name_ != "") {
     // Adding stated() to avoid finishing a component before started
     if (started() && (num_pending_write_operations_ == 0) && (items_.size() == 0)) {
@@ -325,8 +328,6 @@ void PopDelilahComponent::check() {
             ("Waiting for pop component started:%d with num_pending_write_operations_:%d, items.size():%lu",
              started_, num_pending_write_operations_, items_.size()));
     }
-  } else {
-    LOG_SW(("pop operation without file_name"));
   }
 }
 }

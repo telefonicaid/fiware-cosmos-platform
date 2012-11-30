@@ -200,8 +200,12 @@ void SamsonWorker::Review() {
 
       // Check what commit_id can guarantee this worker
       size_t last_commit_id = worker_controller_->GetMyLastCommitId();  // This is the currently guanrantee commit_id
+      size_t current_data_commit_id = data_model_->GetLastCommitIdForCurrentDataModel();
       size_t previous_data_commit_id = data_model_->GetLastCommitIdForPreviousDataModel();
       size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
+
+      // Confirm all push block operations previous to this commit
+      worker_block_manager_->ReviewPushItems(previous_data_commit_id, current_data_commit_id);
 
       if (previous_data_commit_id > last_commit_id) {
         // Check I can confirm this level of data model

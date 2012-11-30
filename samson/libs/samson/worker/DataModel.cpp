@@ -575,7 +575,7 @@ void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::C
     LOG_W(logs.data_model, ("queue '%s' not found", cmd->get_argument(1).c_str()));
     return;                                // nothing to do
   }
-  queue->set_commit_id(data->commit_id()); // Update version where this queue was updated
+  queue->set_commit_id(data->commit_id());  // Update version where this queue was updated
   KVFormat format(queue->key_format(), queue->value_format());
   samson::gpb::Queue *target_queue = get_or_create_queue(data, cmd->get_argument(2), format, error);
 
@@ -1178,6 +1178,11 @@ std::set<size_t> DataModel::GetAllBlockIds() {
   AddBlockIds(data_model->mutable_previous_data(), block_ids);
 
   return block_ids;
+}
+
+size_t DataModel::GetLastCommitIdForCurrentDataModel() {
+  au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
+  return data_model->current_data().commit_id();
 }
 
 size_t DataModel::GetLastCommitIdForPreviousDataModel() {

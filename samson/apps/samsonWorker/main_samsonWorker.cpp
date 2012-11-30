@@ -92,41 +92,41 @@ bool thread_mode;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-zk",                 zoo_host,                    "",                         PaString,
+  { "-zk",                 zoo_host,      "",   PaString,
     PaOpt,
     _i "localhost:2181",
-    PaNL,                  PaNL,                        "Zookeeper server"                   },
-  { "-log",                log_command,                 "",                         PaString,
-    PaOpt,                 _i "",                       PaNL,
+    PaNL,                  PaNL,          "Zookeeper server"                   },
+  { "-log",                log_command,   "",   PaString,
+    PaOpt,                 _i "",         PaNL,
     PaNL,                  "log server host"                          },
-  { "-log_server",         log_server,                  "",                         PaString,
-    PaOpt,                 _i "",                       PaNL,
+  { "-log_server",         log_server,    "",   PaString,
+    PaOpt,                 _i "",         PaNL,
     PaNL,                  "log server host"                          },
-  { "-fg",                 &fg,                         "",                         PaBool,
+  { "-fg",                 &fg,           "",   PaBool,
     PaOpt,
     false,
     false,
     true,
     "don't start as daemon"              },
-  { "-port",               &port,                       "",                         PaInt,
+  { "-port",               &port,         "",   PaInt,
     PaOpt,
     SAMSON_WORKER_PORT,
     1,
     9999,
     "Port to receive new connections"    },
-  { "-web_port",           &web_port,                   "",                         PaInt,
+  { "-web_port",           &web_port,     "",   PaInt,
     PaOpt,
     SAMSON_WORKER_WEB_PORT,
     1,
     9999,
     "Port to receive web connections"    },
-  { "-valgrind",           &valgrind,                   "",                         PaInt,
+  { "-valgrind",           &valgrind,     "",   PaInt,
     PaOpt,
     0,
     0,
     20,
     "help valgrind debug process"        },
-  { "-thread_mode",        &thread_mode,                "",                         PaBool,
+  { "-thread_mode",        &thread_mode,  "",   PaBool,
     PaOpt,
     false,
     false,
@@ -314,7 +314,7 @@ int main(int argC, const char *argV[]) {
   // Check to see if the current memory configuration is ok or not
   if (samson::MemoryCheck() == false) {
     LOG_SW(("Not enougth shared memory. Please check setup with samsonSetup"));
-    LM_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information.", paLogDir));
+    LOG_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information.", paLogDir));
   }
 
   // Complete host of zk

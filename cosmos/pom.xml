@@ -30,11 +30,6 @@
             <plugins>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>3.2</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>1.7.1</version>
                     <executions>
@@ -111,6 +106,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
+                <version>3.2</version>
                 <configuration>
                     <locales>es</locales>
                     <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
@@ -280,12 +276,8 @@
 
     <pluginRepositories>
         <pluginRepository>
-            <id>dtrott</id>
-            <url>http://maven.davidtrott.com/repository</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>maven-repo</id>
-            <url>http://repo1.maven.org/maven2</url>
+            <id>nexus</id>
+            <url>http://cosmos-ci/nexus/content/groups/public/</url>
         </pluginRepository>
     </pluginRepositories>
 

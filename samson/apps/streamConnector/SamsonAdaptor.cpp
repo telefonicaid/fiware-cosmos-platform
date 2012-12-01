@@ -35,7 +35,7 @@ SamsonConnection::SamsonConnection(Adaptor *_item
 }
 
 void SamsonConnection::try_connect() {
-  if (( client_ ) && (client_->connection_ready())) {
+  if ((client_) && (client_->connection_ready())) {
     return;
   }
 
@@ -115,8 +115,14 @@ void SamsonConnection::receive_buffer_from_queue(std::string queue, engine::Buff
   samson::KVHeader *header = (samson::KVHeader *)buffer->data();
 
   if (header->IsTxt()) {
+    // Remove header of the received block
+    size_t real_size = buffer->size() - sizeof(samson::KVHeader);
+    engine::BufferPointer buffer2 = engine::Buffer::Create("TXT " + buffer->name(), real_size);
+    buffer2->set_size(real_size);
+    memcpy(buffer2->data(), buffer->data() + sizeof(samson::KVHeader), real_size);
+
     // Push the new buffer
-    pushInputBuffer(buffer);
+    pushInputBuffer(buffer2);
   } else {
     LOG_SW(("Received a binary buffer %s from %s. Still not implemented how to process this"
             , au::str(buffer->size(), "B").c_str(), getFullName().c_str()));

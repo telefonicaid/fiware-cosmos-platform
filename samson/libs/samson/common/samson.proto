@@ -299,8 +299,11 @@ message MessagePlatformProcess
 message PopQueue
 {
 	required string queue		= 1;	// Queue we are interested in extracting data
-	required uint64 commit_id    = 2;    // Last commit_id requested for this queue ( get only updates ) 
+	required uint64 commit_id   = 2;    // Last commit_id requested for this queue ( get only updates ) 
                                         // -1 --> Initial popQueue request
+    required uint64 min_commit_id = 3;  // Min commit id still pending to be "poped". Blocks with lower commit ids can be removed
+										
+
 }
 
 message PopQueueResponse

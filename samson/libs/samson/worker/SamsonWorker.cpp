@@ -525,7 +525,8 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    uint64 commit_id = packet->message->pop_queue().commit_id();
+    size_t commit_id = packet->message->pop_queue().commit_id();
+    size_t min_commit_id = packet->message->pop_queue().min_commit_id();
     size_t delilah_id = packet->from.id;
     std::string original_queue = packet->message->pop_queue().queue();
     std::string pop_queue = au::str(".%s_%lu_%s"
@@ -539,9 +540,9 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     p->to = packet->from;
     gpb::Queue *gpb_queue = p->message->mutable_pop_queue_response()->mutable_queue();
     gpb_queue->set_name(original_queue);
-    gpb_queue->set_key_format("?");           // It is necessary to fill this fields
+    gpb_queue->set_key_format("?");             // It is necessary to fill these fields
     gpb_queue->set_value_format("?");
-    gpb_queue->set_commit_id(gpb_queue->commit_id());
+    gpb_queue->set_commit_id(SIZE_T_UNDEFINED);
 
 
     // Get a copy of the entire data model
@@ -571,7 +572,30 @@ void SamsonWorker::receive(const PacketPointer& packet) {
         for (int i = 0; i < queue->blocks_size(); ++i) {
           if (queue->blocks(i).commit_id() > commit_id) {
             gpb_queue->add_blocks()->CopyFrom(queue->blocks(i));
+          } else if ((min_commit_id == SIZE_T_UNDEFINED) || (queue->blocks(i).commit_id() < min_commit_id)) {
+            // Add to be removed from this queue
           }
+        }
+      }
+
+      // Remove old unnecessary blocks from queue
+      if (queue) {
+        CommitCommand commit_command;
+        for (int i = 0; i < queue->blocks_size(); ++i) {
+          if (queue->blocks(i).commit_id() <= commit_id) {  // Not new
+            if ((min_commit_id == SIZE_T_UNDEFINED) || (queue->blocks(i).commit_id() < min_commit_id)) {
+              // Add to be removed from this queue
+              size_t block_id =  queue->blocks(i).block_id();
+              KVFormat format(queue->key_format(), queue->value_format());
+              KVRange range = queue->blocks(i).range();  // Implicit conversion
+              KVInfo info(queue->blocks(i).size(), queue->blocks(i).kvs());
+              commit_command.RemoveBlock(pop_queue, block_id, queue->blocks(i).block_size(), format, range, info);
+            }
+          }
+        }
+        if (commit_command.size() > 0) {
+          au::ErrorManager error;
+          data_model_->Commit("pop", commit_command.GetCommitCommand(), error);
         }
       }
     }

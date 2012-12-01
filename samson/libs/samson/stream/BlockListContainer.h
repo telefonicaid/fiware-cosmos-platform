@@ -79,6 +79,7 @@ public:
   FullKVInfo GetOutputsInfo() const;
 
 private:
+  mutable au::Token token_;
   size_t task_id_;
   std::string container_name_;
   au::map<std::string, BlockList> blockLists_;

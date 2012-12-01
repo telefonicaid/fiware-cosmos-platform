@@ -58,7 +58,7 @@ namespace samson {
 SamsonClient::SamsonClient(std::string connection_type) {
   connection_type_ = connection_type;
   delilah_ = new Delilah("client");
-  delilah_->data_receiver_interface = this;
+  delilah_->data_receiver_interface = this;  // By default, I am the default receiver
 
   LM_V(("SamsonClient: Delilah client with id %s", au::code64_str(delilah_->get_delilah_id()).c_str()));
 }

@@ -28,10 +28,7 @@
 #include "PopDelilahComponent.h"  // Own interface
 
 namespace samson {
-PopDelilahComponent::PopDelilahComponent(std::string queue
-                                         , std::string file_name
-                                         , bool force_flag
-                                         , bool show_flag)
+PopDelilahComponent::PopDelilahComponent(std::string queue, std::string file_name, bool force_flag, bool show_flag)
   : DelilahComponent(DelilahComponent::pop) {
   queue_ = queue;
   file_name_ = file_name;
@@ -40,7 +37,7 @@ PopDelilahComponent::PopDelilahComponent(std::string queue
 
   // Main request information
   worker_id_ = static_cast<size_t>(-1);
-  commit_id_ = -1;   // No previous commit observed
+  commit_id_ = SIZE_T_UNDEFINED;   // No previous commit observed
 
   // Init counter of items to be poped
   item_id_ = 1;
@@ -61,8 +58,7 @@ PopDelilahComponent::~PopDelilahComponent() {
 }
 
 void PopDelilahComponent::run() {
-  // Continuous pop operations
-  if (file_name_ != "") {
+  if (file_name_ != "") {  // Continuous pop operations
     if (force_flag_) {
       au::ErrorManager error;
       au::RemoveDirectory(file_name_, error);
@@ -70,21 +66,21 @@ void PopDelilahComponent::run() {
 
     if (mkdir(file_name_.c_str(), 0755)) {
       LM_E(("Not possible to create directory %s (%s).", file_name_.c_str(), strerror(errno)));
-      setComponentFinishedWithError(au::str("Not possible to create directory %s (%s).", file_name_.c_str(),
-                                            strerror(errno)));
+      setComponentFinishedWithError(au::str("Not possible to create directory %s (%s)."
+                                            , file_name_.c_str(), strerror(errno)));
       return;
     }
   }
 
   // Send info request to a random worker
-  send_main_request();
+  SendMainRequest();
 }
 
 void PopDelilahComponent::review() {
   if (file_name_ == "") {
-    send_main_request();  // If continuous, ask for more data
-  } else if ((commit_id_ == -1) && (num_pop_queue_responses_ == 0) && (cronometer_.seconds() > 5)) {
-    send_main_request();
+    SendMainRequest();  // If continuous, ask for more data
+  } else if ((commit_id_ == SIZE_T_UNDEFINED) && (num_pop_queue_responses_ == 0) && (cronometer_.seconds() > 5)) {
+    SendMainRequest();
   }
 }
 
@@ -142,14 +138,25 @@ std::string PopDelilahComponent::getExtraStatus() {
   return output.str();
 }
 
-void PopDelilahComponent::send_main_request() {
+void PopDelilahComponent::SendMainRequest() {
   cronometer_.Reset();
+
+  size_t min_commit_id = SIZE_T_UNDEFINED;
+  au::map< size_t, PopDelilahComponentItem >::iterator iter;
+  for (iter = items_.begin(); iter != items_.end(); iter++) {
+    if ((min_commit_id  == SIZE_T_UNDEFINED) || (iter->second->commit_id()  < min_commit_id)) {
+      min_commit_id = iter->second->commit_id();
+    }
+  }
 
   worker_id_ = delilah->network->getRandomWorkerId(worker_id_);
   au::SharedPointer<Packet> packet(new Packet(Message::PopQueue));
   gpb::PopQueue *pop_queue = packet->message->mutable_pop_queue();
   pop_queue->set_queue(queue_);
   pop_queue->set_commit_id(commit_id_);
+  pop_queue->set_min_commit_id(min_commit_id);
+
+  LOG_SW(("Pop queue message %s min_commit %lu  commit %lu", queue_.c_str(), min_commit_id, commit_id_));
 
   // Identifier of the component at this delilah
   packet->message->set_delilah_component_id(id);
@@ -176,27 +183,27 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
 
     // Add all element to the list
     const gpb::Queue& queue = packet->message->pop_queue_response().queue();
-    LOG_M(logs.delilah_components,
-          (
-            "Received a pop request response for queue:'%s', with correct information. blocks_size:%d, num_pop_queue_responses_:%d",
-            queue.name().c_str(), queue.blocks_size(), num_pop_queue_responses_));
+    LOG_M(logs.delilah_components, ("Received PopQueueResponse. Queue:'%s' blocks_size:%d, num_pop_queue_responses_:%d",
+                                    queue.name().c_str(), queue.blocks_size(), num_pop_queue_responses_));
     LOG_M(logs.delilah_components, ("Message:'%s'", packet->message->ShortDebugString().c_str()));
-    for (int i = 0; i < queue.blocks_size(); ++i) {
-      int commit_id = queue.blocks(i).commit_id();
-      if (commit_id > commit_id_) {
-        commit_id_ = commit_id;
-      }
-      size_t block_id = queue.blocks(i).block_id();
 
+    for (int i = 0; i < queue.blocks_size(); ++i) {
+      size_t commit_id = queue.blocks(i).commit_id();
+      if ((commit_id_ == SIZE_T_UNDEFINED) || (commit_id > commit_id_)) {
+        commit_id_ = commit_id;  // Get the largest commit id
+      }
+      // Create a new item to be "poped"
+      size_t block_id = queue.blocks(i).block_id();
       size_t item_id = item_id_++;
-      PopDelilahComponentItem *item = new PopDelilahComponentItem(item_id, block_id);
+      PopDelilahComponentItem *item = new PopDelilahComponentItem(item_id, block_id, commit_id);
       items_.insertInMap(item_id, item);
-      LOG_M(logs.delilah_components, ("activate component with started flag"));
+
+      LOG_M(logs.delilah_components, ("Activate component with started flag"));
       set_started(true);
 
       // Send first request for this item
-      LOG_M(logs.delilah_components, ("send_request called from PopDelilahComponent::receive(), first request"));
-      send_request(item);
+      LOG_M(logs.delilah_components, ("SendRequest called from PopDelilahComponent::receive(), first request"));
+      SendRequest(item);
 
       // total counter of blocks
       num_blocks_downloaded_++;
@@ -224,7 +231,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     if (packet->message->has_error()) {
       // Error in confirmation, send the next one
       LOG_SW(("Error in confirmation, send the next one"));
-      send_request(item);
+      SendRequest(item);
       check();
       return;
     } else
@@ -275,7 +282,7 @@ void PopDelilahComponent::check() {
         time_limit = 300;
       }
       if (item->cronometer().seconds() > time_limit) {
-        send_request(item);
+        SendRequest(item);
       }
     }
   }
@@ -329,5 +336,24 @@ void PopDelilahComponent::check() {
              started_, num_pending_write_operations_, items_.size()));
     }
   }
+}
+
+void PopDelilahComponent::SendRequest(PopDelilahComponentItem *item) const {
+  item->ResetRequest();              // Reset request
+
+  // Select a worker
+  size_t worker_id = delilah->network->getRandomWorkerId(item->worker_id());
+  item->set_worker_id(worker_id);
+
+  // Build & sent the packet
+  au::SharedPointer<Packet> packet(new Packet(Message::PopBlockRequest, NodeIdentifier(WorkerNode, worker_id)));
+
+  // Fill information about this request
+  packet->message->set_delilah_component_id(id);
+  packet->message->set_pop_id(item->pop_id());
+  packet->message->set_block_id(item->block_id());
+
+  LOG_M(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
+  delilah->network->Send(packet);
 }
 }

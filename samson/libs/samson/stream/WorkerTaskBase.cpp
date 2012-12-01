@@ -60,7 +60,7 @@ void WorkerTaskBase::AddInput(int channel, BlockPointer block, KVRange range, KV
   std::string block_list_name = au::str("input_%d", channel);
   BlockList *block_list = block_list_container_.getBlockList(block_list_name);
 
-  block_list->add(new BlockRef(block, range, info));
+  block_list->Add(new BlockRef(block, range, info));
   input_block_ids_.push_back(block->block_id());
 }
 
@@ -68,7 +68,7 @@ void WorkerTaskBase::AddOutput(int channel, BlockPointer block, KVRange range, K
   std::string block_list_name = au::str("output_%d", channel);
   BlockList *block_list = block_list_container_.getBlockList(block_list_name);
 
-  block_list->add(new BlockRef(block, range, info));
+  block_list->Add(new BlockRef(block, range, info));
   output_block_ids_.push_back(block->block_id());
 }
 
@@ -164,9 +164,8 @@ std::string WorkerTaskBase::generate_commit_command(const std::vector<std::strin
   for (size_t c = 0; c < inputs.size(); c++) {
     BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", c));
     au::list<BlockRef>::iterator it;
-    for (it = block_list->blocks.begin(); it != block_list->blocks.end(); it++) {
+    for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); it++) {
       BlockRef *block_ref = *it;
-
       commit_command.RemoveBlock(inputs[c], block_ref->block_id(), block_ref->block_size(),
                                  block_ref->block()->getKVFormat(), block_ref->range(), block_ref->info());
     }
@@ -176,7 +175,7 @@ std::string WorkerTaskBase::generate_commit_command(const std::vector<std::strin
   for (size_t c = 0; c < outputs.size(); c++) {
     BlockList *block_list = block_list_container_.getBlockList(au::str("output_%d", c));
     au::list<BlockRef>::iterator it;
-    for (it = block_list->blocks.begin(); it != block_list->blocks.end(); it++) {
+    for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); it++) {
       BlockRef *block_ref = *it;
 
       commit_command.AddBlock(outputs[c], block_ref->block_id(), block_ref->block_size(),

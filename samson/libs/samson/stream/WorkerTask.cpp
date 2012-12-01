@@ -214,7 +214,7 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
   BlockList *list = block_list_container_.getBlockList("input_0");
 
   au::list<BlockRef>::iterator bi;
-  for (bi = list->blocks.begin(); bi != list->blocks.end(); bi++) {
+  for (bi = list->blocks_.begin(); bi != list->blocks_.end(); bi++) {
     BlockRef *block_ref = *bi;
     BlockPointer block = block_ref->block();
     engine::BufferPointer buffer = block->buffer();
@@ -281,7 +281,7 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
   BlockList *list = block_list_container_.getBlockList("input_0");
 
   au::list<BlockRef>::iterator bi;
-  for (bi = list->blocks.begin(); bi != list->blocks.end(); bi++) {
+  for (bi = list->blocks_.begin(); bi != list->blocks_.end(); bi++) {
     BlockRef *block_ref = *bi;
     BlockPointer block = block_ref->block();
     engine::BufferPointer buffer = block->buffer();
@@ -378,9 +378,9 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
     LOG_D(logs.reduce_operation, ("Reduce WT%lu - Adding Input %d : %lu blocks"
                                   , worker_task_id()
                                   , i
-                                  , list->blocks.size()));
+                                  , list->blocks_.size()));
 
-    for (bi = list->blocks.begin(); bi != list->blocks.end(); bi++) {
+    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); bi++) {
       BlockRef *block_ref = *bi;
       // BlockPointer block = block_ref->block();
       // engine::BufferPointer buffer = block->buffer();
@@ -507,7 +507,7 @@ void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
   BlockList *list = block_list_container_.getBlockList("input_0");
 
   au::list<BlockRef>::iterator bi;
-  for (bi = list->blocks.begin(); bi != list->blocks.end(); bi++) {
+  for (bi = list->blocks_.begin(); bi != list->blocks_.end(); bi++) {
     BlockRef *block_ref = *bi;
     BlockPointer block = block_ref->block();
     engine::BufferPointer buffer = block->buffer();

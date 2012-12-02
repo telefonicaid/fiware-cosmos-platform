@@ -156,8 +156,6 @@ void PopDelilahComponent::SendMainRequest() {
   pop_queue->set_commit_id(commit_id_);
   pop_queue->set_min_commit_id(min_commit_id);
 
-  LOG_SW(("Pop queue message %s min_commit %lu  commit %lu", queue_.c_str(), min_commit_id, commit_id_));
-
   // Identifier of the component at this delilah
   packet->message->set_delilah_component_id(id);
 

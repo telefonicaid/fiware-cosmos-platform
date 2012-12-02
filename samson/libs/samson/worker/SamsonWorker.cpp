@@ -228,6 +228,11 @@ void SamsonWorker::Review() {
       // Update if necessary my current information
       worker_controller_->UpdateWorkerNode(last_commit_id);
 
+      // Check if I need to remove any pop queue and queue_connections for unconnected delilah's
+      if (worker_controller_->cluster_leader()) {
+        ReviewPopQueues();
+      }
+
       // If I am the cluster leader, consolidate next frozen data model if necessary
       if (worker_controller_->cluster_leader()) {
         size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
@@ -241,6 +246,50 @@ void SamsonWorker::Review() {
       }
     }
     break;
+  }
+}
+
+void SamsonWorker::ReviewPopQueues() {
+  au::SharedPointer<gpb::DataModel> data_model =  data_model_->getCurrentModel();
+  gpb::Data *current_data = data_model->mutable_current_data();
+
+  for (int i = 0; i < current_data->queue_size(); i++) {
+    std::string queue = current_data->queue(i).name();
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues satifsy   ".pop_delilah_id_XXX"
+      size_t p = queue.find('_', 5);
+      if (p == std::string::npos) {
+        LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
+        continue;
+      }
+      size_t delilah_id = au::code64_num(queue.substr(5, p - 5));
+      // Check if this delilah is connected or has been connected in the last minute
+      if (!network_->CheckValidNode(NodeIdentifier(DelilahNode, delilah_id))) {
+        // Remove this queue
+        au::ErrorManager error;
+        std::string command = au::str("rm %s", queue.c_str());
+        data_model_->Commit("pop_review", command, error);
+      }
+    }
+  }
+
+  for (int i = 0; i < current_data->queue_connections_size(); i++) {
+    std::string source_queue = current_data->queue_connections(i).queue_source();
+    std::string queue = current_data->queue_connections(i).queue_target();
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues satifsy   ".pop_delilah_id_XXX"
+      size_t p = queue.find('_', 5);
+      if (p == std::string::npos) {
+        LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
+        continue;
+      }
+      size_t delilah_id = au::code64_num(queue.substr(5, p - 5));
+      // Check if this delilah is connected or has been connected in the last minute
+      if (!network_->CheckValidNode(NodeIdentifier(DelilahNode, delilah_id))) {
+        // Remove this queue
+        au::ErrorManager error;
+        std::string command = au::str("rm_queue_connection %s %s", source_queue.c_str(), queue.c_str());
+        data_model_->Commit("pop_review", command, error);
+      }
+    }
   }
 }
 
@@ -529,7 +578,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     size_t min_commit_id = packet->message->pop_queue().min_commit_id();
     size_t delilah_id = packet->from.id;
     std::string original_queue = packet->message->pop_queue().queue();
-    std::string pop_queue = au::str(".%s_%lu_%s"
+    std::string pop_queue = au::str(".pop_%s_%lu_%s"
                                     , au::code64_str(delilah_id).c_str()
                                     , packet->message->delilah_component_id()
                                     , original_queue.c_str());

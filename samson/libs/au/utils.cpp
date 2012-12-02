@@ -62,6 +62,33 @@ bool code64_is_valid(size_t v) {
   return true;
 }
 
+int GetCode64Base(char v) {
+  for (size_t i = 0; i < strlen(valid_chars); i++) {
+    if (v == valid_chars[i]) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+size_t code64_num(const std::string& value) {
+  size_t v;
+  char *c = (char *)&v;
+
+  if (value.length() != sizeof(size_t)) {
+    return static_cast<size_t>(-1);
+  }
+
+  for (size_t i = 0; i < sizeof(size_t); i++) {
+    int num_value = GetCode64Base(value[i]);
+    if (num_value == -1) {
+      return static_cast<size_t>(-1);  // Not possible to transform this letter
+    }
+    c[i] = num_value;
+  }
+  return v;
+}
+
 std::string code64_str(size_t v) {
   char str[sizeof(size_t) + 1];
   char *c = (char *)&v;

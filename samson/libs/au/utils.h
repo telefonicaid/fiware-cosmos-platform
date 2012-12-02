@@ -24,6 +24,7 @@ void ClearTerminalLine();
 size_t code64_rand();
 bool code64_is_valid(size_t v);
 std::string code64_str(size_t);
+size_t code64_num(const std::string& value);
 
 // Remove '\n's at the end of the line
 void remove_return_chars(char *line);

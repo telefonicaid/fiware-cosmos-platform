@@ -20,6 +20,7 @@
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/network/NetworkListener.h"
+#include "au/statistics/ConceptTimeCounter.h"
 #include "au/tables/Table.h"
 
 #include "engine/Engine.h"
@@ -40,8 +41,7 @@ class NetworkListener;
 class NetworkManager {
 public:
 
-  NetworkManager() :
-    token_connections_("token_connections_") {
+  NetworkManager() : token_connections_("token_connections_") {
   }
 
   virtual ~NetworkManager();
@@ -58,76 +58,141 @@ public:
   void Send(const PacketPointer& packet);
   void SendToAllDelilahs(const PacketPointer& packet);
 
-  // Review
-  //  --> Remove packets sent to long unconnected nodes
-  //  --> Remove disconnected connections
+  /**
+   * \brief Review current connections and queue of pending packets
+   * Remove packets sent to long unconnected nodes
+   * Remove disconnected connections
+   * Track connection names to be able to say if I have been connected to a particular delilah
+   */
   void Review();
 
-  // Remove this connection ( whatever name it has )
+  /**
+   * \brief Remove a particular connection
+   */
   void Remove(NetworkConnection *network_connection);
+
+  /**
+   * \brief Remove a particular connection identifier by name
+   */
   void Remove(const std::string& connection_name);
 
-  // Remove all unconnected connections
+  /**
+   * \brief Remove connections with a closed socket
+   */
   void RemoveDisconnectedConnections();
 
-  // Remove all connections hold.
+  /**
+   * \brief Remove all connections
+   */
   void ClearConnections() {
-    std::vector<std::string> connections = getAllConnectionNames();
+    std::vector<std::string> connections = GetAllConnectionNames();
     for (size_t i = 0; (i < connections.size()); ++i) {
       Remove(connections[i]);
     }
   }
 
-  // Check connection
-  bool isConnected(std::string connection_name);
+  /**
+   * \brief Check if a connection is stablished ( identified by name )
+   */
+  bool IsConnected(std::string connection_name) const;
 
-  // Get table with connection information
-  au::tables::Table *getConnectionsTable();
+  /**
+   * \brief Get table with connection information
+   */
+  au::tables::Table *GetConnectionsTable() const;
 
-  // Get pending packets table
-  au::tables::Table *getPendingPacketsTable();
+  /**
+   * \brief Get pending packets table
+   */
+  au::tables::Table *GetPendingPacketsTable() const;
 
-  // Get delilah ids
-  std::vector<size_t> getDelilahIds();
+  /**
+   * \brief Get delilah ids in all current connections
+   */
+  std::vector<size_t> GetDelilahIds() const;
 
-  // Get all connections
-  std::vector<std::string> getAllConnectionNames();
+  /**
+   * \brief Get all connections
+   */
+  std::vector<std::string> GetAllConnectionNames() const;
 
-  // Debug str
-  std::string str();
+  /**
+   * \brief Debug string
+   */
+  std::string str() const;
 
-  // Get a collection for all connections
-  au::SharedPointer<gpb::Collection> GetConnectionsCollection(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization);
+  /**
+   * \brief Get a collection for all connections
+   */
+  au::SharedPointer<gpb::Collection> GetConnectionsCollection(const Visualization& visualization) const;
 
-  // Reset all connections
-  void reset();
+  /**
+   * \brief Get a collection for all queues of pending packets
+   */
+  au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization)  const;
 
-  // Get number of connections
-  size_t getNumConnections();
+  /**
+   * \brief Reset all connections
+   */
+  void Reset();
 
-  size_t get_rate_in();
-  size_t get_rate_out();
-  std::string getStatusForConnection(std::string connection_name);
+  /**
+   * \brief Get number of connections
+   */
+  size_t GetNumConnections() const;
 
+  /**
+   * \brief rate of bytes per second for input traffic
+   */
+  size_t GetRateIn() const;
+
+  /**
+   * \brief rate of bytes per second for output traffic
+   */
+  size_t GetRateOut() const;
+
+  /**
+   * \brief Get some debug information about a connection
+   */
+  std::string GetStatusForConnection(const std::string& connection_name) const;
+
+  /**
+   * \brief Get total size in all pending paquets queues
+   */
   size_t GetAllQueuesSize() {
-    return multi_packet_queue.GetAllQueuesSize();
+    return multi_packet_queue_.GetAllQueuesSize();
   }
 
+  /**
+   * \brief Get size in pending paquets for a particular qoeker
+   */
   size_t GetQueueSizeForWorker(size_t worker_id) {
-    return multi_packet_queue.GetQueueSize(au::str("worker_%lu", worker_id));
+    return multi_packet_queue_.GetQueueSize(au::str("worker_%lu", worker_id));
+  }
+
+  /**
+   * \brief Check if I have "seen" a particular node during last minute
+   */
+  bool CheckValidNode(const NodeIdentifier& node) {
+    if (connections_names_.time() < 60) {
+      return true;  // We are still not ready to validate a node, so all of them are valid
+    }
+    return connections_names_.IsActive(node.getCodeName());
   }
 
 private:
 
   // Multi queue for all unconnected connections
-  MultiPacketQueue multi_packet_queue;
+  MultiPacketQueue multi_packet_queue_;
 
   // All managed connection ( name = code name of node identifier )
-  au::map<std::string, NetworkConnection> connections;
+  au::map<std::string, NetworkConnection> connections_;
+
+  // Register of connections established until last minute
+  au::ConceptTimeCounter connections_names_;
 
   // Token to block add and move operations on connections
-  au::Token token_connections_;
+  mutable au::Token token_connections_;
 
   friend class NetworkConnection;
 };

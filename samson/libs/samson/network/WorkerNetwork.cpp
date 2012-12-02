@@ -48,7 +48,7 @@ void WorkerNetwork::stop() {
 
   // Close all connections
   LOG_M(logs.cleanup, ("Close all connections"));
-  NetworkManager::reset();
+  NetworkManager::Reset();
 }
 
 void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::SocketConnection *socket_connection) {

@@ -149,6 +149,12 @@ private:
   // This function is preiodically called from engine
   void Review();
 
+  /**
+   * \brief Review pop queues and queue_connections for unconnected delilahs ( remove them )
+   */
+
+  void ReviewPopQueues();
+
   void ResetToUnconnected();     // Reset when come back to unconnected
   void ResetToConnected();     // Reset when come back to connected ( change cluster setup )
 

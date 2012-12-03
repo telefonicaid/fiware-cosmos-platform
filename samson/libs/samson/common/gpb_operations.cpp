@@ -95,7 +95,7 @@ std::string getProperty(Environment *environment, const std::string& name, const
   // Search for an existing variable
   for (int i = 0; i < environment->variable_size(); ++i) {
     if (environment->variable(i).name() == name) {
-      return environment->variable(i).name();
+      return environment->variable(i).value();
     }
   }
   return default_value;

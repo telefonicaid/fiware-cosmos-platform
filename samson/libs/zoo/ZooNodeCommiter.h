@@ -124,9 +124,8 @@ public:
   /*
    * \brief Get current data model
    */
-  au::SharedPointer<C> getCurrentModel() {
+  au::SharedPointer<C> getCurrentModel() const {
     au::TokenTaker tt(&token_);
-
     return c_;
   }
 
@@ -377,7 +376,7 @@ private:
   }
 
   zoo::Connection *zoo_connection_;
-  au::Token token_;
+  mutable au::Token token_;
   std::string path_;
   au::SharedPointer<C> c_;
   int version_;

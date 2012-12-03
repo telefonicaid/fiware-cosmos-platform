@@ -47,10 +47,8 @@ class Buffer;
 class PopDelilahComponentItem {
 public:
 
-  PopDelilahComponentItem(size_t pop_id, size_t block_id, size_t commit_id) {
-    pop_id_ = pop_id;
-    block_id_ = block_id;
-    commit_id_ = commit_id;
+  PopDelilahComponentItem(size_t pop_id, size_t block_id, size_t commit_id) :
+    pop_id_(pop_id), block_id_(block_id), commit_id_(commit_id) {
   }
 
   void SetContent(engine::BufferPointer buffer) {
@@ -117,6 +115,17 @@ private:
   PopDelilahComponent *pop_delilah_component_;
 };
 
+
+/**
+ * \brief Component in delilah client to "pop" content of a queue
+ *
+ * There are two types of "pop" operation: continuous pop operation , non-continuous pop operations
+ *
+ * continuous pop is downloading the content of a queue in a cpontinuous way getting all data pushed to that queue
+ * non-continuous pop operation is downloading data currently holded by a queue.
+ *
+ *
+ */
 class PopDelilahComponent : public DelilahComponent, public engine::NotificationListener {
 public:
 

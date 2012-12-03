@@ -34,7 +34,7 @@ int getTerminalColumns() {
 
 void ClearTerminalLine() {
   printf("\r");
-  for (int i = 0; i < getTerminalColumns(); i++) {
+  for (int i = 0; i < getTerminalColumns(); ++i) {
     printf(" ");
   }
   printf("\r");
@@ -43,18 +43,18 @@ void ClearTerminalLine() {
 
 size_t code64_rand() {
   size_t v;
-  char *c = (char *)&v;
+  char *c =  reinterpret_cast<char *>(&v);
 
-  for (size_t i = 0; i < sizeof(size_t) / sizeof(char); i++) {
+  for (size_t i = 0; i < sizeof(size_t) / sizeof(char); ++i) {
     c[i] = rand() % strlen(valid_chars);
   }
   return v;
 }
 
 bool code64_is_valid(size_t v) {
-  char *c = (char *)&v;
+  char *c =  reinterpret_cast<char *>(&v);
 
-  for (size_t i = 0; i < sizeof(size_t) / sizeof(char); i++) {
+  for (size_t i = 0; i < sizeof(size_t) / sizeof(char); ++i) {
     if (c[i] >= (int)strlen(valid_chars)) {
       return false;
     }
@@ -63,7 +63,7 @@ bool code64_is_valid(size_t v) {
 }
 
 int GetCode64Base(char v) {
-  for (size_t i = 0; i < strlen(valid_chars); i++) {
+  for (size_t i = 0; i < strlen(valid_chars); ++i) {
     if (v == valid_chars[i]) {
       return i;
     }
@@ -73,13 +73,13 @@ int GetCode64Base(char v) {
 
 size_t code64_num(const std::string& value) {
   size_t v;
-  char *c = (char *)&v;
+  char *c =  reinterpret_cast<char *>(&v);
 
   if (value.length() != sizeof(size_t)) {
     return static_cast<size_t>(-1);
   }
 
-  for (size_t i = 0; i < sizeof(size_t); i++) {
+  for (size_t i = 0; i < sizeof(size_t); ++i) {
     int num_value = GetCode64Base(value[i]);
     if (num_value == -1) {
       return static_cast<size_t>(-1);  // Not possible to transform this letter
@@ -91,9 +91,9 @@ size_t code64_num(const std::string& value) {
 
 std::string code64_str(size_t v) {
   char str[sizeof(size_t) + 1];
-  char *c = (char *)&v;
+  char *c =  reinterpret_cast<char *>(&v);
 
-  for (size_t i = 0; i < sizeof(size_t); i++) {
+  for (size_t i = 0; i < sizeof(size_t); ++i) {
     int p = c[i];
     if (p >= (int)strlen(valid_chars)) {
       str[i] = '?';

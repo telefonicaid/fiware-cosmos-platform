@@ -111,12 +111,11 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
   }
 
   if (worker_id != worker_id_) {
-    LOG_SW((
-             "Push item %lu: Received message '%s' from worker %lu in a push item while my worker id is %lu. Ignoring..."
-             , push_id_
-             , Message::messageCode(msgCode)
-             , worker_id
-             , worker_id_));
+    LOG_SW(("Push item %lu: Received message '%s' from worker %lu in a push item (my worker id is %lu). Ignoring...",
+            push_id_,
+            Message::messageCode(msgCode),
+            worker_id,
+            worker_id_));
     return;
   }
 
@@ -128,15 +127,12 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
 
   switch (state_) {
     case init:
-    {
       LOG_SW(("Push item %lu: Received message '%s' in a push item while in init mode. Ignoring..."
               , push_id_
               , Message::messageCode(msgCode)));
-    }
-    break;
+      break;
 
     case waiting_push_block_response:
-    {
       if (msgCode != Message::PushBlockResponse) {
         LOG_SW(("Push item %lu: Received wrong message '%s' from worker while waiting for PushBlockResponse"
                 , push_id_
@@ -145,11 +141,9 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
         return;
       }
       state_ = waiting_push_block_confirmation;
-    }
-    break;
+      break;
 
     case waiting_push_block_confirmation:
-    {
       if (msgCode != Message::PushBlockConfirmation) {
         LOG_SW(("Push item %lu: Recieved wrong message '%s' from worker while waiting for PushBlockConfirmation"
                 , push_id_
@@ -159,8 +153,8 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
       }
       state_ = completed;
       return;
-    }
-    break;
+
+      break;
 
     case completed:
       // Nothing else to do here
@@ -168,15 +162,15 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
   }
 }
 
-size_t PushItem::push_id() {
+size_t PushItem::push_id() const {
   return push_id_;
 }
 
-size_t PushItem::time() {
+size_t PushItem::time() const {
   return cronometer_.seconds();
 }
 
-size_t PushItem::size() {
+size_t PushItem::size() const {
   if (buffer_ != NULL) {
     return buffer_->size();
   } else {
@@ -184,7 +178,7 @@ size_t PushItem::size() {
   }
 }
 
-std::string PushItem::str() {
+std::string PushItem::str() const {
   switch (state_) {
     case init: return au::str("[%lu] Uninitialized", push_id_);
 
@@ -200,7 +194,7 @@ std::string PushItem::str() {
   return "Error";
 }
 
-std::string PushItem::str_buffer_info() {
+std::string PushItem::str_buffer_info() const {
   if (buffer_ != NULL) {
     return au::str(buffer_->size(), "B");
   } else {

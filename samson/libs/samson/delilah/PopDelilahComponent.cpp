@@ -64,9 +64,9 @@ void PopDelilahComponent::run() {
       au::RemoveDirectory(file_name_, error);
     }
 
-    if (mkdir(file_name_.c_str(), 0755)) {
-      LM_E(("Not possible to create directory %s (%s).", file_name_.c_str(), strerror(errno)));
-      setComponentFinishedWithError(au::str("Not possible to create directory %s (%s)."
+    if (mkdir(file_name_.c_str(), 0755) == -1) {
+      LM_E(("Not possible to create directory. mkdir(%s): '%s'.", file_name_.c_str(), strerror(errno)));
+      setComponentFinishedWithError(au::str("Not possible to create directory. mkdir(%s): '%s'."
                                             , file_name_.c_str(), strerror(errno)));
       return;
     }
@@ -319,7 +319,7 @@ void PopDelilahComponent::check() {
     items_.erase(it++);
   }
 
-  // Set component as finish if everything is done ( file_name is set in normal pop operations )
+  // Set component as finnish if everything has completed ( file_name is set in normal pop operations )
   if (file_name_ != "") {
     // Adding stated() to avoid finishing a component before started
     if (started() && (num_pending_write_operations_ == 0) && (items_.size() == 0)) {

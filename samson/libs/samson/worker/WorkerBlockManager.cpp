@@ -253,7 +253,7 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
 
   KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
   if (!header->Check() || !header->range.isValid()) {
-    LOG_W(logs.worker_block_manager, ("Push message with a invalid buffer. Ignoring..."));
+    LOG_W(logs.worker_block_manager, ("Push message with an invalid buffer. Ignoring..."));
     SendPushBlockResponseWithError(delilah_id, push_id, "Invalid buffer provided");
     return;
   }
@@ -337,6 +337,7 @@ void WorkerBlockManager::ReviewPushItems(size_t previous_data_commit_id, size_t 
                                           , current_data_commit_id);
       SendPushBlockConfirmationWithError(iter->delilah_id(), iter->push_id(), error_message);
       push_items_.erase(iter++);
+      continue;
     }
 
     ++iter;

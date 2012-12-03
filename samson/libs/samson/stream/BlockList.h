@@ -61,7 +61,7 @@ public:
   ~BlockList();
 
   // Simple add or remove blocks
-  void Add(BlockRef *blobk_ref);
+  void Add(BlockRef *block_ref);
   void Remove(BlockRef *block_ref);
 
   // Remove all the blocks contained in the list

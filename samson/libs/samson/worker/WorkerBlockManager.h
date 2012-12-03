@@ -61,15 +61,15 @@ public:
   ~WorkerPushItem() {
   }
 
-  size_t push_id() {
+  size_t push_id() const {
     return push_id_;
   }
 
-  size_t commit_id() {
+  size_t commit_id() const {
     return commit_id_;
   }
 
-  size_t delilah_id() {
+  size_t delilah_id() const {
     return delilah_id_;
   }
 

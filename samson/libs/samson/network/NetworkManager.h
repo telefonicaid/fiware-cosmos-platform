@@ -41,7 +41,7 @@ class NetworkListener;
 class NetworkManager {
 public:
 
-  NetworkManager() : token_connections_("token_connections_") {
+  NetworkManager() : token_connections_("token_connections_"), connections_names_(60) {
   }
 
   virtual ~NetworkManager();
@@ -94,7 +94,7 @@ public:
   /**
    * \brief Check if a connection is stablished ( identified by name )
    */
-  bool IsConnected(std::string connection_name) const;
+  bool IsConnected(const std::string& connection_name) const;
 
   /**
    * \brief Get table with connection information
@@ -157,14 +157,14 @@ public:
   std::string GetStatusForConnection(const std::string& connection_name) const;
 
   /**
-   * \brief Get total size in all pending paquets queues
+   * \brief Get total size in all pending packets queues
    */
   size_t GetAllQueuesSize() {
     return multi_packet_queue_.GetAllQueuesSize();
   }
 
   /**
-   * \brief Get size in pending paquets for a particular qoeker
+   * \brief Get size in pending packets for a particular qoeker
    */
   size_t GetQueueSizeForWorker(size_t worker_id) {
     return multi_packet_queue_.GetQueueSize(au::str("worker_%lu", worker_id));
@@ -182,6 +182,9 @@ public:
 
 private:
 
+  // Token to block add and move operations on connections
+  mutable au::Token token_connections_;
+
   // Multi queue for all unconnected connections
   MultiPacketQueue multi_packet_queue_;
 
@@ -190,9 +193,6 @@ private:
 
   // Register of connections established until last minute
   au::ConceptTimeCounter connections_names_;
-
-  // Token to block add and move operations on connections
-  mutable au::Token token_connections_;
 
   friend class NetworkConnection;
 };

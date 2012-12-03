@@ -46,7 +46,7 @@ std::string Adaptor::getName() {
 }
 
 std::string Adaptor::getFullName() {
-  return au::str("%s.%s",  channel->getName().c_str(), name_.c_str());
+  return au::str("%s.%s", channel->getName().c_str(), name_.c_str());
 }
 
 std::string Adaptor::getDescription() {
@@ -77,10 +77,7 @@ void Adaptor::push(engine::BufferPointer buffer) {
   au::TokenTaker tt(&token);
 
   au::map<int, Connection>::iterator it_connections;
-  for (it_connections = connections.begin()
-       ; it_connections != connections.end()
-       ; it_connections++)
-  {
+  for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
     Connection *connection = it_connections->second;
     if (connection->getType() == connection_output) {
       connection->push(buffer);
@@ -99,10 +96,7 @@ void Adaptor::review() {
     au::TokenTaker tt(&token);
     au::map<int, Connection>::iterator it_connections;
 
-    for (it_connections = connections.begin()
-         ; it_connections != connections.end()
-         ; it_connections++)
-    {
+    for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
       Connection *connection = it_connections->second;
       connection->review();
     }
@@ -122,10 +116,7 @@ void Adaptor::cancel_item() {
 
     // Cancel all connections
     au::map<int, Connection>::iterator it_connections;
-    for (it_connections = connections.begin()
-         ; it_connections != connections.end()
-         ; it_connections++)
-    {
+    for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
       Connection *connection = it_connections->second;
       connection->cancel_connecton();
     }
@@ -157,10 +148,7 @@ size_t Adaptor::getConnectionsBufferedSize() {
   size_t total = 0;
 
   au::map<int, Connection>::iterator it_connections;
-  for (it_connections = connections.begin()
-       ; it_connections != connections.end()
-       ; it_connections++)
-  {
+  for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
     Connection *connection = it_connections->second;
     total += connection->bufferedSize();
   }
@@ -174,10 +162,7 @@ void Adaptor::remove_finished_connections(au::ErrorManager *error) {
 
   // Cancel all connections
   au::map<int, Connection>::iterator it_connections;
-  for (it_connections = connections.begin()
-       ; it_connections != connections.end()
-       ; it_connections++)
-  {
+  for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
     Connection *connection = it_connections->second;
     if (connection->is_finished()) {
       log("Message", au::str("Removing connection %s", connection->getFullName().c_str()));

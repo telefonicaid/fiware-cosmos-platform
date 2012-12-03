@@ -35,7 +35,7 @@ std::vector<std::string> NetworkManager::GetAllConnectionNames() const {
 
 void NetworkManager::Remove(NetworkConnection *network_connection) {
   au::map<std::string, NetworkConnection>::iterator it;
-  for (it = connections_.begin(); it != connections_.end(); it++) {
+  for (it = connections_.begin(); it != connections_.end(); ++it) {
     if (it->second == network_connection) {
       connections_.extractFromMap(it->first);
       delete network_connection;
@@ -85,7 +85,7 @@ size_t NetworkManager::GetNumConnections() const {
   return connections_.size();
 }
 
-bool NetworkManager::IsConnected(std::string connection_name) const {
+bool NetworkManager::IsConnected(const std::string& connection_name) const {
   au::TokenTaker tt(&token_connections_, "token_connections_.isConnected");
   bool connected = (connections_.findInMap(connection_name) != NULL);
 
@@ -99,7 +99,7 @@ au::tables::Table *NetworkManager::GetConnectionsTable() const {
 
   au::map<std::string, NetworkConnection>::const_iterator it_connections;
 
-  for (it_connections = connections_.begin(); it_connections != connections_.end(); it_connections++) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     au::StringVector values;
 
     values.push_back(it_connections->first);   // Name of the connection
@@ -140,7 +140,7 @@ std::vector<size_t> NetworkManager::GetDelilahIds() const {
   au::TokenTaker tt(&token_connections_);
 
   au::map<std::string, NetworkConnection>::const_iterator it_connections;
-  for (it_connections = connections_.begin(); it_connections != connections_.end(); it_connections++) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     NodeIdentifier _node_identifier = it_connections->second->node_identifier();
 
     if (_node_identifier.node_type == DelilahNode) {
@@ -167,7 +167,7 @@ std::string NetworkManager::str() const {
   std::ostringstream output;
 
   au::map<std::string, NetworkConnection>::const_iterator it_connections;
-  for (it_connections = connections_.begin(); it_connections != connections_.end(); it_connections++) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     output << it_connections->first << " : " << it_connections->second->str() << "\n";
   }
 
@@ -184,7 +184,7 @@ void NetworkManager::Review() {
 
   // Track name of connections
   au::map<std::string, NetworkConnection>::iterator iter;
-  for (iter = connections_.begin(); iter != connections_.end(); iter++) {
+  for (iter = connections_.begin(); iter != connections_.end(); ++iter) {
     connections_names_.Add(iter->first);
   }
   connections_names_.Review();
@@ -209,7 +209,7 @@ void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
 
   // Send to all involved workers
   au::map<std::string, NetworkConnection>::iterator it_connections;
-  for (it_connections = connections_.begin(); it_connections != connections_.end(); it_connections++) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     std::string name = it_connections->first;
     NetworkConnection *connection = it_connections->second;
     NodeIdentifier connection_node_identifier = connection->node_identifier();
@@ -233,7 +233,7 @@ au::SharedPointer<gpb::Collection> NetworkManager::GetConnectionsCollection(cons
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("connections");
   au::map<std::string, NetworkConnection>::const_iterator it_connections;
-  for (it_connections = connections_.begin(); it_connections != connections_.end(); it_connections++) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     gpb::CollectionRecord *record = collection->add_record();
     it_connections->second->fill(record, visualization);
   }
@@ -248,7 +248,7 @@ void NetworkManager::Reset() {
   connections_.clearMap();
 
   au::map<std::string, NetworkConnection>::iterator it_connections;
-  for (it_connections = connections_.begin(); it_connections != connections_.end(); it_connections++) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     NetworkConnection *connection = it_connections->second;
     connection->Close();
   }
@@ -262,7 +262,7 @@ size_t NetworkManager::GetRateIn() const {
   size_t total = 0;
 
   au::map<std::string, NetworkConnection>::const_iterator it_connections;
-  for (it_connections = connections_.begin(); it_connections != connections_.end(); it_connections++) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     total += it_connections->second->rate_in();
   }
 
@@ -275,7 +275,7 @@ size_t NetworkManager::GetRateOut() const {
   size_t total = 0;
 
   au::map<std::string, NetworkConnection>::const_iterator it_connections;
-  for (it_connections = connections_.begin(); it_connections != connections_.end(); it_connections++) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     total += it_connections->second->rate_out();
   }
 

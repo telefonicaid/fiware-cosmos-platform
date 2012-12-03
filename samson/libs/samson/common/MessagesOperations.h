@@ -57,9 +57,9 @@ bool name_match(const char *pattern, C _value) {
 
 // Get a collection from a map
 template<typename K, typename V>
-au::SharedPointer<gpb::Collection> GetCollectionForMap(const std::string& title
-                                                       , const std::map<K, V *>& m
-                                                       , const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> GetCollectionForMap(const std::string& title,
+                                                       const std::map<K, V *>& m,
+                                                       const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name(title);
 

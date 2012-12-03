@@ -810,7 +810,7 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
       au::TokenTaker tt(&item->token);
 
       au::map<int, Connection>::iterator it_connections;
-      for (it_connections = item->connections.begin(); it_connections != item->connections.end(); it_connections++) {
+      for (it_connections = item->connections.begin(); it_connections != item->connections.end(); ++it_connections) {
         Connection *connection = it_connections->second;
 
         // Draw separation line if necessary

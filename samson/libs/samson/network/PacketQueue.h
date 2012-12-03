@@ -28,7 +28,7 @@
 
 namespace samson {
 /**
- * \brief Queue of pending packets for a particular connections ( identified by a string )
+ * \brief Queue of pending packets for a particular connection (identified by a string)
  */
 
 class PacketQueue : public au::Queue<Packet>{

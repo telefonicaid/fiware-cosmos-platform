@@ -22,40 +22,26 @@
 #include "samson/module/KVFormat.h"
 
 namespace samson {
-// ------------------------------------------------------------------
-//
-// class CommitCommandItem
-//
-// Item inside CommitCommand ( atomic operation over a queue )
-// Thist class accumuate information about a queue operation commit
-// and generte the std::string to be included in a commit command over DataModel
-// ------------------------------------------------------------------
-
+/**
+ * \brief Item inside CommitCommand ( atomic operation over a queue )
+ * This class accumulate information about a queue operation commit
+ * and generte the std::string to be included in a commit command over DataModel
+ *
+ * FORMAT  command:queue:block_id:key_format:value_format:range_begin:range_end:info.kvs:info.size
+ *
+ * [0]  command
+ * [1]  queue
+ * [2]  block_id
+ * [3]  block_size
+ * [4][5] format
+ * [6][7] range
+ * [8][9] info ( size - kvs )
+ *
+ */
 
 class CommitCommandItem {
-  std::string command_;
-  std::string queue_;
-  size_t block_id_;
-  size_t block_size_;
-  KVFormat format_;
-  KVRange range_;
-  KVInfo info_;
-
-  /*
-   *
-   * FORMAT  command:queue:block_id:key_format:value_format:range_begin:range_end:info.kvs:info.size
-   *
-   * [0]  command
-   * [1]  queue
-   * [2]  block_id
-   * [3]  block_size
-   * [4][5] format
-   * [6][7] range
-   * [8][9] info ( size - kvs )
-   *
-   */
-
 public:
+
   CommitCommandItem(const std::string& command
                     , const std::string& queue
                     , size_t block_id
@@ -78,6 +64,16 @@ public:
 
   // Generate string command to be added to others and forma  complete commit command for Datamodel
   std::string str() const;
+
+private:
+
+  std::string command_;
+  std::string queue_;
+  size_t block_id_;
+  size_t block_size_;
+  KVFormat format_;
+  KVRange range_;
+  KVInfo info_;
 };
 
 class CommitCommand {

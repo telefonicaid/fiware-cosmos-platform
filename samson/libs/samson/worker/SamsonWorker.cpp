@@ -228,7 +228,7 @@ void SamsonWorker::Review() {
       // Update if necessary my current information
       worker_controller_->UpdateWorkerNode(last_commit_id);
 
-      // Check if I need to remove any pop queue and queue_connections for unconnected delilah's
+      // Check to see if I need to remove any pop queue or queue_connections for disconnected delilah clients
       if (worker_controller_->cluster_leader()) {
         ReviewPopQueues();
       }
@@ -255,7 +255,7 @@ void SamsonWorker::ReviewPopQueues() {
 
   for (int i = 0; i < current_data->queue_size(); i++) {
     std::string queue = current_data->queue(i).name();
-    if (queue.substr(0, 5) == ".pop_") {           // Pop queues satifsy   ".pop_delilah_id_XXX"
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues names matchs ".pop_delilah_id_XXX"
       size_t p = queue.find('_', 5);
       if (p == std::string::npos) {
         LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
@@ -275,7 +275,7 @@ void SamsonWorker::ReviewPopQueues() {
   for (int i = 0; i < current_data->queue_connections_size(); i++) {
     std::string source_queue = current_data->queue_connections(i).queue_source();
     std::string queue = current_data->queue_connections(i).queue_target();
-    if (queue.substr(0, 5) == ".pop_") {           // Pop queues satifsy   ".pop_delilah_id_XXX"
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues names matchs ".pop_delilah_id_XXX"
       size_t p = queue.find('_', 5);
       if (p == std::string::npos) {
         LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
@@ -621,8 +621,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
         for (int i = 0; i < queue->blocks_size(); ++i) {
           if (queue->blocks(i).commit_id() > commit_id) {
             gpb_queue->add_blocks()->CopyFrom(queue->blocks(i));
-          } else if ((min_commit_id == SIZE_T_UNDEFINED) || (queue->blocks(i).commit_id() < min_commit_id)) {
-            // Add to be removed from this queue
           }
         }
       }

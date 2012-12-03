@@ -297,11 +297,11 @@ void Delilah::receive(const PacketPointer& packet) {
   // --------------------------------------------------------------------
   if ((msgCode == Message::PushBlockResponse) || (msgCode == Message::PushBlockConfirmation)) {
     if (!packet->message->has_push_id()) {
-      LOG_SW(("Received a %s without a push_id", Message::messageCode(msgCode)));
+      LOG_SW(("Received a '%s' without a push_id", Message::messageCode(msgCode)));
       return;
     }
     if (packet->from.node_type != WorkerNode) {
-      LOG_SW(("Received a %s from a non-worker nodeid", Message::messageCode(msgCode)));
+      LOG_SW(("Received a '%s' from a non-worker nodeid", Message::messageCode(msgCode)));
       return;
     }
 

@@ -36,6 +36,8 @@ const char *messageCode(MessageCode code) {
 
     case PushBlockResponse:                return "PushBlockResponse";
 
+    case PushBlockConfirmation:            return "PushBlockConfirmation";
+
     case PopQueue:                         return "PopQueue";
 
     case PopQueueResponse:                 return "PopQueueResponse";
@@ -59,8 +61,6 @@ const char *messageCode(MessageCode code) {
     case Message:                          return "Message";
 
     case Unknown:                          return "Unknown";
-
-    default:                               LOG_SW(("Unknown message code(%d)", static_cast<int>(code)));
   }
 
   return (char *)"Unknown";

@@ -47,9 +47,8 @@ class Buffer;
 class PopDelilahComponentItem {
 public:
 
-  PopDelilahComponentItem(size_t pop_id, size_t block_id) {
-    pop_id_ = pop_id;
-    block_id_ = block_id;
+  PopDelilahComponentItem(size_t pop_id, size_t block_id, size_t commit_id) :
+    pop_id_(pop_id), block_id_(block_id), commit_id_(commit_id) {
   }
 
   void SetContent(engine::BufferPointer buffer) {
@@ -97,13 +96,17 @@ public:
     return pop_id_;
   }
 
+  size_t commit_id() const {
+    return commit_id_;
+  }
+
 private:
 
   engine::BufferPointer buffer_;         // Buffer received for this item
 
   size_t pop_id_;                        // Identifier of this particular item
   size_t block_id_;                      // Identifier of the block
-
+  size_t commit_id_;                     // Commit id where this block was added to the queue
   size_t worker_id_;                     // worker selected to retrieve this block
 
   au::Cronometer cronometer_;            // Cronometer since request was sent to the worker
@@ -112,6 +115,17 @@ private:
   PopDelilahComponent *pop_delilah_component_;
 };
 
+
+/**
+ * \brief Component in delilah client to "pop" content of a queue
+ *
+ * There are two types of "pop" operation: continuous pop operation , non-continuous pop operations
+ *
+ * continuous pop is downloading the content of a queue in a cpontinuous way getting all data pushed to that queue
+ * non-continuous pop operation is downloading data currently holded by a queue.
+ *
+ *
+ */
 class PopDelilahComponent : public DelilahComponent, public engine::NotificationListener {
 public:
 
@@ -143,39 +157,28 @@ public:
 
 private:
 
-  // Send pop request
-  void send_main_request();
+  /**
+   * \brief Send main request to get connected to a queue
+   */
 
-  // Send request for a particular item
-  void send_request(PopDelilahComponentItem *item) {
-    item->ResetRequest();            // Reset request
+  void SendMainRequest();
 
-    // Select a worker
-    size_t worker_id = delilah->network->getRandomWorkerId(item->worker_id());
-    item->set_worker_id(worker_id);
+  /**
+   * \brief Send request for a particular item
+   */
 
-    // Build & sent the packet
-    au::SharedPointer<Packet> packet(new Packet(Message::PopBlockRequest, NodeIdentifier(WorkerNode, worker_id)));
-
-    // Fill information about this request
-    packet->message->set_delilah_component_id(id);
-    packet->message->set_pop_id(item->pop_id());
-    packet->message->set_block_id(item->block_id());
-
-    LOG_M(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
-    delilah->network->Send(packet);
-  }
+  void SendRequest(PopDelilahComponentItem *item) const;
 
   // Initial information of this pop operation
-  std::string queue_;     // Name of the queue we are recovering
+  std::string queue_;      // Name of the queue we are recovering
   std::string file_name_;  // Name of the file to create
-  bool force_flag_;       // Flag to remove previos directory
+  bool force_flag_;        // Flag to remove previos directory
   bool show_flag_;
 
   // Main request information
-  size_t worker_id_;     // worker selected to request information about my queue
-  int commit_id_;         // last commit observed
-  au::Cronometer cronometer_;
+  size_t worker_id_;       // worker selected to request information about my queue
+  size_t commit_id_;       // last commit observed
+  au::Cronometer cronometer_;  // Time since request was sent
 
   // Number of pop_responses
   int num_pop_queue_responses_;

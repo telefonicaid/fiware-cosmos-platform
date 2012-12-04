@@ -37,7 +37,8 @@ typedef enum MessageCode {
   WorkerCommand,                // Command from a delilah node to a worker
   WorkerCommandResponse,
   PushBlock,                    // Push a block from delilah to a worker
-  PushBlockResponse,            // Confirmation from worker that block has been distributed in the cluster
+  PushBlockResponse,            // Confirmation from worker that block has been received
+  PushBlockConfirmation,        // Confirmation from worker that block has been confirmed in data model
 
   PopQueue,                     // Request from delilah for a particular queue ( returns information about queue )
   PopQueueResponse,             // Response from worker

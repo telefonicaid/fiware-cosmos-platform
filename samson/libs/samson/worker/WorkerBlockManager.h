@@ -48,6 +48,37 @@ namespace stream {
 class DefragTask;
 }
 
+/**
+ * \brief Class to keep information of a push operation from a delilah pending to be confirmed
+ */
+
+class WorkerPushItem {
+public:
+  WorkerPushItem(size_t delilah_id, size_t push_id, size_t commit_id) :
+    delilah_id_(delilah_id), push_id_(push_id), commit_id_(commit_id) {
+  }
+
+  ~WorkerPushItem() {
+  }
+
+  size_t push_id() const {
+    return push_id_;
+  }
+
+  size_t commit_id() const {
+    return commit_id_;
+  }
+
+  size_t delilah_id() const {
+    return delilah_id_;
+  }
+
+private:
+  size_t delilah_id_;
+  size_t push_id_;
+  size_t commit_id_;
+};
+
 class WorkerBlockManager {
 public:
 
@@ -82,7 +113,7 @@ public:
    * \brief Notify that a block request response message has been received with an error
    */
 
-  void ReceivedBlockRequestResponse(size_t block_id, size_t worker_id,  const std::string& error_message);
+  void ReceivedBlockRequestResponse(size_t block_id, size_t worker_id, const std::string& error_message);
 
   // Add a block-break request
   void AddBlockBreak(const std::string& queue_name, size_t block_id, const std::vector<KVRange>& ranges);
@@ -90,7 +121,15 @@ public:
   // Review all kind of elements
   void Review();
 
-  // Receive a push block from delilah
+  /**
+   * \brief Review push items based on consolidated commit_id and current commit_id
+   */
+  void ReviewPushItems(size_t previous_data_commit_id, size_t current_data_commit_id);
+
+  /**
+   * \brief Notify that a push has been received
+   */
+
   void ReceivedPushBlock(size_t delilah_id
                          , size_t push_id
                          , engine::BufferPointer buffer
@@ -108,9 +147,15 @@ public:
 
 private:
 
+  void SendPushBlockResponse(size_t delilah_id, size_t push_id);
+  void SendPushBlockResponseWithError(size_t delilah_id, size_t push_id, const std::string& error);
+  void SendPushBlockConfirmation(size_t delilah_id, size_t push_id);
+  void SendPushBlockConfirmationWithError(size_t delilah_id, size_t push_id, const std::string& error);
+
   SamsonWorker *samson_worker_;
   au::map<size_t, BlockRequest> block_requests_;     // Block requests sent by this worker
   au::Dictionary<std::string, stream::DefragTask > defrag_tasks_;
+  std::list<WorkerPushItem> push_items_;  // List of push items pending to be confirmed
 };
 }
 

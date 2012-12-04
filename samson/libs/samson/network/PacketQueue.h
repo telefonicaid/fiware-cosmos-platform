@@ -27,6 +27,10 @@
 #include "samson/network/Packet.h"
 
 namespace samson {
+/**
+ * \brief Queue of pending packets for a particular connection (identified by a string)
+ */
+
 class PacketQueue : public au::Queue<Packet>{
 public:
 
@@ -34,7 +38,7 @@ public:
     name_ = name;
   }
 
-  size_t byte_size() {
+  size_t GetByteSize() const {
     // Get packets in this queue
     std::vector< au::SharedPointer<Packet> > packets = items();
     size_t total_size = 0;
@@ -81,6 +85,11 @@ private:
   std::string name_;
 };
 
+
+/**
+ * \brief Collection of queues for all connections
+ */
+
 class MultiPacketQueue {
 public:
 
@@ -102,7 +111,7 @@ public:
   void Clear();
 
   // Get a descriptive table with current status of all the queues
-  au::tables::Table *getPendingPacketsTable();
+  au::tables::Table *GetPendingPacketsTable() const;
 
   // Check old messages to be removes
   void RemoveOldConnections(const std::set<std::string> current_connections);
@@ -111,7 +120,7 @@ public:
   std::string GetDescription(const NodeIdentifier& node_identifier) const;
 
   // Collection to be displayes
-  au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization) const;
 
   // Get information about output queues
   size_t GetAllQueuesSize();

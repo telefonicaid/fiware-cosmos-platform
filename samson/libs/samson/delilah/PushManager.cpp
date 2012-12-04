@@ -78,21 +78,20 @@ void PushItem::Review() {
 
   // Check if my worker is away and come back to init state if so
   if (!delilah_->network->IsWorkerConnected(worker_id_)) {
-    LOG_SW(("We are not connected to worker %lu anymore. Reseting push operation...", worker_id_));
+    LOG_SW(("Push item %lu: We are not connected to worker %lu anymore. Reseting item...", push_id_, worker_id_));
     state_ = init;
     return;
   }
 
   // Is worker is not part of the cluster
   if (!delilah_->network->IsWorkerInCluster(worker_id_)) {
-    LOG_SW(("Worker %lu is not part of the cluster anymore. Reseting push operation...", worker_id_));
+    LOG_SW(("Push item %lu: Worker %lu is not part of the cluster anymore. Reseting item...", push_id_, worker_id_));
     state_ = init;
     return;
   }
 
-
   if (cronometer_.seconds() > 30) {
-    LOG_SW(("[%lu] Push item timeout 30 seconds. Reseting...", push_id_));
+    LOG_SW(("Push item %lu: Timeout 30 seconds. Reseting item...", push_id_, worker_id_));
     // Reset by time
     state_ = init;
   }
@@ -102,7 +101,6 @@ void PushItem::ResetPushItem() {
   if (state_ == completed) {
     return;
   }
-  LOG_SW(("[%lu] Reset Push item", push_id_));
   state_ = init;
 }
 
@@ -111,56 +109,68 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::Error
   if (state_ == completed) {
     return;  // This item is completed, nothing to do with me
   }
+
   if (worker_id != worker_id_) {
-    LOG_SW(("Push[%lu] Received message %s from worker %lu in a push item while my worker id is %lu. Ignoring..."
-            , push_id_
-            , Message::messageCode(msgCode)
-            , worker_id
-            , worker_id_));
+    LOG_SW(("Push item %lu: Received message '%s' from worker %lu in a push item (my worker id is %lu). Ignoring...",
+            push_id_,
+            Message::messageCode(msgCode),
+            worker_id,
+            worker_id_));
     return;
   }
 
-
   if (error.HasErrors()) {
-    LOG_SW(("Push[%lu] Error received in a push operation %s.Reseting...", push_id_, error.GetLastError().c_str()));
+    LOG_SW(("Push item %lu: Received error from worker '%s'. Reseting item...", push_id_, error.GetLastError().c_str()));
     ResetPushItem();
     return;
   }
 
-  if (state_ == init) {
-    LOG_SW(("Push[%lu] Received message %s in a push item while in init mode. Ignoring...", push_id_,
-            Message::messageCode(msgCode)));
-    return;
-  }
-
-  if (state_ == waiting_push_block_response) {
-    if (msgCode != Message::PushBlockResponse) {
-      LOG_SW(("Push[%lu] Recieved wrong message (%s) from worker while waiting for distribution confirmation"
+  switch (state_) {
+    case init:
+      LOG_SW(("Push item %lu: Received message '%s' in a push item while in init mode. Ignoring..."
               , push_id_
               , Message::messageCode(msgCode)));
-      ResetPushItem();
+      break;
+
+    case waiting_push_block_response:
+      if (msgCode != Message::PushBlockResponse) {
+        LOG_SW(("Push item %lu: Received wrong message '%s' from worker while waiting for PushBlockResponse"
+                , push_id_
+                , Message::messageCode(msgCode)));
+        ResetPushItem();
+        return;
+      }
+      state_ = waiting_push_block_confirmation;
+      break;
+
+    case waiting_push_block_confirmation:
+      if (msgCode != Message::PushBlockConfirmation) {
+        LOG_SW(("Push item %lu: Recieved wrong message '%s' from worker while waiting for PushBlockConfirmation"
+                , push_id_
+                , Message::messageCode(msgCode)));
+        ResetPushItem();
+        return;
+      }
+      state_ = completed;
       return;
-    }
 
-    // Change state to ready for commit
-    // In the future, here we should move to waiting_push_block_confirmation to keep this block until
-    // next data-model cicle
-    state_ = completed;
-    return;
+      break;
+
+    case completed:
+      // Nothing else to do here
+      break;
   }
-
-  LM_X(1, ("Internal error"));
 }
 
-size_t PushItem::push_id() {
+size_t PushItem::push_id() const {
   return push_id_;
 }
 
-size_t PushItem::time() {
+size_t PushItem::time() const {
   return cronometer_.seconds();
 }
 
-size_t PushItem::size() {
+size_t PushItem::size() const {
   if (buffer_ != NULL) {
     return buffer_->size();
   } else {
@@ -168,7 +178,7 @@ size_t PushItem::size() {
   }
 }
 
-std::string PushItem::str() {
+std::string PushItem::str() const {
   switch (state_) {
     case init: return au::str("[%lu] Uninitialized", push_id_);
 
@@ -184,7 +194,7 @@ std::string PushItem::str() {
   return "Error";
 }
 
-std::string PushItem::str_buffer_info() {
+std::string PushItem::str_buffer_info() const {
   if (buffer_ != NULL) {
     return au::str(buffer_->size(), "B");
   } else {

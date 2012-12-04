@@ -31,9 +31,9 @@ public:
   void ResetPushItem();         // Reest this push operation
 
   // Accessors
-  size_t push_id();
-  size_t time();
-  size_t size();
+  size_t push_id() const;
+  size_t time() const;
+  size_t size() const;
 
   // Messages recevied form workers
   void receive(Message::MessageCode mdgCode, size_t worker_id, au::ErrorManager& error);
@@ -42,8 +42,8 @@ public:
   void SendCommit();
 
   // Get a description of current status
-  std::string str();
-  std::string str_buffer_info();
+  std::string str() const;
+  std::string str_buffer_info() const;
 
 private:
 

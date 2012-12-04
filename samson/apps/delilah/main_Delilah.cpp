@@ -301,7 +301,7 @@ int main(int argC, const char *argV[]) {
 
   // Change log to console
   au::log_central->evalCommand("screen off");   // Disable log to screen since we log to console
-  au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole));
+  au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole, "[type][channel] text"));
 
   LOG_M(samson::logs.delilah, ("Delilah running..."));
 

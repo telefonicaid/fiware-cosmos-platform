@@ -575,7 +575,7 @@ void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::C
     LOG_W(logs.data_model, ("queue '%s' not found", cmd->get_argument(1).c_str()));
     return;                                // nothing to do
   }
-  queue->set_commit_id(data->commit_id()); // Update version where this queue was updated
+  queue->set_commit_id(data->commit_id());  // Update version where this queue was updated
   KVFormat format(queue->key_format(), queue->value_format());
   samson::gpb::Queue *target_queue = get_or_create_queue(data, cmd->get_argument(2), format, error);
 
@@ -1180,10 +1180,24 @@ std::set<size_t> DataModel::GetAllBlockIds() {
   return block_ids;
 }
 
-size_t DataModel::GetLastCommitIdForPreviousDataModel() {
+size_t DataModel::GetLastCommitIdForCurrentDataModel() const {
+  au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
+  return data_model->current_data().commit_id();
+}
+
+size_t DataModel::GetLastCommitIdForPreviousDataModel() const {
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   return data_model->previous_data().commit_id();
 }
+  
+  size_t DataModel::GetLastCommitIdForCandidateDataModel() const {
+    au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
+    
+    if (!data_model->has_candidate_data()) {
+      return static_cast<size_t>(-1);
+    }
+    return data_model->candidate_data().commit_id();
+  }
 
 std::set<size_t> DataModel::GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges) {
   std::set<size_t> block_ids;          // Prepare list of ids to be returned
@@ -1210,15 +1224,6 @@ std::set<size_t> DataModel::GetMyBlockIdsForPreviousDataModel(const std::vector<
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   gpb::AddBlockIds(data_model->mutable_previous_data(), ranges, block_ids);
   return block_ids;
-}
-
-size_t DataModel::GetLastCommitIdForCandidateDataModel() {
-  au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
-
-  if (!data_model->has_candidate_data()) {
-    return static_cast<size_t>(-1);
-  }
-  return data_model->candidate_data().commit_id();
 }
 
 std::set<size_t> DataModel::GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges) {

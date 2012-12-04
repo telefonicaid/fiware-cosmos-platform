@@ -200,8 +200,12 @@ void SamsonWorker::Review() {
 
       // Check what commit_id can guarantee this worker
       size_t last_commit_id = worker_controller_->GetMyLastCommitId();  // This is the currently guanrantee commit_id
+      size_t current_data_commit_id = data_model_->GetLastCommitIdForCurrentDataModel();
       size_t previous_data_commit_id = data_model_->GetLastCommitIdForPreviousDataModel();
       size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
+
+      // Confirm all push block operations previous to this commit
+      worker_block_manager_->ReviewPushItems(previous_data_commit_id, current_data_commit_id);
 
       if (previous_data_commit_id > last_commit_id) {
         // Check I can confirm this level of data model
@@ -224,6 +228,11 @@ void SamsonWorker::Review() {
       // Update if necessary my current information
       worker_controller_->UpdateWorkerNode(last_commit_id);
 
+      // Check to see if I need to remove any pop queue or queue_connections for disconnected delilah clients
+      if (worker_controller_->cluster_leader()) {
+        ReviewPopQueues();
+      }
+
       // If I am the cluster leader, consolidate next frozen data model if necessary
       if (worker_controller_->cluster_leader()) {
         size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
@@ -237,6 +246,50 @@ void SamsonWorker::Review() {
       }
     }
     break;
+  }
+}
+
+void SamsonWorker::ReviewPopQueues() {
+  au::SharedPointer<gpb::DataModel> data_model =  data_model_->getCurrentModel();
+  gpb::Data *current_data = data_model->mutable_current_data();
+
+  for (int i = 0; i < current_data->queue_size(); i++) {
+    std::string queue = current_data->queue(i).name();
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues names matchs ".pop_delilah_id_XXX"
+      size_t p = queue.find('_', 5);
+      if (p == std::string::npos) {
+        LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
+        continue;
+      }
+      size_t delilah_id = au::code64_num(queue.substr(5, p - 5));
+      // Check if this delilah is connected or has been connected in the last minute
+      if (!network_->CheckValidNode(NodeIdentifier(DelilahNode, delilah_id))) {
+        // Remove this queue
+        au::ErrorManager error;
+        std::string command = au::str("rm %s", queue.c_str());
+        data_model_->Commit("pop_review", command, error);
+      }
+    }
+  }
+
+  for (int i = 0; i < current_data->queue_connections_size(); i++) {
+    std::string source_queue = current_data->queue_connections(i).queue_source();
+    std::string queue = current_data->queue_connections(i).queue_target();
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues names matchs ".pop_delilah_id_XXX"
+      size_t p = queue.find('_', 5);
+      if (p == std::string::npos) {
+        LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
+        continue;
+      }
+      size_t delilah_id = au::code64_num(queue.substr(5, p - 5));
+      // Check if this delilah is connected or has been connected in the last minute
+      if (!network_->CheckValidNode(NodeIdentifier(DelilahNode, delilah_id))) {
+        // Remove this queue
+        au::ErrorManager error;
+        std::string command = au::str("rm_queue_connection %s %s", source_queue.c_str(), queue.c_str());
+        data_model_->Commit("pop_review", command, error);
+      }
+    }
   }
 }
 
@@ -521,10 +574,11 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    uint64 commit_id = packet->message->pop_queue().commit_id();
+    size_t commit_id = packet->message->pop_queue().commit_id();
+    size_t min_commit_id = packet->message->pop_queue().min_commit_id();
     size_t delilah_id = packet->from.id;
     std::string original_queue = packet->message->pop_queue().queue();
-    std::string pop_queue = au::str(".%s_%lu_%s"
+    std::string pop_queue = au::str(".pop_%s_%lu_%s"
                                     , au::code64_str(delilah_id).c_str()
                                     , packet->message->delilah_component_id()
                                     , original_queue.c_str());
@@ -535,9 +589,9 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     p->to = packet->from;
     gpb::Queue *gpb_queue = p->message->mutable_pop_queue_response()->mutable_queue();
     gpb_queue->set_name(original_queue);
-    gpb_queue->set_key_format("?");           // It is necessary to fill this fields
+    gpb_queue->set_key_format("?");             // It is necessary to fill these fields
     gpb_queue->set_value_format("?");
-    gpb_queue->set_commit_id(gpb_queue->commit_id());
+    gpb_queue->set_commit_id(SIZE_T_UNDEFINED);
 
 
     // Get a copy of the entire data model
@@ -568,6 +622,27 @@ void SamsonWorker::receive(const PacketPointer& packet) {
           if (queue->blocks(i).commit_id() > commit_id) {
             gpb_queue->add_blocks()->CopyFrom(queue->blocks(i));
           }
+        }
+      }
+
+      // Remove old unnecessary blocks from queue
+      if (queue) {
+        CommitCommand commit_command;
+        for (int i = 0; i < queue->blocks_size(); ++i) {
+          if (queue->blocks(i).commit_id() <= commit_id) {  // Not new
+            if ((min_commit_id == SIZE_T_UNDEFINED) || (queue->blocks(i).commit_id() < min_commit_id)) {
+              // Add to be removed from this queue
+              size_t block_id =  queue->blocks(i).block_id();
+              KVFormat format(queue->key_format(), queue->value_format());
+              KVRange range = queue->blocks(i).range();  // Implicit conversion
+              KVInfo info(queue->blocks(i).size(), queue->blocks(i).kvs());
+              commit_command.RemoveBlock(pop_queue, block_id, queue->blocks(i).block_size(), format, range, info);
+            }
+          }
+        }
+        if (commit_command.size() > 0) {
+          au::ErrorManager error;
+          data_model_->Commit("pop", commit_command.GetCommitCommand(), error);
         }
       }
     }

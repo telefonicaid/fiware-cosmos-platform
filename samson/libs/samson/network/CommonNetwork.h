@@ -98,7 +98,7 @@ public:
     std::vector<size_t> connected_worker_ids;
     for (int i = 0; i < cluster_information_->workers_size(); i++) {
       size_t worker_id = cluster_information_->workers(i).worker_id();
-      if (isConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName())) {
+      if (IsConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName())) {
         connected_worker_ids.push_back(worker_id);
       }
     }
@@ -129,7 +129,7 @@ public:
 
   // Check if this worker id is valid
   bool IsWorkerConnected(size_t worker_id) {
-    return isConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName());
+    return IsConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName());
   }
 
   // Check if this worker id is valid

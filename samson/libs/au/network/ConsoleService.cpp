@@ -231,7 +231,7 @@ void ConsoleServiceClient::evalCommand(const std::string& command) {
   au::ErrorManager error;
 
   ConsoleServiceClientBase::evalCommand(command, &error);
-  Console::write(&error);
+  Console::Write(error);
 }
 
 void ConsoleServiceClient::autoComplete(console::ConsoleAutoComplete *info) {

@@ -46,14 +46,6 @@ public:
   explicit DelilahConsole(size_t delilah_id = 1);
   ~DelilahConsole();
 
-  void setSimpleOutput() {
-    simple_output_ = true;
-  }
-
-  void setNoOutput() {
-    no_output_ = true;
-  }
-
   // Console related methods
   virtual std::string getPrompt();
   virtual void evalCommand(const std::string& command);
@@ -67,7 +59,7 @@ public:
   void autoCompleteQueues(au::console::ConsoleAutoComplete *info);
   virtual void process_escape_sequence(const std::string& sequence) {
     if (sequence == "samson") {
-      writeWarningOnConsole("SAMSON's cool ;)");
+      WriteWarningOnConsole("SAMSON's cool ;)");
     }
   }
 
@@ -92,66 +84,68 @@ public:
     std::ostringstream output;
 
     output << "Finished local delilah process with : " << id;
-    showWarningMessage(output.str());
+    Write(output.str());
   }
 
-  void Show(au::ErrorManager& error, const std::string& prefix_message) {
-    for (size_t i = 0; i < error.items().size(); i++) {
-      switch (error.items()[i]->type()) {
-        case au::message:
-          showMessage(prefix_message + " " + error.items()[i]->message());
-          break;
-        case au::warning:
-          showWarningMessage(prefix_message + " " + error.items()[i]->message());
-          break;
-        case au::error:
-          showErrorMessage(prefix_message + " " + error.items()[i]->message());
-          break;
-      }
-    }
+  virtual void WriteOnDelilah(const std::string& message) {
+    Write(message);
+  }
+
+  virtual void WriteWarningOnDelilah(const std::string& message) {
+    WriteWarningOnConsole(message);
+  }
+
+  virtual void WriteErrorOnDelilah(const std::string& message) {
+    WriteErrorOnConsole(message);
   }
 
   // Show a message on screen
-  void showMessage(std::string message) {
-    if (no_output_) {
-      LM_V(("%s", message.c_str()));
-      return;
-    }
-    if (simple_output_) {
-      std::cout << message;
-      return;
-    }
-    writeOnConsole(au::StringInConsole(message));
-  }
+  /*
+   * void showMessage(std::string message) {
+   * if (no_output_) {
+   *  LM_V(("%s", message.c_str()));
+   *  return;
+   * }
+   * if (simple_output_) {
+   *  std::cout << message;
+   *  return;
+   * }
+   * Write(au::StringInConsole(message));
+   * }
+   *
+   * void showWarningMessage(std::string message) {
+   * if (no_output_) {
+   *  LOG_SV(("%s", au::str(au::BoldMagenta, "%s", message.c_str()).c_str()));
+   *  return;
+   * }
+   * if (simple_output_) {
+   *  std::cout << au::str(au::BoldMagenta, "%s", message.c_str());
+   *  return;
+   * }
+   * WriteWarningOnConsole(au::StringInConsole(message));
+   * }
+   *
+   * void showErrorMessage(std::string message) {
+   * if (no_output_) {
+   *  LOG_SV(("%s", au::str(au::BoldRed, "%s", message.c_str()).c_str()));
+   *  return;
+   * }
+   * if (simple_output_) {
+   *  std::cout << au::str(au::BoldRed, "%s", message.c_str());
+   *  return;
+   * }
+   * WriteErrorOnConsole(au::StringInConsole(message));
+   * }
+   *
+   * virtual void showTrace(std::string message) {
+   * if (show_alerts_) {
+   *  WriteWarningOnConsole(message);
+   * }
+   * }
+   */
 
-  void showWarningMessage(std::string message) {
-    if (no_output_) {
-      LOG_SV(("%s", au::str(au::BoldMagenta, "%s", message.c_str()).c_str()));
-      return;
-    }
-    if (simple_output_) {
-      std::cout << au::str(au::BoldMagenta, "%s", message.c_str());
-      return;
-    }
-    writeWarningOnConsole(au::StringInConsole(message));
-  }
-
-  void showErrorMessage(std::string message) {
-    if (no_output_) {
-      LOG_SV(("%s", au::str(au::BoldRed, "%s", message.c_str()).c_str()));
-      return;
-    }
-    if (simple_output_) {
-      std::cout << au::str(au::BoldRed, "%s", message.c_str());
-      return;
-    }
-    writeErrorOnConsole(au::StringInConsole(message));
-  }
-
-  virtual void showTrace(std::string message) {
-    if (show_alerts_) {
-      writeWarningOnConsole(message);
-    }
+  void set_verbose(bool value) {
+    verbose_ = value;
   }
 
 private:
@@ -171,8 +165,6 @@ private:
 
   bool verbose_;        // Flag to show on screen certain messages
   bool simple_output_;  // Flag to just visualize content on screen ( delilah -command  or -f XX )
-  bool no_output_;      // Flag to avoid any message visualization
-
 
   // LogClient used when working in log_client mode
   au::SharedPointer<au::LogProbe> log_probe;

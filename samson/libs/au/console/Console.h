@@ -67,42 +67,100 @@ public:
   void StartConsole(bool block_thread = false);
   void StopConsole();
 
-  /* Methods to write things on screen */
-  void writeWarningOnConsole(const std::string& message);
-  void writeErrorOnConsole(const std::string& message);
-  void writeOnConsole(const std::string& message);
+  /**
+   * Main method to write something on screen ( if foreground page-control is applyied )
+   */
+  void Write(const std::string& message);
+
+  /**
+   * \brief Main method to add a line with a particular color to the console
+   */
+  void Write(au::Color color, const std::string& message) {
+    if (colors_) {
+      Write(str(color, message));
+    } else {
+      Write(message);
+    }
+  }
+
+  /**
+   * \brief Write a warning ( message with some color or [WARNING] message )
+   */
+  void WriteWarningOnConsole(const std::string& message);
+
+  /**
+   * \brief Write an error ( message with some color or [ERROR] message )
+   */
+  void WriteErrorOnConsole(const std::string& message);
+
+  /**
+   * \brief Write an error ( message with some color or [ERROR] message )
+   */
+  void WriteBoldOnConsole(const std::string& message);
+
 
   /*
    * \brief General write function for all content inside a ErrorManager instance
    */
-
-  void write(au::ErrorManager *error);
   void Write(au::ErrorManager& error);
+
+  /**
+   * \brief Write some messges included in error with a previx
+   */
+  void Write(au::ErrorManager& error, const std::string& prefix_message) {
+    au::ErrorManager tmp_error;
+
+    tmp_error.Add(error, prefix_message);
+    Write(tmp_error);
+  }
 
   /*
    * \brief Add a escape sequence to be considered in this console
    */
-
   void AddEspaceSequence(const std::string& sequence);
 
+  /*
+   * \brief Refresh content of the console
+   */
   void Refresh();
 
   /*
    * \brief Wait showing a message on screen.... ( background message works )
    */
-
   int WaitWithMessage(const std::string& message, double sleep_time, ConsoleEntry *entry);
 
-  // Make sure all messages are shown
+  /*
+   * \brief Flush background messages to the console
+   */
   void Flush();
 
-  // Append to current command
+  /*
+   * \brief Append some text to the current command introduced by the user
+   */
   void AppendToCommand(const std::string& txt);
 
-  // Get the history string
+  /*
+   * \brief Get a string with previous history
+   */
   std::string str_history(int limit);
 
+  /**
+   * \brief Activate or reactivate color output
+   */
+
+  void set_colors(bool value) {
+    colors_ = value;
+  }
+
+  /**
+   * \brief FLush accumulated messages even when console thread is no running
+   */
+
+  void FlushBackgroundMessages();
+
 private:
+
+  void PrintLines(const std::string&message);
 
   void RunThread();     // Main routine for background process
 
@@ -116,8 +174,6 @@ private:
 
   void ProcessBackgroundMessages();
   bool IsNormalChar(char c) const;
-
-  void Write(const std::string& message);
 
   void GetEntry(ConsoleEntry *entry);        // Get the next entry from console
 
@@ -136,6 +192,9 @@ private:
 
   // Flag to finish the background thread
   bool quit_console_;
+
+  // Flag to indicate if colors are allowed in this console
+  bool colors_;
 };
 }
 }

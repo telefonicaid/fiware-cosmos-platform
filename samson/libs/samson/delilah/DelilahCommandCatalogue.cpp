@@ -211,6 +211,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_mandatory_string_argument("push_module", "file", "Local file or directory")->set_options_group("#file");
 
   add("clear_modules", "modules", "Remove all previously updated modules");
+  add_string_argument("clear_modules", "pattern", "*", "Block name attern ( see ls_modules_information)");
 
   // ------------------------------------------------------------------
   // STREAM

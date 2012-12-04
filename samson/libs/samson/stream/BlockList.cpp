@@ -99,10 +99,20 @@ BlockInfo BlockList::getBlockInfo() {
   return block_info;
 }
 
-void BlockList::ReviewBlockReferences(au::ErrorManager& error) {
+void BlockList::Review(au::ErrorManager& error) {
   au::list<BlockRef>::iterator it;
   for (it = blocks_.begin(); it != blocks_.end(); it++) {
-    (*it)->review(error);
+    (*it)->Review(error);
+    if (error.HasErrors()) {
+      return;
+    }
+  }
+}
+
+void BlockList::ReviewKVFiles(au::ErrorManager& error) {
+  au::list<BlockRef>::iterator it;
+  for (it = blocks_.begin(); it != blocks_.end(); it++) {
+    (*it)->ReviewKVFile(error);
     if (error.HasErrors()) {
       return;
     }

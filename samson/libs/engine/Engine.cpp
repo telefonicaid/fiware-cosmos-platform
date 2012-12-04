@@ -109,7 +109,7 @@ void Engine::RunElement(EngineElement *running_element) {
   au::Cronometer cronometer;
 
   InternRunElement(running_element);
-  if (cronometer.seconds() > 1) {
+  if (cronometer.seconds() > 3) {
     LOG_W(logs.engine, ("EngineElement %s has being running for %s"
                         , running_element->str().c_str(), au::str_time(cronometer.seconds()).c_str()));
   }
@@ -143,7 +143,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
     int execution_time = c.seconds();
     if (execution_time > 10) {
       LOG_SW(("Engine has executed an item in %d seconds.", execution_time));
-      LOG_SW(("Engine Executed item: %s",  running_element->str().c_str()));
+      LOG_SW(("Engine Executed item: %s", running_element->str().c_str()));
     }
   }
 
@@ -306,28 +306,28 @@ au::statistics::ActivityMonitor *Engine::activity_monitor() {
 
 Engine *Engine::shared() {
   if (!engine_) {
-    LOG_W(logs.engine, ("Engine was not initialised. Calling Engine::init()"));
+    LOG_W(logs.engine, ("Engine was not initialised."));
   }
   return engine_;
 }
 
 DiskManager *Engine::disk_manager() {
   if (!disk_manager_) {
-    LM_E(("DiskManager was not initialised. Calling Engine::init()"));
+    LM_E(("DiskManager was not initialised."));
   }
   return disk_manager_;
 }
 
 MemoryManager *Engine::memory_manager() {
   if (!memory_manager_) {
-    LM_E(("MemoryManager was not initialised. Calling Engine::init()"));
+    LM_E(("MemoryManager was not initialised."));
   }
   return memory_manager_;
 }
 
 ProcessManager *Engine::process_manager() {
   if (!process_manager_) {
-    LM_E(("ProcessManager was not initialised. Calling Engine::init()"));
+    LM_E(("ProcessManager was not initialised."));
   }
   return process_manager_;
 }

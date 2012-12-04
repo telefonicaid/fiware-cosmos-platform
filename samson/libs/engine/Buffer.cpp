@@ -75,7 +75,10 @@ Buffer::~Buffer() {
   LOG_M(logs.buffer, ("Destroying buffer %s", str().c_str()));
 
   // Unregister in the memory manager
-  Engine::memory_manager()->Remove(this);
+  engine::MemoryManager *memory_manager = Engine::memory_manager();
+  if (memory_manager) {
+    memory_manager->Remove(this);
+  }
 
   // Free allocated data
   if (data_) {

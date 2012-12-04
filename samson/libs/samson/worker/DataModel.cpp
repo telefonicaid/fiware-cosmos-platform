@@ -556,10 +556,30 @@ void DataModel::ProcessClearBatchOPerationsCommand(gpb::Data *data, au::SharedPo
 
 void DataModel::ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd  /* cmd */,
                                            au::ErrorManager &  /* error */) {
-  // Remove queue .modules
-  au::ErrorManager error2;         // we are not interested in this error
+  // Remove blocks in queue .modules
+  gpb::Queue *queue = gpb::get_queue(data, ".modules");
 
-  ProcessCommand(data, "rm .modules", error2);
+  if (!queue) {
+    return;  // Nothing to remove
+  }
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block > *blocks = queue->mutable_blocks();
+  std::string pattern = "*";
+  if (cmd->get_num_arguments() > 1) {
+    pattern = cmd->get_argument(1);
+  }
+  au::SimplePattern simple_pattern(pattern);
+  for (int i = 0; i < blocks->size(); ) {
+    size_t block_id = blocks->Get(i).block_id();
+    std::string block_name = str_block_id(block_id);
+    if (simple_pattern.match(block_name)) {
+      // Remove block
+      blocks->SwapElements(i, blocks->size() - 1);
+      blocks->RemoveLast();
+    } else {
+      ++i;
+    }
+  }
+
   return;
 }
 
@@ -1189,15 +1209,15 @@ size_t DataModel::GetLastCommitIdForPreviousDataModel() const {
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   return data_model->previous_data().commit_id();
 }
-  
-  size_t DataModel::GetLastCommitIdForCandidateDataModel() const {
-    au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
-    
-    if (!data_model->has_candidate_data()) {
-      return static_cast<size_t>(-1);
-    }
-    return data_model->candidate_data().commit_id();
+
+size_t DataModel::GetLastCommitIdForCandidateDataModel() const {
+  au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
+
+  if (!data_model->has_candidate_data()) {
+    return static_cast<size_t>(-1);
   }
+  return data_model->candidate_data().commit_id();
+}
 
 std::set<size_t> DataModel::GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges) {
   std::set<size_t> block_ids;          // Prepare list of ids to be returned

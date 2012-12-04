@@ -49,22 +49,19 @@ public:
   ~BlockListContainer();
 
   // Get a particular block list
-  BlockList *getBlockList(std::string name);
-
-  // Return NULL if not found
-  BlockList *findBlockList(std::string name) const;
+  BlockList *GetBlockList(std::string name);
 
   // Remove all block lists contained here
-  void clearBlockListcontainer();
+  void ClearBlockListcontainer();
 
-  // Get the list of names for all the block lists...
-  std::vector<std::string> get_block_list_names();
+  // Return NULL if not found
+  BlockList *FindBlockList(std::string name) const;
 
   // Get the total number of blocks included in all the block lists
-  size_t getNumBlocks();
+  size_t GetNumBlocks() const;
 
   // Check if all blocks are on memory
-  bool is_content_in_memory();
+  bool is_content_in_memory() const;
 
   // Lock content on memory
   void lock_content_in_memory();
@@ -78,8 +75,27 @@ public:
   FullKVInfo GetInputsInfo() const;
   FullKVInfo GetOutputsInfo() const;
 
+  void Review(au::ErrorManager& error) {
+    au::map<std::string, BlockList>::iterator iter;
+    for (iter = blockLists_.begin(); iter != blockLists_.end(); iter++) {
+      iter->second->Review(error);
+      if (error.HasErrors()) {
+        return;
+      }
+    }
+  }
+
+  void ReviewKVFile(au::ErrorManager& error) {
+    au::map<std::string, BlockList>::iterator iter;
+    for (iter = blockLists_.begin(); iter != blockLists_.end(); iter++) {
+      iter->second->ReviewKVFiles(error);
+      if (error.HasErrors()) {
+        return;
+      }
+    }
+  }
+
 private:
-  mutable au::Token token_;
   size_t task_id_;
   std::string container_name_;
   au::map<std::string, BlockList> blockLists_;

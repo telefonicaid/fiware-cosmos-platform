@@ -285,7 +285,7 @@ void StreamConnector::evalCommand(const std::string& command) {
 
   au::ErrorManager error;
   process_command(command, &error);
-  write(&error);
+  Write(error);
 }
 
 void StreamConnector::autoCompleteWithChannelNames(au::console::ConsoleAutoComplete *info) {
@@ -704,7 +704,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   if (main_command == "remove_finished_adaptors_and_connections") {
     au::ErrorManager error;
     remove_finished_items_and_connections(&error);
-    write(&error);
+    Write(error);
     return;
   }
 
@@ -955,7 +955,7 @@ void StreamConnector::log(au::SharedPointer<Log> log) {
   } else {
     error.AddMessage(log->getNameAndMessage());
   } if (interactive) {
-    au::console::Console::write(&error);
+    au::console::Console::Write(error);
   } else if (run_as_daemon) {
     // Nothing here
   } else {

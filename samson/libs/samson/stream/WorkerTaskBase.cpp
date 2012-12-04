@@ -58,7 +58,7 @@ void WorkerTaskBase::SetTaskState(const std::string& task_state) {
 
 void WorkerTaskBase::AddInput(int channel, BlockPointer block, KVRange range, KVInfo info) {
   std::string block_list_name = au::str("input_%d", channel);
-  BlockList *block_list = block_list_container_.getBlockList(block_list_name);
+  BlockList *block_list = block_list_container_.GetBlockList(block_list_name);
 
   block_list->Add(new BlockRef(block, range, info));
   input_block_ids_.push_back(block->block_id());
@@ -66,7 +66,7 @@ void WorkerTaskBase::AddInput(int channel, BlockPointer block, KVRange range, KV
 
 void WorkerTaskBase::AddOutput(int channel, BlockPointer block, KVRange range, KVInfo info) {
   std::string block_list_name = au::str("output_%d", channel);
-  BlockList *block_list = block_list_container_.getBlockList(block_list_name);
+  BlockList *block_list = block_list_container_.GetBlockList(block_list_name);
 
   block_list->Add(new BlockRef(block, range, info));
   output_block_ids_.push_back(block->block_id());
@@ -76,13 +76,19 @@ void WorkerTaskBase::fill(samson::gpb::CollectionRecord *record, const Visualiza
   if (visualization.get_flag("data")) {
     add(record, "id", worker_task_id(), "left,different");
     for (int i = 0; i < 3; i++) {
-      BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", i));
-      BlockInfo block_info = block_list->getBlockInfo();
+      BlockList *block_list = block_list_container_.FindBlockList(au::str("input_%d", i));
+      BlockInfo block_info;
+      if (block_list) {
+        block_info = block_list->getBlockInfo();
+      }
       add(record, au::str("Input %d", i), block_info.strShort(), "left,different");
     }
     for (int i = 0; i < 3; i++) {
-      BlockList *block_list = block_list_container_.getBlockList(au::str("output_%d", i));
-      BlockInfo block_info = block_list->getBlockInfo();
+      BlockList *block_list = block_list_container_.FindBlockList(au::str("output_%d", i));
+      BlockInfo block_info;
+      if (block_list) {
+        block_info = block_list->getBlockInfo();
+      }
       add(record, au::str("Output %d", i), block_info.strShort(), "left,different");
     }
 
@@ -93,12 +99,20 @@ void WorkerTaskBase::fill(samson::gpb::CollectionRecord *record, const Visualiza
     add(record, "id", id_, "left,different");
 
     for (int i = 0; i < 3; i++) {
-      BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", i));
-      add(record, au::str("Input %d", i), block_list->str_blocks(), "left,different");
+      BlockList *block_list = block_list_container_.FindBlockList(au::str("input_%d", i));
+      if (block_list) {
+        add(record, au::str("Input %d", i), block_list->str_blocks(), "left,different");
+      } else {
+        add(record, au::str("Input %d", i), "-", "left,different");
+      }
     }
     for (int i = 0; i < 3; i++) {
-      BlockList *block_list = block_list_container_.getBlockList(au::str("output_%d", i));
-      add(record, au::str("Output %d", i), block_list->str_blocks(), "left,different");
+      BlockList *block_list = block_list_container_.FindBlockList(au::str("output_%d", i));
+      if (block_list) {
+        add(record, au::str("Output %d", i), block_list->str_blocks(), "left,different");
+      } else {
+        add(record, au::str("Output %d", i), "-", "left,different");
+      }
     }
 
     return;
@@ -162,24 +176,27 @@ std::string WorkerTaskBase::generate_commit_command(const std::vector<std::strin
 
   // Input elements
   for (size_t c = 0; c < inputs.size(); c++) {
-    BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", c));
-    au::list<BlockRef>::iterator it;
-    for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); it++) {
-      BlockRef *block_ref = *it;
-      commit_command.RemoveBlock(inputs[c], block_ref->block_id(), block_ref->block_size(),
-                                 block_ref->block()->getKVFormat(), block_ref->range(), block_ref->info());
+    BlockList *block_list = block_list_container_.FindBlockList(au::str("input_%d", c));
+    if (block_list) {
+      au::list<BlockRef>::iterator it;
+      for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); it++) {
+        BlockRef *block_ref = *it;
+        commit_command.RemoveBlock(inputs[c], block_ref->block_id(), block_ref->block_size(),
+                                   block_ref->block()->getKVFormat(), block_ref->range(), block_ref->info());
+      }
     }
   }
 
   // Output elements
   for (size_t c = 0; c < outputs.size(); c++) {
-    BlockList *block_list = block_list_container_.getBlockList(au::str("output_%d", c));
-    au::list<BlockRef>::iterator it;
-    for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); it++) {
-      BlockRef *block_ref = *it;
-
-      commit_command.AddBlock(outputs[c], block_ref->block_id(), block_ref->block_size(),
-                              block_ref->block()->getKVFormat(), block_ref->range(), block_ref->info());
+    BlockList *block_list = block_list_container_.FindBlockList(au::str("output_%d", c));
+    if (block_list) {
+      au::list<BlockRef>::iterator it;
+      for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); it++) {
+        BlockRef *block_ref = *it;
+        commit_command.AddBlock(outputs[c], block_ref->block_id(), block_ref->block_size(),
+                                block_ref->block()->getKVFormat(), block_ref->range(), block_ref->info());
+      }
     }
   }
 
@@ -214,7 +231,7 @@ FullKVInfo WorkerTaskBase::GetOutputsInfo() const {
 }
 
 FullKVInfo WorkerTaskBase::GetInputInfo(int c) const {
-  BlockList *block_list = block_list_container_.findBlockList(au::str("input_%d", c));
+  BlockList *block_list = block_list_container_.FindBlockList(au::str("input_%d", c));
 
   if (block_list) {
     return block_list->getBlockInfo().info;
@@ -223,7 +240,7 @@ FullKVInfo WorkerTaskBase::GetInputInfo(int c) const {
 }
 
 FullKVInfo WorkerTaskBase::GetOutputInfo(int c) const {
-  BlockList *block_list = block_list_container_.findBlockList(au::str("output_%d", c));
+  BlockList *block_list = block_list_container_.FindBlockList(au::str("output_%d", c));
 
   if (block_list) {
     return block_list->getBlockInfo().info;

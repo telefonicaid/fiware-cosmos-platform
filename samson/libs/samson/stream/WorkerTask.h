@@ -83,8 +83,13 @@ private:
   // Information about the operation to run
   gpb::StreamOperation *stream_operation_;
 
-  // Operation to be used here ( form ModulesManager )
+  // Operation to be used in the background thread
+  // andreu: It cannot be used in the platform process since module can be removed in engine thread
   Operation *operation_;
+
+  // Information to collect statistics
+  int state_input_channel_;
+  int num_input_channels_;
 
   // Range to apply this operation
   KVRange range_;

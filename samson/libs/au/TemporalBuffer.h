@@ -37,6 +37,9 @@ public:
   TemporalBuffer(size_t size);
   ~TemporalBuffer();
 
+  // Reset buffer to another size
+  void Reset(size_t size);
+
   // Accessors
   char *data();
   size_t size();

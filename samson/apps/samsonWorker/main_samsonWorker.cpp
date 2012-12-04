@@ -175,9 +175,6 @@ void SamsonWorkerCleanUp() {
 
   // Destroy creatd shared memory segments
   samson::SharedMemoryManager::Destroy();
-
-  // Close log system
-  au::LogCentral::StopLogSystem();
 }
 
 void captureSIGINT(int s) {
@@ -431,8 +428,12 @@ int main(int argC, const char *argV[]) {
   LOG_M(samson::logs.cleanup, ("Stopping network listener (worker at %p)", worker));
   worker->network()->stop();
   LOG_M(samson::logs.cleanup, ("log_central marked to stop"));
-  LOG_M(samson::logs.worker, ("log_central stopping..."));
 
+  LOG_M(samson::logs.worker, ("Stop worker console"));
+  worker->StopConsole();
+
+  LOG_M(samson::logs.worker, ("log_central stopping..."));
+  au::log_central->StopLogSystem();
 
   LOG_M(samson::logs.cleanup, ("Waiting for threads (worker at %p)", worker));
   au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");

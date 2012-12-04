@@ -232,7 +232,7 @@ au::tables::Table *WorkerCommandDelilahComponent::getTable(au::SharedPointer<gpb
 void WorkerCommandDelilahComponent::print_content(au::SharedPointer<gpb::Collection> collection) {
   if (collection->record_size() == 0) {
     if (!hidden) {
-      delilah->showWarningMessage("No records\n");
+      delilah->WriteOnDelilah("No records\n");
     }
     return;
   }
@@ -251,10 +251,9 @@ void WorkerCommandDelilahComponent::print_content(au::SharedPointer<gpb::Collect
     delilah->database.addTable(table_name, table);
 
     if (!hidden) {
-      delilah->showWarningMessage(
-        au::str("Table %s has been created locally. Type set_database_mode to check content...\n"
-                , table_name.c_str())
-        );
+      std::string message = au::str("Table %s has been created locally. Type set_database_mode to check content...\n"
+                                    , table_name.c_str());
+      delilah->WriteOnDelilah(message);
     }
   }
 }

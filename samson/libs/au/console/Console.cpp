@@ -78,7 +78,8 @@ Console::Console()
     , command_history_(new ConsoleCommandHistory())
     , token_pending_messages_("token_pending_messages")
     , block_background_messages_(false)  // By default, background messages are not blocked ( esc - b for toogle )
-    , quit_console_(false) {  // Internal flag to quit console ( i.e. the user has tiped command quit )
+    , quit_console_(false)  // Internal flag to quit console ( i.e. the user has tiped command quit )
+    , colors_(true) {  // By default colors are allowed
 }
 
 Console::~Console() {
@@ -277,9 +278,9 @@ void Console::ProcessEscapeSequenceInternal(const std::string& sequence) {
     block_background_messages_ = !block_background_messages_;
 
     if (block_background_messages_) {
-      writeWarningOnConsole("Background messages blocked ( press esc b to show again )\n");
+      WriteWarningOnConsole("Background messages blocked ( press esc b to show again )\n");
     } else {
-      writeWarningOnConsole("Background messages are shown again\n");
+      WriteWarningOnConsole("Background messages are shown again\n");
     }
 
     ClearTerminalLine();
@@ -345,6 +346,24 @@ void Console::ProcessEscapeSequenceInternal(const std::string& sequence) {
   process_escape_sequence(sequence);
 }
 
+void Console::PrintLines(const std::string&message) {
+  // Divide input message in lines
+  std::vector<std::string> lines = au::split(message, '\n');
+
+  // Get terminal size
+  int x, y;
+  au::GetTerminalSize(1, &x, &y);
+  std::string line_to_print;
+  for (size_t i = 0; i < lines.size(); ++i) {
+    if (lines[i].length() <= (size_t)x) {
+      line_to_print = lines[i];
+    } else {
+      line_to_print = lines[i].substr(0, x - 3) + "...";
+    }
+    printf("%s\n", line_to_print.c_str());
+  }
+}
+
 void Console::ProcessBackgroundMessages() {
   if (block_background_messages_) {
     return;
@@ -358,7 +377,7 @@ void Console::ProcessBackgroundMessages() {
     while (pending_messages_.size() != 0) {
       std::string txt = pending_messages_.front();
       pending_messages_.pop_front();
-      printf("%s", txt.c_str());
+      PrintLines(txt);
     }
 
     PrintCommand();
@@ -368,6 +387,14 @@ void Console::ProcessBackgroundMessages() {
 
 void Console::Flush() {
   ProcessBackgroundMessages();
+}
+
+void Console::FlushBackgroundMessages() {
+  while (pending_messages_.size() != 0) {
+    std::string txt = pending_messages_.front();
+    pending_messages_.pop_front();
+    PrintLines(txt);
+  }
 }
 
 bool Console::IsNormalChar(char c) const {
@@ -479,7 +506,7 @@ void Console::RunThread() {
             break;
 
           default:
-            writeWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
+            WriteWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
             break;
         }
       }
@@ -488,7 +515,7 @@ void Console::RunThread() {
       ProcessEscapeSequenceInternal(escape_sequence_.getCurrentSequence());
     } else if (entry.isUnknownEscapeSequence()) {
       std::string seq = entry.getEscapeSequece();
-      writeWarningOnConsole(au::str("Unknown escape sequence (%s)", GetEscapeSequenceDescription(seq).c_str()));
+      WriteWarningOnConsole(au::str("Unknown escape sequence (%s)", GetEscapeSequenceDescription(seq).c_str()));
     }
   }
 
@@ -507,39 +534,42 @@ void Console::Write(au::ErrorManager& error) {
 
     switch (item->type()) {
       case au::message:
-        writeOnConsole(item->message());
+        Write(item->message());
         break;
 
       case au::warning:
-        writeWarningOnConsole(item->message());
+        WriteWarningOnConsole(item->message());
         break;
       case au::error:
-        writeErrorOnConsole(item->message());
+        WriteErrorOnConsole(item->message());
         break;
     }
   }
 }
 
-void Console::write(au::ErrorManager *error) {
-  Write(*error);
-}
-
 /* Methods to write things on screen */
-void Console::writeWarningOnConsole(const std::string& message) {
-  bool append_return = message.substr(message.length() - 1) != "\n";
-  std::ostringstream output;
-
-  output << "\033[1;35m" << message << (append_return ? "\n" : "") << "\033[0m";
-  Write(output.str());
+void Console::WriteWarningOnConsole(const std::string& message) {
+  if (colors_) {
+    Write(BoldMagenta, message);
+  } else {
+    Write("[WARNING] " + message);
+  }
 }
 
-void Console::writeErrorOnConsole(const std::string& message) {
-  bool append_return = message.substr(message.length() - 1) != "\n";
-  std::ostringstream output;
+void Console::WriteErrorOnConsole(const std::string& message) {
+  if (colors_) {
+    Write(BoldRed, message);
+  } else {
+    Write("[ERROR] " + message);
+  }
+}
 
-  output << "\033[1;31m" << message << (append_return ? "\n" : "") <<  "\033[0m";
-  std::string txt = output.str();
-  Write(txt);
+void Console::WriteBoldOnConsole(const std::string& message) {
+  if (colors_) {
+    Write(BoldYellow, message);
+  } else {
+    Write(">>>> " + message);
+  }
 }
 
 int Console::WaitWithMessage(const std::string& message, double sleep_time, ConsoleEntry *entry) {
@@ -568,8 +598,9 @@ int Console::WaitWithMessage(const std::string& message, double sleep_time, Cons
   return 1;   // Timeout
 }
 
-void Console::writeOnConsole(const std::string& message) {
+void Console::Write(const std::string& message) {
   if (IsBackgroundThread()) {
+    // Page control is applyed if necessary
     ClearTerminalLine();
 
     // Divide input message in lines
@@ -640,27 +671,11 @@ void Console::writeOnConsole(const std::string& message) {
 
     PrintCommand();
     fflush(stdout);
-    return;
-  }
-
-  // --------------------------------------------------------------------------------------------
-
-  Write(message);
-}
-
-void Console::Write(const std::string& message) {
-  // Accumulate message if necessary
-  if (!IsBackgroundThread()) {
+  } else {
+    // Accumulate messages in background thread
     au::TokenTaker tt(&token_pending_messages_);
     pending_messages_.push_back(message);
-    return;
   }
-
-  // Show directly on screen
-  ClearTerminalLine();
-  printf("%s", message.c_str());
-  PrintCommand();
-  fflush(stdout);
 }
 
 std::string Console::getPrompt() {
@@ -668,7 +683,7 @@ std::string Console::getPrompt() {
 }
 
 void Console::evalCommand(const std::string& command) {
-  writeWarningOnConsole("Console::evalCommand not implemented");
+  WriteWarningOnConsole("Console::evalCommand not implemented");
 
   // Simple quit function...
   if (command == "quit") {
@@ -677,7 +692,7 @@ void Console::evalCommand(const std::string& command) {
 }
 
 void Console::autoComplete(ConsoleAutoComplete *info) {
-  writeWarningOnConsole(au::str("Console::auto_complete not implemented (%p)", info));
+  WriteWarningOnConsole(au::str("Console::auto_complete not implemented (%p)", info));
 }
 
 void Console::Refresh() {

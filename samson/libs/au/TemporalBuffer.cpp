@@ -17,6 +17,14 @@ TemporalBuffer::TemporalBuffer(size_t size) {
   size_ = size;
 }
 
+void TemporalBuffer::Reset(size_t size) {
+  if (data_) {
+    free(data_);
+  }
+  data_ = (char *)malloc(size);
+  size_ = size;
+}
+
 char *TemporalBuffer::data() {
   return data_;
 }
@@ -28,6 +36,7 @@ size_t TemporalBuffer::size() {
 TemporalBuffer::~TemporalBuffer() {
   if (data_) {
     free(data_);
+    data_ = NULL;
   }
 }
 }

@@ -301,21 +301,7 @@ std::string str_color(int main_color_code, int color_code, const std::string mes
   return au::str("\033[%d;%dm", main_color_code, color_code) + message + std::string("\033[0m");
 }
 
-std::string str(Color color, const char *format, ...) {
-  va_list args;
-  char vmsg[2048];
-
-  /* "Parse" the varible arguments */
-  va_start(args, format);
-
-  /* Print message to variable */
-  vsnprintf(vmsg, sizeof(vmsg), format, args);
-  // vmsg[2047] = 0;
-  va_end(args);
-
-  // Real message to print
-  std::string message = std::string(vmsg);
-
+std::string str(Color color, const std::string& message) {
   switch (color) {
     case Normal: return message;
 
@@ -354,6 +340,23 @@ std::string str(Color color, const char *format, ...) {
 
   // Default mode ( just in case )
   return message;
+}
+
+std::string str(Color color, const char *format, ...) {
+  va_list args;
+  char vmsg[2048];
+
+  /* "Parse" the varible arguments */
+  va_start(args, format);
+
+  /* Print message to variable */
+  vsnprintf(vmsg, sizeof(vmsg), format, args);
+  // vmsg[2047] = 0;
+  va_end(args);
+
+  // Real message to print
+  std::string message = std::string(vmsg);
+  return str(color, message);
 }
 
 std::string str_double(double value, char letter) {
@@ -432,7 +435,7 @@ std::string str(double value) {
   if (value < 0) {
     std::string tmp = str(-value);
     size_t pos = tmp.find_first_not_of(" ");
-    if ((pos == std::string::npos) || ( pos == 0 )) {
+    if ((pos == std::string::npos) || (pos == 0)) {
       return "ERROR";
     }
 
@@ -818,10 +821,10 @@ bool IsCharInRange(char c, char lower, char higher) {
 }
 
 Color GetColor(const std::string color_name) {
-  if (( color_name == "red" ) || ( color_name == "r" )) {
+  if ((color_name == "red") || (color_name == "r")) {
     return BoldRed;
   }
-  if (( color_name == "magenta" ) || ( color_name == "m" )) {
+  if ((color_name == "magenta") || (color_name == "m")) {
     return BoldMagenta;
   }
 

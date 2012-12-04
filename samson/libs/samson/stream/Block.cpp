@@ -81,26 +81,21 @@ Block::~Block() {
   }
 }
 
-au::SharedPointer<KVFile> Block::getKVFile(au::ErrorManager& error, bool retain) {
+au::SharedPointer<KVFile> Block::GetKVFile(au::ErrorManager& error) {
   au::TokenTaker tt(&token_file_);
 
-  // If it has been calculated before, just return
   if (file_ != NULL) {
-    return file_;
+    return file_;  // If it has been calculated before, just return
   }
 
-  if (buffer_ == NULL) {       // Not possible to compute the KVFile
+  if (buffer_ == NULL) {
     error.AddError(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str()));
-    return file_;         // Return NULL;
+    return file_;  // Returning NULL since memory block is not in memory
   }
 
-  if (retain) {
-    file_ = KVFile::create(buffer_, error);
-    return file_;
-  } else {
-    au::SharedPointer<KVFile> file = KVFile::create(buffer_, error);
-    return file;
-  }
+  // Create a new KVFile
+  file_ = KVFile::create(buffer_, error);
+  return file_;
 }
 
 Block::BlockState Block::state() const {

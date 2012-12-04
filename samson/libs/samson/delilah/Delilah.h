@@ -19,37 +19,35 @@
  *
  */
 
-#include <iostream>                          // std::cout
-#include <set>                               // std::set
+#include <iostream>                        // std::cout
+#include <set>                             // std::set
 #include <string>
 #include <vector>
 
-#include "logMsg/logMsg.h"                   // lmInit, LM_*
+#include "logMsg/logMsg.h"                 // lmInit, LM_*
 
-#include "au/CommandLine.h"                  // au::CommandLine
-#include "au/containers/map.h"               // au::map
-#include "au/mutex/Token.h"                  // au::Token
-#include "au/mutex/TokenTaker.h"             // au::TokenTaker
+#include "au/CommandLine.h"                // au::CommandLine
+#include "au/containers/map.h"             // au::map
+#include "au/mutex/Token.h"                // au::Token
+#include "au/mutex/TokenTaker.h"           // au::TokenTaker
 #include "au/statistics/CounterCollection.h"  // au::CounterCollection
 #include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/string/StringUtilities.h"       // au::Table
-
-#include "au/tables/pugi.h"                  // pugi::...
+#include "au/tables/pugi.h"                // pugi::...
 
 #include "engine/Buffer.h"
 #include "engine/MemoryManager.h"
 #include "engine/NotificationListener.h"     // engine::NotificationListener
 
-#include "samson/common/Macros.h"            // EXIT, ...
-// samson::network::..
-
+#include "samson/common/Logs.h"            // EXIT, ...
+#include "samson/common/Macros.h"          // EXIT, ...
 #include "samson/module/Environment.h"  // samson::Environment
 
 #include "samson/network/DelilahNetwork.h"
-#include "samson/network/Message.h"          // Message::MessageCode
+#include "samson/network/Message.h"        // Message::MessageCode
 #include "samson/network/NetworkInterface.h"  // NetworkInterface
 
-#include "DelilahBase.h"                     // Monitorization information for delilah
+#include "DelilahBase.h"                   // Monitorization information for delilah
 #include "DelilahBaseConnection.h"
 #include "PushManager.h"
 
@@ -144,11 +142,13 @@ public:
   size_t get_num_push_items();
 
   // Add a push component
-  size_t add_push_component(const std::vector<std::string>& file_names, const std::vector<std::string>& queues);
-  size_t add_push_component(DataSource *data_source, const std::vector<std::string>& queues, bool module = false);
+  size_t add_push_component(const std::vector<std::string>& file_names, const std::vector<std::string>& queues,
+                            au::ErrorManager& error);
+  size_t add_push_component(DataSource *data_source, const std::vector<std::string>& queues, bool module,
+                            au::ErrorManager& error);
 
   // Add a push module component
-  size_t add_push_module_component(const std::vector<std::string>& file_names);
+  size_t add_push_module_component(const std::vector<std::string>& file_names, au::ErrorManager& error);
 
   size_t AddPopComponent(std::string queue_name, std::string fileName, bool force_flag, bool show_flag);
 
@@ -189,15 +189,17 @@ public:
   };
 
   // Write something on screen
-  virtual void showMessage(std::string message) {
-    LM_D(("not implemented (%s)", message.c_str()));
-  };
-  virtual void showWarningMessage(std::string message) {
-    LM_D(("not implemented (%s)", message.c_str()));
-  };
-  virtual void showErrorMessage(std::string message) {
-    LM_D(("not implemented (%s)", message.c_str()));
-  };
+  virtual void WriteOnDelilah(const std::string& message) {
+    LOG_M(logs.delilah, ("%s", message.c_str()));
+  }
+
+  virtual void WriteWarningOnDelilah(const std::string& message) {
+    LOG_W(logs.delilah, ("%s", message.c_str()));
+  }
+
+  virtual void WriteErrorOnDelilah(const std::string& message) {
+    LOG_E(logs.delilah, ("%s", message.c_str()));
+  }
 
   // Show traces  ( by default it does nothing )
   virtual void showTrace(std::string message) {
@@ -217,7 +219,7 @@ public:
   }
 
   virtual void receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
-    showWarningMessage(au::str("Buffer with %s recevied for queue %s. Ignored..", buffer->str().c_str(), queue.c_str()));
+    LOG_W(logs.delilah, ("Buffer with %s recevied for queue %s. Ignored..", buffer->str().c_str(), queue.c_str()));
   }
 
   // Get info about the list of loads
@@ -246,7 +248,7 @@ public:
 
 
   // Cancel a particuarl delilah_id
-  void cancelComponent(size_t id);
+  void cancelComponent(size_t id, au::ErrorManager& error);
   void setBackgroundComponent(size_t id);
   std::string getOutputForComponent(size_t id);
 

@@ -898,7 +898,7 @@ void SamsonWorker::evalCommand(const std::string& command) {
 
   if (au::CheckIfStringsBeginWith(main_command, "log_")) {
     au::log_central->evalCommand(command, error);
-    write(&error);          // Write the output of the command
+    Write(error);          // Write the output of the command
     return;
   }
 
@@ -909,26 +909,26 @@ void SamsonWorker::evalCommand(const std::string& command) {
     StopConsole();
   }
   if (main_command == "threads") {
-    writeOnConsole(au::Singleton<au::ThreadManager>::shared()->str());
+    Write(au::Singleton<au::ThreadManager>::shared()->str());
   }
 
   if (main_command == "show_engine_current_element") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetCurrentActivity() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetCurrentActivity() + "\n");
     return;
   }
 
   if (main_command == "show_engine_statistics") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetElementsTable() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetElementsTable() + "\n");
     return;
   }
 
   if (main_command == "show_engine_last_items") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetLastItemsTable() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetLastItemsTable() + "\n");
     return;
   }
 
   if (main_command == "show_engine_elements") {
-    writeOnConsole(engine::Engine::shared()->GetTableOfEngineElements() + "\n");
+    Write(engine::Engine::shared()->GetTableOfEngineElements() + "\n");
     return;
   }
 

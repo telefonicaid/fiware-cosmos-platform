@@ -91,6 +91,7 @@ std::string str_grouped(const std::vector<std::string>& names);
 
 // Strings in color
 std::string str(Color color, const char *format, ...);
+std::string str(Color color, const std::string& message);
 
 // String with size_t content
 std::string str(double value, const std::string& postfix);

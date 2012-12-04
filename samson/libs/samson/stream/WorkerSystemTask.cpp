@@ -140,9 +140,15 @@ void DefragTask::AddOutputBuffer(engine::BufferPointer buffer) {
 
 void DefragTask::run() {
   // Review input blocks
-  BlockList *list = block_list_container_.getBlockList("input_0");
+  BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  list->ReviewBlockReferences(error_);
+  if (!list) {
+    error_.AddError("No data provided at input_0");
+    return;
+  }
+
+  list->Review(error_);
+  list->ReviewKVFiles(error_);  // This should be done in a background  process
 
   if (error_.HasErrors()) {
     LOG_SW((">>>> Error in defrag operation: %s", error_.GetLastError().c_str()));

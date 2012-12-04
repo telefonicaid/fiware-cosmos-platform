@@ -95,11 +95,6 @@ DelilahConsole::DelilahConsole(size_t delilah_id) : Delilah("console", delilah_i
 
   // By default no save traces
   trace_file_ = NULL;
-  simple_output_ = false;
-  no_output_ = false;
-
-  // Inform about random code for this delilah
-  writeWarningOnConsole(au::str("Random delilah id generated [%s]", au::code64_str(get_delilah_id()).c_str()));
 }
 
 DelilahConsole::~DelilahConsole() {
@@ -126,19 +121,19 @@ void DelilahConsole::evalCommand(const std::string& command) {
       int s = WaitWithMessage(message, 0.2, &entry);
 
       if (!isActive(_delilah_id)) {
-        // Print output
+        // Print output in this thread to control pages using au::Console
         Refresh();
-        writeOnConsole(getOutputForComponent(_delilah_id));
+        Write(getOutputForComponent(_delilah_id));
         return;
       }
 
       if (s == 0) {
-        // To something with the key
-
         if (entry.isChar('c')) {
           Refresh();
-          writeWarningOnConsole(au::str("Canceling process %lu : %s", _delilah_id, command.c_str()));
-          cancelComponent(_delilah_id);
+          WriteWarningOnConsole(au::str("Canceling process %lu : %s", _delilah_id, command.c_str()));
+          au::ErrorManager error;
+          cancelComponent(_delilah_id, error);
+          Write(error);
           return;
         } else if (entry.isChar('b')) {
           Refresh();   // Refresh console
@@ -267,8 +262,7 @@ size_t DelilahConsole::runAsyncCommand(std::string command) {
   au::console::CommandInstance *command_instance = delilah_command_catalogue_.parse(command, error);
 
   if (error.HasErrors()) {
-    LM_E(("Error parsing command:'%s', error: '%s'", command.c_str(), error.GetLastError().c_str()));
-    write(&error);   // Write errors and messages
+    Write(error);   // Write errors and messages
     return 0;
   }
 
@@ -284,7 +278,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
    * if (mode == mode_database) {
    * // Run data base command
    * std::string result = runDatabaseCommand(command_instance->command_line());
-   * writeOnConsole(au::StringInConsole(result));
+   * Write(au::StringInConsole(result));
    * return 0;
    * }
    */
@@ -305,10 +299,10 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     log_probe->ConnectAsProbe(host, filter, error);
 
     if (error.HasErrors()) {
-      write(&error);
+      Write(error);
       log_probe = NULL;
     } else {
-      writeWarningOnConsole(au::str("Connected to %s to get logs (Filter %s)", host.c_str(), filter.c_str()));
+      WriteWarningOnConsole(au::str("Connected to %s to get logs (Filter %s)", host.c_str(), filter.c_str()));
     }
 
     return 0;
@@ -316,10 +310,10 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "wlog_hide") {
     if (log_probe != NULL) {
-      writeWarningOnConsole("Logs deactivated");
+      WriteWarningOnConsole("Logs deactivated");
       log_probe = NULL;
     } else {
-      writeWarningOnConsole("Logs were not activated");
+      WriteWarningOnConsole("Logs were not activated");
     }
 
     return 0;
@@ -328,7 +322,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (au::CheckIfStringsBeginWith(mainCommand, "log_")) {
     au::ErrorManager error;
     au::log_central->evalCommand(command_instance->command_line(), error);
-    write(&error);
+    Write(error);
     return 0;
   }
 
@@ -340,22 +334,22 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     std::vector<std::string> hosts = au::split(host, ' ');
 
     if (hosts.size() == 0) {
-      writeErrorOnConsole(command_instance->ErrorMessage(au::str("No host provided (%s)", host.c_str())));
+      WriteErrorOnConsole(command_instance->ErrorMessage(au::str("No host provided (%s)", host.c_str())));
     }
     for (int i = 0; i < static_cast<int>(hosts.size()); i++) {
-      writeOnConsole(au::str("Connecting to %s...\n", hosts[i].c_str()));
+      Write(au::str("Connecting to %s...\n", hosts[i].c_str()));
 
       au::ErrorManager error;
       if (connect(hosts[i], &error)) {
-        writeOnConsole("OK\n");
+        Write("OK\n");
         return 0;
       } else {
-        writeErrorOnConsole(error.GetLastError());
+        WriteErrorOnConsole(error.GetLastError());
       }
     }
 
     if (hosts.size() > 2) {
-      writeErrorOnConsole("Not possible to connect to any hosts\n");
+      WriteErrorOnConsole("Not possible to connect to any hosts\n");
     }
     return 0;
   }
@@ -366,18 +360,18 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "show_cluster_setup") {
-    writeOnConsole(network->getClusterSetupStr() + "\n");
+    Write(network->getClusterSetupStr() + "\n");
     return 0;
   }
 
   if (mainCommand == "show_cluster_assignation") {
-    writeOnConsole(network->getClusterAssignationStr() + "\n");
+    Write(network->getClusterAssignationStr() + "\n");
     return 0;
   }
 
   if (mainCommand == "history") {
     int limit = command_instance->get_int_option("limit");
-    showMessage(str_history(limit));
+    Write(str_history(limit));
     return 0;
   }
 
@@ -389,7 +383,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     if (error.HasErrors()) {
       Write(error);
     } else {
-      writeWarningOnConsole("Modules at delilah client have been reloaded.");
+      WriteWarningOnConsole("Modules at delilah client have been reloaded.");
     }
   }
 
@@ -397,7 +391,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     std::string concept = command_instance->get_string_argument("concept");
 
     if (concept != "") {
-      writeOnConsole(delilah_command_catalogue_.getHelpForConcept(concept));
+      Write(delilah_command_catalogue_.getHelpForConcept(concept));
       return 0;
     } else {
       std::ostringstream output;
@@ -424,7 +418,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
       std::string text = output.str();
 
-      writeOnConsole(text);
+      Write(text);
       return 0;
     }
   }
@@ -438,7 +432,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (mainCommand == "threads") {
     std::ostringstream message;
     message << au::Singleton<au::ThreadManager>::shared()->str();
-    writeOnConsole(message.str());
+    Write(message.str());
     return 0;
   }
 
@@ -458,12 +452,12 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
         table.addRow(au::StringVector(it_environment->first, it_environment->second));
       }
 
-      writeOnConsole(table.str());
+      Write(table.str());
       return 0;
     }
 
     environment.set(name, value);
-    writeWarningOnConsole(au::str("Environment variable '%s' set to '%s'", name.c_str(), value.c_str()));
+    WriteWarningOnConsole(au::str("Environment variable '%s' set to '%s'", name.c_str(), value.c_str()));
     return 0;
   }
 
@@ -471,17 +465,17 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     std::string name = command_instance->get_string_argument("name");
 
     if (!environment.isSet(name)) {
-      writeErrorOnConsole(au::str("Variable %s is not set", name.c_str()));
+      WriteErrorOnConsole(au::str("Variable %s is not set", name.c_str()));
       return 0;
     }
 
     environment.unset(name);
-    writeWarningOnConsole(au::str("Environment variable '%s' is removed ", name.c_str()));
+    WriteWarningOnConsole(au::str("Environment variable '%s' is removed ", name.c_str()));
     return 0;
   }
 
   if (mainCommand == "ls_local_connections") {
-    writeOnConsole(GetTableFromCollection(network->GetConnectionsCollection(samson::Visualization()))->str());
+    Write(GetTableFromCollection(network->GetConnectionsCollection(samson::Visualization()))->str());
     return 0;
   }
 
@@ -490,17 +484,17 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     if (action == "on") {
       show_alerts_ = true;
-      writeOnConsole("Alerts are now activated\n");
+      Write("Alerts are now activated\n");
       return 0;
     }
 
     if (action == "off") {
       show_alerts_ = false;
-      writeOnConsole("Alerts are now NOT activated\n");
+      Write("Alerts are now NOT activated\n");
       return 0;
     }
 
-    writeErrorOnConsole("Usage: alerts on/off\n");
+    WriteErrorOnConsole("Usage: alerts on/off\n");
     return 0;
   }
 
@@ -509,31 +503,31 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     if (action == "") {
       if (verbose_) {
-        writeOnConsole("verbose mode is activated\n");
+        Write("verbose mode is activated\n");
       } else {
-        writeOnConsole("verbose mode is NOT activated\n");
+        Write("verbose mode is NOT activated\n");
       }
       return 0;
     }
 
     if (action == "on") {
       verbose_ = true;
-      writeOnConsole("verbose mode is now activated\n");
+      Write("verbose mode is now activated\n");
       return 0;
     }
     if (action == "off") {
       verbose_ = false;
-      writeOnConsole("verbose mode is now NOT activated\n");
+      Write("verbose mode is now NOT activated\n");
       return 0;
     }
 
-    writeErrorOnConsole(command_instance->ErrorMessage("Unknown action"));
+    WriteErrorOnConsole(command_instance->ErrorMessage("Unknown action"));
     return 0;
   }
 
   if (mainCommand == "show_alerts") {
     std::string txt = trace_colleciton_.str();
-    writeOnConsole(au::StringInConsole(txt));
+    Write(au::StringInConsole(txt));
     return 0;
   }
 
@@ -541,7 +535,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     std::string filename = command_instance->get_string_argument("file");
 
     if (trace_file_) {
-      writeErrorOnConsole(
+      WriteErrorOnConsole(
         au::str("Please close previous alerts file (%s) with command 'close_alerts_file'\n",
                 trace_file_name_.c_str()));
       return 0;
@@ -549,24 +543,24 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     trace_file_ = fopen(filename.c_str(), "w");
     if (!trace_file_) {
-      writeErrorOnConsole(
+      WriteErrorOnConsole(
         au::str("Error opening file '%s' to store alerts (%s)\n", trace_file_name_.c_str(),
                 strerror(errno)));
       return 0;
     }
 
-    writeOnConsole(au::str("Saving alerts to file '%s'\n", trace_file_name_.c_str()));
+    Write(au::str("Saving alerts to file '%s'\n", trace_file_name_.c_str()));
     return 0;
   }
 
   if (mainCommand == "close_alerts_file") {
     if (!trace_file_) {
-      writeErrorOnConsole("There is no opened alerts file. Open one with command 'open_alerts_file'\n");
+      WriteErrorOnConsole("There is no opened alerts file. Open one with command 'open_alerts_file'\n");
       return 0;
     }
 
     fclose(trace_file_);
-    writeOnConsole(
+    Write(
       "Stop saving alerts to file '%s'.\nRemeber you can open a new alerts file with command 'open_alerts_file\n'");
     return 0;
   }
@@ -583,7 +577,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       DelilahComponent *component = components_.findInMap(id);
 
       if (!component) {
-        writeErrorOnConsole(au::str("Unknown process with id %d", id));
+        WriteErrorOnConsole(au::str("Unknown process with id %d", id));
       } else {
         au::tables::Table table("Concept|Value,left");
 
@@ -602,14 +596,14 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
         }
         table.addRow(au::StringVector("Status", component->getStatus()));
 
-        writeOnConsole(table.str() + "\n" + component->getExtraStatus());
+        Write(table.str() + "\n" + component->getExtraStatus());
       }
 
       return 0;
     }
 
     std::string txt = getListOfComponents();
-    writeOnConsole(au::StringInConsole(txt));
+    Write(au::StringInConsole(txt));
     return 0;
   }
 
@@ -617,7 +611,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "ls_local_push_operations") {
     au::tables::Table *table = push_manager->getTableOfItems();
-    writeOnConsole(table->str());
+    Write(table->str());
     delete table;
     return 0;
   }
@@ -628,11 +622,14 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     au::ErrorManager error;
     std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
     if (error.HasErrors()) {
-      write(&error);
+      Write(error);
       return -1;
     }
 
-    return add_push_module_component(file_names);
+    au::ErrorManager error_push;
+    size_t id = add_push_module_component(file_names, error);
+    Write(error_push);  // Write any error message on screen
+    return id;
   }
 
   if (mainCommand == "push") {
@@ -642,7 +639,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     au::ErrorManager error;
     std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
     if (error.HasErrors()) {
-      write(&error);
+      Write(error);
       return -1;
     }
 
@@ -652,17 +649,19 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     // Check queue names
     for (size_t i = 0; i < queues.size(); i++) {
       if (queues[i].size() == 0) {
-        writeErrorOnConsole("Invalid queue");
+        WriteErrorOnConsole("Invalid queue");
         return -1;
       }
 
       if (queues[i][0] == '.') {
-        writeErrorOnConsole("Invalid queue. Name can not start with a dot (.)");
+        WriteErrorOnConsole("Invalid queue. Name can not start with a dot (.)");
         return -1;
       }
     }
 
-    size_t id = add_push_component(file_names, queues);
+    au::ErrorManager error_push;
+    size_t id = add_push_component(file_names, queues, error_push);
+    Write(error_push);
     return id;
   }
 
@@ -671,7 +670,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (mainCommand == "connect_to_queue") {
     std::string queue = command_instance->get_string_argument("queue");
     size_t id = connect_to_queue(queue);
-    writeWarningOnConsole(au::str("Connected to queue %s using pop component %lu", queue.c_str(), id));
+    WriteWarningOnConsole(au::str("Connected to queue %s using pop component %lu", queue.c_str(), id));
     return 0;
   }
 
@@ -693,29 +692,29 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     au::RemoveDirectory(file, error);
 
     if (error.HasErrors()) {
-      writeErrorOnConsole(error.GetLastError());
+      WriteErrorOnConsole(error.GetLastError());
     } else {
-      writeWarningOnConsole("OK");
+      WriteWarningOnConsole("OK");
     }
     return 0;
   }
 
   if (mainCommand == "ls_local_modules") {
-    writeOnConsole(au::Singleton<ModulesManager>::shared()->GetTableOfModules() + "\n");
+    Write(au::Singleton<ModulesManager>::shared()->GetTableOfModules() + "\n");
     return 0;
   }
 
   if (mainCommand == "ls_local") {
     std::string file = command_instance->get_string_argument("file");
 
-    writeOnConsole(getLsLocal(file, false));
+    Write(getLsLocal(file, false));
     return 0;
   }
 
   if (mainCommand == "ls_local_queues") {
     std::string file = command_instance->get_string_argument("file");
 
-    writeOnConsole(getLsLocal(file, true));
+    Write(getLsLocal(file, true));
     return 0;
   }
 
@@ -736,44 +735,44 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       au::SharedPointer<samson::SamsonFile> samson_file = samson::SamsonFile::create(file_name, error);
 
       if (error.HasErrors()) {
-        writeErrorOnConsole(au::str("%s", error.GetLastError().c_str()));
+        WriteErrorOnConsole(au::str("%s", error.GetLastError().c_str()));
         return 0;
       }
 
       if (header) {
         std::ostringstream output;
         samson_file->printHeader(output);
-        writeOnConsole(output.str());
+        Write(output.str());
         return 0;
       }
 
       std::ostringstream output;
       samson_file->printContent(limit, show_hg, output);
-      writeOnConsole(output.str());
+      Write(output.str());
       return 0;
     } else if (S_ISDIR(filestatus.st_mode)) {
       au::ErrorManager error;
       au::SharedPointer<samson::SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name, error);
 
       if (error.HasErrors()) {
-        writeErrorOnConsole(au::str("%s", error.GetLastError().c_str()));
+        WriteErrorOnConsole(au::str("%s", error.GetLastError().c_str()));
         return 0;
       }
 
       if (header) {
         std::ostringstream output;
         samson_data_set->printHeaders(output);
-        writeOnConsole(output.str());
+        Write(output.str());
         return 0;
       }
 
       std::ostringstream output;
       samson_data_set->printContent(limit, show_hg, output);
       std::string txt = output.str();
-      writeOnConsole(output.str());
+      Write(output.str());
       return 0;
     } else {
-      writeErrorOnConsole(au::str("%s is not a file or a directory\n", file_name));
+      WriteErrorOnConsole(au::str("%s is not a file or a directory\n", file_name));
       return 0;
     }
 
@@ -816,11 +815,11 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
         std::string trace_message = table.str();
 
         if (_type == "error") {
-          writeErrorOnConsole(trace_message);
+          WriteErrorOnConsole(trace_message);
         } else if (_type == "warning") {
-          writeWarningOnConsole(trace_message);
+          WriteWarningOnConsole(trace_message);
         } else {
-          writeOnConsole(trace_message);
+          Write(trace_message);
         }
       }
     }
@@ -839,15 +838,10 @@ void DelilahConsole::delilahComponentStartNotification(DelilahComponent *compone
     return;   // No notification for hidden processes
   }
   if (verbose_) {
-    std::ostringstream o;
-
-    o << "[ " << au::code64_str(get_delilah_id()) << "_" << component->getId() << " ] Process started: ";
-    o << component->getConcept();
-    if (component->error.HasErrors()) {
-      showErrorMessage(o.str());
-    } else {
-      showMessage(au::str(au::Yellow, "%s", o.str().c_str()));
-    }
+    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(get_delilah_id()).c_str(), component->getId());
+    std::string message = component_id + " Process started: " + component->getConcept();
+    Write(component->error, component_id);
+    WriteBoldOnConsole(au::str("%s", message.c_str()));
   }
 }
 
@@ -857,17 +851,12 @@ void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *compon
   }
   if (verbose_) {
     std::string component_id = au::str("[ %s_%lu ]", au::code64_str(get_delilah_id()).c_str(), component->getId());
-
-    // Write all messages, warnings and errors for this worker task
-    Show(component->error, component_id);
-
-    if (!component->error.HasErrors()) {
-      showMessage(au::str(au::Yellow, "[ %s_%lu ] Process finished: %s", au::code64_str(get_delilah_id()).c_str(),
-                          component->getId(), component->getConcept().c_str()));
+    std::string message = component_id + " Process finished: " + component->getConcept();
+    Write(component->error, component_id);
+    if (component->error.HasErrors()) {
+      WriteErrorOnConsole(au::str("%s", message.c_str()));
     } else {
-      showErrorMessage(
-        au::str("[ %s_%lu ] Process finished with error: %s\n",
-                au::code64_str(get_delilah_id()).c_str(), component->getId(), component->getConcept().c_str()));
+      WriteBoldOnConsole(au::str("%s", message.c_str()));
     }
   }
 }
@@ -881,10 +870,9 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
   std::string directory_name = au::str("stream_out_%s", queue.c_str());
 
   if ((mkdir(directory_name.c_str(), 0755) != 0) && (errno != EEXIST)) {
-    showErrorMessage(
-      au::str("It was not possible to create directory %s to store data from queue %s",
-              directory_name.c_str(), queue.c_str()));
-    showErrorMessage(au::str("Rejecting a %s data from queue %s", au::str(packet_size, "B").c_str(), queue.c_str()));
+    WriteErrorOnConsole(au::str("It was not possible to create directory %s to store data from queue %s",
+                                directory_name.c_str(), queue.c_str()));
+    WriteErrorOnConsole(au::str("Rejecting a %s data from queue %s", au::str(packet_size, "B").c_str(), queue.c_str()));
     return;
   }
 
@@ -903,7 +891,7 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
     output << samson_client_block.get_content(5);
     output << "====================================================================\n";
 
-    showMessage(output.str());
+    Write(output.str());
   }
 
   // Disk operation....

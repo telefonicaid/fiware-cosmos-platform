@@ -56,7 +56,7 @@ int port;
 
 PaArgument paArgs[] = {
   SAMSON_ARGS,
-  { "-show",  &show, "", PaBool, PaOpt, false, false, true, "Show current options"                    },
+  { "-show",  &show,"", PaBool, PaOpt, false, false, true, "Show current options"                    },
   PA_END_OF_ARGS
 };
 
@@ -131,27 +131,27 @@ public:
     std::string main_command = cmd.get_argument(0);
 
     if (main_command == "help") {
-      writeOnConsole(getHelpMessage());
+      Write(getHelpMessage());
       return;
     }
 
     if (main_command == "set") {
       if (cmd.get_num_arguments() < 3) {
-        writeOnConsole("Usage: set property value");
+        Write("Usage: set property value");
       }
       std::string property = cmd.get_argument(1);
       std::string value = cmd.get_argument(2);
 
       if (!au::Singleton<samson::SamsonSetup>::shared()->IsParameterDefined(property)) {
-        writeErrorOnConsole(au::str("Parameter '%s' not defined", property.c_str()));
+        WriteErrorOnConsole(au::str("Parameter '%s' not defined", property.c_str()));
         return;
       }
 
       if (au::Singleton<samson::SamsonSetup>::shared()->Set(property, value)) {
         modified = true;
-        writeWarningOnConsole(au::str("Property '%s' set to '%s'", property.c_str(), value.c_str()));
+        WriteWarningOnConsole(au::str("Property '%s' set to '%s'", property.c_str(), value.c_str()));
       } else {
-        writeWarningOnConsole(au::str("'%s' is not valid for property", value.c_str(), property.c_str()));
+        WriteWarningOnConsole(au::str("'%s' is not valid for property", value.c_str(), property.c_str()));
       }
 
       return;
@@ -177,10 +177,10 @@ public:
       au::Singleton<samson::SamsonSetup>::shared()->Set("stream.max_operation_input_size"
                                                         , au::str("%ld", kernel_shmmax));
 
-      writeWarningOnConsole(au::str("Properties general.memory                        = %lld", physical_ram));
-      writeWarningOnConsole(au::str("Properties general.num_processess                = %d", no_cpus));
-      writeWarningOnConsole(au::str("Properties general.shared_memory_size_per_buffer = %ld", kernel_shmmax));
-      writeWarningOnConsole(au::str("Properties stream.max_operation_input_size       = %ld", kernel_shmmax));
+      WriteWarningOnConsole(au::str("Properties general.memory                        = %lld", physical_ram));
+      WriteWarningOnConsole(au::str("Properties general.num_processess                = %d", no_cpus));
+      WriteWarningOnConsole(au::str("Properties general.shared_memory_size_per_buffer = %ld", kernel_shmmax));
+      WriteWarningOnConsole(au::str("Properties stream.max_operation_input_size       = %ld", kernel_shmmax));
 
       modified = true;
 
@@ -195,10 +195,10 @@ public:
       au::Singleton<samson::SamsonSetup>::shared()->Set("general.shared_memory_size_per_buffer", "64000000");
       au::Singleton<samson::SamsonSetup>::shared()->Set("stream.max_operation_input_size", "64000000");
 
-      writeWarningOnConsole("Properties general.memory                        = 2Gb");
-      writeWarningOnConsole("Properties general.num_processess                = 2");
-      writeWarningOnConsole("Properties general.shared_memory_size_per_buffer = 64Mb");
-      writeWarningOnConsole("Properties stream.max_operation_input_size       = 64Mb");
+      WriteWarningOnConsole("Properties general.memory                        = 2Gb");
+      WriteWarningOnConsole("Properties general.num_processess                = 2");
+      WriteWarningOnConsole("Properties general.shared_memory_size_per_buffer = 64Mb");
+      WriteWarningOnConsole("Properties stream.max_operation_input_size       = 64Mb");
 
       modified = true;
 
@@ -207,7 +207,7 @@ public:
 
     if (main_command == "use_default_values") {
       au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
-      writeOnConsole("OK");
+      Write("OK");
       modified = true;
       return;
     }
@@ -217,10 +217,10 @@ public:
       std::string fileName = au::Singleton<samson::SamsonSetup>::shared()->setup_filename();
 
       if (saved_ok) {
-        writeWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
+        WriteWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
         modified = false;
       } else {
-        writeErrorOnConsole(au::str("Error saving file at %s", fileName.c_str()));
+        WriteErrorOnConsole(au::str("Error saving file at %s", fileName.c_str()));
       }
 
       return;
@@ -231,12 +231,12 @@ public:
         std::cout << "Setup file modified.... save (y/n)? ";
         char line[1024];
         if (fgets(line, 1024, stdin) == NULL) {
-          writeWarningOnConsole("Read nothing");
+          WriteWarningOnConsole("Read nothing");
         }
         if (strcmp(line, "y") || strcmp(line, "Y")) {
           au::Singleton<samson::SamsonSetup>::shared()->Save();            // Save a new file with the current setup
           std::string fileName = au::Singleton<samson::SamsonSetup>::shared()->setup_filename();
-          writeWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
+          WriteWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
         }
       }
 
@@ -258,8 +258,8 @@ public:
     }
 
 
-    writeErrorOnConsole(au::str("Unknown command '%s'", main_command.c_str()));
-    writeWarningOnConsole("Type help to get a list of valid commands ");
+    WriteErrorOnConsole(au::str("Unknown command '%s'", main_command.c_str()));
+    WriteWarningOnConsole("Type help to get a list of valid commands ");
   }
 };
 
@@ -296,19 +296,19 @@ static const char *manVersion       = SAMSON_VERSION;
  */
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)"only errors");
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE@TIME  EXEC: TEXT");
-  paConfig("log to file",                   (void *)true);
+  paConfig("log to screen", (void *)"only errors");
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE@TIME  EXEC: TEXT");
+  paConfig("log to file", (void *)true);
 
-  paConfig("man synopsis",                  (void *)manSynopsis);
-  paConfig("man shortdescription",          (void *)manShortDescription);
-  paConfig("man description",               (void *)manDescription);
-  paConfig("man exitstatus",                (void *)manExitStatus);
-  paConfig("man author",                    (void *)manAuthor);
-  paConfig("man reportingbugs",             (void *)manReportingBugs);
-  paConfig("man copyright",                 (void *)manCopyright);
-  paConfig("man version",                   (void *)manVersion);
+  paConfig("man synopsis", (void *)manSynopsis);
+  paConfig("man shortdescription", (void *)manShortDescription);
+  paConfig("man description", (void *)manDescription);
+  paConfig("man exitstatus", (void *)manExitStatus);
+  paConfig("man author", (void *)manAuthor);
+  paConfig("man reportingbugs", (void *)manReportingBugs);
+  paConfig("man copyright", (void *)manCopyright);
+  paConfig("man version", (void *)manVersion);
 
   paParse(paArgs, argC, (char **)argV, 1, false);
 

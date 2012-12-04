@@ -215,7 +215,7 @@ void Delilah::notify(engine::Notification *notification) {
     size_t id = notification->environment().Get("id", -1);
 
     // At the moment only a warning
-    showWarningMessage(au::str("Disconnected (%s %lu )", type.c_str(), id));
+    LOG_W(logs.delilah, ("Disconnected (%s %lu )", type.c_str(), id));
     return;
   }
 
@@ -225,9 +225,7 @@ void Delilah::notify(engine::Notification *notification) {
   }
 
   if (notification->isName("notification_cluster_info_changed")) {
-    std::string message = au::str("Cluster setup has changed ( current version %lu )",
-                                  network->cluster_information_version());
-    showWarningMessage(message);
+    LOG_M(logs.delilah, ("Cluster setup has changed ( current version %lu )", network->cluster_information_version()));
     return;
   }
 
@@ -251,7 +249,7 @@ void Delilah::receive(const PacketPointer& packet) {
   // --------------------------------------------------------------------
 
   if (msgCode == Message::Message) {
-    showWarningMessage(packet->message->message());
+    WriteOnDelilah(packet->message->message());
     return;
   }
 
@@ -353,29 +351,33 @@ void Delilah::notificationSent(size_t id, bool success) {
  * pushData -
  */
 
-size_t Delilah::add_push_component(const std::vector<std::string>&file_names, const std::vector<std::string>& queues) {
+size_t Delilah::add_push_component(const std::vector<std::string>&file_names,
+                                   const std::vector<std::string>& queues,
+                                   au::ErrorManager& error) {
   // Data source with these files
   AgregatedFilesDataSource *data_source = new AgregatedFilesDataSource(file_names);
 
   if (data_source->getTotalSize() == 0) {
-    std::ostringstream message;
-
     if (file_names.size() == 0) {
-      message << "No valid files provided";
+      error.AddError("No valid files provided");
     } else {
+      std::ostringstream message;
       message << "No content at ";
       for (size_t i = 0; i < file_names.size(); i++) {
         message << file_names[i] << " ";
       }
+      error.AddError(message.str());
     }
-    showErrorMessage(message.str());
     return 0;
   }
 
-  return add_push_component(data_source, queues);
+  return add_push_component(data_source, queues, false, error);
 }
 
-size_t Delilah::add_push_component(DataSource *data_source, const std::vector<std::string>& queues, bool modules) {
+size_t Delilah::add_push_component(DataSource *data_source,
+                                   const std::vector<std::string>& queues,
+                                   bool modules,
+                                   au::ErrorManager& error) {
   PushDelilahComponent *d = new PushDelilahComponent(data_source, queues);
 
   if (modules) {
@@ -386,14 +388,14 @@ size_t Delilah::add_push_component(DataSource *data_source, const std::vector<st
   return tmp_id;
 }
 
-size_t Delilah::add_push_module_component(const std::vector<std::string>& file_names) {
+size_t Delilah::add_push_module_component(const std::vector<std::string>& file_names, au::ErrorManager& error) {
   // Spetial one-buffer data source
   IndividualFilesDataSources *data_source = new IndividualFilesDataSources(file_names);
 
   std::vector<std::string> queues;
   queues.push_back(".modules");
 
-  return add_push_component(data_source, queues, true);
+  return add_push_component(data_source, queues, true, error);
 }
 
 size_t Delilah::AddPopComponent(std::string queue_name, std::string fileName, bool force_flag, bool show_flag) {
@@ -456,7 +458,7 @@ size_t Delilah::addComponent(DelilahComponent *component) {
   return tmp_id;
 }
 
-void Delilah::cancelComponent(size_t _id) {
+void Delilah::cancelComponent(size_t _id, au::ErrorManager& error) {
   au::TokenTaker tk(&token);
 
   DelilahComponent *component = components_.findInMap(_id);
@@ -464,7 +466,7 @@ void Delilah::cancelComponent(size_t _id) {
   if (component) {
     component->setComponentFinishedWithError("Canceled by user in delilah console");
   } else {
-    showWarningMessage(au::str("Not possible to cancel delilah process %lu.", _id));
+    error.AddWarning(au::str("Not possible to cancel delilah process %lu.", _id));
   }
 }
 
@@ -487,7 +489,7 @@ void Delilah::setBackgroundComponent(size_t _id) {
   if (component) {
     component->set_print_output_at_finish();
   } else {
-    showWarningMessage(au::str("Not possible to set delilah process %lu in background.", _id));
+    LOG_W(logs.delilah, ("Not possible to set delilah process %lu in background.", _id));
   }
 }
 

@@ -299,20 +299,27 @@ int main(int argC, const char *argV[]) {
   // Create a DelilahControler once network is ready
   delilahConsole = new samson::DelilahConsole(delilah_random_code);
 
-  // Change log to console
-  au::log_central->evalCommand("screen off");   // Disable log to screen since we log to console
-  au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole, "[type][channel] text"));
-
+  // Special setup for command or command-file
+  if ((strcmp(commandFileName, "") != 0) || (strcmp(command, "") != 0)) {
+    delilahConsole->set_colors(false);
+    delilahConsole->set_verbose(false);
+  } else {
+    // Change log to console and activate delilah::G at message level
+    au::log_central->evalCommand("screen off");   // Disable log to screen since we log to console
+    au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole, "[type][channel] text"));
+    au::log_central->evalCommand("log_set delilah::G M");
+  }
   LOG_M(samson::logs.delilah, ("Delilah running..."));
+  LOG_M(samson::logs.delilah, ("Random delilah id generated [%s]", au::code64_str(delilah_random_code).c_str()));
 
   std::vector<std::string> hosts = au::split(host, ' ');
   for (size_t i = 0; i < hosts.size(); i++) {
     au::ErrorManager error;
     if (delilahConsole->connect(hosts[i], &error)) {
-      delilahConsole->writeWarningOnConsole(au::str("Connected to %s", hosts[i].c_str()));
+      LOG_M(samson::logs.delilah, ("Connected to %s", hosts[i].c_str()));
       break;
     } else {
-      delilahConsole->writeWarningOnConsole(au::str("Not possible to connect with %s: %s", hosts[i].c_str(),
+      delilahConsole->WriteWarningOnConsole(au::str("Not possible to connect with %s: %s", hosts[i].c_str(),
                                                     error.GetLastError().c_str()));
     }
   }
@@ -337,8 +344,6 @@ int main(int argC, const char *argV[]) {
         }
       }
     }
-    // Set output to screen
-    delilahConsole->setNoOutput();
     size_t id = delilahConsole->runAsyncCommand(command);
 
     LOG_SM(("runAsyncCommand returned for command:'%s', id:%d", command, id));
@@ -361,6 +366,9 @@ int main(int argC, const char *argV[]) {
       }
     }
 
+    // Flush all messages
+    delilahConsole->FlushBackgroundMessages();
+
     // Disconnect delilah
     LOG_SM(("Calling delilahConsole->disconnect()"));
     delilahConsole->disconnect();
@@ -376,9 +384,6 @@ int main(int argC, const char *argV[]) {
 
   if (strcmp(commandFileName, "") != 0) {
     au::log_central->AddScreenPlugin("screen", "[type][channel] text");    // Activate logs at screen
-
-    delilahConsole->setSimpleOutput();
-
     {
       au::Cronometer cronometer;
       while (!delilahConsole->isConnected()) {
@@ -430,6 +435,10 @@ int main(int argC, const char *argV[]) {
 
     fclose(f);
 
+    // Flush all messages
+    delilahConsole->FlushBackgroundMessages();
+
+    // Disconnect from cluter
     delilahConsole->disconnect();
 
     LOG_SM(("delilah exit correctly"));

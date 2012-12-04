@@ -26,14 +26,13 @@ BlockListContainer::~BlockListContainer() {
   blockLists_.clearMap();   // Remove all BlockList instances
 }
 
-BlockList *BlockListContainer::findBlockList(std::string name) const {
-  au::TokenTaker tt(&token_);
-
+BlockList *BlockListContainer::FindBlockList(std::string name) const {
+  // au::TokenTaker tt(&token_);
   return blockLists_.findInMap(name);
 }
 
-BlockList *BlockListContainer::getBlockList(std::string name) {
-  au::TokenTaker tt(&token_);
+BlockList *BlockListContainer::GetBlockList(std::string name) {
+  // au::TokenTaker tt(&token_);
   BlockList *blockList = blockLists_.findInMap(name);
 
   if (!blockList) {
@@ -44,38 +43,23 @@ BlockList *BlockListContainer::getBlockList(std::string name) {
   return blockList;
 }
 
-void BlockListContainer::clearBlockListcontainer() {
-  au::TokenTaker tt(&token_);
-
+void BlockListContainer::ClearBlockListcontainer() {
+  // au::TokenTaker tt(&token_);
   blockLists_.clearMap();   // Remove all BlockList instances
 }
 
-std::vector<std::string> BlockListContainer::get_block_list_names() {
-  au::TokenTaker tt(&token_);
-
-  std::vector<std::string> keys;
-  au::map<std::string, BlockList>::iterator it_blockLists;
-  for (it_blockLists = blockLists_.begin(); it_blockLists != blockLists_.end(); it_blockLists++) {
-    keys.push_back(it_blockLists->first);
-  }
-  return keys;
-}
-
-size_t BlockListContainer::getNumBlocks() {
-  au::TokenTaker tt(&token_);
+size_t BlockListContainer::GetNumBlocks() const {
   size_t total = 0;
 
-  au::map<std::string, BlockList>::iterator it;
+  au::map<std::string, BlockList>::const_iterator it;
   for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
     total += (it->second->getNumBlocks());
   }
   return total;
 }
 
-bool BlockListContainer::is_content_in_memory() {
-  au::TokenTaker tt(&token_);
-
-  au::map<std::string, BlockList>::iterator it;
+bool BlockListContainer::is_content_in_memory() const {
+  au::map<std::string, BlockList>::const_iterator it;
   for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
     BlockList *block_list = it->second;
     if (!block_list->IsContentInMemory()) {
@@ -86,8 +70,6 @@ bool BlockListContainer::is_content_in_memory() {
 }
 
 void BlockListContainer::lock_content_in_memory() {
-  au::TokenTaker tt(&token_);
-
   au::map<std::string, BlockList>::iterator it;
   for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
     BlockList *block_list = it->second;
@@ -96,7 +78,6 @@ void BlockListContainer::lock_content_in_memory() {
 }
 
 std::string BlockListContainer::str_blocks() const {
-  au::TokenTaker tt(&token_);
   std::ostringstream output;
 
   au::map<std::string, BlockList>::const_iterator it;
@@ -108,7 +89,6 @@ std::string BlockListContainer::str_blocks() const {
 }
 
 std::string BlockListContainer::str_block_ids() const {
-  au::TokenTaker tt(&token_);
   std::ostringstream output;
   int num_inputs = 0;
 
@@ -147,7 +127,6 @@ std::string BlockListContainer::str_block_ids() const {
 }
 
 std::string BlockListContainer::str_inputs() const {
-  au::TokenTaker tt(&token_);
   int num_inputs = 0;
 
   for (int i = 0; i < 10; i++) {
@@ -169,7 +148,6 @@ std::string BlockListContainer::str_inputs() const {
 }
 
 std::string BlockListContainer::str_outputs() const {
-  au::TokenTaker tt(&token_);
   int num_outputs = 0;
 
   for (int i = 0; i < 10; i++) {
@@ -191,7 +169,6 @@ std::string BlockListContainer::str_outputs() const {
 }
 
 FullKVInfo BlockListContainer::GetInputsInfo() const {
-  au::TokenTaker tt(&token_);
   int num_inputs = 0;
 
   for (int i = 0; i < 10; i++) {
@@ -211,7 +188,6 @@ FullKVInfo BlockListContainer::GetInputsInfo() const {
 }
 
 FullKVInfo BlockListContainer::GetOutputsInfo() const {
-  au::TokenTaker tt(&token_);
   int num_outputs = 0;
 
   for (int i = 0; i < 10; i++) {

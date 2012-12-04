@@ -93,17 +93,17 @@ public:
       stat(path.c_str(), &info);
 
       if (S_ISDIR(info.st_mode)) {
-        writeOnConsole(au::str("Reading directory %s...\n", path.c_str()));
+        Write(au::str("Reading directory %s...\n", path.c_str()));
         std::string module_fileName = path + "/module";
 
         au::ErrorManager error;
         samson::ModuleInformation *module_information = samson::ModuleInformation::parse(module_fileName, &error);
 
         if (error.HasErrors()) {
-          writeErrorOnConsole(error.GetLastError());
+          WriteErrorOnConsole(error.GetLastError());
         } else {
           if (module_information->module.name != fileName) {
-            writeErrorOnConsole(
+            WriteErrorOnConsole(
               au::str("Module '%s' defined inside directory %s: Skipping...\n",
                       module_information->module.name.c_str(),
                       fileName.c_str()
@@ -189,7 +189,7 @@ public:
       select_table.addColumn("#Datas");
       select_table.addColumn("#Operations");
 
-      writeOnConsole(table->str(&select_table));
+      Write(table->str(&select_table));
       delete table;
     }
 
@@ -207,7 +207,7 @@ public:
             samson::KVFormat key_values = module_information->operations[o].inputs[i].key_values;
 
             if (!check_data(key_values.keyFormat)) {
-              writeWarningOnConsole(
+              WriteWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at input %d"
                         , operation.c_str()
                         , key_values.keyFormat.c_str(),
@@ -216,7 +216,7 @@ public:
                 );
             }
             if (!check_data(key_values.valueFormat)) {
-              writeWarningOnConsole(
+              WriteWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at input %d"
                         , operation.c_str()
                         , key_values.valueFormat.c_str(),
@@ -231,7 +231,7 @@ public:
             samson::KVFormat key_values = module_information->operations[o].outputs[i].key_values;
 
             if (!check_data(key_values.keyFormat)) {
-              writeWarningOnConsole(
+              WriteWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at output %d"
                         , operation.c_str()
                         , key_values.keyFormat.c_str(),
@@ -240,7 +240,7 @@ public:
                 );
             }
             if (!check_data(key_values.valueFormat)) {
-              writeWarningOnConsole(
+              WriteWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at output %d"
                         , operation.c_str()
                         , key_values.valueFormat.c_str(),

@@ -227,8 +227,6 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     }
 
     if (packet->message->has_error()) {
-      // Error in confirmation, send the next one
-      LOG_SW(("Error in confirmation, send the next one"));
       SendRequest(item);
       check();
       return;

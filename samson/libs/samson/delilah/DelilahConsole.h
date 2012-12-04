@@ -47,9 +47,9 @@ public:
   ~DelilahConsole();
 
   // Console related methods
-  virtual std::string getPrompt();
-  virtual void evalCommand(const std::string& command);
-  virtual void autoComplete(au::console::ConsoleAutoComplete *info);
+  virtual std::string GetPrompt();
+  virtual void EvalCommand(const std::string& command);
+  virtual void AutoComplete(au::console::ConsoleAutoComplete *info);
   void autoCompleteOperations(au::console::ConsoleAutoComplete *info);
   void autoCompleteOperations(au::console::ConsoleAutoComplete *info, std::string type);
   void autoCompleteQueueForOperation(au::console::ConsoleAutoComplete *info, std::string operation_name,
@@ -57,7 +57,7 @@ public:
   void autoCompleteQueueWithFormat(au::console::ConsoleAutoComplete *info, std::string key_format,
                                    std::string value_format);
   void autoCompleteQueues(au::console::ConsoleAutoComplete *info);
-  virtual void process_escape_sequence(const std::string& sequence) {
+  virtual void ProcessEscapeSequence(const std::string& sequence) {
     if (sequence == "samson") {
       WriteWarningOnConsole("SAMSON's cool ;)");
     }

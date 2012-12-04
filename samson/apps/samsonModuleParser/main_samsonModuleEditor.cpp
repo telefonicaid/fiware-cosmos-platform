@@ -119,7 +119,7 @@ public:
     closedir(dp);
   }
 
-  std::string getPrompt() {
+  std::string GetPrompt() {
     return "ModuleEditor >>";
   }
 
@@ -164,7 +164,7 @@ public:
     return table;
   }
 
-  void evalCommand(const std::string& command) {
+  void EvalCommand(const std::string& command) {
     au::CommandLine cmdLine;
 
     cmdLine.Parse(command);
@@ -278,7 +278,7 @@ public:
     return false;
   }
 
-  void autoComplete(au::console::ConsoleAutoComplete *info) {
+  void AutoComplete(au::console::ConsoleAutoComplete *info) {
     if (info->completingFirstWord()) {
       info->add("ls_modules");
       info->add("quit");

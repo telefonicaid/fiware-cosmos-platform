@@ -56,7 +56,7 @@ public:
   std::string runCommand(std::string command);
 
   // Main autocomplete function
-  void autoComplete(au::console::ConsoleAutoComplete *info);
+  void AutoComplete(au::console::ConsoleAutoComplete *info);
 
   // Get duplicate of tables, trees or collections
   Table *getTable(std::string name);

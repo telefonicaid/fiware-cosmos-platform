@@ -54,7 +54,7 @@ public:
   virtual void PerformCommit(au::SharedPointer<gpb::DataModel>, std::string command, int version, au::ErrorManager&);
 
   // Check if this command can be process by this element
-  static bool isValidCommand(const std::string& main_command);
+  static bool IsValidCommand(const std::string& main_command);
 
   // Get collection to be displayed on delilah console
   au::SharedPointer<gpb::Collection> GetCollectionForQueues(const Visualization& visualization);

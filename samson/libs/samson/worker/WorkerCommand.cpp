@@ -217,7 +217,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
   }
 
   // If operation can be process by DataMode, go ahead
-  if (samson_worker_->data_model()->isValidCommand(main_command)) {
+  if (samson_worker_->data_model()->IsValidCommand(main_command)) {
     std::string caller = au::str("Command %s from delilah %s", main_command.c_str(), au::code64_str(delilah_id_).c_str());
     samson_worker_->data_model()->Commit(caller, command, error);
     return;
@@ -272,7 +272,7 @@ void WorkerCommand::Run() {
 
   // Parse a delilah command
   DelilahCommandCatalogue delilah_command_catalogue;
-  au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command_, error_);
+  au::console::CommandInstance *command_instance = delilah_command_catalogue.Parse(command_, error_);
   if (error_.HasErrors()) {
     return;   // Finish with this error
   }
@@ -284,13 +284,13 @@ void WorkerCommand::Run() {
   for (size_t i = 0; i < options.size(); ++i) {
     if (options[i]->type() == au::console::options::option_bool) {
       std::string name = options[i]->name();
-      visualization.set_flag(name, command_instance->get_bool_option(name));
+      visualization.set_flag(name, command_instance->GetBoolOption(name));
     }
   }
 
   // Add argument pattern if exist
-  if (command_instance->has_string_argument("pattern")) {
-    visualization.set_pattern(command_instance->get_string_argument("pattern"));   // Get main command
+  if (command_instance->HasStringArgument("pattern")) {
+    visualization.set_pattern(command_instance->GetStringArgument("pattern"));   // Get main command
   }
   std::string main_command = command_instance->main_command();
 
@@ -322,7 +322,7 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "ls_queue_ranges") {
-    std::string queue_name = command_instance->get_string_argument("name");
+    std::string queue_name = command_instance->GetStringArgument("name");
     au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForQueueRanges(visualization,
                                                                                                      queue_name);
     c->set_title(command_);
@@ -510,22 +510,22 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "wlog_set") {
-    std::string channel_pattern_string = command_instance->get_string_argument("channel_pattern");
-    std::string str_log_level = command_instance->get_string_argument("log_level");
+    std::string channel_pattern_string = command_instance->GetStringArgument("channel_pattern");
+    std::string str_log_level = command_instance->GetStringArgument("log_level");
 
-    au::log_central->evalCommand("log_set " + channel_pattern_string + " " + str_log_level + " server");
+    au::log_central->EvalCommand("log_set " + channel_pattern_string + " " + str_log_level + " server");
     FinishWorkerTask();
     return;
   }
 
   if (main_command == "wlog_set_log_server") {
-    std::string host = command_instance->get_string_argument("host");
+    std::string host = command_instance->GetStringArgument("host");
 
     au::log_central->RemovePlugin("server");
     au::log_central->AddServerPlugin("server", host, host + "_local_log.log");
-    au::log_central->evalCommand("log_set * X server");
-    au::log_central->evalCommand("log_set samson::W M server");
-    au::log_central->evalCommand("log_set samson::OP W server");
+    au::log_central->EvalCommand("log_set * X server");
+    au::log_central->EvalCommand("log_set samson::W M server");
+    au::log_central->EvalCommand("log_set samson::OP W server");
 
 
     FinishWorkerTask();
@@ -632,9 +632,9 @@ void WorkerCommand::Run() {
 
 
   if (main_command == "send_alert") {
-    std::string message = command_instance->get_string_argument("message");
-    bool error = command_instance->get_bool_option("-error");
-    bool warning = command_instance->get_bool_option("-error");
+    std::string message = command_instance->GetStringArgument("message");
+    bool error = command_instance->GetBoolOption("-error");
+    bool warning = command_instance->GetBoolOption("-error");
 
     // Full message
     std::string full_message = au::str("[Alert from Delilah_%s] %s", au::code64_str(delilah_id_).c_str(),
@@ -695,10 +695,10 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "run") {
-    std::string operation = command_instance->get_string_argument("operation");
-    std::string inputs = command_instance->get_string_option("input");
-    std::string outputs = command_instance->get_string_option("output");
-    std::string env = command_instance->get_string_option("env");
+    std::string operation = command_instance->GetStringArgument("operation");
+    std::string inputs = command_instance->GetStringOption("input");
+    std::string outputs = command_instance->GetStringOption("output");
+    std::string env = command_instance->GetStringOption("env");
 
     std::string command = au::str(
       "batch %s -input \"%s\" -output \"%s\" -delilah_id %lu -delilah_component_id %lu -env \"%s\"",

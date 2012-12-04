@@ -106,7 +106,7 @@ void Console::StopConsole() {
 
 void Console::PrintCommand() {
   // Get prompt
-  std::string prompt = getPrompt();
+  std::string prompt = GetPrompt();
   // Get command and position inside the command
   std::string _command = command_history_->current()->getCommand();
   int _pos = command_history_->current()->getPos();
@@ -132,7 +132,7 @@ void Console::PrintCommand() {
   }
 
   // Print the entire command
-  printf("%s ", getPrompt().c_str());
+  printf("%s ", GetPrompt().c_str());
   if (command_begin > 0) {
     printf("...");
   }
@@ -146,7 +146,7 @@ void Console::PrintCommand() {
   // Put cursor in the rigth place ( printing again text )
   if (_pos != command_end) {
     printf("\r");
-    printf("%s ", getPrompt().c_str());
+    printf("%s ", GetPrompt().c_str());
     if (command_begin > 0) {
       printf("...");
     }
@@ -202,7 +202,7 @@ void Console::ProcessChar(char c) {
 void Console::ProcessInternalCommand(const std::string& command) {
   if (command == "tab") {
     ConsoleAutoComplete *info = new ConsoleAutoComplete(command_history_->current()->getCommandUntilPointer());
-    autoComplete(info);
+    AutoComplete(info);
     ProcessAutoComplete(info);
     delete info;
     return;
@@ -216,7 +216,7 @@ void Console::ProcessInternalCommand(const std::string& command) {
     printf("\n");
 
     // Eval the command....
-    evalCommand(_command);
+    EvalCommand(_command);
 
     // New command in history
     command_history_->new_command();
@@ -343,7 +343,7 @@ void Console::ProcessEscapeSequenceInternal(const std::string& sequence) {
     return;
   }
 
-  process_escape_sequence(sequence);
+  ProcessEscapeSequence(sequence);
 }
 
 void Console::PrintLines(const std::string&message) {
@@ -526,6 +526,21 @@ void Console::RunThread() {
   signal(SIGWINCH, SIG_IGN);
 }
 
+void Console::Write(au::Color color, const std::string& message) {
+  if (colors_) {
+    Write(str(color, message));
+  } else {
+    Write(message);
+  }
+}
+
+void Console::Write(au::ErrorManager& error, const std::string& prefix_message) {
+  au::ErrorManager tmp_error;
+
+  tmp_error.Add(error, prefix_message);
+  Write(tmp_error);
+}
+
 void Console::Write(au::ErrorManager& error) {
   const au::vector<ErrorManagerItem>& items = error.items();
 
@@ -678,11 +693,11 @@ void Console::Write(const std::string& message) {
   }
 }
 
-std::string Console::getPrompt() {
+std::string Console::GetPrompt() {
   return "> ";
 }
 
-void Console::evalCommand(const std::string& command) {
+void Console::EvalCommand(const std::string& command) {
   WriteWarningOnConsole("Console::evalCommand not implemented");
 
   // Simple quit function...
@@ -691,7 +706,7 @@ void Console::evalCommand(const std::string& command) {
   }
 }
 
-void Console::autoComplete(ConsoleAutoComplete *info) {
+void Console::AutoComplete(ConsoleAutoComplete *info) {
   WriteWarningOnConsole(au::str("Console::auto_complete not implemented (%p)", info));
 }
 

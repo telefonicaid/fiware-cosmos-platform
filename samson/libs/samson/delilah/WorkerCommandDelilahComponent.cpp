@@ -40,9 +40,9 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   DelilahCommandCatalogue catalogue;
 
   au::ErrorManager error;
-  command_instance_ = catalogue.parse(command, error);
+  command_instance_ = catalogue.Parse(command, error);
 
-  send_to_all_workers = command_instance_->command()->tag("send_to_all_workers");
+  send_to_all_workers = command_instance_->command()->HasTag("send_to_all_workers");
 
   if (error.HasErrors()) {
     setComponentFinishedWithError(error.GetLastError());

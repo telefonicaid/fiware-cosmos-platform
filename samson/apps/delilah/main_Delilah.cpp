@@ -260,11 +260,11 @@ int main(int argC, const char *argV[]) {
   au::LogCentral::InitLogSystem(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,engine libraries included )
 
-  au::log_central->evalCommand("log_to_file " + str_log_file);
+  au::log_central->EvalCommand("log_to_file " + str_log_file);
   if (str_log_server != "") {
-    au::log_central->evalCommand("log_to_server " + str_log_server + " " + str_log_server_file);
+    au::log_central->EvalCommand("log_to_server " + str_log_server + " " + str_log_server_file);
   }
-  au::log_central->evalCommand(log_command);  // Command provided in command line
+  au::log_central->EvalCommand(log_command);  // Command provided in command line
 
   LOG_M(samson::logs.delilah, ("Delilah starting..."));
 
@@ -305,9 +305,9 @@ int main(int argC, const char *argV[]) {
     delilahConsole->set_verbose(false);
   } else {
     // Change log to console and activate delilah::G at message level
-    au::log_central->evalCommand("screen off");   // Disable log to screen since we log to console
+    au::log_central->EvalCommand("screen off");   // Disable log to screen since we log to console
     au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole, "[type][channel] text"));
-    au::log_central->evalCommand("log_set delilah::G M");
+    au::log_central->EvalCommand("log_set delilah::G M");
   }
   LOG_M(samson::logs.delilah, ("Delilah running..."));
   LOG_M(samson::logs.delilah, ("Random delilah id generated [%s]", au::code64_str(delilah_random_code).c_str()));

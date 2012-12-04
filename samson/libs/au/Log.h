@@ -18,7 +18,7 @@
 /**
  * \namespace au
  * \brief Namespace for au library
- * \auth Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ * @author Andreu Urruela, Gregorio Escalada & Ken Zangelin
  */
 
 namespace au {

@@ -862,7 +862,7 @@ void DataModel::FreezeCandidateDataModel() {
   }
 }
 
-bool DataModel::isValidCommand(const std::string& main_command) {
+bool DataModel::IsValidCommand(const std::string& main_command) {
   for (size_t i = 0; i < sizeof(commands) / sizeof(std::string); i++) {
     if (main_command == commands[i]) {
       return true;

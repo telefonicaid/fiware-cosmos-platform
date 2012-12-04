@@ -100,11 +100,11 @@ DelilahConsole::DelilahConsole(size_t delilah_id) : Delilah("console", delilah_i
 DelilahConsole::~DelilahConsole() {
 }
 
-std::string DelilahConsole::getPrompt() {
+std::string DelilahConsole::GetPrompt() {
   return au::str("[%s] Delilah>", getClusterConnectionSummary().c_str());
 }
 
-void DelilahConsole::evalCommand(const std::string& command) {
+void DelilahConsole::EvalCommand(const std::string& command) {
   // Run this command
   size_t _delilah_id = runAsyncCommand(command);
 
@@ -212,9 +212,9 @@ void DelilahConsole::autoCompleteQueueForOperation(au::console::ConsoleAutoCompl
   }
 }
 
-void DelilahConsole::autoComplete(au::console::ConsoleAutoComplete *info) {
+void DelilahConsole::AutoComplete(au::console::ConsoleAutoComplete *info) {
   // Use catalogue for auto-completion
-  delilah_command_catalogue_.autoComplete(info);
+  delilah_command_catalogue_.AutoComplete(info);
   return;
 }
 
@@ -259,7 +259,7 @@ void add(const char *list[], std::vector<std::string> &commands) {
 size_t DelilahConsole::runAsyncCommand(std::string command) {
   // Parse command acording to the commands catalogue
   au::ErrorManager error;
-  au::console::CommandInstance *command_instance = delilah_command_catalogue_.parse(command, error);
+  au::console::CommandInstance *command_instance = delilah_command_catalogue_.Parse(command, error);
 
   if (error.HasErrors()) {
     Write(error);   // Write errors and messages
@@ -288,9 +288,9 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       log_probe = NULL;
     }
 
-    std::string host = command_instance->get_string_argument("host");
-    std::string format = command_instance->get_string_option("format");
-    std::string filter = command_instance->get_string_option("filter");
+    std::string host = command_instance->GetStringArgument("host");
+    std::string format = command_instance->GetStringOption("format");
+    std::string filter = command_instance->GetStringOption("filter");
 
     log_probe = new au::LogProbe();
     log_probe->AddPlugin("console", new au::LogProbeConsole(this, format));
@@ -321,7 +321,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (au::CheckIfStringsBeginWith(mainCommand, "log_")) {
     au::ErrorManager error;
-    au::log_central->evalCommand(command_instance->command_line(), error);
+    au::log_central->EvalCommand(command_instance->command_line(), error);
     Write(error);
     return 0;
   }
@@ -330,11 +330,11 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     // Disconnect first from whatever cluster I am connected to...
     disconnect();
 
-    std::string host = command_instance->get_string_argument("host");
+    std::string host = command_instance->GetStringArgument("host");
     std::vector<std::string> hosts = au::split(host, ' ');
 
     if (hosts.size() == 0) {
-      WriteErrorOnConsole(command_instance->ErrorMessage(au::str("No host provided (%s)", host.c_str())));
+      WriteErrorOnConsole(command_instance->GetErrorMessage(au::str("No host provided (%s)", host.c_str())));
     }
     for (int i = 0; i < static_cast<int>(hosts.size()); i++) {
       Write(au::str("Connecting to %s...\n", hosts[i].c_str()));
@@ -370,7 +370,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "history") {
-    int limit = command_instance->get_int_option("limit");
+    int limit = command_instance->GetIntOption("limit");
     Write(str_history(limit));
     return 0;
   }
@@ -388,10 +388,10 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "help") {
-    std::string concept = command_instance->get_string_argument("concept");
+    std::string concept = command_instance->GetStringArgument("concept");
 
     if (concept != "") {
-      Write(delilah_command_catalogue_.getHelpForConcept(concept));
+      Write(delilah_command_catalogue_.GetHelpForConcept(concept));
       return 0;
     } else {
       std::ostringstream output;
@@ -437,8 +437,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "set") {
-    std::string name = command_instance->get_string_argument("name");
-    std::string value = command_instance->get_string_argument("value");
+    std::string name = command_instance->GetStringArgument("name");
+    std::string value = command_instance->GetStringArgument("value");
 
     // Only set, we show all the defined parameters
     if (name == "") {
@@ -462,7 +462,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "unset") {
-    std::string name = command_instance->get_string_argument("name");
+    std::string name = command_instance->GetStringArgument("name");
 
     if (!environment.isSet(name)) {
       WriteErrorOnConsole(au::str("Variable %s is not set", name.c_str()));
@@ -480,7 +480,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "alerts") {
-    std::string action = command_instance->get_string_argument("action");
+    std::string action = command_instance->GetStringArgument("action");
 
     if (action == "on") {
       show_alerts_ = true;
@@ -499,7 +499,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "verbose") {
-    std::string action = command_instance->get_string_argument("action");
+    std::string action = command_instance->GetStringArgument("action");
 
     if (action == "") {
       if (verbose_) {
@@ -521,7 +521,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       return 0;
     }
 
-    WriteErrorOnConsole(command_instance->ErrorMessage("Unknown action"));
+    WriteErrorOnConsole(command_instance->GetErrorMessage("Unknown action"));
     return 0;
   }
 
@@ -532,7 +532,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "open_alerts_file") {
-    std::string filename = command_instance->get_string_argument("file");
+    std::string filename = command_instance->GetStringArgument("file");
 
     if (trace_file_) {
       WriteErrorOnConsole(
@@ -566,10 +566,10 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "ps") {
-    if (command_instance->get_bool_option("-clear")) {
+    if (command_instance->GetBoolOption("-clear")) {
       clearComponents();
     }
-    std::string str_id = command_instance->get_string_argument("id");
+    std::string str_id = command_instance->GetStringArgument("id");
 
     if (str_id != "") {
       size_t id = atoll(str_id.c_str());
@@ -617,7 +617,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "push_module") {
-    std::string file_name = command_instance->get_string_argument("file");
+    std::string file_name = command_instance->GetStringArgument("file");
 
     au::ErrorManager error;
     std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
@@ -633,8 +633,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "push") {
-    std::string file_name = command_instance->get_string_argument("file");
-    std::string queue = command_instance->get_string_argument("queue");
+    std::string file_name = command_instance->GetStringArgument("file");
+    std::string queue = command_instance->GetStringArgument("queue");
 
     au::ErrorManager error;
     std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
@@ -668,7 +668,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   // Connect and disconnect to a queue
 
   if (mainCommand == "connect_to_queue") {
-    std::string queue = command_instance->get_string_argument("queue");
+    std::string queue = command_instance->GetStringArgument("queue");
     size_t id = connect_to_queue(queue);
     WriteWarningOnConsole(au::str("Connected to queue %s using pop component %lu", queue.c_str(), id));
     return 0;
@@ -677,17 +677,17 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   // Push data to a queue
 
   if (mainCommand == "pop") {
-    std::string queue_name = command_instance->get_string_argument("queue");
-    std::string fileName = command_instance->get_string_argument("file_name");
+    std::string queue_name = command_instance->GetStringArgument("queue");
+    std::string fileName = command_instance->GetStringArgument("file_name");
 
-    bool force_flag = command_instance->get_bool_option("-force");
-    bool show_flag = command_instance->get_bool_option("-show");
+    bool force_flag = command_instance->GetBoolOption("-force");
+    bool show_flag = command_instance->GetBoolOption("-show");
     size_t id = AddPopComponent(queue_name, fileName, force_flag, show_flag);
     return id;
   }
 
   if (mainCommand == "rm_local") {
-    std::string file = command_instance->get_string_argument("file");
+    std::string file = command_instance->GetStringArgument("file");
     au::ErrorManager error;
     au::RemoveDirectory(file, error);
 
@@ -705,26 +705,26 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "ls_local") {
-    std::string file = command_instance->get_string_argument("file");
+    std::string file = command_instance->GetStringArgument("file");
 
     Write(getLsLocal(file, false));
     return 0;
   }
 
   if (mainCommand == "ls_local_queues") {
-    std::string file = command_instance->get_string_argument("file");
+    std::string file = command_instance->GetStringArgument("file");
 
     Write(getLsLocal(file, true));
     return 0;
   }
 
   if (mainCommand == "show_local_queue") {
-    std::string queue = command_instance->get_string_argument("queue");
+    std::string queue = command_instance->GetStringArgument("queue");
 
     const char *file_name = queue.c_str();
-    size_t limit = command_instance->get_uint64_option("-limit");
-    bool header = command_instance->get_bool_option("-header");
-    bool show_hg = command_instance->get_bool_option("-show_hg");
+    size_t limit = command_instance->GetUint64Option("-limit");
+    bool header = command_instance->GetBoolOption("-header");
+    bool show_hg = command_instance->GetBoolOption("-show_hg");
 
     struct stat filestatus;
     stat(file_name, &filestatus);

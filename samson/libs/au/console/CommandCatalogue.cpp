@@ -213,7 +213,7 @@ std::string CommandItem::str_usage_argument() {
   return output.str();
 }
 
-void CommandItem::autoComplete(au::console::ConsoleAutoComplete *info) {
+void CommandItem::AutoComplete(au::console::ConsoleAutoComplete *info) {
   /*
    * if( help_ != "" )
    * info->setHelpMessage( au::str("Seting option '%s': (%s) %s" , name_.c_str() , str_type() , help_.c_str() ) );
@@ -286,10 +286,10 @@ Command::Command(const Command& command) {
 
   // Copy all options and arguments
   for (size_t i = 0; i < command.arguments_.size(); i++) {
-    add_argument(new CommandItem(*command.arguments_[i]));
+    AddArgument(new CommandItem(*command.arguments_[i]));
   }
   for (size_t i = 0; i < command.options_.size(); i++) {
-    add_option(new CommandItem(*command.options_[i]));
+    AddOption(new CommandItem(*command.options_[i]));
   }
 
   // Copy all the tags
@@ -309,23 +309,23 @@ Command::~Command() {
   tags_.clear();
 }
 
-const std::string& Command::name() {
+std::string Command::name() const {
   return name_;
 }
 
-const std::string& Command::category() {
+std::string Command::category() const {
   return category_;
 }
 
-const std::string& Command::short_description() {
+std::string Command::short_description() const {
   return short_description_;
 }
 
-const std::string& Command::help() {
+std::string Command::help() const {
   return help_;
 }
 
-std::string Command::usage() {
+std::string Command::usage() const {
   std::ostringstream output;
 
   output << name_ << " ";
@@ -339,15 +339,15 @@ std::string Command::usage() {
 }
 
 // Add argument or option
-void Command::add_argument(CommandItem *item) {
+void Command::AddArgument(CommandItem *item) {
   arguments_.push_back(item);
 }
 
-void Command::add_option(CommandItem *item) {
+void Command::AddOption(CommandItem *item) {
   options_.push_back(item);
 }
 
-void Command::autoComplete(au::console::ConsoleAutoComplete *info) {
+void Command::AutoComplete(au::console::ConsoleAutoComplete *info) {
   // Identify if it is completing a particular item ( argument or option )
   if (!info->completingSecondWord()) {
     // Get the last work
@@ -356,11 +356,11 @@ void Command::autoComplete(au::console::ConsoleAutoComplete *info) {
     // Autocomplete if we are filling an option
     if ((last_word.length() > 0) && (last_word[0] == '-')) {
       // Try to identify the options it is filling
-      CommandItem *item = get_option(last_word);
+      CommandItem *item = GetOption(last_word);
 
       if (item && (item->type() != options::option_bool)) {
         // We are completing this item
-        item->autoComplete(info);
+        item->AutoComplete(info);
         return;
       }
     }
@@ -377,7 +377,7 @@ void Command::autoComplete(au::console::ConsoleAutoComplete *info) {
   const std::vector<std::string>& previous_words = info->get_previous_words();
   for (size_t i = 1; i < previous_words.size(); i++) {
     if ((previous_words[i].length() > 0) && (previous_words[i][0] == '-')) {
-      CommandItem *item = get_option(previous_words[i]);
+      CommandItem *item = GetOption(previous_words[i]);
       if (!item) {
         return;           // Not possible to autocomplete since this error is wrong.
       }
@@ -394,7 +394,7 @@ void Command::autoComplete(au::console::ConsoleAutoComplete *info) {
   if (arguments_.size() <= (size_t)argument_pos) {
     return;              // Not possible to autocomplete
   }
-  arguments_[argument_pos]->autoComplete(info);
+  arguments_[argument_pos]->AutoComplete(info);
 
   // Set help based on usage
   info->setHelpMessage("Usage: " + usage());
@@ -408,10 +408,10 @@ const std::vector<CommandItem *>& Command::arguments() {
   return arguments_;
 }
 
-CommandItem *Command::get_option(const std::string& name) {
+CommandItem *Command::GetOption(const std::string& name) const {
   // Robust for asking without "-"
   if ((name.length() > 0) && (name[0] != '-')) {
-    return get_option("-" + name);
+    return GetOption("-" + name);
   }
 
   for (size_t i = 0; i < options_.size(); i++) {
@@ -422,7 +422,7 @@ CommandItem *Command::get_option(const std::string& name) {
   return NULL;
 }
 
-CommandItem *Command::get_argument(const std::string& name) {
+CommandItem *Command::GetArgument(const std::string& name) const {
   for (size_t i = 0; i < arguments_.size(); i++) {
     if (arguments_[i]->name() == name) {
       return arguments_[i];
@@ -436,12 +436,12 @@ CommandItem *Command::get_argument(const std::string& name) {
 //
 
 CommandCatalogue::CommandCatalogue() {
-  add("help", "general", "Get some help for commands and categories of commands");
-  add_string_argument("help", "concept", "",
-                      "Command or category of commands. Type 'help all' for a complete list of commands");
+  Add("help", "general", "Get some help for commands and categories of commands");
+  AddStringArgument("help", "concept", "",
+                    "Command or category of commands. Type 'help all' for a complete list of commands");
 }
 
-Command *CommandCatalogue::add(const std::string& name
+Command *CommandCatalogue::Add(const std::string& name
                                , const std::string& category
                                , const std::string& short_description
                                , const std::string& help) {
@@ -451,15 +451,15 @@ Command *CommandCatalogue::add(const std::string& name
   return command;
 }
 
-CommandItem *CommandCatalogue::add_option(const std::string& command_name
-                                          , const std::string& name
-                                          , options::Type type
-                                          , bool optional
-                                          , const std::string& help
-                                          , const std::string& default_value
-                                          , const std::string& min_value
-                                          , const std::string& max_value) {
-  Command *c = get_command(command_name);
+CommandItem *CommandCatalogue::AddOption(const std::string& command_name
+                                         , const std::string& name
+                                         , options::Type type
+                                         , bool optional
+                                         , const std::string& help
+                                         , const std::string& default_value
+                                         , const std::string& min_value
+                                         , const std::string& max_value) {
+  Command *c = GetCommand(command_name);
 
   if (!c) {
     LOG_SW(("Not possible to add option %s to command %s. This command has not been added previously"
@@ -477,19 +477,19 @@ CommandItem *CommandCatalogue::add_option(const std::string& command_name
 
 
   CommandItem *item = new CommandItem(final_name, type, optional, help, default_value, min_value, max_value);
-  c->add_option(item);
+  c->AddOption(item);
   return item;
 }
 
-CommandItem *CommandCatalogue::add_argument(const std::string& command_name
-                                            , const std::string& name
-                                            , options::Type type
-                                            , bool optional
-                                            , const std::string& help
-                                            , const std::string& default_value
-                                            , const std::string& min_value
-                                            , const std::string& max_value) {
-  Command *c = get_command(command_name);
+CommandItem *CommandCatalogue::AddArgument(const std::string& command_name
+                                           , const std::string& name
+                                           , options::Type type
+                                           , bool optional
+                                           , const std::string& help
+                                           , const std::string& default_value
+                                           , const std::string& min_value
+                                           , const std::string& max_value) {
+  Command *c = GetCommand(command_name);
 
   if (!c) {
     LOG_SW(("Not possible to add argument '%s' to command '%s'. This command has not been added previously"
@@ -497,105 +497,105 @@ CommandItem *CommandCatalogue::add_argument(const std::string& command_name
     return NULL;
   }
   CommandItem *item = new CommandItem(name, type, optional, help, default_value, min_value, max_value);
-  c->add_argument(item);
+  c->AddArgument(item);
   return item;
 }
 
-CommandItem *CommandCatalogue::add_int_option(const std::string& command_name
-                                              , const std::string& name
-                                              , int default_value
-                                              , const std::string& help) {
-  return add_option(command_name
-                    , name
-                    , options::option_int
-                    , true
-                    , help
-                    , au::str("%d", default_value));
+CommandItem *CommandCatalogue::AddIntOption(const std::string& command_name
+                                            , const std::string& name
+                                            , int default_value
+                                            , const std::string& help) {
+  return AddOption(command_name
+                   , name
+                   , options::option_int
+                   , true
+                   , help
+                   , au::str("%d", default_value));
 }
 
-CommandItem *CommandCatalogue::add_uint64_option(const std::string& command_name
-                                                 , const std::string& name
-                                                 , size_t default_value
-                                                 , const std::string& help) {
-  return add_option(command_name
-                    , name
-                    , options::option_uint64
-                    , true
-                    , help
-                    , au::str("%lu", default_value));
+CommandItem *CommandCatalogue::AddUInt64Option(const std::string& command_name
+                                               , const std::string& name
+                                               , size_t default_value
+                                               , const std::string& help) {
+  return AddOption(command_name
+                   , name
+                   , options::option_uint64
+                   , true
+                   , help
+                   , au::str("%lu", default_value));
 }
 
-CommandItem *CommandCatalogue::add_string_option(const std::string& command_name
+CommandItem *CommandCatalogue::AddStringOption(const std::string& command_name
+                                               , const std::string& name
+                                               , const std::string& default_value
+                                               , const std::string& help) {
+  return AddOption(command_name
+                   , name
+                   , options::option_string
+                   , true
+                   , help
+                   , default_value);
+}
+
+CommandItem *CommandCatalogue::AddBoolOption(const std::string& command_name
+                                             , const std::string& name
+                                             , const std::string& help) {
+  return AddOption(command_name
+                   , name
+                   , options::option_bool
+                   , true
+                   , help);
+}
+
+CommandItem *CommandCatalogue::AddStringArgument(const std::string& command_name
                                                  , const std::string& name
                                                  , const std::string& default_value
                                                  , const std::string& help) {
-  return add_option(command_name
-                    , name
-                    , options::option_string
-                    , true
-                    , help
-                    , default_value);
+  return AddArgument(command_name
+                     , name
+                     , options::option_string
+                     , true
+                     , help
+                     , default_value);
 }
 
-CommandItem *CommandCatalogue::add_bool_option(const std::string& command_name
-                                               , const std::string& name
-                                               , const std::string& help) {
-  return add_option(command_name
-                    , name
-                    , options::option_bool
-                    , true
-                    , help);
+CommandItem *CommandCatalogue::AddMandatoryStringArgument(const std::string& command_name
+                                                          , const std::string& name
+                                                          , const std::string& help) {
+  return AddArgument(command_name
+                     , name
+                     , options::option_string
+                     , false
+                     , help
+                     );
 }
 
-CommandItem *CommandCatalogue::add_string_argument(const std::string& command_name
-                                                   , const std::string& name
-                                                   , const std::string& default_value
-                                                   , const std::string& help) {
-  return add_argument(command_name
-                      , name
-                      , options::option_string
-                      , true
-                      , help
-                      , default_value);
+CommandItem *CommandCatalogue::AddMandatoryUInt64Argument(const std::string& command_name
+                                                          , const std::string& name
+                                                          , const std::string& help) {
+  return AddArgument(command_name
+                     , name
+                     , options::option_uint64
+                     , false
+                     , help
+                     );
 }
 
-CommandItem *CommandCatalogue::add_mandatory_string_argument(const std::string& command_name
-                                                             , const std::string& name
-                                                             , const std::string& help) {
-  return add_argument(command_name
-                      , name
-                      , options::option_string
-                      , false
-                      , help
-                      );
-}
-
-CommandItem *CommandCatalogue::add_mandatory_uint64_argument(const std::string& command_name
-                                                             , const std::string& name
-                                                             , const std::string& help) {
-  return add_argument(command_name
-                      , name
-                      , options::option_uint64
-                      , false
-                      , help
-                      );
-}
-
-CommandItem *CommandCatalogue::add_string_options_argument(const std::string& command_name
-                                                           , const std::string& name
-                                                           , const std::string& options_group
-                                                           , const std::string& help) {
-  CommandItem *item = add_argument(command_name
-                                   , name
-                                   , options::option_string
-                                   , true
-                                   , help);
+CommandItem *CommandCatalogue::AddStringOptionsArgument(const std::string& command_name
+                                                        , const std::string& name
+                                                        , const std::string& options_group
+                                                        , const std::string& help) {
+  CommandItem *item = AddArgument(command_name
+                                  , name
+                                  , options::option_string
+                                  , true
+                                  , help);
 
   item->set_options_group(options_group);
   return item;
 }
 
-void CommandCatalogue::autoComplete(au::console::ConsoleAutoComplete *info) {
+void CommandCatalogue::AutoComplete(au::console::ConsoleAutoComplete *info) {
   // Autocomplete with the names
   if (info->completingFirstWord()) {
     info->add("help: Show help for commands or categories", "help", true);
@@ -618,7 +618,7 @@ void CommandCatalogue::autoComplete(au::console::ConsoleAutoComplete *info) {
       }
 
       // Add categories as options
-      au::StringVector categories = getCategories();
+      au::StringVector categories = GetCategories();
       for (size_t i = 0; i < categories.size(); i++) {
         info->add(categories[i] + " (category)", categories[i], true);
       }
@@ -632,16 +632,16 @@ void CommandCatalogue::autoComplete(au::console::ConsoleAutoComplete *info) {
 
 
   // Autocompleting with options and arguments if this is a valid command
-  Command *c = get_command(info->firstWord());
+  Command *c = GetCommand(info->firstWord());
   if (c) {
-    c->autoComplete(info);
+    c->AutoComplete(info);
   } else {
     info->setHelpMessage(au::str("Command %s is not a valid command in this catalogue",
                                  info->firstWord().c_str()));
   }
 }
 
-std::string CommandCatalogue::getCommandsTable(const std::string& category) {
+std::string CommandCatalogue::GetCommandsTable(const std::string& category) const {
   au::StringVector columns = au::StringVector("Command", "Category,left", "Description,left");
   au::tables::Table table(columns);
 
@@ -661,8 +661,8 @@ std::string CommandCatalogue::getCommandsTable(const std::string& category) {
   } return table.str();
 }
 
-std::string CommandCatalogue::getHelpForConcept(const std::string& name) {
-  Command *c = get_command(name);
+std::string CommandCatalogue::GetHelpForConcept(const std::string& name) const {
+  Command *c = GetCommand(name);
 
   if (c) {
     std::ostringstream output;
@@ -711,13 +711,13 @@ std::string CommandCatalogue::getHelpForConcept(const std::string& name) {
 
 
   // Check if it is a category...
-  if (isValidCategory(name)) {
-    return getCommandsTable(name);
+  if (IsValidCategory(name)) {
+    return GetCommandsTable(name);
   }
 
   // Show list of categories
   if (name == "categories") {
-    au::StringVector cats = getCategories();
+    au::StringVector cats = GetCategories();
     std::ostringstream output;
     output << "\nCategories:\n\n";
     for (size_t i = 0; i < cats.size(); i++) {
@@ -727,13 +727,13 @@ std::string CommandCatalogue::getHelpForConcept(const std::string& name) {
   }
 
   if (name == "all") {
-    return getCommandsTable();
+    return GetCommandsTable();
   }
 
   return au::str("Unknown command or categories %s\n", name.c_str());
 }
 
-au::StringVector CommandCatalogue::getCategories() {
+au::StringVector CommandCatalogue::GetCategories() const {
   au::StringVector categories;
 
   for (size_t i = 0; i < commands_.size(); i++) {
@@ -744,7 +744,7 @@ au::StringVector CommandCatalogue::getCategories() {
   return categories;
 }
 
-bool CommandCatalogue::isValidCommand(const std::string& command) {
+bool CommandCatalogue::IsValidCommand(const std::string& command) const {
   for (size_t i = 0; i < commands_.size(); i++) {
     if (commands_[i]->name() == command) {
       return true;
@@ -753,7 +753,7 @@ bool CommandCatalogue::isValidCommand(const std::string& command) {
   return false;
 }
 
-bool CommandCatalogue::isValidCategory(const std::string& category) {
+bool CommandCatalogue::IsValidCategory(const std::string& category) const {
   for (size_t i = 0; i < commands_.size(); i++) {
     if (commands_[i]->category() == category) {
       return true;
@@ -762,7 +762,7 @@ bool CommandCatalogue::isValidCategory(const std::string& category) {
   return false;
 }
 
-Command *CommandCatalogue::get_command(const std::string& name) {
+Command *CommandCatalogue::GetCommand(const std::string& name) const {
   for (size_t i = 0; i < commands_.size(); i++) {
     if (commands_[i]->name() == name) {
       return commands_[i];
@@ -771,7 +771,7 @@ Command *CommandCatalogue::get_command(const std::string& name) {
   return NULL;
 }
 
-CommandInstance *CommandCatalogue::parse(const std::string command_line, au::ErrorManager& error) {
+CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::ErrorManager& error) const {
   // Tokenize provided line
   token::Tokenizer tokenizer;
 
@@ -795,7 +795,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
 
   // Create a new C
   std::string main_command = components[0];
-  Command *command = get_command(main_command);
+  Command *command = GetCommand(main_command);
   if (!command) {
     error.AddError(au::str("Command '%s' not found", main_command.c_str()));
     return NULL;
@@ -812,7 +812,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
         std::string option_name = components[i];
 
         // Find option in the command
-        CommandItem *item = command->get_option(option_name);
+        CommandItem *item = command->GetOption(option_name);
         if (!item) {
           error.AddError(au::str("Option %s is not defined for command %s", option_name.c_str(),
                                  main_command.c_str()));
@@ -822,7 +822,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
           return NULL;
         } else {
           if (item->type() == options::option_bool) {
-            command_instance->set_value(option_name, "true");
+            command_instance->SetValue(option_name, "true");
             continue;
           } else {
             if (i == (components.size() - 1)) {
@@ -844,7 +844,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
                 delete command_instance;
                 return NULL;
               } else {
-                command_instance->set_value(option_name, value);
+                command_instance->SetValue(option_name, value);
                 continue;
               }
             }
@@ -875,7 +875,7 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
       return NULL;
     }
 
-    command_instance->set_value(item->name(), value);
+    command_instance->SetValue(item->name(), value);
   }
 
   // Verify it is correct
@@ -909,15 +909,15 @@ CommandInstance *CommandCatalogue::parse(const std::string command_line, au::Err
   return command_instance;
 }
 
-void CommandCatalogue::add_tag(const std::string& command_name, const std::string& tag) {
-  Command *c = get_command(command_name);
+void CommandCatalogue::AddTag(const std::string& command_name, const std::string& tag) {
+  Command *c = GetCommand(command_name);
 
   if (!c) {
     LOG_SW(("Not possible to add tag %s to command %s. This command has not been added previously"
             , tag.c_str(), command_name.c_str()));
     return;
   }
-  c->set_tag(tag);
+  c->SetTag(tag);
 }
 
 CommandInstance::CommandInstance(Command *command, const std::string & command_line) {
@@ -934,13 +934,13 @@ const std::string CommandInstance::command_line() {
 }
 
 // Handy function to check content
-bool CommandInstance::get_bool_option(const std::string& name) {
+bool CommandInstance::GetBoolOption(const std::string& name) const {
   // Robust for asking without "-"
   if ((name.length() > 0) && (name[0] != '-')) {
-    return get_bool_option("-" + name);
+    return GetBoolOption("-" + name);
   }
 
-  CommandItem *item = command_->get_option(name);
+  CommandItem *item = command_->GetOption(name);
 
   if (!item) {
     LOG_SW(("Requesting option %s for command %s. Not defined in the command catalogue"
@@ -961,17 +961,13 @@ bool CommandInstance::get_bool_option(const std::string& name) {
   }
 }
 
-int CommandInstance::get_int_option(const std::string& name) {
+int CommandInstance::GetIntOption(const std::string& name) const {
   // Robust for asking without "-"
   if ((name.length() > 0) && (name[0] != '-')) {
-    return get_int_option("-" + name);
+    return GetIntOption("-" + name);
   }
 
-
-
-
-
-  CommandItem *item = command_->get_option(name);
+  CommandItem *item = command_->GetOption(name);
 
   if (!item) {
     LOG_SW(("Requesting option %s for command %s. Not defined in the command catalogue"
@@ -995,14 +991,14 @@ int CommandInstance::get_int_option(const std::string& name) {
   return atoi(value.c_str());
 }
 
-size_t CommandInstance::get_uint64_option(const std::string& name) {
+size_t CommandInstance::GetUint64Option(const std::string& name) const {
   // Robust for asking without "-"
   if ((name.length() > 0) && (name[0] != '-')) {
-    return get_uint64_option("-" + name);
+    return GetUint64Option("-" + name);
   }
 
 
-  CommandItem *item = command_->get_option(name);
+  CommandItem *item = command_->GetOption(name);
 
   if (!item) {
     LOG_SW(("Requesting option %s for command %s. Not defined in the command catalogue"
@@ -1026,17 +1022,17 @@ size_t CommandInstance::get_uint64_option(const std::string& name) {
   return atoll(value.c_str());
 }
 
-double CommandInstance::get_double_option(const std::string& name) {
+double CommandInstance::GetDoubleOption(const std::string& name) const {
   // Robust for asking without "-"
   if ((name.length() > 0) && (name[0] != '-')) {
-    return get_double_option("-" + name);
+    return GetDoubleOption("-" + name);
   }
 
 
 
 
 
-  CommandItem *item = command_->get_option(name);
+  CommandItem *item = command_->GetOption(name);
 
   if (!item) {
     LOG_SW(("Requesting option %s for command %s. Not defined in the command catalogue"
@@ -1060,13 +1056,13 @@ double CommandInstance::get_double_option(const std::string& name) {
   return atof(value.c_str());
 }
 
-std::string CommandInstance::get_string_option(const std::string& name) {
+std::string CommandInstance::GetStringOption(const std::string& name) const {
   // Robust for asking without "-"
   if ((name.length() > 0) && (name[0] != '-')) {
-    return get_string_option("-" + name);
+    return GetStringOption("-" + name);
   }
 
-  CommandItem *item = command_->get_option(name);
+  CommandItem *item = command_->GetOption(name);
 
   if (!item) {
     LOG_SW(("Requesting option %s for command %s. Not defined in the command catalogue"
@@ -1090,8 +1086,8 @@ std::string CommandInstance::get_string_option(const std::string& name) {
   return value;
 }
 
-bool CommandInstance::has_string_argument(const std::string& name) {
-  CommandItem *item = command_->get_argument(name);
+bool CommandInstance::HasStringArgument(const std::string& name) const {
+  CommandItem *item = command_->GetArgument(name);
 
   if (!item) {
     return false;
@@ -1104,8 +1100,8 @@ bool CommandInstance::has_string_argument(const std::string& name) {
   return true;
 }
 
-std::string CommandInstance::get_string_argument(const std::string& name) {
-  CommandItem *item = command_->get_argument(name);
+std::string CommandInstance::GetStringArgument(const std::string& name) const {
+  CommandItem *item = command_->GetArgument(name);
 
   if (!item) {
     LOG_SW(("Requesting option %s for command %s. Not defined in the command catalogue"
@@ -1130,19 +1126,19 @@ std::string CommandInstance::get_string_argument(const std::string& name) {
 }
 
 // Set and get values
-void CommandInstance::set_value(const std::string& name, const std::string& value) {
+void CommandInstance::SetValue(const std::string& name, const std::string& value) {
   values_.insertInMap(name, value);
 }
 
-bool CommandInstance::hasValueFor(const std::string& name) {
+bool CommandInstance::hasValueFor(const std::string& name) const {
   return values_.isInMap(name);
 }
 
-std::string CommandInstance::ErrorMessage(const std::string error_message) {
+std::string CommandInstance::GetErrorMessage(const std::string error_message) const {
   return au::str("%s ( usage: %s)", error_message.c_str(), command_->usage().c_str());
 }
 
-Command *CommandInstance::command() {
+Command *CommandInstance::command() const {
   return command_;
 }
 }

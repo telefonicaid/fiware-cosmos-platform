@@ -139,7 +139,7 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
   error->AddError(au::str("Unknown command %s\n", main_command.c_str()));
 }
 
-void LogServer::autoComplete(console::ConsoleAutoComplete *info, au::Environment *environment) {
+void LogServer::AutoComplete(console::ConsoleAutoComplete *info, au::Environment *environment) {
   if (info->completingFirstWord()) {
     info->add("help");
     info->add("info");
@@ -153,7 +153,7 @@ void LogServer::autoComplete(console::ConsoleAutoComplete *info, au::Environment
   }
 }
 
-std::string LogServer::getPrompt(au::Environment *environment) {
+std::string LogServer::GetPrompt(au::Environment *environment) {
   return au::str("LogServer [%lu logs] >> ", service_.log_container_.size());
 }
 }

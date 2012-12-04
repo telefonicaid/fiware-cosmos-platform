@@ -275,11 +275,11 @@ void StreamConnector::review() {
   }
 }
 
-std::string StreamConnector::getPrompt() {
+std::string StreamConnector::GetPrompt() {
   return "SC console> ";
 }
 
-void StreamConnector::evalCommand(const std::string& command) {
+void StreamConnector::EvalCommand(const std::string& command) {
   // Log activity
   Log("Console", "Message", command);
 
@@ -309,7 +309,7 @@ void StreamConnector::autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComp
   }
 }
 
-void StreamConnector::autoComplete(au::console::ConsoleAutoComplete *info) {
+void StreamConnector::AutoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("quit");
     info->add("help");

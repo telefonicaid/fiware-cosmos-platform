@@ -87,11 +87,11 @@ std::string getHelpMessage() {
 class SamsonConfigConsole : public au::console::Console {
 public:
 
-  std::string getPrompt() {
+  std::string GetPrompt() {
     return "samsonSetup > ";
   }
 
-  void autoComplete(au::console::ConsoleAutoComplete *info) {
+  void AutoComplete(au::console::ConsoleAutoComplete *info) {
     if (info->completingFirstWord()) {
       info->add("show");
       info->add("help");
@@ -119,7 +119,7 @@ public:
   }
 
   // function to process a command instroduced by user
-  void evalCommand(const std::string& command) {
+  void EvalCommand(const std::string& command) {
     au::CommandLine cmd;
 
     cmd.Parse(command);

@@ -872,7 +872,7 @@ std::string getFormatedError(std::string message, std::string& format) {
   return getFormatedElement("error", message, format);
 }
 
-void SamsonWorker::autoComplete(au::console::ConsoleAutoComplete *info) {
+void SamsonWorker::AutoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("quit");
     info->add("exit");
@@ -884,7 +884,7 @@ void SamsonWorker::autoComplete(au::console::ConsoleAutoComplete *info) {
   }
 }
 
-void SamsonWorker::evalCommand(const std::string& command) {
+void SamsonWorker::EvalCommand(const std::string& command) {
   au::CommandLine cmdLine;
 
   cmdLine.Parse(command);
@@ -897,7 +897,7 @@ void SamsonWorker::evalCommand(const std::string& command) {
   au::ErrorManager error;
 
   if (au::CheckIfStringsBeginWith(main_command, "log_")) {
-    au::log_central->evalCommand(command, error);
+    au::log_central->EvalCommand(command, error);
     Write(error);          // Write the output of the command
     return;
   }
@@ -936,7 +936,7 @@ void SamsonWorker::evalCommand(const std::string& command) {
   // More command to check what is going on inside a worker
 }
 
-std::string SamsonWorker::getPrompt() {
+std::string SamsonWorker::GetPrompt() {
   if (worker_controller_ == NULL) {
     return "[Unconnected] SamsonWorker > ";
   }

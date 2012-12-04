@@ -85,7 +85,7 @@ Collection *DataBase::getCollection(std::string name) {
   }
 }
 
-void DataBase::autoComplete(au::console::ConsoleAutoComplete *info) {
+void DataBase::AutoComplete(au::console::ConsoleAutoComplete *info) {
   au::TokenTaker tt(&token);   // Mutex protection for public methods
 
   if (info->completingFirstWord()) {
@@ -171,19 +171,19 @@ std::string DataBase::runCommand(std::string command) {
 
   if (mainCommand == "show_tables") {
     Table *table = getTableOfTables();
-    _addTable("result",  table);
+    _addTable("result", table);
     return table->str();
   }
 
   if (mainCommand == "show_trees") {
     Table *table = getTableOfTrees();
-    _addTable("result",  table);
+    _addTable("result", table);
     return table->str();
   }
 
   if (mainCommand == "show_collections") {
     Table *table = getTableOfCollections();
-    _addTable("result",  table);
+    _addTable("result", table);
     return table->str();
   }
 
@@ -223,10 +223,10 @@ std::string DataBase::runCommand(std::string command) {
 
     Table *result = table->getColumnDescriptionTable();
     if (save != "no_save") {
-      _addTable(save,  result);
+      _addTable(save, result);
       return au::str("Created table %s", save.c_str());
     } else {
-      _addTable("result",  result);
+      _addTable("result", result);
       return result->str();
     }
   }
@@ -380,7 +380,7 @@ std::string DataBase::runCommand(std::string command) {
       return au::string_in_color("No table result to save", "red");
     }
 
-    _addTable(cmdLine.get_argument(1),  new Table(table));
+    _addTable(cmdLine.get_argument(1), new Table(table));
     return "Ok";
   }
 
@@ -400,10 +400,10 @@ std::string DataBase::runCommand(std::string command) {
     Table *result = tree->getTableFromPath(path);
 
     if (save != "no_save") {
-      _addTable(save,  result);
+      _addTable(save, result);
       return au::string_in_color(au::str("Created table %s", save.c_str()), "magenta");
     } else {
-      _addTable("result",  result);
+      _addTable("result", result);
       return result->str();
     }
   }

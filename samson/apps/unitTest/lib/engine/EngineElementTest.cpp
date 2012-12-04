@@ -101,5 +101,5 @@ TEST(engine_EngineElement, engine_idTest) {
 
   engine_element2.SetAsExtra();
   EXPECT_EQ(engine_element2.IsExtra(), true);
-  EXPECT_STREQ("Extra] Engine element repeated every 10 seconds", engine_element2.str().c_str());
+  EXPECT_STREQ("[Extra] Engine element repeated every 10 seconds", engine_element2.str().c_str());
 }

@@ -137,8 +137,6 @@ int Log::level() const {
 
 // Get information from this log
 std::string Log::Get(std::string name) const {
-  LM_V(("Getting %s from log %s", name.c_str(), str().c_str()));
-
   if (name == "type") {
     return GetLogLevel(log_data_.level);
   }
@@ -348,7 +346,7 @@ au::Color Log::GetColor() {
   }
 
   if (log_data_.level == LOG_LEVEL_VERBOSE) {
-    return au::Blue;
+    return au::BoldCyan;
   }
 
   if (log_data_.level == LOG_LEVEL_MESSAGE) {

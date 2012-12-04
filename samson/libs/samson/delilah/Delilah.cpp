@@ -95,7 +95,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   if (isConnected()) {
     disconnect();
   }
-  LM_V(("Connecting to %s", host.c_str()));
+  LOG_V(logs.delilah, ("Delilah connecting to %s", host.c_str()));
 
   // Get host and port
   std::vector<std::string> components = au::split(host, ':');
@@ -167,9 +167,9 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   au::SharedPointer<gpb::ClusterInfo> cluster_info(new gpb::ClusterInfo());
   cluster_info->CopyFrom(packet->message->cluster_info());
 
-  LM_V(("ClusterSetup retreived correctly from %s ( version %lu )"
-        , host.c_str()
-        , cluster_info->version()));
+  LOG_V(logs.delilah, ("ClusterSetup retreived correctly from %s ( version %lu )"
+                       , host.c_str()
+                       , cluster_info->version()));
 
   network->set_cluster_information(cluster_info);
 

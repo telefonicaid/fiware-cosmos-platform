@@ -300,8 +300,12 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddTag("ps_tasks", "send_to_all_workers");
 
   Add("ls_workers", "stream", "Get a list of current workers");
+  AddBoolOption("ls_workers", "-modules", "Show if modules are available at each worker");
+  AddBoolOption("ls_workers", "-traffic", "Show information about data rate to/from disk,network & ZK");
+  AddBoolOption("ls_workers", "-data_model", "Show information about data-model version at each worker");
   AddBoolOption("ls_workers", "-engine", "Show details about underlying engines at worker nodes");
   AddBoolOption("ls_workers", "-disk", "Show details about underlying engines at worker nodes");
+
   AddTag("ls_workers", "send_to_all_workers");
 
   Add("init_stream", "stream", "Execute am initialization script to setup some automatic stream operations",

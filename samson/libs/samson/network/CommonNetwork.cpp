@@ -27,7 +27,7 @@ CommonNetwork::CommonNetwork(NodeIdentifier my_node_identifier) :
   // Identify myself
   node_identifier_ = my_node_identifier;
 
-  LM_V(("CommonNetwork %s", node_identifier_.str().c_str()));
+  LOG_V(logs.network_connection, ("CommonNetwork created for node %s", node_identifier_.str().c_str()));
 
   // No cluster information at the moment
   cluster_information_ = NULL;

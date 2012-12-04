@@ -74,7 +74,7 @@ int load_buffer_size_mb;
 char commandFileName[1024];
 bool monitorization;
 char command[1024];
-
+bool stdin_commands;
 char log_command[1024];
 char log_server[1024];
 unsigned short log_port;
@@ -132,6 +132,7 @@ PaArgument paArgs[] =
   { "-command",command,               "",                 PaString,
     PaOpt,    _i "",                 PaNL,
     PaNL,     "Single command to be executed"            },
+  { "-",      &stdin_commands,       "",                 PaBool,  PaOpt,false, false, true },
   { "",       host,                  "",                 PaString,
     PaOpt,    _i "localhost",        PaNL,
     PaNL,     "host to be connected"                     },
@@ -252,19 +253,22 @@ int main(int argC, const char *argV[]) {
   paParse(paArgs, argC, (char **)argV, 1, true);
 
   // New log system
-
-  std::string str_log_file = std::string(paLogDir) + "delilah.log";
-  std::string str_log_server =  log_server;
-  std::string str_log_server_file = std::string(paLogDir) + "delilah_" + log_server +  ".log";
-
   au::LogCentral::InitLogSystem(argV[0]);
   samson::RegisterLogChannels();   // Add all log channels for samson project ( au,engine libraries included )
 
+  // Log to file
+  std::string str_log_file = std::string(paLogDir) + "delilah.log";
   au::log_central->EvalCommand("log_to_file " + str_log_file);
+
+  // Log to server
+  std::string str_log_server =  log_server;
+  std::string str_log_server_file = std::string(paLogDir) + "delilah_" + log_server +  ".log";
   if (str_log_server != "") {
     au::log_central->EvalCommand("log_to_server " + str_log_server + " " + str_log_server_file);
   }
-  au::log_central->EvalCommand(log_command);  // Command provided in command line
+
+  // Command line provided interface for logging
+  au::log_central->EvalCommand(log_command);
 
   LOG_M(samson::logs.delilah, ("Delilah starting..."));
 
@@ -273,9 +277,6 @@ int main(int argC, const char *argV[]) {
 
   // Clean up function
   atexit(cleanup);
-
-  // Start secondary log system
-  // TODO: Complete this initialization
 
   lmAux((char *)"father");
   logFd = lmFirstDiskFileDescriptor();
@@ -286,6 +287,7 @@ int main(int argC, const char *argV[]) {
 
   au::Singleton<samson::SamsonSetup>::shared()->Set("general.memory", au::str("%lu", _memory));
   au::Singleton<samson::SamsonSetup>::shared()->Set("load.buffer_size", au::str("%lu", _load_buffer_size));
+
   // Engine and its associated elements
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
   engine::Engine::InitEngine(num_cores, _memory, 1);
@@ -296,115 +298,28 @@ int main(int argC, const char *argV[]) {
     LOG_W(samson::logs.delilah, ("Error loading modules: %s", error.GetLastError().c_str()));
   }
 
-  // Create a DelilahControler once network is ready
-  delilahConsole = new samson::DelilahConsole(delilah_random_code);
+  // List of commands to be executed ( if -command XX or -f XXX or - is specififed )
+  std::vector<std::string> commands;
+  bool commands_mode = false;
 
-  // Special setup for command or command-file
-  if ((strcmp(commandFileName, "") != 0) || (strcmp(command, "") != 0)) {
-    delilahConsole->set_colors(false);
-    delilahConsole->set_verbose(false);
-  } else {
-    // Change log to console and activate delilah::G at message level
-    au::log_central->EvalCommand("screen off");   // Disable log to screen since we log to console
-    au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole, "[type][channel] text"));
-    au::log_central->EvalCommand("log_set delilah::G M");
-  }
-  LOG_M(samson::logs.delilah, ("Delilah running..."));
-  LOG_M(samson::logs.delilah, ("Random delilah id generated [%s]", au::code64_str(delilah_random_code).c_str()));
-
-  std::vector<std::string> hosts = au::split(host, ' ');
-  for (size_t i = 0; i < hosts.size(); i++) {
-    au::ErrorManager error;
-    if (delilahConsole->connect(hosts[i], &error)) {
-      LOG_M(samson::logs.delilah, ("Connected to %s", hosts[i].c_str()));
-      break;
-    } else {
-      delilahConsole->WriteWarningOnConsole(au::str("Not possible to connect with %s: %s", hosts[i].c_str(),
-                                                    error.GetLastError().c_str()));
-    }
-  }
-
-  if (!delilahConsole->isConnected()) {
-    LOG_SW(("Delilah client not connected to any SAMSON cluster. ( see help connect )"));
-  }
-
-  // Special mode with one command line command
-  // ----------------------------------------------------------------
-
+  // Special mode with -c parameter
   if (strcmp(command, "") != 0) {
-    au::log_central->AddScreenPlugin("screen", "[type][channel] text");    // Activate logs at screen
-    {
-      au::Cronometer cronometer;
-      while (!delilahConsole->isConnected()) {
-        usleep(100000);
-        if (cronometer.seconds() > 1) {
-          LOG_SW(("delilahConsoleConnection is not ready, waiting to connect to all workers"));
-          LOG_SV(("Waiting delilah to connect to all workers"));
-          cronometer.Reset();
-        }
-      }
-    }
-    size_t id = delilahConsole->runAsyncCommand(command);
-
-    LOG_SM(("runAsyncCommand returned for command:'%s', id:%d", command, id));
-    if (id != 0) {
-      // Wait until this operation is finished
-      while (delilahConsole->isActive(id)) {
-        // TODO(@jges): Remove log message
-        LOG_SM(("Sleep after check isActive command_id:%d", id));
-
-        usleep(100000);
-      }
-      LOG_SM(("Command activity is finished for command:'%s', id:%d", command, id));
-
-      if (delilahConsole->hasError(id)) {
-        LOG_E(samson::logs.delilah, ("Error running '%s'", command));
-        LOG_E(samson::logs.delilah, ("Error: %s", delilahConsole->errorMessage(id).c_str()));
-      } else {
-        printf("%s", delilahConsole->getOutputForComponent(id).c_str());
-        fflush(stdout);
-      }
-    }
-
-    // Flush all messages
-    delilahConsole->FlushBackgroundMessages();
-
-    // Disconnect delilah
-    LOG_SM(("Calling delilahConsole->disconnect()"));
-    delilahConsole->disconnect();
-
-    exit(0);
+    commands_mode = true;
+    commands.push_back(command);
   }
 
-  lmFdUnregister(2);   // no more traces to stdout
-
-  // ----------------------------------------------------------------
-  // Special mode for file-based commands
-  // ----------------------------------------------------------------
-
+  // Special mode with -f parameter
   if (strcmp(commandFileName, "") != 0) {
-    au::log_central->AddScreenPlugin("screen", "[type][channel] text");    // Activate logs at screen
-    {
-      au::Cronometer cronometer;
-      while (!delilahConsole->isConnected()) {
-        usleep(100000);
-        if (cronometer.seconds() > 1) {
-          LOG_SM(("Waiting delilah to connect to all workers"));
-          cronometer.Reset();
-        }
-      }
-    }
+    commands_mode = true;
 
     FILE *f = fopen(commandFileName, "r");
     if (!f) {
-      LM_E(("Error opening commands file %s", commandFileName));
-      exit(0);
+      LOG_X(1, ("Error opening commands file '%s'", commandFileName));
     }
 
     int num_line = 0;
     char line[1024];
-
-    std::cerr << au::str("Processing commands file %s\n", commandFileName);
+    LOG_SV(("Reading commands from file '%s'\n", commandFileName));
 
     while (fgets(line, sizeof(line), f)) {
       // Remove the last return of a string
@@ -413,27 +328,108 @@ int main(int argC, const char *argV[]) {
       }
 
       num_line++;
-
       if ((line[0] != '#') && (strlen(line) > 0)) {
-        std::cerr << au::str("Processing: '%s'\n", line);
-        size_t id = delilahConsole->runAsyncCommand(line);
-        std::cerr << au::str("Delilah id generated %lu\n", id);
-
-        if (id != 0) {
-          // Wait until this operation is finished
-          while (delilahConsole->isActive(id)) {
-            usleep(1000);
-          }
-
-          if (delilahConsole->hasError(id)) {
-            LM_E(("Error running '%s' at line %d", line, num_line));
-            LM_E(("Error: %s", delilahConsole->errorMessage(id).c_str()));
-          }
-        }
+        commands.push_back(line);
+        LOG_SV(("Read command '%s' from file '%s' at line %d\n", line, commandFileName, num_line));
       }
     }
 
     fclose(f);
+  }
+
+  if (stdin_commands) {
+    commands_mode = true;
+    char line[1024];
+    int num_line = 0;
+    while (fgets(line, sizeof(line), stdin)) {
+      // Remove the last return of a string
+      while ((strlen(line) > 0) && (line[strlen(line) - 1] == '\n') > 0) {
+        line[strlen(line) - 1] = '\0';
+      }
+      num_line++;
+      if ((line[0] != '#') && (strlen(line) > 0)) {
+        commands.push_back(line);
+        LOG_SV(("Read command '%s' from stdin at line %d\n", line, num_line));
+      }
+    }
+  }
+
+  // Create a DelilahConsole
+  delilahConsole = new samson::DelilahConsole(delilah_random_code);
+
+  if (commands_mode) {
+    // Special setup
+    delilahConsole->set_colors(false);
+    delilahConsole->set_verbose(false);
+    au::log_central->AddScreenPlugin("screen", "[type][channel] text");    // Activate logs at screen
+  } else {
+    // Normal setup for delilah logging
+    au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole, "[type][channel] text"));
+    au::log_central->EvalCommand("log_set delilah::G M");
+    LOG_M(samson::logs.delilah, ("Delilah running..."));
+    LOG_M(samson::logs.delilah, ("Random delilah id generated [%s]", au::code64_str(delilah_random_code).c_str()));
+  }
+
+  // Verbose mode
+  if (paVerbose) {
+    au::log_central->EvalCommand("log_set system V");
+  }
+
+  // Try to connect with provided list of hosts in order
+  std::vector<std::string> hosts = au::split(host, ' ');
+  for (size_t i = 0; i < hosts.size(); i++) {
+    au::ErrorManager error;
+    if (delilahConsole->connect(hosts[i], &error)) {
+      LOG_M(samson::logs.delilah, ("Connected to %s", hosts[i].c_str()));
+      break;
+    } else {
+      LOG_W(::samson::logs.delilah, ("Not possible to connect with %s: %s",
+                                     hosts[i].c_str(),
+                                     error.GetLastError().c_str()));
+    }
+  }
+
+  if (commands_mode) {    // Some command executed in sequential order and exit
+    // If not connected, exit here
+    if (!delilahConsole->isConnected()) {
+      LOG_X(1, ("Delilah client not connected to any SAMSON cluster. Exiting..."));
+    }
+
+    if (commands.size() == 0) {
+      LOG_X(1, ("No command provided. Nothing to do..."));
+    }
+
+    for (size_t i = 0; i < commands.size(); i++) {
+      LOG_SV(("Processing: '%s'", commands[i].c_str()));
+
+      size_t id = delilahConsole->runAsyncCommand(commands[i]);
+      LOG_SV(("Delilah id generated %lu", id));
+
+      if (id != 0) {
+        // Wait until this operation is finished
+        au::Cronometer total_cronometer;
+        au::Cronometer cronometer;
+        while (delilahConsole->isActive(id)) {
+          usleep(1000);
+          if (cronometer.seconds() > 1) {
+            LOG_SW(("[%s] Waiting for command: %s", total_cronometer.str().c_str(), commands[i].c_str()));
+            cronometer.Reset();
+          }
+          if (total_cronometer.seconds() > 100) {
+            LOG_X(1, ("Excesive time for command: %s", commands[i].c_str()));
+          }
+        }
+
+        if (delilahConsole->hasError(id)) {
+          LOG_SE(("Error running '%s' (line %d)", commands[i].c_str(), i + 1));
+          LOG_SE(("Error: %s", delilahConsole->errorMessage(id).c_str()));
+        }
+      }
+
+      // manual output
+      std::string output = delilahConsole->getOutputForComponent(id);
+      delilahConsole->WriteOnDelilah(output);
+    }
 
     // Flush all messages
     delilahConsole->FlushBackgroundMessages();
@@ -441,11 +437,18 @@ int main(int argC, const char *argV[]) {
     // Disconnect from cluter
     delilahConsole->disconnect();
 
-    LOG_SM(("delilah exit correctly"));
-    au::LogCentral::StopLogSystem();    // Stopping the new log_central thread
-
+    LOG_SV(("delilah exit correctly"));
+    // Stopping the new log_central thread
+    au::LogCentral::StopLogSystem();
     exit(0);
   }
+
+  // Show a warning is console is still un connected
+  if (!delilahConsole->isConnected()) {
+    LOG_SW(("Delilah client not connected to any SAMSON cluster. ( see help connect )"));
+  }
+
+  lmFdUnregister(2);   // no more traces to stdout
 
   // Start delilah console blockign this thread
   delilahConsole->StartConsole(true);

@@ -1047,6 +1047,10 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
 
   gpb::CollectionRecord *record = collection->add_record();
 
+
+  // Common fields
+  ::samson::add(record, "Status", state_message_, "different");
+
   if (visualization.get_flag("engine")) {
     size_t num_elements = engine::Engine::shared()->GetNumElementsInEngineStack();
     double waiting_time = engine::Engine::shared()->GetMaxWaitingTimeInEngineStack();
@@ -1069,9 +1073,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "BM reading", stream::BlockManager::shared()->scheduled_read_size(), "f=uint64,sum");
     double usage =  engine::Engine::disk_manager()->on_off_activity();
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
-  } else {
-    ::samson::add(record, "Status", state_message_, "different");
-
+  } else if (visualization.get_flag("modules")) {
     if (!modules_available_) {
       ::samson::add(record, "Modules", "No", "different");
     } else if (last_modules_version_ != SIZE_T_UNDEFINED) {
@@ -1079,21 +1081,21 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     } else {
       ::samson::add(record, "Modules", "No modules", "different");
     }
-
-    ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
-    ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
-    ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
-    ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
+  } else if (visualization.get_flag("traffic")) {
     ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->num_disk_operations(), "f=uint64,sum");
     ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
     ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
     ::samson::add(record, "Net in B/s", network_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "Net out B/s", network_->get_rate_out(), "f=uint64,sum");
-
     ::samson::add(record, "ZK in B/s", zoo_connection_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "ZK out B/s", zoo_connection_->get_rate_out(), "f=uint64,sum");
-
+  } else if (visualization.get_flag("data_model")) {
     ::samson::add(record, "DataModel", worker_controller_->GetMyLastCommitId(), "different");
+  } else {
+    ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
+    ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
+    ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
+    ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
   }
 
   return collection;

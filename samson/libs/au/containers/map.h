@@ -135,7 +135,7 @@ public:
     }
   }
 
-  // Remove all elements that satify a bool function
+  // Remove all elements that satisfy a bool function
   // Returns the number of removed elements
 
   int removeInMapIfFinished() {

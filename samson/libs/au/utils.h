@@ -22,13 +22,13 @@ void ClearTerminalLine();
 
 /**
  * \brief Get a random valid "code64 number"
- * "code64 number" and size_t numbers that satify minor restrictions in order to be printable as strings ( see code64_str )
+ * "code64 number" and size_t numbers that satisfy minor restrictions in order to be printable as strings ( see code64_str )
  */
 size_t code64_rand();
 
 /**
  * \brief Check if a provided "code64 number" is value
- * This checks if the provided size_t satify minor conditions to be printed as string
+ * This checks if the provided size_t satisfy minor conditions to be printed as string
  */
 bool code64_is_valid(size_t v);
 
@@ -40,18 +40,18 @@ std::string code64_str(size_t);
 
 /**
  * \brief Get "code64 number" based on its string representation
- * Inverse than code64_str
+ * Inverse of code64_str
  */
 
 size_t code64_num(const std::string& value);
 /**
  * \brief Get position in valid_chars vector for a particular char
- * Used insie code64_num to recover original number based on its string representation
+ * Used inside code64_num to recover original number based on its string representation
  */
 int GetCode64Base(char v);
 
 /**
- * \brief Remove returns at the end of a string
+ * \brief Remove newline character from the end of a string
  */
 void remove_return_chars(char *line);
 }

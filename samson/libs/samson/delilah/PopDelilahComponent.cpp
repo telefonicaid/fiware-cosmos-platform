@@ -317,7 +317,7 @@ void PopDelilahComponent::check() {
     items_.erase(it++);
   }
 
-  // Set component as finnish if everything has completed ( file_name is set in normal pop operations )
+  // Set component as finished if everything has completed ( file_name is set in normal pop operations )
   if (file_name_ != "") {
     // Adding stated() to avoid finishing a component before started
     if (started() && (num_pending_write_operations_ == 0) && (items_.size() == 0)) {

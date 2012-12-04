@@ -327,7 +327,7 @@ void WorkerBlockManager::ReviewPushItems(size_t previous_data_commit_id, size_t 
   for (iter = push_items_.begin(); iter != push_items_.end(); ) {
     if (iter->commit_id() <= previous_data_commit_id) {
       SendPushBlockConfirmation(iter->delilah_id(), iter->push_id());            // Operation can be confirmed
-      push_items_.erase(iter++);
+      iter = push_items_.erase(iter);
       continue;
     }
 
@@ -336,7 +336,7 @@ void WorkerBlockManager::ReviewPushItems(size_t previous_data_commit_id, size_t 
                                           , iter->commit_id()
                                           , current_data_commit_id);
       SendPushBlockConfirmationWithError(iter->delilah_id(), iter->push_id(), error_message);
-      push_items_.erase(iter++);
+      iter = push_items_.erase(iter);
       continue;
     }
 

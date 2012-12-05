@@ -101,7 +101,7 @@ public:
   }
 
   // Push a packet for a node
-  void Push(const au::SharedPointer<Packet>& packet);
+  void Push(au::SharedPointer<Packet> packet);
 
   // Recover and remove a paquet for a node
   au::SharedPointer<Packet> Front(const NodeIdentifier& node_identifier);

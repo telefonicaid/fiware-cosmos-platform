@@ -35,7 +35,7 @@ TEST(au_string_StringCollection, basic) {
 
 
 TEST(au_string_StringCollection, write_and_read) {
-  std::string test_dir = au::GetRandomDirectory();
+  std::string test_dir = au::GetRandomTmpFileOrDirectory();
 
   au::CreateDirectory(test_dir);
   std::string test_file = test_dir + "/string_collection_test";

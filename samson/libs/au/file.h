@@ -54,7 +54,7 @@ bool isRegularFile(char path[]);
 std::vector<std::string> getRegularFilesFromDirectory(std::string directory);
 
 // Create a random tmp direcotry
-std::string GetRandomDirectory();
+std::string GetRandomTmpFileOrDirectory();
 
 // Working with paths
 std::string path_remove_last_component(std::string path);

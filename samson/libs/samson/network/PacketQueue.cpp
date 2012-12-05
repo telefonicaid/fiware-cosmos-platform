@@ -22,7 +22,7 @@ void MultiPacketQueue::Clear() {
 }
 
 // Push a packet to be sent
-void MultiPacketQueue::Push(const au::SharedPointer<Packet>& packet) {
+void MultiPacketQueue::Push(au::SharedPointer<Packet> packet) {
   // Robust agains NULL Packets...
   if (packet == NULL) {
     return;

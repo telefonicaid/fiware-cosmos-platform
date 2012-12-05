@@ -492,11 +492,12 @@ void BlockManager::ScheduleReadOperation(BlockPointer block) {
   // Read operation over this buffer
   std::string fileName = block->file_name();
 
-  engine::DiskOperation *o = engine::DiskOperation::newReadOperation(fileName, 0
-                                                                     , size
-                                                                     , block->buffer()->GetSimpleBuffer()
-                                                                     , engine_id());
-  au::SharedPointer<engine::DiskOperation> operation(o);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newReadOperation(fileName,
+                                                      0,
+                                                      size,
+                                                      block->buffer()->GetSimpleBuffer(),
+                                                      engine_id());
 
   operation->environment.Set("block_id", block_id);
   operation->environment.Set("operation_size", size);
@@ -525,8 +526,8 @@ void BlockManager::ScheduleWriteOperation(BlockPointer block) {
   if (buffer == NULL) {
     LM_X(1, ("Internal error"));
   }
-  engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer, fileName, engine_id());
-  au::SharedPointer<engine::DiskOperation> operation(o);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newWriteOperation(buffer, fileName, engine_id());
   operation->environment.Set("block_id", block_id);
   operation->environment.Set("operation_size", size);
 

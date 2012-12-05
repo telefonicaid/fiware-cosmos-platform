@@ -110,9 +110,8 @@ void BufferListItem::flush_to_disk() {
       if (buffer_ == NULL) {
         LM_X(1, ("Internal error"));
       }
-      engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer_, file_name_,
-                                                                          engine_id());
-      au::SharedPointer<engine::DiskOperation> operation(o);
+      au::SharedPointer<engine::DiskOperation> operation;
+      operation = engine::DiskOperation::newWriteOperation(buffer_, file_name_, engine_id());
       engine::Engine::disk_manager()->Add(operation);
 
       state = writing;

@@ -37,7 +37,7 @@ template <class V>
 class Box {
 public:
 
-  void Insert(const SharedPointer<V>& shared_pointer_v) {
+  void Insert(SharedPointer<V> shared_pointer_v) {
     V *v = shared_pointer_v.shared_object();
 
     if (Contains(shared_pointer_v)) {
@@ -52,7 +52,7 @@ public:
     Insert(tmp_v);
   }
 
-  void Erase(const SharedPointer<V>& shared_pointer_v) {
+  void Erase(SharedPointer<V> shared_pointer_v) {
     V *v = shared_pointer_v.shared_object();
 
     typename std::map<V *, au::SharedPointer<V> >::iterator iter = items_.find(v);
@@ -64,7 +64,7 @@ public:
     }
   }
 
-  bool Contains(const SharedPointer<V>& shared_pointer_v) {
+  bool Contains(SharedPointer<V> shared_pointer_v) {
     V *v = shared_pointer_v.shared_object();
 
     return  (items_.find(v) != items_.end());

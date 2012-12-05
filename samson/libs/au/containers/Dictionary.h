@@ -71,7 +71,7 @@ public:
 
   // Insert a pair of elements ( easy method )
   // If a previous element was inserted with the same key, it is automatically deleted
-  void Set(const K& key, const SharedPointer<V>& value) {
+  void Set(const K& key, SharedPointer<V> value) {
     Extract(key);          // Extract any previous reference ( if any )
     std::map< K, SharedPointer<V>, _Compare >::insert(std::pair<K, SharedPointer<V> >(key, value));
   }

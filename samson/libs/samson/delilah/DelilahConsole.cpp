@@ -892,8 +892,8 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
   }
 
   // Disk operation....
-  engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer, fileName, engine_id());
-  au::SharedPointer<engine::DiskOperation> operation(o);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newWriteOperation(buffer, fileName, engine_id());
   engine::Engine::disk_manager()->Add(operation);
 }
 

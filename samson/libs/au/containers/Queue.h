@@ -42,7 +42,7 @@ template <class V>
 class Queue {
 public:
 
-  void Push(const SharedPointer<V>& v) {
+  void Push(SharedPointer<V> v) {
     list_.push_back(v);
   }
 
@@ -97,7 +97,7 @@ public:
   }
 
   // Extract an element from the queue
-  bool Contains(const SharedPointer<V>& v) {
+  bool Contains(SharedPointer<V> v) {
     typename std::list< SharedPointer<V> >::iterator iter;
     for (iter = list_.begin(); iter != list_.end(); ++iter) {
       if (*iter == v) {
@@ -107,11 +107,11 @@ public:
     return false;
   }
 
-  void ExtractAll(const SharedPointer<V>& v) {
+  void ExtractAll(SharedPointer<V> v) {
     typename std::list< SharedPointer<V> >::iterator iter;
     for (iter = list_.begin(); iter != list_.end(); ) {
       if (*iter == v) {
-        list_.erase(++iter);
+        iter = list_.erase(iter);
       } else {
         ++iter;
       }

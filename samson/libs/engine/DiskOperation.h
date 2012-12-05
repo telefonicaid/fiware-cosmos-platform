@@ -60,88 +60,89 @@ class DiskManager;
 // disk operation in a notification dictionary
 
 class DiskOperation {
-  public:
-    au::Environment environment;   // Environment properties
+public:
+  au::Environment environment;     // Environment properties
 
-    typedef enum {
-      read, write, append, remove
-    } DiskOperationType;
+  typedef enum {
+    read, write, append, remove
+  } DiskOperationType;
 
-  private:
-    DiskOperationType type;   // Type of operation ( read, write , remove , etc.. )
-    std::string fileName;   // FileName to open
+private:
+  DiskOperationType type;     // Type of operation ( read, write , remove , etc.. )
+  std::string fileName;     // FileName to open
 
-    engine::BufferPointer buffer;   // Auto-retained pointer to a buffer
+  engine::BufferPointer buffer;     // Auto-retained pointer to a buffer
 
-    char *read_buffer;   // Buffer used when reading from disk
-    size_t size;   // Size to read/write
-    size_t offset;   // Offset inside the file ( only for read operations )
+  char *read_buffer;     // Buffer used when reading from disk
+  size_t size;     // Size to read/write
+  size_t offset;     // Offset inside the file ( only for read operations )
 
-    std::set<size_t> listeners;   // Collection of Ids of the listener to notify when operation is completed
+  std::set<size_t> listeners;     // Collection of Ids of the listener to notify when operation is completed
 
-    friend class DiskManagerNotification;
-    friend class DiskManager;
+  friend class DiskManagerNotification;
+  friend class DiskManager;
 
-    pthread_t t;   // Background thread to run the operation
+  pthread_t t;     // Background thread to run the operation
 
-    DiskOperation();
+  DiskOperation();
 
-  public:
-    DiskManager *diskManager;   // Pointer to the disk manager to notify
+public:
+  DiskManager *diskManager;     // Pointer to the disk manager to notify
 
-    ~DiskOperation();
+  ~DiskOperation();
 
-    // int tag;                          // General tag to identify the operation
+  // int tag;                          // General tag to identify the operation
 
-    au::ErrorManager error;   // Management of the error during this operation
+  au::ErrorManager error;     // Management of the error during this operation
 
-    // Constructors used to create Disk Operations ( to be submitted to Engine )
+  // Constructors used to create Disk Operations ( to be submitted to Engine )
 
-    static DiskOperation *newReadOperation(char *data, std::string fileName, size_t offset, size_t size,
-                                           size_t _listenerId);
-    static DiskOperation *newWriteOperation(BufferPointer buffer, std::string fileName, size_t _listenerId);
-    static DiskOperation *newAppendOperation(BufferPointer buffer, std::string fileName, size_t _listenerId);
-    static DiskOperation *newRemoveOperation(std::string fileName, size_t _listenerId);
+  static au::SharedPointer<DiskOperation> newReadOperation(char *data, std::string fileName, size_t offset, size_t size,
+                                                           size_t _listenerId);
+  static au::SharedPointer<DiskOperation> newWriteOperation(BufferPointer buffer, std::string fileName,
+                                                            size_t _listenerId);
+  static au::SharedPointer<DiskOperation> newAppendOperation(BufferPointer buffer, std::string fileName,
+                                                             size_t _listenerId);
+  static au::SharedPointer<DiskOperation> newRemoveOperation(std::string fileName, size_t _listenerId);
+  static au::SharedPointer<DiskOperation> newReadOperation(std::string _fileName, size_t _offset, size_t _size,
+                                                           SimpleBuffer simpleBuffer, size_t _listenerId);
 
-    static DiskOperation *newReadOperation(std::string _fileName, size_t _offset, size_t _size,
-                                           SimpleBuffer simpleBuffer, size_t _listenerId);
+  void setError(std::string message);
 
-    void setError(std::string message);
+  std::string getDescription();
+  std::string getShortDescription();
 
-    std::string getDescription();
-    std::string getShortDescription();
+  DiskOperationType getType() {
+    return type;
+  }
 
-    DiskOperationType getType() {
-      return type;
-    }
+  size_t getSize() {
+    return size;
+  }
 
-    size_t getSize() {
-      return size;
-    }
+public:
+  // Run the operation
+  void run();
 
-  public:
-    // Run the operation
-    void run();
+private:
+  friend class DiskOperationGroup;
 
-  private:
-    friend class DiskOperationGroup;
+  size_t id;
+  void setId(size_t _id) {
+    id = _id;
+  }
 
-    size_t id;
-    void setId(size_t _id) {
-      id = _id;
-    }
+  size_t getId() {
+    return id;
+  }
 
-    size_t getId() {
-      return id;
-    }
+public:
+  void addListener(size_t id) {
+    listeners.insert(id);
+  }
 
-  public:
-    void addListener(size_t id) {
-      listeners.insert(id);
-    }
-
-  public:
-    void getInfo(std::ostringstream& output);
+public:
+  void getInfo(std::ostringstream& output);
 };
 }
 

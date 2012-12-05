@@ -1254,7 +1254,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visu
   gpb::Queue *queue = gpb::get_queue(data_model->mutable_current_data(), ".modules");
 
   // Create a tmp directory
-  std::string directory = au::GetRandomDirectory();
+  std::string directory = au::GetRandomTmpFileOrDirectory();
   au::CreateDirectory(directory);
 
   // Set of names used so far to detect colision name...

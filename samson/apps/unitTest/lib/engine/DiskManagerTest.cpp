@@ -35,6 +35,7 @@
 
 #include "gtest/gtest.h"
 
+#include "au/file.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 #include "engine/DiskManager.h"
@@ -50,9 +51,11 @@ typedef au::SharedPointer<engine::DiskOperation>   SharedDiskOp;
 TEST(engine_DiskManager, rates) {
   init_engine_test();
 
+  std::string test_filename = au::GetRandomTmpFileOrDirectory();
+
   char *buffer = reinterpret_cast<char *>(malloc(1024 * 1024));
 
-  SharedDiskOp operation(engine::DiskOperation::newReadOperation(buffer, "test_filename.txt", 0, 1, 0));
+  SharedDiskOp operation(engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0));
 
   size_t rate_in = engine::Engine::disk_manager()->rate_in();
   EXPECT_EQ(0, rate_in);
@@ -83,7 +86,7 @@ TEST(engine_DiskManager, times) {
   EXPECT_EQ(0, on_time);
 
   double off_time = engine::Engine::disk_manager()->off_time();
-  EXPECT_LT(1, off_time);
+  EXPECT_GE(1, off_time);
 
   int workers = engine::Engine::disk_manager()->num_disk_manager_workers();
   EXPECT_EQ(1, workers);
@@ -111,24 +114,21 @@ public:
       au::TokenTaker tt(&token);
       char *buffer = reinterpret_cast<char *>(malloc(1024 * 1024));
 
+      std::string test_filename = au::GetRandomTmpFileOrDirectory();
+
       EXPECT_TRUE(buffer != NULL);
-      au::SharedPointer<engine::DiskOperation> operation(engine::DiskOperation::newReadOperation(buffer,
-                                                                                                 "test_filename.txt",
-                                                                                                 0,
-                                                                                                 1,
-                                                                                                 0));
+      au::SharedPointer<engine::DiskOperation> operation;
+      operation = engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0);
 
       engine::Engine::disk_manager()->Add(operation);
       EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 1) << "Wrong number of disk operations";
 
       engine::Engine::disk_manager()->Cancel(operation);
       usleep(50000);
-      EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 0) <<
-      "Wrong number of disk operations";
+      EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 0) << "Wrong number of disk operations";
 
       engine::Engine::disk_manager()->Add(operation);
-      EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 1) <<
-      "Wrong number of disk operations";
+      EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 1) << "Wrong number of disk operations";
 
       free(buffer);
     }
@@ -154,18 +154,19 @@ public:
 TEST(engine_DiskManager, diskOperations) {
   init_engine_test();
 
+  std::string test_filename = au::GetRandomTmpFileOrDirectory();
   char *buffer = reinterpret_cast<char *>(malloc(1024 * 1024));
 
   au::SharedPointer<engine::DiskOperation> operation1(
-    engine::DiskOperation::newReadOperation(buffer, "test_filename.txt", 0, 1, 0));
+    engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0));
   au::SharedPointer<engine::DiskOperation> operation2(
-    engine::DiskOperation::newReadOperation(buffer, "test_filename.txt", 0, 1, 0));
+    engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0));
   au::SharedPointer<engine::DiskOperation> operation3(
-    engine::DiskOperation::newReadOperation(buffer, "test_filename.txt", 0, 1, 0));
+    engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0));
   au::SharedPointer<engine::DiskOperation> operation4(
-    engine::DiskOperation::newReadOperation(buffer, "test_filename.txt", 0, 1, 0));
+    engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0));
   au::SharedPointer<engine::DiskOperation> operation5(
-    engine::DiskOperation::newReadOperation(buffer, "test_filename.txt", 0, 1, 0));
+    engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0));
 
   engine::Engine::disk_manager()->Add(operation1);
   EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 1) <<
@@ -200,11 +201,12 @@ TEST(engine_DiskManager, run_worker) {
   init_engine_test();
 
   char *buffer = reinterpret_cast<char *>(malloc(1024 * 1024));
+  std::string test_filename = au::GetRandomTmpFileOrDirectory();
 
   engine::DiskManager *disk_manager = engine::Engine::disk_manager();
 
   au::SharedPointer<engine::DiskOperation> operation1(
-    engine::DiskOperation::newReadOperation(buffer, "test_filename.txt", 0, 1, 0));
+    engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0));
 
   disk_manager->Add(operation1);
   EXPECT_EQ(disk_manager->num_disk_operations(), 1) << "Wrong number of disk operations";

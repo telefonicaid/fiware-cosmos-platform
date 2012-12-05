@@ -61,17 +61,17 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.keyFormat);
   Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.valueFormat);
 
-  if (!key_data) {
+  if (key_data == NULL) {
     error.AddError(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
-  if (!value_data) {
+  if (value_data == NULL) {
     error.AddError(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
-  // Data instances for parsing and printing contente
+  // Data instances for parsing and printing content
   au::SharedPointer<DataInstance> key(key_data->getInstance());
   au::SharedPointer<DataInstance> value(value_data->getInstance());
 
@@ -197,21 +197,19 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
   Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(header_.keyFormat);
   Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(header_.valueFormat);
 
-  if (!key_data) {
+  if (key_data == NULL) {
     output << au::str("Unknown data type for key: %s", header_.keyFormat);
     return 0;
   }
 
-  if (!value_data) {
+  if (value_data == NULL) {
     output << au::str("Unknown data type for value: %s", header_.valueFormat);
     return 0;
   }
 
-  // Data instances for parsing and printing contente
+  // Data instances for parsing and printing content
   au::SharedPointer<DataInstance> key(key_data->getInstance());
   au::SharedPointer<DataInstance> value(value_data->getInstance());
-
-
 
   for (size_t i = 0; i < header_.info.kvs; i++) {
     key->parse(kvs[i].key);

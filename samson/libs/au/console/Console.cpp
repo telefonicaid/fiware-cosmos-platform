@@ -353,9 +353,11 @@ void Console::PrintLines(const std::string&message) {
   // Get terminal size
   int x, y;
   au::GetTerminalSize(1, &x, &y);
+  size_t console_width = x;
+
   std::string line_to_print;
   for (size_t i = 0; i < lines.size(); ++i) {
-    if (lines[i].length() <= (size_t)x) {
+    if (lines[i].length() <= console_width) {
       line_to_print = lines[i];
     } else {
       line_to_print = lines[i].substr(0, x - 3) + "...";
@@ -615,7 +617,7 @@ int Console::WaitWithMessage(const std::string& message, double sleep_time, Cons
 
 void Console::Write(const std::string& message) {
   if (IsBackgroundThread()) {
-    // Page control is applyed if necessary
+    // Page control is applied if necessary
     ClearTerminalLine();
 
     // Divide input message in lines
@@ -624,6 +626,7 @@ void Console::Write(const std::string& message) {
     // Get terminal size
     int x, y;
     au::GetTerminalSize(1, &x, &y);
+    size_t console_width = x;
 
     int pos = 0;   // Line to print
     size_t num_lines_on_screen = y - 3;
@@ -635,7 +638,7 @@ void Console::Write(const std::string& message) {
       size_t max_pos = pos + num_lines_on_screen;
       for (size_t i = pos; i < std::min(lines.size(), max_pos); ++i) {
         std::string line_to_print;
-        if (lines[i].length() <= (size_t)x) {
+        if (lines[i].length() <= console_width) {
           line_to_print = lines[i];
         } else {
           line_to_print = lines[i].substr(0, x - 3) + "...";

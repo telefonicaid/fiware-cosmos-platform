@@ -224,7 +224,7 @@ public:
   void clearListMap() {
     typename std::map<K, V * >::iterator iter;
 
-    for (iter = map.begin(); iter != map.end(); iter++) {
+    for (iter = map.begin(); iter != map.end(); ++iter) {
       delete iter->second;
     }
 

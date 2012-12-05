@@ -167,9 +167,9 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   au::SharedPointer<gpb::ClusterInfo> cluster_info(new gpb::ClusterInfo());
   cluster_info->CopyFrom(packet->message->cluster_info());
 
-  LOG_V(logs.delilah, ("ClusterSetup retreived correctly from %s ( version %lu )"
-                       , host.c_str()
-                       , cluster_info->version()));
+  LOG_V(logs.delilah, ("ClusterSetup retreived correctly from %s ( version %lu )",
+                       host.c_str(),
+                       cluster_info->version()));
 
   network->set_cluster_information(cluster_info);
 
@@ -202,7 +202,7 @@ void Delilah::notify(engine::Notification *notification) {
     // Review all co
 
     std::map<size_t, DelilahComponent *>::iterator iter;
-    for (iter = components_.begin(); iter != components_.end(); iter++) {
+    for (iter = components_.begin(); iter != components_.end(); ++iter) {
       DelilahComponent *component = iter->second;
       component->review();
     }
@@ -536,7 +536,7 @@ std::string Delilah::getListOfComponents() {
   table.setTitle("List of delilah processes");
 
   std::map<size_t, DelilahComponent *>::iterator iter;
-  for (iter = components_.begin(); iter != components_.end(); iter++) {
+  for (iter = components_.begin(); iter != components_.end(); ++iter) {
     DelilahComponent *component = iter->second;
 
     if (component->hidden) {

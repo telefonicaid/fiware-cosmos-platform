@@ -90,7 +90,7 @@ au::SharedPointer<gpb::Collection> WorkerCommandManager::GetCollection(const Vis
   collection->set_name("worker_commands");
 
   au::map<size_t, WorkerCommand>::iterator it;
-  for (it = worker_commands_.begin(); it != worker_commands_.end(); it++) {
+  for (it = worker_commands_.begin(); it != worker_commands_.end(); ++it) {
     std::string command = it->second->command_;
     if (visualization.match(command)) {
       it->second->fill(collection->add_record(), visualization);

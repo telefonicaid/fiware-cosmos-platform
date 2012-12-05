@@ -36,7 +36,7 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   # Several compilers are used in mac environment
   #
   # gcc 4.2  : Default in current Lion version
-  # clang    : Usefull for code-coverage
+  # clang    : useful for code-coverage
   # gcc 4.7  : from mac ports
 
   # By default if CC or CXX are set to default gcc 4.2

@@ -58,21 +58,21 @@ char samson_comsore_dictionary_file_name[1024];
 
 PaArgument paArgs[] =
 {
-  { "-source",                      comsore_dictionary_file_name,                             "",
-    PaString,                    PaOpt,
-    _i DEF_DICTIONARY,  PaNL,        PaNL,          "Original Comscore dictionary (.bcp)"              },
-  { "-pattern_to_catergories_file", pattern_to_category_file_name,                            "",
-    PaString,                     PaOpt,
-    _i DEF_PATTERN_CAT, PaNL,        PaNL,          "Pattern to categories file"                       },
-  { "-categories_file",             comscore_categories_files,                                "",
-    PaString,                     PaOpt,
-    _i DEF_CAT,         PaNL,        PaNL,          "Categories file"                                  },
-  { "-output",                      samson_comsore_dictionary_file_name,                      "",
-    PaString,                     PaOpt,
-    _i DEF_OUTPUT,      PaNL,        PaNL,          "Output binary diccionary"                         },
-  { "-max_num_entries",             &max_num_entries,                                         "",
-    PaInt,                        PaOpt,   0,
-    0,           1000000000,    "Maximum number of entries from original file"     },
+  { "-source",                      comsore_dictionary_file_name,        "",
+    PaString, PaOpt,
+    _i DEF_DICTIONARY, PaNL, PaNL, "Original Comscore dictionary (.bcp)"              },
+  { "-pattern_to_catergories_file", pattern_to_category_file_name,       "",
+    PaString, PaOpt,
+    _i DEF_PATTERN_CAT, PaNL, PaNL, "Pattern to categories file"                       },
+  { "-categories_file",             comscore_categories_files,           "",
+    PaString, PaOpt,
+    _i DEF_CAT, PaNL, PaNL, "Categories file"                                  },
+  { "-output",                      samson_comsore_dictionary_file_name, "",
+    PaString, PaOpt,
+    _i DEF_OUTPUT, PaNL, PaNL, "Output binary diccionary"                         },
+  { "-max_num_entries",             &max_num_entries,                    "",
+    PaInt, PaOpt, 0,
+    0, 1000000000, "Maximum number of entries from original file"     },
   PA_END_OF_ARGS
 };
 
@@ -114,7 +114,7 @@ void read_original_categories_file(const char *file_name) {
   char *fields[10];
   size_t num = 0;
 
-  while (fgets(line, 10000, file)) {
+  while (fgets(line, sizeof(line), file) != NULL) {
     fields[0] = line;
     for (int f = 1; f < 3; f++) {
       char *pos = strstr(fields[f - 1], "\t");
@@ -155,7 +155,7 @@ void read_original_pattern_to_category_file(const char *file_name) {
   char *fields[10];
   size_t num = 0;
 
-  while (fgets(line, 10000, file)) {
+  while (fgets(line, sizeof(line), file) != NULL) {
     fields[0] = line;
     for (int f = 1; f < 3; f++) {
       char *pos = strstr(fields[f - 1], "\t");
@@ -173,7 +173,7 @@ void read_original_pattern_to_category_file(const char *file_name) {
     if ((++num % 100000) == 0) {
       LOG_SM(("Readed %lu records", num));
     }
-    if (( max_num_entries > 0 ) && ( max_num_entries < 1000 )) {
+    if ((max_num_entries > 0) && (max_num_entries < 1000)) {
       if (!isPatternIdUsed(entry.first)) {
         // LOG_SM(("Pattern %lu not used...", entry.first));
         continue;
@@ -189,10 +189,10 @@ void read_original_pattern_to_category_file(const char *file_name) {
 }
 
 void read_original_dictionary_file(const char *file_name, size_t max_num_records = 0) {
-  LOG_SM(("Reading original dictionary file '%s'", file_name ));
+  LOG_SM(("Reading original dictionary file '%s'", file_name));
 
   if (max_num_records > 0) {
-    LOG_SM(("Max number records %d", max_num_records ));
+    LOG_SM(("Max number records %d", max_num_records));
   }
   FILE *file = fopen(file_name, "r");
 
@@ -203,7 +203,7 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
   char *fields[11];
   size_t num = 0;
 
-  while (fgets(line, 10000, file)) {
+  while (fgets(line, sizeof(line), file) != NULL) {
     fields[0] = line;
     for (int f = 1; f < (int)(sizeof(fields) / sizeof(char *)); f++) {
       char *pos = strstr(fields[f - 1], "\t");
@@ -229,9 +229,9 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
 
 
     if (
-      ( strstr(dictionary_entry.domain.c_str(), "/") != NULL ) ||
-      ( strstr(dictionary_entry.domain.c_str(), "%") != NULL ) ||
-      ( strcmp(dictionary_entry.domain.c_str(), "") == 0 )
+      (strstr(dictionary_entry.domain.c_str(), "/") != NULL) ||
+      (strstr(dictionary_entry.domain.c_str(), "%") != NULL) ||
+      (strcmp(dictionary_entry.domain.c_str(), "") == 0)
       )
     {
       LOG_SW(("Discarting domain '%s' [%s][%s]"
@@ -286,14 +286,14 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
 }
 
 int main(int argC, const char *argV[]) {
-  paConfig("builtin prefix",                (void *)"SS_WORKER_");
+  paConfig("builtin prefix", (void *)"SS_WORKER_");
   paConfig("usage and exit on any warning", (void *)true);
 
-  paConfig("log to screen",                 (void *)true);
+  paConfig("log to screen", (void *)true);
 
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE@TIME  EXEC: TEXT");
-  paConfig("log to file",                   (void *)true);
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE@TIME  EXEC: TEXT");
+  paConfig("log to file", (void *)true);
 
   paParse(paArgs, argC, (char **)argV, 1, false);
 

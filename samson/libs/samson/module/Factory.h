@@ -83,7 +83,7 @@ public:
     std::ostringstream o;
 
     o << "List of " << name_of_elements << ": ";
-    for (mapFactory::iterator iter = creationFunctions.begin(); iter != creationFunctions.end(); iter++) {
+    for (mapFactory::iterator iter = creationFunctions.begin(); iter != creationFunctions.end(); ++iter) {
       o << iter->first << " ";
     }
     return o.str();
@@ -188,7 +188,7 @@ public:
       std::string factory_name = iter_factories->first;
       Factory f = iter_factories->second;
 
-      for (mapFactory::iterator iter = f.creationFunctions.begin(); iter != f.creationFunctions.end(); iter++) {
+      for (mapFactory::iterator iter = f.creationFunctions.begin(); iter != f.creationFunctions.end(); ++iter) {
         std::string name = iter->first;
         factoryFunction function  = iter->second;
 

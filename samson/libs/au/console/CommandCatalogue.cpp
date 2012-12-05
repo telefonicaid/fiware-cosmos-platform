@@ -436,15 +436,15 @@ CommandItem *Command::GetArgument(const std::string& name) const {
 //
 
 CommandCatalogue::CommandCatalogue() {
-  Add("help", "general", "Get some help for commands and categories of commands");
+  AddCommand("help", "general", "Get some help for commands and categories of commands");
   AddStringArgument("help", "concept", "",
                     "Command or category of commands. Type 'help all' for a complete list of commands");
 }
 
-Command *CommandCatalogue::Add(const std::string& name
-                               , const std::string& category
-                               , const std::string& short_description
-                               , const std::string& help) {
+Command *CommandCatalogue::AddCommand(const std::string& name
+                                      , const std::string& category
+                                      , const std::string& short_description
+                                      , const std::string& help) {
   Command *command = new Command(name, category, short_description, help);
 
   commands_.push_back(command);

@@ -204,29 +204,26 @@ int main(int argC, const char *argV[]) {
     // Common error messages
 
     // Read commands from file
-    FILE *f = fopen(file_name, "r");
-    if (!f) {
+    FILE *file = fopen(file_name, "r");
+    if (file == NULL) {
       LM_E(("Error opening commands file %s", file_name));
       exit(0);
     }
 
     int num_line = 0;
-    char line[1024];
+    char buffer_line[1024];
 
     std::string message = au::str("Setup file %s. Opening...", file_name);
     main_stream_connector->log("StreamConnector", "Message", message);
 
-    while (fgets(line, sizeof(line), f)) {
-      // Remove the last return of a string
-      while ((strlen(line) > 0) && (line[ strlen(line) - 1] == '\n') > 0) {
-        line[ strlen(line) - 1] = '\0';
-      }
+    while (fgets(buffer_line, sizeof(buffer_line), file) != NULL) {
+      std::string line = ::au::StripString(buffer_line);
 
       // LOG_SM(("Processing line: %s", line ));
-      num_line++;
+      ++num_line;
 
-      if ((line[0] != '#') && (strlen(line) > 0)) {
-        message = au::str("%s ( File %s )", line, file_name);
+      if ((line.length() > 0) && (line[0] != '#')) {
+        message = au::str("%s ( File %s )", line.c_str(), file_name);
         main_stream_connector->log("StreamConnector", "Message", message);
 
         au::ErrorManager error;
@@ -243,8 +240,7 @@ int main(int argC, const char *argV[]) {
     message = au::str("Setup file %s. Finished", file_name);
     main_stream_connector->log("StreamConnector", "Message", message);
 
-
-    fclose(f);
+    fclose(file);
   } else {
     // Create default channel
     {

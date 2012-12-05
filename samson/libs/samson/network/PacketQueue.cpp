@@ -78,7 +78,7 @@ au::tables::Table *MultiPacketQueue::GetPendingPacketsTable() const {
   au::tables::Table *table = new au::tables::Table(au::StringVector("Connection", "#Packets", "Size"));
 
   au::map<std::string, PacketQueue>::const_iterator it;
-  for (it = packet_queues_.begin(); it != packet_queues_.end(); it++) {
+  for (it = packet_queues_.begin(); it != packet_queues_.end(); ++it) {
     au::StringVector values;
     values.push_back(it->first);     // Name of the connection
     PacketQueue *packet_queue = it->second;
@@ -128,7 +128,7 @@ size_t MultiPacketQueue::GetAllQueuesSize() {
   size_t total = 0;
 
   au::map< std::string, PacketQueue >::iterator it;
-  for (it = packet_queues_.begin(); it != packet_queues_.end(); it++) {
+  for (it = packet_queues_.begin(); it != packet_queues_.end(); ++it) {
     total += it->second->GetByteSize();
   }
   return total;

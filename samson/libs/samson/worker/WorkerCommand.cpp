@@ -652,38 +652,6 @@ void WorkerCommand::Run() {
     return;
   }
 
-  if (main_command == "cancel_stream_operation") {
-    error_.AddError("Unimplemented");
-    FinishWorkerTask();
-    return;
-
-    /*
-     * if( cmd.get_num_arguments() < 2 )
-     * {
-     * FinishWorkerTaskWithError( au::str("Not enough parameters for command %s\nUsage: cancel_stream_operation operation_id" , main_command.c_str() ) );
-     * return;
-     * }
-     *
-     * std::string canceled_worker_command_id = cmd.get_argument(1);
-     *
-     * // Emit a cancellation notification to cancel as much cas possible
-     * engine::Notification * notification = new engine::Notification("cancel");
-     * notification->environment.set("id", canceled_worker_command_id );
-     *
-     * // This is a stream operation ( not return error ;) )
-     * std::string prefix = "stream_";
-     * if( canceled_worker_command_id.substr( 0 , prefix.length() ) == prefix )
-     * FinishWorkerTask();
-     *
-     * // Remove in the worker command manager
-     * if( samson_worker_->workerCommandManager->cancel( canceled_worker_command_id ) )
-     * FinishWorkerTask();
-     * else
-     * FinishWorkerTaskWithError(au::str("Worker command %s not found" , canceled_worker_command_id.c_str() ));
-     */
-    return;
-  }
-
   /**
    * "run" calls are transformed into "batch" to add extra information about delilah client
    * the "batch" command cannot be called directly from delilah

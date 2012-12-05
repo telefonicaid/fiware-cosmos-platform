@@ -179,7 +179,7 @@ std::string WorkerTaskBase::generate_commit_command(const std::vector<std::strin
     BlockList *block_list = block_list_container_.FindBlockList(au::str("input_%d", c));
     if (block_list) {
       au::list<BlockRef>::iterator it;
-      for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); it++) {
+      for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); ++it) {
         BlockRef *block_ref = *it;
         commit_command.RemoveBlock(inputs[c], block_ref->block_id(), block_ref->block_size(),
                                    block_ref->block()->getKVFormat(), block_ref->range(), block_ref->info());
@@ -192,7 +192,7 @@ std::string WorkerTaskBase::generate_commit_command(const std::vector<std::strin
     BlockList *block_list = block_list_container_.FindBlockList(au::str("output_%d", c));
     if (block_list) {
       au::list<BlockRef>::iterator it;
-      for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); it++) {
+      for (it = block_list->blocks_.begin(); it != block_list->blocks_.end(); ++it) {
         BlockRef *block_ref = *it;
         commit_command.AddBlock(outputs[c], block_ref->block_id(), block_ref->block_size(),
                                 block_ref->block()->getKVFormat(), block_ref->range(), block_ref->info());

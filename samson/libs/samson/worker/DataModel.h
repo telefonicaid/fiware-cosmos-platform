@@ -32,7 +32,7 @@
 //
 // Complete model for data and operations for samson
 //
-// It currently lives inside ZK for simplicity
+// It currently lives inside Zookeeper for simplicity
 //
 // It codifies all information about queues, operations, batch operations etc...
 // ------------------------------------------------------------------
@@ -133,7 +133,7 @@ private:
 
   // Check if it is necesssary to run this while recovering
   bool IsRecoveryCommand(const std::string& command);
-  // Default path in ZK for this information
+  // Default path in Zookeeper for this information
   static const std::string kDefaultSamsonDataPath;
 
   // Groups the initialization of all flags to process command

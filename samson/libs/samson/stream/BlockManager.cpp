@@ -130,7 +130,7 @@ std::set<size_t> BlockManager::GetBlockIds() {
 
   std::set<size_t> block_ids;
   std::list<size_t>::iterator it;
-  for (it = block_ids_.begin(); it != block_ids_.end(); it++) {
+  for (it = block_ids_.begin(); it != block_ids_.end(); ++it) {
     block_ids.insert(*it);
   }
   return block_ids;
@@ -595,7 +595,7 @@ void BlockManager::Sort() {
 
 bool BlockManager::CheckBlocks(const std::set<size_t>& block_ids) {
   std::set<size_t>::const_iterator it;
-  for (it = block_ids.begin(); it != block_ids.end(); it++) {
+  for (it = block_ids.begin(); it != block_ids.end(); ++it) {
     if (GetBlock(*it) == NULL) {
       return false;
     }

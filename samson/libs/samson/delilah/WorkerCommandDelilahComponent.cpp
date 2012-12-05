@@ -196,7 +196,7 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
 
     // Print the result in a table if necessary
     std::map<std::string, au::SharedPointer<gpb::Collection> >::iterator it;
-    for (it = collections.begin(); it != collections.end(); it++) {
+    for (it = collections.begin(); it != collections.end(); ++it) {
       print_content(it->second);
     }
 
@@ -263,7 +263,7 @@ std::string WorkerCommandDelilahComponent::getStatus() {
 
   output << "Command sent to workers [";
   std::set<size_t>::iterator it;
-  for (it = workers.begin(); it != workers.end(); it++) {
+  for (it = workers.begin(); it != workers.end(); ++it) {
     output << *it  << " ";
   }
   output << "] ";
@@ -283,7 +283,7 @@ std::string WorkerCommandDelilahComponent::getExtraStatus() {
   au::tables::Table table("Worker,left|Status,left|Message,left");
 
   std::set<size_t>::iterator it;
-  for (it = workers.begin(); it != workers.end(); it++) {
+  for (it = workers.begin(); it != workers.end(); ++it) {
     size_t worker_id = *it;
 
     au::StringVector values;

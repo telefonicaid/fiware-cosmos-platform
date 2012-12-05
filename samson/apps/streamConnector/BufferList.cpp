@@ -70,14 +70,14 @@ void BufferListItem::notify(engine::Notification *notification) {
 
     if (type == "write") {
       if (state != writing) {
-        LOG_SW(("Unexpected state in BufferListItem"  ));
+        LOG_SW(("Unexpected state in BufferListItem"));
         return;
       }
       state = on_memory_and_disk;
       return;
     } else if (type == "read") {
       if (state != reading) {
-        LOG_SW(("Unexpected state in BufferListItem"  ));
+        LOG_SW(("Unexpected state in BufferListItem"));
         return;
       }
       state = on_memory_and_disk;
@@ -168,7 +168,7 @@ void BufferList::review_persistence() {
   // Schedule read or write tasks
   au::list<BufferListItem>::iterator it;
   size_t total = 0;
-  for (it = items.begin(); it != items.end(); it++) {
+  for (it = items.begin(); it != items.end(); ++it) {
     BufferListItem *item = *it;
 
     if (total < max_size_on_memory_) {
@@ -220,7 +220,7 @@ size_t BufferList::getSize() {
   size_t total = 0;
 
   au::list<BufferListItem>::iterator it;
-  for (it = items.begin(); it != items.end(); it++) {
+  for (it = items.begin(); it != items.end(); ++it) {
     BufferListItem *item = *it;
     total += item->getSize();
   }
@@ -232,7 +232,7 @@ size_t BufferList::getSizeOnMemory() {
   size_t total = 0;
 
   au::list<BufferListItem>::iterator it;
-  for (it = items.begin(); it != items.end(); it++) {
+  for (it = items.begin(); it != items.end(); ++it) {
     BufferListItem *item = *it;
     total += item->getSizeOnMemory();
   }

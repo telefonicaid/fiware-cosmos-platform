@@ -260,7 +260,7 @@ void StreamConnector::review() {
 
   // Review input inter channel connections
   au::list<InputInterChannelConnection>::iterator it;
-  for (it = input_inter_channel_connections.begin(); it != input_inter_channel_connections.end(); it++) {
+  for (it = input_inter_channel_connections.begin(); it != input_inter_channel_connections.end(); ++it) {
     InputInterChannelConnection *c = *it;
     if (c->is_finished()) {
       delete c;
@@ -293,7 +293,7 @@ void StreamConnector::autoCompleteWithChannelNames(au::console::ConsoleAutoCompl
   au::TokenTaker tt(&token);
 
   au::map<std::string, Channel>::iterator it;
-  for (it = channels_.begin(); it != channels_.end(); it++) {
+  for (it = channels_.begin(); it != channels_.end(); ++it) {
     info->add(it->first, it->first, false);
   }
 }
@@ -303,7 +303,7 @@ void StreamConnector::autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComp
   au::TokenTaker tt(&token);
 
   au::map<std::string, Channel>::iterator it;
-  for (it = channels_.begin(); it != channels_.end(); it++) {
+  for (it = channels_.begin(); it != channels_.end(); ++it) {
     Channel *channel = it->second;
     channel->autoCompleteWithAdaptorsNames(info);
   }
@@ -772,7 +772,7 @@ au::tables::Table *StreamConnector::getInputInterChannelConnections() {
   table->setTitle("Input InterChannel connections");
 
   au::list<InputInterChannelConnection>::iterator it;
-  for (it = input_inter_channel_connections.begin(); it != input_inter_channel_connections.end(); it++) {
+  for (it = input_inter_channel_connections.begin(); it != input_inter_channel_connections.end(); ++it) {
     InputInterChannelConnection *c = *it;
     table->addRow(au::StringVector(c->host_and_port(), c->getStatus()));
   }

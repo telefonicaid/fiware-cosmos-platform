@@ -36,7 +36,7 @@ const std::string DataModel::kClearBatchOPerations("clear_batch_operations");
 const std::string DataModel::kClearModules("clear_modules");
 const std::string DataModel::kPushQueue("push_queue");
 const std::string DataModel::kRemoveAll("remove_all");
-const std::string DataModel::kRemoveAllData("remove_all_data");
+const std::string DataModel::kRemoveAllData("remove_all_queues");
 const std::string DataModel::kRemoveAllStreamOperations("remove_all_stream_operations");
 const std::string DataModel::kRemoveStreamOperation("remove_stream_operation");
 const std::string DataModel::kRm("rm");

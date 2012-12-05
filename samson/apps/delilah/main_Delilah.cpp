@@ -312,44 +312,37 @@ int main(int argC, const char *argV[]) {
   if (strcmp(commandFileName, "") != 0) {
     commands_mode = true;
 
-    FILE *f = fopen(commandFileName, "r");
-    if (!f) {
-      LOG_X(1, ("Error opening commands file '%s'", commandFileName));
+    FILE *file = fopen(commandFileName, "r");
+    if (file == NULL) {
+      LOG_X(1, ("Error opening commands file '%s': %s", commandFileName, strerror(errno)));
     }
 
     int num_line = 0;
-    char line[1024];
+    char buffer_line[1024];
     LOG_SV(("Reading commands from file '%s'\n", commandFileName));
 
-    while (fgets(line, sizeof(line), f)) {
-      // Remove the last return of a string
-      while ((strlen(line) > 0) && (line[strlen(line) - 1] == '\n') > 0) {
-        line[strlen(line) - 1] = '\0';
-      }
-
-      num_line++;
-      if ((line[0] != '#') && (strlen(line) > 0)) {
+    while (fgets(buffer_line, sizeof(buffer_line), file) != NULL) {
+      std::string line = au::StripString(buffer_line);
+      ++num_line;
+      if ((line.length() > 0) && (line[0] != '#')) {
         commands.push_back(line);
-        LOG_SV(("Read command '%s' from file '%s' at line %d\n", line, commandFileName, num_line));
+        LOG_SV(("Read command '%s' from file '%s' at line %d\n", line.c_str(), commandFileName, num_line));
       }
     }
 
-    fclose(f);
+    fclose(file);
   }
 
   if (stdin_commands) {
     commands_mode = true;
-    char line[1024];
+    char buffer_line[1024];
     int num_line = 0;
-    while (fgets(line, sizeof(line), stdin)) {
-      // Remove the last return of a string
-      while ((strlen(line) > 0) && (line[strlen(line) - 1] == '\n') > 0) {
-        line[strlen(line) - 1] = '\0';
-      }
-      num_line++;
-      if ((line[0] != '#') && (strlen(line) > 0)) {
+    while (fgets(buffer_line, sizeof(buffer_line), stdin) != NULL) {
+      std::string line = au::StripString(buffer_line);
+      ++num_line;
+      if ((line.length() > 0) && (line[0] != '#')) {
         commands.push_back(line);
-        LOG_SV(("Read command '%s' from stdin at line %d\n", line, num_line));
+        LOG_SV(("Read command '%s' from stdin at line %d\n", line.c_str(), num_line));
       }
     }
   }
@@ -366,8 +359,8 @@ int main(int argC, const char *argV[]) {
     // Normal setup for delilah logging
     au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole, "[type][channel] text"));
     au::log_central->EvalCommand("log_set delilah::G M");
-    LOG_M(samson::logs.delilah, ("Delilah running..."));
-    LOG_M(samson::logs.delilah, ("Random delilah id generated [%s]", au::code64_str(delilah_random_code).c_str()));
+    LOG_M(samson::logs.delilah, ("Delilah running with delilah generated id %s"
+                                 , au::code64_str(delilah_random_code).c_str()));
   }
 
   // Verbose mode
@@ -375,9 +368,9 @@ int main(int argC, const char *argV[]) {
     au::log_central->EvalCommand("log_set system V");
   }
 
-  // Try to connect with provided list of hosts in order
+  // Try connect to each host in a given list, in turn, until a successful connection is made
   std::vector<std::string> hosts = au::split(host, ' ');
-  for (size_t i = 0; i < hosts.size(); i++) {
+  for (size_t i = 0; i < hosts.size(); ++i) {
     au::ErrorManager error;
     if (delilahConsole->connect(hosts[i], &error)) {
       LOG_M(samson::logs.delilah, ("Connected to %s", hosts[i].c_str()));
@@ -416,7 +409,7 @@ int main(int argC, const char *argV[]) {
             cronometer.Reset();
           }
           if (total_cronometer.seconds() > 100) {
-            LOG_X(1, ("Excesive time for command: %s", commands[i].c_str()));
+            LOG_X(1, ("Excessive time for command: %s", commands[i].c_str()));
           }
         }
 

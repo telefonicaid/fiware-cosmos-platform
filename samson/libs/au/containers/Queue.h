@@ -99,7 +99,7 @@ public:
   // Extract an element from the queue
   bool Contains(const SharedPointer<V>& v) {
     typename std::list< SharedPointer<V> >::iterator iter;
-    for (iter = list_.begin(); iter != list_.end(); iter++) {
+    for (iter = list_.begin(); iter != list_.end(); ++iter) {
       if (*iter == v) {
         return true;
       }
@@ -111,7 +111,7 @@ public:
     typename std::list< SharedPointer<V> >::iterator iter;
     for (iter = list_.begin(); iter != list_.end(); ) {
       if (*iter == v) {
-        list_.erase(iter++);
+        list_.erase(++iter);
       } else {
         ++iter;
       }
@@ -131,7 +131,7 @@ public:
   std::vector< SharedPointer<V> > items() const {
     std::vector< SharedPointer<V> > vector;
     typename std::list< SharedPointer<V> >::const_iterator iter;
-    for (iter = list_.begin(); iter != list_.end(); iter++) {
+    for (iter = list_.begin(); iter != list_.end(); ++iter) {
       vector.push_back(*iter);
     }
     return vector;

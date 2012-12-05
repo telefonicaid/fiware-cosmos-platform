@@ -8,7 +8,6 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-
 #ifndef _AU_CONSOLE
 #define _AU_CONSOLE
 
@@ -87,12 +86,13 @@ public:
   void StopConsole();
 
   /**
-   * Main method to write something on screen ( if foreground page-control is applyied )
+   * \brief Main method to write something on screen ( if foreground page-control is applyied )
    */
   void Write(const std::string& message);
 
   /**
    * \brief Main method to add a line with a particular color to the console
+   *
    * If set_colors(false) has been set, no color-codes are emitted to the output
    */
   void Write(au::Color color, const std::string& message);
@@ -118,7 +118,7 @@ public:
   void Write(au::ErrorManager& error);
 
   /**
-   * \brief Write some messges included in error with a previx
+   * \brief Write some messages included in error with a prefix
    */
   void Write(au::ErrorManager& error, const std::string& prefix_message);
 
@@ -160,8 +160,8 @@ public:
   }
 
   /**
-   * \brief FLush accumulated messages (even when console thread is no running)
-   * This command is usefull if au::Console is only used to accumulate output of a process
+   * \brief Flush accumulated messages (even when console thread is no running)
+   * This command is useful if au::Console is only used to accumulate output of a process
    */
   void FlushBackgroundMessages();
 

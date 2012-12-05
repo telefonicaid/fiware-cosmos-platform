@@ -57,7 +57,7 @@ public:
 
   bool isInMap(const K& key) const {
     typename std::map<K, V >::const_iterator iter = std::map<K, V >::find(key);
-    return(iter != std::map<K, V>::end());
+    return (iter != std::map<K, V >::end());
   }
 
   /*

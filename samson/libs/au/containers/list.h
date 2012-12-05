@@ -80,7 +80,7 @@ public:
   V *extractFromList(V *v) {
     typename std::list<V *>::iterator iter;
 
-    for (iter = std::list<V *>::begin(); iter != std::list<V *>::end(); iter++) {
+    for (iter = std::list<V *>::begin(); iter != std::list<V *>::end(); ++iter) {
       if (*iter == v) {
         break;
       }
@@ -107,7 +107,7 @@ public:
   void clearList() {
     typename std::list<V * >::iterator iter;
 
-    for (iter =  std::list<V *>::begin(); iter != std::list<V *>::end(); iter++) {
+    for (iter =  std::list<V *>::begin(); iter != std::list<V *>::end(); ++iter) {
       delete *iter;
     }
     std::list<V *>::clear();
@@ -116,7 +116,7 @@ public:
   void releaseList() {
     typename std::list<V * >::iterator iter;
 
-    for (iter =  std::list<V *>::begin(); iter != std::list<V *>::end(); iter++) {
+    for (iter =  std::list<V *>::begin(); iter != std::list<V *>::end(); ++iter) {
       (*iter)->Release();
     }
     std::list<V *>::clear();

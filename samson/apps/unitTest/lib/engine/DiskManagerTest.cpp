@@ -80,10 +80,10 @@ TEST(engine_DiskManager, times) {
   init_engine_test();
 
   double on_time  = engine::Engine::disk_manager()->on_time();
-  EXPECT_EQ(on_time, 0);
+  EXPECT_EQ(0, on_time);
 
   double off_time = engine::Engine::disk_manager()->off_time();
-  EXPECT_LT(off_time, 1);
+  EXPECT_LT(1, off_time);
 
   int workers = engine::Engine::disk_manager()->num_disk_manager_workers();
   EXPECT_EQ(1, workers);

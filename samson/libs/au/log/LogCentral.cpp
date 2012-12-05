@@ -585,45 +585,46 @@ void LogCentral::EvalCommand(const std::string& command, au::ErrorManager& error
 }
 
 LogCentralCatalogue::LogCentralCatalogue() {
-  Add("log_help", "general", "Show help about log_X commands to interact with the log system");
+  AddCommand("log_help", "general", "Show help about log_X commands to interact with the log system");
 
-  Add("log_to_screen", "general", "Add a log plugin to emit logs to screen");
+  AddCommand("log_to_screen", "general", "Add a log plugin to emit logs to screen");
   AddStringOption("log_to_screen", "-name", "screen", "Name of the plugin");
   AddStringOption("log_to_screen", "-format", LOG_DEFAULT_FORMAT, "Format of logs on screen");
 
-  Add("log_to_file", "general", "Add a log plugin to emit logs to a file");
+  AddCommand("log_to_file", "general", "Add a log plugin to emit logs to a file");
   AddMandatoryStringArgument("log_to_file", "filename", "File to be created to store logs");
   AddStringOption("log_to_file", "name", "file", "Name of the plugin");
 
-  Add("log_to_server", "general", "Add a log plugin to emit logs to a server");
+  AddCommand("log_to_server", "general", "Add a log plugin to emit logs to a server");
   AddMandatoryStringArgument("log_to_server", "host", "Host of the log server");
   AddMandatoryStringArgument("log_to_server", "filename",
                              "File to be created to store logs when connection is not available");
   AddStringOption("log_to_server", "name", "server", "Name of the plugin");
 
   // Show information
-  Add("log_show_fields", "general", "Show available fields for logs");
-  Add("log_show_plugins", "general", "Show current plugins for logs");
-  Add("log_show_channels", "general", "Show logs generatd for all channels and all plugins");
+  AddCommand("log_show_fields", "general", "Show available fields for logs");
+  AddCommand("log_show_plugins", "general", "Show current plugins for logs");
+  AddCommand("log_show_channels", "general", "Show logs generatd for all channels and all plugins");
   AddBoolOption("log_show_channels", "rates", "Show information about logs generated in bytes/second");
   AddBoolOption("log_show_channels", "v", "Show more information about generated logs");
 
   // Set level of log messages for a particular channel
-  Add("log_set", "general",
-      "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
+  AddCommand("log_set", "general",
+             "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
   AddMandatoryStringArgument("log_set", "channel_pattern", "Name (or pattern) of log channel");
   AddMandatoryStringArgument("log_set", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
   AddStringArgument("log_set", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
 
   // Set level of log messages for a particular channel
-  Add("log_add", "general",
-      "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
+  AddCommand(
+    "log_add", "general",
+    "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
   AddMandatoryStringArgument("log_add", "channel_pattern", "Name (or pattern) of log channel");
   AddMandatoryStringArgument("log_add", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
   AddStringArgument("log_add", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
 
   // Set level of log messages for a particular channel
-  Add("log_remove", "general", "Unset logs for some log-channels ( and for some log-plugins if specified )");
+  AddCommand("log_remove", "general", "Unset logs for some log-channels ( and for some log-plugins if specified )");
   AddMandatoryStringArgument("log_remove", "channel_pattern", "Name (or pattern) of log channel");
   AddStringArgument("log_remove", "plugin_pattern", "*",
                     "Name (or pattern) of log-plugin (type * or nothing for all)");

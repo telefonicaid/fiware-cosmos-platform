@@ -310,12 +310,9 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "wlog_hide") {
     if (log_probe != NULL) {
-      WriteWarningOnConsole("Logs deactivated");
       log_probe = NULL;
-    } else {
-      WriteWarningOnConsole("Logs were not activated");
     }
-
+    WriteWarningOnConsole("Logs deactivated");
     return 0;
   }
 
@@ -334,7 +331,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     std::vector<std::string> hosts = au::split(host, ' ');
 
     if (hosts.size() == 0) {
-      WriteErrorOnConsole(command_instance->GetErrorMessage(au::str("No host provided (%s)", host.c_str())));
+      WriteErrorOnConsole(command_instance->GetErrorMessage("No host provided"));
     }
     for (int i = 0; i < static_cast<int>(hosts.size()); i++) {
       Write(au::str("Connecting to %s...\n", hosts[i].c_str()));
@@ -349,7 +346,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     }
 
     if (hosts.size() > 2) {
-      WriteErrorOnConsole("Not possible to connect to any hosts\n");
+      WriteErrorOnConsole("Unable to connect to any host");
     }
     return 0;
   }
@@ -383,7 +380,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     if (error.HasErrors()) {
       Write(error);
     } else {
-      WriteWarningOnConsole("Modules at delilah client have been reloaded.");
+      WriteWarningOnConsole("Reloaded delilah client modules");
     }
   }
 
@@ -484,13 +481,13 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     if (action == "on") {
       show_alerts_ = true;
-      Write("Alerts are now activated\n");
+      Write("Alerts are activated\n");
       return 0;
     }
 
     if (action == "off") {
       show_alerts_ = false;
-      Write("Alerts are now NOT activated\n");
+      Write("Alerts are deactivated\n");
       return 0;
     }
 
@@ -505,19 +502,19 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       if (verbose_) {
         Write("verbose mode is activated\n");
       } else {
-        Write("verbose mode is NOT activated\n");
+        Write("verbose mode is deactivated\n");
       }
       return 0;
     }
 
     if (action == "on") {
       verbose_ = true;
-      Write("verbose mode is now activated\n");
+      Write("verbose mode is activated\n");
       return 0;
     }
     if (action == "off") {
       verbose_ = false;
-      Write("verbose mode is now NOT activated\n");
+      Write("verbose mode is deactivated\n");
       return 0;
     }
 
@@ -541,11 +538,11 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       return 0;
     }
 
-    trace_file_ = fopen(filename.c_str(), "w");
+    trace_file_name_ = filename;
+    trace_file_ = fopen(trace_file_name_.c_str(), "w");
     if (!trace_file_) {
       WriteErrorOnConsole(
-        au::str("Error opening file '%s' to store alerts (%s)\n", trace_file_name_.c_str(),
-                strerror(errno)));
+        au::str("Error opening file '%s' to store alerts (%s)\n", trace_file_name_.c_str(), strerror(errno)));
       return 0;
     }
 
@@ -555,13 +552,13 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "close_alerts_file") {
     if (!trace_file_) {
-      WriteErrorOnConsole("There is no opened alerts file. Open one with command 'open_alerts_file'\n");
+      WriteErrorOnConsole("No active alerts file is open. Open one with command 'open_alerts_file'");
       return 0;
     }
 
     fclose(trace_file_);
-    Write(
-      "Stop saving alerts to file '%s'.\nRemeber you can open a new alerts file with command 'open_alerts_file\n'");
+    Write(au::str("Stop saving alerts to file '%s'.\nOpen a new alerts file with command 'open_alerts_file\n'",
+                  trace_file_name_.c_str()));
     return 0;
   }
 
@@ -654,7 +651,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       }
 
       if (queues[i][0] == '.') {
-        WriteErrorOnConsole("Invalid queue. Name can not start with a dot (.)");
+        WriteErrorOnConsole("Invalid queue specified. Name can not start with a dot (.)");
         return -1;
       }
     }
@@ -870,9 +867,9 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
   std::string directory_name = au::str("stream_out_%s", queue.c_str());
 
   if ((mkdir(directory_name.c_str(), 0755) != 0) && (errno != EEXIST)) {
-    WriteErrorOnConsole(au::str("It was not possible to create directory %s to store data from queue %s",
-                                directory_name.c_str(), queue.c_str()));
-    WriteErrorOnConsole(au::str("Rejecting a %s data from queue %s", au::str(packet_size, "B").c_str(), queue.c_str()));
+    WriteErrorOnConsole(au::str("Error creating the directory '%s' to store data from queue '%s' (%s)",
+                                directory_name.c_str(), queue.c_str(), strerror(errno)));
+    WriteErrorOnConsole(au::str("Rejecting '%s' data from queue '%s'", au::str(packet_size, "B").c_str(), queue.c_str()));
     return;
   }
 

@@ -9,14 +9,14 @@
  * All rights reserved.
  */
 
-#include "au/string/StringUtilities.h"          // au::split
+#include "au/string/StringUtilities.h" // au::split
 
-#include "Environment.h"        // OWn interface
+#include "Environment.h"               // OWn interface
 
 namespace au {
 void Environment::Add(const Environment& environment) {
   std::map<std::string, std::string>::const_iterator iter;
-  for (iter = environment.items_.begin(); iter != environment.items_.end(); iter++) {
+  for (iter = environment.items_.begin(); iter != environment.items_.end(); ++iter) {
     Set(iter->first, iter->second);
   }
 }
@@ -87,7 +87,7 @@ bool Environment::IsSet(const std::string& name) const {
 Environment& Environment::operator=(Environment& environment) {
   ClearEnvironment();   // Clear previous enviroment
   std::map<std::string, std::string>::iterator iter;
-  for (iter = environment.items_.begin(); iter != environment.items_.end(); iter++) {
+  for (iter = environment.items_.begin(); iter != environment.items_.end(); ++iter) {
     items_.insert(std::pair<std::string, std::string>(iter->first, iter->second));
   }
   return *this;

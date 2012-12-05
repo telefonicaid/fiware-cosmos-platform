@@ -219,7 +219,7 @@ public:
   bool hasValueFor(const std::string& name) const;
 
   /**
-   * \brief Get an complete error message with extra information about provided command
+   * \brief Get a complete error message with extra information about provided command
    */
   std::string GetErrorMessage(const std::string error_message) const;
 
@@ -242,7 +242,7 @@ private:
 /**
  * \brief Complete catalogue of possible commands with all their options and arguments
  *
- * Very usefull used toguether with au::Console since commands introduced by user can be verified and parsed here
+ * Very useful used toguether with au::Console since commands introduced by user can be verified and parsed here
  */
 
 class CommandCatalogue {
@@ -263,10 +263,10 @@ public:
 /**
  * \brief Add a new command to the catalogue
  */
-  Command *Add(const std::string& name
-               , const std::string& category = "general"
-               , const std::string& short_description = ""
-               , const std::string& help = "");
+  Command *AddCommand(const std::string& name
+                      , const std::string& category = "general"
+                      , const std::string& short_description = ""
+                      , const std::string& help = "");
 
 /**
  * \brief Add option to previously added command
@@ -368,7 +368,7 @@ public:
   std::string GetHelpForConcept(const std::string& name) const;
 
   /**
-   * \brief Get list of cagtegories to be displayed in help message
+   * \brief Get list of categories to be displayed in help message
    */
   au::StringVector GetCategories() const;
 
@@ -378,7 +378,7 @@ public:
   bool IsValidCommand(const std::string& command) const;
 
   /**
-   * \brief Check if is a category is included in this command catalogue
+   * \brief Check if a category is included in this command catalogue
    */
   bool IsValidCategory(const std::string& category) const;
 

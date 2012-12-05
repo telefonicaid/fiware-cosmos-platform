@@ -114,7 +114,7 @@ public:
     au::map< std::string, ConceptTimeCounterItem >::iterator iter;
     for (iter = items_.begin(); iter != items_.end(); ) {
       if (iter->second->GetTime() > max_time_) {
-        items_.erase(iter++);
+        items_.erase(++iter);
       } else {
         ++iter;
       }

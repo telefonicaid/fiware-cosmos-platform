@@ -20,10 +20,10 @@ void SimpleLogCounter::Process(au::LogPointer log) {
   types_.Add(log->Get("type"));
   // Min-max time
   time_t time = log->log_data().tv.tv_sec;
-  if (( min_time == (time_t)-1 ) || ( time < min_time )) {
+  if ((min_time == (time_t)-1) || (time < min_time)) {
     min_time = time;
   }
-  if (( max_time == (time_t)-1 ) || ( time > max_time )) {
+  if ((max_time == (time_t)-1) || (time > max_time)) {
     max_time = time;
   }
 }
@@ -61,10 +61,10 @@ void LogCounter::Process(LogPointer log) {
 
   // Min-max time
   time_t time = log->log_data().tv.tv_sec;
-  if (( min_time_ == (time_t)-1 ) || ( time < min_time_ )) {
+  if ((min_time_ == (time_t)-1) || (time < min_time_)) {
     min_time_ = time;
   }
-  if (( max_time_ == (time_t)-1 ) || ( time > max_time_ )) {
+  if ((max_time_ == (time_t)-1) || (time > max_time_)) {
     max_time_ = time;
   }
 
@@ -78,7 +78,7 @@ std::string LogCounter::GetChannelsTable() const {
   table.setTitle("Log info");
 
   au::map<std::string, SimpleLogCounter>::const_iterator iter;
-  for (iter = logs_per_channel_.begin(); iter != logs_per_channel_.end(); iter++) {
+  for (iter = logs_per_channel_.begin(); iter != logs_per_channel_.end(); ++iter) {
     au::StringVector values;
 
     values.Push(iter->first);

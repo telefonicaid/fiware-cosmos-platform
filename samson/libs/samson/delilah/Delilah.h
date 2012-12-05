@@ -41,15 +41,13 @@
 
 #include "samson/common/Logs.h"            // EXIT, ...
 #include "samson/common/Macros.h"          // EXIT, ...
+#include "samson/delilah/DelilahBase.h"    // Monitorization information for delilah
+#include "samson/delilah/DelilahBaseConnection.h"
+#include "samson/delilah/PushManager.h"
 #include "samson/module/Environment.h"  // samson::Environment
-
 #include "samson/network/DelilahNetwork.h"
 #include "samson/network/Message.h"        // Message::MessageCode
 #include "samson/network/NetworkInterface.h"  // NetworkInterface
-
-#include "DelilahBase.h"                   // Monitorization information for delilah
-#include "DelilahBaseConnection.h"
-#include "PushManager.h"
 
 namespace  engine {
 class Buffer;

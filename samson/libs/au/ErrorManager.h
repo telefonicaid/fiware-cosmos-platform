@@ -21,7 +21,7 @@
 *
 * DESCRIPTION
 *
-* Simple but usefull error mesasage information
+* Simple but useful error mesasage information
 * Whatever sistem that can report an error can activate this error providing a message
 *
 * ****************************************************************************/

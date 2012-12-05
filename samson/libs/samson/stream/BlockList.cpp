@@ -91,7 +91,7 @@ BlockInfo BlockList::getBlockInfo() {
   BlockInfo block_info;
 
   au::list<BlockRef>::iterator it;
-  for (it = blocks_.begin(); it != blocks_.end(); it++) {
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
     BlockRef *block_ref = *it;
     block_ref->append(block_info);
   }
@@ -101,7 +101,7 @@ BlockInfo BlockList::getBlockInfo() {
 
 void BlockList::Review(au::ErrorManager& error) {
   au::list<BlockRef>::iterator it;
-  for (it = blocks_.begin(); it != blocks_.end(); it++) {
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
     (*it)->Review(error);
     if (error.HasErrors()) {
       return;
@@ -111,7 +111,7 @@ void BlockList::Review(au::ErrorManager& error) {
 
 void BlockList::ReviewKVFiles(au::ErrorManager& error) {
   au::list<BlockRef>::iterator it;
-  for (it = blocks_.begin(); it != blocks_.end(); it++) {
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
     (*it)->ReviewKVFile(error);
     if (error.HasErrors()) {
       return;
@@ -127,7 +127,7 @@ std::string BlockList::str_blocks() {
   std::ostringstream output;
   output << "[ ";
   au::list<BlockRef>::iterator it;
-  for (it = blocks_.begin(); it != blocks_.end(); it++) {
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
     output << str_block_id((*it)->block_id()) << " ";
   }
   output << "]";
@@ -136,7 +136,7 @@ std::string BlockList::str_blocks() {
 
 bool BlockList::ContainsBlock(size_t block_id) {
   au::list<BlockRef>::iterator it;
-  for (it = blocks_.begin(); it != blocks_.end(); it++) {
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
     if ((*it)->block_id() == block_id) {
       return true;
     }

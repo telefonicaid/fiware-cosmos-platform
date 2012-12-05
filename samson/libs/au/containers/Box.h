@@ -67,7 +67,7 @@ public:
   bool Contains(const SharedPointer<V>& shared_pointer_v) {
     V *v = shared_pointer_v.shared_object();
 
-    return  ( items_.find(v) != items_.end());
+    return  (items_.find(v) != items_.end());
   }
 
   size_t size() const {
@@ -77,7 +77,7 @@ public:
   std::vector< SharedPointer<V> > items() {
     std::vector< SharedPointer<V> > vector;
     typename std::map< V *, SharedPointer<V> >::iterator iter;
-    for (iter = items_.begin(); iter != items_.end(); iter++) {
+    for (iter = items_.begin(); iter != items_.end(); ++iter) {
       vector.push_back(iter->second);
     }
     return vector;

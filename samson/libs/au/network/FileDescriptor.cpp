@@ -76,7 +76,7 @@ void FileDescriptor::Close() {
 }
 
 bool FileDescriptor::IsClosed() const {
-  return ( fd_ == -1 );
+  return (fd_ == -1);
 }
 
 std::string FileDescriptor::str() {
@@ -116,7 +116,7 @@ Status FileDescriptor::okToSend(int tries, int tv_sec, int tv_usec) {
       if (tryh % 10 == 0) {
         // Traces canceled since it is used to send traces to a server
         LM_LW(("Problems to send to %s (%d/%d secs)", name_.c_str(), tryh,
-               tries ));
+               tries));
       }
     }
   }
@@ -254,8 +254,8 @@ Status FileDescriptor::ReadLine(char *line, size_t max_size, int max_seconds) {
     // A new letter has been read
     tot++;
 
-    // Check excesive line length
-    if (tot >= ( max_size - 2 )) {
+    // Check Excessive line length
+    if (tot >= (max_size - 2)) {
       return Error;
     }
   }
@@ -284,7 +284,7 @@ Status FileDescriptor::partRead(void *vbuf
 
       s = msgAwait(1, 0, what);   // Continous try with 1 second timeout to check max_seconds
 
-      if (( s != OK ) && ( s != Timeout )) {
+      if ((s != OK) && (s != Timeout)) {
         if (read_size) {
           *read_size = tot;
         }

@@ -22,7 +22,7 @@
 *
 * DESCRIPTION
 *
-*  Usefull functions to simplify development with pugi library
+*  useful functions to simplify development with pugi library
 *  Everything ready for running xpath queries over xml data
 *
 * ****************************************************************************/

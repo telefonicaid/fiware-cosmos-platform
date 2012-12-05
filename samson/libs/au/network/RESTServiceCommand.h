@@ -107,7 +107,7 @@ private:
   std::string format_;                  // Extension of the resource (.xml , .json , .html )
 
   // First line in request
-  char request_line_[1024];
+  std::string request_line_;
 
   // Header environment
   au::Environment header_;

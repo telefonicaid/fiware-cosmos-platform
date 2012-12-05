@@ -20,7 +20,7 @@
 *
 * DESCRIPTION
 *
-*      Usefull functions to generate xml tags
+*      useful functions to generate xml tags
 *
 * ****************************************************************************/
 
@@ -95,7 +95,7 @@ void xml_iterate_list(std::ostringstream& output, std::string name, T& vector) {
   // typename std::map<K, V* >::iterator iter;
   typename T::iterator iter;
 
-  for (iter = vector.begin(); iter != vector.end(); iter++) {
+  for (iter = vector.begin(); iter != vector.end(); ++iter) {
     (*iter)->getInfo(output);
   }
 
@@ -109,7 +109,7 @@ void xml_reverse_iterate_list(std::ostringstream& output, std::string name, T& v
   // typename std::map<K, V* >::iterator iter;
   typename T::r_iterator iter;
 
-  for (iter = vector.r_begin(); iter != vector.r_end(); iter++) {
+  for (iter = vector.r_begin(); iter != vector.r_end(); ++iter) {
     (*iter)->getInfo(output);
   }
 
@@ -123,7 +123,7 @@ void xml_iterate_list_object(std::ostringstream& output, std::string name, T& ve
   // typename std::map<K, V* >::iterator iter;
   typename T::iterator iter;
 
-  for (iter = vector.begin(); iter != vector.end(); iter++) {
+  for (iter = vector.begin(); iter != vector.end(); ++iter) {
     (iter)->getInfo(output);
   }
 
@@ -137,7 +137,7 @@ void xml_iterate_map(std::ostringstream& output, std::string name, au::map<K, V>
   // typename std::map<K, V* >::iterator iter;
   typename au::map<K, V>::iterator iter;
 
-  for (iter = vector.begin(); iter != vector.end(); iter++) {
+  for (iter = vector.begin(); iter != vector.end(); ++iter) {
     iter->second->getInfo(output);
   }
 

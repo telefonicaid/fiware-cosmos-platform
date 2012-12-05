@@ -181,7 +181,7 @@ std::string ModulesManager::GetTableOfModules() const {
 
   table.setTitle("Modules");
   au::map<std::string, Module>::const_iterator it;
-  for (it = modules_.begin(); it != modules_.end(); it++) {
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
     std::string name = it->second->name;
 
     Module *module = it->second;
@@ -200,7 +200,7 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetModulesCollection(const Vi
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("modules");
   au::map<std::string, Module>::const_iterator it;
-  for (it = modules_.begin(); it != modules_.end(); it++) {
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
     std::string name = it->second->name;
     if (::fnmatch(visualitzation.pattern().c_str(), name.c_str(), FNM_PATHNAME) == 0) {
       Module *module = it->second;
@@ -222,7 +222,7 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetDatasCollection(const Visu
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("datas");
   au::map<std::string, Module>::const_iterator it;
-  for (it = modules_.begin(); it != modules_.end(); it++) {
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
     Module *module = it->second;
 
     std::map<std::string, Data *>::iterator it_datas;
@@ -245,7 +245,7 @@ au::SharedPointer<gpb::Collection> ModulesManager::GetOperationsCollection(const
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("operations");
   au::map<std::string, Module>::const_iterator it;
-  for (it = modules_.begin(); it != modules_.end(); it++) {
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
     Module *module = it->second;
 
     std::map<std::string, Operation *>::iterator it_operation;

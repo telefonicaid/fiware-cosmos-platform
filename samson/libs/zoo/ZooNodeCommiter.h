@@ -126,6 +126,7 @@ public:
    */
   au::SharedPointer<C> getCurrentModel() const {
     au::TokenTaker tt(&token_);
+
     return c_;
   }
 
@@ -247,7 +248,7 @@ public:
   std::vector<StringCommitRecord> last_commits() const {
     std::vector<StringCommitRecord> copy_last_commits;
     std::list<StringCommitRecord>::const_iterator it;
-    for (it = last_commits_.begin(); it != last_commits_.end(); it++) {
+    for (it = last_commits_.begin(); it != last_commits_.end(); ++it) {
       copy_last_commits.push_back(*it);
     }
     return copy_last_commits;

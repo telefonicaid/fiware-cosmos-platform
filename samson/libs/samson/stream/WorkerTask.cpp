@@ -147,13 +147,13 @@ std::string WorkerTask::commit_command() {
   std::vector<std::string> inputs;
   std::vector<std::string> outputs;
 
-  for (int c = 0; c < stream_operation_->inputs_size(); c++) {
+  for (int c = 0; c < stream_operation_->inputs_size(); ++c) {
     if (!remove_last_input && (c == (stream_operation_->inputs_size() - 1))) {
       continue;  // Skip this last input
     }
     inputs.push_back(stream_operation_->inputs(c));
   }
-  for (int c = 0; c < stream_operation_->outputs_size(); c++) {
+  for (int c = 0; c < stream_operation_->outputs_size(); ++c) {
     outputs.push_back(stream_operation_->outputs(c));
   }
 
@@ -226,9 +226,9 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
 
   BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  if (list) {
+  if (list != NULL) {
     au::list<BlockRef>::iterator bi;
-    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); bi++) {
+    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
       BlockRef *block_ref = *bi;
       BlockPointer block = block_ref->block();
       engine::BufferPointer buffer = block->buffer();
@@ -240,7 +240,7 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
         return;
       }
 
-      for (int hg = range_.hg_begin_; hg < range_.hg_end_; hg++) {
+      for (int hg = range_.hg_begin_; hg < range_.hg_end_; ++hg) {
         KVInfo info = file->info[hg];
 
         if (info.size > 0) {
@@ -295,9 +295,9 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
 
   BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  if (list) {
+  if (list != NULL) {
     au::list<BlockRef>::iterator bi;
-    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); bi++) {
+    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
       BlockRef *block_ref = *bi;
       BlockPointer block = block_ref->block();
       engine::BufferPointer buffer = block->buffer();
@@ -319,7 +319,7 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
       // Read key values
       inputVector.prepareInput(header->info.kvs);
 
-      for (int hg = range_.hg_begin_; hg < range_.hg_end_; hg++) {
+      for (int hg = range_.hg_begin_; hg < range_.hg_end_; ++hg) {
         inputVector.addKVs(0, file->info[hg], &file->kvs[file->kvs_index[hg]]);
       }
 
@@ -387,10 +387,10 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   BlockReaderCollection blockreaderCollection(operation_);
 
   // Insert all the blocks involved in this operation
-  for (int i = 0; i < operation_->getNumInputs(); i++) {
+  for (int i = 0; i < operation_->getNumInputs(); ++i) {
     BlockList *list = block_list_container_.FindBlockList(au::str("input_%d", i));
 
-    if (list) {
+    if (list != NULL) {
       au::list<BlockRef>::iterator bi;
 
       LOG_D(logs.reduce_operation, ("Reduce WT%lu - Adding Input %d : %lu blocks"
@@ -398,7 +398,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
                                     , i
                                     , list->blocks_.size()));
 
-      for (bi = list->blocks_.begin(); bi != list->blocks_.end(); bi++) {
+      for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
         BlockRef *block_ref = *bi;
         // BlockPointer block = block_ref->block();
         // engine::BufferPointer buffer = block->buffer();
@@ -432,14 +432,14 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
   LOG_M(logs.reduce_operation, ("[WT%lu:%s] Processing data...", id(), au::str(cronometer.seconds(), "s").c_str()));
 
-  for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; hg++) {
+  for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; ++hg) {
     // Check if this is inside the range we are interested in processing
     if ((hg < range_.hg_begin_) || (hg >= range_.hg_end_)) {
       continue;
     }
 
     // Report progress to show in the lists
-    processed_hds++;
+    ++processed_hds;
     // reportProgress((double)processed_hds / (double)total_hgs);
 
     // Prepare the blockReaderCollection for thi hash-group
@@ -467,7 +467,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
         // Check if we have data in the input channels ( non state )
         bool input_data_available = false;
-        for (size_t i = 0; i < (num_inputs - 1); i++) {
+        for (size_t i = 0; i < (num_inputs - 1); ++i) {
           if (inputStructs[i].num_kvs > 0) {
             input_data_available = true;
           }
@@ -481,14 +481,14 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
             size_t key_size = inputStructs[1].kvs[0]->key_size;  // Jey size
             size_t value_size = inputStructs[1].kvs[0]->value_size;  // Value size
             writer->internal_emit(state_output, hg, key_data, key_size + value_size);
-            transfered_states++;
+            ++transfered_states;
           } else {
             LOG_SW(("Interal error. No input and no state?"));
           }
         } else {
           // Call the reduce operation to generate output
           reduce->run(inputStructs, writer);
-          processed_states++;
+          ++processed_states;
         }
 
         // Get the next one
@@ -525,9 +525,9 @@ void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
   // Recover the input list "input_0"
   BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  if (list) {
+  if (list != NULL) {
     au::list<BlockRef>::iterator bi;
-    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); bi++) {
+    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
       BlockRef *block_ref = *bi;
       BlockPointer block = block_ref->block();
       engine::BufferPointer buffer = block->buffer();
@@ -602,7 +602,7 @@ FullKVInfo WorkerTask::GetStateDataInfo() const {
 FullKVInfo WorkerTask::GetInputDataInfo() const {
   FullKVInfo info;
 
-  for (int i = 0; i < num_input_channels_; i++) {
+  for (int i = 0; i < num_input_channels_; ++i) {
     info.append(GetInputInfo(i));
   }
   return info;

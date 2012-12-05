@@ -1473,7 +1473,7 @@ bool SamsonWorker::IsWorkerReadyForBlockRequest(size_t worker_id) {
     return false;
   }
 
-  // If number of scheduled block_request task is excesive, also stop
+  // If number of scheduled block_request task is Excessive, also stop
   // TODO
 
   return true;

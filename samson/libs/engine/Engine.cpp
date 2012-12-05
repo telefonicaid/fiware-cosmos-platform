@@ -134,7 +134,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
 
 
   {
-    // Run the item controlling excesive time
+    // Run the item controlling Excessive time
     au::Cronometer c;
 
     // Run the running element ;)
@@ -306,28 +306,28 @@ au::statistics::ActivityMonitor *Engine::activity_monitor() {
 
 Engine *Engine::shared() {
   if (!engine_) {
-    LOG_W(logs.engine, ("Engine was not initialised."));
+    LOG_W(logs.engine, ("Engine has not been initialised"));
   }
   return engine_;
 }
 
 DiskManager *Engine::disk_manager() {
   if (!disk_manager_) {
-    LM_E(("DiskManager was not initialised."));
+    LM_E(("DiskManager has not been initialised"));
   }
   return disk_manager_;
 }
 
 MemoryManager *Engine::memory_manager() {
   if (!memory_manager_) {
-    LM_E(("MemoryManager was not initialised."));
+    LM_E(("MemoryManager has not been initialised"));
   }
   return memory_manager_;
 }
 
 ProcessManager *Engine::process_manager() {
   if (!process_manager_) {
-    LM_E(("ProcessManager was not initialised."));
+    LM_E(("ProcessManager has not been initialised"));
   }
   return process_manager_;
 }

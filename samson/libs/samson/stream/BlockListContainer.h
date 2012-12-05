@@ -77,7 +77,7 @@ public:
 
   void Review(au::ErrorManager& error) {
     au::map<std::string, BlockList>::iterator iter;
-    for (iter = blockLists_.begin(); iter != blockLists_.end(); iter++) {
+    for (iter = blockLists_.begin(); iter != blockLists_.end(); ++iter) {
       iter->second->Review(error);
       if (error.HasErrors()) {
         return;
@@ -87,7 +87,7 @@ public:
 
   void ReviewKVFile(au::ErrorManager& error) {
     au::map<std::string, BlockList>::iterator iter;
-    for (iter = blockLists_.begin(); iter != blockLists_.end(); iter++) {
+    for (iter = blockLists_.begin(); iter != blockLists_.end(); ++iter) {
       iter->second->ReviewKVFiles(error);
       if (error.HasErrors()) {
         return;

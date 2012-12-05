@@ -90,7 +90,7 @@ au::SharedPointer<KVFile> Block::GetKVFile(au::ErrorManager& error) {
 
   if (buffer_ == NULL) {
     error.AddError(au::str("No buffer in memory for block %s", str_block_id(block_id_).c_str()));
-    return file_;  // Returning NULL since memory block is not in memory
+    return au::SharedPointer<KVFile>(NULL);
   }
 
   // Create a new KVFile

@@ -52,7 +52,7 @@ size_t BlockListContainer::GetNumBlocks() const {
   size_t total = 0;
 
   au::map<std::string, BlockList>::const_iterator it;
-  for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
+  for (it = blockLists_.begin(); it != blockLists_.end(); ++it) {
     total += (it->second->getNumBlocks());
   }
   return total;
@@ -60,7 +60,7 @@ size_t BlockListContainer::GetNumBlocks() const {
 
 bool BlockListContainer::is_content_in_memory() const {
   au::map<std::string, BlockList>::const_iterator it;
-  for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
+  for (it = blockLists_.begin(); it != blockLists_.end(); ++it) {
     BlockList *block_list = it->second;
     if (!block_list->IsContentInMemory()) {
       return false;
@@ -71,7 +71,7 @@ bool BlockListContainer::is_content_in_memory() const {
 
 void BlockListContainer::lock_content_in_memory() {
   au::map<std::string, BlockList>::iterator it;
-  for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
+  for (it = blockLists_.begin(); it != blockLists_.end(); ++it) {
     BlockList *block_list = it->second;
     block_list->lock_content_in_memory();
   }
@@ -81,7 +81,7 @@ std::string BlockListContainer::str_blocks() const {
   std::ostringstream output;
 
   au::map<std::string, BlockList>::const_iterator it;
-  for (it = blockLists_.begin(); it != blockLists_.end(); it++) {
+  for (it = blockLists_.begin(); it != blockLists_.end(); ++it) {
     BlockList *block_list = it->second;
     output << "<<" << it->first << " " << block_list->str_blocks() << ">> ";
   }
@@ -92,14 +92,14 @@ std::string BlockListContainer::str_block_ids() const {
   std::ostringstream output;
   int num_inputs = 0;
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; ++i) {
     if (blockLists_.findInMap(au::str("input_%d", i))) {
       num_inputs = i + 1;
     }
   }
 
   int num_outputs = 0;
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; ++i) {
     if (blockLists_.findInMap(au::str("output_%d", i))) {
       num_outputs = i + 1;
     }
@@ -129,7 +129,7 @@ std::string BlockListContainer::str_block_ids() const {
 std::string BlockListContainer::str_inputs() const {
   int num_inputs = 0;
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; ++i) {
     if (blockLists_.findInMap(au::str("input_%d", i))) {
       num_inputs = i + 1;
     }
@@ -150,7 +150,7 @@ std::string BlockListContainer::str_inputs() const {
 std::string BlockListContainer::str_outputs() const {
   int num_outputs = 0;
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; ++i) {
     if (blockLists_.findInMap(au::str("output_%d", i))) {
       num_outputs = i + 1;
     }
@@ -171,7 +171,7 @@ std::string BlockListContainer::str_outputs() const {
 FullKVInfo BlockListContainer::GetInputsInfo() const {
   int num_inputs = 0;
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; ++i) {
     if (blockLists_.findInMap(au::str("input_%d", i))) {
       num_inputs = i + 1;
     }
@@ -190,7 +190,7 @@ FullKVInfo BlockListContainer::GetInputsInfo() const {
 FullKVInfo BlockListContainer::GetOutputsInfo() const {
   int num_outputs = 0;
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 10; ++i) {
     if (blockLists_.findInMap(au::str("output_%d", i))) {
       num_outputs = i + 1;
     }

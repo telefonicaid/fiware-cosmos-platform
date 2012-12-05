@@ -31,7 +31,7 @@ void WorkerBlockManager::Review() {
       // Remove if necessary...
       if (it->second->finished()) {
         delete it->second;
-        block_requests_.erase(it++);
+        block_requests_.erase(++it);
       } else {
         ++it;
       }
@@ -349,7 +349,7 @@ void WorkerBlockManager::RemoveRequestIfNecessary(const std::set<size_t>& all_bl
   for (iter = block_requests_.begin(); iter != block_requests_.end(); ) {
     if (all_block_ids.find(iter->second->block_id()) == all_block_ids.end()) {
       delete iter->second;  // Remove the request itself
-      block_requests_.erase(iter++);          // Remove this request
+      block_requests_.erase(++iter);          // Remove this request
     } else {
       ++iter;   // keep request
     }

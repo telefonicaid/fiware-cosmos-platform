@@ -49,11 +49,6 @@ size_t code64_num(const std::string& value);
  * Used inside code64_num to recover original number based on its string representation
  */
 int GetCode64Base(char v);
-
-/**
- * \brief Remove newline character from the end of a string
- */
-void remove_return_chars(char *line);
 }
 
 #endif  // ifndef _H_AU_UTILS

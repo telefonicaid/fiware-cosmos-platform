@@ -221,7 +221,7 @@ std::string Log::Get(std::string name) const {
   }
 
   // If not recognized as a field, just return the name
-  // This is usefull for formatting a line
+  // This is useful for formatting a line
   return name;
 }
 

@@ -21,7 +21,7 @@
 *
 * DESCRIPTION
 *
-*      Usefull functions to work with strings
+*      useful functions to work with strings
 *
 * ****************************************************************************/
 
@@ -170,6 +170,13 @@ bool MatchPatterns(const char *inputString, const char *pattern, char wildcard);
 // Find and replace
 void FindAndReplaceInString(std::string &source, const std::string& find, const std::string& replace);
 
+/**
+ * \brief Remove trailing spaces, tabs at the begining or end of the command and spaces,tabs and return at the end
+ */
+
+std::string StripString(const std::string& line);
+
+
 // ------------------------------------------------------------------
 // Miscelania
 // ------------------------------------------------------------------
@@ -205,7 +212,7 @@ std::string str(const std::set<C>& elements) {
 
   output << "[ ";
   typename std::set<C>::const_iterator it;
-  for (it = elements.begin(); it != elements.end(); it++) {
+  for (it = elements.begin(); it != elements.end(); ++it) {
     output << *it << " ";
   }
   output << "]";
@@ -218,7 +225,7 @@ std::string str(const std::list<C>& elements) {
 
   output << "[ ";
   typename std::list<C>::const_iterator it;
-  for (it = elements.begin(); it != elements.end(); it++) {
+  for (it = elements.begin(); it != elements.end(); ++it) {
     output << *it << " ";
   }
   output << "]";

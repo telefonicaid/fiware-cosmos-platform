@@ -20,7 +20,7 @@
 *
 * DESCRIPTION
 *
-* Simple but usefull class to work with a temporary allocated buffer
+* Simple but useful class to work with a temporary allocated buffer
 *
 * ****************************************************************************/
 

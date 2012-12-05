@@ -197,7 +197,7 @@ std::string str_double_progress_bar(double p1, double p2, char c1, char c2, char
     p2 = 1;
   }
   if (p2 < p1) {
-    p2 = p1;      // no sense
+    p2 = p1;        // no sense
   }
   int pos1 = (double)len * p1;
   int pos2 = (double)len * p2;
@@ -374,7 +374,7 @@ std::string str_double(double value, char letter) {
 std::string str(const std::vector<std::string>& hosts) {
   std::ostringstream output;
 
-  for (size_t i = 0; i < hosts.size(); i++) {
+  for (size_t i = 0; i < hosts.size(); ++i) {
     output << hosts[i];
     if (i != (hosts.size() - 2)) {
       output << " ";
@@ -401,7 +401,7 @@ std::string str_grouped(const std::vector<std::string>& names) {
 
   std::ostringstream output;
   au::map<std::string, std::vector<std::string> >::iterator iter;
-  for (iter = grouped_names.begin(); iter != grouped_names.end(); iter++) {
+  for (iter = grouped_names.begin(); iter != grouped_names.end(); ++iter) {
     if (iter->second->size() == 1) {
       std::string name = iter->second->at(0);
       if (name == "") {
@@ -901,6 +901,19 @@ int HashString(const std::string& str, int max_num_partitions) {
     hash *= FNVMultiple;
   }
   return static_cast<int>(hash % max_num_partitions);
+}
+
+std::string StripString(const std::string& line) {
+  size_t begin_pos = line.find_first_not_of(" \t");
+
+  if (begin_pos == std::string::npos) {
+    return "";
+  }
+  size_t end_pos = line.find_last_not_of(" \t\n\r");
+  if (end_pos == std::string::npos) {
+    return "";   // Theoretically impossible
+  }
+  return line.substr(begin_pos, end_pos - begin_pos);
 }
 }
 

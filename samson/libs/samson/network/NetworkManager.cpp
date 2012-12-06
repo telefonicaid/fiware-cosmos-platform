@@ -125,7 +125,7 @@ void NetworkManager::RemoveDisconnectedConnections() {
     if (connection->isDisconnectd()) {
       // Extract connection
       LOG_SW(("Removing connection %s since it is disconnected", it->first.c_str()));
-      connections_.erase(++it);
+      connections_.erase(it++);
       delete connection;
     } else {
       ++it;

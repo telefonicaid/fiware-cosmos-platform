@@ -163,7 +163,7 @@ public:
     for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); ) {
       if (keys.find(iter->first) == keys.end()) {
         delete iter->second;   // Remove instance before extracting from map
-        std::map<K, V *, _Compare>::erase(++iter);
+        std::map<K, V *, _Compare>::erase(iter++);
       } else {
         ++iter;
       }

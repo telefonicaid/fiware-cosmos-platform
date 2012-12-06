@@ -255,7 +255,7 @@ void PushManager::Review() {
       notification->environment().Set("size", item->size());
       engine::Engine::shared()->notify(notification);
 
-      items_.erase(++it);
+      items_.erase(it++);
       delete item;   // Remove item itself
     } else {
       ++it;

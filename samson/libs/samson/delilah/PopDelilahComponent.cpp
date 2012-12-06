@@ -18,8 +18,8 @@
 #include "engine/DiskOperation.h"
 #include "engine/Notification.h"                // engine::Notification
 
+#include "samson/common/SamsonDataSet.h"
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
-// network::...
 #include "samson/delilah/Delilah.h"  // samson::Delilah
 #include "samson/network/Message.h"  // samson::Message
 #include "samson/network/Packet.h"  // samson::Packet
@@ -58,7 +58,7 @@ PopDelilahComponent::~PopDelilahComponent() {
 }
 
 void PopDelilahComponent::run() {
-  if (file_name_ != "") {  // Continuous pop operations
+  if (file_name_ != "") {
     if (force_flag_) {
       au::ErrorManager error;
       au::RemoveDirectory(file_name_, error);
@@ -320,12 +320,27 @@ void PopDelilahComponent::check() {
   // Set component as finished if everything has completed ( file_name is set in normal pop operations )
   if (file_name_ != "") {
     // Adding stated() to avoid finishing a component before started
-    if (started() && (num_pending_write_operations_ == 0) && (items_.size() == 0)) {
-      LOG_M(logs.delilah_components,
-            (
-              "pop operation finished on file '%s' because started:%d, num_pending_write_operations_:%d && items_.size():%lu",
-              file_name_.c_str(), started_, num_pending_write_operations_, items_.size()));
+    if (started_ && (num_pending_write_operations_ == 0) && (items_.size() == 0)) {
+      LOG_M(logs.delilah_components, ("pop operation finished on file '%s'", file_name_.c_str()));
       setComponentFinished();
+
+      if (show_flag_) {
+        au::ErrorManager error;
+        au::SharedPointer<SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name_, error);
+
+        if (error.HasErrors()) {
+          delilah->WriteErrorOnDelilah(au::str("Not possible to show content from dir %s", file_name_.c_str()));
+        } else {
+          std::ostringstream output;
+          output << "----------------------------------------------------------------------\n";
+          output << " Output of queue " << queue_ << " (file " << file_name_ << ")\n";
+          output << "----------------------------------------------------------------------\n";
+          samson_data_set->printContent(100, false, output);
+          output << "----------------------------------------------------------------------\n";
+          delilah->WriteOnDelilah(output.str());
+        }
+      } else {
+      }
     } else {
       LOG_M(logs.delilah_components,
             ("Waiting for pop component started:%d with num_pending_write_operations_:%d, items.size():%lu",

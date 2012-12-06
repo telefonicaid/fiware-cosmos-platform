@@ -337,7 +337,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddMandatoryStringArgument("pop", "queue", "Queue to be popped");
   AddMandatoryStringArgument("pop", "file_name", "The name of a folder where the data is downloaded to");
   AddBoolOption("pop", "-force", "Delete local directory if it exists");
-  AddBoolOption("pop", "-show", "Show first lines of the content once downloaded");
+  AddBoolOption("pop", "-show", "Show first key-values or lines (max 100) of the content once downloaded");
 
   AddCommand("ls_local_push_operations", "push&pop", "Show a list of items awaiting upload");
 

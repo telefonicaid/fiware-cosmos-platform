@@ -53,7 +53,6 @@ void Channel::remove_finished_items_and_connections(au::ErrorManager *error) {
 
     if ((item->getNumConnections() == 0) && (item->is_finished())) {
       log("Message", au::str("Removing adaptor %s", item->getFullName().c_str()));
-
       item->cancel_item();
       delete item;
       items.erase(it_items);

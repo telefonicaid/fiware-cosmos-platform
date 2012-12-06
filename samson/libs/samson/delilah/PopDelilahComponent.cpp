@@ -314,7 +314,7 @@ void PopDelilahComponent::check() {
     }
 
     // Remove this item in the list
-    items_.erase(++it);
+    items_.erase(it++);
   }
 
   // Set component as finished if everything has completed ( file_name is set in normal pop operations )

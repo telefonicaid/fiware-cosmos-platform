@@ -57,8 +57,10 @@ bool Log::Read(au::FileDescriptor *fd) {
   size_t string_length = header.dataLen - sizeof(LogData);
   au::TemporalBuffer buffer(string_length);
   // LM_V(("Reading strings data of %lu bytes" ,string_length ));
-  fd->partRead(buffer.data(), string_length, "log_strings", 100);
-
+  s = fd->partRead(buffer.data(), string_length, "log_strings", 100);
+  if( s != au::OK)
+    return false;
+  
   // Process strings
   AddStrings(buffer.data(), string_length);
   return true;

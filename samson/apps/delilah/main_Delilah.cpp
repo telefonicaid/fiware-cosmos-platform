@@ -77,6 +77,7 @@ char command[1024];
 bool stdin_commands;
 char log_command[1024];
 char log_server[1024];
+bool interactive_mode;
 unsigned short log_port;
 
 char host[1024];
@@ -133,6 +134,7 @@ PaArgument paArgs[] =
     PaOpt,    _i "",                 PaNL,
     PaNL,     "Single command to be executed"            },
   { "-",      &stdin_commands,       "",                 PaBool,  PaOpt,false, false, true },
+  { "-i",     &interactive_mode,     "",                 PaBool,  PaOpt,false, false, true },
   { "",       host,                  "",                 PaString,
     PaOpt,    _i "localhost",        PaNL,
     PaNL,     "host to be connected"                     },
@@ -382,9 +384,11 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-  if (commands_mode) {    // Some command executed in sequential order and exit
-    // If not connected, exit here
+  if (commands_mode) {
+    // Some command executed in sequential order and exit
+
     if (!delilahConsole->isConnected()) {
+      // If not connected, exit here
       LOG_X(1, ("Delilah client not connected to any SAMSON cluster. Exiting..."));
     }
 
@@ -433,7 +437,20 @@ int main(int argC, const char *argV[]) {
     LOG_SV(("delilah exit correctly"));
     // Stopping the new log_central thread
     au::LogCentral::StopLogSystem();
-    exit(0);
+    
+    if( !interactive_mode ) {
+      exit(0);
+    }
+    else {
+      // Change to interactive setup
+      delilahConsole->set_colors(true);
+      delilahConsole->set_verbose(true);
+      au::log_central->RemovePlugin("screen");
+      au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(delilahConsole, "[type][channel] text"));
+      au::log_central->EvalCommand("log_set delilah::G M");
+      LOG_M(samson::logs.delilah, ("Delilah running now in interactive mode with delilah generated id %s",
+                                   au::code64_str(delilah_random_code).c_str()));
+    }
   }
 
   // Show a warning is console is still un connected

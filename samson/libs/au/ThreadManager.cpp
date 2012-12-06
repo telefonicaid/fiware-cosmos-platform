@@ -288,10 +288,11 @@ void Thread::StopThread() {
 
 void Thread::JoinThread() {
   au::TokenTaker tt(&token_);
-
-  if (!pthread_running_) {
-    return;   // It is not running, it is not necessary to wait
+  while( true ) {
+    if (!pthread_running_) {
+      return;   // It is not running, it is not necessary to wait
+    }
+    tt.Stop();
   }
-  tt.Stop();
 }
 }

@@ -133,8 +133,8 @@ PaArgument paArgs[] =
   { "-command",command,               "",                 PaString,
     PaOpt,    _i "",                 PaNL,
     PaNL,     "Single command to be executed"            },
-  { "-",      &stdin_commands,       "",                 PaBool,  PaOpt,false, false, true },
-  { "-i",     &interactive_mode,     "",                 PaBool,  PaOpt,false, false, true },
+  { "-",      &stdin_commands,       "",                 PaBool,  PaOpt,  false, false, true },
+  { "-i",     &interactive_mode,     "",                 PaBool,  PaOpt,  false, false, true },
   { "",       host,                  "",                 PaString,
     PaOpt,    _i "localhost",        PaNL,
     PaNL,     "host to be connected"                     },
@@ -421,27 +421,22 @@ int main(int argC, const char *argV[]) {
           LOG_SE(("Error running '%s' (line %d)", commands[i].c_str(), i + 1));
           LOG_SE(("Error: %s", delilahConsole->errorMessage(id).c_str()));
         }
-      }
 
-      // manual output
-      std::string output = delilahConsole->getOutputForComponent(id);
-      delilahConsole->WriteOnDelilah(output);
+        // manual output
+        std::string output = delilahConsole->getOutputForComponent(id);
+        delilahConsole->WriteOnDelilah(output);
+      }
     }
 
     // Flush all messages
     delilahConsole->FlushBackgroundMessages();
 
-    // Disconnect from cluter
-    delilahConsole->disconnect();
-
-    LOG_SV(("delilah exit correctly"));
-    // Stopping the new log_central thread
-    au::LogCentral::StopLogSystem();
-    
-    if( !interactive_mode ) {
+    if (!interactive_mode) {
+      delilahConsole->disconnect();
+      LOG_SV(("delilah exit correctly"));
+      au::LogCentral::StopLogSystem();
       exit(0);
-    }
-    else {
+    } else {
       // Change to interactive setup
       delilahConsole->set_colors(true);
       delilahConsole->set_verbose(true);

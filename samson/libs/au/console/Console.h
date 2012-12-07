@@ -30,6 +30,7 @@ namespace console {
 class Console;
 class ConsoleAutoComplete;
 class ConsoleCommandHistory;
+class ConsoleCommand;
 
 /**
  * \brief Full-featured console for easy interaction with user
@@ -167,19 +168,29 @@ public:
 
 private:
 
-  void PrintLines(const std::string&message);
-  void RunThread();     // Main routine for background process
   void PrintCommand();
+  void PrintCurrentCommand();
+  void PrintReverseSearchCommand();
+
+  void RunThread();     // Main routine for background process
+  void PrintLines(const std::string&message);
   bool IsInputReady() const;
   void ProcessAutoComplete(ConsoleAutoComplete *info);
-  void ProcessInternalCommand(const std::string& sequence);
-  void ProcessChar(char c);
+
+  void ProcessReturn();
+  void ProcessTab();
+
   void ProcessEscapeSequenceInternal(const std::string& sequence);
   void ProcessBackgroundMessages();
-  bool IsNormalChar(char c) const;
   void GetEntry(ConsoleEntry *entry);        // Get the next entry from console
+  void ProcessEntry(ConsoleEntry& entry);
 
-  // History information ( all commands introduced before )
+  void StartReverseSearchMode();
+  void StopReverseSearchMode();
+  void UpdateReverseSearchMode();
+  void NextReverseSearch();
+
+  // History information ( all commands introduced before and current command )
   ConsoleCommandHistory *command_history_;
 
   // Pending messages to be displayed in background
@@ -197,6 +208,11 @@ private:
 
   // Flag to indicate if colors are allowed in this console
   bool colors_;
+
+  // Reverse search mode
+  bool reverse_search_mode_;
+  int reverse_search_history_pos_;
+  au::SharedPointer<ConsoleCommand> reverse_search_command_;
 };
 }
 }

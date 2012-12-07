@@ -15,40 +15,114 @@
 
 #include <string>
 
-
+#include "au/console/ConsoleEntry.h"
 
 namespace au {
 namespace console {
+/**
+ * \brief Command currently being introduced by the user
+ */
 class ConsoleCommand {
-  std::string command;      // Command we are currently reading from the user
-  int pos;                  // Current position in the command
-
 public:
 
   ConsoleCommand();
-  ConsoleCommand(std::string _command);
+  ConsoleCommand(const std::string& command);
 
-  // Add chars and string to current command
-  void add(char c);
-  void add(std::string txt);
+  /**
+   * \brief Add a character to the current command
+   */
+  void AddChar(char c);
 
-  void delete_char();
-  void delete_word();
-  void delete_rest_line();
+  /**
+   * \brief Add a string to current command
+   */
 
-  void toogle();
+  void AddString(const std::string& txt);
 
-  void move_home();
-  void move_end();
-  void move_cursor(int offset);
+  /**
+   * \brief Replace current command with a new command
+   */
 
-  std::string getCommand();
-  std::string getCommandUntilPointer();
-  int getPos();
+  void SetCommand(const std::string& command);
 
-  bool isCursorAtEnd();
+  /**
+   * \brief Delete a char in the current command
+   */
 
-  void setCommand(std::string _command);
+  void DeleteChar();
+
+  /**
+   * \brief Delete a work ( backward delete )
+   */
+
+  void DeleteWord();
+
+  /**
+   * \brief Remove the rest of the line ( forward )
+   */
+
+  void DeleteRestOfLine();
+
+  /**
+   * \brief Toogle the next two consecutive letters
+   */
+
+  void Toogle();
+
+  /**
+   * \brief Move pointer to the begining of the line
+   */
+  void MoveHome();
+
+  /**
+   * \brief Mode pointer to the end of the line
+   */
+  void MoveEnd();
+
+  /**
+   * \brief Move position in the current command an offerse ( possitive and negative )
+   */
+  void MoveCursor(int offset);
+
+  /**
+   * \brief Check if the pointer is at the of the line
+   */
+  bool IsCursorAtEnd() const;
+
+  /**
+   * \brief Get the current command
+   */
+  std::string command() const;
+
+  /**
+   * \brief Get the substring until the pointer position
+   */
+  std::string GetCommandUntilCursor() const;
+
+  /**
+   * \brief Get the pointer position (inside current command)
+   */
+  int cursor() const;
+
+  /**
+   * \brief Check if this command contain a string
+   */
+  bool Contains(const std::string& message);
+
+  /**
+   * \brief Process an entry from user
+   */
+  void ProcessEntry(ConsoleEntry& entry);
+
+  /**
+   * \brief Check if an entry given by user is "processable" by a ConsoleCommand
+   */
+  static bool CanProcessEntry(ConsoleEntry& entry);
+
+private:
+
+  std::string command_;      /**< Command we are currently reading from the user */
+  int pos_;                  /**< Current position in the command */
 };
 }
 }

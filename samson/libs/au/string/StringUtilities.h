@@ -138,8 +138,16 @@ bool CheckIfStringBeginsAndEndsWith(const std::string& str, const std::string& p
 // Console string commands
 // ------------------------------------------------------------------
 
-// Get the width of the terminal
+/**
+ * \brief Get the width of the terminal
+ */
 int GetTerminalWidth();
+
+/**
+ * \brief Clear current line in the terminal
+ */
+void ClearTerminalLine();
+
 
 // Get a string where every line has a maximum length ( "..." is added if more length
 std::string StringWithMaxLineLength(const std::string& txt, int max_line_length);

@@ -915,5 +915,14 @@ std::string StripString(const std::string& line) {
   }
   return line.substr(begin_pos, end_pos - begin_pos);
 }
+
+void ClearTerminalLine() {
+  printf("\r");
+  for (int i = 0; i < GetTerminalWidth(); ++i) {
+    printf(" ");
+  }
+  printf("\r");
+  fflush(stdout);
+}
 }
 

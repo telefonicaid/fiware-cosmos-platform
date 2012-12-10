@@ -116,7 +116,7 @@ au::StringVector ThreadManager::getThreadNames() {
   return names;
 }
 
-std::string ThreadManager::str() {
+std::string ThreadManager::str() const {
   // Mutex protection
   au::TokenTaker tt(&token_);
 
@@ -133,6 +133,23 @@ std::string ThreadManager::str() {
   }
 
   return o.str();
+}
+
+std::string ThreadManager::str_table() const {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  au::tables::Table table("Name,left|time,left");
+
+  table.setTitle("Running threads");
+
+  std::set< ThreadInfo * >::iterator it_threads;
+  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+    if (threads_[i] != NULL) {
+      table.addRow(au::StringVector(threads_[i]->name_, threads_[i]->cronometer_.str()));
+    }
+  }
+  return table.str();
 }
 
 void ThreadManager::wait(std::string title) {
@@ -229,70 +246,5 @@ void *run_NonDetachedThreadInfo(void *p) {
   delete thread_info;
 
   return ans;
-}
-
-void *run_Thread(void *p) {
-  Thread *t = (Thread *)p;
-
-  t->RunThread();
-  t->pthread_running_ = false;
-
-  // Wake up joining threads
-  au::TokenTaker tt(&t->token_);
-  tt.WakeUpAll();
-
-  return NULL;
-}
-
-void Thread::StartThread() {
-  if (pthread_running_) {
-    return;       // If already running, nothing to do
-  }
-  pthread_running_ = true;      // Mark as running
-
-  // Run the thread in background
-  au::Singleton<au::ThreadManager>::shared()->AddThread(name_, &t_, NULL, run_Thread, this);
-}
-
-void Thread::StopThread() {
-  stoping_ = true;
-  if (!pthread_running_) {
-    return;
-  }
-  if (pthread_self() == t_) {
-    LOG_SW(("Not possible to stop a thread from itself"));
-    return;
-  }
-
-  // Set the flag
-  stoping_ = true;
-
-  // Execute cutom cancel cunfion
-  UnlockThread();
-
-  // Wait until thread is finished
-  au::Cronometer c;
-  while (true) {
-    if (!pthread_running_) {
-      return;
-    }
-
-    if (c.seconds() > 2) {
-      LOG_SW(("Too much time waiting for thread %s", name_.c_str()));
-      c.Reset();
-    }
-
-    usleep(100000);
-  }
-}
-
-void Thread::JoinThread() {
-  au::TokenTaker tt(&token_);
-  while( true ) {
-    if (!pthread_running_) {
-      return;   // It is not running, it is not necessary to wait
-    }
-    tt.Stop();
-  }
 }
 }

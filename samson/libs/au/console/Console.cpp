@@ -76,9 +76,8 @@ void handle_tstp(int sig);
 Console::Console() : au::Thread("Console"),
                      command_history_(new ConsoleCommandHistory()),
                      token_pending_messages_("token_pending_messages"),
-                     block_background_messages_(false), // By default, background messages are not blocked ( esc - b for toogle )
-                     quit_console_(false), // Internal flag to quit console ( i.e. the user has tiped command quit )
-                     colors_(true), // By default colors are allowed
+                     block_background_messages_(false),  // By default, background messages are not blocked ( esc - b for toogle )
+                     colors_(true),  // By default colors are allowed
                      reverse_search_mode_(false),
                      reverse_search_command_(new ConsoleCommand()) {
 }
@@ -89,7 +88,6 @@ Console::~Console() {
 }
 
 void Console::StartConsole(bool block_thread) {
-  quit_console_ = false;
   StartThread();
 
   if (block_thread) {
@@ -98,11 +96,7 @@ void Console::StartConsole(bool block_thread) {
 }
 
 void Console::StopConsole() {
-  if (IsBackgroundThread()) {
-    quit_console_ = true;   // Interal flag to make sure background thread is finished
-  } else {
-    StopThread();   // Stop background thread directly
-  }
+  StopThread();   // Stop background thread
 }
 
 void Console::PrintCommand() {
@@ -495,9 +489,6 @@ void Console::RunThread() {
   while (true) {
     if (IsThreadQuiting()) {
       return;  // StopConsole has been called
-    }
-    if (quit_console_) {
-      return;
     }
 
     while (!IsInputReady()) {

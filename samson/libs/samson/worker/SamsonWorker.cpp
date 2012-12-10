@@ -904,12 +904,16 @@ void SamsonWorker::EvalCommand(const std::string& command) {
 
   if (main_command == "quit") {
     StopConsole();
+    return;
   }
   if (main_command == "exit") {
     StopConsole();
+    return;
   }
+
   if (main_command == "threads") {
-    Write(au::Singleton<au::ThreadManager>::shared()->str());
+    Write(au::Singleton<au::ThreadManager>::shared()->str_table());
+    return;
   }
 
   if (main_command == "show_engine_current_element") {

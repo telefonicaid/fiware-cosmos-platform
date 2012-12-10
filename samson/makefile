@@ -431,8 +431,8 @@ cleanhudson:
 
 
 v: valgrind
-valgrind: di
-	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> output_valgrind_samsonLocal
+valgrind: dia
+	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonWorker -fg  2> output_valgrind_samsonWorker
 
 
 clear_ipcs:

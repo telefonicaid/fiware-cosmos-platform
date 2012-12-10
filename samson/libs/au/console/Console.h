@@ -16,6 +16,7 @@
 #include <list>
 #include <string>
 
+#include "au/Thread.h"
 #include "au/ThreadManager.h"
 #include "au/console/ConsoleEntry.h"
 #include "au/console/ConsoleEscapeSequence.h"
@@ -202,9 +203,6 @@ private:
 
   // Detector of escape sequences
   ConsoleEscapeSequence escape_sequence_;
-
-  // Flag to finish the background thread
-  bool quit_console_;
 
   // Flag to indicate if colors are allowed in this console
   bool colors_;

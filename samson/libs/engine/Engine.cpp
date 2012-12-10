@@ -320,7 +320,7 @@ DiskManager *Engine::disk_manager() {
 
 MemoryManager *Engine::memory_manager() {
   if (!memory_manager_) {
-    LM_E(("MemoryManager has not been initialised"));
+    LOG_E(logs.memory_manager, ("MemoryManager has not been initialised"));
   }
   return memory_manager_;
 }

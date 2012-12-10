@@ -167,7 +167,37 @@ static const char *manVersion = SAMSON_VERSION;
 void SamsonWorkerCleanUp() {
   LOG_M(samson::logs.worker, ("Cleaning up samsonWorker"));
 
+  // Stop console just in case it is not already stopped
+  LOG_M(samson::logs.worker, ("Stop worker console"));
+  worker->StopConsole();
+
+  LOG_M(samson::logs.cleanup, ("Stopping REST service (worker at %p)", worker));
+  worker->samson_worker_rest()->StopRestService();
+
+  LOG_M(samson::logs.cleanup, ("Stopping network listener (worker at %p)", worker));
+  worker->network()->stop();
+
+  // Deleting worker
+  LOG_M(samson::logs.cleanup, ("Removing worker instance"));
+  if (worker != NULL) {
+    delete worker;
+    worker = NULL;
+  }
+
+  LOG_M(samson::logs.cleanup, ("destroying BlockManager"));
+  samson::stream::BlockManager::destroy();
+
+  LOG_M(samson::logs.cleanup, ("destroying Engine"));
+  engine::Engine::StopEngine();
+
+  LOG_M(samson::logs.cleanup, ("Calling paConfigCleanup"));
+  paConfigCleanup();
+
+  LOG_M(samson::logs.cleanup, ("Calling lmCleanProgName"));
+  lmCleanProgName();
+
   // Remove pid file
+  LOG_M(samson::logs.worker, ("Removing pid file for samsonWorker"));
   std::string pid_file_name = au::str("%s/samsond.pid", paLogDir);
   if (remove(pid_file_name.c_str()) != 0) {
     LM_LW(("Error deleting the pid file %s", pid_file_name.c_str()));
@@ -175,6 +205,19 @@ void SamsonWorkerCleanUp() {
 
   // Destroy creatd shared memory segments
   samson::SharedMemoryManager::Destroy();
+
+  // Stop the logging system
+  LOG_M(samson::logs.worker, ("log_central stopping..."));
+  au::log_central->StopLogSystem();
+
+  // Wait for all background threads
+  LOG_M(samson::logs.cleanup, ("Waiting for threads (worker at %p)", worker));
+  au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");
+
+  // Shutdown all GPB stuff
+  google::protobuf::ShutdownProtobufLibrary();
+
+  LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
 }
 
 void captureSIGINT(int s) {
@@ -388,7 +431,7 @@ int main(int argC, const char *argV[]) {
   // Instance of SamsonWorker object
   worker = new samson::SamsonWorker(my_zoo_host, port, web_port);
 
-  // At the moment BlockManager is still an isolated singleton
+  // Set worker in block manager ( to get information about how to sort blocks )
   samson::stream::BlockManager::shared()->set_samson_worker(worker);
 
   LOG_M(samson::logs.worker, ("Worker Running..."));
@@ -417,51 +460,10 @@ int main(int argC, const char *argV[]) {
   // Run worker console ( -fg is activated ) blocking this thread
   worker->StartConsole(true);
 
-  engine::Engine::StopEngine();
-
-  LOG_M(samson::logs.cleanup, ("Engine stopped (worker at %p)", worker));
-
-  // Closing network connections before the wait for the threads
-  LOG_M(samson::logs.cleanup, ("Stopping REST service (worker at %p)", worker));
-  worker->samson_worker_rest()->StopRestService();
-
-  LOG_M(samson::logs.cleanup, ("Stopping network listener (worker at %p)", worker));
-  worker->network()->stop();
-  LOG_M(samson::logs.cleanup, ("log_central marked to stop"));
-
-  LOG_M(samson::logs.worker, ("Stop worker console"));
-  worker->StopConsole();
-
-  LOG_M(samson::logs.worker, ("log_central stopping..."));
-  au::log_central->StopLogSystem();
-
-  LOG_M(samson::logs.cleanup, ("Waiting for threads (worker at %p)", worker));
-  au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");
-
-  // Shutdown all GPB stuff
-  google::protobuf::ShutdownProtobufLibrary();
-
-  // Deleting worker
-  LOG_M(samson::logs.cleanup, ("Shutting down worker components (worker at %p)", worker));
-  if (worker != NULL) {
-    LOG_M(samson::logs.cleanup, ("deleting worker"));
-    delete worker;
-    worker = NULL;
-  }
-
-  LOG_M(samson::logs.cleanup, ("destroying BlockManager"));
-  samson::stream::BlockManager::destroy();
-
-  LOG_M(samson::logs.cleanup, ("destroying ModulesManager"));
-
-  LOG_M(samson::logs.cleanup, ("destroying Engine"));
-  engine::Engine::StopEngine();
-
-  LOG_M(samson::logs.cleanup, ("Calling paConfigCleanup"));
-  paConfigCleanup();
-  LOG_M(samson::logs.cleanup, ("Calling lmCleanProgName"));
-  lmCleanProgName();
-  LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
+  // Remove console log-plugin & add a screen log-plugin
+  au::log_central->RemovePlugin("console");
+  au::log_central->AddScreenPlugin("screen");
+  au::log_central->EvalCommand("log_set system M");
 
   // Clean up all worker setup
   SamsonWorkerCleanUp();

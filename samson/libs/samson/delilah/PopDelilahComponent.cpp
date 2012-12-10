@@ -100,7 +100,7 @@ std::string PopDelilahComponent::getExtraStatus() {
   table.setTitle("Items for this pop operation");
 
   au::map<size_t, PopDelilahComponentItem>::iterator it;
-  for (it = items_.begin(); it != items_.end(); it++) {
+  for (it = items_.begin(); it != items_.end(); ++it) {
     PopDelilahComponentItem *item = it->second;
 
     au::StringVector values;
@@ -143,7 +143,7 @@ void PopDelilahComponent::SendMainRequest() {
 
   size_t min_commit_id = SIZE_T_UNDEFINED;
   au::map< size_t, PopDelilahComponentItem >::iterator iter;
-  for (iter = items_.begin(); iter != items_.end(); iter++) {
+  for (iter = items_.begin(); iter != items_.end(); ++iter) {
     if ((min_commit_id  == SIZE_T_UNDEFINED) || (iter->second->commit_id()  < min_commit_id)) {
       min_commit_id = iter->second->commit_id();
     }
@@ -227,8 +227,6 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     }
 
     if (packet->message->has_error()) {
-      // Error in confirmation, send the next one
-      LOG_SW(("Error in confirmation, send the next one"));
       SendRequest(item);
       check();
       return;
@@ -272,7 +270,7 @@ void PopDelilahComponent::notify(engine::Notification *notification) {
 void PopDelilahComponent::check() {
   // Resent to other workers if necessary
   au::map<size_t, PopDelilahComponentItem>::iterator it;
-  for (it = items_.begin(); it != items_.end(); it++) {
+  for (it = items_.begin(); it != items_.end(); ++it) {
     PopDelilahComponentItem *item = it->second;
     if (item->buffer() == NULL) {
       int time_limit = 30;

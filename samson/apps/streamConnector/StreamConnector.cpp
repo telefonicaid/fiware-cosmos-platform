@@ -260,7 +260,7 @@ void StreamConnector::review() {
 
   // Review input inter channel connections
   au::list<InputInterChannelConnection>::iterator it;
-  for (it = input_inter_channel_connections.begin(); it != input_inter_channel_connections.end(); it++) {
+  for (it = input_inter_channel_connections.begin(); it != input_inter_channel_connections.end(); ++it) {
     InputInterChannelConnection *c = *it;
     if (c->is_finished()) {
       delete c;
@@ -275,17 +275,17 @@ void StreamConnector::review() {
   }
 }
 
-std::string StreamConnector::getPrompt() {
+std::string StreamConnector::GetPrompt() {
   return "SC console> ";
 }
 
-void StreamConnector::evalCommand(const std::string& command) {
+void StreamConnector::EvalCommand(const std::string& command) {
   // Log activity
   Log("Console", "Message", command);
 
   au::ErrorManager error;
   process_command(command, &error);
-  write(&error);
+  Write(error);
 }
 
 void StreamConnector::autoCompleteWithChannelNames(au::console::ConsoleAutoComplete *info) {
@@ -293,7 +293,7 @@ void StreamConnector::autoCompleteWithChannelNames(au::console::ConsoleAutoCompl
   au::TokenTaker tt(&token);
 
   au::map<std::string, Channel>::iterator it;
-  for (it = channels_.begin(); it != channels_.end(); it++) {
+  for (it = channels_.begin(); it != channels_.end(); ++it) {
     info->add(it->first, it->first, false);
   }
 }
@@ -303,13 +303,13 @@ void StreamConnector::autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComp
   au::TokenTaker tt(&token);
 
   au::map<std::string, Channel>::iterator it;
-  for (it = channels_.begin(); it != channels_.end(); it++) {
+  for (it = channels_.begin(); it != channels_.end(); ++it) {
     Channel *channel = it->second;
     channel->autoCompleteWithAdaptorsNames(info);
   }
 }
 
-void StreamConnector::autoComplete(au::console::ConsoleAutoComplete *info) {
+void StreamConnector::AutoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("quit");
     info->add("help");
@@ -704,7 +704,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   if (main_command == "remove_finished_adaptors_and_connections") {
     au::ErrorManager error;
     remove_finished_items_and_connections(&error);
-    write(&error);
+    Write(error);
     return;
   }
 
@@ -772,7 +772,7 @@ au::tables::Table *StreamConnector::getInputInterChannelConnections() {
   table->setTitle("Input InterChannel connections");
 
   au::list<InputInterChannelConnection>::iterator it;
-  for (it = input_inter_channel_connections.begin(); it != input_inter_channel_connections.end(); it++) {
+  for (it = input_inter_channel_connections.begin(); it != input_inter_channel_connections.end(); ++it) {
     InputInterChannelConnection *c = *it;
     table->addRow(au::StringVector(c->host_and_port(), c->getStatus()));
   }
@@ -955,7 +955,7 @@ void StreamConnector::log(au::SharedPointer<Log> log) {
   } else {
     error.AddMessage(log->getNameAndMessage());
   } if (interactive) {
-    au::console::Console::write(&error);
+    au::console::Console::Write(error);
   } else if (run_as_daemon) {
     // Nothing here
   } else {

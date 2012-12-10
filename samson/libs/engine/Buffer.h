@@ -72,7 +72,7 @@ public:
   // Write content to this buffer
   bool Write(const char *input_buffer, size_t input_size);
 
-  // Skip some space without writing anything ( usefull to fix-size headers )
+  // Skip some space without writing anything ( useful to fix-size headers )
   bool SkipWrite(size_t size);
 
   // Write on the buffer the maximum possible ammount of data

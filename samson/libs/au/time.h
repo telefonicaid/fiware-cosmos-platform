@@ -21,7 +21,7 @@
 *
 * DESCRIPTION
 *
-*      Usefull functions to work with time
+*      useful functions to work with time
 *
 * ****************************************************************************/
 

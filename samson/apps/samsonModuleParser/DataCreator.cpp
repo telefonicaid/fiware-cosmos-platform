@@ -222,7 +222,7 @@ void ModuleInformation::printMainHeaderFile(std::string outputFileName) {
   // Help of this function
   output << "\n\t\tstd::string help(){\n";
   output << "\t\t\tstd::ostringstream o;\n";
-  for (std::vector<std::string>::iterator iter = module.help.begin(); iter < module.help.end(); iter++) {
+  for (std::vector<std::string>::iterator iter = module.help.begin(); iter < module.help.end(); ++iter) {
     output << "\t\t o<<\"" << (*iter) << "\";\n";
   }
   output << "\t\t\treturn o.str();\n";
@@ -270,13 +270,13 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
 
 
   std::set<std::string> includes;
-  for (vector <OperationContainer>::iterator iter = operations.begin(); iter < operations.end(); iter++) {
+  for (vector <OperationContainer>::iterator iter = operations.begin(); iter < operations.end(); ++iter) {
     OperationContainer op = *iter;
     if ((op.type == "reduce") || (op.type == "parserOutReduce")) {
       op.getIncludes(includes);
     }
   }
-  for (std::set<std::string>::iterator iter = includes.begin(); iter != includes.end(); iter++) {
+  for (std::set<std::string>::iterator iter = includes.begin(); iter != includes.end(); ++iter) {
     output << *iter;
   }
 
@@ -308,7 +308,7 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
 
   output << "\n";
   output << "\t\t//Add datas\n";
-  for (vector <DataContainer>::iterator iter = datas.begin(); iter < datas.end(); iter++) {
+  for (vector <DataContainer>::iterator iter = datas.begin(); iter < datas.end(); ++iter) {
     output << "\t\tadd( new DataImpl<" << iter->name << ">(\"" << iter->module << "." << iter->name << "\" )";
     output << ");\n";
   }
@@ -320,7 +320,7 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
 
 #pragma mark Static operation
 
-  for (vector <OperationContainer>::iterator iter = operations.begin(); iter < operations.end(); iter++) {
+  for (vector <OperationContainer>::iterator iter = operations.begin(); iter < operations.end(); ++iter) {
     OperationContainer op = *iter;
 
 

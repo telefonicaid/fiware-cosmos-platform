@@ -92,7 +92,7 @@ void DiskManager::Stop() {
   }
 }
 
-void DiskManager::Add(const au::SharedPointer<engine::DiskOperation>& operation) {
+void DiskManager::Add(au::SharedPointer<engine::DiskOperation> operation) {
   // Mutex protection
   au::TokenTaker tt(&token_);
 
@@ -103,7 +103,7 @@ void DiskManager::Add(const au::SharedPointer<engine::DiskOperation>& operation)
   pending_operations_.Push(operation);
 }
 
-void DiskManager::Cancel(const au::SharedPointer<engine::DiskOperation>& operation) {
+void DiskManager::Cancel(au::SharedPointer<engine::DiskOperation> operation) {
   au::TokenTaker tt(&token_);
 
   // If it is still in the pending queue
@@ -124,7 +124,7 @@ void DiskManager::Cancel(const au::SharedPointer<engine::DiskOperation>& operati
   }
 }
 
-void DiskManager::FinishDiskOperation(const au::SharedPointer<engine::DiskOperation>& operation) {
+void DiskManager::FinishDiskOperation(au::SharedPointer<engine::DiskOperation> operation) {
   // Callback received from background process
 
   // Mutex protection

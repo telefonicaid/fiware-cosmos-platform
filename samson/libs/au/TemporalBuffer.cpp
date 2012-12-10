@@ -13,7 +13,15 @@
 
 namespace au {
 TemporalBuffer::TemporalBuffer(size_t size) {
-  data_ = (char *)malloc(size);
+  data_ =  reinterpret_cast<char *>(malloc(size));
+  size_ = size;
+}
+
+void TemporalBuffer::Reset(size_t size) {
+  if (data_) {
+    free(data_);
+  }
+  data_ =  reinterpret_cast<char *>(malloc(size));
   size_ = size;
 }
 
@@ -28,6 +36,7 @@ size_t TemporalBuffer::size() {
 TemporalBuffer::~TemporalBuffer() {
   if (data_) {
     free(data_);
+    data_ = NULL;
   }
 }
 }

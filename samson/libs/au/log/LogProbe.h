@@ -152,7 +152,7 @@ public:
   }
 
   virtual void Process(au::SharedPointer<au::Log> log) {
-    console_->writeOnConsole(log_formatter_.get(log) + "\n");
+    console_->Write(log_formatter_.get(log) + "\n");
   }
 
 private:

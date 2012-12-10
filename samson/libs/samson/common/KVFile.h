@@ -24,13 +24,11 @@ namespace samson {
  **/
 
 class KVFile {
-  KVFile() {
+  KVFile() : auxiliar_buffer_(0) {
     // Default values ( for correct deallocation in case of errors )
     kvs = NULL;
     info = NULL;
     kvs_index = NULL;
-    key_ = NULL;
-    value_ = NULL;
   }
 
 public:
@@ -54,11 +52,7 @@ public:
   }
 
   size_t size() {
-    if (auxiliar_buffer_ != NULL) {
-      return auxiliar_buffer_->max_size();
-    } else {
-      return 0;
-    }
+    return auxiliar_buffer_.size();
   }
 
   // Main interface to interact with key-values contained in this block
@@ -76,14 +70,10 @@ private:
   engine::BufferPointer buffer_;
 
   // Buffer to hold all data for this KVFile
-  engine::BufferPointer auxiliar_buffer_;
+  au::TemporalBuffer auxiliar_buffer_;
 
   // Copy of the heder contained in the buffer
   KVHeader header_;
-
-  // Data instances for parsing and printing contente
-  DataInstance *key_;
-  DataInstance *value_;
 };
 }
 

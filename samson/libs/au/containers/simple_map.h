@@ -55,9 +55,9 @@ public:
     std::map<K, V >::insert(std::pair<K, V>(key, value));
   }
 
-  bool isInMap(const K& key) {
-    typename std::map<K, V >::iterator iter = std::map<K, V >::find(key);
-    return( iter != std::map<K, V>::end());
+  bool isInMap(const K& key) const {
+    typename std::map<K, V >::const_iterator iter = std::map<K, V >::find(key);
+    return (iter != std::map<K, V >::end());
   }
 
   /*
@@ -65,9 +65,9 @@ public:
    * NULL if not found
    */
 
-  V findInMap(const K& key) {
-    typename std::map<K, V >::iterator iter = std::map<K, V >::find(key);
-    typename std::map<K, V >::iterator iter_end = std::map<K, V >::end();
+  V findInMap(const K& key) const {
+    typename std::map<K, V >::const_iterator iter = std::map<K, V >::find(key);
+    typename std::map<K, V >::const_iterator iter_end = std::map<K, V >::end();
 
     if (iter == iter_end) {
       LM_X(1, ("Error using findInMap. Please check first with isInMap"));

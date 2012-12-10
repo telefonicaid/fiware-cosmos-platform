@@ -83,17 +83,11 @@ void EngineElement::set_short_description(const std::string& short_description) 
 
 std::string EngineElement::str() {
   if (type_ == repeated) {
-    return au::str(
-             "%s [ Engine element to be executed in %02.2f seconds ( repeat every %d secs , repeated %d times )] "
-             , description_.c_str()
-             , GetTimeToTrigger()
-             , period_
-             , counter_
-             );
+    return au::str("[Repeat %d secs] %s", period_, short_description_.c_str());
   } else if (type_ == extra) {
-    return au::str("%s [ Engine element EXTRA ]", description_.c_str());
+    return au::str("[Extra] %s", short_description_.c_str());
   } else {
-    return au::str("%s [ Engine element ]", description_.c_str());
+    return au::str("%s", short_description_.c_str());
   }
 }
 

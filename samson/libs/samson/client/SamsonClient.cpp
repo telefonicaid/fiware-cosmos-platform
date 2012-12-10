@@ -65,7 +65,7 @@ SamsonClient::SamsonClient(std::string connection_type) {
 
 bool SamsonClient::connect(const std::vector<std::string>& hosts) {
   // Try connection with all provided hosts
-  for (size_t i = 0; i < hosts.size(); i++) {
+  for (size_t i = 0; i < hosts.size(); ++i) {
     if (connect(hosts[i])) {
       return true;
     }

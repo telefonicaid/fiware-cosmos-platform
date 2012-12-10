@@ -68,7 +68,8 @@ public:
   ~Block();
 
   // Compute KVFile for this block ( if retain is true, it will keep for the next call )
-  au::SharedPointer<KVFile> getKVFile(au::ErrorManager& error, bool retain);
+  au::SharedPointer<KVFile> CreateKVFile(au::ErrorManager& error);
+  au::SharedPointer<KVFile> GetKVFile(au::ErrorManager& error);
 
   // Accessorrs
   BlockState state() const;

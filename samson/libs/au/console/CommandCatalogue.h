@@ -35,7 +35,9 @@ namespace console {
  * \brief Namespace to protect scope of enum inside au::console library
  */
 namespace options {
-// Class used to store a valid command in delilah console
+/**
+ * \brief Enum to describe types of arguments used in CommandCatalogue
+ */
 typedef enum {
   option_bool,
   option_int,
@@ -46,7 +48,7 @@ typedef enum {
 }
 
 /**
- * \brief Item inside a CommandInstance ( name, value and type of any of the arguments/options of provided command )
+ * \brief Item inside a Command ( name, value and type of any of the arguments/options of provided command )
  */
 
 class CommandItem {
@@ -71,7 +73,7 @@ public:
   void set_options_group(const std::string& options_group);
   void review_options_group();
 
-  void autoComplete(au::console::ConsoleAutoComplete *info);
+  void AutoComplete(au::console::ConsoleAutoComplete *info);
   bool HasValidValue(const std::string& value);  // Check valid valie
 
   std::string str_help();
@@ -113,33 +115,35 @@ public:
 
   ~Command();
 
-  const std::string& name();
-  const std::string& category();
-  const std::string& short_description();
-  const std::string& help();
-
-  std::string usage();
+  std::string name() const;
+  std::string category() const;
+  std::string short_description() const;
+  std::string help() const;
+  std::string usage() const;
 
   // Add argument or options
-  void add_argument(CommandItem *item);
-  void add_option(CommandItem *item);
+  void AddArgument(CommandItem *item);
+  void AddOption(CommandItem *item);
 
   // methods for tags
-  void set_tag(const std::string& tag) {
+  void SetTag(const std::string& tag) {
     tags_.insert(tag);
   }
 
-  bool tag(const std::string& tag) {
-    return ( tags_.find(tag) != tags_.end());
+  bool HasTag(const std::string& tag) {
+    return (tags_.find(tag) != tags_.end());
   }
 
-  void autoComplete(au::console::ConsoleAutoComplete *info);
+  /**
+   * \brief Fill "info" with all possible auto-completion elements based on this command
+   */
+  void AutoComplete(au::console::ConsoleAutoComplete *info);
+
+  CommandItem *GetOption(const std::string& name) const;
+  CommandItem *GetArgument(const std::string& name) const;
 
   const std::vector<CommandItem *>& options();
   const std::vector<CommandItem *>& arguments();
-
-  CommandItem *get_option(const std::string& name);
-  CommandItem *get_argument(const std::string& name);
 
 private:
 
@@ -156,8 +160,9 @@ private:
 };
 
 /**
- * \brief Instance of a command.
- * Once a string is provided ( i.e. in a console ), and instance of this class is obtained from a CommandCatalogue
+ * \brief Instance of a command generated from a string usually entered by the user
+ *
+ * Once a string is provided ( i.e. in a console ), an instance of this class is obtained from a CommandCatalogue
  */
 
 class CommandInstance {
@@ -167,139 +172,223 @@ public:
 
   const std::string main_command();
   const std::string command_line();
-  Command *command();  // Get the original command ( definition of options and arguments )
 
-  // Handy function to check content
-  bool has_string_argument(const std::string& name);
-  bool get_bool_option(const std::string& name);
-  int get_int_option(const std::string& name);
-  size_t get_uint64_option(const std::string& name);
-  double get_double_option(const std::string& name);
-  std::string get_string_option(const std::string& name);
-  std::string get_string_argument(const std::string& name);
-  // Set and get values
-  void set_value(const std::string& name, const std::string& value);
-  bool hasValueFor(const std::string& name);
-  std::string ErrorMessage(const std::string error_message);
+  /**
+   * \brief Get the original command ( definition of options and arguments )
+   */
+  Command *command() const;
+
+  /**
+   * \brief Check if a string argument has been provided in the command line
+   */
+  bool HasStringArgument(const std::string& name) const;
+
+  /**
+   * \brief Gets the value of a string argument provided in the comamnd line
+   */
+  std::string GetStringArgument(const std::string& name) const;
+
+  /**
+   * \brief Gets the value of a bool-option provided in the comamnd line
+   */
+  bool GetBoolOption(const std::string& name) const;
+
+  /**
+   * \brief Gets the value of a int-option provided in the comamnd line
+   */
+  int GetIntOption(const std::string& name) const;
+
+  /**
+   * \brief Gets the value of a uint64-option provided in the comamnd line
+   */
+  size_t GetUint64Option(const std::string& name) const;
+
+  /**
+   * \brief Gets the value of a double-option provided in the comamnd line
+   */
+  double GetDoubleOption(const std::string& name) const;
+
+  /**
+   * \brief Gets the value of a string-option provided in the comamnd line
+   */
+  std::string GetStringOption(const std::string& name) const;
+
+  /**
+   * \brief Check if a particular option/argument has value
+   */
+  bool hasValueFor(const std::string& name) const;
+
+  /**
+   * \brief Get a complete error message with extra information about provided command
+   */
+  std::string GetErrorMessage(const std::string error_message) const;
 
 private:
+
+  friend class CommandCatalogue;
+
+  /**
+   * \brief Set value for a particular option/argument
+   */
+  void SetValue(const std::string& name, const std::string& value);
+
+
   au::ErrorManager error_;                           // Error during parse operation
   Command *command_;                                 // Duplicate command definition
   std::string command_line_;                         // Copy of the original command line
   au::simple_map<std::string, std::string> values_;  // Values assigned to each item
 };
 
-// Catalogue of commands
+/**
+ * \brief Complete catalogue of possible commands with all their options and arguments
+ *
+ * Very useful used toguether with au::Console since commands introduced by user can be verified and parsed here
+ */
 
 class CommandCatalogue {
 public:
 
-  // Vector of available commands
-  au::vector<Command> commands_;
-
-  // Construtor
   CommandCatalogue();
-
   ~CommandCatalogue() {
     commands_.clearVector();
   }
 
-  // Add elements adn extra description
-  Command *add(const std::string& name
-               , const std::string& category = "general"
-               , const std::string& short_description = ""
-               , const std::string& help = "");
+  /**
+   * \brief Parse a provided command line based on the commands defined in this catalogue
+   * In case of error, NULL is returned.
+   * Otherwise, returned instance contains all values for arguments and options of the selected command
+   */
+  CommandInstance *Parse(const std::string command_line, au::ErrorManager& error) const;
 
-  // Add option to previously added command
-  CommandItem *add_option(const std::string& command_name
-                          , const std::string& name
-                          , options::Type type
-                          , bool optional =  true
-                          , const std::string& help = ""
-                          , const std::string& default_value = ""
-                          , const std::string& min_value = ""
-                          , const std::string& max_value = "");
+/**
+ * \brief Add a new command to the catalogue
+ */
+  Command *AddCommand(const std::string& name
+                      , const std::string& category = "general"
+                      , const std::string& short_description = ""
+                      , const std::string& help = "");
 
-  // Add argument to previously added command
-  CommandItem *add_argument(const std::string& command_name
+/**
+ * \brief Add option to previously added command
+ */
+  CommandItem *AddOption(const std::string& command_name
+                         , const std::string& name
+                         , options::Type type
+                         , bool optional =  true
+                         , const std::string& help = ""
+                         , const std::string& default_value = ""
+                         , const std::string& min_value = ""
+                         , const std::string& max_value = "");
+
+  /**
+   * \brief Add argument to previously added command
+   */
+  CommandItem *AddArgument(const std::string& command_name
+                           , const std::string& name
+                           , options::Type type
+                           , bool optional =  true
+                           , const std::string& help = ""
+                           , const std::string& default_value = ""
+                           , const std::string& min_value = ""
+                           , const std::string& max_value = "");
+
+  /**
+   * \brief Set a tag for a previously added command
+   */
+  void AddTag(const std::string& command_name, const std::string& tag);
+
+  /**
+   * \brief Set a int-option for a previously added command
+   */
+  CommandItem *AddIntOption(const std::string& command_name
                             , const std::string& name
-                            , options::Type type
-                            , bool optional =  true
-                            , const std::string& help = ""
-                            , const std::string& default_value = ""
-                            , const std::string& min_value = ""
-                            , const std::string& max_value = "");
+                            , int default_value
+                            , const std::string& help = "");
 
-  // Handy methods to add tags
-  void add_tag(const std::string& command_name, const std::string& tag);
 
-  // Handy function to add common options
-  CommandItem *add_int_option(const std::string& command_name
-                              , const std::string& name
-                              , int default_value
-                              , const std::string& help = "");
-
-  CommandItem *add_uint64_option(const std::string& command_name
-                                 , const std::string& name
-                                 , size_t default_value
-                                 , const std::string& help = "");
-
-  CommandItem *add_string_option(const std::string& command_name
-                                 , const std::string& name
-                                 , const std::string& default_value
-                                 , const std::string& help = "");
-
-  CommandItem *add_bool_option(const std::string& command_name
+  /**
+   * \brief Set a uint64-option for a previously added command
+   */
+  CommandItem *AddUInt64Option(const std::string& command_name
                                , const std::string& name
+                               , size_t default_value
                                , const std::string& help = "");
 
+  /**
+   * \brief Set a string-option for a previously added command
+   */
+  CommandItem *AddStringOption(const std::string& command_name
+                               , const std::string& name
+                               , const std::string& default_value
+                               , const std::string& help = "");
+
+  /**
+   * \brief Set a bool-option for a previously added command
+   */
+  CommandItem *AddBoolOption(const std::string& command_name
+                             , const std::string& name
+                             , const std::string& help = "");
 
 
-  // Handy function to add common arguments
-  CommandItem *add_string_argument(const std::string& command_name
-                                   , const std::string& name
-                                   , const std::string& default_value
-                                   , const std::string& help);
+  /**
+   * \brief Set a string-argument for a previously added command
+   */
+  CommandItem *AddStringArgument(const std::string& command_name
+                                 , const std::string& name
+                                 , const std::string& default_value
+                                 , const std::string& help);
 
-  CommandItem *add_mandatory_string_argument(const std::string& command_name
-                                             , const std::string& name
-                                             , const std::string& help);
+  CommandItem *AddMandatoryStringArgument(const std::string& command_name
+                                          , const std::string& name
+                                          , const std::string& help);
 
-  CommandItem *add_mandatory_uint64_argument(const std::string& command_name
-                                             , const std::string& name
-                                             , const std::string& help);
+  CommandItem *AddMandatoryUInt64Argument(const std::string& command_name
+                                          , const std::string& name
+                                          , const std::string& help);
 
 
-  CommandItem *add_string_options_argument(const std::string& command_name
-                                           , const std::string& name
-                                           , const std::string& group_value
-                                           , const std::string& help = "");
+  CommandItem *AddStringOptionsArgument(const std::string& command_name
+                                        , const std::string& name
+                                        , const std::string& group_value
+                                        , const std::string& help = "");
 
-  // Autocompletion functionality for this command catalogue ( see au::console::Console )
-  void autoComplete(au::console::ConsoleAutoComplete *info);
+  /**
+   * \brief Full "info" with all auto-completion options based on command included in this catalogue
+   */
+  void AutoComplete(au::console::ConsoleAutoComplete *info);
 
-  // Get a table with available command ( optional filter per category )
-  std::string getCommandsTable(const std::string& category = "");
+  /**
+   * \brief Get a table with available command ( optional filter per category )
+   */
+  std::string GetCommandsTable(const std::string& category = "") const;
 
-  // Get help message for an individual command
-  std::string getHelpForConcept(const std::string& name);
+  /**
+   * \brief Get help message for an individual command
+   */
+  std::string GetHelpForConcept(const std::string& name) const;
 
-  // Get list of cagtegories to be displayed in help message
-  au::StringVector getCategories();
+  /**
+   * \brief Get list of categories to be displayed in help message
+   */
+  au::StringVector GetCategories() const;
 
-  // Check if a command is valid ( used in repeat command )
-  bool isValidCommand(const std::string& command);
+  /**
+   * \brief Check if a command is defined
+   */
+  bool IsValidCommand(const std::string& command) const;
 
-  // Check if is a category
-  bool isValidCategory(const std::string& category);
-
-  // Parse command to check validity
-  CommandInstance *parse(const std::string command_line, au::ErrorManager& error);
+  /**
+   * \brief Check if a category is included in this command catalogue
+   */
+  bool IsValidCategory(const std::string& category) const;
 
 private:
 
+  // Vector of available commands
+  au::vector<Command> commands_;
+
   // Get a particular command ( supouselly added beforehand )
-  Command *get_command(const std::string& name);
+  Command *GetCommand(const std::string& name) const;
 };
 }
 }

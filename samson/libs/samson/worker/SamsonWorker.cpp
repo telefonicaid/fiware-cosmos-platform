@@ -872,7 +872,7 @@ std::string getFormatedError(std::string message, std::string& format) {
   return getFormatedElement("error", message, format);
 }
 
-void SamsonWorker::autoComplete(au::console::ConsoleAutoComplete *info) {
+void SamsonWorker::AutoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("quit");
     info->add("exit");
@@ -884,7 +884,7 @@ void SamsonWorker::autoComplete(au::console::ConsoleAutoComplete *info) {
   }
 }
 
-void SamsonWorker::evalCommand(const std::string& command) {
+void SamsonWorker::EvalCommand(const std::string& command) {
   au::CommandLine cmdLine;
 
   cmdLine.Parse(command);
@@ -897,8 +897,8 @@ void SamsonWorker::evalCommand(const std::string& command) {
   au::ErrorManager error;
 
   if (au::CheckIfStringsBeginWith(main_command, "log_")) {
-    au::log_central->evalCommand(command, error);
-    write(&error);          // Write the output of the command
+    au::log_central->EvalCommand(command, error);
+    Write(error);          // Write the output of the command
     return;
   }
 
@@ -909,26 +909,26 @@ void SamsonWorker::evalCommand(const std::string& command) {
     StopConsole();
   }
   if (main_command == "threads") {
-    writeOnConsole(au::Singleton<au::ThreadManager>::shared()->str());
+    Write(au::Singleton<au::ThreadManager>::shared()->str());
   }
 
   if (main_command == "show_engine_current_element") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetCurrentActivity() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetCurrentActivity() + "\n");
     return;
   }
 
   if (main_command == "show_engine_statistics") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetElementsTable() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetElementsTable() + "\n");
     return;
   }
 
   if (main_command == "show_engine_last_items") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetLastItemsTable() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetLastItemsTable() + "\n");
     return;
   }
 
   if (main_command == "show_engine_elements") {
-    writeOnConsole(engine::Engine::shared()->GetTableOfEngineElements() + "\n");
+    Write(engine::Engine::shared()->GetTableOfEngineElements() + "\n");
     return;
   }
 
@@ -936,7 +936,7 @@ void SamsonWorker::evalCommand(const std::string& command) {
   // More command to check what is going on inside a worker
 }
 
-std::string SamsonWorker::getPrompt() {
+std::string SamsonWorker::GetPrompt() {
   if (worker_controller_ == NULL) {
     return "[Unconnected] SamsonWorker > ";
   }
@@ -1047,6 +1047,10 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
 
   gpb::CollectionRecord *record = collection->add_record();
 
+
+  // Common fields
+  ::samson::add(record, "Status", state_message_, "different");
+
   if (visualization.get_flag("engine")) {
     size_t num_elements = engine::Engine::shared()->GetNumElementsInEngineStack();
     double waiting_time = engine::Engine::shared()->GetMaxWaitingTimeInEngineStack();
@@ -1069,9 +1073,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "BM reading", stream::BlockManager::shared()->scheduled_read_size(), "f=uint64,sum");
     double usage =  engine::Engine::disk_manager()->on_off_activity();
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
-  } else {
-    ::samson::add(record, "Status", state_message_, "different");
-
+  } else if (visualization.get_flag("modules")) {
     if (!modules_available_) {
       ::samson::add(record, "Modules", "No", "different");
     } else if (last_modules_version_ != SIZE_T_UNDEFINED) {
@@ -1079,21 +1081,21 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     } else {
       ::samson::add(record, "Modules", "No modules", "different");
     }
-
-    ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
-    ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
-    ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
-    ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
+  } else if (visualization.get_flag("traffic")) {
     ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->num_disk_operations(), "f=uint64,sum");
     ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
     ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
     ::samson::add(record, "Net in B/s", network_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "Net out B/s", network_->get_rate_out(), "f=uint64,sum");
-
     ::samson::add(record, "ZK in B/s", zoo_connection_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "ZK out B/s", zoo_connection_->get_rate_out(), "f=uint64,sum");
-
+  } else if (visualization.get_flag("data_model")) {
     ::samson::add(record, "DataModel", worker_controller_->GetMyLastCommitId(), "different");
+  } else {
+    ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
+    ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
+    ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
+    ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
   }
 
   return collection;
@@ -1252,7 +1254,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visu
   gpb::Queue *queue = gpb::get_queue(data_model->mutable_current_data(), ".modules");
 
   // Create a tmp directory
-  std::string directory = au::GetRandomDirectory();
+  std::string directory = au::GetRandomTmpFileOrDirectory();
   au::CreateDirectory(directory);
 
   // Set of names used so far to detect colision name...
@@ -1471,7 +1473,7 @@ bool SamsonWorker::IsWorkerReadyForBlockRequest(size_t worker_id) {
     return false;
   }
 
-  // If number of scheduled block_request task is excesive, also stop
+  // If number of scheduled block_request task is Excessive, also stop
   // TODO
 
   return true;

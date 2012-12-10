@@ -175,9 +175,6 @@ void SamsonWorkerCleanUp() {
 
   // Destroy creatd shared memory segments
   samson::SharedMemoryManager::Destroy();
-
-  // Close log system
-  au::LogCentral::StopLogSystem();
 }
 
 void captureSIGINT(int s) {
@@ -299,13 +296,13 @@ int main(int argC, const char *argV[]) {
   if (strlen(log_server) > 0) {
     std::string log_server_file = std::string(paLogDir) + "samsonWorker_" + log_server +  ".log";
     au::log_central->AddServerPlugin("server", log_server, log_server_file);
-    au::log_central->evalCommand("log_set * X server");
-    au::log_central->evalCommand("log_set samson::W M server");
-    au::log_central->evalCommand("log_set samson::OP W server");
+    au::log_central->EvalCommand("log_set * X server");
+    au::log_central->EvalCommand("log_set samson::W M server");
+    au::log_central->EvalCommand("log_set samson::OP W server");
   }
-  au::log_central->evalCommand(log_command);  // Additional command provided in command line
-  au::log_central->evalCommand("log_set samson::W M");  // Set message level for the log channel samson::W
-  au::log_central->evalCommand("log_set system M");     // Set message level for the log channel system
+  au::log_central->EvalCommand(log_command);  // Additional command provided in command line
+  au::log_central->EvalCommand("log_set samson::W M");  // Set message level for the log channel samson::W
+  au::log_central->EvalCommand("log_set system M");     // Set message level for the log channel system
 
   LOG_SM(("Please, check logs for this worker at %s (using logCat tool)", log_file_name.c_str()));
 
@@ -415,7 +412,7 @@ int main(int argC, const char *argV[]) {
   au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(worker));
 
   // Add samson::W M
-  au::log_central->evalCommand("log_set samson::W M");
+  au::log_central->EvalCommand("log_set samson::W M");
 
   // Run worker console ( -fg is activated ) blocking this thread
   worker->StartConsole(true);
@@ -431,8 +428,12 @@ int main(int argC, const char *argV[]) {
   LOG_M(samson::logs.cleanup, ("Stopping network listener (worker at %p)", worker));
   worker->network()->stop();
   LOG_M(samson::logs.cleanup, ("log_central marked to stop"));
-  LOG_M(samson::logs.worker, ("log_central stopping..."));
 
+  LOG_M(samson::logs.worker, ("Stop worker console"));
+  worker->StopConsole();
+
+  LOG_M(samson::logs.worker, ("log_central stopping..."));
+  au::log_central->StopLogSystem();
 
   LOG_M(samson::logs.cleanup, ("Waiting for threads (worker at %p)", worker));
   au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");

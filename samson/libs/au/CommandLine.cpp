@@ -167,7 +167,7 @@ void CommandLine::Parse(const std::string& command) {
 void CommandLine::ClearValues() {
   // Remove the "value" field in all "flags"
   std::map< std::string, CommandLineFlag >::iterator iter;
-  for (iter = flags_.begin(); iter != flags_.end(); iter++) {
+  for (iter = flags_.begin(); iter != flags_.end(); ++iter) {
     iter->second.value = "unknown";     // Default value when no assigned
   }
   // Remove the arguments vector
@@ -182,7 +182,7 @@ void CommandLine::ParseTockens(std::vector<std::string> &tockens) {
   std::map<std::string, CommandLineFlag>::iterator flag_iterator;
 
 
-  for (iter = tockens.begin(); iter < tockens.end(); iter++) {
+  for (iter = tockens.begin(); iter < tockens.end(); ++iter) {
     std::string tocken = *iter;
 
 
@@ -221,7 +221,7 @@ int CommandLine::get_num_arguments() const {
 }
 
 std::string CommandLine::get_argument(int index) const {
-  if ((index < 0) || ( index >= (int)arguments_.size())) {
+  if ((index < 0) || (index >= (int)arguments_.size())) {
     return "no-argument";
   }
   return arguments_[index];
@@ -290,7 +290,7 @@ std::string CommandLine::GetFlagString(const std::string& flag_name) const {
     return 0;
   }
 
-  return ( GetFlagValue(flag_name));
+  return (GetFlagValue(flag_name));
 }
 
 size_t CommandLine::GetFlagUint64(const std::string& flag_name) const {
@@ -333,7 +333,7 @@ double CommandLine::getDoubleValue(const std::string& value) {
 }
 
 bool CommandLine::getBoolValue(const std::string& value) {
-  return ( value == "true" );
+  return (value == "true");
 }
 
 std::string CommandLine::command() const {

@@ -8,7 +8,12 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-#include "samson/delilah/DelilahCommandCatalogue.h"
+
+
+#include "samson/delilah/DelilahCommandCatalogue.h"  // Own interface
+
+#include "samson/common/common.h"
+
 
 namespace samson {
 DelilahCommandCatalogue::DelilahCommandCatalogue() {
@@ -16,426 +21,416 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // SETUP
   // ------------------------------------------------------------------
 
-  add("show_cluster_setup", "setup", "Show cluster setup",
-      "Get information about workers currently connected to current ( number of cores, memory, etc... )\n");
-
-  add("show_cluster_assignation", "setup", "Show cluster assignment",
-      "Get information about what hash-groups are assigned to what workers\n");
-
-  add("ls_local_connections", "delilah",
-      "Show status of all connections of this delilah ( typically to all workers of the SAMSON cluster )");
+  AddCommand("show_cluster_setup", "setup", "Show cluster setup", "Display cluster configuration");
+  AddCommand("show_cluster_assignation", "setup", "Show cluster assignment",
+             "Display the hash-groups assigned to each worker");
+  AddCommand("ls_local_connections", "delilah", "Display the connection status for this delilah session");
 
   // ------------------------------------------------------------------
   // DELILAH
   // ------------------------------------------------------------------
 
-  add("connect", "delilah", "Connect to a SAMSON system");
-  add_mandatory_string_argument("connect", "host", "SAMSON node/s to connect (\"host:port host:port..\")");
-  add_string_option("connect", "-digest", "", "Username and password used to connect to this SAMSON cluster");
+  AddCommand("connect", "delilah", "Connect to the specified SAMSON cluster");
+  AddMandatoryStringArgument("connect", "host", "SAMSON node(s) to connect to (\"host:port host:port..\")");
+  AddStringOption("connect", "-digest", "", "Username and password used to connect to the SAMSON cluster");
 
-  add("disconnect", "delilah", "Disconnect from a SAMSON system");
+  AddCommand("disconnect", "delilah", "Disconnect from a SAMSON cluster");
 
-  add("alerts", "delilah", "Activate or deactivate showing alerts from SAMSON platform on console");
-  add_string_options_argument("alerts", "action", "Options:on:off", "Command to activate or deactivate alerts");
+  AddCommand("alerts", "delilah", "Enable/disable console alerts");
+  AddStringOptionsArgument("alerts", "action", "Options:on:off", "Enable/disable console alerts");
 
-  add("show_alerts", "delilah", "Show the last alerts received from current SAMSON cluster at this delilah");
+  AddCommand("show_alerts", "delilah", "Show previously sent alerts for the current delilah session");
 
-  add("open_alerts_file", "delilah", "Open a local file to store all received alerts");
-  add_mandatory_string_argument("open_alerts_file", "file", "Local file to store alerts");
+  AddCommand("open_alerts_file", "delilah", "Open a local file to store all received alerts");
+  AddMandatoryStringArgument("open_alerts_file", "file", "Local file to store alerts");
 
-  add("close_alerts_file", "delilah", "Close local file opened to store with command 'open_traces_file'");
+  AddCommand("close_alerts_file", "delilah", "Stop saving alerts to a local file");
 
-  add("verbose", "delilah", "Activate or deactivate verbose mode",
-      "In verbose mode, extra information is shown to the user");
-  add_string_options_argument("verbose", "action", "Options::on:off");
+  AddCommand("verbose", "delilah", "Enable/disable verbose reporting mode");
+  AddStringOptionsArgument("verbose", "action", "Options::on:off");
 
+  AddCommand("send_alert", "delilah", "Send an alert to all active delilah sessions");
+  AddStringOption("send_alert", "-worker", "", "Select broadcaster worker");
+  AddBoolOption("send_alert", "-error", "Mark message as an error");
+  AddBoolOption("send_alert", "-warning", "Mark message as a warning");
+  AddStringArgument("send_alert", "message", "", "Content of the message");
 
-  add("send_alert", "delilah", "Send an alert to all connected delilahs using a random worker as sender");
-  add_string_option("send_alert", "-worker", "", "Select broadcaster worker");
-  add_bool_option("send_alert", "-error", "Mark message as an error");
-  add_bool_option("send_alert", "-warning", "Mark message as a warning");
-  add_string_argument("send_alert", "message", "", "Content of the message");
+  AddCommand("ps", "delilah", "Show information about delilah processes");
+  AddBoolOption("ps", "-clear", "Remove finished processes");
+  AddStringArgument("ps", "id", "", "Show more information for this process");
 
-  add("ps", "delilah", "Show information about delilah processes");
-  add_bool_option("ps", "-clear", "Remove finished processes");
-  add_string_argument("ps", "id", "", "Show more information for this process");
+  AddCommand("set", "delilah", "Set an environment variable");
+  AddStringArgument("set", "name", "", "Variable name");
+  AddStringArgument("set", "value", "", "Variable value");
 
-  add("set", "delilah", "Set environment variable in delilah client");
-  add_string_argument("set", "name", "", "Name of the variable to set");
-  add_string_argument("set", "value", "", "Value to assign");
+  AddCommand("unset", "delilah", "Unset a previously defined environment variable");
+  AddStringArgument("set", "name", "", "Variable name");
 
-  add("unset", "delilah", "Remove an environment variable in delilah client");
-  add_string_argument("set", "name", "", "Name of the variable to set");
+  AddCommand("ls_local", "local", "Show a directory listing combined with local queue information");
+  AddStringArgument("ls_local", "file", "*", "File or pattern to be displayed");
 
-  add("ls_local", "local", "Show a list of current directory with relevant information about local queues");
-  add_string_argument("ls_local", "file", "*", "File or pattern to be displayed");
+  AddCommand("ls_local_queues", "local", "Show a list of local queues");
+  AddStringArgument("ls_local_queues", "file", "*", "File or pattern to be displayed");
 
-  add("ls_local_queues", "local", "Show a list of local queues");
-  add_string_argument("ls_local_queues", "file", "*", "File or pattern to be displayed");
+  AddCommand("rm_local", "local", "Recursively remove a file or directory");
+  AddMandatoryStringArgument("rm_local", "file", "File or directory to be removed");
 
-  add("rm_local", "local", "Remove a local file or directory (and all its contents)");
-  add_mandatory_string_argument("rm_local", "file", "Local file or directory to be removed");
+  AddCommand("history", "local", "Show the command history");
+  AddIntOption("history", "limit", 0);
 
-  add("history", "local", "Show the history of the last commands");
-  add_int_option("history", "limit", 0);
+  AddCommand("quit", "delilah", "Quit delilah console");
 
-  add("quit", "delilah", "Quit delilah console");
+  AddCommand("reload_modules_local", "delilah", "Reload local modules");
 
   // ------------------------------------------------------------------
   // DATA MANIPULATION
   // ------------------------------------------------------------------
 
-  add("ls", "data", "Show a list of all data queues in the system");
-  add_string_argument("ls", "pattern", "*", "Pattern of the queues to show");
-  add_bool_option("ls", "-a", "Show hidden queues as well ( used internally by the platform )");
-  add_bool_option("ls", "-commit", "Add commit id information for each queue");
-  add_bool_option("ls", "-blocks", "Add #blocks information for each queue");
-  add_string_option("ls", "-group", "", "Group results by a particular column");
+  AddCommand("ls", "data", "Show a list of all data queues in the SAMSON cluster");
+  AddStringArgument("ls", "pattern", "*", "Pattern of the queues to show");
+  AddBoolOption("ls", "-a", "Include internal queues");
+  AddBoolOption("ls", "-commit", "Add commit id information for each queue");
+  AddBoolOption("ls", "-blocks", "Add #blocks information for each queue");
 
-  add("add", "data", "Create a new queue");
-  add_mandatory_string_argument("add", "queue", "Name of the new queue");
-  add_mandatory_string_argument("add", "key_format", "Format for the key's in new queue (txt is accepted)");
-  add_string_argument("add", "value_format", "txt", "Format for the value's in new queue (txt is accepted)");
+  AddCommand("add", "data", "Create a new queue");
+  AddMandatoryStringArgument("add", "queue", "Name of the new queue");
+  AddMandatoryStringArgument("add", "key_format", "Format for the key's in new queue (txt is accepted)");
+  AddStringArgument("add", "value_format", "txt", "Format for the value's in new queue (txt is accepted)");
 
-  add("remove_all_data", "data", "Remove all queues in the system");
+  AddCommand("remove_all_queues", "data", "Remove all queues in the SAMSON cluter");
 
-  add("remove_all", "data", "Remove all queues and stream_operations in the current SAMSON cluster");
+  AddCommand("remove_all", "data", "Remove all queues and stream_operations in the SAMSON cluster");
 
-  add("rm", "data", "Remove a queue");
-  add_mandatory_string_argument("rm", "queue", "Queue to be removed");
+  AddCommand("rm", "data", "Remove a queue");
+  AddMandatoryStringArgument("rm", "queue", "Queue to be removed");
 
-  add("set_queue_property", "data", "Specify the value of a property in a queue ");
-  add_mandatory_string_argument("set_queue_property", "queue", "Queue to be updated");
-  add_mandatory_string_argument("set_queue_property", "property", "Name of the property we want to update");
-  add_mandatory_string_argument("set_queue_property", "value", "Value for the selected property");
+  AddCommand("set_queue_property", "data", "Specify the value of a property in a queue ");
+  AddMandatoryStringArgument("set_queue_property", "queue", "Queue to be updated");
+  AddMandatoryStringArgument("set_queue_property", "property", "Name of the property we want to update");
+  AddMandatoryStringArgument("set_queue_property", "value", "Value for the selected property");
 
-  add("unset_queue_property", "data", "Remove a previously defined property for a queue");
-  add_mandatory_string_argument("unset_queue_property", "queue", "Queue to be updated");
-  add_mandatory_string_argument("unset_queue_property", "property", "Name of the property we want to update");
+  AddCommand("unset_queue_property", "data", "Remove a previously defined property for a queue");
+  AddMandatoryStringArgument("unset_queue_property", "queue", "Queue to be updated");
+  AddMandatoryStringArgument("unset_queue_property", "property", "Name of the property we want to update");
 
   // ------------------------------------------------------------------
   // Debug
   // ------------------------------------------------------------------
 
-  add("ls_connections", "debug", "Show status of all connections in the cluster");
-  add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
-  add_tag("ls_connections", "send_to_all_workers");
+  AddCommand("ls_connections", "debug", "(Debug) Show status of all connections in the cluster");
+  AddUInt64Option("ls_connections", "-w", SIZE_T_UNDEFINED, "Specify the worker used to request the connections list");
+  AddTag("ls_connections", "send_to_all_workers");
 
-  add("ls_network_queues", "debug", "Show status of all connections in the cluster");
-  add_uint64_option("ls_network_queues", "-w", 0, "Specify a particular worker");
-  add_tag("ls_network_queues", "send_to_all_workers");
+  AddCommand("ls_network_queues", "debug", "(Debug) Show status of all connections in the cluster");
+  AddUInt64Option("ls_network_queues", "-w", SIZE_T_UNDEFINED, "Specify the worker used to request this list");
+  AddTag("ls_network_queues", "send_to_all_workers");
 
-  add("threads", "debug", "Show current threads in this delilah");
+  AddCommand("threads", "debug", "(Debug) Show current threads in this delilah");
 
-  add("ls_blocks", "debug", "Show a list of data blocks managed by SAMSON nodes");
-  add_string_argument("ls_blocks", "pattern", "*", "Pattern to find specific blocks");
-  add_uint64_option("ls_blocks", "-w", static_cast<size_t>(-1), "Specify a worker to request the list of blocks");
-  add_tag("ls_blocks", "send_to_all_workers");
-  add_bool_option("ls_blocks", "-info", "Show more information about priority of this block");
+  AddCommand("ls_blocks", "debug", "(Debug) Show a list of data blocks managed by each SAMSON node");
+  AddStringArgument("ls_blocks", "pattern", "*", "Pattern to find specific blocks");
+  AddUInt64Option("ls_blocks", "-w", SIZE_T_UNDEFINED, "Specify the worker used to request this list");
+  AddTag("ls_blocks", "send_to_all_workers");
+  AddBoolOption("ls_blocks", "-info", "Show more information about priority of this block");
 
-  add("ls_queue_blocks", "debug", "Show detailed list of the blocks included in every queue");
-  add_string_argument("ls_queue_blocks", "pattern", "*", "Pattern to find specific queues");
-  add_bool_option("ls_queue_blocks", "-a", "Show hiden queues as well ( used internally by the platform )");
+  AddCommand("ls_queue_blocks", "debug", "(Debug) Show a detailed list of the blocks included in every queue");
+  AddStringArgument("ls_queue_blocks", "pattern", "*", "Pattern to find specific queues");
+  AddBoolOption("ls_queue_blocks", "-a", "Include internal queues");
 
-  add("ls_buffers", "debug", "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool");
-  add_uint64_option("ls_buffers", "-w", 0, "Specify a particular worker");
-  add_tag("ls_buffers", "send_to_all_workers");
+  AddCommand("ls_buffers", "debug", "(Debug) Show the list of data buffers managed in a SAMSON cluster.");
+  AddUInt64Option("ls_buffers", "-w", SIZE_T_UNDEFINED, "Specify the worker used to request this list");
+  AddTag("ls_buffers", "send_to_all_workers");
 
-  add("ls_block_requests", "debug", "Show current block requests operations in SAMSON nodes");
-  add_string_argument("ls_block_requests", "pattern", "*", "Select pattern for blocks");
-  add_tag("ls_block_requests", "send_to_all_workers");
+  AddCommand("ls_block_requests", "debug", "(Debug) Show current block requests in all SAMSON nodes");
+  AddStringArgument("ls_block_requests", "pattern", "*", "Select pattern for blocks");
+  AddTag("ls_block_requests", "send_to_all_workers");
 
-  add("ls_block_defrags", "debug", "Show current block defrags operations in all SAMSON nodes");
-  add_tag("ls_block_defrags", "send_to_all_workers");
+  AddCommand("ls_block_defrags", "debug", "(Debug) Show block de-fragmentation operations in all SAMSON nodes");
+  AddTag("ls_block_defrags", "send_to_all_workers");
 
-  add("ls_last_commits", "debug", "Show last commits on data model");
+  AddCommand("ls_last_commits", "debug", "(Debug) Show recently committed data models");
 
-  add("ls_last_commits_debug", "debug", "Show last commits trials at all workers on data model.");
-  add_tag("ls_last_commits_debug", "send_to_all_workers");
+  AddCommand("ls_last_commits_debug", "debug", "(Debug) Show recent commit tests for the data model");
+  AddTag("ls_last_commits_debug", "send_to_all_workers");
 
-  add("ls_last_tasks", "debug", "Show last 100 tasks scheduled in workers");
-  add_bool_option("ls_last_tasks", "-times", "Show times spent by tasks");
-  add_tag("ls_last_tasks", "send_to_all_workers");
+  AddCommand("ls_last_tasks", "debug", "(Debug) Show the last 100 tasks scheduled for execution against all nodes");
+  AddBoolOption("ls_last_tasks", "-times", "Include the execution time for each task");
+  AddTag("ls_last_tasks", "send_to_all_workers");
 
-  add("ls_stream_operations_statistics", "debug", "Show statistics about stream operations");
-  add_tag("ls_stream_operations_statistics", "send_to_all_workers");
+  AddCommand("ls_queue_ranges", "debug", "(Debug) Display the range of data for a given queue");
+  AddMandatoryStringArgument("ls_queue_ranges", "name", "Name of the queue we would like to scan");
 
-  add("ls_queue_ranges", "debug", "Show how much information of a queue is at every range");
-  add_mandatory_string_argument("ls_queue_ranges", "name", "Name of the queue we would like to scan");
+  AddCommand("data_model_status", "debug", "(Debug) Show the status of frozen and current data models");
+  AddCommand("data_model_commits", "debug", "(Debug) Show on-the-fly commits pending to be consolidated");
+  AddCommand("data_model_freeze", "debug", "(Debug) Freeze the current data model");
+  AddCommand("data_model_cancel_freeze", "debug", "(Debug) Cancel candidate data model");
+  AddCommand("data_model_recover", "debug", "(Debug) Recover the previously frozen data model");
 
-  add("data_model_status", "debug", "Show frozen and current data model status");
-  add("data_model_commits", "debug", "Show on-the-fly commits pending to be consolidated");
-  add("data_model_freeze", "debug", "Show frozen and current data model status");
-  add("data_model_cancel_freeze", "debug", "Cancel candidate data model");
-  add("data_model_recover", "debug", "Show frozen and current data model status");
+  AddCommand("ls_kv_ranges", "debug", "(Debug) Show a list of key-value ranges in this SAMSON cluster");
 
-  add("ls_kv_ranges", "debug", "Show a list of current KVRanges in this SAMSON cluster");
-
-  add("set_replication_factor", "debug", "Show a list of current KVRanges in this SAMSON cluster");
-  add_mandatory_uint64_argument("set_replication_factor", "factor", "Number of times each block is present in cluster");
-  add("get_replication_factor", "debug", "Show a list of current KVRanges in this SAMSON cluster");
-
+  AddCommand("set_replication_factor", "debug", "(Experimental) Set replication factor in the cluster");
+  AddMandatoryUInt64Argument("set_replication_factor", "factor", "Number of times each block is present in cluster");
+  AddCommand("get_replication_factor", "debug", "Show a list of key-value ranges in this SAMSON cluster");
 
   // ------------------------------------------------------------------
   // MODULES
   // ------------------------------------------------------------------
 
-  add("ls_modules", "modules", "Show a list of modules installed in SAMSON node workers");
-  add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
+  AddCommand("ls_modules", "modules", "Show a list of modules installed at each SAMSON node");
+  AddStringArgument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
+  AddTag("ls_modules", "send_to_all_workers");
 
-  add("ls_modules_information", "modules", "Show information about loading module process");
+  AddCommand("ls_modules_information", "modules", "Show the results of previously executed push_module command");
 
-  add("ls_operations", "modules", "Shows a list of available operations");
-  add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
-  add_bool_option("ls_operations", "-v", "Show more details about input/output parameters");
+  AddCommand("ls_operations", "modules", "Shows a list of available operations");
+  AddStringArgument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
+  AddBoolOption("ls_operations", "-v", "Show more details about input/output parameters");
 
-  add("ls_datas", "modules", "Shows a list of available data-types.");
-  add_string_argument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
+  AddCommand("ls_datas", "modules", "Show a list of the available data-types.");
+  AddStringArgument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
 
-  add("ls_modules", "modules", "Show a list of modules installed in SAMSON node workers");
-  add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
-  add_tag("ls_modules", "send_to_all_workers");
 
-  add("ls_operations", "modules", "Shows a list of available operations");
-  add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
-  add_bool_option("ls_operations", "-v", "Show more details about input/output parameters");
-  add_tag("ls_operations", "send_to_all_workers");
+  AddCommand("ls_operations", "modules", "Shows a list of available operations");
+  AddStringArgument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
+  AddBoolOption("ls_operations", "-v", "Show more details about input/output parameters");
+  AddTag("ls_operations", "send_to_all_workers");
 
-  add("ls_datas", "modules", "Shows a list of available data-types.");
-  add_string_argument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
-  add_tag("ls_datas", "send_to_all_workers");
+  AddCommand("ls_datas", "modules", "Shows a list of available data-types.");
+  AddStringArgument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
+  AddTag("ls_datas", "send_to_all_workers");
 
-  add("ls_local_modules", "modules", "Show a list of modules installed available at this delilah");
+  AddCommand("ls_local_modules", "modules", "Show a list of locally installed modules");
 
-  add("push_module", "modules", "Push a module to the cluster.");
-  add_mandatory_string_argument("push_module", "file", "Local file or directory")->set_options_group("#file");
+  AddCommand("push_module", "modules", "Upload a module to the cluster");
+  AddMandatoryStringArgument("push_module", "file", "Local file or directory")->set_options_group("#file");
 
-  add("clear_modules", "modules", "Remove all previously updated modules");
+  AddCommand("clear_modules", "modules", "Remove all previously uploaded modules");
+  AddStringArgument("clear_modules", "pattern", "*", "Block name attern ( see ls_modules_information)");
 
   // ------------------------------------------------------------------
   // STREAM
   // ------------------------------------------------------------------
 
-  add("ls_stream_operations", "stream", "Show a list of stream operations",
-      "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
-      "They consist in applying a particular operation ( defined in a module ) to process data from\n"
-      "one or multiple input queues and send result to one or multiple output queues\n"
-      "Please, add new stream operations with add_stream_operations command");
-  add_bool_option("ls_stream_operations", "-a",
-                  "Show hidden stream operations as well ( used internally by the platform )");
+  AddCommand("ls_stream_operations", "stream", "Show a list of stream operations",
+             "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
+             "They consist in applying a particular operation ( defined in a module ) to process data from\n"
+             "one or multiple input queues and send result to one or multiple output queues\n"
+             "Please, add new stream operations with add_stream_operations command");
+  AddBoolOption("ls_stream_operations", "-a", "Include internal stream operations");
 
-  add("ps_stream_operations", "stream", "Show a list of stream operations with information about execution planning");
-  add_string_argument("ps_stream_operations", "pattern", "*", "Name of the stream operation");
-  add_bool_option("ps_stream_operations", "-state", "Show state of these stream operations");
-  add_tag("ps_stream_operations", "send_to_all_workers");
+  AddCommand("ls_stream_operations_statistics", "stream", "Show stream operation statistics for the cluster");
+  AddTag("ls_stream_operations_statistics", "send_to_all_workers");
 
-  add("ps_stream_operations_ranges", "stream", "Show a detailed list of a stream operation (for each range)");
-  add_string_argument("ps_stream_operations_ranges", "pattern", "*", "Name of the stream operation");
-  add_bool_option("ps_stream_operations_ranges", "-state",
-                  "Show planning state ( paused, error, ready for scheduling...)");
-  add_bool_option("ps_stream_operations_ranges", "-tasks", "Show tasks associated to stream_operations");
-  add_bool_option("ps_stream_operations_ranges", "-properties", "Information about properties of each stream opertion");
-  add_bool_option("ps_stream_operations_ranges", "-data", "Show input and output data processed of each operation");
-  add_uint64_option("ps_stream_operations_ranges", "-w", static_cast<size_t>(-1), "Selected worker");
-  add_tag("ps_stream_operations_ranges", "send_to_all_workers");
+  AddCommand("ps_stream_operations", "stream",
+             "Show a list of stream operations with information about execution planning");
+  AddStringArgument("ps_stream_operations", "pattern", "*", "Name of the stream operation");
+  AddBoolOption("ps_stream_operations", "-state", "Show state of these stream operations");
+  AddTag("ps_stream_operations", "send_to_all_workers");
 
-  add("add_stream_operation", "stream", "Add a new stream operation to the current SAMSON cluster");
-  add_mandatory_string_argument("add_stream_operation", "name", "Name of the new stream operation");
-  add_mandatory_string_argument("add_stream_operation", "operation", "Name of the operation to run");
-  add_bool_option("add_stream_operation", "-paused", "Start with the operation paused");
+  AddCommand("ps_stream_operations_ranges", "stream", "Show the range data for the specified stream operation");
+  AddStringArgument("ps_stream_operations_ranges", "pattern", "*", "Name of the stream operation");
+  AddBoolOption("ps_stream_operations_ranges", "-state",
+                "Show planning state ( paused, error, ready for scheduling...)");
+  AddBoolOption("ps_stream_operations_ranges", "-tasks", "Show tasks associated to stream_operations");
+  AddBoolOption("ps_stream_operations_ranges", "-properties", "Show stream operation properites");
+  AddBoolOption("ps_stream_operations_ranges", "-data", "Show detail regarding input/output data");
+  AddUInt64Option("ps_stream_operations_ranges", "-w", SIZE_T_UNDEFINED, "Specify the worker used to request this list");
+  AddTag("ps_stream_operations_ranges", "send_to_all_workers");
 
-  add_string_option("add_stream_operation", "-input", "", "Input queues to get data from");
-  add_string_option("add_stream_operation", "-output", "", "Output queues to push data to");
+  AddCommand("add_stream_operation", "stream", "Add a new stream operation to the SAMSON cluster");
+  AddMandatoryStringArgument("add_stream_operation", "name", "Stream operation alias");
+  AddMandatoryStringArgument("add_stream_operation", "operation", "Name of the operation to run");
+  AddBoolOption("add_stream_operation", "-paused", "Start with the operation paused");
 
-  add_bool_option("add_stream_operation", "-forward", "Forward reduce operations are scheduled. ( No state )");
-  add_bool_option("add_stream_operation", "-update_only", "Only update state for keys with new input values");
+  AddStringOption("add_stream_operation", "-input", "", "Input queues to read data");
+  AddStringOption("add_stream_operation", "-output", "", "Output queues to write data");
 
-  add_string_option("add_stream_operation", "-env", "", "Environment variables separated by commas");
+  AddBoolOption("add_stream_operation", "-forward", "Mark as a forward reduce operation (no state is maintained)");
+  AddBoolOption("add_stream_operation", "-update_only", "Only update state for keys with new input values");
 
-  add("remove_stream_operation", "stream", "Remove a previously defined operation with add_stream_operation");
-  add_mandatory_string_argument("remove_stream_operation", "name", "Name of the stream operations to remove");
+  AddStringOption("add_stream_operation", "-env", "", "List of environment variables (key=value) separated by commas");
 
-  add("remove_all_stream_operations", "stream", "Remove all stream operations");
+  AddCommand("remove_stream_operation", "stream", "Remove a previously scheduled streaming operation");
+  AddMandatoryStringArgument("remove_stream_operation", "name", "Alias of the stream operation to be removed");
 
-  add("wait", "stream", "Wait for all the stream operations activity to be finished");
-  add("wait_batch_tasks", "stream", "Wait for all batch-operation activity to be finished");
-  add("wait_my_batch_tasks", "stream", "Wait for all my batch-operation activity to be finished");
+  AddCommand("remove_all_stream_operations", "stream", "Remove all stream operations");
 
-  add("cancel_stream_operation", "stream", "Cancel of  execution of a particular stream operation");
-  add_string_option("cancel_stream_operation", "name", "", "Name of the stream operation to be canceled");
+  AddCommand("wait", "stream", "Wait for all input queues used in stream operations to empty");
+  AddCommand("wait_batch_tasks", "stream", "Wait for all batch operation tasks to complete");
+  AddCommand("wait_my_batch_tasks", "stream", "Wait for my batch operations to complete");
 
-  add("set_stream_operation_property", "stream",
-      "Set value of an environment property associated to a stream operation (see add_stream_operation)",
-      "set_stream_operation_property <stream_operation_name> <variable_name> <value>");
-  add_mandatory_string_argument("set_stream_operation_property", "operation_name",
-                                "Name of the affected stream operation");
-  add_mandatory_string_argument("set_stream_operation_property", "variable_name", "Name of the variable");
-  add_mandatory_string_argument("set_stream_operation_property", "value", "Value of the variable");
+  AddCommand("set_stream_operation_property", "stream",
+             "Set value of an environment property associated to a stream operation (see add_stream_operation)",
+             "set_stream_operation_property <stream_operation_name> <variable_name> <value>");
+  AddMandatoryStringArgument("set_stream_operation_property", "operation_name", "Stream operation alias");
+  AddMandatoryStringArgument("set_stream_operation_property", "variable_name", "Variable name");
+  AddMandatoryStringArgument("set_stream_operation_property", "value", "Variable value");
 
-  add("unset_stream_operation_property", "stream",
-      "Remove an environment property associated to a stream operation (see add_stream_operation)",
-      "unset_stream_operation_property <stream_operation_name> <variable_name>");
+  AddCommand("unset_stream_operation_property", "stream", "Unset environment variables for a stream operation");
+  AddMandatoryStringArgument("unset_stream_operation_property", "operation_name", "Stream operation alias");
+  AddMandatoryStringArgument("unset_stream_operation_property", "variable_name", "Variable name");
 
-  add_mandatory_string_argument("unset_stream_operation_property", "operation_name",
-                                "Name of the affected stream operation");
-  add_mandatory_string_argument("unset_stream_operation_property", "variable_name", "Name of the variable");
+  AddCommand("add_queue_connection", "stream",
+             "Continually replicate the contents of an existing queue with one or more new queues");
 
-  add("add_queue_connection", "stream", "Connect a queue to other queues to duplicate data automatically");
+  AddMandatoryStringArgument("add_queue_connection", "source_queue", "Source queue");
+  AddMandatoryStringArgument("add_queue_connection", "target_queue", "Target queue ( or queues )");
 
-  add_mandatory_string_argument("add_queue_connection", "source_queue", "Source queue");
-  add_mandatory_string_argument("add_queue_connection", "target_queue", "Target queue ( or queues )");
+  AddCommand("rm_queue_connection", "stream", "Remove a connection between queues (see add_queue_connection )");
+  AddMandatoryStringArgument("rm_queue_connection", "source_queue", "Source queue");
+  AddMandatoryStringArgument("rm_queue_connection", "target_queue", "Target queue ( or queues )");
 
-  add("rm_queue_connection", "stream", "Remove a connection between queues (see  add_queue_connection )");
-  add_mandatory_string_argument("rm_queue_connection", "source_queue", "Source queue");
-  add_mandatory_string_argument("rm_queue_connection", "target_queue", "Target queue ( or queues )");
+  AddCommand("ls_queue_connections", "stream", "Show a list of linked queues");
+  AddBoolOption("ls_queue_connections", "-a", "Include internal queues");
 
-  add("ls_queue_connections", "stream", "Show a list with all queue connections ( see add_queue_connection ) ");
-  add_bool_option("ls_queue_connections", "-a", "Show hidden items as well ( used internally by the platform )");
+  AddCommand("ps_tasks", "stream", "Get a list of currently running stream tasks in all workers");
+  AddUInt64Option("ps_tasks", "-w", SIZE_T_UNDEFINED, "Specify the worker used to request the task list");
+  AddBoolOption("ps_tasks", "-data", "Show detail regarding input/output data");
+  AddBoolOption("ps_tasks", "-blocks", "Show detail regarding input/output blocks");
+  AddTag("ps_tasks", "send_to_all_workers");
 
-  add("ps_tasks", "stream", "Get a list of current stream tasks currently running in all workers");
-  add_uint64_option("ps_tasks", "-w", static_cast<size_t>(-1), "Specify worker to request list of tasks");
-  add_bool_option("ps_tasks", "-data", "Get detailed information of input/output data");
-  add_bool_option("ps_tasks", "-blocks", "Get detailed information of input/output blocks");
-  add_tag("ps_tasks", "send_to_all_workers");
+  AddCommand("ls_workers", "stream", "Get a list of worker nodes");
+  AddBoolOption("ls_workers", "-modules", "Show if modules are available at each worker");
+  AddBoolOption("ls_workers", "-traffic", "Show information about data rate to/from disk, network & Zookeeper");
+  AddBoolOption("ls_workers", "-data_model", "Show information about data-model version at each worker");
+  AddBoolOption("ls_workers", "-engine", "For each worker node, detail the state of the underlying engine");
+  AddBoolOption("ls_workers", "-disk", "For each worker node, detail the state of the underlying disk manager");
 
-  add("ls_workers", "stream", "Get a list of current workers");
-  add_bool_option("ls_workers", "-engine", "Show details about underlying engines at worker nodes");
-  add_bool_option("ls_workers", "-disk", "Show details about underlying engines at worker nodes");
-  add_tag("ls_workers", "send_to_all_workers");
+  AddTag("ls_workers", "send_to_all_workers");
 
-  add("init_stream", "stream", "Execute am initialization script to setup some automatic stream operations",
-      "init_stream [-prefix pref] <script_name>\n"
-      "          [-prefix pref_string]         It is used to name operations and queues\n"
-      "          <script_name>    Name of the script (e.g. module.script)\n");
-  add_string_option("init_stream", "-prefix", "", "Prefix to name operations and queues");
-  add_mandatory_string_argument("init_stream", "operation", "Name of the stream script to be installed");
+  AddCommand("init_stream", "stream", "Execute an script to initialize a set of automatic stream operations",
+             "init_stream [-prefix pref] <script_name>\n"
+             "          [-prefix pref_string]         It is used to name operations and queues\n"
+             "          <script_name>    Name of the script (e.g. module.script)\n");
+  AddStringOption("init_stream", "-prefix", "", "Prefix to name operations and queues");
+  AddMandatoryStringArgument("init_stream", "operation", "Name of the stream script to be executed");
 
-  add("ps_workers", "stream", "Show a list of commands being executed in each node of the cluster",
-      "ps_workers <command pattern>\n");
+  AddCommand("ps_workers", "stream", "Show a list of commands currently being executed in each node");
 
-  add("defrag", "stream", "Defrag content of a particular queue", "defrag <queue> <destination_queue>\n");
-
+  // ------------------------------------------------------------------
   // BATCH
+  // ------------------------------------------------------------------
 
-  add("run", "batch", "Run a particular operation over queues in batch mode");
-  add_mandatory_string_argument("run", "operation", "Name of the operation to run");
-  add_string_option("run", "-input", "", "Input queues to get data from");
-  add_string_option("run", "-output", "", "Output queues to push data to");
+  AddCommand("run", "batch", "Run the specified operation in batch mode");
+  AddMandatoryStringArgument("run", "operation", "Operation name to execute");
+  AddStringOption("run", "-input", "", "Input queues to read data");
+  AddStringOption("run", "-output", "", "Output queues to write data");
 
-  add_string_option("run", "-env", "", "Environment variables separated by commas");
+  AddStringOption("run", "-env", "", "List of environment variables (key=value) separated by commas");
 
-  add("ls_batch_operations", "batch", "List scheduled batch operations");
-  add_bool_option("ls_batch_operations", "-input", "Show real input pending to be processed");
-  add_bool_option("ls_batch_operations", "-output", "Show output produced by batch operations");
+  AddCommand("ls_batch_operations", "batch", "List scheduled batch operations");
+  AddBoolOption("ls_batch_operations", "-input", "Show input pending processing");
+  AddBoolOption("ls_batch_operations", "-output", "Show the output summary");
 
-  add("clear_batch_operations", "batch", "Clear finished batch operations");
-  add_bool_option("clear_batch_operations", "-a", "Clear also unfinished tasks");
+  AddCommand("clear_batch_operations", "batch", "Clear finished batch operations");
+  AddBoolOption("clear_batch_operations", "-a", "Clear also unfinished tasks");
 
   // ------------------------------------------------------------------
   // PUSH&POP
   // ------------------------------------------------------------------
 
-  add("push", "push&pop", "Push content of a local file or a directory to a set of queues");
-  add_mandatory_string_argument("push", "file", "Local file or directory")->set_options_group("#file");
-  add_mandatory_string_argument("push", "queue", "queue or queues to push data (queue1 queue2 queue3 ...)");
+  AddCommand("push", "push&pop", "Push/upload the contents of a local file or directory to one or more queues");
+  AddMandatoryStringArgument("push", "file", "Local file or directory")->set_options_group("#file");
+  AddMandatoryStringArgument("push", "queue", "Queue or queues to push data to (queue1 queue2 queue3 ...)");
 
-  add("pop", "push&pop", "Pop content of a queue to a local directory");
-  add_mandatory_string_argument("pop", "queue", "Name of the queue we want to pop");
-  add_mandatory_string_argument("pop", "file_name", "Local directory to save downloaded blocks");
-  add_bool_option("pop", "-force", "Delete local directory if it exists");
-  add_bool_option("pop", "-show", "Show first lines of the content once downloaded");
+  AddCommand("pop", "push&pop", "Pop the contents of a queue to the local filesystem");
+  AddMandatoryStringArgument("pop", "queue", "Queue to be popped");
+  AddMandatoryStringArgument("pop", "file_name", "The name of a folder where the data is downloaded to");
+  AddBoolOption("pop", "-force", "Delete local directory if it exists");
+  AddBoolOption("pop", "-show", "Show first lines of the content once downloaded");
 
-  add("ls_local_push_operations", "push&pop", "Show list of pending push items");
+  AddCommand("ls_local_push_operations", "push&pop", "Show a list of items awaiting upload");
 
-  add("connect_to_queue", "push&pop", "Connect to a queue to receive live data from a SAMSON cluster");
-  add_mandatory_string_argument("connect_to_queue", "queue", "Source queue ( see ls command )");
+  AddCommand("connect_to_queue", "push&pop", "Connect to a queue to receive live data from a SAMSON cluster");
+  AddMandatoryStringArgument("connect_to_queue", "queue", "Source queue ( see ls command )");
 
-  add("disconnect_from_queue", "push&pop",
-      "Disconnects from a particular queue to not receive live data from a SAMSON cluster");
-  add_mandatory_string_argument("disconnect_from_queue", "queue", "Source queue ( see ls command )");
+  AddCommand("disconnect_from_queue", "push&pop",
+             "Disconnects from a particular queue to not receive live data from a SAMSON cluster");
+  AddMandatoryStringArgument("disconnect_from_queue", "queue", "Source queue ( see ls command )");
 
-  add("ls_pop_connections", "push&pop", "Show a list of connections to receive live data from SAMSON.",
-      "ls_pop_connections");
+  AddCommand("ls_pop_connections", "push&pop", "Show a list of connections to receive live data from SAMSON.",
+             "ls_pop_connections");
 
-  add("show_local_queue", "push&pop", "Show contents of a local queue downloaded using pop",
-      "Note: Modules should be installed locally");
+  AddCommand("show_local_queue", "push&pop", "Show contents of a local queue downloaded using pop",
+             "Note: Modules should be installed locally");
 
-  add_mandatory_string_argument("show_local_queue", "queue", "Local queue to be displayed");
-  add_bool_option("show_local_queue", "-header", "Display only header information");
-  add_bool_option("show_local_queue", "-show_hg", "Show hash-group for each key-value");
-  add_uint64_option("show_local_queue", "-limit", 0, "Limit the number of records displayed");
+  AddMandatoryStringArgument("show_local_queue", "queue", "Local queue to be displayed");
+  AddBoolOption("show_local_queue", "-header", "Display only header information");
+  AddBoolOption("show_local_queue", "-show_hg", "Show hash-group for each key-value");
+  AddUInt64Option("show_local_queue", "-limit", 0, "Limit the number of records displayed");
 
-  add("push_queue", "push&pop", "Push content of a queue to another queue/s");
-  add_mandatory_string_argument("push_queue", "queue_from", "Source queue to get data from");
-  add_mandatory_string_argument("push_queue", "queue_to", "Target queue to push data to");
+  AddCommand("push_queue", "push&pop", "Push content of a queue to another queue/s");
+  AddMandatoryStringArgument("push_queue", "queue_from", "Source queue to get data from");
+  AddMandatoryStringArgument("push_queue", "queue_to", "Target queue to push data to");
 
   // ------------------------------------------------------------------
   // LOG
   // ------------------------------------------------------------------
 
 
-  add("wlog_show", "log", "Show logs received from workers (via logServer)");
-  add_string_argument("wlog_show", "host", "localhost", "logServer hostname ( optional :port)");
-  add_string_option("wlog_show", "format", LOG_DEFAULT_FORMAT_CONSOLE, "Format of the logs");
-  add_string_option("wlog_show", "filter", "", "Filter of logs to show");
-  add("wlog_hide", "debug", "Not show logs received from workers (via logServer) anymore");
+  AddCommand("wlog_show", "log", "Show logs received from workers (via logServer)");
+  AddStringArgument("wlog_show", "host", "localhost", "logServer hostname ( optional :port)");
+  AddStringOption("wlog_show", "format", LOG_DEFAULT_FORMAT_CONSOLE, "Format of the logs");
+  AddStringOption("wlog_show", "filter", "", "Filter of logs to show");
+  AddCommand("wlog_hide", "debug", "Not show logs received from workers (via logServer) anymore");
 
-  add("wlog_status", "log", "Show current status of the logs from workers");
-  add_tag("wlog_status", "send_to_all_workers");
+  AddCommand("wlog_status", "log", "Show status of the logs from workers");
+  AddTag("wlog_status", "send_to_all_workers");
 
-  add("wlog_all_channels", "log", "Show all possible log channels to be activated");
+  AddCommand("wlog_all_channels", "log", "Show all possible log channels to be activated");
 
-  add("wlog_set_log_server", "log", "Set the host for log server in all workers");
-  add_mandatory_string_argument("wlog_set_log_server", "host", "Log server host");
-  add_tag("wlog_set_log_server", "send_to_all_workers");
+  AddCommand("wlog_set_log_server", "log", "Set the log server to be used by all workers");
+  AddMandatoryStringArgument("wlog_set_log_server", "host", "Log server host");
+  AddTag("wlog_set_log_server", "send_to_all_workers");
 
-  add("wlog_set", "log", "Set the lovel of logs for a particular channel");
-  add_mandatory_string_argument("wlog_set", "channel_pattern", "Channel ( or channel pattern )");
-  add_string_argument("wlog_set", "log_level", "*", "Level of logs");
-  add_tag("wlog_set", "send_to_all_workers");
+  AddCommand("wlog_set", "log", "For a given channel set the log level");
+  AddMandatoryStringArgument("wlog_set", "channel_pattern", "Channel ( or channel pattern )");
+  AddStringArgument("wlog_set", "log_level", "*", "Log level D,M,V,W,E,X ( type '-' for no log )");
+  AddTag("wlog_set", "send_to_all_workers");
 
 
-  add("log_help", "log", "Show help about log_X commands to interact with the log system");
+  AddCommand("log_help", "log", "Show the log system help");
 
-  add("log_to_screen", "log", "Add a log plugin to emit logs to screen");
-  add_string_option("log_to_screen", "-name", "screen", "Name of the plugin");
-  add_string_option("log_to_screen", "-format", LOG_DEFAULT_FORMAT, "Format of logs on screen");
+  AddCommand("log_to_screen", "log", "Add a log plugin to send logs to screen");
+  AddStringOption("log_to_screen", "-name", "screen", "Name of the plugin");
+  AddStringOption("log_to_screen", "-format", LOG_DEFAULT_FORMAT, "Log format");
 
-  add("log_to_file", "log", "Add a log plugin to emit logs to a file");
-  add_mandatory_string_argument("log_to_file", "filename", "File to be created to store logs");
-  add_string_option("log_to_file", "name", "file", "Name of the plugin");
+  AddCommand("log_to_file", "log", "Add a log plugin to send logs to a file");
+  AddMandatoryStringArgument("log_to_file", "filename", "File to be used to store logs");
+  AddStringOption("log_to_file", "name", "file", "Name of the plugin");
 
-  add("log_to_server", "log", "Add a log plugin to emit logs to a server");
-  add_mandatory_string_argument("log_to_server", "host", "Host of the log server");
-  add_mandatory_string_argument("log_to_server", "filename",
-                                "File to be created to store logs when connection is not available");
-  add_string_option("log_to_server", "name", "server", "Name of the plugin");
+  AddCommand("log_to_server", "log", "Add a log plugin to send logs to a server");
+  AddMandatoryStringArgument("log_to_server", "host", "Host of the log server");
+  AddMandatoryStringArgument("log_to_server", "filename",
+                             "File to be created to store logs when connection is not available");
+  AddStringOption("log_to_server", "name", "server", "Name of the plugin");
 
   // Show information
-  add("log_show_fields", "log", "Show available fields for logs");
-  add("log_show_plugins", "log", "Show current plugins for logs");
-  add("log_show_channels", "log", "Show logs generatd for all channels and all plugins");
-  add_bool_option("log_show_channels", "rates", "Show information about logs generated in bytes/second");
-  add_bool_option("log_show_channels", "v", "Show more information about generated logs");
+  AddCommand("log_show_fields", "log", "Show available log fields");
+  AddCommand("log_show_plugins", "log", "Show current log plugins");
+  AddCommand("log_show_channels", "log", "Show logging information for channels and plugins");
+  AddBoolOption("log_show_channels", "rates", "Show log data rates (bytes/sec)");
+  AddBoolOption("log_show_channels", "v", "Show more information about generated logs");
 
   // Set level of log messages for a particular channel
-  add("log_set", "log",
-      "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
-  add_mandatory_string_argument("log_set", "channel_pattern", "Name (or pattern) of log channel");
-  add_mandatory_string_argument("log_set", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
-  add_string_argument("log_set", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
+  AddCommand("log_set", "log",
+             "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
+  AddMandatoryStringArgument("log_set", "channel_pattern", "Name (or pattern) of log channel");
+  AddMandatoryStringArgument("log_set", "log_level", "Log level: D,M,V,W,E,X ( type '-' for no log )");
+  AddStringArgument("log_set", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
 
   // Set level of log messages for a particular channel
-  add("log_add", "log",
-      "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
-  add_mandatory_string_argument("log_add", "channel_pattern", "Name (or pattern) of log channel");
-  add_mandatory_string_argument("log_add", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
-  add_string_argument("log_add", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
+  AddCommand(
+    "log_add", "log",
+    "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
+  AddMandatoryStringArgument("log_add", "channel_pattern", "Name (or pattern) of log channel");
+  AddMandatoryStringArgument("log_add", "log_level", "Log level D,M,V,W,E,X ( type '-' for no log )");
+  AddStringArgument("log_add", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
 
   // Set level of log messages for a particular channel
-  add("log_remove", "log", "Unset logs for some log-channels ( and for some log-plugins if specified )");
-  add_mandatory_string_argument("log_remove", "channel_pattern", "Name (or pattern) of log channel");
-  add_string_argument("log_remove", "plugin_pattern", "*",
-                      "Name (or pattern) of log-plugin (type * or nothing for all)");
+  AddCommand("log_remove", "log", "Unset logs for some log-channels ( and for some log-plugins if specified )");
+  AddMandatoryStringArgument("log_remove", "channel_pattern", "Name (or pattern) of log channel");
+  AddStringArgument("log_remove", "plugin_pattern", "*",
+                    "Name (or pattern) of log-plugin (type * or nothing for all)");
 }
 }

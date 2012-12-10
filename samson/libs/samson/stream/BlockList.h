@@ -80,7 +80,8 @@ public:
   BlockInfo getBlockInfo();
 
   // Review blocks to verify number of key-values
-  void ReviewBlockReferences(au::ErrorManager& error);
+  void Review(au::ErrorManager& error);
+  void ReviewKVFiles(au::ErrorManager& error);
 
   // string for debug blocks
   std::string str_blocks();

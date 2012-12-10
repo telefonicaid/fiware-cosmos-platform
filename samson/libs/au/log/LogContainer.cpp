@@ -47,7 +47,7 @@ size_t LogContainer::size() const {
 
 void LogContainer::Process(LogQuery *log_query) {
   std::list<LogPointer>::iterator iter;
-  for (iter = logs_.begin(); iter != logs_.end(); iter++) {
+  for (iter = logs_.begin(); iter != logs_.end(); ++iter) {
     log_query->Process(*iter);
   }
 }

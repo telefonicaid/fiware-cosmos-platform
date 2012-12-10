@@ -18,7 +18,7 @@
 namespace samson {
 void copyEnviroment(Environment *from, gpb::Environment *to) {
   std::map<std::string, std::string>::iterator iter;
-  for (iter = from->environment.begin(); iter != from->environment.end(); iter++) {
+  for (iter = from->environment.begin(); iter != from->environment.end(); ++iter) {
     gpb::EnvironmentVariable *ev = to->add_variable();
 
     ev->set_name(iter->first);

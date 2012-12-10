@@ -94,9 +94,9 @@ public:
   void notify(engine::Notification *notification);
 
   // au::console::Console ( debug mode with fg )
-  void autoComplete(au::console::ConsoleAutoComplete *info);
-  void evalCommand(const std::string& command);
-  std::string getPrompt();
+  void AutoComplete(au::console::ConsoleAutoComplete *info);
+  void EvalCommand(const std::string& command);
+  std::string GetPrompt();
 
   // Function to get information about current status
   au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization);

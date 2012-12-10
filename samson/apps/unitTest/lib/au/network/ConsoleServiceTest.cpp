@@ -20,12 +20,12 @@ public:
   MyConsoleService(int port) : au::network::ConsoleService(port) {
   }
 
-  virtual void autoComplete(au::console::ConsoleAutoComplete *info, au::Environment *environment) {
+  virtual void AutoComplete(au::console::ConsoleAutoComplete *info, au::Environment *environment) {
     info->add("start_option");
     info->add("start_option2");
   }
 
-  virtual std::string getPrompt(au::Environment *environment) {
+  virtual std::string GetPrompt(au::Environment *environment) {
     return "My prompt>>";
   }
 
@@ -48,15 +48,15 @@ TEST(au_network_ConsoleService, DISABLED_basic) {
   client.Connect("localhost", &error);
   EXPECT_FALSE(error.HasErrors());
 
-  client.evalCommand("repeat this", &error);
+  client.EvalCommand("repeat this", &error);
   EXPECT_EQ("repeat this\n", error.GetLastError());
 
   au::console::ConsoleAutoComplete info("start");
   au::ErrorManager error_auto_complete;
-  client.autoComplete(&info);
+  client.AutoComplete(&info);
   EXPECT_EQ(2, info.getNumAlternatives());
 
-  EXPECT_EQ("My prompt>>", client.getPrompt());
+  EXPECT_EQ("My prompt>>", client.GetPrompt());
 
   // Disconnect client
   client.Disconnect(&error);

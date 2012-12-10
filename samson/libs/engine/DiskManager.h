@@ -60,10 +60,10 @@ public:
   ~DiskManager();
 
   // Add a disk operation to be executed in the background
-  void Add(const au::SharedPointer< ::engine::DiskOperation>& operation);
+  void Add(au::SharedPointer< ::engine::DiskOperation> operation);
 
   // Cancel a disk operation already included
-  void Cancel(const au::SharedPointer< ::engine::DiskOperation>& operation);
+  void Cancel(au::SharedPointer< ::engine::DiskOperation> operation);
 
   // run_worker - main function for the background worker
   //   NOTE: the class that needs to use this method has to be made a friend
@@ -94,7 +94,7 @@ private:
   void Stop();
 
   // Notification that a disk operation has finished
-  void FinishDiskOperation(const au::SharedPointer< ::engine::DiskOperation >& operation);
+  void FinishDiskOperation(au::SharedPointer< ::engine::DiskOperation > operation);
 
   // Auxiliary function to get the next operation ( NULL if no more disk operations )
   au::SharedPointer< ::engine::DiskOperation > getNextDiskOperation();

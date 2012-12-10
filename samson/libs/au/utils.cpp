@@ -106,20 +106,4 @@ std::string code64_str(size_t v) {
 
   return str;
 }
-
-void remove_return_chars(char *line) {
-  while (true) {
-    size_t l = strlen(line);
-
-    if (l == 0) {
-      return;
-    }
-
-    if ((line[l - 1] == '\n') || (line[l - 1] == '\r')) {
-      line[l - 1] = '\0';
-    } else {
-      return;
-    }
-  }
-}
 }

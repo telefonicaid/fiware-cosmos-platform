@@ -265,7 +265,7 @@ void PushManager::Review() {
 
 void PushManager::ResetAllItems() {
   au::map<size_t, PushItem>::iterator it;
-  for (it = items_.begin(); it != items_.end(); it++) {
+  for (it = items_.begin(); it != items_.end(); ++it) {
     PushItem *item = it->second;
     item->ResetPushItem();
   }
@@ -277,7 +277,7 @@ au::tables::Table *PushManager::getTableOfItems() {
   table->setTitle("push operations");
 
   au::map<size_t, PushItem>::iterator it;
-  for (it = items_.begin(); it != items_.end(); it++) {
+  for (it = items_.begin(); it != items_.end(); ++it) {
     PushItem *item = it->second;
 
     au::StringVector values;

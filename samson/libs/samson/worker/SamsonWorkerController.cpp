@@ -297,7 +297,7 @@ int SamsonWorkerController::UpdateWorkerNode(size_t last_commit_id) {
   if (rc) {
     LOG_SW(("Not possible to update worker node %s with new commit id %lu"
             , au::zoo::str_error(rc).c_str()
-            , last_commit_id ));
+            , last_commit_id));
     worker_info_.set_last_commit_id(previous_last_commit_id);     // Recover previous value
   }
 
@@ -421,7 +421,7 @@ int SamsonWorkerController::Review() {
   }
 
   // Check if I am the lowest worker_id ( that means the leader )
-  cluster_leader_ = ( worker_ids_[0] == worker_id_ );
+  cluster_leader_ = (worker_ids_[0] == worker_id_);
 
   if (cluster_leader_) {
     return ReviewClusterLeather();
@@ -513,7 +513,7 @@ int SamsonWorkerController::CreateClusterInfo(size_t version) {
   } else if (num_workers > 5) {
     num_units = 128;
   } else if (num_workers > 2) {
-    num_units = 64;
+    num_units = 24;
   } else if (num_workers > 1) {
     num_units = 16;
   }

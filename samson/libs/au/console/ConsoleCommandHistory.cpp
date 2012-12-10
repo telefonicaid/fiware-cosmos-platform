@@ -56,7 +56,7 @@ void ConsoleCommandHistory::recover_history() {
   }
 
   char line[1024];
-  while (fgets(line, 1024, file)) {
+  while (fgets(line, 1024, file) != NULL) {
     // Remove the \n char at the end of each line
     line[ strlen(line) - 1 ] = '\0';
 
@@ -72,7 +72,7 @@ void ConsoleCommandHistory::save_history() {
     delete commands[ commands.size() - 1 ];
     commands.pop_back();
 
-    if (pos > ( commands.size() - 1 )) {
+    if (pos > (commands.size() - 1)) {
       pos = commands.size() - 1;
     }
   }

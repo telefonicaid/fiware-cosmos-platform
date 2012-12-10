@@ -285,7 +285,7 @@ std::string path_from_directory(const std::string& directory, const std::string&
   }
 }
 
-std::string GetRandomDirectory() {
+std::string GetRandomTmpFileOrDirectory() {
   char tmp_directory[100];
 
   sprintf(tmp_directory, "/tmp/tmpXXXXXXX");

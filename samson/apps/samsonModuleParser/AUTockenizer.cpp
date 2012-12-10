@@ -46,7 +46,7 @@ std::vector<AUToken> AUTockenizer::removeSpacesAndReturns(std::vector<AUToken> i
 
   std::vector<AUToken>::iterator iter;
 
-  for (iter = items.begin(); iter < items.end(); iter++) {
+  for (iter = items.begin(); iter < items.end(); ++iter) {
     if (literal) {
       if ((*iter).str == "\"") {
         literal = false;
@@ -81,7 +81,7 @@ std::vector<AUToken> AUTockenizer::removeComments(std::vector<AUToken> items) {
 
   std::vector<AUToken>::iterator iter;
 
-  for (iter = items.begin(); iter < items.end(); iter++) {
+  for (iter = items.begin(); iter < items.end(); ++iter) {
     if (removing) {
       if ((*iter).str == "\n") {
         removing = false;
@@ -107,7 +107,7 @@ std::vector<AUToken> AUTockenizer::removeSpacesAndCommentsAndReturns(std::vector
 
   std::vector<AUToken>::iterator iter;
 
-  for (iter = items.begin(); iter < items.end(); iter++) {
+  for (iter = items.begin(); iter < items.end(); ++iter) {
     if (literal) {
       if ((*iter).str == "\"") {
         literal = false;
@@ -242,19 +242,19 @@ bool AUTockenizer::isSpecial(int pos) {
 }
 
 bool AUTockenizer::isOpenSet(int pos) {
-  return( itemAtPos(pos).str == "{" );
+  return(itemAtPos(pos).str == "{");
 }
 
 bool AUTockenizer::isCloseSet(int pos) {
-  return( itemAtPos(pos).str == "}" );
+  return(itemAtPos(pos).str == "}");
 }
 
 bool AUTockenizer::isSemiColom(int pos) {
-  return( itemAtPos(pos).str == ";" );
+  return(itemAtPos(pos).str == ";");
 }
 
 bool AUTockenizer::isOpenCloseLiteral(int pos) {
-  return( itemAtPos(pos).str == "\"" );
+  return(itemAtPos(pos).str == "\"");
 }
 
 int AUTockenizer::searchSetFinishStartingAt(int pos) {

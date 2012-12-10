@@ -67,7 +67,7 @@ public:
 
   void copyFrom(Environment *other) {
     std::map<std::string, std::string>::iterator iter;
-    for (iter = other->environment.begin(); iter != other->environment.end(); iter++) {
+    for (iter = other->environment.begin(); iter != other->environment.end(); ++iter) {
       environment.insert(std::pair<std::string, std::string>(iter->first, iter->second));
     }
   }
@@ -76,7 +76,7 @@ public:
     std::ostringstream o;
 
     std::map<std::string, std::string>::iterator iter;
-    for (iter = environment.begin(); iter != environment.end(); iter++) {
+    for (iter = environment.begin(); iter != environment.end(); ++iter) {
       o << iter->first << " : " << iter->second << "\n";
     }
     return o.str();

@@ -56,7 +56,7 @@ public:
 
   void addTo(std::set<size_t> &ids) {
     std::set<size_t>::iterator it;
-    for (it = ids_.begin(); it != ids_.end(); it++) {
+    for (it = ids_.begin(); it != ids_.end(); ++it) {
       ids.insert(*it);
     }
   }

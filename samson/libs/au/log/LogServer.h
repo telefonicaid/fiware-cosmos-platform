@@ -53,8 +53,8 @@ public:
 
   // au::network::ConsoleService
   void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error);
-  void autoComplete(console::ConsoleAutoComplete *info, au::Environment *environment);
-  std::string getPrompt(au::Environment *environment);
+  void AutoComplete(console::ConsoleAutoComplete *info, au::Environment *environment);
+  std::string GetPrompt(au::Environment *environment);
 
 private:
   LogServerService service_;   // Service to accept connection with binary logs ( providers, probes, queries...)

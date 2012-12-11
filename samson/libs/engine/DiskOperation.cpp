@@ -28,9 +28,10 @@ DiskOperation::DiskOperation() {
 DiskOperation::~DiskOperation() {
 }
 
-DiskOperation *DiskOperation::newReadOperation(char *data, std::string fileName, size_t offset, size_t size,
-                                               size_t _listenerId) {
-  DiskOperation *o = new DiskOperation();
+au::SharedPointer<DiskOperation> DiskOperation::newReadOperation(char *data, std::string fileName, size_t offset,
+                                                                 size_t size,
+                                                                 size_t _listenerId) {
+  au::SharedPointer<DiskOperation> o(new DiskOperation());
 
   o->fileName = fileName;
   o->type = DiskOperation::read;
@@ -44,10 +45,10 @@ DiskOperation *DiskOperation::newReadOperation(char *data, std::string fileName,
   return o;
 }
 
-DiskOperation *DiskOperation::newReadOperation(std::string fileName, size_t offset, size_t size,
-                                               SimpleBuffer simpleBuffer,
-                                               size_t _listenerId) {
-  DiskOperation *o = new DiskOperation();
+au::SharedPointer<DiskOperation> DiskOperation::newReadOperation(std::string fileName, size_t offset, size_t size,
+                                                                 SimpleBuffer simpleBuffer,
+                                                                 size_t _listenerId) {
+  au::SharedPointer<DiskOperation> o(new DiskOperation());
 
   o->fileName = fileName;
   o->type = DiskOperation::read;
@@ -61,8 +62,9 @@ DiskOperation *DiskOperation::newReadOperation(std::string fileName, size_t offs
   return o;
 }
 
-DiskOperation *DiskOperation::newWriteOperation(BufferPointer buffer, std::string fileName, size_t _listenerId) {
-  DiskOperation *o = new DiskOperation();
+au::SharedPointer<DiskOperation> DiskOperation::newWriteOperation(BufferPointer buffer, std::string fileName,
+                                                                  size_t _listenerId) {
+  au::SharedPointer<DiskOperation>o(new DiskOperation());
 
   o->fileName = fileName;
   o->type = DiskOperation::write;
@@ -76,8 +78,9 @@ DiskOperation *DiskOperation::newWriteOperation(BufferPointer buffer, std::strin
   return o;
 }
 
-DiskOperation *DiskOperation::newAppendOperation(BufferPointer buffer, std::string fileName, size_t _listenerId) {
-  DiskOperation *o = new DiskOperation();
+au::SharedPointer<DiskOperation> DiskOperation::newAppendOperation(BufferPointer buffer, std::string fileName,
+                                                                   size_t _listenerId) {
+  au::SharedPointer<DiskOperation>o(new DiskOperation());
 
   o->fileName = fileName;
   o->type = DiskOperation::append;
@@ -91,8 +94,8 @@ DiskOperation *DiskOperation::newAppendOperation(BufferPointer buffer, std::stri
   return o;
 }
 
-DiskOperation *DiskOperation::newRemoveOperation(std::string fileName, size_t _listenerId) {
-  DiskOperation *o = new DiskOperation();
+au::SharedPointer<DiskOperation> DiskOperation::newRemoveOperation(std::string fileName, size_t _listenerId) {
+  au::SharedPointer<DiskOperation> o(new DiskOperation());
 
   o->fileName = fileName;
   o->type = DiskOperation::remove;

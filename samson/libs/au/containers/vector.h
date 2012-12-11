@@ -103,7 +103,7 @@ template <class C>
 std::vector<C> vector_from_set(const std::set<C> set) {
   std::vector<C> vector;
   typename std::set<C>::iterator it;
-  for (it = set.begin(); it != set.end(); it++) {
+  for (it = set.begin(); it != set.end(); ++it) {
     vector.push_back(*it);
   }
   return vector;

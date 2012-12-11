@@ -13,7 +13,6 @@
 #include "ReadFileManager.h"        // Own interface
 
 namespace engine {
-
 ReadFileManager::ReadFileManager() {
   // Default number of open files
   max_open_files_ = 100;
@@ -33,7 +32,7 @@ ReadFile *ReadFileManager::GetReadFile(const std::string& file_name) {
     f = NULL;
   }
 
-  if (!f) {
+  if (f == NULL) {
     f = new ReadFile(file_name);
   }
 

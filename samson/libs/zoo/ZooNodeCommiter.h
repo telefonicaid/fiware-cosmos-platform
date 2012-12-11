@@ -124,7 +124,7 @@ public:
   /*
    * \brief Get current data model
    */
-  au::SharedPointer<C> getCurrentModel() {
+  au::SharedPointer<C> getCurrentModel() const {
     au::TokenTaker tt(&token_);
 
     return c_;
@@ -144,13 +144,11 @@ public:
   /*
    * \brief Perform a new commit over data model
    */
-  void Commit(const std::string& caller, const std::string& commit_command, au::ErrorManager& error) {
+  au::SharedPointer<C> Commit(const std::string& caller, const std::string& commit_command, au::ErrorManager& error) {
     au::TokenTaker tt(&token_);
+    au::Cronometer cronometer;  // Cronometer to measure how much time it takes to perform commit
 
-    // Perform intern commit ( counting time )
-    au::Cronometer cronometer;
-
-    InternCommit(commit_command, error);
+    au::SharedPointer<C> c = InternCommit(commit_command, error);
     double time = cronometer.seconds();
 
     // Log activity for debugging
@@ -162,6 +160,8 @@ public:
     while (last_commits_.size() > 100) {
       last_commits_.pop_back();
     }
+
+    return c;
   }
 
   /*
@@ -248,7 +248,7 @@ public:
   std::vector<StringCommitRecord> last_commits() const {
     std::vector<StringCommitRecord> copy_last_commits;
     std::list<StringCommitRecord>::const_iterator it;
-    for (it = last_commits_.begin(); it != last_commits_.end(); it++) {
+    for (it = last_commits_.begin(); it != last_commits_.end(); ++it) {
       copy_last_commits.push_back(*it);
     }
     return copy_last_commits;
@@ -256,9 +256,8 @@ public:
 
 private:
 
-  void InternCommit(const std::string& commit_command, au::ErrorManager& error) {
-    // Mutex protection
-    au::TokenTaker tt(&token_);
+  au::SharedPointer<C> InternCommit(const std::string& commit_command, au::ErrorManager& error) {
+    au::TokenTaker tt(&token_);    // Mutex protection
 
     int trial = 0;
 
@@ -270,7 +269,7 @@ private:
         int rc = UpdateToLastVersion();
         if (rc) {
           error.AddError(au::str("Internal error in DataModelCommiter with ZK: %s", zoo::str_error(rc).c_str()));
-          return;
+          return au::SharedPointer<C>(NULL);
         }
       }
 
@@ -280,7 +279,7 @@ private:
       LOG_M(logs.zoo, ("trying to performing commit %s over path %s", commit_command.c_str(), path_.c_str()));
       PerformCommit(c, commit_command, version_, error);     // Change on a duplicated data model
       if (error.HasErrors()) {          // If error in the operation itself, No commit is done at all
-        return;
+        return au::SharedPointer<C>(NULL);
       }
 
       // Try to commit
@@ -295,21 +294,21 @@ private:
         int rc = UpdateToLastVersion();
         if (rc) {
           error.AddError(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
-          return;
+          return au::SharedPointer<C>(NULL);
         }
         continue;     // Loop to load again data model and commit
       }
 
       if (rc) {
         error.AddError(au::str("Error with ZK: %s ", zoo::str_error(rc).c_str()));  // Any other error cancel this operation
-        return;
+        return au::SharedPointer<C>(NULL);
       }
 
       // Operation is commited correctly
       PerformCommit(c_, commit_command, version_, error);     // Real changes on data model
       version_++;
-      ReviewInternalCommit();                                                 // Interal review to consolidate data model and remove paths
-      return;
+      ReviewInternalCommit();  // Interal review to consolidate data model and remove paths in ZK when required
+      return c_;
     }
   }
 
@@ -378,7 +377,7 @@ private:
   }
 
   zoo::Connection *zoo_connection_;
-  au::Token token_;
+  mutable au::Token token_;
   std::string path_;
   au::SharedPointer<C> c_;
   int version_;

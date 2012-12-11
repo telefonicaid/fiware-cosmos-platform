@@ -239,6 +239,7 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
 
   if (buffer == NULL) {
     LOG_W(logs.worker_block_manager, ("Push message without a buffer. This is an error..."));
+    SendPushBlockResponseWithError(delilah_id, push_id, "No buffer provided");
     return;
   }
 
@@ -246,13 +247,14 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
   size_t block_size = buffer->size();
   if (buffer->size() < sizeof(KVHeader)) {
     LOG_W(logs.worker_block_manager, ("Push message with a non-valid buffer.Ignoring..."));
+    SendPushBlockResponseWithError(delilah_id, push_id, "Invalid buffer provided");
     return;
   }
 
   KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
-
   if (!header->Check() || !header->range.isValid()) {
-    LOG_W(logs.worker_block_manager, ("Push message with a non-valid buffer.Ignoring..."));
+    LOG_W(logs.worker_block_manager, ("Push message with an invalid buffer. Ignoring..."));
+    SendPushBlockResponseWithError(delilah_id, push_id, "Invalid buffer provided");
     return;
   }
 
@@ -268,6 +270,7 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
 
     if (all_hgs.size() == 0) {
       LOG_W(logs.worker_block_manager, ("Push message rejected. No hash group assigned to me"));
+      SendPushBlockResponseWithError(delilah_id, push_id, "Internal error in this worker");
       return;
     }
 
@@ -277,6 +280,7 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
     header->range.set(0, KVFILE_NUM_HASHGROUPS);        // Make sure it is full range
   } else {
     LOG_W(logs.worker_block_manager, ("Push message with a buffer that is not data or a module.Ignoring..."));
+    SendPushBlockResponseWithError(delilah_id, push_id, "Invalid buffer provided");
     return;
   }
 
@@ -285,6 +289,7 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
 
   if (block_id == static_cast<size_t>(-1)) {
     LOG_W(logs.worker_block_manager, ("Error creating block in a push operation ( block_id -1 )"));
+    SendPushBlockResponseWithError(delilah_id, push_id, "Internal error in this worker");
     return;
   }
 
@@ -300,19 +305,43 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
   std::string caller = au::str("PushOperation from delilah %s ( push id %lu )"
                                , au::code64_str(delilah_id).c_str()
                                , push_id);
-  samson_worker_->data_model()->Commit(caller, command, error);
+  au::SharedPointer<gpb::DataModel> data_model = samson_worker_->data_model()->Commit(caller, command, error);
 
   if (error.HasErrors()) {
     LOG_W(logs.worker_block_manager, ("Error comitting a push operation to data model: %s", error.GetLastError().c_str()));
+    SendPushBlockResponseWithError(delilah_id, push_id, "Internal error in this worker");
     return;
   }
 
+  // Add in the list of push items to be confirmed
+  size_t commit_id = data_model->current_data().commit_id();
+  push_items_.push_back(WorkerPushItem(delilah_id, push_id, commit_id));
+
   // Send a message to delilah to inform we have received correctly
-  PacketPointer packet(new Packet(Message::PushBlockResponse));
-  packet->to = NodeIdentifier(DelilahNode, delilah_id);
-  packet->message->set_push_id(push_id);
-  samson_worker_->network()->Send(packet);
+  SendPushBlockResponse(delilah_id, push_id);
   return;
+}
+
+void WorkerBlockManager::ReviewPushItems(size_t previous_data_commit_id, size_t current_data_commit_id) {
+  std::list<WorkerPushItem>::iterator iter;
+  for (iter = push_items_.begin(); iter != push_items_.end(); ) {
+    if (iter->commit_id() <= previous_data_commit_id) {
+      SendPushBlockConfirmation(iter->delilah_id(), iter->push_id());            // Operation can be confirmed
+      iter = push_items_.erase(iter);
+      continue;
+    }
+
+    if (iter->commit_id() > current_data_commit_id) {
+      std::string error_message = au::str("Canceled since commit# %lu is newer than current commit# %lu "
+                                          , iter->commit_id()
+                                          , current_data_commit_id);
+      SendPushBlockConfirmationWithError(iter->delilah_id(), iter->push_id(), error_message);
+      iter = push_items_.erase(iter);
+      continue;
+    }
+
+    ++iter;
+  }
 }
 
 void WorkerBlockManager::RemoveRequestIfNecessary(const std::set<size_t>& all_block_ids) {
@@ -325,5 +354,40 @@ void WorkerBlockManager::RemoveRequestIfNecessary(const std::set<size_t>& all_bl
       ++iter;   // keep request
     }
   }
+}
+
+void WorkerBlockManager::SendPushBlockResponse(size_t delilah_id, size_t push_id) {
+  PacketPointer packet(new Packet(Message::PushBlockResponse));
+
+  packet->to = NodeIdentifier(DelilahNode, delilah_id);
+  packet->message->set_push_id(push_id);
+  samson_worker_->network()->Send(packet);
+}
+
+void WorkerBlockManager::SendPushBlockResponseWithError(size_t delilah_id, size_t push_id, const std::string& error) {
+  PacketPointer packet(new Packet(Message::PushBlockResponse));
+
+  packet->to = NodeIdentifier(DelilahNode, delilah_id);
+  packet->message->set_push_id(push_id);
+  packet->message->mutable_error()->set_message(error);
+  samson_worker_->network()->Send(packet);
+}
+
+void WorkerBlockManager::SendPushBlockConfirmation(size_t delilah_id, size_t push_id) {
+  PacketPointer packet(new Packet(Message::PushBlockConfirmation));
+
+  packet->to = NodeIdentifier(DelilahNode, delilah_id);
+  packet->message->set_push_id(push_id);
+  samson_worker_->network()->Send(packet);
+}
+
+void WorkerBlockManager::SendPushBlockConfirmationWithError(size_t delilah_id, size_t push_id,
+                                                            const std::string& error) {
+  PacketPointer packet(new Packet(Message::PushBlockConfirmation));
+
+  packet->to = NodeIdentifier(DelilahNode, delilah_id);
+  packet->message->set_push_id(push_id);
+  packet->message->mutable_error()->set_message(error);
+  samson_worker_->network()->Send(packet);
 }
 }

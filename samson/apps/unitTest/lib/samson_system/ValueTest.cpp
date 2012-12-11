@@ -36,7 +36,7 @@
 void check_serialization(samson::system::Value *value, char *line, size_t expected_size) {
   size_t s = value->serialize(line);
 
-  EXPECT_EQ(expected_size, s) << au::str("Excesive size to serialize value %s ( used %lu when expected is %lu) ",
+  EXPECT_EQ(expected_size, s) << au::str("Excessive size to serialize value %s ( used %lu when expected is %lu) ",
                                          value->str().c_str(), s, expected_size).c_str();
 
   samson::system::Value *value2 = new samson::system::Value();

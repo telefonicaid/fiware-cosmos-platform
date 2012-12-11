@@ -100,7 +100,7 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
   }
 }
 
-std::string ConsoleServiceClientBase::getPrompt() {
+std::string ConsoleServiceClientBase::GetPrompt() {
   // If not connected....
   if (!socket_connection_) {
     return "Disconnected > ";
@@ -136,7 +136,7 @@ std::string ConsoleServiceClientBase::getPrompt() {
   return current_prompt_;
 }
 
-void ConsoleServiceClientBase::evalCommand(const std::string& command, au::ErrorManager *error) {
+void ConsoleServiceClientBase::EvalCommand(const std::string& command, au::ErrorManager *error) {
   // Establish connection
   au::CommandLine cmdLine;
 
@@ -186,7 +186,7 @@ void ConsoleServiceClientBase::evalCommand(const std::string& command, au::Error
   }
 }
 
-void ConsoleServiceClientBase::autoComplete(console::ConsoleAutoComplete *info) {
+void ConsoleServiceClientBase::AutoComplete(console::ConsoleAutoComplete *info) {
   // Options for connection and disconnection...
   if (info->completingFirstWord()) {
     info->add("connect");
@@ -227,19 +227,19 @@ ConsoleServiceClient::ConsoleServiceClient(int port) :
 }
 
 // Write all messages on console
-void ConsoleServiceClient::evalCommand(const std::string& command) {
+void ConsoleServiceClient::EvalCommand(const std::string& command) {
   au::ErrorManager error;
 
-  ConsoleServiceClientBase::evalCommand(command, &error);
-  Console::write(&error);
+  ConsoleServiceClientBase::EvalCommand(command, &error);
+  Console::Write(error);
 }
 
-void ConsoleServiceClient::autoComplete(console::ConsoleAutoComplete *info) {
-  ConsoleServiceClientBase::autoComplete(info);
+void ConsoleServiceClient::AutoComplete(console::ConsoleAutoComplete *info) {
+  ConsoleServiceClientBase::AutoComplete(info);
 }
 
-std::string ConsoleServiceClient::getPrompt() {
-  return ConsoleServiceClientBase::getPrompt();
+std::string ConsoleServiceClient::GetPrompt() {
+  return ConsoleServiceClientBase::GetPrompt();
 }
 
 // Fill message to be sent to client
@@ -291,7 +291,7 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
     if (message->has_auto_complettion_command()) {
       // Auto completion request....
       console::ConsoleAutoComplete info(message->auto_complettion_command());
-      autoComplete(&info, &environment);
+      AutoComplete(&info, &environment);
 
       // Fill answer message with alternatives
       for (size_t i = 0; i < info.getNumAlternatives(); i++) {
@@ -303,7 +303,7 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
       }
     } else if (message->has_prompt_request()) {
       // Prompt request
-      answer_message.set_prompt(getPrompt(&environment));
+      answer_message.set_prompt(GetPrompt(&environment));
     } else {
       // Run this command message...
       au::ErrorManager error;

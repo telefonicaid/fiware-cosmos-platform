@@ -59,13 +59,13 @@ int logFd             = -1;
 
 int main(int argC, char **argV) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)"only errors");
-  paConfig("log to screen",                 (void *)false);
-  paConfig("log to file",                   (void *)true);
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE@TIME  EXEC: TEXT");
-  paConfig("default value", "-logDir",      (void *)"/var/log/samson");
-  paConfig("man author",                    "Samson team");
+  paConfig("log to screen", (void *)"only errors");
+  paConfig("log to screen", (void *)false);
+  paConfig("log to file", (void *)true);
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE@TIME  EXEC: TEXT");
+  paConfig("default value", "-logDir", (void *)"/var/log/samson");
+  paConfig("man author", "Samson team");
 
   // Parse incoming arguments without being altered by google test library arguments
   if (( argC > 2 ) &&  (strcmp(argV[1], "-t") == 0)) {
@@ -83,7 +83,7 @@ int main(int argC, char **argV) {
   au::log_central->AddScreenPlugin("screen", "[type][channel] text");
 
   // Set Error level for this channel to avoid unnecessary warning messages when testing stuff
-  au::log_central->evalCommand("log_set system E");
+  au::log_central->EvalCommand("log_set system E");
 
   // Run all tests
   LM_M(("calling ::testing::InitGoogleTest"));

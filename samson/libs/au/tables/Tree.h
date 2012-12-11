@@ -20,7 +20,7 @@
 *
 * DESCRIPTION
 *
-*      Usefull classes to get tree data-sets
+*      useful classes to get tree data-sets
 *
 * ****************************************************************************/
 

@@ -18,7 +18,7 @@
 /**
  * \namespace au
  * \brief Namespace for au library
- * \auth Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ * @author Andreu Urruela, Gregorio Escalada & Ken Zangelin
  */
 
 namespace au {
@@ -47,7 +47,7 @@ public:
     zoo  = LOG_REGISTER_CHANNEL("au::ZOO", "au library : Zookeeper wrapper");
     gpb  = LOG_REGISTER_CHANNEL("au::GPB", "au library : Google Protocol Buffers wrapper");
     rest = LOG_REGISTER_CHANNEL("au::R", "au library : Rest interface");
-    excessive_time = LOG_REGISTER_CHANNEL("au::E", "au library : Excesive time");
+    excessive_time = LOG_REGISTER_CHANNEL("au::E", "au library : Excessive time");
     thread_manager = LOG_REGISTER_CHANNEL("au::TM", "au library : Thread manager");
     file_descriptor = LOG_REGISTER_CHANNEL("au::TM", "au library : File descriptor");
     listener = LOG_REGISTER_CHANNEL("au::L", "au library : Network listener");

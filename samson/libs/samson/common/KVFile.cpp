@@ -65,23 +65,21 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.keyFormat);
   Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.valueFormat);
 
-  if (!key_data) {
+  if (key_data == NULL) {
     error.AddError(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
 	LM_E(("Unknown data type for key: %s", kv_file->header_.keyFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
-  if (!value_data) {
+  if (value_data == NULL) {
     error.AddError(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
     LM_E(("Unknown data type for value: %s", kv_file->header_.valueFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
-  kv_file->key_   = (DataInstance * )key_data->getInstance();
-  kv_file->value_ = (DataInstance * )value_data->getInstance();
-
-  DataInstance *key   = kv_file->key_;
-  DataInstance *value = kv_file->value_;
+  // Data instances for parsing and printing content
+  au::SharedPointer<DataInstance> key(key_data->getInstance());
+  au::SharedPointer<DataInstance> value(value_data->getInstance());
 
   // Create a unified buffer to hold all auxiliar data required
   size_t size_for_kvs  = sizeof(KV) * kv_file->header_.info.kvs;
@@ -89,13 +87,11 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   size_t size_for_kvs_idnex = sizeof(int) * KVFILE_NUM_HASHGROUPS;
   size_t size_total = size_for_kvs + size_for_info + size_for_kvs_idnex;
 
-  std::string buffer_name = au::str("KVFile for block %s", buffer->name().c_str());
-  kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, size_total);
-  kv_file->auxiliar_buffer_->set_size(size_total);  // Set total size for statistics about used memory
+  kv_file->auxiliar_buffer_.Reset(size_total);
 
-  kv_file->kvs       = (KV *)kv_file->auxiliar_buffer_->data();
-  kv_file->info      = (KVInfo *)(kv_file->auxiliar_buffer_->data() + size_for_kvs);
-  kv_file->kvs_index = (int *)(kv_file->auxiliar_buffer_->data() + size_for_kvs + size_for_info);
+  kv_file->kvs       = (KV *)kv_file->auxiliar_buffer_.data();
+  kv_file->info      = (KVInfo *)(kv_file->auxiliar_buffer_.data() + size_for_kvs);
+  kv_file->kvs_index = (int *)(kv_file->auxiliar_buffer_.data() + size_for_kvs + size_for_info);
 
   // Local pointer fo easy access
   KV *kvs = kv_file->kvs;
@@ -183,14 +179,6 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 }
 
 KVFile::~KVFile() {
-  if (key_) {
-    delete key_;
-    key_ = NULL;
-  }
-  if (value_) {
-    delete value_;
-    value_ = NULL;
-  }
 }
 
 size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
@@ -223,14 +211,31 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
   }
 
 
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(header_.keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(header_.valueFormat);
+
+  if (key_data == NULL) {
+    output << au::str("Unknown data type for key: %s", header_.keyFormat);
+    return 0;
+  }
+
+  if (value_data == NULL) {
+    output << au::str("Unknown data type for value: %s", header_.valueFormat);
+    return 0;
+  }
+
+  // Data instances for parsing and printing content
+  au::SharedPointer<DataInstance> key(key_data->getInstance());
+  au::SharedPointer<DataInstance> value(value_data->getInstance());
+
   for (size_t i = 0; i < header_.info.kvs; i++) {
-    key_->parse(kvs[i].key);
-    value_->parse(kvs[i].value);
+    key->parse(kvs[i].key);
+    value->parse(kvs[i].value);
 
     if (show_hg) {
-      output << "[ hg " << key_->hash(KVFILE_NUM_HASHGROUPS) << " ] ";
+      output << "[ hg " << key->hash(KVFILE_NUM_HASHGROUPS) << " ] ";
     }
-    output << key_->str() << " " << value_->str() << std::endl;
+    output << key->str() << " " << value->str() << std::endl;
 
     if (limit > 0) {
       if (i >= limit) {

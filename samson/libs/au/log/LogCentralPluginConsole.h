@@ -30,7 +30,7 @@ public:
   };
 
   virtual void Emit(au::SharedPointer<Log>log) {
-    console_->writeOnConsole(log_formatter_.get(log) + "\n");
+    console_->Write(log_formatter_.get(log) + "\n");
   }
 
   virtual std::string status() {

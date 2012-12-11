@@ -40,7 +40,7 @@
 
 #include "logMsg/logMsg.h"  // LOG_SM()
 
-// Usefull define for full iteration over a map structure
+// useful define for full iteration over a map structure
 
 namespace au {
 /**
@@ -130,12 +130,12 @@ public:
 
   void removeInMap(const std::set<K>& keys) {
     typename std::set<K>::iterator iter;
-    for (iter = keys.begin(); iter != keys.end(); iter++) {
+    for (iter = keys.begin(); iter != keys.end(); ++iter) {
       removeInMap(*iter);
     }
   }
 
-  // Remove all elements that satify a bool function
+  // Remove all elements that satisfy a bool function
   // Returns the number of removed elements
 
   int removeInMapIfFinished() {
@@ -143,7 +143,7 @@ public:
 
     std::set<K> keys_to_remove;
 
-    for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); iter++) {
+    for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); ++iter) {
       if (iter->second->finished()) {
         keys_to_remove.insert(iter->first);
       }
@@ -185,7 +185,7 @@ public:
   void clearMap() {
     typename std::map<K, V *, _Compare>::iterator iter;
 
-    for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); iter++) {
+    for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); ++iter) {
       delete iter->second;
     }
     std::map<K, V *, _Compare>::clear();
@@ -196,7 +196,7 @@ public:
   std::set<K> getKeys() {
     std::set<K> childrens;
     typename std::map<K, V *, _Compare>::iterator iter;
-    for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); iter++) {
+    for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); ++iter) {
       childrens.insert(iter->first);
     }
     return childrens;
@@ -206,7 +206,7 @@ public:
     std::vector<K> v;
 
     typename std::map<K, V *, _Compare>::const_iterator iter;
-    for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); iter++) {
+    for (iter = std::map<K, V *, _Compare>::begin(); iter != std::map<K, V *, _Compare>::end(); ++iter) {
       v.push_back(iter->first);
     }
     return v;

@@ -22,7 +22,7 @@ void MultiPacketQueue::Clear() {
 }
 
 // Push a packet to be sent
-void MultiPacketQueue::Push(const au::SharedPointer<Packet>& packet) {
+void MultiPacketQueue::Push(au::SharedPointer<Packet> packet) {
   // Robust agains NULL Packets...
   if (packet == NULL) {
     return;
@@ -72,18 +72,18 @@ void MultiPacketQueue::Pop(const NodeIdentifier& node_identifier) {
   LOG_M(logs.out_messages, ("Removed packet %s from otuput queue %s", packet->str().c_str(), name.c_str()));
 }
 
-au::tables::Table *MultiPacketQueue::getPendingPacketsTable() {
+au::tables::Table *MultiPacketQueue::GetPendingPacketsTable() const {
   au::TokenTaker tt(&token_packet_queues_);
 
   au::tables::Table *table = new au::tables::Table(au::StringVector("Connection", "#Packets", "Size"));
 
-  au::map<std::string, PacketQueue>::iterator it;
-  for (it = packet_queues_.begin(); it != packet_queues_.end(); it++) {
+  au::map<std::string, PacketQueue>::const_iterator it;
+  for (it = packet_queues_.begin(); it != packet_queues_.end(); ++it) {
     au::StringVector values;
     values.push_back(it->first);     // Name of the connection
     PacketQueue *packet_queue = it->second;
     values.push_back(au::str(packet_queue->size()));
-    values.push_back(au::str(packet_queue->byte_size()));
+    values.push_back(au::str(packet_queue->GetByteSize()));
     table->addRow(values);
   }
 
@@ -117,7 +117,7 @@ void MultiPacketQueue::RemoveOldConnections(const std::set<std::string> current_
   }
 }
 
-au::SharedPointer<gpb::Collection> MultiPacketQueue::GetQueuesCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> MultiPacketQueue::GetQueuesCollection(const Visualization& visualization) const {
   au::TokenTaker tt(&token_packet_queues_);
 
   return GetCollectionForMap("network_queues", packet_queues_, visualization);
@@ -128,8 +128,8 @@ size_t MultiPacketQueue::GetAllQueuesSize() {
   size_t total = 0;
 
   au::map< std::string, PacketQueue >::iterator it;
-  for (it = packet_queues_.begin(); it != packet_queues_.end(); it++) {
-    total += it->second->byte_size();
+  for (it = packet_queues_.begin(); it != packet_queues_.end(); ++it) {
+    total += it->second->GetByteSize();
   }
   return total;
 }
@@ -141,6 +141,6 @@ size_t MultiPacketQueue::GetQueueSize(const std::string& name) {
   if (!queue) {
     return 0;
   }
-  return queue->byte_size();
+  return queue->GetByteSize();
 }
 }

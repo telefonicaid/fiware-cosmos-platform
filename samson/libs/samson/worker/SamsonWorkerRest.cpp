@@ -445,8 +445,8 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
   if (my_worker_id != worker_id) {
     std::string host = samson_worker_->worker_controller()->getHostForWorker(worker_id);
     unsigned short port = samson_worker_->worker_controller()->getWebPortForWorker(worker_id);
-
     command->SetRedirect(au::str("http://%s:%d%s", host.c_str(), port, command->resource().c_str()));
+    return;
   }
 
   if (debug) {

@@ -40,9 +40,9 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   DelilahCommandCatalogue catalogue;
 
   au::ErrorManager error;
-  command_instance_ = catalogue.parse(command, error);
+  command_instance_ = catalogue.Parse(command, error);
 
-  send_to_all_workers = command_instance_->command()->tag("send_to_all_workers");
+  send_to_all_workers = command_instance_->command()->HasTag("send_to_all_workers");
 
   if (error.HasErrors()) {
     setComponentFinishedWithError(error.GetLastError());
@@ -196,7 +196,7 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
 
     // Print the result in a table if necessary
     std::map<std::string, au::SharedPointer<gpb::Collection> >::iterator it;
-    for (it = collections.begin(); it != collections.end(); it++) {
+    for (it = collections.begin(); it != collections.end(); ++it) {
       print_content(it->second);
     }
 
@@ -232,7 +232,7 @@ au::tables::Table *WorkerCommandDelilahComponent::getTable(au::SharedPointer<gpb
 void WorkerCommandDelilahComponent::print_content(au::SharedPointer<gpb::Collection> collection) {
   if (collection->record_size() == 0) {
     if (!hidden) {
-      delilah->showWarningMessage("No records\n");
+      delilah->WriteOnDelilah("No records\n");
     }
     return;
   }
@@ -251,10 +251,9 @@ void WorkerCommandDelilahComponent::print_content(au::SharedPointer<gpb::Collect
     delilah->database.addTable(table_name, table);
 
     if (!hidden) {
-      delilah->showWarningMessage(
-        au::str("Table %s has been created locally. Type set_database_mode to check content...\n"
-                , table_name.c_str())
-        );
+      std::string message = au::str("Table %s has been created locally. Type set_database_mode to check content...\n"
+                                    , table_name.c_str());
+      delilah->WriteOnDelilah(message);
     }
   }
 }
@@ -264,7 +263,7 @@ std::string WorkerCommandDelilahComponent::getStatus() {
 
   output << "Command sent to workers [";
   std::set<size_t>::iterator it;
-  for (it = workers.begin(); it != workers.end(); it++) {
+  for (it = workers.begin(); it != workers.end(); ++it) {
     output << *it  << " ";
   }
   output << "] ";
@@ -284,7 +283,7 @@ std::string WorkerCommandDelilahComponent::getExtraStatus() {
   au::tables::Table table("Worker,left|Status,left|Message,left");
 
   std::set<size_t>::iterator it;
-  for (it = workers.begin(); it != workers.end(); it++) {
+  for (it = workers.begin(); it != workers.end(); ++it) {
     size_t worker_id = *it;
 
     au::StringVector values;

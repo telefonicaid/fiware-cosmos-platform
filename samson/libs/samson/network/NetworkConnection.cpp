@@ -169,7 +169,7 @@ void NetworkConnection::writerThread() {
     }
 
     // Get the next packet to be sent by me
-    PacketPointer packet = network_manager_->multi_packet_queue.Front(node_identifier_);
+    PacketPointer packet = network_manager_->multi_packet_queue_.Front(node_identifier_);
 
     if (packet != NULL) {
       LOG_M(logs.out_messages, ("Sent packet to %s : %s", packet->to.str().c_str(), packet->str().c_str()));
@@ -183,7 +183,7 @@ void NetworkConnection::writerThread() {
       rate_out_.Push(total_write);
 
       if (s == au::OK) {
-        network_manager_->multi_packet_queue.Pop(node_identifier_);
+        network_manager_->multi_packet_queue_.Pop(node_identifier_);
       } else {
         LOG_SW(("Problem writing packet on socket_connection_:'%s'", socket_connection_->str().c_str()));
       }
@@ -244,7 +244,7 @@ void NetworkConnection::fill(gpb::CollectionRecord *record, const Visualization&
   ::samson::add(record, "Out (B/s)", (size_t)rate_out_.rate(), "f=uint64,sum");
 
   // Pending data to be sent
-  std::string queue_description = network_manager_->multi_packet_queue.GetDescription(node_identifier_);
+  std::string queue_description = network_manager_->multi_packet_queue_.GetDescription(node_identifier_);
   ::samson::add(record, "Output queue", queue_description, "different");
 }
 

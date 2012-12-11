@@ -31,7 +31,7 @@
 #define PROGRESSIVE_NUMBER 20000
 
 static const char *manShortDescription =
-  "word_generator a simple toll to generate random sequences of words. Usefull in demos about word counting and topic trenddding\n";
+"word_generator - a simple tool to generate a random sequence of words. Useful in demos on word counting and topic trending.";
 
 static const char *manSynopsis =
   "   [-r] [-t secs] [-l len] num_words\n"
@@ -49,26 +49,26 @@ bool progresive;
 int max_rate;  // Max rate of words per second
 PaArgument paArgs[] =
 {
-  { "-l",           &word_length,              "",                 PaInt,                  PaOpt,                  9,
+  { "-l",           &word_length,     "", PaInt,  PaOpt, 9,
     1,
     30,
     "Number of letters of generated words ( default 9 )"                           },
-  { "-alphabet",    &alphabet_length,          "",                 PaInt,                  PaOpt,                  10,
+  { "-alphabet",    &alphabet_length, "", PaInt,  PaOpt, 10,
     1,
     30,
     "Number of differnt letters used to generate words ( default 10 )"             },
-  { "-random",      &rand_flag,                "",                 PaBool,                 PaOpt,
+  { "-random",      &rand_flag,       "", PaBool, PaOpt,
     false,
-    false,     true,
+    false, true,
     "Flag to generate completelly randomized sequence of words"                    },
-  { "-progressive", &progresive,               "",                 PaBool,                 PaOpt,
+  { "-progressive", &progresive,      "", PaBool, PaOpt,
     false,
-    false,     true,
+    false, true,
     "Flag to generate sequences of numbers in incressing order"                    },
-  { "-rate",        &max_rate,                 "",                 PaInt,                  PaOpt,                  0,
+  { "-rate",        &max_rate,        "", PaInt,  PaOpt, 0,
     0,
-    10000000000,     "Max rate in words / second"                 },
-  { " ",            &max_num_lines,            "",                 PaInt,                  PaOpt,                  0,
+    10000000000, "Max rate in words / second"                 },
+  { " ",            &max_num_lines,   "", PaInt,  PaOpt, 0,
     0,
     1000000000,
     "Number of words to be generated"                                              },
@@ -93,7 +93,7 @@ void getNewWord() {
     progressive_word_slots[word_length - 1]++;
 
     int pos = word_length - 1;
-    while ((pos >= 0) && ( progressive_word_slots[pos] >= alphabet_length )) {
+    while ((pos >= 0) && (progressive_word_slots[pos] >= alphabet_length)) {
       progressive_word_slots[pos] = 0;
       if (pos > 0) {
         progressive_word_slots[pos - 1]++;
@@ -123,7 +123,7 @@ public:
   }
 
   void append(char *data, int len) {
-    if ((size + len ) > max_size) {
+    if ((size + len) > max_size) {
       flush();
     }
     memcpy(buffer + size, data, len);
@@ -144,12 +144,12 @@ public:
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
 
-  paConfig("log to screen",                 (void *)true);
-  paConfig("log to file",                   (void *)false);
-  paConfig("screen line format",            (void *)"TYPE:EXEC: TEXT");
-  paConfig("man shortdescription",          (void *)manShortDescription);
-  paConfig("man synopsis",                  (void *)manSynopsis);
-  paConfig("log to stderr",                 (void *)true);
+  paConfig("log to screen", (void *)true);
+  paConfig("log to file", (void *)false);
+  paConfig("screen line format", (void *)"TYPE:EXEC: TEXT");
+  paConfig("man shortdescription", (void *)manShortDescription);
+  paConfig("man synopsis", (void *)manSynopsis);
+  paConfig("log to stderr", (void *)true);
 
   // Parse input arguments
   paParse(paArgs, argC, (char **)argV, 1, false);
@@ -218,22 +218,22 @@ int main(int argC, const char *argV[]) {
     if (total_seconds > 0) {
       lines_per_second = (double)num_lines / (double)total_seconds;
     }
-    if (( total_seconds - last_message_time ) > 5) {
+    if ((total_seconds - last_message_time) > 5) {
       last_message_time = total_seconds;
-      LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s",
-             au::str(num_lines).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
-             au::str((double)num_lines / (double)total_seconds,
-                     "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
+      LM_V(("Generated %s lines ( %s bytes ) in %s. Rate: %s / %s",
+            au::str(num_lines).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
+            au::str((double)num_lines / (double)total_seconds,
+                    "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
     }
 
     if (total_seconds > 0) {
       if (max_num_lines > 100) {
-        if ((num_lines % ( max_num_lines / 100)) == 0) {
-          LM_V(( "Generated %s - %s lines ( %s bytes ) in %s. Rate: %s / %s",
-                 au::str_percentage(num_lines,  max_num_lines).c_str(),
-                 au::str(num_lines).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
-                 au::str((double)num_lines / (double)total_seconds,
-                         "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));  // Sleep if necessary
+        if ((num_lines % (max_num_lines / 100)) == 0) {
+          LM_V(("Generated %s - %s lines ( %s bytes ) in %s. Rate: %s / %s",
+                au::str_percentage(num_lines, max_num_lines).c_str(),
+                au::str(num_lines).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
+                au::str((double)num_lines / (double)total_seconds,
+                        "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));   // Sleep if necessary
         }
       }
     }
@@ -249,9 +249,9 @@ int main(int argC, const char *argV[]) {
   buffer_to_screen.flush();
 
   size_t total_seconds = cronometer.seconds();
-  LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s",
-         au::str(num_lines).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
-         au::str((double)num_lines / (double)total_seconds,
-                 "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
+  LM_V(("Generated %s lines ( %s bytes ) in %s. Rate: %s / %s",
+        au::str(num_lines).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
+        au::str((double)num_lines / (double)total_seconds,
+                "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
 }
 

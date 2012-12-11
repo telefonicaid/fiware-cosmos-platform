@@ -20,7 +20,7 @@
 *
 * DESCRIPTION
 *
-* Simple but usefull class to work with a temporary allocated buffer
+* Simple but useful class to work with a temporary allocated buffer
 *
 * ****************************************************************************/
 
@@ -36,6 +36,9 @@ public:
   // Constructors & Destructors
   TemporalBuffer(size_t size);
   ~TemporalBuffer();
+
+  // Reset buffer to another size
+  void Reset(size_t size);
 
   // Accessors
   char *data();

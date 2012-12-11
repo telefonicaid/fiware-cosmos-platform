@@ -65,6 +65,30 @@ WorkerTask::WorkerTask(SamsonWorker *samson_worker
   stream_operation_ = new gpb::StreamOperation();
   stream_operation_->CopyFrom(stream_operation);
 
+  // Add a new output queue to emit big-data traces ( system.String , system.Void )
+  stream_operation_->add_outputs("debug_" + stream_operation_->name());
+
+  // Channels state and num input channels to collect statistics at the end of the task
+  if (operation_ && stream_operation_) {
+    if (operation_->getType() == Operation::reduce) {
+      num_input_channels_ = operation_->getNumInputs();
+      if (stream_operation_->batch_operation()) {
+        state_input_channel_ = -1;
+      } else {
+        state_input_channel_ = num_input_channels_ - 1;
+        num_input_channels_--;
+      }
+    } else {
+      state_input_channel_ = -1;   // No state
+      num_input_channels_ = 1;   // Only one input for all operations ( map, parse, parseout, etc...)
+    }
+  } else {
+    // No data to be collected
+    state_input_channel_ = -1;
+    num_input_channels_ = 0;
+  }
+
+
   LOG_M(logs.worker_task, ("Worker task created WT%s", str().c_str()));
 }
 
@@ -123,13 +147,13 @@ std::string WorkerTask::commit_command() {
   std::vector<std::string> inputs;
   std::vector<std::string> outputs;
 
-  for (int c = 0; c < stream_operation_->inputs_size(); c++) {
+  for (int c = 0; c < stream_operation_->inputs_size(); ++c) {
     if (!remove_last_input && (c == (stream_operation_->inputs_size() - 1))) {
       continue;  // Skip this last input
     }
     inputs.push_back(stream_operation_->inputs(c));
   }
-  for (int c = 0; c < stream_operation_->outputs_size(); c++) {
+  for (int c = 0; c < stream_operation_->outputs_size(); ++c) {
     outputs.push_back(stream_operation_->outputs(c));
   }
 
@@ -138,32 +162,21 @@ std::string WorkerTask::commit_command() {
 
 void WorkerTask::initProcessIsolated() {
   LOG_M(logs.background_process, ("Init background process for task WT%lu", id()));
-  au::Cronometer cronometer;
-
-  if (operation_->getType() == Operation::reduce) {
-    LOG_M(logs.reduce_operation, ("[WT%lu:%s] Init Block setup for blocks %s"
-                                  , id()
-                                  , au::str(cronometer.seconds(), "s").c_str()
-                                  , block_list_container_.str_blocks().c_str()));
-  }
-
-
   // Review input blocks to count key-values
-  for (int i = 0; i < operation_->getNumInputs(); i++) {
-    BlockList *list = block_list_container_.getBlockList(au::str("input_%d", i));
-    list->ReviewBlockReferences(error_);
-  }
-
-  if (operation_->getType() == Operation::reduce) {
-    LOG_M(logs.reduce_operation,
-          ("[WT%lu] Finish Block setup for operation (%s) ", id(), au::str(cronometer.seconds(), "s").c_str()));
-  }
+  block_list_container_.Review(error_);
 }
 
 void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
+  au::Cronometer cronometer;
+
   LOG_M(logs.background_process, ("Generate key-values for task WT%lu", id()));
 
-  au::Cronometer cronometer;
+  // Get KVFiles scaning input data
+  block_list_container_.ReviewKVFile(error_);
+  if (error_.HasErrors()) {
+    setUserError(error_.GetLastError());
+    return;
+  }
 
   switch (operation_->getType()) {
     case Operation::parser:
@@ -211,33 +224,35 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
 
   parserOut->init(writer);
 
-  BlockList *list = block_list_container_.getBlockList("input_0");
+  BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  au::list<BlockRef>::iterator bi;
-  for (bi = list->blocks.begin(); bi != list->blocks.end(); bi++) {
-    BlockRef *block_ref = *bi;
-    BlockPointer block = block_ref->block();
-    engine::BufferPointer buffer = block->buffer();
+  if (list != NULL) {
+    au::list<BlockRef>::iterator bi;
+    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
+      BlockRef *block_ref = *bi;
+      BlockPointer block = block_ref->block();
+      engine::BufferPointer buffer = block->buffer();
 
-    // KV File to access content of this block
-    au::SharedPointer<KVFile> file = block_ref->file();
-    if (file == NULL) {
-      setUserError("Error getting information about this block");
-      return;
-    }
+      // KV File to access content of this block
+      au::SharedPointer<KVFile> file = block_ref->file();
+      if (file == NULL) {
+        setUserError("Error getting information about this block");
+        return;
+      }
 
-    for (int hg = range_.hg_begin_; hg < range_.hg_end_; hg++) {
-      KVInfo info = file->info[hg];
+      for (int hg = range_.hg_begin_; hg < range_.hg_end_; ++hg) {
+        KVInfo info = file->info[hg];
 
-      if (info.size > 0) {
-        inputVector.prepareInput(info.kvs);
-        inputVector.addKVs(0, info, file->kvs_for_hg(hg));
+        if (info.size > 0) {
+          inputVector.prepareInput(info.kvs);
+          inputVector.addKVs(0, info, file->kvs_for_hg(hg));
 
-        KVSetStruct inputStruct;
-        inputStruct.num_kvs = inputVector.num_kvs;
-        inputStruct.kvs = inputVector._kv;
+          KVSetStruct inputStruct;
+          inputStruct.num_kvs = inputVector.num_kvs;
+          inputStruct.kvs = inputVector._kv;
 
-        parserOut->run(&inputStruct, writer);
+          parserOut->run(&inputStruct, writer);
+        }
       }
     }
   }
@@ -278,42 +293,44 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
   // Call the init function
   map->init(writer);
 
-  BlockList *list = block_list_container_.getBlockList("input_0");
+  BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  au::list<BlockRef>::iterator bi;
-  for (bi = list->blocks.begin(); bi != list->blocks.end(); bi++) {
-    BlockRef *block_ref = *bi;
-    BlockPointer block = block_ref->block();
-    engine::BufferPointer buffer = block->buffer();
+  if (list != NULL) {
+    au::list<BlockRef>::iterator bi;
+    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
+      BlockRef *block_ref = *bi;
+      BlockPointer block = block_ref->block();
+      engine::BufferPointer buffer = block->buffer();
 
-    // Check header for valid block
-    KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
-    if (!header->Check()) {
-      setUserError(("Not valid header in block refernce"));
-      return;
+      // Check header for valid block
+      KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
+      if (!header->Check()) {
+        setUserError(("Not valid header in block refernce"));
+        return;
+      }
+
+      // Analyse all key-values and hashgroups
+      au::SharedPointer<KVFile> file = block_ref->file();
+      if (file == NULL) {
+        setUserError("Error getting information about this block");
+        return;
+      }
+
+      // Read key values
+      inputVector.prepareInput(header->info.kvs);
+
+      for (int hg = range_.hg_begin_; hg < range_.hg_end_; ++hg) {
+        inputVector.addKVs(0, file->info[hg], &file->kvs[file->kvs_index[hg]]);
+      }
+
+      // inputVector.addKVs(0, header->info, file->dataForHashGroup(range.hg_begin_));
+
+      KVSetStruct inputStruct;
+      inputStruct.num_kvs = inputVector.num_kvs;
+      inputStruct.kvs = inputVector._kv;
+
+      map->run(&inputStruct, writer);
     }
-
-    // Analyse all key-values and hashgroups
-    au::SharedPointer<KVFile> file = block_ref->file();
-    if (file == NULL) {
-      setUserError("Error getting information about this block");
-      return;
-    }
-
-    // Read key values
-    inputVector.prepareInput(header->info.kvs);
-
-    for (int hg = range_.hg_begin_; hg < range_.hg_end_; hg++) {
-      inputVector.addKVs(0, file->info[hg], &file->kvs[file->kvs_index[hg]]);
-    }
-
-    // inputVector.addKVs(0, header->info, file->dataForHashGroup(range.hg_begin_));
-
-    KVSetStruct inputStruct;
-    inputStruct.num_kvs = inputVector.num_kvs;
-    inputStruct.kvs = inputVector._kv;
-
-    map->run(&inputStruct, writer);
   }
 
   map->finish(writer);
@@ -370,31 +387,33 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   BlockReaderCollection blockreaderCollection(operation_);
 
   // Insert all the blocks involved in this operation
-  for (int i = 0; i < operation_->getNumInputs(); i++) {
-    BlockList *list = block_list_container_.getBlockList(au::str("input_%d", i));
+  for (int i = 0; i < operation_->getNumInputs(); ++i) {
+    BlockList *list = block_list_container_.FindBlockList(au::str("input_%d", i));
 
-    au::list<BlockRef>::iterator bi;
+    if (list != NULL) {
+      au::list<BlockRef>::iterator bi;
 
-    LOG_D(logs.reduce_operation, ("Reduce WT%lu - Adding Input %d : %lu blocks"
-                                  , worker_task_id()
-                                  , i
-                                  , list->blocks.size()));
-
-    for (bi = list->blocks.begin(); bi != list->blocks.end(); bi++) {
-      BlockRef *block_ref = *bi;
-      // BlockPointer block = block_ref->block();
-      // engine::BufferPointer buffer = block->buffer();
-
-      LOG_D(logs.reduce_operation, ("Reduce WT%lu - Adding block %lu (%s)"
+      LOG_D(logs.reduce_operation, ("Reduce WT%lu - Adding Input %d : %lu blocks"
                                     , worker_task_id()
-                                    , block_ref->block_id()
-                                    , block_ref->info().str().c_str()));
+                                    , i
+                                    , list->blocks_.size()));
 
-      // Process the last input as state ( if no batch operation, no reduce forward )
-      if (!batch_operation && !reduce_forward && (i == (operation_->getNumInputs() - 1))) {
-        blockreaderCollection.AddStateBlocks(block_ref, i);
-      } else {
-        blockreaderCollection.AddInputBlocks(block_ref, i);
+      for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
+        BlockRef *block_ref = *bi;
+        // BlockPointer block = block_ref->block();
+        // engine::BufferPointer buffer = block->buffer();
+
+        LOG_D(logs.reduce_operation, ("Reduce WT%lu - Adding block %lu (%s)"
+                                      , worker_task_id()
+                                      , block_ref->block_id()
+                                      , block_ref->info().str().c_str()));
+
+        // Process the last input as state ( if no batch operation, no reduce forward )
+        if (!batch_operation && !reduce_forward && (i == (operation_->getNumInputs() - 1))) {
+          blockreaderCollection.AddStateBlocks(block_ref, i);
+        } else {
+          blockreaderCollection.AddInputBlocks(block_ref, i);
+        }
       }
     }
   }
@@ -413,14 +432,14 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
   LOG_M(logs.reduce_operation, ("[WT%lu:%s] Processing data...", id(), au::str(cronometer.seconds(), "s").c_str()));
 
-  for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; hg++) {
+  for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; ++hg) {
     // Check if this is inside the range we are interested in processing
     if ((hg < range_.hg_begin_) || (hg >= range_.hg_end_)) {
       continue;
     }
 
     // Report progress to show in the lists
-    processed_hds++;
+    ++processed_hds;
     // reportProgress((double)processed_hds / (double)total_hgs);
 
     // Prepare the blockReaderCollection for thi hash-group
@@ -448,7 +467,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 
         // Check if we have data in the input channels ( non state )
         bool input_data_available = false;
-        for (size_t i = 0; i < (num_inputs - 1); i++) {
+        for (size_t i = 0; i < (num_inputs - 1); ++i) {
           if (inputStructs[i].num_kvs > 0) {
             input_data_available = true;
           }
@@ -462,14 +481,14 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
             size_t key_size = inputStructs[1].kvs[0]->key_size;  // Jey size
             size_t value_size = inputStructs[1].kvs[0]->value_size;  // Value size
             writer->internal_emit(state_output, hg, key_data, key_size + value_size);
-            transfered_states++;
+            ++transfered_states;
           } else {
             LOG_SW(("Interal error. No input and no state?"));
           }
         } else {
           // Call the reduce operation to generate output
           reduce->run(inputStructs, writer);
-          processed_states++;
+          ++processed_states;
         }
 
         // Get the next one
@@ -504,20 +523,22 @@ void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
   parser->init(writer);
 
   // Recover the input list "input_0"
-  BlockList *list = block_list_container_.getBlockList("input_0");
+  BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  au::list<BlockRef>::iterator bi;
-  for (bi = list->blocks.begin(); bi != list->blocks.end(); bi++) {
-    BlockRef *block_ref = *bi;
-    BlockPointer block = block_ref->block();
-    engine::BufferPointer buffer = block->buffer();
+  if (list != NULL) {
+    au::list<BlockRef>::iterator bi;
+    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
+      BlockRef *block_ref = *bi;
+      BlockPointer block = block_ref->block();
+      engine::BufferPointer buffer = block->buffer();
 
-    // Pointer to the internal data in the buffer
-    char *data = buffer->data() + sizeof(KVHeader);
-    size_t size = buffer->size() - sizeof(KVHeader);
+      // Pointer to the internal data in the buffer
+      char *data = buffer->data() + sizeof(KVHeader);
+      size_t size = buffer->size() - sizeof(KVHeader);
 
-    // Run parser with this data
-    parser->run(data, size, writer);
+      // Run parser with this data
+      parser->run(data, size, writer);
+    }
   }
 
   parser->finish(writer);
@@ -567,47 +588,21 @@ void WorkerTask::commit() {
       LOG_W(logs.task_manager, ("Error commiting task W%lu : %s"
                                 , worker_task_id()
                                 , error().GetLastError().c_str()));
-    } else {
-      // Check new blocks are included in data model, just now
-      std::set<size_t> all_blocks = samson_worker_->data_model()->GetAllBlockIds();
-      for (size_t i = 0; i < new_block_ids.size(); ++i) {
-        if (all_blocks.find(new_block_ids[i]) == all_blocks.end()) {
-          LM_E(("Internal error since a new block(%lu at pos %d) is not in the current data model",
-                new_block_ids[i], i));
-          LM_E(("Blocks in the data_model:"));
-          std::set<size_t>::const_iterator block_it;
-          for (block_it = all_blocks.begin(); block_it != all_blocks.end(); ++block_it) {
-            LM_E(("Block:%lu", *block_it));
-          }
-          LM_X(1, ("Unrecoverable error. Exiting"));
-        }
-      }
     }
   }
 }
 
 FullKVInfo WorkerTask::GetStateDataInfo() const {
-  if (!operation_ || !stream_operation_) {
+  if (state_input_channel_ == -1) {
     return FullKVInfo();
   }
-  if ((operation_->getType() == Operation::reduce) && (!stream_operation_->batch_operation())) {
-    int num_input_channels = operation_->getNumInputs();
-    return GetInputInfo(num_input_channels - 1);
-  }
-  return FullKVInfo();
+  return GetInputInfo(state_input_channel_);
 }
 
 FullKVInfo WorkerTask::GetInputDataInfo() const {
-  if (!operation_ || !stream_operation_) {
-    return FullKVInfo();
-  }
-
   FullKVInfo info;
-  int num_input_channels = operation_->getNumInputs();
-  if ((operation_->getType() == Operation::reduce) && (!stream_operation_->batch_operation())) {
-    --num_input_channels;
-  }
-  for (int i = 0; i < num_input_channels; i++) {
+
+  for (int i = 0; i < num_input_channels_; ++i) {
     info.append(GetInputInfo(i));
   }
   return info;

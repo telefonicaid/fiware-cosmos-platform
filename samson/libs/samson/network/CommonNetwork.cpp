@@ -27,7 +27,7 @@ CommonNetwork::CommonNetwork(NodeIdentifier my_node_identifier) :
   // Identify myself
   node_identifier_ = my_node_identifier;
 
-  LM_V(("CommonNetwork %s", node_identifier_.str().c_str()));
+  LOG_V(logs.network_connection, ("CommonNetwork created for node %s", node_identifier_.str().c_str()));
 
   // No cluster information at the moment
   cluster_information_ = NULL;
@@ -121,7 +121,7 @@ void CommonNetwork::review_connections() {
       }
     }
 
-    if (NetworkManager::isConnected(name)) {
+    if (NetworkManager::IsConnected(name)) {
       LOG_M(logs.network_connection, ("Worker %lu ( %s ) already connected.", worker_id, name.c_str()));
     } else {
       LOG_M(logs.network_connection, ("Worker %lu ( %s ) not connected. Trying to connect to %s:%d..."
@@ -135,7 +135,7 @@ void CommonNetwork::review_connections() {
   }
 
   // Close old connections
-  std::vector<std::string> connection_names = getAllConnectionNames();
+  std::vector<std::string> connection_names = GetAllConnectionNames();
 
   for (size_t i = 0; i < connection_names.size(); i++) {
     std::string connection_name = connection_names[i];
@@ -209,7 +209,7 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
   std::string name = node_identifier.getCodeName();
 
   // Check if we already have this connection
-  if (NetworkManager::isConnected(name)) {
+  if (NetworkManager::IsConnected(name)) {
     return Error;
   }
 
@@ -331,7 +331,7 @@ au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
       if (ni == node_identifier_) {
         values.push_back("me");
       } else {
-        values.push_back(NetworkManager::getStatusForConnection(connection_name));
+        values.push_back(NetworkManager::GetStatusForConnection(connection_name));
       }
       table->addRow(values);
     }
@@ -343,11 +343,11 @@ au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
 }
 
 size_t CommonNetwork::get_rate_in() {
-  return NetworkManager::get_rate_in();
+  return NetworkManager::GetRateIn();
 }
 
 size_t CommonNetwork::get_rate_out() {
-  return NetworkManager::get_rate_out();
+  return NetworkManager::GetRateOut();
 }
 
 void CommonNetwork::schedule_receive(PacketPointer packet) {
@@ -393,7 +393,7 @@ std::string CommonNetwork::getClusterSetupStr() {
                                cluster_information_->workers(i).worker_info().port_web());
     values.push_back(host);
 
-    if (isConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName())) {
+    if (IsConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName())) {
       values.push_back("yes");
     } else {
       values.push_back("no");

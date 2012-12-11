@@ -41,7 +41,7 @@
 #include "au/containers/SharedPointer.h"
 #include "logMsg/logMsg.h"  // LOG_SM()
 
-// Usefull define for full iteration over a map structure
+// useful define for full iteration over a map structure
 
 namespace au {
 /* ------------------------------------------------------------------------
@@ -71,7 +71,7 @@ public:
 
   // Insert a pair of elements ( easy method )
   // If a previous element was inserted with the same key, it is automatically deleted
-  void Set(const K& key, const SharedPointer<V>& value) {
+  void Set(const K& key, SharedPointer<V> value) {
     Extract(key);          // Extract any previous reference ( if any )
     std::map< K, SharedPointer<V>, _Compare >::insert(std::pair<K, SharedPointer<V> >(key, value));
   }
@@ -84,8 +84,8 @@ public:
   }
 
   bool ContainsKey(const K& key) const {
-    return ( std::map<K, SharedPointer<V>, _Compare >::find(key) !=
-             std::map<K, SharedPointer<V>, _Compare>::end());
+    return (std::map<K, SharedPointer<V>, _Compare >::find(key) !=
+            std::map<K, SharedPointer<V>, _Compare>::end());
   }
 
   SharedPointer<V> Get(const K& key) const {
@@ -125,7 +125,7 @@ public:
 
   void Extract(const std::set<K>& keys) {
     typename std::set<K>::iterator iter;
-    for (iter = keys.begin(); iter != keys.end(); iter++) {
+    for (iter = keys.begin(); iter != keys.end(); ++iter) {
       extractFromMap(*iter);
     }
   }
@@ -147,7 +147,7 @@ public:
     std::set<K> childrens;
     typename std::map<K, V *, _Compare >::iterator iter;
     for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
-         iter++)
+         ++iter)
     {
       childrens.insert(iter->first);
     }
@@ -159,7 +159,7 @@ public:
 
     typename std::map<K, SharedPointer<V>, _Compare >::iterator iter;
     for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
-         iter++)
+         ++iter)
     {
       v.push_back(iter->first);
     }
@@ -170,7 +170,7 @@ public:
     std::vector< SharedPointer<V> > vector;
     typename std::map<K, SharedPointer<V>, _Compare >::const_iterator iter;
     for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
-         iter++)
+         ++iter)
     {
       vector.push_back(iter->second);
     }

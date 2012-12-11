@@ -58,14 +58,14 @@ namespace samson {
 SamsonClient::SamsonClient(std::string connection_type) {
   connection_type_ = connection_type;
   delilah_ = new Delilah("client");
-  delilah_->data_receiver_interface = this;
+  delilah_->data_receiver_interface = this;  // By default, I am the default receiver
 
   LM_V(("SamsonClient: Delilah client with id %s", au::code64_str(delilah_->get_delilah_id()).c_str()));
 }
 
 bool SamsonClient::connect(const std::vector<std::string>& hosts) {
   // Try connection with all provided hosts
-  for (size_t i = 0; i < hosts.size(); i++) {
+  for (size_t i = 0; i < hosts.size(); ++i) {
     if (connect(hosts[i])) {
       return true;
     }

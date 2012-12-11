@@ -76,7 +76,8 @@ public:
   void append(BlockInfo&);
 
   // Review BlockReference
-  void review(au::ErrorManager& error);
+  void Review(au::ErrorManager& error);
+  void ReviewKVFile(au::ErrorManager& error);
 
 private:
 
@@ -90,4 +91,4 @@ private:
 }
 }
 
-#endif // ifndef _H_BLOCK_REF
+#endif  // ifndef _H_BLOCK_REF

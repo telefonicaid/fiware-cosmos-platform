@@ -97,10 +97,11 @@ void DelilahComponent::setComponentFinished() {
   component_finished = true;
   cronometer.Stop();
 
-  // Show output on screen
+  // Show output on screen if required
   if (print_output_at_finish) {
-    delilah->showMessage(output_component.str());
+    delilah->WriteOnDelilah(output_component.str());
   }
+
   delilah->delilahComponentFinishNotification(this);
 }
 

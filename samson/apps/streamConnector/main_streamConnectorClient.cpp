@@ -90,7 +90,7 @@ int main(int argC, const char *argV[]) {
     LM_V(("Executing single command %s", command));
 
     au::ErrorManager error;
-    console.ConsoleServiceClientBase::evalCommand(command, &error);
+    console.ConsoleServiceClientBase::EvalCommand(command, &error);
     std::cout << error.str();
 
     return 0;

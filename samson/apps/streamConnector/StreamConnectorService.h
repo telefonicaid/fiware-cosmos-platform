@@ -59,8 +59,8 @@ public:
   virtual ~StreamConnectorService();
 
   virtual void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error);
-  virtual void autoComplete(au::console::ConsoleAutoComplete *info, au::Environment *environment);
-  virtual std::string getPrompt(au::Environment *environment);
+  virtual void AutoComplete(au::console::ConsoleAutoComplete *info, au::Environment *environment);
+  virtual std::string GetPrompt(au::Environment *environment);
 };
 }  // End of namespace stream_connector
 

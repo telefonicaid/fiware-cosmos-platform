@@ -89,7 +89,7 @@ bool SetupItemCollection::Load(const std::string& fileName) {
   }
 
   char line[2000];
-  while (fgets(line, sizeof(line), file)) {
+  while (fgets(line, sizeof(line), file) != NULL) {
     au::CommandLine c;
     c.Parse(line);
 
@@ -151,7 +151,7 @@ int SetupItemCollection::GetInt(const std::string& name) const {
 }
 
 bool SetupItemCollection::IsParameterDefined(const std::string& name) const {
-  return ( items_.findInMap(name) != NULL);
+  return (items_.findInMap(name) != NULL);
 }
 
 bool SetupItemCollection::Set(const std::string& name, const std::string& value) {

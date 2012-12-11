@@ -13,7 +13,7 @@
 #include "gtest/gtest.h"
 
 TEST(au_file, simple) {
-  std::string test_dir = au::GetRandomDirectory();
+  std::string test_dir = au::GetRandomTmpFileOrDirectory();
 
   EXPECT_EQ(au::CreateDirectory(test_dir), au::OK)
   << "Error in createDirectory test";

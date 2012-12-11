@@ -88,4 +88,39 @@ TEST(CommandLine, literals) {
   ASSERT_TRUE(cmdLine.get_argument(1) == "this is the second") << "Error parsing argument 1";
 }
 
+TEST(CommandLine, collisions) {
+  au::CommandLine cmdLine1;
+
+  cmdLine1.SetFlagString("prefix", "");
+  cmdLine1.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p2", cmdLine1.GetFlagString("prefix")) << "Error parsing string flag default";
+
+  au::CommandLine cmdLine2;
+  cmdLine2.SetFlagString("prefix", "", au::CommandLine::kCollisionBegin);
+  cmdLine2.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p2.p1", cmdLine2.GetFlagString("prefix")) << "Error parsing string flag with kCollisionBegin";
+
+  au::CommandLine cmdLine3;
+  cmdLine3.SetFlagString("prefix", "", au::CommandLine::kCollisionEnd);
+  cmdLine3.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p1.p2", cmdLine3.GetFlagString("prefix")) << "Error parsing string flag with kCollisionEnd";
+
+  au::CommandLine cmdLine4;
+  cmdLine4.SetFlagString("prefix", "", au::CommandLine::kCollisionIgnore);
+  cmdLine4.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p1", cmdLine4.GetFlagString("prefix")) << "Error parsing string flag with kCollisionIgnore";
+
+  au::CommandLine cmdLine5;
+  cmdLine5.SetFlagString("prefix", "", au::CommandLine::kCollisionOverwrite);
+  cmdLine5.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p2", cmdLine5.GetFlagString("prefix")) << "Error parsing string flag with kCollisionOverwrite";
+
+  au::CommandLine cmdLine6;
+  // Not way to check the detection of the wrong parameter, but in logs
+  // We check that the Parse() behaviour is the same as the default
+  cmdLine6.SetFlagString("prefix", "", "unsupported");
+  cmdLine6.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p2", cmdLine6.GetFlagString("prefix")) << "Error parsing string flag with unsupported parameter";
+}
+
 

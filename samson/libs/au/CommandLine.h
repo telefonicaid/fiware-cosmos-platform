@@ -1,3 +1,5 @@
+#ifndef COMMAND_LINE_H
+#define COMMAND_LINE_H
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -24,20 +26,27 @@
 * CommandLine
 *
 * Class used to parse a string containing a command with multiple flags and arguments
-* The advantadge of this class is that is supports running-time definiton of possible flags.
+* The advantage of this class is that is supports running-time definition of possible flags.
 *
 *
 * Example: command arg1 -f input.txt -g 2 arg2
 *
 * Depending on how you define flags "f" and "g" this will parse in a different way
 *
-* You can define flags as "bool", "double", "int" "string" "uint64".
+* You can define flags as type "bool", "double", "int" "string" "uint64".
 * The properties of each element are:
 *   bool:       It is a true/false flag. It does not take any parameter
-*   int:        Takes an interguer parameter with it.   Example: -n 12
+*   int:        Takes an integer parameter with it.   Example: -n 12
 *   double:     Takes a double parameter.               Example: -threshold 5.67
 *   uint64:     Takes an unsigned parameter.            Example: -size 12G , -size 100
-*   string:     Takes an atring parameter.              Example: -file andreu.txt
+*   string:     Takes a string parameter.              Example: -file andreu.txt
+*
+* In case of multiple assignments on the same flag (if it is of string type), its behaviour can be controlled
+* with the string collisition_resolution:
+*   overwrite:   Forget previous flag value
+*   begin:       Put the new value at the beginning (separated by a dot ("."))
+*   end:         Put the new value at the end (separated by a dot ("."))
+*   ignore:      Ignore the new value and write a warning
 *
 * The basic usage has three steps:
 *   * Use command set_flag_X( ) methods to define flags and types
@@ -46,13 +55,11 @@
 *
 * ****************************************************************************/
 
-#ifndef COMMAND_LINE_H
-#define COMMAND_LINE_H
+#include <stdio.h>             // fprintf, stderr, ...
 
 #include <cstdlib>
 #include <map>
 #include <sstream>
-#include <stdio.h>             // fprintf, stderr, ...
 #include <string>
 #include <vector>
 
@@ -62,11 +69,19 @@ namespace au {
 typedef struct CommandLineFlag {
   std::string type;
   std::string default_value;
+  std::string collision_resolution;
   std::string value;
 } CommandLineFlag;
 
 class CommandLine {
 public:
+  // Constant strings for the "collision_resolution" field
+  static const std::string kCollisionBegin;
+  static const std::string kCollisionEnd;
+  static const std::string kCollisionIgnore;
+  static const std::string kCollisionOverwrite;
+
+  static const std::string kUnknownValue;
 
   /**
    * Simple constructor
@@ -99,19 +114,20 @@ public:
   void SetFlagBoolean(const std::string& name);
   void SetFlagInt(const std::string& name, int default_value);
   void SetFlagString(const std::string& name, const std::string& default_value);
+  void SetFlagString(const std::string& name, const std::string& default_value, const std::string& collision);
   void SetFlagUint64(const std::string& name, const std::string& default_value);
   void SetFlagUint64(const std::string& name, size_t default_value);
   void SetFlagDouble(const std::string& name, double default_value);
 
   /**
-   * Acces information about arguments
+   * Access information about arguments
    */
 
   int get_num_arguments() const;
   std::string get_argument(int index) const;
 
   /**
-   * Specialed access to parametes
+   * Specialized access to parameters
    */
 
   bool GetFlagBool(const std::string& flag_name) const;
@@ -124,6 +140,12 @@ public:
   std::string command() const;
 
 private:
+  // Constant strings for the "type" field
+  static const std::string kTypeBool;
+  static const std::string kTypeDouble;
+  static const std::string kTypeInt;
+  static const std::string kTypeString;
+  static const std::string kTypeUInt64;
 
   /**
    * Access to flags

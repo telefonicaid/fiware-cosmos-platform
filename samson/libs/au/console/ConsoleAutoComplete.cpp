@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <algorithm>
 
 #include "au/file.h"
 #include "au/string/StringUtilities.h"

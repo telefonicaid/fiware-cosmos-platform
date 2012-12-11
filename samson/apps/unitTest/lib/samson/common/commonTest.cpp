@@ -22,6 +22,10 @@
  * unit test of the file 'common.cpp' in the samson/common library
  *
  */
+#include <utility>
+#include <map>
+#include <string>
+
 #include "gtest/gtest.h"
 
 #include "samson/common/common.h"
@@ -31,7 +35,7 @@
 #include "unitTest/common_engine_test.h"
 
 // -----------------------------------------------------------------------------
-// str_block_id - 
+// str_block_id -
 //
 TEST(samson_common_common, str_block_id) {
   const size_t  block_id = 14;
@@ -41,7 +45,7 @@ TEST(samson_common_common, str_block_id) {
 }
 
 // -----------------------------------------------------------------------------
-// GetTableFromCollection - 
+// GetTableFromCollection -
 //
 TEST(DISABLED_samson_common_common, GetTableFromCollection) {
   init_engine_test();
@@ -63,8 +67,7 @@ TEST(DISABLED_samson_common_common, GetTableFromCollection) {
 
   collectionP = samson::GetCollectionForMap(std::string("Blocks"), requests, visualization);
   EXPECT_TRUE(collectionP != NULL);
-  au::SharedPointer<au::tables::Table>        table2 =
-     samson::GetTableFromCollection(collectionP);
+  au::SharedPointer<au::tables::Table> table2 = samson::GetTableFromCollection(collectionP);
 
   close_engine_test();
 }

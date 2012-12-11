@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "au/log/LogMain.h"
 #include "au/string/StringUtilities.h"
@@ -95,7 +96,7 @@ std::string getProperty(Environment *environment, const std::string& name, const
   // Search for an existing variable
   for (int i = 0; i < environment->variable_size(); ++i) {
     if (environment->variable(i).name() == name) {
-      return environment->variable(i).name();
+      return environment->variable(i).value();
     }
   }
   return default_value;
@@ -120,7 +121,7 @@ void setPropertyInt(Environment *environment, const std::string& name, int value
 int getPropertyInt(Environment *environment, const std::string& name, int default_value) {
   std::string v = getProperty(environment, name, "no-value");
 
-  if (v == "no_value") {
+  if (v == "no-value") {
     return default_value;
   } else {
     return atoi(v.c_str());
@@ -277,11 +278,11 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
   // Get or create this queue
   gpb::Queue *queue = get_or_create_queue(data, queue_name, format, error);
 
-  queue->set_commit_id(data->commit_id());
-
-  if (error.HasErrors()) {
+  if ((queue == NULL) || error.HasErrors()) {
     return;
   }
+
+  queue->set_commit_id(data->commit_id());
 
   // Add a new block reference
   Block *block = queue->add_blocks();
@@ -300,7 +301,7 @@ void add_block(Data *data, const std::string& queue_name, size_t block_id, size_
 
 void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVFormat format, ::samson::KVRange range,
               ::samson::KVInfo info, int version, au::ErrorManager& error) {
-  // Get or create this queue
+  // Get the queue
   gpb::Queue *queue = get_queue(data, queue_name, format, error);
 
   if (error.HasErrors()) {
@@ -313,7 +314,6 @@ void rm_block(Data *data, const std::string& queue_name, size_t block_id, KVForm
   }
 
   queue->set_commit_id(data->commit_id());
-
 
   // Remove the first time ( and probably the only one ) this block is in the queue
   ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block> *blocks = queue->mutable_blocks();

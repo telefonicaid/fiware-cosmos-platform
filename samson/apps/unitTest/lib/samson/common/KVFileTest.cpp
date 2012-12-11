@@ -60,7 +60,7 @@ TEST(samson_common_KVFile, createError) {
 
     if (kvFileOkPointer == NULL)
     {
-       std::string msg = errorManager.GetMessage();
+       std::string msg = errorManager.GetLastError();
        LM_M(("kvFileOkPointer == NULL: '%s'", msg.c_str()));
     }
 
@@ -70,7 +70,7 @@ TEST(samson_common_KVFile, createError) {
 
     if (kvFileSmallPointer == NULL)
     {
-      std::string msg = errorManager.GetMessage();
+      std::string msg = errorManager.GetLastError();
       LM_M(("kvFileSmallPointer == NULL: '%s'", msg.c_str()));
     }
 
@@ -80,7 +80,7 @@ TEST(samson_common_KVFile, createError) {
 
     if (kvFileNullPointer == NULL)
     {
-      std::string msg = errorManager.GetMessage();
+      std::string msg = errorManager.GetLastError();
       LM_M(("kvFileNullPointer == NULL: '%s'", msg.c_str()));
     }
 
@@ -120,7 +120,7 @@ TEST(DISABLED_samson_common_KVFile, createOkAndError) {
   au::SharedPointer<samson::KVFile>  kvFile    = samson::KVFile::create(buffer, errorManager);
 
   if (kvFile == NULL)
-    LM_E(("samson::KVFile::create: %s", errorManager.GetMessage().c_str()));
+    LM_E(("samson::KVFile::create: %s", errorManager.GetLastError().c_str()));
   EXPECT_TRUE(kvFile != NULL);
 
   // We have a correct KVFile, lets use it for auxiliar functions
@@ -141,16 +141,17 @@ TEST(DISABLED_samson_common_KVFile, createOkAndError) {
 // -----------------------------------------------------------------------------
 // fileCreateOK - 
 //
-TEST(samson_common_KVFile, fileCreateOK) {
+TEST(DISABLED_samson_common_KVFile, fileCreateOK) {
   init_engine_test();
 
   {
-    samson::ModulesManager* mm = au::Singleton<samson::ModulesManager>::shared();
-    mm->addModulesFromDirectory("test_modules");
+    au::ErrorManager         errorMgr;
+    samson::ModulesManager*  mm = au::Singleton<samson::ModulesManager>::shared();
+    mm->AddModulesFromDirectory("test_modules", errorMgr);
 
     LM_W(("-------------------------------------"));
-    samson::Data*           dataKeyP   = mm->getData("system.String");
-    samson::Data*           dataValueP = mm->getData("system.UInt");
+    samson::Data*           dataKeyP   = mm->GetData("system.String");
+    samson::Data*           dataValueP = mm->GetData("system.UInt");
 
     EXPECT_TRUE(dataKeyP   != NULL);
     EXPECT_TRUE(dataValueP != NULL);
@@ -193,7 +194,7 @@ TEST(samson_common_KVFile, fileCreateOK) {
     au::SharedPointer<samson::KVFile>  kvFileP = samson::KVFile::create(buffer, errorManager);
 
     EXPECT_TRUE(kvFileP != NULL);
-    EXPECT_FALSE(errorManager.IsActivated());
+    EXPECT_FALSE(errorManager.HasErrors());
 
     samson::KV* hgKeys = kvFileP->kvs_for_hg(0);
     EXPECT_TRUE(hgKeys == NULL);
@@ -214,7 +215,7 @@ TEST(samson_common_KVFile, fileCreateOK) {
     buffer->set_size(info.size + sizeof(samson::KVHeader) - 1);
     kvFileP = samson::KVFile::create(buffer, errorManager);
     EXPECT_TRUE(kvFileP == NULL);
-    EXPECT_TRUE(errorManager.IsActivated());
+    EXPECT_TRUE(errorManager.HasErrors());
     buffer->set_size(info.size + sizeof(samson::KVHeader));
 
     //
@@ -223,7 +224,7 @@ TEST(samson_common_KVFile, fileCreateOK) {
     --header->info.size;
     kvFileP = samson::KVFile::create(buffer, errorManager);
     EXPECT_TRUE(kvFileP == NULL);
-    EXPECT_TRUE(errorManager.IsActivated());
+    EXPECT_TRUE(errorManager.HasErrors());
     ++header->info.size;
 
     //
@@ -251,9 +252,9 @@ TEST(samson_common_KVFile, fileCreateOK) {
     kvFileP = samson::KVFile::create(buffer, errorManager);
     EXPECT_TRUE(kvFileP == NULL);
 
-    LM_M(("calling ModulesManager::clearModulesManager"));
-    mm->clearModulesManager();
-    LM_M(("After ModulesManager::clearModulesManager"));
+    LM_M(("calling ModulesManager::ClearModulesManager"));
+    mm->ClearModulesManager();
+    LM_M(("After ModulesManager::ClearModulesManager"));
   }
 
   close_engine_test();
@@ -262,15 +263,16 @@ TEST(samson_common_KVFile, fileCreateOK) {
 // -----------------------------------------------------------------------------
 // fileCreateBadData - 
 //
-TEST(samson_common_KVFile, fileCreateBadData) {
+TEST(DISABLED_samson_common_KVFile, fileCreateBadData) {
   init_engine_test();
 
   {
-    samson::ModulesManager* mm = au::Singleton<samson::ModulesManager>::shared();
-    mm->addModulesFromDirectory("test_modules");
+    au::ErrorManager         errorMgr;
+    samson::ModulesManager*  mm = au::Singleton<samson::ModulesManager>::shared();
+    mm->AddModulesFromDirectory("test_modules", errorMgr);
 
-    samson::Data*           dataKeyP   = mm->getData("system.String");
-    samson::Data*           dataValueP = mm->getData("system.UInt");
+    samson::Data*           dataKeyP   = mm->GetData("system.String");
+    samson::Data*           dataValueP = mm->GetData("system.UInt");
 
     EXPECT_TRUE(dataKeyP   != NULL);
     EXPECT_TRUE(dataValueP != NULL);
@@ -310,11 +312,11 @@ TEST(samson_common_KVFile, fileCreateBadData) {
     au::SharedPointer<samson::KVFile>  kvFileP = samson::KVFile::create(buffer, errorManager);
 
     EXPECT_TRUE(kvFileP == NULL);
-    EXPECT_TRUE(errorManager.IsActivated());
+    EXPECT_TRUE(errorManager.HasErrors());
 
-    LM_M(("calling ModulesManager::clearModulesManager"));
-    // mm->clearModulesManager();
-    LM_M(("After ModulesManager::clearModulesManager"));
+    LM_M(("calling ModulesManager::ClearModulesManager"));
+    // mm->ClearModulesManager();
+    LM_M(("After ModulesManager::ClearModulesManager"));
   }
 
   close_engine_test();

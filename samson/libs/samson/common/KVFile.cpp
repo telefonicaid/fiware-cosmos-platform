@@ -159,7 +159,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   // Check correct final offset
   if (offset != kv_file->header_.info.size) {
-    error.set(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
+    error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
 	LM_E(("Error parsing block."));
     return au::SharedPointer<KVFile>(NULL);
   }

@@ -24,7 +24,7 @@ au::SharedPointer<SamsonDataSet> SamsonDataSet::create(const std::string& direct
 
   struct stat filestatus;
   if (stat(directory.c_str(), &filestatus) == -1) {
-     error.set(au::str("%s doesn't exist", directory.c_str()));
+     error.AddError(au::str("%s doesn't exist", directory.c_str()));
      return au::SharedPointer<SamsonDataSet>(NULL);
   }
 

@@ -215,7 +215,7 @@ TEST(engine_DiskManager, run_worker) {
   }
   buffer[10] = 0;
 
-  EXPECT_FALSE(operation1->error.IsActivated());
+  EXPECT_FALSE(operation1->error.HasErrors());
   EXPECT_STREQ(buffer, "0123456789");
 
   free(buffer);

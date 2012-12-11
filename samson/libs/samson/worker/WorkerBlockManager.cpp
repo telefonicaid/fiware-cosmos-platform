@@ -313,6 +313,11 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
     return;
   }
 
+  // If no delilah waiting, no message is sent
+  if (delilah_id == SIZE_T_UNDEFINED) {
+    return;
+  }
+
   if (samson_worker_->worker_controller()->IsSingleWorkerCluster()) {
     SendPushBlockResponse(delilah_id, push_id);
     SendPushBlockConfirmation(delilah_id, push_id);
@@ -361,16 +366,20 @@ void WorkerBlockManager::RemoveRequestIfNecessary(const std::set<size_t>& all_bl
 }
 
 void WorkerBlockManager::SendPushBlockResponse(size_t delilah_id, size_t push_id) {
+  if (delilah_id == SIZE_T_UNDEFINED) {
+    return;
+  }
   PacketPointer packet(new Packet(Message::PushBlockResponse));
-
   packet->to = NodeIdentifier(DelilahNode, delilah_id);
   packet->message->set_push_id(push_id);
   samson_worker_->network()->Send(packet);
 }
 
 void WorkerBlockManager::SendPushBlockResponseWithError(size_t delilah_id, size_t push_id, const std::string& error) {
+  if (delilah_id == SIZE_T_UNDEFINED) {
+    return;
+  }
   PacketPointer packet(new Packet(Message::PushBlockResponse));
-
   packet->to = NodeIdentifier(DelilahNode, delilah_id);
   packet->message->set_push_id(push_id);
   packet->message->mutable_error()->set_message(error);
@@ -378,8 +387,10 @@ void WorkerBlockManager::SendPushBlockResponseWithError(size_t delilah_id, size_
 }
 
 void WorkerBlockManager::SendPushBlockConfirmation(size_t delilah_id, size_t push_id) {
+  if (delilah_id == SIZE_T_UNDEFINED) {
+    return;
+  }
   PacketPointer packet(new Packet(Message::PushBlockConfirmation));
-
   packet->to = NodeIdentifier(DelilahNode, delilah_id);
   packet->message->set_push_id(push_id);
   samson_worker_->network()->Send(packet);

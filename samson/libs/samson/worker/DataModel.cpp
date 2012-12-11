@@ -36,6 +36,7 @@ const std::string DataModel::kClearBatchOPerations("clear_batch_operations");
 const std::string DataModel::kClearModules("clear_modules");
 const std::string DataModel::kPushQueue("push_queue");
 const std::string DataModel::kRemoveAll("remove_all");
+const std::string DataModel::kResetSamson("reset_samson");
 const std::string DataModel::kRemoveAllData("remove_all_queues");
 const std::string DataModel::kRemoveAllStreamOperations("remove_all_stream_operations");
 const std::string DataModel::kRemoveStreamOperation("remove_stream_operation");
@@ -56,7 +57,7 @@ const std::string DataModel::commands[] = {
   DataModel::kAdd,             DataModel::kAddQueueConnection,
   kAddStreamOperation,         kBatch,                        kBlock,
   kClearBatchOPerations,       kClearModules,                 kPushQueue,
-  kRemoveAll,
+  kRemoveAll,                  kResetSamson,
   kRemoveAllData,              kRemoveAllStreamOperations,
   kRemoveStreamOperation,      kRm,                           kRmQueueConnection,
   kSetQueueProperty,
@@ -69,7 +70,7 @@ const std::string DataModel::recovery_commands[] = {
   DataModel::kAdd,            DataModel::kAddQueueConnection, kAddStreamOperation,
   kBatch,
   kClearBatchOPerations,      kClearModules,
-  kPushQueue,                 kRemoveAll,                     kRemoveAllData,
+  kPushQueue,                 kRemoveAll,                     kResetSamson,       kRemoveAllData,
   kRemoveAllStreamOperations,
   kRemoveStreamOperation,     kRm,                            kRmQueueConnection,
   kSetQueueProperty,          kSetStreamOperationProperty,    kUnsetStreamOperationProperty
@@ -205,6 +206,8 @@ void DataModel::ProcessCommand(gpb::Data *data, au::SharedPointer<au::CommandLin
     ProcessClearModulesCommand(data, cmd, error);
   } else if (main_command == kPushQueue) {
     ProcessPushQueueCommand(data, cmd, error);
+  } else if (main_command == kResetSamson) {
+    ProcessResetSamsonCommand(data, cmd, error);
   } else if (main_command == kRemoveAll) {
     ProcessRemoveAllCommand(data, cmd, error);
   } else if (main_command == kRemoveAllData) {
@@ -556,36 +559,13 @@ void DataModel::ProcessClearBatchOPerationsCommand(gpb::Data *data, au::SharedPo
 
 void DataModel::ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd  /* cmd */,
                                            au::ErrorManager &  /* error */) {
-  // Remove blocks in queue .modules
-  gpb::Queue *queue = gpb::get_queue(data, ".modules");
-
-  if (!queue) {
-    return;  // Nothing to remove
-  }
-  ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block > *blocks = queue->mutable_blocks();
   std::string pattern = "*";
+
   if (cmd->get_num_arguments() > 1) {
     pattern = cmd->get_argument(1);
   }
-  au::SimplePattern simple_pattern(pattern);
-  bool update_queue_commit_id = false;
-  for (int i = 0; i < blocks->size(); ) {
-    size_t block_id = blocks->Get(i).block_id();
-    std::string block_name = str_block_id(block_id);
-    if (simple_pattern.match(block_name)) {
-      // Remove block
-      update_queue_commit_id = true;
-      blocks->SwapElements(i, blocks->size() - 1);
-      blocks->RemoveLast();
-    } else {
-      ++i;
-    }
-  }
 
-  if (update_queue_commit_id) {
-    queue->set_commit_id(data->commit_id());
-  }
-
+  gpb::RemoveModules(data, pattern);
   return;
 }
 
@@ -617,8 +597,14 @@ void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::C
   return;
 }
 
-// All
-
+void DataModel::ProcessResetSamsonCommand(gpb::Data *data
+                                          , au::SharedPointer<au::CommandLine>        /* cmd */
+                                          , au::ErrorManager&  /* error */) {
+  reset_stream_operations(data);
+  reset_data(data);
+  gpb::RemoveModules(data, "*");
+  return;
+}
 
 void DataModel::ProcessRemoveAllCommand(gpb::Data *data
                                         , au::SharedPointer<au::CommandLine>      /* cmd */

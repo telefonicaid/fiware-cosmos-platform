@@ -110,6 +110,7 @@ private:
                                           au::ErrorManager& error);
   void ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
   void ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessResetSamsonCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
   void ProcessRemoveAllCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
   void ProcessRemoveAllDataCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
   void ProcessRemoveAllStreamOperationsCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
@@ -149,6 +150,7 @@ private:
   static const std::string kClearModules;
   static const std::string kPushQueue;
   static const std::string kRemoveAll;
+  static const std::string kResetSamson;
   static const std::string kRemoveAllData;
   static const std::string kRemoveAllStreamOperations;
   static const std::string kRemoveStreamOperation;

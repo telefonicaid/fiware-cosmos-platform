@@ -485,6 +485,53 @@ void WorkerCommand::Run() {
     return;
   }
 
+  if (main_command == "push_internal_modules") {
+    std::string directory = au::Singleton<SamsonSetup>::shared()->samson_home() + "/modules";
+    std::vector<std::string> files =  au::getRegularFilesFromDirectory(directory);
+
+
+    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+    collection->set_name("modules");
+    collection->set_title(command_);
+
+    for (size_t i = 0; i < files.size(); ++i) {
+      gpb::CollectionRecord *record = collection->add_record();
+      add(record, "File", files[i], "left");
+
+      size_t size = au::sizeOfFile(files[i]);
+
+      if (size == 0) {
+        add(record, "Result", "Error, size=0", "left");
+        continue;
+      }
+      if (size > 200000000) {
+        add(record, "Result", au::str("Error, excesive size %lu", size), "left");
+        continue;
+      }
+
+      engine::BufferPointer buffer(engine::Buffer::Create("push_internal_modules", size + sizeof(KVHeader)));
+      au::ErrorManager error;
+      KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
+      buffer->SkipWrite(sizeof(KVHeader));
+      buffer->WriteFromFile(files[i], error);
+      header->InitForModule(size);
+
+      if (error.HasErrors()) {
+        add(record, "Result", error.GetLastError(), "left");
+        continue;
+      }
+
+      std::vector<std::string> queues;
+      queues.push_back(".modules");
+      samson_worker_->worker_block_manager()->ReceivedPushBlock(-1, -1, buffer, queues);
+      add(record, "Result", "OK", "left");
+    }
+    collections_.push_back(collection);
+    FinishWorkerTask();
+    return;
+  }
+
+
   if (main_command == "ls_kv_ranges") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->GetKVRangesCollection(visualization);
     c->set_title(command_);

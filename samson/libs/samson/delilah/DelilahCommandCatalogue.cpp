@@ -101,6 +101,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   AddCommand("remove_all", "data", "Remove all queues and stream_operations in the SAMSON cluster");
 
+  AddCommand("reset_samson", "data", "Remove all queues, stream_operations & modules in the SAMSON cluster");
+
   AddCommand("rm", "data", "Remove a queue");
   AddMandatoryStringArgument("rm", "queue", "Queue to be removed");
 
@@ -203,6 +205,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   AddCommand("push_module", "modules", "Upload a module to the cluster");
   AddMandatoryStringArgument("push_module", "file", "Local file or directory")->set_options_group("#file");
+
+  AddCommand("push_internal_modules", "modules", "Upload internal modules to current cluster");
 
   AddCommand("clear_modules", "modules", "Remove all previously uploaded modules");
   AddStringArgument("clear_modules", "pattern", "*", "Block name attern ( see ls_modules_information)");

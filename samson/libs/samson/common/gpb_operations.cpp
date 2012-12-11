@@ -687,5 +687,34 @@ void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au
     setProperty(environment, concept, value);
   }
 }
+
+void RemoveModules(gpb::Data *data, const std::string pattern) {
+  // Remove blocks in queue .modules
+  gpb::Queue *queue = gpb::get_queue(data, ".modules");
+
+  if (!queue) {
+    return;    // Nothing to remove
+  }
+
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block > *blocks = queue->mutable_blocks();
+  au::SimplePattern simple_pattern(pattern);
+  bool update_queue_commit_id = false;
+  for (int i = 0; i < blocks->size(); ) {
+    size_t block_id = blocks->Get(i).block_id();
+    std::string block_name = str_block_id(block_id);
+    if (simple_pattern.match(block_name)) {
+      // Remove block
+      update_queue_commit_id = true;
+      blocks->SwapElements(i, blocks->size() - 1);
+      blocks->RemoveLast();
+    } else {
+      ++i;
+    }
+  }
+
+  if (update_queue_commit_id) {
+    queue->set_commit_id(data->commit_id());
+  }
+}
 }
 }

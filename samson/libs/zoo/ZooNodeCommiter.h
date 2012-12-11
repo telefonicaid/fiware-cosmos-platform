@@ -149,7 +149,21 @@ public:
     au::TokenTaker tt(&token_);
     au::Cronometer cronometer;  // Cronometer to measure how much time it takes to perform commit
 
-    au::SharedPointer<C> c = InternCommit(commit_command, error);
+    // Multi-line commit allowed
+    std::vector<std::string> commit_commands =  au::split(commit_command, '\n');
+
+    // No commands to execute, just return current model
+    if (commit_commands.size() == 0) {
+      return c_;
+    }
+
+    au::SharedPointer<C> c;
+    for (size_t i = 0; i < commit_commands.size(); ++i) {
+      c = InternCommit(commit_commands[i], error);
+      if (error.HasErrors()) {
+        break;  // No continue if errors are found
+      }
+    }
     double time = cronometer.seconds();
 
     // Log activity for debugging

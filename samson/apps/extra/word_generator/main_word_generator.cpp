@@ -31,7 +31,7 @@
 #define PROGRESSIVE_NUMBER 20000
 
 static const char *manShortDescription =
-  "word_generator - a simple tool to generate a random sequence of words. Useful in demos on word counting and topic trending.\n";
+"word_generator - a simple tool to generate a random sequence of words. Useful in demos on word counting and topic trending.";
 
 static const char *manSynopsis =
   "   [-r] [-t secs] [-l len] num_words\n"

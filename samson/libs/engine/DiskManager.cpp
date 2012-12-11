@@ -12,18 +12,18 @@
 #include <sys/time.h>
 #include <time.h>
 
+#include "au/ThreadManager.h"
 #include "au/containers/SharedPointer.h"
-#include "au/string/Descriptors.h"       // au::Descriptors
 #include "au/mutex/TokenTaker.h"  // au::TokenTaker...
 #include "au/singleton/Singleton.h"
-#include "au/ThreadManager.h"
-#include "au/string/xml.h"               // au::xml...
+#include "au/string/Descriptors.h"       // au::Descriptors
+#include "au/string/xml.h"        // au::xml...
 
-#include "engine/Logs.h"
 #include "engine/DiskManager.h"   // Own interface
 #include "engine/DiskOperation.h"  // engine::DiskOperation
 #include "engine/Engine.h"        // engine::Engine
 #include "engine/EngineElement.h"  // engine::EngineElement
+#include "engine/Logs.h"
 #include "engine/Notification.h"  // engine::Notification
 #include "engine/NotificationElement.h"      // engine::EngineNotificationElement
 #include "engine/ProcessItem.h"   // engine::ProcessItem
@@ -53,20 +53,20 @@ void DiskManager::CreateThreads() {
 
   // Create as many workers as necessary
   while (num_disk_manager_workers_ < max_num_disk_operations_) {
-    LOG_D( logs.disk_manager, ("create threads %d/%d", num_disk_manager_workers_, max_num_disk_operations_));
+    LOG_D(logs.disk_manager, ("create threads %d/%d", num_disk_manager_workers_, max_num_disk_operations_));
 
     num_disk_manager_workers_++;
 
     pthread_t t;
-    int rc = au::Singleton<au::ThreadManager>::shared()->addThread("DiskManager_worker", &t, NULL,
+    int rc = au::Singleton<au::ThreadManager>::shared()->AddThread("DiskManager_worker", &t, NULL,
                                                                    run_disk_manager_worker, this);
     if (rc) {
-      LM_W(("Error creating background thread for disk operations..."));
+      LOG_SW(("Error creating background thread for disk operations..."));
       num_disk_manager_workers_--;
     }
   }
 
-  LOG_D( logs.disk_manager, ("created %d threads", num_disk_manager_workers_));
+  LOG_D(logs.disk_manager, ("created %d threads", num_disk_manager_workers_));
 }
 
 DiskManager::~DiskManager() {
@@ -87,7 +87,7 @@ void DiskManager::Stop() {
     usleep(100000);
     if (cronometer.seconds() > 1) {
       cronometer.Reset();
-      LM_W(("Waiting for background threads of engine::DiskManager"));
+      LOG_SW(("Waiting for background threads of engine::DiskManager"));
     }
   }
 }
@@ -141,9 +141,10 @@ void DiskManager::FinishDiskOperation(const au::SharedPointer<engine::DiskOperat
   }
   if (operation->getType() == DiskOperation::append) {
     rate_out_.Push(operation->getSize());
-  } LOG_D( logs.disk_manager,
-      ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s",
-          operation->fileName.c_str()));
+  }
+  LOG_D(logs.disk_manager,
+        ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s",
+         operation->fileName.c_str()));
 
   // Add a notification for this operation to the required target listener
   Notification *notification = new Notification(notification_disk_operation_request_response);
@@ -152,9 +153,9 @@ void DiskManager::FinishDiskOperation(const au::SharedPointer<engine::DiskOperat
   notification->AddEngineListeners(operation->listeners);
   notification->environment().Add(operation->environment);   // Recover the environment variables to identify this request
 
-  LOG_D( logs.disk_manager,
-      ("DiskManager::finishDiskOperation notification sent on file:%s and ready to share and checkDiskOperations",
-          operation->fileName.c_str()));
+  LOG_D(logs.disk_manager,
+        ("DiskManager::finishDiskOperation notification sent on file:%s and ready to share and checkDiskOperations",
+         operation->fileName.c_str()));
   Engine::shared()->notify(notification);
 }
 
@@ -185,12 +186,12 @@ int DiskManager::num_disk_manager_workers() const {
 
 // Check if we can run more disk operations
 void DiskManager::run_worker() {
-  LOG_D( logs.disk_manager, ("Running worker...", num_disk_manager_workers_));
+  LOG_D(logs.disk_manager, ("Running worker...", num_disk_manager_workers_));
 
   while (true) {
     // If quitting or too many workers... just quit.
     if (quitting_ || (num_disk_manager_workers_ > max_num_disk_operations_)) {
-      LOG_D( logs.disk_manager, ("Quitting worker...", num_disk_manager_workers_));
+      LOG_D(logs.disk_manager, ("Quitting worker...", num_disk_manager_workers_));
       au::TokenTaker tt(&token_);
       num_disk_manager_workers_--;
       return;

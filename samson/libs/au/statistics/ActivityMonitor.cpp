@@ -11,9 +11,14 @@
 
 
 #include "ActivityMonitor.h"  // Own interface
+
+#include "au/log/LogMain.h"
 #include <math.h>
 
 namespace au {
+/**
+ * \brief Namespace for au::statistics library (Handy classes for statistics)
+ */
 namespace statistics {
 ActivityStatistics::ActivityStatistics(const std::string& name) {
   name_ = name;
@@ -27,7 +32,7 @@ ActivityStatistics::ActivityStatistics(const std::string& name) {
 
 void ActivityStatistics::Push(double t) {
   if (time < 0) {
-    LM_W(("Reported negative time (%d) for item %s", t,  name_.c_str()));
+    LOG_SW(("Reported negative time (%d) for item %s", t,  name_.c_str()));
     return;
   }
 
@@ -85,7 +90,7 @@ double ActivityStatistics::GetStdDeviation() const {
   double average = GetAverage();
   double tmp = ( total_square_ / (double)counter_ ) - average * average;
   if (tmp < 0) {
-    LM_W(("Error computing std deviation in ActivityStatistics"));
+    LOG_SW(("Error computing std deviation in ActivityStatistics"));
     return 0;
   }
   return sqrt(tmp);
@@ -101,9 +106,9 @@ void ActivityMonitor::StartActivity(const std::string& activity_name) {
   au::TokenTaker tt(&token_);
   double stop_time = cronometer_.seconds();
   double time = stop_time - current_activirty_start_time_;
-  
+
   // Inset in the list of last items
-  items_.push_back( new ActivityItem(current_activty_, time) );
+  items_.push_back(new ActivityItem(current_activty_, time));
   // Only keep the list of last 100 elements
   while (items_.size() > 100) {
     ActivityItem *tmp_item = items_.extractFront();
@@ -136,36 +141,36 @@ std::string ActivityMonitor::GetLastItemsTable() const {
   return table.str();
 }
 
-  double ActivityMonitor::GetTotalTimeForActivity( const std::string name ) const
-  {
-    ActivityStatistics* activity = elements_.findInMap(name);
-    if( !activity )
-      return 0;
-    return activity->total();
-  }
-  
-  std::string ActivityMonitor::GetSummary() const
-  {
-    std::ostringstream output;
-    
-    au::TokenTaker tt(&token_);
-    
-    
-    au::map<std::string, ActivityStatistics >::const_iterator it;
-    for (it = elements_.begin(); it != elements_.end(); it++) {
-      output << "["<< it->first << ":" <<  au::str(it->second->total(),"s")  << "]";
-    }
-    return output.str();
-  }
+double ActivityMonitor::GetTotalTimeForActivity(const std::string name) const {
+  ActivityStatistics *activity = elements_.findInMap(name);
 
-  
+  if (!activity) {
+    return 0;
+  }
+  return activity->total();
+}
+
+std::string ActivityMonitor::GetSummary() const {
+  std::ostringstream output;
+
+  au::TokenTaker tt(&token_);
+
+
+  au::map<std::string, ActivityStatistics >::const_iterator it;
+  for (it = elements_.begin(); it != elements_.end(); it++) {
+    output << "[" << it->first << ":" <<  au::str(it->second->total(), "s")  << "]";
+  }
+  return output.str();
+}
+
 std::string ActivityMonitor::GetElementsTable() const {
   au::TokenTaker tt(&token_);
 
   au::tables::Table table(
     "Element|Num,f=uint64|Total time,f=double|Average,f=double|std dev,f=double|Min,f=double|Max,f=double");
+
   table.setTitle("Engine statistics");
-  
+
   au::map<std::string, ActivityStatistics >::const_iterator it;
   for (it = elements_.begin(); it != elements_.end(); it++) {
     au::StringVector values;

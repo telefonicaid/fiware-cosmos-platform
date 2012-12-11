@@ -27,17 +27,17 @@
 #ifndef _H_AU_TREE
 #define _H_AU_TREE
 
-#include "logMsg/logMsg.h"     // LM_W
-#include <sstream>             // std::ostringstream
-#include <stdio.h>             /* sprintf */
-#include <string>              // std::string
-#include <sys/time.h>          // struct timeval
+#include "logMsg/logMsg.h"     // LOG_SW
+#include <sstream>                     // std::ostringstream
+#include <stdio.h>                     /* sprintf */
+#include <string>                      // std::string
+#include <sys/time.h>                  // struct timeval
 
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
-#include "au/string/StringUtilities.h"         // au::str(...)
+#include "au/string/StringUtilities.h"  // au::str(...)
 
 
 

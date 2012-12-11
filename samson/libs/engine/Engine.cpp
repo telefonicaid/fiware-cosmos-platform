@@ -15,26 +15,26 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "logMsg/logMsg.h"        // LM_X
+#include "logMsg/logMsg.h"             // LM_X
 
 #include "au/ErrorManager.h"      // au::ErrorManager
-#include "au/singleton/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/mutex/Token.h"       // au::Token
 #include "au/mutex/TokenTaker.h"  // au::TokenTake
-#include "au/string/StringUtilities.h"            // au::xml_...
-#include "au/string/xml.h"               // au::xml...
+#include "au/singleton/Singleton.h"
+#include "au/string/StringUtilities.h"  // au::xml_...
+#include "au/string/xml.h"             // au::xml...
 
 
-#include "Notification.h"         // engine::Notification
+#include "Notification.h"              // engine::Notification
 
-#include "engine/Logs.h"
+#include "engine/DiskManager.h"
 #include "engine/DiskOperation.h"  // engine::DiskOperation
 #include "engine/EngineElement.h"  // engine::EngineElement
+#include "engine/Logs.h"
+#include "engine/MemoryManager.h"
 #include "engine/NotificationElement.h"       // engine::EngineNotificationElement
 #include "engine/ProcessItem.h"   // engine::ProcessItem
-#include "engine/DiskManager.h"
-#include "engine/MemoryManager.h"
 #include "engine/ProcessManager.h"
 
 #include "engine/Engine.h"        // Own interface
@@ -52,10 +52,9 @@ DiskManager *Engine::disk_manager_ = NULL;
 ProcessManager *Engine::process_manager_ = NULL;
 
 void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
-  LM_VV(("Engine init"));
-
+  LOG_M(logs.engine, ("Engine init"));
   if (engine_) {
-    LM_W(("Init engine twice... just ignoring"));
+    LOG_W(logs.engine, ("Init engine twice... just ignoring"));
     return;
   }
 
@@ -64,85 +63,68 @@ void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
   disk_manager_ = new DiskManager(num_disk_operations);
   memory_manager_ = new MemoryManager(memory);
   process_manager_ = new ProcessManager(num_cores);
+
+  engine_->StartThread();  // Start thread in background
+}
+
+bool Engine::IsEngineWorking() {
+  return (engine_ != NULL);
 }
 
 void Engine::StopEngine() {
-  if (disk_manager_ != NULL)
-    disk_manager_->Stop();
-
-  if (process_manager_ != NULL)
-    process_manager_->Stop();
-
-  if (engine_ != NULL)
-    engine_->Stop();
-}
-
-void Engine::DestroyEngine() {
-  // Make sure, engine is completely stoped
-  Engine::StopEngine();
-
-
-  if (!engine_) {
-    LM_W(("Stopping engine that was never initialized. Ignoring..."));
-    return;
+  if (engine_) {
+    engine_->StopThread();  // Stop background thread if necessary
   }
-
-  // Remove instances
-  delete memory_manager_;
-  delete disk_manager_;
-  delete process_manager_;
-  delete engine_;
-
-  memory_manager_ = NULL;
-  disk_manager_ = NULL;
-  process_manager_ = NULL;
-  engine_ = NULL;
+  if (disk_manager_ != NULL) {
+    disk_manager_->Stop();
+    delete disk_manager_;
+    disk_manager_ = NULL;
+  }
+  if (process_manager_ != NULL) {
+    process_manager_->Stop();
+    delete process_manager_;
+    process_manager_ = NULL;
+  }
+  if (memory_manager_ != NULL) {
+    delete memory_manager_;
+    memory_manager_ = NULL;
+  }
+  if (engine_ != NULL) {
+    delete engine_;
+    engine_ = NULL;
+  }
 }
 
-void *runEngineBackground(void *e) {
-  Engine::shared()->RunMainLoop();
-  return e;
-}
-
-Engine::Engine() {
+Engine::Engine() : au::Thread("engine") {
   // Add a simple periodic element to not die inmediatelly
   EngineElement *element = new NotificationElement(new Notification("alive"), 10);
 
   engine_element_collection_.Add(element);
-
-  quitting_thread_ = false;
-  if (au::Singleton<au::ThreadManager>::shared()->addNonDetachedThread("Engine", &thread_id_, 0, runEngineBackground,
-                                                                       NULL) == 0)
-  {
-    running_thread_ = true;
-  } else {
-    running_thread_ = false;
-  }
 }
 
 Engine::~Engine() {
-  Stop();
-}
-
-void Engine::Stop() {
-  if (running_thread_) {
-    void *ans;
-    quitting_thread_ = true;
-    pthread_join(thread_id_, &ans);
-    running_thread_ = false;
-  }
 }
 
 void Engine::RunElement(EngineElement *running_element) {
+  au::Cronometer cronometer;
+
+  InternRunElement(running_element);
+  if (cronometer.seconds() > 1) {
+    LOG_W(logs.engine, ("EngineElement %s has being running for %s"
+                        , running_element->str().c_str(), au::str_time(cronometer.seconds()).c_str()));
+  }
+}
+
+void Engine::InternRunElement(EngineElement *running_element) {
   activity_monitor_.StartActivity(running_element->name());
 
   // Execute the item selected as running_element
-  LOG_M( logs.engine, ("[START] Engine:  executing %s", running_element->str().c_str()));
+  LOG_M(logs.engine, ("[START] Engine:  executing %s", running_element->str().c_str()));
 
   // Print traces for debugging strange situations
   int waiting_time = running_element->GetWaitingTime();
   if (waiting_time > 10) {
-    LM_W(("Engine is running an element that has been waiting %d seconds", waiting_time ));
+    LOG_SW(("Engine is running an element that has been waiting %d seconds", waiting_time));
 
     if (waiting_time > 100) {
       // Print all elements with traces for debuggin...
@@ -160,50 +142,55 @@ void Engine::RunElement(EngineElement *running_element) {
 
     int execution_time = c.seconds();
     if (execution_time > 10) {
-      LM_W(("Engine has executed an item in %d seconds.", execution_time ));
-      LM_W(("Engine Executed item: %s",  running_element->str().c_str()));
+      LOG_SW(("Engine has executed an item in %d seconds.", execution_time));
+      LOG_SW(("Engine Executed item: %s",  running_element->str().c_str()));
     }
   }
 
-  LOG_M( logs.engine , ("[DONE] Engine:  executing %s", running_element->str().c_str()));
+  LOG_M(logs.engine, ("[DONE] Engine:  executing %s", running_element->str().c_str()));
 
   // Collect information about this execution
   activity_monitor_.StartActivity("engine_management");
 }
 
-void Engine::RunMainLoop() {
-  
-  LOG_M( logs.engine, ("Engine run"));
+/**
+ *
+ * RunMainLoop
+ *
+ * \breif Main loop to process engine-elements ( normal, periodic ande extra )
+ *
+ * Try to get the next element in the repeat_elements list
+ * if not there , try normal elements...
+ * if not, run extra elements and loop again...
+ *
+ */
 
-  counter_ = 0;                // Init the counter to elements managed by this run-time
+
+void Engine::RunThread() {
+  LOG_M(logs.engine, ("Engine run"));
+
+  counter_ = 0;  // Init the counter to elements managed by this run-time
 
   while (true) {
-    // Keep a total counter of loops
-    counter_++;
+    counter_++;  // Keep a total counter of loops
 
-    // Finish this thread if necessary
-    if (quitting_thread_) {
-      return;
+    if (IsThreadQuiting()) {
+      return;    // Finish this thread if necessary ( a call to StopThread is done )
     }
 
     // Check if there are elements in the list
     if (engine_element_collection_.IsEmpty()) {
-      LOG_D( logs.engine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
+      LOG_D(logs.engine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
       return;
     }
 
     // Warning if we have a lot of elements in the engine stack
     size_t num_engine_elements = engine_element_collection_.GetNumEngineElements();
-    LOG_D( logs.engine, ("Number of elements in the engine stack %lu", num_engine_elements ));
+    LOG_D(logs.engine, ("Number of elements in the engine stack %lu", num_engine_elements));
 
     if (num_engine_elements > 10000) {
-      LM_W(("Execesive number of elements in the engine stack %lu", num_engine_elements ));    // ------------------------------------------------------------------------------------
+      LOG_SW(("Execesive number of elements in the engine stack %lu", num_engine_elements));
     }
-    // Try to get the next element in the repeat_elements list
-    // if not there , try normal elements...
-    // if not, run extra elements and loop again...
-    // ------------------------------------------------------------------------------------
-
 
     // Try if next repeated element is ready to be executed
     EngineElement *element = engine_element_collection_.NextRepeatedEngineElement();
@@ -235,20 +222,20 @@ void Engine::RunMainLoop() {
     // If normal elements to be executed, do not sleep
     size_t num_normal_elements =  engine_element_collection_.GetNumNormalEngineElements();
     if (num_normal_elements > 0) {
-      LOG_D( logs.engine, ("Do not sleep since it seems there are %lu elements in the engine",
-                       num_normal_elements));
+      LOG_D(logs.engine, ("Do not sleep since it seems there are %lu elements in the engine",
+                          num_normal_elements));
       continue;         // Do not sleep here
     }
 
     // If next repeated elements is close, do not sleep
     double t_next_repeated_elements = engine_element_collection_.TimeForNextRepeatedEngineElement();
-    LOG_D( logs.engine, ("Engine: Next repeated item in %.2f secs ...", t_next_repeated_elements));
+    LOG_D(logs.engine, ("Engine: Next repeated item in %.2f secs ...", t_next_repeated_elements));
     if (t_next_repeated_elements < 0.01) {
       continue;
     }
     activity_monitor_.StartActivity("sleep");
 
-    usleep(100000);
+    usleep(300000);
 
     activity_monitor_.StartActivity("engine_management");
   }
@@ -319,7 +306,7 @@ au::statistics::ActivityMonitor *Engine::activity_monitor() {
 
 Engine *Engine::shared() {
   if (!engine_) {
-    LM_E(("Engine was not initialised. Calling Engine::init()"));
+    LOG_W(logs.engine, ("Engine was not initialised. Calling Engine::init()"));
   }
   return engine_;
 }

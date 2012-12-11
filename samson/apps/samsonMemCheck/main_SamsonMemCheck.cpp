@@ -29,7 +29,7 @@
 #include "parseArgs/parseArgs.h"
 
 #include "au/CommandLine.h"                     // au::CommandLine
-#include "au/console/Console.h"                 // au::Console
+#include "au/console/Console.h"                 // au::console::Console
 
 #include "samson/common/MemoryCheck.h"
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
@@ -79,7 +79,7 @@ int main(int argc, const char *argv[]) {
   if (samson::MemoryCheck() == false) {
     LM_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information."));
   } else {
-    LM_M(("samsonMemCheck ok"));
+    LOG_SM(("samsonMemCheck ok"));
   }
 }
 

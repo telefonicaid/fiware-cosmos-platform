@@ -35,13 +35,13 @@ public:
     // This method is called once
     // Run background threads if necessary ( using au::ThreadManager please )
 
-    LM_W(("start_connection in HDFS connections is still not defined"));
+    LOG_SW(("start_connection in HDFS connections is still not defined"));
   }
 
   virtual void review_connection() {
     // This method is periodically called if you have to do any periodic review
     // This method has to return quickly ( no heavy operations are permitted )
-    LM_W(("review in HDFS: Pending %s to be sent ", au::str(bufferedSize(), "B").c_str()));
+    LOG_SW(("review in HDFS: Pending %s to be sent ", au::str(bufferedSize(), "B").c_str()));
 
 
     // How to extract data to be sent ( this has not to be done here )
@@ -49,7 +49,7 @@ public:
       engine::BufferPointer buffer = getNextBufferToSent();
 
       if (buffer != NULL) {
-        LM_W(("Sending buffer of %s", au::str(buffer->size(), "B").c_str()));
+        LOG_SW(("Sending buffer of %s", au::str(buffer->size(), "B").c_str()));
       } else {
         break;
       }
@@ -64,7 +64,7 @@ public:
   virtual void stop_connection() {
     // Stop all background threads ( and make sure they do not start again ; ))
     // Alert: Once this method return, streamConnector can remove this object
-    LM_W(("stop_connection in HDFS connection is still not defined"));
+    LOG_SW(("stop_connection in HDFS connection is still not defined"));
   }
 };
 }

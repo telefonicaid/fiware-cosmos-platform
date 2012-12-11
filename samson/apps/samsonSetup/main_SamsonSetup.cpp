@@ -16,19 +16,20 @@
  *
  * AUTHOR: Andreu Urruela
  */
-#include <iostream>
-#include <string>
+
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <iostream>
+#include <string>
+
+#include "au/CommandLine.h"                     // au::CommandLine
+#include "au/console/Console.h"                 // au::console::Console
+#include "au/console/ConsoleAutoComplete.h"
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 #include "parseArgs/parseArgs.h"
-
-#include "au/CommandLine.h"                     // au::CommandLine
-#include "au/console/Console.h"                 // au::Console
-#include "au/console/ConsoleAutoComplete.h"
 
 #include "samson/common/MemoryCheck.h"          // samson::MemoryCheck
 #include "samson/common/SamsonSetup.h"          // samson::SamsonSetup
@@ -38,9 +39,6 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/module/KVFormat.h"             // samson::KVFormat
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
-
-
-
 
 /* ****************************************************************************
  *
@@ -86,14 +84,14 @@ std::string getHelpMessage() {
   return output.str();
 }
 
-class SamsonConfigConsole : public au::Console {
+class SamsonConfigConsole : public au::console::Console {
 public:
 
   std::string getPrompt() {
     return "samsonSetup > ";
   }
 
-  void autoComplete(au::ConsoleAutoComplete *info) {
+  void autoComplete(au::console::ConsoleAutoComplete *info) {
     if (info->completingFirstWord()) {
       info->add("show");
       info->add("help");
@@ -121,7 +119,7 @@ public:
   }
 
   // function to process a command instroduced by user
-  void evalCommand(std::string command) {
+  void evalCommand(const std::string& command) {
     au::CommandLine cmd;
 
     cmd.Parse(command);
@@ -173,11 +171,11 @@ public:
 
       au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
       au::Singleton<samson::SamsonSetup>::shared()->Set("general.memory", au::str("%lld", physical_ram));
-      au::Singleton<samson::SamsonSetup>::shared()->Set("general.num_processess",au::str("%d", no_cpus));
+      au::Singleton<samson::SamsonSetup>::shared()->Set("general.num_processess", au::str("%d", no_cpus));
       au::Singleton<samson::SamsonSetup>::shared()->Set("general.shared_memory_size_per_buffer"
-                                                        ,au::str("%ld", kernel_shmmax));
+                                                        , au::str("%ld", kernel_shmmax));
       au::Singleton<samson::SamsonSetup>::shared()->Set("stream.max_operation_input_size"
-                                                        ,au::str("%ld", kernel_shmmax));
+                                                        , au::str("%ld", kernel_shmmax));
 
       writeWarningOnConsole(au::str("Properties general.memory                        = %lld", physical_ram));
       writeWarningOnConsole(au::str("Properties general.num_processess                = %d", no_cpus));
@@ -194,7 +192,7 @@ public:
       au::Singleton<samson::SamsonSetup>::shared()->ResetToDefaultValues();
       au::Singleton<samson::SamsonSetup>::shared()->Set("general.memory", "2000000000");
       au::Singleton<samson::SamsonSetup>::shared()->Set("general.num_processess", "2");
-      au::Singleton<samson::SamsonSetup>::shared()->Set("general.shared_memory_size_per_buffer","64000000");
+      au::Singleton<samson::SamsonSetup>::shared()->Set("general.shared_memory_size_per_buffer", "64000000");
       au::Singleton<samson::SamsonSetup>::shared()->Set("stream.max_operation_input_size", "64000000");
 
       writeWarningOnConsole("Properties general.memory                        = 2Gb");
@@ -214,23 +212,19 @@ public:
       return;
     }
 
-
     if (main_command == "save") {
-      int res = au::Singleton<samson::SamsonSetup>::shared()->Save();        // Save a new file with the current setup
-
+      bool saved_ok = au::Singleton<samson::SamsonSetup>::shared()->Save();        // Save a new file with the current setup
       std::string fileName = au::Singleton<samson::SamsonSetup>::shared()->setup_filename();
 
-      if (!res) {
+      if (saved_ok) {
         writeWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
         modified = false;
       } else {
         writeErrorOnConsole(au::str("Error saving file at %s", fileName.c_str()));
       }
 
-
       return;
     }
-
 
     if (main_command == "quit") {
       if (modified) {
@@ -246,7 +240,7 @@ public:
         }
       }
 
-      quitConsole();
+      StopConsole();
       return;
     }
 
@@ -328,9 +322,6 @@ int main(int argC, const char *argV[]) {
 
   std::cout << "\nType help to get a list of valid command\n\n";
   SamsonConfigConsole console;
-  console.runConsole();
-
-  // Show samson setup
-  // std::cout << au::Singleton<samson::SamsonSetup>::shared()->str();
+  console.StartConsole(true);
 }
 

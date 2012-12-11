@@ -9,20 +9,20 @@
  * All rights reserved.
  */
 /* ****************************************************************************
- *
- * FILE            xml.h
- *
- * AUTHOR          Andreu Urruela
- *
- * PROJECT         au library
- *
- * DATE            Septembre 2011
- *
- * DESCRIPTION
- *
- *      Usefull functions to generate xml tags
- *
- * ****************************************************************************/
+*
+* FILE            xml.h
+*
+* AUTHOR          Andreu Urruela
+*
+* PROJECT         au library
+*
+* DATE            Septembre 2011
+*
+* DESCRIPTION
+*
+*      Usefull functions to generate xml tags
+*
+* ****************************************************************************/
 
 #ifndef _H_AU_XML
 #define _H_AU_XML
@@ -54,9 +54,23 @@ void xml_simple_literal(std::ostringstream& output, std::string name, T value) {
   output << "</" << name << ">";
 }
 
+/**
+ * \brief Method to generate json key-value pairs inside a json object element.
+ */
+
 template<typename T>
 void json_simple(std::ostringstream& output, std::string name, T value) {
-  output << "{\"" << name << "\":\"" << value << "\"}";
+  output << "\"" << name << "\":" << value << ",";
+}
+
+/**
+ * \brief Method to generate json key-value pairs inside a json object element.
+ * The value is expected to be a literal so "'s will be added
+ */
+
+template<typename T>   // Expected to be inside a {} block
+void json_simple_literal(std::ostringstream& output, std::string name, T value) {
+  output << "\"" << name << "\":\"" << value << "\"" << ",";
 }
 
 template<typename T>

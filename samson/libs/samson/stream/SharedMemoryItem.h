@@ -33,16 +33,15 @@
 
 #include "au/containers/map.h"               // au::map
 #include "au/mutex/Token.h"                  // au::Token
-#include "au/string/StringUtilities.h"                       // au::Format
+#include "au/string/StringUtilities.h"       // au::Format
 
 #include "engine/Buffer.h"                   // samson::Buffer
 
-#include "samson/common/samson.pb.h"         // network::..
+// network::..
 #include "samson/common/samsonDirectories.h"  // SAMSON_SETUP_FILE
 
 
-namespace engine {
-
+namespace samson {
 /*
  * SharedMemoryItem is a class that contains information about a region of memory shared between different processes
  * Memory manager singleton provides pointers to these objects
@@ -51,53 +50,51 @@ namespace engine {
 class SharedMemoryItem {
 public:
 
-  int id;                                               /* Identifier of the shared memory area 0 .. N-1 */
-  int shmid;                                            /* return value from shmget() */
-  char *data;                                           /* Shared memory data */
-  size_t size;                                          /* Information about the size of this shared memory item */
-
-  SharedMemoryItem(int _id, int _shmid, size_t _size) {
-    id = _id;
-    shmid = _shmid;
-    size = _size;
-
-    // Attach to local-space memory
-    data = (char *)shmat(shmid, 0, 0);
-    if (data == (char *)-1) {
-      LM_X(1,
-           (
-             "Error with shared memory while attaching to local memory ( %s )( shared memory id %d shmid %d size %lu )\n"
-             , strerror(errno),  id, shmid, size ));
-    }
-  }
-
-  ~SharedMemoryItem() {
-    // Detach data if it was previously attached
-    if (data) {
-      if (shmdt(data) == -1) {
-        LM_X(1, ("Error calling shmdt"));
-      }
-    }
-  }
+  // Constructor and destructor
+  SharedMemoryItem(int id, int shmid, size_t size);
+  ~SharedMemoryItem();
 
   // --------------------------------------------------------------------------------
   // Interfaces to get SimpleBuffer elements in order to read or write to them
   // --------------------------------------------------------------------------------
 
-  SimpleBuffer getSimpleBuffer() {
-    return SimpleBuffer(data, size);
+  engine::SimpleBuffer getSimpleBuffer() const {
+    return engine::SimpleBuffer(data_, size_);
   }
 
-  SimpleBuffer getSimpleBufferAtOffset(size_t offset) {
-    return SimpleBuffer(data + offset, size - offset);
+  engine::SimpleBuffer getSimpleBufferAtOffset(size_t offset) const {
+    return engine::SimpleBuffer(data_ + offset, size_ - offset);
   }
 
-  SimpleBuffer getSimpleBufferAtOffsetWithMaxSize(size_t offset, size_t _size) {
-    if (_size > ( size - offset )) {
+  engine::SimpleBuffer getSimpleBufferAtOffsetWithMaxSize(size_t offset, size_t size) const {
+    if (size > (size_ - offset)) {
       LM_X(1, ("Error cheking size of a simple Buffer"));
     }
-    return SimpleBuffer(data + offset, _size);
+    return engine::SimpleBuffer(data_ + offset, size_ - offset);
   }
+
+  int id() const {
+    return id_;
+  }
+
+  int shmid() const {
+    return shmid_;
+  }
+
+  size_t size() const {
+    return size_;
+  }
+
+  char *data() const {
+    return data_;
+  }
+
+private:
+
+  int id_;                                               /* Identifier of the shared memory area 0 .. N-1 */
+  int shmid_;                                            /* return value from shmget() */
+  char *data_;                                           /* Shared memory data */
+  size_t size_;                                          /* Information about the size of this shared memory item */
 };
 };
 

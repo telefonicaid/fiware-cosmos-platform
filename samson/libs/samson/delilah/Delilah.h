@@ -27,12 +27,12 @@
 #include "logMsg/logMsg.h"                   // lmInit, LM_*
 
 #include "au/CommandLine.h"                  // au::CommandLine
-#include "au/statistics/CounterCollection.h"            // au::CounterCollection
-#include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/containers/map.h"               // au::map
 #include "au/mutex/Token.h"                  // au::Token
 #include "au/mutex/TokenTaker.h"             // au::TokenTaker
-#include "au/string/StringUtilities.h"                       // au::Table
+#include "au/statistics/CounterCollection.h"  // au::CounterCollection
+#include "au/statistics/Cronometer.h"      // au::Cronometer
+#include "au/string/StringUtilities.h"       // au::Table
 
 #include "au/tables/pugi.h"                  // pugi::...
 
@@ -41,7 +41,7 @@
 #include "engine/NotificationListener.h"     // engine::NotificationListener
 
 #include "samson/common/Macros.h"            // EXIT, ...
-#include "samson/common/samson.pb.h"         // samson::network::..
+// samson::network::..
 
 #include "samson/module/Environment.h"  // samson::Environment
 
@@ -109,13 +109,8 @@ public:
 
   Environment environment;                      // Environment properties to be sent in the next job
 
-  Delilah(std::string connection_type, size_t delilah_id = (size_t)-1);
+  Delilah(std::string connection_type, size_t delilah_id = static_cast<size_t>(-1));
   ~Delilah();
-
-  // Stop all threads ( just before calling delete )
-  void stop() {
-    network->ClearConnections();
-  }
 
   // Connect and disconnect to a cluster
   bool connect(std::string host, au::ErrorManager *error);      // Return true if it was possible to connect

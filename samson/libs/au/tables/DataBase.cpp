@@ -85,7 +85,7 @@ Collection *DataBase::getCollection(std::string name) {
   }
 }
 
-void DataBase::autoComplete(au::ConsoleAutoComplete *info) {
+void DataBase::autoComplete(au::console::ConsoleAutoComplete *info) {
   au::TokenTaker tt(&token);   // Mutex protection for public methods
 
   if (info->completingFirstWord()) {
@@ -280,7 +280,7 @@ std::string DataBase::runCommand(std::string command) {
 
       // Print first record if any ....
       if (_table->getNumRows() == 0) {
-        return au::str(au::red, "No records to print");
+        return au::str(au::BoldRed, "No records to print");
       }
 
       Table *record_table = _table->rows[0]->getTable();
@@ -297,13 +297,13 @@ std::string DataBase::runCommand(std::string command) {
 
   if (mainCommand == "table_from_table") {
     if (cmdLine.get_num_arguments() < 3) {
-      return au::str(au::red, "Usage: table_from_table table <fields> [-save new_table]");
+      return au::str(au::BoldRed, "Usage: table_from_table table <fields> [-save new_table]");
     }
 
     std::string table_name = cmdLine.get_argument(1);
     Table *table = tables.findInMap(table_name);
     if (!table) {
-      return au::str(au::red, "Unknown table %s", table_name.c_str());
+      return au::str(au::BoldRed, "Unknown table %s", table_name.c_str());
     }
 
     SelectTableInformation select;
@@ -318,7 +318,7 @@ std::string DataBase::runCommand(std::string command) {
 
     if (save != "no_save") {
       addTable(save, table_result);
-      return au::str(au::magenta, "Created table %s", save.c_str());
+      return au::str(au::BoldMagenta, "Created table %s", save.c_str());
     } else {
       addTable("result", table_result);
       return table_result->str();
@@ -426,7 +426,7 @@ std::string DataBase::runCommand(std::string command) {
 
     if (result->getNumTrees() == 0) {
       delete result;
-      return au::str(au::red, "No result for path %s over tree %s", tree_name.c_str(), path.c_str());
+      return au::str(au::BoldRed, "No result for path %s over tree %s", tree_name.c_str(), path.c_str());
     }
 
     TreeItem *result_tree = result->getTree(0);        // Get first tree
@@ -569,7 +569,7 @@ void DataBase::_addCollection(std::string name, Collection *collection) {
   collections.insertInMap(name, collection);
 }
 
-void DataBase::autoCompleteTables(au::ConsoleAutoComplete *info) {
+void DataBase::autoCompleteTables(au::console::ConsoleAutoComplete *info) {
   au::map<std::string, Table>::iterator it_tables;
   for (it_tables = tables.begin(); it_tables != tables.end(); it_tables++) {
     std::string name = it_tables->first;
@@ -577,7 +577,7 @@ void DataBase::autoCompleteTables(au::ConsoleAutoComplete *info) {
   }
 }
 
-void DataBase::autoCompleteTrees(au::ConsoleAutoComplete *info) {
+void DataBase::autoCompleteTrees(au::console::ConsoleAutoComplete *info) {
   au::map<std::string, TreeItem>::iterator it_trees;
   for (it_trees = trees.begin(); it_trees != trees.end(); it_trees++) {
     std::string name = it_trees->first;
@@ -585,7 +585,7 @@ void DataBase::autoCompleteTrees(au::ConsoleAutoComplete *info) {
   }
 }
 
-void DataBase::autoCompleteCollections(au::ConsoleAutoComplete *info) {
+void DataBase::autoCompleteCollections(au::console::ConsoleAutoComplete *info) {
   au::map<std::string, Collection>::iterator it_collections;
   for (it_collections = collections.begin(); it_collections != collections.end(); it_collections++) {
     std::string name = it_collections->first;
@@ -593,7 +593,7 @@ void DataBase::autoCompleteCollections(au::ConsoleAutoComplete *info) {
   }
 }
 
-void DataBase::autoCompleteFieldsOfTable(std::string table_name, au::ConsoleAutoComplete *info) {
+void DataBase::autoCompleteFieldsOfTable(std::string table_name, au::console::ConsoleAutoComplete *info) {
   Table *table = tables.findInMap(table_name);
 
   if (table) {

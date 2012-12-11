@@ -226,16 +226,16 @@
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("ps clear wrong_job"), 0) << "Wrong result from runAsyncCommand(ps clear wrong_job)";
  *
- *  LM_W(("Before push"));
+ *  LOG_SW(("Before push"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("push"), 0) << "Wrong result from runAsyncCommand(push)";
  *
- *  LM_W(("Before push /bin/bash"));
+ *  LOG_SW(("Before push /bin/bash"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("push /bin/bash"), 0) << "Wrong result from runAsyncCommand(push /bin/bash)";
  *
- *  LM_W(("Before push /bin/bash a"));
+ *  LOG_SW(("Before push /bin/bash a"));
  *  EXPECT_NE(delilah_console->runAsyncCommand("push /bin/bash a"), 0) << "Wrong result from runAsyncCommand(push /bin/bash a)";
  *
- *  LM_W(("Before push /tmp/dir_test a"));
+ *  LOG_SW(("Before push /tmp/dir_test a"));
  *  EXPECT_NE(delilah_console->runAsyncCommand("push /tmp/dir_test a"), 0) << "Wrong result from runAsyncCommand(push /tmp/dir_test a)";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("pop"), 0) << "Wrong result from runAsyncCommand(pop)";
@@ -250,22 +250,22 @@
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("rm_local /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(rm_local /tmp/traces)";
  *
- *  //LM_W(("Before ls_local"));
+ *  //LOG_SW(("Before ls_local"));
  *  //EXPECT_EQ(delilah_console->runAsyncCommand("ls_local"), 0) << "Wrong result from runAsyncCommand(ls_local)";
  *
- *  LM_W(("Before show_local_queue"));
+ *  LOG_SW(("Before show_local_queue"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue"), 0) << "Wrong result from runAsyncCommand(show_local_queue)";
  *
- *  LM_W(("Before show_local_queue /tmp/traces"));
+ *  LOG_SW(("Before show_local_queue /tmp/traces"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces)";
  *
- *  LM_W(("Before show_local_queue /tmp/traces -header"));
+ *  LOG_SW(("Before show_local_queue /tmp/traces -header"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces -header)";
  *
- *  LM_W(("Before show_local_queue /tmp/dir_test -header"));
+ *  LOG_SW(("Before show_local_queue /tmp/dir_test -header"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/dir_test -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/dir_test -header)";
  *
- *  LM_W(("Before push_module"));
+ *  LOG_SW(("Before push_module"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("push_module"), 0) << "Wrong result from runAsyncCommand(push_module)";
  *
  *  //EXPECT_NE(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /tmp/libtxt.so txt)";
@@ -312,17 +312,17 @@
  *
  *  EXPECT_NE(delilah_console->runAsyncCommand("ls -group name -rates"), 0) << "Wrong result from runAsyncCommand(ls -group name -rates)";
  *
- *  LM_W(("Before disconnect"));
+ *  LOG_SW(("Before disconnect"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("disconnect"), 0) << "Wrong result from runAsyncCommand(disconnect)";
  *
- *  LM_W(("Before quit"));
+ *  LOG_SW(("Before quit"));
  *  EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
  *
  * //    au::ErrorManager error;
  * //    delilah_console->delilah_disconnect( &error );
  * //    //EXPECT_TRUE(error.isActivated() == false);
  *
- *  LM_W(("Before close_delilah_test()"));
+ *  LOG_SW(("Before close_delilah_test()"));
  *  close_delilah_test(delilah_console);
  * }
  *
@@ -342,7 +342,7 @@
  *  }
  *  char *user = strdup("anonymous");
  *  char *password = strdup("anonymous");
- *  LM_M(("delilah_console->connect"));
+ *  LOG_SM(("delilah_console->connect"));
  *  delilah_console->connect( host , port , user , password );
  *
  *  sleep(1);
@@ -356,551 +356,551 @@
  * //    delilah_console->evalCommand("help");
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("lso");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("lso");
  *      delilah_console->autoComplete(info);
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("lso txt.*");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("lso txt.*");
  *      delilah_console->autoComplete(info);
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("test_trap");
- *      delilah_console->autoComplete(info);
- *
- *      delete info;
- *  }
- *
- *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set_mode database");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("test_trap");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set_mode mode_logs");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_mode database");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set_mode normal");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_mode mode_logs");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set_mode wrong_mode");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_mode normal");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("history");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_mode wrong_mode");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("history 10");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("history");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("cluster info");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("history 10");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("cluster info");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help categor");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help categories cl");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help categor");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help all");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help categories cl");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help ls");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help all");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help ls_stream_operation");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help ls");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("threads");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help ls_stream_operation");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("threads");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set a b");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("unset a");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set a b");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("local_logs");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("unset a");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("alerts");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("local_logs");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("alerts on");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("alerts");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("alerts off");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("alerts on");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("show_alerts");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("alerts off");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("verbose");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("show_alerts");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("wverbose");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("verbose");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("wverbose 0");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("wverbose");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("open_alerts_file /tmp/trace.log");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("wverbose 0");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("close_alerts_file");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("open_alerts_file /tmp/trace.log");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("clear_components");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("close_alerts_file");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ps");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("clear_components");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ps 1");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ps clear");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps 1");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ps clear 3");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps clear");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ps clear wrong_job");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps clear 3");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps clear wrong_job");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push /bin/bash");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push /bin/bash a");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push /bin/bash");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push /tmp/dir_test a");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push /bin/bash a");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("pop");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push /tmp/dir_test a");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("pop a");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("pop");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("pop a /tmp/traces");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("pop a");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("pop a /tmp/traces2");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("pop a /tmp/traces");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("rm");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("pop a /tmp/traces2");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("rm_local /tmp/traces2");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("rm");
+ *      delilah_console->autoComplete(info);
+ *
+ *      delete info;
+ *  }
+ *
+ *  {
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("rm_local /tmp/traces2");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  * //    {
- * //        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_local");
+ * //        au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_local");
  * //        delilah_console->autoComplete(info);
  * //
  * //        delete info;
  * //    }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("show_local_queue");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("show_local_queue");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("show_local_queue /tmp/traces");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("show_local_queue /tmp/traces");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("show_local_queue /tmp/traces -header");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("show_local_queue /tmp/traces -header");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push_module");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push_module");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push_module /tmp/libtxt.so txt");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push_module /tmp/libtxt.so txt");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set_queue_property");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_queue_property");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set_queue_property a");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_queue_property a");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set_queue_property a pause");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_queue_property a pause");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("set_queue_property a pause true");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_queue_property a pause true");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls -rat");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls -rat");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls -p");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls -p");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls -r");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls -r");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls -group name -rates");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls -group name -rates");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_workers");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_workers");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_workers -eng");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_workers -eng");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_workers -d");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_workers -d");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_workers -");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_workers -");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations -p");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations -p");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations -r");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations -r");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations -i");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations -i");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations -o");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations -o");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("trace");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("trace");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("wtrace");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("wtrace");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("wdebug");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("wdebug");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("run");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("run");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("run txt");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("run txt");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("run txt.parser_words ");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("run txt.parser_words ");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("init_stream");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("init_stream");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("init_stream txt");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("init_stream txt");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push_module");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push_module");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
@@ -908,7 +908,7 @@
  *
  *
  *  {
- *      au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("quit");
+ *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("quit");
  *      delilah_console->autoComplete(info);
  *
  *      delete info;
@@ -940,7 +940,7 @@
  *  }
  *  char *user = strdup("anonymous");
  *  char *password = strdup("anonymous");
- *  LM_M(("delilah_console->connect"));
+ *  LOG_SM(("delilah_console->connect"));
  *  delilah_console->connect( host , port , user , password );
  *
  *  char expected_result[1024];

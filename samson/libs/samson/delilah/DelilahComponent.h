@@ -1,3 +1,6 @@
+#ifndef _H_DELILAH_COMPONENT
+#define _H_DELILAH_COMPONENT
+
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -9,11 +12,9 @@
  * All rights reserved.
  */
 
-#ifndef _H_DELILAH_COMPONENT
-#define _H_DELILAH_COMPONENT
 
-#include "au/statistics/CronometerSystem.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
+#include "au/statistics/CronometerSystem.h"
 
 #include "samson/network/Message.h"  // Message::MessageCode
 #include "samson/network/Packet.h"  // samson::Packet
@@ -46,7 +47,7 @@ public:
   double progress;             // Information about progress of this task
   bool hidden;                 // Flag to not show information on screen about this
 
-  std::ostringstream output;   // Output to be shown on screen
+  std::ostringstream output_component;   // Output to be shown on screen
   bool print_output_at_finish;      // Flag to determine if we have to show result at the end
 
   au::ErrorManager error;      // Manager of the error in this operation
@@ -55,7 +56,7 @@ public:
   virtual ~DelilahComponent() {
   };                           // Virtual destructor necessary in this class since subclasses are deleted using parent pointers
 
-  void setId(Delilah *_delilah,  size_t _id);
+  void setId(Delilah *_delilah, size_t _id);
   virtual void receive(const PacketPointer& packet) = 0;
   virtual void review() {
   };

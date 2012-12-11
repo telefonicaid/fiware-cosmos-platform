@@ -16,7 +16,7 @@
 
 namespace au {
 LogCentralPluginServer::LogCentralPluginServer(const std::string& host, int port,
-                                 const std::string& local_file) : LogCentralPlugin("Server") {
+                                               const std::string& local_file) : LogCentralPlugin("Server") {
   set_host(host, port, local_file);
 }
 
@@ -101,7 +101,7 @@ void LogCentralPluginServer::ReviewSocketConnection() {
 
           /*
            * size_t next_try_time = time_reconnect_ - time;
-           * LM_W(("Not possible to connect with log server %s:%d (%s). Next try in %s"
+           * LOG_SW(("Not possible to connect with log server %s:%d (%s). Next try in %s"
            * , host_.c_str(), port_, au::status(s), au::str_time(next_try_time).c_str()));
            */
         }
@@ -126,9 +126,9 @@ void LogCentralPluginServer::Emit(SharedPointer<Log> log) {
   if (socket_connection_ != NULL) {
     if (log->Write(socket_connection_.shared_object())) {
       return;
-    }
-    else
+    } else {
       socket_connection_ = NULL;
+    }
   }
 
   // It was not possible, so use disk

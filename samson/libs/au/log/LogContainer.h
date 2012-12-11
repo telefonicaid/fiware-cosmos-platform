@@ -17,29 +17,26 @@
 
 #include "logMsg/logMsg.h"
 
-#include "au/string/Descriptors.h"
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
 #include "au/log/Log.h"
 #include "au/network/FileDescriptor.h"
 #include "au/network/Service.h"
+#include "au/string/Descriptors.h"
 #include "au/string/StringUtilities.h"
 #include "au/tables/Table.h"
-
-/*
- 
- LogContainer
- 
- On-memory container of logs to process queries of previous logs
- Used in LogServer to keep in memory last logs
- */
 
 namespace au {
 class LogServer;
 class LogQuery;
-  
+
 class LogContainer {
 public:
+
+  /**
+   * \brief On-memory container of logs to process queries of previous logs
+   * Used in LogServer to keep in memory last logs
+   */
 
   LogContainer();
   ~LogContainer() {
@@ -52,14 +49,13 @@ public:
   size_t size() const;
 
   // Process a particular query
-  void Process( LogQuery* log_query );
+  void Process(LogQuery *log_query);
 
   // Get access to counters
-  LogCounter& log_counter()
-  {
+  LogCounter& log_counter() {
     return log_counter_;
   }
-  
+
 private:
 
   mutable au::Token token_;

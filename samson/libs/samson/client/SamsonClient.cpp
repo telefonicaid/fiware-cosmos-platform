@@ -28,7 +28,8 @@
 #include "parseArgs/paConfig.h"
 
 #include "au/ThreadManager.h"
-#include "au/string/StringUtilities.h"                  // au::Format
+#include "au/log/LogMain.h"
+#include "au/string/StringUtilities.h"  // au::Format
 
 #include "engine/DiskManager.h"         // engine::DiskManager
 #include "engine/Engine.h"              // engine::Engine
@@ -37,6 +38,7 @@
 #include "engine/ProcessManager.h"      // engine::ProcessManager
 
 
+#include "samson/common/Logs.h"
 #include "samson/common/NotificationMessages.h"  // notification_review_timeOut_SamsonPushBuffer
 #include "samson/common/SamsonSetup.h"  // samson::SamsonSetup
 #include "samson/common/samsonDirectories.h"
@@ -76,8 +78,8 @@ bool SamsonClient::connect(const std::string& host) {
   au::ErrorManager error;
   bool c = delilah_->connect(host, &error);
 
-  if (error.IsActivated()) {
-    LM_W(("Not possible to connect to %s: %s", host.c_str(), error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LOG_SW(("Not possible to connect to %s: %s", host.c_str(), error.GetLastError().c_str()));
   }
   return c;
 }
@@ -116,7 +118,7 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
   engine::Engine::InitEngine(num_cores, memory, 1);
 
   // Init the modules manager
-  LM_T(LmtModuleManager, ("Starting ModulesManager from SamsonClient::general_init()"));
+  LOG_M(logs.modules_manager, ("Starting ModulesManager from SamsonClient::general_init()"));
 }
 
 void SamsonClient::general_close() {
@@ -127,7 +129,7 @@ void SamsonClient::general_close() {
   au::Singleton<ModulesManager>::DestroySingleton();
 
   // Close engine
-  engine::Engine::DestroyEngine();
+  engine::Engine::StopEngine();
 }
 
 void SamsonClient::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
@@ -171,7 +173,8 @@ void SamsonClient::connect_to_queue(std::string queue, bool flag_new, bool flag_
   // Update queue management in samsonClient in the same way as in delilah.
   // Old strategy with delilah_->sendWorkerCommand("connect_to_queue") was not working
   size_t id = delilah_->AddPopComponent(queue, "", false, false);
-  LM_T(LmtDelilahComponent, ("AddPopComponent for queue:'%s' returned id:%lu", queue.c_str(), id));
+
+  LOG_M(logs.delilah_components, ("AddPopComponent for queue:'%s' returned id:%lu", queue.c_str(), id));
 }
 
 SamsonClientBlockInterface *SamsonClient::getNextBlock(std::string queue) {

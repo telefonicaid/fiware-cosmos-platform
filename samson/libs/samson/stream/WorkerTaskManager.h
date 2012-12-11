@@ -19,12 +19,13 @@
 #include "au/containers/Dictionary.h"
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
+#include "au/statistics/Averager.h"
 
 #include "engine/NotificationListener.h"  // engine::NotificationListener
 
+#include "samson/common/Visualitzation.h"
 #include "samson/common/gpb_operations.h"
 #include "samson/common/status.h"
-#include "samson/common/Visualitzation.h"
 #include "samson/module/ModulesManager.h"
 #include "samson/module/Operation.h"
 #include "samson/stream/WorkerSystemTask.h"
@@ -32,6 +33,7 @@
 
 namespace samson {
 class SamsonWorker;
+class GlobalBlockSortInfo;
 
 namespace stream {
 class StreamOperationRangeInfo;
@@ -40,71 +42,159 @@ class StreamOperationGlobalInfo;
 // Logs for debugging
 
 struct WorkerTaskLog {
-    std::string description;   // Description of the task
-    std::string result;    // Result of the operation
-    std::string inputs;    // Information at the input of the operation
-    std::string outputs;   // Information at output of the operation
-    std::string times;
-    std::string process_time;
-    int waiting_time_seconds;   // Waiting time until execution starts
-    int running_time_seconds;   // Running time
+  std::string description;     // Description of the task
+  std::string result;      // Result of the operation
+  std::string inputs;      // Information at the input of the operation
+  std::string outputs;     // Information at output of the operation
+  std::string times;
+  std::string process_time;
+  int waiting_time_seconds;     // Waiting time until execution starts
+  int running_time_seconds;     // Running time
 };
 
+class StreamOperationStatistics {
+public:
+
+  /**
+   * \brief Inform about a finished task to update statistics
+   */
+
+  void UpdateTaskInformation(int num_hgs, FullKVInfo input, FullKVInfo state, double process_time) {
+    // Update information about input
+    input_size_.Push(input.size);
+    input_kvs_.Push(input.kvs);
+
+    // Update information about state
+    state_size_.Push(state.size);
+    state_kvs_.Push(state.kvs);
+
+    // Update information about process
+    real_process_rate_.Push((double)( input.size ) / process_time);
+    process_rate_.Push((double)( input.size + state.size ) / process_time);
+
+    // Just keep the number of divisions to compute erlangs
+    num_hgs_ = num_hgs;
+  }
+
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) const {
+    add(record, "Input", GetInputRateStr(), "left,different");
+    add(record, "#Ops/s", GetOperationsRateStr(), "left,different");
+
+    add(record, "Total input", GetInputTotalStr(), "left,different");
+    add(record, "Total #Ops", GetOperationsTotalStr(), "left,different");
+
+    add(record, "#hgs", num_hgs_, "left,different");
+    add(record, "State", GetStateStr(), "left,different");
+
+    add(record, "Process", GetProcessRateStr(), "left,different");
+  }
+
+  int num_hgs() const {
+    return num_hgs_;
+  }
+
+  std::string GetStateStr() const {
+    return state_kvs_.str_mean("kvs") + " " + state_size_.str_mean("B");
+  }
+
+  std::string GetInputRateStr() const {
+    return au::str(input_kvs_.rate(), "kvs/s") + " " + au::str(input_size_.rate(), "B/s");
+  }
+
+  std::string GetOperationsRateStr() const {
+    return au::str(input_kvs_.hit_rate(), "ops/s");
+  }
+
+  std::string GetInputTotalStr() const {
+    return au::str(input_kvs_.size(), "kvs") + " " + au::str(input_size_.size(), "B");
+  }
+
+  std::string GetOperationsTotalStr() const {
+    return au::str(input_kvs_.hits(), "ops");
+  }
+
+  std::string GetProcessRateStr() const {
+    return au::str(real_process_rate_.GetAverage(), "B/s") + " " + au::str(process_rate_.GetAverage(), "B/s");
+  }
+
+private:
+
+  int num_hgs_;
+
+  au::Rate input_size_;
+  au::Rate input_kvs_;
+
+  au::Averager state_size_;
+  au::Averager state_kvs_;
+
+  au::Averager real_process_rate_;
+  au::Averager process_rate_;
+};
+
+
 class WorkerTaskManager : public ::engine::NotificationListener {
-  public:
-  
-    explicit WorkerTaskManager(SamsonWorker *samson_worker);
+public:
 
-    void Add(au::SharedPointer<WorkerTaskBase> task);   // Add new task to the manager
+  explicit WorkerTaskManager(SamsonWorker *samson_worker);
+  ~WorkerTaskManager();
 
-    size_t getNewId();   // Get identifier for a new task
+  void Add(au::SharedPointer<WorkerTaskBase> task);     // Add new task to the manager
 
-    // Add a system task to distribute a particular block to a set of workers
-    void AddBlockRequestTask(size_t block_id, const std::vector<size_t>& worker_ids);
+  size_t getNewId();     // Get identifier for a new task
 
-    // Review schedules tasks
-    void reviewPendingWorkerTasks();
+  // Add a system task to distribute a particular block to a set of workers
+  size_t AddBlockRequestTask(size_t block_id, const std::vector<size_t>& worker_ids);
 
-    // Review stream operations to schedule new stuff
-    void review_stream_operations();
+  // Review schedules tasks
+  void reviewPendingWorkerTasks();
 
-    // Notifications
-    void notify(engine::Notification *notification);
+  // Review stream operations to schedule new stuff
+  void review_stream_operations();
 
-    // Reset all the content of this manager
-    void Reset();
+  // Notifications
+  void notify(engine::Notification *notification);
 
-    // Get a collection for monitoring
-    gpb::CollectionPointer GetCollection(const ::samson::Visualization& visualization);
-    gpb::CollectionPointer GetLastTasksCollection(const ::samson::Visualization& visualization);
+  // Reset all the content of this manager
+  void Reset();
 
-    size_t get_num_running_tasks() const ;
-    size_t get_num_tasks() const ;
+  // Get a collection for monitoring
+  gpb::CollectionPointer GetCollection(const ::samson::Visualization& visualization);
+  gpb::CollectionPointer GetLastTasksCollection(const ::samson::Visualization& visualization);
 
-    // Get collection to list in delilah
-    gpb::CollectionPointer GetCollectionForStreamOperationsRanges(const ::samson::Visualization& visualization);
-    gpb::CollectionPointer GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
+  size_t get_num_running_tasks() const;
+  size_t get_num_tasks() const;
 
-  private:
-  
-    bool runNextWorkerTasksIfNecessary();
+  // Get collection to list in delilah
+  gpb::CollectionPointer GetCollectionForStreamOperationsRanges(const ::samson::Visualization& visualization);
+  gpb::CollectionPointer GetCollectionForStreamOperations(const ::samson::Visualization& visualization);
+  gpb::CollectionPointer GetSOStatisticsCollection(const ::samson::Visualization& visualization);
 
-  
-    size_t id_;   // Id of the current task
-    au::Queue<WorkerTaskBase> pending_tasks_;   // List of pending task to be executed
-    au::Dictionary<size_t, WorkerTaskBase> running_tasks_;   // Map of running tasks
+  // Update information about blocks
+  void Update(GlobalBlockSortInfo *info) const;
 
-    // Information about execution of current stream operations
-    au::map<size_t, StreamOperationGlobalInfo> stream_operations_global_info_;
+private:
 
-    // Pointer to samson worker
-    SamsonWorker *samson_worker_;
+  bool runNextWorkerTasksIfNecessary();
 
-    // Log of last tasks...
-    std::list<WorkerTaskLog> last_tasks_;
-  
+
+  size_t id_;     // Id of the current task
+  au::Queue<WorkerTaskBase> pending_tasks_;                  // List of pending task to be executed
+  au::Dictionary<size_t, WorkerTaskBase> running_tasks_;     // Map of running tasks
+
+  // Information about execution of current stream operations
+  au::map<size_t, StreamOperationGlobalInfo> stream_operations_global_info_;
+
+  // Pointer to samson worker
+  SamsonWorker *samson_worker_;
+
+  // Log of last tasks...
+  std::list<WorkerTaskLog> last_tasks_;
+
+  // Statistics about tasks
+  au::map<std::string, StreamOperationStatistics > stream_operations_statistics_;
+
   // Get the number of current running tasks for a particular stream operation
-  int GetRunningTasks( size_t stream_operation_id );
+  int GetRunningTasks(size_t stream_operation_id);
 };
 }
 }

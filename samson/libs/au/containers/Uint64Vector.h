@@ -11,15 +11,18 @@
 #ifndef _H_AU_STRING_UINT64_VECTOR
 #define _H_AU_STRING_UINT64_VECTOR
 
-#include "logMsg/logMsg.h"     // LM_W
+#include <algorithm>
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
 #include <string>              // std::string
 #include <sys/time.h>          // struct timeval
 
+#include "logMsg/logMsg.h"     // LOG_SW
+
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/console/ConsoleAutoComplete.h"
+#include "au/containers/StringVector.h"
 #include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
 #include "au/string/StringUtilities.h"         // au::str(...)
@@ -100,6 +103,19 @@ public:
     return output.str();
   }
 };
+
+// Handy methods to manipulate vector of strings and numbers
+std::vector<int> GetVectorOfInts(const au::StringVector& v);
+
+template<typename C>
+C max_element(const std::vector<C>& vector, C default_value) {
+  if (vector.size() == 0) {
+    return default_value;
+  }
+  return *std::max_element(vector.begin(), vector.end());
+}
+
+std::vector<int> GetVectorOfElementsLowerThan(const std::vector<int> & vector, int limit);
 }
 
 #endif  // ifndef _H_AU_STRING_UINT64_VECTOR

@@ -21,87 +21,96 @@
 
 #include "engine/NotificationListener.h"              // engine::NotificationListener
 
-#include "samson/common/samson.pb.h"
 #include "samson/common/Visualitzation.h"
+
 #include "samson/stream/Block.h"                      // samson::stream::Block
 
 namespace samson {
+class SamsonWorker;
+class GlobalBlockSortInfo;
 namespace stream {
 class BlockList;
 
+
 /*
- 
- BlockManager
- 
- Manager of all the blocks running on the system
- Main responsible to keep blocks of data in memory for operations
- 
+ *
+ * BlockManager
+ *
+ * Manager of all the blocks running on the system
+ * Main responsible to keep blocks of data in memory for operations
+ *
  */
 
 class BlockManager : public engine::NotificationListener {
-  
-  public:
-  
-    // Singleton
-    static void init();
-    static BlockManager *shared();
-    static void destroy();
+public:
 
-    // Create blocks
-    void CreateBlock(size_t block_id, engine::BufferPointer buffer);
+  // Singleton
+  static void init();
+  static BlockManager *shared();
+  static void destroy();
 
-    // Get a particular block
-    BlockPointer GetBlock(size_t _id);
+  // Create blocks
+  void CreateBlock(size_t block_id, engine::BufferPointer buffer);
 
-    // Reset the entire block manager
-    void ResetBlockManager();
+  // Get a particular block
+  BlockPointer GetBlock(size_t _id);
 
-    // Function to review pending read / free / write operations
-    void Review();
+  // Reset the entire block manager
+  void ResetBlockManager();
 
-    // Remove blocks not included in this list
-    void RemoveBlocksIfNecessary( const std::set<size_t>& all_blocks);
+  // Function to review pending read / free / write operations
+  void Review();
 
-    // Notification interface
-    virtual void notify(engine::Notification *notification);
+  // Notification interface
+  virtual void notify(engine::Notification *notification);
 
-    // Get collection of blocks for remote listing
-    au::SharedPointer<gpb::Collection> GetCollectionOfBlocks(const Visualization& visualization);
+  // Get collection of blocks for remote listing
+  au::SharedPointer<gpb::Collection> GetCollectionOfBlocks(const Visualization& visualization);
 
-    size_t scheduled_write_size() {
-      return scheduled_write_size_;
-    }
+  size_t scheduled_write_size() {
+    return scheduled_write_size_;
+  }
 
-    size_t scheduled_read_size() {
-      return scheduled_read_size_;
-    }
+  size_t scheduled_read_size() {
+    return scheduled_read_size_;
+  }
 
-    // Get all block identifiers
-    std::set<size_t> GetBlockIds();
+  // Get all block identifiers
+  std::set<size_t> GetBlockIds();
 
   // Check if all theses blocks are present
-  bool CheckBlocks( const std::set<size_t>& block_ids );
-  
-  private:
-    BlockManager();   // Private constructor & destructir for singleton implementation
-    ~BlockManager();
+  bool CheckBlocks(const std::set<size_t>& block_ids);
 
-    void Sort();   // Sort blocks
-    void CreateBlockFromDisk(const std::string& path);
-    void RecoverBlocksFromDisks();
+  void set_samson_worker(SamsonWorker *samson_worker) {
+    samson_worker_ = samson_worker;
+  }
 
-    void ScheduleRemoveOperation(BlockPointer block);
-    void ScheduleReadOperation(BlockPointer block);
-    void ScheduleWriteOperation(BlockPointer block);
+private:
 
-    au::Dictionary<size_t, Block> blocks_;   // Dictionary of blocks
-    std::list<size_t> block_ids_;   // list of block identifiers in order
+  BlockManager();     // Private constructor & destructir for singleton implementation
+  ~BlockManager();
 
-    size_t scheduled_write_size_;   // Amount of bytes scheduled to be writen to disk
-    size_t scheduled_read_size_;   // Amount of bytes scheduled to be read from disk
-    size_t max_memory_;   // Maximum amount of memory to be used by this block manager
+  void Sort();     // Sort blocks
+  void CreateBlockFromDisk(const std::string& path);
+  void RecoverBlocksFromDisks();
 
-    au::Token token_;   // Mutex protection since operations create blocks in multiple threads
+  // Remove blocks not included in this list
+  void RemoveBlocksIfNecessary(GlobalBlockSortInfo *info);
+
+  void ScheduleRemoveOperation(BlockPointer block);
+  void ScheduleReadOperation(BlockPointer block);
+  void ScheduleWriteOperation(BlockPointer block);
+
+  au::Dictionary<size_t, Block> blocks_;     // Dictionary of blocks
+  std::list<size_t> block_ids_;     // list of block identifiers in order
+
+  size_t scheduled_write_size_;     // Amount of bytes scheduled to be writen to disk
+  size_t scheduled_read_size_;     // Amount of bytes scheduled to be read from disk
+  size_t max_memory_;     // Maximum amount of memory to be used by this block manager
+
+  au::Token token_;     // Mutex protection since operations create blocks in multiple threads
+
+  SamsonWorker *samson_worker_;  // Pointer to samson worker
 };
 }
 }

@@ -12,15 +12,15 @@
 
 #include <string>
 
-#include "engine/Buffer.h"                          // samson::Buffer
-#include "engine/MemoryManager.h"                   // samson::MemoryManager
+#include "engine/Buffer.h"                        // samson::Buffer
+#include "engine/MemoryManager.h"                 // samson::MemoryManager
 
+#include "samson/module/ModulesManager.h"         // samson::ModulesManager
+#include "samson/network/NetworkInterface.h"      // samson::NetworkInterface
+#include "samson/network/Packet.h"                // samson::Packet
 #include "samson/stream/ProcessIsolated.h"        // samson::ProcessIsolated
 #include "samson/stream/SharedMemoryItem.h"       // samson::SharedMemoryItem
 #include "samson/stream/SharedMemoryManager.h"    // samson::SharedMemoryManager
-#include "samson/module/ModulesManager.h"           // samson::ModulesManager
-#include "samson/network/NetworkInterface.h"        // samson::NetworkInterface
-#include "samson/network/Packet.h"                  // samson::Packet
 
 namespace samson {
 ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
@@ -28,11 +28,11 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   processIsolated = _processIsolated;
 
   // Get the assignated shared memory region
-  item = engine::SharedMemoryManager::shared()->getSharedMemoryChild(processIsolated->get_shm_id());
+  item = samson::SharedMemoryManager::Shared()->GetSharedMemoryChild(processIsolated->get_shm_id());
 
   // General output buffer
-  buffer = item->data;
-  size = item->size;
+  buffer = item->data();
+  size = item->size();
 
   if (!buffer) {
     LM_X(1, ("Internal error: No buffer in a ProcessWriter"));
@@ -43,7 +43,7 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   num_outputs = processIsolated->get_num_outputs();
 
   // Take the ranges to emit packets....
-  //num_hg_divisions = processIsolated->num_hg_divisions;
+  // num_hg_divisions = processIsolated->num_hg_divisions;
 
   // Hash code for the outputs
   keyValueHash = new KeyValueHash[num_outputs];
@@ -52,16 +52,18 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   outputValueDataInstance = reinterpret_cast<DataInstance **>(malloc(sizeof(*outputValueDataInstance) * num_outputs));
 
   if (num_outputs != static_cast<int>(processIsolated->get_outputFormats().size())) {
-    LM_E(("Not possible to get the hash-code of the data instances used at the output since output formats are not defined"));
-    processIsolated->setUserError("Not possible to get the hash-code of the data instances used at the output since output formats are not defined");
+    LM_E((
+           "Not possible to get the hash-code of the data instances used at the output since output formats are not defined"));
+    processIsolated->setUserError(
+      "Not possible to get the hash-code of the data instances used at the output since output formats are not defined");
     return;
   } else {
     for (int i = 0; i < static_cast<int>(num_outputs); i++) {
       std::string key_data = processIsolated->get_outputFormats()[i].keyFormat;
       std::string value_data = processIsolated->get_outputFormats()[i].valueFormat;
 
-      Data *keyData = au::Singleton<ModulesManager>::shared()->getData(key_data);
-      Data *valueData = au::Singleton<ModulesManager>::shared()->getData(value_data);
+      Data *keyData = au::Singleton<ModulesManager>::shared()->GetData(key_data);
+      Data *valueData = au::Singleton<ModulesManager>::shared()->GetData(value_data);
 
       if (!keyData) {
         processIsolated->setUserError(au::str("Data %s not found", key_data.c_str()));
@@ -90,8 +92,8 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   if (size < sizeof(OutputChannel) * num_outputs) {
     LM_X(1, ("Wrong size of shared-memory segment (%lu)", size));   // Buffer starts next
   }
-  node = reinterpret_cast<NodeBuffer *>((buffer + sizeof(OutputChannel) * num_outputs ));
-  num_nodes = (size - (sizeof(OutputChannel) * num_outputs )) / sizeof(NodeBuffer);
+  node = reinterpret_cast<NodeBuffer *>((buffer + sizeof(OutputChannel) * num_outputs));
+  num_nodes = (size - (sizeof(OutputChannel) * num_outputs)) / sizeof(NodeBuffer);
 
   // Clear this structure to receive new key-values
   clear();
@@ -126,7 +128,6 @@ ProcessWriter::~ProcessWriter() {
 }
 
 void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_size) {
-
   // Get a pointer to the current node
   OutputChannel *_channel = &channel[output ];   // Final Output channel ( output + server )
   HashGroupOutput *_hgOutput = &_channel->hg[hg];   // Current hash-group output
@@ -196,7 +197,7 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
   if (output > num_outputs) {
     std::ostringstream error_message;
     error_message << "Output queue index (" << output << ") is larger than the number of defined outputs("
-        << num_outputs << ")  (last one is trace channel)";
+                  << num_outputs << ")  (last one is trace channel)";
     LM_E(("Error: %s", error_message.str().c_str()));
 
     processIsolated->setUserError(error_message.str());
@@ -209,7 +210,7 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
   if (key->getHashType() != keyValueHash[output].key_hash) {
     std::ostringstream error_message;
     error_message << "Different hash-type for key at output # " << output << " of num_outputs:" << num_outputs
-        << " (last one is trace channel)";
+                  << " (last one is trace channel)";
     error_message << ". Used " << key->getName() << " instead of ";
     error_message << outputKeyDataInstance[output]->getName() << ".";
     LM_E(("Error: %s", error_message.str().c_str()));
@@ -231,7 +232,7 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
     return;
   }
 
-  // LM_M(("PW emit: %s %s", key->str().c_str()  , value->str().c_str() ));
+  // LOG_SM(("PW emit: %s %s", key->str().c_str()  , value->str().c_str() ));
 
   // Serialize to the minibuffer
   int hg_previous = key->hash(KVFILE_NUM_HASHGROUPS);
@@ -241,18 +242,19 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
   size_t key_size_theoretical = key->parse(miniBuffer);
 
   if (key_size != key_size_theoretical) {
-    LM_W(("Error serializing [%s] '%s'", key->getType(), key->str().c_str()));
-    LM_W(("Error serializing data. Different key size serializing key %lu vs %lu", key_size, key_size_theoretical));
-    LM_X(1, ("Non valid serialization key"));
+    LOG_SW(("Error serializing [%s] '%s'", key->getType(), key->str().c_str()));
+    LOG_SW(("Error serializing data. Different key size serializing key %lu vs %lu", key_size, key_size_theoretical));
+    LM_X(1, ("Invalid serialization key"));
   }
 
   size_t value_size = value->serialize(miniBuffer + key_size);
   size_t value_size_theoretical = value->parse(miniBuffer + key_size);
 
   if (value_size != value_size_theoretical) {
-    LM_W(("Error serializing [%s] '%s'", value->getType(), value->str().c_str()));
-    LM_W(("Error serializing data. Different value size serializing key %lu vs %lu", value_size, value_size_theoretical));
-    LM_X(1, ("Non valid serialization value"));
+    LOG_SW(("Error serializing [%s] '%s'", value->getType(), value->str().c_str()));
+    LOG_SW(("Error serializing data. Different value size serializing key %lu vs %lu", value_size,
+            value_size_theoretical));
+    LM_X(1, ("Invalid serialization value"));
   }
 
   // Total size including key & value
@@ -263,7 +265,7 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
 
   if (hg != hg_previous) {
     LM_E(("Error, different hash for original key:'%s' --> hash:%d and parsed key:'%s' --> hash:%d",
-            original_key.c_str(), hg_previous, key->str().c_str(), hg));
+          original_key.c_str(), hg_previous, key->str().c_str(), hg));
     return;
   }
 
@@ -283,7 +285,7 @@ void ProcessWriter::flushBuffer(bool finish) {
 
 void ProcessWriter::clear() {
   // Init all the outputs
-  for (size_t c = 0; c < (size_t) (num_outputs); c++) {
+  for (size_t c = 0; c < (size_t)(num_outputs); c++) {
     channel[c].init();
   }
   new_node = 0;
@@ -295,14 +297,14 @@ ProcessTXTWriter::ProcessTXTWriter(ProcessIsolated *_workerTaskItem) {
   workerTaskItem = _workerTaskItem;
 
   // Get the assignated shared memory region
-  item = engine::SharedMemoryManager::shared()->getSharedMemoryChild(workerTaskItem->get_shm_id());
+  item = samson::SharedMemoryManager::Shared()->GetSharedMemoryChild(workerTaskItem->get_shm_id());
 
   // Size if the firt position in the buffer
-  size = reinterpret_cast<size_t *>(item->data);
+  size = reinterpret_cast<size_t *>(item->data());
 
   // Init the data buffer used here
-  data = item->data + sizeof(size_t);
-  max_size = item->size - sizeof(size_t);   // This is the available space int he buffer
+  data = item->data() + sizeof(size_t);
+  max_size = item->size() - sizeof(size_t);   // This is the available space int he buffer
 
   // Init the size of the output
   *size = 0;

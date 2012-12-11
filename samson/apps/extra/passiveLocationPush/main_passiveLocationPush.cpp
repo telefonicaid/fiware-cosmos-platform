@@ -21,31 +21,31 @@
  * OR: connects to tektronixTunnel to receive real data and injects that data in samson
  *
  */
-#include <arpa/inet.h>          // inet_ntoa
-#include <dirent.h>             // opendir, scandir
-#include <errno.h>              // errno
-#include <fcntl.h>              // fcntl, F_SETFD
-#include <inttypes.h>           // uint64_t etc.
-#include <iostream>             // std::cout
-#include <netdb.h>              // gethostbyname
-#include <netinet/in.h>         // struct sockaddr_in
-#include <netinet/tcp.h>        // TCP_NODELAY
-#include <signal.h>             // signal, SIGINT, ...
-#include <stdio.h>              // printf
-#include <stdlib.h>             // exit
-#include <stdlib.h>             // free
-#include <string.h>             // memcpy
-#include <sys/socket.h>         // socket, bind, listen
-#include <sys/stat.h>           // stat
-#include <sys/types.h>          // types needed by socket include files
-#include <sys/un.h>             // sockaddr_un
-#include <time.h>               // strptime, struct tm
-#include <unistd.h>             // close
+#include <arpa/inet.h>                 // inet_ntoa
+#include <dirent.h>                    // opendir, scandir
+#include <errno.h>                     // errno
+#include <fcntl.h>                     // fcntl, F_SETFD
+#include <inttypes.h>                  // uint64_t etc.
+#include <iostream>                    // std::cout
+#include <netdb.h>                     // gethostbyname
+#include <netinet/in.h>                // struct sockaddr_in
+#include <netinet/tcp.h>               // TCP_NODELAY
+#include <signal.h>                    // signal, SIGINT, ...
+#include <stdio.h>                     // printf
+#include <stdlib.h>                    // exit
+#include <stdlib.h>                    // free
+#include <string.h>                    // memcpy
+#include <sys/socket.h>                // socket, bind, listen
+#include <sys/stat.h>                  // stat
+#include <sys/types.h>                 // types needed by socket include files
+#include <sys/un.h>                    // sockaddr_un
+#include <time.h>                      // strptime, struct tm
+#include <unistd.h>                    // close
 
 #include "au/CommandLine.h"     // au::CommandLine
 #include "au/statistics/Cronometer.h"      // au::Cronometer
-#include "au/string/StringUtilities.h"          // au::str()
-#include "au/time.h"            // au::todatString()
+#include "au/string/StringUtilities.h"  // au::str()
+#include "au/time.h"                   // au::todatString()
 
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
@@ -225,7 +225,7 @@ void toFileF(const char *buf, int bufLen) {
   }
 
   totalFileSize += bufLen;
-  // LM_M(("Written %d bytes to file (%d bytes in total)", bufLen, totalFileSize));
+  // LOG_SM(("Written %d bytes to file (%d bytes in total)", bufLen, totalFileSize));
 }
 
 /* ********************************************************************************
@@ -274,7 +274,7 @@ int connectToServer(void) {
   while (1) {
     if (connect(fd, (struct sockaddr *)&peer, sizeof(peer)) == -1) {
       ++tri;
-      LM_W(("connect intent %d failed: %s", tri, strerror(errno)));
+      LOG_SW(("connect intent %d failed: %s", tri, strerror(errno)));
       usleep(500000);
       if (tri > retries) {
         close(fd);
@@ -342,7 +342,7 @@ int bufPush(char *buf, unsigned int size, samson::SamsonPushBuffer *pushBuffer) 
     // NOT Enough bytes for an entire packet?
     if ((size < 4) || size < dataLen) {
       if (size >= 4) {
-        // LM_W(("bytes read: %d, packetLen == %d (totalLen == %d)", size, packetLen, totalLen));
+        // LOG_SW(("bytes read: %d, packetLen == %d (totalLen == %d)", size, packetLen, totalLen));
         if (packetLen > 50000) {
           bufPresent("bad packetLen", buf, size, 1);
           LM_X(1,
@@ -350,7 +350,7 @@ int bufPush(char *buf, unsigned int size, samson::SamsonPushBuffer *pushBuffer) 
                 ntohl(*((int *)buf))));
         }  // else
       }
-      //    LM_W(("bytes read: %d (totalLen == %d)", size, totalLen));
+      //    LOG_SW(("bytes read: %d (totalLen == %d)", size, totalLen));
 
       if (totalLen != 0) {
         if (fake == false) {
@@ -395,7 +395,7 @@ int bufPush(char *buf, unsigned int size, samson::SamsonPushBuffer *pushBuffer) 
     toFileF(initialBuf, totalLen);
   }
   // else
-  //   LM_W(("totalLen == %d", totalLen));
+  //   LOG_SW(("totalLen == %d", totalLen));
 
   return size;
 }
@@ -836,7 +836,7 @@ int main(int argC, const char *argV[]) {
   paParse(paArgs, argC, (char **)argV, 1, false);
 
   if (signal(SIGINT, captureSIGINT) == SIG_ERR) {
-    LM_W(("SIGINT cannot be handled"));
+    LOG_SW(("SIGINT cannot be handled"));
   }
   signaled_quit = false;
 

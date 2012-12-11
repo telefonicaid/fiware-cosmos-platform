@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "au/file.h"        // Own interface
+#include "au/log/LogMain.h"
 #include "au/string/StringUtilities.h"
 
 namespace au {
@@ -61,19 +62,19 @@ bool isRegularFile(std::string fileName) {
   return S_ISREG(buf.st_mode);
 }
 
-void removeDirectory(std::string fileName, au::ErrorManager & error) {
+void RemoveDirectory(std::string fileName, au::ErrorManager & error) {
   if (isRegularFile(fileName)) {
     // Just remove
     int s = remove(fileName.c_str());
     if (s != 0) {
-      error.set("Not possible to remove file " + fileName);
+      error.AddError("Not possible to remove file " + fileName);
     }
     return;
   }
 
   // Navigate in the directory
   if (!isDirectory(fileName)) {
-    error.set(au::str("%s is not a directory or a file", fileName.c_str()));
+    error.AddError(au::str("%s is not a directory or a file", fileName.c_str()));
     return;
   }
 
@@ -92,7 +93,7 @@ void removeDirectory(std::string fileName, au::ErrorManager & error) {
         std::ostringstream localFileName;
         localFileName << fileName << "/" << pent->d_name;
 
-        removeDirectory(localFileName.str(), error);
+        RemoveDirectory(localFileName.str(), error);
       }
     }
     // finally, let's close the directory
@@ -102,7 +103,7 @@ void removeDirectory(std::string fileName, au::ErrorManager & error) {
   // Remove the directory properly
   int s = rmdir(fileName.c_str());
   if (s != 0) {
-    error.set(au::str("Not possible to remove directory %s", fileName.c_str()));
+    error.AddError(au::str("Not possible to remove directory %s", fileName.c_str()));
   }
 }
 
@@ -150,7 +151,7 @@ std::vector<std::string> getRegularFilesFromDirectory(std::string directory) {
 }
 
 std::string get_directory_from_path(std::string path) {
-  if (( path == "") || ( path == ".") || ( path == "./")) {
+  if ((path == "") || (path == ".") || (path == "./")) {
     return "./";
   }
 
@@ -187,7 +188,7 @@ std::string get_directory_from_path(std::string path) {
 Status CreateDirectory(std::string path) {
   if (mkdir(path.c_str(), 0755) == -1) {
     if (errno != EEXIST) {
-      LM_W(("Error creating directory %s (%s)", path.c_str(), strerror(errno)));
+      LOG_SW(("Error creating directory %s (%s)", path.c_str(), strerror(errno)));
       return Error;
     }
   }
@@ -210,7 +211,7 @@ Status CreateFullDirectory(std::string path) {
     accumulated_path += components[i];
     Status s = CreateDirectory(accumulated_path);
     if (s != OK) {
-      LM_W(("Error creating directory %s (%s)", accumulated_path.c_str(), status(s)));
+      LOG_SW(("Error creating directory %s (%s)", accumulated_path.c_str(), status(s)));
       return s;
     }
 
@@ -219,14 +220,15 @@ Status CreateFullDirectory(std::string path) {
 
   return OK;
 }
- 
-  std::string GetCannonicalPath(const std::string& path) {
 
-    size_t pos = path.size()-1;
-    while ( (pos>0) && path[pos]=='/')
-      pos--;
-    return path.substr( 0 , pos+1);
+std::string GetCannonicalPath(const std::string& path) {
+  size_t pos = path.size() - 1;
+
+  while ((pos > 0) && path[pos] == '/') {
+    pos--;
   }
+  return path.substr(0, pos + 1);
+}
 
 std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorManager& error) {
   std::vector<std::string> file_names;
@@ -235,7 +237,7 @@ std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorMa
   int rc = stat(file_name.c_str(), &buf);
 
   if (rc) {
-    error.set(au::str("%s is not a valid local file or dir ", file_name.c_str()));
+    error.AddError(au::str("%s is not a valid local file or dir ", file_name.c_str()));
     return file_names;
   }
 
@@ -265,29 +267,28 @@ std::vector<std::string> GetListOfFiles(const std::string file_name, au::ErrorMa
       }
     }
   } else {
-    error.set(au::str("%s is not a valid local file or dir ", file_name.c_str()));
+    error.AddError(au::str("%s is not a valid local file or dir ", file_name.c_str()));
   }
 
   return file_names;
 }
-  
-  std::string path_from_directory(const std::string& directory, const std::string& file) {
-    if (directory.length() == 0) {
-      return file;
-    }
-    
-    if (directory[ directory.length() - 1 ] == '/') {
-      return directory + file;
-    } else {
-      return directory + "/" + file;
-    }
-  }
-  
-  std::string GetRandomDirectory()
-  {
-    char tmp_directory[100];
-    sprintf(tmp_directory, "/tmp/tmpXXXXXXX");
-    return mktemp( tmp_directory );
+
+std::string path_from_directory(const std::string& directory, const std::string& file) {
+  if (directory.length() == 0) {
+    return file;
   }
 
+  if (directory[ directory.length() - 1 ] == '/') {
+    return directory + file;
+  } else {
+    return directory + "/" + file;
+  }
+}
+
+std::string GetRandomDirectory() {
+  char tmp_directory[100];
+
+  sprintf(tmp_directory, "/tmp/tmpXXXXXXX");
+  return mktemp(tmp_directory);
+}
 }

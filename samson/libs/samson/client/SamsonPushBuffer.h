@@ -11,8 +11,8 @@
 #ifndef _H_SamsonPushBuffer_SamsonClient
 #define _H_SamsonPushBuffer_SamsonClient
 
-#include "au/statistics/Rate.h"
 #include "au/mutex/Token.h"
+#include "au/statistics/Rate.h"
 #include <string>
 
 
@@ -38,7 +38,7 @@ class SamsonPushBuffer {
 public:
 
   // Statistics about rate
-  au::rate::Rate rate_;
+  au::Rate rate_;
 
   // Constructor
   SamsonPushBuffer(SamsonClient *client, std::string queue);

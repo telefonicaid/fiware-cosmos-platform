@@ -12,8 +12,10 @@
 
 #include <set>
 
+#include "au/log/LogMain.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
+#include "samson/common/Logs.h"
 #include "samson/network/NetworkConnection.h"
 
 namespace samson {
@@ -41,7 +43,7 @@ void NetworkManager::Remove(NetworkConnection *network_connection) {
     }
   }
 
-  LM_W(("Removing a network connection that is not part of this manager"));
+  LOG_SW(("Removing a network connection that is not part of this manager"));
 }
 
 void NetworkManager::Remove(const std::string& connection_name) {
@@ -51,7 +53,7 @@ void NetworkManager::Remove(const std::string& connection_name) {
     delete connection;
     return;
   } else {
-    LM_W(("trying to remove connection %s that is not present in this connection manager"
+    LOG_SW(("trying to remove connection %s that is not present in this connection manager"
             , connection_name.c_str()));
   }
 }
@@ -63,7 +65,7 @@ void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::Socke
   // Name of this connection
   std::string name = new_node_identifier.getCodeName();
 
-  LM_T(LmtNetworkConnection, ("Adding network_connection:%s", name.c_str()));
+  LOG_M(logs.network_connection, ("Adding network_connection:%s", name.c_str()));
 
   if (connections.findInMap(name) != NULL) {
     LOG_SW(("Rejecting an incomming connection (%s) since it already exists", name.c_str()));
@@ -72,7 +74,7 @@ void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::Socke
   }
 
   // Add to the map of connections
-  LM_T(LmtNetworkConnection, ("Inserted new connection %s", name.c_str()));
+  LOG_M(logs.network_connection, ("Inserted new connection %s", name.c_str()));
   NetworkConnection *network_connection = new NetworkConnection(new_node_identifier, socket_connection, this);
   connections.insertInMap(name, network_connection);
 }
@@ -105,8 +107,8 @@ au::tables::Table *NetworkManager::getConnectionsTable() {
     NetworkConnection *connection = it_connections->second;
     au::SocketConnection *socket_connection = connection->socket_connection_;
     values.push_back(socket_connection->host_and_port());
-    values.push_back(au::str(connection->get_rate_in(), "B/s"));
-    values.push_back(au::str(connection->get_rate_out(), "B/s"));
+    values.push_back(au::str(connection->rate_in(), "B/s"));
+    values.push_back(au::str(connection->rate_out(), "B/s"));
 
     table->addRow(values);
   }
@@ -118,7 +120,7 @@ au::tables::Table *NetworkManager::getConnectionsTable() {
 
 void NetworkManager::RemoveDisconnectedConnections() {
   au::map<std::string, NetworkConnection>::iterator it;
-  for (it = connections.begin(); it != connections.end();) {
+  for (it = connections.begin(); it != connections.end(); ) {
     NetworkConnection *connection = it->second;
 
     if (connection->isDisconnectd()) {
@@ -149,7 +151,7 @@ std::vector<size_t> NetworkManager::getDelilahIds() {
         // Add this id to the list
         ids.push_back(id);
       } else {
-        LM_W(("Delilah %lu (%s) connected using wrong connection name %s",
+        LOG_SW(("Delilah %lu (%s) connected using wrong connection name %s",
                 _node_identifier.id,
                 _node_identifier.getCodeName().c_str(),
                 it_connections->first.c_str()));
@@ -215,14 +217,16 @@ void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
   }
 }
 
-au::SharedPointer<gpb::Collection> NetworkManager::GetConnectionsCollection(const Visualization& visualization) {
-  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
-  collection->set_name("connections");
+au::SharedPointer<gpb::Collection> NetworkManager::GetQueuesCollection(const Visualization& visualization) {
+  return multi_packet_queue.GetQueuesCollection(visualization);
+}
 
+au::SharedPointer<gpb::Collection> NetworkManager::GetConnectionsCollection(const Visualization& visualization) {
   au::TokenTaker tt(&token_connections_);
 
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("connections");
   au::map<std::string, NetworkConnection>::iterator it_connections;
-
   for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
     gpb::CollectionRecord *record = collection->add_record();
     it_connections->second->fill(record, visualization);
@@ -253,7 +257,7 @@ size_t NetworkManager::get_rate_in() {
 
   au::map<std::string, NetworkConnection>::iterator it_connections;
   for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
-    total += it_connections->second->get_rate_in();
+    total += it_connections->second->rate_in();
   }
 
   return total;
@@ -266,7 +270,7 @@ size_t NetworkManager::get_rate_out() {
 
   au::map<std::string, NetworkConnection>::iterator it_connections;
   for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
-    total += it_connections->second->get_rate_out();
+    total += it_connections->second->rate_out();
   }
 
   return total;
@@ -283,8 +287,8 @@ std::string NetworkManager::getStatusForConnection(std::string connection_name) 
   } else if (connection->isDisconnectd()) {
     return "Disconnected";
   } else {
-    return au::str("Connected In: %s Out: %s ", au::str(connection->get_rate_in(), "B/s").c_str(),
-                   au::str(connection->get_rate_out(), "B/s").c_str());
+    return au::str("Connected In: %s Out: %s ", au::str(connection->rate_in(), "B/s").c_str(),
+                   au::str(connection->rate_out(), "B/s").c_str());
   }
 }
 

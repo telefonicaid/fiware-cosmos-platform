@@ -12,7 +12,7 @@
 #ifndef _H_AU_TABLE_TABLE
 #define _H_AU_TABLE_TABLE
 
-#include "logMsg/logMsg.h"     // LM_W
+#include "logMsg/logMsg.h"     // LOG_SW
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
 #include <string>              // std::string
@@ -28,6 +28,9 @@
 #include "au/string/StringUtilities.h"         // au::str(...)
 
 namespace au {
+/**
+ * \brief Namespace for au::tables library (generic table management for console displaying)
+ */
 namespace tables {
 class Table;
 class SelectTableInformation;

@@ -22,13 +22,15 @@ LogServer::LogServer()
   Status s = InitService();
 
   if (s != OK) {
-    LM_X(1, ( "Not possible to open query channel on port %d\n", LOG_SERVER_DEFAULT_CLIENT_PORT ));  // Init channel to receive binrary logs
+    LOG_X(1, ("Not possible to open query channel on port %d, error:'%s'",
+              LOG_SERVER_DEFAULT_CLIENT_PORT, au::status(s)));
   }
+  // Init channel to receive binary logs
   au::ErrorManager error;
   service_.initLogServerService(&error);
 
-  if (error.IsActivated()) {
-    LM_X(1, ( "Not possible to open channel for logs %s\n", error.GetMessage().c_str()));
+  if (error.HasErrors()) {
+    LM_X(1, ("Not possible to open channel for logs %s", error.GetLastError().c_str()));
   }
 }
 
@@ -137,7 +139,7 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
   error->AddError(au::str("Unknown command %s\n", main_command.c_str()));
 }
 
-void LogServer::autoComplete(ConsoleAutoComplete *info, au::Environment *environment) {
+void LogServer::autoComplete(console::ConsoleAutoComplete *info, au::Environment *environment) {
   if (info->completingFirstWord()) {
     info->add("help");
     info->add("info");
@@ -149,7 +151,6 @@ void LogServer::autoComplete(ConsoleAutoComplete *info, au::Environment *environ
   if (info->completingSecondWord("connect")) {
     info->setHelpMessage("Provide hostname where logServer is located...");
   }
-
 }
 
 std::string LogServer::getPrompt(au::Environment *environment) {

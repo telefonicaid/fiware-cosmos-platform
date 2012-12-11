@@ -18,16 +18,16 @@
 #include <sstream>                       // std::ostringstream
 #include <vector>                        // std::vector
 
-#include "au/statistics/Cronometer.h"      // au::Cronometer
 #include "au/ErrorManager.h"             // au::ErrorManager
 #include "au/containers/Uint64Vector.h"
-#include "au/string/StringUtilities.h"                   // au::Format
+#include "au/statistics/Cronometer.h"      // au::Cronometer
+#include "au/string/StringUtilities.h"   // au::Format
 
 #include "engine/DiskManager.h"     // engine::DiskManager
 #include "engine/Engine.h"               // engine::NotificationListener
 #include "engine/NotificationListener.h"  // engine::NotificationListener
 
-#include "samson/common/samson.pb.h"  // samson::network
+// samson::network
 
 #include "DelilahComponent.h"            // samson::DelilahComponent
 #include "samson/delilah/Delilah.h"  // samson::Delilah

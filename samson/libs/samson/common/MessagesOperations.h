@@ -15,15 +15,14 @@
 #include <map>
 #include <string>
 
-#include "au/containers/map.h"
 #include "au/containers/Dictionary.h"
 #include "au/containers/SharedPointer.h"
-
-#include "samson/common/samson.pb.h"    // network::
+#include "au/containers/map.h"
 #include "samson/common/Visualitzation.h"
-#include "samson/module/KVFormat.h"     // KVFormat
-namespace samson {
+#include "samson/common/samson.pb.h"
+#include "samson/module/KVFormat.h"
 
+namespace samson {
 template<typename C>
 void add(samson::gpb::CollectionRecord *record, std::string name, C _value, std::string format) {
   std::ostringstream value;
@@ -58,8 +57,9 @@ bool name_match(const char *pattern, C _value) {
 
 // Get a collection from a map
 template<typename K, typename V>
-au::SharedPointer<gpb::Collection> GetCollectionForMap(const std::string& title, std::map<K, V *>& m,
-                                                       const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> GetCollectionForMap(const std::string& title
+                                                       , std::map<K, V *>& m
+                                                       , const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name(title);
 
@@ -68,6 +68,10 @@ au::SharedPointer<gpb::Collection> GetCollectionForMap(const std::string& title,
   for (iter = m.begin(); iter != m.end(); ++iter) {
     // Get pointer to the instance
     V *v = iter->second;
+
+    if (!visualization.match(v->pattern_name())) {
+      continue;
+    }
 
     // Create a new record for this instance
     gpb::CollectionRecord *record = collection->add_record();
@@ -78,32 +82,31 @@ au::SharedPointer<gpb::Collection> GetCollectionForMap(const std::string& title,
 
   return collection;
 }
-  
-  // Get a collection from a map
-  template<typename K, typename V>
-  au::SharedPointer<gpb::Collection> GetCollectionForDiccionary(const std::string& title
-                                                                , au::Dictionary<K,V> & d
-                                                                , const Visualization& visualization) {
-    // Create a new collection to be returned
-    au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
-    collection->set_name(title);
-    
-    typename std::map<K, au::SharedPointer<V> >::iterator iter;
-    
-    for (iter = d.begin(); iter != d.end(); ++iter) {
-      // Get pointer to the instance
-      au::SharedPointer<V> v = iter->second;
-      
-      // Create a new record for this instance
-      gpb::CollectionRecord *record = collection->add_record();
-      
-      // Common type to joint queries ls_workers -group type
-      v->fill(record, visualization);
-    }
-    
-    return collection;
+
+// Get a collection from a map
+template<typename K, typename V>
+au::SharedPointer<gpb::Collection> GetCollectionForDiccionary(const std::string& title
+                                                              , au::Dictionary<K, V> & d
+                                                              , const Visualization& visualization) {
+  // Create a new collection to be returned
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name(title);
+
+  typename std::map<K, au::SharedPointer<V> >::iterator iter;
+
+  for (iter = d.begin(); iter != d.end(); ++iter) {
+    // Get pointer to the instance
+    au::SharedPointer<V> v = iter->second;
+
+    // Create a new record for this instance
+    gpb::CollectionRecord *record = collection->add_record();
+
+    // Common type to joint queries ls_workers -group type
+    v->fill(record, visualization);
   }
-  
+
+  return collection;
+}
 }
 
 #endif  // ifndef _H_MESSAGES_OPERATIONS

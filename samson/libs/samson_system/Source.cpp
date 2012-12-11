@@ -14,20 +14,19 @@
 
 namespace samson {
 namespace system {
-
 Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *error) {
   // ----------------------------------------------------------------
   // Brackets to group operations
   // ----------------------------------------------------------------
 
-  if (token_vector->popNextTokenIfItIs("(")) {
+  if (token_vector->PopNextTokenIfContentIs("(")) {
     Source *source = GetSource(token_vector, error);
-    if (!source || error->IsActivated()) {
+    if (!source || error->HasErrors()) {
       return NULL;
     }
 
-    if (!token_vector->popNextTokenIfItIs(")")) {
-      error->set("Parentheses not closed");
+    if (!token_vector->PopNextTokenIfContentIs(")")) {
+      error->AddError("Parentheses not closed");
     }
     return source;
   }
@@ -36,24 +35,24 @@ Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   // Vector
   // ----------------------------------------------------------------
 
-  if (token_vector->popNextTokenIfItIs("[")) {
+  if (token_vector->PopNextTokenIfContentIs("[")) {
     // Vector source
     au::vector<Source> source_components;
 
     while (true) {
-      au::token::Token *token = token_vector->getNextToken();
+      au::token::Token *token = token_vector->GetNextToken();
       if (!token) {
         source_components.clearVector();
-        error->set("Unfinish vector");
+        error->AddError("Unfinish vector");
         return NULL;
-      } else if (token->is("]")) {
+      } else if (token->ContentMatch("]")) {
         // end of vector
-        token_vector->popToken();
+        token_vector->PopToken();
         return new SourceVector(source_components);
       }
 
       Source *tmp = GetSource(token_vector, error);
-      if (error->IsActivated()) {
+      if (error->HasErrors()) {
         source_components.clearVector();
         return NULL;
       } else {
@@ -61,11 +60,11 @@ Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       }
 
       // Read the mandatory "," if it is not the end of the vector
-      if (!token_vector->checkNextTokenIs("]")) {
-        if (!token_vector->popNextTokenIfItIs(",")) {
-          error->set(
-                     au::str("Wrong map format (expected ',' instead of %s)",
-                             token_vector->getNextTokenContent().c_str()));
+      if (!token_vector->CheckNextTokenContentIs("]")) {
+        if (!token_vector->PopNextTokenIfContentIs(",")) {
+          error->AddError(
+            au::str("Wrong map format (expected ',', got '%s')",
+                    token_vector->GetNextTokenContent().c_str()));
           source_components.clearVector();
           return NULL;
         }
@@ -77,41 +76,41 @@ Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   // Map
   // ----------------------------------------------------------------
 
-  if (token_vector->popNextTokenIfItIs("{")) {
+  if (token_vector->PopNextTokenIfContentIs("{")) {
     // Vector source
     au::vector<Source> source_keys;
     au::vector<Source> source_values;
 
     while (true) {
-      au::token::Token *token = token_vector->getNextToken();
+      au::token::Token *token = token_vector->GetNextToken();
       if (!token) {
         source_keys.clearVector();
         source_values.clearVector();
-        error->set("Unfinish map");
+        error->AddError("Unfinish map");
         return NULL;
-      } else if (token->is("}")) {
+      } else if (token->ContentMatch("}")) {
         // end of map
-        token_vector->popToken();
+        token_vector->PopToken();
         return new SourceMap(source_keys, source_values);
       }
 
       Source *tmp_key = GetSource(token_vector, error);
-      if (error->IsActivated()) {
+      if (error->HasErrors()) {
         source_keys.clearVector();
         source_values.clearVector();
         return NULL;
       }
 
-      if (!token_vector->popNextTokenIfItIs(":")) {
-        error->set(au::str("Wrong map format (expected ':' instead of %s)",
-                           token_vector->getNextTokenContent().c_str()));
+      if (!token_vector->PopNextTokenIfContentIs(":")) {
+        error->AddError(au::str("Wrong map format (expected ':', got '%s')",
+                                token_vector->GetNextTokenContent().c_str()));
         source_keys.clearVector();
         source_values.clearVector();
         return NULL;
       }
 
       Source *tmp_value = GetSource(token_vector, error);
-      if (error->IsActivated()) {
+      if (error->HasErrors()) {
         source_keys.clearVector();
         source_values.clearVector();
         return NULL;
@@ -122,11 +121,11 @@ Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       source_values.push_back(tmp_value);
 
       // Read the mandatory "," if it is not the end of the map
-      if (!token_vector->checkNextTokenIs("}")) {
-        if (!token_vector->popNextTokenIfItIs(",")) {
-          error->set(
-                     au::str("Wrong map format (expected ',' instead of %s)",
-                             token_vector->getNextTokenContent().c_str()));
+      if (!token_vector->CheckNextTokenContentIs("}")) {
+        if (!token_vector->PopNextTokenIfContentIs(",")) {
+          error->AddError(
+            au::str("Wrong map format (expected ',', got '%s')",
+                    token_vector->GetNextTokenContent().c_str()));
           source_keys.clearVector();
           source_values.clearVector();
           return NULL;
@@ -140,48 +139,48 @@ Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   // ----------------------------------------------------------------
 
   // Generic function interface
-  if (token_vector->checkNextNextTokenIs("(")) {
+  if (token_vector->CheckNextNextTokenContentIs("(")) {
     // Recover the name of the function
-    au::token::Token *token_function_name = token_vector->popToken();
-    if (!token_function_name->isNormal()) {
-      error->set("Non valid function name");
+    au::token::Token *token_function_name = token_vector->PopToken();
+    if (!token_function_name->IsNormal()) {
+      error->AddError("Invalid function name");
       return NULL;
     }
 
-    token_vector->popToken();   // Skip "("
+    token_vector->PopToken();   // Skip "("
 
     au::vector<Source> source_components;
 
     while (true) {
-      au::token::Token *token = token_vector->getNextToken();
+      au::token::Token *token = token_vector->GetNextToken();
       if (!token) {
         source_components.clearVector();
-        error->set("Unfinish function call");
+        error->AddError("Unfinish function call");
         return NULL;
-      } else if (token->is(")")) {
+      } else if (token->ContentMatch(")")) {
         // end of vector
-        token_vector->popToken();   // skip ")"
-        return SourceFunction::GetSourceForFunction(token_function_name->content, source_components, error);
-      } else if ((source_components.size() == 0) || (token->is(","))) {
-        if ((source_components.size() == 0) && token->is(",")) {
-          error->set("Non valid first parameter for function call");
+        token_vector->PopToken();   // skip ")"
+        return SourceFunction::GetSourceForFunction(token_function_name->content(), source_components, error);
+      } else if ((source_components.size() == 0) || (token->ContentMatch(","))) {
+        if ((source_components.size() == 0) && token->ContentMatch(",")) {
+          error->AddError("Invalid first parameter for function call");
           source_components.clearVector();
           return NULL;
         }
 
-        if (token->is(",")) {
-          token_vector->popToken();   // Skip ","
+        if (token->ContentMatch(",")) {
+          token_vector->PopToken();   // Skip ","
         }
         // Another component
         Source *tmp = GetSource(token_vector, error);
-        if (error->IsActivated()) {
+        if (error->HasErrors()) {
           source_components.clearVector();
           return NULL;
         } else {
           source_components.push_back(tmp);
         }
       } else {
-        error->set(au::str("Non valid function call. Found %s when expecting ) or ,", token->content.c_str()));
+        error->AddError(au::str("Invalid function call. Found '%s' when expecting ')' or ','", token->content().c_str()));
         return NULL;
       }
     }
@@ -191,24 +190,24 @@ Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   // Get the next element key, value , key[X]:[name]
   // ---------------------------------------------------------
 
-  au::token::Token *token = token_vector->popToken();
+  au::token::Token *token = token_vector->PopToken();
   if (!token) {
-    error->set("Missing element");
+    error->AddError("Missing element");
     return NULL;
   }
 
   // Literal Constant
-  if (token->isLiteral()) {
-    return new SourceStringConstant(token->content);
+  if (token->IsLiteral()) {
+    return new SourceStringConstant(token->content());
   }
 
   // Key-word
   Source *main = NULL;
 
-  if (token->is("key")) {
+  if (token->ContentMatch("key")) {
     main = new SourceKey();
   }
-  if (token->is("value")) {
+  if (token->ContentMatch("value")) {
     main = new SourceValue();
   }
 
@@ -217,26 +216,26 @@ Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   // ---------------------------------------------------------
   if (main) {
     while (true) {
-      if (token_vector->popNextTokenIfItIs("[")) {
+      if (token_vector->PopNextTokenIfContentIs("[")) {
         Source *index = GetSource(token_vector, error);
-        if (error->IsActivated()) {
+        if (error->HasErrors()) {
           delete main;
           return NULL;
         }
 
-        if (!token_vector->popNextTokenIfItIs("]")) {
+        if (!token_vector->PopNextTokenIfContentIs("]")) {
           delete main;
 
-          std::string token_content = token_vector->getNextTokenContent();
-          error->set(au::str("Wrong index for vector. Expeted ] and found %s", token_content.c_str()));
+          std::string token_content = token_vector->GetNextTokenContent();
+          error->AddError(au::str("Wrong index for vector. Expeted ] and found %s", token_content.c_str()));
           return NULL;
         }
 
         // Cumulative source vectors
         main = new SourceVectorComponent(main, index);
-      } else if (token_vector->popNextTokenIfItIs(".")) {
+      } else if (token_vector->PopNextTokenIfContentIs(".")) {
         Source *index = GetSource(token_vector, error);
-        if (error->IsActivated()) {
+        if (error->HasErrors()) {
           delete main;
           return NULL;
         }
@@ -249,29 +248,29 @@ Source *GetSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
     }
   }
   // Negative numbers
-  if (token->is("-")) {
+  if (token->ContentMatch("-")) {
     // Get next token that has to be a number
-    au::token::Token *next_token = token_vector->popToken();
+    au::token::Token *next_token = token_vector->PopToken();
     if (!next_token) {
-      error->set(au::str("Extected a number after sign '-' but found nothing"));
+      error->AddError(au::str("Expected a number after '-' sign but found nothing"));
       return NULL;
     }
 
-    if (!token->isNumber()) {
-      error->set(au::str("Extected a number after sign '-' but found %s", token->content.c_str()));
+    if (!token->IsNumber()) {
+      error->AddError(au::str("Expected a number after '-' sign but found '%s'", token->content().c_str()));
       return NULL;
     }
 
-    return new SourceNumberConstant(-atof(next_token->content.c_str()));
+    return new SourceNumberConstant(-atof(next_token->content().c_str()));
   }
 
   // ---------------------------------------------------------
   // Constant
   // ---------------------------------------------------------
-  if (token->isNumber()) {
-    return new SourceNumberConstant(atof(token->content.c_str()));
+  if (token->IsNumber()) {
+    return new SourceNumberConstant(atof(token->content().c_str()));
   } else {
-    return new SourceStringConstant(token->content);
+    return new SourceStringConstant(token->content());
   }
 }
 
@@ -281,23 +280,23 @@ Source *GetSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
   while (true) {
     if (!source) {
       source = GetSingleSource(token_vector, error);
-      if (!source || error->IsActivated()) {
+      if (!source || error->HasErrors()) {
         return NULL;
       }
     }
 
     // Check if there is something to continue "< > <= >= != + - * /
-    au::token::Token *token = token_vector->getNextToken();
+    au::token::Token *token = token_vector->GetNextToken();
     if (!token) {
       return source;   // No more tokens
     }
-    if (token->isComparator()) {
+    if (token->IsComparator()) {
       // Skip the comparator
-      std::string comparator = token->content;
-      token_vector->popToken();
+      std::string comparator = token->content();
+      token_vector->PopToken();
 
       Source *_source = GetSingleSource(token_vector, error);
-      if (!_source || error->IsActivated()) {
+      if (!_source || error->HasErrors()) {
         delete source;
         return NULL;
       }
@@ -310,13 +309,13 @@ Source *GetSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
       continue;
     }
 
-    if (token->isOperation()) {
+    if (token->IsOperation()) {
       // Skip the comparator
-      std::string operation_string = token->content;
-      token_vector->popToken();
+      std::string operation_string = token->content();
+      token_vector->PopToken();
 
       Source *_source = GetSingleSource(token_vector, error);
-      if (!_source || error->IsActivated()) {
+      if (!_source || error->HasErrors()) {
         delete source;
         return NULL;
       }
@@ -329,24 +328,24 @@ Source *GetSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
       continue;
     }
 
-    if (token_vector->popNextTokenIfItIs("?")) {
+    if (token_vector->PopNextTokenIfContentIs("?")) {
       Source *first_source = GetSingleSource(token_vector, error);
-      if (!first_source || error->IsActivated()) {
+      if (!first_source || error->HasErrors()) {
         delete source;
         return NULL;
       }
 
-      if (!token_vector->popNextTokenIfItIs(":")) {
+      if (!token_vector->PopNextTokenIfContentIs(":")) {
         delete source;
         delete first_source;
-        error->set(
-                   au::str("Statement '?' without ':'. Expected ':' but found %s",
-                           token_vector->getNextTokenContent().c_str()));
+        error->AddError(
+          au::str("Statement '?' without ':'. Expected ':' but found %s",
+                  token_vector->GetNextTokenContent().c_str()));
         return NULL;
       }
 
       Source *second_source = GetSingleSource(token_vector, error);
-      if (!second_source || error->IsActivated()) {
+      if (!second_source || error->HasErrors()) {
         delete source;
         return NULL;
       }

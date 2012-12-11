@@ -46,7 +46,6 @@
 
 
 namespace au {
-namespace rate {
 class Rate {
 public:
 
@@ -59,7 +58,7 @@ public:
 
   // Clear data
   void Clear();
-  
+
   // Get totals
   size_t hits() const;
   size_t size() const;
@@ -88,7 +87,6 @@ private:
   au::Cronometer c;
   mutable size_t last_time_correction;
 };
-}
-}                     // end of namespace au::rate
+}  // end of namespace au::rate
 
 #endif  // ifndef _H_AU_RATE

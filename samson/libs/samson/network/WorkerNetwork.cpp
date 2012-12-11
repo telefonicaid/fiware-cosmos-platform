@@ -10,8 +10,10 @@
  */
 #include "samson/network/WorkerNetwork.h"  // Own interface
 
-#include "au/utils.h"
 #include "au/log/LogMain.h"
+#include "au/log/LogMain.h"
+#include "au/utils.h"
+#include "samson/common/Logs.h"
 #include "samson/network/NetworkConnection.h"
 
 namespace samson {
@@ -25,14 +27,14 @@ WorkerNetwork::WorkerNetwork(size_t worker_id, int port) :
 
     if (s != au::OK) {
       // Not allow to continue without incoming connections...
-      LM_X(1, ("Not possible to open main samson port %d (%s). Probably another worker is running...", port, status(s)));
+      LOG_X(1, ("Not possible to open main samson port %d (%s). Probably another worker is running...", port, status(s)));
     }
   }
 }
 
 WorkerNetwork::~WorkerNetwork() {
   if (worker_listener != NULL) {
-    LM_T(LmtCleanup, ("In ~WorkerNetwork() calling StopNetworkListeners()"));
+    LOG_M(logs.cleanup, ("In ~WorkerNetwork() calling StopNetworkListeners()"));
     worker_listener->StopNetworkListener();
     delete worker_listener;
     worker_listener = NULL;
@@ -41,11 +43,11 @@ WorkerNetwork::~WorkerNetwork() {
 
 void WorkerNetwork::stop() {
   // Stop listeners
-  LM_T(LmtCleanup, ("NetworkListener called to stop"));
+  LOG_M(logs.cleanup, ("NetworkListener called to stop"));
   worker_listener->StopNetworkListener();
 
   // Close all connections
-  LM_T(LmtCleanup, ("Close all connections"));
+  LOG_M(logs.cleanup, ("Close all connections"));
   NetworkManager::reset();
 }
 
@@ -56,7 +58,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
     delete socket_connection;
   }
 
-  if (cluster_information_version() == (size_t) -1) {   // Still not part of any cluster..
+  if (cluster_information_version() == static_cast<size_t>(-1)) {   // Still not part of any cluster..
     LOG_SW(("Connection rejected since I am still not part of any cluster..."));
     socket_connection->Close();
     delete socket_connection;
@@ -68,14 +70,14 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   au::Status s = packet.read(socket_connection, NULL);
 
   if (s != au::OK) {
-    LM_W(("Error receiving hello message form income connection (%s)", au::status(s)));
+    LOG_SW(("Error receiving hello message form income connection (%s)", au::status(s)));
     socket_connection->Close();
     delete socket_connection;
     return;
   }
 
   if (packet.msgCode != Message::Hello) {
-    LM_W(("Received message %s instead of the required hello message. Closing connection"
+    LOG_SW(("Received message %s instead of the required hello message. Closing connection"
             , messageCode(packet.msgCode)));
     socket_connection->Close();
     delete socket_connection;
@@ -84,7 +86,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
 
   // Check valid hello message
   if (!packet.message->has_hello()) {
-    LM_W(("Missing Hello information in a hello packet"));
+    LOG_SW(("Missing Hello information in a hello packet"));
     socket_connection->Close();
     delete socket_connection;
     return;
@@ -94,7 +96,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   NodeIdentifier new_node_identifier(packet.message->hello().node_identifier());
 
   if (new_node_identifier.node_type == UnknownNode) {
-    LM_W(("Hello message received with nodetype unknown. Closing connection"));
+    LOG_SW(("Hello message received with nodetype unknown. Closing connection"));
     socket_connection->Close();
     delete socket_connection;
     return;
@@ -104,7 +106,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   if (new_node_identifier.node_type == DelilahNode) {
     size_t new_delilah_id = new_node_identifier.id;
     if (!au::code64_is_valid(new_delilah_id)) {
-      LM_W(("No valid delilah_id (%lu). Closing conneciton...", new_delilah_id));
+      LOG_SW(("No valid delilah_id (%lu). Closing conneciton...", new_delilah_id));
       socket_connection->Close();
       delete socket_connection;
       return;
@@ -120,7 +122,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
     au::Status s = ci_packet->write(socket_connection, NULL);
 
     if (s != au::OK) {
-      LM_W(("Not possible to write cluster information a new delilah connection (%s) ", au::status(s)));
+      LOG_SW(("Not possible to write cluster information a new delilah connection (%s) ", au::status(s)));
       socket_connection->Close();
       delete socket_connection;
       return;
@@ -140,7 +142,7 @@ void WorkerNetwork::SendAlertToAllDelilahs(std::string type, std::string context
   alert->set_text(message);
 
   // This message do not belong to any delilah operation
-  p->message->set_delilah_component_id((size_t) -1);
+  p->message->set_delilah_component_id(static_cast<size_t>(-1));
 
   // Send packet
   SendToAllDelilahs(p);
@@ -155,7 +157,7 @@ void WorkerNetwork::SendAlertToDelilah(size_t delilah_id, std::string type, std:
   alert->set_text(message);
 
   // This message do not belong to any delilah operation
-  p->message->set_delilah_component_id((size_t) -1);
+  p->message->set_delilah_component_id(static_cast<size_t>(-1));
 
   // Direction of this packet
   p->to = NodeIdentifier(DelilahNode, delilah_id);

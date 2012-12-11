@@ -18,8 +18,8 @@
 #include "au/utils.h"
 
 #include "au/log/LogCommon.h"
-#include "au/log/LogProbe.h"
 #include "au/log/LogFilter.h"
+#include "au/log/LogProbe.h"
 #include "au/network/ConsoleService.h"
 
 char format[1024];
@@ -34,11 +34,15 @@ bool no_color;
 
 PaArgument paArgs[] =
 {
-  { "-host",   host,     "",  PaString,        PaOpt,  _i "localhost", PaNL,PaNL,"Log server hostname"  },
-  { "-format", format,   "",  PaString, PaOpt, _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,  PaNL, "Formats of the logs at the output" },
-  { "-filter", filter,   "",  PaString, PaOpt, _i "", PaNL,  PaNL, "Filter for logs"                   },
-  { "-save"  , file_name,"", PaString, PaOpt, _i "",  PaNL, PaNL,"Save received logs to file" },
-  { "-no_color" , &no_color,"", PaBool, PaOpt, false,  false, true,"No colored output" },
+  { "-host",     host,      "", PaString, PaOpt, _i "localhost",                   PaNL,
+    PaNL, "Log server hostname"               },
+  { "-format",   format,    "", PaString, PaOpt, _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,
+    PaNL,
+    "Formats of the logs at the output" },
+  { "-filter",   filter,    "", PaString, PaOpt, _i "",                            PaNL, PaNL,  "Filter for logs"                   },
+  { "-save",     file_name, "", PaString, PaOpt, _i "",                            PaNL, PaNL,
+    "Save received logs to file"        },
+  { "-no_color", &no_color, "", PaBool,   PaOpt, false,                            false,true,  "No colored output"                 },
   PA_END_OF_ARGS
 };
 
@@ -57,68 +61,63 @@ int logFd = -1;
 
 
 
-  
-  int main(int argC, const char *argV[]) {
-    paConfig("prefix",                        (void *)"LOG_CLIENT_");
-    paConfig("usage and exit on any warning", (void *)true);
-    paConfig("log to screen",                 (void *)true);
-    paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-    paConfig("screen line format",            (void *)"TYPE: TEXT");
-    paConfig("log to file",                   (void *)false);
-    paConfig("log to stderr",                 (void *)true);
-    
-    paConfig("man synopsis",                  (void *)manSynopsis);
-    paConfig("man shortdescription",          (void *)manShortDescription);
-    paConfig("man description",               (void *)manDescription);
-    paConfig("man exitstatus",                (void *)manExitStatus);
-    paConfig("man author",                    (void *)manAuthor);
-    paConfig("man reportingbugs",             (void *)manReportingBugs);
-    paConfig("man copyright",                 (void *)manCopyright);
-    paConfig("man version",                   (void *)manVersion);
-    
-    paParse(paArgs, argC, (char **)argV, 1, true);
-    logFd = lmFirstDiskFileDescriptor();
 
-    // Check format for filter
-    au::ErrorManager error;
-    au::LogFilter::Create( filter , error);
-    if( error.IsActivated() )
-    {
-      std::cerr << error.GetErrorMessage("Error in filter definition");
-      exit(1);
-    }
-    
-    // Log Probe to get logs and print on screen...
-    au::LogProbe log_probe;
-    log_probe.AddPlugin("printer", new au::LogProbePriter(format , !no_color , false ) );
-    if( strlen( file_name) > 0 )
-    {
-      au::ErrorManager error;
-      log_probe.AddFilePlugin("file", file_name , error );
-      if( error.IsActivated() )
-        std::cerr << error.GetErrorMessage(au::str("Error login to file %s" , file_name)) << std::endl;
-    }
-    
-    // Connect with LogServer
-    log_probe.ConnectAsProbe(host, filter, error);
-    
-    if( error.IsActivated() )
-    {
-      std::cerr << "Error connecting " << host << " : " << error.GetMessage() << std::endl;
-      exit(1);
-    }
-    
-    // Sleep forever
-    while (true) {
-      sleep(1);
-      if( !log_probe.IsConnected() )
-      {
-        // Show only if verbose is activated
-        //std::cerr << "Error receiving logs from " << host << " : " << log_probe_printer.error().GetMessage() << std::endl;
-        exit(1);
-      }
-    }
-    
-    return 0;
+int main(int argC, const char *argV[]) {
+  paConfig("prefix", (void *)"LOG_CLIENT_");
+  paConfig("usage and exit on any warning", (void *)true);
+  paConfig("log to screen", (void *)true);
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE: TEXT");
+  paConfig("log to file", (void *)false);
+  paConfig("log to stderr", (void *)true);
+
+  paConfig("man synopsis", (void *)manSynopsis);
+  paConfig("man shortdescription", (void *)manShortDescription);
+  paConfig("man description", (void *)manDescription);
+  paConfig("man exitstatus", (void *)manExitStatus);
+  paConfig("man author", (void *)manAuthor);
+  paConfig("man reportingbugs", (void *)manReportingBugs);
+  paConfig("man copyright", (void *)manCopyright);
+  paConfig("man version", (void *)manVersion);
+
+  paParse(paArgs, argC, (char **)argV, 1, true);
+  logFd = lmFirstDiskFileDescriptor();
+
+  // Check format for filter
+  au::ErrorManager error;
+  au::LogFilter::Create(filter, error);
+  if (error.HasErrors()) {
+    std::cerr << "Error in filter definition: " << error.GetLastError();
+    exit(1);
   }
-  
+
+  // Log Probe to get logs and print on screen...
+  au::LogProbe log_probe;
+  log_probe.AddPlugin("printer", new au::LogProbePriter(format, !no_color, false));
+  if (strlen(file_name) > 0) {
+    au::ErrorManager error;
+    log_probe.AddFilePlugin("file", file_name, error);
+    if (error.HasErrors()) {
+      std::cerr << au::str("Error login to file %s: ", file_name) << error.GetLastError() << std::endl;
+    }
+  }
+
+  // Connect with LogServer
+  log_probe.ConnectAsProbe(host, filter, error);
+
+  if (error.HasErrors()) {
+    std::cerr << "Error connecting " << host << " : " << error.GetLastError() << std::endl;
+    exit(1);
+  }
+
+  // Sleep forever
+  while (true) {
+    sleep(1);
+    if (!log_probe.IsConnected()) {
+      exit(1);
+    }
+  }
+
+  return 0;
+}
+

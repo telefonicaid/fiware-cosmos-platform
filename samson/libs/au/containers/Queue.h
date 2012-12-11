@@ -35,7 +35,7 @@
 #include "au/containers/SharedPointer.h"
 #include <list>            // std::map
 
-#include "logMsg/logMsg.h"  // LM_M()
+#include "logMsg/logMsg.h"  // LOG_SM()
 
 namespace au {
 template <class V>

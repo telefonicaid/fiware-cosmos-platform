@@ -1,0 +1,178 @@
+Module fiware_pos
+{
+
+    title   "fiware_pos  module"
+    author  "Gregorio Escalada (jges@tid.es)"
+    version "0.1"
+    
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data Position
+{
+     system.UInt posX;
+     system.UInt posY;
+}
+
+data Sensor
+{
+    system.UInt id;
+    fiware_pos.Position position;
+}
+
+data SensorTick
+{
+     fiware_pos.Sensor sensor;
+     system.TimeUnix timestamp;
+}
+
+data UserTick
+{
+    system.UInt user_id;
+    system.UInt8 incoming;
+    system.TimeUnix timestamp;
+}
+
+data PosAndUserTick
+{
+    fiware_pos.Position position;
+    fiware_pos.UserTick user_tick;
+}
+
+data Users
+{
+    system.UInt num_users;
+    vector fiware_pos.UserTick user_ticks;
+}
+
+data PosAndUsers
+{
+    fiware_pos.Position position;
+    fiware_pos.Users users;
+}
+
+data TimeSensor
+{
+    system.UInt sensor_id;
+    system.TimeUnix time;
+}
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+simpleParser ParserLogs
+{
+        out system.UInt fiware_pos.UserTick
+        
+        helpLine "Parse input logs as 'userId|sensorId|timeStamp' and emits user ticks per sensorId"
+}
+
+simpleParser ParserTable
+{
+        out system.UInt fiware_pos.Position
+        
+        helpLine "Parse table of sensor positions as 'sensorId|posX,posY' and emits position per sensorId"
+}
+
+reduce AddPositionInfo
+{
+    in  system.UInt fiware_pos.UserTick
+    in  system.UInt fiware_pos.Position 
+    out system.UInt fiware_pos.SensorTick   
+
+    helpLine "Reduce forward operation to join the sensor position info to every user tick"
+}
+
+reduce UpdateLastKnownPosition
+{
+    in    system.UInt fiware_pos.SensorTick
+    in    system.UInt fiware_pos.SensorTick
+    out   system.UInt fiware_pos.PosAndUserTick
+    out   system.UInt fiware_pos.SensorTick
+
+    helpLine "Reduce with state to keep the last known position per user"
+}
+
+reduce UpdateUsersList
+{
+    in    system.UInt fiware_pos.PosAndUserTick
+    in    system.UInt fiware_pos.PosAndUsers
+    out   fiware_pos.TimeSensor fiware_pos.PosAndUsers
+    out   system.UInt fiware_pos.PosAndUsers
+
+    helpLine "Reduce with state to keep the list of users per sensor"
+}
+
+map ExportSensorsInfoToMongo
+{
+    in   fiware_pos.TimeSensor fiware_pos.PosAndUsers
+
+    helpLine "Export the list of users per sensor to mongoDB"
+}
+
+script prepare_data
+{
+    code
+    {
+        # push info_pos_sensors.tab sensors.txt
+        run fiware_pos.ParserLogs sensors.txt sensors_pos;
+    }
+}
+
+script init_stream
+{
+    # Before, the position information for sensors should be available:
+    # push info_pos_sensors.tab sensors.txt
+    # run_stream_operation fiware_pos.ParserLogs sensors.txt sensors_pos;
+    code
+    {
+
+        # ----------------------------------------------------------------
+        # Input queues
+        # ----------------------------------------------------------------        
+        alias [logs.txt]                logs.txt;
+        alias [sensors_pos]             sensors_pos;
+        
+        # ----------------------------------------------------------------
+        # Output queues
+        # ----------------------------------------------------------------
+        alias [users_per_sensor]              users_per_sensor;
+        alias [users_last_position]           users_last_position;
+        
+        # ----------------------------------------------------------------
+        # Internal queues
+        # ----------------------------------------------------------------
+        alias [logs]              logs;
+        alias [user_ticks]        user_ticks;
+        alias [user_flow]         user_flow;
+        alias [users_list]        users_list;
+        
+  
+        # ----------------------------------------------------------------
+        # Operations
+        # ----------------------------------------------------------------        
+        alias [pl]              0.parse.logs;
+        alias [ri]              1.add.info;        
+        alias [rp]              2.update.position;
+        alias [rs]              3.update.users;
+        alias [xm]              4.export.mongo;
+             
+        # ----------------------------------------------------------------
+        # Definitions
+        # ----------------------------------------------------------------
+
+        add_stream_operation [pl] fiware_pos.ParserLogs -input [logs.txt] -output [logs];
+        add_stream_operation [ri] fiware_pos.AddPositionInfo -input '[logs] [sensors_pos]' -output [user_ticks] -forward; 
+        add_stream_operation [rp] fiware_pos.UpdateLastKnownPosition -input '[user_ticks users_last_position' -output '[user_flow] [users_last_position]'; 
+        add_stream_operation [rs] fiware_pos.UpdateUsersList -input '[user_flow] [users_per_sensor]' -output '[users_list] [users_per_sensor]';    
+        add_stream_operation [xm] fiware_pos.ExportSensorsInfoToMongo -input [users_list];
+        # Change localhost to the server where MongoDB is running
+        set_stream_operation_property [xm] mongo.ip         localhost;
+        set_stream_operation_property [xm] mongo.db         FIWARE;
+        set_stream_operation_property [xm] mongo.collection UsersList;           
+    }
+}

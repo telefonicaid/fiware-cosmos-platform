@@ -32,7 +32,7 @@ int getTerminalColumns() {
   return x;
 }
 
-void clearTerminalLine() {
+void ClearTerminalLine() {
   printf("\r");
   for (int i = 0; i < getTerminalColumns(); i++) {
     printf(" ");
@@ -88,7 +88,7 @@ void remove_return_chars(char *line) {
       return;
     }
 
-    if ( (line[l - 1] == '\n') || (line[l - 1] == '\r')) {
+    if ((line[l - 1] == '\n') || (line[l - 1] == '\r')) {
       line[l - 1] = '\0';
     } else {
       return;

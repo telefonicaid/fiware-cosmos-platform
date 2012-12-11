@@ -11,6 +11,7 @@
 
 
 #include "BufferList.h"
+#include "au/log/LogMain.h"
 #include "engine/Notification.h"
 
 namespace stream_connector {
@@ -20,7 +21,6 @@ BufferListItem::BufferListItem(engine::BufferPointer buffer, const std::string& 
 
   buffer_size = buffer->size();
   buffer_name = buffer->name();
-  buffer_type = buffer->type();
 
   // Initial state
   state = on_memory;
@@ -70,14 +70,14 @@ void BufferListItem::notify(engine::Notification *notification) {
 
     if (type == "write") {
       if (state != writing) {
-        LM_W(("Unexpected state in BufferListItem"  ));
+        LOG_SW(("Unexpected state in BufferListItem"  ));
         return;
       }
       state = on_memory_and_disk;
       return;
     } else if (type == "read") {
       if (state != reading) {
-        LM_W(("Unexpected state in BufferListItem"  ));
+        LOG_SW(("Unexpected state in BufferListItem"  ));
         return;
       }
       state = on_memory_and_disk;
@@ -89,7 +89,7 @@ void BufferListItem::notify(engine::Notification *notification) {
     return;
   }
 
-  LM_W(("Unknown notification received in BufferListItem"));
+  LOG_SW(("Unknown notification received in BufferListItem"));
 }
 
 void BufferListItem::flush_to_disk() {
@@ -130,9 +130,8 @@ void BufferListItem::load_from_disk() {
   switch (state) {
     case on_disk:
     {
-      // Squedule reading
       // Create the buffer
-      buffer_ = engine::Buffer::Create(buffer_name, buffer_type, buffer_size);
+      buffer_ = engine::Buffer::Create(buffer_name, buffer_size);
 
       engine::DiskOperation::newReadOperation(buffer_->data(), file_name_, 0, buffer_size, engine_id());
 

@@ -15,26 +15,32 @@
 #include <string>
 #include <vector>
 
-#include "au/string/Pattern.h"
 #include "au/log/LogCommon.h"
+#include "au/string/Pattern.h"
 
 namespace au {
-  
+/**
+ * \brief LogCentralChannels : Collection of channels registered to emit logs
+ */
+
 class LogCentralChannels {
 public:
 
   LogCentralChannels();
-  ~LogCentralChannels(){}
+  ~LogCentralChannels() {
+  }
 
-  int RegisterChannel(const std::string& name , const std::string& description );
+  int RegisterChannel(const std::string& name, const std::string& description);
   std::vector<int> Get(const std::string& str_pattern);  // Commands to activate or dactivate channels
 
-  bool IsRegistered( int channel );
+  bool IsRegistered(int channel);
   int num_channels() const;
-  int channel( const std::string name );
+  int channel(const std::string name);
   std::string channel_name(int c);
   std::string channel_description(int c);
-  std::string GetAllChannels()const;
+  std::string GetAllChannels() const;
+
+  void Clear();
 
 private:
 

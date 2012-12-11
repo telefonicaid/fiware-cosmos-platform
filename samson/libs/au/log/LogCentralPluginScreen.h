@@ -15,15 +15,15 @@
 #include "au/containers/SharedPointer.h"
 #include "au/log/Log.h"
 #include "au/log/LogCentralChannelsFilter.h"
-#include "au/log/LogFormatter.h"
 #include "au/log/LogCentralPlugin.h"
+#include "au/log/LogFormatter.h"
 
 namespace au {
 class LogCentralPluginScreen : public LogCentralPlugin {
 public:
   LogCentralPluginScreen(const std::string& format_definition = LOG_DEFAULT_FORMAT, bool output_stderror = false)
     : LogCentralPlugin("Screen")
-      , log_formatter_(format_definition) {
+      , log_formatter_(format_definition, true) {
     output_stderror_ = output_stderror;
   }
 
@@ -49,7 +49,7 @@ public:
   }
 
   void SetFormat(const std::string format, bool color = false) {
-    log_formatter_.SetFormat(format , color);
+    log_formatter_.SetFormat(format, color);
   }
 
 private:

@@ -47,7 +47,7 @@ public:
 
     // Check header
     if (!header->Check()) {
-      error.set("Header check failed");
+      error.AddError("Header check failed");
       return;
     }
 
@@ -57,29 +57,29 @@ public:
     size_t expected_size;
 
     if (format.isTxt()) {
-      expected_size =   (size_t)( sizeof(samson::KVHeader)  + header->info.size );
+      expected_size =   (size_t)(sizeof(samson::KVHeader)  + header->info.size);
       data = buffer->data() + sizeof(samson::KVHeader);
     } else {
-      expected_size =   (size_t)( sizeof(samson::KVHeader) + header->info.size );
+      expected_size =   (size_t)(sizeof(samson::KVHeader) + header->info.size);
       data = buffer->data() + sizeof(samson::KVHeader);
     }
 
     if (expected_size != buffer->size()) {
-      error.set("Wrong file format");
+      error.AddError("Wrong file format");
     }
 
     // Check if we have data types installed here
     samson::ModulesManager *modulesManager = au::Singleton<samson::ModulesManager>::shared();
-    samson::Data *keyData = modulesManager->getData(format.keyFormat);
-    samson::Data *valueData = modulesManager->getData(format.valueFormat);
+    samson::Data *keyData = modulesManager->GetData(format.keyFormat);
+    samson::Data *valueData = modulesManager->GetData(format.valueFormat);
 
     if (!format.isTxt()) {
       if (!keyData) {
-        error.set(au::str("Unknown data type %s", format.keyFormat.c_str()));
+        error.AddError(au::str("Unknown data type %s", format.keyFormat.c_str()));
       }
 
       if (!valueData) {
-        error.set(au::str("Unknown data type %s", format.valueFormat.c_str()));
+        error.AddError(au::str("Unknown data type %s", format.valueFormat.c_str()));
       }
     }
   }
@@ -92,7 +92,7 @@ public:
   }
 
   size_t getTXTBufferSize() {
-    return buffer_->size() - sizeof( samson::KVHeader );
+    return buffer_->size() - sizeof(samson::KVHeader);
   }
 
   char *getData() {
@@ -104,8 +104,8 @@ public:
   }
 
   std::string get_header_content() {
-    if (error.IsActivated()) {
-      return au::str("ERROR: %s\n", error.GetMessage().c_str());
+    if (error.HasErrors()) {
+      return au::str("ERROR: %s\n", error.GetLastError().c_str());
     }
 
 

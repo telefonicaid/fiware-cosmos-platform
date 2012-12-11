@@ -27,7 +27,7 @@
 #include <string>                  // std::string
 
 #include "au/mutex/TokenTaker.h"   // au::TokenTaker
-#include "au/string/xml.h"                // au::xml...
+#include "au/string/xml.h"         // au::xml...
 
 #include "engine/Buffer.h"         // samson::Buffer
 
@@ -84,7 +84,7 @@ double MemoryManager::memory_usage() {
 }
 
 au::tables::Table MemoryManager::getTableOfBuffers() {
-  au::tables::Table table("Type,left,different|Name,left,different|Size,f=uint64,sum|TotalSize,f=uint64,sum|Tags,left");
+  au::tables::Table table("Size,f=uint64,sum|TotalSize,f=uint64,sum|Name,left,different");
 
   au::TokenTaker tt(&token_);
 
@@ -94,12 +94,10 @@ au::tables::Table MemoryManager::getTableOfBuffers() {
     Buffer *buffer = *it_buffers;
     au::StringVector values;
 
-    values.push_back(buffer->type());
-    values.push_back(buffer->name());
     values.push_back(au::str("%lu", buffer->size()));
     total_size += buffer->size();
-    values.Push( total_size );
-    values.Push( buffer->GetTagString() );
+    values.Push(total_size);
+    values.push_back(buffer->name());
     table.addRow(values);
   }
 

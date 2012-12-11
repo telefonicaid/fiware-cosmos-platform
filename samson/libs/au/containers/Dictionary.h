@@ -39,7 +39,7 @@
 #include <vector>       // std::vector
 
 #include "au/containers/SharedPointer.h"
-#include "logMsg/logMsg.h"  // LM_M()
+#include "logMsg/logMsg.h"  // LOG_SM()
 
 // Usefull define for full iteration over a map structure
 
@@ -166,9 +166,9 @@ public:
     return v;
   }
 
-  std::vector< SharedPointer<V> > items() {
+  std::vector< SharedPointer<V> > items() const {
     std::vector< SharedPointer<V> > vector;
-    typename std::map<K, SharedPointer<V>, _Compare >::iterator iter;
+    typename std::map<K, SharedPointer<V>, _Compare >::const_iterator iter;
     for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
          iter++)
     {

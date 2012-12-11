@@ -31,27 +31,27 @@ public:
   std::string author;                             // Author of this module (mail included to report bugs)
 
   std::map<std::string, Operation *>  operations;  // Vector containing operations (map, generate, reduce)
-  std::map<std::string, Data *>      datas;  // Vector containing data
+  std::map<std::string, Data *>      datas;       // Vector containing data
 
   friend class ModulesManager;
 
-  std::string file_name;
-
   Module() {
+    hndl_ = NULL;
   }
 
   Module(std::string _name, std::string _version, std::string _author) {
     name    = _name;
     version = _version;
     author  = _author;
+    hndl_ = NULL;
   }
 
   ~Module() {
-    LM_T(LmtModuleManager, ("Destructor for module:'%s'", name.c_str()));
     clearModule();
+    if (hndl_) {
+      dlclose(hndl_);
+    }
   }
-
-public:
 
   void getInfo(std::ostringstream& output) {
     output << "<module>\n";
@@ -95,9 +95,6 @@ public:
       return Operation::unknown;
     }
 
-
-
-
     return o->getType();
   }
 
@@ -140,7 +137,7 @@ public:
     }
 
     operations.insert(std::pair<std::string, Operation *>(operation->getName(), operation));
-    LM_T(LmtModuleManager, ("Module operation inserted: '%s' at operation:%p", operation->getName().c_str(), operation));
+    // LOG_M(logs.modules_manager, ("Module operation inserted: '%s' at operation:%p", operation->getName().c_str(), operation));
   }
 
   void add(Data *data) {
@@ -151,7 +148,7 @@ public:
     }
 
     datas.insert(std::pair<std::string, Data *> (data->getName(), data));
-    LM_T(LmtModuleManager, ("Module data inserted: '%s' at data:%p", data->getName().c_str(), data));
+    // LOG_M(logs.modules_manager, ("Module data inserted: '%s' at data:%p", data->getName().c_str(), data));
   }
 
   /*
@@ -185,18 +182,39 @@ public:
   void clearModule() {
     // Remove all operations and datas
     for (std::map<std::string, Operation *>::iterator o = operations.begin(); o != operations.end(); o++) {
-      LM_T(LmtModuleManager, ("delete operation:%s with val:%p", o->first.c_str(), o->second));
+      // LOG_M(logs.modules_manager, ("delete operation:%s with val:%p", o->first.c_str(), o->second));
       delete o->second;
     }
 
     for (std::map<std::string, Data *>::iterator d = datas.begin(); d != datas.end(); d++) {
-      LM_T(LmtModuleManager, ("delete data:%s with val:%p", d->first.c_str(), d->second));
+      // LOG_M(logs.modules_manager, ("delete data:%s with val:%p", d->first.c_str(), d->second));
       delete d->second;
     }
 
     datas.clear();
     operations.clear();
   }
+
+  std::string file_name() const {
+    return file_name_;
+  }
+
+  void set_file_name(const std::string& file_name) {
+    file_name_ = file_name;
+  }
+
+  void set_hndl(void *hndl) {
+    if (hndl_) {
+      LOG_SW(("Major error in Module handler: Previous handler to be deallocated"));
+    }
+    hndl_ = hndl;
+  }
+
+private:
+
+  // Information assigned during loading of this module
+  std::string file_name_;
+  void *hndl_;
 };
 }
 

@@ -17,7 +17,7 @@ TEST(au_string_Pattern, pattern) {
   au::ErrorManager error;
   au::Pattern pattern("^A", error);
 
-  EXPECT_FALSE(error.IsActivated());
+  EXPECT_FALSE(error.HasErrors());
   EXPECT_TRUE(pattern.match("Andreu"));
   EXPECT_FALSE(pattern.match("Pepe"));
 }

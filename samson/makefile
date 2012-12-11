@@ -14,7 +14,7 @@ SAMSON_VERSION=0.7.0
 endif
 ifndef SAMSON_RELEASE
 	# Use the current timestamp guarantee unique builds
-	SAMSON_RELEASE:=$(shell echo `date +%Y%M%d%H%M`)
+	SAMSON_RELEASE:=$(shell echo `date +%Y%m%d`)
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -409,8 +409,8 @@ reset:
 	rm -Rf BUILD_RELEASE_ALL
 	rm -Rf BUILD_COVERAGE
 	rm -Rf coverage
-	rm -f libs/common/samson.pb.*
-	rm -f libs/data/data.pb.*
+	rm -f libs/samson/common/samson.pb.*
+	rm -f libs/au/au.pb.*
 	rm -Rf /usr/local/include/samson || true
 	rm -f testing/module_test/Module.*
 	rm -f /etc/init/samson.conf || true
@@ -463,12 +463,28 @@ publish_packages:
 tarball:
 	git archive --format=tar --prefix=./samson-$(SAMSON_VERSION)/ HEAD | gzip > samson-$(SAMSON_VERSION).tar.gz
 
-rpm: clean
+rpm:
 	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
 	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
 	# Generate a tarball from the latest checked in code
 	git archive --format=tar --prefix=./samson-$(SAMSON_VERSION)/ HEAD | gzip > ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
 	rpmbuild -bb rpm/samson.spec --define 'version $(SAMSON_VERSION)' --define 'release $(SAMSON_RELEASE)'
+
+mock: /var/lib/mock/epel-6-x86_64-samson
+	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
+	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
+	# Generate a tarball from the latest checked in code
+	git archive --format=tar --prefix=./samson-$(SAMSON_VERSION)/ HEAD | gzip > ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
+	rpmbuild -bs rpm/samson.spec --define 'version $(SAMSON_VERSION)' --define 'release $(SAMSON_RELEASE)'
+	/usr/bin/mock   -r epel-6-x86_64-samson ~/rpmbuild/SRPMS/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).src.rpm -v --define='version $(SAMSON_VERSION)' --define='release $(SAMSON_RELEASE)' 
+
+/var/lib/mock/epel-6-x86_64-samson: /etc/mock/epel-6-x86_64-samson.cfg
+	/usr/bin/mock --init -r epel-6-x86_64-samson
+
+# We use a custom mock config file for CentOS 6 that references the RPM repo on
+# http://samson09.hi.inet/repository/redhat/6 for libzookeeper
+/etc/mock/epel-6-x86_64-samson.cfg:
+	sudo cp scripts/mock/epel-6-x86_64-samson.cfg /etc/mock/epel-6-x86_64-samson.cfg
 
 publish_rpm: rpm
 	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
@@ -583,3 +599,6 @@ di_clang:
 
 gcovr:
 	scripts/gcovr --object-directory=$(PWD)/BUILD_COVERAGE -f $(PWD)/ -e BUILD_COVERAGE/modules -e modules
+
+docs:
+	doxygen doc/doxygen.setup 2>&1 

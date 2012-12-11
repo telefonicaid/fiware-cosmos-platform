@@ -44,20 +44,9 @@ void KVInfo::append(uint32 _size, uint32 _kvs) {
   kvs += _kvs;
 }
 
-void KVInfo::append(KVInfo other) {
+void KVInfo::append(const KVInfo& other) {
   size += other.size;
   kvs += other.kvs;
-}
-
-bool KVInfo::canAppend(KVInfo other) {
-  if (((uint64)size + (uint64)other.size ) >= MAX_UINT_32) {
-    return false;
-  }
-  if (((uint64)kvs + (uint64)other.kvs ) >= MAX_UINT_32) {
-    return false;
-  }
-
-  return true;
 }
 
 void KVInfo::remove(uint32 _size, uint32 _kvs) {
@@ -65,7 +54,7 @@ void KVInfo::remove(uint32 _size, uint32 _kvs) {
   kvs -= _kvs;
 }
 
-void KVInfo::remove(KVInfo other) {
+void KVInfo::remove(const KVInfo& other) {
   size -= other.size;
   kvs -= other.kvs;
 }
@@ -77,7 +66,7 @@ std::string KVInfo::str() const {
   return o.str();
 }
 
-bool KVInfo::isEmpty() {
+bool KVInfo::isEmpty() const {
   return ((kvs == 0) && (size == 0));
 }
 
@@ -85,25 +74,25 @@ bool KVInfo::isEmpty() {
 KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
   if (_data == NULL) {
     LM_E(("Null _data"));
-    error->set(au::str("NULL _data"));
+    error->AddError(au::str("NULL _data"));
     return NULL;
   }
 
-  KVHeader *header = (KVHeader *)_data;
+  KVHeader *header = reinterpret_cast<KVHeader *>(_data);
   char *data = _data + sizeof(KVHeader);
 
-  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(header->keyFormat);
-  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(header->valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(header->keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(header->valueFormat);
 
   if (!key_data) {
     LM_E(("Unknown data type %s", header->keyFormat));
-    error->set(au::str("Unknown data type %s", header->keyFormat));
+    error->AddError(au::str("Unknown data type %s", header->keyFormat));
     return NULL;
   }
 
   if (!value_data) {
     LM_E(("Unknown data type %s", header->valueFormat));
-    error->set(au::str("Unknown data type %s", header->valueFormat));
+    error->AddError(au::str("Unknown data type %s", header->valueFormat));
     return NULL;
   }
 
@@ -133,7 +122,7 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
     if (hg < previous_hg) {
       free(info);
       info = NULL;
-      error->set(
+      error->AddError(
         au::str(
           "Error getting KVInfo vector pargins %lu key-value. Current (%s) belongs to hg=%d and previous hg is %d"
           , i
@@ -154,10 +143,9 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
     total_info.append(info[hg]);
   }
 
-  if (( total_info.size != header->info.size ) || ( total_info.kvs != header->info.kvs )) {
+  if ((total_info.size != header->info.size) || (total_info.kvs != header->info.kvs)) {
     LM_X(1, ("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(), header->info.str().c_str()));
   }
   return info;
 }
-
 }

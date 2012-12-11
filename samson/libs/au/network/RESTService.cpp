@@ -11,25 +11,21 @@
 
 #include "RESTService.h"  // Own interface
 #include "RESTServiceCommand.h"
-#include "au/string/xml.h"
-#include "au/gpb.h"
 #include "au/au.pb.h"
+#include "au/gpb.h"
+#include "au/string/xml.h"
 
 
 namespace au {
 namespace network {
-RESTService::RESTService(int port,
-                         RESTServiceInterface *_interface) :
-  Service(port) {
-  // Keep a pointer to the interface to get REST answers
-  interface = _interface;
+RESTService::RESTService(int port, RESTServiceInterface *interface) : Service(port) {
+  interface_ = interface;    // Keep a pointer to the interface to get REST answers
 }
 
 RESTService::~RESTService() {
 }
 
-void RESTService::run(SocketConnection *socket_connection,
-                      bool *quit) {
+void RESTService::run(SocketConnection *socket_connection, bool *quit) {
   if (*quit) {
     return;
   }
@@ -37,25 +33,23 @@ void RESTService::run(SocketConnection *socket_connection,
   au::ErrorManager error;
 
   // Read HTTP packet
-  au::SharedPointer<RESTServiceCommand> command(
-    new RESTServiceCommand());
+  au::SharedPointer<RESTServiceCommand> command(new RESTServiceCommand());
   au::Status s = command->Read(socket_connection, error);
 
   if (s != au::OK) {
-    LM_W(("Error in REST interface ( %s / %s )", status(s),
-          error.GetMessage().c_str()));
+    LOG_SW(("Error in REST interface ( %s / %s )", status(s), error.GetLastError().c_str()));
     socket_connection->Close();
     return;
   }
 
   // Get anser from the service
-  interface->process(command);
+  interface_->process(command);
 
   // Return anser for this request
   s = command->Write(socket_connection);
+
   if (s != au::OK) {
-    LM_W(("Error in REST interface ( %s / %s )", status(s),
-          error.GetMessage().c_str()));
+    LOG_SW(("Error in REST interface ( %s / %s )", status(s), error.GetLastError().c_str()));
     socket_connection->Close();
     return;
   }

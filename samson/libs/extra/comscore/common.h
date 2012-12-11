@@ -19,6 +19,9 @@
 #include <string>
 
 namespace samson {
+/**
+ * \brief Namespace for samson::comscore library (Classes to manipulate comscore dictionaries for URL classification)
+ */
 namespace comscore {
 // Common identifier for the entire library
 typedef unsigned int   uint;

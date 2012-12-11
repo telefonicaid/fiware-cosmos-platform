@@ -30,7 +30,7 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
   if (cmdLine.get_num_arguments() > 0) {
     if (cmdLine.get_argument(0) == "login") {
       if (cmdLine.get_num_arguments() < 2) {
-        error->set("Usage: login user [-p password]");
+        error->AddError("Usage: login user [-p password]");
         return;
       }
 
@@ -38,7 +38,7 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
       std::string password = cmdLine.GetFlagString("p");
 
       if (user != "root") {
-        error->set("Only root user supported in this release");
+        error->AddError("Only root user supported in this release");
         return;
       }
 
@@ -53,12 +53,12 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
 
     if (cmdLine.get_argument(0) == "password") {
       if (cmdLine.get_num_arguments() < 2) {
-        error->set("Usage: password new_password");
+        error->AddError("Usage: password new_password");
         return;
       }
 
       if (!environment->IsSet("user")) {
-        error->set("Not logged! Please log using command 'login user-name -p password'");
+        error->AddError("Not logged! Please log using command 'login user-name -p password'");
         return;
       }
 
@@ -72,7 +72,7 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
 
   // Protect against non authorized users
   if (!environment->IsSet("user")) {
-    error->set("Not logged! Please log using command 'login user-name -p password'");
+    error->AddError("Not logged! Please log using command 'login user-name -p password'");
     return;
   }
 
@@ -84,7 +84,7 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
   samson_connector->process_command(command, error);
 }
 
-void StreamConnectorService::autoComplete(au::ConsoleAutoComplete *info, au::Environment *environment) {
+void StreamConnectorService::autoComplete(au::console::ConsoleAutoComplete *info, au::Environment *environment) {
   if (info->completingFirstWord()) {
     info->add("login");
     info->add("password");

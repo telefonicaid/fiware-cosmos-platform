@@ -13,10 +13,10 @@
 #ifndef _H_AU_FILE_DESCRIPTOR
 #define _H_AU_FILE_DESCRIPTOR
 
-#include "au/statistics/Rate.h"
 #include "au/Status.h"
 #include "au/ThreadManager.h"
 #include "au/mutex/Token.h"
+#include "au/statistics/Rate.h"
 #include "au/string/StringUtilities.h"
 
 /*****************************************************************************
@@ -42,8 +42,8 @@ public:
   int fd() const;
   std::string name() const;
   void set_name(const std::string& name);
-  au::rate::Rate& rate_in();
-  au::rate::Rate& rate_out();
+  au::Rate& rate_in();
+  au::Rate& rate_out();
 
   // Connection management
   void Close();               // Close this file descriptor
@@ -78,8 +78,8 @@ private:
   int fd_;                 // If id is -1 it means it was closed for some reason
 
   // Statistics about input output rate
-  au::rate::Rate rate_in_;
-  au::rate::Rate rate_out_;
+  au::Rate rate_in_;
+  au::Rate rate_out_;
 };
 }
 

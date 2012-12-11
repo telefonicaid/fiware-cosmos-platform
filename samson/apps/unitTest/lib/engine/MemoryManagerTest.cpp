@@ -47,9 +47,9 @@ TEST(memoryManagerTest, used_memory) {
   init_engine_test();
 
   {
-    samson::BufferContainer  bufContainer;
-    engine::BufferPointer    buf1 =
-       engine::Buffer::Create("buf1", "ram", 3 * 1024);  // Added to memory_manager
+    samson::BufferContainer bufContainer;
+    engine::BufferPointer buf1 =
+      engine::Buffer::Create("buf1", 3 * 1024);   // Added to memory_manager
 
     EXPECT_TRUE(buf1 != NULL);
 
@@ -78,13 +78,13 @@ TEST(memoryManagerTest, table) {
   init_engine_test();
 
   {
-    engine::BufferPointer    buf1   =
-       engine::Buffer::Create("buf1", "ram", 3 * 1024);  // Added to memory_manager
-    au::tables::Table        table  =
-       engine::Engine::memory_manager()->getTableOfBuffers();
+    engine::BufferPointer buf1   =
+      engine::Buffer::Create("buf1", 3 * 1024);   // Added to memory_manager
+    au::tables::Table table  =
+      engine::Engine::memory_manager()->getTableOfBuffers();
 
     EXPECT_EQ(1, table.getNumRows());
-    EXPECT_EQ(5, table.getNumColumns());
+    EXPECT_EQ(3, table.getNumColumns());
   }
 
   close_engine_test();

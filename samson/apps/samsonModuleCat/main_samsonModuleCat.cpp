@@ -69,29 +69,24 @@ int logFd = -1;
 
 
 void consider_file(std::string _fileName, au::tables::Table *table) {
-  samson::Module *module;
-  std::string version;
-  samson::Status s = samson::ModulesManager::loadModule(_fileName, &module, &version);
+  au::ErrorManager error;
+  samson::Module *module = samson::ModulesManager::LoadModule(_fileName, error);
 
-
-  if (s == samson::OK) {
-    // Add row with information
-    au::StringVector values;
-    values.push_back(_fileName);
-    values.push_back(version);
-
-    values.push_back(module->name);
-    values.push_back(module->version);
-
-    values.push_back(au::str(module->operations.size()));
-    values.push_back(au::str(module->datas.size()));
-
-    table->addRow(values);
-
-    delete module;
-  } else {
-    LM_W(("Not possible to load file %s", _fileName.c_str()));
+  if (error.HasErrors()) {
+    LOG_SW(("Not possible to load file %s (%s)", _fileName.c_str(), error.GetLastError().c_str()));
+    return;
   }
+
+  // Add row with information
+  au::StringVector values;
+  values.push_back(_fileName);
+  values.push_back(module->name);
+  values.push_back(module->version);
+  values.push_back(au::str(module->operations.size()));
+  values.push_back(au::str(module->datas.size()));
+  table->addRow(values);
+
+  delete module;
 }
 
 void consider_directory(std::string directory, au::tables::Table *table) {
@@ -121,18 +116,18 @@ void consider_directory(std::string directory, au::tables::Table *table) {
 
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)"only errors");
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
-  paConfig("log to file",                   (void *)true);
-  paConfig("log to stderr",         (void *)true);
+  paConfig("log to screen", (void *)"only errors");
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE: TEXT");
+  paConfig("log to file", (void *)true);
+  paConfig("log to stderr", (void *)true);
 
   paParse(paArgs, argC, (char **)argV, 1, false);      // No more pid in the log file name
   lmAux((char *)"father");
   logFd = lmFirstDiskFileDescriptor();
 
 
-  au::StringVector fields("File", "SAMSON", "Module", "Version", "#Operations", "#Datas");
+  au::StringVector fields("File", "Module", "Version", "#Operations", "#Datas");
   au::tables::Table table(fields);
 
   struct ::stat info;

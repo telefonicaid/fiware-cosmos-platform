@@ -29,39 +29,39 @@
 
 namespace samson {
 class SamsonWorkerRest : public au::network::RESTServiceInterface, engine::NotificationListener {
-  public:
-    SamsonWorkerRest(SamsonWorker *samson_worker, int web_port);
-    virtual ~SamsonWorkerRest();
+public:
+  SamsonWorkerRest(SamsonWorker *samson_worker, int web_port);
+  virtual ~SamsonWorkerRest();
 
-    // Receive notifications to take tample
-    void notify(engine::Notification *notification);
+  // Receive notifications to take tample
+  void notify(engine::Notification *notification);
 
-    // au::network::RESTServiceInterface
-    void process(au::SharedPointer<au::network::RESTServiceCommand> command);
+  // au::network::RESTServiceInterface
+  void process(au::SharedPointer<au::network::RESTServiceCommand> command);
 
-    void StopRestService();
+  void StopRestService();
 
-  private:
-    // Main pointer to samson worker
-    SamsonWorker *samson_worker_;
+private:
 
-    // Auxiliar functions to satisfy Rest queries
-    void process_intern(au::SharedPointer<au::network::RESTServiceCommand> command);
-    void process_delilah_command(std::string delilah_command,
-                                 au::SharedPointer<au::network::RESTServiceCommand> command);
-    void process_node(au::SharedPointer<au::network::RESTServiceCommand> command);
-    void process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command);
-    void process_logging(au::SharedPointer<au::network::RESTServiceCommand> command);
-    void process_synchronized(au::SharedPointer<au::network::RESTServiceCommand> command);
 
-    // Auto-client for REST interface
-    Delilah *delilah;
+  // Auxiliar functions to satisfy Rest queries
+  void ProcessIntern(au::SharedPointer<au::network::RESTServiceCommand> command);
+  void ProcessDelilahCommand(std::string delilah_command, au::SharedPointer<au::network::RESTServiceCommand> cmd);
+  void ProcessLookupSynchronized(au::SharedPointer<au::network::RESTServiceCommand> command);
 
-    // REST Service itself
-    au::network::RESTService *rest_service;
 
-    // Sampler for REST interface
-    SamsonWorkerSamples samson_worker_samples;
+  // Commit to data model
+  void ProcessCommitToDatamodel(const std::string& c, au::SharedPointer<au::network::RESTServiceCommand> command);
+
+  // Handy method to add a collection to the output
+  // The same collections are generated to be sent to delilahs
+  void Append(au::SharedPointer<au::network::RESTServiceCommand> command,
+              au::SharedPointer<gpb::Collection> collection);
+
+  SamsonWorker *samson_worker_;  // Main pointer to samson worker
+  Delilah *delilah_;    // Auto-client for REST interface
+  au::network::RESTService *rest_service_;    // REST Service itself
+  SamsonWorkerSamples samson_worker_samples_;    // Sampler for REST interface
 };
 }
 

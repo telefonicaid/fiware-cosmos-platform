@@ -223,22 +223,22 @@ int main(int argC, const char *argV[]) {
       strcat(initial_timestamp_str, " ");
     }
     first_timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(initial_timestamp_str);
-    LM_M(("From command line, initial_time_stamp:%s, %lu = '%s'", initial_timestamp_str, first_timestamp,
-          ctimeUTC(&first_timestamp)));
+    LOG_SM(("From command line, initial_time_stamp:%s, %lu = '%s'", initial_timestamp_str, first_timestamp,
+            ctimeUTC(&first_timestamp)));
   } else {
-    LM_M(("Reading first_timestamp from datasets"));
+    LOG_SM(("Reading first_timestamp from datasets"));
     first_timestamp = time(NULL);
 
     for (unsigned int ix = 0; (ix < datasets_vector.size()); ix++) {
       time_t dataset_timestamp = 0;
       char *log_line;
       if (datasets_vector[ix]->LookAtNextLogLineEntry(&log_line, &dataset_timestamp) == true) {
-        LM_M(("For dataset:%d, dataset_timestamp:%s", ix, ctimeUTC(&dataset_timestamp)));
-        LM_M(("For dataset:%d, first_timestamp:%s", ix, ctimeUTC(&first_timestamp)));
+        LOG_SM(("For dataset:%d, dataset_timestamp:%s", ix, ctimeUTC(&dataset_timestamp)));
+        LOG_SM(("For dataset:%d, first_timestamp:%s", ix, ctimeUTC(&first_timestamp)));
         free(log_line);
         if (dataset_timestamp < first_timestamp) {
-          LM_M(("Updating dataset_timestamp:%s", ctimeUTC(&dataset_timestamp)));
-          LM_M(("Updating first_timestamp:%s", ctimeUTC(&first_timestamp)));
+          LOG_SM(("Updating dataset_timestamp:%s", ctimeUTC(&dataset_timestamp)));
+          LOG_SM(("Updating first_timestamp:%s", ctimeUTC(&first_timestamp)));
           first_timestamp = dataset_timestamp;
         }
       }
@@ -247,7 +247,7 @@ int main(int argC, const char *argV[]) {
 
   char *time_init_str = strdup(ctimeUTC(&first_timestamp));
   time_init_str[strlen(time_init_str) - 1] = '\0';
-  LM_M(("Final first_timestamp: %s", time_init_str));
+  LOG_SM(("Final first_timestamp: %s", time_init_str));
 
   for (unsigned int ix = 0; (ix < datasets_vector.size()); ix++) {
     datasets_vector[ix]->SetFirstTimestamp(first_timestamp);
@@ -256,8 +256,8 @@ int main(int argC, const char *argV[]) {
     char *dataset_first_timestamp_str = strdup(ctimeUTC(&dataset_first_timestamp));
     dataset_first_timestamp_str[strlen(dataset_first_timestamp_str) - 1] = '\0';
 
-    LM_M(("Checking %s with first_timestamp:%s, read %s", datasets_vector[ix]->GetQueueName(), time_init_str,
-          dataset_first_timestamp_str));
+    LOG_SM(("Checking %s with first_timestamp:%s, read %s", datasets_vector[ix]->GetQueueName(), time_init_str,
+            dataset_first_timestamp_str));
     free(dataset_first_timestamp_str);
 
     datasets_vector[ix]->Synchronize(first_timestamp);
@@ -274,11 +274,11 @@ int main(int argC, const char *argV[]) {
   while (true) {
     sleep(100);
     manager.ReviewDatasets();
-    LM_M(("samsonPushLogs reading and waiting as times go by with %lu  datasets and %lu active", datasets_vector.size(),
-          manager.GetNumDataSets()));
+    LOG_SM(("samsonPushLogs reading and waiting as times go by with %lu  datasets and %lu active", datasets_vector.size(),
+            manager.GetNumDataSets()));
 
     if (manager.GetNumDataSets() == 0) {
-      LM_M(("Read all datasets"));
+      LOG_SM(("Read all datasets"));
       break;
     }
   }

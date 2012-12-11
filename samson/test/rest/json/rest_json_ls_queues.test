@@ -1,0 +1,11 @@
+--NAME--
+REST JSON /samson/queues
+--SHELL--
+delilah  ${SAMSON_LOG_LEVELS} -command remove_all 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "add_stream_operation o1 txt.parser_words -input input -output words" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "add_stream_operation o2 txt.word_count_accumulate -input 'words words_count' -output  words_count" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "push input.txt input" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command wait 2>/dev/null
+curl -s http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/queues.json
+--EXPECT--
+{"table":{"items":[{"name":"input","format":"txt-txt","#kvs":"    0 ","size":"    0 "},{"name":"words","format":"system.String-system.UInt","#kvs":"    0 ","size":"    0 "},{"name":"words_count","format":"system.String-system.UInt","#kvs":" 10.0 ","size":"  110 "}]},}

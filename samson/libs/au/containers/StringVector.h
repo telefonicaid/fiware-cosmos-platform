@@ -20,7 +20,7 @@
 #include <sys/time.h>          // struct timeval
 #include <vector>
 
-#include "logMsg/logMsg.h"     // LM_W
+#include "logMsg/logMsg.h"     // LOG_SW
 
 /*
  *

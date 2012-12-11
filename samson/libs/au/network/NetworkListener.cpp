@@ -29,12 +29,14 @@
 #include <sys/socket.h>
 #include <unistd.h>             // close
 
+#include "NetworkListener.h"  // Own interface
+#include "au/Log.h"
+#include "au/ThreadManager.h"
+#include "au/log/LogMain.h"
+#include "au/network/SocketConnection.h"
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
-
-#include "NetworkListener.h"  // Own interface
-#include "au/ThreadManager.h"
-#include "au/network/SocketConnection.h"
+#include "samson/common/Logs.h"
 
 namespace au {
 void *NetworkListener_run(void *p);
@@ -59,7 +61,7 @@ NetworkListener::~NetworkListener() {
 
 void NetworkListener::StopNetworkListener() {
   if (!background_thread_running_) {
-    LM_W(("NetworkListener not running, nothing to stop"));
+    LOG_W(logs.listener, ("NetworkListener not running, nothing to stop"));
     return;   // Nothing to do
   }
   background_thread_running_ = false;
@@ -67,7 +69,7 @@ void NetworkListener::StopNetworkListener() {
   // Close the open file descriptor
   int rc = ::close(rFd_);
   if (rc) {
-    LM_W(("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc ));
+    LOG_W(logs.listener, ("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc));
   }
   rFd_ = -1;
 
@@ -81,7 +83,7 @@ void NetworkListener::StopNetworkListener() {
 
 Status NetworkListener::InitNetworkListener(int port) {
   if (port_ != -1) {
-    LM_W(("NetworkListener previously initialized with port %d. Ignoring...", port_));
+    LOG_W(logs.listener, ("NetworkListener previously initialized with port %d. Ignoring...", port_));
     return au::Error;
   }
 
@@ -93,7 +95,7 @@ Status NetworkListener::InitNetworkListener(int port) {
   struct sockaddr_in peer;
 
   if (rFd_ != -1) {
-    LM_W(("This listener already seems to be prepared, so not init again"));
+    LOG_W(logs.listener, ("This listener already seems to be prepared, so not init again"));
     return Error;
   }
 
@@ -115,22 +117,22 @@ Status NetworkListener::InitNetworkListener(int port) {
   if (bind(rFd_, reinterpret_cast<struct sockaddr *>(&sock), sizeof(struct sockaddr_in)) == -1) {
     ::close(rFd_);
     rFd_ = -1;
-    // LM_RP(BindError, ("bind to port %d: %s", port, strerror(errno)));
+    // LM_RP() makes the return of Status BindError and it also prints strerror(errno)
+    LOG_V(logs.listener, ("Error in bind to port %d", port));
     return BindError;
   }
 
   if (listen(rFd_, 10) == -1) {
     ::close(rFd_);
     rFd_ = -1;
-    // LM_RP(ListenError, ("listen to port %d", port));
-    return ListenError;
+    // LM_RP() makes the return of Status ListenError and it also prints strerror(errno)
+    LM_RP(ListenError, ("Error listening on port %d", port));
   }
 
 
   // Create thread
-  LM_T(LmtCleanup, ("Creating a thread, NetworkListener on port:%d", port));
   std::string name = au::str("NetworkListener on port %d", port);
-  int s = au::Singleton<au::ThreadManager>::shared()->addNonDetachedThread(name
+  int s = au::Singleton<au::ThreadManager>::shared()->AddNonDetachedThread(name
                                                                            , &t
                                                                            , NULL
                                                                            , NetworkListener_run
@@ -139,6 +141,7 @@ Status NetworkListener::InitNetworkListener(int port) {
     background_thread_running_ = true;
     return OK;
   } else {
+    LOG_E(logs.listener, ("Error creating thread on port %d: %s", port, strerror(errno)));
     return au::Error;
   }
 }
@@ -157,13 +160,11 @@ void *NetworkListener::runNetworkListener() {
   struct timeval tv;
 
   int fds;
-  LM_T(LmtCleanup, ("Thread running"));
 
   while (true) {
     // this means that stop has been called
     int rFd = rFd_;
     if (rFd == -1) {
-      LM_T(LmtCleanup, ("return because rFd_ == -1"));
       return (void *)"rFd_ == -1";
     }
 
@@ -234,7 +235,7 @@ SocketConnection *NetworkListener::acceptNewNetworkConnection(void) {
   if (rFd == -1) {
     return NULL;
   }
-  LM_T(LmtNetworkListener, ("Accepting incoming connection"));
+
   if ((fd = ::accept(rFd, (struct sockaddr *)&sin, &len)) == -1) {
     LM_RP(NULL, ("accept"));
   }

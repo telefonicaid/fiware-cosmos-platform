@@ -13,8 +13,8 @@
 #include "logMsg/logMsg.h"
 #include <stdlib.h>  // malloc
 
-#include "samson/module/Data.h"
 #include "samson/common/Logs.h"
+#include "samson/module/Data.h"
 #include "samson/module/ModulesManager.h"
 
 
@@ -22,28 +22,26 @@
 
 namespace samson {
 au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::ErrorManager& error) {
-
   au::Cronometer cronometer;
-  
+
   if (buffer == NULL) {
-    error.set("NULL buffer provided");
+    error.AddError("NULL buffer provided");
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Candidate instance
   au::SharedPointer<KVFile> kv_file(new KVFile());
   kv_file->buffer_ = buffer;
-  buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
-  
+
   if (buffer->size() < sizeof(KVHeader)) {
-    error.set(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
+    error.AddError(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Copy & check header of this packet
   memcpy(&kv_file->header_, buffer->data(), sizeof(KVHeader));
   if (!kv_file->header_.Check()) {
-    error.set("KVHeader error: wrong magic number");
+    error.AddError("KVHeader error: wrong magic number");
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -60,16 +58,16 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     return kv_file;
   }
 
-  Data *key_data = au::Singleton<ModulesManager>::shared()->getData(kv_file->header_.keyFormat);
-  Data *value_data = au::Singleton<ModulesManager>::shared()->getData(kv_file->header_.valueFormat);
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.valueFormat);
 
   if (!key_data) {
-    error.set(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
+    error.AddError(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   if (!value_data) {
-    error.set(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
+    error.AddError(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -84,13 +82,14 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   size_t size_for_info = sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
   size_t size_for_kvs_idnex = sizeof(int) * KVFILE_NUM_HASHGROUPS;
   size_t size_total = size_for_kvs + size_for_info + size_for_kvs_idnex;
-  
-  std::string buffer_name = au::str("Auxiliar buffer for KVFile for block %s" , buffer->str().c_str() );
-  kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, "KVFile", size_total );
-  
-  kv_file->kvs       = (KV *) kv_file->auxiliar_buffer_->data();
-  kv_file->info      = (KVInfo *) ( kv_file->auxiliar_buffer_->data() + size_for_kvs );
-  kv_file->kvs_index = (int *) ( kv_file->auxiliar_buffer_->data() + size_for_kvs + size_for_info );
+
+  std::string buffer_name = au::str("KVFile for block %s", buffer->name().c_str());
+  kv_file->auxiliar_buffer_ = engine::Buffer::Create(buffer_name, size_total);
+  kv_file->auxiliar_buffer_->set_size(size_total);  // Set total size for statistics about used memory
+
+  kv_file->kvs       = (KV *)kv_file->auxiliar_buffer_->data();
+  kv_file->info      = (KVInfo *)(kv_file->auxiliar_buffer_->data() + size_for_kvs);
+  kv_file->kvs_index = (int *)(kv_file->auxiliar_buffer_->data() + size_for_kvs + size_for_info);
 
   // Local pointer fo easy access
   KV *kvs = kv_file->kvs;
@@ -123,7 +122,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     info[hg].append(kvs[i].key_size + kvs[i].value_size, 1);
     // Check hg value
     if (hg < previous_hg) {
-      error.set(
+      error.AddError(
         au::str("Error parsing a block. Key-value #%lu belongs to hash-group %d and previous hg was %d"
                 , i
                 , hg
@@ -143,50 +142,45 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   // Check correct formatted block
 
-  if (( total_info.size != kv_file->header_.info.size ) || ( total_info.kvs != kv_file->header_.info.kvs )) {
-    error.set(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
-                      kv_file->header_.info.str().c_str()));
+  if ((total_info.size != kv_file->header_.info.size) || (total_info.kvs != kv_file->header_.info.kvs)) {
+    error.AddError(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
+                           kv_file->header_.info.str().c_str()));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Check correct final offset
   if (offset != kv_file->header_.info.size) {
-    error.set(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
+    error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Everything correct, return generated kv_file
   LOG_M(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
-                      , au::str( size_total ,  "B" ).c_str()
-                      , au::str(cronometer.seconds()).c_str()
-                      , kv_file->header_.keyFormat
-                      , kv_file->header_.valueFormat
-                      , buffer->str().c_str() ));
-  
+                       , au::str(size_total, "B").c_str()
+                       , au::str(cronometer.seconds()).c_str()
+                       , kv_file->header_.keyFormat
+                       , kv_file->header_.valueFormat
+                       , buffer->str().c_str()));
+
   return kv_file;
 }
 
 KVFile::~KVFile() {
-
-  // Tag for debuggin
-  if( buffer_ != NULL )
-    buffer_->RemoveTag( au::str("kvfile_%p" , this ) );
-
-  if( key_ )
+  if (key_) {
     delete key_;
-  if( value_ )
+  }
+  if (value_) {
     delete value_;
+  }
 }
 
 size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
-
-
   if (header_.IsTxt()) {
     size_t line_begin = 0;
     size_t num_lines = 0;
     while (true) {
       size_t line_size = 0;
-      while (( data[line_begin + line_size ] != '\n') && ((line_begin + line_size) < data_size)) {
+      while ((data[line_begin + line_size ] != '\n') && ((line_begin + line_size) < data_size)) {
         line_size++;
       }
 
@@ -234,7 +228,4 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
 KVHeader KVFile::header() {
   return header_;
 }
-  
-  
-
 }

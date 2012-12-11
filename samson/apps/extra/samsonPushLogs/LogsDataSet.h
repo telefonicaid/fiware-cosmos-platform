@@ -16,6 +16,7 @@
 #include <time.h>
 #include <vector>
 
+#include "au/log/LogMain.h"
 #include "logMsg/logMsg.h"
 
 /* ****************************************************************************
@@ -70,10 +71,10 @@ public:
   }
 
   time_t GetFirstTimestamp() {
-    LM_M(("For queue:%s, Get first_timestamp:%s", queue_name_, ctimeUTC(&first_timestamp_))); return first_timestamp_;
+    LOG_SM(("For queue:%s, Get first_timestamp:%s", queue_name_, ctimeUTC(&first_timestamp_))); return first_timestamp_;
   };
   void SetFirstTimestamp(time_t value) {
-    first_timestamp_ = value; LM_M(("For queue:%s, Set first_timestamp:%s", queue_name_, ctimeUTC(&first_timestamp_)));
+    first_timestamp_ = value; LOG_SM(("For queue:%s, Set first_timestamp:%s", queue_name_, ctimeUTC(&first_timestamp_)));
   };
 
   const char *GetQueueName() {

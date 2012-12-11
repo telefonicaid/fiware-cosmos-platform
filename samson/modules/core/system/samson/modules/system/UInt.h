@@ -103,7 +103,22 @@ class UInt : public samson::DataInstance {
         return compare( data1 , data2 , &offset_1 , &offset_2 );
     }
 
-    void setFromString(const char *_data)
+	virtual bool setContentFromString(const char *str , std::string& error_message) {
+	   
+	   // Check all all numbers
+	   for ( size_t i = 0 ; i < strlen(str) ; i++ ) {
+		  if( !isdigit(str[i]) ) {
+			 error_message = "Only digits are supported";
+			 return false;
+		  }		  
+	   } 
+
+	   setFromString( str );
+	   return true;
+	   
+	}
+
+    virtual void setFromString(const char *_data)
     {
         if (strncmp(_data, "0x", strlen("0x")) == 0)
         {

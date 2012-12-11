@@ -10,7 +10,7 @@
  */
 
 
-#include "logMsg/logMsg.h"      // LM_M
+#include "logMsg/logMsg.h"      // LOG_SM
 #include "logMsg/traceLevels.h"  // LmtEngineNotification
 
 #include "engine/Logs.h"
@@ -38,13 +38,13 @@ void NotificationListenersManager::Add(NotificationListener *o) {
   // Adding object to the general map by id
   objects_.insertInMap(o->engine_id_, o);
 
-  LOG_D( logs.notifications, ("Add object %p for id %lu", o, o->engine_id_ ));
+  LOG_D(logs.notifications, ("Add object %p for id %lu", o, o->engine_id_ ));
 }
 
 void NotificationListenersManager::Remove(NotificationListener *o) {
   au::TokenTaker tt(&token_);
 
-  LOG_D( logs.notifications, ("Remove completely object %lu", o, o->engine_id_  ));
+  LOG_D(logs.notifications, ("Remove completely object %lu", o, o->engine_id_  ));
   objects_.extractFromMap(o->engine_id_);
 
   au::map< const char *, IdsCollection, au::strCompare >::iterator c;
@@ -56,14 +56,14 @@ void NotificationListenersManager::Remove(NotificationListener *o) {
 void NotificationListenersManager::AddToChannel(NotificationListener *o, const char *name) {
   au::TokenTaker tt(&token_);
 
-  LOG_D( logs.notifications, ("Add object %lu to channel %s", o->engine_id_, name ));
+  LOG_D(logs.notifications, ("Add object %lu to channel %s", o->engine_id_, name ));
   GetListenersForChannel(name)->add(o->engine_id_);
 }
 
 void NotificationListenersManager::RemoveFromChannel(NotificationListener *o, const char *name) {
   au::TokenTaker tt(&token_);
 
-  LOG_D( logs.notifications, ("Remove object %lu to channel %s", o->engine_id_, name ));
+  LOG_D(logs.notifications, ("Remove object %lu to channel %s", o->engine_id_, name ));
   GetListenersForChannel(name)->remove(o->engine_id_);
 }
 

@@ -59,7 +59,7 @@ int logFd             = -1;
 
 int main(int argC, char **argV) {
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void*) "only errors");
+  paConfig("log to screen",                 (void *)"only errors");
   paConfig("log to screen",                 (void *)false);
   paConfig("log to file",                   (void *)true);
   paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
@@ -68,18 +68,30 @@ int main(int argC, char **argV) {
   paConfig("man author",                    "Samson team");
 
   // Parse incomming arguments without being alteres by google test library arguments
-  if (( argC > 2 ) &&  (strcmp(argV[1], "-t") == 0)) {
+  if ((argC > 2) &&  (strcmp(argV[1], "-t") == 0)) {
     paParse(paArgs, 3, (char **)argV, 3, false);
   } else {
     // Avoid parsing any argument
     paParse(paArgs, 1, (char **)argV, 1, false);
   }
-  
+
   // Set assert flag to true ro force asserts instead of exits
   lmAssertAtExit = true;
 
+  // Init log sytem
+  au::LogCentral::InitLogSystem(argV[0]);
+  au::log_central->AddScreenPlugin("screen", "[type][channel] text");
+
+  // Set Error level for this channel to avoid unnecessary warning messages when testing stuff
+  au::log_central->evalCommand("log_set system E");
+
   // Run all tests
   ::testing::InitGoogleTest(&argC, argV);
-  return RUN_ALL_TESTS();
+  int r = RUN_ALL_TESTS();
+
+
+  au::LogCentral::StopLogSystem();
+
+  return r;
 }
 

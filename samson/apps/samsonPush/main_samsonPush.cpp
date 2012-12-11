@@ -146,7 +146,7 @@ void receive_data_from_port() {
   while (true) {
     sleep(5);
     manager.review_connections();
-    LM_M(("samsonPush listening from port %d with %lu active connections", port,  manager.getNumConnections()));
+    LOG_SM(("samsonPush listening from port %d with %lu active connections", port,  manager.getNumConnections()));
   }
 }
 
@@ -225,7 +225,7 @@ int main(int argc, const char *argv[]) {
   LM_V(("Input parameter break_sequence '%s' ( length %d ) ", tmp_separator.c_str(), strlen(breaker_sequence)));
 
   // Statistics about stdin rate ( it also controls max rate )
-  au::rate::Rate rate_stdin;
+  au::Rate rate_stdin;
 
   while (true) {
     // --------------------------------------------------------------------
@@ -279,7 +279,7 @@ int main(int argc, const char *argv[]) {
     }
     size_t output_size = last_pos - data + strlen(breaker_sequence);
 
-    // LM_M(("Processing buffer with %s --> %s block push to queue" , au::str(size).c_str() , au::str(output_size).c_str() ));
+    // LOG_SM(("Processing buffer with %s --> %s block push to queue" , au::str(size).c_str() , au::str(output_size).c_str() ));
 
     // Emit this block of data ( always flushing to the platform )
     LM_V(("Pushing a buffer of %s bytes to our push buffer", au::str(output_size).c_str()));

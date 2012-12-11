@@ -95,25 +95,17 @@ public:
   // Set functions
   int Set(const std::string& path, const char *value = NULL, int value_len = 0, int version = -1);
   int Set(const std::string& path, ::google::protobuf::Message *value, int version = -1);
-  
+  int Set(const std::string& path, const std::string& value, int version = -1);
+
   // Get functions
   int Get(const std::string& path, char *buffer, int *buflen, struct Stat *stat = NULL);
   int Get(const std::string& path, ::google::protobuf::Message *value);
-  int Get(const std::string& path, engine::BufferPointer buffe);
-  int Get(const std::string& path, std::string& value);
-  int Get(const std::string& path
-          , size_t engine_id
-          , char *buffer = NULL
-          , int *buffer_len = NULL
-          , struct Stat *stat = NULL);
-  int Get(const std::string& path
-          , size_t engine_id
-          , std::string& value
-          , struct Stat *stat = NULL);
-  int Get(const std::string& path
-          , size_t engine_id
-          , ::google::protobuf::Message *value
-          , struct Stat *stat = NULL);
+  int Get(const std::string& path, std::string& value, struct Stat *data = NULL);
+  int Get(const std::string& path, engine::BufferPointer buffer);
+
+  int Get(const std::string& path, size_t engine_id, char *buf = NULL, int *buf_len = NULL, struct Stat *stat = NULL);
+  int Get(const std::string& path, size_t engine_id, ::google::protobuf::Message *value, struct Stat *stat = NULL);
+  int Get(const std::string& path, size_t engine_id, std::string& value, struct Stat *stat = NULL);
 
   // Exist functions
   int Exists(const std::string& path, struct Stat *stat = NULL);
@@ -127,18 +119,21 @@ public:
   // Connection time in seconds
   double GetConnectionTime();
 
-  size_t get_rate_in(){ return rate_read_.rate(); };
-  size_t get_rate_out(){ return rate_write_.rate(); };
-  
+  size_t get_rate_in() {
+    return rate_read_.rate();
+  };
+  size_t get_rate_out() {
+    return rate_write_.rate();
+  };
+
 private:
 
   // Cronometer since its creation
   au::Cronometer cronometer_;
-  
+
   // Rate measurements
-  au::rate::Rate rate_read_;
-  au::rate::Rate rate_write_;
-  
+  au::Rate rate_read_;
+  au::Rate rate_write_;
 };
 }
 }                       // End of namespace samson::zoo

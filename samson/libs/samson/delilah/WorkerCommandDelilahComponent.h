@@ -15,14 +15,14 @@
 #include <cstring>
 #include <map>
 
+#include "au/ErrorManager.h"          // au::ErrorManager
 #include "au/console/CommandCatalogue.h"
 #include "au/containers/SharedPointer.h"
-#include "au/statistics/Cronometer.h"          // au::CronometerSystem
-#include "au/ErrorManager.h"        // au::ErrorManager
+#include "au/statistics/Cronometer.h"  // au::CronometerSystem
 
-#include "samson/common/samson.pb.h"
+
 #include "samson/delilah/DelilahComponent.h"
-#include "samson/network/Message.h" // Message::MessageCode
+#include "samson/network/Message.h"  // Message::MessageCode
 #include "samson/network/Packet.h"  // samson::Packet
 
 namespace engine {
@@ -46,14 +46,14 @@ public:
 
   WorkerResponese(size_t _worker_id, std::string error_message) {
     worker_id_ = _worker_id;
-    error_.set(error_message);
+    error_.AddError(error_message);
   }
 
   size_t worker_id() {
     return worker_id_;
   }
 
-  const au::ErrorManager&error() {
+  au::ErrorManager& error() {
     return error_;
   }
 
@@ -81,9 +81,6 @@ public:
 
   // Get main table of result ( to show on screen )
   au::tables::Table *getMainTable();
-
-  // Transform a collection received from workers to a table ( to be printed on screen )
-  static au::tables::Table *getStaticTable(au::SharedPointer<gpb::Collection> collection);
 
 private:
 

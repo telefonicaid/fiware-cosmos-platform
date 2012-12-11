@@ -55,8 +55,8 @@ public:
   ~Descriptors();
 
   void Add(const std::string& txt);
-  size_t size();
-  std::string str();
+  size_t size()  const;
+  std::string str() const;
 
 private:
 

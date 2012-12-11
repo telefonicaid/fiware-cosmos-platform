@@ -16,21 +16,20 @@
 #include "engine/ProcessItem.h"             // engine::ProcessItem
 #include "engine/ProcessManager.h"          // engine::ProcessManager
 
-#include "samson/worker/SamsonWorker.h"
 #include "samson/common/KVHeader.h"
-#include "samson/stream/ProcessIsolated.h"                // Own interface
-#include "samson/stream/ProcessWriter.h"
-#include "samson/stream/SharedMemoryManager.h"
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/Packet.h"
+#include "samson/stream/ProcessIsolated.h"  // Own interface
+#include "samson/stream/ProcessWriter.h"
+#include "samson/stream/SharedMemoryManager.h"
+#include "samson/worker/SamsonWorker.h"
 
 namespace samson {
-
-ProcessIsolated::ProcessIsolated(SamsonWorker* samson_worker
+ProcessIsolated::ProcessIsolated(SamsonWorker *samson_worker
                                  , size_t worker_task_id
                                  , const std::string& operation
                                  , const std::string& concept
-                                 , ProcessBaseType _type ) :
+                                 , ProcessBaseType _type) :
   ProcessItemIsolated(samson_worker, worker_task_id, operation, concept) {
   num_outputs = 0;   // Outputs are defined calling "addOutput" with the rigth output format
   type = _type;   // Keep the type of operation ( data is generated differently )
@@ -40,9 +39,9 @@ ProcessIsolated::ProcessIsolated(SamsonWorker* samson_worker
   shm_id = -1;
   item = NULL;
 
-    // Output ranges based on cluster information
-    output_ranges_ = samson_worker->worker_controller()->GetKVRanges();
-    
+  // Output ranges based on cluster information
+  output_ranges_ = samson_worker->worker_controller()->GetKVRanges();
+
   writer = NULL;
   txtWriter = NULL;
 }
@@ -78,7 +77,7 @@ ProcessTXTWriter *ProcessIsolated::getTXTWriter() {
 }
 
 void ProcessIsolated::runCode(int c) {
-  // LM_M(("Isolated process Running code %d",c));
+  // LOG_SM(("Isolated process Running code %d",c));
 
   switch (c) {
     case WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:
@@ -92,18 +91,18 @@ void ProcessIsolated::runCode(int c) {
 
       break;
     default:
-      error_.set("System error: Unknown code in the isolated process communication");
+      error_.AddError("System error: Unknown code in the isolated process communication");
       break;
   }
 
-  // LM_M(("Finish Isolated process Running code %d",c));
+  // LOG_SM(("Finish Isolated process Running code %d",c));
 }
 
 void ProcessIsolated::flushBuffer(bool finish) {
   au::Cronometer cronometer;
 
-  LM_T(LmtIsolatedOutputs,
-      ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id, process_item_description().c_str()));
+  LOG_M(logs.isolated_process,
+        ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id, process_item_description().c_str()));
 
   switch (type) {
     case key_value:
@@ -114,16 +113,16 @@ void ProcessIsolated::flushBuffer(bool finish) {
       break;
   }
 
-  LM_T(LmtIsolatedOutputs, ("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s "
-          , shm_id, process_item_description().c_str(), au::S(cronometer).str().c_str()));
+  LOG_M(logs.isolated_process, ("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s "
+                                , shm_id, process_item_description().c_str(), au::S(cronometer).str().c_str()));
 }
 
 void ProcessIsolated::flushKVBuffer(bool finish) {
 #pragma mark ---
 
   // General output buffer
-  char *buffer = item->data;
-  size_t size = item->size;
+  char *buffer = item->data();
+  size_t size = item->size();
 
   // Make sure everything is correct
   if (!buffer) {
@@ -135,7 +134,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
   OutputChannel *channel = reinterpret_cast<OutputChannel *>(buffer);
 
   // NodeBuffers ( inodes in the shared memory buffer )
-  NodeBuffer *node = reinterpret_cast<NodeBuffer *>(buffer + sizeof(OutputChannel) * num_outputs );
+  NodeBuffer *node = reinterpret_cast<NodeBuffer *>(buffer + sizeof(OutputChannel) * num_outputs);
 
 #pragma mark ---
 
@@ -143,9 +142,10 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
 
   for (int o = 0; o < num_outputs; o++) {
     OutputChannel *_channel = &channel[o];
-    
-    if (_channel->info.size == 0)
+
+    if (_channel->info.size == 0) {
       continue;
+    }
 
     // For each output range, create an output buffer
     for (size_t r = 0; r < output_ranges_.size(); r++) {
@@ -162,8 +162,8 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
         continue;
       }
 
-      engine::BufferPointer buffer = engine::Buffer::Create("Output of [" + concept() + "]", "ProcessIsolated",
-                                                            sizeof(KVHeader) + range_info.size);
+      engine::BufferPointer buffer = engine::Buffer::Create("Output of an isolated process [" + concept() + "]"
+                                                            , sizeof(KVHeader) + range_info.size);
 
       if (buffer == NULL) {
         LM_X(1, ("Internal error: Not possible to create a buffer"));
@@ -175,24 +175,23 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
       buffer->SkipWrite(sizeof(KVHeader));
 
       // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
-      if (outputFormats.size() > (size_t) o) {
+      if (outputFormats.size() > (size_t)o) {
         header->Init(outputFormats[o], range_info);
       } else {
-        error_.set(au::str("No output format for output %d", o));
+        error_.AddError(au::str("No output format for output %d", o));
         return;
       }
-      
-      for (int i = range.hg_begin_; i <  range.hg_end_; i++) {
 
+      for (int i = range.hg_begin_; i <  range.hg_end_; i++) {
         // Current hash-group output
         HashGroupOutput *_hgOutput = &_channel->hg[i];
-        
+
         // Write data following nodes
         uint32 node_id = _hgOutput->first_node;
         while (node_id != KV_NODE_UNASIGNED) {
           if (node_id > _hgOutput->last_node) {
-            LM_W(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
-                  _hgOutput->first_node, _hgOutput->last_node, node_id));
+            LOG_SW(("Warning, we have passed through the end of hashgroup(%u,%u), node_id:%u",
+                    _hgOutput->first_node, _hgOutput->last_node, node_id));
           }
           bool ans = buffer->Write(reinterpret_cast<char *>(node[node_id].data), node[node_id].size);
           if (!ans) {
@@ -201,24 +200,24 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
           node_id = node[node_id].next;
         }
       }
-      
+
       if (buffer->size() != buffer->max_size()) {
         LM_X(1, ("Internal error"));   // Set the hash-group limits of the header
       }
 
       int min_hg = range.hg_begin_;
       int max_hg = range.hg_end_;
-      
+
       while (_channel->hg[min_hg].info.size == 0) {
         min_hg++;
       }
       while (_channel->hg[max_hg - 1].info.size == 0) {
         max_hg--;
       }
-      
+
       // Compute the range of valid data
       header->range = KVRange(min_hg, max_hg);
-      
+
       // Process the output buffer
       processOutputBuffer(buffer, o);
     }
@@ -229,15 +228,15 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
 #pragma mark ---
 
   // Size if the firt thing in the buffer
-  size_t size = *(reinterpret_cast<size_t *>(item->data));
+  size_t size = *(reinterpret_cast<size_t *>(item->data()));
 
   // Init the data buffer used here
-  char *data = item->data + sizeof(size_t);
+  char *data = item->data() + sizeof(size_t);
 
 #pragma mark ---
 
   if (size > 0) {
-    engine::BufferPointer buffer = engine::Buffer::Create("Output of [" + concept() + "]", "ProcessIsolated",
+    engine::BufferPointer buffer = engine::Buffer::Create("Output of an isolated process [" + concept() + "]",
                                                           sizeof(KVHeader) + size);
 
     if (buffer == NULL) {
@@ -255,36 +254,35 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
 }
 
 void ProcessIsolated::initProcessItemIsolated() {
-
   setActivity("process");
-  
+
   initProcessIsolated();   // Init function in the foreground-process
-  
-  if( !CheckCompleteKVRanges(output_ranges_) )
-    error_.set("Output ranges are not complete");
-  
-  if (error_.IsActivated()) {
+
+  if (!CheckCompleteKVRanges(output_ranges_)) {
+    error_.AddError("Output ranges are not complete");
+  }
+
+  if (error_.HasErrors()) {
     return;
   }
-  
+
   // Init the shared memory segment
-  shm_id = engine::SharedMemoryManager::shared()->RetainSharedMemoryArea();
+  shm_id = samson::SharedMemoryManager::Shared()->RetainSharedMemoryArea();
   if (shm_id != -1) {
-    item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform(shm_id);
+    item = samson::SharedMemoryManager::Shared()->GetSharedMemoryPlatform(shm_id);
   } else {
-    error_.set(au::str("Error getting shared memory for %s", process_item_description().c_str()));
+    error_.AddError(au::str("Error getting shared memory for %s", process_item_description().c_str()));
   }
 }
 
 void ProcessIsolated::finishProcessItemIsolated() {
   if (shm_id != -1) {
-    engine::SharedMemoryManager::shared()->ReleaseSharedMemoryArea(shm_id);
+    samson::SharedMemoryManager::Shared()->ReleaseSharedMemoryArea(shm_id);
     item = NULL;
     shm_id = -1;
   }
-  
-  setActivity("finishing");
 
+  setActivity("finishing");
 }
 
 void ProcessIsolated::runIsolated() {

@@ -108,30 +108,18 @@ message Block
 message Queue
 {
 	required string name         = 1;  // Name of this queue
-	required uint64 version      = 2;  // Version number of this queue ( updated when modified )
 	repeated Block  blocks       = 3;  // Blocks contained in this queue
 	required string key_format   = 4;  // Format for the key
 	required string value_format = 5;  // Format for the value
+
+	required uint64 commit_id    = 2;  // Version number of this queue ( updated when modified )
+	
 }
 
 message QueueConnection
 {
 	required string queue_source = 1; // Source queue
 	required string queue_target = 2; // Target queu
-}
-
-message Operation
-{
-	required string name = 1; // Name of the operation
-	required string type = 2; // map, reduce, etc...
-	required string help = 3; // Some help message for this operation	
-}
-
-message Module
-{
-	required string name = 1;          // Name of the module
-	required uint64 block_id = 2;      // Block where this module is stored
-	repeated Operation operations = 3; // Operations included in this module
 }
 
 message Data
@@ -149,11 +137,11 @@ message Data
 	// Queue connections ( to duplicate data automatically when added to a queue )
 	repeated QueueConnection queue_connections = 5;
 
-	// Modules
-	repeated Module modules = 6;
-
 	// Last commit seen so far ( and id for the next commit )
 	required uint64 commit_id = 7;
+
+	// Last commits for debug
+	repeated string last_commits = 8;
 }
 
 message DataCommit
@@ -336,7 +324,8 @@ message WorkerCommand
 message WorkerCommandResponse
 {
 	required WorkerCommand worker_command = 1;	// Copy of the original command ( Including the enviroment properties system.*)
-	optional Error error   = 2;	      			// Optional error message ( if any )
+	repeated string error   = 2;	      			// Optional error messages
+	repeated string warning = 3;	      			// Optional warning messages
 }
 
 // ////////////////////////////////////////////////////////////////////////////

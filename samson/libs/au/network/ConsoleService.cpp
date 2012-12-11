@@ -74,7 +74,7 @@ void ConsoleServiceClientBase::FillMessage(au::gpb::ConsolePacket *message, au::
 
 void ConsoleServiceClientBase::Disconnect(au::ErrorManager *error) {
   if (socket_connection_) {
-    error->AddWarning(au::str("Closing connection with %s\n", socket_connection_->host_and_port() .c_str()));
+    error->AddWarning(au::str("Closing connection with %s\n", socket_connection_->host_and_port().c_str()));
 
     socket_connection_->Close();
     delete socket_connection_;
@@ -86,7 +86,7 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
   // Disconnect from previos one if any...
   Disconnect(error);
 
-  if (error->IsActivated()) {
+  if (error->HasErrors()) {
     return;
   }
 
@@ -101,15 +101,16 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
 }
 
 std::string ConsoleServiceClientBase::getPrompt() {
-
   // If not connected....
-  if( !socket_connection_ )
+  if (!socket_connection_) {
     return "Disconnected > ";
-  
-  if( current_prompt_ != "" )
+  }
+
+  if (current_prompt_ != "") {
     if (cronometer_prompt_request_.seconds() < 2) {
       return current_prompt_;
     }
+  }
 
   // Prepare message to be send to server
   au::gpb::ConsolePacket m;
@@ -135,7 +136,7 @@ std::string ConsoleServiceClientBase::getPrompt() {
   return current_prompt_;
 }
 
-void ConsoleServiceClientBase::evalCommand(std::string command, au::ErrorManager *error) {
+void ConsoleServiceClientBase::evalCommand(const std::string& command, au::ErrorManager *error) {
   // Establish connection
   au::CommandLine cmdLine;
 
@@ -185,7 +186,7 @@ void ConsoleServiceClientBase::evalCommand(std::string command, au::ErrorManager
   }
 }
 
-void ConsoleServiceClientBase::autoComplete(ConsoleAutoComplete *info) {
+void ConsoleServiceClientBase::autoComplete(console::ConsoleAutoComplete *info) {
   // Options for connection and disconnection...
   if (info->completingFirstWord()) {
     info->add("connect");
@@ -213,7 +214,7 @@ void ConsoleServiceClientBase::autoComplete(ConsoleAutoComplete *info) {
   for (int i = 0; i < answer->auto_completion_alternatives_size(); i++) {
     std::string label = answer->auto_completion_alternatives(i).label();
     std::string command = answer->auto_completion_alternatives(i).command();
-    bool add_space = answer->auto_completion_alternatives(i). add_space_if_unique();
+    bool add_space = answer->auto_completion_alternatives(i).add_space_if_unique();
     info->add(label, command, add_space);
   }
 }
@@ -226,14 +227,14 @@ ConsoleServiceClient::ConsoleServiceClient(int port) :
 }
 
 // Write all messages on console
-void ConsoleServiceClient::evalCommand(std::string command) {
+void ConsoleServiceClient::evalCommand(const std::string& command) {
   au::ErrorManager error;
 
   ConsoleServiceClientBase::evalCommand(command, &error);
   Console::write(&error);
 }
 
-void ConsoleServiceClient::autoComplete(ConsoleAutoComplete *info) {
+void ConsoleServiceClient::autoComplete(console::ConsoleAutoComplete *info) {
   ConsoleServiceClientBase::autoComplete(info);
 }
 
@@ -243,21 +244,21 @@ std::string ConsoleServiceClient::getPrompt() {
 
 // Fill message to be sent to client
 void ConsoleService::fill_message(au::ErrorManager *error, au::gpb::ConsolePacket *message) {
-  const au::vector<au::ErrorMessage>& error_messages = error->errors();
-  for (size_t i = 0; i < error_messages.size(); i++) {
-    ErrorMessage *error_message = error_messages[i];
+  const au::vector<au::ErrorManagerItem>& items = error->items();
+  for (size_t i = 0; i < items.size(); i++) {
+    ErrorManagerItem *item = items[i];
 
     au::gpb::Message *m = message->add_message();
-    m->set_txt(error_message->GetMultiLineMessage());
+    m->set_txt(item->message());
 
-    switch (error_message->type()) {
-      case ErrorMessage::item_message:
+    switch (item->type()) {
+      case au::message:
         m->set_type(au::gpb::Message::message);
         break;
-      case ErrorMessage::item_warning:
+      case au::warning:
         m->set_type(au::gpb::Message::warning);
         break;
-      case ErrorMessage::item_error:
+      case au::error:
         m->set_type(au::gpb::Message::error);
         break;
     }
@@ -276,7 +277,7 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
 
     // Finish connection if not possible to read a message
     if (s != OK) {
-      LM_W(("ConsoleService: Could not read message from client correctly (%s).Closing connection", status(s)));
+      LOG_SW(("ConsoleService: Could not read message from client correctly (%s).Closing connection", status(s)));
       socket_connection->Close();
       if (message) {
         delete message;
@@ -289,12 +290,12 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
 
     if (message->has_auto_complettion_command()) {
       // Auto completion request....
-      ConsoleAutoComplete info(message->auto_complettion_command());
+      console::ConsoleAutoComplete info(message->auto_complettion_command());
       autoComplete(&info, &environment);
 
       // Fill answer message with alternatives
       for (size_t i = 0; i < info.getNumAlternatives(); i++) {
-        ConsoleAutoCompleteAlternative alternative = info.getAlternative(i);
+        console::ConsoleAutoCompleteAlternative alternative = info.getAlternative(i);
         au::gpb::AutoCompletionAlternative *a = answer_message.add_auto_completion_alternatives();
         a->set_command(alternative.command);
         a->set_label(alternative.label);
@@ -314,11 +315,11 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
     s = writeGPB(socket_connection->fd(), &answer_message);
     // Finish connection if not possible to read a message
     if (s != OK) {
-      LM_W(("ConsoleService: Could not send message back to client correctly (%s).Closing connection", status(s)));
+      LOG_SW(("ConsoleService: Could not send message back to client correctly (%s).Closing connection", status(s)));
       socket_connection->Close();
       return;
     }
   }
 }
 }
-} // end of namespace
+}  // end of namespace

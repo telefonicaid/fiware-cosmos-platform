@@ -14,6 +14,7 @@
 #include "au/console/ConsoleCommand.h"  // Own interface
 
 namespace au {
+namespace console {
 ConsoleCommand::ConsoleCommand() {
   pos = 0;
 }
@@ -107,5 +108,6 @@ int ConsoleCommand::getPos() {
 
 bool ConsoleCommand::isCursorAtEnd() {
   return (pos == (int)command.length());
+}
 }
 }

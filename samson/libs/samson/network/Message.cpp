@@ -13,8 +13,8 @@
  * FILE                     Message.cpp - message definitions for all Samson IPC
  *
  */
+#include "au/log/LogMain.h"
 #include "samson/network/Message.h"            // Own interface
-
 namespace samson {
 namespace Message {
 /* ****************************************************************************
@@ -49,7 +49,7 @@ const char *messageCode(MessageCode code) {
     case BlockRequest:                     return "BlockRequest";
 
     case BlockRequestResponse:             return "BlockRequestResponse";
-      
+
     case StreamOutQueue:                   return "StreamOutQueue";
 
     case WorkerCommand:                    return "WorkerCommand";
@@ -59,6 +59,8 @@ const char *messageCode(MessageCode code) {
     case Message:                          return "Message";
 
     case Unknown:                          return "Unknown";
+
+    default:                               LOG_SW(("Unknown message code(%d)", static_cast<int>(code)));
   }
 
   return (char *)"Unknown";

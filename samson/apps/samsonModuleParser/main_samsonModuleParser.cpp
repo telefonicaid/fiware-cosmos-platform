@@ -107,7 +107,7 @@ int main(int argC, const char *argV[]) {
 
   verbose = cmdLine.GetFlagBool("v");
 
-  if (( res_stat1 == 0) && ( res_stat2 == 0)) {
+  if ((res_stat1 == 0) && (res_stat2 == 0)) {
 /* Disabling timestamp checking, since makefile is more clever and if it has called samsonModuleParser,
  * it has some work to do (for example, the samsonModuleParser itself may have changed).
  *
@@ -144,9 +144,9 @@ int main(int argC, const char *argV[]) {
 
   samson::ModuleInformation *module_information = samson::ModuleInformation::parse(moduleFileName, &error);
 
-  if (error.IsActivated()) {
+  if (error.HasErrors()) {
     std::cerr << "Error parsing file " << moduleFileName << "\n";
-    std::cerr << error.GetMessage();
+    std::cerr << error.GetLastError();
   }
 
   // Print all the files

@@ -63,9 +63,7 @@ TEST(engine_ProcessManager, instantiationTest) {
 
     size_t x = 71;
     process_manager->Add(item.static_pointer_cast<engine::ProcessItem>(), x);
-    // EXPECT_EQ(1, process_manager->num_used_procesors());  Timing issue?
-    process_manager->Cancel(item.static_pointer_cast<engine::ProcessItem>());
-    // EXPECT_EQ(0, process_manager->num_used_procesors());  Timing issue?
+    EXPECT_EQ(0, process_manager->num_used_procesors());
 
     engine::Notification notification("notification_name");
     process_manager->notify(&notification);

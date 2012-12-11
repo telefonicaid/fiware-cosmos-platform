@@ -16,8 +16,9 @@
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 
-#include "samson/common/gpb_operations.h"
+#include "samson/common/Logs.h"
 #include "samson/common/MessagesOperations.h"
+#include "samson/common/gpb_operations.h"
 #include "samson/network/NetworkConnection.h"
 
 namespace samson {
@@ -68,8 +69,8 @@ void CommonNetwork::set_cluster_information(au::SharedPointer<gpb::ClusterInfo> 
     ci_packet->message->mutable_cluster_info()->CopyFrom(*cluster_information_);
     ci_packet->from = node_identifier_;
 
-    LM_T(LmtNetworkConnection, ("Sending cluster info version %lu update packages to all delilahs",
-            cluster_information_->version()));
+    LOG_M(logs.network_connection, ("Sending cluster info version %lu update packages to all delilahs",
+                                    cluster_information_->version()));
 
     SendToAllDelilahs(ci_packet);
   }
@@ -81,53 +82,53 @@ void CommonNetwork::set_cluster_information(au::SharedPointer<gpb::ClusterInfo> 
 void CommonNetwork::review_connections() {
   au::TokenTaker tt(&token_);
 
-  LM_T(LmtNetworkConnection, ("Review connections ( me = %s ) ******************************************"
-          , node_identifier_.str().c_str()));
+  LOG_M(logs.network_connection, ("Review connections ( me = %s ) ******************************************"
+                                  , node_identifier_.str().c_str()));
 
   NetworkManager::Review();   // Check pending packets to be removed after 1 minute disconnected
 
   // Check workers to be connected to
   if (cluster_information_ == NULL) {
-    LM_T(LmtNetworkConnection, ("No cluster information available. Not possible to review connections"));
+    LOG_M(logs.network_connection, ("No cluster information available. Not possible to review connections"));
     return;
   }
 
   int num_workers = cluster_information_->workers_size();
-  LM_T(LmtNetworkConnection, ("Review connections to all workers (cluster with %d workers)", num_workers));
+  LOG_M(logs.network_connection, ("Review connections to all workers (cluster with %d workers)", num_workers));
   for (int i = 0; i < num_workers; i++) {
     size_t worker_id = cluster_information_->workers(i).worker_id();
     std::string name = NodeIdentifier(WorkerNode, worker_id).getCodeName();
     std::string host = cluster_information_->workers(i).worker_info().host();
     int port = cluster_information_->workers(i).worker_info().port();
 
-    LM_T(LmtNetworkConnection, ("Checking connection %s worker_id=%lu at %s:%d"
-            , name.c_str()
-            , worker_id
-            , host.c_str()
-            , port));
+    LOG_M(logs.network_connection, ("Checking connection %s worker_id=%lu at %s:%d"
+                                    , name.c_str()
+                                    , worker_id
+                                    , host.c_str()
+                                    , port));
 
     // Discard for lower id or me ( if I am a worker )
     if (node_identifier_.node_type == WorkerNode) {
       if (node_identifier_.id < worker_id) {
-        LM_T(LmtNetworkConnection,
-            ("Not adding connection with worker %lu (%s:%d) since my id is lower", worker_id, host.c_str(), port));
+        LOG_M(logs.network_connection,
+              ("Not adding connection with worker %lu (%s:%d) since my id is lower", worker_id, host.c_str(), port));
         continue;
       }
       if (node_identifier_.id == worker_id) {
-        LM_T(LmtNetworkConnection,
-            ("Not adding connection with worker %lu (%s:%d) since this is me", worker_id, host.c_str(), port));
+        LOG_M(logs.network_connection,
+              ("Not adding connection with worker %lu (%s:%d) since this is me", worker_id, host.c_str(), port));
         continue;
       }
     }
 
     if (NetworkManager::isConnected(name)) {
-      LM_T(LmtNetworkConnection, ("Worker %lu ( %s ) already connected.", worker_id, name.c_str()));
+      LOG_M(logs.network_connection, ("Worker %lu ( %s ) already connected.", worker_id, name.c_str()));
     } else {
-      LM_T(LmtNetworkConnection, ("Worker %lu ( %s ) not connected. Trying to connect to %s:%d..."
-              , worker_id
-              , name.c_str()
-              , host.c_str()
-              , port));
+      LOG_M(logs.network_connection, ("Worker %lu ( %s ) not connected. Trying to connect to %s:%d..."
+                                      , worker_id
+                                      , name.c_str()
+                                      , host.c_str()
+                                      , port));
 
       addWorkerConnection(worker_id, host, port);
     }
@@ -144,15 +145,15 @@ void CommonNetwork::review_connections() {
 
     if (node_identifier.node_type == WorkerNode) {
       if (!isWorkerIncluded(cluster_information_.shared_object(), node_identifier.id)) {
-        LM_T(LmtNetworkConnection,
-            ("Removing connection %s since this worker is not included in the cluster any more"
-                , connection_name.c_str()));
+        LOG_M(logs.network_connection,
+              ("Removing connection %s since this worker is not included in the cluster any more"
+               , connection_name.c_str()));
         Remove(connection_names[i]);
       }
     }
   }
 
-  LM_T(LmtNetworkConnection, ("END Review connections **************************************************"));
+  LOG_M(logs.network_connection, ("END Review connections **************************************************"));
 }
 
 void CommonNetwork::notify(engine::Notification *notification) {
@@ -160,7 +161,7 @@ void CommonNetwork::notify(engine::Notification *notification) {
     au::SharedPointer<Packet> packet = notification->dictionary().Get<Packet> ("packet");
 
     if (packet == NULL) {
-      LM_W(("Notification notification_send_packet without packet"));
+      LOG_SW(("Notification notification_send_packet without packet"));
       return;
     }
 
@@ -174,7 +175,7 @@ void CommonNetwork::notify(engine::Notification *notification) {
     if (packet != NULL) {
       SendToAllDelilahs(packet);
     } else {
-      LM_W(("Notification send_to_all_delilahs without packet"));
+      LOG_SW(("Notification send_to_all_delilahs without packet"));
     }
     return;
   }
@@ -199,10 +200,10 @@ std::string CommonNetwork::str() {
 Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, int port) {
   NodeIdentifier node_identifier = NodeIdentifier(WorkerNode, worker_id);
 
-  LM_T(LmtNetworkConnection, ("**** Adding connection for worker %lu at %s:%d"
-          , worker_id
-          , host.c_str()
-          , port));
+  LOG_M(logs.network_connection, ("**** Adding connection for worker %lu at %s:%d"
+                                  , worker_id
+                                  , host.c_str()
+                                  , port));
 
   // Name for this connection
   std::string name = node_identifier.getCodeName();
@@ -218,7 +219,7 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
 
   // If there is an error, just return the error
   if (s != au::OK) {
-    LM_W(("Not possible to connect with %s:%d (%s)", host.c_str(), port, au::status(s)));
+    LOG_SW(("Not possible to connect with %s:%d (%s)", host.c_str(), port, au::status(s)));
     return Error;   // Generic error
   }
 
@@ -229,7 +230,7 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
   node_identifier_.fill(pb_hello->mutable_node_identifier());
 
   if (hello_packet->write(socket_connection, NULL) != au::OK) {
-    LM_W(("Not possible to send hello message to %s:%d (%s)", host.c_str(), port, au::status(s)));
+    LOG_SW(("Not possible to send hello message to %s:%d (%s)", host.c_str(), port, au::status(s)));
     return Error;
   }
 
@@ -241,24 +242,22 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
 
 void CommonNetwork::Send(const PacketPointer& packet) {
   if (packet->msgCode == Message::Hello) {
-    LM_W(("Not allowed to send hello message outside initial handshake"));
+    LOG_W(logs.worker, ("Not allowed to send hello message outside initial handshake"));
     return;
   }
 
-  // Add more info to buffer name for debugging
-  engine::BufferPointer buffer = packet->buffer();
-  if (buffer != NULL) {
-    buffer->add_to_name(au::str(" [in packet to %s]", packet->to.str().c_str()));   // Set me as from identifier
-  }
+  // Set me as "from" identifier
   packet->from = node_identifier_;
 
   if (packet->to == node_identifier_) {
-    // Local loop
-    schedule_receive(packet);
+    schedule_receive(packet);    // Local loop
     return;
   }
 
   // Push a packet to a connection or eventually keep in queue to see if it connects back soon ;)
+  LOG_V(logs.out_messages, ("Sending packet %s to %s"
+                            , packet->str().c_str()
+                            , packet->to.str().c_str()));
   NetworkManager::Send(packet);
 }
 
@@ -277,16 +276,16 @@ void CommonNetwork::SendToAllWorkers(const PacketPointer& packet, std::set<size_
 
 // Receive a packet from a connection
 void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& packet) {
-  LM_T(LmtNetworkConnection, ("RECEIVED from %s: PACKET %s\n", connection->getName().c_str(), packet->str().c_str()));
+  LOG_M(logs.network_connection, ("RECEIVED from %s: PACKET %s\n", connection->name().c_str(), packet->str().c_str()));
 
   if (packet->msgCode == Message::Hello) {
-    LM_W(("Received a hello packet once connection is identified. Ignoring..."));
+    LOG_SW(("Received a hello packet once connection is identified. Ignoring..."));
     return;   // Ignore hello message here
   }
 
   if (packet->msgCode == Message::ClusterInfoUpdate) {
     if (node_identifier_.node_type == WorkerNode) {
-      LM_W(("ClusterInfoUpdate packet received at a worker node from connection %s. Closing connection"
+      LOG_SW(("ClusterInfoUpdate packet received at a worker node from connection %s. Closing connection"
               , connection->node_identifier().str().c_str()));
       connection->Close();
       return;
@@ -294,7 +293,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
   }
   // Check we do now receive messages from unidenfitied node elements
   if (connection->node_identifier().node_type == UnknownNode) {
-    LM_W(("Packet %s received from a non-identified node %s. Closing connection"
+    LOG_SW(("Packet %s received from a non-identified node %s. Closing connection"
             , packet->str().c_str()
             , connection->node_identifier().str().c_str()));
     connection->Close();
@@ -343,10 +342,6 @@ au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
   return table;
 }
 
-au::SharedPointer<gpb::Collection> CommonNetwork::GetConnectionsCollection(const Visualization& visualization) {
-  return NetworkManager::GetConnectionsCollection(visualization);
-}
-
 size_t CommonNetwork::get_rate_in() {
   return NetworkManager::get_rate_in();
 }
@@ -365,7 +360,7 @@ void CommonNetwork::schedule_receive(PacketPointer packet) {
 
 size_t CommonNetwork::cluster_information_version() {
   if (cluster_information_ == NULL) {
-    return (size_t) -1;
+    return static_cast<size_t>(-1);
   }
   return cluster_information_->version();
 }
@@ -374,9 +369,9 @@ std::string CommonNetwork::getClusterConnectionStr() {
   if (cluster_information_ == NULL) {
     return "Disconnected";
   } else {
-    return au::str("%d nodes / v %d",
-                   static_cast<int>(cluster_information_->workers_size()),
-                   static_cast<int>(cluster_information_->version()));
+    return au::str("Cluster v %d / %d nodes"
+                   , static_cast<int>(cluster_information_->version())
+                   , static_cast<int>(cluster_information_->workers_size()));
   }
 }
 

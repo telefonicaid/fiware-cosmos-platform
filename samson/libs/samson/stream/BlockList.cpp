@@ -37,27 +37,27 @@ BlockList::~BlockList() {
 void BlockList::clearBlockList() {
   // Make sure I am not in any list in the blocks I am retaining...
   au::list<BlockRef>::iterator it_blocks;   // List of blocks references
-  for (it_blocks = blocks.begin(); it_blocks != blocks.end(); it_blocks++) {
+  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); it_blocks++) {
     BlockRef *block_ref = *it_blocks;
     BlockPointer block = block_ref->block();
     block->remove_block_list(this);
   }
 
   // Remove all reference contained in this list
-  blocks.clearList();
+  blocks_.clearList();
 }
 
-void BlockList::add(BlockRef *block_ref) {
+void BlockList::Add(BlockRef *block_ref) {
   // Insert this block in my list
-  blocks.push_back(block_ref);
+  blocks_.push_back(block_ref);
 
   // Update information in the block ( for sorting )
   block_ref->block()->add_block_list(this);
 }
 
-void BlockList::remove(BlockRef *block_ref) {
+void BlockList::Remove(BlockRef *block_ref) {
   // Remove this block from my list of blocks
-  blocks.remove(block_ref);
+  blocks_.remove(block_ref);
 
   // Update information in the block ( for sorting )
   block_ref->block()->remove_block_list(this);
@@ -65,7 +65,7 @@ void BlockList::remove(BlockRef *block_ref) {
 
 void BlockList::lock_content_in_memory() {
   au::list<BlockRef>::iterator it_blocks;   // List of blocks references
-  for (it_blocks = blocks.begin(); it_blocks != blocks.end(); it_blocks++) {
+  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); it_blocks++) {
     BlockRef *block_ref = *it_blocks;
     BlockPointer block = block_ref->block();
     if (!block->is_content_in_memory()) {
@@ -76,7 +76,7 @@ void BlockList::lock_content_in_memory() {
 }
 
 size_t BlockList::getNumBlocks() {
-  return blocks.size();
+  return blocks_.size();
 }
 
 size_t BlockList::task_id() {
@@ -91,7 +91,7 @@ BlockInfo BlockList::getBlockInfo() {
   BlockInfo block_info;
 
   au::list<BlockRef>::iterator it;
-  for (it = blocks.begin(); it != blocks.end(); it++) {
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
     BlockRef *block_ref = *it;
     block_ref->append(block_info);
   }
@@ -99,10 +99,20 @@ BlockInfo BlockList::getBlockInfo() {
   return block_info;
 }
 
-void BlockList::ReviewBlockReferences(au::ErrorManager& error) {
+void BlockList::Review(au::ErrorManager& error) {
   au::list<BlockRef>::iterator it;
-  for (it = blocks.begin(); it != blocks.end(); it++) {
-    (*it)->review(error);
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
+    (*it)->Review(error);
+    if (error.HasErrors()) {
+      return;
+    }
+  }
+}
+
+void BlockList::ReviewKVFiles(au::ErrorManager& error) {
+  au::list<BlockRef>::iterator it;
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
+    (*it)->ReviewKVFile(error);
     if (error.HasErrors()) {
       return;
     }
@@ -110,14 +120,14 @@ void BlockList::ReviewBlockReferences(au::ErrorManager& error) {
 }
 
 std::string BlockList::str_blocks() {
-  if (blocks.size() == 0) {
+  if (blocks_.size() == 0) {
     return "empty";
   }
 
   std::ostringstream output;
   output << "[ ";
   au::list<BlockRef>::iterator it;
-  for (it = blocks.begin(); it != blocks.end(); it++) {
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
     output << str_block_id((*it)->block_id()) << " ";
   }
   output << "]";
@@ -126,7 +136,7 @@ std::string BlockList::str_blocks() {
 
 bool BlockList::ContainsBlock(size_t block_id) {
   au::list<BlockRef>::iterator it;
-  for (it = blocks.begin(); it != blocks.end(); it++) {
+  for (it = blocks_.begin(); it != blocks_.end(); ++it) {
     if ((*it)->block_id() == block_id) {
       return true;
     }

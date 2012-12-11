@@ -85,7 +85,7 @@ void BlockManager::CreateBlock(size_t block_id, engine::BufferPointer buffer) {
   BlockPointer block(new Block(block_id, buffer));
 
   if (blocks_.Get(block_id) != NULL) {
-    LM_X(1, ("Internal error. Trying to add block %lu twice", block_id ));
+    LM_X(1, ("Internal error. Trying to add block %lu twice", block_id));
   }
 
   // Add this block
@@ -130,7 +130,7 @@ std::set<size_t> BlockManager::GetBlockIds() {
 
   std::set<size_t> block_ids;
   std::list<size_t>::iterator it;
-  for (it = block_ids_.begin(); it != block_ids_.end(); it++) {
+  for (it = block_ids_.begin(); it != block_ids_.end(); ++it) {
     block_ids.insert(*it);
   }
   return block_ids;
@@ -436,7 +436,7 @@ void BlockManager::RecoverBlocksFromDisks() {
     while ((dirp = readdir(dp)) != NULL) {
       std::string fileName = dirp->d_name;
 
-      if (( fileName.length() == 0 ) || ( fileName[0] == '.' )) {
+      if ((fileName.length() == 0) || (fileName[0] == '.')) {
         continue;
       }
 
@@ -448,7 +448,9 @@ void BlockManager::RecoverBlocksFromDisks() {
     closedir(dp);
   }
   for (size_t i = 0; i < file_names.size(); i++) {
-    LOG_M(logs.worker, ("[File #%lu/%lu] Recovering data from file %s", i + 1, file_names.size(), file_names[i].c_str()));
+    size_t num_files = file_names.size();
+    LOG_M(logs.worker, ("[File #%lu/%lu %s] Recovering data from file %s"
+                        , i + 1, num_files, au::str_percentage(i + 1, num_files).c_str(), file_names[i].c_str()));
 
     struct ::stat info;
     stat(file_names[i].c_str(), &info);
@@ -490,11 +492,12 @@ void BlockManager::ScheduleReadOperation(BlockPointer block) {
   // Read operation over this buffer
   std::string fileName = block->file_name();
 
-  engine::DiskOperation *o = engine::DiskOperation::newReadOperation(fileName, 0
-                                                                     , size
-                                                                     , block->buffer()->GetSimpleBuffer()
-                                                                     , engine_id());
-  au::SharedPointer<engine::DiskOperation> operation(o);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newReadOperation(fileName,
+                                                      0,
+                                                      size,
+                                                      block->buffer()->GetSimpleBuffer(),
+                                                      engine_id());
 
   operation->environment.Set("block_id", block_id);
   operation->environment.Set("operation_size", size);
@@ -523,8 +526,8 @@ void BlockManager::ScheduleWriteOperation(BlockPointer block) {
   if (buffer == NULL) {
     LM_X(1, ("Internal error"));
   }
-  engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer, fileName, engine_id());
-  au::SharedPointer<engine::DiskOperation> operation(o);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newWriteOperation(buffer, fileName, engine_id());
   operation->environment.Set("block_id", block_id);
   operation->environment.Set("operation_size", size);
 
@@ -593,7 +596,7 @@ void BlockManager::Sort() {
 
 bool BlockManager::CheckBlocks(const std::set<size_t>& block_ids) {
   std::set<size_t>::const_iterator it;
-  for (it = block_ids.begin(); it != block_ids.end(); it++) {
+  for (it = block_ids.begin(); it != block_ids.end(); ++it) {
     if (GetBlock(*it) == NULL) {
       return false;
     }

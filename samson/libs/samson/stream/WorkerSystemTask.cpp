@@ -140,9 +140,15 @@ void DefragTask::AddOutputBuffer(engine::BufferPointer buffer) {
 
 void DefragTask::run() {
   // Review input blocks
-  BlockList *list = block_list_container_.getBlockList("input_0");
+  BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  list->ReviewBlockReferences(error_);
+  if (list == NULL) {
+    error_.AddError("No data provided at input_0");
+    return;
+  }
+
+  list->Review(error_);
+  list->ReviewKVFiles(error_);  // This should be done in a background process
 
   if (error_.HasErrors()) {
     LOG_SW((">>>> Error in defrag operation: %s", error_.GetLastError().c_str()));
@@ -151,34 +157,11 @@ void DefragTask::run() {
 
   // Get vector with all KVFiles at the input
   // ------------------------------------------------------------------------------
-  std::vector<au::SharedPointer<KVFile> > kv_files;
-  au::list<BlockRef>::iterator bi;
-  for (bi = list->blocks.begin(); bi != list->blocks.end(); ++bi) {
-    BlockRef *block_ref = *bi;
-    BlockPointer block = block_ref->block();
-    engine::BufferPointer buffer = block->buffer();
 
-    if (buffer == NULL) {
-      error_.AddError(au::str("Block %lu is apparently not in memory", block_ref->block_id()));
-      return;
-    }
+  std::vector<au::SharedPointer<KVFile> > kv_files = list->GetKVFileVector(error_);
 
-    // Check header for valid block
-    KVHeader *header = reinterpret_cast<KVHeader *> (buffer->data());
-    if (!header->Check()) {
-      error_.AddError("Not valid header in block reference");
-      return;
-    }
-
-    // Analyze all key-values and hashgroups
-    au::SharedPointer<KVFile> file = block_ref->file();
-
-    if (file == NULL) {
-      error_.AddError(au::str("Error getting KVFile for block %lu", block_ref->block_id()));
-      return;
-    }
-
-    kv_files.push_back(file);
+  if (error_.HasErrors()) {
+    return;
   }
 
   if (kv_files.size() == 0) {

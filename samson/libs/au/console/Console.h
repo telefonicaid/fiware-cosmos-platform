@@ -8,7 +8,6 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-
 #ifndef _AU_CONSOLE
 #define _AU_CONSOLE
 
@@ -36,16 +35,16 @@ class ConsoleCommandHistory;
  * \brief Full-featured console for easy interaction with user
  *
  * Subclasses should implement "evalCommand" to respond to a command introduced by user:
- * virtual void evalCommand(const std::string& command);
+ * virtual void EvalCommand(const std::string& command);
  *
  * Optional method to get custom prompts:
- * virtual std::string getPrompt();
+ * virtual std::string GetPrompt();
  *
  * Optional method to autocomplete user command entry with "tab" key:
- * virtual void autoComplete(ConsoleAutoComplete *info);
+ * virtual void AutoComplete(ConsoleAutoComplete *info);
  *
  * Optional, subclasses could implement following method for escape sequence handling:
- * virtual void process_escape_sequence(const std::string& sequence);
+ * virtual void ProcessEscapeSequence(const std::string& sequence);
  *
  */
 
@@ -55,70 +54,129 @@ public:
   Console();
   virtual ~Console();
 
-  // Customize console
-  virtual std::string getPrompt();
-  virtual void evalCommand(const std::string& command);
-  virtual void autoComplete(ConsoleAutoComplete *info);
-  virtual void process_escape_sequence(const std::string& sequence) {
+  /**
+   * \brief Get prompt to be shown to the user
+   */
+  virtual std::string GetPrompt();
+  /**
+   * \brief Main method to eval a command instroduced by user
+   */
+  virtual void EvalCommand(const std::string& command);
+
+  /**
+   * \brief Get all auto-complete options for currently introduced command
+   */
+  virtual void AutoComplete(ConsoleAutoComplete *info);
+
+  /**
+   * \brief Process a escape sequence introduced by user ( see AddEspaceSequence )
+   */
+  virtual void ProcessEscapeSequence(const std::string& sequence) {
   };
 
-
-  // Methods to run and stop the console in background
+  /**
+   * \brief Start background thread to read command from user.
+   * \param block_thread Specifies if the calling thread has to be blocked until StopConsole() is called
+   */
   void StartConsole(bool block_thread = false);
+
+  /**
+   * \brief Stop background thread ( it is robust agains multiple calls to this method )
+   */
   void StopConsole();
 
-  /* Methods to write things on screen */
-  void writeWarningOnConsole(const std::string& message);
-  void writeErrorOnConsole(const std::string& message);
-  void writeOnConsole(const std::string& message);
+  /**
+   * \brief Main method to write something on screen ( if foreground page-control is applyied )
+   */
+  void Write(const std::string& message);
 
-  /*
+  /**
+   * \brief Main method to add a line with a particular color to the console
+   *
+   * If set_colors(false) has been set, no color-codes are emitted to the output
+   */
+  void Write(au::Color color, const std::string& message);
+
+  /**
+   * \brief Write a warning ( message with some color or [WARNING] message )
+   */
+  void WriteWarningOnConsole(const std::string& message);
+
+  /**
+   * \brief Write an error ( message with some color or [ERROR] message )
+   */
+  void WriteErrorOnConsole(const std::string& message);
+
+  /**
+   * \brief Write an error ( message with some color or [ERROR] message )
+   */
+  void WriteBoldOnConsole(const std::string& message);
+
+  /**
    * \brief General write function for all content inside a ErrorManager instance
    */
-
-  void write(au::ErrorManager *error);
   void Write(au::ErrorManager& error);
 
-  /*
+  /**
+   * \brief Write some messages included in error with a prefix
+   */
+  void Write(au::ErrorManager& error, const std::string& prefix_message);
+
+  /**
    * \brief Add a escape sequence to be considered in this console
    */
-
   void AddEspaceSequence(const std::string& sequence);
 
+  /**
+   * \brief Refresh content of the console
+   */
   void Refresh();
 
   /*
    * \brief Wait showing a message on screen.... ( background message works )
    */
-
   int WaitWithMessage(const std::string& message, double sleep_time, ConsoleEntry *entry);
 
-  // Make sure all messages are shown
+  /**
+   * \brief Flush background messages to the console
+   */
   void Flush();
 
-  // Append to current command
+  /**
+   * \brief Append some text to the current command introduced by the user
+   */
   void AppendToCommand(const std::string& txt);
 
-  // Get the history string
+  /**
+   * \brief Get a string with previous history
+   */
   std::string str_history(int limit);
+
+  /**
+   * \brief Activate or reactivate color output
+   */
+  void set_colors(bool value) {
+    colors_ = value;
+  }
+
+  /**
+   * \brief Flush accumulated messages (even when console thread is no running)
+   * This command is useful if au::Console is only used to accumulate output of a process
+   */
+  void FlushBackgroundMessages();
 
 private:
 
+  void PrintLines(const std::string&message);
   void RunThread();     // Main routine for background process
-
   void PrintCommand();
   bool IsInputReady() const;
-
   void ProcessAutoComplete(ConsoleAutoComplete *info);
   void ProcessInternalCommand(const std::string& sequence);
   void ProcessChar(char c);
   void ProcessEscapeSequenceInternal(const std::string& sequence);
-
   void ProcessBackgroundMessages();
   bool IsNormalChar(char c) const;
-
-  void Write(const std::string& message);
-
   void GetEntry(ConsoleEntry *entry);        // Get the next entry from console
 
   // History information ( all commands introduced before )
@@ -136,6 +194,9 @@ private:
 
   // Flag to finish the background thread
   bool quit_console_;
+
+  // Flag to indicate if colors are allowed in this console
+  bool colors_;
 };
 }
 }

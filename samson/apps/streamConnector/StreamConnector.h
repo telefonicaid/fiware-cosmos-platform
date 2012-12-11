@@ -128,9 +128,9 @@ public:
   void process_command(std::string command, au::ErrorManager *error);
 
   // au::console::Console interface
-  std::string getPrompt();
-  void evalCommand(const std::string& command);
-  void autoComplete(au::console::ConsoleAutoComplete *info);
+  std::string GetPrompt();
+  void EvalCommand(const std::string& command);
+  void AutoComplete(au::console::ConsoleAutoComplete *info);
   void autoCompleteWithChannelNames(au::console::ConsoleAutoComplete *info);
   void autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComplete *info);
 

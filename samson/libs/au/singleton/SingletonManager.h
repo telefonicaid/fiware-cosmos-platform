@@ -37,7 +37,7 @@ public:
 
   void DestroySingletons() {
     std::set<SingletonBase *>::iterator iter;
-    for (iter = singletons_.begin(); iter != singletons_.end(); iter++) {
+    for (iter = singletons_.begin(); iter != singletons_.end(); ++iter) {
       (*iter)->DestroySingletonInternal();
     }
     singletons_.clear();
@@ -68,4 +68,4 @@ private:
 extern SingletonManager singleton_manager;
 }
 
-#endif // ifndef _H_AU_SINGLETON_MANAGER
+#endif  // ifndef _H_AU_SINGLETON_MANAGER

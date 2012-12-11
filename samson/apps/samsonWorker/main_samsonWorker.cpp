@@ -92,41 +92,41 @@ bool thread_mode;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-zk",                 zoo_host,                    "",                         PaString,
+  { "-zk",                 zoo_host,      "",   PaString,
     PaOpt,
     _i "localhost:2181",
-    PaNL,                  PaNL,                        "Zookeeper server"                   },
-  { "-log",                log_command,                 "",                         PaString,
-    PaOpt,                 _i "",                       PaNL,
+    PaNL,                  PaNL,          "Zookeeper server"                   },
+  { "-log",                log_command,   "",   PaString,
+    PaOpt,                 _i "",         PaNL,
     PaNL,                  "log server host"                          },
-  { "-log_server",         log_server,                  "",                         PaString,
-    PaOpt,                 _i "",                       PaNL,
+  { "-log_server",         log_server,    "",   PaString,
+    PaOpt,                 _i "",         PaNL,
     PaNL,                  "log server host"                          },
-  { "-fg",                 &fg,                         "",                         PaBool,
+  { "-fg",                 &fg,           "",   PaBool,
     PaOpt,
     false,
     false,
     true,
     "don't start as daemon"              },
-  { "-port",               &port,                       "",                         PaInt,
+  { "-port",               &port,         "",   PaInt,
     PaOpt,
     SAMSON_WORKER_PORT,
     1,
     9999,
     "Port to receive new connections"    },
-  { "-web_port",           &web_port,                   "",                         PaInt,
+  { "-web_port",           &web_port,     "",   PaInt,
     PaOpt,
     SAMSON_WORKER_WEB_PORT,
     1,
     9999,
     "Port to receive web connections"    },
-  { "-valgrind",           &valgrind,                   "",                         PaInt,
+  { "-valgrind",           &valgrind,     "",   PaInt,
     PaOpt,
     0,
     0,
     20,
     "help valgrind debug process"        },
-  { "-thread_mode",        &thread_mode,                "",                         PaBool,
+  { "-thread_mode",        &thread_mode,  "",   PaBool,
     PaOpt,
     false,
     false,
@@ -175,9 +175,6 @@ void SamsonWorkerCleanUp() {
 
   // Destroy creatd shared memory segments
   samson::SharedMemoryManager::Destroy();
-
-  // Close log system
-  au::LogCentral::StopLogSystem();
 }
 
 void captureSIGINT(int s) {
@@ -299,13 +296,13 @@ int main(int argC, const char *argV[]) {
   if (strlen(log_server) > 0) {
     std::string log_server_file = std::string(paLogDir) + "samsonWorker_" + log_server +  ".log";
     au::log_central->AddServerPlugin("server", log_server, log_server_file);
-    au::log_central->evalCommand("log_set * X server");
-    au::log_central->evalCommand("log_set samson::W M server");
-    au::log_central->evalCommand("log_set samson::OP W server");
+    au::log_central->EvalCommand("log_set * X server");
+    au::log_central->EvalCommand("log_set samson::W M server");
+    au::log_central->EvalCommand("log_set samson::OP W server");
   }
-  au::log_central->evalCommand(log_command);  // Additional command provided in command line
-  au::log_central->evalCommand("log_set samson::W M");  // Set message level for the log channel samson::W
-  au::log_central->evalCommand("log_set system M");     // Set message level for the log channel system
+  au::log_central->EvalCommand(log_command);  // Additional command provided in command line
+  au::log_central->EvalCommand("log_set samson::W M");  // Set message level for the log channel samson::W
+  au::log_central->EvalCommand("log_set system M");     // Set message level for the log channel system
 
   LOG_SM(("Please, check logs for this worker at %s (using logCat tool)", log_file_name.c_str()));
 
@@ -314,7 +311,7 @@ int main(int argC, const char *argV[]) {
   // Check to see if the current memory configuration is ok or not
   if (samson::MemoryCheck() == false) {
     LOG_SW(("Not enougth shared memory. Please check setup with samsonSetup"));
-    LM_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information.", paLogDir));
+    LOG_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information.", paLogDir));
   }
 
   // Complete host of zk
@@ -415,7 +412,7 @@ int main(int argC, const char *argV[]) {
   au::log_central->AddPlugin("console", new au::LogCentralPluginConsole(worker));
 
   // Add samson::W M
-  au::log_central->evalCommand("log_set samson::W M");
+  au::log_central->EvalCommand("log_set samson::W M");
 
   // Run worker console ( -fg is activated ) blocking this thread
   worker->StartConsole(true);
@@ -431,8 +428,12 @@ int main(int argC, const char *argV[]) {
   LOG_M(samson::logs.cleanup, ("Stopping network listener (worker at %p)", worker));
   worker->network()->stop();
   LOG_M(samson::logs.cleanup, ("log_central marked to stop"));
-  LOG_M(samson::logs.worker, ("log_central stopping..."));
 
+  LOG_M(samson::logs.worker, ("Stop worker console"));
+  worker->StopConsole();
+
+  LOG_M(samson::logs.worker, ("log_central stopping..."));
+  au::log_central->StopLogSystem();
 
   LOG_M(samson::logs.cleanup, ("Waiting for threads (worker at %p)", worker));
   au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");

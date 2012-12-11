@@ -200,8 +200,12 @@ void SamsonWorker::Review() {
 
       // Check what commit_id can guarantee this worker
       size_t last_commit_id = worker_controller_->GetMyLastCommitId();  // This is the currently guanrantee commit_id
+      size_t current_data_commit_id = data_model_->GetLastCommitIdForCurrentDataModel();
       size_t previous_data_commit_id = data_model_->GetLastCommitIdForPreviousDataModel();
       size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
+
+      // Confirm all push block operations previous to this commit
+      worker_block_manager_->ReviewPushItems(previous_data_commit_id, current_data_commit_id);
 
       if (previous_data_commit_id > last_commit_id) {
         // Check I can confirm this level of data model
@@ -224,6 +228,11 @@ void SamsonWorker::Review() {
       // Update if necessary my current information
       worker_controller_->UpdateWorkerNode(last_commit_id);
 
+      // Check to see if I need to remove any pop queue or queue_connections for disconnected delilah clients
+      if (worker_controller_->cluster_leader()) {
+        ReviewPopQueues();
+      }
+
       // If I am the cluster leader, consolidate next frozen data model if necessary
       if (worker_controller_->cluster_leader()) {
         size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
@@ -237,6 +246,50 @@ void SamsonWorker::Review() {
       }
     }
     break;
+  }
+}
+
+void SamsonWorker::ReviewPopQueues() {
+  au::SharedPointer<gpb::DataModel> data_model =  data_model_->getCurrentModel();
+  gpb::Data *current_data = data_model->mutable_current_data();
+
+  for (int i = 0; i < current_data->queue_size(); i++) {
+    std::string queue = current_data->queue(i).name();
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues names matchs ".pop_delilah_id_XXX"
+      size_t p = queue.find('_', 5);
+      if (p == std::string::npos) {
+        LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
+        continue;
+      }
+      size_t delilah_id = au::code64_num(queue.substr(5, p - 5));
+      // Check if this delilah is connected or has been connected in the last minute
+      if (!network_->CheckValidNode(NodeIdentifier(DelilahNode, delilah_id))) {
+        // Remove this queue
+        au::ErrorManager error;
+        std::string command = au::str("rm %s", queue.c_str());
+        data_model_->Commit("pop_review", command, error);
+      }
+    }
+  }
+
+  for (int i = 0; i < current_data->queue_connections_size(); i++) {
+    std::string source_queue = current_data->queue_connections(i).queue_source();
+    std::string queue = current_data->queue_connections(i).queue_target();
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues names matchs ".pop_delilah_id_XXX"
+      size_t p = queue.find('_', 5);
+      if (p == std::string::npos) {
+        LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
+        continue;
+      }
+      size_t delilah_id = au::code64_num(queue.substr(5, p - 5));
+      // Check if this delilah is connected or has been connected in the last minute
+      if (!network_->CheckValidNode(NodeIdentifier(DelilahNode, delilah_id))) {
+        // Remove this queue
+        au::ErrorManager error;
+        std::string command = au::str("rm_queue_connection %s %s", source_queue.c_str(), queue.c_str());
+        data_model_->Commit("pop_review", command, error);
+      }
+    }
   }
 }
 
@@ -521,10 +574,11 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    uint64 commit_id = packet->message->pop_queue().commit_id();
+    size_t commit_id = packet->message->pop_queue().commit_id();
+    size_t min_commit_id = packet->message->pop_queue().min_commit_id();
     size_t delilah_id = packet->from.id;
     std::string original_queue = packet->message->pop_queue().queue();
-    std::string pop_queue = au::str(".%s_%lu_%s"
+    std::string pop_queue = au::str(".pop_%s_%lu_%s"
                                     , au::code64_str(delilah_id).c_str()
                                     , packet->message->delilah_component_id()
                                     , original_queue.c_str());
@@ -535,9 +589,9 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     p->to = packet->from;
     gpb::Queue *gpb_queue = p->message->mutable_pop_queue_response()->mutable_queue();
     gpb_queue->set_name(original_queue);
-    gpb_queue->set_key_format("?");           // It is necessary to fill this fields
+    gpb_queue->set_key_format("?");             // It is necessary to fill these fields
     gpb_queue->set_value_format("?");
-    gpb_queue->set_commit_id(gpb_queue->commit_id());
+    gpb_queue->set_commit_id(SIZE_T_UNDEFINED);
 
 
     // Get a copy of the entire data model
@@ -568,6 +622,27 @@ void SamsonWorker::receive(const PacketPointer& packet) {
           if (queue->blocks(i).commit_id() > commit_id) {
             gpb_queue->add_blocks()->CopyFrom(queue->blocks(i));
           }
+        }
+      }
+
+      // Remove old unnecessary blocks from queue
+      if (queue) {
+        CommitCommand commit_command;
+        for (int i = 0; i < queue->blocks_size(); ++i) {
+          if (queue->blocks(i).commit_id() <= commit_id) {  // Not new
+            if ((min_commit_id == SIZE_T_UNDEFINED) || (queue->blocks(i).commit_id() < min_commit_id)) {
+              // Add to be removed from this queue
+              size_t block_id =  queue->blocks(i).block_id();
+              KVFormat format(queue->key_format(), queue->value_format());
+              KVRange range = queue->blocks(i).range();  // Implicit conversion
+              KVInfo info(queue->blocks(i).size(), queue->blocks(i).kvs());
+              commit_command.RemoveBlock(pop_queue, block_id, queue->blocks(i).block_size(), format, range, info);
+            }
+          }
+        }
+        if (commit_command.size() > 0) {
+          au::ErrorManager error;
+          data_model_->Commit("pop", commit_command.GetCommitCommand(), error);
         }
       }
     }
@@ -797,7 +872,7 @@ std::string getFormatedError(std::string message, std::string& format) {
   return getFormatedElement("error", message, format);
 }
 
-void SamsonWorker::autoComplete(au::console::ConsoleAutoComplete *info) {
+void SamsonWorker::AutoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("quit");
     info->add("exit");
@@ -809,7 +884,7 @@ void SamsonWorker::autoComplete(au::console::ConsoleAutoComplete *info) {
   }
 }
 
-void SamsonWorker::evalCommand(const std::string& command) {
+void SamsonWorker::EvalCommand(const std::string& command) {
   au::CommandLine cmdLine;
 
   cmdLine.Parse(command);
@@ -822,8 +897,8 @@ void SamsonWorker::evalCommand(const std::string& command) {
   au::ErrorManager error;
 
   if (au::CheckIfStringsBeginWith(main_command, "log_")) {
-    au::log_central->evalCommand(command, error);
-    write(&error);          // Write the output of the command
+    au::log_central->EvalCommand(command, error);
+    Write(error);          // Write the output of the command
     return;
   }
 
@@ -834,26 +909,26 @@ void SamsonWorker::evalCommand(const std::string& command) {
     StopConsole();
   }
   if (main_command == "threads") {
-    writeOnConsole(au::Singleton<au::ThreadManager>::shared()->str());
+    Write(au::Singleton<au::ThreadManager>::shared()->str());
   }
 
   if (main_command == "show_engine_current_element") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetCurrentActivity() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetCurrentActivity() + "\n");
     return;
   }
 
   if (main_command == "show_engine_statistics") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetElementsTable() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetElementsTable() + "\n");
     return;
   }
 
   if (main_command == "show_engine_last_items") {
-    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetLastItemsTable() + "\n");
+    Write(engine::Engine::shared()->activity_monitor()->GetLastItemsTable() + "\n");
     return;
   }
 
   if (main_command == "show_engine_elements") {
-    writeOnConsole(engine::Engine::shared()->GetTableOfEngineElements() + "\n");
+    Write(engine::Engine::shared()->GetTableOfEngineElements() + "\n");
     return;
   }
 
@@ -861,7 +936,7 @@ void SamsonWorker::evalCommand(const std::string& command) {
   // More command to check what is going on inside a worker
 }
 
-std::string SamsonWorker::getPrompt() {
+std::string SamsonWorker::GetPrompt() {
   if (worker_controller_ == NULL) {
     return "[Unconnected] SamsonWorker > ";
   }
@@ -972,6 +1047,10 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
 
   gpb::CollectionRecord *record = collection->add_record();
 
+
+  // Common fields
+  ::samson::add(record, "Status", state_message_, "different");
+
   if (visualization.get_flag("engine")) {
     size_t num_elements = engine::Engine::shared()->GetNumElementsInEngineStack();
     double waiting_time = engine::Engine::shared()->GetMaxWaitingTimeInEngineStack();
@@ -994,9 +1073,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "BM reading", stream::BlockManager::shared()->scheduled_read_size(), "f=uint64,sum");
     double usage =  engine::Engine::disk_manager()->on_off_activity();
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
-  } else {
-    ::samson::add(record, "Status", state_message_, "different");
-
+  } else if (visualization.get_flag("modules")) {
     if (!modules_available_) {
       ::samson::add(record, "Modules", "No", "different");
     } else if (last_modules_version_ != SIZE_T_UNDEFINED) {
@@ -1004,21 +1081,21 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     } else {
       ::samson::add(record, "Modules", "No modules", "different");
     }
-
-    ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
-    ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
-    ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
-    ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
+  } else if (visualization.get_flag("traffic")) {
     ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->num_disk_operations(), "f=uint64,sum");
     ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
     ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
     ::samson::add(record, "Net in B/s", network_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "Net out B/s", network_->get_rate_out(), "f=uint64,sum");
-
     ::samson::add(record, "ZK in B/s", zoo_connection_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "ZK out B/s", zoo_connection_->get_rate_out(), "f=uint64,sum");
-
+  } else if (visualization.get_flag("data_model")) {
     ::samson::add(record, "DataModel", worker_controller_->GetMyLastCommitId(), "different");
+  } else {
+    ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
+    ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
+    ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
+    ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
   }
 
   return collection;
@@ -1177,7 +1254,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visu
   gpb::Queue *queue = gpb::get_queue(data_model->mutable_current_data(), ".modules");
 
   // Create a tmp directory
-  std::string directory = au::GetRandomDirectory();
+  std::string directory = au::GetRandomTmpFileOrDirectory();
   au::CreateDirectory(directory);
 
   // Set of names used so far to detect colision name...
@@ -1396,7 +1473,7 @@ bool SamsonWorker::IsWorkerReadyForBlockRequest(size_t worker_id) {
     return false;
   }
 
-  // If number of scheduled block_request task is excesive, also stop
+  // If number of scheduled block_request task is Excessive, also stop
   // TODO
 
   return true;

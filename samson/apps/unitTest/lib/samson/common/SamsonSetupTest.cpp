@@ -14,8 +14,8 @@
 
 // Test void SamsonSetup();
 TEST(samson_common_SamsonSetup, SamsonSetup) {
-  std::string samson_home_dir = au::GetRandomDirectory();
-  std::string samson_working_dir = au::GetRandomDirectory();
+  std::string samson_home_dir = au::GetRandomTmpFileOrDirectory();
+  std::string samson_working_dir = au::GetRandomTmpFileOrDirectory();
 
 
   // Better not to set /opt/samson and /var/samson, so init() can get environment variables

@@ -74,12 +74,12 @@ public:
   void Emit(Log *log);
 
   // Direct Console interface for this element
-  void evalCommand(const std::string& command);
-  void evalCommand(const std::string& command, au::ErrorManager& error);
+  void EvalCommand(const std::string& command);
+  void EvalCommand(const std::string& command, au::ErrorManager& error);
 
   // Plugins management
-  void AddPlugin(const std::string& name,  LogCentralPlugin *p);
-  void AddPlugin(const std::string& name,  LogCentralPlugin *p, au::ErrorManager& error);
+  void AddPlugin(const std::string& name, LogCentralPlugin *p);
+  void AddPlugin(const std::string& name, LogCentralPlugin *p, au::ErrorManager& error);
   void RemovePlugin(const std::string& plugin_name);
   void AddFilePlugin(const std::string& plugin_name, const std::string& file_name);
   void AddServerPlugin(const std::string& plugin_name, const std::string& host, const std::string file_name);

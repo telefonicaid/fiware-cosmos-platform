@@ -94,7 +94,18 @@ au::SharedPointer<KVFile> BlockRef::file() {
   return file_;
 }
 
-void BlockRef::review(au::ErrorManager& error) {
+void BlockRef::ReviewKVFile(au::ErrorManager& error) {
+  // Get complete information about how key-values are organized in this block
+  engine::BufferPointer buffer =  block_->buffer();
+
+  if (buffer != NULL) {
+    file_ = KVFile::create(buffer, error);
+  } else {
+    error.AddError(au::str("Not possible to parse block %lu. Buffer not in memory", block_id()));
+  }
+}
+
+void BlockRef::Review(au::ErrorManager& error) {
   if (!block_->is_content_in_memory()) {
     error.AddError(au::str("Block %lu is not in memory", block_->block_id()));
     return;
@@ -103,12 +114,6 @@ void BlockRef::review(au::ErrorManager& error) {
   if (block_->getKVFormat().isTxt()) {
     // If data is txt, nothing else to do
     return;
-  }
-
-  // Get complete information about how key-values are organized in this block
-  file_ = block_->getKVFile(error, false);      // Do not retain KVFile in the block
-  if (file_ == NULL) {
-    error.AddError(au::str("Not possible to parse block %lu", block_id()));
   }
 }
 }

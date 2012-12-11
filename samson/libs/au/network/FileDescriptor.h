@@ -24,7 +24,7 @@
 *  FileDescriptor
 *
 *  Handy class to work with a single file-descriptor
-*  It offers mutex protection agains close operation and some usefull
+*  It offers mutex protection agains close operation and some useful
 *  read/write methods
 *
 *  Note: Use only LM_LM or LM_LW in this class since it is used in hoock function

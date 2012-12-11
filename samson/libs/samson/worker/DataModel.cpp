@@ -36,7 +36,7 @@ const std::string DataModel::kClearBatchOPerations("clear_batch_operations");
 const std::string DataModel::kClearModules("clear_modules");
 const std::string DataModel::kPushQueue("push_queue");
 const std::string DataModel::kRemoveAll("remove_all");
-const std::string DataModel::kRemoveAllData("remove_all_data");
+const std::string DataModel::kRemoveAllData("remove_all_queues");
 const std::string DataModel::kRemoveAllStreamOperations("remove_all_stream_operations");
 const std::string DataModel::kRemoveStreamOperation("remove_stream_operation");
 const std::string DataModel::kRm("rm");
@@ -556,10 +556,36 @@ void DataModel::ProcessClearBatchOPerationsCommand(gpb::Data *data, au::SharedPo
 
 void DataModel::ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd  /* cmd */,
                                            au::ErrorManager &  /* error */) {
-  // Remove queue .modules
-  au::ErrorManager error2;         // we are not interested in this error
+  // Remove blocks in queue .modules
+  gpb::Queue *queue = gpb::get_queue(data, ".modules");
 
-  ProcessCommand(data, "rm .modules", error2);
+  if (!queue) {
+    return;  // Nothing to remove
+  }
+  ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block > *blocks = queue->mutable_blocks();
+  std::string pattern = "*";
+  if (cmd->get_num_arguments() > 1) {
+    pattern = cmd->get_argument(1);
+  }
+  au::SimplePattern simple_pattern(pattern);
+  bool update_queue_commit_id = false;
+  for (int i = 0; i < blocks->size(); ) {
+    size_t block_id = blocks->Get(i).block_id();
+    std::string block_name = str_block_id(block_id);
+    if (simple_pattern.match(block_name)) {
+      // Remove block
+      update_queue_commit_id = true;
+      blocks->SwapElements(i, blocks->size() - 1);
+      blocks->RemoveLast();
+    } else {
+      ++i;
+    }
+  }
+
+  if (update_queue_commit_id) {
+    queue->set_commit_id(data->commit_id());
+  }
+
   return;
 }
 
@@ -575,7 +601,7 @@ void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::C
     LOG_W(logs.data_model, ("queue '%s' not found", cmd->get_argument(1).c_str()));
     return;                                // nothing to do
   }
-  queue->set_commit_id(data->commit_id()); // Update version where this queue was updated
+  queue->set_commit_id(data->commit_id());  // Update version where this queue was updated
   KVFormat format(queue->key_format(), queue->value_format());
   samson::gpb::Queue *target_queue = get_or_create_queue(data, cmd->get_argument(2), format, error);
 
@@ -842,7 +868,7 @@ void DataModel::FreezeCandidateDataModel() {
   }
 }
 
-bool DataModel::isValidCommand(const std::string& main_command) {
+bool DataModel::IsValidCommand(const std::string& main_command) {
   for (size_t i = 0; i < sizeof(commands) / sizeof(std::string); i++) {
     if (main_command == commands[i]) {
       return true;
@@ -1180,9 +1206,23 @@ std::set<size_t> DataModel::GetAllBlockIds() {
   return block_ids;
 }
 
-size_t DataModel::GetLastCommitIdForPreviousDataModel() {
+size_t DataModel::GetLastCommitIdForCurrentDataModel() const {
+  au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
+  return data_model->current_data().commit_id();
+}
+
+size_t DataModel::GetLastCommitIdForPreviousDataModel() const {
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   return data_model->previous_data().commit_id();
+}
+
+size_t DataModel::GetLastCommitIdForCandidateDataModel() const {
+  au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
+
+  if (!data_model->has_candidate_data()) {
+    return static_cast<size_t>(-1);
+  }
+  return data_model->candidate_data().commit_id();
 }
 
 std::set<size_t> DataModel::GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges) {
@@ -1210,15 +1250,6 @@ std::set<size_t> DataModel::GetMyBlockIdsForPreviousDataModel(const std::vector<
   au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
   gpb::AddBlockIds(data_model->mutable_previous_data(), ranges, block_ids);
   return block_ids;
-}
-
-size_t DataModel::GetLastCommitIdForCandidateDataModel() {
-  au::SharedPointer<gpb::DataModel> data_model = getCurrentModel();
-
-  if (!data_model->has_candidate_data()) {
-    return static_cast<size_t>(-1);
-  }
-  return data_model->candidate_data().commit_id();
 }
 
 std::set<size_t> DataModel::GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges) {

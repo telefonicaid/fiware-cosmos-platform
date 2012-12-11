@@ -47,20 +47,20 @@ char log_directory[1024];
 
 PaArgument paArgs[] =
 {
-  { "-fg",         &fg,                  "",                  PaBool,                    PaOpt,
+  { "-fg",         &fg,           "", PaBool,   PaOpt,
     false,
     false,
     true,
     "don't start as daemon"                  },
-  { "-port",       &target_port,         "",                  PaInt,                     PaOpt,
+  { "-port",       &target_port,  "", PaInt,    PaOpt,
     LS_PORT,
-    1,                 99999,
+    1, 99999,
     "Port for default log channel"        },
-  { "-query_port", &query_port,          "",                  PaInt,                     PaOpt,
-    LS_QUERY_PORT,          1,                 99999,
+  { "-query_port", &query_port,   "", PaInt,    PaOpt,
+    LS_QUERY_PORT, 1, 99999,
     "Port for logClient connections"      },
-  { "-dir",        log_directory,        "",                  PaString,                  PaOpt,
-    _i LS_LOG_DIR,          PaNL,              PaNL,
+  { "-dir",        log_directory, "", PaString, PaOpt,
+    _i LS_LOG_DIR, PaNL, PaNL,
     "Directory for default channel logs"  },
   PA_END_OF_ARGS
 };
@@ -88,22 +88,22 @@ void captureSIGPIPE(int s) {
 }
 
 int main(int argC, const char *argV[]) {
-  paConfig("prefix",                        (void *)"LOG_CLIENT_");
+  paConfig("prefix", (void *)"LOG_CLIENT_");
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)true);
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE: TEXT");
-  paConfig("log to file",                   (void *)false);
-  paConfig("log to stderr",                 (void *)true);
+  paConfig("log to screen", (void *)true);
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE: TEXT");
+  paConfig("log to file", (void *)false);
+  paConfig("log to stderr", (void *)true);
 
-  paConfig("man synopsis",                  (void *)manSynopsis);
-  paConfig("man shortdescription",          (void *)manShortDescription);
-  paConfig("man description",               (void *)manDescription);
-  paConfig("man exitstatus",                (void *)manExitStatus);
-  paConfig("man author",                    (void *)manAuthor);
-  paConfig("man reportingbugs",             (void *)manReportingBugs);
-  paConfig("man copyright",                 (void *)manCopyright);
-  paConfig("man version",                   (void *)manVersion);
+  paConfig("man synopsis", (void *)manSynopsis);
+  paConfig("man shortdescription", (void *)manShortDescription);
+  paConfig("man description", (void *)manDescription);
+  paConfig("man exitstatus", (void *)manExitStatus);
+  paConfig("man author", (void *)manAuthor);
+  paConfig("man reportingbugs", (void *)manReportingBugs);
+  paConfig("man copyright", (void *)manCopyright);
+  paConfig("man version", (void *)manVersion);
 
   paParse(paArgs, argC, (char **)argV, 1, true);
   // lmAux((char*) "father");
@@ -117,7 +117,7 @@ int main(int argC, const char *argV[]) {
   std::string log_file_name = au::path_from_directory(std::string(paLogDir), "/samsonWorker.log");
   au::log_central->AddFilePlugin("file", log_file_name);
   au::log_central->AddScreenPlugin("screen", "[type] text");  // Only to show first messages if process is not in foreground
-  au::log_central->evalCommand("log_set system M");         // Set message level for the log channel system
+  au::log_central->EvalCommand("log_set system M");         // Set message level for the log channel system
 
   LOG_SM(("Please, review logs of this log server at %s", log_file_name.c_str()));
 

@@ -84,17 +84,17 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
   samson_connector->process_command(command, error);
 }
 
-void StreamConnectorService::autoComplete(au::console::ConsoleAutoComplete *info, au::Environment *environment) {
+void StreamConnectorService::AutoComplete(au::console::ConsoleAutoComplete *info, au::Environment *environment) {
   if (info->completingFirstWord()) {
     info->add("login");
     info->add("password");
   }
 
   // Complete with the rest of options
-  samson_connector->autoComplete(info);
+  samson_connector->AutoComplete(info);
 }
 
-std::string StreamConnectorService::getPrompt(au::Environment *environment) {
+std::string StreamConnectorService::GetPrompt(au::Environment *environment) {
   char host[1024];
 
   host[1023] = '\0';

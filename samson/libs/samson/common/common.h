@@ -25,7 +25,7 @@
 
 /**
  * \brief Namespace for samson library
- * \auth Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ * @author Andreu Urruela, Gregorio Escalada & Ken Zangelin
  */
 namespace samson {
 // Unsigned types with different bits lengths

@@ -38,7 +38,7 @@ au::SharedPointer<SamsonFile> SamsonFile::create(const std::string file_name, au
   size_t file_size = info.st_size;
 
   if (file_size > 1024 * 1024 * 1024) {
-    error.AddError(au::str("Excesive file size %s (%s)"
+    error.AddError(au::str("Excessive file size %s (%s)"
                            , file_name.c_str()
                            , au::str(file_size, "B").c_str()));
     return au::SharedPointer<SamsonFile>(NULL);

@@ -278,7 +278,7 @@ void Thread::StopThread() {
     }
 
     if (c.seconds() > 2) {
-      LOG_SW(("Too mush time waiting for thread %s", name_.c_str()));
+      LOG_SW(("Too much time waiting for thread %s", name_.c_str()));
       c.Reset();
     }
 

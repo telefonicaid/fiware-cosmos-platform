@@ -32,6 +32,7 @@
  */
 #include "gtest/gtest.h"
 
+#include "au/file.h"
 #include "engine/DiskManager.h"
 #include "engine/DiskOperation.h"
 #include "unitTest/common_engine_test.h"
@@ -53,8 +54,8 @@ TEST(engine_DiskOperation, setError) {
   init_engine_test();
 
   char charBuffer[1024 * 1024];
-  engine::DiskOperation *operation =
-    engine::DiskOperation::newReadOperation(charBuffer, "test_data/test_data.txt", 3, 5, 0);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newReadOperation(charBuffer, "test_data/test_data.txt", 3, 5, 0);
 
   operation->setError("Just a test");
   operation->getInfo(out);
@@ -72,8 +73,8 @@ TEST(engine_DiskOperation, getInfoTest) {
   init_engine_test();
 
   char charBuffer[1024 * 1024];
-  engine::DiskOperation *operation =
-    engine::DiskOperation::newReadOperation(charBuffer, "test_data/test_data.txt", 3, 5, 0);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newReadOperation(charBuffer, "test_data/test_data.txt", 3, 5, 0);
   EXPECT_EQ(operation->getType(), engine::DiskOperation::read) << "Wrong type value";
   operation->getInfo(out);
   // operation->run();
@@ -89,9 +90,9 @@ TEST(engine_DiskOperation, newWriteOperationTest) {
 
   init_engine_test();
 
-  engine::BufferPointer buffer = engine::Buffer::Create("buffer1",  15);
-  engine::DiskOperation *operation =
-    engine::DiskOperation::newWriteOperation(buffer, "test_data/test_data.txt", 2);
+  engine::BufferPointer buffer = engine::Buffer::Create("buffer1", 15);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newWriteOperation(buffer, "test_data/test_data.txt", 2);
 
   EXPECT_EQ(operation->getType(), engine::DiskOperation::write) << "Wrong type value";
   operation->getInfo(out);
@@ -108,10 +109,9 @@ TEST(engine_DiskOperation, newAppendOperationTest) {
 
   init_engine_test();
 
-  engine::BufferPointer buffer    = engine::Buffer::Create("buffer1",  15);
-  engine::DiskOperation *operation =
-    engine::DiskOperation::newAppendOperation(buffer, "test_filename.txt", 2);
-
+  engine::BufferPointer buffer    = engine::Buffer::Create("buffer1", 15);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newAppendOperation(buffer, au::GetRandomTmpFileOrDirectory(), 2);
   EXPECT_EQ(operation->getType(), engine::DiskOperation::append) << "Wrong type value";
   operation->getInfo(out);
   operation->run();
@@ -127,8 +127,8 @@ TEST(engine_DiskOperation, newRemoveOperationTest) {
 
   init_engine_test();
 
-  engine::DiskOperation *operation =
-    engine::DiskOperation::newRemoveOperation("test_data/test_data.txt", 1);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newRemoveOperation("test_data/test_data.txt", 1);
 
   EXPECT_EQ(operation->getType(), engine::DiskOperation::remove) << "Wrong type value";
   operation->getInfo(out);
@@ -146,8 +146,8 @@ TEST(engine_DiskOperation, newReadOperation2Test) {
   init_engine_test();
   engine::SimpleBuffer buffer(data, 100);
 
-  engine::DiskOperation *operation =
-    engine::DiskOperation::newReadOperation("test_filename.txt", 3, 6, buffer, 2);
+  au::SharedPointer<engine::DiskOperation> operation;
+  operation = engine::DiskOperation::newReadOperation("test_filename.txt", 3, 6, buffer, 2);
 
   EXPECT_EQ(operation->getType(), engine::DiskOperation::read) << "Wrong type value";
   close_engine_test();
@@ -160,16 +160,14 @@ TEST(engine_DiskOperation, getDescriptionTest) {
   init_engine_test();
 
   char charBuffer[1024 * 1024];
-  engine::BufferPointer buffer = engine::Buffer::Create("buffer1",  15);
+  engine::BufferPointer buffer = engine::Buffer::Create("buffer1", 15);
 
-  engine::DiskOperation *operation1 =
-    engine::DiskOperation::newReadOperation(charBuffer, "test_filename.txt", 3, 6, 2);
-  engine::DiskOperation *operation2 =
-    engine::DiskOperation::newWriteOperation(buffer,    "test_filename.txt", 2);
-  engine::DiskOperation *operation3 =
-    engine::DiskOperation::newAppendOperation(buffer,   "test_filename.txt", 2);
-  engine::DiskOperation *operation4 =
-    engine::DiskOperation::newRemoveOperation("test_filename.txt", 2);
+  au::SharedPointer<engine::DiskOperation> operation1, operation2, operation3, operation4;
+
+  operation1 = engine::DiskOperation::newReadOperation(charBuffer, "test_filename.txt", 3, 6, 2);
+  operation2 = engine::DiskOperation::newWriteOperation(buffer, "test_filename.txt", 2);
+  operation3 = engine::DiskOperation::newAppendOperation(buffer, "test_filename.txt", 2);
+  operation4 = engine::DiskOperation::newRemoveOperation("test_filename.txt", 2);
 
   EXPECT_EQ(operation1->getDescription(),
             "Read from file: 'test_filename.txt' Size: 6.00 B [6B] Offset:3") <<
@@ -202,12 +200,11 @@ TEST(engine_DiskOperation, getSizeTest) {
   init_engine_test();
 
   char charBuffer[1024 * 1024];
-  engine::BufferPointer buffer = engine::Buffer::Create("buffer1",  15);
+  engine::BufferPointer buffer = engine::Buffer::Create("buffer1", 15);
 
-  engine::DiskOperation *operation1 =
-    engine::DiskOperation::newReadOperation(charBuffer, "test_filename.txt", 3, 5, 2);
-  engine::DiskOperation *operation2 =
-    engine::DiskOperation::newWriteOperation(buffer, "test_filename.txt", 2);
+  au::SharedPointer<engine::DiskOperation> operation1, operation2;
+  operation1 = engine::DiskOperation::newReadOperation(charBuffer, "test_filename.txt", 3, 5, 2);
+  operation2 = engine::DiskOperation::newWriteOperation(buffer, "test_filename.txt", 2);
 
   EXPECT_EQ(operation1->getSize(), 5) << "Error in getSize()";
   EXPECT_EQ(operation2->getSize(), 0) << "Error in getSize()";

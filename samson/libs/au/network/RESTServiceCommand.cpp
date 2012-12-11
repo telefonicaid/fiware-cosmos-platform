@@ -49,20 +49,21 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
          socket_connection->host_and_port().c_str()));
 
   // Read a line from socket
-  au::Status s = socket_connection->ReadLine(request_line_, sizeof(request_line_), 10);
+  char request_line[1024];
+  au::Status s = socket_connection->ReadLine(request_line, sizeof(request_line), 10);
 
   if (s == au::OK) {
-    LOG_M(logs.rest, ("REST FIRST Head line: %s", request_line_));
+    LOG_M(logs.rest, ("REST FIRST Head line: %s", request_line));
 
     // Remove last "\n" "\r" characters.
-    au::remove_return_chars(request_line_);
+    request_line_ = au::StripString(request_line);
 
     // Process incomming line with cmdLine
     au::CommandLine cmdLine;
     cmdLine.Parse(request_line_);
 
     if (cmdLine.get_num_arguments() < 2) {
-      error.AddError(au::str("Unexpected format. Incomming line %s", request_line_));
+      error.AddError(au::str("Unexpected format. Incomming line %s", request_line_.c_str()));
       return au::Error;
     }
 
@@ -105,12 +106,12 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
     }
 
     // Read the rest of the REST Request
-    char line[1024];
+    char buffer_line[1024];
     while (s == au::OK) {
-      s = socket_connection->ReadLine(line, sizeof(request_line_), 10);
-      au::remove_return_chars(line);
+      s = socket_connection->ReadLine(buffer_line, sizeof(buffer_line), 10);
+      std::string line = au::StripString(buffer_line);
 
-      if (strlen(line) == 0) {
+      if (line.length() == 0) {
         LOG_M(logs.rest, ("REST End of header"));
         break;
       }
@@ -120,7 +121,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
         size_t pos = header_line.find(":");
 
         if (pos == std::string::npos) {
-          error.AddError(au::str("No valid HTTP header field: %s", line));
+          error.AddError(au::str("No valid HTTP header field: %s", line.c_str()));
           return au::Error;
         }
 
@@ -128,9 +129,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
         std::string value = header_line.substr(pos + 2);
         header_.Set(concept, value);
 
-        LOG_M(logs.rest,
-              ("REST Head line: '%s' [%s=%s]", line,
-               concept.c_str(), value.c_str()));
+        LOG_M(logs.rest, ("REST Head line: '%s' [%s=%s]", line.c_str(), concept.c_str(), value.c_str()));
       } else {
         error.AddError("No valid HTTP header");
         return au::Error;

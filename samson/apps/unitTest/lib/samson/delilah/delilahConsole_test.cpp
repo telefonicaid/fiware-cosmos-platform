@@ -37,15 +37,15 @@
 /*
  *
  *
- * //Test void getPrompt();
- * TEST(delilahConsoleTest, getPrompt)
+ * //Test void GetPrompt();
+ * TEST(delilahConsoleTest, GetPrompt)
  * {
  *
  *
  *  samson::DelilahConsole *delilah_console = init_delilah_test();
  *
  *  EXPECT_TRUE(delilah_console != NULL);
- *  EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt before connecting";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), "[Unconnected] Delilah>") << "Wrong prompt before connecting";
  *  // Stupid warning on deprecated conversion from string constant to ‘char*’
  *  char *host = strdup("localhost");
  *
@@ -57,21 +57,21 @@
  *  }
  *
  *  char expected_result[1024];
- *  EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after connected (samsonWorker should be running in localhost)";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), expected_result) << "Wrong prompt after connected (samsonWorker should be running in localhost)";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("set_mode"), 0) << "Wrong result from (set_mode)";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("set_mode database"), 0) << "Wrong result from (set_mode database)";
- *  EXPECT_EQ(delilah_console->getPrompt(), "Database >") << "Wrong prompt after set_mode database";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), "Database >") << "Wrong prompt after set_mode database";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("set_mode logs"), 0) << "Wrong result from (set_mode ogs)";
- *  EXPECT_EQ(delilah_console->getPrompt(), ">>") << "Wrong prompt after set_mode logs";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), ">>") << "Wrong prompt after set_mode logs";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("set_mode normal"), 0) << "Wrong result from (set_mode normal)";
- *  EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after set_mode normal";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), expected_result) << "Wrong prompt after set_mode normal";
  *
  *  EXPECT_TRUE(error.isActivated() == false);
- *  EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
  *
@@ -348,560 +348,560 @@
  *  sleep(1);
  *  delilah_console->add_alias("lso", "ls_operations");
  *
- * //    delilah_console->evalCommand("lso txt.*");
- * //    delilah_console->evalCommand("set_mode database");
- * //    delilah_console->evalCommand("ls");
- * //    delilah_console->evalCommand("set_mode normal");
- * //    delilah_console->evalCommand("ls_workers");
- * //    delilah_console->evalCommand("help");
+ * //    delilah_console->EvalCommand("lso txt.*");
+ * //    delilah_console->EvalCommand("set_mode database");
+ * //    delilah_console->EvalCommand("ls");
+ * //    delilah_console->EvalCommand("set_mode normal");
+ * //    delilah_console->EvalCommand("ls_workers");
+ * //    delilah_console->EvalCommand("help");
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("lso");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("lso txt.*");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("test_trap");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_mode database");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_mode mode_logs");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_mode normal");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_mode wrong_mode");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("history");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("history 10");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("cluster info");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help categor");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help categories cl");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help all");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help ls");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("help ls_stream_operation");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("threads");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set a b");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("unset a");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("local_logs");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("alerts");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("alerts on");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("alerts off");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("show_alerts");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("verbose");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("wverbose");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("wverbose 0");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("open_alerts_file /tmp/trace.log");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("close_alerts_file");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("clear_components");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps 1");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps clear");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps clear 3");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ps clear wrong_job");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push /bin/bash");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push /bin/bash a");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push /tmp/dir_test a");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("pop");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("pop a");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("pop a /tmp/traces");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("pop a /tmp/traces2");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("rm");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("rm_local /tmp/traces2");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  * //    {
  * //        au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_local");
- * //        delilah_console->autoComplete(info);
+ * //        delilah_console->AutoComplete(info);
  * //
  * //        delete info;
  * //    }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("show_local_queue");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("show_local_queue /tmp/traces");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("show_local_queue /tmp/traces -header");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push_module");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push_module /tmp/libtxt.so txt");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_queue_property");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_queue_property a");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_queue_property a pause");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("set_queue_property a pause true");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls -rat");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls -p");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls -r");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls -group name -rates");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_workers");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_workers -eng");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_workers -d");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_workers -");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations -p");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations -r");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations -i");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("ls_stream_operations -o");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("trace");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("wtrace");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("wdebug");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("run");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("run txt");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("run txt.parser_words ");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("init_stream");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("init_stream txt");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("push_module");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
@@ -909,7 +909,7 @@
  *
  *  {
  *      au::console::ConsoleAutoComplete* info = new au::console::ConsoleAutoComplete("quit");
- *      delilah_console->autoComplete(info);
+ *      delilah_console->AutoComplete(info);
  *
  *      delete info;
  *  }
@@ -929,7 +929,7 @@
  *  samson::DelilahConsole *delilah_console = init_delilah_test();
  *
  *  EXPECT_TRUE(delilah_console != NULL);
- *  EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt before connecting";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), "[Unconnected] Delilah>") << "Wrong prompt before connecting";
  *  // Stupid warning on deprecated conversion from string constant to ‘char*’
  *  char *host = strdup("localhost");
  *  int port = SAMSON_WORKER_PORT;
@@ -945,17 +945,17 @@
  *
  *  char expected_result[1024];
  *  sprintf(expected_result, "[%s@%s:%d] Delilah>", user, host, port);
- *  EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after connected (samsonWorker should be running in localhost)";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), expected_result) << "Wrong prompt after connected (samsonWorker should be running in localhost)";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("set_mode database"), 0) << "Wrong result from (set_mode database)";
- *  EXPECT_EQ(delilah_console->getPrompt(), "Database >") << "Wrong prompt after set_mode database";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), "Database >") << "Wrong prompt after set_mode database";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("set_mode logs"), 0) << "Wrong result from (set_mode ogs)";
- *  EXPECT_EQ(delilah_console->getPrompt(), ">>") << "Wrong prompt after set_mode logs";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), ">>") << "Wrong prompt after set_mode logs";
  *
  *  EXPECT_EQ(delilah_console->runAsyncCommand("set_mode normal"), 0) << "Wrong result from (set_mode normal)";
  *  sprintf(expected_result, "[%s@%s:%d] Delilah>", user, host, port);
- *  EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after set_mode normal";
+ *  EXPECT_EQ(delilah_console->GetPrompt(), expected_result) << "Wrong prompt after set_mode normal";
  *
  *  EXPECT_TRUE(strncmp(delilah_console->updateTimeString().c_str(), "Update times from SAMSON elements", strlen("Update times from SAMSON elements")) == 0) << "Wrong updateTimeString at delilahBase";
  *
@@ -973,7 +973,7 @@
  * //    au::ErrorManager error;
  * //    delilah_console->delilah_disconnect( &error );
  * //    EXPECT_TRUE(error.isActivated() == false);
- * //    EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
+ * //    EXPECT_EQ(delilah_console->GetPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
  *
  *  close_delilah_test(delilah_console);
  * }

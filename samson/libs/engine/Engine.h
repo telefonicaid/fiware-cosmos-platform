@@ -57,7 +57,7 @@ class Token;
 
 /**
  * \brief Namespace for engine library
- * \auth Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ * @author Andreu Urruela, Gregorio Escalada & Ken Zangelin
  */
 
 namespace engine {

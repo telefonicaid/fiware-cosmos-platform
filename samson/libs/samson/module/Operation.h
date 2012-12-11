@@ -304,7 +304,7 @@ public:
  * A MRGenerator consist in creating a fileSet from scratch.
  * Only command line parameters introduced in the console can be used to generate the output.
  * This class should be subclasses to create custom "generator".\n
- * This type of operations are very usefull to generate example fileSets to test map&reduce operations.\n
+ * This type of operations are very useful to generate example fileSets to test map&reduce operations.\n
  *
  */
 

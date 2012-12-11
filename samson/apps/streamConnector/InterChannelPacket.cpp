@@ -47,11 +47,11 @@ au::Status InterChannelPacket::read(au::FileDescriptor *fd) {
     return s;
   }
 
-  // Reject excesive large packets
-  if (header_.buffer_size > ( 256 * 1024 * 1024 )) {
+  // Reject Excessive large packets
+  if (header_.buffer_size > (256 * 1024 * 1024)) {
     return au::Error;
   }
-  if (header_.message_size > ( 256 * 1024 * 1024 )) {
+  if (header_.message_size > (256 * 1024 * 1024)) {
     return au::Error;
   }
 
@@ -70,7 +70,7 @@ au::Status InterChannelPacket::read(au::FileDescriptor *fd) {
 
     if (message->IsInitialized() == false) {
       LM_E(("Error parsing Google Protocol Buffer of %lu bytes because is not initialized!",
-            header_.message_size ));
+            header_.message_size));
       // Close connection ( We close here since it is not a io error, is a protocol error )
       free(dataP);
       fd->Close();
@@ -129,7 +129,7 @@ au::Status InterChannelPacket::write(au::FileDescriptor *fd) {
   if (header_.message_size > 0) {
     char *outputVec = (char *)malloc(header_.message_size + 2);
     if (outputVec == NULL) {
-      LM_XP(1, ("malloc(%d)", header_.message_size ));
+      LM_XP(1, ("malloc(%d)", header_.message_size));
     }
     if (message->SerializeToArray(outputVec, header_.message_size) == false) {
       LM_X(1, ("SerializeToArray failed"));
@@ -165,7 +165,7 @@ size_t InterChannelPacket::getSize() {
   recompute_sizes_in_header();
 
   size_t total = 0;
-  total += sizeof( header_ );
+  total += sizeof(header_);
   total += header_.message_size;
   total += header_.buffer_size;
 

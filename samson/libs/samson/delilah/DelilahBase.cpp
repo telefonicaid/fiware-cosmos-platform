@@ -124,7 +124,7 @@ std::string DelilahBase::runDatabaseCommand(std::string command) {
 
 // Autocomplete for database mode
 void DelilahBase::autoCompleteForDatabaseCommand(au::console::ConsoleAutoComplete *info) {
-  database.autoComplete(info);
+  database.AutoComplete(info);
 }
 
 std::string DelilahBase::updateTimeString() {

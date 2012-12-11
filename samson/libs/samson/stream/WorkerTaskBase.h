@@ -137,8 +137,11 @@ public:
   }
 
   bool ContainsBlockAtInput(int input, size_t block_id) {
-    BlockList *block_list = block_list_container_.getBlockList(au::str("input_%d", input));
+    BlockList *block_list = block_list_container_.FindBlockList(au::str("input_%d", input));
 
+    if (!block_list) {
+      return false;
+    }
     return block_list->ContainsBlock(block_id);
   }
 

@@ -116,7 +116,7 @@ public:
   }
 
   void addInput(DataSet input_dataset) {
-    if (( type == "parser" ) || (type == "simpleParser")) {
+    if ((type == "parser") || (type == "simpleParser")) {
       std::cerr << "Error in operation " << name <<
       ": Not possible to add inputs to a parser. The unique txt-txt input will be added automatically\n";
       exit(1);
@@ -150,7 +150,7 @@ public:
   void addOutput(DataSet output_dataset) {
     // printf("Adding output %s ( %s )\n", name.c_str() , type.c_str() );
 
-    if (( type == "parserOut" ) || ( type == "parserOutReduce" )) {
+    if ((type == "parserOut") || (type == "parserOutReduce")) {
       std::cerr << "samsonModuleParser: Error in operation " << name <<
       ": Not possible to add outputs to a parserOut or parserOutReduce. The unique txt-txt output will be added automatically\n";
       exit(1);
@@ -164,29 +164,29 @@ public:
 
     // Checking the use of reserved words in the name
     std::string arr_reserved_words[] =
-    { "auto",             "const",                "double",                        "float",
+    { "auto",             "const",    "double",       "float",
       "int",              "short",
-      "struct",           "unsigned",             "break",                         "continue",
+      "struct",           "unsigned", "break",        "continue",
       "else",
-      "for",              "long",                 "signed",                        "switch",
-      "void",             "case",                 "default",                       "enum",
-      "goto",             "register",             "sizeof",                        "typedef",
-      "volatile",         "char",                 "do",                            "extern",
-      "if",               "return",               "static",                        "union",
-      "while",            "asm",                  "dynamic_cast",                  "namespace",
+      "for",              "long",     "signed",       "switch",
+      "void",             "case",     "default",      "enum",
+      "goto",             "register", "sizeof",       "typedef",
+      "volatile",         "char",     "do",           "extern",
+      "if",               "return",   "static",       "union",
+      "while",            "asm",      "dynamic_cast", "namespace",
       "reinterpret_cast",
-      "try",              "bool",                 "explicit",                      "new",
-      "static_cast",      "typeid",               "catch",                         "false",
-      "operator",         "template",             "typename",                      "class",
-      "friend",           "private",              "this",                          "using",
-      "const_cast",       "inline",               "public",                        "throw",
-      "virtual",          "delete",               "mutable",                       "protected",
-      "true",             "wchar_t",              "and",                           "bitand",
-      "compl",            "not_eq",               "or_eq",                         "xor_eq",
-      "and_eq",           "bitor",                "not",                           "or",
-      "xor",              "cin",                  "endl",                          "INT_MIN",
-      "iomanip",          "main",                 "npos",                          "std",
-      "cout",             "include",              "INT_MAX",                       "iostream",
+      "try",              "bool",     "explicit",     "new",
+      "static_cast",      "typeid",   "catch",        "false",
+      "operator",         "template", "typename",     "class",
+      "friend",           "private",  "this",         "using",
+      "const_cast",       "inline",   "public",       "throw",
+      "virtual",          "delete",   "mutable",      "protected",
+      "true",             "wchar_t",  "and",          "bitand",
+      "compl",            "not_eq",   "or_eq",        "xor_eq",
+      "and_eq",           "bitor",    "not",          "or",
+      "xor",              "cin",      "endl",         "INT_MIN",
+      "iomanip",          "main",     "npos",         "std",
+      "cout",             "include",  "INT_MAX",      "iostream",
       "MAX_RAND",         "NULL",
       "string" };
 
@@ -212,7 +212,7 @@ public:
      *      }
      */
 
-    if (( type == "map" ) || ( type == "reduce" ) || ( type == "parserOut" ) || ( type == "parserOutReduce" )) {
+    if ((type == "map") || (type == "reduce") || (type == "parserOut") || (type == "parserOutReduce")) {
       if (inputs.size() == 0) {
         std::cerr << "samsonModuleParser: Error in operation " << name << ": Operation needs an input\n";
         return false;
@@ -350,7 +350,7 @@ public:
     if (type != "script") {
       std::set<std::string> includes;
       getIncludes(includes);
-      for (std::set<std::string>::iterator iter = includes.begin(); iter != includes.end(); iter++) {
+      for (std::set<std::string>::iterator iter = includes.begin(); iter != includes.end(); ++iter) {
         file << *iter;
       }
     }
@@ -430,7 +430,7 @@ public:
         file << "\t\tvoid parseLine( char * line, samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
         file << "\t\tvoid finish( samson::KVWriter *writer )\n\t\t{\n\t\t}\n\n";
       }
-      if (( type == "parserOut" ) || ( type == "parserOutReduce" )) {
+      if ((type == "parserOut") || (type == "parserOutReduce")) {
         file << "\t\tvoid init( TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
         file << "\t\tvoid run( KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
         file << "\t\tvoid finish( TXTWriter *writer )\n\t\t{\n\t\t}\n\n";

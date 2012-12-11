@@ -32,7 +32,7 @@
 //
 // Complete model for data and operations for samson
 //
-// It currently lives inside ZK for simplicity
+// It currently lives inside Zookeeper for simplicity
 //
 // It codifies all information about queues, operations, batch operations etc...
 // ------------------------------------------------------------------
@@ -54,7 +54,7 @@ public:
   virtual void PerformCommit(au::SharedPointer<gpb::DataModel>, std::string command, int version, au::ErrorManager&);
 
   // Check if this command can be process by this element
-  static bool isValidCommand(const std::string& main_command);
+  static bool IsValidCommand(const std::string& main_command);
 
   // Get collection to be displayed on delilah console
   au::SharedPointer<gpb::Collection> GetCollectionForQueues(const Visualization& visualization);
@@ -73,8 +73,10 @@ public:
   std::set<size_t> GetMyBlockIdsForPreviousDataModel(const std::vector<KVRange>& ranges);
   std::set<size_t> GetMyBlockIdsForCandidateDataModel(const std::vector<KVRange>& ranges);
   std::set<size_t> GetMyStateBlockIdsForCurrentDataModel(const std::vector<KVRange>& ranges);
-  size_t GetLastCommitIdForPreviousDataModel();
-  size_t GetLastCommitIdForCandidateDataModel();
+
+  size_t GetLastCommitIdForCurrentDataModel() const;
+  size_t GetLastCommitIdForCandidateDataModel() const;
+  size_t GetLastCommitIdForPreviousDataModel() const;
 
   // Method to discover if all operations have finished ( see wait command in delilah )
   bool CheckForAllStreamOperationsFinished();
@@ -131,7 +133,7 @@ private:
 
   // Check if it is necesssary to run this while recovering
   bool IsRecoveryCommand(const std::string& command);
-  // Default path in ZK for this information
+  // Default path in Zookeeper for this information
   static const std::string kDefaultSamsonDataPath;
 
   // Groups the initialization of all flags to process command

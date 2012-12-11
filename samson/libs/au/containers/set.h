@@ -56,7 +56,7 @@ public:
   void clearSet() {
     typename std::set<V * >::iterator iter;
 
-    for (iter =  std::set<V *>::begin(); iter != std::set<V *>::end(); iter++) {
+    for (iter =  std::set<V *>::begin(); iter != std::set<V *>::end(); ++iter) {
       delete *iter;
     }
     std::set<V *>::clear();

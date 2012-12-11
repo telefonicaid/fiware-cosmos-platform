@@ -32,7 +32,7 @@ ActivityStatistics::ActivityStatistics(const std::string& name) {
 
 void ActivityStatistics::Push(double t) {
   if (time < 0) {
-    LOG_SW(("Reported negative time (%d) for item %s", t,  name_.c_str()));
+    LOG_SW(("Reported negative time (%d) for item %s", t, name_.c_str()));
     return;
   }
 
@@ -88,7 +88,7 @@ double ActivityStatistics::GetStdDeviation() const {
   }
 
   double average = GetAverage();
-  double tmp = ( total_square_ / (double)counter_ ) - average * average;
+  double tmp = (total_square_ / (double)counter_) - average * average;
   if (tmp < 0) {
     LOG_SW(("Error computing std deviation in ActivityStatistics"));
     return 0;
@@ -135,7 +135,7 @@ std::string ActivityMonitor::GetLastItemsTable() const {
   au::tables::Table table("Item|Time,left,f=double");
 
   au::list<ActivityItem>::const_iterator it;
-  for (it = items_.begin(); it != items_.end(); it++) {
+  for (it = items_.begin(); it != items_.end(); ++it) {
     table.addRow(au::StringVector((*it)->name(), au::str("%.12f", (*it)->time()).c_str()));
   }
   return table.str();
@@ -157,7 +157,7 @@ std::string ActivityMonitor::GetSummary() const {
 
 
   au::map<std::string, ActivityStatistics >::const_iterator it;
-  for (it = elements_.begin(); it != elements_.end(); it++) {
+  for (it = elements_.begin(); it != elements_.end(); ++it) {
     output << "[" << it->first << ":" <<  au::str(it->second->total(), "s")  << "]";
   }
   return output.str();
@@ -172,7 +172,7 @@ std::string ActivityMonitor::GetElementsTable() const {
   table.setTitle("Engine statistics");
 
   au::map<std::string, ActivityStatistics >::const_iterator it;
-  for (it = elements_.begin(); it != elements_.end(); it++) {
+  for (it = elements_.begin(); it != elements_.end(); ++it) {
     au::StringVector values;
 
     values.push_back(it->first);

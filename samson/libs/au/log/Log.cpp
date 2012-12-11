@@ -58,9 +58,10 @@ bool Log::Read(au::FileDescriptor *fd) {
   au::TemporalBuffer buffer(string_length);
   // LM_V(("Reading strings data of %lu bytes" ,string_length ));
   s = fd->partRead(buffer.data(), string_length, "log_strings", 100);
-  if( s != au::OK)
+  if (s != au::OK) {
     return false;
-  
+  }
+
   // Process strings
   AddStrings(buffer.data(), string_length);
   return true;
@@ -360,25 +361,27 @@ au::Color Log::GetColor() {
 
 int Log::GetLogLevel(const std::string& str_log_level) {
   if (str_log_level == "E") {
-    return 1;
+    return LOG_LEVEL_ERROR;
   }
   if (str_log_level == "W") {
-    return 2;
-  }
-  if (str_log_level == "V") {
-    return 3;
+    return LOG_LEVEL_WARNING;
   }
   if (str_log_level == "M") {
-    return 4;
+    return LOG_LEVEL_MESSAGE;
   }
+
+  if (str_log_level == "V") {
+    return LOG_LEVEL_VERBOSE;
+  }
+
   if (str_log_level == "D") {
-    return 5;
+    return LOG_LEVEL_DEBUG;
   }
   if (str_log_level == "*") {
-    return 256;
+    return LOG_LEVEL_ALL;
   }
   if (str_log_level == "all") {
-    return 5;
+    return LOG_LEVEL_ALL;
   }
 
   // Any other case, 0
@@ -386,20 +389,22 @@ int Log::GetLogLevel(const std::string& str_log_level) {
 }
 
 std::string Log::GetLogLevel(int log_level) {
+  if (log_level >= LOG_LEVEL_ALL) {
+    return "*";
+  }
+
   switch (log_level) {
-    case 0: return "X";
+    case LOG_LEVEL_ERROR_EXIT: return "X";
 
-    case 1: return "E";
+    case LOG_LEVEL_ERROR: return "E";
 
-    case 2: return "W";
+    case LOG_LEVEL_WARNING: return "W";
 
-    case 3: return "V";
+    case LOG_LEVEL_MESSAGE: return "M";
 
-    case 4: return "M";
+    case LOG_LEVEL_VERBOSE: return "V";
 
-    case 5: return "D";
-
-    case 256: return "*";
+    case LOG_LEVEL_DEBUG: return "D";
 
     default:
       return "?";

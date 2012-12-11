@@ -226,11 +226,11 @@ void PushManager::receive(Message::MessageCode msgCode, size_t worker_id, size_t
 }
 
 size_t PushManager::Push(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
-  LM_V(("PushManager: pushing buffer %s to %lu queues ( delilah %s )"
-        , au::str(buffer->size()).c_str()
-        , queues.size()
-        , au::code64_str(delilah_->get_delilah_id()).c_str()
-        ));
+  LOG_D(logs.delilah, ("PushManager: pushing buffer %s to %lu queues ( delilah %s )"
+                       , au::str(buffer->size()).c_str()
+                       , queues.size()
+                       , au::code64_str(delilah_->get_delilah_id()).c_str()
+                       ));
 
   size_t item_id = item_id_++;
   PushItem *item = new PushItem(delilah_, item_id, buffer, queues);

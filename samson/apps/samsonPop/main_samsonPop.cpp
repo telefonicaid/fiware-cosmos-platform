@@ -33,6 +33,7 @@
 #include "au/string/StringUtilities.h"                  // au::str()
 
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
+#include "samson/common/samsonVersion.h"
 
 
 size_t buffer_size;
@@ -143,6 +144,10 @@ int main(int argC, const char *argV[]) {
   paConfig("man shortdescription", (void *)manShortDescription);
   paConfig("man synopsis", (void *)manSynopsis);
   paConfig("log to stderr", (void *)true);
+  paConfig("man reportingbugs", SAMSON_BUG_REPORTING);
+  paConfig("man author", SAMSON_AUTHORS);
+  paConfig("man copyright", SAMSON_COPYRIGHT);
+  paConfig("man version", SAMSON_VERSION);
 
 
   // Parse input arguments
@@ -159,6 +164,11 @@ int main(int argC, const char *argV[]) {
   gettimeofday(&tp, NULL);
   int rand_seq = tp.tv_sec * 1000 + tp.tv_usec % 1000;
   srand(rand_seq);
+
+  // Init log system
+  au::LogCentral::InitLogSystem(argV[0]);
+  samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
+  au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin
 
   // Set 1G RAM for uploading content
   samson::SamsonClient::general_init(1024 * 1024 * 1024);

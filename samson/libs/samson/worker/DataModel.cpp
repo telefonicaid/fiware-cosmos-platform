@@ -891,6 +891,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForStreamOperations(c
   gpb::Data *data = getCurrentModel()->mutable_current_data();
 
   bool all_flag = visualization.get_flag("a");
+  bool id_flag = visualization.get_flag("id");
 
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("stream_operations");
@@ -903,7 +904,9 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForStreamOperations(c
       continue;
     }
     gpb::CollectionRecord *record = collection->add_record();
-    ::samson::add(record, "id", stream_operation.stream_operation_id(), "different");
+    if (id_flag) {
+      ::samson::add(record, "id", stream_operation.stream_operation_id(), "different");
+    }
     ::samson::add(record, "name", stream_operation.name(), "different,left");
     ::samson::add(record, "operation", stream_operation.operation(), "different");
 
@@ -933,6 +936,10 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForStreamOperations(c
     ::samson::add(record, "outputs", outputs.str(), "different");
     ::samson::add(record, "environment", str(stream_operation.environment()), "different");
   }
+
+  // Sort collection by name
+  gpb::Sort(collection.shared_object(), "name");
+
   return collection;
 }
 

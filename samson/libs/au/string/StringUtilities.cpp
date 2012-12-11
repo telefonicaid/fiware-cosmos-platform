@@ -904,7 +904,7 @@ std::string StripString(const std::string& line) {
   if (end_pos == std::string::npos) {
     return "";   // Theoretically impossible
   }
-  return line.substr(begin_pos, end_pos - begin_pos);
+  return line.substr(begin_pos, end_pos - begin_pos + 1);
 }
 
 void ClearTerminalLine() {

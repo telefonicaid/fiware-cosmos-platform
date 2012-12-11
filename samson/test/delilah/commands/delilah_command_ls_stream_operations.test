@@ -5,15 +5,14 @@ remove_all
 add_stream_operation o1 txt.parser_words -input input -output words
 add_stream_operation o2 txt.word_count_accumulate -input "words words_count" -output words_count
 set_stream_operation_property o2 update_only true
-set_stream_operation_property o2 num_divisions 4
 --COMMAND--
 ls_stream_operations 
 --EXPECT--
-/-------------------------------------------------------------------------------------------------------------------------------\
-| ls_stream_operations                                                                                                          |
-|-------------------------------------------------------------------------------------------------------------------------------|
-| id | name |                 operation | Flags |                 inputs |          outputs |                       environment | 
-|----+------+---------------------------+-------+------------------------+------------------+-----------------------------------|
-|  5 | o1   |          txt.parser_words |       |             [1] input  |       [1] words  |                                   | 
-|  6 | o2   | txt.word_count_accumulate |       | [2] words words_count  | [1] words_count  | update_only=true num_divisions=4  | 
-\-------------------------------------------------------------------------------------------------------------------------------/
+/--------------------------------------------------------------------------------------------------\
+| ls_stream_operations                                                                             |
+|--------------------------------------------------------------------------------------------------|
+| name |                 operation | Flags |             inputs |      outputs |       environment | 
+|------+---------------------------+-------+--------------------+--------------+-------------------|
+| o1   |          txt.parser_words |       |             input  |       words  |                   | 
+| o2   | txt.word_count_accumulate |       | words words_count  | words_count  | update_only=true  | 
+\--------------------------------------------------------------------------------------------------/

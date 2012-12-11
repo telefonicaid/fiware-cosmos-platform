@@ -78,7 +78,7 @@ char log_command[1024];
 char log_server[1024];
 int log_port;
 bool thread_mode;
-bool worker_quit=false; // Flag used to exit background worker when sigterm is send
+bool worker_quit = false;  // Flag used to exit background worker when sigterm is send
 
 #define LOG_PORT LOG_SERVER_DEFAULT_PORT
 
@@ -147,10 +147,6 @@ static const char *manDescription = "\n"
                                     "\n";
 
 static const char *manExitStatus = "0      if OK\n 1-255  error\n";
-static const char *manAuthor = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
-static const char *manReportingBugs = "bugs to samson-dev@tid.es\n";
-static const char *manCopyright = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
-static const char *manVersion = SAMSON_VERSION;
 
 void SamsonWorkerCleanUp() {
   LOG_M(samson::logs.cleanup, ("Cleaning up samsonWorker"));
@@ -212,7 +208,7 @@ void SamsonWorkerCleanUp() {
 
 void captureSIGINT(int s) {
   LM_LM(("Signal SIGINT %d", s));
-  if( fg ) {
+  if (fg) {
     worker->StopConsole();
   } else {
     worker_quit = true;
@@ -225,7 +221,7 @@ void captureSIGPIPE(int s) {
 
 void captureSIGTERM(int s) {
   LM_LM(("Captured SIGTERM"));
-  if( fg ) {
+  if (fg) {
     worker->StopConsole();
   } else {
     worker_quit = true;
@@ -251,10 +247,10 @@ int main(int argC, const char *argV[]) {
   paConfig("man shortdescription", (void *)manShortDescription);
   paConfig("man description", (void *)manDescription);
   paConfig("man exitstatus", (void *)manExitStatus);
-  paConfig("man author", (void *)manAuthor);
-  paConfig("man reportingbugs", (void *)manReportingBugs);
-  paConfig("man copyright", (void *)manCopyright);
-  paConfig("man version", (void *)manVersion);
+  paConfig("man reportingbugs", SAMSON_BUG_REPORTING);
+  paConfig("man author", SAMSON_AUTHORS);
+  paConfig("man copyright", SAMSON_COPYRIGHT);
+  paConfig("man version", SAMSON_VERSION);
   paConfig("screen line format", (void *)"TYPE: TEXT");
   const char *extra = paIsSetSoGet(argC, (char **)argV, "-port");
   paParse(paArgs, argC, (char **)argV, 1, false, extra);
@@ -410,10 +406,10 @@ int main(int argC, const char *argV[]) {
   setlocale(LC_ALL, oldlocale);
 
   // Put in background if necessary
-  if ( fg ) {
+  if (fg) {
     log_plugin_console_->SetConsole(worker);
     worker->StartConsole(true);
-    log_plugin_console_->SetConsole(NULL); // Not use console any more to print logs
+    log_plugin_console_->SetConsole(NULL);  // Not use console any more to print logs
     LOG_M(samson::logs.worker, ("samsonWorker is now quitting..."));
   } else {
     LOG_M(samson::logs.worker, ("samsonWorker is now working in background"));

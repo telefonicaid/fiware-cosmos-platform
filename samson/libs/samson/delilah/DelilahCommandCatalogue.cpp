@@ -217,6 +217,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
              "one or multiple input queues and send result to one or multiple output queues\n"
              "Please, add new stream operations with add_stream_operations command");
   AddBoolOption("ls_stream_operations", "-a", "Include internal stream operations");
+  AddBoolOption("ls_stream_operations", "-id", "Include numerical identifier of each operation");
 
   AddCommand("ls_stream_operations_statistics", "stream", "Show stream operation statistics for the cluster");
   AddTag("ls_stream_operations_statistics", "send_to_all_workers");

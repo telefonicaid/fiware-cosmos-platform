@@ -561,7 +561,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
     worker_block_manager_->ReceivedPushBlock(packet->from.id, push_id, packet->buffer(), queues);
-    return;
   }
 
   // --------------------------------------------------------------------

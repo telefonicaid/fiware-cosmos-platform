@@ -283,10 +283,6 @@ static const char *manDescription      =
   "\n";
 
 static const char *manExitStatus    = "0      if OK\n 1-255  error\n";
-static const char *manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
-static const char *manReportingBugs = "bugs to samson-dev@tid.es\n";
-static const char *manCopyright     = "Copyright (C) 2011 Telefonica Investigacion y Desarrollo";
-static const char *manVersion       = SAMSON_VERSION;
 
 
 
@@ -305,10 +301,10 @@ int main(int argC, const char *argV[]) {
   paConfig("man shortdescription", (void *)manShortDescription);
   paConfig("man description", (void *)manDescription);
   paConfig("man exitstatus", (void *)manExitStatus);
-  paConfig("man author", (void *)manAuthor);
-  paConfig("man reportingbugs", (void *)manReportingBugs);
-  paConfig("man copyright", (void *)manCopyright);
-  paConfig("man version", (void *)manVersion);
+  paConfig("man reportingbugs", SAMSON_BUG_REPORTING);
+  paConfig("man author", SAMSON_AUTHORS);
+  paConfig("man copyright", SAMSON_COPYRIGHT);
+  paConfig("man version", SAMSON_VERSION);
 
   paParse(paArgs, argC, (char **)argV, 1, false);
 

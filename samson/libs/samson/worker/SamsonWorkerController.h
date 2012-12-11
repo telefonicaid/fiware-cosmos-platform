@@ -113,6 +113,11 @@ public:
   std::string  getHostForWorker(size_t worker_id);
   unsigned short getWebPortForWorker(size_t worker_id);
 
+  // Check if we are a single-worker cluster
+  bool IsSingleWorkerCluster() {
+    return (cluster_info_->workers_size() == 1);
+  }
+
 private:
 
   // Get all worker identifiers

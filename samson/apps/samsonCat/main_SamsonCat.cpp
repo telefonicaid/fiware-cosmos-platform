@@ -29,7 +29,7 @@
 #include "engine/MemoryManager.h"
 
 #include "samson/common/SamsonSetup.h"    // samson::SamsonSetup
-#include "samson/common/SamsonVersion.h"
+#include "samson/common/samsonVersion.h"
 #include "samson/common/coding.h"         // samson::FormatHeader
 #include "samson/common/samsonVars.h"     // SAMSON_ARG_VARS
 

@@ -33,21 +33,20 @@ WorkerNetwork::WorkerNetwork(size_t worker_id, int port) :
 }
 
 WorkerNetwork::~WorkerNetwork() {
+  LOG_D(logs.cleanup, ("Calling ~WorkerNetwork"));
   if (worker_listener != NULL) {
-    LOG_M(logs.cleanup, ("In ~WorkerNetwork() calling StopNetworkListeners()"));
     worker_listener->StopNetworkListener();
     delete worker_listener;
     worker_listener = NULL;
   }
+  LOG_D(logs.cleanup, ("Finished ~WorkerNetwork"));
 }
 
 void WorkerNetwork::stop() {
   // Stop listeners
-  LOG_M(logs.cleanup, ("NetworkListener called to stop"));
   worker_listener->StopNetworkListener();
 
   // Close all connections
-  LOG_M(logs.cleanup, ("Close all connections"));
   NetworkManager::Reset();
 }
 

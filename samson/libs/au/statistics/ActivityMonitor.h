@@ -83,6 +83,8 @@ public:
 
   ActivityMonitor(const std::string& first_activity_name = "init_activity");
   ~ActivityMonitor() {
+    elements_.clearMap();
+    items_.clearList();
   };
 
   // Start and Stop activities
@@ -95,8 +97,8 @@ public:
   std::string GetElementsTable() const;
   std::string GetSummary() const;
 
-  double GetTotalTimeForActivity( const std::string name ) const;
-  
+  double GetTotalTimeForActivity(const std::string name) const;
+
 private:
 
   au::Cronometer cronometer_;                 // Global cronometer

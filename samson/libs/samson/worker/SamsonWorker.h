@@ -83,6 +83,16 @@ public:
 
   SamsonWorker(std::string zoo_host, int port, int web_port);
   ~SamsonWorker() {
+    LOG_D(logs.cleanup, ("Calling ~SamsonWorker"));
+    worker_controller_ = NULL;
+    data_model_ = NULL;
+    network_ = NULL;
+    samson_worker_rest_ = NULL;
+    worker_block_manager_ = NULL;
+    task_manager_ = NULL;
+    workerCommandManager_ = NULL;
+    zoo_connection_ = NULL;
+    LOG_D(logs.cleanup, ("Finished ~SamsonWorker"));
   }
 
   // All internal components are shared pointers

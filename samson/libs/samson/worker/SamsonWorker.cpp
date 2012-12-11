@@ -151,13 +151,13 @@ void SamsonWorker::Review() {
         return;
       }
 
-      data_model_ = new DataModel(zoo_connection_.shared_object());
+      data_model_ = new DataModel(zoo_connection_);
       data_model_->UpdateToLastVersion();
       network_ = new WorkerNetwork(worker_controller_->worker_id(), port_);
 
       state_ = connected;            // Now we are connected
       state_message_ = "Connected";
-      LOG_M(logs.worker_controller, ("Worker connected to ZK"));
+      LOG_M(logs.worker_controller, ("Worker connected to Zookeeper"));
       break;
     }
     case connected:
@@ -168,7 +168,7 @@ void SamsonWorker::Review() {
         network_->set_cluster_information(cluster_info);     // Inform network about cluster setup
         state_message_ = "Ready";
         state_ = ready;
-        LOG_M(logs.worker, ("Worker connected to ZK and part of the cluster"));
+        LOG_M(logs.worker, ("Worker connected to Zookeeper and part of the cluster"));
       } else {
         state_message_ = "Still not included in the cluster";
       }

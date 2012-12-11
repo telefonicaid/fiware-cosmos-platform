@@ -771,7 +771,8 @@ Command *CommandCatalogue::GetCommand(const std::string& name) const {
   return NULL;
 }
 
-CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::ErrorManager& error) const {
+au::SharedPointer<CommandInstance> CommandCatalogue::Parse(const std::string command_line,
+                                                           au::ErrorManager& error) const {
   // Tokenize provided line
   token::Tokenizer tokenizer;
 
@@ -790,7 +791,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
   // Analyse the line
   if (components.size() == 0) {
     error.AddError("No provided command");
-    return NULL;
+    return au::SharedPointer<CommandInstance>(NULL);
   }
 
   // Create a new C
@@ -798,10 +799,10 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
   Command *command = GetCommand(main_command);
   if (!command) {
     error.AddError(au::str("Command '%s' not found", main_command.c_str()));
-    return NULL;
+    return au::SharedPointer<CommandInstance>(NULL);
   }
 
-  CommandInstance *command_instance = new CommandInstance(command, command_line);
+  au::SharedPointer<CommandInstance> command_instance(new CommandInstance(command, command_line));
 
   int pos_argument = 0;              // Position of the argument we are parsing
 
@@ -818,8 +819,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                  main_command.c_str()));
           error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
           error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-          delete command_instance;
-          return NULL;
+          return au::SharedPointer<CommandInstance>(NULL);
         } else {
           if (item->type() == options::option_bool) {
             command_instance->SetValue(option_name, "true");
@@ -830,8 +830,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                      , option_name.c_str(), main_command.c_str()));
               error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
               error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-              delete command_instance;
-              return NULL;
+              return au::SharedPointer<CommandInstance>(NULL);
             } else {
               std::string value = components[i + 1];
               i++;
@@ -841,8 +840,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                        value.c_str(), option_name.c_str(), main_command.c_str()));
                 error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
                 error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-                delete command_instance;
-                return NULL;
+                return au::SharedPointer<CommandInstance>(NULL);
               } else {
                 command_instance->SetValue(option_name, value);
                 continue;
@@ -858,8 +856,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                              , main_command.c_str(), command->usage().c_str()));
       error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
       error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-      delete command_instance;
-      return NULL;
+      return au::SharedPointer<CommandInstance>(NULL);
     }
 
     // Recover item we are filling
@@ -871,8 +868,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                              value.c_str(), item->name().c_str(), main_command.c_str()));
       error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
       error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-      delete command_instance;
-      return NULL;
+      return au::SharedPointer<CommandInstance>(NULL);
     }
 
     command_instance->SetValue(item->name(), value);
@@ -886,8 +882,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                command->options()[i]->name().c_str(), main_command.c_str()));
         error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
         error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-        delete command_instance;
-        return NULL;
+        return au::SharedPointer<CommandInstance>(NULL);
       }
     }
   }
@@ -899,12 +894,10 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                command->arguments()[i]->name().c_str(), main_command.c_str()));
         error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
         error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-        delete command_instance;
-        return NULL;
+        return au::SharedPointer<CommandInstance>(NULL);
       }
     }
   }
-
 
   return command_instance;
 }
@@ -923,6 +916,10 @@ void CommandCatalogue::AddTag(const std::string& command_name, const std::string
 CommandInstance::CommandInstance(Command *command, const std::string & command_line) {
   command_ = new Command(*command);                   // duplicate command information
   command_line_ = command_line;                       // Copy of the origina command line
+}
+
+CommandInstance::~CommandInstance() {
+  delete command_;   // Remove duplicated information
 }
 
 const std::string CommandInstance::main_command() {

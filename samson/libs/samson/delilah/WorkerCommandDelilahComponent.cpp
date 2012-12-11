@@ -80,9 +80,6 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
 WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent() {
   responses.clearMap();
   collections.clear();
-  if (command_instance_) {
-    delete command_instance_;
-  }
 }
 
 void WorkerCommandDelilahComponent::run() {

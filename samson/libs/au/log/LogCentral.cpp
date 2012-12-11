@@ -141,7 +141,7 @@ void LogCentral::Init(const std::string& exec) {
   // keep the name of the executable
   exec_ = exec;
 
-  if (fd_read_logs_) {
+  if (fd_read_logs_ != NULL) {
     return;  // Already initialized
   }
   CreatePipeAndFileDescriptors();
@@ -225,14 +225,14 @@ void LogCentral::Emit(Log *log) {
   if (fd_write_logs_ == NULL) {
     return;
   }
-  log->Write(fd_write_logs_);
+  log->Write(fd_write_logs_.shared_object());
 }
 
 void LogCentral::RunThread() {
   // Background thread
   while (true) {
     LogPointer log(new Log());
-    bool real_log = log->Read(fd_read_logs_);
+    bool real_log = log->Read(fd_read_logs_.shared_object());
 
     if (!real_log) {
       if (IsThreadQuiting()) {
@@ -299,7 +299,7 @@ void LogCentral::EvalCommand(const std::string& command, au::ErrorManager& error
   std::vector<std::string> commands = au::split(command, ',');
   for (size_t i = 0; i < commands.size(); i++) {
     // Get instance of the command (using command catalogue )
-    au::console::CommandInstance *command_instance = log_central_catalogue.Parse(command, error);
+    au::SharedPointer<au::console::CommandInstance> command_instance = log_central_catalogue.Parse(command, error);
 
     // If error parsing the command, just return the error
     if (error.HasErrors()) {
@@ -609,16 +609,13 @@ LogCentralCatalogue::LogCentralCatalogue() {
   AddBoolOption("log_show_channels", "v", "Show more information about generated logs");
 
   // Set level of log messages for a particular channel
-  AddCommand("log_set", "general",
-             "Set log-level to specified value for some log-channels ( and for some log-plugins if specified )");
+  AddCommand("log_set", "general", "Set log-level to specified value for some log-channels");
   AddMandatoryStringArgument("log_set", "channel_pattern", "Name (or pattern) of log channel");
   AddMandatoryStringArgument("log_set", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
   AddStringArgument("log_set", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
 
   // Set level of log messages for a particular channel
-  AddCommand(
-    "log_add", "general",
-    "Set log-level at least to specified value for some log-channels ( and for some log-plugins if specified )");
+  AddCommand("log_add", "general", "Set log-level at least to specified value for some log-channels");
   AddMandatoryStringArgument("log_add", "channel_pattern", "Name (or pattern) of log channel");
   AddMandatoryStringArgument("log_add", "log_level", "Level of log D,M,V,V2,V3,V4,V5,W,E,X ( type - for no log )");
   AddStringArgument("log_add", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
@@ -626,7 +623,6 @@ LogCentralCatalogue::LogCentralCatalogue() {
   // Set level of log messages for a particular channel
   AddCommand("log_remove", "general", "Unset logs for some log-channels ( and for some log-plugins if specified )");
   AddMandatoryStringArgument("log_remove", "channel_pattern", "Name (or pattern) of log channel");
-  AddStringArgument("log_remove", "plugin_pattern", "*",
-                    "Name (or pattern) of log-plugin (type * or nothing for all)");
+  AddStringArgument("log_remove", "plugin_pattern", "*", "Name (or pattern) of log-plugin (type * or nothing for all)");
 }
 }

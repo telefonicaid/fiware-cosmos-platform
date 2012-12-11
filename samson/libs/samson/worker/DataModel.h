@@ -43,7 +43,7 @@ class WorkerBlockData;
 class DataModel : public au::StringDataModel<gpb::DataModel> {
 public:
 
-  explicit DataModel(au::zoo::Connection *zoo_connection) :
+  explicit DataModel(au::SharedPointer<au::zoo::Connection> zoo_connection) :
     au::StringDataModel<gpb::DataModel> (zoo_connection, kDefaultSamsonDataPath) {
   }
 

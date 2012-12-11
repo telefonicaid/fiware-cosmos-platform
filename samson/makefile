@@ -432,8 +432,11 @@ cleanhudson:
 
 v: valgrind
 valgrind: dia
-	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonWorker -fg  2> output_valgrind_samsonWorker
+		  rm -f output_valgrind_samsonWorker 
+	valgrind -v --gen-suppressions=all --suppressions=valgrind_exceptions.txt --leak-check=full --track-origins=yes --show-reachable=yes  samsonWorker -fg -log "log_set samson::C D"  2> output_valgrind_samsonWorker
 
+v_gen:
+	cat output_valgrind_samsonWorker  | grep -v '\-\-' | grep -v "==" >> valgrind_exceptions.txt
 
 clear_ipcs:
 	for mem in `sudo ipcs -m  | awk '{ if ($$6 == 0) print $$2;}'`; do ipcrm -m $$mem; done

@@ -45,8 +45,10 @@ WorkerTaskManager::WorkerTaskManager(SamsonWorker *samson_worker) {
 }
 
 WorkerTaskManager::~WorkerTaskManager() {
+  LOG_D(logs.cleanup, ("Calling ~WorkerTaskManager"));
   stream_operations_statistics_.clearMap();
   stream_operations_global_info_.clearMap();
+  LOG_D(logs.cleanup, ("Finished ~WorkerTaskManager"));
 }
 
 size_t WorkerTaskManager::getNewId() {

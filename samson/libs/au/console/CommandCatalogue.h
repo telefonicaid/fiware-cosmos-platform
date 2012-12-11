@@ -169,6 +169,7 @@ class CommandInstance {
 public:
 
   CommandInstance(Command *command, const std::string& command_line);
+  ~CommandInstance();
 
   const std::string main_command();
   const std::string command_line();
@@ -258,7 +259,7 @@ public:
    * In case of error, NULL is returned.
    * Otherwise, returned instance contains all values for arguments and options of the selected command
    */
-  CommandInstance *Parse(const std::string command_line, au::ErrorManager& error) const;
+  au::SharedPointer<CommandInstance> Parse(const std::string command_line, au::ErrorManager& error) const;
 
 /**
  * \brief Add a new command to the catalogue

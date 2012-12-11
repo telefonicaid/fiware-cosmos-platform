@@ -29,6 +29,9 @@ class KVFile {
     kvs = NULL;
     info = NULL;
     kvs_index = NULL;
+    key_ = NULL;
+    value_ = NULL;
+
   }
 
 public:
@@ -38,6 +41,10 @@ public:
 
   // Get header information
   KVHeader header();
+
+  // Data instances for parsing and printing contente
+  DataInstance *key_;
+  DataInstance *value_;
 
   // Print content of key-values ( mainly drebugging )
   size_t printContent(size_t limit, bool show_hg, std::ostream &output);

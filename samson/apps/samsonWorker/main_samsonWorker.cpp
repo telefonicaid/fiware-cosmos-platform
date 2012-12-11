@@ -78,6 +78,7 @@ char log_command[1024];
 char log_server[1024];
 int log_port;
 bool thread_mode;
+bool worker_quit=false; // Flag used to exit background worker when sigterm is send
 
 #define LOG_PORT LOG_SERVER_DEFAULT_PORT
 
@@ -211,7 +212,11 @@ void SamsonWorkerCleanUp() {
 
 void captureSIGINT(int s) {
   LM_LM(("Signal SIGINT %d", s));
-  _exit(1);
+  if( fg ) {
+    worker->StopConsole();
+  } else {
+    worker_quit = true;
+  }
 }
 
 void captureSIGPIPE(int s) {
@@ -220,7 +225,11 @@ void captureSIGPIPE(int s) {
 
 void captureSIGTERM(int s) {
   LM_LM(("Captured SIGTERM"));
-  _exit(1);
+  if( fg ) {
+    worker->StopConsole();
+  } else {
+    worker_quit = true;
+  }
 }
 
 /**
@@ -384,7 +393,7 @@ int main(int argC, const char *argV[]) {
   samson::SharedMemoryManager::Init(num_processors, shm_size);
 
   // Global init of engine
-  LOG_D(samson::logs.worker, ("Init engine system with %s cores and memory=%s", num_processors, au::str(memory).c_str()));
+  LOG_D(samson::logs.worker, ("Init engine system with %d cores and memory=%s", num_processors, au::str(memory).c_str()));
   engine::Engine::InitEngine(num_processors, memory, 1);
 
   LOG_D(samson::logs.worker, ("Init Block manager"));
@@ -401,22 +410,18 @@ int main(int argC, const char *argV[]) {
   setlocale(LC_ALL, oldlocale);
 
   // Put in background if necessary
-  if (fg == false) {
+  if ( fg ) {
+    log_plugin_console_->SetConsole(worker);
+    worker->StartConsole(true);
+    log_plugin_console_->SetConsole(NULL); // Not use console any more to print logs
+    LOG_M(samson::logs.worker, ("samsonWorker is now quitting..."));
+  } else {
     LOG_M(samson::logs.worker, ("samsonWorker is now working in background"));
     Deamonize_close_all();
-    while (true) {
-      sleep(10);
+    while (!worker_quit) {
+      sleep(1);
     }
   }
-
-  // Show logs on console and not on screen
-  log_plugin_console_->SetConsole(worker);
-
-  // Run worker console ( -fg is activated ) blocking this thread
-  worker->StartConsole(true);
-
-  // Not use console any more to print logs
-  log_plugin_console_->SetConsole(NULL);
 
   // Not use this worker any more in BlockManager
   samson::stream::BlockManager::shared()->set_samson_worker(NULL);

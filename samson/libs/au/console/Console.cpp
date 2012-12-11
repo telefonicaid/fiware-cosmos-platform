@@ -89,10 +89,11 @@ Console::~Console() {
 
 void Console::StartConsole(bool block_thread) {
   StartThread();
-
   if (block_thread) {
     JoinThread();  // Wait for background thread to finish
+    printf("\n"); // Print a last return to avoid writting after console prompt
   }
+  
 }
 
 void Console::StopConsole() {
@@ -495,6 +496,10 @@ void Console::RunThread() {
       // Review background messages
       ProcessBackgroundMessages();
       usleep(20000);
+      
+      if (IsThreadQuiting()) {
+        return;  // StopConsole has been called
+      }
     }
 
     // Read an entry or a escape sequence

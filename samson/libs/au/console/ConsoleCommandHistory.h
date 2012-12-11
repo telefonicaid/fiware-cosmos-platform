@@ -74,7 +74,7 @@ public:
   /**
    * \brief Get string command at a particular position
    */
-  std::string GetStringCommand(int pos);
+  std::string GetStringCommand(size_t pos);
 
 
   /**

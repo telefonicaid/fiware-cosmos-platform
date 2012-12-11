@@ -157,10 +157,7 @@ int ConsoleCommandHistory::Find(int pos, const std::string& message) {
   return -1;
 }
 
-std::string ConsoleCommandHistory::GetStringCommand(int pos) {
-  if (pos < 0) {
-    return "";
-  }
+std::string ConsoleCommandHistory::GetStringCommand(size_t pos) {
   if (pos >= commands_.size()) {
     return "";
   }

@@ -11,11 +11,12 @@ namespace au {
     Thread *t = (Thread *)p;
     
     t->RunThread();
-    t->pthread_running_ = false;
     
-    // Wake up joining threads
-    au::TokenTaker tt(&t->token_);
-    tt.WakeUpAll();
+    {
+      au::TokenTaker tt(&t->token_);
+      t->pthread_running_ = false;
+      tt.WakeUpAll();    // Wake up joining threads
+    }
     
     return NULL;
   }

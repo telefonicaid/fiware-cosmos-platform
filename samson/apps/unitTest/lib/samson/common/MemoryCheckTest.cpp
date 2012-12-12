@@ -31,15 +31,17 @@ TEST(samson_common_MemoryCheck, MemoryCheck) {
   bool ok = samson::MemoryCheck();
   EXPECT_TRUE(ok);
 
+  LM_M(("MemoryCheck Exercising 'if (samson_required_mem > max_memory_size)'"));
   // Exercising 'if (samson_required_mem > max_memory_size)'
   samson::SamsonSetup* setup = au::Singleton<samson::SamsonSetup>::shared();
-  setup->Set("general.num_processess", "32");
+  setup->Set("general.num_processess", "17");
   setup->Set("general.shared_memory_size_per_buffer", "536870912"); // 512Mb
   ok = samson::MemoryCheck();
   EXPECT_FALSE(ok);
 
+  LM_M(("MemoryCheck Exercising 'if (shared_memory_size_per_buffer > kernel_shmmax)'"));
   // Exercising 'if (shared_memory_size_per_buffer > kernel_shmmax)'
-  setup->Set("general.shared_memory_size_per_buffer", "2147483648"); // 2Gb
+  setup->Set("general.shared_memory_size_per_buffer", "3221225472"); // 3Gb
   setup->Set("general.num_processess", "1");
   ok = samson::MemoryCheck();
   EXPECT_FALSE(ok);

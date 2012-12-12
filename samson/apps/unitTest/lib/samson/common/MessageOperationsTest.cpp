@@ -77,22 +77,3 @@ TEST(DISABLED_samson_common_MessageOperations, GetCollectionForMap) {
 
   close_engine_test();
 }
-
-#if 0
-// -----------------------------------------------------------------------------
-// Test the MessageOperations 'GetCollectionForDictionary' function
-//
-TEST(DISABLED_samson_common_MessageOperations, GetCollectionForDictionary) {
-  init_engine_test();
-
-  au::Dictionary<int, int>                   dict;
-  samson::Visualization                      visualization;
-  au::SharedPointer<samson::gpb::Collection> collection;
-  
-  dict.insert(std::pair<int, int>(1, 2));
-  dict.insert(std::pair<int, int>(2, 3));
-
-  collection = samson::GetCollectionForDictionary("Numbers", dict, visualization);
-  EXPECT_TRUE(collection != NULL);
-}
-#endif

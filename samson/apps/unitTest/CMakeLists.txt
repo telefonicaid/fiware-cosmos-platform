@@ -195,7 +195,7 @@ link_directories("/usr/lib/x86_64-linux-gnu")
 # ------------------------------------------------------------
 
 ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS})
-TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} /usr/lib/x86_64-linux-gnu/libdl.so)
+TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} libdl.so)
 
 #INSTALL(TARGETS               unitTest
 #        RUNTIME DESTINATION   bin)

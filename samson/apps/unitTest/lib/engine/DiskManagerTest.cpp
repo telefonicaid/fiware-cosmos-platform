@@ -30,6 +30,9 @@
  * Copyright (c) Telefonica Investigacion y Desarrollo S.A.U.
  * All rights reserved.
  */
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <pthread.h>
 #include <sys/time.h>
 
@@ -200,13 +203,23 @@ TEST(engine_DiskManager, diskOperations) {
 TEST(engine_DiskManager, run_worker) {
   init_engine_test();
 
-  char *buffer = reinterpret_cast<char *>(malloc(1024 * 1024));
-  std::string test_filename = au::GetRandomTmpFileOrDirectory();
+  char         *buffer = reinterpret_cast<char *>(malloc(1024 * 1024));
+  std::string  test_filename = au::GetRandomTmpFileOrDirectory();
+  int          fd            = open(test_filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0744);
+  const char  *file_content  = "0123456789";
+
+  EXPECT_TRUE(fd != -1);
+  if (fd != -1) {
+    int nb = write(fd, file_content, strlen(file_content));
+    EXPECT_EQ(strlen(file_content), nb);
+  }
+  else
+     LM_E(("open(%s): %s", test_filename.c_str(), strerror(errno)));
 
   engine::DiskManager *disk_manager = engine::Engine::disk_manager();
 
   au::SharedPointer<engine::DiskOperation> operation1(
-    engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 1, 0));
+    engine::DiskOperation::newReadOperation(buffer, test_filename, 0, 10, 0));
 
   disk_manager->Add(operation1);
   au::Cronometer c;
@@ -220,10 +233,14 @@ TEST(engine_DiskManager, run_worker) {
   }
   buffer[10] = 0;
 
+  if (operation1->error.HasErrors())
+     LM_M(("operation1 error: %s", operation1->error.GetLastError().c_str()));
+
   EXPECT_FALSE(operation1->error.HasErrors());
-  EXPECT_STREQ(buffer, "0123456789");
+  EXPECT_STREQ(buffer, file_content);
 
   free(buffer);
 
   close_engine_test();
+  unlink(test_filename.c_str());
 }

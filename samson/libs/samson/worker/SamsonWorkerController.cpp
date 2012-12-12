@@ -371,7 +371,8 @@ int SamsonWorkerController::ReviewClusterLeather() {
     // Set the new cluster information to update the other worhers
     rc = zoo_connection_->Set("/samson/cluster", cluster_info_.shared_object());
     if (rc) {
-      LOG_W(logs.worker_controller, ("Not possible to set new version of cluter info: %s", au::zoo::str_error(rc).c_str()));
+      LOG_W(logs.worker_controller,
+            ("Not possible to set new version of cluster info: %s", au::zoo::str_error(rc).c_str()));
       return 1;
     }
 

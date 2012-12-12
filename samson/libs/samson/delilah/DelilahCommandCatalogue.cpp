@@ -97,7 +97,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddMandatoryStringArgument("add", "key_format", "Format for the key's in new queue (txt is accepted)");
   AddStringArgument("add", "value_format", "txt", "Format for the value's in new queue (txt is accepted)");
 
-  AddCommand("remove_all_queues", "data", "Remove all queues in the SAMSON cluter");
+  AddCommand("remove_all_queues", "data", "Remove all queues in the SAMSON cluster");
 
   AddCommand("remove_all", "data", "Remove all queues and stream_operations in the SAMSON cluster");
 

@@ -914,7 +914,7 @@ void ClearTerminalLine() {
   au::TemporalBuffer buffer(terminal_width + 1);
   char *data = buffer.data();
 
-  memset(buffer.data(), 0x20, GetTerminalWidth());
+  memset(buffer.data(), 0x20, terminal_width);
   data[terminal_width] = '\0';
   printf("\r%s\r", buffer.data());
   fflush(stdout);

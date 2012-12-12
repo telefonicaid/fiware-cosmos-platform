@@ -34,6 +34,9 @@ TEST(samson_common_SamsonDataSet, constructor) {
   init_engine_test();
 
   // Test on Empty directory
+  int status = mkdir("test_data/EmptyDir", 0777);
+  EXPECT_EQ(0, status);
+
   au::ErrorManager                          eManager;
   au::SharedPointer<samson::SamsonDataSet>  dataSetP = samson::SamsonDataSet::create("test_data/EmptyDir", eManager);
   EXPECT_TRUE(eManager.HasErrors());
@@ -50,6 +53,9 @@ TEST(samson_common_SamsonDataSet, constructor) {
   // dataSetP = samson::SamsonDataSet::create("test_data/SamsonDataSetTest", eManager);
   // EXPECT_STREQ(eManager.GetLastError().c_str(), "Unknown data type for key: system.String");
   // EXPECT_STREQ(eManager.GetLastError().c_str(), "No errors");
+
+  status = rmdir("test_data/EmptyDir");
+  EXPECT_EQ(0, status);
 
   close_engine_test();
 }

@@ -5,7 +5,8 @@ SET (FILES
     samsonPrepareServer
     samsonModuleDist
     samsonInitSetup
-	samsonTest
+    samsonTest
+    testDiff.py
 )
 
 # Instalation header files

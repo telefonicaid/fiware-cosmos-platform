@@ -21,17 +21,18 @@ TEST(au_CommandLine, simple) {
   au::CommandLine cmdLine(argc, argv);
 
 
-  ASSERT_TRUE(cmdLine.get_num_arguments() == 2) << "Wrong number of arguments";
-  ASSERT_TRUE(cmdLine.get_argument(0) == "A") << "Error parsing argument 0";
-  ASSERT_TRUE(cmdLine.get_argument(1) == "B") << "Error parsing argument 1";
+  EXPECT_EQ(2, cmdLine.get_num_arguments()) << "Wrong number of arguments";
+  EXPECT_EQ("A", cmdLine.get_argument(0)) << "Error parsing argument 0";
+  EXPECT_EQ("B", cmdLine.get_argument(1)) << "Error parsing argument 1";
 }
 
 TEST(CommandLine, simple2) {
   au::CommandLine cmdLine("A B");
 
-  ASSERT_TRUE(cmdLine.get_num_arguments() == 2) << "Wrong number of arguments";
-  ASSERT_TRUE(cmdLine.get_argument(0) == "A") << "Error parsing argument 0";
-  ASSERT_TRUE(cmdLine.get_argument(1) == "B") << "Error parsing argument 1";
+  EXPECT_EQ(2, cmdLine.get_num_arguments()) << "Wrong number of arguments";
+  EXPECT_EQ("A", cmdLine.get_argument(0)) << "Error parsing argument 0";
+  EXPECT_EQ("B", cmdLine.get_argument(1)) << "Error parsing argument 1";
+  EXPECT_EQ(au::CommandLine::kNoArgument, cmdLine.get_argument(2)) << "Error parsing argument 2";
 }
 
 TEST(CommandLine, all_arguments) {
@@ -45,15 +46,17 @@ TEST(CommandLine, all_arguments) {
 
   cmdLine.Parse("command -f 12.3 -ui 56 -i 12 -s andreu -b");
 
-  ASSERT_TRUE(cmdLine.get_num_arguments() == 1) << "Wrong number of arguments";
-  ASSERT_TRUE(cmdLine.get_argument(0) == "command") << "Error parsing argument 0";
+  EXPECT_EQ(1, cmdLine.get_num_arguments()) << "Wrong number of arguments";
+  EXPECT_EQ("command", cmdLine.get_argument(0)) << "Error parsing argument 0";
 
 
-  ASSERT_TRUE(cmdLine.GetFlagBool("b") == true) << "Errro parsing bool flag";
-  ASSERT_TRUE(cmdLine.GetFlagString("s") == "andreu") << "Errro parsing string flag";
-  ASSERT_TRUE(cmdLine.GetFlagInt("i") == 12) << "Errro parsing int flag";
-  ASSERT_TRUE(cmdLine.GetFlagDouble("f") == 12.3) << "Errro parsing double flag";
-  ASSERT_TRUE(cmdLine.GetFlagUint64("ui") == 56) << "Errro parsing uint64 flag";
+  EXPECT_TRUE(cmdLine.GetFlagBool("b")) << "Error parsing bool flag";
+  EXPECT_EQ("andreu", cmdLine.GetFlagString("s")) << "Error parsing string flag";
+  EXPECT_EQ(12, cmdLine.GetFlagInt("i")) << "Error parsing int flag";
+  EXPECT_EQ(12.3, cmdLine.GetFlagDouble("f")) << "Error parsing double flag";
+  EXPECT_EQ(56, cmdLine.GetFlagUint64("ui")) << "Error parsing uint64 flag";
+  EXPECT_EQ(au::CommandLine::kUnknownFlag, cmdLine.GetFlagString("wrong")) << "Error parsing wrong flag";
+  EXPECT_EQ(au::CommandLine::kWrongType, cmdLine.GetFlagString("ui")) << "Error parsing wrong type for uint64 flag";
 }
 
 TEST(CommandLine, default_values) {
@@ -67,60 +70,104 @@ TEST(CommandLine, default_values) {
 
   cmdLine.Parse("command");
 
-  ASSERT_TRUE(cmdLine.get_num_arguments() == 1) << "Wrong number of arguments";
-  ASSERT_TRUE(cmdLine.get_argument(0) == "command") << "Error parsing argument 0";
+  EXPECT_EQ(1, cmdLine.get_num_arguments() == 1) << "Wrong number of arguments";
+  EXPECT_EQ("command", cmdLine.get_argument(0)) << "Error parsing argument 0";
 
-  ASSERT_TRUE(cmdLine.GetFlagBool("b") == false) << "Errro parsing bool flag";
-  ASSERT_TRUE(cmdLine.GetFlagString("s") == "default") << "Errro parsing string flag";
-  ASSERT_TRUE(cmdLine.GetFlagInt("i") == 1) << "Errro parsing int flag";
-  ASSERT_TRUE(cmdLine.GetFlagDouble("f") == 1) << "Errro parsing double flag";
-  ASSERT_TRUE(cmdLine.GetFlagUint64("ui") == 1) << "Errro parsing uint64 flag";
+  EXPECT_FALSE(cmdLine.GetFlagBool("b")) << "Error parsing bool flag";
+  EXPECT_EQ("default", cmdLine.GetFlagString("s")) << "Error parsing string flag";
+  EXPECT_EQ(1, cmdLine.GetFlagInt("i")) << "Error parsing int flag";
+  EXPECT_EQ(1.0, cmdLine.GetFlagDouble("f")) << "Error parsing double flag";
+  EXPECT_EQ(1, cmdLine.GetFlagUint64("ui")) << "Error parsing uint64 flag";
 }
-
 
 TEST(CommandLine, literals) {
   au::CommandLine cmdLine;
 
   cmdLine.Parse("command \"this is the second\"");
 
-  ASSERT_TRUE(cmdLine.get_num_arguments() == 2) << "Wrong number of arguments";
-  ASSERT_TRUE(cmdLine.get_argument(0) == "command") << "Error parsing argument 0";
-  ASSERT_TRUE(cmdLine.get_argument(1) == "this is the second") << "Error parsing argument 1";
+  EXPECT_EQ(2, cmdLine.get_num_arguments()) << "Wrong number of arguments";
+  EXPECT_EQ("command", cmdLine.get_argument(0)) << "Error parsing argument 0";
+  EXPECT_EQ("this is the second", cmdLine.get_argument(1)) << "Error parsing argument 1";
+}
+
+TEST(CommandLine, reset) {
+  au::CommandLine cmdLine;
+
+  cmdLine.SetFlagString("s", "default");
+  cmdLine.SetFlagBoolean("b");
+  cmdLine.SetFlagInt("i", 1);
+  cmdLine.SetFlagUint64("ui", 1);
+  cmdLine.SetFlagDouble("f", 1);
+
+  EXPECT_EQ("", cmdLine.command()) << "Error in initial command";
+
+  cmdLine.Parse("command -s 'multiple word string' -ui 64M -u unknown");
+  EXPECT_EQ("command -s 'multiple word string' -ui 64M -u unknown", cmdLine.command()) << "Error parsing command";
+  EXPECT_EQ("multiple word string", cmdLine.GetFlagString("s")) << "Error parsing string flag";
+  EXPECT_EQ(64*1024*1024, cmdLine.GetFlagUint64("ui")) << "Error parsing uint64 flag";
+
+  cmdLine.ResetFlags();
+  EXPECT_EQ("command -s 'multiple word string' -ui 64M -u unknown", cmdLine.command()) <<
+      "Error after reset in command";
+  EXPECT_EQ(au::CommandLine::kUnknownFlag, cmdLine.GetFlagString("s")) << "Error after reset string flag";
+  EXPECT_EQ(0, cmdLine.GetFlagUint64("ui")) << "Error resetting uint64 flag";
 }
 
 TEST(CommandLine, collisions) {
-  au::CommandLine cmdLine1;
+  au::CommandLine cmdLine;
 
-  cmdLine1.SetFlagString("prefix", "");
-  cmdLine1.Parse("command -prefix p1 -prefix p2");
-  EXPECT_EQ("p2", cmdLine1.GetFlagString("prefix")) << "Error parsing string flag default";
+  cmdLine.SetFlagString("prefix", "");
+  cmdLine.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p2", cmdLine.GetFlagString("prefix")) << "Error parsing string flag default";
 
-  au::CommandLine cmdLine2;
-  cmdLine2.SetFlagString("prefix", "", au::CommandLine::kCollisionBegin);
-  cmdLine2.Parse("command -prefix p1 -prefix p2");
-  EXPECT_EQ("p2.p1", cmdLine2.GetFlagString("prefix")) << "Error parsing string flag with kCollisionBegin";
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagString("prefix", "", au::CommandLine::kCollisionInsertAtBegin);
+  cmdLine.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p2.p1", cmdLine.GetFlagString("prefix")) << "Error parsing string flag with kCollisionInsertAtBegin";
 
-  au::CommandLine cmdLine3;
-  cmdLine3.SetFlagString("prefix", "", au::CommandLine::kCollisionEnd);
-  cmdLine3.Parse("command -prefix p1 -prefix p2");
-  EXPECT_EQ("p1.p2", cmdLine3.GetFlagString("prefix")) << "Error parsing string flag with kCollisionEnd";
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagString("prefix", "", au::CommandLine::kCollisionConcatenateAtEnd);
+  cmdLine.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p1.p2", cmdLine.GetFlagString("prefix")) << "Error parsing string flag with kCollisionConcatenateAtEnd";
 
-  au::CommandLine cmdLine4;
-  cmdLine4.SetFlagString("prefix", "", au::CommandLine::kCollisionIgnore);
-  cmdLine4.Parse("command -prefix p1 -prefix p2");
-  EXPECT_EQ("p1", cmdLine4.GetFlagString("prefix")) << "Error parsing string flag with kCollisionIgnore";
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagString("prefix", "", au::CommandLine::kCollisionIgnore);
+  cmdLine.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p1", cmdLine.GetFlagString("prefix")) << "Error parsing string flag with kCollisionIgnore";
 
-  au::CommandLine cmdLine5;
-  cmdLine5.SetFlagString("prefix", "", au::CommandLine::kCollisionOverwrite);
-  cmdLine5.Parse("command -prefix p1 -prefix p2");
-  EXPECT_EQ("p2", cmdLine5.GetFlagString("prefix")) << "Error parsing string flag with kCollisionOverwrite";
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagString("prefix", "", au::CommandLine::kCollisionOverwrite);
+  cmdLine.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p2", cmdLine.GetFlagString("prefix")) << "Error parsing string flag with kCollisionOverwrite";
 
-  au::CommandLine cmdLine6;
-  // Not way to check the detection of the wrong parameter, but in logs
-  // We check that the Parse() behaviour is the same as the default
-  cmdLine6.SetFlagString("prefix", "", "unsupported");
-  cmdLine6.Parse("command -prefix p1 -prefix p2");
-  EXPECT_EQ("p2", cmdLine6.GetFlagString("prefix")) << "Error parsing string flag with unsupported parameter";
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagString("prefix", "", au::CommandLine::kCollisionSubtractFromPrevious);
+  // Error collision parameter. No detection but in logs
+  // Default behaviour (overwrite) expected
+  cmdLine.Parse("command -prefix p1 -prefix p2");
+  EXPECT_EQ("p2", cmdLine.GetFlagString("prefix")) << "Error parsing string flag with kCollisionSubtractFromPrevious";
+
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagInt("i", 1, au::CommandLine::kCollisionAddToPrevious);
+  cmdLine.SetFlagDouble("f", 1.0, au::CommandLine::kCollisionAddToPrevious);
+  cmdLine.SetFlagUint64("ui", 1.0, au::CommandLine::kCollisionAddToPrevious);
+  cmdLine.Parse("command -i 2 -i 3 -f 4.0 -f 5 -ui 1K -ui 1G");
+  EXPECT_EQ(5, cmdLine.GetFlagInt("i")) << "Error parsing int flag with kCollisionAddToPrevious";
+  EXPECT_EQ(9.0, cmdLine.GetFlagDouble("f")) << "Error parsing double flag with kCollisionAddToPrevious";
+  EXPECT_EQ(1*1024 + 1*1024*1024*1024, cmdLine.GetFlagUint64("ui")) <<
+      "Error parsing uint64 flag with kCollisionAddToPrevious";
+
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagInt("i", 1, au::CommandLine::kCollisionSubtractFromPrevious);
+  cmdLine.SetFlagDouble("f", 1.0, au::CommandLine::kCollisionSubtractFromPrevious);
+  cmdLine.SetFlagUint64("ui", 1.0, au::CommandLine::kCollisionSubtractFromPrevious);
+  cmdLine.Parse("command -i 2 -i 3 -f 4.0 -f 5 -ui 1K -ui 1G");
+  EXPECT_EQ(-1, cmdLine.GetFlagInt("i")) << "Error parsing int flag with kCollisionSubtractFromPrevious";
+  EXPECT_EQ(-1.0, cmdLine.GetFlagDouble("f")) << "Error parsing double flag with kCollisionSubtractFromPrevious";
+  EXPECT_EQ(0, cmdLine.GetFlagUint64("ui")) << "Error parsing uint64 flag with kCollisionSubtractFromPrevious";
+  cmdLine.Parse("command -ui 1G -ui 1M");
+  EXPECT_EQ(1*1024*1024*1024 - 1*1024*1024, cmdLine.GetFlagUint64("ui")) <<
+      "Error parsing uint64 flag with kCollisionSubtractFromPrevious";
 }
 
 

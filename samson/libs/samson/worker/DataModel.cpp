@@ -93,7 +93,7 @@ au::SharedPointer<au::CommandLine> DataModel::GetCommandLine() {
   cmd->SetFlagBoolean("batch_operation");    // Flag to indicate that this is a batch operation
 
   // Prefix used to change names of queues and operations
-  cmd->SetFlagString("prefix", "", au::CommandLine::kCollisionBegin);
+  cmd->SetFlagString("prefix", "", au::CommandLine::kCollisionInsertAtBegin);
   cmd->SetFlagUint64("delilah_id", static_cast<size_t>(-1));
   cmd->SetFlagUint64("delilah_component_id", static_cast<size_t>(-1));
 

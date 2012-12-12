@@ -29,20 +29,13 @@
  */
 
 namespace au {
-typedef struct CommandLineFlag {
-  std::string type;
-  std::string default_value;
-  std::string collision_resolution;
-  std::string value;
-} CommandLineFlag;
-
 /**
  * \class CommandLine
  * \brief Class used to parse a string containing a command with multiple flags and arguments
  * The advantage of this class is that is supports running-time definition of possible flags.
  * Example: command arg1 -f input.txt -g 2 arg2
  * Depending on how flags "f" and "g" are defined, this will parse in a different way
- * Flags can be defined being of types "bool", "double", "int" "string" "uint64".
+ * Flags can be defined being of types boolean, double, int, string or uint64.
  * For each flag type:
  *   bool:       It is a true/false flag. It does not take any parameter
  *   double:     Takes a double parameter.              Example: -threshold 5.67
@@ -51,10 +44,12 @@ typedef struct CommandLineFlag {
  *   uint64:     Takes an unsigned parameter.           Example: -size 12G , -size 100
  * In case of multiple assignments on the same flag (if it is of string type), its behaviour can be controlled
  * with the collisition_resolution field:
- *   kCollisionBegin:       Put the new value at the beginning (separated by a dot ("."))
- *   kCollisionEnd:         Put the new value at the end (separated by a dot ("."))
- *   kCollisionIgnore:      Ignore the new value and write a warning
- *   kCollisionOverwrite:   Forget previous flag value
+ *   kCollisionAddToPrevious:        Add new value (numeric) to the previous one
+ *   kCollisionConcatenateAtEnd:     Append new value (string) to the end of the previous one (separated by a dot ("."))
+ *   kCollisionIgnore:               Ignore new value (create a warning)
+ *   kCollisionInsertAtBegin:        Insert new value (string) at the beginning of the previous one
+ *   kCollisionOverwrite:            Overwrite the flag value with the last detected, forgetting previous ones
+ *   kCollisionSubtractFromPrevious: Subtract new value (numeric) from the previous one
  * The basic usage has three steps:
  *   * Use command set_flag_X( ) methods to define flags and types
  *   * Use one of the parse(.) methods to parse the incoming command line
@@ -63,13 +58,37 @@ typedef struct CommandLineFlag {
 
 class CommandLine {
 public:
-  // Constant strings for the "collision_resolution" field
-  static const std::string kCollisionBegin;
-  static const std::string kCollisionEnd;
-  static const std::string kCollisionIgnore;
-  static const std::string kCollisionOverwrite;
+  /**< Possible values for the flag type field */
+  enum TypeValues {
+    kTypeBool = 0,  /**< boolean */
+    kTypeDouble,    /**< double */
+    kTypeInt,       /**< integer */
+    kTypeString,    /**< string */
+    kTypeUInt64     /**< unsigned 64 bits integer */
+  };
+  /**< Possible values for the "collision_resolution" field */
+  enum CollisionResolutionValues {
+    kCollisionAddToPrevious = 0,     /**< Add new value (numeric) to the previous one */
+    kCollisionConcatenateAtEnd,      /**< Append new value (string) to the end of the previous one */
+    kCollisionIgnore,                /**< Ignore new value (create a warning) */
+    kCollisionInsertAtBegin,         /**< Insert new value (string) at the beginning of the previous one */
+    kCollisionOverwrite,             /**< Overwrite the flag value with the last detected, forgetting previous ones */
+    kCollisionSubtractFromPrevious   /**< Subtract new value (numeric) from the previous one */
+  };
+    /**< Struct to keep flag information */
+  typedef struct CommandLineFlag {
+    TypeValues type;
+    std::string default_value;
+    CollisionResolutionValues collision_resolution;
+    std::string value;
+  } CommandLineFlag;
 
-  static const std::string kUnknownValue;
+  static const std::string kUnknownValue;  /**< Assigned to reseted flags */
+  static const std::string kUnknownFlag;   /**< Returned when the flag name is not found in the list of flags */
+  static const std::string kNoArgument;    /**< No argument at the requested position */
+  static const std::string kWrongType;     /**< Wrong type for a string flag */
+  static const std::string kTrue;          /**< String for true value */
+  static const std::string kFalse;         /**< String for false value */
 
   /**
    * Simple constructor
@@ -103,7 +122,7 @@ public:
    * \brief Reset all the added flags (do not remove them)
    * Just remove the referred value
    */
-  void ResetFlags();
+  void ResetFlags(void);
 
   /**
    * \brief Add a new flag of type boolean
@@ -117,11 +136,18 @@ public:
    */
   void SetFlagInt(const std::string& name, int default_value);
   /**
+   * \brief Add a new flag of type int
+   * \param[in] name of the flag
+   * \param[in] default value for the flag (value to be found when flag does not appear in the command line)
+   */
+  void SetFlagInt(const std::string& name, int default_value, CollisionResolutionValues collision_strategy);
+  /**
    * \brief Add a new flag of type string
    * For string type flags, the behaviour when multiple appearances can be configured.
    * In this case, it is defaulted to overwrite
    * \param[in] name of the flag
    * \param[in] default value for the flag (value to be found when flag does not appear in the command line)
+   * \param[in] behaviour when multiple appearances of flag in command line. Options defined as enum items
    */
   void SetFlagString(const std::string& name, const std::string& default_value);
   /**
@@ -129,9 +155,9 @@ public:
    * For string type flags, the behaviour when multiple appearances can be configured.
    * \param[in] name of the flag
    * \param[in] default value for the flag (value to be found when flag does not appear in the command line)
-   * \param[in] behaviour when multiple appearances of flag in command line. Options defined as constants
+   * \param[in] behaviour when multiple appearances of flag in command line. Options defined as enum items
    */
-  void SetFlagString(const std::string& name, const std::string& default_value, const std::string& collision);
+  void SetFlagString(const std::string& name, const std::string& default_value, CollisionResolutionValues collision_strategy);
   /**
    * \brief Add a new flag of type uint64
    * \param[in] name of the flag
@@ -141,21 +167,42 @@ public:
   /**
    * \brief Add a new flag of type uint64
    * \param[in] name of the flag
+   * \param[in] default value (as a string) for the flag (value to be found when flag does not appear in the command line)
+   * \param[in] behaviour when multiple appearances of flag in command line. Options defined as enum items
+   */
+  void SetFlagUint64(const std::string& name, const std::string& default_value, CollisionResolutionValues collision_strategy);
+  /**
+   * \brief Add a new flag of type uint64
+   * \param[in] name of the flag
    * \param[in] default value (as a uint64) for the flag (value to be found when flag does not appear in the command line)
    */
   void SetFlagUint64(const std::string& name, size_t default_value);
+  /**
+   * \brief Add a new flag of type uint64
+   * \param[in] name of the flag
+   * \param[in] default value (as a uint64) for the flag (value to be found when flag does not appear in the command line)
+   * \param[in] behaviour when multiple appearances of flag in command line. Options defined as enum items
+   */
+  void SetFlagUint64(const std::string& name, size_t default_value, CollisionResolutionValues collision_strategy);
   /**
    * \brief Add a new flag of type double
    * \param[in] name of the flag
    * \param[in] default value for the flag (value to be found when flag does not appear in the command line)
    */
   void SetFlagDouble(const std::string& name, double default_value);
+  /**
+   * \brief Add a new flag of type double
+   * \param[in] name of the flag
+   * \param[in] default value for the flag (value to be found when flag does not appear in the command line)
+   * \param[in] behaviour when multiple appearances of flag in command line. Options defined as enum items
+   */
+  void SetFlagDouble(const std::string& name, double default_value, CollisionResolutionValues collision_strategy);
 
   /**
    * \brief Number of arguments found in the command line
    * \return number of arguments in the command line
    */
-  int get_num_arguments() const;
+  int get_num_arguments(void) const;
 
   /**
    * \brief Access one argument by index
@@ -196,42 +243,54 @@ public:
   size_t GetFlagUint64(const std::string& flag_name) const;
 
   /**
+   * \brief Add values according to the flag type
+   * \param[in] first value to be added
+   * \param[in] second value to be added
+   * \param[in] flag type
+   * \return    the addition in string format, according to the flag type
+   */
+  static std::string AddFlagValues(const std::string& addend1, const std::string& addend2, TypeValues type);
+
+  /**
+   * \brief Substract values according to the flag type
+   * Special case for uint64: If subtrahend is larger than minuend, 0 is returned
+   * \param[in] minuend
+   * \param[in] subtrahend
+   * \param[in] flag type
+   * \return    the subtraction in string format, according to the flag type
+   */
+  static std::string SubtractFlagValues(const std::string& minuend, const std::string& subtrahend, TypeValues type);
+
+  /**
    * \brief Command with all arguments and flags
    * \return string with the reconstructed command
    */
-  std::string command() const;
+  std::string command(void) const;
 
 private:
-  // Constant strings for the "type" field
-  static const std::string kTypeBool;
-  static const std::string kTypeDouble;
-  static const std::string kTypeInt;
-  static const std::string kTypeString;
-  static const std::string kTypeUInt64;
-
   /**
    * Access to flags
    */
 
   std::string GetFlagValue(const std::string& flag_name) const;
-  std::string GetFlagType(const std::string& flag_name) const;
+  TypeValues GetFlagType(const std::string& flag_name) const;
 
   /**
    * Functions to transform values
    */
 
   static int getIntValue(const std::string& value);
-  static size_t getUint64Value(std::string value);
+  static size_t getUint64Value(const std::string& value);
   static double getDoubleValue(const std::string& value);
   static bool getBoolValue(const std::string& value);
 
   // Internal function to parse content
-  void ClearValues();
+  void ClearValues(void);
   void ParseTockens(std::vector<std::string> &tockens);
 
-  std::string command_;                                                                          // !<< Incoming General command
+  std::string command_;                                  // !<< Incoming General command
   std::map< std::string, CommandLineFlag > flags_;       // !<< Map of flags
-  std::vector<std::string> arguments_;                                                           // !<< Command line arguments separated in "words"
+  std::vector<std::string> arguments_;                   // !<< Command line arguments separated in "words"
 };
 }
 

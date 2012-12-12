@@ -132,7 +132,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
 
   cmd.SetFlagBoolean("new");
   cmd.SetFlagBoolean("remove");
-  cmd.SetFlagString("prefix", "", au::CommandLine::kCollisionBegin);
+  cmd.SetFlagString("prefix", "", au::CommandLine::kCollisionInsertAtBegin);
   cmd.Parse(command);
 
   std::string prefix = cmd.GetFlagString("prefix");

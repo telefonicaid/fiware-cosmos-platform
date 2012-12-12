@@ -149,7 +149,7 @@ void PopDelilahComponent::SendMainRequest() {
     }
   }
 
-  worker_id_ = delilah->network->getRandomWorkerId(worker_id_);
+  worker_id_ = delilah->network_->getRandomWorkerId(worker_id_);
   au::SharedPointer<Packet> packet(new Packet(Message::PopQueue));
   gpb::PopQueue *pop_queue = packet->message->mutable_pop_queue();
   pop_queue->set_queue(queue_);
@@ -163,7 +163,7 @@ void PopDelilahComponent::SendMainRequest() {
   packet->to = NodeIdentifier(WorkerNode, worker_id_);
 
   // Send message
-  delilah->network->Send(packet);
+  delilah->network_->Send(packet);
   LOG_V(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
 }
 
@@ -355,7 +355,7 @@ void PopDelilahComponent::SendRequest(PopDelilahComponentItem *item) const {
   item->ResetRequest();              // Reset request
 
   // Select a worker
-  size_t worker_id = delilah->network->getRandomWorkerId(item->worker_id());
+  size_t worker_id = delilah->network_->getRandomWorkerId(item->worker_id());
   item->set_worker_id(worker_id);
 
   // Build & sent the packet
@@ -367,6 +367,6 @@ void PopDelilahComponent::SendRequest(PopDelilahComponentItem *item) const {
   packet->message->set_block_id(item->block_id());
 
   LOG_V(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
-  delilah->network->Send(packet);
+  delilah->network_->Send(packet);
 }
 }

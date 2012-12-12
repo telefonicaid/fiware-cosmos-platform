@@ -58,6 +58,7 @@ public:
     client                 = LOG_REGISTER_CHANNEL("samson::CL", "samson library : Samson client");
 
     delilah                = LOG_REGISTER_CHANNEL("delilah::G", "delilah library : General channel");
+    delilah_push_manager   = LOG_REGISTER_CHANNEL("delilah::PM", "delilah library : Push manager");
     delilah_components     = LOG_REGISTER_CHANNEL("delilah::C", "delilah library : Components");
   }
 
@@ -87,6 +88,7 @@ public:
   int client;
 
   int delilah;
+  int delilah_push_manager;
   int delilah_components;
 
 private:

@@ -221,6 +221,24 @@ Status CreateFullDirectory(std::string path) {
   return OK;
 }
 
+std::string GetLastPathComponent(const std::string& path) {
+  if (path.length() == 0) {
+    return path;
+  }
+
+  if (path[path.length() - 1] == '/') {
+    return GetLastPathComponent(path.substr(0, path.length() - 2));
+  }
+
+  size_t pos = path.find_last_of('/');
+
+  if (pos == std::string::npos) {
+    return path;
+  } else {
+    return path.substr(pos + 1);
+  }
+}
+
 std::string GetCannonicalPath(const std::string& path) {
   size_t pos = path.size() - 1;
 
@@ -278,7 +296,7 @@ std::string path_from_directory(const std::string& directory, const std::string&
     return file;
   }
 
-  if (directory[ directory.length() - 1 ] == '/') {
+  if (directory[directory.length() - 1] == '/') {
     return directory + file;
   } else {
     return directory + "/" + file;

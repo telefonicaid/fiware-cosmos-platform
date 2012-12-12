@@ -425,7 +425,7 @@ int main(int argC, const char *argV[]) {
         }
 
         // manual output
-        std::string output = delilahConsole->getOutputForComponent(id);
+        std::string output = delilahConsole->GetOutputForComponent(id);
         delilahConsole->WriteOnDelilah(output);
       }
     }

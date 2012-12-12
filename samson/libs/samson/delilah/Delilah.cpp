@@ -50,7 +50,8 @@ namespace samson {
  * Delilah::Delilah
  */
 Delilah::Delilah(std::string connection_type, size_t delilah_id) :
-  token("Delilah_token") {
+  push_manager_(new PushManager(this)),
+  token_("Delilah_token") {
   // Random identifier for this delilah
   if (delilah_id == static_cast<size_t>(-1)) {
     delilah_id_ = au::code64_rand();
@@ -58,15 +59,13 @@ Delilah::Delilah(std::string connection_type, size_t delilah_id) :
     delilah_id_ = delilah_id;   // Network interface for all the workers ( included in the cluster selected )
   }
 
-  au::log_central->set_node(au::str("D%s", au::code64_str(delilah_id_).c_str()));
-
-  network = new DelilahNetwork(connection_type, delilah_id_);
+  if (au::log_central != NULL) {
+    au::log_central->set_node(au::str("D%s", au::code64_str(delilah_id_).c_str()));
+  }
+  network_ = new DelilahNetwork(connection_type, delilah_id_);
 
   // we start with process 2 because 0 is no process & 1 is global_update messages
-  id = 2;
-
-  // Init the push & pop manager
-  push_manager.Reset(new PushManager(this));
+  next_delilah_component_id = 2;
 
   // Listen notification about netowrk disconnection
   listen(notification_network_diconnected);
@@ -82,12 +81,12 @@ Delilah::Delilah(std::string connection_type, size_t delilah_id) :
 }
 
 Delilah::~Delilah() {
-  network->ClearConnections();
+  network_->ClearConnections();
   clearAllComponents();
 }
 
 std::string Delilah::getClusterConnectionSummary() {
-  return network->getClusterConnectionStr();
+  return network_->getClusterConnectionStr();
 }
 
 bool Delilah::connect(std::string host, au::ErrorManager *error) {
@@ -171,7 +170,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
                        host.c_str(),
                        cluster_info->version()));
 
-  network->set_cluster_information(cluster_info);
+  network_->set_cluster_information(cluster_info);
 
   if (socket_connection) {
     delete socket_connection;
@@ -180,12 +179,12 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
 }
 
 void Delilah::disconnect() {
-  network->remove_cluster_information();
+  network_->remove_cluster_information();
 }
 
 bool Delilah::isConnected() {
   // Check if have received an update from any worker
-  return (network->cluster_information_version() != static_cast<size_t>(-1));
+  return (network_->cluster_information_version() != static_cast<size_t>(-1));
 }
 
 void Delilah::notify(engine::Notification *notification) {
@@ -199,13 +198,15 @@ void Delilah::notify(engine::Notification *notification) {
   }
 
   if (notification->isName("delilah_components_review")) {
-    // Review all co
-
+    // Review all components
     std::map<size_t, DelilahComponent *>::iterator iter;
     for (iter = components_.begin(); iter != components_.end(); ++iter) {
       DelilahComponent *component = iter->second;
       component->review();
     }
+
+    // Review push manager
+    push_manager_->Review();
 
     return;
   }
@@ -225,7 +226,7 @@ void Delilah::notify(engine::Notification *notification) {
   }
 
   if (notification->isName("notification_cluster_info_changed")) {
-    LOG_M(logs.delilah, ("Cluster setup has changed ( current version %lu )", network->cluster_information_version()));
+    LOG_M(logs.delilah, ("Cluster setup has changed ( current version %lu )", network_->cluster_information_version()));
     return;
   }
 
@@ -268,7 +269,7 @@ void Delilah::receive(const PacketPointer& packet) {
     au::SharedPointer<gpb::ClusterInfo> cluster_info(new gpb::ClusterInfo());
     cluster_info->CopyFrom(packet->message->cluster_info());
 
-    network->set_cluster_information(cluster_info);
+    network_->set_cluster_information(cluster_info);
 
     return;
   }
@@ -311,7 +312,7 @@ void Delilah::receive(const PacketPointer& packet) {
     if (packet->message->has_error()) {
       error.AddError(packet->message->error().message());
     }
-    push_manager->receive(msgCode, worker_id, push_id, error);
+    push_manager_->receive(msgCode, worker_id, push_id, error);
     return;
   }
 
@@ -319,7 +320,7 @@ void Delilah::receive(const PacketPointer& packet) {
 
 
   {
-    au::TokenTaker tk(&token);
+    au::TokenTaker tk(&token_);
 
     size_t delilah_component_id = packet->message->delilah_component_id();
     component = components_.findInMap(delilah_component_id);
@@ -332,19 +333,6 @@ void Delilah::receive(const PacketPointer& packet) {
   // Forward the reception of this message to the client
   _receive(packet);
 }
-
-/* ****************************************************************************
- *
- * notificationSent -
- */
-void Delilah::notificationSent(size_t id, bool success) {
-  // Do something
-  if ((id == 0) || (success == false)) {
-    return;
-  }
-}
-
-#pragma mark Load data process
 
 /* ****************************************************************************
  *
@@ -383,7 +371,7 @@ size_t Delilah::add_push_component(DataSource *data_source,
   if (modules) {
     d->SetUploadModule();
   }
-  size_t tmp_id = addComponent(d);
+  size_t tmp_id = AddComponent(d);
   d->run();
   return tmp_id;
 }
@@ -400,7 +388,7 @@ size_t Delilah::add_push_module_component(const std::vector<std::string>& file_n
 
 size_t Delilah::AddPopComponent(std::string queue_name, std::string fileName, bool force_flag, bool show_flag) {
   PopDelilahComponent *d = new PopDelilahComponent(queue_name, fileName, force_flag, show_flag);
-  size_t tmp_id = addComponent(d);
+  size_t tmp_id = AddComponent(d);
 
   if (!d->error.HasErrors()) {
     d->run();
@@ -437,17 +425,17 @@ size_t Delilah::push_txt(engine::BufferPointer buffer, const std::vector<std::st
 
 size_t Delilah::push(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
   // Insert int the push manager
-  return push_manager->Push(buffer, queues);
+  return push_manager_->Push(buffer, queues);
 }
 
-size_t Delilah::get_num_push_items() {
-  return push_manager->get_num_items();
+size_t Delilah::GetPendingSizeToPush() {
+  return push_manager_->GetPendingSizeToPush();
 }
 
-size_t Delilah::addComponent(DelilahComponent *component) {
-  au::TokenTaker tk(&token);
+size_t Delilah::AddComponent(DelilahComponent *component) {
+  au::TokenTaker tk(&token_);
 
-  size_t tmp_id = id++;
+  size_t tmp_id = next_delilah_component_id++;
 
   component->setId(this, tmp_id);
   components_.insertInMap(tmp_id, component);
@@ -459,7 +447,7 @@ size_t Delilah::addComponent(DelilahComponent *component) {
 }
 
 void Delilah::cancelComponent(size_t _id, au::ErrorManager& error) {
-  au::TokenTaker tk(&token);
+  au::TokenTaker tk(&token_);
 
   DelilahComponent *component = components_.findInMap(_id);
 
@@ -470,8 +458,8 @@ void Delilah::cancelComponent(size_t _id, au::ErrorManager& error) {
   }
 }
 
-std::string Delilah::getOutputForComponent(size_t _id) {
-  au::TokenTaker tk(&token);
+std::string Delilah::GetOutputForComponent(size_t _id) {
+  au::TokenTaker tk(&token_);
 
   DelilahComponent *component = components_.findInMap(_id);
 
@@ -481,20 +469,8 @@ std::string Delilah::getOutputForComponent(size_t _id) {
   return component->output_component.str();
 }
 
-void Delilah::setBackgroundComponent(size_t _id) {
-  au::TokenTaker tk(&token);
-
-  DelilahComponent *component = components_.findInMap(_id);
-
-  if (component) {
-    component->set_print_output_at_finish();
-  } else {
-    LOG_W(logs.delilah, ("Not possible to set delilah process %lu in background.", _id));
-  }
-}
-
 void Delilah::clearComponents() {
-  au::TokenTaker tk(&token);
+  au::TokenTaker tk(&token_);
 
   std::vector<size_t> components_to_remove;
 
@@ -513,7 +489,7 @@ void Delilah::clearComponents() {
 }
 
 void Delilah::clearAllComponents() {
-  au::TokenTaker tk(&token);
+  au::TokenTaker tk(&token_);
 
   std::vector<size_t> components_to_remove;
 
@@ -563,7 +539,7 @@ size_t Delilah::sendWorkerCommand(std::string command, engine::BufferPointer buf
   WorkerCommandDelilahComponent *c = new WorkerCommandDelilahComponent(command, buffer);
 
   // Get the id of this operation
-  size_t tmp_id = addComponent(c);
+  size_t tmp_id = AddComponent(c);
 
   // Send the packet to necessary workers
   c->run();
@@ -572,7 +548,7 @@ size_t Delilah::sendWorkerCommand(std::string command, engine::BufferPointer buf
 }
 
 bool Delilah::isActive(size_t id) {
-  au::TokenTaker tk(&token);
+  au::TokenTaker tk(&token_);
 
   DelilahComponent *c = components_.findInMap(id);
 
@@ -584,7 +560,7 @@ bool Delilah::isActive(size_t id) {
 }
 
 bool Delilah::hasError(size_t id) {
-  au::TokenTaker tk(&token);
+  au::TokenTaker tk(&token_);
 
   DelilahComponent *c = components_.findInMap(id);
 
@@ -598,7 +574,7 @@ bool Delilah::hasError(size_t id) {
 }
 
 std::string Delilah::errorMessage(size_t id) {
-  au::TokenTaker tk(&token);
+  au::TokenTaker tk(&token_);
 
   DelilahComponent *c = components_.findInMap(id);
 
@@ -611,7 +587,7 @@ std::string Delilah::errorMessage(size_t id) {
 }
 
 std::string Delilah::getDescription(size_t id) {
-  au::TokenTaker tk(&token);
+  au::TokenTaker tk(&token_);
 
   DelilahComponent *c = components_.findInMap(id);
 
@@ -641,7 +617,7 @@ void Delilah::getInfo(std::ostringstream&  /* output */) {
   // au::Singleton<ModulesManager>::shared()->getInfo( output );
 
   // Network
-  // network->getInfo( output , "main" );
+  // network_->getInfo( output , "main" );
 }
 
 std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {

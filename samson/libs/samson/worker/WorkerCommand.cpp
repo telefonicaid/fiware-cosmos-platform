@@ -496,7 +496,7 @@ void WorkerCommand::Run() {
 
     for (size_t i = 0; i < files.size(); ++i) {
       gpb::CollectionRecord *record = collection->add_record();
-      add(record, "File", files[i], "left");
+      add(record, "File", au::GetLastPathComponent(files[i]), "left");
 
       size_t size = au::sizeOfFile(files[i]);
 

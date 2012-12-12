@@ -123,7 +123,7 @@ void DelilahConsole::EvalCommand(const std::string& command) {
       if (!isActive(_delilah_id)) {
         // Print output in this thread to control pages using au::Console
         Refresh();
-        Write(getOutputForComponent(_delilah_id));
+        Write(GetOutputForComponent(_delilah_id));
         return;
       }
 
@@ -357,12 +357,12 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "show_cluster_setup") {
-    Write(network->getClusterSetupStr() + "\n");
+    Write(network_->getClusterSetupStr() + "\n");
     return 0;
   }
 
   if (mainCommand == "show_cluster_assignation") {
-    Write(network->getClusterAssignationStr() + "\n");
+    Write(network_->getClusterAssignationStr() + "\n");
     return 0;
   }
 
@@ -443,8 +443,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       table.setTitle("Environent variables");
 
       std::map<std::string, std::string>::iterator it_environment;
-      for (it_environment = environment.environment.begin()
-           ; it_environment != environment.environment.end(); it_environment++)
+      for (it_environment = environment_.environment.begin()
+           ; it_environment != environment_.environment.end(); it_environment++)
       {
         table.addRow(au::StringVector(it_environment->first, it_environment->second));
       }
@@ -453,7 +453,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       return 0;
     }
 
-    environment.set(name, value);
+    environment_.set(name, value);
     WriteWarningOnConsole(au::str("Environment variable '%s' set to '%s'", name.c_str(), value.c_str()));
     return 0;
   }
@@ -461,18 +461,18 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (mainCommand == "unset") {
     std::string name = command_instance->GetStringArgument("name");
 
-    if (!environment.isSet(name)) {
+    if (!environment_.isSet(name)) {
       WriteErrorOnConsole(au::str("Variable %s is not set", name.c_str()));
       return 0;
     }
 
-    environment.unset(name);
+    environment_.unset(name);
     WriteWarningOnConsole(au::str("Environment variable '%s' is removed ", name.c_str()));
     return 0;
   }
 
   if (mainCommand == "ls_local_connections") {
-    Write(GetTableFromCollection(network->GetConnectionsCollection(samson::Visualization()))->str());
+    Write(GetTableFromCollection(network_->GetConnectionsCollection(samson::Visualization()))->str());
     return 0;
   }
 
@@ -580,7 +580,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
         table.setTitle(au::str("Job %lu description ", id));
 
-        table.addRow(au::StringVector("Delilah", au::code64_str(get_delilah_id())));
+        table.addRow(au::StringVector("Delilah", au::code64_str(delilah_id())));
         table.addRow(au::StringVector("Job id", au::str("%lu", id)));
 
         if (component->isComponentFinished()) {
@@ -607,7 +607,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   // Push data to a queue
 
   if (mainCommand == "ls_local_push_operations") {
-    au::tables::Table *table = push_manager->getTableOfItems();
+    au::tables::Table *table = push_manager_->getTableOfItems();
     Write(table->str());
     delete table;
     return 0;
@@ -835,7 +835,7 @@ void DelilahConsole::delilahComponentStartNotification(DelilahComponent *compone
     return;   // No notification for hidden processes
   }
   if (verbose_) {
-    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(get_delilah_id()).c_str(), component->getId());
+    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(delilah_id()).c_str(), component->getId());
     std::string message = component_id + " Process started: " + component->getConcept();
     Write(component->error, component_id);
     WriteBoldOnConsole(au::str("%s", message.c_str()));
@@ -847,7 +847,7 @@ void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *compon
     return;   // No notification for hidden processes
   }
   if (verbose_) {
-    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(get_delilah_id()).c_str(), component->getId());
+    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(delilah_id()).c_str(), component->getId());
     std::string message = component_id + " Process finished: " + component->getConcept();
     Write(component->error, component_id);
     if (component->error.HasErrors()) {

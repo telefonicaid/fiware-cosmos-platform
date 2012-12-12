@@ -106,10 +106,11 @@ void MultiPacketQueue::RemoveOldConnections(const std::set<std::string> current_
       continue;
     }
 
-    if (it_packet_queues->second->inactivity_time() > 60) {
+    if (it_packet_queues->second->inactivity_time() > 30) {
       if (it_packet_queues->second->size() > 0) {
-        LOG_SW(("Removing  pending packets for %s since it has been disconnected mote than 60 secs", name.c_str()));
+        LOG_SW(("Removing  pending packets for %s since it has been inactive more than 30 secs", name.c_str()));
       }
+      delete it_packet_queues->second;  // Removing instance itself
       packet_queues_.erase(it_packet_queues++);
     } else {
       ++it_packet_queues;

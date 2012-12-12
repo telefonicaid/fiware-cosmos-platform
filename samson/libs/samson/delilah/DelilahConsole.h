@@ -79,14 +79,6 @@ public:
   // Process buffers of data received in streaming from SAMSON
   void receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer);
 
-  // Notify that an operation hash finish
-  virtual void notifyFinishOperation(size_t id) {
-    std::ostringstream output;
-
-    output << "Finished local delilah process with : " << id;
-    Write(output.str());
-  }
-
   virtual void WriteOnDelilah(const std::string& message) {
     Write(message);
   }

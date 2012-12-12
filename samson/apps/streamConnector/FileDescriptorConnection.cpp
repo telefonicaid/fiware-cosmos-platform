@@ -171,10 +171,18 @@ void FileDescriptorConnection::run_as_input() {
                                      , "read connector connections"
                                      , 300
                                      , &read_size);
+
+      // adapt size of input buffer
       if (c.seconds() < 0.1) {
         input_buffer_size *= 2;
       } else if (c.seconds() > 3) {
         input_buffer_size /= 2;
+      }
+
+      // Max by total memory available
+      size_t max_mem = engine::Engine::memory_manager()->memory() / 10;
+      if (input_buffer_size > max_mem) {
+        input_buffer_size = max_mem;
       }
 
       if (input_buffer_size > kMaxInputbufferSize) {

@@ -87,11 +87,17 @@ void SamsonConnection::review_connection() {
   set_as_connected(client_->connection_ready());
 }
 
-size_t SamsonConnection::bufferedSize() {
-  // It is not the size in bytes but at least is >0 if not all data is emitted
-
+size_t SamsonConnection::bufferedSizeOnMemory() {
   if (getType() == connection_output) {
-    return Connection::bufferedSize() + client_->getNumPendingPushItems();
+    return Connection::bufferedSize() + client_->GetPendingSizeToPush();
+  } else {
+    return 0;
+  }
+}
+
+size_t SamsonConnection::bufferedSize() {
+  if (getType() == connection_output) {
+    return Connection::bufferedSize() + client_->GetPendingSizeToPush();
   } else {
     return 0;
   }

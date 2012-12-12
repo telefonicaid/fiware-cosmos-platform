@@ -345,7 +345,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   LOG_V(logs.background_process, ("generateKeyValues_reduce task WT%lu", id()));
 
   au::Cronometer cronometer;
-  LOG_M(logs.reduce_operation, ("[WT%lu:%s] Start reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
+  LOG_V(logs.reduce_operation, ("[WT%lu:%s] Start reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
 
   bool update_only = stream_operation_->has_reduce_update_only() && stream_operation_->reduce_update_only();
   bool reduce_forward = stream_operation_->has_reduce_forward() && stream_operation_->reduce_forward();
@@ -381,7 +381,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   // Init function
   reduce->init(writer);
 
-  LOG_M(logs.reduce_operation, ("[WT%lu:%s] Collecting data...", id(), au::str(cronometer.seconds(), "s").c_str()));
+  LOG_V(logs.reduce_operation, ("[WT%lu:%s] Collecting data...", id(), au::str(cronometer.seconds(), "s").c_str()));
 
   // Get the block reader list to prepare inputs for operation
   BlockReaderCollection blockreaderCollection(operation_);
@@ -430,7 +430,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
                                 , process_item_description().c_str()));
 
 
-  LOG_M(logs.reduce_operation, ("[WT%lu:%s] Processing data...", id(), au::str(cronometer.seconds(), "s").c_str()));
+  LOG_V(logs.reduce_operation, ("[WT%lu:%s] Processing data...", id(), au::str(cronometer.seconds(), "s").c_str()));
 
   for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; ++hg) {
     // Check if this is inside the range we are interested in processing
@@ -502,7 +502,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   // Detele the created instance
   delete reduce;
 
-  LOG_M(logs.reduce_operation, ("[WT%lu:%s] Finish reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
+  LOG_V(logs.reduce_operation, ("[WT%lu:%s] Finish reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
 }
 
 void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {

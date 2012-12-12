@@ -48,7 +48,6 @@ public:
   bool hidden;                 // Flag to not show information on screen about this
 
   std::ostringstream output_component;   // Output to be shown on screen
-  bool print_output_at_finish;      // Flag to determine if we have to show result at the end
 
   au::ErrorManager error;      // Manager of the error in this operation
 
@@ -83,10 +82,6 @@ public:
 
   std::string getConcept() {
     return concept;
-  }
-
-  void set_print_output_at_finish() {
-    print_output_at_finish = true;
   }
 
 protected:

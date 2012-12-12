@@ -48,11 +48,13 @@ bool PushItem::IsFinished() {
 }
 
 void PushItem::Review() {
+  LOG_D(logs.delilah_push_manager, ("Review item %s", str().c_str()));
+
   if (state_ == completed) {
     return;   // Nothing to do
   }
   if (state_ == init) {
-    worker_id_ = delilah_->network->getRandomWorkerId();        // Get a random worker id to push content
+    worker_id_ = delilah_->network_->getRandomWorkerId();        // Get a random worker id to push content
     if (worker_id_ == static_cast<size_t>(-1)) {
       return;     // no worker available...
     }
@@ -68,7 +70,7 @@ void PushItem::Review() {
     }
 
     // Send packet and wait for the answer
-    delilah_->network->Send(packet);
+    delilah_->network_->Send(packet);
 
     // Change state to waiting push confirmation
     state_ = waiting_push_block_response;
@@ -77,14 +79,14 @@ void PushItem::Review() {
   }
 
   // Check if my worker is away and come back to init state if so
-  if (!delilah_->network->IsWorkerConnected(worker_id_)) {
+  if (!delilah_->network_->IsWorkerConnected(worker_id_)) {
     LOG_SW(("Push item %lu: We are not connected to worker %lu anymore. Reseting item...", push_id_, worker_id_));
     state_ = init;
     return;
   }
 
   // Is worker is not part of the cluster
-  if (!delilah_->network->IsWorkerInCluster(worker_id_)) {
+  if (!delilah_->network_->IsWorkerInCluster(worker_id_)) {
     LOG_SW(("Push item %lu: Worker %lu is not part of the cluster anymore. Reseting item...", push_id_, worker_id_));
     state_ = init;
     return;
@@ -229,7 +231,7 @@ size_t PushManager::Push(engine::BufferPointer buffer, const std::vector<std::st
   LOG_D(logs.delilah, ("PushManager: pushing buffer %s to %lu queues ( delilah %s )"
                        , au::str(buffer->size()).c_str()
                        , queues.size()
-                       , au::code64_str(delilah_->get_delilah_id()).c_str()
+                       , au::code64_str(delilah_->delilah_id()).c_str()
                        ));
 
   size_t item_id = item_id_++;
@@ -243,6 +245,8 @@ size_t PushManager::Push(engine::BufferPointer buffer, const std::vector<std::st
 }
 
 void PushManager::Review() {
+  LOG_D(logs.delilah_push_manager, ("Review items...."));
+
   au::map<size_t, PushItem>::iterator it;
   for (it = items_.begin(); it != items_.end(); ) {      // Review and remove finished items
     PushItem *item = it->second;
@@ -293,7 +297,13 @@ au::tables::Table *PushManager::getTableOfItems() {
   return table;
 }
 
-size_t PushManager::get_num_items() {
-  return items_.size();
+size_t PushManager::GetPendingSizeToPush() {
+  size_t total = 0;
+
+  au::map<size_t, PushItem>::iterator iter;
+  for (iter = items_.begin(); iter != items_.end(); iter++) {
+    total += iter->second->size();
+  }
+  return total;
 }
 }

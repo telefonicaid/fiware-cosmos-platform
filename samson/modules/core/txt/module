@@ -108,7 +108,7 @@ script demo
     code
     {
         add_stream_operation p txt.parser_words -input input -output words;
-        add_stream_operation c txt.word_count2 -input words  -output 'state state' -update_only;
+        add_stream_operation c txt.word_count2 -input 'words state' -output state -update_only;
     }
 }
 

@@ -73,53 +73,20 @@ public:
  */
 
 class Delilah : public engine::NotificationListener, public DelilahBase {
-  // Random identifier for this delilah
-  size_t delilah_id_;
-
-  // Id counter of all internal DelilahComponents
-  size_t id;
-
-  // Private token to protect the local list of components
-  au::Token token;
-
-  // last commit observed
-  int last_commit_version_;
-
-  friend class SamsonClient;
-
-protected:
-
-  // Map of components that intercept messages
-  au::map<size_t, DelilahComponent> components_;
-
-  // Manager of the push items
-  au::SharedPointer<PushManager> push_manager;
-
 public:
-
-  // Interface to receive live data
-  DelilahLiveDataReceiverInterface *data_receiver_interface;
-
-  // Network connection ( with workers )
-  DelilahNetwork *network;
-
-  Environment environment;                      // Environment properties to be sent in the next job
 
   Delilah(std::string connection_type, size_t delilah_id = static_cast<size_t>(-1));
   ~Delilah();
 
   // Connect and disconnect to a cluster
-  bool connect(std::string host, au::ErrorManager *error);      // Return true if it was possible to connect
+  bool connect(std::string host, au::ErrorManager *error);
   void disconnect();
-
+  bool isConnected();  // Check if we are really connected to a cluster
 
   // Connect to a queue
   size_t connect_to_queue(const std::string queue) {
     return AddPopComponent(queue, "", false, false);
   }
-
-  // Check if we are really connected to a cluster
-  bool isConnected();
 
   // Get a a line with information about connection
   std::string getClusterConnectionSummary();
@@ -130,14 +97,15 @@ public:
   // PacketReceiverInterface
   void receive(const PacketPointer& packet);
 
-  // PacketSenderInterface
-  virtual void notificationSent(size_t id, bool success);
-
-  // Add particular process that will take input parameters
+  // Push data to SAMSON
   size_t push_txt(engine::BufferPointer buffer, const std::string& queues);
   size_t push_txt(engine::BufferPointer buffer, const std::vector<std::string>& queues);
   size_t push(engine::BufferPointer buffer, const std::vector<std::string>& queues);
-  size_t get_num_push_items();
+
+  /**
+   * \brief Get pending data size to be "pushed"
+   */
+  size_t GetPendingSizeToPush();
 
   // Add a push component
   size_t add_push_component(const std::vector<std::string>& file_names, const std::vector<std::string>& queues,
@@ -153,9 +121,20 @@ public:
   // Add a worker command
   size_t sendWorkerCommand(std::string command, engine::BufferPointer buffer  = engine::BufferPointer(NULL));
 
-  // Get delilah_id
+  // Get info about the list of loads
+  std::string getListOfComponents();
 
-  size_t get_delilah_id() {
+  // Recover a particular component
+  DelilahComponent *getComponent(size_t delilah_id);
+
+  void clearComponents();
+  void clearAllComponents();    // Force all of them to be removed
+
+
+  /**
+   * \brief Get internal delilah identifier
+   */
+  size_t delilah_id() const {
     return delilah_id_;
   }
 
@@ -165,25 +144,22 @@ public:
   std::string errorMessage(size_t id);
   std::string getDescription(size_t id);
 
-public:
 
   /**
-   * Methonds implemented by subclasses
+   * \brief Handle packets not managed by delilah components
    */
-
-  // Function to be implemented by sub-classes to process packets ( not handled by this class )
   virtual int _receive(const PacketPointer& packet);
 
-  // Notification form a delilah component
+  /**
+   * \brief Nofication that a delilah component has started
+   */
   virtual void delilahComponentStartNotification(DelilahComponent *component) {
-    if (component == NULL) {
-      return;
-    }
   };
+
+  /**
+   * \brief Nofication that a delilah component has finished
+   */
   virtual void delilahComponentFinishNotification(DelilahComponent *component) {
-    if (component == NULL) {
-      return;
-    }
   };
 
   // Write something on screen
@@ -199,15 +175,6 @@ public:
     LOG_E(logs.delilah, ("%s", message.c_str()));
   }
 
-  // Show traces  ( by default it does nothing )
-  virtual void showTrace(std::string message) {
-    LM_D(("not implemented (%s)", message.c_str()));
-  };
-
-  // Callback to notify that a particular operation has finished
-  virtual void notifyFinishOperation(size_t) {
-  }
-
   void PublishBufferFromQueue(std::string queue, engine::BufferPointer buffer) {
     if (data_receiver_interface) {
       data_receiver_interface->receive_buffer_from_queue(queue, buffer);
@@ -220,22 +187,6 @@ public:
     LOG_W(logs.delilah, ("Buffer with %s recevied for queue %s. Ignored..", buffer->str().c_str(), queue.c_str()));
   }
 
-  // Get info about the list of loads
-  std::string getListOfComponents();
-
-  // Recover a particular component
-  DelilahComponent *getComponent(size_t delilah_id);
-
-public:
-
-  void clearComponents();
-  void clearAllComponents();    // Force all of them to be removed
-
-  /*
-   * Status stop_repeat( size_t id );
-   * Status stop_all_repeat(  );
-   */
-
   // Get a list of local directory
   std::string getLsLocal(std::string pattern, bool only_queues);
 
@@ -247,12 +198,37 @@ public:
 
   // Cancel a particuarl delilah_id
   void cancelComponent(size_t id, au::ErrorManager& error);
-  void setBackgroundComponent(size_t id);
-  std::string getOutputForComponent(size_t id);
+  std::string GetOutputForComponent(size_t id);
+
+  DelilahNetwork *network_;   /**< Network connection ( with workers ) */
+  Environment environment_;   /**< Environment properties to be sent in the next job */
 
 protected:
 
-  size_t addComponent(DelilahComponent *component);
+  /**
+   * \brief Add a component to this delilah
+   */
+  size_t AddComponent(DelilahComponent *component);
+
+  DelilahLiveDataReceiverInterface *data_receiver_interface;  /**< Interface to receive live data */
+  au::map<size_t, DelilahComponent> components_;             /**< Map of components that intercept messages */
+  au::SharedPointer<PushManager> push_manager_;              /**< Manager of data-blocks being pushed to SAMSON  */
+
+private:
+
+  friend class SamsonClient;
+
+  // Random identifier for this delilah
+  size_t delilah_id_;
+
+  // Id counter of all internal DelilahComponents
+  size_t next_delilah_component_id;
+
+  // Private token to protect the local list of components
+  au::Token token_;
+
+  // last commit observed
+  int last_commit_version_;
 };
 }
 

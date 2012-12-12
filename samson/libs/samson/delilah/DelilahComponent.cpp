@@ -38,7 +38,6 @@ DelilahComponent::DelilahComponent(DelilaComponentType _type) {
   progress = 0;
 
   hidden = false;
-  print_output_at_finish = false;          // By default, foreground process waits for component to finish
 }
 
 void DelilahComponent::setId(Delilah *_delilah, size_t _id) {
@@ -96,11 +95,6 @@ void DelilahComponent::setComponentFinished() {
   LOG_V(logs.delilah_components, ("component %d set to finished", id));
   component_finished = true;
   cronometer.Stop();
-
-  // Show output on screen if required
-  if (print_output_at_finish) {
-    delilah->WriteOnDelilah(output_component.str());
-  }
 
   delilah->delilahComponentFinishNotification(this);
 }

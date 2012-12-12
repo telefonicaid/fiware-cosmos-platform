@@ -75,16 +75,11 @@ public:
       nc += connection_cronometer.seconds();
     }
 
-
     double t = c + nc;
 
     if (t == 0) {
       return 0;
     }
-
-
-
-
 
     return c / (c + nc);
   }

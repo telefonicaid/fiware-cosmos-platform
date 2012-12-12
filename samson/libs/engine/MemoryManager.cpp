@@ -54,6 +54,9 @@ void MemoryManager::Add(Buffer *buffer) {
   buffers_.insert(buffer);
   used_memory_ += buffer->max_size();      // Increse the internal counter of memory
   if (used_memory_ > 3 * memory_) {
+    au::tables::Table table = getTableOfBuffers();
+    std::cout << table.str() << std::endl;
+    std::cout.flush();
     LM_X(1, ("Too much memory allocated"));
   }
 }
@@ -84,8 +87,9 @@ double MemoryManager::memory_usage() {
 }
 
 au::tables::Table MemoryManager::getTableOfBuffers() {
-  au::tables::Table table("Size,f=uint64,sum|TotalSize,f=uint64,sum|Name,left,different");
+  au::tables::Table table("Size,f=uint64,sum|MaxSize,f=uint64,sum|Accumulated,f=uint64,sum|Name,left,different");
 
+  table.setTitle("Buffers in engine::MemoryManager");
   au::TokenTaker tt(&token_);
 
   std::set<Buffer *>::iterator it_buffers;
@@ -95,6 +99,7 @@ au::tables::Table MemoryManager::getTableOfBuffers() {
     au::StringVector values;
 
     values.push_back(au::str("%lu", buffer->size()));
+    values.push_back(au::str("%lu", buffer->max_size()));
     total_size += buffer->size();
     values.Push(total_size);
     values.push_back(buffer->name());

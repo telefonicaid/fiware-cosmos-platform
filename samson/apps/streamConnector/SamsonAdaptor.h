@@ -52,7 +52,8 @@ public:
   virtual void stop_connection();
   virtual void review_connection();
 
-  size_t bufferedSize();
+  virtual size_t bufferedSize();
+  virtual size_t bufferedSizeOnMemory();
 
   void push(engine::BufferPointer buffer);
 

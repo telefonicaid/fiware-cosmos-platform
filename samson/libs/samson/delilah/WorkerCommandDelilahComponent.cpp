@@ -85,7 +85,7 @@ WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent() {
 void WorkerCommandDelilahComponent::run() {
   // Get a random worker id to send the command (excep command that requires all workers involved )
   if ((worker_id == static_cast<size_t>(-1)) && (!send_to_all_workers)) {
-    worker_id = delilah->network->getRandomWorkerId();
+    worker_id = delilah->network_->getRandomWorkerId();
     if (worker_id == static_cast<size_t>(-1)) {
       setComponentFinishedWithError("It seems there is no samson worker up in this cluster");
     }
@@ -109,7 +109,7 @@ void WorkerCommandDelilahComponent::run() {
   gpb::WorkerCommand *c = p->message->mutable_worker_command();
   c->set_command(command);
   p->message->set_delilah_component_id(id);
-  copyEnviroment(&delilah->environment, c->mutable_environment());
+  copyEnviroment(&delilah->environment_, c->mutable_environment());
 
   // Set buffer to be sent
   p->set_buffer(buffer_);
@@ -117,9 +117,9 @@ void WorkerCommandDelilahComponent::run() {
   if (worker_id != static_cast<size_t>(-1)) {
     p->to = NodeIdentifier(WorkerNode, worker_id);
     workers.insert(worker_id);
-    delilah->network->Send(p);
+    delilah->network_->Send(p);
   } else {
-    delilah->network->SendToAllWorkers(p, workers);    // Send to all workers
+    delilah->network_->SendToAllWorkers(p, workers);    // Send to all workers
   }
 }
 

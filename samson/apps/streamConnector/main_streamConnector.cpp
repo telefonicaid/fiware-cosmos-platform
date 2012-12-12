@@ -94,6 +94,7 @@ int sc_console_port;
 int sc_web_port;
 int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
 size_t memory;
+char log_command[1024];
 
 PaArgument paArgs[] =
 {
@@ -132,6 +133,9 @@ PaArgument paArgs[] =
   { "-memory",       &memory,             "", PaIntU64, PaOpt,
     1000000000, 1, 10000000000ULL,
     "Port to receive REST connections"                                        },
+  { "-log",          log_command,         "", PaString,
+    PaOpt, _i "", PaNL,
+    PaNL, "log server host"                          },
   PA_END_OF_ARGS
 };
 
@@ -189,6 +193,9 @@ int main(int argC, const char *argV[]) {
   if (lmDebug) {
     au::LogCentral::Shared()->EvalCommand("log_set system D");
   }
+
+  // Additional log-command provided in command line
+  au::log_central->EvalCommand(log_command);
 
   LOG_SV(("Setup memory at engine %s", au::str(memory).c_str()));
 
@@ -346,21 +353,25 @@ int main(int argC, const char *argV[]) {
         message << "Memory " << au::str(used_memory) << "/" << au::str(memory);
         message << "(" << au::str_percentage(used_memory, memory) << ") ";
 
-        LOG_SM(("%s", message.str().c_str()));
+        LOG_SV(("%s", message.str().c_str()));
 
-/*
- *      if (lmVerbose) {
- *        au::tables::Table *table = main_stream_connector->getConnectionsTable();
- *        std::cerr << table->str();
- *        delete table;
- *      }
- *
- *      if (lmVerbose) {
- *        au::tables::Table *table = main_stream_connector->getConnectionsTable("data");
- *        std::cerr << table->str();
- *        delete table;
- *      }
- */
+        /*
+         * if (lmVerbose) {
+         * std::cout << engine::Engine::memory_manager()->getTableOfBuffers().str() << std::endl;
+         * }
+         *
+         * if (lmVerbose) {
+         * au::tables::Table *table = main_stream_connector->getConnectionsTable();
+         * std::cerr << table->str();
+         * delete table;
+         * }
+         *
+         * if (lmVerbose) {
+         * au::tables::Table *table = main_stream_connector->getConnectionsTable("data");
+         * std::cerr << table->str();
+         * delete table;
+         * }
+         */
       }
 
       // Verify if can exit....

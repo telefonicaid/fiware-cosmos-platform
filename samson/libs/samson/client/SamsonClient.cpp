@@ -60,7 +60,7 @@ SamsonClient::SamsonClient(std::string connection_type) {
   delilah_ = new Delilah("client");
   delilah_->data_receiver_interface = this;  // By default, I am the default receiver
 
-  LM_V(("SamsonClient: Delilah client with id %s", au::code64_str(delilah_->get_delilah_id()).c_str()));
+  LM_V(("SamsonClient: Delilah client with id %s", au::code64_str(delilah_->delilah_id()).c_str()));
 }
 
 bool SamsonClient::connect(const std::vector<std::string>& hosts) {
@@ -152,7 +152,7 @@ size_t SamsonClient::push(engine::BufferPointer buffer, const std::vector<std::s
 }
 
 bool SamsonClient::isFinishedPushingData() {
-  return (delilah_->get_num_push_items() == 0);
+  return (delilah_->GetPendingSizeToPush() == 0);
 }
 
 void SamsonClient::waitFinishPushingData() {
@@ -162,7 +162,8 @@ void SamsonClient::waitFinishPushingData() {
     } else {
       usleep(200000);
     }
-    LOG_SV(("Waiting delilah to finish push process. Still pending %lu push items", delilah_->get_num_push_items()));
+    LOG_SV(("Waiting delilah to finish push process. Still pending %s",
+            au::str(delilah_->GetPendingSizeToPush()).c_str()));
   }
 }
 
@@ -189,8 +190,8 @@ bool SamsonClient::connection_ready() {
   return delilah_->isConnected();
 }
 
-size_t SamsonClient::getNumPendingPushItems() {
-  return delilah_->get_num_push_items();
+size_t SamsonClient::GetPendingSizeToPush() {
+  return delilah_->GetPendingSizeToPush();
 }
 
 void SamsonClient::waitUntilFinish() {

@@ -99,51 +99,6 @@ public:
     WriteErrorOnConsole(message);
   }
 
-  // Show a message on screen
-  /*
-   * void showMessage(std::string message) {
-   * if (no_output_) {
-   *  LM_V(("%s", message.c_str()));
-   *  return;
-   * }
-   * if (simple_output_) {
-   *  std::cout << message;
-   *  return;
-   * }
-   * Write(au::StringInConsole(message));
-   * }
-   *
-   * void showWarningMessage(std::string message) {
-   * if (no_output_) {
-   *  LOG_SV(("%s", au::str(au::BoldMagenta, "%s", message.c_str()).c_str()));
-   *  return;
-   * }
-   * if (simple_output_) {
-   *  std::cout << au::str(au::BoldMagenta, "%s", message.c_str());
-   *  return;
-   * }
-   * WriteWarningOnConsole(au::StringInConsole(message));
-   * }
-   *
-   * void showErrorMessage(std::string message) {
-   * if (no_output_) {
-   *  LOG_SV(("%s", au::str(au::BoldRed, "%s", message.c_str()).c_str()));
-   *  return;
-   * }
-   * if (simple_output_) {
-   *  std::cout << au::str(au::BoldRed, "%s", message.c_str());
-   *  return;
-   * }
-   * WriteErrorOnConsole(au::StringInConsole(message));
-   * }
-   *
-   * virtual void showTrace(std::string message) {
-   * if (show_alerts_) {
-   *  WriteWarningOnConsole(message);
-   * }
-   * }
-   */
-
   void set_verbose(bool value) {
     verbose_ = value;
   }

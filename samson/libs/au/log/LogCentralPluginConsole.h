@@ -12,6 +12,7 @@
 #ifndef _H_LOG_PLUGIN_CONSOLE
 #define _H_LOG_PLUGIN_CONSOLE
 
+#include "au/console/Console.h"
 #include "au/log/LogCentralPlugin.h"
 #include "au/log/LogCommon.h"
 

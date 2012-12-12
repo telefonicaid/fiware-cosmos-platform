@@ -936,39 +936,38 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
 }
 
 void StreamConnector::log(const std::string& name, const std::string& type, const std::string& message) {
-  au::SharedPointer<stream_connector::Log> my_log(new stream_connector::Log(name, type, message));
-  log(my_log);
+  // Not using this old log system any more. Moving to the new au::LogCentral model
+  /*
+   * au::SharedPointer<stream_connector::Log> my_log(new stream_connector::Log(name, type, message));
+   * log(my_log);
+   */
 }
 
 void StreamConnector::log(au::SharedPointer<Log> log) {
-  au::TokenTaker tt(&token);
-
-  // Create au::ErrorManager element
-  au::ErrorManager error;
-
-  std::string type = log->getType();
-
-  if (type == "Warning") {
-    error.AddWarning(log->getNameAndMessage());
-  } else if (type == "Error") {
-    error.AddError(log->getNameAndMessage());
-  } else {
-    error.AddMessage(log->getNameAndMessage());
-  } if (interactive) {
-    au::console::Console::Write(error);
-  } else if (run_as_daemon) {
-    // Nothing here
-  } else {
-    // Print on screen
-    if (lmVerbose) {
-      std::cerr << error.str();
-    }
-  }
-
-
-  // Add to the log system
-  LogManager *log_manager = au::Singleton<LogManager>::shared();
-  log_manager->log(log);
+  /*
+   * au::TokenTaker tt(&token);
+   *
+   * // Create au::ErrorManager element
+   * au::ErrorManager error;
+   *
+   * std::string type = log->getType();
+   *
+   * if (type == "Warning") {
+   * error.AddWarning(log->getNameAndMessage());
+   * } else if (type == "Error") {
+   * error.AddError(log->getNameAndMessage());
+   * } else {
+   * error.AddMessage(log->getNameAndMessage());
+   * } if (interactive) {
+   * //au::console::Console::Write(error);
+   * } else if (run_as_daemon) {
+   * // Nothing here
+   * }
+   *
+   * // Add to the log system
+   * LogManager *log_manager = au::Singleton<LogManager>::shared();
+   * log_manager->log(log);
+   */
 }
 
 void StreamConnector::newSocketConnection(au::NetworkListener *listener

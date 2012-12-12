@@ -624,7 +624,7 @@ std::string Delilah::getDescription(size_t id) {
 
 int Delilah::_receive(const PacketPointer& packet) {
   if (packet->msgCode != Message::Alert) {
-    LM_V(("Unused packet %s", packet->str().c_str()));
+    LOG_W(logs.delilah, ("Unused packet %s", packet->str().c_str()));
   }
   return 0;
 }

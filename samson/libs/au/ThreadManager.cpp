@@ -211,7 +211,7 @@ void *run_ThreadInfo(void *p) {
 
   ThreadInfo *thread_info = (ThreadInfo *)p;
 
-  LM_VV(("Running thread %s", thread_info->name_.c_str()));
+  LOG_V(logs.thread_manager, ("Running thread %s", thread_info->name_.c_str()));
 
   // Execute the real function
   void *ans = thread_info->f_(thread_info->p_);
@@ -219,7 +219,7 @@ void *run_ThreadInfo(void *p) {
   // Notify my ThreadRunner
   au::Singleton<au::ThreadManager>::shared()->notify_finish_thread(thread_info);
 
-  LM_VV(("Finished thread %s", thread_info->name_.c_str()));
+  LOG_V(logs.thread_manager, ("Finished thread %s", thread_info->name_.c_str()));
 
   // Delete this structure
   delete thread_info;
@@ -230,7 +230,7 @@ void *run_ThreadInfo(void *p) {
 void *run_NonDetachedThreadInfo(void *p) {
   ThreadInfo *thread_info = (ThreadInfo *)p;
 
-  LM_VV(("Running thread %s", thread_info->name_.c_str()));
+  LOG_V(logs.thread_manager, ("Running thread %s", thread_info->name_.c_str()));
 
   // Execute the real function
   void *ans = thread_info->f_(thread_info->p_);
@@ -238,7 +238,7 @@ void *run_NonDetachedThreadInfo(void *p) {
   // Notify my ThreadRunner
   au::Singleton<au::ThreadManager>::shared()->notify_finish_thread(thread_info);
 
-  LM_VV(("Finished thread %s", thread_info->name_.c_str()));
+  LOG_V(logs.thread_manager, ("Finished thread %s", thread_info->name_.c_str()));
 
   // Delete this structure
   delete thread_info;

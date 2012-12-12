@@ -31,11 +31,11 @@ std::string Log::getType() {
 
 void Log::writeOnScreen() {
   if (type_ == "Warning") {
-    LOG_SW(( getNameAndMessage().c_str()));
+    LOG_SW((getNameAndMessage().c_str()));
   } else if (type_ == "Error") {
-    LM_E(( getNameAndMessage().c_str()));
+    LOG_SE((getNameAndMessage().c_str()));
   } else {
-    LOG_SM(( getNameAndMessage().c_str()));
+    LOG_SM((getNameAndMessage().c_str()));
   }
 }
 

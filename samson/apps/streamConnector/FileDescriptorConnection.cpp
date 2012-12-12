@@ -145,6 +145,20 @@ void FileDescriptorConnection::run_as_input() {
     if (!file_descriptor_) {
       LM_X(1, ("Internal error"));  // Get a buffer
     }
+
+    // If memory usage is too high wait
+    au::Cronometer cronometer;
+    while (engine::Engine::memory_manager()->memory_usage() > 1) {
+      usleep(100000);
+      if (cronometer.seconds() > 2) {
+        cronometer.Reset();
+        double mem = engine::Engine::memory_manager()->memory_usage();
+        LOG_SW(("Not reading from input connection '%s' since memory usage is %s",
+                getFullName().c_str(),
+                au::str_percentage(mem).c_str()));
+      }
+    }
+
     engine::BufferPointer buffer = engine::Buffer::Create("stdin buffer", input_buffer_size);
 
 

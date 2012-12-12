@@ -17,7 +17,9 @@
 
 
 #include "au/ThreadManager.h"
+#include "au/console/Console.h"
 #include "au/daemonize.h"
+#include "au/log/LogCentralPluginConsole.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 #include "au/string/StringUtilities.h"                  // au::str()
@@ -91,7 +93,7 @@ static const char *manSynopsis =
 int sc_console_port;
 int sc_web_port;
 int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
-
+size_t memory;
 
 PaArgument paArgs[] =
 {
@@ -127,6 +129,9 @@ PaArgument paArgs[] =
   { "-working",      working_directory,   "", PaString, PaOpt,
     _i ".", PaNL, PaNL,
     "Directory to store persistance data if necessary"                        },
+  { "-memory",       &memory,             "", PaIntU64, PaOpt,
+    1000000000, 1, 10000000000ULL,
+    "Port to receive REST connections"                                        },
   PA_END_OF_ARGS
 };
 
@@ -174,7 +179,18 @@ int main(int argC, const char *argV[]) {
   // Add plugins to report logs to file, server and console
   au::log_central->AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
   au::log_central->AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
-  au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin
+
+  au::LogCentralPluginConsole *log_plugin_console = new au::LogCentralPluginConsole(NULL, "[type][channel] text", true);
+  au::log_central->AddPlugin("console", log_plugin_console);
+
+  if (lmVerbose) {
+    au::LogCentral::Shared()->EvalCommand("log_set system V");
+  }
+  if (lmDebug) {
+    au::LogCentral::Shared()->EvalCommand("log_set system D");
+  }
+
+  LOG_SV(("Setup memory at engine %s", au::str(memory).c_str()));
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
@@ -189,7 +205,7 @@ int main(int argC, const char *argV[]) {
   }
 
   // Engine and its associated elements
-  engine::Engine::InitEngine(2, 10000000000, 1);
+  engine::Engine::InitEngine(2, memory, 1);
 
   // Load modules
   au::ErrorManager error;
@@ -305,7 +321,9 @@ int main(int argC, const char *argV[]) {
     // Add service to accept inter-channel connections
     main_stream_connector->init_inter_channel_connections_service();
 
+    log_plugin_console->SetConsole(main_stream_connector);
     main_stream_connector->StartConsole();
+    log_plugin_console->SetConsole(NULL);
   } else {
     au::Cronometer cronometer_notification;
     while (true) {
@@ -320,21 +338,29 @@ int main(int argC, const char *argV[]) {
       if (cronometer_notification.seconds() > 1) {
         cronometer_notification.Reset();
 
-        LM_V(("Review samsonConnnector : %lu input-items & %s pending to be sent",
-              num_input_items, au::str(pending_size, "B").c_str()));
+        std::ostringstream message;
 
+        size_t memory = engine::Engine::memory_manager()->memory();
+        size_t used_memory = engine::Engine::memory_manager()->used_memory();
 
-        if (lmVerbose) {
-          au::tables::Table *table = main_stream_connector->getConnectionsTable();
-          std::cerr << table->str();
-          delete table;
-        }
+        message << "Memory " << au::str(used_memory) << "/" << au::str(memory);
+        message << "(" << au::str_percentage(used_memory, memory) << ") ";
 
-        if (lmVerbose) {
-          au::tables::Table *table = main_stream_connector->getConnectionsTable("data");
-          std::cerr << table->str();
-          delete table;
-        }
+        LOG_SM(("%s", message.str().c_str()));
+
+/*
+ *      if (lmVerbose) {
+ *        au::tables::Table *table = main_stream_connector->getConnectionsTable();
+ *        std::cerr << table->str();
+ *        delete table;
+ *      }
+ *
+ *      if (lmVerbose) {
+ *        au::tables::Table *table = main_stream_connector->getConnectionsTable("data");
+ *        std::cerr << table->str();
+ *        delete table;
+ *      }
+ */
       }
 
       // Verify if can exit....

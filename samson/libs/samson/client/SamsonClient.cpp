@@ -116,9 +116,6 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
   // Init Engine, DiskManager, ProcessManager and Memory manager
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
   engine::Engine::InitEngine(num_cores, memory, 1);
-
-  // Init the modules manager
-  LOG_V(logs.modules_manager, ("Starting ModulesManager from SamsonClient::general_init()"));
 }
 
 void SamsonClient::general_close() {
@@ -138,7 +135,7 @@ void SamsonClient::receive_buffer_from_queue(std::string queue, engine::BufferPo
 }
 
 size_t SamsonClient::push(engine::BufferPointer buffer, const std::string& queue) {
-  LM_V(("SamsonClient: Pushing buffer %s to %lu queues", au::str(buffer->size()).c_str(), queue.size()));
+  LOG_V(logs.client, ("SamsonClient: Pushing buffer %s to %lu queues", au::str(buffer->size()).c_str(), queue.size()));
 
   std::vector<std::string> queues;
   queues.push_back(queue);
@@ -165,7 +162,7 @@ void SamsonClient::waitFinishPushingData() {
     } else {
       usleep(200000);
     }
-    LM_V(("Waiting delilah to finish push process. Still pending %lu push items", delilah_->get_num_push_items()));
+    LOG_SV(("Waiting delilah to finish push process. Still pending %lu push items", delilah_->get_num_push_items()));
   }
 }
 

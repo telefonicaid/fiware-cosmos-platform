@@ -160,7 +160,7 @@ void LogServerService::runLogProvider(gpb::LogConnectionHello *hello, au::Socket
     // Read a log
     au::SharedPointer<Log>log(new Log());
     if (!log->Read(socket_connection)) {
-      LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
+      // LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
       return;    // Not possible to read a log...
     }
 

@@ -33,7 +33,6 @@ void Log::Set(const std::string& field_name, const std::string& field_value) {
 }
 
 bool Log::Read(au::FileDescriptor *fd) {
-  // LM_V(("Reading log header of %lu bytes" ,sizeof(LogHeader)));
   LogHeader header;
   au::Status s = fd->partRead(&header, sizeof(LogHeader), "log header", 300);
 
@@ -47,7 +46,6 @@ bool Log::Read(au::FileDescriptor *fd) {
 
 
   // Read fixed data
-  // LM_V(("Reading fix log data of %lu bytes" ,sizeof(LogData)));
   s = fd->partRead(&log_data_, sizeof(LogData), "log data", 300);
 
   if (s != au::OK) {
@@ -56,7 +54,6 @@ bool Log::Read(au::FileDescriptor *fd) {
   // Read strings
   size_t string_length = header.dataLen - sizeof(LogData);
   au::TemporalBuffer buffer(string_length);
-  // LM_V(("Reading strings data of %lu bytes" ,string_length ));
   s = fd->partRead(buffer.data(), string_length, "log_strings", 100);
   if (s != au::OK) {
     return false;
@@ -68,7 +65,6 @@ bool Log::Read(au::FileDescriptor *fd) {
 }
 
 bool Log::Write(au::FileDescriptor *fd) {
-  // LM_V(("Writing %s" , str().c_str() ));
   LogHeader header;
 
   header.setMagicNumber();
@@ -282,14 +278,10 @@ void Log::AddStrings(char *strings, size_t len) {
     }
   }
 
-  // LM_V(("Readed %lu strins" , vector_strings.size() ));
-
   // Add to the map
   for (size_t i = 0; i < vector_strings.size() / 2; i++) {
     std::string field_name = vector_strings[2 * i];
     std::string field_value = vector_strings[2 * i + 1];
-
-    // LM_V(("Added %s=%s" , field_name.c_str() , field_value.c_str() ));
 
     // Add field
     Set(field_name, field_value);
@@ -377,7 +369,7 @@ int Log::GetLogLevel(const std::string& str_log_level) {
   if (str_log_level == "I") {
     return LOG_LEVEL_INFO;
   }
-  
+
   if (str_log_level == "D") {
     return LOG_LEVEL_DEBUG;
   }
@@ -409,7 +401,7 @@ std::string Log::GetLogLevel(int log_level) {
     case LOG_LEVEL_VERBOSE: return "V";
 
     case LOG_LEVEL_INFO: return "I";
-      
+
     case LOG_LEVEL_DEBUG: return "D";
 
     default:

@@ -972,11 +972,11 @@ void StreamConnector::log(au::SharedPointer<Log> log) {
 }
 
 void StreamConnector::newSocketConnection(au::NetworkListener *listener
-                                          , au::SocketConnection *socket_connetion) {
+                                          , au::SocketConnection *socket_connection) {
   // Create a new connection
   InputInterChannelConnection *connection = new InputInterChannelConnection(this,
-                                                                            socket_connetion->host_and_port(),
-                                                                            socket_connetion);
+                                                                            socket_connection->host_and_port(),
+                                                                            socket_connection);
 
   // We start connection here
   connection->init_connecton();

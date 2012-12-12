@@ -33,7 +33,7 @@ WorkerNetwork::WorkerNetwork(size_t worker_id, int port) :
 }
 
 WorkerNetwork::~WorkerNetwork() {
-  LOG_D(logs.cleanup, ("Calling ~WorkerNetwork"));
+  LOG_D(logs.cleanup, ("Entering ~WorkerNetwork"));
   if (worker_listener != NULL) {
     worker_listener->StopNetworkListener();
     delete worker_listener;
@@ -91,7 +91,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
     return;
   }
 
-  // Identifier from the incomming hello packet
+  // Identifier from the incoming hello packet
   NodeIdentifier new_node_identifier(packet.message->hello().node_identifier());
 
   if (new_node_identifier.node_type == UnknownNode) {

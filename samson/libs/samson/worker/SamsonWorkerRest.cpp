@@ -43,7 +43,7 @@ SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) :
 }
 
 SamsonWorkerRest::~SamsonWorkerRest() {
-  LOG_D(logs.cleanup, ("Calling ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
+  LOG_D(logs.cleanup, ("Entering ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
   rest_service_->StopService();
   if (delilah_) {
     delete delilah_;

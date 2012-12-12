@@ -48,7 +48,7 @@ public:
   ~SharedMemoryManager();
 
   /**
-   * \brief Init shared memory segments to exchange data between main and background processess
+   * \brief Init shared memory segments to exchange data between main and background processes
    */
   static void Init(int shared_memory_num_buffers, size_t shared_memory_size_per_buffer);
 

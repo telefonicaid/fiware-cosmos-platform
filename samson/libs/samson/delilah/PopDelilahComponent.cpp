@@ -329,7 +329,9 @@ void PopDelilahComponent::check() {
         au::SharedPointer<SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name_, error);
 
         if (error.HasErrors()) {
-          delilah->WriteErrorOnDelilah(au::str("Not possible to show content from dir %s", file_name_.c_str()));
+          delilah->WriteErrorOnDelilah(au::str("Can't show content from dir '%s': %s",
+                                               file_name_.c_str(),
+                                               error.GetLastError().c_str()));
         } else {
           std::ostringstream output;
           output << "----------------------------------------------------------------------\n";

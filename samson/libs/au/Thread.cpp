@@ -17,7 +17,7 @@
 
 namespace au {
 void *run_Thread(void *p) {
-  Thread *t = (Thread *)p;
+  Thread *t = reinterpret_cast<Thread *>(p);
 
   t->RunThread();
 
@@ -34,7 +34,7 @@ void Thread::StartThread() {
   if (pthread_running_) {
     return;                // If already running, nothing to do
   }
-  pthread_running_ = true; // Mark as running
+  pthread_running_ = true;  // Mark as running
 
   // Run the thread in background
   au::Singleton<au::ThreadManager>::shared()->AddThread(name_, &t_, NULL, run_Thread, this);

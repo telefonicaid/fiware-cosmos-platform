@@ -350,7 +350,7 @@ int main(int argC, const char *argV[]) {
     au::zoo::Connection connection(my_zoo_host, "samson", "samson");
     connection.WaitUntilConnected(2000);
     if (!connection.IsConnected()) {
-      LOG_W(samson::logs.worker, ("Unable to connect with Zookeeper at %s.", zoo_host));
+      LOG_W(samson::logs.worker, ("Unable to connect to Zookeeper at %s.", zoo_host));
       if (!fg) {
         LOG_W(samson::logs.worker, ("Keep trying to connect to Zookeeper at %s in background...", zoo_host));
       }

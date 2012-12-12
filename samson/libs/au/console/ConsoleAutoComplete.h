@@ -60,7 +60,7 @@ public:
   }
 
   std::string label() const {
-    return command_;
+    return label_;
   }
 
   bool add_space_if_unique() const {

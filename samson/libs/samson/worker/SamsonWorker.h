@@ -83,7 +83,7 @@ public:
 
   SamsonWorker(std::string zoo_host, int port, int web_port);
   ~SamsonWorker() {
-    LOG_D(logs.cleanup, ("Calling ~SamsonWorker"));
+    LOG_D(logs.cleanup, ("Entering ~SamsonWorker"));
     worker_controller_ = NULL;
     data_model_ = NULL;
     network_ = NULL;
@@ -182,7 +182,7 @@ private:
   // Initial time stamp for this worker
   au::Cronometer cronometer_;
 
-  // Last try to connect with ZK
+  // Last try to connect to ZK
   au::Cronometer zk_connection_cronometer_;
   bool zk_first_connection_;
 

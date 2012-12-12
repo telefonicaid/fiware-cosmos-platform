@@ -132,7 +132,7 @@ void SamsonWorker::Review() {
       zoo_connection_ = new au::zoo::Connection(zoo_host_, "samson", "samson");
       int rc = zoo_connection_->WaitUntilConnected(20000);
       if (rc) {
-        state_message_ = au::str("Unable to connect with zk at %s (%s)"
+        state_message_ = au::str("Unable to connect to zk at %s (%s)"
                                  , zoo_host_.c_str()
                                  , au::zoo::str_error(rc).c_str());
         LOG_SW(("%s", state_message_.c_str()));
@@ -168,7 +168,7 @@ void SamsonWorker::Review() {
         network_->set_cluster_information(cluster_info);     // Inform network about cluster setup
         state_message_ = "Ready";
         state_ = ready;
-        LOG_M(logs.worker, ("Worker connected to Zookeeper and part of the cluster"));
+        LOG_M(logs.worker, ("Worker connected to Zookeeper. This worker is now included in the cluster"));
       } else {
         state_message_ = "Still not included in the cluster";
       }
@@ -935,8 +935,8 @@ void SamsonWorker::EvalCommand(const std::string& command) {
     return;
   }
 
-
   // More command to check what is going on inside a worker
+  WriteErrorOnConsole("Unknown command for samsonWorker");
 }
 
 std::string SamsonWorker::GetPrompt() {

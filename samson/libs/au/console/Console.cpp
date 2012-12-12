@@ -91,7 +91,7 @@ void Console::StartConsole(bool block_thread) {
   StartThread();
   if (block_thread) {
     JoinThread();  // Wait for background thread to finish
-    printf("\n");  // Print a last return to avoid writting after console prompt
+    printf("\n");  // Print a last return to avoid writing after console prompt
   }
 }
 
@@ -101,10 +101,10 @@ void Console::StopConsole() {
 
 void Console::PrintCommand() {
   if (reverse_search_mode_) {
-    PrintReverseSearchCommand();        // Special mode to search command backwards
-    return;
+    PrintReverseSearchCommand();  // Special mode to search command backwards
+  } else {
+    PrintCurrentCommand();       // Normal moode, print current command
   }
-  PrintCurrentCommand();      // Normal moode, print curretn command
 }
 
 void Console::PrintReverseSearchCommand() {
@@ -418,7 +418,7 @@ void Console::ProcessEntry(ConsoleEntry& entry) {
       return;
     }
 
-    // Type C-r again
+    // Type ( C-r == 18 ) again
     if (entry.isChar() && (entry.getChar() == 18)) {
       NextReverseSearch();
       PrintCommand();
@@ -452,11 +452,11 @@ void Console::ProcessEntry(ConsoleEntry& entry) {
         ProcessTab();
         break;
 
-      case 7:
+      case 7:  // C-g
         printf("%c", c);    // bell
         break;
 
-      case 18:
+      case 18:  // C-r
         StartReverseSearchMode();
         PrintCommand();   // update command on screen
         break;

@@ -28,8 +28,8 @@ void *run_SamsonPushConnection(void *p) {
   return NULL;
 }
 
-SamsonPushConnection::SamsonPushConnection(au::SocketConnection *_socket_connetion) {
-  socket_connetion = _socket_connetion;
+SamsonPushConnection::SamsonPushConnection(au::SocketConnection *_socket_connection) {
+  socket_connection = _socket_connection;
   thread_running = true;
 
   // Alloc buffer to receive data
@@ -51,21 +51,21 @@ SamsonPushConnection::~SamsonPushConnection() {
 
 void SamsonPushConnection::run() {
   while (true) {
-    if (socket_connetion->IsClosed()) {
+    if (socket_connection->IsClosed()) {
       thread_running = false;
       return;
     }
 
     // Read and push...
     size_t read_size;
-    au::Status s = socket_connetion->partRead(buffer, buffer_size, "SamsonPushConnection", 100, &read_size);
+    au::Status s = socket_connection->partRead(buffer, buffer_size, "SamsonPushConnection", 100, &read_size);
 
     // Pushding this data to SAMSON system
     pushBuffer->push(buffer, read_size, true);
 
     if (s != au::OK) {
       // Just to make sure we close
-      socket_connetion->Close();
+      socket_connection->Close();
       thread_running = false;
       return;
     }

@@ -133,7 +133,7 @@ void LogCentral::CreatePipeAndFileDescriptors() {
   }
 
   // Create file descriptor to write logs
-  fd_write_logs_ = new au::FileDescriptor("fd for writting logs", fds_[1]);
+  fd_write_logs_ = new au::FileDescriptor("fd for writing logs", fds_[1]);
   fd_read_logs_ = new au::FileDescriptor("fd for reading logs", fds_[0]);
 }
 

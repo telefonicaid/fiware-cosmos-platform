@@ -26,7 +26,7 @@ ConsoleCommand::ConsoleCommand(const std::string& command) {
 
 void ConsoleCommand::AddChar(char c) {
   command_.insert(pos_, 1, c);
-  pos_++;
+  ++pos_;
 }
 
 void ConsoleCommand::AddString(const std::string& txt) {
@@ -38,7 +38,7 @@ void ConsoleCommand::DeleteChar() {
   // Delete last char introduced ( at pos )
   if (pos_ > 0) {
     command_.erase(pos_ - 1, 1);
-    pos_--;
+    --pos_;
   }
 }
 
@@ -66,7 +66,7 @@ void ConsoleCommand::DeleteWord() {
   } while ((pos_ > 0) && (command_[pos_ - 1] != ' '));
 }
 
-void ConsoleCommand::Toogle() {
+void ConsoleCommand::Toggle() {
   if (command_.length() < 2) {
     return;
   }
@@ -133,7 +133,7 @@ void ConsoleCommand::ProcessEntry(ConsoleEntry& entry) {
         DeleteRestOfLine();
         break;
       case 20:
-        Toogle();
+        Toggle();
         break;
       case 23:
         DeleteWord();

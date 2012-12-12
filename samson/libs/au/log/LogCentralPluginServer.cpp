@@ -84,7 +84,7 @@ void LogCentralPluginServer::ReviewSocketConnection() {
   if (socket_connection_ == NULL) {
     // Reconnect to server if necessary
     size_t time = time_since_last_connection_.seconds();
-    if (( host_ != "" )  && ( time >= time_reconnect_ )) {
+    if ((host_ != "")  && (time >= time_reconnect_)) {
       SocketConnection *tmp_socket_connection;
       au::Status s = au::SocketConnection::Create(host_, port_, &tmp_socket_connection);
 
@@ -101,7 +101,7 @@ void LogCentralPluginServer::ReviewSocketConnection() {
 
           /*
            * size_t next_try_time = time_reconnect_ - time;
-           * LOG_SW(("Not possible to connect with log server %s:%d (%s). Next try in %s"
+           * LOG_SW(("Unable to connect with log server %s:%d (%s). Next try in %s"
            * , host_.c_str(), port_, au::status(s), au::str_time(next_try_time).c_str()));
            */
         }

@@ -31,7 +31,7 @@ class SocketConnection;
 class NetworkListener;
 
 /**
- * \brief Interface of NetworkListener to hande incomming connections
+ * \brief Interface of NetworkListener to handle incomming connections
  */
 
 class NetworkListenerInterface {
@@ -40,7 +40,7 @@ public:
 };
 
 /**
- * \brief Listener over a particular port. Incomming connectiong handled with an interface
+ * \brief Listener over a particular port. Incomming connections handled with an interface
  */
 
 class NetworkListener : public au::Thread {

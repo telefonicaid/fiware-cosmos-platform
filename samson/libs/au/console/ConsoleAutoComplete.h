@@ -37,7 +37,7 @@ public:
     add_space_if_unique_ = add_space_if_unique;
   }
 
-  std::string GetColoredLabel(std::string last_word) {
+  std::string GetColoredLabel(std::string last_word) const {
     if (last_word.length() > label_.length()) {
       return label_;
     }
@@ -55,15 +55,15 @@ public:
     return a.label_ < b.label_;
   }
 
-  std::string command() {
+  std::string command() const {
     return command_;
   }
 
-  std::string label() {
+  std::string label() const {
     return command_;
   }
 
-  bool add_space_if_unique() {
+  bool add_space_if_unique() const {
     return add_space_if_unique_;
   }
 

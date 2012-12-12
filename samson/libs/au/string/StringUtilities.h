@@ -179,7 +179,7 @@ bool MatchPatterns(const char *inputString, const char *pattern, char wildcard);
 void FindAndReplaceInString(std::string &source, const std::string& find, const std::string& replace);
 
 /**
- * \brief Remove trailing spaces, tabs at the begining or end of the command and spaces,tabs and return at the end
+ * \brief Remove trailing spaces, tabs at the beginning or end of the command and spaces,tabs and return at the end
  */
 
 std::string StripString(const std::string& line);

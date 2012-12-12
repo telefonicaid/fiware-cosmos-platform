@@ -128,11 +128,11 @@ void SamsonWorker::Review() {
       zk_first_connection_ = false;
 
       // Try to connect with ZK
-      LOG_M(logs.worker_controller, ("Trying to connect with zk at %s", zoo_host_.c_str()));
+      LOG_M(logs.worker_controller, ("Trying to connect to zk at %s", zoo_host_.c_str()));
       zoo_connection_ = new au::zoo::Connection(zoo_host_, "samson", "samson");
       int rc = zoo_connection_->WaitUntilConnected(20000);
       if (rc) {
-        state_message_ = au::str("Not possible to connect with zk at %s (%s)"
+        state_message_ = au::str("Unable to connect with zk at %s (%s)"
                                  , zoo_host_.c_str()
                                  , au::zoo::str_error(rc).c_str());
         LOG_SW(("%s", state_message_.c_str()));

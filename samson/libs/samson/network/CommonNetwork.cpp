@@ -219,7 +219,7 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
 
   // If there is an error, just return the error
   if (s != au::OK) {
-    LOG_SW(("Not possible to connect with %s:%d (%s)", host.c_str(), port, au::status(s)));
+    LOG_SW(("Unable to connect with %s:%d (%s)", host.c_str(), port, au::status(s)));
     return Error;   // Generic error
   }
 

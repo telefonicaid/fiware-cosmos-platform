@@ -960,7 +960,7 @@ void StreamConnector::log(au::SharedPointer<Log> log) {
     // Nothing here
   } else {
     // Print on screen
-    if (paVerbose) {
+    if (lmVerbose) {
       std::cerr << error.str();
     }
   }

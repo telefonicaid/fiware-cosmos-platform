@@ -174,7 +174,7 @@ void Engine::RunThread() {
   while (true) {
     counter_++;  // Keep a total counter of loops
 
-    if (IsThreadQuiting()) {
+    if (IsThreadQuitting()) {
       return;    // Finish this thread if necessary ( a call to StopThread is done )
     }
 

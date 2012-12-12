@@ -25,7 +25,7 @@ void ThreadManager::wait_all_threads(std::string title) {
 }
 
 ThreadManager::ThreadManager() : token_("ThreadManager") {
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     threads_[i] = NULL;
   }
 }
@@ -87,7 +87,7 @@ int ThreadManager::AddNonDetachedThread(std::string thread_name
 int ThreadManager::num_threads() const {
   int total = 0;
 
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] != NULL) {
       total++;
     }
@@ -108,7 +108,7 @@ au::StringVector ThreadManager::getThreadNames() {
 
   au::StringVector names;
 
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] != NULL) {
       names.push_back(threads_[i]->name_);
     }
@@ -125,8 +125,7 @@ std::string ThreadManager::str() const {
 
   o << "Running threads\n";
   o << "------------------------------------\n";
-  std::set< ThreadInfo * >::iterator it_threads;
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] != NULL) {
       o << threads_[i]->name_ << " " << threads_[i]->cronometer_ << "\n";
     }
@@ -143,8 +142,7 @@ std::string ThreadManager::str_table() const {
 
   table.setTitle("Running threads");
 
-  std::set< ThreadInfo * >::iterator it_threads;
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] != NULL) {
       table.addRow(au::StringVector(threads_[i]->name_, threads_[i]->cronometer_.str()));
     }
@@ -181,7 +179,7 @@ void ThreadManager::wait(std::string title) {
 void ThreadManager::AddThread(ThreadInfo *thread_info) {
   LOG_V(logs.thread_manager, ("Adding  Thread '%s'", thread_info->str().c_str()));
 
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] == NULL) {
       threads_[i] = thread_info;
       return;
@@ -193,7 +191,7 @@ void ThreadManager::AddThread(ThreadInfo *thread_info) {
 
 void ThreadManager::RemoveThread(ThreadInfo *thread_info) {
   LOG_M(logs.thread_manager, ("Remove thead %s ", thread_info->str().c_str()));
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] == thread_info) {
       threads_[i] = NULL;
       return;

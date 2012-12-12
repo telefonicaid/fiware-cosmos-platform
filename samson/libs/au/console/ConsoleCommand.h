@@ -64,13 +64,13 @@ public:
   void DeleteRestOfLine();
 
   /**
-   * \brief Toogle the next two consecutive letters
+   * \brief Toggle the next two consecutive letters
    */
 
-  void Toogle();
+  void Toggle();
 
   /**
-   * \brief Move pointer to the begining of the line
+   * \brief Move pointer to the beginning of the line
    */
   void MoveHome();
 
@@ -80,12 +80,12 @@ public:
   void MoveEnd();
 
   /**
-   * \brief Move position in the current command an offerse ( possitive and negative )
+   * \brief Move position of cursor in the current command ( possitive and negative offsets allowed )
    */
   void MoveCursor(int offset);
 
   /**
-   * \brief Check if the pointer is at the of the line
+   * \brief Check if the pointer is at the end of the line
    */
   bool IsCursorAtEnd() const;
 
@@ -105,7 +105,7 @@ public:
   int cursor() const;
 
   /**
-   * \brief Check if this command contain a string
+   * \brief Check if this command contains a string
    */
   bool Contains(const std::string& message);
 

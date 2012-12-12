@@ -322,7 +322,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
     if (error.HasErrors()) {
       delete delilah_;
       delilah_ = NULL;
-      command->AppendFormatedError(500, "Not possible to connect internal delilah client");
+      command->AppendFormatedError(500, "Unable to connect internal delilah client");
     }
   }
 

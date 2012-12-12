@@ -324,13 +324,13 @@ int main(int argC, const char *argV[]) {
               num_input_items, au::str(pending_size, "B").c_str()));
 
 
-        if (paVerbose) {
+        if (lmVerbose) {
           au::tables::Table *table = main_stream_connector->getConnectionsTable();
           std::cerr << table->str();
           delete table;
         }
 
-        if (paVerbose) {
+        if (lmVerbose) {
           au::tables::Table *table = main_stream_connector->getConnectionsTable("data");
           std::cerr << table->str();
           delete table;

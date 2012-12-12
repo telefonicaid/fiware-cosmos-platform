@@ -600,7 +600,7 @@ void CommandCatalogue::AutoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("help: Show help for commands or categories", "help", true);
 
-    for (size_t i = 0; i < commands_.size(); i++) {
+    for (size_t i = 0; i < commands_.size(); ++i) {
       info->add(commands_[i]->name());
     }
     return;
@@ -613,7 +613,7 @@ void CommandCatalogue::AutoComplete(au::console::ConsoleAutoComplete *info) {
       info->add("categories");       // To view available categories
 
       // Add all commands
-      for (size_t i = 0; i < commands_.size(); i++) {
+      for (size_t i = 0; i < commands_.size(); ++i) {
         info->add(commands_[i]->name());
       }
 
@@ -645,7 +645,7 @@ std::string CommandCatalogue::GetCommandsTable(const std::string& category) cons
   au::StringVector columns = au::StringVector("Command", "Category,left", "Description,left");
   au::tables::Table table(columns);
 
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     if (category == "" || (commands_[i]->category() == category)) {
       table.addRow(au::StringVector(commands_[i]->name(), commands_[i]->category(),
                                     commands_[i]->short_description()));
@@ -736,7 +736,7 @@ std::string CommandCatalogue::GetHelpForConcept(const std::string& name) const {
 au::StringVector CommandCatalogue::GetCategories() const {
   au::StringVector categories;
 
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     categories.push_back(commands_[i]->category());
   }
 
@@ -745,7 +745,7 @@ au::StringVector CommandCatalogue::GetCategories() const {
 }
 
 bool CommandCatalogue::IsValidCommand(const std::string& command) const {
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     if (commands_[i]->name() == command) {
       return true;
     }
@@ -754,7 +754,7 @@ bool CommandCatalogue::IsValidCommand(const std::string& command) const {
 }
 
 bool CommandCatalogue::IsValidCategory(const std::string& category) const {
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     if (commands_[i]->category() == category) {
       return true;
     }
@@ -763,7 +763,7 @@ bool CommandCatalogue::IsValidCategory(const std::string& category) const {
 }
 
 Command *CommandCatalogue::GetCommand(const std::string& name) const {
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     if (commands_[i]->name() == name) {
       return commands_[i];
     }
@@ -807,7 +807,7 @@ au::SharedPointer<CommandInstance> CommandCatalogue::Parse(const std::string com
   int pos_argument = 0;              // Position of the argument we are parsing
 
   for (size_t i = 1; i < components.size(); i++) {
-    // Check if we are at the begining of a -option element
+    // Check if we are at the beginning of a -option element
     if (components[i].length() > 0) {
       if (components[i][0] == '-') {
         std::string option_name = components[i];

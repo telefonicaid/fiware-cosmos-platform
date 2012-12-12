@@ -18,7 +18,7 @@
 
 namespace au {
 /**
- * \brief Log plugin to show plogs on a console
+ * \brief Log plugin to show logs on a console
  */
 
 class LogCentralPluginConsole : public LogCentralPlugin {

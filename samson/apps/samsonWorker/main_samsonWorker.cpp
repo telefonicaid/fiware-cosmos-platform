@@ -188,7 +188,7 @@ void SamsonWorkerCleanUp() {
     LM_LW(("Error deleting the pid file %s", pid_file_name.c_str()));
   }
 
-  // Destroy shared memory segments
+  // Destroy shared memory manager
   LOG_M(samson::logs.cleanup, ("Destroying shared memory manager"));
   samson::SharedMemoryManager::Destroy();
 
@@ -207,7 +207,7 @@ void SamsonWorkerCleanUp() {
 }
 
 void captureSIGINT(int s) {
-  LM_LM(("Signal SIGINT %d", s));
+  LOG_SW(("Signal SIGINT %d", s));
   if (fg) {
     worker->StopConsole();
   } else {
@@ -216,11 +216,11 @@ void captureSIGINT(int s) {
 }
 
 void captureSIGPIPE(int s) {
-  LM_LM(("Captured SIGPIPE %d", s));
+  LOG_SV(("Captured SIGPIPE %d", s));
 }
 
 void captureSIGTERM(int s) {
-  LM_LM(("Captured SIGTERM"));
+  LOG_SW(("Captured SIGTERM"));
   if (fg) {
     worker->StopConsole();
   } else {
@@ -282,7 +282,7 @@ int main(int argC, const char *argV[]) {
   // Change channel levels by default
   au::log_central->EvalCommand("log_set samson::W M");  // Set message level for the log channel samson::W
   au::log_central->EvalCommand("log_set system M");     // Set message level for the log channel system
-  if (paDebug) {
+  if (lmDebug) {
     au::log_central->EvalCommand("log_set samson::W D");
     au::log_central->EvalCommand("log_set system D");
   }
@@ -298,7 +298,7 @@ int main(int argC, const char *argV[]) {
 
   // Check to see if the current memory configuration is ok or not
   if (samson::MemoryCheck() == false) {
-    LOG_W(samson::logs.worker, ("Not enougth shared memory. Please check setup with samsonSetup"));
+    LOG_W(samson::logs.worker, ("Not enough shared memory. Please check setup with samsonSetup"));
     LOG_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information.", paLogDir));
   } else {
     LOG_M(samson::logs.worker, ("Memory check for samsonWorekr OK"));
@@ -322,8 +322,8 @@ int main(int argC, const char *argV[]) {
 
   // Debug information
   LOG_D(samson::logs.worker, ("Started with arguments:"));
-  for (int ix = 0; ix < argC; ix++) {
-    LM_V(("  %02d: '%s'", ix, argV[ix]));
+  for (int ix = 0; ix < argC; ++ix) {
+    LOG_D(samson::logs.worker, ("  %02d: '%s'", ix, argV[ix]));
   }
 
   // Capturing SIGPIPE
@@ -352,7 +352,7 @@ int main(int argC, const char *argV[]) {
     au::zoo::Connection connection(my_zoo_host, "samson", "samson");
     connection.WaitUntilConnected(2000);
     if (!connection.IsConnected()) {
-      LOG_W(samson::logs.worker, ("Not possible to connect with Zookeeper at %s.", zoo_host));
+      LOG_W(samson::logs.worker, ("Unable to connect with Zookeeper at %s.", zoo_host));
       if (!fg) {
         LOG_W(samson::logs.worker, ("Keep trying to connect to Zookeeper at %s in background...", zoo_host));
       }
@@ -362,7 +362,7 @@ int main(int argC, const char *argV[]) {
   }
 
   if (fg == false) {
-    LOG_M(samson::logs.worker, ("samsonWorker will start in background..."));
+    LOG_M(samson::logs.worker, ("samsonWorker will continue in background..."));
     au::log_central->Flush();  // Flush logs to make sure this message is shown on screen
     Daemonize();
   }

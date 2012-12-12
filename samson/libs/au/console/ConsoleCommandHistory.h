@@ -42,7 +42,7 @@ public:
   void RecoverHistory();
 
   /**
-   * \brief Dave history commands to file
+   * \brief Save history commands to file
    */
   void SaveHistory();
 
@@ -74,7 +74,7 @@ public:
   /**
    * \brief Get string command at a particular position
    */
-  std::string GetStringCommand(size_t pos);
+  std::string GetStringCommand(size_t pos) const;
 
 
   /**

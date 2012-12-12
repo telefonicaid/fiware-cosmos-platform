@@ -101,53 +101,53 @@ PaArgument paArgs[] =
 {
   SAMSON_ARGS,
 
-  { "-dir",        directory,         "SS_PLP_DIRECTORY",                   PaString,
+  { "-dir",        directory,   "SS_PLP_DIRECTORY",      PaString,
     PaOpt,
-    _i "nodir",    PaNL,              PaNL,
+    _i "nodir",    PaNL,        PaNL,
     "directory"                              },
-  { "-tektronix",  &tektronix,        "SS_PLP_TEKTRONIX",                   PaBool,
+  { "-tektronix",  &tektronix,  "SS_PLP_TEKTRONIX",      PaBool,
     PaOpt,
-    false,         false,             true,
+    false,         false,       true,
     "act as tektronix consumer"              },
-  { "-fake",       &fake,             "SS_PLP_FAKE",                        PaBool,
+  { "-fake",       &fake,       "SS_PLP_FAKE",           PaBool,
     PaOpt,
-    false,         false,             true,
+    false,         false,       true,
     "fake data"                              },
-  { "-host",       host,              "SS_PLP_TEKTRONIX_HOST",              PaString,
+  { "-host",       host,        "SS_PLP_TEKTRONIX_HOST", PaString,
     PaOpt,
-    PaND,          PaNL,              PaNL,
+    PaND,          PaNL,        PaNL,
     "tektronix tunnel host"                  },
-  { "-port",       &port,             "SS_PLP_TEKTRONIX_PORT",              PaShortU,
+  { "-port",       &port,       "SS_PLP_TEKTRONIX_PORT", PaShortU,
     PaOpt,
     1099,          1024,
     65535,         "tektronix tunnel port"                  },
-  { "-queue",      queueName,         "SS_PLP_QUEUE_NAME",                  PaString,
+  { "-queue",      queueName,   "SS_PLP_QUEUE_NAME",     PaString,
     PaOpt,
-    PaND,          PaNL,              PaNL,
+    PaND,          PaNL,        PaNL,
     "name of the queue"                      },
-  { "-timeout",    &timeout,          "SS_PLP_TIMEOUT",                     PaInt,
+  { "-timeout",    &timeout,    "SS_PLP_TIMEOUT",        PaInt,
     PaOpt,
-    0,             0,                 3600,
+    0,             0,           3600,
     "timeout"                                },
-  { "-rate",       &rate,             "SS_PLP_RATE",                        PaDouble,
+  { "-rate",       &rate,       "SS_PLP_RATE",           PaDouble,
     PaOpt,
-    _i 1.0,        PaNL,              PaNL,
+    _i 1.0,        PaNL,        PaNL,
     "rate"                                   },
-  { "-node",       controller,        "",                                   PaString,
+  { "-node",       controller,  "",                      PaString,
     PaOpt,
-    _i "localhost",PaNL,              PaNL,
+    _i "localhost",PaNL,        PaNL,
     "SAMSON node"                            },
-  { "-user",       user,              "",                                   PaString,
+  { "-user",       user,        "",                      PaString,
     PaOpt,
-    _i "anonymous",PaNL,              PaNL,
+    _i "anonymous",PaNL,        PaNL,
     "User to connect to SAMSON cluster"      },
-  { "-password",   password,          "",                                   PaString,
+  { "-password",   password,    "",                      PaString,
     PaOpt,
-    _i "anonymous",PaNL,              PaNL,
+    _i "anonymous",PaNL,        PaNL,
     "Password to connect to SAMSON cluster"  },
-  { "-file",       file,              "SS_PLP_FILE",                        PaString,
+  { "-file",       file,        "SS_PLP_FILE",           PaString,
     PaOpt,
-    _i "generator",PaNL,              PaNL,
+    _i "generator",PaNL,        PaNL,
     "file"                                   },
 
   PA_END_OF_ARGS
@@ -594,13 +594,13 @@ void injectFromFile(File *fileP, samson::SamsonPushBuffer *pushBuffer, char *buf
 
     if ((pushes != 0) && (pushes % 500 == 0)) {
       LM_V(("------------------------------------------------------------------------------"));
-      LM_V(("Pushes:                       %d/%d (%d%%)",   pushes, nonsleeps, (nonsleeps / pushes) * 100));
-      LM_V(("Bytes pushed so far:          %ldMB",   bytesPushed / 1024 / 1024));
+      LM_V(("Pushes:                       %d/%d (%d%%)", pushes, nonsleeps, (nonsleeps / pushes) * 100));
+      LM_V(("Bytes pushed so far:          %ldMB", bytesPushed / 1024 / 1024));
       LM_V(("Actual rate:                  %f Mb/s", actualRate));
       LM_V(("Wanted rate:                  %f Mb/s", rate));
-      LM_V(("Time we've been executing:    %.6fs",   executionTime));
-      LM_V(("Time to get to correct rate:  %.6fs",   wantedTime));
-      LM_V(("Time to sleep:                %dus",    sleepTime));
+      LM_V(("Time we've been executing:    %.6fs", executionTime));
+      LM_V(("Time to get to correct rate:  %.6fs", wantedTime));
+      LM_V(("Time to sleep:                %dus", sleepTime));
     }
 
     if (sleepTime > 0) {
@@ -646,10 +646,10 @@ void injectFromDirectory(const char *dirPath, samson::SamsonPushBuffer *pushBuff
   actualRate    = ((float)bytesPushed / 1024 / 1024) / ((float)diffTime.tv_sec + (float)diffTime.tv_usec / 1000000);
 
   LM_V(("============ Injected %d files to samson =====================================", files));
-  LM_V(("Pushes:                       %d",          pushes));
+  LM_V(("Pushes:                       %d", pushes));
   LM_V(("Bytes pushed:                 %ld (%ldMB)", bytesPushed, bytesPushed / 1024 / 1024));
-  LM_V(("Final rate:                   %f Mb/s",     actualRate));
-  LM_V(("Execution Time:               %.6fs",       executionTime));
+  LM_V(("Final rate:                   %f Mb/s", actualRate));
+  LM_V(("Execution Time:               %.6fs", executionTime));
 }
 
 /* ****************************************************************************
@@ -825,13 +825,13 @@ void fakeData(samson::SamsonPushBuffer *pushBuffer) {
  * main -
  */
 int main(int argC, const char *argV[]) {
-  paConfig("builtin prefix",                (void *)"SS_PLP_");
+  paConfig("builtin prefix", (void *)"SS_PLP_");
   paConfig("usage and exit on any warning", (void *)true);
-  paConfig("log to screen",                 (void *)"only errors");
-  paConfig("log file line format",          (void *)"TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");
-  paConfig("screen line format",            (void *)"TYPE@TIME  EXEC: TEXT (FUNC)");
-  paConfig("log to file",                   (void *)true);
-  paConfig("exit on usage",                 (void *)false);
+  paConfig("log to screen", (void *)"only errors");
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC/FILE[LINE] FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE@TIME  EXEC: TEXT (FUNC)");
+  paConfig("log to file", (void *)true);
+  paConfig("exit on usage", (void *)false);
 
   paParse(paArgs, argC, (char **)argV, 1, false);
 
@@ -852,7 +852,7 @@ int main(int argC, const char *argV[]) {
   LM_V(("Connecting to '%s'", controller));
   samson::SamsonClient client("push");
   if (!client.connect(controller)) {
-    LM_X(1, ("Not possible to connect with %s", controller ));  // Set 1G RAM for uploading content
+    LM_X(1, ("Unable to connect with %s", controller));  // Set 1G RAM for uploading content
   }
   uint64_t mem = 1024 * 1024 * 1024;
   mem *= 4;

@@ -17,27 +17,25 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "au/CommandLine.h"               // au::CommandLine
 
 #include "logMsg/logMsg.h"                // LM_*
 #include "logMsg/traceLevels.h"           // Trace Levels
 
 #include "parseArgs/parseArgs.h"
 
+#include "au/CommandLine.h"               // au::CommandLine
 #include "au/mutex/LockDebugger.h"        // au::LockDebugger
 
 #include "engine/MemoryManager.h"
 
-#include "samson/common/SamsonSetup.h"    // samson::SamsonSetup
-#include "samson/common/samsonVersion.h"
-#include "samson/common/coding.h"         // samson::FormatHeader
-#include "samson/common/samsonVars.h"     // SAMSON_ARG_VARS
-
-#include "samson/module/KVFormat.h"       // samson::KVFormat
-#include "samson/module/ModulesManager.h"  // samson::ModulesManager
-
 #include "samson/common/SamsonDataSet.h"  // samson::SamsonDataSet
 #include "samson/common/SamsonFile.h"     // samson::SamsonFile
+#include "samson/common/SamsonSetup.h"    // samson::SamsonSetup
+#include "samson/common/coding.h"         // samson::FormatHeader
+#include "samson/common/samsonVars.h"     // SAMSON_ARG_VARS
+#include "samson/common/samsonVersion.h"
+#include "samson/module/KVFormat.h"       // samson::KVFormat
+#include "samson/module/ModulesManager.h"  // samson::ModulesManager
 
 
 /* ****************************************************************************

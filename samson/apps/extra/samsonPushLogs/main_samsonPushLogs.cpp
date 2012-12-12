@@ -69,51 +69,51 @@ int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {
-  { "-node",             controller,                                      "",
+  { "-node",             controller,                        "",
     PaString,
     PaOpt,
-    _i "localhost",            PaNL,      PaNL,                  "SAMSON node to connect with "                                                                                                       },
-  { "-port_node",        &port_node,                                      "",
-    PaInt,                                               PaOpt,
-    SAMSON_WORKER_PORT,        1,         99999,                 "SAMSON server port"                                                                                                                 },
-  { "-user",             user,                                            "",
-    PaString,                                            PaOpt,
-    _i "anonymous",            PaNL,      PaNL,                  "User to connect to SAMSON cluster"                                                                                                  },
-  { "-password",         password,                                        "",
-    PaString,                                            PaOpt,
-    _i "anonymous",            PaNL,      PaNL,                  "Password to connect to SAMSON cluster"                                                                                              },
-  { "-buffer_size",      &buffer_size,                                    "",
-    PaInt,                                               PaOpt,
-    default_buffer_size,       1,         default_buffer_size,   "Buffer size in bytes"                                                                                                               },
-  { "-mr",               &max_rate,                                       "",
-    PaInt,                                               PaOpt,
-    10000000,                  100,       100000000,             "Max rate in bytes/s"                                                                                                                },
-  { "-nr",               &ntimes_real_time,                               "",
-    PaFloat,                                             PaOpt,                       (long long)1.0,
-    (long long)0.01,      (long long)10000.0,               "Number of time real time"                                                                                                           },
-  { "-ti",               initial_timestamp_commandline_str,               "",
-    PaSList,                                             PaOpt,
-    PaND,                      PaNL,      PaNL,
+    _i "localhost", PaNL, PaNL, "SAMSON node to connect with "                                                                                                       },
+  { "-port_node",        &port_node,                        "",
+    PaInt, PaOpt,
+    SAMSON_WORKER_PORT, 1, 99999, "SAMSON server port"                                                                                                                 },
+  { "-user",             user,                              "",
+    PaString, PaOpt,
+    _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"                                                                                                  },
+  { "-password",         password,                          "",
+    PaString, PaOpt,
+    _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"                                                                                              },
+  { "-buffer_size",      &buffer_size,                      "",
+    PaInt, PaOpt,
+    default_buffer_size, 1, default_buffer_size, "Buffer size in bytes"                                                                                                               },
+  { "-mr",               &max_rate,                         "",
+    PaInt, PaOpt,
+    10000000, 100, 100000000, "Max rate in bytes/s"                                                                                                                },
+  { "-nr",               &ntimes_real_time,                 "",
+    PaFloat, PaOpt, (long long)1.0,
+    (long long)0.01, (long long)10000.0, "Number of time real time"                                                                                                           },
+  { "-ti",               initial_timestamp_commandline_str, "",
+    PaSList, PaOpt,
+    PaND, PaNL, PaNL,
     "Initial timestamp (by default, first timestamp in input data"                                                                       },
-  { "-breaker_sequence", breaker_sequence,                                "",
-    PaString,                                            PaOpt,
-    _i "\n",                   PaNL,      PaNL,                  "Breaker sequence ( by default \\n )"                                                                                                },
-  { "-lines",            &lines,                                          "",
-    PaBool,                                              PaOpt,
-    false,                     false,     true,                  "Read std-in line by line"                                                                                                           },
-  { "-memory",           &push_memory,                                    "",
-    PaInt,                                               PaOpt,
-    1000,                      1,         1000000,               "Memory in Mb used to push data ( default 1000)"                                                                                     },
-  { "-port",             &port,                                           "",
-    PaInt,                                               PaOpt,                       0,
-    0,         99999,                 "Port to listen from"                                                                                                                },
-  { "-dl",               dir_list,                                        "",
-    PaSList,                                             PaOpt,
-    PaND,                      PaNL,      PaNL,
+  { "-breaker_sequence", breaker_sequence,                  "",
+    PaString, PaOpt,
+    _i "\n", PaNL, PaNL, "Breaker sequence ( by default \\n )"                                                                                                },
+  { "-lines",            &lines,                            "",
+    PaBool, PaOpt,
+    false, false, true, "Read std-in line by line"                                                                                                           },
+  { "-memory",           &push_memory,                      "",
+    PaInt, PaOpt,
+    1000, 1, 1000000, "Memory in Mb used to push data ( default 1000)"                                                                                     },
+  { "-port",             &port,                             "",
+    PaInt, PaOpt, 0,
+    0, 99999, "Port to listen from"                                                                                                                },
+  { "-dl",               dir_list,                          "",
+    PaSList, PaOpt,
+    PaND, PaNL, PaNL,
     "string list with all the datasets directories to be pushed, format: dir,extension,nfileds,time_pos,time_type,queue_name"            },
-  { "-fl",               file_list,                                       "",
-    PaSList,                                             PaOpt,
-    PaND,                      PaNL,      PaNL,
+  { "-fl",               file_list,                         "",
+    PaSList, PaOpt,
+    PaND, PaNL, PaNL,
     "string list with all the datasets files to be pushed, format: file,nfields,time_pos,time_type,queue_name"                           },
   PA_END_OF_ARGS
 };
@@ -127,12 +127,12 @@ samson::SamsonClient *samson_client;
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
 
-  paConfig("log to screen",                 (void *)true);
-  paConfig("log to file",                   (void *)true);
-  paConfig("screen line format",            (void *)"TYPE:EXEC: TEXT");
-  paConfig("log file line format",              (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-  paConfig("man shortdescription",          (void *)manShortDescription);
-  paConfig("man synopsis",          (void *)manSynopsis);
+  paConfig("log to screen", (void *)true);
+  paConfig("log to file", (void *)true);
+  paConfig("screen line format", (void *)"TYPE:EXEC: TEXT");
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("man shortdescription", (void *)manShortDescription);
+  paConfig("man synopsis", (void *)manSynopsis);
 
   // Parse input arguments
   paParse(paArgs, argC, (char **)argV, 1, false);
@@ -148,7 +148,7 @@ int main(int argC, const char *argV[]) {
 
 
   if (buffer_size == 0) {
-    LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Check queue is specified
+    LM_X(1, ("Wrong buffer size %lu", buffer_size));  // Check queue is specified
   }
   if (dir_list[0] == NULL) {
     LM_X(1, ("Please, specify at least a dataset and a queue to push data to"));  // Create samson client
@@ -161,7 +161,7 @@ int main(int argC, const char *argV[]) {
 
   samson_client = new samson::SamsonClient("push");
   if (!samson_client->connect(controller)) {
-    LM_X(1, ("Not possible to connect with %s", controller ));
+    LM_X(1, ("Unable to connect with %s", controller));
   }
   SamsonPushLogsConnectionsManager manager;
 

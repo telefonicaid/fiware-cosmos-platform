@@ -86,7 +86,7 @@ void ConsoleCommandHistory::SaveHistory() {
     return;
   }
 
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     fprintf(file, "%s\n", commands_[i]->command().c_str());
   }
 
@@ -95,13 +95,13 @@ void ConsoleCommandHistory::SaveHistory() {
 
 void ConsoleCommandHistory::MoveUp() {
   if (pos_ > 0) {
-    pos_--;
+    --pos_;
   }
 }
 
 void ConsoleCommandHistory::MoveDown() {
   if (pos_ < (commands_.size() - 1)) {
-    pos_++;
+    ++pos_;
   }
 }
 
@@ -133,7 +133,7 @@ std::string ConsoleCommandHistory::str_history(size_t limit) const {
       pos = commands_.size() - limit;
     }
   }
-  for (; pos < commands_.size(); pos++) {
+  for (; pos < commands_.size(); ++pos) {
     output << commands_[pos]->command() << "\n";
   }
   return output.str();
@@ -153,11 +153,11 @@ int ConsoleCommandHistory::Find(int pos, const std::string& message) {
     }
     pos--;
   }
-  ;
+
   return -1;
 }
 
-std::string ConsoleCommandHistory::GetStringCommand(size_t pos) {
+std::string ConsoleCommandHistory::GetStringCommand(size_t pos) const {
   if (pos >= commands_.size()) {
     return "";
   }

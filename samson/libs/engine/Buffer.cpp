@@ -229,7 +229,7 @@ void Buffer::WriteFromFile(const std::string& file_name, au::ErrorManager& error
   size_t file_size = au::sizeOfFile(file_name);
 
   if (GetAvailableSizeToWrite() < file_size) {
-    error.AddError(au::str("Not enougth space in buffer to read file %s (%s)"
+    error.AddError(au::str("Not enough space in buffer to read file %s (%s)"
                            , file_name.c_str(), au::str(file_size).c_str()));
     return;
   }

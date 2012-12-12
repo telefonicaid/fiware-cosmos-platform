@@ -91,52 +91,52 @@ char host[1024];
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-log",   log_command,            "",                    PaString,
-    PaOpt,    _i "",                  PaNL,
+  { "-log",   log_command,           "",                 PaString,
+    PaOpt,    _i "",                 PaNL,
     PaNL,     "log server host"                          },
-  { "-log_server",log_server,             "",                    PaString,
-    PaOpt,    _i "",                  PaNL,
+  { "-log_server",log_server,            "",                 PaString,
+    PaOpt,    _i "",                 PaNL,
     PaNL,     "log server host"                          },
-  { "-user",  user,                   "",                    PaString,
-    PaOpt,    _i "anonymous",         PaNL,
+  { "-user",  user,                  "",                 PaString,
+    PaOpt,    _i "anonymous",        PaNL,
     PaNL,     "User to connect to SAMSON cluster"        },
-  { "-password",password,               "",                    PaString,
-    PaOpt,    _i "anonymous",         PaNL,
+  { "-password",password,              "",                 PaString,
+    PaOpt,    _i "anonymous",        PaNL,
     PaNL,     "Password to connect to SAMSON cluster"    },
-  { "-memory",&memory_gb,             "MEMORY",              PaInt,
-    PaOpt,    1,                      1,
+  { "-memory",&memory_gb,            "MEMORY",           PaInt,
+    PaOpt,    1,                     1,
     100,      "memory in GBytes"                         },
-  { "-load_buffer_size",&load_buffer_size_mb,   "LOAD_BUFFER_SIZE",    PaInt,
-    PaOpt,    64,                     64,
+  { "-load_buffer_size",&load_buffer_size_mb,  "LOAD_BUFFER_SIZE", PaInt,
+    PaOpt,    64,                    64,
     2048,     "load buffer size in MBytes"               },
-  { "-f",     commandFileName,        "FILE_NAME",           PaString,
-    PaOpt,    _i "",                  PaNL,
+  { "-f",     commandFileName,       "FILE_NAME",        PaString,
+    PaOpt,    _i "",                 PaNL,
     PaNL,     "File with commands to run"                },
-  { "-command",command,                "",                    PaString,
-    PaOpt,    _i "",                  PaNL,
+  { "-command",command,               "",                 PaString,
+    PaOpt,    _i "",                 PaNL,
     PaNL,     "Single command to be executed"            },
-  { "-user",  user,                   "",                    PaString,
-    PaOpt,    _i "anonymous",         PaNL,
+  { "-user",  user,                  "",                 PaString,
+    PaOpt,    _i "anonymous",        PaNL,
     PaNL,     "User to connect to SAMSON cluster"        },
-  { "-password",password,               "",                    PaString,
-    PaOpt,    _i "anonymous",         PaNL,
+  { "-password",password,              "",                 PaString,
+    PaOpt,    _i "anonymous",        PaNL,
     PaNL,     "Password to connect to SAMSON cluster"    },
-  { "-memory",&memory_gb,             "MEMORY",              PaInt,
-    PaOpt,    1,                      1,
+  { "-memory",&memory_gb,            "MEMORY",           PaInt,
+    PaOpt,    1,                     1,
     100,      "memory in GBytes"                         },
-  { "-load_buffer_size",&load_buffer_size_mb,   "LOAD_BUFFER_SIZE",    PaInt,
-    PaOpt,    64,                     64,
+  { "-load_buffer_size",&load_buffer_size_mb,  "LOAD_BUFFER_SIZE", PaInt,
+    PaOpt,    64,                    64,
     2048,     "load buffer size in MBytes"               },
-  { "-f",     commandFileName,        "FILE_NAME",           PaString,
-    PaOpt,    _i "",                  PaNL,
+  { "-f",     commandFileName,       "FILE_NAME",        PaString,
+    PaOpt,    _i "",                 PaNL,
     PaNL,     "File with commands to run"                },
-  { "-command",command,                "",                    PaString,
-    PaOpt,    _i "",                  PaNL,
+  { "-command",command,               "",                 PaString,
+    PaOpt,    _i "",                 PaNL,
     PaNL,     "Single command to be executed"            },
-  { "-",      &stdin_commands,        "",                    PaBool,                  PaOpt,   false,  false, true },
-  { "-i",     &interactive_mode,      "",                    PaBool,                  PaOpt,   false,  false, true },
-  { "",       host,                   "",                    PaString,
-    PaOpt,    _i "localhost",         PaNL,
+  { "-",      &stdin_commands,       "",                 PaBool,  PaOpt,  false, false, true },
+  { "-i",     &interactive_mode,     "",                 PaBool,  PaOpt,  false, false, true },
+  { "",       host,                  "",                 PaString,
+    PaOpt,    _i "localhost",        PaNL,
     PaNL,     "host to be connected"                     },
 
   PA_END_OF_ARGS
@@ -275,7 +275,7 @@ int main(int argC, const char *argV[]) {
   au::LogCentral::Shared()->EvalCommand(log_command);
 
   // Verbose mode if required
-  if (paVerbose) {
+  if (lmVerbose) {
     au::log_central->EvalCommand("log_set system V");
     au::log_central->EvalCommand("log_set delilah::G V");  // Set level for delilah::G channel to "M" ( messages )
   }
@@ -336,7 +336,7 @@ int main(int argC, const char *argV[]) {
       ++num_line;
       if ((line.length() > 0) && (line[0] != '#')) {
         commands.push_back(line);
-        LOG_SV(("File '%s' [line %d] Command '%s' at line %d", commandFileName, num_line, line.c_str()));
+        LOG_SV(("File '%s' [line %d] Command '%s'", commandFileName, num_line, line.c_str()));
       }
     }
 
@@ -379,14 +379,14 @@ int main(int argC, const char *argV[]) {
       LOG_M(samson::logs.delilah, ("Connected to %s", hosts[i].c_str()));
       break;
     } else {
-      LOG_W(::samson::logs.delilah, ("Not possible to connect with %s: %s",
+      LOG_W(::samson::logs.delilah, ("Unable to connect with %s: %s",
                                      hosts[i].c_str(),
                                      error.GetLastError().c_str()));
     }
   }
 
   if (commands_mode) {
-    // Some command executed in sequential order and exit
+    // Execute a set of commands sequentially and exit
 
     if (!delilahConsole->isConnected()) {
       // If not connected, exit here
@@ -435,7 +435,7 @@ int main(int argC, const char *argV[]) {
 
     if (!interactive_mode) {
       delilahConsole->disconnect();
-      LOG_SV(("delilah exit correctly"));
+      LOG_SV(("delilah exits correctly"));
       au::LogCentral::StopLogSystem();
       exit(0);
     } else {
@@ -460,10 +460,10 @@ int main(int argC, const char *argV[]) {
   // Use console to display logs
   console_log_plugin->SetConsole(delilahConsole);
 
-  // Start delilah console blockign this thread
+  // Start delilah console, blocking this thread
   delilahConsole->StartConsole(true);
 
-  // Stop using console to display logs ( use screen instead )
+  // Stop using console to display logs (use screen instead)
   console_log_plugin->SetConsole(NULL);
 
   // Disconnect delilah
@@ -475,7 +475,7 @@ int main(int argC, const char *argV[]) {
 
   // Flush content of console
   // delilahConsole->flush();
-  LOG_SM(("delilah exit correctly"));
+  LOG_SM(("delilah exits correctly"));
 
   // Stop log system
   au::LogCentral::StopLogSystem();

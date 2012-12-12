@@ -23,7 +23,6 @@
 #include "common.h"
 
 namespace stream_connector {
-
 class DiskConnection : public Connection {
   std::string file_name;                     // Name of a file or directory
   std::list<std::string> files;              // Files to open ( working as input )
@@ -41,7 +40,7 @@ class DiskConnection : public Connection {
 public:
 
   bool thread_running;
-  bool stoping_threads;       // Flag to stop the background thread
+  bool stopping_threads;       // Flag to stop the background thread
 
 public:
 
@@ -74,7 +73,7 @@ class DiskAdaptor : public Adaptor {
 
 public:
 
-  DiskAdaptor(Channel *_channel, ConnectionType _type,  std::string _directory);
+  DiskAdaptor(Channel *_channel, ConnectionType _type, std::string _directory);
 
   // Get status of this element
   std::string getStatus();

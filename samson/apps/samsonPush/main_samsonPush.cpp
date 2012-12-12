@@ -193,9 +193,9 @@ int main(int argC, const char *argV[]) {
   samson_client = new samson::SamsonClient("push");
 
   if (!samson_client->connect(host)) {
-    LM_X(1, ("Not possible to connect with %s", host));
+    LM_X(1, ("Unable to connect with %s", host));
   }
-  LM_V(("Waiting connection to %s", host));
+  LM_V(("Trying to connect to %s", host));
   while (true) {
     if (samson_client->connection_ready()) {
       break;
@@ -282,7 +282,7 @@ int main(int argC, const char *argV[]) {
     const char *last_pos = au::laststrstr(data, size, breaker_sequence);
 
     if (!last_pos) {
-      LM_X(1, ("Not found breaker sequecny '%s' in a buffer of %lu bytes", breaker_sequence, size));
+      LM_X(1, ("Not found breaker sequence '%s' in a buffer of %lu bytes", breaker_sequence, size));
     }
     size_t output_size = last_pos - data + strlen(breaker_sequence);
 
@@ -301,7 +301,7 @@ int main(int argC, const char *argV[]) {
       sleep(1);
     }
 
-    // Move rest of data to the begining of the buffer
+    // Move rest of data to the beginning of the buffer
     if (output_size < size) {
       memmove(data, data + output_size, size - output_size);
       size = size - output_size;

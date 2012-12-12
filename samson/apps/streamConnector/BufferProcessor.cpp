@@ -120,7 +120,7 @@ void BufferProcessor::process_intenal_buffer(bool finish) {
       } else {
         size_t skip_size = nextData - buffer;
 
-        // Move data at the begining of the buffer
+        // Move data at the beginning of the buffer
         memmove(buffer, buffer + skip_size, size - skip_size);
         size -= skip_size;
       }

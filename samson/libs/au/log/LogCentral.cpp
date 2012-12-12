@@ -235,7 +235,7 @@ void LogCentral::RunThread() {
     bool real_log = log->Read(fd_read_logs_.shared_object());
 
     if (!real_log) {
-      if (IsThreadQuiting()) {
+      if (IsThreadQuitting()) {
         return;  // Finish this thread if I am suppoused to do so
       }
       continue;

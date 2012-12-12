@@ -374,6 +374,10 @@ int Log::GetLogLevel(const std::string& str_log_level) {
     return LOG_LEVEL_VERBOSE;
   }
 
+  if (str_log_level == "I") {
+    return LOG_LEVEL_INFO;
+  }
+  
   if (str_log_level == "D") {
     return LOG_LEVEL_DEBUG;
   }
@@ -404,6 +408,8 @@ std::string Log::GetLogLevel(int log_level) {
 
     case LOG_LEVEL_VERBOSE: return "V";
 
+    case LOG_LEVEL_INFO: return "I";
+      
     case LOG_LEVEL_DEBUG: return "D";
 
     default:

@@ -27,7 +27,7 @@ public:
 
   LogCentralChannelsFilter() {
     for (int i = 0; i < LOG_MAX_CHANNELS; i++) {
-      channels_level_[i] = LOG_LEVEL_WARNING;  // Warning and Errors by default
+      channels_level_[i] = LOG_LEVEL_MESSAGE;  // Messages, Warning and Errors by default
     }
   }
 

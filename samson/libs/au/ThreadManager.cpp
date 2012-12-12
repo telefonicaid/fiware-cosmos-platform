@@ -46,7 +46,7 @@ int ThreadManager::AddThread(std::string thread_name, pthread_t *__restrict t, c
   thread_info->t_ = *t;
 
   if (s == 0) {
-    LOG_M(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
+    LOG_V(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
     AddThread(thread_info);
   } else {
     LOG_SW(("Not possible to create thread %s %d ", thread_name.c_str(), s));
@@ -74,7 +74,7 @@ int ThreadManager::AddNonDetachedThread(std::string thread_name
   thread_info->t_ = *t;
 
   if (s == 0) {
-    LOG_M(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
+    LOG_V(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
     AddThread(thread_info);
   } else {
     LOG_SW(("Not possible to create thread %s %d ", thread_name.c_str(), s));
@@ -179,7 +179,7 @@ void ThreadManager::wait(std::string title) {
 }
 
 void ThreadManager::AddThread(ThreadInfo *thread_info) {
-  LOG_M(logs.thread_manager, ("Adding  Thread '%s'", thread_info->str().c_str()));
+  LOG_V(logs.thread_manager, ("Adding  Thread '%s'", thread_info->str().c_str()));
 
   for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
     if (threads_[i] == NULL) {

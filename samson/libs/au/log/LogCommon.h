@@ -32,7 +32,8 @@
 #define LOG_LEVEL_WARNING              2
 #define LOG_LEVEL_MESSAGE              3
 #define LOG_LEVEL_VERBOSE              4
-#define LOG_LEVEL_DEBUG                5
+#define LOG_LEVEL_INFO                 5
+#define LOG_LEVEL_DEBUG                6
 
 #define LOG_LEVEL_ALL                  256
 
@@ -89,16 +90,18 @@
 
 #define LOG_E(c, s)                       LOG_GENERATE(LOG_LEVEL_ERROR, c, s)
 #define LOG_W(c, s)                       LOG_GENERATE(LOG_LEVEL_WARNING, c, s)
-#define LOG_V(c, s)                       LOG_GENERATE(LOG_LEVEL_VERBOSE, c, s)
 #define LOG_M(c, s)                       LOG_GENERATE(LOG_LEVEL_MESSAGE, c, s)
+#define LOG_V(c, s)                       LOG_GENERATE(LOG_LEVEL_VERBOSE, c, s)
+#define LOG_I(c, s)                       LOG_GENERATE(LOG_LEVEL_INFO, c, s)
 #define LOG_D(c, s)                       LOG_GENERATE(LOG_LEVEL_DEBUG, c, s)
 
 // Macros to emit logs for system channel (0)
 
 #define LOG_SE(s)                         LOG_GENERATE(LOG_LEVEL_ERROR, 0, s)
 #define LOG_SW(s)                         LOG_GENERATE(LOG_LEVEL_WARNING, 0, s)
-#define LOG_SV(s)                         LOG_GENERATE(LOG_LEVEL_VERBOSE, 0, s)
 #define LOG_SM(s)                         LOG_GENERATE(LOG_LEVEL_MESSAGE, 0, s)
+#define LOG_SV(s)                         LOG_GENERATE(LOG_LEVEL_VERBOSE, 0, s)
+#define LOG_SI(s)                         LOG_GENERATE(LOG_LEVEL_INFO, 0, s)
 #define LOG_SD(s)                         LOG_GENERATE(LOG_LEVEL_DEBUG, 0, s)
 
 

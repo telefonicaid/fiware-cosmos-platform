@@ -57,7 +57,7 @@ SamsonWorkerRest::~SamsonWorkerRest() {
 }
 
 void SamsonWorkerRest::StopRestService() {
-  LOG_M(logs.cleanup, ("Calling rest_service->StopService()"));
+  LOG_V(logs.cleanup, ("Calling rest_service->StopService()"));
   rest_service_->StopService();
 }
 
@@ -360,7 +360,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
     return;
   }
 
-  LOG_M(logs.rest, ("appending delilah output to command: '%s'", table->str().c_str()));
+  LOG_V(logs.rest, ("appending delilah output to command: '%s'", table->str().c_str()));
   command->Append(table->strFormatted(command->format()));
   delete table;
 }
@@ -387,7 +387,7 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
   // If debug is specified ( instead of "key" ) show more messages
   bool debug = (command->path_components()[3] == "debug");
 
-  LOG_M(logs.rest, ("looking up key '%s' in queue '%s'", key.c_str(), queue_name.c_str()));
+  LOG_V(logs.rest, ("looking up key '%s' in queue '%s'", key.c_str(), queue_name.c_str()));
 
   // Get  copy of the current data model
   au::SharedPointer<gpb::DataModel> data_model = samson_worker_->data_model()->getCurrentModel();
@@ -434,12 +434,12 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
                                          , key.c_str(), key_data->getName().c_str(), error_message.c_str()));
     return;
   }
-  LOG_M(logs.rest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
+  LOG_V(logs.rest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
 
 
   // Get hashgroup
   int hg = reference_key_data_instance->hash(KVFILE_NUM_HASHGROUPS);
-  LOG_M(logs.rest, ("Hash group: %d", hg));
+  LOG_V(logs.rest, ("Hash group: %d", hg));
 
   // Get the worker for this hash.group
   size_t worker_id = samson_worker_->worker_controller()->GetMainWorkerForHashGroup(hg);

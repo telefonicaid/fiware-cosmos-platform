@@ -41,7 +41,7 @@ void BlockRequest::NotifyErrorMessage(size_t worker_id, const std::string& error
     LOG_D(logs.block_request, ("[%s] Received a block request from an unexpected worker (%lu != %lu). Ignoring..."
                                , str_block_id(block_id_).c_str()
                                , worker_id
-                               , worker_id_ ));
+                               , worker_id_));
     return;
   }
 
@@ -49,7 +49,7 @@ void BlockRequest::NotifyErrorMessage(size_t worker_id, const std::string& error
   fails_.Add(au::str("W%lu", worker_id));
 
   // Remove this worker form the list of candidates
-  if (( worker_ids_.size() > 0 ) && ( worker_ids_.front() == worker_id )) {
+  if ((worker_ids_.size() > 0) && (worker_ids_.front() == worker_id)) {
     worker_ids_.pop_front();
   }
   worker_id_ = SIZE_T_UNDEFINED;    // Mark as "unsent"
@@ -70,12 +70,12 @@ void BlockRequest::fill(gpb::CollectionRecord *record, const Visualization& visu
 }
 
 BlockRequest::BlockRequest(SamsonWorker *samson_worker, size_t block_id)
-    : samson_worker_(samson_worker)
+  : samson_worker_(samson_worker)
     , block_id_(block_id)
     , worker_id_(SIZE_T_UNDEFINED)
     , finished_(false)
     , state_("Created") {
-  LOG_M(logs.block_request, ("New block request %s", str_block_id(block_id).c_str()));
+  LOG_V(logs.block_request, ("New block request %s", str_block_id(block_id).c_str()));
 
   Review();
 }
@@ -88,7 +88,7 @@ void BlockRequest::Review() {
 
   // If the block manager contains this block, just set as finished
   if (stream::BlockManager::shared()->GetBlock(block_id_) != NULL) {
-    LOG_M(logs.block_request, ("[%s] Found in local block manager", str_block_id(block_id_).c_str()));
+    LOG_V(logs.block_request, ("[%s] Found in local block manager", str_block_id(block_id_).c_str()));
     finished_ = true;
     state_ = "Finished";
     return;
@@ -103,7 +103,7 @@ void BlockRequest::Review() {
       return;
     }
     // Remove this worker as a candidate for timeout
-    if (( worker_ids_.size() > 0 ) && ( worker_ids_.front() == worker_id_)) {
+    if ((worker_ids_.size() > 0) && (worker_ids_.front() == worker_id_)) {
       worker_ids_.pop_front();
     }
     fails_.Add(au::str("W%lu-timeout", worker_id_));    // Some debug information for lists
@@ -148,7 +148,7 @@ void BlockRequest::Review() {
   }
 
   // Send request to thist worker
-  LOG_M(logs.block_request, ("[%s] Send request to worker %lu", str_block_id(block_id_).c_str(), worker_id ));
+  LOG_V(logs.block_request, ("[%s] Send request to worker %lu", str_block_id(block_id_).c_str(), worker_id));
 
   worker_id_ = worker_id;
   last_request_cronometer_.Reset();  // Reset the last cronometer

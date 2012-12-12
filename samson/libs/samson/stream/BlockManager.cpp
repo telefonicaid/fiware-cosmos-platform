@@ -172,7 +172,7 @@ void BlockManager::notify(engine::Notification *notification) {
       return;
     }
 
-    LOG_M(logs.block_manager, ("Received a disk notification ( type %s size %s block_id %s )"
+    LOG_V(logs.block_manager, ("Received a disk notification ( type %s size %s block_id %s )"
                                , type.c_str()
                                , au::str(operation_size).c_str()
                                , str_block_id(block_id).c_str()
@@ -291,7 +291,7 @@ void BlockManager::Review() {
       BlockPointer block = blocks_.Get(block_id);
 
       if (block->state() == Block::on_memory) {
-        LOG_M(logs.block_manager, ("Schedule write for block:'%s'", block->str().c_str()));
+        LOG_V(logs.block_manager, ("Schedule write for block:'%s'", block->str().c_str()));
 
         // Schedule write
         ScheduleWriteOperation(block);
@@ -320,7 +320,7 @@ void BlockManager::Review() {
 
       if (block->state() == Block::on_disk) {
         // Needed to be loaded...
-        LOG_M(logs.block_manager, ("Scheduling read block'%s'", block->str().c_str()));
+        LOG_V(logs.block_manager, ("Scheduling read block'%s'", block->str().c_str()));
 
         // Read the block
         ScheduleReadOperation(block);

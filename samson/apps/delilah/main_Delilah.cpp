@@ -172,18 +172,18 @@ void cleanup(void) {
   // Clear google protocol buffers library
   google::protobuf::ShutdownProtobufLibrary();
 
-  LOG_M(samson::logs.cleanup, ("Shutting down delilah components (delilahConsole at %p)", delilahConsole));
+  LOG_V(samson::logs.cleanup, ("Shutting down delilah components (delilahConsole at %p)", delilahConsole));
   if (delilahConsole != NULL) {
-    LOG_M(samson::logs.cleanup, ("deleting delilahConsole"));
+    LOG_V(samson::logs.cleanup, ("deleting delilahConsole"));
     delete delilahConsole;
     delilahConsole = NULL;
   }
 
-  LOG_M(samson::logs.cleanup, ("Calling paConfigCleanup"));
+  LOG_V(samson::logs.cleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
-  LOG_M(samson::logs.cleanup, ("Calling lmCleanProgName"));
+  LOG_V(samson::logs.cleanup, ("Calling lmCleanProgName"));
   lmCleanProgName();
-  LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
+  LOG_V(samson::logs.cleanup, ("Cleanup DONE"));
 
   engine::Engine::StopEngine();
 

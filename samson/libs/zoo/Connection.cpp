@@ -45,7 +45,7 @@ int Connection::Remove(const std::string&path, int version) {
     return rc;
   }
 
-  LOG_M(logs.zoo, ("Delete node %s (version %d)", path.c_str(), version ));
+  LOG_V(logs.zoo, ("Delete node %s (version %d)", path.c_str(), version));
   return zoo_delete(handler_, path.c_str(), version);
 }
 
@@ -60,9 +60,9 @@ int Connection::Set(const std::string& path, const char *value, int value_len, i
   }
 
   // Create a node
-  LOG_M(logs.zoo, ("Set node %s (value %d bytes ,version %d)", path.c_str(), value_len, version ));
+  LOG_V(logs.zoo, ("Set node %s (value %d bytes ,version %d)", path.c_str(), value_len, version));
   rate_write_.Push(value_len);
-  return zoo_set(handler_, path.c_str(), value, value_len,  version);
+  return zoo_set(handler_, path.c_str(), value, value_len, version);
 }
 
 int Connection::Set(const std::string& path, ::google::protobuf::Message *value, int version) {
@@ -82,7 +82,7 @@ int Connection::Set(const std::string& path, ::google::protobuf::Message *value,
 }
 
 int Connection::Set(const std::string& path, const std::string& value, int version) {
-  return Set(path, value.c_str(), value.length(),  version);
+  return Set(path, value.c_str(), value.length(), version);
 }
 
 int Connection::Get(const std::string& path
@@ -97,7 +97,7 @@ int Connection::Get(const std::string& path
     return Exists(path, engine_id, stat);
   }
 
-  LOG_M(logs.zoo, ("Get node %s (buffer %d bytes)", path.c_str(), *buffer_len ));
+  LOG_V(logs.zoo, ("Get node %s (buffer %d bytes)", path.c_str(), *buffer_len));
 
   int rc = zoo_wget(handler_
                     , path.c_str()
@@ -272,7 +272,7 @@ int Connection::Get(const std::string& path
     if (value->ParseFromArray(buffer.data(), buffer_size)) {
       return 0;    // OK
     } else {
-      LOG_SW(("GPB error when ParseFromArray for node %s with a buffer of %d bytes", path.c_str(), buffer_size ));
+      LOG_SW(("GPB error when ParseFromArray for node %s with a buffer of %d bytes", path.c_str(), buffer_size));
       return ZC_ERROR_GPB;
     }
   }
@@ -282,7 +282,7 @@ int Connection::Get(const std::string& path, char *buffer, int *buffer_len, stru
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
-  LOG_M(logs.zoo, ("Get node %s (buffer %d bytes)", path.c_str(), buffer_len ));
+  LOG_V(logs.zoo, ("Get node %s (buffer %d bytes)", path.c_str(), buffer_len));
   int rc = zoo_get(handler_, path.c_str(), 0, buffer, buffer_len, stat);
 
   if (!rc) {
@@ -312,7 +312,7 @@ int Connection::Exists(const std::string& path, struct Stat *stat) {
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
-  LOG_M(logs.zoo, ("Check exist node %s", path.c_str()));
+  LOG_V(logs.zoo, ("Check exist node %s", path.c_str()));
   return zoo_exists(handler_, path.c_str(), 0, stat);
 }
 
@@ -321,7 +321,7 @@ int Connection::Exists(const std::string& path, size_t engine_id,
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
-  LOG_M(logs.zoo, ("Check exist node %s", path.c_str()));
+  LOG_V(logs.zoo, ("Check exist node %s", path.c_str()));
   return zoo_wexists(handler_
                      , path.c_str()
                      , static_watcher
@@ -353,7 +353,7 @@ int Connection::GetChildrens(const std::string& path, String_vector *vector) {
   if (rc) {
     return rc;
   }
-  LOG_M(logs.zoo, ("Get childrens of node %s", path.c_str()));
+  LOG_V(logs.zoo, ("Get childrens of node %s", path.c_str()));
   return zoo_get_children(handler_, path.c_str(), 0, vector);
 }
 
@@ -383,10 +383,10 @@ void Connection::static_watcher(zhandle_t *zzh,
                                 int state,
                                 const char *path,
                                 void *watcherCtx) {
-  if ((type == ZOO_CREATED_EVENT )
-      || (type == ZOO_DELETED_EVENT )
-      || (type == ZOO_CHANGED_EVENT )
-      || (type == ZOO_CHILD_EVENT ))
+  if ((type == ZOO_CREATED_EVENT)
+      || (type == ZOO_DELETED_EVENT)
+      || (type == ZOO_CHANGED_EVENT)
+      || (type == ZOO_CHILD_EVENT))
   {
     // Recover engine_id using context
     size_t engine_id = (size_t)watcherCtx;
@@ -481,7 +481,7 @@ int Connection::Create(std::string& path, int flags, const char *value, int valu
   struct ACL_vector ACL_VECTOR = { 1, ALL_ACL };
 
   // Create a node
-  LOG_M(logs.zoo, ("Create node %s (Value: %d bytes )", path.c_str(), buffer_length ));
+  LOG_V(logs.zoo, ("Create node %s (Value: %d bytes )", path.c_str(), buffer_length));
   rc = zoo_create(handler_, path.c_str(), value, value_len, &ACL_VECTOR, flags, buffer, buffer_length - 1);
   if (!rc) {
     path = buffer;                     // Get the new name ( it is different when flag ZOO_SEQUETIAL is used )
@@ -510,7 +510,7 @@ int Connection::Connect(const std::string& host) {
   Close();
 
   // Init zookeerp
-  LOG_M(logs.zoo, ("Init connection to %s", host.c_str()));
+  LOG_V(logs.zoo, ("Init connection to %s", host.c_str()));
   handler_ = zookeeper_init(host.c_str(), NULL, 5000, 0, NULL, 0);
   if (handler_) {
     return WaitUntilConnected(1000);
@@ -530,7 +530,7 @@ int Connection::AddAuth(const std::string& user, const std::string& password) {
   }
 
   std::string user_password = user + ":" + password;
-  LOG_M(logs.zoo, ("Add auth  user: %s", user.c_str()));
+  LOG_V(logs.zoo, ("Add auth  user: %s", user.c_str()));
   rc = zoo_add_auth(handler_, "digest", user_password.c_str(), user_password.length(), 0, 0);
 
   // If corect, just wait until connected
@@ -544,7 +544,7 @@ void Connection::Close() {
   au::TokenTaker tt(&token_);
 
   if (handler_) {
-    LOG_M(logs.zoo, ("Close connection"));
+    LOG_V(logs.zoo, ("Close connection"));
     zookeeper_close(handler_);
     handler_ = NULL;
   }
@@ -556,7 +556,7 @@ bool Connection::IsConnected() {
   if (!handler_) {
     return false;
   }
-  return( zoo_state(handler_) == ZOO_CONNECTED_STATE );
+  return(zoo_state(handler_) == ZOO_CONNECTED_STATE);
 }
 
 std::string Connection::GetStatusString() {
@@ -569,7 +569,7 @@ std::string Connection::GetStatusString() {
     return "Unconnected";
   }
 
-  LOG_M(logs.zoo, ("Get connection status"));
+  LOG_V(logs.zoo, ("Get connection status"));
   rc = zoo_state(handler_);
 
   if (rc == ZOO_EXPIRED_SESSION_STATE) {

@@ -51,7 +51,7 @@ Block::Block(size_t block_id, engine::BufferPointer buffer) :
   // No lookup list by default
   lookupList = NULL;
 
-  LOG_M(logs.block_manager, ("Block created from buffer: %s", str().c_str()));
+  LOG_V(logs.block_manager, ("Block created from buffer: %s", str().c_str()));
 }
 
 Block::Block(size_t block_id, KVHeader *_header) :
@@ -71,7 +71,7 @@ Block::Block(size_t block_id, KVHeader *_header) :
   // Put cronometer to 1 hour before to remove blocks not included in the data model rigth now
   cronometer.AddOffset(-24 * 60 * 60);
 
-  LOG_M(logs.block_manager, ("Block created from id: %s", this->str().c_str()));
+  LOG_V(logs.block_manager, ("Block created from id: %s", this->str().c_str()));
 }
 
 Block::~Block() {
@@ -130,7 +130,7 @@ void Block::freeBlock() {
     return;
   }
 
-  LOG_M(logs.block_manager, ("Destroying buffer for block:'%s'", str().c_str()));
+  LOG_D(logs.block_manager, ("Destroying buffer for block:'%s'", str().c_str()));
 
   // Relase buffer
   buffer_ = NULL;

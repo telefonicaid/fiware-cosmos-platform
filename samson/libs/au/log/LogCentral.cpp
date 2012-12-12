@@ -530,7 +530,7 @@ void LogCentral::EvalCommand(const std::string& command, au::ErrorManager& error
       bool rates = command_instance->GetBoolOption("rates");
       bool verbose = command_instance->GetBoolOption("v");
 
-      std::string table_definition = "Channel,left|Level|Count";
+      std::string table_definition = "Channel,left|Hits|Level|Count";
 
       au::map<std::string, LogCentralPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); ++it) {
@@ -547,6 +547,8 @@ void LogCentral::EvalCommand(const std::string& command, au::ErrorManager& error
 
         au::StringVector values;
         values.Push(name);
+        values.Push(main_log_channel_filter_.GetHitDescriptionForChannel(i));
+
         values.Push(Log::GetLogLevel(main_log_channel_filter_.GetLevel(i)));
 
         if (rates) {

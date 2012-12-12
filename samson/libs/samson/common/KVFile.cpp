@@ -151,7 +151,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   }
 
   // Everything correct, return generated kv_file
-  LOG_M(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
+  LOG_V(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
                        , au::str(size_total, "B").c_str()
                        , au::str(cronometer.seconds()).c_str()
                        , kv_file->header_.keyFormat

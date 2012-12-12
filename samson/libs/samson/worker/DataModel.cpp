@@ -103,7 +103,7 @@ au::SharedPointer<au::CommandLine> DataModel::GetCommandLine() {
 
 void DataModel::Init(au::SharedPointer<gpb::DataModel> data_model) {
   // Create an empty node
-  LOG_M(logs.data_model, ("Init a new instance of data model"));
+  LOG_V(logs.data_model, ("Init a new instance of data model"));
   data_model->set_replication_factor(3);
 
   gpb::Data *previous_data = data_model->mutable_previous_data();
@@ -165,7 +165,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
   }
 
   size_t commit_id = data->mutable_current_data()->commit_id();
-  LOG_M(logs.data_model, ("Trying to perform commit over Data model [candidate for %lu] %s (data version  %d)"
+  LOG_V(logs.data_model, ("Trying to perform commit over Data model [candidate for %lu] %s (data version  %d)"
                           , commit_id, command.c_str(), version));
 
   // add to the list of last_commits
@@ -188,7 +188,7 @@ void DataModel::ProcessCommand(gpb::Data *data, au::SharedPointer<au::CommandLin
   // Reset error messages
   error.Reset();
 
-  LOG_M(logs.data_model, ("ProcessCommand %s", main_command.c_str()));
+  LOG_V(logs.data_model, ("ProcessCommand %s", main_command.c_str()));
 
   if (main_command == kAdd) {
     ProcessAddCommand(data, cmd, error);

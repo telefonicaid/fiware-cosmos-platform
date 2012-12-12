@@ -383,6 +383,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddTag("wlog_status", "send_to_all_workers");
 
   AddCommand("wlog_all_channels", "log", "Show all possible log channels to be activated");
+  AddBoolOption("wlog_all_channels", "hits", "Show number of hits for each channel");
 
   AddCommand("wlog_set_log_server", "log", "Set the log server to be used by all workers");
   AddMandatoryStringArgument("wlog_set_log_server", "host", "Log server host");

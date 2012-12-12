@@ -92,6 +92,10 @@ public:
     return log_channels_;
   }
 
+  LogCentralChannelsFilter& log_channels_filter() {
+    return main_log_channel_filter_;
+  }
+
   int GetLogChannelLevel(int c) {
     return main_log_channel_filter_.GetLevel(c);
   }

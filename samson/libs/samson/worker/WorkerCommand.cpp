@@ -119,7 +119,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
     return;
   }
 
-  LOG_M(logs.worker_command, ("[%s] Running command %s", worker_command_id_.c_str(), command.c_str()));
+  LOG_V(logs.worker_command, ("[%s] Running command %s", worker_command_id_.c_str(), command.c_str()));
 
   // Parse command
   au::CommandLine cmd;
@@ -266,7 +266,7 @@ void WorkerCommand::Run() {
     return;
   }
 
-  LOG_M(logs.worker_command, ("[%s] Run", worker_command_id_.c_str()));
+  LOG_V(logs.worker_command, ("[%s] Run", worker_command_id_.c_str()));
 
   pending_to_be_executed_ = false;   // Not pending any more, except if something happen...
 

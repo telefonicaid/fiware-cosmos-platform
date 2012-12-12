@@ -54,7 +54,7 @@ void WorkerBlockManager::Review() {
 
       // If we are running a task, let see if it is finished
       if (defrag_task->IsWorkerTaskFinished()) {
-        LOG_M(logs.worker_block_manager, ("Defrag task %s has finish", defrag_task_name.c_str()));
+        LOG_V(logs.worker_block_manager, ("Defrag task %s has finish", defrag_task_name.c_str()));
 
         defrag_tasks_names_remove.push_back(defrag_task_name);     // add key to be removed latter
 
@@ -66,7 +66,7 @@ void WorkerBlockManager::Review() {
                                             , error_message.c_str()));
         } else {
           // Commit changes and release task
-          LOG_M(logs.worker_block_manager, ("Commiting defrag task %lu:%s", defrag_task->id(), defrag_task->str().c_str()));
+          LOG_V(logs.worker_block_manager, ("Commiting defrag task %lu:%s", defrag_task->id(), defrag_task->str().c_str()));
 
           std::string commit_command = defrag_task->commit_command();
           std::string caller = au::str("defrag task %lu // %s", defrag_task->worker_task_id(), defrag_task_name.c_str());
@@ -97,7 +97,7 @@ size_t WorkerBlockManager::CreateBlock(engine::BufferPointer buffer) {
   // Add to the block manager
   stream::BlockManager::shared()->CreateBlock(block_id, buffer);
 
-  LOG_M(logs.worker_block_manager, ("Create block from buffer %s --> %s"
+  LOG_V(logs.worker_block_manager, ("Create block from buffer %s --> %s"
                                     , buffer->str().c_str()
                                     , str_block_id(block_id).c_str()));
 
@@ -106,7 +106,7 @@ size_t WorkerBlockManager::CreateBlock(engine::BufferPointer buffer) {
 
 // Messages received from other workers
 void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t worker_id) {
-  LOG_M(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu )"
+  LOG_V(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu )"
                                     , str_block_id(block_id).c_str()
                                     , worker_id));
 
@@ -118,7 +118,7 @@ void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t wo
 
 void WorkerBlockManager::ReceivedBlockRequestResponse(size_t block_id, size_t worker_id,
                                                       const std::string& error_message) {
-  LOG_M(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu error %s)"
+  LOG_V(logs.worker_block_manager, ("ReceivedBlockRequestResponse for %s ( worker %lu error %s)"
                                     , str_block_id(block_id).c_str()
                                     , worker_id
                                     , error_message.c_str()));
@@ -172,7 +172,7 @@ void WorkerBlockManager::RequestBlock(size_t block_id) {
   }
 
   // New block request for this block
-  LOG_M(logs.worker_block_manager, ("Requested block %s", str_block_id(block_id).c_str()));
+  LOG_V(logs.worker_block_manager, ("Requested block %s", str_block_id(block_id).c_str()));
   block_request = new BlockRequest(samson_worker_, block_id);
   block_requests_.insertInMap(block_id, block_request);
 }
@@ -186,7 +186,7 @@ void WorkerBlockManager::RequestBlocks(const std::set<size_t>& pending_block_ids
 }
 
 void WorkerBlockManager::Reset() {
-  LOG_M(logs.worker_block_manager, ("Reset"));
+  LOG_V(logs.worker_block_manager, ("Reset"));
   // Remove all internal elements
   block_requests_.clearMap();
 }
@@ -201,7 +201,7 @@ void WorkerBlockManager::AddBlockBreak(const std::string& queue_name, size_t blo
     return;
   }
 
-  LOG_M(logs.worker_block_manager,
+  LOG_V(logs.worker_block_manager,
         ("AddBlockBreak for block %s in queeu %s", str_block_id(block_id).c_str(), queue_name.c_str()));
 
   // Get the block to de defrag
@@ -231,7 +231,7 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
                                            , size_t push_id
                                            , engine::BufferPointer buffer
                                            , const std::vector<std::string>& queues) {
-  LOG_M(logs.worker_block_manager, ("Received a push block (Delilah %s PushId %lu Buffer %s Queues %s)"
+  LOG_V(logs.worker_block_manager, ("Received a push block (Delilah %s PushId %lu Buffer %s Queues %s)"
                                     , au::code64_str(delilah_id).c_str()
                                     , push_id
                                     , buffer->str().c_str()

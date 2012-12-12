@@ -128,7 +128,7 @@ void SamsonWorker::Review() {
       zk_first_connection_ = false;
 
       // Try to connect with ZK
-      LOG_M(logs.worker_controller, ("Trying to connect to zk at %s", zoo_host_.c_str()));
+      LOG_V(logs.worker_controller, ("Trying to connect to zk at %s", zoo_host_.c_str()));
       zoo_connection_ = new au::zoo::Connection(zoo_host_, "samson", "samson");
       int rc = zoo_connection_->WaitUntilConnected(20000);
       if (rc) {
@@ -157,7 +157,7 @@ void SamsonWorker::Review() {
 
       state_ = connected;            // Now we are connected
       state_message_ = "Connected";
-      LOG_M(logs.worker_controller, ("Worker connected to Zookeeper"));
+      LOG_V(logs.worker_controller, ("Worker connected to Zookeeper"));
       break;
     }
     case connected:
@@ -323,7 +323,7 @@ void SamsonWorker::ResetToConnected() {
  */
 
 void SamsonWorker::receive(const PacketPointer& packet) {
-  LOG_M(logs.in_messages, ("Received packet from %s : %s", packet->from.str().c_str(), packet->str().c_str()));
+  LOG_V(logs.in_messages, ("Received packet from %s : %s", packet->from.str().c_str(), packet->str().c_str()));
 
   if (!IsConnected()) {
     LOG_SW(("Ignoring packet %s since we are not connected any more", packet->str().c_str()));
@@ -452,7 +452,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     if (packet->message->has_error()) {
       std::string error_message = packet->message->error().message();
-      LOG_M(logs.block_request, ("Received block request response for %s from worker %lu with error %s"
+      LOG_V(logs.block_request, ("Received block request response for %s from worker %lu with error %s"
                                  , str_block_id(block_id).c_str()
                                  , worker_id
                                  , error_message.c_str()
@@ -466,7 +466,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    LOG_M(logs.block_request, ("Received block request response for %s from worker %lu"
+    LOG_V(logs.block_request, ("Received block request response for %s from worker %lu"
                                , str_block_id(block_id).c_str()
                                , worker_id
                                ));
@@ -977,6 +977,12 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerAllLogChannels(const V
     std::string description = au::log_central->log_channels().channel_description(i);
 
     ::samson::add(record, "Channel", name, "different,left");
+
+    if (visualization.get_flag("-hits")) {
+      ::samson::add(record, "Hits", au::log_central->log_channels_filter().GetHitDescriptionForChannel(
+                      i), "different,left");
+    }
+
     ::samson::add(record, "Description", description, "different,left");
   }
   return collection;
@@ -1160,7 +1166,7 @@ void SamsonWorker::ReloadModulesIfNecessary() {
     if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
       // Add this block to be requested to other workers
       worker_block_manager_->RequestBlock(block_id);
-      LOG_M(logs.modules_manager, ("Missing block(%lu) detected and requested, pos(%d)", block_id, b));
+      LOG_V(logs.modules_manager, ("Missing block(%lu) detected and requested, pos(%d)", block_id, b));
       ++missing_blocks;
     }
   }

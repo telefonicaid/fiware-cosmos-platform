@@ -52,7 +52,7 @@ DiskManager *Engine::disk_manager_ = NULL;
 ProcessManager *Engine::process_manager_ = NULL;
 
 void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
-  LOG_M(logs.engine, ("Engine init"));
+  LOG_V(logs.engine, ("Engine init"));
   if (engine_) {
     LOG_W(logs.engine, ("Init engine twice... just ignoring"));
     return;
@@ -119,7 +119,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
   activity_monitor_.StartActivity(running_element->name());
 
   // Execute the item selected as running_element
-  LOG_M(logs.engine, ("[START] Engine:  executing %s", running_element->str().c_str()));
+  LOG_V(logs.engine, ("[START] Engine:  executing %s", running_element->str().c_str()));
 
   // Print traces for debugging strange situations
   int waiting_time = running_element->GetWaitingTime();
@@ -147,7 +147,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
     }
   }
 
-  LOG_M(logs.engine, ("[DONE] Engine:  executing %s", running_element->str().c_str()));
+  LOG_V(logs.engine, ("[DONE] Engine:  executing %s", running_element->str().c_str()));
 
   // Collect information about this execution
   activity_monitor_.StartActivity("engine_management");
@@ -167,7 +167,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
 
 
 void Engine::RunThread() {
-  LOG_M(logs.engine, ("Engine run"));
+  LOG_V(logs.engine, ("Engine run"));
 
   counter_ = 0;  // Init the counter to elements managed by this run-time
 

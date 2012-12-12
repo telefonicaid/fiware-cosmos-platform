@@ -93,7 +93,7 @@ void DelilahComponent::setComponentFinished() {
     return;
   }
 
-  LOG_M(logs.delilah_components, ("component %d set to finished", id));
+  LOG_V(logs.delilah_components, ("component %d set to finished", id));
   component_finished = true;
   cronometer.Stop();
 
@@ -111,7 +111,7 @@ void DelilahComponent::setComponentFinishedWithError(std::string error_message) 
     return;
   }
 
-  LOG_M(logs.delilah_components, ("component %d set to finished with error:'%s'", id, error_message.c_str()));
+  LOG_V(logs.delilah_components, ("component %d set to finished with error:'%s'", id, error_message.c_str()));
   component_finished = true;
   cronometer.Stop();
 

@@ -89,11 +89,11 @@ WorkerTask::WorkerTask(SamsonWorker *samson_worker
   }
 
 
-  LOG_M(logs.worker_task, ("Worker task created WT%s", str().c_str()));
+  LOG_V(logs.worker_task, ("Worker task created WT%s", str().c_str()));
 }
 
 WorkerTask::~WorkerTask() {
-  LOG_M(logs.worker_task, ("Worker task destroyed WT%s", str().c_str()));
+  LOG_V(logs.worker_task, ("Worker task destroyed WT%s", str().c_str()));
   delete stream_operation_;
 }
 
@@ -120,7 +120,7 @@ std::vector<size_t> WorkerTask::ProcessOutputBuffers() {
     // Add output to this operation
     AddOutput(output, block, header->range, header->info);
 
-    LOG_M(logs.worker_task, ("Task WT%lu: Generated block %s ( %s ) for output %d "
+    LOG_V(logs.worker_task, ("Task WT%lu: Generated block %s ( %s ) for output %d "
                              , id()
                              , str_block_id(block_id).c_str()
                              , header->str().c_str()
@@ -161,7 +161,7 @@ std::string WorkerTask::commit_command() {
 }
 
 void WorkerTask::initProcessIsolated() {
-  LOG_M(logs.background_process, ("Init background process for task WT%lu", id()));
+  LOG_V(logs.background_process, ("Init background process for task WT%lu", id()));
   // Review input blocks to count key-values
   block_list_container_.Review(error_);
 }
@@ -169,7 +169,7 @@ void WorkerTask::initProcessIsolated() {
 void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
   au::Cronometer cronometer;
 
-  LOG_M(logs.background_process, ("Generate key-values for task WT%lu", id()));
+  LOG_V(logs.background_process, ("Generate key-values for task WT%lu", id()));
 
   // Get KVFiles scaning input data
   block_list_container_.ReviewKVFile(error_);
@@ -198,7 +198,7 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
 }
 
 void WorkerTask::generateTXT(TXTWriter *writer) {
-  LOG_M(logs.background_process, ("Generate txt-data for task WT%lu", id()));
+  LOG_V(logs.background_process, ("Generate txt-data for task WT%lu", id()));
 
   // Type of inputs ( for selecting key-values )
   std::vector<KVFormat> inputFormats = operation_->getInputFormats();
@@ -264,7 +264,7 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
 }
 
 void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
-  LOG_M(logs.background_process, ("generateKeyValues_map task WT%lu", id()));
+  LOG_V(logs.background_process, ("generateKeyValues_map task WT%lu", id()));
 
   // Type of inputs ( for selecting key-values )
   std::vector<KVFormat> inputFormats = operation_->getInputFormats();
@@ -342,7 +342,7 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
 #pragma mark
 
 void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
-  LOG_M(logs.background_process, ("generateKeyValues_reduce task WT%lu", id()));
+  LOG_V(logs.background_process, ("generateKeyValues_reduce task WT%lu", id()));
 
   au::Cronometer cronometer;
   LOG_M(logs.reduce_operation, ("[WT%lu:%s] Start reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
@@ -506,7 +506,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
 }
 
 void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
-  LOG_M(logs.background_process, ("generateKeyValues_parser task WT%lu", id()));
+  LOG_V(logs.background_process, ("generateKeyValues_parser task WT%lu", id()));
 
   // Run the generator over the ProcessWriter to emit all key-values
   Parser *parser = (Parser *)operation_->getInstance();
@@ -563,7 +563,7 @@ std::string WorkerTask::str() {
 
 void WorkerTask::commit() {
   if (environment().Get("system.canceled_task", "no") == "yes") {
-    LOG_M(logs.worker_task, ("Task %s not commited since it has been deactivated", str().c_str()));
+    LOG_V(logs.worker_task, ("Task %s not commited since it has been deactivated", str().c_str()));
     return;
   }
 
@@ -574,10 +574,10 @@ void WorkerTask::commit() {
 
   if (error_.HasErrors()) {
     std::string error_message = error_.GetLastError();
-    LOG_M(logs.task_manager, ("Error in task %lu (%s)", id(), error_message.c_str()));
+    LOG_V(logs.task_manager, ("Error in task %lu (%s)", id(), error_message.c_str()));
   } else {
     LOG_D(logs.task_manager, ("Task WT%lu blocks: %s", id(), str_block_ids().c_str()));
-    LOG_M(logs.task_manager, ("Commiting task W%lu (%s)", id(), str().c_str()));
+    LOG_V(logs.task_manager, ("Commiting task W%lu (%s)", id(), str().c_str()));
 
     // Commit changes and release task
     std::string my_commit_command = commit_command();

@@ -34,7 +34,7 @@ void MultiPacketQueue::Push(au::SharedPointer<Packet> packet) {
   // Select the correct queue and push the new packet
   std::string name = node_identifier.getCodeName();
 
-  LOG_M(logs.out_messages, ("Scheduling packet %s in otuput queue %s", packet->str().c_str(), name.c_str()));
+  LOG_V(logs.out_messages, ("Scheduling packet %s in otuput queue %s", packet->str().c_str(), name.c_str()));
 
   au::TokenTaker tt(&token_packet_queues_);
   packet_queues_.findOrCreate(name, name)->Push(packet);
@@ -69,7 +69,7 @@ void MultiPacketQueue::Pop(const NodeIdentifier& node_identifier) {
   // Pop packet
   PacketPointer packet = paquet_queue->Pop();
 
-  LOG_M(logs.out_messages, ("Removed packet %s from otuput queue %s", packet->str().c_str(), name.c_str()));
+  LOG_V(logs.out_messages, ("Removed packet %s from otuput queue %s", packet->str().c_str(), name.c_str()));
 }
 
 au::tables::Table *MultiPacketQueue::GetPendingPacketsTable() const {

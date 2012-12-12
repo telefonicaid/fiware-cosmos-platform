@@ -66,7 +66,7 @@ void BlockRequestTask::run() {
     LM_X(1, ("Internal error"));
   }
 
-  LOG_M(logs.block_request, ("Answering block request for %s to workers %s"
+  LOG_V(logs.block_request, ("Answering block request for %s to workers %s"
                              , str_block_id(block_id_).c_str()
                              , au::str(worker_ids_).c_str()));
 

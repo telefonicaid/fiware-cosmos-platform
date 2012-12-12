@@ -291,7 +291,7 @@ private:
       // Get a copy of the data model
       au::SharedPointer<C> c = getDuplicatedCurrentModel();
 
-      LOG_M(logs.zoo, ("trying to performing commit %s over path %s", commit_command.c_str(), path_.c_str()));
+      LOG_V(logs.zoo, ("trying to performing commit %s over path %s", commit_command.c_str(), path_.c_str()));
       PerformCommit(c, commit_command, version_, error);     // Change on a duplicated data model
       if (error.HasErrors()) {          // If error in the operation itself, No commit is done at all
         return au::SharedPointer<C>(NULL);
@@ -302,7 +302,7 @@ private:
       int rc = zoo_connection_->Create(path, 0, commit_command);
 
       if (rc == ZNODEEXISTS) {
-        LOG_M(logs.zoo, ("Not possible to commit version %d (path %s).This mean another worker has commited first"
+        LOG_V(logs.zoo, ("Not possible to commit version %d (path %s).This mean another worker has commited first"
                          , version_
                          , path_.c_str()));
 
@@ -330,7 +330,7 @@ private:
   void ReviewInternalCommit() {
     if ((version_ > 0) && (version_ % node_commiter_num_commits_to_save_ == 0)) {
       // Save this version to stable
-      LOG_M(logs.zoo, ("Review of version %d for path %s... saving data to do %s"
+      LOG_V(logs.zoo, ("Review of version %d for path %s... saving data to do %s"
                        , version_
                        , path_.c_str()
                        , GetVersionPath(version_).c_str()));
@@ -361,8 +361,8 @@ private:
       int last_version = au::max_element(int_versions, 0);
       std::vector<int> int_old_versions = au::GetVectorOfElementsLowerThan(int_versions, last_version);
 
-      LOG_M(logs.zoo, ("Last version of data model in %sis %d ", path_.c_str(), last_version));
-      LOG_M(logs.zoo, ("Removing %lu old versions of data model in %s ", int_old_versions.size(), path_.c_str()));
+      LOG_V(logs.zoo, ("Last version of data model in %sis %d ", path_.c_str(), last_version));
+      LOG_V(logs.zoo, ("Removing %lu old versions of data model in %s ", int_old_versions.size(), path_.c_str()));
 
       for (size_t i = 0; i < int_old_versions.size(); i++) {
         zoo_connection_->Remove(GetVersionPath(int_old_versions[i]));    // We are not interested in errores

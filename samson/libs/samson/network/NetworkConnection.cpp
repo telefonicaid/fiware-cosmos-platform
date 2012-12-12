@@ -172,7 +172,7 @@ void NetworkConnection::writerThread() {
     PacketPointer packet = network_manager_->multi_packet_queue_.Front(node_identifier_);
 
     if (packet != NULL) {
-      LOG_M(logs.out_messages, ("Sent packet to %s : %s", packet->to.str().c_str(), packet->str().c_str()));
+      LOG_V(logs.out_messages, ("Sent packet to %s : %s", packet->to.str().c_str(), packet->str().c_str()));
 
       size_t total_write = 0;
 

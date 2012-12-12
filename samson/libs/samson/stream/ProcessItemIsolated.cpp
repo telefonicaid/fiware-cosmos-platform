@@ -62,7 +62,7 @@ public:
     if (p == pid) {
       if (WIFEXITED(stat_loc)) {
         int s = WEXITSTATUS(stat_loc);
-        LOG_M(logs.isolated_process, ("Background process (pid=%d) ended with exit with code %d", pid, s));
+        LOG_V(logs.isolated_process, ("Background process (pid=%d) ended with exit with code %d", pid, s));
       } else if (WIFSIGNALED(stat_loc)) {
         int s = WTERMSIG(stat_loc);
         LOG_E(logs.isolated_process, ("Background process (pid=%d) ended with signal with signal %d", pid, s));
@@ -75,7 +75,7 @@ public:
 
     if (cronometer.seconds() > 3.0) {    // Three seconds to die
       // Send a kill signal to this process
-      LOG_M(logs.isolated_process, ("Killing background process (%d) manually", pid));
+      LOG_V(logs.isolated_process, ("Killing background process (%d) manually", pid));
       kill(pid, SIGKILL);
 
       kill_count++;
@@ -160,12 +160,12 @@ ProcessItemIsolated::~ProcessItemIsolated() {
 }
 
 void ProcessItemIsolated::run() {
-  LOG_M(logs.isolated_process, ("Isolated process %s: start", str().c_str()));
+  LOG_V(logs.isolated_process, ("Isolated process %s: start", str().c_str()));
 
   if (isolated_process_as_tread) {
-    LOG_M(logs.isolated_process, ("Isolated process %s start in thread mode", str().c_str()));
+    LOG_V(logs.isolated_process, ("Isolated process %s start in thread mode", str().c_str()));
   } else {
-    LOG_M(logs.isolated_process, ("Isolated process %s start in fork mode", str().c_str()));   // Create a couple of pipes to communicate both process
+    LOG_V(logs.isolated_process, ("Isolated process %s start in fork mode", str().c_str()));   // Create a couple of pipes to communicate both process
   }
 
   if (pipe(pipeFdPair1) != 0) {
@@ -188,7 +188,7 @@ void ProcessItemIsolated::run() {
           "Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",
           str().c_str(),
           pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
-  LOG_M(logs.isolated_process, ("Isolated process %s: pipes created ", str().c_str()));
+  LOG_V(logs.isolated_process, ("Isolated process %s: pipes created ", str().c_str()));
 
   // Init isolated stuff
   initProcessItemIsolated();
@@ -210,14 +210,14 @@ void ProcessItemIsolated::run() {
     au::Singleton<au::ThreadManager>::shared()->AddThread("ProcessItemIsolated::run", &t, NULL,
                                                           run_ProcessItemIsolated, tmp);
   } else {
-    LOG_M(logs.isolated_process, ("Isolated process %s: father about to fork", str().c_str()));
+    LOG_V(logs.isolated_process, ("Isolated process %s: father about to fork", str().c_str()));
     pid = fork();
     if (pid < 0) {
       LM_X(1, ("Fork return an error"));
     }
     if (pid == 0) {   // Children running the background process
       runBackgroundProcessRun();
-      LOG_M(logs.isolated_process,
+      LOG_V(logs.isolated_process,
             (
               "Child in Background process finished, calling _exit that will close its side pipes: pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n",
               pipeFdPair1[1], pipeFdPair2[0]));
@@ -226,12 +226,12 @@ void ProcessItemIsolated::run() {
   }
 
   // Exchange all the necessary messages between background and foreground process
-  LOG_M(logs.isolated_process,
+  LOG_V(logs.isolated_process,
         ("Isolated process %s: father runExchangeMessages start, child pid=%d ", str().c_str(), pid));
 
   runExchangeMessages();
 
-  LOG_M(logs.isolated_process, ("Isolated process %s: father runExchangeMessages finish ", str().c_str()));
+  LOG_V(logs.isolated_process, ("Isolated process %s: father runExchangeMessages finish ", str().c_str()));
 
   // Close the rest of pipes all pipes
   if (isolated_process_as_tread) {
@@ -252,7 +252,7 @@ void ProcessItemIsolated::run() {
   close(pipeFdPair1[0]);
   close(pipeFdPair2[1]);
 
-  LOG_M(logs.isolated_process, ("Isolated process %s: waiting child pid=%d to finish ", str().c_str(), pid));
+  LOG_V(logs.isolated_process, ("Isolated process %s: waiting child pid=%d to finish ", str().c_str(), pid));
 
   // Kill and wait the process
   if (!isolated_process_as_tread) {
@@ -260,7 +260,7 @@ void ProcessItemIsolated::run() {
     myPidCollection.clear();
   }
 
-  LOG_M(logs.isolated_process,
+  LOG_V(logs.isolated_process,
         (
           "Isolated process %s: Finish ******************************************************************************************* ",
           str().c_str()));
@@ -274,11 +274,11 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
     case samson::gpb::MessageProcessPlatform_Code_code_operation: {
       int operation = message->operation();
 
-      LOG_M(logs.isolated_process, ("Isolated process %s: Message to run operation  %d ", str().c_str(), operation));
+      LOG_V(logs.isolated_process, ("Isolated process %s: Message to run operation  %d ", str().c_str(), operation));
 
       runCode(operation);
 
-      LOG_M(logs.isolated_process,
+      LOG_V(logs.isolated_process,
             (
               "Isolated process %s: runCode() returned from operation %d, preparing to send continue to pipeFdPair2[1]:%d",
               str().c_str(),
@@ -286,9 +286,9 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
 
       // Send the continue
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
-      LOG_M(logs.isolated_process, ("Isolated process %s: response created ", str().c_str()));
+      LOG_V(logs.isolated_process, ("Isolated process %s: response created ", str().c_str()));
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
-      LOG_M(logs.isolated_process,
+      LOG_V(logs.isolated_process,
             ("Isolated process %s: send the continue on pipeFdPair2[1]:%d ", str().c_str(), pipeFdPair2[1]));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LOG_E(logs.isolated_process,
@@ -305,7 +305,7 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       break;
 
     case samson::gpb::MessageProcessPlatform_Code_code_progress: {
-      LOG_M(logs.isolated_process,
+      LOG_V(logs.isolated_process,
             ("Isolated process %s: Message reporting progress %f ", str().c_str(), message->progress()));
 
       // set the progress and the progress status
@@ -315,7 +315,7 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       // Send the continue
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
-      LOG_M(logs.isolated_process, ("Writing reporting message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
+      LOG_V(logs.isolated_process, ("Writing reporting message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LOG_E(logs.isolated_process,
               ("Error sending progress report, code(%d),  (pipeFdPair2[1]:%d) ", response->code(), pipeFdPair2[1]));
@@ -328,7 +328,7 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
     break;
 
     case samson::gpb::MessageProcessPlatform_Code_code_user_error: {
-      LOG_M(logs.isolated_process, ("Isolated process %s: Message reporting user error  ", str().c_str()));
+      LOG_V(logs.isolated_process, ("Isolated process %s: Message reporting user error  ", str().c_str()));
       LOG_E(logs.isolated_process,
             ("User generated error at operation %s received %s", process_item_description().c_str(),
              message->error().c_str()));
@@ -342,7 +342,7 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       // Send an ok back, and return
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
-      LOG_M(logs.isolated_process, ("Writing user error on pipeFdPair2[1]:%d", pipeFdPair2[1]));
+      LOG_V(logs.isolated_process, ("Writing user error on pipeFdPair2[1]:%d", pipeFdPair2[1]));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LOG_E(logs.isolated_process,
               ("Error sending user error, code(%d),  (pipeFdPair2[1]:%d), error message:%s ", response->code(),
@@ -363,13 +363,13 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
     break;
 
     case samson::gpb::MessageProcessPlatform_Code_code_end: {
-      LOG_M(logs.isolated_process, ("Isolated process %s: Message reporting finish process  ", str().c_str()));
+      LOG_V(logs.isolated_process, ("Isolated process %s: Message reporting finish process  ", str().c_str()));
 
       // Send an ok back, and return
 
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
-      LOG_M(logs.isolated_process, ("Writing finish message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
+      LOG_V(logs.isolated_process, ("Writing finish message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LOG_E(logs.isolated_process,
               ("Error sending finish process, code(%d),  (pipeFdPair2[1]:%d) ", response->code(), pipeFdPair2[1]));
@@ -429,7 +429,7 @@ void ProcessItemIsolated::runExchangeMessages() {
     {
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
-      LOG_M(logs.isolated_process, ("Writing exchange message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
+      LOG_V(logs.isolated_process, ("Writing exchange message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LOG_E(logs.isolated_process,
               ("Error sending exchange message, code(%d),  (pipeFdPair2[1]:%d) ", response->code(), pipeFdPair2[1]));
@@ -440,7 +440,7 @@ void ProcessItemIsolated::runExchangeMessages() {
     }
   }
 
-  LOG_M(logs.isolated_process,
+  LOG_V(logs.isolated_process,
         ("Isolated process %s: begin message received. Starting the continuous loop... ", str().c_str()));
 
   // Continuous read of messages and perform required actions
@@ -449,7 +449,7 @@ void ProcessItemIsolated::runExchangeMessages() {
     // Take the timeout for reading operations from the other site
     int timeout_setup = au::Singleton<SamsonSetup>::shared()->GetInt("isolated.timeout");
 
-    LOG_M(logs.isolated_process,
+    LOG_V(logs.isolated_process,
           ("Isolated process %s: Reading a new message with timeout %d", str().c_str(), timeout_setup));
 
     // Read a message from the process
@@ -489,7 +489,7 @@ void ProcessItemIsolated::runExchangeMessages() {
 
 // Generic function to send messages from process to platform
 void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcessPlatform *message) {
-  LOG_M(logs.isolated_process,
+  LOG_V(logs.isolated_process,
         ("Background process: Sending a message from process to platform on pipeFdPair1[1]:%d", pipeFdPair1[1]));
 
   // Write the message
@@ -501,7 +501,7 @@ void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcess
           ("Error sending message from process to platform (pipeFdPair1[1]:%d) write-error %s", pipeFdPair1[1],
            au::status(write_ans)));
 
-    LOG_M(logs.isolated_process, ("Error sending message from process to platform write-error %s", au::status(write_ans)));
+    LOG_V(logs.isolated_process, ("Error sending message from process to platform write-error %s", au::status(write_ans)));
     if (isolated_process_as_tread) {
       return;
     } else {
@@ -512,7 +512,7 @@ void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcess
   // Read the response message
   samson::gpb::MessagePlatformProcess *response;
 
-  LOG_M(logs.isolated_process, ("Background process: Receive answer from platform on pipeFdPair2[0]:%d", pipeFdPair2[0]));
+  LOG_V(logs.isolated_process, ("Background process: Receive answer from platform on pipeFdPair2[0]:%d", pipeFdPair2[0]));
   // Read the answer from the platform
   au::Status read_ans = au::readGPB(pipeFdPair2[0], &response, -1);
 
@@ -522,7 +522,7 @@ void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcess
           (
             "Background process did not receive an answer from message with code %d (written on pipeFdPair1[1](%d) to the platform, reading from pipeFdPair2[0](%d). Error code '%s'",
             message->code(), pipeFdPair1[1], pipeFdPair2[0], au::status(read_ans)));
-    LOG_M(logs.isolated_process, ("Error sending message from process to platform read-error '%s'", au::status(read_ans)));
+    LOG_V(logs.isolated_process, ("Error sending message from process to platform read-error '%s'", au::status(read_ans)));
     if (isolated_process_as_tread) {
       return;
     } else {
@@ -532,7 +532,7 @@ void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcess
 
   // If response code is kill, let's die
   if (response->code() == samson::gpb::MessagePlatformProcess_Code_code_kill) {
-    LOG_M(logs.isolated_process, ("Kill message received in thread-mode!!", write_ans));
+    LOG_V(logs.isolated_process, ("Kill message received in thread-mode!!", write_ans));
     if (isolated_process_as_tread) {
       return;
     } else {
@@ -543,12 +543,12 @@ void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcess
   // Revove response object
   delete response;
 
-  LOG_M(logs.isolated_process, ("Background process: Finish a message to process"));
+  LOG_V(logs.isolated_process, ("Background process: Finish a message to process"));
 }
 
 // Function used inside runIsolated to send a code to the main process
 void ProcessItemIsolated::sendCode(int c) {
-  LOG_M(logs.isolated_process,
+  LOG_V(logs.isolated_process,
         (
           "Background process: Sending code %d (WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:%d, WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:%d)",
           c,
@@ -586,7 +586,7 @@ void ProcessItemIsolated::trace(LogLineData *logData) {
 
 #if 0
 
-  LOG_M(logs.isolated_process, ("Background process: Sending trace %s", logData->text));
+  LOG_V(logs.isolated_process, ("Background process: Sending trace %s", logData->text));
 
   samson::gpb::MessageProcessPlatform *message = new samson::gpb::MessageProcessPlatform();
   message->set_code(samson::gpb::MessageProcessPlatform_Code_code_trace);
@@ -612,7 +612,7 @@ void ProcessItemIsolated::trace(LogLineData *logData) {
 }
 
 void ProcessItemIsolated::reportProgress(double p) {
-  LOG_M(logs.isolated_process, ("Background process: Report progress %f", p));
+  LOG_V(logs.isolated_process, ("Background process: Report progress %f", p));
 
   samson::gpb::MessageProcessPlatform *message = new samson::gpb::MessageProcessPlatform();
   message->set_code(samson::gpb::MessageProcessPlatform_Code_code_progress);
@@ -624,7 +624,7 @@ void ProcessItemIsolated::reportProgress(double p) {
 }
 
 void ProcessItemIsolated::reportProgress(double p, std::string status) {
-  LOG_M(logs.isolated_process, ("Background process: Report progress %f", p));
+  LOG_V(logs.isolated_process, ("Background process: Report progress %f", p));
 
   samson::gpb::MessageProcessPlatform *message = new samson::gpb::MessageProcessPlatform();
   message->set_code(samson::gpb::MessageProcessPlatform_Code_code_progress);
@@ -637,7 +637,7 @@ void ProcessItemIsolated::reportProgress(double p, std::string status) {
 }
 
 void ProcessItemIsolated::runBackgroundProcessRun() {
-  LOG_M(logs.isolated_process, ("[Background] Running..."));
+  LOG_V(logs.isolated_process, ("[Background] Running..."));
 
   // Close the other side of the pipes ( if it is in thread-mode, we cannot close)
 
@@ -680,7 +680,7 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
     }
   }
 
-  LOG_M(logs.isolated_process, ("[Background] Sending 'begin' message"));
+  LOG_V(logs.isolated_process, ("[Background] Sending 'begin' message"));
   // Send the "begin" message
   {
     samson::gpb::MessageProcessPlatform *message = new samson::gpb::MessageProcessPlatform();
@@ -689,10 +689,10 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
     delete message;
   }
 
-  LOG_M(logs.isolated_process, ("[Background] Running process"));
+  LOG_V(logs.isolated_process, ("[Background] Running process"));
   runIsolated();
 
-  LOG_M(logs.isolated_process, ("[Background] Sends 'end' message"));
+  LOG_V(logs.isolated_process, ("[Background] Sends 'end' message"));
   // Send the "end" message
   {
     samson::gpb::MessageProcessPlatform *message = new samson::gpb::MessageProcessPlatform();
@@ -701,7 +701,7 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
     delete message;
   }
 
-  LOG_M(logs.isolated_process, ("[Background] Close the rest of pipes"));
+  LOG_V(logs.isolated_process, ("[Background] Close the rest of pipes"));
 
   // Close the other side of the pipe
   if (!isolated_process_as_tread) {
@@ -709,6 +709,6 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
     close(pipeFdPair2[0]);
   }
 
-  LOG_M(logs.isolated_process, ("[Background] Finished!"));
+  LOG_V(logs.isolated_process, ("[Background] Finished!"));
 }
 }

@@ -65,7 +65,7 @@ void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::Socke
   // Name of this connection
   std::string name = new_node_identifier.getCodeName();
 
-  LOG_M(logs.network_connection, ("Adding network_connection:%s", name.c_str()));
+  LOG_V(logs.network_connection, ("Adding network_connection:%s", name.c_str()));
 
   if (connections_.findInMap(name) != NULL) {
     LOG_SW(("Rejecting an incomming connection (%s) since it already exists", name.c_str()));
@@ -74,7 +74,7 @@ void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::Socke
   }
 
   // Add to the map of connections
-  LOG_M(logs.network_connection, ("Inserted new connection %s", name.c_str()));
+  LOG_V(logs.network_connection, ("Inserted new connection %s", name.c_str()));
   NetworkConnection *network_connection = new NetworkConnection(new_node_identifier, socket_connection, this);
   connections_.insertInMap(name, network_connection);
 }

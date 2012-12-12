@@ -38,7 +38,7 @@ NotificationElement::NotificationElement(Notification *notification, int seconds
 }
 
 void NotificationElement::run() {
-  LOG_M(logs.notifications, ("Running notification %s", notification_->GetDescription().c_str()));
+  LOG_V(logs.notifications, ("Running notification %s", notification_->GetDescription().c_str()));
   Engine::shared()->Send(notification_);
 }
 }

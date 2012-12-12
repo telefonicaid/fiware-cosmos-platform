@@ -118,7 +118,7 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
   engine::Engine::InitEngine(num_cores, memory, 1);
 
   // Init the modules manager
-  LOG_M(logs.modules_manager, ("Starting ModulesManager from SamsonClient::general_init()"));
+  LOG_V(logs.modules_manager, ("Starting ModulesManager from SamsonClient::general_init()"));
 }
 
 void SamsonClient::general_close() {
@@ -174,7 +174,7 @@ void SamsonClient::connect_to_queue(std::string queue, bool flag_new, bool flag_
   // Old strategy with delilah_->sendWorkerCommand("connect_to_queue") was not working
   size_t id = delilah_->AddPopComponent(queue, "", false, false);
 
-  LOG_M(logs.delilah_components, ("AddPopComponent for queue:'%s' returned id:%lu", queue.c_str(), id));
+  LOG_V(logs.delilah_components, ("AddPopComponent for queue:'%s' returned id:%lu", queue.c_str(), id));
 }
 
 SamsonClientBlockInterface *SamsonClient::getNextBlock(std::string queue) {

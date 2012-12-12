@@ -190,7 +190,7 @@ void ThreadManager::AddThread(ThreadInfo *thread_info) {
 }
 
 void ThreadManager::RemoveThread(ThreadInfo *thread_info) {
-  LOG_M(logs.thread_manager, ("Remove thead %s ", thread_info->str().c_str()));
+  LOG_V(logs.thread_manager, ("Remove thead %s ", thread_info->str().c_str()));
   for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] == thread_info) {
       threads_[i] = NULL;

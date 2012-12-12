@@ -21,6 +21,9 @@
 // Channel definition
 #define LOG_MAX_CHANNELS               1024
 
+// Max number of levels
+#define LOG_MAX_LEVELS                 256
+
 // Log Server
 #define LOG_SERVER_DEFAULT_PORT        6001
 #define LOG_SERVER_DEFAULT_CLIENT_PORT 6000
@@ -35,7 +38,7 @@
 #define LOG_LEVEL_INFO                 5
 #define LOG_LEVEL_DEBUG                6
 
-#define LOG_LEVEL_ALL                  256
+#define LOG_LEVEL_ALL                  255
 
 // Formatting
 // #define LOG_DEFAULT_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"

@@ -11,8 +11,8 @@
 
 #include "au/log/LogCentralChannelsFilter.h"  // Own interface
 
-
 #include "au/log/LogCentral.h"
+#include "au/string/StringUtilities.h"
 
 namespace au {
 std::string LogCentralChannelsFilter::description() {
@@ -33,6 +33,18 @@ std::string LogCentralChannelsFilter::description() {
     }
   }
 
+  return output.str();
+}
+
+std::string LogCentralChannelsFilter::GetHitDescriptionForChannel(int c) const {
+  std::ostringstream output;
+
+  for (int j = 0; j < LOG_MAX_LEVELS; ++j) {
+    size_t hits = channels_hits_[c][j];
+    if (hits > 0) {
+      output << au::str("%s x %s ", au::str(hits).c_str(), Log::GetLogLevel(j).c_str());
+    }
+  }
   return output.str();
 }
 }

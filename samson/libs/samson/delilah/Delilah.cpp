@@ -237,7 +237,7 @@ void Delilah::notify(engine::Notification *notification) {
  * receive -
  */
 void Delilah::receive(const PacketPointer& packet) {
-  LM_T(logs.in_messages, ("Delilah received packet type:%s", packet->str().c_str()));
+  LOG_V(logs.in_messages, ("Delilah received packet type:%s", packet->str().c_str()));
 
   // Message received
   Message::MessageCode msgCode = packet->msgCode;

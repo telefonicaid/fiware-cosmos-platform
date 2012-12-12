@@ -21,17 +21,17 @@ class NetworkListenerInterfaceImpl : public au::NetworkListenerInterface {
 public:
 
   virtual void newSocketConnection(au::NetworkListener *listener,
-                                   au::SocketConnection *socket_connetion) {
-    if (socket_connetion == NULL) {
+                                   au::SocketConnection *socket_connection) {
+    if (socket_connection == NULL) {
       LM_X(1, ("Null socket connection"));
     }
     char line[1024];
     num_connections_++;
 
-    if (socket_connetion->ReadLine(line, sizeof(line)) == au::OK) {
-      socket_connetion->WriteLine(line, strlen(line));
+    if (socket_connection->ReadLine(line, sizeof(line)) == au::OK) {
+      socket_connection->WriteLine(line, strlen(line));
     }
-    socket_connetion->Close();
+    socket_connection->Close();
   }
 
   static int num_connections() {

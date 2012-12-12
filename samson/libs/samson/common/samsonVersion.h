@@ -30,7 +30,7 @@
 #define SAMSON_VERSION       "0.7.0"
 
 /**
- * \brief Copyrigth message for all samson products
+ * \brief Copyright message for all samson products
  */
 #define SAMSON_COPYRIGHT     "Copyright (C) 2011 Telefonica Investigacion y Desarrollo"
 

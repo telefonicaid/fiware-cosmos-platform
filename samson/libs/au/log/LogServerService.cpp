@@ -197,7 +197,7 @@ void LogServerService::run(au::SocketConnection *socket_connection, bool *quit) 
   au::Status s = readGPB(socket_connection->fd(), &hello, 10);  // 10 seconds timeout to read hello message
 
   if (s != au::OK) {
-    LOG_SW(("Error reading hello message for incomming connection (%s)", au::status(s)));
+    LOG_SW(("Error reading hello message for incoming connection (%s)", au::status(s)));
     return;
   }
 

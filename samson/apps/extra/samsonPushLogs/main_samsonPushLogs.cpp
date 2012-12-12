@@ -72,7 +72,7 @@ PaArgument paArgs[] =
   { "-node",             controller,                        "",
     PaString,
     PaOpt,
-    _i "localhost", PaNL, PaNL, "SAMSON node to connect with "                                                                                                       },
+    _i "localhost", PaNL, PaNL, "SAMSON node to connect to "                                                                                                       },
   { "-port_node",        &port_node,                        "",
     PaInt, PaOpt,
     SAMSON_WORKER_PORT, 1, 99999, "SAMSON server port"                                                                                                                 },
@@ -161,7 +161,7 @@ int main(int argC, const char *argV[]) {
 
   samson_client = new samson::SamsonClient("push");
   if (!samson_client->connect(controller)) {
-    LM_X(1, ("Unable to connect with %s", controller));
+    LM_X(1, ("Unable to connect to %s", controller));
   }
   SamsonPushLogsConnectionsManager manager;
 

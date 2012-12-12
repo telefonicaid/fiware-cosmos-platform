@@ -94,7 +94,7 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
   au::Status s = SocketConnection::Create(host, port_, &socket_connection_);
   if (s != OK) {
     Disconnect(error);
-    error->AddError(au::str("Unable to connect with %s (%s)\n", host.c_str(), status(s)));
+    error->AddError(au::str("Unable to connect to %s (%s)\n", host.c_str(), status(s)));
   } else {
     error->AddWarning(au::str("Connection stablished with %s\n", host.c_str()));
   }

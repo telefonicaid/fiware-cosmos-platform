@@ -40,7 +40,7 @@ class LogCentral;
  *
  */
 
-extern LogCentral *log_central;   // Unique log_central variable used firectly when emitting logs
+extern LogCentral *log_central;   // Unique log_central variable used directly when emitting logs
 
 class LogCentral : public au::Thread {
 public:

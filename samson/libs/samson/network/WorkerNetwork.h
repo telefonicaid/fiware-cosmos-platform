@@ -23,22 +23,22 @@
 
 namespace samson {
 class WorkerNetwork : public CommonNetwork, public au::NetworkListenerInterface {
-  public:
-    WorkerNetwork(size_t worker_id, int port);
-    ~WorkerNetwork();
+public:
+  WorkerNetwork(size_t worker_id, int port);
+  ~WorkerNetwork();
 
-    // Stop background threads
-    void stop();
+  // Stop background threads
+  void stop();
 
-    void SendAlertToAllDelilahs(std::string type, std::string context, std::string message);
-    void SendAlertToDelilah(size_t delilah_id, std::string type, std::string context, std::string message);
+  void SendAlertToAllDelilahs(std::string type, std::string context, std::string message);
+  void SendAlertToDelilah(size_t delilah_id, std::string type, std::string context, std::string message);
 
-    // NetworkManager interface
-    void newSocketConnection(au::NetworkListener *listener, au::SocketConnection *socket_connetion);
+  // NetworkManager interface
+  void newSocketConnection(au::NetworkListener *listener, au::SocketConnection *socket_connection);
 
-  private:
-    // Worker listtener for new worker / delilah connections
-    au::NetworkListener *worker_listener;
+private:
+  // Worker listtener for new worker / delilah connections
+  au::NetworkListener *worker_listener;
 };
 }
 

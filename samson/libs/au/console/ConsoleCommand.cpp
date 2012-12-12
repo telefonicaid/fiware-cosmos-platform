@@ -123,22 +123,22 @@ void ConsoleCommand::ProcessEntry(ConsoleEntry& entry) {
   if (entry.isChar()) {
     char c = entry.getChar();
     switch (c) {
-      case 1:
+      case 1:  // C-a
         MoveHome();
         break;
-      case 5:
+      case 5:  // C-e
         MoveEnd();
         break;
-      case 11:
+      case 11:  // C-k
         DeleteRestOfLine();
         break;
-      case 20:
+      case 20:  // C-t
         Toggle();
         break;
-      case 23:
+      case 23:  // C-del
         DeleteWord();
         break;
-      case 127:
+      case 127:  // del
         DeleteChar();
         break;
     }

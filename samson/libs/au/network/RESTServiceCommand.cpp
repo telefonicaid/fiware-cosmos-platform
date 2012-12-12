@@ -58,7 +58,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
     // Remove last "\n" "\r" characters.
     request_line_ = au::StripString(request_line);
 
-    // Process incomming line with cmdLine
+    // Process incoming line with cmdLine
     au::CommandLine cmdLine;
     cmdLine.Parse(request_line_);
 
@@ -159,7 +159,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
 
     return au::OK;
   } else {
-    error.AddError("Error reading incomming command");
+    error.AddError("Error reading incoming command");
     return au::Error;
   }
 }

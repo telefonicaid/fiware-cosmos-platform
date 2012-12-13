@@ -70,7 +70,7 @@ TEST(CommandLine, default_values) {
 
   cmdLine.Parse("command");
 
-  EXPECT_EQ(1, cmdLine.get_num_arguments() == 1) << "Wrong number of arguments";
+  EXPECT_EQ(1, cmdLine.get_num_arguments()) << "Wrong number of arguments";
   EXPECT_EQ("command", cmdLine.get_argument(0)) << "Error parsing argument 0";
 
   EXPECT_FALSE(cmdLine.GetFlagBool("b")) << "Error parsing bool flag";
@@ -170,4 +170,36 @@ TEST(CommandLine, collisions) {
       "Error parsing uint64 flag with kCollisionSubtractFromPrevious";
 }
 
+TEST(CommandLine, error_cases) {
+  au::CommandLine cmdLine;
 
+  cmdLine.SetFlagString("s", "default");
+  cmdLine.SetFlagBoolean("b");
+  cmdLine.SetFlagInt("i", 1);
+  cmdLine.SetFlagUint64("ui", "64M");
+  cmdLine.SetFlagDouble("f", 1);
+
+  cmdLine.Parse("command -f");
+  EXPECT_EQ(1.0, cmdLine.GetFlagDouble("f")) << "Error parsing incomplete double flag";
+
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagBoolean("b");
+  cmdLine.SetFlagUint64("ui", "M", au::CommandLine::kCollisionConcatenateAtEnd);
+  cmdLine.Parse("command -s word");
+  EXPECT_EQ(2, cmdLine.get_num_arguments()) << "Wrong number of arguments";
+  EXPECT_FALSE(cmdLine.GetFlagBool("ui")) << "Error parsing wrong flag";
+  EXPECT_EQ(0, cmdLine.GetFlagDouble("ui")) << "Error parsing wrong flag";
+  EXPECT_EQ(0, cmdLine.GetFlagInt("ui")) << "Error parsing wrong flag";
+
+  cmdLine.ResetFlags();
+  cmdLine.SetFlagDouble("f", 1.0, au::CommandLine::kCollisionConcatenateAtEnd);
+  cmdLine.SetFlagString("s", "default", au::CommandLine::kCollisionSubtractFromPrevious);
+  // Again, wrong collision parameters can only be checked by the default behaviour (and logs)
+  cmdLine.Parse("command -f 1.0 -f 2.0 -s first -s second");
+  EXPECT_EQ(2.0, cmdLine.GetFlagDouble("f")) << "Error parsing double flag with wrong kCollisionConcatenateAtEnd";
+  EXPECT_EQ("second", cmdLine.GetFlagString("s")) <<
+      "Error parsing string flag with wrong kCollisionSubtractFromPrevious";
+
+
+
+}

@@ -188,7 +188,7 @@ void CommandLine::Parse(const std::string& command) {
       if (command.length() <= pos) {
         break; // No more characters to finish the literal
       }
-      pos++;
+      ++pos;
       size_t last = command.find_first_of("\"", pos);
       if (last == std::string::npos) {
         // Add the unfinished literal and finish
@@ -202,7 +202,7 @@ void CommandLine::Parse(const std::string& command) {
       if (command.length() <= pos) {
         break; // No more characters to finish the literal
       }
-      pos++;
+      ++pos;
       size_t last = command.find_first_of("'", pos);
       if (last == std::string::npos) {
         // Add the unfinished literal and finish
@@ -346,7 +346,7 @@ void CommandLine::ParseTockens(std::vector<std::string> &tockens) {
           flag_iterator->second.value = kTrue;
         } else {
           // This is a unary parameter
-          iter++;
+          ++iter;
           if (iter != tockens.end()) {
             if (flag_iterator->second.value != kUnknownValue) {
               switch (flag_iterator->second.collision_resolution) {

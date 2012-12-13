@@ -84,10 +84,10 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
 
   // Components
   worker_block_manager_.Reset(new WorkerBlockManager(this));
-  workerCommandManager_ = new WorkerCommandManager(this);
-  samson_worker_rest_ = new SamsonWorkerRest(this, web_port_);
-  task_manager_ =  new stream::WorkerTaskManager(this);
-  network_ = NULL;  // network_ will be properly initialized later
+  workerCommandManager_.Reset(new WorkerCommandManager(this));
+  samson_worker_rest_.Reset(new SamsonWorkerRest(this, web_port_));
+  task_manager_.Reset(new stream::WorkerTaskManager(this));
+  network_.Reset();     // network_ will be properly initialized later
 
 
   // Initial state of this worker ( unconnected )
@@ -129,31 +129,31 @@ void SamsonWorker::Review() {
 
       // Try to connect with ZK
       LOG_V(logs.worker_controller, ("Trying to connect to zk at %s", zoo_host_.c_str()));
-      zoo_connection_ = new au::zoo::Connection(zoo_host_, "samson", "samson");
+      zoo_connection_.Reset(new au::zoo::Connection(zoo_host_, "samson", "samson"));
       int rc = zoo_connection_->WaitUntilConnected(20000);
       if (rc) {
         state_message_ = au::str("Unable to connect to zk at %s (%s)"
                                  , zoo_host_.c_str()
                                  , au::zoo::str_error(rc).c_str());
         LOG_SW(("%s", state_message_.c_str()));
-        zoo_connection_ = NULL;
+        zoo_connection_.Reset();
         return;
       }
 
       // Main worker controller ( based on zookeeper connection )
-      worker_controller_ = new SamsonWorkerController(zoo_connection_.shared_object(), port_, web_port_);
+      worker_controller_.Reset(new SamsonWorkerController(zoo_connection_.shared_object(), port_, web_port_));
       rc = worker_controller_->init();
       if (rc) {
         state_message_ =  au::str("Error creating worker controller %s", au::zoo::str_error(rc).c_str());
         LOG_SW(("%s", state_message_.c_str()));
-        zoo_connection_ = NULL;
-        worker_controller_ = NULL;
+        zoo_connection_.Reset();
+        worker_controller_.Reset();
         return;
       }
 
-      data_model_ = new DataModel(zoo_connection_);
+      data_model_.Reset(new DataModel(zoo_connection_));
       data_model_->UpdateToLastVersion();
-      network_ = new WorkerNetwork(worker_controller_->worker_id(), port_);
+      network_.Reset(new WorkerNetwork(worker_controller_->worker_id(), port_));
 
       state_ = connected;            // Now we are connected
       state_message_ = "Connected";
@@ -299,10 +299,10 @@ void SamsonWorker::ResetToUnconnected() {
   state_message_ = "Unconnected";
 
 
-  zoo_connection_ = NULL;
-  worker_controller_ = NULL;
-  data_model_ = NULL;
-  network_ = NULL;
+  zoo_connection_.Reset();
+  worker_controller_.Reset();
+  data_model_.Reset();
+  network_.Reset();
 
   // Reset internal components
   worker_block_manager_->Reset();

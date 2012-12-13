@@ -97,16 +97,16 @@ public:
   }
 
   template<class T>
-  bool operator==(SharedPointer<T> shared_pointer) const {
+  bool operator==(const SharedPointer<T>& shared_pointer) const {
     return (shared_reference_counter_ == shared_pointer.shared_reference_counter_);
   }
 
   template<class T>
-  bool operator!=(SharedPointer<T> shared_pointer) const {
+  bool operator!=(const SharedPointer<T>& shared_pointer) const {
     return (shared_reference_counter_ != shared_pointer.shared_reference_counter_);
   }
 
-  SharedPointer<C>& operator=(SharedPointer<C> shared_pointer) {
+  SharedPointer<C>& operator=(const SharedPointer<C>& shared_pointer) {
     Release();
 
     shared_reference_counter_ = shared_pointer.shared_reference_counter_;
@@ -116,9 +116,15 @@ public:
     return *this;
   }
 
-  SharedPointer<C>& operator=(C *c) {
-    Reset(c);
-    return *this;
+/*
+ * SharedPointer<C>& operator=(C *c) {
+ *  Reset(c);
+ *  return *this;
+ * }
+ */
+
+  void Reset() {
+    Reset(NULL);
   }
 
   void Reset(C *c) {

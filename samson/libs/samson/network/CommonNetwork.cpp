@@ -30,7 +30,7 @@ CommonNetwork::CommonNetwork(NodeIdentifier my_node_identifier) :
   LOG_V(logs.network_connection, ("CommonNetwork created for node %s", node_identifier_.str().c_str()));
 
   // No cluster information at the moment
-  cluster_information_ = NULL;
+  cluster_information_.Reset();
 
   // Listen and create notifications for network manager review
   listen("notification_network_manager_review");

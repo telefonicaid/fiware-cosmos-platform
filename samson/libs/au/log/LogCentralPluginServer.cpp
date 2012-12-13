@@ -26,15 +26,15 @@ void LogCentralPluginServer::set_host(const std::string& host, int port, const s
   local_file_ = local_file;
 
   // Close previous connections if any
-  local_file_descriptor_ = NULL;
-  socket_connection_ = NULL;
+  local_file_descriptor_.Reset();
+  socket_connection_.Reset();
 
   // Open local file ( if possible )
   int fd = open(local_file_.c_str(), O_WRONLY | O_CREAT, 0644);
   if (fd >= 0) {
-    local_file_descriptor_ = new FileDescriptor("local_log", fd);
+    local_file_descriptor_.Reset(new FileDescriptor("local_log", fd));
   } else {
-    local_file_descriptor_ = NULL;
+    local_file_descriptor_.Reset();
     // LM_LW(("Not possible to open local log file %s. Logs will be definitely lost", local_file_.c_str()));
   }
 
@@ -63,7 +63,7 @@ std::string LogCentralPluginServer::local_file() const {
 void LogCentralPluginServer::SetLogServer(std::string host, int port) {
   host_ = host;
   port_ = port;
-  socket_connection_ = NULL;
+  socket_connection_.Reset();
   time_reconnect_ = 0;
 }
 
@@ -75,7 +75,7 @@ void LogCentralPluginServer::ReviewSocketConnection() {
 
   // If connected but closed, remove it
   if ((socket_connection_ != NULL) && socket_connection_->IsClosed()) {
-    socket_connection_ = NULL;   // Socket is closed automatically on destructor
+    socket_connection_.Reset();
 
     time_since_last_connection_.Reset();      // This is the time counter since last connection
     time_reconnect_ = 0;                      // Force try reconnect in next log
@@ -127,7 +127,7 @@ void LogCentralPluginServer::Emit(SharedPointer<Log> log) {
     if (log->Write(socket_connection_.shared_object())) {
       return;
     } else {
-      socket_connection_ = NULL;
+      socket_connection_.Reset();
     }
   }
 

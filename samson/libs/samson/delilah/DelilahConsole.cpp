@@ -216,14 +216,14 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "wlog_show") {
     if (log_probe != NULL) {
-      log_probe = NULL;
+      log_probe.Reset();
     }
 
     std::string host = command_instance->GetStringArgument("host");
     std::string format = command_instance->GetStringOption("format");
     std::string filter = command_instance->GetStringOption("filter");
 
-    log_probe = new au::LogProbe();
+    log_probe.Reset(new au::LogProbe());
     log_probe->AddPlugin("console", new au::LogProbeConsole(this, format));
 
     au::ErrorManager error;
@@ -231,7 +231,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     if (error.HasErrors()) {
       Write(error);
-      log_probe = NULL;
+      log_probe.Reset();
     } else {
       WriteWarningOnConsole(au::str("Connected to %s to get logs (Filter %s)", host.c_str(), filter.c_str()));
     }
@@ -241,7 +241,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "wlog_hide") {
     if (log_probe != NULL) {
-      log_probe = NULL;
+      log_probe.Reset();
     }
     WriteWarningOnConsole("Logs deactivated");
     return 0;

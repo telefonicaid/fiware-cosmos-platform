@@ -84,14 +84,14 @@ public:
   SamsonWorker(std::string zoo_host, int port, int web_port);
   ~SamsonWorker() {
     LOG_D(logs.cleanup, ("Entering ~SamsonWorker"));
-    worker_controller_ = NULL;
-    data_model_ = NULL;
-    network_ = NULL;
-    samson_worker_rest_ = NULL;
-    worker_block_manager_ = NULL;
-    task_manager_ = NULL;
-    workerCommandManager_ = NULL;
-    zoo_connection_ = NULL;
+    worker_controller_.Reset();
+    data_model_.Reset();
+    network_.Reset();
+    samson_worker_rest_.Reset();
+    worker_block_manager_.Reset();
+    task_manager_.Reset();
+    workerCommandManager_.Reset();
+    zoo_connection_.Reset();
     LOG_D(logs.cleanup, ("Finished ~SamsonWorker"));
   }
 

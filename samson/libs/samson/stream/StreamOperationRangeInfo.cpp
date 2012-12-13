@@ -250,7 +250,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);
   if (!stream_operation) {
     SetError(au::str("stream operation %s does not exist"));
-    worker_task_ = NULL;       // Cancel task if any
+    worker_task_.Reset();
     return;
   }
 
@@ -258,7 +258,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
   au::ErrorManager error;
   if (!IsStreamOperationValid(data, *stream_operation, &error)) {
     SetError(au::str("Error validating stream operation: %s", error.GetLastError().c_str()));
-    worker_task_ = NULL;       // Cancel task if any
+    worker_task_.Reset();
     return;
   }
 
@@ -450,7 +450,7 @@ void StreamOperationRangeInfo::ReviewCurrentTask() {
     if (worker_task_->error().HasErrors()) {
       SetError(worker_task_->error().GetLastError());
     }
-    worker_task_ = NULL;
+    worker_task_.Reset();
   }
 }
 
@@ -553,7 +553,7 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
   }
 
   if (accumulated_size > 2 * max_memory_per_task) {
-    worker_task_ = NULL;
+    worker_task_.Reset();
     SetError(au::str("Error: Memory footprint of %s for previous operation.", au::str(accumulated_size).c_str()));
     return au::SharedPointer<WorkerTask>(NULL);
   }

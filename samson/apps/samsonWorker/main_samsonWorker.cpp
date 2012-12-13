@@ -206,8 +206,16 @@ void SamsonWorkerCleanUp() {
   LOG_V(samson::logs.cleanup, ("Cleanup DONE"));
 }
 
+bool captured_sigint = false;
 void captureSIGINT(int s) {
   LOG_SW(("Signal SIGINT %d", s));
+
+  // If two are captures, just exit
+  if (captured_sigint) {
+    _exit(1);
+  }
+  captured_sigint = true;
+
   if (fg) {
     worker->StopConsole();
   } else {

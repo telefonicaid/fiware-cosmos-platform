@@ -133,10 +133,10 @@ void Block::freeBlock() {
   LOG_D(logs.block_manager, ("Destroying buffer for block:'%s'", str().c_str()));
 
   // Relase buffer
-  buffer_ = NULL;
+  buffer_.Reset();
 
   // Release KVFILE
-  file_ = NULL;
+  file_.Reset();
 }
 
 // Get information about this block

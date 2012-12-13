@@ -86,7 +86,7 @@ void BufferProcessor::emit(char *data, size_t length) {
 void BufferProcessor::flushOutputBuffer() {
   if (output_buffer_ != NULL) {
     channel->push(output_buffer_);
-    output_buffer_ = NULL;
+    output_buffer_.Reset();
   }
 }
 

@@ -60,7 +60,7 @@ au::Status RESTServiceCommand::Read(SocketConnection *socket_connection, au::Err
 
     // Process incoming line with cmdLine
     au::CommandLine cmdLine;
-    cmdLine.Parse(request_line_);
+    cmdLine.Parse(request_line_, false);
 
     if (cmdLine.get_num_arguments() < 2) {
       error.AddError(au::str("Unexpected format. Incomming line %s", request_line_.c_str()));

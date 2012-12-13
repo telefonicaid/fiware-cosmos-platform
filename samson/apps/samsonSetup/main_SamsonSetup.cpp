@@ -122,7 +122,7 @@ public:
   void EvalCommand(const std::string& command) {
     au::CommandLine cmd;
 
-    cmd.Parse(command);
+    cmd.Parse(command, false);
 
     if (cmd.get_num_arguments() == 0) {
       return;

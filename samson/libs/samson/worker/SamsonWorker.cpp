@@ -892,7 +892,7 @@ void SamsonWorker::AutoComplete(au::console::ConsoleAutoComplete *info) {
 void SamsonWorker::EvalCommand(const std::string& command) {
   au::CommandLine cmdLine;
 
-  cmdLine.Parse(command);
+  cmdLine.Parse(command, false);
   if (cmdLine.get_num_arguments() == 0) {
     return;
   }

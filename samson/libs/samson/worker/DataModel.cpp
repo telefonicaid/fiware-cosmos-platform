@@ -278,6 +278,13 @@ void DataModel::ProcessAddQueueConnectionCommand(gpb::Data *data, au::SharedPoin
 
 // All
 
+std::string ConcatPrefix(const std::string& prefix, const std::string& name) {
+  if (prefix.length() > 0) {
+    return prefix + "." + name;
+  } else {
+    return name;
+  }
+}
 
 void DataModel::ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
                                                  au::ErrorManager& error) {
@@ -291,7 +298,7 @@ void DataModel::ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPoin
   // Recover prefix
   std::string prefix = cmd->GetFlagString("prefix");
 
-  std::string name = prefix + "." + cmd->get_argument(1);
+  std::string name = ConcatPrefix(prefix, cmd->get_argument(1));
   std::string operation = cmd->get_argument(2);
   std::string inputs = cmd->GetFlagString("input");
   std::string outputs = cmd->GetFlagString("output");
@@ -647,7 +654,8 @@ void DataModel::ProcessRemoveStreamOperationCommand(gpb::Data *data
                                                     , au::ErrorManager& error) {
   // Recover prefix
   std::string prefix = cmd->GetFlagString("prefix");
-  std::string name = prefix + "." + cmd->get_argument(1);
+
+  std::string name = ConcatPrefix(prefix, cmd->get_argument(1));
 
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, name);
 
@@ -716,7 +724,7 @@ void DataModel::ProcessSetStreamOperationPropertyCommand(gpb::Data *data, au::Sh
   // Recover prefix
   std::string prefix = cmd->GetFlagString("prefix");
 
-  std::string name = prefix + "." + cmd->get_argument(1);
+  std::string name = ConcatPrefix(prefix, cmd->get_argument(1));
   std::string property = cmd->get_argument(2);
   std::string value = cmd->get_argument(3);
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, name);
@@ -751,8 +759,7 @@ void DataModel::ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data,
   }
   // Recover prefix
   std::string prefix = cmd->GetFlagString("prefix");
-
-  std::string name = prefix + "." + cmd->get_argument(1);
+  std::string name = ConcatPrefix(prefix, cmd->get_argument(1));
   std::string property = cmd->get_argument(2);
 
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, name);

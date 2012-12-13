@@ -9,8 +9,8 @@
  * All rights reserved.
  */
 #include "au/CommandLine.h"             // Own interface
-#include <iostream>                     // std::cout
 #include "au/log/LogMain.h"
+#include <iostream>                     // std::cout
 
 namespace au {
 const std::string CommandLine::kUnknownValue("unknown");
@@ -28,13 +28,13 @@ CommandLine::CommandLine(int argc, const char *argv[]) {
   Parse(argc, argv);
 }
 
-void CommandLine::Parse(int args, const char *argv[]) {
+void CommandLine::Parse(int args, const char *argv[], bool strict) {
   std::ostringstream o;
 
   for (int i = 0; i < args; ++i) {
     o << argv[i] << " ";
   }
-  Parse(o.str());
+  Parse(o.str(), strict);
 }
 
 void CommandLine::ResetFlags(void) {
@@ -57,7 +57,7 @@ void CommandLine::SetFlagInt(const std::string& name, int default_value) {
 }
 
 void CommandLine::SetFlagInt(const std::string& name, int default_value,
-    CollisionResolutionValues collision_strategy) {
+                             CollisionResolutionValues collision_strategy) {
   CommandLineFlag flag;
 
   flag.type = kTypeInt;
@@ -84,7 +84,7 @@ void CommandLine::SetFlagDouble(const std::string& name, double default_value) {
 }
 
 void CommandLine::SetFlagDouble(const std::string& name, double default_value,
-    CollisionResolutionValues collision_strategy) {
+                                CollisionResolutionValues collision_strategy) {
   CommandLineFlag flag;
 
   flag.type = kTypeDouble;
@@ -111,7 +111,7 @@ void CommandLine::SetFlagString(const std::string& name, const std::string& defa
 }
 
 void CommandLine::SetFlagString(const std::string& name, const std::string& default_value,
-    CollisionResolutionValues collision_strategy) {
+                                CollisionResolutionValues collision_strategy) {
   CommandLineFlag flag;
 
   flag.type = kTypeString;
@@ -135,19 +135,21 @@ void CommandLine::SetFlagUint64(const std::string& name, const std::string& defa
 
 void CommandLine::SetFlagUint64(const std::string& name, size_t default_value) {
   std::ostringstream o;
+
   o << default_value;
   SetFlagUint64(name, o.str(), kCollisionOverwrite);
 }
 
 void CommandLine::SetFlagUint64(const std::string& name, size_t default_value,
-    CollisionResolutionValues collision_strategy) {
+                                CollisionResolutionValues collision_strategy) {
   std::ostringstream o;
+
   o << default_value;
   SetFlagUint64(name, o.str(), collision_strategy);
 }
 
 void CommandLine::SetFlagUint64(const std::string& name, const std::string& default_value,
-    CollisionResolutionValues collision_strategy) {
+                                CollisionResolutionValues collision_strategy) {
   CommandLineFlag flag;
 
   flag.type = kTypeUInt64;
@@ -165,7 +167,7 @@ void CommandLine::SetFlagUint64(const std::string& name, const std::string& defa
   flags_.insert(std::pair<std::string, CommandLineFlag>(name, flag));
 }
 
-void CommandLine::Parse(const std::string& command) {
+void CommandLine::Parse(const std::string& command, bool strict) {
   ClearValues();
 
   std::vector<std::string> tockens;
@@ -173,7 +175,7 @@ void CommandLine::Parse(const std::string& command) {
   // Copy the original command
   command_ = command;
 
-  std::string delimiters = " \t\n"; // All possible delimiters
+  std::string delimiters = " \t\n";  // All possible delimiters
   std::string delimiters_and_literal = " \t\n";
 
   std::string::size_type pos = 0;
@@ -182,11 +184,11 @@ void CommandLine::Parse(const std::string& command) {
     pos = command.find_first_not_of(delimiters, pos);
 
     if (pos == std::string::npos) {
-      break; // No more tockens in this string
+      break;  // No more tockens in this string
     }
     if (command[pos] == '\"') {
       if (command.length() <= pos) {
-        break; // No more characters to finish the literal
+        break;  // No more characters to finish the literal
       }
       ++pos;
       size_t last = command.find_first_of("\"", pos);
@@ -200,7 +202,7 @@ void CommandLine::Parse(const std::string& command) {
       }
     } else if (command[pos] == '\'') {
       if (command.length() <= pos) {
-        break; // No more characters to finish the literal
+        break;  // No more characters to finish the literal
       }
       ++pos;
       size_t last = command.find_first_of("'", pos);
@@ -227,11 +229,12 @@ void CommandLine::Parse(const std::string& command) {
     }
   }
 
-  ParseTockens(tockens);
+  ParseTockens(tockens, strict);
 }
 
 std::string CommandLine::AddFlagValues(const std::string& addend1, const std::string& addend2, TypeValues type) {
   std::string result;
+
   switch (type) {
     case kTypeBool: {
       LOG_SW(("Wrong operation on flag type bool"));
@@ -269,8 +272,10 @@ std::string CommandLine::AddFlagValues(const std::string& addend1, const std::st
   return result;
 }
 
-std::string CommandLine::SubtractFlagValues(const std::string& minuend, const std::string& subtrahend, TypeValues type) {
+std::string CommandLine::SubtractFlagValues(const std::string& minuend, const std::string& subtrahend,
+                                            TypeValues type) {
   std::string result;
+
   switch (type) {
     case kTypeBool: {
       LOG_SW(("Wrong operation on flag type bool"));
@@ -317,13 +322,13 @@ void CommandLine::ClearValues() {
   // Remove the "value" field in all "flags"
   std::map<std::string, CommandLineFlag>::iterator iter;
   for (iter = flags_.begin(); iter != flags_.end(); ++iter) {
-    iter->second.value = kUnknownValue; // Default value when no assigned
+    iter->second.value = kUnknownValue;  // Default value when no assigned
   }
   // Remove the arguments vector
   arguments_.clear();
 }
 
-void CommandLine::ParseTockens(std::vector<std::string> &tockens) {
+void CommandLine::ParseTockens(std::vector<std::string> &tockens, bool strict) {
   // Parse tockens to distinguish between arguments and flags parameters
 
   std::vector<std::string>::iterator iter;
@@ -358,7 +363,9 @@ void CommandLine::ParseTockens(std::vector<std::string> &tockens) {
                   flag_iterator->second.value = flag_iterator->second.value + "." + *iter;
                   break;
                 case kCollisionIgnore:
-                  LOG_SW(("Multiple appearances of flag:'%s', ignoring all but the first one", flag_name.c_str()));
+                  if (strict) {
+                    LOG_SW(("Multiple appearances of flag:'%s', ignoring all but the first one", flag_name.c_str()));
+                  }
                   break;
                 case kCollisionInsertAtBegin:
                   flag_iterator->second.value = *iter + "." + flag_iterator->second.value;
@@ -377,7 +384,9 @@ void CommandLine::ParseTockens(std::vector<std::string> &tockens) {
           }
         }
       } else {
-        LOG_SW(("Flag:'%s' in command line, not present among flags to be processed", flag_name.c_str()));
+        if (strict) {
+          LOG_SW(("Flag:'%s' in command line, not present among flags to be processed", flag_name.c_str()));
+        }
       }
     } else {
       // Normal argument
@@ -395,7 +404,7 @@ int CommandLine::get_num_arguments() const {
 }
 
 std::string CommandLine::get_argument(int index) const {
-  if ((index < 0) || (index >= (int) arguments_.size())) {
+  if ((index < 0) || (index >= (int)arguments_.size())) {
     return kNoArgument;
   }
   return arguments_[index];
@@ -488,7 +497,7 @@ int CommandLine::getIntValue(const std::string& value) {
 }
 
 size_t CommandLine::getUint64Value(const std::string& value) {
-  size_t base = 1; // Default base
+  size_t base = 1;  // Default base
   size_t num = 0;
 
   if (value[value.size() - 1] == 'K') {

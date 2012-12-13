@@ -166,11 +166,13 @@ void ThreadManager::AddThread(ThreadInfo *thread_info) {
 
   for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
     if (threads_[i] == NULL) {
+      LOG_M(logs.thread_manager, ("Adding  Thread '%s' at pos:%d of %d", thread_info->str().c_str(), i, AU_MAX_NUM_THREADS));
       threads_[i] = thread_info;
       return;
     }
   }
 
+  LOG_E(logs.thread_manager, ("No space for more threads, all %d in use", AU_MAX_NUM_THREADS));
   LM_X(1, ("No space for more threads"));
 }
 
@@ -178,6 +180,7 @@ void ThreadManager::RemoveThread(ThreadInfo *thread_info) {
   LOG_M(logs.thread_manager, ("Remove thead %s ", thread_info->str().c_str()));
   for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
     if (threads_[i] == thread_info) {
+      LOG_M(logs.thread_manager, ("Resetting thread:%d of %d", i, AU_MAX_NUM_THREADS));
       threads_[i] = NULL;
       return;
     }

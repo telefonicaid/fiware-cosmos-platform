@@ -120,6 +120,8 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
   }
 
   LOG_M(logs.worker_command, ("[%s] Running command %s", worker_command_id_.c_str(), command.c_str()));
+  // TODO(@jges): Remove log message
+  LM_W(("[%s] Running command %s", worker_command_id_.c_str(), command.c_str()));
 
   // Parse command
   au::CommandLine cmd;

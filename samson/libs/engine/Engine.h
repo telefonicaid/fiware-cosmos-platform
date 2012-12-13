@@ -110,9 +110,21 @@ public:
 
 private:
 
+
   Engine();     // Private constructor ( see Init static method )
 
-  void RunThread();  // Run method for background thread
+  /**
+   *
+   * RunThread
+   *
+   * \brief Main loop to process engine-elements ( normal, periodic ande extra )
+   *
+   * Try to get the next element in the repeat_elements list
+   * if not there , try normal elements...
+   * if not, run extra elements and loop again...
+   *
+   */
+  void RunThread();
 
   // Methods to register and unregister listsners ( used from class NotificationListener )
   void AddListener(NotificationListener *object);

@@ -110,8 +110,9 @@ void Engine::RunElement(EngineElement *running_element) {
 
   InternRunElement(running_element);
   if (cronometer.seconds() > 3) {
-    LOG_W(logs.engine, ("EngineElement %s has being running for %s"
-                        , running_element->str().c_str(), au::str_time(cronometer.seconds()).c_str()));
+    LOG_W(logs.engine, ("EngineElement %s has being running for %s",
+                        running_element->str().c_str(),
+                        au::str_time(cronometer.seconds()).c_str()));
   }
 }
 
@@ -124,7 +125,7 @@ void Engine::InternRunElement(EngineElement *running_element) {
   // Print traces for debugging strange situations
   int waiting_time = running_element->GetWaitingTime();
   if (waiting_time > 10) {
-    LOG_SW(("Engine is running an element that has been waiting %d seconds", waiting_time));
+    LOG_SV(("Engine will run '%s' that has been waiting %d seconds", waiting_time));
 
     if (waiting_time > 100) {
       // Print all elements with traces for debuggin...
@@ -139,12 +140,6 @@ void Engine::InternRunElement(EngineElement *running_element) {
 
     // Run the running element ;)
     running_element->run();
-
-    int execution_time = c.seconds();
-    if (execution_time > 10) {
-      LOG_SW(("Engine has executed an item in %d seconds.", execution_time));
-      LOG_SW(("Engine Executed item: %s", running_element->str().c_str()));
-    }
   }
 
   LOG_V(logs.engine, ("[DONE] Engine:  executing %s", running_element->str().c_str()));
@@ -152,19 +147,6 @@ void Engine::InternRunElement(EngineElement *running_element) {
   // Collect information about this execution
   activity_monitor_.StartActivity("engine_management");
 }
-
-/**
- *
- * RunMainLoop
- *
- * \breif Main loop to process engine-elements ( normal, periodic ande extra )
- *
- * Try to get the next element in the repeat_elements list
- * if not there , try normal elements...
- * if not, run extra elements and loop again...
- *
- */
-
 
 void Engine::RunThread() {
   LOG_V(logs.engine, ("Engine run"));

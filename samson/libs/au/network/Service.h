@@ -83,7 +83,7 @@ public:
   virtual void run(SocketConnection *soket_connection, bool *quit) = 0;
 
   // virtual methods of NetworkListenerInterface
-  virtual void newSocketConnection(NetworkListener *_listener, SocketConnection *socket_connetion);
+  virtual void newSocketConnection(NetworkListener *_listener, SocketConnection *socket_connection);
 
   // Accessorts
   int port() const;

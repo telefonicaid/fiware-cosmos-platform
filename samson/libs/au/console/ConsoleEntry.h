@@ -55,12 +55,12 @@ public:
   }
 
   bool isChar() {
-    return ( type == normal_char);
+    return (type == normal_char);
   }
 
   bool isChar(char _c) {
     if (type == normal_char) {
-      return (c == _c );
+      return (c == _c);
     } else {
       return false;
     }
@@ -74,18 +74,17 @@ public:
   }
 
   bool isEscapeSequence() {
-    return ( type == escape_sequence);
+    return (type == escape_sequence);
   }
 
   bool isUnknownEscapeSequence() {
-    return ( type == unknown_escape_sequence);
+    return (type == unknown_escape_sequence);
   }
 
   std::string getEscapeSequece() {
     if (type == normal_char) {
       LM_X(1, ("Getting a escape sequence from a wrong Console Entry"));
     }
-
     return seq;
   }
 
@@ -93,44 +92,37 @@ public:
     if (type != escape_sequence) {
       return false;
     }
-
-
-
-
-    return ( seq == "[A" );
+    return (seq == "[A");
   }
 
   bool isCursorDown() {
     if (type != escape_sequence) {
       return false;
     }
-
-
-
-
-    return ( seq == "[B" );
+    return (seq == "[B");
   }
 
   bool isCursorLeft() {
     if (type != escape_sequence) {
       return false;
     }
-
-
-
-
-    return ( seq == "[D" );
+    return (seq == "[D");
   }
 
   bool isCursorRigth() {
     if (type != escape_sequence) {
       return false;
     }
+    return (seq == "[C");
+  }
 
-
-
-
-    return ( seq == "[C" );
+  bool IsNormalChar() const {
+    if (type == normal_char) {
+      if ((c >= 32) && (c <= 126)) {
+        return true;
+      }
+    }
+    return false;
   }
 };
 }

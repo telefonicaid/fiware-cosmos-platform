@@ -103,6 +103,7 @@ function setup_test_vars
 
 function execute_test
 {
+    echo "RUNNING: $TEST_NAME ( $TEST_FILE )"
 
     # ------------------------------------------------ 
     # Initialize the test

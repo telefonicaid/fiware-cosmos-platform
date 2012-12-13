@@ -18,38 +18,67 @@
 
 namespace au {
 namespace console {
+/**
+ * \brief Alternative for auto completion
+ */
+
 class ConsoleAutoCompleteAlternative {
 public:
-  std::string label;     // Label to show on screen
-  std::string command;     // Text to be compared with the current last word
-
-  bool add_space_if_unique;
 
   explicit ConsoleAutoCompleteAlternative(std::string txt) {
-    label = txt;
-    command = txt;
-    add_space_if_unique = true;
+    label_ = txt;
+    command_ = txt;
+    add_space_if_unique_ = true;
   }
 
-  ConsoleAutoCompleteAlternative(std::string _label, std::string _command, bool _add_space_if_unique) {
-    command = _command;
-    label = _label;
-    add_space_if_unique = _add_space_if_unique;
+  ConsoleAutoCompleteAlternative(std::string label, std::string command, bool add_space_if_unique) {
+    command_ = command;
+    label_ = label;
+    add_space_if_unique_ = add_space_if_unique;
   }
 
-  std::string bold_label(std::string last_word) {
-    if (last_word.length() > label.length()) {
-      return label;
+  std::string GetColoredLabel(std::string last_word) const {
+    if (last_word.length() > label_.length()) {
+      return label_;
     }
 
-    if (label.substr(0, last_word.length()) == last_word) {
+    if (label_.substr(0, last_word.length()) == last_word) {
       return au::str(au::BoldRed, "%s", last_word.c_str())
-             + au::str(au::BoldMagenta, "%s", label.substr(last_word.length()).c_str());
+             + au::str(au::BoldMagenta, "%s", label_.substr(last_word.length()).c_str());
     } else {
-      return label;
+      return label_;
     }
   }
+
+  // Operation < to be used in std::sort
+  friend bool operator<(const ConsoleAutoCompleteAlternative& a, const ConsoleAutoCompleteAlternative& b) {
+    return a.label_ < b.label_;
+  }
+
+  std::string command() const {
+    return command_;
+  }
+
+  std::string label() const {
+    return label_;
+  }
+
+  bool add_space_if_unique() const {
+    return add_space_if_unique_;
+  }
+
+private:
+
+  friend class ConsoleAutoComplete;
+
+  std::string label_;          // Label to show on screen
+  std::string command_;        // Text to be compared with the current last word
+  bool add_space_if_unique_;
 };
+
+/**
+ * \brief Autocomplete information and container for all alternatives
+ */
 
 class ConsoleAutoComplete {
 public:

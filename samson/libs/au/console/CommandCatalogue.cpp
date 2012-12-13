@@ -600,7 +600,7 @@ void CommandCatalogue::AutoComplete(au::console::ConsoleAutoComplete *info) {
   if (info->completingFirstWord()) {
     info->add("help: Show help for commands or categories", "help", true);
 
-    for (size_t i = 0; i < commands_.size(); i++) {
+    for (size_t i = 0; i < commands_.size(); ++i) {
       info->add(commands_[i]->name());
     }
     return;
@@ -613,7 +613,7 @@ void CommandCatalogue::AutoComplete(au::console::ConsoleAutoComplete *info) {
       info->add("categories");       // To view available categories
 
       // Add all commands
-      for (size_t i = 0; i < commands_.size(); i++) {
+      for (size_t i = 0; i < commands_.size(); ++i) {
         info->add(commands_[i]->name());
       }
 
@@ -645,7 +645,7 @@ std::string CommandCatalogue::GetCommandsTable(const std::string& category) cons
   au::StringVector columns = au::StringVector("Command", "Category,left", "Description,left");
   au::tables::Table table(columns);
 
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     if (category == "" || (commands_[i]->category() == category)) {
       table.addRow(au::StringVector(commands_[i]->name(), commands_[i]->category(),
                                     commands_[i]->short_description()));
@@ -736,7 +736,7 @@ std::string CommandCatalogue::GetHelpForConcept(const std::string& name) const {
 au::StringVector CommandCatalogue::GetCategories() const {
   au::StringVector categories;
 
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     categories.push_back(commands_[i]->category());
   }
 
@@ -745,7 +745,7 @@ au::StringVector CommandCatalogue::GetCategories() const {
 }
 
 bool CommandCatalogue::IsValidCommand(const std::string& command) const {
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     if (commands_[i]->name() == command) {
       return true;
     }
@@ -754,7 +754,7 @@ bool CommandCatalogue::IsValidCommand(const std::string& command) const {
 }
 
 bool CommandCatalogue::IsValidCategory(const std::string& category) const {
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     if (commands_[i]->category() == category) {
       return true;
     }
@@ -763,7 +763,7 @@ bool CommandCatalogue::IsValidCategory(const std::string& category) const {
 }
 
 Command *CommandCatalogue::GetCommand(const std::string& name) const {
-  for (size_t i = 0; i < commands_.size(); i++) {
+  for (size_t i = 0; i < commands_.size(); ++i) {
     if (commands_[i]->name() == name) {
       return commands_[i];
     }
@@ -771,7 +771,8 @@ Command *CommandCatalogue::GetCommand(const std::string& name) const {
   return NULL;
 }
 
-CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::ErrorManager& error) const {
+au::SharedPointer<CommandInstance> CommandCatalogue::Parse(const std::string command_line,
+                                                           au::ErrorManager& error) const {
   // Tokenize provided line
   token::Tokenizer tokenizer;
 
@@ -790,7 +791,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
   // Analyse the line
   if (components.size() == 0) {
     error.AddError("No provided command");
-    return NULL;
+    return au::SharedPointer<CommandInstance>(NULL);
   }
 
   // Create a new C
@@ -798,15 +799,15 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
   Command *command = GetCommand(main_command);
   if (!command) {
     error.AddError(au::str("Command '%s' not found", main_command.c_str()));
-    return NULL;
+    return au::SharedPointer<CommandInstance>(NULL);
   }
 
-  CommandInstance *command_instance = new CommandInstance(command, command_line);
+  au::SharedPointer<CommandInstance> command_instance(new CommandInstance(command, command_line));
 
   int pos_argument = 0;              // Position of the argument we are parsing
 
   for (size_t i = 1; i < components.size(); i++) {
-    // Check if we are at the begining of a -option element
+    // Check if we are at the beginning of a -option element
     if (components[i].length() > 0) {
       if (components[i][0] == '-') {
         std::string option_name = components[i];
@@ -818,8 +819,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                  main_command.c_str()));
           error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
           error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-          delete command_instance;
-          return NULL;
+          return au::SharedPointer<CommandInstance>(NULL);
         } else {
           if (item->type() == options::option_bool) {
             command_instance->SetValue(option_name, "true");
@@ -830,8 +830,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                      , option_name.c_str(), main_command.c_str()));
               error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
               error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-              delete command_instance;
-              return NULL;
+              return au::SharedPointer<CommandInstance>(NULL);
             } else {
               std::string value = components[i + 1];
               i++;
@@ -841,8 +840,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                        value.c_str(), option_name.c_str(), main_command.c_str()));
                 error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
                 error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-                delete command_instance;
-                return NULL;
+                return au::SharedPointer<CommandInstance>(NULL);
               } else {
                 command_instance->SetValue(option_name, value);
                 continue;
@@ -858,8 +856,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                              , main_command.c_str(), command->usage().c_str()));
       error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
       error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-      delete command_instance;
-      return NULL;
+      return au::SharedPointer<CommandInstance>(NULL);
     }
 
     // Recover item we are filling
@@ -871,8 +868,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                              value.c_str(), item->name().c_str(), main_command.c_str()));
       error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
       error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-      delete command_instance;
-      return NULL;
+      return au::SharedPointer<CommandInstance>(NULL);
     }
 
     command_instance->SetValue(item->name(), value);
@@ -886,8 +882,7 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                command->options()[i]->name().c_str(), main_command.c_str()));
         error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
         error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-        delete command_instance;
-        return NULL;
+        return au::SharedPointer<CommandInstance>(NULL);
       }
     }
   }
@@ -899,12 +894,10 @@ CommandInstance *CommandCatalogue::Parse(const std::string command_line, au::Err
                                command->arguments()[i]->name().c_str(), main_command.c_str()));
         error.AddWarning(au::str("Usage: %s", command->usage().c_str()));
         error.AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
-        delete command_instance;
-        return NULL;
+        return au::SharedPointer<CommandInstance>(NULL);
       }
     }
   }
-
 
   return command_instance;
 }
@@ -923,6 +916,10 @@ void CommandCatalogue::AddTag(const std::string& command_name, const std::string
 CommandInstance::CommandInstance(Command *command, const std::string & command_line) {
   command_ = new Command(*command);                   // duplicate command information
   command_line_ = command_line;                       // Copy of the origina command line
+}
+
+CommandInstance::~CommandInstance() {
+  delete command_;   // Remove duplicated information
 }
 
 const std::string CommandInstance::main_command() {

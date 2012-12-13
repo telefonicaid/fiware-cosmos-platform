@@ -127,7 +127,10 @@ public:
   int num_threads() const;
 
   // Debug string
-  std::string str();
+  std::string str() const;
+
+  // Debug string
+  std::string str_table() const;
 
   // Singleton access handy function
   static ThreadManager *shared() {
@@ -136,79 +139,14 @@ public:
 
 private:
 
+  // Mutex protection
+  mutable au::Token token_;
+
   // "Name" of the running threads
   ThreadInfo *threads_[AU_MAX_NUM_THREADS];
 
   void AddThread(ThreadInfo *thread_info);
   void RemoveThread(ThreadInfo *thread_info);
-
-  // Mutex protection
-  au::Token token_;
-};
-
-
-// Class to encapsulate a thread
-//
-// The thread itself is implemented in the "run" method
-// Method thread_should_quit() should be periodically checked inside run() to return from "run"
-
-
-class Thread {
-public:
-
-  explicit Thread(const std::string& name) {
-    name_ = name;
-    stoping_ = false;
-    pthread_running_ = false;
-  }
-
-  ~Thread() {
-    StopThread();  // make sure background thread is stoped
-  }
-
-  // Main functions to control this thread ( from outputside the thread )
-  void StartThread();
-  void StopThread();
-
-  // Method to block this thread until background thread is finisd
-  void JoinThread();
-
-  // Overload this method to implement whatever is necessary to unlock background thread
-  virtual void UnlockThread() {
-  };
-
-  bool IsThreadQuiting() const {
-    return stoping_;
-  }
-
-  bool IsThreadRunning() const {
-    return pthread_running_;
-  }
-
-  /**
-   * \brief Check if I am the background thread
-   */
-
-  bool IsBackgroundThread() const {
-    if (!pthread_running_) {
-      return false;
-    }
-    return pthread_equal(pthread_self(), t_);
-  }
-
-private:
-
-  // Main function of the thread to be overloaded
-  virtual void RunThread() = 0;
-
-  std::string name_;        // Name of this thread for debugging
-  pthread_t t_;             // Identifier of backgroud thread
-  bool pthread_running_;    // Flag to indicate background thread is really running
-  bool stoping_;            // Flag to indicate background thread to stop
-
-  friend void *run_Thread(void *p);
-
-  au::Token token_;  // Mutex to stop threads until background thread is finished
 };
 }
 

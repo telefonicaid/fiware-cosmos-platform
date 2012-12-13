@@ -76,7 +76,7 @@ public:
   SamsonClient(std::string connection_type);
   virtual ~SamsonClient();
 
-  // Connect with a cluter
+  // connect to a cluster
   bool connect(const std::vector<std::string>& hosts);
   bool connect(const std::string& host);
 

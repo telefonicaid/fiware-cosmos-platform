@@ -151,7 +151,7 @@ public:
 
   // au::network::NetworkListenerInterface
   virtual void newSocketConnection(au::NetworkListener *listener
-                                   , au::SocketConnection *socket_connetion);
+                                   , au::SocketConnection *socket_connection);
 
   // Write errors depending on setup ( interactive, deamon, normal )
   void log(au::SharedPointer<Log> log);

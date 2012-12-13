@@ -138,8 +138,16 @@ bool CheckIfStringBeginsAndEndsWith(const std::string& str, const std::string& p
 // Console string commands
 // ------------------------------------------------------------------
 
-// Get the width of the terminal
+/**
+ * \brief Get the width of the terminal
+ */
 int GetTerminalWidth();
+
+/**
+ * \brief Clear current line in the terminal
+ */
+void ClearTerminalLine();
+
 
 // Get a string where every line has a maximum length ( "..." is added if more length
 std::string StringWithMaxLineLength(const std::string& txt, int max_line_length);
@@ -171,7 +179,7 @@ bool MatchPatterns(const char *inputString, const char *pattern, char wildcard);
 void FindAndReplaceInString(std::string &source, const std::string& find, const std::string& replace);
 
 /**
- * \brief Remove trailing spaces, tabs at the begining or end of the command and spaces,tabs and return at the end
+ * \brief Remove trailing spaces, tabs at the beginning or end of the command and spaces,tabs and return at the end
  */
 
 std::string StripString(const std::string& line);

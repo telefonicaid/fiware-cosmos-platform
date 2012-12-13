@@ -1,16 +1,15 @@
 --NAME--
 ls_queues - fetch the current queue list
--- DELILAH - INIT--
-remove_all_stream
+--DELILAH-INIT--
+remove_all
 push input.txt input
-flush_buffers
--- COMMAND--
+--COMMAND--
 ls
--- EXPECT--
-/ -------------------------------------------------- - \
-  | ls                                                |
-| -------------------------------------------------- - |
-| worker_id | name  |   # kvs |   size | key | value |
-| ---------- - +------ - +-------- + -------- + ---- - +------ - |
-|         0 | input |     0  |   100  | txt |   txt |
-\-------------------------------------------------- - /
+--EXPECT--
+/-----------------------------------\
+| ls                                |
+|-----------------------------------|
+|  name |  format |   #kvs |   size | 
+|-------+---------+--------+--------|
+| input | txt-txt |     0  |   100  | 
+\-----------------------------------/

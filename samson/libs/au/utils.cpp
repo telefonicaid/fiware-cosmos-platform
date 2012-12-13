@@ -32,15 +32,6 @@ int getTerminalColumns() {
   return x;
 }
 
-void ClearTerminalLine() {
-  printf("\r");
-  for (int i = 0; i < getTerminalColumns(); ++i) {
-    printf(" ");
-  }
-  printf("\r");
-  fflush(stdout);
-}
-
 size_t code64_rand() {
   size_t v;
   char *c =  reinterpret_cast<char *>(&v);

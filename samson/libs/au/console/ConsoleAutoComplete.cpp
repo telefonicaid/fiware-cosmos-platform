@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <algorithm>
 
 #include "au/file.h"
 #include "au/string/StringUtilities.h"
@@ -96,10 +97,10 @@ bool ConsoleAutoComplete::completingThirdWord(std::string first_word, std::strin
     return false;
   }
 
-  if (( first_word != "*" ) && ( previous_words[0] != first_word )) {
+  if ((first_word != "*") && (previous_words[0] != first_word)) {
     return false;
   }
-  if (( second_word != "*" ) && ( previous_words[1] != second_word )) {
+  if ((second_word != "*") && (previous_words[1] != second_word)) {
     return false;
   }
 
@@ -125,17 +126,17 @@ void ConsoleAutoComplete::add(const std::string& label, const std::string& comma
 }
 
 void ConsoleAutoComplete::add(ConsoleAutoCompleteAlternative alternative) {
-  if (alternative.command.length() < last_word.length()) {
+  if (alternative.command_.length() < last_word.length()) {
     return;   // Not valid candidate
   }
   // Check if it was previously included...
   for (size_t i = 0; i < last_word_alternatives.size(); ++i) {
-    if (last_word_alternatives[i].command == alternative.command) {
+    if (last_word_alternatives[i].command_ == alternative.command_) {
       return;
     }
   }
 
-  if (CheckIfStringsBeginWith(alternative.command, last_word)) {
+  if (CheckIfStringsBeginWith(alternative.command_, last_word)) {
     last_word_alternatives.push_back(alternative);
   }
 }
@@ -144,7 +145,7 @@ void ConsoleAutoComplete::auto_complete_files(std::string file_selector) {
   std::string directory = get_directory_from_path(last_word);      // By default, take the last work as the directory to go
   std::string base = path_remove_last_component(last_word);
 
-  if (( base.length() > 0 ) && ( base != "/" )) {
+  if ((base.length() > 0) && (base != "/")) {
     base.append("/");  // printf("Last word '%s' dir='%s' base='%s'\n", last_word.c_str() , directory.c_str() , base.c_str() );
   }
   // Try to open directory
@@ -194,9 +195,9 @@ int ConsoleAutoComplete::common_chars_in_last_word_alternative() {
     return 0;
   }
 
-  int common_chars = last_word_alternatives[0].command.length();
+  int common_chars = last_word_alternatives[0].command_.length();
   for (size_t i = 1; i < last_word_alternatives.size(); i++) {
-    int n = GetCommonChars(last_word_alternatives[i].command, last_word_alternatives[i - 1].command);
+    int n = GetCommonChars(last_word_alternatives[i].command_, last_word_alternatives[i - 1].command_);
     if (n < common_chars) {
       common_chars = n;
     }
@@ -214,12 +215,12 @@ std::string ConsoleAutoComplete::stringToAppend() {
   int last_word_length = last_word.length();
   int common_chars = common_chars_in_last_word_alternative();
 
-  std::string complete_text = last_word_alternatives[0].command.substr(last_word_length,
-                                                                       common_chars - last_word_length);
+  std::string complete_text = last_word_alternatives[0].command_.substr(last_word_length,
+                                                                        common_chars - last_word_length);
 
   // printf("Complete %s", complete_text.c_str());
   if (last_word_alternatives.size() == 1) {
-    if (last_word_alternatives[0].add_space_if_unique) {
+    if (last_word_alternatives[0].add_space_if_unique_) {
       return complete_text + " ";
     } else {
       return complete_text;
@@ -256,7 +257,7 @@ void ConsoleAutoComplete::print_last_words_alternatives() {
   int columns = getTerminalColumns();
   int max_length = 0;
   for (size_t i = 0; i < last_word_alternatives.size(); i++) {
-    int n = last_word_alternatives[i].label.length();
+    int n = last_word_alternatives[i].label_.length();
     if (n > max_length) {
       max_length = n;
     }
@@ -266,9 +267,14 @@ void ConsoleAutoComplete::print_last_words_alternatives() {
   if (num_words_per_row == 0) {
     num_words_per_row = 1;
   }
+
+  // Sort last words alternative
+  std::sort(last_word_alternatives.begin(), last_word_alternatives.end());
+
   for (size_t i = 0; i < last_word_alternatives.size(); ++i) {
-    std::cout << last_word_alternatives[i].bold_label(last_word);
-    for (int j = 0; j < static_cast<int>((max_length - last_word_alternatives[i].label.length())); ++j) {
+    std::cout << last_word_alternatives[i].GetColoredLabel(last_word);
+
+    for (int j = 0; j < static_cast<int>((max_length - last_word_alternatives[i].label_.length())); ++j) {
       std::cout << " ";
     }
     std::cout << " ";

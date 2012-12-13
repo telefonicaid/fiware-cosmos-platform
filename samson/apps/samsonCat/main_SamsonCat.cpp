@@ -17,26 +17,25 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "au/CommandLine.h"               // au::CommandLine
 
 #include "logMsg/logMsg.h"                // LM_*
 #include "logMsg/traceLevels.h"           // Trace Levels
 
 #include "parseArgs/parseArgs.h"
 
+#include "au/CommandLine.h"               // au::CommandLine
 #include "au/mutex/LockDebugger.h"        // au::LockDebugger
 
 #include "engine/MemoryManager.h"
 
+#include "samson/common/SamsonDataSet.h"  // samson::SamsonDataSet
+#include "samson/common/SamsonFile.h"     // samson::SamsonFile
 #include "samson/common/SamsonSetup.h"    // samson::SamsonSetup
 #include "samson/common/coding.h"         // samson::FormatHeader
 #include "samson/common/samsonVars.h"     // SAMSON_ARG_VARS
-
+#include "samson/common/samsonVersion.h"
 #include "samson/module/KVFormat.h"       // samson::KVFormat
 #include "samson/module/ModulesManager.h"  // samson::ModulesManager
-
-#include "samson/common/SamsonDataSet.h"  // samson::SamsonDataSet
-#include "samson/common/SamsonFile.h"     // samson::SamsonFile
 
 
 /* ****************************************************************************
@@ -88,8 +87,6 @@ PaArgument paArgs[] =
 int logFd = -1;
 
 
-
-
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
   paConfig("log to screen", (void *)"only errors");
@@ -97,6 +94,9 @@ int main(int argC, const char *argV[]) {
   paConfig("screen line format", (void *)"TYPE: TEXT");
   paConfig("log to file", (void *)true);
   paConfig("log to stderr", (void *)true);
+  paConfig("man author", SAMSON_AUTHORS);
+  paConfig("man copyright", SAMSON_COPYRIGHT);
+  paConfig("man version", SAMSON_VERSION);
 
   paParse(paArgs, argC, (char **)argV, 1, false);      // No more pid in the log file name
   lmAux((char *)"father");

@@ -27,6 +27,7 @@
 #include "au/containers/SharedPointer.h"
 #include "au/containers/map.h"
 #include "engine/NotificationListener.h"
+#include "samson/common/Logs.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
 
@@ -40,8 +41,10 @@ class WorkerCommand;
 class WorkerCommandManager : public engine::NotificationListener {
 public:
 
-  // Constructor
   explicit WorkerCommandManager(SamsonWorker *samson_worker);
+  ~WorkerCommandManager() {
+    LOG_D(logs.cleanup, ("Entering ~WorkerCommandManager"));
+  }
 
   // Add a worker command to this stream manager
   void Add(WorkerCommand *workerCommand);

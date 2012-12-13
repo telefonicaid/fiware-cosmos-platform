@@ -1,21 +1,17 @@
 --NAME--
 samsonCat - queue
 --SHELL--
-delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command remove_all
-delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "push_module ${SAMSON_HOME}/modules/libsystem.so"  
-delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "push_module ${SAMSON_HOME}/modules/libtxt.so"
-samsonPush -node ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} input < input.txt
-delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "run txt.parser_words -input input -output words"
-delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "wait"
-delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "run txt.word_count_accumulate -input 'words words_count' -output words_count"
-delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "wait"
-delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command "pop words_count /tmp/words_count_samsonCat_queue -force"
-ls -lrt /tmp/words_count_samsonCat_queue > /tmp/words_count_samsonCat_queue.info
-samsonCat /tmp/words_count_samsonCat_queue | sort
+samsonCat words | sort
 --EXPECT--
-"015211078" 4
-"072866046" 3
-"140660895" 2
+"015211078" 1
+"015211078" 1
+"015211078" 1
+"015211078" 1
+"072866046" 1
+"072866046" 1
+"072866046" 1
+"140660895" 1
+"140660895" 1
 "160420776" 1
 "221322853" 1
 "364161913" 1

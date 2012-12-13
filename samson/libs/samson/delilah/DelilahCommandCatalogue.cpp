@@ -97,7 +97,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddMandatoryStringArgument("add", "key_format", "Format for the key's in new queue (txt is accepted)");
   AddStringArgument("add", "value_format", "txt", "Format for the value's in new queue (txt is accepted)");
 
-  AddCommand("remove_all_queues", "data", "Remove all queues in the SAMSON cluter");
+  AddCommand("remove_all_queues", "data", "Remove all queues in the SAMSON cluster");
 
   AddCommand("remove_all", "data", "Remove all queues and stream_operations in the SAMSON cluster");
 
@@ -217,6 +217,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
              "one or multiple input queues and send result to one or multiple output queues\n"
              "Please, add new stream operations with add_stream_operations command");
   AddBoolOption("ls_stream_operations", "-a", "Include internal stream operations");
+  AddBoolOption("ls_stream_operations", "-id", "Include numerical identifier of each operation");
 
   AddCommand("ls_stream_operations_statistics", "stream", "Show stream operation statistics for the cluster");
   AddTag("ls_stream_operations_statistics", "send_to_all_workers");
@@ -337,7 +338,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddMandatoryStringArgument("pop", "queue", "Queue to be popped");
   AddMandatoryStringArgument("pop", "file_name", "The name of a folder where the data is downloaded to");
   AddBoolOption("pop", "-force", "Delete local directory if it exists");
-  AddBoolOption("pop", "-show", "Show first lines of the content once downloaded");
+  AddBoolOption("pop", "-show", "Show first key-values or lines (max 100) of the content once downloaded");
 
   AddCommand("ls_local_push_operations", "push&pop", "Show a list of items awaiting upload");
 

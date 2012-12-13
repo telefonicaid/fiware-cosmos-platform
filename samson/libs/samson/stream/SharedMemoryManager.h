@@ -47,10 +47,17 @@ public:
 
   ~SharedMemoryManager();
 
-  // Init
+  /**
+   * \brief Init shared memory segments to exchange data between main and background processes
+   */
   static void Init(int shared_memory_num_buffers, size_t shared_memory_size_per_buffer);
-  static SharedMemoryManager *Shared();
+
+  /**
+   * \brief Destroy shared memory segments created with init
+   */
   static void Destroy();
+
+  static SharedMemoryManager *Shared();
 
   /**
    * *\brief  Retain a free shared-memory area for an operation
@@ -103,7 +110,7 @@ private:
   bool *shared_memory_used_buffers_;          // Bool vector showing if a particular shared memory buffer is used
   int *shm_ids_;                              // Vector containing all the shared memory identifiers
 
-  std::vector<SharedMemoryItem *> shared_memory_items_;  // Vector containing all the SharedMemoryItem's
+  au::vector<SharedMemoryItem> shared_memory_items_;  // Vector containing all the SharedMemoryItem's
 
   std::string sharedMemoryIdsFileName_;
 };

@@ -379,7 +379,7 @@ int main(int argC, const char *argV[]) {
       LOG_M(samson::logs.delilah, ("Connected to %s", hosts[i].c_str()));
       break;
     } else {
-      LOG_W(::samson::logs.delilah, ("Unable to connect with %s: %s",
+      LOG_W(::samson::logs.delilah, ("Unable to connect to %s: %s",
                                      hosts[i].c_str(),
                                      error.GetLastError().c_str()));
     }

@@ -61,7 +61,7 @@ void ConsoleCommandHistory::RecoverHistory() {
   char line[1024];
   while (fgets(line, 1024, file) != NULL) {
     // Remove the \n char at the end of each line
-    line[ strlen(line) - 1 ] = '\0';
+    line[strlen(line) - 1] = '\0';
 
     commands_.push_back(new ConsoleCommand(line));
   }
@@ -71,8 +71,8 @@ void ConsoleCommandHistory::RecoverHistory() {
 
 void ConsoleCommandHistory::SaveHistory() {
   // Remove the last one if empty...
-  if (commands_[ commands_.size() - 1 ]->command() == "") {
-    delete commands_[ commands_.size() - 1 ];
+  if (commands_[commands_.size() - 1]->command() == "") {
+    delete commands_[commands_.size() - 1];
     commands_.pop_back();
 
     if (pos_ > (commands_.size() - 1)) {

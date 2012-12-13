@@ -9,6 +9,8 @@
  * All rights reserved.
  */
 
+#include "StringUtilities.h"     // Own definitions
+
 #include <cstdarg>
 #include <sstream>
 #include <stdio.h>
@@ -17,7 +19,7 @@
 
 #include <sys/ioctl.h>
 
-#include "StringUtilities.h"     // Own definitions
+#include "au/TemporalBuffer.h"
 
 namespace au {
 std::string str_tabs(int t) {
@@ -908,11 +910,13 @@ std::string StripString(const std::string& line) {
 }
 
 void ClearTerminalLine() {
-  printf("\r");
-  for (int i = 0; i < GetTerminalWidth(); ++i) {
-    printf(" ");
-  }
-  printf("\r");
+  int terminal_width = GetTerminalWidth();
+  au::TemporalBuffer buffer(terminal_width + 1);
+  char *data = buffer.data();
+
+  memset(buffer.data(), 0x20, terminal_width);
+  data[terminal_width] = '\0';
+  printf("\r%s\r", buffer.data());
   fflush(stdout);
 }
 }

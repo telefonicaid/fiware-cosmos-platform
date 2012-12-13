@@ -30,7 +30,7 @@ public:
 
   // samson::NetworkListenerInterface
   void newSocketConnection(au::NetworkListener *listener
-                           , au::SocketConnection *socket_connetion);
+                           , au::SocketConnection *socket_connection);
 
   // Get status of this element
   std::string getStatus();

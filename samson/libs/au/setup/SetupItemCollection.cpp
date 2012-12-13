@@ -90,8 +90,15 @@ bool SetupItemCollection::Load(const std::string& fileName) {
 
   char line[2000];
   while (fgets(line, sizeof(line), file) != NULL) {
+    std::string str_line = au::StripString(line);
+
+    // Skip comments
+    if (str_line.substr(0, 1) == "#") {
+      continue;
+    }
+
     au::CommandLine c;
-    c.Parse(line);
+    c.Parse(str_line, false);  // strict mode is disabled to avoid unnecessary warnings
 
     if (c.get_num_arguments() == 0) {
       continue;      // Skip comments

@@ -67,7 +67,7 @@ int main(int argC, char **argV) {
   paConfig("default value", "-logDir", (void *)"/var/log/samson");
   paConfig("man author", "Samson team");
 
-  // Parse incomming arguments without being alteres by google test library arguments
+  // Parse incoming arguments without being alteres by google test library arguments
   if ((argC > 2) &&  (strcmp(argV[1], "-t") == 0)) {
     paParse(paArgs, 3, (char **)argV, 3, false);
   } else {

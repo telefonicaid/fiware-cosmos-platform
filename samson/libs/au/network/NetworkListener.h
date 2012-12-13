@@ -31,12 +31,12 @@ class SocketConnection;
 class NetworkListener;
 
 /**
- * \brief Interface of NetworkListener to handle incomming connections
+ * \brief Interface of NetworkListener to handle incoming connections
  */
 
 class NetworkListenerInterface {
 public:
-  virtual void newSocketConnection(NetworkListener *listener, SocketConnection *socket_connetion) = 0;
+  virtual void newSocketConnection(NetworkListener *listener, SocketConnection *socket_connection) = 0;
 };
 
 /**

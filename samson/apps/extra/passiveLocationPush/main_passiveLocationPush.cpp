@@ -852,7 +852,7 @@ int main(int argC, const char *argV[]) {
   LM_V(("Connecting to '%s'", controller));
   samson::SamsonClient client("push");
   if (!client.connect(controller)) {
-    LM_X(1, ("Unable to connect with %s", controller));  // Set 1G RAM for uploading content
+    LM_X(1, ("Unable to connect to %s", controller));  // Set 1G RAM for uploading content
   }
   uint64_t mem = 1024 * 1024 * 1024;
   mem *= 4;

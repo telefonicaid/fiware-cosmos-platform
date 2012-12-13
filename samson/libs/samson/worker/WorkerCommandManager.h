@@ -43,7 +43,7 @@ public:
 
   explicit WorkerCommandManager(SamsonWorker *samson_worker);
   ~WorkerCommandManager() {
-    LOG_D(logs.cleanup, ("Calling ~WorkerCommandManager"));
+    LOG_D(logs.cleanup, ("Entering ~WorkerCommandManager"));
   }
 
   // Add a worker command to this stream manager

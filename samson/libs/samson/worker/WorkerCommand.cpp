@@ -132,7 +132,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
 
   cmd.SetFlagBoolean("new");
   cmd.SetFlagBoolean("remove");
-  cmd.SetFlagString("prefix", "");
+  cmd.SetFlagString("prefix", "", au::CommandLine::kCollisionInsertAtBegin);
   cmd.Parse(command);
 
   std::string prefix = cmd.GetFlagString("prefix");
@@ -186,7 +186,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
       std::string sub_command = op->code[i];
 
       au::CommandLine intern_cmdLine;
-      intern_cmdLine.Parse(sub_command);
+      intern_cmdLine.Parse(sub_command, false);  // strict mode i disabled to avoid unnecessary warnings
 
       if (intern_cmdLine.get_argument(0) == "alias") {
         if (intern_cmdLine.get_num_arguments() < 3) {

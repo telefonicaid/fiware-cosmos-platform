@@ -95,7 +95,7 @@ public:
   std::string command() const;
 
   /**
-   * \brief Get the substring until the pointer position
+   * \brief Get the substring up to the pointer position
    */
   std::string GetCommandUntilCursor() const;
 

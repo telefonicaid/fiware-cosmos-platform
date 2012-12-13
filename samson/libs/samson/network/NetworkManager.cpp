@@ -68,7 +68,7 @@ void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::Socke
   LOG_M(logs.network_connection, ("Adding network_connection:%s", name.c_str()));
 
   if (connections_.findInMap(name) != NULL) {
-    LOG_SW(("Rejecting an incomming connection (%s) since it already exists", name.c_str()));
+    LOG_SW(("Rejecting an incoming connection (%s) since it already exists", name.c_str()));
     delete socket_connection;
     return;
   }

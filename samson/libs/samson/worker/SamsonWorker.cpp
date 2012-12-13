@@ -564,6 +564,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
+    bool continuous_pop = packet->message->pop_queue().continuous_pop();
     size_t commit_id = packet->message->pop_queue().commit_id();
     size_t min_commit_id = packet->message->pop_queue().min_commit_id();
     size_t delilah_id = packet->from.id;
@@ -589,14 +590,28 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     gpb::Data *data = data_model->mutable_current_data();
 
     if (commit_id == static_cast<size_t>(-1)) {
-      // Duplicate queue and link
-      au::ErrorManager error;
-      std::string command = au::str("add_queue_connection %s %s", original_queue.c_str(), pop_queue.c_str());
-      data_model_->Commit("pop", command, error);
+      // Duplicate queue
+      {
+        au::ErrorManager error;
+        std::string command = au::str("push_queue %s %s", original_queue.c_str(), pop_queue.c_str());
+        data_model_->Commit("pop", command, error);
 
-      if (error.HasErrors()) {
-        LOG_SW(("Internal error with add_queue_connection command in pop request: %s", error.GetLastError().c_str()));
-        return;
+        if (error.HasErrors()) {
+          LOG_SW(("Internal error with push_queue command in pop request: %s", error.GetLastError().c_str()));
+          return;
+        }
+      }
+
+      // Link content to the new queue if required
+      if (continuous_pop) {
+        au::ErrorManager error;
+        std::string command = au::str("add_queue_connection %s %s", original_queue.c_str(), pop_queue.c_str());
+        data_model_->Commit("pop", command, error);
+
+        if (error.HasErrors()) {
+          LOG_SW(("Internal error with add_queue_connection command in pop request: %s", error.GetLastError().c_str()));
+          return;
+        }
       }
 
       // If the queue really exist, return all its content to be popped

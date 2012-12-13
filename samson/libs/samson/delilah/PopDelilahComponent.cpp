@@ -155,6 +155,7 @@ void PopDelilahComponent::SendMainRequest() {
   pop_queue->set_queue(queue_);
   pop_queue->set_commit_id(commit_id_);
   pop_queue->set_min_commit_id(min_commit_id);
+  pop_queue->set_continuous_pop(file_name_ != "");
 
   // Identifier of the component at this delilah
   packet->message->set_delilah_component_id(id);

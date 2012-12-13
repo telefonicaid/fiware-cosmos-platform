@@ -116,7 +116,7 @@ CommitCommand::~CommitCommand() {
 }
 
 void CommitCommand::ParseCommitCommand(const std::string& command, au::ErrorManager& error) {
-  au::CommandLine cmdLine(command, false);
+  au::CommandLine cmdLine(command);
   int num_arguments = cmdLine.get_num_arguments();
 
   if (num_arguments == 0) {

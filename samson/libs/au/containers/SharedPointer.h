@@ -171,6 +171,7 @@ private:
         c_ = NULL;
       }
       delete shared_reference_counter_;
+      shared_reference_counter_ = NULL; // Just for debuggin correctly
     }
   }
 

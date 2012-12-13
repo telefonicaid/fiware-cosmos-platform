@@ -317,7 +317,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
   if (!delilah_) {
     delilah_ = new Delilah("rest");
     au::ErrorManager error;
-    delilah_->connect(au::str("localhost:%d", samson_worker_->port()), &error);
+    delilah_->Connect(au::str("localhost:%d", samson_worker_->port()), &error);
 
     if (error.HasErrors()) {
       delete delilah_;
@@ -327,12 +327,12 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
   }
 
   LOG_M(logs.delilah, ("Sending delilah command: '%s'", delilah_command.c_str()));
-  size_t command_id = delilah_->sendWorkerCommand(delilah_command);
+  size_t command_id = delilah_->SendWorkerCommand(delilah_command);
 
   // Wait for the command to finish
   {
     au::Cronometer c;
-    while (delilah_->isActive(command_id)) {
+    while (delilah_->DelilahComponentIsActive(command_id)) {
       usleep(10000);
       if (c.seconds() > 2) {
         command->AppendFormatedError(500, au::str("Timeout awaiting response from REST client (task %lu)", command_id));
@@ -344,7 +344,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
 
   // Recover information
   WorkerCommandDelilahComponent *component =
-    reinterpret_cast<WorkerCommandDelilahComponent *>(delilah_->getComponent(command_id));
+    reinterpret_cast<WorkerCommandDelilahComponent *>(delilah_->GetComponent(command_id));
   if (!component) {
     command->AppendFormatedError(500, "Internal error recovering answer from REST client");
     LM_E(("Internal error recovering answer from REST client"));

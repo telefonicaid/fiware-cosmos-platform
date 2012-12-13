@@ -76,7 +76,7 @@ bool SamsonClient::connect(const std::vector<std::string>& hosts) {
 
 bool SamsonClient::connect(const std::string& host) {
   au::ErrorManager error;
-  bool c = delilah_->connect(host, &error);
+  bool c = delilah_->Connect(host, &error);
 
   if (error.HasErrors()) {
     LOG_SW(("Unable to connect to %s: %s", host.c_str(), error.GetLastError().c_str()));
@@ -148,7 +148,7 @@ size_t SamsonClient::push(engine::BufferPointer buffer, const std::vector<std::s
   }
 
   push_rate_.Push(buffer->size());     // Update statistics
-  return delilah_->push_txt(buffer, queues);
+  return delilah_->PushPlainData(buffer, queues);
 }
 
 bool SamsonClient::isFinishedPushingData() {
@@ -169,7 +169,7 @@ void SamsonClient::waitFinishPushingData() {
 
 void SamsonClient::connect_to_queue(std::string queue, bool flag_new, bool flag_remove) {
   // Update queue management in samsonClient in the same way as in delilah.
-  // Old strategy with delilah_->sendWorkerCommand("connect_to_queue") was not working
+  // Old strategy with delilah_->SendWorkerCommand("connect_to_queue") was not working
   size_t id = delilah_->AddPopComponent(queue, "", false, false);
 
   LOG_V(logs.delilah_components, ("AddPopComponent for queue:'%s' returned id:%lu", queue.c_str(), id));
@@ -187,7 +187,7 @@ SamsonClientBlockInterface *SamsonClient::getNextBlock(std::string queue) {
 }
 
 bool SamsonClient::connection_ready() {
-  return delilah_->isConnected();
+  return delilah_->IsConnected();
 }
 
 size_t SamsonClient::GetPendingSizeToPush() {

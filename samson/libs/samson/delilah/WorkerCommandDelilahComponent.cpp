@@ -27,13 +27,9 @@
 namespace samson {
 WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _command, engine::BufferPointer buffer)
   : DelilahComponent(DelilahComponent::worker_command) {
-  command = _command;
+  command = au::StripString( _command);
   buffer_ = buffer;
-
-  // Remove the last return
-  while (command.substr(command.size() - 1) == "\n") {
-    command.erase(command.size() - 1, 1);
-  }
+  timeout_ = 0;  // No timeout by default
 
   setConcept(command);        // The command is the description itself
 
@@ -49,28 +45,26 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
     return;
   }
 
-
   // Old parsing stuff
   au::CommandLine cmdLine;
   cmdLine.SetFlagBoolean("hidden");
-  cmdLine.SetFlagBoolean("save");       // Flag to identify if is necessary to save it locally
   cmdLine.SetFlagBoolean("connected_workers");      // Flag to run the operation only with connected workers
   cmdLine.SetFlagUint64("w", static_cast<size_t>(-1));
   cmdLine.SetFlagString("group", "");
   cmdLine.SetFlagString("filter", "");
   cmdLine.SetFlagString("sort", "");
   cmdLine.SetFlagUint64("limit", 0);
+  cmdLine.SetFlagInt("timeout", 0);
   cmdLine.Parse(command);
 
   worker_id         = cmdLine.GetFlagUint64("w");
   hidden            = cmdLine.GetFlagBool("hidden");
-  save_in_database  = cmdLine.GetFlagBool("save");
   group_field       = cmdLine.GetFlagString("group");
   filter_field      = cmdLine.GetFlagString("filter");
   sort_field        = cmdLine.GetFlagString("sort");
   connected_workers = cmdLine.GetFlagBool("connected_workers");
   limit             = cmdLine.GetFlagUint64("limit");
-
+  timeout_          = cmdLine.GetFlagInt("timeout");
 
   if (cmdLine.get_num_arguments() > 0) {
     main_command = cmdLine.get_argument(0);
@@ -97,7 +91,7 @@ void WorkerCommandDelilahComponent::run() {
     return;
   }
 
-  if (!delilah->isConnected()) {
+  if (!delilah->IsConnected()) {
     setComponentFinishedWithError("This delilah is not connected to any SAMSON cluster");
     return;
   }
@@ -239,19 +233,6 @@ void WorkerCommandDelilahComponent::print_content(au::SharedPointer<gpb::Collect
   if (!hidden) {
     std::string title = collection->title();
     output_component << table->str();
-  }
-
-  // Save in the internal database
-  if (save_in_database) {
-    std::string table_name = collection->name();
-
-    delilah->database.addTable(table_name, table);
-
-    if (!hidden) {
-      std::string message = au::str("Table %s has been created locally. Type set_database_mode to check content...\n"
-                                    , table_name.c_str());
-      delilah->WriteOnDelilah(message);
-    }
   }
 }
 

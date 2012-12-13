@@ -342,16 +342,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
   }
 
   // --------------------------------------------------------------------
-  // StatusReport
-  // --------------------------------------------------------------------
-
-  if (msgCode == Message::StatusReport) {
-    // LOG_SM(("Recieved status report message from %s" , packet->from.str().c_str() ));
-    return;
-  }
-
-
-  // --------------------------------------------------------------------
   // BlockRequest
   // --------------------------------------------------------------------
 

@@ -261,9 +261,14 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddCommand("remove_all_stream_operations", "stream", "Remove all stream operations");
 
   AddCommand("wait", "stream", "Wait for all input queues used in stream operations to empty");
+  AddIntOption("wait", "timeout", 0);
+  
   AddCommand("wait_batch_tasks", "stream", "Wait for all batch operation tasks to complete");
-  AddCommand("wait_my_batch_tasks", "stream", "Wait for my batch operations to complete");
+  AddIntOption("wait_batch_tasks", "timeout", 0);
 
+  AddCommand("wait_my_batch_tasks", "stream", "Wait for my batch operations to complete");
+  AddIntOption("wait_my_batch_tasks", "timeout", 0);
+  
   AddCommand("set_stream_operation_property", "stream",
              "Set value of an environment property associated to a stream operation (see add_stream_operation)",
              "set_stream_operation_property <stream_operation_name> <variable_name> <value>");

@@ -26,8 +26,6 @@ const char *messageCode(MessageCode code) {
   switch (code) {
     case Hello:                            return "Hello";
 
-    case StatusReport:                     return "StatusReport";
-
     case Alert:                            return "Alert";
 
     case ClusterInfoUpdate:                return "ClusterInfoUpdate";

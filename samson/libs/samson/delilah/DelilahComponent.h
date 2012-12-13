@@ -53,7 +53,8 @@ public:
 
   DelilahComponent(DelilaComponentType _type);
   virtual ~DelilahComponent() {
-  };                           // Virtual destructor necessary in this class since subclasses are deleted using parent pointers
+    // Virtual destructor necessary in this class since subclasses are deleted using parent pointers
+  };
 
   void setId(Delilah *_delilah, size_t _id);
   virtual void receive(const PacketPointer& packet) = 0;

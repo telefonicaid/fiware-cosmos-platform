@@ -50,13 +50,6 @@ public:
   virtual std::string GetPrompt();
   virtual void EvalCommand(const std::string& command);
   virtual void AutoComplete(au::console::ConsoleAutoComplete *info);
-  void autoCompleteOperations(au::console::ConsoleAutoComplete *info);
-  void autoCompleteOperations(au::console::ConsoleAutoComplete *info, std::string type);
-  void autoCompleteQueueForOperation(au::console::ConsoleAutoComplete *info, std::string operation_name,
-                                     int argument_pos);
-  void autoCompleteQueueWithFormat(au::console::ConsoleAutoComplete *info, std::string key_format,
-                                   std::string value_format);
-  void autoCompleteQueues(au::console::ConsoleAutoComplete *info);
   virtual void ProcessEscapeSequence(const std::string& sequence) {
     if (sequence == "samson") {
       WriteWarningOnConsole("SAMSON's cool ;)");
@@ -70,8 +63,8 @@ public:
 
   // Functions overloaded from Delilah
   // --------------------------------------------------------
-  void delilahComponentFinishNotification(DelilahComponent *component);
-  void delilahComponentStartNotification(DelilahComponent *component);
+  void DelilahComponentFinishNotification(DelilahComponent *component);
+  void DelilahComponentStartNotification(DelilahComponent *component);
 
   // Function to process messages from network elements not handled by Delila class ( with DelilahComponenets )
   int _receive(const PacketPointer& packet);

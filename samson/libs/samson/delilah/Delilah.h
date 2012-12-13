@@ -72,64 +72,118 @@ public:
  * Main class for the samson client element
  */
 
-class Delilah : public engine::NotificationListener, public DelilahBase {
+class Delilah : public engine::NotificationListener {
 public:
 
   Delilah(std::string connection_type, size_t delilah_id = static_cast<size_t>(-1));
   ~Delilah();
 
-  // Connect and disconnect to a cluster
-  bool connect(std::string host, au::ErrorManager *error);
-  void disconnect();
-  bool isConnected();  // Check if we are really connected to a cluster
+  /**
+   * \brief Try to connect with a SAMSON cluster. Error is reported if not possible
+   */
+  bool Connect(std::string host, au::ErrorManager *error);
+  
+  /**
+   * \brief Disconnect from SAMSON cluster
+   */
+  void Disconnect();
+  
+  /**
+   * \brief Check if this delilah is already connected
+   */
+  bool IsConnected() const;
 
-  // Connect to a queue
-  size_t connect_to_queue(const std::string queue) {
+  /**
+   * \brief Connect to a queue to receive live data from this queue
+   */
+  size_t ConnectToQueue(const std::string queue) {
     return AddPopComponent(queue, "", false, false);
   }
 
-  // Get a a line with information about connection
-  std::string getClusterConnectionSummary();
+  /**
+   * \brief Get a string with information about connection ( used in prompt for DelilahConsole)
+   */
+  std::string GetClusterConnectionSummary();
 
-  // Notification system
-  void notify(engine::Notification *notification);
+  /**
+   * \brief Process a notification from engine system
+   */
+  virtual void notify(engine::Notification *notification);
 
-  // PacketReceiverInterface
-  void receive(const PacketPointer& packet);
+  /**
+   * \brief Process a packet received from other nodes ( SAMSON workers )
+   */
+  void ProcessIncomePacket(const PacketPointer& packet);
 
-  // Push data to SAMSON
-  size_t push_txt(engine::BufferPointer buffer, const std::string& queues);
-  size_t push_txt(engine::BufferPointer buffer, const std::vector<std::string>& queues);
-  size_t push(engine::BufferPointer buffer, const std::vector<std::string>& queues);
+  /**
+   * \brief Push a buffer with plain data to a queue ( expected to be a txt-txt queue )
+   */
+  size_t PushPlainData(engine::BufferPointer buffer, const std::string& queues);
+
+  /**
+   * \brief Push a buffer with plain data to a set of queue ( expected all of them to be txt-txt queues )
+   */
+  size_t PushPlainData(engine::BufferPointer buffer, const std::vector<std::string>& queues);
+  
+  /**
+   * \brief Push a SAMSON block ( KVHeader + data ) to some queues
+   */
+  size_t PushSamsonBlock(engine::BufferPointer buffer, const std::vector<std::string>& queues);
 
   /**
    * \brief Get pending data size to be "pushed"
    */
   size_t GetPendingSizeToPush();
 
-  // Add a push component
-  size_t add_push_component(const std::vector<std::string>& file_names, const std::vector<std::string>& queues,
-                            au::ErrorManager& error);
-  size_t add_push_component(DataSource *data_source, const std::vector<std::string>& queues, bool module,
-                            au::ErrorManager& error);
+  /**
+   * \brief Add a PushDelilahComponent to push some files to a queue
+   */
+  size_t AddPushComponent(const std::vector<std::string>& file_names,
+                          const std::vector<std::string>& queues,
+                          au::ErrorManager& error);
+  
+  /**
+   * \brief Add a PushDelilahComponent to push data to some queues from a generic "data source"
+   */
+  size_t AddPushComponent(DataSource *data_source,
+                          const std::vector<std::string>& queues,
+                          bool module,
+                          au::ErrorManager& error);
 
-  // Add a push module component
-  size_t add_push_module_component(const std::vector<std::string>& file_names, au::ErrorManager& error);
+  /**
+   * \brief Add a PushDelilahComponent to push a module from a file
+   */
+  size_t AddPushModuleComponent(const std::vector<std::string>& file_names, au::ErrorManager& error);
 
+  /**
+   * \brief Add a PopDelilahComponent to pop data deom a queue and push content to a file
+   */
   size_t AddPopComponent(std::string queue_name, std::string fileName, bool force_flag, bool show_flag);
 
-  // Add a worker command
-  size_t sendWorkerCommand(std::string command, engine::BufferPointer buffer  = engine::BufferPointer(NULL));
+  /**
+   * \brief Add a WorkerCommandDelilahComponent to send a command to SAMSON cluster ( one or all workers )
+   */
+  size_t SendWorkerCommand(std::string command, engine::BufferPointer buffer  = engine::BufferPointer(NULL));
 
-  // Get info about the list of loads
-  std::string getListOfComponents();
+  /**
+   * \brief Get a string with the list of all components in this delilah
+   */
+  std::string GetListOfComponents();
 
-  // Recover a particular component
-  DelilahComponent *getComponent(size_t delilah_id);
+  /**
+   * \brief Get a particular delilah component from its id
+   */
+  DelilahComponent *GetComponent(size_t delilah_id);
 
-  void clearComponents();
-  void clearAllComponents();    // Force all of them to be removed
-
+  /**
+   * \brief Remove finished delilah components ( with or without error )
+   */
+  void ClearFinishedComponents();
+  
+  /**
+   * \brief Remove all delilah components ( finished or not )
+   */
+  void ClearComponents();    // Force all of them to be removed
 
   /**
    * \brief Get internal delilah identifier
@@ -138,67 +192,84 @@ public:
     return delilah_id_;
   }
 
-  // Check a particular id
-  bool isActive(size_t id);
-  bool hasError(size_t id);
-  std::string errorMessage(size_t id);
-  std::string getDescription(size_t id);
+  /**
+   * \brief Check if a particular delilah component is still active ( not finished )
+   */
+  bool DelilahComponentIsActive(size_t id);
+  
+  /**
+   * \brief Check if a particular delilah component has finihsed with error
+   */
+  bool DelilahComponentHasError(size_t id);
 
+  /**
+   * \brief Get output generated by a particular delilah component
+   */
+  std::string GetOutputForComponent(size_t id);
+  
+  /**
+   * \brief Get the error for a particular delilah component
+   */
+  std::string GetErrorForDelilahComponent(size_t id);
+  
+  /**
+   * \brief Get a description for a particular delilah component
+   */
+  std::string GetDescriptionForDelilahComponent(size_t id);
+
+  /**
+   * \brief Nofication that a delilah component has started
+   */
+  virtual void DelilahComponentStartNotification(DelilahComponent *component) {};
+
+  /**
+   * \brief Nofication that a delilah component has finished
+   */
+  virtual void DelilahComponentFinishNotification(DelilahComponent *component) {};
 
   /**
    * \brief Handle packets not managed by delilah components
    */
   virtual int _receive(const PacketPointer& packet);
-
+  
+  
   /**
-   * \brief Nofication that a delilah component has started
+   * \brief Write something
    */
-  virtual void delilahComponentStartNotification(DelilahComponent *component) {
-  };
-
-  /**
-   * \brief Nofication that a delilah component has finished
-   */
-  virtual void delilahComponentFinishNotification(DelilahComponent *component) {
-  };
-
-  // Write something on screen
   virtual void WriteOnDelilah(const std::string& message) {
     LOG_M(logs.delilah, ("%s", message.c_str()));
   }
 
+  /**
+   * \brief Write a warning
+   */
   virtual void WriteWarningOnDelilah(const std::string& message) {
     LOG_W(logs.delilah, ("%s", message.c_str()));
   }
 
+  /**
+   * \brief Write an error
+   */
   virtual void WriteErrorOnDelilah(const std::string& message) {
     LOG_E(logs.delilah, ("%s", message.c_str()));
   }
 
-  void PublishBufferFromQueue(std::string queue, engine::BufferPointer buffer) {
-    if (data_receiver_interface) {
-      data_receiver_interface->receive_buffer_from_queue(queue, buffer);
-    } else {
-      receive_buffer_from_queue(queue, buffer);
-    }
-  }
-
+  /**
+   * \brief Default implementation to handle live data from SAMSON cluter
+   */
   virtual void receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
     LOG_W(logs.delilah, ("Buffer with %s recevied for queue %s. Ignored..", buffer->str().c_str(), queue.c_str()));
   }
 
-  // Get a list of local directory
-  std::string getLsLocal(std::string pattern, bool only_queues);
+  /**
+   * \brief Get a list of local directory
+   */
+  std::string GetLsLocal(std::string pattern, bool only_queues);
 
-  // Generate XML monitorization data
-  void getInfo(std::ostringstream& output);
-
-  bool checkXMLInfoUpdate();
-
-
-  // Cancel a particuarl delilah_id
-  void cancelComponent(size_t id, au::ErrorManager& error);
-  std::string GetOutputForComponent(size_t id);
+  /**
+   * \brief Cancel a particuarl delilah_id
+   */
+  void CancelDelilahComponent(size_t id, au::ErrorManager& error);
 
   DelilahNetwork *network_;   /**< Network connection ( with workers ) */
   Environment environment_;   /**< Environment properties to be sent in the next job */
@@ -211,13 +282,26 @@ protected:
   size_t AddComponent(DelilahComponent *component);
 
   DelilahLiveDataReceiverInterface *data_receiver_interface;  /**< Interface to receive live data */
-  au::map<size_t, DelilahComponent> components_;             /**< Map of components that intercept messages */
-  au::SharedPointer<PushManager> push_manager_;              /**< Manager of data-blocks being pushed to SAMSON  */
+  au::map<size_t, DelilahComponent> components_;              /**< Map of components that intercept messages */
+  au::SharedPointer<PushManager> push_manager_;               /**< Manager of data-blocks being pushed to SAMSON  */
 
 private:
 
   friend class SamsonClient;
+  friend class PopDelilahComponent;
+  
+  /**
+   * \brief Publish data received from a queue ( in a pop component )
+   */
+  void PublishBufferFromQueue(std::string queue, engine::BufferPointer buffer) {
+    if (data_receiver_interface) {
+      data_receiver_interface->receive_buffer_from_queue(queue, buffer);
+    } else {
+      receive_buffer_from_queue(queue, buffer);
+    }
+  }
 
+  
   // Random identifier for this delilah
   size_t delilah_id_;
 

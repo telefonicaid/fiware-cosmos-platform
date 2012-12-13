@@ -155,7 +155,7 @@ void PushDelilahComponent::run_in_background() {
 
     // Add this buffer to be pushed by delilah
     current_status_ = au::S() <<  "Pushing block " << buffer->str() << " using delilah component ";
-    size_t push_id = delilah->push(buffer, queues_);
+    size_t push_id = delilah->PushSamsonBlock(buffer, queues_);
 
     // Collect this push_id to be tracked...
     {

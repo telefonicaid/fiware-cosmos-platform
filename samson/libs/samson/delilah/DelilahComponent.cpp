@@ -96,7 +96,7 @@ void DelilahComponent::setComponentFinished() {
   component_finished = true;
   cronometer.Stop();
 
-  delilah->delilahComponentFinishNotification(this);
+  delilah->DelilahComponentFinishNotification(this);
 }
 
 void DelilahComponent::setComponentFinishedWithError(std::string error_message) {
@@ -110,7 +110,7 @@ void DelilahComponent::setComponentFinishedWithError(std::string error_message) 
   cronometer.Stop();
 
   error.AddError(error_message);
-  delilah->delilahComponentFinishNotification(this);
+  delilah->DelilahComponentFinishNotification(this);
 }
 
 void DelilahComponent::setConcept(std::string _concept) {

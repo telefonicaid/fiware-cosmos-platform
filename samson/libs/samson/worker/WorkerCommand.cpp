@@ -641,7 +641,6 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "wait") {
-    // Recovering old wait command
     if (samson_worker_->data_model()->CheckForAllStreamOperationsFinished() == false) {
       pending_to_be_executed_ = true;
       return;
@@ -675,8 +674,6 @@ void WorkerCommand::Run() {
     FinishWorkerTask();
     return;
   }
-
-
 
   if (main_command == "send_alert") {
     std::string message = command_instance->GetStringArgument("message");

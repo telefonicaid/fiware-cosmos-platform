@@ -75,7 +75,7 @@ public:
     kCollisionOverwrite,             /**< Overwrite the flag value with the last detected, forgetting previous ones */
     kCollisionSubtractFromPrevious   /**< Subtract new value (numeric) from the previous one */
   };
-    /**< Struct to keep flag information */
+  /**< Struct to keep flag information */
   typedef struct CommandLineFlag {
     TypeValues type;
     std::string default_value;
@@ -108,15 +108,17 @@ public:
   /**
    * \brief Parse a command line using the previously defined flags
    * \param[in] command line to be parsed
+   * \param[in] In script mode, warning messages are shown
    */
-  void Parse(const std::string& command);
+  void Parse(const std::string& command, bool strict = true);
 
   /**
    * \brief Parse a command line using the previously defined flags
    * \param[in] number of arguments
    * \param[in] array of pointers to the arguments
+   * \param[in] In script mode, warning messages are shown
    */
-  void Parse(int args, const char *argv[]);
+  void Parse(int args, const char *argv[], bool strict = true);
 
   /**
    * \brief Reset all the added flags (do not remove them)
@@ -157,7 +159,8 @@ public:
    * \param[in] default value for the flag (value to be found when flag does not appear in the command line)
    * \param[in] behaviour when multiple appearances of flag in command line. Options defined as enum items
    */
-  void SetFlagString(const std::string& name, const std::string& default_value, CollisionResolutionValues collision_strategy);
+  void SetFlagString(const std::string& name, const std::string& default_value,
+                     CollisionResolutionValues collision_strategy);
   /**
    * \brief Add a new flag of type uint64
    * \param[in] name of the flag
@@ -170,7 +173,8 @@ public:
    * \param[in] default value (as a string) for the flag (value to be found when flag does not appear in the command line)
    * \param[in] behaviour when multiple appearances of flag in command line. Options defined as enum items
    */
-  void SetFlagUint64(const std::string& name, const std::string& default_value, CollisionResolutionValues collision_strategy);
+  void SetFlagUint64(const std::string& name, const std::string& default_value,
+                     CollisionResolutionValues collision_strategy);
   /**
    * \brief Add a new flag of type uint64
    * \param[in] name of the flag
@@ -286,7 +290,7 @@ private:
 
   // Internal function to parse content
   void ClearValues(void);
-  void ParseTockens(std::vector<std::string> &tockens);
+  void ParseTockens(std::vector<std::string> &tockens, bool strict = true);
 
   std::string command_;                                  // !<< Incoming General command
   std::map< std::string, CommandLineFlag > flags_;       // !<< Map of flags

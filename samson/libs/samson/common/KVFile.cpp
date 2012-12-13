@@ -72,8 +72,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   }
 
   // Data instances for parsing and printing content
-  au::SharedPointer<DataInstance> key(key_data->getInstance());
-  au::SharedPointer<DataInstance> value(value_data->getInstance());
+  DataInstance *key = key_data->getInstance();
+  DataInstance *value = value_data->getInstance();
 
   // Create a unified buffer to hold all auxiliar data required
   size_t size_for_kvs  = sizeof(KV) * kv_file->header_.info.kvs;
@@ -120,9 +120,9 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     if (hg < previous_hg) {
       error.AddError(
         au::str("Error parsing a block. Key-value #%lu belongs to hash-group %d and previous hg was %d"
-                , i
-                , hg
-                , previous_hg));
+                , i, hg, previous_hg));
+      delete key;
+      delete value;
       return au::SharedPointer<KVFile>(NULL);
     }
 
@@ -141,12 +141,16 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   if ((total_info.size != kv_file->header_.info.size) || (total_info.kvs != kv_file->header_.info.kvs)) {
     error.AddError(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
                            kv_file->header_.info.str().c_str()));
+    delete key;
+    delete value;
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Check correct final offset
   if (offset != kv_file->header_.info.size) {
     error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
+    delete key;
+    delete value;
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -158,6 +162,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
                        , kv_file->header_.valueFormat
                        , buffer->str().c_str()));
 
+  delete key;
+  delete value;
   return kv_file;
 }
 
@@ -170,7 +176,7 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
     size_t num_lines = 0;
     while (true) {
       size_t line_size = 0;
-      while ((data[line_begin + line_size ] != '\n') && ((line_begin + line_size) < data_size)) {
+      while ((data[line_begin + line_size] != '\n') && ((line_begin + line_size) < data_size)) {
         line_size++;
       }
 

@@ -1,8 +1,8 @@
 /* ****************************************************************************
  *
- * FILE            common_test.cpp
+ * FILE            KVInfoTest.cpp
  *
- * AUTHOR         Gregorio Escalada
+ * AUTHOR          Ken Zangelin
  *
  * DATE            May 2012
  *
@@ -58,19 +58,6 @@ TEST(samson_common_KVInfo, test1) {
   EXPECT_EQ(info_2.str(), "(  20.0 kvs in  2.00Kbytes )") << "Error in KVInfo for initialised constructor";
   info_1.append(info_2);
   EXPECT_EQ(info_1.str(), "(  20.0 kvs in  2.00Kbytes )") << "Error in KVInfo append from KVInfo";
-}
-
-// -----------------------------------------------------------------------------
-// Test KVInfo.canAppend
-//
-TEST(samson_common_KVInfo, canAppend) {
-  samson::KVInfo toInfoWithHugeSize(0xFFFFFFFF, 5);
-  samson::KVInfo fromInfoWithHugeSize(0xFFFFFFFF, 5);
-  samson::KVInfo toInfoWithHugeKvs(5, 0xFFFFFFFF);
-  samson::KVInfo fromInfoWithHugeKvs(5, 0xFFFFFFFF);
-
-  // EXPECT_EQ(toInfoWithHugeSize.canAppend(fromInfoWithHugeSize), false);
-  // EXPECT_EQ(toInfoWithHugeKvs.canAppend(fromInfoWithHugeKvs), false);
 }
 
 // -----------------------------------------------------------------------------
@@ -150,7 +137,6 @@ TEST(DISABLED_samson_common_KVInfo, createKVInfoVector) {
 
     goodHeader->Init(format2, info2);
     infoP = samson::createKVInfoVector((char*) &goodHeader, &errorMgr);
-    LM_M(("Error: '%s'", errorMgr.GetLastError().c_str()));
     EXPECT_TRUE(infoP == NULL);
   }
 

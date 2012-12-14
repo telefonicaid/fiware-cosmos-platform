@@ -43,9 +43,9 @@ TEST(samson_common_BlockKVInfo, AppendBlock) {
   samson::FullKVInfo  fullKvInfo(20, 10);
 
   blockInfo.AppendBlock(fullKvInfo);
-  EXPECT_EQ(blockInfo.size, 20);
-  EXPECT_EQ(blockInfo.kvs, 10);
-  EXPECT_EQ(blockInfo.num_blocks, 1);
+  EXPECT_EQ(20, blockInfo.size);
+  EXPECT_EQ(10, blockInfo.kvs);
+  EXPECT_EQ(1, blockInfo.num_blocks);
   EXPECT_STREQ(" 1.00 Bl/ 10.0 kvs/ 20.0 B", blockInfo.str().c_str());
 }
 
@@ -59,7 +59,7 @@ TEST(samson_common_BlockKVInfo, Append) {
 
   blockInfo.AppendBlock(fullKvInfo);
   blockInfo2.Append(blockInfo);
-  EXPECT_EQ(blockInfo2.size, 20);
-  EXPECT_EQ(blockInfo2.kvs, 10);
-  EXPECT_EQ(blockInfo2.num_blocks, 1);
+  EXPECT_EQ(20, blockInfo2.size);
+  EXPECT_EQ(10, blockInfo2.kvs);
+  EXPECT_EQ(1, blockInfo2.num_blocks);
 }

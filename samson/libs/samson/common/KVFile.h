@@ -75,7 +75,7 @@ public:
   char *data;
   size_t data_size;
 
-  void* key() { return key_; }
+  void* key() const { return key_; }
   
 private:
 

@@ -22,9 +22,9 @@
  * unit test of the file 'common.cpp' in the samson/common library
  *
  */
-#include <utility>
 #include <map>
 #include <string>
+#include <utility>
 
 #include "gtest/gtest.h"
 
@@ -68,6 +68,7 @@ TEST(DISABLED_samson_common_common, GetTableFromCollection) {
   collectionP = samson::GetCollectionForMap(std::string("Blocks"), requests, visualization);
   EXPECT_TRUE(collectionP != NULL);
   au::SharedPointer<au::tables::Table> table2 = samson::GetTableFromCollection(collectionP);
+  EXPECT_TRUE(table2 != NULL);
 
   close_engine_test();
 }

@@ -38,7 +38,7 @@ TEST(samson_common_SamsonDataSet, constructor) {
   EXPECT_EQ(0, status);
 
   au::ErrorManager                          eManager;
-  au::SharedPointer<samson::SamsonDataSet>  dataSetP = samson::SamsonDataSet::create("test_data/EmptyDir", eManager);
+  au::SharedPointer<samson::SamsonDataSet>  dataSetP(samson::SamsonDataSet::create("test_data/EmptyDir", eManager));
   EXPECT_TRUE(eManager.HasErrors());
   EXPECT_STREQ(eManager.GetLastError().c_str(), "No content");
 

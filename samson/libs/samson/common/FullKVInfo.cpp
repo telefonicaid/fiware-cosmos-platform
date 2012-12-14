@@ -13,7 +13,7 @@
 #include "au/string/StringUtilities.h"
 #include "au/string/xml.h"
 
-#include "./FullKVInfo.h"  // Own interface
+#include "samson/common/FullKVInfo.h"  // Own interface
 
 namespace samson {
 FullKVInfo::FullKVInfo(uint32 _size, uint32 _kvs) {

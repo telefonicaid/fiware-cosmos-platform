@@ -83,7 +83,6 @@ TEST(samson_common_coding, NodeBuffer) {
   // Write OK
   nodeBuf.write((char*) "12345", 5);
   EXPECT_EQ(nodeBuf.availableSpace(), KV_NODE_SIZE - 5);
-  LM_M(("nodeBuf.availableSpace: %d", nodeBuf.availableSpace()));
   EXPECT_FALSE(nodeBuf.isFull());
 
   // Fill buffer to make it overrun its initial size

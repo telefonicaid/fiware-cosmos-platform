@@ -1,6 +1,6 @@
 /* ****************************************************************************
  *
- * FILE            SamsonFile_test.cpp
+ * FILE            SamsonFileTest.cpp
  *
  * AUTHOR          Gregorio Escalada
  *

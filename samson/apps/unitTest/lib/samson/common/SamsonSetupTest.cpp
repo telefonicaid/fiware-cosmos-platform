@@ -72,15 +72,17 @@ TEST(samson_common_SamsonSetup, SamsonSetup) {
   EXPECT_TRUE(au::Singleton<samson::SamsonSetup>::shared()->Save()) << "Error in save SamsonSetup";
 
   samson::SamsonSetup* setup                    = au::Singleton<samson::SamsonSetup>::shared();
-  char*                modules_directory        = (char*) setup->modules_directory().c_str();
-  char*                worker_modules_directory = (char*) setup->worker_modules_directory().c_str();
-  char*                blocks_directory         = (char*) setup->blocks_directory().c_str();
-  char*                block_filename           = (char*) setup->block_filename(0).c_str();
+  std::string          modules_directory        = setup->modules_directory();
+  std::string          worker_modules_directory = setup->worker_modules_directory();
+  std::string          blocks_directory         = setup->blocks_directory();
+  std::string          block_filename           = setup->block_filename(0);
+  std::string prefix = "/tmp/";
 
-  EXPECT_TRUE(strncpy(modules_directory,        "/tmp/", 5));
-  EXPECT_TRUE(strncpy(worker_modules_directory, "/tmp/", 5));
-  EXPECT_TRUE(strncpy(blocks_directory,         "/tmp/", 5));
-  EXPECT_TRUE(strncpy(block_filename,           "/tmp/", 5));
+
+  EXPECT_EQ(prefix, modules_directory.substr(0, prefix.length()));
+  EXPECT_EQ(prefix, worker_modules_directory.substr(0, prefix.length()));
+  EXPECT_EQ(prefix, blocks_directory.substr(0, prefix.length()));
+  EXPECT_EQ(prefix, block_filename.substr(0, prefix.length()));
 
   EXPECT_NE(0, setup->block_id_from_filename("xxx"));
 

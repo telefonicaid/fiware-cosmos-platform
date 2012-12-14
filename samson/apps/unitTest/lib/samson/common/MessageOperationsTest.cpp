@@ -41,7 +41,7 @@ TEST(samson_common_MessageOperations, add) {
   samson::gpb::CollectionRecord  record;
   std::string                    test = "test";
 
-  samson::add(&record, std::string("test"), test, std::string("system.String"));
+  samson::add(&record, "test", test, "system.String");
   EXPECT_EQ(record.item_size(), 1);
 }
 

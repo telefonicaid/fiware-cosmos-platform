@@ -59,8 +59,7 @@ TEST(samson_common_KVInputVector, addAndSort) {
   samson::KVInfo        info(4, 4);
   samson::KV            kvs[4];
 
-  for (unsigned int ix = 0; ix < sizeof(kvs) / sizeof(kvs[0]); ++ix)
-  {
+  for (unsigned int ix = 0; ix < sizeof(kvs) / sizeof(kvs[0]); ++ix) {
      kvs[ix].key         = strdup("KEY_X");
      kvs[ix].key[4]      = '0' + (9 - ix);
      kvs[ix].key_size    = 5;
@@ -77,24 +76,25 @@ TEST(samson_common_KVInputVector, addAndSort) {
   EXPECT_STREQ(inputVec.kv[2].key, "KEY_7");
   EXPECT_STREQ(inputVec.kv[3].key, "KEY_6");
 
-  inputVec.kv[0].key[4] = '8';
-  inputVec.kv[1].key[4] = '9';
-  inputVec.kv[2].key[4] = '6';
-  inputVec.kv[3].key[4] = '7';
-
   inputVec.sort();
-#if 1
   EXPECT_STREQ(inputVec._kv[0]->key, "KEY_6");
   EXPECT_STREQ(inputVec._kv[1]->key, "KEY_7");
   EXPECT_STREQ(inputVec._kv[2]->key, "KEY_8");
   EXPECT_STREQ(inputVec._kv[3]->key, "KEY_9");
-#endif
   
+  // 'unsorting' first two - reparing for sortAndMerge(2) ...
+  inputVec._kv[0]->key[4]   = '7';
+  inputVec._kv[0]->value[6] = '7';
+  inputVec._kv[1]->key[4]   = '6';
+  inputVec._kv[1]->value[6] = '6';
+  EXPECT_STREQ(inputVec._kv[0]->key, "KEY_7");
+  EXPECT_STREQ(inputVec._kv[1]->key, "KEY_6");
   inputVec.sortAndMerge(2);
-
+  EXPECT_STREQ(inputVec._kv[0]->key, "KEY_6");
+  EXPECT_STREQ(inputVec._kv[1]->key, "KEY_7");
+  
   // cleanup
-  for (unsigned int ix = 0; ix < sizeof(kvs) / sizeof(kvs[0]); ++ix)
-  {
+  for (unsigned int ix = 0; ix < sizeof(kvs) / sizeof(kvs[0]); ++ix) {
     free(kvs[ix].key);
     free(kvs[ix].value);
   }
@@ -187,6 +187,7 @@ TEST(DISABLED_samson_common_KVInputVector, addKVs) {
 
   inputVec.prepareInput(10);
   inputVec.addKVs(9, info, kvV);
+  EXPECT_EQ(100, inputVec.num_kvs) << "input vector should have 100 KVs";
 
   for (unsigned int ix = 0; ix < sizeof(kvV) / sizeof(kvV[0]); ++ix) {
     free(kvV[ix].key);
@@ -204,7 +205,9 @@ TEST(samson_common_KVInputVector, prepareInput) {
   samson::KVInputVector  inputVec(&op);
 
   inputVec.prepareInput(3);
+  EXPECT_EQ(3, inputVec.max_num_kvs);
   inputVec.prepareInput(4);
+  EXPECT_EQ(4, inputVec.max_num_kvs);
 }
 
 // -----------------------------------------------------------------------------
@@ -367,8 +370,7 @@ TEST(DISABLED_samson_common_KVInputVector, GetNext) {
   // EXPECT_EQ(set->num_kvs, 5);
   
   // cleanup
-  for (unsigned int ix = 0; ix < sizeof(kvs) / sizeof(kvs[0]); ++ix)
-  {
+  for (unsigned int ix = 0; ix < sizeof(kvs) / sizeof(kvs[0]); ++ix) {
     free(kvs[ix].key);
     free(kvs[ix].value);
   }

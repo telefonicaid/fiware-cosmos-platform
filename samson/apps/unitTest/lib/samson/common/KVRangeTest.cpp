@@ -304,7 +304,6 @@ TEST(samson_common_KVRange, gpbConstructor) {
   samson::gpb::KVRange  gpbRange;
   samson::KVRange       range1(1, 2);
   samson::KVRange       range2(range1);
-
   samson::KVRange       range(gpbRange);
   
   EXPECT_TRUE(range2.isValid());

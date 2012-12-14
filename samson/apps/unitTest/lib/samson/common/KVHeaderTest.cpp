@@ -47,7 +47,7 @@ TEST(samson_common_KVHeader, basic) {
   EXPECT_FALSE( header_module.IsTxt() );
   EXPECT_TRUE( header_module.IsModule() );
   EXPECT_TRUE( header_module.Check() );
-
+  EXPECT_STREQ(header.str().c_str(), "KVHeader: (  10.0 kvs in   100 bytes )([00000 65536)) (a-b)");
 }
 
 TEST(samson_common_KVHeader, check_total_size ) {

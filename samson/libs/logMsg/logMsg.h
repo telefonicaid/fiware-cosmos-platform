@@ -1186,6 +1186,7 @@ extern bool lmBuf;
 extern bool lmReads;
 extern bool lmWrites;
 extern bool lmAssertAtExit;
+extern bool lmDontExit;
 extern bool lmNoTracesToFileIfHookActive;
 
 
@@ -1203,6 +1204,14 @@ extern LmxFp lmxFp;
  * lmInit -
  */
 extern LmStatus lmInit(void);
+
+
+
+/* ****************************************************************************
+ *
+ * lmDoExit -
+ */
+extern void lmDoExit(bool val);
 
 
 

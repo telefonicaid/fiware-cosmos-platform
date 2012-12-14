@@ -29,6 +29,9 @@ class KVFile {
     kvs = NULL;
     info = NULL;
     kvs_index = NULL;
+    key_ = NULL;
+    value_ = NULL;
+
   }
 
 public:
@@ -39,15 +42,23 @@ public:
   // Get header information
   KVHeader header();
 
+  // Data instances for parsing and printing contente
+  DataInstance *key_;
+  DataInstance *value_;
+
   // Print content of key-values ( mainly drebugging )
   size_t printContent(size_t limit, bool show_hg, std::ostream &output);
 
   // Get key-values vector for a particular hash-group
   KV *kvs_for_hg(int hg) {
+    if (kvs_index[hg] == -1)
+      return NULL;
     return &kvs[kvs_index[hg]];
   }
 
   char *data_for_hg(int hg) {
+    if (kvs_index[hg] == -1)
+      return NULL;
     return kvs[kvs_index[hg]].key;
   }
 
@@ -64,6 +75,8 @@ public:
   char *data;
   size_t data_size;
 
+  void* key() const { return key_; }
+  
 private:
 
   // Buffer of data ( retained by the shared reference counter )

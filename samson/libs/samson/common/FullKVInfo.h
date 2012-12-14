@@ -1,3 +1,6 @@
+#ifndef SAMSON_LIBS_SAMSON_COMMON_FULLKVINFO_H_
+#define SAMSON_LIBS_SAMSON_COMMON_FULLKVINFO_H_
+
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -8,8 +11,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-#ifndef _H_SAMSON_FULLKVINFO
-#define _H_SAMSON_FULLKVINFO
+#include <string>
 
 #include "samson/common/KVInfo.h"
 #include "samson/common/common.h"
@@ -58,4 +60,4 @@ struct FullKVInfo {
 };
 }
 
-#endif  // ifndef _H_SAMSON_FULLKVINFO
+#endif  // SAMSON_LIBS_SAMSON_COMMON_FULLKVINFO_H_

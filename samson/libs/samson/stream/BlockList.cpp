@@ -143,6 +143,64 @@ bool BlockList::ContainsBlock(size_t block_id) {
   }
   return false;
 }
+
+std::vector<au::SharedPointer<KVFile> > BlockList::GetKVFileVector(au::ErrorManager& error) {
+  std::vector<au::SharedPointer<KVFile> > kv_files;
+  au::list<BlockRef>::iterator bi;
+  for (bi = blocks_.begin(); bi != blocks_.end(); ++bi) {
+    BlockRef *block_ref = *bi;
+    BlockPointer block = block_ref->block();
+    engine::BufferPointer buffer = block->buffer();
+
+    if (buffer == NULL) {
+      error.AddError(au::str("Block %lu is apparently not in memory", block_ref->block_id()));
+      kv_files.clear();
+      return kv_files;
+    }
+
+    // Check header for valid block
+    KVHeader *header = reinterpret_cast<KVHeader *> (buffer->data());
+    if (!header->Check()) {
+      error.AddError("Not valid header in block reference");
+      kv_files.clear();
+      return kv_files;
+    }
+
+    // Analyze all key-values and hashgroups
+    au::SharedPointer<KVFile> file = block_ref->file();
+
+    if (file == NULL) {
+      error.AddError(au::str("Error getting KVFile for block %lu", block_ref->block_id()));
+      kv_files.clear();
+      return kv_files;
+    }
+
+    kv_files.push_back(file);
+  }
+  return kv_files;
+}
+
+std::vector<au::Token *> BlockList::GetTokens() {
+  std::vector<au::Token *> tokens;
+  au::list<BlockRef>::iterator bi;
+  for (bi = blocks_.begin(); bi != blocks_.end(); ++bi) {
+    BlockRef *block_ref = *bi;
+    tokens.push_back(block_ref->block().GetRefCounterToken());
+  }
+  return tokens;
+}
+
+bool BlockList::IsContentInMemory() const {
+  au::list<BlockRef>::const_iterator it_blocks;
+  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); it_blocks++) {
+    BlockRef *block_ref = *it_blocks;
+    BlockPointer block = block_ref->block();
+    if (!block->is_content_in_memory()) {
+      return false;
+    }
+  }
+  return true;
+}
 }
 }
 

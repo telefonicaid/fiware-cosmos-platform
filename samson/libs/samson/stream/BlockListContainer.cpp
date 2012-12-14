@@ -208,5 +208,17 @@ FullKVInfo BlockListContainer::GetOutputsInfo() const {
   }
   return info;
 }
+
+std::vector<au::Token *> BlockListContainer::GetTokens() {
+  std::vector<au::Token *> tokens;
+  au::map<std::string, BlockList>::iterator iter;
+  for (iter = blockLists_.begin(); iter != blockLists_.end(); iter++) {
+    std::vector<au::Token *> tmp_tokens = iter->second->GetTokens();
+    for (size_t i = 0; i < tmp_tokens.size(); i++) {
+      tokens.push_back(tmp_tokens[i]);
+    }
+  }
+  return tokens;
+}
 }
 }

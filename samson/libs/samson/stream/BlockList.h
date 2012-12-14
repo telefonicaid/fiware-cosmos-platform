@@ -89,56 +89,18 @@ public:
   // Check if it contains a particular block
   bool ContainsBlock(size_t block_id);
 
-  std::vector<au::SharedPointer<KVFile> > GetKVFileVector(au::ErrorManager& error) {
-    std::vector<au::SharedPointer<KVFile> > kv_files;
-    au::list<BlockRef>::iterator bi;
-    for (bi = blocks_.begin(); bi != blocks_.end(); ++bi) {
-      BlockRef *block_ref = *bi;
-      BlockPointer block = block_ref->block();
-      engine::BufferPointer buffer = block->buffer();
-
-      if (buffer == NULL) {
-        error.AddError(au::str("Block %lu is apparently not in memory", block_ref->block_id()));
-        kv_files.clear();
-        return kv_files;
-      }
-
-      // Check header for valid block
-      KVHeader *header = reinterpret_cast<KVHeader *> (buffer->data());
-      if (!header->Check()) {
-        error.AddError("Not valid header in block reference");
-        kv_files.clear();
-        return kv_files;
-      }
-
-      // Analyze all key-values and hashgroups
-      au::SharedPointer<KVFile> file = block_ref->file();
-
-      if (file == NULL) {
-        error.AddError(au::str("Error getting KVFile for block %lu", block_ref->block_id()));
-        kv_files.clear();
-        return kv_files;
-      }
-
-      kv_files.push_back(file);
-    }
-    return kv_files;
-  }
+  std::vector<au::SharedPointer<KVFile> > GetKVFileVector(au::ErrorManager& error);
 
   // Check if content is in memory
-  bool IsContentInMemory() const {
-    au::list<BlockRef>::const_iterator it_blocks;
-    for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); it_blocks++) {
-      BlockRef *block_ref = *it_blocks;
-      BlockPointer block = block_ref->block();
-      if (!block->is_content_in_memory()) {
-        return false;
-      }
-    }
-    return true;
-  }
+  bool IsContentInMemory() const;
 
-  au::list<BlockRef> blocks_;  // Public manipulation of blocks for simplicity
+  // Public manipulation of blocks for simplicity
+  au::list<BlockRef> blocks_;
+
+  /**
+   * \brief Get list of tokens to be retained for fork-save operation
+   */
+  std::vector<au::Token *> GetTokens();
 
 private:
 

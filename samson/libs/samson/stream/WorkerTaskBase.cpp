@@ -247,5 +247,9 @@ FullKVInfo WorkerTaskBase::GetOutputInfo(int c) const {
   }
   return FullKVInfo();
 }
+
+std::vector<au::Token *> WorkerTaskBase::GetTokens() {
+  return block_list_container_.GetTokens();
+}
 }
 }

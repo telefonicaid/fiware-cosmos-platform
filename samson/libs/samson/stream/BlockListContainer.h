@@ -95,6 +95,11 @@ public:
     }
   }
 
+  /**
+   * \brief Get a list of all tokens for fork-save operation
+   */
+  std::vector<au::Token *> GetTokens();
+
 private:
   size_t task_id_;
   std::string container_name_;

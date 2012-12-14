@@ -55,6 +55,10 @@ public:
     return reference_counter_;
   }
 
+  Token *token() {
+    return &token_;
+  }
+
 private:
   au::Token token_;  /**< Mutex protection for reference counter */
   int reference_counter_;
@@ -123,13 +127,6 @@ public:
     return *this;
   }
 
-/*
- * SharedPointer<C>& operator=(C *c) {
- *  Reset(c);
- *  return *this;
- * }
- */
-
   void Reset() {
     Reset(NULL);
   }
@@ -166,6 +163,10 @@ public:
       return SharedPointer<T> (NULL);     // Different unrelated shared pointer to NULL
     }
     return SharedPointer<T> (shared_reference_counter_, t);
+  }
+
+  Token *GetRefCounterToken() {
+    return shared_reference_counter_->token();
   }
 
 private:

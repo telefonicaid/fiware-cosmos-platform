@@ -211,17 +211,23 @@ void ProcessItemIsolated::run() {
                                                           run_ProcessItemIsolated, tmp);
   } else {
     LOG_V(logs.isolated_process, ("Isolated process %s: father about to fork", str().c_str()));
-    pid = fork();
-    if (pid < 0) {
-      LM_X(1, ("Fork return an error"));
-    }
-    if (pid == 0) {   // Children running the background process
-      runBackgroundProcessRun();
-      LOG_V(logs.isolated_process,
-            (
-              "Child in Background process finished, calling _exit that will close its side pipes: pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n",
-              pipeFdPair1[1], pipeFdPair2[0]));
-      _exit(1000);
+
+    // Get all tokens for this task for fork-save ( avoid deadlocks )
+    std::vector<au::Token *> tokens = GetTokens();
+
+    {
+      LOG_V(logs.isolated_process, ("Retaining %lu locks to be fork-save", tokens.size()));
+      au::MultipleTokenTaker mtt(tokens);  // Retain all significant tokens during call to fork
+      pid = fork();
+      if (pid < 0) {
+        LM_X(1, ("Fork return an error"));
+      }
+
+      if (pid == 0) {   // Children running the background process
+        runBackgroundProcessRun();
+        LOG_V(logs.isolated_process, ("Child in Background process finished"));
+        _exit(1000);
+      }
     }
   }
 

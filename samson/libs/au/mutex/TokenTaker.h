@@ -32,6 +32,7 @@
 
 #include <pthread.h>             /* pthread_mutex_t                          */
 #include <string>
+#include <vector>
 
 namespace au {
 class Token;
@@ -49,6 +50,16 @@ public:
 private:
   std::string name_;
   Token *token_;
+};
+
+class MultipleTokenTaker {
+public:
+
+  MultipleTokenTaker(const std::vector<Token *>& tokens);
+  ~MultipleTokenTaker();
+
+private:
+  std::vector<Token *> tokens_;
 };
 }
 

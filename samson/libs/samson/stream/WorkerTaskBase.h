@@ -145,6 +145,11 @@ public:
     return block_list->ContainsBlock(block_id);
   }
 
+  /**
+   * \brief Get a vector of tokens to be retained-releaed during fork
+   */
+  std::vector<au::Token *> GetTokens();
+
 protected:
   // Container for all input/output blocks
   BlockListContainer block_list_container_;

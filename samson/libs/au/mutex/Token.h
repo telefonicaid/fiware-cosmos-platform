@@ -80,6 +80,7 @@ private:
 
   // To avoid missing releases, we use helper class TokenTaker
   friend class TokenTaker;
+  friend class MultipleTokenTaker;
 
   void Retain();
   void Release();

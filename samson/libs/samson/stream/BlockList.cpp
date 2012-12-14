@@ -185,7 +185,10 @@ std::vector<au::Token *> BlockList::GetTokens() {
   au::list<BlockRef>::iterator bi;
   for (bi = blocks_.begin(); bi != blocks_.end(); ++bi) {
     BlockRef *block_ref = *bi;
-    tokens.push_back(block_ref->block().GetRefCounterToken());
+    BlockPointer block = block_ref->block();
+    tokens.push_back(block.GetRefCounterToken());
+    engine::BufferPointer buffer = block->buffer();
+    tokens.push_back(buffer.GetRefCounterToken());
   }
   return tokens;
 }

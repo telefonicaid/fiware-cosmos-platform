@@ -328,7 +328,7 @@ script demo
 		# OTTstream profiling stream block
 		# ----------------------------------------------------------------
 
-        init_stream 01.OTTstream    OTTstream.init_stream_operations;
+        init_stream -prefix 01.OTTstream    OTTstream.init_stream_operations;
 
 		add_queue_connection [input_http]		01.OTTstream.logs_http;
 		add_queue_connection [input_dns]		01.OTTstream.logs_dns;
@@ -344,7 +344,7 @@ script demo
 		# ----------------------------------------------------------------
         
         # Connect with the level module to keep updated the number of users active in last timespan, for every service        
-		init_stream 02.level level.init_stream_operations_timed;
+		init_stream -prefix 02.level level.init_stream_operations_timed;
 		
 		add_queue_connection 02.level.04.levels_updates_txt    output_levels;
 		add_queue_connection 01.OTTstream.level_commands 	02.level.01.input;
@@ -354,7 +354,7 @@ script demo
 		# ----------------------------------------------------------------
 		
 		# Connect with the hit stream_block to accumulate topics
-	    init_stream 03.hit hit.init_stream_operations;
+	    init_stream -prefix 03.hit hit.init_stream_operations;
 		
 		add_queue_connection category_hits 01.OTTstream.category_hits;
 		add_queue_connection 01.OTTstream.category_hits 03.hit.01.input;

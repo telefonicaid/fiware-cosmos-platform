@@ -132,15 +132,15 @@ script init_stream_operations
 
 		# Remove queues and operations
 		rm [input] [state] [output] [output_txt] -f;
-		rm_stream_operation [o1] [o2] -f;
+		remove_stream_operation [o1] [o2] -f;
 
 		# Properties for output queue
 		set_queue_property [output_txt] max_size 1000;
 
 		# Definitions
-		aso [o1]  level.update_int32_levels    [input] [state]       [output] [state];
+		add_steam_operation [o1]  level.update_int32_levels    [input] [state]       [output] [state];
 		set_stream_operation_property [o1] update_only true;
-		aso [o2]  level.publish_int32_levels    [output]              [output_txt];
+		add_steam_operation [o2]  level.publish_int32_levels    [output]              [output_txt];
 		
 	}
 }
@@ -163,7 +163,7 @@ script init_stream_operations_timed
 
 		# Remove queues and operations
 		rm [input] [state] [output] [output_txt] -f;
-		rm_stream_operation [o1] [o2] -f;
+		remove_stream_operation [o1] [o2] -f;
 
 		# Properties for output queues
 		#set_queue_property [input] max_size 1;
@@ -171,13 +171,13 @@ script init_stream_operations_timed
 		#set_queue_property [output_txt] max_size 1;
 
 		# Definitions
-		aso [o1]  level.update_valTimed_levels    [input] [state]       [output] [state];
+		add_steam_operation [o1]  level.update_valTimed_levels    [input] [state]       [output] [state];
 		#set_stream_operation_property [o1]   priority 7;
 		set_stream_operation_property [o1]   max_latency 20;
 		set_stream_operation_property [o1] update_only true;
 		add_queue_connection [output]   [output].bis;
-		aso [o2]  level.publish_valTimed_levels    [output]              [output_txt];
-		aso [o3]  level.update_valTimed_graph   [output].bis [graph]        [graph];
+		add_steam_operation [o2]  level.publish_valTimed_levels    [output]              [output_txt];
+		add_steam_operation [o3]  level.update_valTimed_graph   [output].bis [graph]        [graph];
 		set_stream_operation_property [o3] update_only true;
 		#set_stream_operation_property [o3]   priority 9;
 		set_stream_operation_property [o3]   max_latency 20;

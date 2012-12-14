@@ -25,7 +25,7 @@
  *
  * LogFilter
  *
- * Generic class to filter incomming logs based on different criteria like
+ * Generic class to filter incoming logs based on different criteria like
  *
  * - Number of logs
  * - Time refernce
@@ -42,7 +42,7 @@ public:
 
   virtual ~LogFilterItem() {
   };
-  virtual bool Accept(LogPointer log) = 0;  // Virtual method to filter incomming logs
+  virtual bool Accept(LogPointer log) = 0;  // Virtual method to filter incoming logs
   // General method to create items
   static au::SharedPointer<LogFilterItem> Create(const std::string& command, au::ErrorManager& error);
 };

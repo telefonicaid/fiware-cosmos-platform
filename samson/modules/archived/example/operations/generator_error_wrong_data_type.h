@@ -43,6 +43,7 @@ helpLine: Generator that fails because it use a system.Double instead of a syste
 
 		void init( samson::KVWriter *writer )
 		{
+      O_LOG_M(("Ready"));
 		}
 
 		void setup( int worker , int num_workers, int process , int num_processes )
@@ -54,6 +55,8 @@ helpLine: Generator that fails because it use a system.Double instead of a syste
 		   samson::system::UInt key;
 		   samson::system::Double value;
 
+		   O_LOG_M(("Running"));
+
 		   for( int i = 0 ; i < 10 ; i++)
 			  writer->emit( 0 , &key , &value );
 		   
@@ -61,6 +64,7 @@ helpLine: Generator that fails because it use a system.Double instead of a syste
 
 		void finish( samson::KVWriter *writer )
 		{
+		  O_LOG_M(("Finished"));
 		}
 
 

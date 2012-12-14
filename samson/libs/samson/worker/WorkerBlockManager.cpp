@@ -313,13 +313,17 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
     return;
   }
 
-  // Add in the list of push items to be confirmed
-  size_t commit_id = data_model->current_data().commit_id();
-  push_items_.push_back(WorkerPushItem(delilah_id, push_id, commit_id));
+  if (samson_worker_->worker_controller()->IsSingleWorkerCluster()) {
+    SendPushBlockResponse(delilah_id, push_id);
+    SendPushBlockConfirmation(delilah_id, push_id);
+  } else {
+    // Add in the list of push items to be confirmed
+    size_t commit_id = data_model->current_data().commit_id();
+    push_items_.push_back(WorkerPushItem(delilah_id, push_id, commit_id));
 
-  // Send a message to delilah to inform we have received correctly
-  SendPushBlockResponse(delilah_id, push_id);
-  return;
+    // Send a message to delilah to inform we have received correctly
+    SendPushBlockResponse(delilah_id, push_id);
+  }
 }
 
 void WorkerBlockManager::ReviewPushItems(size_t previous_data_commit_id, size_t current_data_commit_id) {

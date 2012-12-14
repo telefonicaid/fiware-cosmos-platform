@@ -124,9 +124,9 @@ script init_stream
         # Definitions
         # ----------------------------------------------------------------
 
-		add_stream_operation [p] moduletemplate.parse_example [input] [tmp1];
-		add_stream_operation [m] moduletemplate.map_example [tmp1] [tmp2];
-		add_stream_operation [r] moduletemplate.reduce_example [tmp2] [state] [state]; 
+		add_stream_operation [p] moduletemplate.parse_example -input [input] -output [tmp1];
+		add_stream_operation [m] moduletemplate.map_example -input [tmp1] -output [tmp2];
+		add_stream_operation [r] moduletemplate.reduce_example -input '[tmp2] [state]' -output [state]; 
 		set_stream_operation_property [r] update_only true;
 	}
 }

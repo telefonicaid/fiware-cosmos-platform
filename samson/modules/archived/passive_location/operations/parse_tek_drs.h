@@ -246,7 +246,6 @@ public:
             {
                 LM_W(("OHDR ignored because not complete, with typeMsg=%d, at pos:%lu of length:%lu, p_blob:%p, p_end_blob:%p", typeMsg, p_init_ohdr - (unsigned char *)data, length, p_blob, p_end_blob));
             }
-            //OLM_M(("p_end_blob - p_blob=%lu (length(%lu))", p_end_blob - p_blob, length));
         }
     }
 

@@ -188,7 +188,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
       std::string sub_command = op->code[i];
 
       au::CommandLine intern_cmdLine;
-      intern_cmdLine.Parse(sub_command);
+      intern_cmdLine.Parse(sub_command, false);  // strict mode i disabled to avoid unnecessary warnings
 
       if (intern_cmdLine.get_argument(0) == "alias") {
         if (intern_cmdLine.get_num_arguments() < 3) {
@@ -206,6 +206,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
         if (prefix.length() > 0) {
           full_command.append(au::str(" -prefix %s", prefix.c_str()));
         }
+        LOG_M(logs.worker_command, ("full_command: '%s'", full_command.c_str()));
         RunCommand(full_command, sub_error);
       }
 
@@ -274,7 +275,7 @@ void WorkerCommand::Run() {
 
   // Parse a delilah command
   DelilahCommandCatalogue delilah_command_catalogue;
-  au::console::CommandInstance *command_instance = delilah_command_catalogue.Parse(command_, error_);
+  au::SharedPointer<au::console::CommandInstance> command_instance = delilah_command_catalogue.Parse(command_, error_);
   if (error_.HasErrors()) {
     return;   // Finish with this error
   }

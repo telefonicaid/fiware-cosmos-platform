@@ -43,7 +43,7 @@ namespace example{
 		  }
 		  else
 		  {
-		    OLM_M(("Ok!"));
+		    O_LOG_M(("Ok!"));
 		  }
 
 		}

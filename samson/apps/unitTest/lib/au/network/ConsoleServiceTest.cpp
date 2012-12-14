@@ -42,7 +42,7 @@ TEST(au_network_ConsoleService, DISABLED_basic) {
 
   EXPECT_EQ(au::OK, console_service.InitService());
 
-  // Connect with a client
+  // connect to a client
   au::network::ConsoleServiceClientBase client(au_network_ConsoleService_TEST_PORT);
   au::ErrorManager error;
   client.Connect("localhost", &error);

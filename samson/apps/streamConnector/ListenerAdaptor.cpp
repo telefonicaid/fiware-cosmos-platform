@@ -26,7 +26,7 @@ ListenerAdaptor::ListenerAdaptor(Channel *channel, ConnectionType type, int _por
 
 // samson::NetworkListenerInterface
 void newSocketConnection(au::NetworkListener *listener
-                         , au::SocketConnection *socket_connetion);
+                         , au::SocketConnection *socket_connection);
 
 // Get status of this element
 std::string ListenerAdaptor::getStatus() {
@@ -53,13 +53,13 @@ void ListenerAdaptor::stop_item() {
 }
 
 void ListenerAdaptor::newSocketConnection(au::NetworkListener *listener
-                                          , au::SocketConnection *socket_connetion) {
-  std::string name  = au::str("Socket %s", socket_connetion->host_and_port().c_str());
+                                          , au::SocketConnection *socket_connection) {
+  std::string name  = au::str("Socket %s", socket_connection->host_and_port().c_str());
 
   FileDescriptorConnection *new_connection = new SimpleFileDescriptorConnection(this
                                                                                 , getType()
                                                                                 , name
-                                                                                , socket_connetion);
+                                                                                , socket_connection);
 
   // Add this item as my children item
   add(new_connection);

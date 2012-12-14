@@ -93,7 +93,7 @@ private:
   std::string command;
 
   // Instance of the command parsed from input command
-  au::console::CommandInstance *command_instance_;
+  au::SharedPointer<au::console::CommandInstance> command_instance_;
 
   engine::BufferPointer buffer_;
 

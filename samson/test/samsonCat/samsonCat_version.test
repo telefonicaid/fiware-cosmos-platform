@@ -3,6 +3,7 @@ samsonCat - version
 --SHELL--
 samsonCat -version
 --EXPECT--
-No MAN version
-No MAN Copyright
-No MAN Author
+0.7.0
+Copyright (C) 2011 Telefonica Investigacion y Desarrollo
+
+Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.

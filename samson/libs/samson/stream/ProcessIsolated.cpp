@@ -129,7 +129,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
     LM_X(1, ("Internal error: Missing buffer in ProcessBase"));
   }
   if (size == 0) {
-    LM_X(1, ("Internal error: Wrong size for ProcessBase"));   // Outputs structures placed at the begining of the buffer
+    LM_X(1, ("Internal error: Wrong size for ProcessBase"));   // Outputs structures placed at the beginning of the buffer
   }
   OutputChannel *channel = reinterpret_cast<OutputChannel *>(buffer);
 

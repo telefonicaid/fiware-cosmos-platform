@@ -90,8 +90,6 @@ public:
   }
 
   void run(samson::KVWriter *writer) {
-    // OLM_M(("Running generator Worker %d/%d  Process %d/%d  Samples %lu" , _worker , _num_workers , _process , _num_processes , local_num_samples ));
-
     for (size_t i = 0; i < local_num_samples; i++) {
       // Generate a new random word
       for (int c = 0; c < line_length; c++) {

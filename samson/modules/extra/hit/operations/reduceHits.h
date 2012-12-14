@@ -103,16 +103,12 @@ namespace hit{
 			  manager.add( &hit );
 		   
 			  // Emit the state to keep track
-			  //OLM_M(("Emiting %s %lu" , concept.value.c_str() ,  count.value ));
-
 			  writer->emit( 1 , &concept , &hit );
-
 		   }
 		}
 
 		void finish( samson::KVWriter *writer )
 		{
-		   //OLM_M(("Emiting output hits...."));
 		   manager.emit_hits( writer );
 		}
 

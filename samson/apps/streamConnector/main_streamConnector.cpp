@@ -31,6 +31,7 @@
 
 #include "samson/common/Logs.h"
 #include "samson/common/coding.h"       // KVHeader
+#include "samson/common/samsonVersion.h"
 
 
 #include "LogManager.h"
@@ -155,6 +156,10 @@ int main(int argC, const char *argV[]) {
   paConfig("man shortdescription", (void *)manShortDescription);
   paConfig("man synopsis", (void *)manSynopsis);
   paConfig("log to stderr", (void *)true);
+  paConfig("man reportingbugs", SAMSON_BUG_REPORTING);
+  paConfig("man author", SAMSON_AUTHORS);
+  paConfig("man copyright", SAMSON_COPYRIGHT);
+  paConfig("man version", SAMSON_VERSION);
 
   // Parse input arguments
   paParse(paArgs, argC, (char **)argV, 1, false);
@@ -319,13 +324,13 @@ int main(int argC, const char *argV[]) {
               num_input_items, au::str(pending_size, "B").c_str()));
 
 
-        if (paVerbose) {
+        if (lmVerbose) {
           au::tables::Table *table = main_stream_connector->getConnectionsTable();
           std::cerr << table->str();
           delete table;
         }
 
-        if (paVerbose) {
+        if (lmVerbose) {
           au::tables::Table *table = main_stream_connector->getConnectionsTable("data");
           std::cerr << table->str();
           delete table;

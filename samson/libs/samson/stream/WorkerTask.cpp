@@ -563,7 +563,7 @@ std::string WorkerTask::str() {
 
 void WorkerTask::commit() {
   if (environment().Get("system.canceled_task", "no") == "yes") {
-    LOG_M(logs.worker_task, ("Task %s not commited since it has been deactivated", str().c_str()));
+    LOG_M(logs.worker_task, ("Task %s not committed since it has been deactivated", str().c_str()));
     return;
   }
 
@@ -577,15 +577,16 @@ void WorkerTask::commit() {
     LOG_M(logs.task_manager, ("Error in task %lu (%s)", id(), error_message.c_str()));
   } else {
     LOG_D(logs.task_manager, ("Task WT%lu blocks: %s", id(), str_block_ids().c_str()));
-    LOG_M(logs.task_manager, ("Commiting task W%lu (%s)", id(), str().c_str()));
+    LOG_M(logs.task_manager, ("Committing task W%lu (%s)", id(), str().c_str()));
 
     // Commit changes and release task
     std::string my_commit_command = commit_command();
     std::string caller = au::str("task WT%lu", worker_task_id());
+    LOG_D(logs.task_manager, ("caller:'%s', commit_command:'%s'", caller.c_str(), my_commit_command.c_str()));
     samson_worker_->data_model()->Commit(caller, my_commit_command, error_);
 
     if (error_.HasErrors()) {
-      LOG_W(logs.task_manager, ("Error commiting task W%lu : %s"
+      LOG_W(logs.task_manager, ("Error committing task W%lu : %s"
                                 , worker_task_id()
                                 , error().GetLastError().c_str()));
     }

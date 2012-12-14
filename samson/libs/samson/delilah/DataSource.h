@@ -152,7 +152,7 @@ public:
       next_file_++;
       return 0;   // OK
     }
-    return 1;   // Error buffer is not enougth
+    return 1;   // Error buffer is not enough
   }
 
   virtual size_t getTotalSize() {

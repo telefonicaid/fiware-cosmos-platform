@@ -371,7 +371,8 @@ int SamsonWorkerController::ReviewClusterLeather() {
     // Set the new cluster information to update the other worhers
     rc = zoo_connection_->Set("/samson/cluster", cluster_info_.shared_object());
     if (rc) {
-      LOG_W(logs.worker_controller, ("Not possible to set new version of cluter info: %s", au::zoo::str_error(rc).c_str()));
+      LOG_W(logs.worker_controller,
+            ("Not possible to set new version of cluster info: %s", au::zoo::str_error(rc).c_str()));
       return 1;
     }
 
@@ -673,7 +674,7 @@ size_t worker_from_block_id(size_t block_id) {
   return b.uint32[0];
 }
 
-std::set<size_t> SamsonWorkerController::GetWorkers() {
+std::set<size_t> SamsonWorkerController::GetWorkers() const {
   std::set<size_t> workers;
   au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = cluster_info_;
   for (int w = 0; w < cluster_info->workers_size(); w++) {
@@ -682,11 +683,11 @@ std::set<size_t> SamsonWorkerController::GetWorkers() {
   return workers;
 }
 
-size_t SamsonWorkerController::GetMyLastCommitId() {
+size_t SamsonWorkerController::GetMyLastCommitId() const {
   return worker_info_.last_commit_id();
 }
 
-std::string SamsonWorkerController::getHostForWorker(size_t worker_id) {
+std::string SamsonWorkerController::getHostForWorker(size_t worker_id) const {
   for (int i = 0; i < cluster_info_->workers_size(); i++) {
     if (cluster_info_->workers(i).worker_id() == worker_id) {
       return cluster_info_->workers(i).worker_info().host();
@@ -695,7 +696,7 @@ std::string SamsonWorkerController::getHostForWorker(size_t worker_id) {
   return "";
 }
 
-unsigned short SamsonWorkerController::getWebPortForWorker(size_t worker_id) {
+unsigned short SamsonWorkerController::getWebPortForWorker(size_t worker_id) const {
   for (int i = 0; i < cluster_info_->workers_size(); i++) {
     if (cluster_info_->workers(i).worker_id() == worker_id) {
       return cluster_info_->workers(i).worker_info().port_web();
@@ -704,7 +705,7 @@ unsigned short SamsonWorkerController::getWebPortForWorker(size_t worker_id) {
   return 0;
 }
 
-bool SamsonWorkerController::CheckDataModelCommitId(size_t last_commit_id) {
+bool SamsonWorkerController::CheckDataModelCommitId(size_t last_commit_id) const {
   if (worker_ids_.size() == 0) {
     return false;   // Check for secutrity
   }

@@ -49,11 +49,8 @@ public:
 
     std::vector<std::string>entorno;
 
-    // OLM_T(LMT_User06, ("Process data: '%s'", data));
-
     while (data[pos_begin] != '\0') {
       if (data[pos_begin] == '\266') {
-        // OLM_T(LMT_User06,("Filter parragraf at %d", pos_begin));
         data[pos_begin] = '\n';
       }
       pos_begin++;
@@ -61,7 +58,6 @@ public:
     pos_begin = 0;
     while (data[pos_begin] != '\0') {
       entorno.clear();
-      // OLM_T(LMT_User06, ("Process at %d line: '%s'", pos_begin, data+pos_begin));
       while (true) {
         while ((data[pos_begin] != '\0') &&
                ((data[pos_begin] == ' ') || (data[pos_begin] == '\r') || (data[pos_begin] == '\n')))
@@ -69,7 +65,6 @@ public:
           pos_begin++;
         }
         if ((data[pos_begin] == '\n') || (data[pos_begin] == '\0')) {
-          // //OLM_T(LMT_User06, ("Breaks after blanks at pos_begin:%d", pos_begin));
           break;
         }
 
@@ -100,7 +95,6 @@ public:
             if (updatePosBegin) {
               pos_begin = pos_end + 1;
             }
-            // //OLM_T(LMT_User06, ("Breaks after word at pos_begin:%d", pos_begin));
             break;
           }
         } else {
@@ -118,9 +112,6 @@ public:
         // value.clear();
         key = *iter1;
 
-        // const char *cad1 = key.value.c_str();
-        // //OLM_T(LMT_User06, ("Works with '%s'", cad1));
-
         samson::txt::CountData item;
         std::string vacio = "__UNK__";
         item.word = vacio;
@@ -136,28 +127,20 @@ public:
         for (i = 0; ((i < tam_ventana) && (iter2 >= entorno.begin())); i++, iter2--) {
           item.word = *iter2;
           item.count = 1;
-          // //OLM_T(LMT_User06,("Add bw '%s' en [%d]", item.word.value.c_str(), i));
           value.colList[i].copyFrom(&item);
         }
-        // //OLM_T(LMT_User06, ("Now let's look forward"));
 
         iter2 = iter1 + 1;
         for (int j = 0; ((j < tam_ventana) && (iter2 < entorno.end())); j++, i++, iter2++) {
           item.word = *iter2;
           item.count = 1;
-          // //OLM_T(LMT_User06,("Add fw '%s' en [%d]", item.word.value.c_str(), i));
           value.colList[i].copyFrom(&item);
         }
 
-
-        // //OLM_T(LMT_User06, ("Emit '%s'", cad1));
         writer->emit(0, &key, &value);
         iter1++;
       }
-      if ((data[pos_begin] != '\0') && ((data[pos_begin] != '\n') || (data[pos_begin + 1] != '\0'))) {
-        // OLM_T(LMT_User06, ("Finished with line at data[%d]:'%c'", pos_begin, data[pos_begin]));
-      } else {
-        // OLM_T(LMT_User06, ("Finished with data at data[%d]:'%c'", pos_begin, data[pos_begin]));
+      if ((data[pos_begin] == '\0') || ((data[pos_begin] == '\n') && (data[pos_begin + 1] == '\0'))) {
         return;
       }
     }

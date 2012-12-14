@@ -30,10 +30,11 @@
 #define LOG_LEVEL_ERROR_EXIT           0 // always accepted and exits program
 #define LOG_LEVEL_ERROR                1
 #define LOG_LEVEL_WARNING              2
-#define LOG_LEVEL_VERBOSE              3
-#define LOG_LEVEL_MESSAGE              4
+#define LOG_LEVEL_MESSAGE              3
+#define LOG_LEVEL_VERBOSE              4
 #define LOG_LEVEL_DEBUG                5
 
+#define LOG_LEVEL_ALL                  256
 
 // Formatting
 // #define LOG_DEFAULT_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"

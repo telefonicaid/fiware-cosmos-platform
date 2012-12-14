@@ -2,7 +2,7 @@ Module txt
 {
 	title	"Basic txt manipulation"
 	author	"Andreu Urruela"
-	version "0.1.3"
+	version "0.2"
 }
 
 data Collocation
@@ -33,7 +33,7 @@ data Stripe
 parser parser_words
 {
 	out system.String system.UInt
-	helpLine "Parse a txt files emiting words at the output (value is always one)"
+	helpLine "Parse a txt files emitting words at the output (value is always one)"
 }
 
 simpleParser parser_words_alpha
@@ -47,15 +47,15 @@ map filter_words_with_numbers_and_letters
 	in system.String system.UInt
 	out system.String system.UInt
 
-	helpLine "Filter words containing only numbers and letter ( ommit words with non-printable ascii chars)"
+	helpLine "Filter words containing only numbers and letter (filter out words with non-printable ascii chars)"
 }
 
-map concert_to_lower_case
+map convert_to_lower_case
 {
 	in system.String system.UInt
 	out system.String system.UInt
 
-	helpLine "Convert to lower case. Also filtere words with non-printable chars"
+	helpLine "Convert to lower case. Also filter words with non-printable chars"
 }
 
 map number_letters
@@ -74,7 +74,7 @@ parser parser_lines
 {
 	out system.String system.UInt
 
-	helpLine "Parse a txt file emiting every line as an independent string ( return character not included )"
+	helpLine "Parse a txt file emitting every line as an independent string ( return character not included )"
 }
 
 #
@@ -93,39 +93,23 @@ parser parser_collocations_pairs
 {
 	out txt.Collocation system.UInt
 
-	helpLine "Parse a txt file emiting collocations at the output (value is always one)"
+	helpLine "Parse a txt file emitting collocations at the output (value is always one)"
 }
 
 parser parser_collocations_stripes
 {
 	out system.String txt.Stripe
 
-	helpLine "Parse a txt file emiting words as key with a vector of collocations at the output"
+	helpLine "Parse a txt file emitting words as key with a vector of collocations at the output"
 }
 
 script demo
 {
     code
     {
-        add_stream_operation p txt.parser_words input words;
-        add_stream_operation c txt.word_count2 words state state;
+        add_stream_operation p txt.parser_words -input input -output words;
+        add_stream_operation c txt.word_count2 -input 'words state' -output state;
     }
-}
-
-script words
-{
-	in txt txt 
-	out txt txt
-
-	helpLine "Complete classical example of counting words"
-
-	code
-	{
-		txt.parser_words $1 $1.words -create -clear;
-		txt.word_count $1.words $1.words.accumulated -create -clear;
-		txt.export_words $1.words.accumulated $2 -create -clear;
-		rm $1.words $1.words.accumulated;
-	}
 
 }
 
@@ -134,7 +118,7 @@ reduce word_count
 	in system.String system.UInt
 	out system.String system.UInt
 
-	helpLine "Classical example to count the words. It basically acumulates the number of times a word appear in a txt file"
+	helpLine "Classical example to count the words. It basically accumulates the number of times a word appear in a txt file"
 }
 
 reduce word_count2
@@ -151,7 +135,7 @@ reduce collocation_count
 	in txt.Collocation system.UInt
 	out txt.Collocation system.UInt
 
-	helpLine "Classical example to count words collocations. It basically acumulates the number of times a collocation appears in a txt file"
+	helpLine "Classical example to count words collocations. It basically accumulates the number of times a collocation appears in a txt file"
 }
 
 reduce collocation_count_stripes
@@ -159,7 +143,7 @@ reduce collocation_count_stripes
 	in system.String txt.Stripe
 	out system.String txt.Stripe
 
-	helpLine "Classical example to count words collocations by stripes. It basically acumulates the number of times a collocation appears in a txt file"
+	helpLine "Classical example to count words collocations by stripes. It basically accumulates the number of times a collocation appears in a txt file"
 }
 
 reduce word_count_accumulate
@@ -194,43 +178,5 @@ parserOut export_collocations_stripes
 	in system.String txt.Stripe
 
 	helpLine "Export collocations and counter with stripe strategy"	
-}
-
-
-#
-# TESTING
-#
-
-script test_1
-{
-	in txt txt 
-	out txt txt
-
-	helpLine "Complete classical example of counting words"
-
-	code
-	{
-		txt.parser_words $1 $1.words -create -clear;
-		txt.word_count $1.words $1.words.accumulated -create -clear;
-		txt.export_words $1.words.accumulated $2 -create -clear;
-		rm $1.words $1.words.accumulated;
-	}
-
-}
-
-script test_2
-{
-	in txt txt 
-	out txt txt
-
-	helpLine "example for cumputing collocations"
-
-	code
-	{
-		txt.parser_collocations_stripes $1 $1.coll -create -clear;
-		txt.collocation_count_stripes $1.coll $1.coll.accumulated -create -clear;
-		txt.export_collocations_stripes $1.coll.accumulated $2 -create -clear;
-		rm $1.coll $1.coll.accumulated;
-	}
 
 }

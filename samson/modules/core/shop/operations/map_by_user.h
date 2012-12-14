@@ -75,7 +75,7 @@ class map_by_user : public samson::Map
 
             // operation traces
             trace.SetString(au::str("Mapped item %lu for user:%lu", output_value.value, output_key.value).c_str());
-            writer->emit( -1 , &trace , &value_void );
+            // writer->emit( -1 , &trace , &value_void );
 
             writer->emit( 0 , &output_key, &output_value);
         }

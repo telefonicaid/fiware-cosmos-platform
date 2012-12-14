@@ -105,7 +105,7 @@ void DiskConnection::start_connection() {
   }
 
   // Flag to indidicate the background thread should return ASAP
-  stoping_threads = false;
+  stopping_threads = false;
 
   // Create the background thread
   thread_running = true;
@@ -115,7 +115,7 @@ void DiskConnection::start_connection() {
 
 void DiskConnection::stop_connection() {
   // Create the background thread
-  stoping_threads = true;
+  stopping_threads = true;
 
   while (thread_running) {
     usleep(100000);
@@ -129,7 +129,7 @@ void DiskConnection::run_as_output() {
   size_t max_size = 64000000;       // Should be a parameter
 
   while (true) {
-    if (stoping_threads) {
+    if (stopping_threads) {
       return;
     }
 
@@ -201,7 +201,7 @@ void DiskConnection::run_as_output() {
 
 void DiskConnection::run_as_input() {
   while (true) {
-    if (stoping_threads) {
+    if (stopping_threads) {
       return;
     }
 

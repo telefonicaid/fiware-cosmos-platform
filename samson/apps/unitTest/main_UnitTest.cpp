@@ -68,7 +68,7 @@ int main(int argC, char **argV) {
   paConfig("man author", "Samson team");
 
   // Parse incoming arguments without being altered by google test library arguments
-  if (( argC > 2 ) &&  (strcmp(argV[1], "-t") == 0)) {
+  if ((argC > 2) &&  (strcmp(argV[1], "-t") == 0)) {
     paParse(paArgs, 3, (char **)argV, 3, false);
   } else {
     // Avoid parsing any argument

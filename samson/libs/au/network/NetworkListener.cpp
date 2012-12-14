@@ -41,17 +41,11 @@
 namespace au {
 void *NetworkListener_run(void *p);
 
-NetworkListener::NetworkListener(
-  NetworkListenerInterface *network_listener_interface) {
+NetworkListener::NetworkListener(NetworkListenerInterface *network_listener_interface)
+  : au::Thread("NetworkListener") {
   network_listener_interface_ = network_listener_interface;
-
   rFd_ = -1;   // Init value
   port_ = -1;
-
-  // Thread to indicate if we are really listening connections
-  background_thread_running_ = false;
-  background_thread_finished_ = false;
-  return_code_ = NULL;
 }
 
 NetworkListener::~NetworkListener() {
@@ -60,25 +54,16 @@ NetworkListener::~NetworkListener() {
 }
 
 void NetworkListener::StopNetworkListener() {
-  if (!background_thread_running_) {
-    LOG_W(logs.listener, ("NetworkListener not running, nothing to stop"));
-    return;   // Nothing to do
+  // Close file descriptor
+  if (rFd_ != -1) {
+    int rc = ::close(rFd_);
+    if (rc) {
+      LOG_W(logs.listener, ("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc));
+    }
+    rFd_ = -1;
   }
-  background_thread_running_ = false;
-
-  // Close the open file descriptor
-  int rc = ::close(rFd_);
-  if (rc) {
-    LOG_W(logs.listener, ("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc));
-  }
-  rFd_ = -1;
-
-  // Joint the background thread
-  // LM_LT(LmtCleanup, ( "Joining background thread of listener on port %d to finish\n", port_ ));
-  if (!return_code_) {
-    // Still pending to be collected
-    pthread_join(t, &return_code_);
-  }
+  port_ = -1;
+  StopThread();  // Stop background thread if still running
 }
 
 Status NetworkListener::InitNetworkListener(int port) {
@@ -87,8 +72,6 @@ Status NetworkListener::InitNetworkListener(int port) {
     return au::Error;
   }
 
-  // Keep port information
-  port_ = port;
 
   int reuse = 1;
   struct sockaddr_in sock;
@@ -129,32 +112,13 @@ Status NetworkListener::InitNetworkListener(int port) {
     LM_RP(ListenError, ("Error listening on port %d", port));
   }
 
+  port_ = port;   // Keep port information
+  StartThread();  // Star background thread to accept connections
 
-  // Create thread
-  std::string name = au::str("NetworkListener on port %d", port);
-  int s = au::Singleton<au::ThreadManager>::shared()->AddNonDetachedThread(name
-                                                                           , &t
-                                                                           , NULL
-                                                                           , NetworkListener_run
-                                                                           , this);
-  if (s == 0) {
-    background_thread_running_ = true;
-    return OK;
-  } else {
-    LOG_E(logs.listener, ("Error creating thread on port %d: %s", port, strerror(errno)));
-    return au::Error;
-  }
+  return au::OK;
 }
 
-void *NetworkListener_run(void *p) {
-  NetworkListener *network_listener = reinterpret_cast<NetworkListener *>(p);
-  void *ans = network_listener->runNetworkListener();
-
-  network_listener->background_thread_finished_ = true;  // Flag to indicate that we are over
-  return ans;
-}
-
-void *NetworkListener::runNetworkListener() {
+void NetworkListener::RunThread() {
   fd_set rFds;
   int max;
   struct timeval tv;
@@ -165,7 +129,7 @@ void *NetworkListener::runNetworkListener() {
     // this means that stop has been called
     int rFd = rFd_;
     if (rFd == -1) {
-      return (void *)"rFd_ == -1";
+      return;
     }
 
     // One fd to read connections
@@ -178,7 +142,7 @@ void *NetworkListener::runNetworkListener() {
     tv.tv_usec = 0;
 
     // Main select to wait new connections
-    fds = select(max + 1,  &rFds, NULL, NULL, &tv);
+    fds = select(max + 1, &rFds, NULL, NULL, &tv);
 
     if ((fds == -1) && (errno == EINTR)) {
       continue;
@@ -204,7 +168,7 @@ void *NetworkListener::runNetworkListener() {
     if (!FD_ISSET(rFd, &rFds)) {
       LM_X(1, ("Error in main loop to accept connections"));  // Accept a new connection
     }
-    SocketConnection *socket_connection = acceptNewNetworkConnection();
+    SocketConnection *socket_connection = AcceptNewNetworkConnection();
 
     // Notify this new connection
     if (socket_connection) {
@@ -221,7 +185,7 @@ void ip2string(int ip, char *ipString, int ipStringLen) {
            (ip & 0xFF000000) >> 24);
 }
 
-SocketConnection *NetworkListener::acceptNewNetworkConnection(void) {
+SocketConnection *NetworkListener::AcceptNewNetworkConnection(void) {
   int fd;
   struct sockaddr_in sin;
   char hostName[64];
@@ -249,25 +213,10 @@ SocketConnection *NetworkListener::acceptNewNetworkConnection(void) {
 
 // Check running status
 bool NetworkListener::IsNetworkListenerRunning() const {
-  return background_thread_running_;
+  return IsThreadRunning();
 }
 
 int NetworkListener::port() const {
   return port_;
-}
-
-void *NetworkListener::background_thread_return_code() {
-  if (!background_thread_running_) {
-    return return_code_;
-  }
-
-  if (!return_code_) {
-    if (background_thread_finished_) {
-      // Recover the background code
-      pthread_join(t, &return_code_);
-    }
-  }
-
-  return return_code_;
 }
 }

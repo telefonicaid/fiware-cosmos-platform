@@ -11,6 +11,8 @@ function setup_test_vars
     INIT_SHELL_ERROR=0
     MULTIPLE_TESTS=0
     TEST_FAILED=0
+    HAVE_EXPECT=0
+    HAVE_REGEXPECT=0
 
     TEST_BASENAME=$(echo $TEST_FILE | sed 's/\.test//')
     TEST_NAME=$(sed -n '/--NAME--/,/^--/p' $TEST_FILE  | grep -v "^--")
@@ -49,14 +51,20 @@ function setup_test_vars
         HAVE_SHELL=1
     fi
 
-    #Generate the canon file
+    #Generate the static canon file
     if [ $(grep "\-\-EXPECT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
         TEST_EXPECT=${TEST_BASENAME}.expect
         sed -n '/--EXPECT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_EXPECT
-    else
-        echo "ERROR: $TEST_FILE is missing an --EXPECT-- section"
-        exit 1
+	   HAVE_EXPECT=1
     fi
+
+    #Generate the dynamic canon file
+    if [ $(grep "\-\-REGEXPECT\-\-" $TEST_FILE | wc -l) -eq 1 ]; then
+        TEST_REGEXPECT=${TEST_BASENAME}.regexpect
+        sed -n '/--REGEXPECT--/,/^--/p' $TEST_FILE  | grep -v "^--" > $TEST_REGEXPECT
+	   HAVE_REGEXPECT=1
+    fi
+
     TEST_DIFF=${TEST_BASENAME}.diff
     TEST_OUTPUT=${TEST_BASENAME}.out
     TEST_OUTPUT_COMPLETE=${TEST_BASENAME}.out.complete
@@ -85,10 +93,17 @@ function setup_test_vars
         echo "Only one test type of --COMMAND--, --SCRIPT-- or --SHELL-- allowed"
         exit 1
     fi
+
+    if [ $HAVE_EXPECT -eq 1 -a $HAVE_REGEXPECT -eq 1 ]; then
+        echo "ERROR: Multiple expect sections detected, only one of EXPECT or REGEXPECT should be specified"
+        exit 1
+    fi
+
 }
 
 function execute_test
 {
+    echo "RUNNING: $TEST_NAME ( $TEST_FILE )"
 
     # ------------------------------------------------ 
     # Initialize the test
@@ -170,14 +185,22 @@ function execute_test
     fi
 
     # Check to see if the output is what we expect
-    diff -wbB -u $TEST_EXPECT $TEST_OUTPUT > $TEST_DIFF
+    if [ $HAVE_EXPECT -eq 1 ]; then
+        diff -wbB -u $TEST_EXPECT $TEST_OUTPUT > $TEST_DIFF
+    else
+        testDiff.py -i $TEST_OUTPUT -r $TEST_REGEXPECT >  $TEST_DIFF
+    fi
     if [ $? -ne 0 ]; then
         TEST_FAILED=1
         if [ $TEST_VERBOSE -eq 1 ]; then
             echo "----------------------------------------------------------------"
             echo "ERROR: executing $TEST_FILE"
             echo "Expected"
-            cat $TEST_EXPECT
+            if  [ $HAVE_EXPECT -eq 1 ]; then
+                cat $TEST_EXPECT
+            else
+                cat $TEST_REGEXPECT
+            fi
             echo "Got"
             cat $TEST_OUTPUT
             if [ $INIT_DELILAH_ERROR -ne 0 ]; then
@@ -203,7 +226,8 @@ function execute_test
                 $TEST_OUTPUT_COMPLETE \
                 $TEST_DELILAH_SCRIPT \
                 $TEST_SHELL_SCRIPT \
-                $TEST_BASENAME.diff
+                $TEST_BASENAME.diff \
+                $TEST_REGEXPECT
         if [ ! -z $TEST_DELILAH_INIT ]; then
             rm -f  $TEST_DELILAH_INIT $TEST_DELILAH_INIT.stderr $TEST_DELILAH_INIT.stdout
         fi

@@ -36,6 +36,7 @@
 #include "au/statistics/ActivityMonitor.h"
 #include "au/tables/Table.h"
 
+#include "au/Thread.h"
 #include "au/ThreadManager.h"
 #include "au/containers/list.h"                  // au::list
 #include "au/mutex/Token.h"                      // au::Token

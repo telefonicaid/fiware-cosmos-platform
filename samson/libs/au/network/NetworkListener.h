@@ -14,6 +14,7 @@
 #define _H_AU_NETWORK_LISTENER
 
 #include "au/Status.h"
+#include "au/Thread.h"
 
 /*****************************************************************************
 *
@@ -29,58 +30,44 @@ namespace au {
 class SocketConnection;
 class NetworkListener;
 
+/**
+ * \brief Interface of NetworkListener to handle incoming connections
+ */
+
 class NetworkListenerInterface {
 public:
-  virtual void newSocketConnection(NetworkListener *listener,
-                                   SocketConnection *socket_connetion) = 0;
+  virtual void newSocketConnection(NetworkListener *listener, SocketConnection *socket_connection) = 0;
 };
 
+/**
+ * \brief Listener over a particular port. Incomming connections handled with an interface
+ */
 
-class NetworkListener {
+class NetworkListener : public au::Thread {
 public:
 
   NetworkListener(NetworkListenerInterface *_network_listener_interface);
-  ~NetworkListener();
+  virtual ~NetworkListener();
 
   // Init and close this listener
   Status InitNetworkListener(int port);
   void StopNetworkListener();
   bool IsNetworkListenerRunning() const;
 
-  // Accesorts
   int port() const;
-
-  // Return code of the background thread ( only used in test )
-  void *background_thread_return_code();
 
 private:
 
-  // Main function to run in background
-  void *runNetworkListener();
+  /**
+   * \brief Main function to run in background
+   */
+  virtual void RunThread();
 
-  SocketConnection *acceptNewNetworkConnection(void);
+  SocketConnection *AcceptNewNetworkConnection(void);
 
-  // Delegate to notify about new connections
-  NetworkListenerInterface *network_listener_interface_;
-
-  // Port where we are listening
-  int port_;
-
-  // Internal file descriptor
-  volatile int rFd_;
-
-  // Background thread
-  pthread_t t;
-
-  // Flag indicating if the background thread is running ( to joint at destructor )
-  bool background_thread_running_;
-  bool background_thread_finished_;
-
-  // Code returned by bacground thread
-  void *return_code_;
-
-  // Background thread function
-  friend void *NetworkListener_run(void *p);
+  volatile int rFd_;   /**< Internal file descriptor */
+  int port_;   /**< Port where we are listening */
+  NetworkListenerInterface *network_listener_interface_;   /**< Delegate to notify about new connections */
 };
 }
 

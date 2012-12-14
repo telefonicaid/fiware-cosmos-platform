@@ -24,13 +24,13 @@ void *run_SamsonPushConnection(void *p);
 
 class SamsonPushConnection {
   samson::SamsonPushBuffer *pushBuffer;
-  au::SocketConnection *socket_connetion;
+  au::SocketConnection *socket_connection;
   char *buffer;
   bool thread_running;
 
 public:
 
-  SamsonPushConnection(au::SocketConnection *_socket_connetion);
+  SamsonPushConnection(au::SocketConnection *_socket_connection);
   ~SamsonPushConnection();
 
   void run();
@@ -49,13 +49,13 @@ public:
   SamsonPushConnectionsManager() : token("SamsonPushConnectionsManager") {
   }
 
-  virtual void newSocketConnection(au::NetworkListener *listener, au::SocketConnection *socket_connetion) {
+  virtual void newSocketConnection(au::NetworkListener *listener, au::SocketConnection *socket_connection) {
     listener = NULL;
 
     // Mutex protection
     au::TokenTaker tt(&token);
 
-    SamsonPushConnection *connection = new SamsonPushConnection(socket_connetion);
+    SamsonPushConnection *connection = new SamsonPushConnection(socket_connection);
     connections.insert(connection);
   }
 

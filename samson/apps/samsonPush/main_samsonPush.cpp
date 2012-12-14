@@ -31,14 +31,13 @@
 
 #include "logMsg/logMsg.h"
 
+#include "au/network/NetworkListener.h"
 #include "au/string/StringUtilities.h"                  // au::str()
 
 #include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
-
 #include "samson/common/coding.h"       // KVHeader
-
-#include "au/network/NetworkListener.h"
+#include "samson/common/samsonVersion.h"
 
 #include "SamsonPushConnectionsManager.h"
 
@@ -66,37 +65,37 @@ int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {
-  { "-node",             host,                       "",                       PaString,                       PaOpt,
+  { "-node",             host,             "", PaString, PaOpt,
     _i "localhost",
     PaNL,
-    PaNL,                  "SAMSON worker node"                              },
-  { "-user",             user,                       "",                       PaString,                       PaOpt,
-    _i "anonymous",           PaNL,
-    PaNL,                  "User to connect to SAMSON cluster"               },
-  { "-password",         password,                   "",                       PaString,                       PaOpt,
-    _i "anonymous",           PaNL,
-    PaNL,                  "Password to connect to SAMSON cluster"           },
-  { "-buffer_size",      &buffer_size,               "",                       PaInt,                          PaOpt,
-    default_buffer_size,      1,
-    default_buffer_size,   "Buffer size in bytes"                            },
-  { "-mr",               &max_rate,                  "",                       PaInt,                          PaOpt,
-    10000000,                 100,
-    100000000,             "Max rate in bytes/s"                             },
-  { "-breaker_sequence", breaker_sequence,           "",                       PaString,                       PaOpt,
-    _i "\n",                  PaNL,
-    PaNL,                  "Breaker sequence ( by default \\n )"             },
-  { "-lines",            &lines,                     "",                       PaBool,                         PaOpt,
-    false,                    false,
-    true,                  "Read std-in line by line"                        },
-  { "-memory",           &push_memory,               "",                       PaInt,                          PaOpt,
-    1000,                     1,
-    1000000,               "Memory in Mb used to push data ( default 1000)"  },
-  { "-port",             &port,                      "",                       PaInt,                          PaOpt,
-    0,                        0,
-    99999,                 "Port to listen from"                             },
-  { " ",                 queue_name,                 "",                       PaString,                       PaReq,
-    _i "null",                PaNL,
-    PaNL,                  "name of the queue to push data"                  },
+    PaNL, "SAMSON worker node"                              },
+  { "-user",             user,             "", PaString, PaOpt,
+    _i "anonymous", PaNL,
+    PaNL, "User to connect to SAMSON cluster"               },
+  { "-password",         password,         "", PaString, PaOpt,
+    _i "anonymous", PaNL,
+    PaNL, "Password to connect to SAMSON cluster"           },
+  { "-buffer_size",      &buffer_size,     "", PaInt,    PaOpt,
+    default_buffer_size, 1,
+    default_buffer_size, "Buffer size in bytes"                            },
+  { "-mr",               &max_rate,        "", PaInt,    PaOpt,
+    10000000, 100,
+    100000000, "Max rate in bytes/s"                             },
+  { "-breaker_sequence", breaker_sequence, "", PaString, PaOpt,
+    _i "\n", PaNL,
+    PaNL, "Breaker sequence ( by default \\n )"             },
+  { "-lines",            &lines,           "", PaBool,   PaOpt,
+    false, false,
+    true, "Read std-in line by line"                        },
+  { "-memory",           &push_memory,     "", PaInt,    PaOpt,
+    1000, 1,
+    1000000, "Memory in Mb used to push data ( default 1000)"  },
+  { "-port",             &port,            "", PaInt,    PaOpt,
+    0, 0,
+    99999, "Port to listen from"                             },
+  { " ",                 queue_name,       "", PaString, PaReq,
+    _i "null", PaNL,
+    PaNL, "name of the queue to push data"                  },
   PA_END_OF_ARGS
 };
 
@@ -146,7 +145,7 @@ void receive_data_from_port() {
   while (true) {
     sleep(5);
     manager.review_connections();
-    LOG_SM(("samsonPush listening from port %d with %lu active connections", port,  manager.getNumConnections()));
+    LOG_SM(("samsonPush listening from port %d with %lu active connections", port, manager.getNumConnections()));
   }
 }
 
@@ -154,17 +153,21 @@ void receive_data_from_port() {
 samson::SamsonClient *samson_client;
 
 
-int main(int argc, const char *argv[]) {
+int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
 
-  paConfig("log to screen",                 (void *)true);
-  paConfig("log to file",                   (void *)true);
-  paConfig("screen line format",            (void *)"TYPE:EXEC: TEXT");
-  paConfig("man shortdescription",          (void *)manShortDescription);
-  paConfig("man synopsis",          (void *)manSynopsis);
+  paConfig("log to screen", (void *)true);
+  paConfig("log to file", (void *)true);
+  paConfig("screen line format", (void *)"TYPE:EXEC: TEXT");
+  paConfig("man shortdescription", (void *)manShortDescription);
+  paConfig("man synopsis", (void *)manSynopsis);
+  paConfig("man reportingbugs", SAMSON_BUG_REPORTING);
+  paConfig("man author", SAMSON_AUTHORS);
+  paConfig("man copyright", SAMSON_COPYRIGHT);
+  paConfig("man version", SAMSON_VERSION);
 
   // Parse input arguments
-  paParse(paArgs, argc, (char **)argv, 1, false);
+  paParse(paArgs, argC, (char **)argV, 1, false);
   logFd = lmFirstDiskFileDescriptor();
 
   // Random initialization
@@ -173,9 +176,13 @@ int main(int argc, const char *argv[]) {
   int rand_seq = tp.tv_sec * 1000 + tp.tv_usec % 1000;
   srand(rand_seq);
 
+  // Init log system
+  au::LogCentral::InitLogSystem(argV[0]);
+  samson::RegisterLogChannels();   // Add all log channels for samson project ( au,zoo libraries included )
+  au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin
 
   if (buffer_size == 0) {
-    LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Check queue is specified
+    LM_X(1, ("Wrong buffer size %lu", buffer_size));  // Check queue is specified
   }
   if (strcmp(queue_name, "null") == 0) {
     LM_X(1, ("Please, specify a queue to push data to"));  // Create samson client
@@ -186,9 +193,9 @@ int main(int argc, const char *argv[]) {
   samson_client = new samson::SamsonClient("push");
 
   if (!samson_client->connect(host)) {
-    LM_X(1, ("Not possible to connect with %s", host ));
+    LM_X(1, ("Unable to connect to %s", host));
   }
-  LM_V(("Waiting connection to %s", host ));
+  LM_V(("Trying to connect to %s", host));
   while (true) {
     if (samson_client->connection_ready()) {
       break;
@@ -196,7 +203,7 @@ int main(int argc, const char *argv[]) {
       usleep(100000);
     }
   }
-  LM_V(("Connected to %s", host ));
+  LM_V(("Connected to %s", host));
 
   if (port != 0) {
     receive_data_from_port();
@@ -214,7 +221,7 @@ int main(int argc, const char *argv[]) {
 
   char *data = (char *)malloc(buffer_size);
   if (!data) {
-    LM_X(1, ("Error allocating %lu bytes", buffer_size ));
+    LM_X(1, ("Error allocating %lu bytes", buffer_size));
   }
   size_t size = 0;                                                                           // Bytes currently contained in the buffer
 
@@ -275,7 +282,7 @@ int main(int argc, const char *argv[]) {
     const char *last_pos = au::laststrstr(data, size, breaker_sequence);
 
     if (!last_pos) {
-      LM_X(1, ("Not found breaker sequecny '%s' in a buffer of %lu bytes", breaker_sequence, size ));
+      LM_X(1, ("Not found breaker sequence '%s' in a buffer of %lu bytes", breaker_sequence, size));
     }
     size_t output_size = last_pos - data + strlen(breaker_sequence);
 
@@ -294,7 +301,7 @@ int main(int argc, const char *argv[]) {
       sleep(1);
     }
 
-    // Move rest of data to the begining of the buffer
+    // Move rest of data to the beginning of the buffer
     if (output_size < size) {
       memmove(data, data + output_size, size - output_size);
       size = size - output_size;

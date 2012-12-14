@@ -25,7 +25,7 @@ void ThreadManager::wait_all_threads(std::string title) {
 }
 
 ThreadManager::ThreadManager() : token_("ThreadManager") {
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     threads_[i] = NULL;
   }
 }
@@ -87,7 +87,7 @@ int ThreadManager::AddNonDetachedThread(std::string thread_name
 int ThreadManager::num_threads() const {
   int total = 0;
 
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] != NULL) {
       total++;
     }
@@ -108,7 +108,7 @@ au::StringVector ThreadManager::getThreadNames() {
 
   au::StringVector names;
 
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] != NULL) {
       names.push_back(threads_[i]->name_);
     }
@@ -116,7 +116,7 @@ au::StringVector ThreadManager::getThreadNames() {
   return names;
 }
 
-std::string ThreadManager::str() {
+std::string ThreadManager::str() const {
   // Mutex protection
   au::TokenTaker tt(&token_);
 
@@ -125,14 +125,29 @@ std::string ThreadManager::str() {
 
   o << "Running threads\n";
   o << "------------------------------------\n";
-  std::set< ThreadInfo * >::iterator it_threads;
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] != NULL) {
       o << threads_[i]->name_ << " " << threads_[i]->cronometer_ << "\n";
     }
   }
 
   return o.str();
+}
+
+std::string ThreadManager::str_table() const {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  au::tables::Table table("Name,left|time,left");
+
+  table.setTitle("Running threads");
+
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
+    if (threads_[i] != NULL) {
+      table.addRow(au::StringVector(threads_[i]->name_, threads_[i]->cronometer_.str()));
+    }
+  }
+  return table.str();
 }
 
 void ThreadManager::wait(std::string title) {
@@ -164,7 +179,7 @@ void ThreadManager::wait(std::string title) {
 void ThreadManager::AddThread(ThreadInfo *thread_info) {
   LOG_M(logs.thread_manager, ("Adding  Thread '%s'", thread_info->str().c_str()));
 
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] == NULL) {
       threads_[i] = thread_info;
       return;
@@ -176,7 +191,7 @@ void ThreadManager::AddThread(ThreadInfo *thread_info) {
 
 void ThreadManager::RemoveThread(ThreadInfo *thread_info) {
   LOG_M(logs.thread_manager, ("Remove thead %s ", thread_info->str().c_str()));
-  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] == thread_info) {
       threads_[i] = NULL;
       return;
@@ -229,69 +244,5 @@ void *run_NonDetachedThreadInfo(void *p) {
   delete thread_info;
 
   return ans;
-}
-
-void *run_Thread(void *p) {
-  Thread *t = (Thread *)p;
-
-  t->RunThread();
-  t->pthread_running_ = false;
-
-  // Wake up joining threads
-  au::TokenTaker tt(&t->token_);
-  tt.WakeUpAll();
-
-  return NULL;
-}
-
-void Thread::StartThread() {
-  if (pthread_running_) {
-    return;       // If already running, nothing to do
-  }
-  pthread_running_ = true;      // Mark as running
-
-  // Run the thread in background
-  au::Singleton<au::ThreadManager>::shared()->AddThread(name_, &t_, NULL, run_Thread, this);
-}
-
-void Thread::StopThread() {
-  stoping_ = true;
-  if (!pthread_running_) {
-    return;
-  }
-  if (pthread_self() == t_) {
-    LOG_SW(("Not possible to stop a thread from itself"));
-    return;
-  }
-
-  // Set the flag
-  stoping_ = true;
-
-  // Execute cutom cancel cunfion
-  UnlockThread();
-
-  // Wait until thread is finished
-  au::Cronometer c;
-  while (true) {
-    if (!pthread_running_) {
-      return;
-    }
-
-    if (c.seconds() > 2) {
-      LOG_SW(("Too much time waiting for thread %s", name_.c_str()));
-      c.Reset();
-    }
-
-    usleep(100000);
-  }
-}
-
-void Thread::JoinThread() {
-  au::TokenTaker tt(&token_);
-
-  if (!pthread_running_) {
-    return;   // It is not running, it is not necessary to wait
-  }
-  tt.Stop();
 }
 }

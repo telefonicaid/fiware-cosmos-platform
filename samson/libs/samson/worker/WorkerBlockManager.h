@@ -87,6 +87,7 @@ public:
   }
 
   ~WorkerBlockManager() {
+    LOG_D(logs.cleanup, ("Called ~WorkerBlockManager"));
   }
 
   /*

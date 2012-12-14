@@ -83,6 +83,16 @@ public:
 
   SamsonWorker(std::string zoo_host, int port, int web_port);
   ~SamsonWorker() {
+    LOG_D(logs.cleanup, ("Entering ~SamsonWorker"));
+    worker_controller_ = NULL;
+    data_model_ = NULL;
+    network_ = NULL;
+    samson_worker_rest_ = NULL;
+    worker_block_manager_ = NULL;
+    task_manager_ = NULL;
+    workerCommandManager_ = NULL;
+    zoo_connection_ = NULL;
+    LOG_D(logs.cleanup, ("Finished ~SamsonWorker"));
   }
 
   // All internal components are shared pointers
@@ -172,7 +182,7 @@ private:
   // Initial time stamp for this worker
   au::Cronometer cronometer_;
 
-  // Last try to connect with ZK
+  // Last try to connect to ZK
   au::Cronometer zk_connection_cronometer_;
   bool zk_first_connection_;
 

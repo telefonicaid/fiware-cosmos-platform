@@ -127,12 +127,12 @@ void SamsonWorker::Review() {
       zk_connection_cronometer_.Reset();
       zk_first_connection_ = false;
 
-      // Try to connect with ZK
-      LOG_M(logs.worker_controller, ("Trying to connect with zk at %s", zoo_host_.c_str()));
+      // Try to connect to ZK
+      LOG_M(logs.worker_controller, ("Trying to connect to zk at %s", zoo_host_.c_str()));
       zoo_connection_ = new au::zoo::Connection(zoo_host_, "samson", "samson");
       int rc = zoo_connection_->WaitUntilConnected(20000);
       if (rc) {
-        state_message_ = au::str("Not possible to connect with zk at %s (%s)"
+        state_message_ = au::str("Unable to connect to zk at %s (%s)"
                                  , zoo_host_.c_str()
                                  , au::zoo::str_error(rc).c_str());
         LOG_SW(("%s", state_message_.c_str()));
@@ -151,13 +151,13 @@ void SamsonWorker::Review() {
         return;
       }
 
-      data_model_ = new DataModel(zoo_connection_.shared_object());
+      data_model_ = new DataModel(zoo_connection_);
       data_model_->UpdateToLastVersion();
       network_ = new WorkerNetwork(worker_controller_->worker_id(), port_);
 
       state_ = connected;            // Now we are connected
       state_message_ = "Connected";
-      LOG_M(logs.worker_controller, ("Worker connected to ZK"));
+      LOG_M(logs.worker_controller, ("Worker connected to Zookeeper"));
       break;
     }
     case connected:
@@ -168,7 +168,7 @@ void SamsonWorker::Review() {
         network_->set_cluster_information(cluster_info);     // Inform network about cluster setup
         state_message_ = "Ready";
         state_ = ready;
-        LOG_M(logs.worker, ("Worker connected to ZK and part of the cluster"));
+        LOG_M(logs.worker, ("Worker connected to Zookeeper. This worker is now included in the cluster"));
       } else {
         state_message_ = "Still not included in the cluster";
       }
@@ -561,7 +561,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
     worker_block_manager_->ReceivedPushBlock(packet->from.id, push_id, packet->buffer(), queues);
-    return;
   }
 
   // --------------------------------------------------------------------
@@ -904,12 +903,16 @@ void SamsonWorker::EvalCommand(const std::string& command) {
 
   if (main_command == "quit") {
     StopConsole();
+    return;
   }
   if (main_command == "exit") {
     StopConsole();
+    return;
   }
+
   if (main_command == "threads") {
-    Write(au::Singleton<au::ThreadManager>::shared()->str());
+    Write(au::Singleton<au::ThreadManager>::shared()->str_table());
+    return;
   }
 
   if (main_command == "show_engine_current_element") {
@@ -932,8 +935,8 @@ void SamsonWorker::EvalCommand(const std::string& command) {
     return;
   }
 
-
   // More command to check what is going on inside a worker
+  WriteErrorOnConsole("Unknown command for samsonWorker");
 }
 
 std::string SamsonWorker::GetPrompt() {

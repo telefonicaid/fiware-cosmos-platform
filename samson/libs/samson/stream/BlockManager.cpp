@@ -346,6 +346,12 @@ BlockPointer BlockManager::GetBlock(size_t block_id) {
   return blocks_.Get(block_id);
 }
 
+bool BlockManager::Contains(size_t block_id) const {
+  au::TokenTaker tt(&token_);     // Mutex protection for the list of blocks
+
+  return blocks_.ContainsKey(block_id);
+}
+
 au::SharedPointer<gpb::Collection> BlockManager::GetCollectionOfBlocks(const Visualization& visualization) {
   au::TokenTaker tt(&token_);   // Mutex protection for the list of blocks
 
@@ -597,7 +603,7 @@ void BlockManager::Sort() {
 bool BlockManager::CheckBlocks(const std::set<size_t>& block_ids) {
   std::set<size_t>::const_iterator it;
   for (it = block_ids.begin(); it != block_ids.end(); ++it) {
-    if (GetBlock(*it) == NULL) {
+    if (!blocks_.ContainsKey(*it)) {
       return false;
     }
   }

@@ -87,7 +87,7 @@ void BlockRequest::Review() {
   }
 
   // If the block manager contains this block, just set as finished
-  if (stream::BlockManager::shared()->GetBlock(block_id_) != NULL) {
+  if (stream::BlockManager::shared()->Contains(block_id_)) {
     LOG_V(logs.block_request, ("[%s] Found in local block manager", str_block_id(block_id_).c_str()));
     finished_ = true;
     state_ = "Finished";

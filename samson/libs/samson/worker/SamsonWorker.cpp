@@ -192,7 +192,7 @@ void SamsonWorker::Review() {
       std::vector<KVRange> my_ranges = worker_controller_->GetAllMyKVRanges();
       std::set<size_t> my_block_ids = data_model_->GetMyBlockIdsForPreviousAndCandidateDataModel(my_ranges);
       for (std::set<size_t>::iterator it = my_block_ids.begin(); it != my_block_ids.end(); ++it) {
-        if (stream::BlockManager::shared()->GetBlock(*it) != NULL) {
+        if (stream::BlockManager::shared()->Contains(*it)) {
           continue;  // This block is contained in the local manager
         }
         worker_block_manager_->RequestBlock(*it);        // Add block request
@@ -462,7 +462,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
                                ));
 
     // Add the block to the block manager
-    if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
+    if (!stream::BlockManager::shared()->Contains(block_id)) {
       stream::BlockManager::shared()->CreateBlock(block_id, packet->buffer());
     }
 
@@ -497,18 +497,17 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     p->message->set_pop_id(packet->message->pop_id());
 
     // Schedule operations to send this block to this user
-    if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
+    if (!stream::BlockManager::shared()->Contains(block_id)) {
       LOG_SW(("Unknown block_id(%d) in PopBlockRequest", block_id));
       p->message->mutable_error()->set_message("Unknown block");
     } else {
       // Schedule task
-      au::SharedPointer<stream::WorkerTaskBase> task;
-      task.Reset(new stream::PopBlockRequestTask(this
-                                                 , task_manager_->getNewId()
-                                                 , block_id
-                                                 , delilah_id
-                                                 , delilah_component_id
-                                                 , pop_id));
+      au::SharedPointer<stream::WorkerTaskBase> task(new stream::PopBlockRequestTask(this,
+                                                                                     task_manager_->getNewId(),
+                                                                                     block_id,
+                                                                                     delilah_id,
+                                                                                     delilah_component_id,
+                                                                                     pop_id));
       task_manager_->Add(task);
     }
 
@@ -708,6 +707,9 @@ std::string SamsonWorker::str_state() {
 // Receive notifications
 void SamsonWorker::notify(engine::Notification *notification) {
   if (notification->isName("notification_new_cluster_setup")) {
+    if (data_model_ == NULL) {
+      return;
+    }
     au::ErrorManager error;
     data_model_->Commit("SAMSON cluster leader", "data_model_recover", error);
     LOG_W(logs.worker, ("New cluster setup, so data model is recovered"));
@@ -715,7 +717,8 @@ void SamsonWorker::notify(engine::Notification *notification) {
   }
 
   if (notification->isName("notification_freeze_data_model")) {
-    if (worker_controller_ == NULL) {
+    if (state_ == unconnected) {
+      LOG_SW(("Cannot process a freeze data model since we are unconnected, ignoring..."));
       return;
     }
 
@@ -754,6 +757,12 @@ void SamsonWorker::notify(engine::Notification *notification) {
     if (packet == NULL) {
       LOG_SW(("Received a notification to receive a packet without a packet"));
     }
+
+    if (state_ == unconnected) {
+      LOG_SW(("Received a packet while unconnected, ignoring..."));
+      return;
+    }
+
     receive(packet);
     return;
   }
@@ -842,6 +851,11 @@ void SamsonWorker::notify(engine::Notification *notification) {
   }
 
   if (notification->isName(notification_samson_worker_send_message)) {
+    if (state_ == unconnected) {
+      LOG_SW(("Cannot sent packet since we are unconnected, ignoring..."));
+      return;
+    }
+
     std::string message = notification->environment().Get("message", "No message coming with trace-notification");
     std::string context = notification->environment().Get("context", "?");
     std::string type    = notification->environment().Get("type", "message");

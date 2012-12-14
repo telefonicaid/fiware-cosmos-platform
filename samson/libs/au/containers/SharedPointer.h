@@ -38,18 +38,25 @@ public:
   }
 
   void Retain() {
+    au::TokenTaker tt(&token_);
+
     reference_counter_++;
   }
 
   int Release() {
+    au::TokenTaker tt(&token_);
+
     return --reference_counter_;
   }
 
   int count() {
+    au::TokenTaker tt(&token_);
+
     return reference_counter_;
   }
 
 private:
+  au::Token token_;  /**< Mutex protection for reference counter */
   int reference_counter_;
 };
 
@@ -171,7 +178,7 @@ private:
         c_ = NULL;
       }
       delete shared_reference_counter_;
-      shared_reference_counter_ = NULL; // Just for debuggin correctly
+      shared_reference_counter_ = NULL;  // Just for debuggin correctly
     }
   }
 

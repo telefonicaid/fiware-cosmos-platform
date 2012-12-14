@@ -67,9 +67,10 @@ void MultiPacketQueue::Pop(const NodeIdentifier& node_identifier) {
   PacketQueue *paquet_queue = packet_queues_.findInMap(name);
 
   // Pop packet
-  PacketPointer packet = paquet_queue->Pop();
-
-  LOG_V(logs.out_messages, ("Removed packet %s from otuput queue %s", packet->str().c_str(), name.c_str()));
+  if (paquet_queue) {
+    PacketPointer packet = paquet_queue->Pop();
+    LOG_V(logs.out_messages, ("Removed packet %s from otuput queue %s", packet->str().c_str(), name.c_str()));
+  }
 }
 
 au::tables::Table *MultiPacketQueue::GetPendingPacketsTable() const {

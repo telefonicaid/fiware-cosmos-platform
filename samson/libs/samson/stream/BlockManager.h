@@ -55,6 +55,11 @@ public:
   // Get a particular block
   BlockPointer GetBlock(size_t _id);
 
+  /**
+   * \brief Check if we have a particular block
+   */
+  bool Contains(size_t block_id) const;
+
   // Reset the entire block manager
   void ResetBlockManager();
 
@@ -108,7 +113,7 @@ private:
   size_t scheduled_read_size_;     // Amount of bytes scheduled to be read from disk
   size_t max_memory_;     // Maximum amount of memory to be used by this block manager
 
-  au::Token token_;     // Mutex protection since operations create blocks in multiple threads
+  mutable au::Token token_;     // Mutex protection since operations create blocks in multiple threads
 
   SamsonWorker *samson_worker_;  // Pointer to samson worker
 };

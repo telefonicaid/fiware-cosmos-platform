@@ -710,5 +710,8 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
   }
 
   LOG_V(logs.isolated_process, ("[Background] Finished!"));
+
+  // Unfortunatelly, no correct exit can be done here since au::SharedPointers are not robust to fork-multithread
+  _exit(0);
 }
 }

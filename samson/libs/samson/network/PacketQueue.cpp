@@ -31,19 +31,16 @@ void MultiPacketQueue::Push(au::SharedPointer<Packet> packet) {
   // Get target node
   const NodeIdentifier& node_identifier = packet->to;
 
-  // Select the correct queue and push the new packet
-  std::string name = node_identifier.getCodeName();
-
-  LOG_V(logs.out_messages, ("Scheduling packet %s in otuput queue %s", packet->str().c_str(), name.c_str()));
+  LOG_V(logs.out_messages, ("Scheduling packet %s in output queue %s",
+                            packet->str().c_str(), node_identifier.str().c_str()));
 
   au::TokenTaker tt(&token_packet_queues_);
-  packet_queues_.findOrCreate(name, name)->Push(packet);
+  packet_queues_.findOrCreate(node_identifier, node_identifier)->Push(packet);
 }
 
 au::SharedPointer<Packet> MultiPacketQueue::Front(const NodeIdentifier& node_identifier) {
   au::TokenTaker tt(&token_packet_queues_);
-  std::string name = node_identifier.getCodeName();
-  PacketQueue *paquet_queue = packet_queues_.findOrCreate(name, name);
+  PacketQueue *paquet_queue = packet_queues_.findOrCreate(node_identifier, node_identifier);
 
   // Get next packet
   return paquet_queue->Front();
@@ -51,8 +48,7 @@ au::SharedPointer<Packet> MultiPacketQueue::Front(const NodeIdentifier& node_ide
 
 std::string MultiPacketQueue::GetDescription(const NodeIdentifier& node_identifier) const {
   au::TokenTaker tt(&token_packet_queues_);
-  std::string name = node_identifier.getCodeName();
-  PacketQueue *paquet_queue = packet_queues_.findInMap(name);
+  PacketQueue *paquet_queue = packet_queues_.findInMap(node_identifier);
 
   if (!paquet_queue) {
     return "[No queue]";
@@ -63,13 +59,13 @@ std::string MultiPacketQueue::GetDescription(const NodeIdentifier& node_identifi
 void MultiPacketQueue::Pop(const NodeIdentifier& node_identifier) {
   au::TokenTaker tt(&token_packet_queues_);
 
-  std::string name = node_identifier.getCodeName();
-  PacketQueue *paquet_queue = packet_queues_.findInMap(name);
+  PacketQueue *paquet_queue = packet_queues_.findInMap(node_identifier);
 
   // Pop packet
   if (paquet_queue) {
     PacketPointer packet = paquet_queue->Pop();
-    LOG_V(logs.out_messages, ("Removed packet %s from otuput queue %s", packet->str().c_str(), name.c_str()));
+    LOG_V(logs.out_messages, ("Removed packet %s from otuput queue %s",
+                              packet->str().c_str(), node_identifier.str().c_str()));
   }
 }
 
@@ -78,10 +74,10 @@ au::tables::Table *MultiPacketQueue::GetPendingPacketsTable() const {
 
   au::tables::Table *table = new au::tables::Table(au::StringVector("Connection", "#Packets", "Size"));
 
-  au::map<std::string, PacketQueue>::const_iterator it;
+  au::map<NodeIdentifier, PacketQueue>::const_iterator it;
   for (it = packet_queues_.begin(); it != packet_queues_.end(); ++it) {
     au::StringVector values;
-    values.push_back(it->first);     // Name of the connection
+    values.push_back(it->first.str());     // Name of the connection
     PacketQueue *packet_queue = it->second;
     values.push_back(au::str(packet_queue->size()));
     values.push_back(au::str(packet_queue->GetByteSize()));
@@ -91,32 +87,6 @@ au::tables::Table *MultiPacketQueue::GetPendingPacketsTable() const {
   table->setTitle("Pending packets");
 
   return table;
-}
-
-void MultiPacketQueue::RemoveOldConnections(const std::set<std::string> current_connections) {
-  au::TokenTaker tt(&token_packet_queues_);
-
-  au::map<std::string, PacketQueue>::iterator it_packet_queues;
-  for (it_packet_queues = packet_queues_.begin(); it_packet_queues != packet_queues_.end(); ) {
-    std::string name = it_packet_queues->first;
-
-    if (current_connections.find(name) != current_connections.end()) {
-      // It is still connected
-      it_packet_queues->second->ResetInactivityCronometer();
-      ++it_packet_queues;
-      continue;
-    }
-
-    if (it_packet_queues->second->inactivity_time() > 30) {
-      if (it_packet_queues->second->size() > 0) {
-        LOG_SW(("Removing  pending packets for %s since it has been inactive more than 30 secs", name.c_str()));
-      }
-      delete it_packet_queues->second;  // Removing instance itself
-      packet_queues_.erase(it_packet_queues++);
-    } else {
-      ++it_packet_queues;
-    }
-  }
 }
 
 au::SharedPointer<gpb::Collection> MultiPacketQueue::GetQueuesCollection(const Visualization& visualization) const {
@@ -129,16 +99,16 @@ size_t MultiPacketQueue::GetAllQueuesSize() {
   au::TokenTaker tt(&token_packet_queues_);
   size_t total = 0;
 
-  au::map< std::string, PacketQueue >::iterator it;
+  au::map< NodeIdentifier, PacketQueue >::iterator it;
   for (it = packet_queues_.begin(); it != packet_queues_.end(); ++it) {
     total += it->second->GetByteSize();
   }
   return total;
 }
 
-size_t MultiPacketQueue::GetQueueSize(const std::string& name) {
+size_t MultiPacketQueue::GetQueueSize(const NodeIdentifier& node_identifier) {
   au::TokenTaker tt(&token_packet_queues_);
-  PacketQueue *queue = packet_queues_.findInMap(name);
+  PacketQueue *queue = packet_queues_.findInMap(node_identifier);
 
   if (!queue) {
     return 0;

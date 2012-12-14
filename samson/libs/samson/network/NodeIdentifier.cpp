@@ -40,25 +40,6 @@ NodeIdentifier::NodeIdentifier (ClusterNodeType _node_type, size_t _id) {
   id = _id;
 }
 
-NodeIdentifier::NodeIdentifier(const std::string& name) {
-  std::vector<std::string> components =  au::split(name, '_');
-  if (components.size() != 2) {
-    node_type = UnknownNode;
-    id = 0;
-    return;
-  }
-
-  if (components[0] == ClusterNodeType2str(WorkerNode)) {
-    node_type = WorkerNode;
-    id = atoll(components[1].c_str());
-  }
-
-  if (components[1] == ClusterNodeType2str(DelilahNode)) {
-    node_type = WorkerNode;
-    id = atoll(components[1].c_str());
-  }
-}
-
 void NodeIdentifier::fill(gpb::NodeIdentifier *pb_node_identifier) {
   switch (node_type) {
     case DelilahNode:
@@ -74,7 +55,7 @@ void NodeIdentifier::fill(gpb::NodeIdentifier *pb_node_identifier) {
   pb_node_identifier->set_id(id);
 }
 
-bool NodeIdentifier::operator==(const NodeIdentifier&  other) {
+bool NodeIdentifier::operator==(const NodeIdentifier&  other) const {
   if (node_type != other.node_type) {
     return false;
   }
@@ -85,34 +66,13 @@ bool NodeIdentifier::operator==(const NodeIdentifier&  other) {
   return true;
 }
 
-std::string NodeIdentifier::str() {
+std::string NodeIdentifier::str() const {
   if (id == static_cast<size_t>(-1)) {
     return au::str("%s:Unknown", ClusterNodeType2str(node_type));
   }
-
-  return au::str("%s:%lu", ClusterNodeType2str(node_type), id);
-}
-
-std::string NodeIdentifier::getCodeName() const {
   if (node_type == DelilahNode) {
-    std::string code_id = au::code64_str(id);
-    return au::str("%s_%s", ClusterNodeType2str(node_type),  code_id.c_str());
-  } else {
-    return au::str("%s_%lu", ClusterNodeType2str(node_type), id);
+    return au::str("%s_%s", ClusterNodeType2str(node_type), au::code64_str(id).c_str());
   }
-}
-
-bool NodeIdentifier::isDelilahOrUnknown() {
-  switch (node_type) {
-    case DelilahNode:
-    case UnknownNode:
-      return true;
-
-    case WorkerNode:
-      return false;
-  }
-
-  LM_X(1, ("Unknown error"));
-  return false;
+  return au::str("%s_%lu", ClusterNodeType2str(node_type), id);
 }
 }

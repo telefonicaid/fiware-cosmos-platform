@@ -69,12 +69,12 @@ public:
   /**
    * \brief Remove a particular connection
    */
-  void Remove(NetworkConnection *network_connection);
+  // void Remove(NetworkConnection *network_connection);
 
   /**
    * \brief Remove a particular connection identifier by name
    */
-  void Remove(const std::string& connection_name);
+  void Remove(const NodeIdentifier& node_identifier);
 
   /**
    * \brief Remove connections with a closed socket
@@ -84,17 +84,12 @@ public:
   /**
    * \brief Remove all connections
    */
-  void ClearConnections() {
-    std::vector<std::string> connections = GetAllConnectionNames();
-    for (size_t i = 0; (i < connections.size()); ++i) {
-      Remove(connections[i]);
-    }
-  }
+  void ClearConnections();
 
   /**
    * \brief Check if a connection is stablished ( identified by name )
    */
-  bool IsConnected(const std::string& connection_name) const;
+  bool IsConnected(const NodeIdentifier& node_identifier) const;
 
   /**
    * \brief Get table with connection information
@@ -114,7 +109,7 @@ public:
   /**
    * \brief Get all connections
    */
-  std::vector<std::string> GetAllConnectionNames() const;
+  std::vector<NodeIdentifier> GetAllNodeIdentifiers() const;
 
   /**
    * \brief Debug string
@@ -154,7 +149,7 @@ public:
   /**
    * \brief Get some debug information about a connection
    */
-  std::string GetStatusForConnection(const std::string& connection_name) const;
+  std::string GetStatusForConnection(const NodeIdentifier& node_identifier) const;
 
   /**
    * \brief Get total size in all pending packets queues
@@ -167,7 +162,7 @@ public:
    * \brief Get size in pending packets for a particular qoeker
    */
   size_t GetQueueSizeForWorker(size_t worker_id) {
-    return multi_packet_queue_.GetQueueSize(au::str("worker_%lu", worker_id));
+    return multi_packet_queue_.GetQueueSize(NodeIdentifier(WorkerNode, worker_id));
   }
 
   /**
@@ -177,19 +172,21 @@ public:
     if (connections_names_.time() < 60) {
       return true;  // We are still not ready to validate a node, so all of them are valid
     }
-    return connections_names_.IsActive(node.getCodeName());
+    return connections_names_.IsActive(node.str());
   }
+
+protected:
+
+  // Multi queue for all unconnected connections
+  MultiPacketQueue multi_packet_queue_;
 
 private:
 
   // Token to block add and move operations on connections
   mutable au::Token token_connections_;
 
-  // Multi queue for all unconnected connections
-  MultiPacketQueue multi_packet_queue_;
-
   // All managed connection ( name = code name of node identifier )
-  au::map<std::string, NetworkConnection> connections_;
+  au::map<NodeIdentifier, NetworkConnection> connections_;
 
   // Register of connections established until last minute
   au::ConceptTimeCounter connections_names_;

@@ -170,6 +170,19 @@ public:
     }
   }
 
+  bool extractAndDeleteFromMap(const K& key) {
+    typename std::map<K, V *, _Compare>::iterator iter = std::map<K, V *, _Compare>::find(key);
+
+    if (iter == std::map<K, V *, _Compare>::end()) {
+      return false;
+    } else {
+      V *v = iter->second;
+      std::map<K, V *, _Compare>::erase(iter);
+      delete v;
+      return true;
+    }
+  }
+
   V *extractFromMap(const K& key) {
     typename std::map<K, V *, _Compare>::iterator iter = std::map<K, V *, _Compare>::find(key);
 

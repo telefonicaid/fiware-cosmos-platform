@@ -33,23 +33,37 @@ namespace samson {
 class NodeIdentifier {
 public:
 
-  ClusterNodeType node_type;
-  size_t id;
-
-  NodeIdentifier();
-  NodeIdentifier(gpb::NodeIdentifier pb_node_identifier);
   NodeIdentifier(ClusterNodeType _node_type, size_t _id);
-  NodeIdentifier(const std::string& name);
+  NodeIdentifier(gpb::NodeIdentifier pb_node_identifier);
+  NodeIdentifier();
 
+  /**
+   * \brief Fill a GoogleProtocolBuffer structure
+   */
   void fill(gpb::NodeIdentifier *pb_node_identifier);
 
-  bool operator==(const NodeIdentifier&  other);
+  /**
+   * \brief Operator to check equal
+   */
+  bool operator==(const NodeIdentifier&  other) const;
 
-  std::string str();
+  /**
+   * \brief Operator < to be used in maps
+   */
+  bool operator<(const NodeIdentifier&  other) const {
+    if (node_type != other.node_type) {
+      return node_type < other.node_type;
+    }
+    return id < other.id;
+  }
 
-  std::string getCodeName() const;
+  /**
+   * \brief Debug string to show on screen
+   */
+  std::string str() const;
 
-  bool isDelilahOrUnknown();
+  ClusterNodeType node_type;     /**< Node type (worker,delilah,unknown) */
+  size_t id;     /**< worker or delilah identifier */
 };
 }
 

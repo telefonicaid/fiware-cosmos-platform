@@ -48,14 +48,15 @@ public:
   // Wake up the writer thrad
   void WakeUpWriter();
 
-  // Check if the socket is closed
-  bool isDisconnectd();
+  /**
+   * \brief Check if the socket is closed
+   */
+  bool IsDisconnected();
 
   // Debug string
   std::string str();
 
   // Get some information
-  std::string name() const;
   std::string host() const;
   int port() const;
   size_t rate_in() const;

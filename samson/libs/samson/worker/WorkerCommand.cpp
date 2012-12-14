@@ -829,8 +829,6 @@ void WorkerCommand::CheckFinish() {
 }
 
 void WorkerCommand::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
-  std::string name = NodeIdentifier(DelilahNode, delilah_id_).getCodeName();
-
   add(record, "id", worker_command_id_, "left,different");
 
   if (finished_) {

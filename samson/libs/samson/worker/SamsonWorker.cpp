@@ -82,13 +82,11 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
   // Random initialization
   srand(time(NULL));
 
-  // Components
+  // Some components ( independent of ZK connection ) can be initialized here
   worker_block_manager_.Reset(new WorkerBlockManager(this));
   workerCommandManager_.Reset(new WorkerCommandManager(this));
   samson_worker_rest_.Reset(new SamsonWorkerRest(this, web_port_));
   task_manager_.Reset(new stream::WorkerTaskManager(this));
-  network_.Reset();     // network_ will be properly initialized later
-
 
   // Initial state of this worker ( unconnected )
   state_ = unconnected;
@@ -113,9 +111,11 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
 }
 
 void SamsonWorker::Review() {
-  // If zoo connection is not valid, come back to unconnected
-  if ((zoo_connection_ != NULL) && (zoo_connection_->GetConnectionTime() > 5)  && !zoo_connection_->IsConnected()) {
-    ResetToUnconnected();
+  // If zoo connection is not valid any more, quit...
+  if (state_ != unconnected) {
+    if ((zoo_connection_ != NULL) && (zoo_connection_->GetConnectionTime() > 5)  && !zoo_connection_->IsConnected()) {
+      LOG_X(1, ("Worker lost connection with zookeeper"));
+    }
   }
 
   switch (state_) {
@@ -130,16 +130,17 @@ void SamsonWorker::Review() {
       // Try to connect with ZK
       LOG_V(logs.worker_controller, ("Trying to connect to zk at %s", zoo_host_.c_str()));
       zoo_connection_.Reset(new au::zoo::Connection(zoo_host_, "samson", "samson"));
-      int rc = zoo_connection_->WaitUntilConnected(20000);
+      int rc = zoo_connection_->WaitUntilConnected(5000);
       if (rc) {
-        state_message_ = au::str("Unable to connect to zk at %s (%s)"
+        state_message_ = au::str("Unable to connect to zookeeper at %s (%s)"
                                  , zoo_host_.c_str()
                                  , au::zoo::str_error(rc).c_str());
         LOG_SW(("%s", state_message_.c_str()));
-        zoo_connection_.Reset();
+        zoo_connection_.Reset();  // Remove current connection
         return;
       }
 
+      // Once connected, init the rest of worker components
       // Main worker controller ( based on zookeeper connection )
       worker_controller_.Reset(new SamsonWorkerController(zoo_connection_.shared_object(), port_, web_port_));
       rc = worker_controller_->init();
@@ -155,14 +156,16 @@ void SamsonWorker::Review() {
       data_model_->UpdateToLastVersion();
       network_.Reset(new WorkerNetwork(worker_controller_->worker_id(), port_));
 
-      state_ = connected;            // Now we are connected
+      // Now we are connected
+      state_ = connected;
       state_message_ = "Connected";
       LOG_V(logs.worker_controller, ("Worker connected to Zookeeper"));
       break;
     }
+
     case connected:
     {
-      // Let see if we promote to "included"...
+      // Let see if we can promote to "included in the cluster" = ready
       au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
       if (isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
         network_->set_cluster_information(cluster_info);     // Inform network about cluster setup
@@ -291,30 +294,6 @@ void SamsonWorker::ReviewPopQueues() {
       }
     }
   }
-}
-
-void SamsonWorker::ResetToUnconnected() {
-  // New state
-  state_ = unconnected;
-  state_message_ = "Unconnected";
-
-
-  zoo_connection_.Reset();
-  worker_controller_.Reset();
-  data_model_.Reset();
-  network_.Reset();
-
-  // Reset internal components
-  worker_block_manager_->Reset();
-  task_manager_->Reset();         // Reset current tasks
-  last_modules_version_ = SIZE_T_UNDEFINED;      // Reset version of the modules
-}
-
-void SamsonWorker::ResetToConnected() {
-  state_ = connected;
-  state_message_ = "Reset to connected";
-
-  task_manager_->Reset();
 }
 
 /* ****************************************************************************
@@ -711,14 +690,17 @@ void SamsonWorker::notify(engine::Notification *notification) {
       return;
     }
     au::ErrorManager error;
-    data_model_->Commit("SAMSON cluster leader", "data_model_recover", error);
-    LOG_W(logs.worker, ("New cluster setup, so data model is recovered"));
+    LOG_W(logs.worker, ("New cluster setup..."));
+    if (worker_controller_->cluster_leader()) {
+      data_model_->Commit("SAMSON cluster leader", "data_model_recover", error);
+      LOG_W(logs.worker, ("Reset data model since a new cluster setup is defined"));
+    }
     return;
   }
 
   if (notification->isName("notification_freeze_data_model")) {
     if (state_ == unconnected) {
-      LOG_SW(("Cannot process a freeze data model since we are unconnected, ignoring..."));
+      // If we are not connected, we cannot handle this notification
       return;
     }
 
@@ -773,31 +755,35 @@ void SamsonWorker::notify(engine::Notification *notification) {
   }
 
   if (notification->isName("notification_cluster_info_changed_in_worker")) {
-    // If we are not included or ready, we cannot process this notification
+    // Recover new cluster setup
+    au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
+    LOG_M(logs.worker, ("New cluster setup (version %lu)", cluster_info->version()));
+
     if (state_ == unconnected) {
       LOG_SW(("New cluster setup cannot be processed since we are disconnected"));
       return;
     }
 
-    // Recover new cluster setup
-    au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
-    LOG_M(logs.worker, ("New cluster setup (version %lu)", cluster_info->version()));
-
-    // If I am not part of this cluster, do not set connections
-    if (!isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
-      LOG_M(logs.worker,
-            ("Still not included in cluster (version %lu). Not seting up this worker", cluster_info->version()));
-      state_ = connected;     // Connected but still not included in the cluster
-      state_message_ = "Still not included in the cluster";
-      return;
+    if (state_ == connected) {
+      if (!isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
+        LOG_V(logs.worker, ("Still not part of cluster (version %lu)", cluster_info->version()));
+        return;
+      }
     }
 
+    if (state_ == ready) {
+      // If I am not part of this cluster any more, exit!
+      if (!isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
+        LOG_X(1, ("We are not included in cluster (version %lu). Exiting...", cluster_info->version()));
+      }
+    }
 
-    // Change network setup to adapt to the new scenario
+    // Reset worker components
+    task_manager_->Reset();
+    worker_block_manager_->Reset();
+
+    // Change network setup to adapt to the new scenario ( close& open connections to all workers )
     network_->set_cluster_information(cluster_info);
-
-    // Reset everything necessary to come back to connected state
-    ResetToConnected();
 
     // Show a label with all the new ranges I am responsible for
     std::vector<KVRange> ranges = worker_controller_->GetMyKVRanges();

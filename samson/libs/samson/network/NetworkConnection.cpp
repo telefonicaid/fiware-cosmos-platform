@@ -97,18 +97,22 @@ void NetworkConnection::WakeUpWriter() {
   tt.WakeUpAll();
 }
 
-bool NetworkConnection::isDisconnectd() {
+bool NetworkConnection::IsDisconnected() {
   return socket_connection_->IsClosed();
 }
 
 void NetworkConnection::Close() {
-  // Make sure connection is close
-  socket_connection_->Close();
+  if (!socket_connection_->IsClosed()) {
+    LOG_SW(("Closing connection %s", node_identifier_.str().c_str()));
+    socket_connection_->Close();
+  }
 }
 
 void NetworkConnection::CloseAndStopBackgroundThreads() {
-  // Make sure connection is close
-  socket_connection_->Close();
+  if (!socket_connection_->IsClosed()) {
+    LOG_SW(("Closing connection %s", node_identifier_.str().c_str()));
+    socket_connection_->Close();
+  }
 
   // Wait until both thread are gone
   au::Cronometer cronometer;
@@ -127,7 +131,7 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
 
     usleep(100000);
     if (cronometer.seconds() > 1) {
-      LOG_SW(("Waiting for background threads of connection %s", node_identifier_.getCodeName().c_str()));
+      LOG_SW(("Waiting for background threads of connection %s", node_identifier_.str().c_str()));
       cronometer.Reset();
     }
   }
@@ -157,7 +161,10 @@ void NetworkConnection::readerThread() {
       packet->from = node_identifier_;   // Set from "node identifier"
       network_manager_->receive(this, packet);
     } else {
-      socket_connection_->Close();   // Close connection since a packet has not been received correctly
+      if (!socket_connection_->IsClosed()) {
+        LOG_SW(("Closing connection %s: Error reading %s", node_identifier_.str().c_str(), au::status(s)));
+        socket_connection_->Close();   // Close connection since a packet has not been received correctly
+      }
     }
   }
 }
@@ -185,7 +192,8 @@ void NetworkConnection::writerThread() {
       if (s == au::OK) {
         network_manager_->multi_packet_queue_.Pop(node_identifier_);
       } else {
-        LOG_SW(("Problem writing packet on socket_connection_:'%s'", socket_connection_->str().c_str()));
+        LOG_SW(("Closing connection %s: Error writing %s", node_identifier_.str().c_str(), au::status(s)));
+        socket_connection_->Close();
       }
     } else {
       // Block this thread until new packets are pushed or connection is restablish...
@@ -227,7 +235,7 @@ std::string NetworkConnection::host_and_port()  const {
 }
 
 void NetworkConnection::fill(gpb::CollectionRecord *record, const Visualization& visualization) {
-  ::samson::add(record, "name", node_identifier_.getCodeName(), "different,left");
+  ::samson::add(record, "name", node_identifier_.str(), "different,left");
   ::samson::add(record, "user", user_, "different,left");
   ::samson::add(record, "connection", connection_type_, "different,left");
 
@@ -246,10 +254,6 @@ void NetworkConnection::fill(gpb::CollectionRecord *record, const Visualization&
   // Pending data to be sent
   std::string queue_description = network_manager_->multi_packet_queue_.GetDescription(node_identifier_);
   ::samson::add(record, "Output queue", queue_description, "different");
-}
-
-std::string NetworkConnection::name() const {
-  return node_identifier_.getCodeName();
 }
 
 std::string NetworkConnection::host() const {

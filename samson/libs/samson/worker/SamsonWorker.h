@@ -155,17 +155,16 @@ private:
     unconnected, connected, ready
   };
 
-  // Main function to review samson worker and all its elements
-  // This function is preiodically called from engine
+  /**
+   * \brief ResetToConnected
+   */
   void Review();
 
   /**
    * \brief Review pop queues and queue_connections for unconnected delilahs ( remove them )
    */
-
   void ReviewPopQueues();
 
-  void ResetToUnconnected();     // Reset when come back to unconnected
   void ResetToConnected();     // Reset when come back to connected ( change cluster setup )
 
   // Visualitzation of current data model

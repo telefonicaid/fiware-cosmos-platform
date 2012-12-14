@@ -62,7 +62,7 @@ public:
 
   virtual void RunThread() {
     while (true) {
-      if (IsThreadQuiting()) {
+      if (IsThreadQuitting()) {
         return;
       }
 
@@ -111,7 +111,7 @@ public:
 
   virtual void RunThread() {
     while (true) {
-      if (IsThreadQuiting()) {
+      if (IsThreadQuitting()) {
         return;
       }
 

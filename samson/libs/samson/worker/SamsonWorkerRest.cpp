@@ -43,14 +43,17 @@ SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) :
 }
 
 SamsonWorkerRest::~SamsonWorkerRest() {
-  LOG_M(logs.cleanup, ("Calling ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
+  LOG_D(logs.cleanup, ("Entering ~SamsonWorkerRest this:%p, rest_service->StopService()", this));
   rest_service_->StopService();
   if (delilah_) {
     delete delilah_;
+    delilah_ = NULL;
   }
   if (rest_service_) {
     delete rest_service_;
+    rest_service_ = NULL;
   }
+  LOG_D(logs.cleanup, ("Finished ~SamsonWorkerRest", this));
 }
 
 void SamsonWorkerRest::StopRestService() {
@@ -319,7 +322,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
     if (error.HasErrors()) {
       delete delilah_;
       delilah_ = NULL;
-      command->AppendFormatedError(500, "Not possible to connect internal delilah client");
+      command->AppendFormatedError(500, "Unable to connect internal delilah client");
     }
   }
 

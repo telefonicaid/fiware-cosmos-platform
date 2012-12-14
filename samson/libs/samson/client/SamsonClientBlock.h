@@ -42,7 +42,7 @@ public:
     // Keep block in memory
     buffer_ = buffer;
 
-    // Header if always at the begining of the buffer
+    // Header if always at the beginning of the buffer
     header = (KVHeader *)buffer->data();
 
     // Check header

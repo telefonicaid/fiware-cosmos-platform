@@ -259,15 +259,15 @@ void add(const char *list[], std::vector<std::string> &commands) {
 size_t DelilahConsole::runAsyncCommand(std::string command) {
   // Parse command acording to the commands catalogue
   au::ErrorManager error;
-  au::console::CommandInstance *command_instance = delilah_command_catalogue_.Parse(command, error);
+
+  au::SharedPointer<au::console::CommandInstance> command_instance = delilah_command_catalogue_.Parse(command, error);
 
   if (error.HasErrors()) {
     Write(error);   // Write errors and messages
     return 0;
   }
 
-  size_t delilah_id = runAsyncCommand(command_instance);
-  delete command_instance;
+  size_t delilah_id = runAsyncCommand(command_instance.shared_object());
   return delilah_id;
 }
 

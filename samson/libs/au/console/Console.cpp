@@ -73,43 +73,62 @@ Console *current_console = NULL;
 void handle_winch(int sig);
 void handle_tstp(int sig);
 
-Console::Console()
-  : au::Thread("Console")
-    , command_history_(new ConsoleCommandHistory())
-    , token_pending_messages_("token_pending_messages")
-    , block_background_messages_(false)  // By default, background messages are not blocked ( esc - b for toogle )
-    , quit_console_(false)  // Internal flag to quit console ( i.e. the user has tiped command quit )
-    , colors_(true) {  // By default colors are allowed
+Console::Console() : au::Thread("Console"),
+                     command_history_(new ConsoleCommandHistory()),
+                     token_pending_messages_("token_pending_messages"),
+                     block_background_messages_(false),  // By default, background messages are not blocked ( esc - b for toogle )
+                     colors_(true),  // By default colors are allowed
+                     reverse_search_mode_(false),
+                     reverse_search_command_(new ConsoleCommand()) {
 }
 
 Console::~Console() {
-  command_history_->save_history();
+  command_history_->SaveHistory();
   delete command_history_;
 }
 
 void Console::StartConsole(bool block_thread) {
-  quit_console_ = false;
   StartThread();
-
   if (block_thread) {
     JoinThread();  // Wait for background thread to finish
+    printf("\n");  // Print a last return to avoid writing after console prompt
   }
 }
 
 void Console::StopConsole() {
-  if (IsBackgroundThread()) {
-    quit_console_ = true;   // Interal flag to make sure background thread is finished
-  } else {
-    StopThread();   // Stop background thread directly
-  }
+  StopThread();   // Stop background thread
 }
 
 void Console::PrintCommand() {
+  if (reverse_search_mode_) {
+    PrintReverseSearchCommand();  // Special mode to search command backwards
+  } else {
+    PrintCurrentCommand();       // Normal moode, print current command
+  }
+}
+
+void Console::PrintReverseSearchCommand() {
+  ClearTerminalLine();
+
+  std::string found_command;
+  if (reverse_search_history_pos_ == -1) {
+    found_command = "Not found";
+  } else {
+    found_command = command_history_->GetStringCommand(reverse_search_history_pos_);
+  }
+
+  printf("[Reverse Search: %s ] %s", reverse_search_command_->command().c_str(), found_command.c_str());
+  printf("\r");
+  printf("[Reverse Search: %s", reverse_search_command_->command().c_str());
+  fflush(stdout);
+}
+
+void Console::PrintCurrentCommand() {
   // Get prompt
   std::string prompt = GetPrompt();
   // Get command and position inside the command
-  std::string _command = command_history_->current()->getCommand();
-  int _pos = command_history_->current()->getPos();
+  std::string _command = command_history_->GetCurrentCommand()->command();
+  int _pos = command_history_->GetCurrentCommand()->cursor();
 
   // Compute terminal width and available space for the command
   int w = GetTerminalWidth();
@@ -187,71 +206,26 @@ void Console::ProcessAutoComplete(ConsoleAutoComplete *info) {
   if (help_message.length() > 0) {
     printf("Help: %s\n", help_message.c_str());   // Add necessary stuff...
   }
-  command_history_->current()->add(info->stringToAppend());
+  command_history_->GetCurrentCommand()->AddString(info->stringToAppend());
   PrintCommand();
 }
 
-void Console::ProcessChar(char c) {
-  // Add char to the current command
-  command_history_->current()->add(c);
+void Console::ProcessReturn() {
+  PrintCommand();
+  printf("\n");
 
-  // We always print command again to detect if command is larger than the console window
+  std::string command = command_history_->GetCurrentCommand()->command();
+  EvalCommand(command);    // Eval the command with virtual method EvalCommand
+  command_history_->AddNewEmptyCommand();      // New command in history
   PrintCommand();
 }
 
-void Console::ProcessInternalCommand(const std::string& command) {
-  if (command == "tab") {
-    ConsoleAutoComplete *info = new ConsoleAutoComplete(command_history_->current()->getCommandUntilPointer());
-    AutoComplete(info);
-    ProcessAutoComplete(info);
-    delete info;
-    return;
-  }
+void Console::ProcessTab() {
+  ConsoleAutoComplete *info = new ConsoleAutoComplete(command_history_->GetCurrentCommand()->GetCommandUntilCursor());
 
-  if (command == "return") {
-    std::string _command = command_history_->current()->getCommand();
-
-    // Print the command on screen...
-    PrintCommand();
-    printf("\n");
-
-    // Eval the command....
-    EvalCommand(_command);
-
-    // New command in history
-    command_history_->new_command();
-    PrintCommand();
-  }
-
-  if (command == "move_home") {
-    command_history_->current()->move_home();
-    PrintCommand();
-  }
-
-  if (command == "move_end") {
-    command_history_->current()->move_end();
-    PrintCommand();
-  }
-
-  if (command == "del_rest_line") {
-    command_history_->current()->delete_rest_line();
-    PrintCommand();
-  }
-
-  if (command == "del") {
-    command_history_->current()->delete_char();
-    PrintCommand();
-  }
-
-  if (command == "delete_word") {
-    command_history_->current()->delete_word();
-    PrintCommand();
-  }
-
-  if (command == "toogle") {
-    command_history_->current()->toogle();
-    PrintCommand();
-  }
+  AutoComplete(info);
+  ProcessAutoComplete(info);
+  delete info;
 }
 
 void Console::AddEspaceSequence(const std::string& sequence) {
@@ -292,38 +266,38 @@ void Console::ProcessEscapeSequenceInternal(const std::string& sequence) {
 
   if (sequence == au::str("%c", 127)) {
     // Remove a word
-    command_history_->current()->delete_word();
+    command_history_->GetCurrentCommand()->DeleteWord();
     PrintCommand();
     return;
   }
 
   if (sequence == "[A") {
     // Mode up
-    command_history_->move_up();
+    command_history_->MoveUp();
     PrintCommand();
     return;
   }
   if (sequence == "[B") {
     // Move down
-    command_history_->move_down();
+    command_history_->MoveDown();
     PrintCommand();
     return;
   }
   if (sequence == "[C") {
     // Move forward
-    command_history_->current()->move_cursor(1);
+    command_history_->GetCurrentCommand()->MoveCursor(1);
     PrintCommand();
     return;
   }
   if (sequence == "[D") {
     // Move backward
-    command_history_->current()->move_cursor(-1);
+    command_history_->GetCurrentCommand()->MoveCursor(-1);
     PrintCommand();
     return;
   }
 
   if (sequence == "au") {
-    command_history_->current()->add("Andreu Urruela (andreu@tid.es,andreu@urruela.com)");
+    command_history_->GetCurrentCommand()->AddString("Andreu Urruela (andreu@tid.es,andreu@urruela.com)");
     PrintCommand();
     return;
   }
@@ -399,13 +373,6 @@ void Console::FlushBackgroundMessages() {
   }
 }
 
-bool Console::IsNormalChar(char c) const {
-  if ((c >= 32) && (c <= 126)) {
-    return true;
-  }
-  return false;
-}
-
 void Console::GetEntry(ConsoleEntry *entry) {
   char c;
 
@@ -442,6 +409,71 @@ void Console::GetEntry(ConsoleEntry *entry) {
   }
 }
 
+void Console::ProcessEntry(ConsoleEntry& entry) {
+  if (reverse_search_mode_) {
+    if (ConsoleCommand::CanProcessEntry(entry)) {
+      reverse_search_command_->ProcessEntry(entry);
+      UpdateReverseSearchMode();
+      PrintCommand();
+      return;
+    }
+
+    // Type ( C-r == 18 ) again
+    if (entry.isChar() && (entry.getChar() == 18)) {
+      NextReverseSearch();
+      PrintCommand();
+      return;
+    }
+
+    // Any other key, we come back to normal mode and process new key
+    StopReverseSearchMode();
+    ProcessEntry(entry);
+    return;
+  }
+  ;
+
+  // If entry can be process by ConsoleCommand, just do it
+  if (ConsoleCommand::CanProcessEntry(entry)) {
+    command_history_->GetCurrentCommand()->ProcessEntry(entry);
+    PrintCommand();
+    return;
+  }
+
+  // Special keys for the console
+  if (entry.isChar()) {
+    char c = entry.getChar();
+
+    switch (c) {
+      case '\n':
+        ProcessReturn();
+        break;
+
+      case '\t':
+        ProcessTab();
+        break;
+
+      case 7:  // C-g
+        printf("%c", c);    // bell
+        break;
+
+      case 18:  // C-r
+        StartReverseSearchMode();
+        PrintCommand();   // update command on screen
+        break;
+
+      default:
+        WriteWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
+        break;
+    }
+  } else if (entry.isEscapeSequence()) {
+    std::string seq = entry.getEscapeSequece();
+    ProcessEscapeSequenceInternal(escape_sequence_.getCurrentSequence());
+  } else if (entry.isUnknownEscapeSequence()) {
+    std::string seq = entry.getEscapeSequece();
+    WriteWarningOnConsole(au::str("Unknown escape sequence (%s)", GetEscapeSequenceDescription(seq).c_str()));
+  }
+}
+
 void Console::RunThread() {
   // Init console
   init_console_mode();
@@ -455,70 +487,24 @@ void Console::RunThread() {
   PrintCommand();
 
   while (true) {
-    if (IsThreadQuiting()) {
+    if (IsThreadQuitting()) {
       return;  // StopConsole has been called
-    }
-    if (quit_console_) {
-      return;
     }
 
     while (!IsInputReady()) {
       // Review background messages
       ProcessBackgroundMessages();
       usleep(20000);
+
+      if (IsThreadQuitting()) {
+        return;  // StopConsole has been called
+      }
     }
 
     // Read an entry or a escape sequence
     ConsoleEntry entry;
     GetEntry(&entry);
-
-    if (entry.isChar()) {
-      char c = entry.getChar();
-
-      if (IsNormalChar(c)) {
-        ProcessChar(c);
-      } else {
-        switch (c) {
-          case '\n':
-            ProcessInternalCommand("return");
-            break;
-          case '\t':
-            ProcessInternalCommand("tab");
-            break;
-          case 127:
-            ProcessInternalCommand("del");
-            break;
-          case 11:
-            ProcessInternalCommand("del_rest_line");
-            break;
-          case 1:
-            ProcessInternalCommand("move_home");
-            break;
-          case 5:
-            ProcessInternalCommand("move_end");
-            break;
-          case 23:
-            ProcessInternalCommand("delete_word");
-            break;
-          case 20:
-            ProcessInternalCommand("toogle");
-            break;
-          case 7:
-            printf("%c", c);  // bell
-            break;
-
-          default:
-            WriteWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
-            break;
-        }
-      }
-    } else if (entry.isEscapeSequence()) {
-      std::string seq = entry.getEscapeSequece();
-      ProcessEscapeSequenceInternal(escape_sequence_.getCurrentSequence());
-    } else if (entry.isUnknownEscapeSequence()) {
-      std::string seq = entry.getEscapeSequece();
-      WriteWarningOnConsole(au::str("Unknown escape sequence (%s)", GetEscapeSequenceDescription(seq).c_str()));
-    }
+    ProcessEntry(entry);
   }
 
   // Clear line to quit nicely...
@@ -718,7 +704,7 @@ void Console::Refresh() {
 }
 
 void Console::AppendToCommand(const std::string& txt) {
-  command_history_->current()->add(txt);
+  command_history_->GetCurrentCommand()->AddString(txt);
   PrintCommand();
 }
 
@@ -762,6 +748,61 @@ void handle_tstp(int sig) {
     // Re init console
     init_console_mode();
   }
+}
+
+void Console::StopReverseSearchMode() {
+  reverse_search_mode_ = false;
+  command_history_->MoveToLastcommand();
+
+  std::string new_command;
+  if (reverse_search_history_pos_ == -1) {
+    new_command = reverse_search_command_->command();
+  } else {
+    new_command = command_history_->GetStringCommand(reverse_search_history_pos_);
+  }
+  command_history_->GetCurrentCommand()->SetCommand(new_command);
+}
+
+void Console::StartReverseSearchMode() {
+  // Take current string as base for search
+  reverse_search_mode_ = true;
+  std::string txt = command_history_->GetCurrentCommand()->command();
+  reverse_search_command_->SetCommand(txt);
+  reverse_search_history_pos_ = -1;
+  UpdateReverseSearchMode();
+}
+
+void Console::UpdateReverseSearchMode() {
+  if (!reverse_search_mode_) {
+    return;
+  }
+
+  std::string message = reverse_search_command_->command();
+  if (message == "") {
+    reverse_search_history_pos_ = -1;
+    return;
+  }
+  reverse_search_history_pos_ = command_history_->Find(reverse_search_history_pos_, message);
+  if (reverse_search_history_pos_ == -1) {
+    reverse_search_history_pos_ = command_history_->Find(reverse_search_history_pos_, message);
+  }
+}
+
+void Console::NextReverseSearch() {
+  int previous_pos = reverse_search_history_pos_;
+  std::string message = reverse_search_command_->command();
+
+  if (previous_pos == -1) {
+    reverse_search_history_pos_ = command_history_->Find(reverse_search_history_pos_, message);
+    return;
+  }
+
+  int next_pos = command_history_->Find(previous_pos - 1, message);
+  if (next_pos == -1) {
+    return;   // No more search
+  }
+  // Keep this as the next por
+  reverse_search_history_pos_ = next_pos;
 }
 }
 }

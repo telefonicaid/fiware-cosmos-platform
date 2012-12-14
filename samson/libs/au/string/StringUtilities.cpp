@@ -9,6 +9,8 @@
  * All rights reserved.
  */
 
+#include "StringUtilities.h"     // Own definitions
+
 #include <cstdarg>
 #include <sstream>
 #include <stdio.h>
@@ -17,7 +19,7 @@
 
 #include <sys/ioctl.h>
 
-#include "StringUtilities.h"     // Own definitions
+#include "au/TemporalBuffer.h"
 
 namespace au {
 std::string str_tabs(int t) {
@@ -33,10 +35,7 @@ std::string str_percentage(double p) {
   if (p > 1) {
     return au::str(p);
   }
-
-  char line[2000];
-  sprintf(line, "%05.1f%%", p * 100);
-  return std::string(line);
+  return au::str("%05.1f%%", p * 100);
 }
 
 std::string str_simple_percentage(double value, double total) {
@@ -51,9 +50,7 @@ std::string str_simple_percentage(double p) {
   if (p > 1) {
     return au::str(p);
   }
-  char line[2000];
-  sprintf(line, "%03.0f%%", p * 100);
-  return std::string(line);
+  return au::str("%03.0f%%", p * 100);
 }
 
 std::string str_percentage(double value, double total) {
@@ -271,15 +268,13 @@ std::string str_indent(const std::string& txt, int num_spaces) {
 }
 
 std::string str(double value, char letter) {
-  char line[2000];
-
   if (value < 10) {
-    sprintf(line, "%4.2f%c", value, letter);
+    return au::str("%4.2f%c", value, letter);
   } else if (value < 100) {
-    sprintf(line, "%4.1f%c", value, letter);
-  } else {
-    sprintf(line, "%4.0f%c", value, letter);
-  } return std::string(line);
+    return au::str("%4.1f%c", value, letter);
+  }
+
+  return au::str("%4.0f%c", value, letter);
 }
 
 std::string str(const char *format, ...) {
@@ -360,15 +355,13 @@ std::string str(Color color, const char *format, ...) {
 }
 
 std::string str_double(double value, char letter) {
-  char line[2000];
-
   if (value < 10) {
-    sprintf(line, " %4.2f%c", value, letter);
+    return au::str(" %4.2f%c", value, letter);
   } else if (value < 100) {
-    sprintf(line, " %4.1f%c", value, letter);
-  } else {
-    sprintf(line, " %4.0f%c", value, letter);
-  } return std::string(line);
+    return au::str(" %4.1f%c", value, letter);
+  }
+
+  return au::str(" %4.0f%c", value, letter);
 }
 
 std::string str(const std::vector<std::string>& hosts) {
@@ -913,7 +906,18 @@ std::string StripString(const std::string& line) {
   if (end_pos == std::string::npos) {
     return "";   // Theoretically impossible
   }
-  return line.substr(begin_pos, end_pos - begin_pos);
+  return line.substr(begin_pos, end_pos - begin_pos + 1);
+}
+
+void ClearTerminalLine() {
+  int terminal_width = GetTerminalWidth();
+  au::TemporalBuffer buffer(terminal_width + 1);
+  char *data = buffer.data();
+
+  memset(buffer.data(), 0x20, terminal_width);
+  data[terminal_width] = '\0';
+  printf("\r%s\r", buffer.data());
+  fflush(stdout);
 }
 }
 

@@ -40,7 +40,7 @@ class LogCentral;
  *
  */
 
-extern LogCentral *log_central;   // Unique log_central variable
+extern LogCentral *log_central;   // Unique log_central variable used directly when emitting logs
 
 class LogCentral : public au::Thread {
 public:
@@ -107,6 +107,10 @@ public:
 
 private:
 
+  /**
+   * \brief Private constructor to make sure only InitLogSystem is used to init the log system
+   */
+
   LogCentral();
 
   // General management
@@ -131,8 +135,8 @@ private:
   int fds_[2];
 
   // File descriptor to emit logs
-  au::FileDescriptor *fd_write_logs_;
-  au::FileDescriptor *fd_read_logs_;
+  au::SharedPointer<au::FileDescriptor> fd_write_logs_;
+  au::SharedPointer<au::FileDescriptor> fd_read_logs_;
 
   // Name of the main executalbe
   std::string exec_;

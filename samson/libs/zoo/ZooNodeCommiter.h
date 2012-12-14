@@ -84,7 +84,8 @@ template<class C>     // C is suppoused to be a gpb message class
 class StringDataModel : public engine::NotificationListener {
 public:
 
-  StringDataModel(zoo::Connection *zoo_connection, const std::string& path) : token_("ZooNodeCommiter") {
+  StringDataModel(au::SharedPointer<au::zoo::Connection> zoo_connection,
+                  const std::string& path) : token_("ZooNodeCommiter") {
     zoo_connection_ = zoo_connection;
     path_ = path;
 
@@ -376,7 +377,7 @@ private:
     version_ = -1;
   }
 
-  zoo::Connection *zoo_connection_;
+  au::SharedPointer<au::zoo::Connection> zoo_connection_;
   mutable au::Token token_;
   std::string path_;
   au::SharedPointer<C> c_;

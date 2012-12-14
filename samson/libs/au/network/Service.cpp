@@ -132,7 +132,7 @@ void Service::StopService() {
 }
 
 void Service::newSocketConnection(NetworkListener *listener,
-                                  SocketConnection *socket_connetion) {
+                                  SocketConnection *socket_connection) {
   au::TokenTaker tt(&token_);
 
   if (listener != &listener_) {
@@ -141,7 +141,7 @@ void Service::newSocketConnection(NetworkListener *listener,
   }
 
   // Create the item
-  ServiceItem *item = new ServiceItem(this, socket_connetion);
+  ServiceItem *item = new ServiceItem(this, socket_connection);
 
   // Insert the item
   items_.insert(item);

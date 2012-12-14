@@ -102,7 +102,7 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-  // Connect with LogServer
+  // connect to LogServer
   log_probe.ConnectAsProbe(host, filter, error);
 
   if (error.HasErrors()) {

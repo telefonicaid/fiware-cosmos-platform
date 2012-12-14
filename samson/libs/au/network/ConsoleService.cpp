@@ -94,7 +94,7 @@ void ConsoleServiceClientBase::Connect(std::string host, au::ErrorManager *error
   au::Status s = SocketConnection::Create(host, port_, &socket_connection_);
   if (s != OK) {
     Disconnect(error);
-    error->AddError(au::str("Not possible to connect with %s (%s)\n", host.c_str(), status(s)));
+    error->AddError(au::str("Unable to connect to %s (%s)\n", host.c_str(), status(s)));
   } else {
     error->AddWarning(au::str("Connection stablished with %s\n", host.c_str()));
   }
@@ -297,9 +297,9 @@ void ConsoleService::run(SocketConnection *socket_connection, bool *quit) {
       for (size_t i = 0; i < info.getNumAlternatives(); i++) {
         console::ConsoleAutoCompleteAlternative alternative = info.getAlternative(i);
         au::gpb::AutoCompletionAlternative *a = answer_message.add_auto_completion_alternatives();
-        a->set_command(alternative.command);
-        a->set_label(alternative.label);
-        a->set_add_space_if_unique(alternative.add_space_if_unique);
+        a->set_command(alternative.command());
+        a->set_label(alternative.label());
+        a->set_add_space_if_unique(alternative.add_space_if_unique());
       }
     } else if (message->has_prompt_request()) {
       // Prompt request

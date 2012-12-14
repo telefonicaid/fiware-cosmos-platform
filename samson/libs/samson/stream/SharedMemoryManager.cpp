@@ -93,13 +93,7 @@ SharedMemoryManager::~SharedMemoryManager() {
   RemoveSharedMemorySegments(shm_ids_, shared_memory_num_buffers_);
 
   // Removing all shared memory items
-  for (size_t ix = 0; ix < shared_memory_items_.size(); ++ix) {
-    SharedMemoryItem *smItemP;
-
-    smItemP = shared_memory_items_.back();
-    shared_memory_items_.pop_back();
-    delete smItemP;
-  }
+  shared_memory_items_.clearVector();
 
   // Remove the file since it will not be necessary
   remove(sharedMemoryIdsFileName_.c_str());

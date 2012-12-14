@@ -104,14 +104,19 @@ public:
   }
 
   // Ask for information based on local data
-  std::set<size_t> GetWorkers();
+  std::set<size_t> GetWorkers() const;
 
-  size_t GetMyLastCommitId();
-  bool CheckDataModelCommitId(size_t last_commit_id);
+  size_t GetMyLastCommitId() const;
+  bool CheckDataModelCommitId(size_t last_commit_id) const;
 
   // Get host and port of a particular worker
-  std::string  getHostForWorker(size_t worker_id);
-  unsigned short getWebPortForWorker(size_t worker_id);
+  std::string  getHostForWorker(size_t worker_id) const;
+  unsigned short getWebPortForWorker(size_t worker_id) const;
+
+  // Check if we are a single-worker cluster
+  bool IsSingleWorkerCluster() const {
+    return (cluster_info_->workers_size() == 1);
+  }
 
 private:
 

@@ -34,17 +34,17 @@ bool no_color;
 
 PaArgument paArgs[] =
 {
-  { "-host",     host,          "",          PaString,      PaOpt,   _i "localhost",                     PaNL,
-    PaNL,  "Log server hostname"                      },
-  { "-format",   format,        "",      PaString, PaOpt,   _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,
+  { "-host",     host,      "", PaString, PaOpt, _i "localhost",                   PaNL,
+    PaNL, "Log server hostname"                      },
+  { "-format",   format,    "", PaString, PaOpt, _i LOG_DEFAULT_FORMAT_LOG_CLIENT, PaNL,
     PaNL,
     "Formats of the logs at the output"        },
-  { "-filter",   filter,    "", PaString, PaOpt, _i "",                            PaNL,  PaNL, "Command to execute"                       },
-  { "-save",     file_name, "", PaString, PaOpt, _i "",                            PaNL,  PaNL,
+  { "-filter",   filter,    "", PaString, PaOpt, _i "",                            PaNL, PaNL,  "Command to execute"                       },
+  { "-save",     file_name, "", PaString, PaOpt, _i "",                            PaNL, PaNL,
     "Save received logs to file"               },
-  { "-count",    &count,    "", PaBool,   PaOpt, false,                            false, true,
+  { "-count",    &count,    "", PaBool,   PaOpt, false,                            false,true,
     "Show possible fields for format argument" },
-  { "-no_color", &no_color, "", PaBool,   PaOpt, false,                            false, true, "No colored output"                        },
+  { "-no_color", &no_color, "", PaBool,   PaOpt, false,                            false,true,  "No colored output"                        },
   PA_END_OF_ARGS
 };
 
@@ -107,7 +107,7 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-  // Connect with LogServer
+  // connect to LogServer
   log_probe.ConnectAsQuery(host, filter, count, error);
   if (error.HasErrors()) {
     std::cerr << "Error connecting " << host << " : " << error.GetLastError() << std::endl;

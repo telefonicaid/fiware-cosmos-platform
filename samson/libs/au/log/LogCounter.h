@@ -80,6 +80,13 @@ public:
     Clear();
   }
 
+  ~LogCounter() {
+    rates.clearMap();
+    types_per_channel_.clearMap();
+    descriptors_.clearMap();
+    logs_per_channel_.clearMap();
+  }
+
   // Process a new log to count
   void Process(LogPointer log);
 

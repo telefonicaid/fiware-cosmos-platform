@@ -13,8 +13,10 @@
  *
  * samsonCatLogs
  *
- * Example app using samsonClient lib
- * It listen std input and push content to the samson cluster indicated by parameters
+ * Tool to send data synchronously to stdin
+ * It reads stdin or a text file, and writes to stdout either keeping a fix rate in lines per second,
+ * or according the log internal timestamp.
+ * This stdout can be piped to streamConnector and inject thus logs into SAMSON controlling their rate
  *
  * AUTHOR: Gregorio Escalada
  *

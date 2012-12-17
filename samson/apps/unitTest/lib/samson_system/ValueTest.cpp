@@ -44,7 +44,7 @@ void check_serialization(samson::system::Value *value, char *line, size_t expect
 
   EXPECT_EQ(s, s2) << au::str("Different serialization size for value %s (write %lu read %lu)",
                               value->str().c_str(), s, s2).c_str();
-  EXPECT_EQ(*value, *value2) << au::str("Different write and read value %s != %s",
+  EXPECT_EQ(value->str(), value2->str()) << au::str("Different write and read value %s != %s",
                                         value->str().c_str(), value2->str().c_str()).c_str();
 
   delete value2;

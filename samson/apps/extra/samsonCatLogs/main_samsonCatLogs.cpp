@@ -44,23 +44,29 @@ char time_format[32];
 char separator;
 char filename[81];
 
+#define YYYY_mm_dd_24H "YYYY_mm_dd_24H"
+#define dd_monthlett_YY_12H_AMPM "dd_monthlett_YY_12H_AMPM"
+
 static const char
     *manShortDescription =
-        "samsonCatLogs is a easy-to-use client to send data to a SAMSON system.\n"
-        "It emulates real_time streaming from any number of datasets, stored in local directories\n";
+        "samsonCatLogs is a tool to send data synchronously to stdin,\n"
+        "so streamConnector can inject it into a SAMSON system.\n"
+        "It can emulate real_time streaming from any file.\n"
+        "The output rate can be set according to the log internal timestamp\n"
+        "or at a fixed number of lines per sencond\n";
 
 static const char
     *manSynopsis =
-        "[-help]  [-breaker_sequence str_pattern]\n";
+        "[-help] [-time_field val] [-sep val] [-time_format val] [-init_time val] [-nr val] [-rate val] [-file val]\n";
 
 PaArgument paArgs[] = {
   { "-time_field", &time_field, "", PaInt, PaOpt, _i -1, _i -1, _i 20,
     "Number of field (first is 0) with time information"},
   { "-sep", &separator, "", PaChar, PaOpt, _i '|', PaNL, PaNL,
     "Log field separator, to parse time info. (Only if time_field defined)"},
-  { "-time_format", time_format, "", PaString, PaOpt, _i "YYYY_mm_dd_24H", PaNL, PaNL,
+  { "-time_format", time_format, "", PaString, PaOpt, _i YYYY_mm_dd_24H, PaNL, PaNL,
     "Format of the time field. Available:YYYY_mm_dd_24H, dd_monthlett_YY_12H_AMPM. (Only if time_field defined)"},
-  { "-initial_time", initial_timestamp_commandline_str, "", PaSList, PaOpt, PaND, PaNL, PaNL,
+  { "-init_time", initial_timestamp_commandline_str, "", PaSList, PaOpt, PaND, PaNL, PaNL,
     "Initial timestamp (by default, first timestamp in input data. (Only if time_field defined)"},
   { "-nr", &ntimes_real_time, "", PaFloat, PaOpt, _i 1.0, _i 0.01, _i 10000.0,
     "Number of times real time. (Only if time_field defined)"},
@@ -289,13 +295,13 @@ int main(int argC, const char *argV[]) {
       strcat(initial_timestamp_str, initial_timestamp_commandline_str[ix]);
       strcat(initial_timestamp_str, " ");
     }
-    if (strcmp(time_format, "YYYY_mm_dd_24H") == 0) {
+    if (strcmp(time_format, YYYY_mm_dd_24H) == 0) {
       first_timestamp = first_timestamp_cmdline = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(initial_timestamp_str);
-    } else if (strcmp(time_format, "dd_monthlett_YY_12H_AMPM") == 0) {
+    } else if (strcmp(time_format, dd_monthlett_YY_12H_AMPM) == 0) {
       first_timestamp = first_timestamp_cmdline = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(initial_timestamp_str);
     } else {
       fprintf(stderr, "Wrong timestamp format:'%s'\n", time_format);
-      fprintf(stderr, "Known formats:'%s', '%s'\n", "YYYY_mm_dd_24H", "dd_monthlett_YY_12H_AMPM");
+      fprintf(stderr, "Known formats:'%s', '%s'\n", YYYY_mm_dd_24H, dd_monthlett_YY_12H_AMPM);
       exit(-2);
     }
   }
@@ -323,13 +329,13 @@ int main(int argC, const char *argV[]) {
         continue;
       }
 
-      if (strcmp(time_format, "YYYY_mm_dd_24H") == 0) {
+      if (strcmp(time_format, YYYY_mm_dd_24H) == 0) {
         log_timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[time_field]);
-      } else if (strcmp(time_format, "dd_monthlett_YY_12H_AMPM") == 0) {
+      } else if (strcmp(time_format, dd_monthlett_YY_12H_AMPM) == 0) {
         log_timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[time_field]);
       } else {
         fprintf(stderr, "Wrong timestamp format:'%s'\n", time_format);
-        fprintf(stderr, "Known formats:'%s', '%s'\n", "YYYY_mm_dd_24H", "dd_monthlett_YY_12H_AMPM");
+        fprintf(stderr, "Known formats:'%s', '%s'\n", YYYY_mm_dd_24H, dd_monthlett_YY_12H_AMPM);
         exit(-2);
       }
       if (first_timestamp == 0) {
@@ -352,9 +358,10 @@ int main(int argC, const char *argV[]) {
         ftime(&act_timebuffer);
         time_t updated_time =  first_timestamp + ntimes_real_time * (act_timebuffer.time - prev_timebuffer.time);
         if (log_timestamp > updated_time) {
-          int rc = usleep((1000000.0*(log_timestamp - updated_time))/ntimes_real_time);
+          useconds_t time_to_sleep = 1000000*(log_timestamp - updated_time)/ntimes_real_time;
+          int rc = usleep(time_to_sleep);
           if (rc != 0) {
-            fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), 1000000 - elapsed_microseconds);
+            fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), time_to_sleep);
           }
           num_logs = 0;
         }
@@ -373,9 +380,10 @@ int main(int argC, const char *argV[]) {
         if (elapsed_microseconds > 1000000) {
           fprintf(stderr, "Warning, elapsed_microseconds(%u) > 1 second\n", elapsed_microseconds);
         } else {
-          int rc = usleep(1000000 - elapsed_microseconds);
+          useconds_t time_to_sleep = 1000000 - elapsed_microseconds;
+          int rc = usleep(time_to_sleep);
           if (rc != 0) {
-            fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), 1000000 - elapsed_microseconds);
+            fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), time_to_sleep);
           }
         }
         num_logs = 0;
@@ -389,5 +397,6 @@ int main(int argC, const char *argV[]) {
       fprintf(stderr, "Error(%d)('%s') in closing file:'%s'\n", rc, strerror(rc), filename);
     }
   }
+  return 0;
 }
 

@@ -316,10 +316,11 @@ std::vector<KVRange> WorkerTaskManager::CompressKVRanges(std::vector<KVRange> in
   }
 
   int pos = 0;
-  while (pos < input_ranges.size()) {
+  int num_input_ranges = input_ranges.size();
+  while (pos < num_input_ranges) {
     int begin = pos;
     int end = pos;
-    while ((end < input_ranges.size()) && ((end - begin + 1) < reduction_factor)) {
+    while ((end < num_input_ranges) && ((end - begin + 1) < reduction_factor)) {
       end++;
     }
 

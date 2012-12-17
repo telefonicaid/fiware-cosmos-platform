@@ -185,6 +185,8 @@ public:
       case script:
         return false;
     }
+
+    return false;
   }
 
   std::string getTypeName() {

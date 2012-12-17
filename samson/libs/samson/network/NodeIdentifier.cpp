@@ -83,5 +83,7 @@ std::string NodeIdentifier::str() const {
 
       break;
   }
+
+  return au::str("%s:Unknown", ClusterNodeType2str(node_type));
 }
 }

@@ -39,7 +39,8 @@
 #include "paWarning.h"          /* paWaringInit, paWarningAdd                */
 #include "parseArgs.h"          /* PaArgument                                */
 
-
+// Constant to avoid string overflow when handling user parameters
+# define STRING_MAX_LENGTH 256
 
 /* ****************************************************************************
  *
@@ -60,10 +61,10 @@
 #define REQUIRE(aP)                                                       \
   do                                                                        \
   {                                                                         \
-    char e[80];                                                           \
-    char w[512];                                                          \
+    char e[STRING_MAX_LENGTH];                                                           \
+    char w[STRING_MAX_LENGTH];                                                          \
                                                                           \
-    sprintf(w, "%s requires %s", paFullName(e, aP), require(aP->type));   \
+    snprintf(w, STRING_MAX_LENGTH, "%s requires %s", paFullName(e, aP), require(aP->type));   \
     PA_WARNING(PasMissingValue, w);                                       \
   } while (0)
 
@@ -329,8 +330,8 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
 
   PA_M(("incoming arg list of %d args", argC));
   while (++argNo < argC) {
-    char e[80];
-    char o[80];
+    char e[STRING_MAX_LENGTH];
+    char o[STRING_MAX_LENGTH];
     int eee;
     int *eP;
 
@@ -347,12 +348,12 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
 //    about the change in the syntax
     } else if ((aP = argFind(paList, (char *)"", UNSTRICT, &param)) != NULL) {
       if (argV[argNo][0] == '-') {
-        sprintf(w, "%s '%s' argument starts with '-'", optOrPar(argV[argNo]), argV[argNo]);
+        snprintf(w, STRING_MAX_LENGTH, "%s '%s' argument starts with '-'", optOrPar(argV[argNo]), argV[argNo]);
         fprintf(stderr, "Warning: '%s'\n", w);
       }
       valueP = argV[argNo];
     } else {
-      sprintf(w, "%s '%s' not recognized", optOrPar(argV[argNo]), argV[argNo]);
+      snprintf(w, STRING_MAX_LENGTH, "%s '%s' not recognized", optOrPar(argV[argNo]), argV[argNo]);
       PA_W(("Warning: '%s'", w));
       PA_WARNING(PasNoSuchOption, w);
       fprintf(stderr, "Warning: '%s'\n", w);
@@ -385,7 +386,7 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
 
     if (aP->used > 0) {
       if ((aP->type != PaSList) && (aP->type != PaIList) && (aP->what != PawParameter)) {
-        sprintf(w, "multiple use of %s", aP->name);
+        snprintf(w, STRING_MAX_LENGTH, "multiple use of %s", aP->name);
         PA_WARNING(PasMultipleOptionUse, w);
         continue;
       }
@@ -395,11 +396,11 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
 
     if (aP->type == PaBoolean) {
       if (strlen(argV[argNo]) != strlen(aP->option)) {
-        char tmp[128];
-        sprintf(w, "boolean option '%s' doesn't take parameters",
+        char tmp[STRING_MAX_LENGTH];
+        snprintf(w, STRING_MAX_LENGTH, "boolean option '%s' doesn't take parameters",
                 paFullName(e, aP));
         /* PA_WARNING(PasValueToBooleanOption, w); */
-        sprintf(tmp, "%c%s", argV[argNo][0], &argV[argNo][2]);
+        snprintf(tmp, STRING_MAX_LENGTH, "%c%s", argV[argNo][0], &argV[argNo][2]);
         LM_W(("Changing arg %d from '%s' to '%s'", argNo, argV[argNo], tmp));
         strcpy(argV[argNo], tmp);
         --argNo;
@@ -510,7 +511,7 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
   paIterateInit();
   while ((aP = paIterateNext(paList)) != NULL) {
     if ((aP->sort == PaReq) && (aP->used == 0)) {
-      sprintf(w, "%s required", aP->name);
+      snprintf(w, STRING_MAX_LENGTH, "%s required", aP->name);
       PA_WARNING(PasRequiredOption, w);
     }
   }

@@ -73,8 +73,10 @@ public:
 
   /**
    * \brief Remove a particular connection identifier by name
+   *
+   * \return true if element really removed
    */
-  void Remove(const NodeIdentifier& node_identifier);
+  bool Remove(const NodeIdentifier& node_identifier);
 
   /**
    * \brief Remove connections with a closed socket

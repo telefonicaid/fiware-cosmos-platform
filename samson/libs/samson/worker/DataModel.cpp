@@ -49,7 +49,7 @@ const std::string DataModel::kFreezeDataModel("data_model_freeze");
 const std::string DataModel::kCancelFreezeDataModel("data_model_cancel_freeze");
 const std::string DataModel::kRecoverDataModel("data_model_recover");
 const std::string DataModel::kConsolidateDataModel("consolidate_data_model");
-const std::string DataModel::kSetReplicationFactor("set_replication_factor");
+const std::string DataModel::kSetClusterParameter("cluster_set_parameter");
 
 
 
@@ -63,7 +63,7 @@ const std::string DataModel::commands[] = {
   kSetQueueProperty,
   kSetStreamOperationProperty, kUnsetStreamOperationProperty,
   kFreezeDataModel,            kCancelFreezeDataModel,        kRecoverDataModel,
-  kConsolidateDataModel,       kSetReplicationFactor
+  kConsolidateDataModel,       kSetClusterParameter
 };
 
 const std::string DataModel::recovery_commands[] = {
@@ -105,6 +105,8 @@ void DataModel::Init(au::SharedPointer<gpb::DataModel> data_model) {
   // Create an empty node
   LOG_V(logs.data_model, ("Init a new instance of data model"));
   data_model->set_replication_factor(3);
+  data_model->set_parallelization_factor(8);
+  data_model->set_parallelization_reduction_factor(1);
 
   gpb::Data *previous_data = data_model->mutable_previous_data();
   previous_data->set_next_stream_operation_id(1);
@@ -148,12 +150,50 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
     return;
   }
 
-  if (main_command == kSetReplicationFactor) {
+  if (main_command == kSetClusterParameter) {
     if (cmd->get_num_arguments() < 2) {
+      error.AddError("usage: cluster_set_parameter <parameter> <value>");
       return;
     }
-    size_t replication_factor = atoll(cmd->get_argument(1).c_str());
-    data->set_replication_factor(replication_factor);
+
+    std::string parameter = cmd->get_argument(1);
+    std::string value = cmd->get_argument(2);
+
+    if (parameter == "replication_factor") {
+      int replicas = atoi(value.c_str());
+      if ((replicas < 1) || (replicas > 10)) {
+        error.AddError(au::str("Invalid value '%s' for cluster parameter '%s' ", value.c_str(), parameter.c_str()));
+        return;
+      }
+
+      data->set_replication_factor(replicas);
+      return;
+    }
+
+    if (parameter == "worker_cores") {
+      int cores = atoi(value.c_str());
+      if ((cores < 1) || (cores > 200)) {
+        error.AddError(au::str("Invalid value '%s' for cluster parameter '%s' ", value.c_str(), parameter.c_str()));
+        return;
+      }
+      data->set_parallelization_factor(cores);
+      return;
+    }
+
+    if (parameter == "forward_reduction") {
+      int cores = atoi(value.c_str());
+      if ((cores < 1) || (cores > 200)) {
+        error.AddError(au::str("Invalid value '%s' for cluster parameter '%s' ", value.c_str(), parameter.c_str()));
+        return;
+      }
+      data->set_parallelization_reduction_factor(cores);
+      return;
+    }
+
+
+
+
+    error.AddError(au::str("Unknown parameter for cluster setup: '%s'", parameter.c_str()));
     return;
   }
 
@@ -870,10 +910,31 @@ bool DataModel::IsValidCommand(const std::string& main_command) {
   return false;
 }
 
-au::SharedPointer<gpb::Collection> DataModel::GetCollectionForReplication(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> DataModel::GetCollectionForClusterParameters(const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
-  gpb::CollectionRecord *record = collection->add_record();
-  ::samson::add(record, "Replication factor", getCurrentModel()->replication_factor(), "different");
+
+  {
+    gpb::CollectionRecord *record = collection->add_record();
+    ::samson::add(record, "name", "Replication factor", "different,left");
+    ::samson::add(record, "code_name", "replication_factor", "different,left");
+    ::samson::add(record, "value", getCurrentModel()->replication_factor(), "different");
+  }
+
+  {
+    gpb::CollectionRecord *record = collection->add_record();
+    ::samson::add(record, "name", "Worker parallelization factor", "different,left");
+    ::samson::add(record, "code_name", "worker_cores", "different,left");
+    ::samson::add(record, "value", getCurrentModel()->parallelization_factor(), "different");
+  }
+
+  {
+    gpb::CollectionRecord *record = collection->add_record();
+    ::samson::add(record, "name", "Worker parallelization reduction factor for forward operations", "different,left");
+    ::samson::add(record, "code_name", "forward_reduction", "different,left");
+    ::samson::add(record, "value", getCurrentModel()->parallelization_reduction_factor(), "different");
+  }
+
+
   collection->set_name("replication_factor");
   return collection;
 }

@@ -48,8 +48,8 @@ std::vector<NodeIdentifier> NetworkManager::GetAllNodeIdentifiers() const {
  * }
  */
 
-void NetworkManager::Remove(const NodeIdentifier& node_identifier) {
-  connections_.extractAndDeleteFromMap(node_identifier);  // Extract and remove if really present in the manager
+bool NetworkManager::Remove(const NodeIdentifier& node_identifier) {
+  return connections_.extractAndDeleteFromMap(node_identifier);  // Extract and remove if really present in the manager
 }
 
 void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::SocketConnection *socket_connection) {

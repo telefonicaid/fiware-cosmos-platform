@@ -63,7 +63,7 @@ public:
   au::SharedPointer<gpb::Collection> GetCollectionForStreamOperations(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetCollectionForBatchOperations(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetCollectionForQueueConnections(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetCollectionForReplication(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForClusterParameters(const Visualization& visualization);
 
   // Get list of all block_ids in the current data ( previous, candidate and current )
   std::set<size_t> GetAllBlockIds();
@@ -157,7 +157,7 @@ private:
   static const std::string kRm;
   static const std::string kRmQueueConnection;
   static const std::string kSetQueueProperty;
-  static const std::string kSetReplicationFactor;
+  static const std::string kSetClusterParameter;
   static const std::string kSetStreamOperationProperty;
   static const std::string kUnsetStreamOperationProperty;
   static const std::string kFreezeDataModel;

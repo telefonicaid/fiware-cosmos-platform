@@ -141,8 +141,11 @@ void SamsonWorker::Review() {
       }
 
       // Once connected, init the rest of worker components
-      // Main worker controller ( based on zookeeper connection )
-      worker_controller_.Reset(new SamsonWorkerController(zoo_connection_.shared_object(), port_, web_port_));
+      worker_controller_.Reset(new SamsonWorkerController(this, zoo_connection_.shared_object(), port_, web_port_));
+      data_model_.Reset(new DataModel(zoo_connection_));
+      data_model_->UpdateToLastVersion();
+
+      // Init main worker controller ( based on zookeeper connection )
       rc = worker_controller_->init();
       if (rc) {
         state_message_ =  au::str("Error creating worker controller %s", au::zoo::str_error(rc).c_str());
@@ -152,8 +155,7 @@ void SamsonWorker::Review() {
         return;
       }
 
-      data_model_.Reset(new DataModel(zoo_connection_));
-      data_model_->UpdateToLastVersion();
+      // Init network element here since we need the worker_id we have been assigned
       network_.Reset(new WorkerNetwork(worker_controller_->worker_id(), port_));
 
       // Now we are connected

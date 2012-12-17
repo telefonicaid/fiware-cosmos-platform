@@ -69,8 +69,8 @@ public:
     state_kvs_.Push(state.kvs);
 
     // Update information about process
-    real_process_rate_.Push((double)( input.size ) / process_time);
-    process_rate_.Push((double)( input.size + state.size ) / process_time);
+    real_process_rate_.Push((double)(input.size) / process_time);
+    process_rate_.Push((double)(input.size + state.size) / process_time);
 
     // Just keep the number of divisions to compute erlangs
     num_hgs_ = num_hgs;
@@ -176,6 +176,11 @@ private:
 
   bool runNextWorkerTasksIfNecessary();
 
+  /**
+   * \brief Compress ranges in groups ( applyied to forward operations )
+   */
+  static std::vector<KVRange> CompressKVRanges(std::vector<KVRange> input_ranges, int reduction_factor,
+                                               au::ErrorManager& error);
 
   size_t id_;     // Id of the current task
   au::Queue<WorkerTaskBase> pending_tasks_;                  // List of pending task to be executed

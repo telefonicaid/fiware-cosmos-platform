@@ -131,7 +131,10 @@ void CommonNetwork::ReviewConnections() {
       if (!IsNecessaryToProcess(node_identifiers[i])) {    // This packets are not necessary any more
         LOG_W(logs.network_connection, ("Removing connection to %s (not necessary any more)",
                                         node_identifiers[i].str().c_str()));
-        Remove(node_identifiers[i]);
+        if (!Remove(node_identifiers[i])) {
+          LOG_E(logs.network_connection, ("Not possible to remove connection %s",
+                                          node_identifiers[i].str().c_str()));
+        }
       }
     }
   }
@@ -193,7 +196,8 @@ std::string CommonNetwork::str() {
 Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, int port) {
   NodeIdentifier node_identifier = NodeIdentifier(WorkerNode, worker_id);
 
-  LOG_V(logs.network_connection, ("**** Adding connection for worker %lu at %s:%d"
+  LOG_V(logs.network_connection, ("**** (%s) Adding connection for worker %lu at %s:%d"
+                                  , node_identifier_.str().c_str()
                                   , worker_id
                                   , host.c_str()
                                   , port));

@@ -31,14 +31,15 @@
 #include "samson/common/Logs.h"
 #include "samson/common/common.h"
 #include "samson/stream/BlockManager.h"
+#include "samson/worker/SamsonWorker.h"
 #include "zoo/common.h"
 
 namespace samson {
-SamsonWorkerController::SamsonWorkerController(au::zoo::Connection *zoo_connection, int port, int port_web) :
+SamsonWorkerController::SamsonWorkerController(SamsonWorker *samson_worker, au::zoo::Connection *zoo_connection,
+                                               int port,
+                                               int port_web) :
   token_("SamsonWorkerController") {
-  // zoo_set_debug_level(ZOO_LOG_LEVEL_ERROR);
-
-  // Keep a pointer to the connection
+  samson_worker_ = samson_worker;
   zoo_connection_ = zoo_connection;
 
   // Make sure basic folders are created
@@ -203,11 +204,14 @@ int SamsonWorkerController::GetAllWorkersFromZk() {
     return rc;
   }
 
+  // Clear previous information about workers
   worker_ids_.clear();
+  workers_info_.clear();
+
+  // Get vector of connected workers
   for (size_t i = 0; i < childrens.size(); ++i) {
     worker_ids_.push_back(atoll(childrens[i].substr(1).c_str()));   //  Note children are... /wXXXX
   }
-
   std::sort(worker_ids_.begin(), worker_ids_.end());
 
   // Get all information from all workers...
@@ -361,26 +365,32 @@ int SamsonWorkerController::ReviewClusterLeather() {
 
   // We have recovered cluster informtion, let see if it is necessary to be changed
   if (!IsValidClusterInfo()) {
-    // Create a new cluster setup
-    int rc2 = CreateClusterInfo(cluster_info_->version() + 1);
-    if (rc2) {
-      LOG_W(logs.worker_controller, ("Not possible to create cluster info %s", au::zoo::str_error(rc2).c_str()));
-      return rc2;
-    }
-
-    // Set the new cluster information to update the other worhers
-    rc = zoo_connection_->Set("/samson/cluster", cluster_info_.shared_object());
-    if (rc) {
-      LOG_W(logs.worker_controller, ("Not possible to set new version of cluster info: %s",
-                                     au::zoo::str_error(rc).c_str()));
-      return 1;
-    }
-
-    // Notify about a new cluster to recover data model
-    engine::notify("notification_new_cluster_setup");
+    return CreateNewClusterSetup();
   }
 
   // Everything ok
+  return 0;
+}
+
+int SamsonWorkerController::CreateNewClusterSetup() {
+  // Create a new cluster info structure ( with a new version number )
+  int rc = CreateClusterInfo(cluster_info_->version() + 1);
+
+  if (rc) {
+    LOG_W(logs.worker_controller, ("Not possible to create cluster info %s", au::zoo::str_error(rc).c_str()));
+    return rc;
+  }
+
+  // Set the new cluster information to update the other worhers
+  rc = zoo_connection_->Set("/samson/cluster", cluster_info_.shared_object());
+  if (rc) {
+    LOG_W(logs.worker_controller, ("Not possible to set new version of cluster info: %s",
+                                   au::zoo::str_error(rc).c_str()));
+    return 1;
+  }
+
+  // Notify about a new cluster to recover data model
+  engine::notify("notification_new_cluster_setup");
   return 0;
 }
 
@@ -476,12 +486,7 @@ int SamsonWorkerController::CreateClusterInfo(size_t version) {
   cluster_info_.Reset(new gpb::ClusterInfo());   // New cluster info
   cluster_info_->set_version(version);           // Set the version provided
 
-  // All information
-  LOG_V(logs.worker_controller, ("Recovering information for all worker to define cluster"));
-
-  // Create a new cluster based on workers information
-  LOG_V(logs.worker_controller,
-        ("Creating new cluster based on collected information (%lu workers)", workers_info_.size()));
+  LOG_V(logs.worker_controller, ("Creating new cluster with %lu workers", workers_info_.size()));
 
   // Add individual worker information
   for (size_t w = 0; w < worker_ids_.size(); w++) {
@@ -494,34 +499,25 @@ int SamsonWorkerController::CreateClusterInfo(size_t version) {
     cluster_worker->mutable_worker_info()->CopyFrom(*worker_info.shared_object());
   }
 
-  // Decide how to organize process units
-  int replica_factor = 2;
+  // Parameter to setup new cluster
+  int replication_factor = 2;
+  int num_units_per_worker = 8;
 
-  if (worker_ids_.size() == 1) {
-    replica_factor = 1;
-  } else if (worker_ids_.size() == 2) {
-    replica_factor = 2;
+  // Recover information from data model
+  au::SharedPointer<gpb::DataModel> data_model = samson_worker_->data_model()->getCurrentModel();
+  if (data_model != NULL) {
+    replication_factor = data_model->replication_factor();
+    num_units_per_worker =  data_model->parallelization_factor();
+  }
+
+  // Maximum replication factor, the number of workers
+  int num_workers = worker_ids_.size();
+  if (replication_factor > num_workers) {
+    replication_factor = num_workers;
   }
 
   // Decide number of process units
-  // Number of hash-group divisions
-  // @jges: Changing the order of the tests
-  int num_units = 8;
-  int num_workers = static_cast<int>(worker_ids_.size());   // Number of workers
-  if (num_workers > 10) {
-    LOG_W(logs.worker_controller, ("Cluster setup not ready to handle more than 10 workers"));
-    // Note: In the future, we have to scale up the 128 limit to handle more workers
-  } else if (num_workers > 5) {
-    num_units = 128;
-  } else if (num_workers > 2) {
-    num_units = 24;
-  } else if (num_workers > 1) {
-    num_units = 16;
-  }
-
-  int num_units_per_worker = num_units / num_workers;   // Number of units per worker
-
-  // TODO(@andreu): This should be revised to map ranges to workers coherently based on previous information
+  int num_units = num_workers * num_units_per_worker;
 
   for (int i = 0; i < num_units; ++i) {
     KVRange range = GetKVRangeForDivision(i, num_units);
@@ -540,7 +536,7 @@ int SamsonWorkerController::CreateClusterInfo(size_t version) {
     process_unit->set_worker_id(worker_ids_[w]);
 
     // Set replica
-    for (int r = 0; r < (replica_factor - 1); ++r) {
+    for (int r = 0; r < (replication_factor - 1); ++r) {
       int ww = w + 1 + r;
       while (ww >= static_cast<int> (worker_ids_.size())) {
         ww -= worker_ids_.size();
@@ -653,7 +649,7 @@ std::string SamsonWorkerController::get_local_ip() const {
   return "127.0.0.1";
 }
 
-size_t SamsonWorkerController::get_new_block_id() {
+size_t SamsonWorkerController::GetNewBlockId() {
   if (worker_id_ == static_cast<size_t>(-1)) {
     return static_cast<size_t>(-1);
   }

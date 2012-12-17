@@ -21,9 +21,6 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // SETUP
   // ------------------------------------------------------------------
 
-  AddCommand("show_cluster_setup", "setup", "Show cluster setup", "Display cluster configuration");
-  AddCommand("show_cluster_assignation", "setup", "Show cluster assignment",
-             "Display the hash-groups assigned to each worker");
   AddCommand("ls_local_connections", "delilah", "Display the connection status for this delilah session");
 
   // ------------------------------------------------------------------
@@ -170,9 +167,24 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   AddCommand("ls_kv_ranges", "debug", "(Debug) Show a list of key-value ranges in this SAMSON cluster");
 
-  AddCommand("set_replication_factor", "debug", "(Experimental) Set replication factor in the cluster");
-  AddMandatoryUInt64Argument("set_replication_factor", "factor", "Number of times each block is present in cluster");
-  AddCommand("get_replication_factor", "debug", "Show a list of key-value ranges in this SAMSON cluster");
+  // ------------------------------------------------------------------
+  // CLUSTER
+  // ------------------------------------------------------------------
+
+  AddCommand("cluster_set_parameter", "cluster", "(Experimental) Set replication factor in the cluster");
+  AddMandatoryStringArgument("cluster_set_parameter", "parameter", "Name of the parameter to change");
+  AddMandatoryStringArgument("cluster_set_parameter", "value", "New value for selected parameter");
+
+  AddCommand("cluster_show_parameter", "cluster", "Show a list of key-value ranges in this SAMSON cluster");
+
+  AddCommand("cluster_create_new", "cluster", "Create a new cluster based on current setup");
+  AddTag("cluster_create_new", "send_to_all_workers");  // worker leader is the only one who can do this
+
+  AddCommand("cluster_show_setup", "cluster", "Show cluster setup", "Display cluster configuration");
+
+  AddCommand("cluster_show_assignation", "cluster", "Show cluster assignment",
+             "Display the hash-groups assigned to each worker");
+
 
   // ------------------------------------------------------------------
   // MODULES
@@ -262,13 +274,13 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   AddCommand("wait", "stream", "Wait for all input queues used in stream operations to empty");
   AddIntOption("wait", "timeout", 0);
-  
+
   AddCommand("wait_batch_tasks", "stream", "Wait for all batch operation tasks to complete");
   AddIntOption("wait_batch_tasks", "timeout", 0);
 
   AddCommand("wait_my_batch_tasks", "stream", "Wait for my batch operations to complete");
   AddIntOption("wait_my_batch_tasks", "timeout", 0);
-  
+
   AddCommand("set_stream_operation_property", "stream",
              "Set value of an environment property associated to a stream operation (see add_stream_operation)",
              "set_stream_operation_property <stream_operation_name> <variable_name> <value>");

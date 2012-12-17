@@ -303,6 +303,35 @@ bool compare_StreamOperationRangeInfo(StreamOperationRangeInfo *a, StreamOperati
   return (a->priority_rank() > b->priority_rank());
 }
 
+std::vector<KVRange> WorkerTaskManager::CompressKVRanges(std::vector<KVRange> input_ranges, int reduction_factor,
+                                                         au::ErrorManager& error) {
+  std::vector<KVRange> result;
+
+  // Check coherence of input tranges
+  for (size_t i = 0; i < (input_ranges.size() - 1); i++) {
+    if (input_ranges[i].hg_end_  != input_ranges[i + 1].hg_begin_) {
+      error.AddError("Non coherent ranges");
+      return result;
+    }
+  }
+
+  int pos = 0;
+  while (pos < input_ranges.size()) {
+    int begin = pos;
+    int end = pos;
+    while ((end < input_ranges.size()) && ((end - begin + 1) < reduction_factor)) {
+      end++;
+    }
+
+    // Create a unified KVRange
+    result.push_back(KVRange(input_ranges[begin].hg_begin_, input_ranges[end].hg_end_));
+
+    // move to the next range
+    pos = end + 1;
+  }
+  return result;
+}
+
 void WorkerTaskManager::review_stream_operations() {
   au::ExecesiveTimeAlarm alarm("WorkerTaskManager::reviewStreamOperations");
   int num_processors = au::Singleton<SamsonSetup>::shared()->GetInt("general.num_processess");
@@ -327,11 +356,32 @@ void WorkerTaskManager::review_stream_operations() {
     // Get the identifier of this stream operation
     size_t stream_operation_id = stream_operation.stream_operation_id();
     std::string stream_operation_name = stream_operation.name();
+    std::string operation_name =  stream_operation.operation();
 
     // Recover glocal information for this stream operation
     StreamOperationGlobalInfo *global_info = stream_operations_global_info_.findInMap(stream_operation_id);
     if (!global_info) {
+      // Full set of ranges
       std::vector<KVRange> worker_ranges = samson_worker_->worker_controller()->GetMyKVRanges();
+
+      // Apply a reduction if operation is known & it is a forward operation
+      Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
+      if (operation) {
+        if (operation->IsForwardOperation()) {
+          // Apply a reduction
+          int reduction_factor = samson_worker_->data_model()->getCurrentModel()->parallelization_reduction_factor();
+          au::ErrorManager error;
+          std::vector<KVRange> new_worker_ranges = CompressKVRanges(worker_ranges, reduction_factor, error);
+          if (!error.HasErrors()) {
+            worker_ranges = new_worker_ranges;
+          } else {
+            LOG_W(logs.task_manager, ("Error compacting ranges: %s", error.GetLastError().c_str()));
+          }
+        }
+      } else {
+        LOG_W(logs.task_manager, ("Unknown operation  %s: not possible to compact if forward", operation_name.c_str()));
+      }
+
       global_info = new StreamOperationGlobalInfo(samson_worker_, stream_operation_id, stream_operation_name,
                                                   worker_ranges);
       stream_operations_global_info_.insertInMap(stream_operation_id, global_info);

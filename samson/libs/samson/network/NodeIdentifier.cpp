@@ -15,7 +15,7 @@
 namespace samson {
 NodeIdentifier::NodeIdentifier() {
   node_type = UnknownNode;
-  id = static_cast<size_t>(-1);
+  id = SIZE_T_UNDEFINED;
 }
 
 NodeIdentifier::NodeIdentifier(gpb::NodeIdentifier pb_node_identifier) {
@@ -67,12 +67,21 @@ bool NodeIdentifier::operator==(const NodeIdentifier&  other) const {
 }
 
 std::string NodeIdentifier::str() const {
-  if (id == static_cast<size_t>(-1)) {
-    return au::str("%s:Unknown", ClusterNodeType2str(node_type));
+  switch (node_type) {
+    case UnknownNode:
+      return au::str("%s:Unknown", ClusterNodeType2str(node_type));
+
+      break;
+
+    case WorkerNode:
+      return au::str("%s_%lu", ClusterNodeType2str(node_type), id);
+
+      break;
+
+    case DelilahNode:
+      return au::str("%s_%s", ClusterNodeType2str(node_type), au::code64_str(id).c_str());
+
+      break;
   }
-  if (node_type == DelilahNode) {
-    return au::str("%s_%s", ClusterNodeType2str(node_type), au::code64_str(id).c_str());
-  }
-  return au::str("%s_%lu", ClusterNodeType2str(node_type), id);
 }
 }

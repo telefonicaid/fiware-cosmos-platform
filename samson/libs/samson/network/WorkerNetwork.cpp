@@ -94,6 +94,10 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   // Identifier from the incoming hello packet
   NodeIdentifier new_node_identifier(packet.message->hello().node_identifier());
 
+  LOG_V(logs.network_connection, ("New connection from %s proving node identifier %s",
+                                  socket_connection->host_and_port().c_str(), new_node_identifier.str().c_str()));
+
+
   if (new_node_identifier.node_type == UnknownNode) {
     LOG_SW(("Hello message received with nodetype unknown. Closing connection"));
     socket_connection->Close();
@@ -125,6 +129,17 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
       socket_connection->Close();
       delete socket_connection;
       return;
+    }
+  }
+
+  // In case of worker connection, check it is defined in the cluster
+  if (new_node_identifier.node_type == WorkerNode) {
+    if (IsWorkerInCluster(new_node_identifier.id)) {
+      LOG_W(logs.network_connection, ("Rejecting connection from %s since it worker is not in cluster %s",
+                                      socket_connection->host_and_port().c_str(), new_node_identifier.str().c_str()));
+    } else {
+      LOG_V(logs.network_connection, ("Worker %s is part of the cluster. Adding new connection...",
+                                      new_node_identifier.str().c_str()));
     }
   }
 

@@ -287,12 +287,12 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     return 0;
   }
 
-  if (mainCommand == "show_cluster_setup") {
+  if (mainCommand == "cluster_show_setup") {
     Write(network_->getClusterSetupStr() + "\n");
     return 0;
   }
 
-  if (mainCommand == "show_cluster_assignation") {
+  if (mainCommand == "cluster_show_assignation") {
     Write(network_->getClusterAssignationStr() + "\n");
     return 0;
   }

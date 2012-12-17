@@ -158,9 +158,11 @@ message DataModel
 
 	// Commit history to recover commands ( mainly add_stream_operation or run )
 	repeated DataCommit commit = 5;    // List of commits from previous_data to current_data
-
-	// Replication factor
-	required int32 replication_factor = 10;      // Number of times data  should be replicated to be considered "save"
+	
+	// Cluster parameters
+	required int32 replication_factor = 10;      // Number of times data  should be replicated to be considered "safe"
+	required int32 parallelization_factor = 11;  // Number of paralel process per worker per task
+	required int32 parallelization_reduction_factor= 12; // group process-units in forward operations ( map, parse, etc...)
 
 }
 

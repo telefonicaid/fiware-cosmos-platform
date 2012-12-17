@@ -92,7 +92,7 @@ void WorkerBlockManager::Review() {
 
 size_t WorkerBlockManager::CreateBlock(engine::BufferPointer buffer) {
   // Get a new id for this block ( identifiers are unique cluster-wide )
-  size_t block_id = samson_worker_->worker_controller()->get_new_block_id();
+  size_t block_id = samson_worker_->worker_controller()->GetNewBlockId();
 
   // Add to the block manager
   stream::BlockManager::shared()->CreateBlock(block_id, buffer);
@@ -274,7 +274,7 @@ void WorkerBlockManager::ReceivedPushBlock(size_t delilah_id
       return;
     }
 
-    int hg =  all_hgs[ rand() % all_hgs.size()];
+    int hg =  all_hgs[rand() % all_hgs.size()];
     header->range.set(hg, hg + 1);
   } else if (header->IsModule()) {
     header->range.set(0, KVFILE_NUM_HASHGROUPS);        // Make sure it is full range

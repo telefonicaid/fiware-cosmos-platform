@@ -278,7 +278,7 @@ time_t RecoverTimeFromLog(const char *tmp_line, int time_field, const char *time
   std::vector<std::string> fields;
   std::string sep_str(1, separator);
   boost::split(fields, tmp_line, boost::is_any_of(sep_str));
-  if (fields.size() < (time_field + 1)) {
+  if (fields.size() < static_cast<size_t>(time_field + 1)) {
     return 0;
   }
   return GetTimeFromStrTimeDate(fields[time_field].c_str(), time_format);

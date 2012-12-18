@@ -269,14 +269,10 @@ script init_stream_operations
 		# REDUCE information for every service             
         add_stream_operation      [update_service_state]  OTTstream.red_update_service_profile	-input '[user_hits] [service_state]'  -output '[alerts] [service_state]';
         set_stream_operation_property [update_service_state] update_only true;
-        set_stream_operation_property [update_service_state] num_divisions 4;
-        
 
         # REDUCE to keep updated a state with all generated alerts (to be accessible by REST interface) 
         add_stream_operation      [update_alerts]  OTTstream.red_update_alerts  -input '[alerts] [alerts_state]'  -output [alerts_state];
         set_stream_operation_property [update_alerts] update_only true;
-        set_stream_operation_property [update_alerts] num_divisions 4;
-
 
 	    # Individual web profiling     
         add_stream_operation        [update_web_profile] OTTstream.red_update_user_web_profile  -input '[web_hits] [user_webprofile_state]'   -output [user_webprofile_state];

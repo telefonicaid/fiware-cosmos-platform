@@ -685,7 +685,7 @@ void DataModel::ProcessRmCommand(gpb::Data *data
 
     samson::gpb::Queue *queue = get_queue(data, name);
     if (!queue) {
-      error.AddError(au::str("Queue %s does not exist already exists", name.c_str()));
+      error.AddError(au::str("Queue %s does not exist", name.c_str()));
     } else {
       removeQueue(data, name);
       error.AddMessage(au::str("Queue %s has been removed correctly", name.c_str()));

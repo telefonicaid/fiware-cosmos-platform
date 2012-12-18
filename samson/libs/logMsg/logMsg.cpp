@@ -283,7 +283,8 @@ bool lmBug                        = false;
 bool lmBuf                        = false;
 bool lmFix                        = false;
 bool lmAssertAtExit               = false;
-LmxFp lmxFp                        = NULL;
+bool lmDontExit                   = false;
+LmxFp lmxFp                       = NULL;
 bool lmNoTracesToFileIfHookActive = false;
 
 
@@ -1723,6 +1724,16 @@ LmStatus lmPathRegister(const char *path, const char *format, const char *timeFo
   return LmsOk;
 }
 
+
+/* ****************************************************************************
+ *
+ * lmDoExit -
+ */
+void lmDoExit(bool val)
+{
+   lmDontExit = (val == true)? false : true;
+}
+
 /* ****************************************************************************
  *
  * lmOut -
@@ -1832,6 +1843,10 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
 
     if (lmAssertAtExit == true) {
       assert(false);
+    }
+
+    if (lmDontExit == true) {
+      return LmsOk;
     }
 
     /* exit here, just in case */

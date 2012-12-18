@@ -32,6 +32,10 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   // Candidate instance
   au::SharedPointer<KVFile> kv_file(new KVFile());
   kv_file->buffer_ = buffer;
+  kv_file->key_    = NULL;
+  kv_file->value_  = NULL;
+
+  // buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
 
   if (buffer->size() < sizeof(KVHeader)) {
     error.AddError(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
@@ -63,11 +67,13 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   if (key_data == NULL) {
     error.AddError(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
+    LM_E(("Unknown data type for key: %s", kv_file->header_.keyFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   if (value_data == NULL) {
     error.AddError(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
+    LM_E(("Unknown data type for value: %s", kv_file->header_.valueFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 

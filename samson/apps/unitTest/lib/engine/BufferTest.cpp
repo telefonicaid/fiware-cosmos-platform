@@ -93,7 +93,7 @@ TEST(bufferTest, writeTest) {
     buffer1->Read(&readChar, 1);
     EXPECT_EQ(readChar, '0') << "read error after writing";
     // if we try to write past the buffer size, it will return false
-    EXPECT_EQ(buffer1->Write(data, 20), false) << "should not write if size goes beyond size";
+    EXPECT_EQ(buffer1->Write(data, 1025), false) << "should not write if size goes beyond size";
   }
   close_engine_test();
 }

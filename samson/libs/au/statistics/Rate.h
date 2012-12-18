@@ -50,7 +50,7 @@ class Rate {
 public:
 
   // Constructor
-  Rate(int num_seconds_to_average = 10);
+  Rate(int num_seconds_to_average = 60);
   ~Rate();
 
   // Push new samples
@@ -69,6 +69,11 @@ public:
 
   // String to visualize this rate
   std::string str() const;
+
+  /**
+   * \brief Debug string with all internal accumulated values
+   */
+  std::string str_debug() const;
 
 private:
 

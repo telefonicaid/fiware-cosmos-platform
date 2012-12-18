@@ -151,10 +151,6 @@ void Block::update(BlockInfo &block_info) {
   }
   if (is_content_in_disk()) {
     block_info.size_on_disk += header.info.size;
-    /*
-     * if (isLockedInMemory())
-     * block_info.size_locked += size;
-     */
   }
   // Key-Value information
   block_info.info.append(header.info);

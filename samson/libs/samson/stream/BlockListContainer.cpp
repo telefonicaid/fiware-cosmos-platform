@@ -170,7 +170,7 @@ std::string BlockListContainer::str_outputs() const {
   return output.str();
 }
 
-FullKVInfo BlockListContainer::GetInputsInfo() const {
+BlockInfo BlockListContainer::GetInputsInfo() const {
   int num_inputs = 0;
 
   for (int i = 0; i < 10; ++i) {
@@ -178,18 +178,19 @@ FullKVInfo BlockListContainer::GetInputsInfo() const {
       num_inputs = i + 1;
     }
   }
-  FullKVInfo info;
+  BlockInfo info;
   for (int i = 0; i < num_inputs; ++i) {
     BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
     if (block_list) {
       BlockInfo block_info = block_list->getBlockInfo();
-      info.append(block_info.info);
+      info.info.append(block_info.info);
+      info.num_blocks += block_info.num_blocks;
     }
   }
   return info;
 }
 
-FullKVInfo BlockListContainer::GetOutputsInfo() const {
+BlockInfo BlockListContainer::GetOutputsInfo() const {
   int num_outputs = 0;
 
   for (int i = 0; i < 10; ++i) {
@@ -198,12 +199,13 @@ FullKVInfo BlockListContainer::GetOutputsInfo() const {
     }
   }
 
-  FullKVInfo info;
+  BlockInfo info;
   for (int i = 0; i < num_outputs; ++i) {
     BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
     if (block_list) {
       BlockInfo block_info = block_list->getBlockInfo();
-      info.append(block_info.info);
+      info.info.append(block_info.info);
+      info.num_blocks += block_info.num_blocks;
     }
   }
   return info;

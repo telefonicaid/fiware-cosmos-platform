@@ -67,8 +67,9 @@ public:
     return stream_operation_->name();
   }
 
-  FullKVInfo GetStateDataInfo() const;
-  FullKVInfo GetInputDataInfo() const;
+  BlockInfo GetStateDataInfo() const;
+  BlockInfo GetInputDataInfo() const;
+  BlockInfo GetOutputDataInfo() const;
 
   // Commit to data model
   void commit();
@@ -90,6 +91,7 @@ private:
   // Information to collect statistics
   int state_input_channel_;
   int num_input_channels_;
+  int num_output_channels_;
 
   // Range to apply this operation
   KVRange range_;

@@ -27,7 +27,7 @@
 namespace samson {
 WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _command, engine::BufferPointer buffer)
   : DelilahComponent(DelilahComponent::worker_command) {
-  command = au::StripString( _command);
+  command = au::StripString(_command);
   buffer_ = buffer;
   timeout_ = 0;  // No timeout by default
 
@@ -230,10 +230,18 @@ void WorkerCommandDelilahComponent::print_content(au::SharedPointer<gpb::Collect
 
   au::tables::Table *table = getTable(collection);
 
+  if (send_to_all_workers) {
+    au::StringVector fields;
+    fields.Push("worker_id");
+    table->sort(fields);
+  }
+
   if (!hidden) {
     std::string title = collection->title();
     output_component << table->str();
   }
+
+  delete table;
 }
 
 std::string WorkerCommandDelilahComponent::getStatus() {

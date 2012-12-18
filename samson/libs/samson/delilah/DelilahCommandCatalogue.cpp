@@ -236,6 +236,9 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddBoolOption("ls_stream_operations", "-id", "Include numerical identifier of each operation");
 
   AddCommand("ls_stream_operations_statistics", "stream", "Show stream operation statistics for the cluster");
+  AddBoolOption("ls_stream_operations_statistics", "-input", "Include input data information");
+  AddBoolOption("ls_stream_operations_statistics", "-output", "Include input data information");
+  AddBoolOption("ls_stream_operations_statistics", "-state", "Include input data information");
   AddTag("ls_stream_operations_statistics", "send_to_all_workers");
 
   AddCommand("ps_stream_operations", "stream",
@@ -317,6 +320,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddBoolOption("ls_workers", "-data_model", "Show information about data-model version at each worker");
   AddBoolOption("ls_workers", "-engine", "For each worker node, detail the state of the underlying engine");
   AddBoolOption("ls_workers", "-disk", "For each worker node, detail the state of the underlying disk manager");
+  AddBoolOption("ls_workers", "-blocks", "Show information about generated blocks");
 
   AddTag("ls_workers", "send_to_all_workers");
 

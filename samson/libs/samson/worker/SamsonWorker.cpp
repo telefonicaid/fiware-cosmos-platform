@@ -128,7 +128,7 @@ void SamsonWorker::Review() {
       zk_first_connection_ = false;
 
       // Try to connect with ZK
-      LOG_V(logs.worker_controller, ("Trying to connect to zk at %s", zoo_host_.c_str()));
+      LOG_M(logs.worker_controller, ("Trying to connect to zk at %s...", zoo_host_.c_str()));
       zoo_connection_.Reset(new au::zoo::Connection(zoo_host_, "samson", "samson"));
       int rc = zoo_connection_->WaitUntilConnected(5000);
       if (rc) {
@@ -148,8 +148,7 @@ void SamsonWorker::Review() {
       // Init main worker controller ( based on zookeeper connection )
       rc = worker_controller_->init();
       if (rc) {
-        state_message_ =  au::str("Error creating worker controller %s", au::zoo::str_error(rc).c_str());
-        LOG_SW(("%s", state_message_.c_str()));
+        LOG_W(logs.worker_controller, ("Error creating worker controller: %s", au::zoo::str_error(rc).c_str()));
         zoo_connection_.Reset();
         worker_controller_.Reset();
         return;
@@ -161,7 +160,7 @@ void SamsonWorker::Review() {
       // Now we are connected
       state_ = connected;
       state_message_ = "Connected";
-      LOG_V(logs.worker_controller, ("Worker connected to Zookeeper"));
+      LOG_M(logs.worker, ("Worker connected to Zookeeper at %s:%d", zoo_host_.c_str()));
       break;
     }
 
@@ -176,6 +175,7 @@ void SamsonWorker::Review() {
         LOG_M(logs.worker, ("Worker connected to Zookeeper. This worker is now included in the cluster"));
       } else {
         state_message_ = "Still not included in the cluster";
+        LOG_M(logs.worker, ("Worker still not included in cluster"));
       }
     }
     break;
@@ -1075,7 +1075,11 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "#buffers in memory", num_buffers, "f=uint64,sum");
     ::samson::add(record, "#elements in engine", num_elements, "f=uint64,sum");
     ::samson::add(record, "Max waiting time", waiting_time, "f=double,different");
-  } else if (visualization.get_flag("disk")) {
+    return collection;
+  }
+
+
+  if (visualization.get_flag("disk")) {
     ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
     ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
     double op_in = engine::Engine::disk_manager()->rate_operations_in();
@@ -1090,7 +1094,10 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "BM reading", stream::BlockManager::shared()->scheduled_read_size(), "f=uint64,sum");
     double usage =  engine::Engine::disk_manager()->on_off_activity();
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
-  } else if (visualization.get_flag("modules")) {
+    return collection;
+  }
+
+  if (visualization.get_flag("modules")) {
     if (!modules_available_) {
       ::samson::add(record, "Modules", "No", "different");
     } else if (last_modules_version_ != SIZE_T_UNDEFINED) {
@@ -1098,7 +1105,16 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     } else {
       ::samson::add(record, "Modules", "No modules", "different");
     }
-  } else if (visualization.get_flag("traffic")) {
+    return collection;
+  }
+
+  if (visualization.get_flag("blocks")) {
+    ::samson::add(record, "#Blocs/s", au::str(blocks_rate_.rate()));
+    ::samson::add(record, "Avg block size", au::str(block_size_average_.GetAverage()));
+    return collection;
+  }
+
+  if (visualization.get_flag("traffic")) {
     ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->num_disk_operations(), "f=uint64,sum");
     ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
     ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
@@ -1106,15 +1122,18 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     ::samson::add(record, "Net out B/s", network_->get_rate_out(), "f=uint64,sum");
     ::samson::add(record, "ZK in B/s", zoo_connection_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "ZK out B/s", zoo_connection_->get_rate_out(), "f=uint64,sum");
-  } else if (visualization.get_flag("data_model")) {
-    ::samson::add(record, "DataModel", worker_controller_->GetMyLastCommitId(), "different");
-  } else {
-    ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
-    ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
-    ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
-    ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
+    return collection;
   }
 
+  if (visualization.get_flag("data_model")) {
+    ::samson::add(record, "DataModel", worker_controller_->GetMyLastCommitId(), "different");
+    return collection;
+  }
+
+  ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
+  ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
+  ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
+  ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
   return collection;
 }
 

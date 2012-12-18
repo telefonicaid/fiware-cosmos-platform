@@ -24,20 +24,20 @@
 
 namespace au {
 std::string GetThreadId(pthread_t t) {
-  std::ostringstream output;
+  std::string thread_name;
   unsigned char *base = reinterpret_cast<unsigned char *>(&t);
 
   for (size_t i = 0; i < sizeof(t); ++i) {
-    output << au::str("%02x", base[i]);
+    thread_name += au::str("%02x", base[i]);
   }
-  return output.str();
+  return thread_name;
 }
 
 TokenOwner::TokenOwner() : locked_(false) {
   int r_init = pthread_mutex_init(&lock_, 0);
 
   if (r_init != 0) {
-    LM_X(1, ("pthread_mutex_init for TokenOwner returned %d", r_init ));
+    LM_X(1, ("pthread_mutex_init for TokenOwner returned %d", r_init));
   }
 }
 
@@ -161,12 +161,12 @@ Token::Token(const std::string& name) : name_(name) {
   int r_init = pthread_mutex_init(&lock_, 0);
 
   if (r_init != 0) {
-    LM_X(1, ("pthread_mutex_init for '%s' returned %d", name_.c_str(), r_init ));
+    LM_X(1, ("pthread_mutex_init for '%s' returned %d", name_.c_str(), r_init));
   }
 
   int t_init_cond = pthread_cond_init(&block_, NULL);
   if (t_init_cond != 0) {
-    LM_X(1, ("pthread_cond_init for '%s' returned %d", name_.c_str(), r_init ));
+    LM_X(1, ("pthread_cond_init for '%s' returned %d", name_.c_str(), r_init));
   }
 }
 

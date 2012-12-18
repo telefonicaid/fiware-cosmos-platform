@@ -111,6 +111,11 @@ public:
    */
   std::string str();
 
+
+  size_t GetNumKVRanges() {
+    return stream_operations_range_info_.size();
+  }
+
 private:
 
   void ReviewIntern(gpb::Data *data);

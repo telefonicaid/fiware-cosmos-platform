@@ -222,4 +222,21 @@ size_t EngineElementCollection::GetMaxWaitingTimeInEngineStack() {
   EngineElement *last_element =  normal_elements_.back();
   return last_element->GetWaitingTime();
 }
+
+std::vector<std::string> EngineElementCollection::GetAllElementDescription() const {
+  std::vector<std::string> descriptions;
+
+  au::list<EngineElement>::const_iterator it;
+  for (it = repeated_elements_.begin(); it != repeated_elements_.end(); it++) {
+    descriptions.push_back((*it)->str());
+  }
+  for (it = normal_elements_.begin(); it != normal_elements_.end(); it++) {
+    descriptions.push_back((*it)->str());
+  }
+  for (size_t i = 0; i < extra_elements_.size(); i++) {
+    descriptions.push_back(extra_elements_[i]->str());
+  }
+
+  return descriptions;
+}
 }

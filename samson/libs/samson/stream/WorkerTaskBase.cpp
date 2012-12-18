@@ -222,30 +222,30 @@ double WorkerTaskBase::GetProcessTime() const {
   return activity_monitor_.GetTotalTimeForActivity("process");
 }
 
-FullKVInfo WorkerTaskBase::GetInputsInfo() const {
+BlockInfo WorkerTaskBase::GetInputsInfo() const {
   return block_list_container_.GetInputsInfo();
 }
 
-FullKVInfo WorkerTaskBase::GetOutputsInfo() const {
+BlockInfo WorkerTaskBase::GetOutputsInfo() const {
   return block_list_container_.GetOutputsInfo();
 }
 
-FullKVInfo WorkerTaskBase::GetInputInfo(int c) const {
+BlockInfo WorkerTaskBase::GetInputInfo(int c) const {
   BlockList *block_list = block_list_container_.FindBlockList(au::str("input_%d", c));
 
   if (block_list) {
-    return block_list->getBlockInfo().info;
+    return block_list->getBlockInfo();
   }
-  return FullKVInfo();
+  return BlockInfo();
 }
 
-FullKVInfo WorkerTaskBase::GetOutputInfo(int c) const {
+BlockInfo WorkerTaskBase::GetOutputInfo(int c) const {
   BlockList *block_list = block_list_container_.FindBlockList(au::str("output_%d", c));
 
   if (block_list) {
-    return block_list->getBlockInfo().info;
+    return block_list->getBlockInfo();
   }
-  return FullKVInfo();
+  return BlockInfo();
 }
 
 std::vector<au::Token *> WorkerTaskBase::GetTokens() {

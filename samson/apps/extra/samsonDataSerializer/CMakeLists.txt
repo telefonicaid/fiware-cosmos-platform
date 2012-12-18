@@ -1,15 +1,13 @@
 SET (SOURCES
-  main_samsonCatLogs.cpp
+  main_samsonDataSerializer.cpp
 )
 
 SET (HEADERS
 )
 
 SET( STATIC_LIBS
-     au
-     lm
-     pthread
-     ${SOLARIS_LIBS}
+  pa
+  ${SOLARIS_LIBS}
 )
 
 # Include directories
@@ -21,9 +19,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(samsonCatLogs ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonCatLogs ${STATIC_LIBS})
+ADD_EXECUTABLE(samsonDataSerializer ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(samsonDataSerializer ${STATIC_LIBS})
 
-INSTALL(TARGETS               samsonCatLogs
+INSTALL(TARGETS               samsonDataSerializer
         RUNTIME DESTINATION   bin)
 

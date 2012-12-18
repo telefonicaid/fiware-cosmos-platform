@@ -11,7 +11,7 @@
 
 /*
  *
- * samsonCatLogs
+ * samsonDataSerializer
  *
  * Tool to send data synchronously to stdin
  * It reads stdin or a text file, and writes to stdout either keeping a fix rate in lines per second,
@@ -21,26 +21,26 @@
  * AUTHOR: Gregorio Escalada
  *
  */
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/timeb.h>
 #include <unistd.h>
 
-#include "au/network/NetworkListener.h"
-#include "au/string/StringUtilities.h"
-#include "logMsg/logMsg.h"
+#include <string>
+#include <vector>
+
+#include <boost/algorithm/string.hpp>
+
 #include "parseArgs/paConfig.h"
 #include "parseArgs/parseArgs.h"
-#include "samson/client/SamsonClient.h"
-#include "samson/client/SamsonPushBuffer.h"
-#include "samson/common/coding.h"
 
 #define TMP_LINE_MAX_LENGTH 1024
 
 int max_rate; // Max rate
 float ntimes_real_time; // Multiplicative factor respect real time
-char *initial_timestamp_commandline_str[32];
+char initial_timestamp_commandline_str[81];
 int time_field;
 char time_format[32];
 char separator;
@@ -51,7 +51,7 @@ char filename[81];
 
 static const char
     *manShortDescription =
-        "samsonCatLogs is a tool to send data synchronously to stdin,\n"
+        "samsonDataSerializer  is a tool to send data synchronously to stdin,\n"
         "so streamConnector can inject it into a SAMSON system.\n"
         "It can emulate real_time streaming from any file.\n"
         "The output rate can be set according to the log internal timestamp\n"
@@ -68,7 +68,7 @@ PaArgument paArgs[] = {
     "Log field separator, to parse time info. (Only if time_field defined)"},
   { "-time_format", time_format, "", PaString, PaOpt, _i YYYY_mm_dd_24H, PaNL, PaNL,
     "Format of the time field. Available:YYYY_mm_dd_24H, dd_monthlett_YY_12H_AMPM. (Only if time_field defined)"},
-  { "-init_time", initial_timestamp_commandline_str, "", PaSList, PaOpt, PaND, PaNL, PaNL,
+  { "-init_time", initial_timestamp_commandline_str, "", PaString, PaOpt, PaND, PaNL, PaNL,
     "Initial timestamp (by default, first timestamp in input data. (Only if time_field defined)"},
   { "-nr", &ntimes_real_time, "", PaFloat, PaOpt, _i 1.0, _i 0.01, _i 10000.0,
     "Number of times real time. (Only if time_field defined)"},
@@ -88,15 +88,28 @@ int logFd = -1;
 #define  FIRSTSUNDAY(timp) (((timp)->tm_yday - (timp)->tm_wday + 420) % 7)
 #define  FIRSTDAYOF(timp)  (((timp)->tm_wday - (timp)->tm_yday + 420) % 7)
 #define  TIME_MAX ULONG_MAX
-#define  ABB_LEN  3
+#define  MONTH_ABB_LEN  3
+#define NUM_MONTHS 12
 
-time_t GetTimeUTCFromCalendar(struct tm *tm) {
+const char kMonthAbreviations[NUM_MONTHS][MONTH_ABB_LEN+1] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP",
+                                                     "OCT", "NOV", "DEC"};
+
+inline int CharToInt(char x) {
+  return static_cast<int>(x - '0');
+}
+
+/**
+ * \brief Interprets the contents of the tm structure pointed by tm as a calendar time expressed in UTC.
+ * This calendar time is used to adjust the values of the members of tm (yday and wday)
+ * accordingly and returned as an object of type time_t.
+ * Similar to the C library mktime, but avoids using the local time
+ */
+time_t mktimeUTC(struct tm *tm) {
   register long day = 0;
   register long year = EPOCH_YR;
   register int tm_year;
   int yday, month;
   register unsigned long seconds = 0;
-  time_t value;
 
   /* Assume that when day becomes negative, there will certainly
    * be overflow on seconds.
@@ -166,10 +179,9 @@ time_t GetTimeUTCFromCalendar(struct tm *tm) {
   /* Not for us */
 
   if ((time_t)seconds != (signed)seconds) {
-    value = (time_t)-1;
-  } else {
-    value = (time_t)seconds;
-  } return value;
+    return static_cast<time_t>(-1);
+  }
+  return static_cast<time_t>(seconds);
 }
 
 time_t GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(const char *strTimeDate) {
@@ -177,56 +189,41 @@ time_t GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(const char *strTimeDate) {
   const char *p_month;
   time_t value;
 
-#define Char_to_int(x) ((x) - 48)
-
   if ((strchr(strTimeDate, '/') != NULL) || (strchr(strTimeDate, '-') != NULL)) {
     // DD/MMM/YY
-    tm.tm_year = 100 + Char_to_int(strTimeDate[7]) * 10 + Char_to_int(strTimeDate[8]);
+    tm.tm_year = 100 + CharToInt(strTimeDate[7]) * 10 + CharToInt(strTimeDate[8]);
     p_month = &(strTimeDate[3]);
-    tm.tm_mday = Char_to_int(strTimeDate[0]) * 10 + Char_to_int(strTimeDate[1]);
+    tm.tm_mday = CharToInt(strTimeDate[0]) * 10 + CharToInt(strTimeDate[1]);
   } else {
     // YYYYMMMDD
-    tm.tm_year = 100 + Char_to_int(strTimeDate[2]) * 10 + Char_to_int(strTimeDate[3]);
+    tm.tm_year = 100 + CharToInt(strTimeDate[2]) * 10 + CharToInt(strTimeDate[3]);
     p_month = &(strTimeDate[4]);
-    tm.tm_mday = Char_to_int(strTimeDate[7]) * 10 + Char_to_int(strTimeDate[8]);
+    tm.tm_mday = CharToInt(strTimeDate[7]) * 10 + CharToInt(strTimeDate[8]);
   }
   tm.tm_mon = 12;
-  if (strncmp(p_month, "JAN", strlen("JAN")) == 0) {
-    tm.tm_mon = 0;
-  } else if (strncmp(p_month, "FEB", strlen("FEB")) == 0) {
-    tm.tm_mon = 1;
-  } else if (strncmp(p_month, "MAR", strlen("MAR")) == 0) {
-    tm.tm_mon = 2;
-  } else if (strncmp(p_month, "APR", strlen("APR")) == 0) {
-    tm.tm_mon = 3;
-  } else if (strncmp(p_month, "MAY", strlen("MAY")) == 0) {
-    tm.tm_mon = 4;
-  } else if (strncmp(p_month, "JUN", strlen("JUN")) == 0) {
-    tm.tm_mon = 5;
-  } else if (strncmp(p_month, "JUL", strlen("JUL")) == 0) {
-    tm.tm_mon = 6;
-  } else if (strncmp(p_month, "AUG", strlen("AUG")) == 0) {
-    tm.tm_mon = 7;
-  } else if (strncmp(p_month, "SEP", strlen("SEP")) == 0) {
-    tm.tm_mon = 8;
-  } else if (strncmp(p_month, "OCT", strlen("OCT")) == 0) {
-    tm.tm_mon = 9;
-  } else if (strncmp(p_month, "NOV", strlen("NOV")) == 0) {
-    tm.tm_mon = 10;
-  } else if (strncmp(p_month, "DEC", strlen("DEC")) == 0) {
-    tm.tm_mon = 11;
+
+  for (unsigned int ix = 0; ix < NUM_MONTHS; ++ix) {
+    if (strcmp(kMonthAbreviations[ix], p_month) == 0) {
+      tm.tm_mon = ix;
+      break;
+    }
   }
-  tm.tm_hour = Char_to_int(strTimeDate[10]) * 10 + Char_to_int(strTimeDate[11]);
-  tm.tm_min = Char_to_int(strTimeDate[13]) * 10 + Char_to_int(strTimeDate[14]);
-  tm.tm_sec = Char_to_int(strTimeDate[16]) * 10 + Char_to_int(strTimeDate[17]);
+
+  tm.tm_hour = CharToInt(strTimeDate[10]) * 10 + CharToInt(strTimeDate[11]);
+  tm.tm_min = CharToInt(strTimeDate[13]) * 10 + CharToInt(strTimeDate[14]);
+  tm.tm_sec = CharToInt(strTimeDate[16]) * 10 + CharToInt(strTimeDate[17]);
 
   // change hour from AM/PM to 24H
+  // We are receiving time "12:00:00 PM" being 12:00:00 in 24H format
+  if (tm.tm_hour == 12) {
+    tm.tm_hour = 0;
+  }
   const char *am_pm = &(strTimeDate[26]);
   if ((strncmp(am_pm, "pm", strlen("pm")) == 0) || (strncmp(am_pm, "PM", strlen("PM")) == 0)) {
     tm.tm_hour += 12;
   }
-#undef Char_to_int
-  value = GetTimeUTCFromCalendar(&tm);
+
+  value = mktimeUTC(&tm);
   return value;
 }
 
@@ -234,33 +231,89 @@ time_t GetTimeFromStrTimeDate_YYYY_mm_dd_24H(const char *strTimeDate) {
   struct tm tm;
   time_t value;
 
-#define Char_to_int(x) ((x) - 48)
   // YYYY_mm-dd
-  tm.tm_year = 100 + Char_to_int(strTimeDate[2]) * 10 + Char_to_int(strTimeDate[3]);
-  tm.tm_mon = Char_to_int(strTimeDate[5]) * 10 + Char_to_int(strTimeDate[6]) - 1;
-  tm.tm_mday = Char_to_int(strTimeDate[8]) * 10 + Char_to_int(strTimeDate[9]);
+  tm.tm_year = 100 + CharToInt(strTimeDate[2]) * 10 + CharToInt(strTimeDate[3]);
+  tm.tm_mon = CharToInt(strTimeDate[5]) * 10 + CharToInt(strTimeDate[6]) - 1;
+  tm.tm_mday = CharToInt(strTimeDate[8]) * 10 + CharToInt(strTimeDate[9]);
 
-  tm.tm_hour = Char_to_int(strTimeDate[11]) * 10 + Char_to_int(strTimeDate[12]);
-  tm.tm_min = Char_to_int(strTimeDate[14]) * 10 + Char_to_int(strTimeDate[15]);
-  tm.tm_sec = Char_to_int(strTimeDate[17]) * 10 + Char_to_int(strTimeDate[18]);
+  tm.tm_hour = CharToInt(strTimeDate[11]) * 10 + CharToInt(strTimeDate[12]);
+  tm.tm_min = CharToInt(strTimeDate[14]) * 10 + CharToInt(strTimeDate[15]);
+  tm.tm_sec = CharToInt(strTimeDate[17]) * 10 + CharToInt(strTimeDate[18]);
 
-#undef Char_to_int
-  value = GetTimeUTCFromCalendar(&tm);
+  value = mktimeUTC(&tm);
   return value;
 }
 
-char *ctimeUTC(time_t *timestamp) {
+char *ctimeUTC(const time_t& timestamp) {
   struct tm tm_calendar;
   static char time_str[81];
 
-  gmtime_r(timestamp, &tm_calendar);
+  gmtime_r(&timestamp, &tm_calendar);
   asctime_r(&tm_calendar, time_str);
-
   return time_str;
 }
 
+time_t GetTimeFromStrTimeDate(const char *timestamp, const char *time_format) {
+  if (*timestamp == '\0') {
+    return 0;
+  }
 
-int main(int argC, const char *argV[]) {
+  if (strcmp(time_format, YYYY_mm_dd_24H) == 0) {
+    return GetTimeFromStrTimeDate_YYYY_mm_dd_24H(timestamp);
+  } else if (strcmp(time_format, dd_monthlett_YY_12H_AMPM) == 0) {
+    return GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(timestamp);
+  } else {
+    fprintf(stderr, "Wrong timestamp format:'%s'\n", time_format);
+    fprintf(stderr, "Known formats:'%s', '%s'\n", YYYY_mm_dd_24H, dd_monthlett_YY_12H_AMPM);
+    exit(-2);
+  }
+}
+
+time_t RecoverTimeFromLog(const char *tmp_line, int time_field, const char *time_format) {
+  std::vector<std::string> fields;
+  std::string sep_str(1, separator);
+  boost::split(fields, tmp_line, boost::is_any_of(sep_str));
+  if (fields.size() < (time_field + 1)) {
+    return 0;
+  }
+  return GetTimeFromStrTimeDate(fields[time_field].c_str(), time_format);
+}
+
+void UpdateReferenceTimeAtSeconds(time_t log_timestamp, time_t first_timestamp, time_t initial_time,
+    float ntimes_real_time) {
+  struct timeb act_timebuffer;
+  ftime(&act_timebuffer);
+  time_t updated_time =  first_timestamp + ntimes_real_time * (act_timebuffer.time - initial_time);
+  if (log_timestamp > updated_time) {
+    useconds_t time_to_sleep = 1000000*(log_timestamp - updated_time)/ntimes_real_time;
+    fprintf(stderr, "Sleeping for %u microseconds\n", time_to_sleep);
+    int rc = usleep(time_to_sleep);
+    if (rc != 0) {
+      fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), time_to_sleep);
+    }
+  } else {
+    fprintf(stderr, "Not able to keep up with the desired ntimes real time. log_ts:%lu, update:%lu\n", log_timestamp, updated_time);
+  }
+}
+
+void UpdateReferenceTimeSleepingToNextSecond(struct timeb *prev_timebuffer) {
+  struct timeb act_timebuffer;
+  ftime(&act_timebuffer);
+  useconds_t elapsed_microseconds = 1000000*(act_timebuffer.time - prev_timebuffer->time) +
+      1000*(act_timebuffer.millitm - prev_timebuffer->millitm);
+  if (elapsed_microseconds > 1000000) {
+    fprintf(stderr, "Warning, elapsed_microseconds(%u) > 1 second\n", elapsed_microseconds);
+  } else {
+    useconds_t time_to_sleep = 1000000 - elapsed_microseconds;
+    int rc = usleep(time_to_sleep);
+    if (rc != 0) {
+      fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), time_to_sleep);
+    }
+  }
+  ftime(prev_timebuffer);
+}
+
+int main(int argC, char **argV) {
   paConfigActions(true);
 
   paConfig("usage and exit on any warning", (void *) true);
@@ -273,10 +326,14 @@ int main(int argC, const char *argV[]) {
   paConfig("man synopsis", (void *) manSynopsis);
 
   // Parse input arguments
-  paParse(paArgs, argC, (char **) argV, 1, false);
-  logFd = lmFirstDiskFileDescriptor();
+  paParse(paArgs, argC, argV, 1, false);
+  //logFd = lmFirstDiskFileDescriptor();
 
   FILE *input_file = NULL;
+  // If filename is "stdin", no need to open the stream
+  // Just in case the users doesn't assign an input filename,
+  // and default value is changed to "", we check also this
+  // option in the if statement
   if ((filename[0] != '\0') && (strcmp(filename, "stdin") != 0)) {
     if ((input_file = fopen(filename, "r")) == NULL) {
       fprintf(stderr, "Error opening input file:'%s', error:'%s", filename, strerror(errno));
@@ -288,32 +345,15 @@ int main(int argC, const char *argV[]) {
 
   time_t first_timestamp = 0;
   time_t first_timestamp_cmdline = 0;
-  if (initial_timestamp_commandline_str[0] != NULL) {
-    int ix;
-    char initial_timestamp_str[1024];
+  first_timestamp = first_timestamp_cmdline = GetTimeFromStrTimeDate(initial_timestamp_commandline_str, time_format);
 
-    initial_timestamp_str[0] = '\0';
-    for (ix = 1; ix <= (long long) initial_timestamp_commandline_str[0]; ix++) {
-      strcat(initial_timestamp_str, initial_timestamp_commandline_str[ix]);
-      strcat(initial_timestamp_str, " ");
-    }
-    if (strcmp(time_format, YYYY_mm_dd_24H) == 0) {
-      first_timestamp = first_timestamp_cmdline = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(initial_timestamp_str);
-    } else if (strcmp(time_format, dd_monthlett_YY_12H_AMPM) == 0) {
-      first_timestamp = first_timestamp_cmdline = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(initial_timestamp_str);
-    } else {
-      fprintf(stderr, "Wrong timestamp format:'%s'\n", time_format);
-      fprintf(stderr, "Known formats:'%s', '%s'\n", YYYY_mm_dd_24H, dd_monthlett_YY_12H_AMPM);
-      exit(-2);
-    }
-  }
-
-  char *time_init_str = strdup(ctimeUTC(&first_timestamp));
+  // This block just is for checking the right conversion of the initial initial_timestamp_commandline_str
+  char *time_init_str = strdup(ctimeUTC(first_timestamp));
   time_init_str[strlen(time_init_str) - 1] = '\0';
-  LOG_SM(("Final first_timestamp: %s", time_init_str));
+  fprintf(stderr, "Final first_timestamp: %s", time_init_str);
+  free(time_init_str);
 
   struct timeb prev_timebuffer;
-  struct timeb act_timebuffer;
   ftime(&prev_timebuffer);
   int num_logs = 0;
   int num_skipped = 0;
@@ -322,78 +362,47 @@ int main(int argC, const char *argV[]) {
   while (fgets(tmp_line, TMP_LINE_MAX_LENGTH, input_file) != NULL) {
     if (time_field != -1) {
       // Logs are emitted following their own timestamps, as time goes by
-      time_t log_timestamp = 0;
-      char *parsing_line = strdup(tmp_line);
-      std::vector<char *> fields = au::SplitInWords(parsing_line, separator);
+      time_t log_timestamp = RecoverTimeFromLog(tmp_line, time_field, time_format);
 
-      if (static_cast<int>(fields.size()) < (time_field + 1)) {
-        free(parsing_line);
+      if (log_timestamp == 0) {
+        // Badly formatted log. Ignore it
         continue;
       }
-
-      if (strcmp(time_format, YYYY_mm_dd_24H) == 0) {
-        log_timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[time_field]);
-      } else if (strcmp(time_format, dd_monthlett_YY_12H_AMPM) == 0) {
-        log_timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[time_field]);
-      } else {
-        fprintf(stderr, "Wrong timestamp format:'%s'\n", time_format);
-        fprintf(stderr, "Known formats:'%s', '%s'\n", YYYY_mm_dd_24H, dd_monthlett_YY_12H_AMPM);
-        exit(-2);
+      // Probably we want to skip logs before the initial time
+      if (log_timestamp < first_timestamp_cmdline) {
+        if (++num_skipped == 1000000) {
+          fprintf(stderr, "Skipping log with ts:'%s'", ctimeUTC(log_timestamp));
+          num_skipped = 0;
+        }
+        continue;
       }
       if (first_timestamp == 0) {
+        // If no initial timestamp selected by the user, take the first in the file
         first_timestamp = log_timestamp;
       }
 
-      // Probably we want to skip badly sorted logs
-      if (log_timestamp < first_timestamp_cmdline) {
-        ++num_skipped;
-        if (num_skipped%1000000 == 0) {
-          fprintf(stderr, "Skipping log with ts:'%s'", ctimeUTC(&log_timestamp));
-        }
-        free(parsing_line);
-        continue;
+      // Finally we emit the log. Probably it should be done after checking the reference time,
+      // but we have decided to just sample this reference time to avoid the ftime() overhead
+      fprintf(stdout, "%s", tmp_line);
+
+      if (++num_logs == 1000) {
+        UpdateReferenceTimeAtSeconds(log_timestamp, first_timestamp, prev_timebuffer.time, ntimes_real_time);
+        num_logs = 0;
       }
 
-      fprintf(stdout, "%s", tmp_line);
-      ++num_logs;
-      if (num_logs%10000 == 0) {
-        ftime(&act_timebuffer);
-        time_t updated_time =  first_timestamp + ntimes_real_time * (act_timebuffer.time - prev_timebuffer.time);
-        if (log_timestamp > updated_time) {
-          useconds_t time_to_sleep = 1000000*(log_timestamp - updated_time)/ntimes_real_time;
-          int rc = usleep(time_to_sleep);
-          if (rc != 0) {
-            fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), time_to_sleep);
-          }
-          num_logs = 0;
-        }
-      }
-      free(parsing_line);
     } else {
       // If no timestamp field specified, logs are emitted in line bursts,
       // keeping max_rate globally
       fprintf(stdout, "%s", tmp_line);
-      ++num_logs;
 
-      if (num_logs > max_rate) {
-        ftime(&act_timebuffer);
-        useconds_t elapsed_microseconds = 1000000*(act_timebuffer.time - prev_timebuffer.time) +
-            1000*(act_timebuffer.millitm - prev_timebuffer.millitm);
-        if (elapsed_microseconds > 1000000) {
-          fprintf(stderr, "Warning, elapsed_microseconds(%u) > 1 second\n", elapsed_microseconds);
-        } else {
-          useconds_t time_to_sleep = 1000000 - elapsed_microseconds;
-          int rc = usleep(time_to_sleep);
-          if (rc != 0) {
-            fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), time_to_sleep);
-          }
-        }
+      if (++num_logs > max_rate) {
+        UpdateReferenceTimeSleepingToNextSecond(&prev_timebuffer);
         num_logs = 0;
-        ftime(&prev_timebuffer);
       }
     }
   }
-  if ((filename[0] != '\0') && (strcmp(filename, "stdin") != 0)) {
+
+  if (input_file != stdin) {
     int rc = fclose(input_file);
     if (rc != 0) {
       fprintf(stderr, "Error(%d)('%s') in closing file:'%s'\n", rc, strerror(rc), filename);

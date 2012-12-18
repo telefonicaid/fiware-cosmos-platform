@@ -89,7 +89,7 @@ int logFd = -1;
 #define  FIRSTDAYOF(timp)  (((timp)->tm_wday - (timp)->tm_yday + 420) % 7)
 #define  TIME_MAX ULONG_MAX
 #define  MONTH_ABB_LEN  3
-#define NUM_MONTHS 12
+#define  NUM_MONTHS 12
 
 const char kMonthAbreviations[NUM_MONTHS][MONTH_ABB_LEN+1] = {"JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP",
                                                      "OCT", "NOV", "DEC"};
@@ -203,7 +203,7 @@ time_t GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(const char *strTimeDate) {
   tm.tm_mon = 12;
 
   for (unsigned int ix = 0; ix < NUM_MONTHS; ++ix) {
-    if (strcmp(kMonthAbreviations[ix], p_month) == 0) {
+    if (strncmp(kMonthAbreviations[ix], p_month, MONTH_ABB_LEN) == 0) {
       tm.tm_mon = ix;
       break;
     }
@@ -218,7 +218,12 @@ time_t GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(const char *strTimeDate) {
   if (tm.tm_hour == 12) {
     tm.tm_hour = 0;
   }
-  const char *am_pm = &(strTimeDate[26]);
+  const char *am_pm = NULL;
+  if (strTimeDate[18] == ' ') {
+    am_pm = &(strTimeDate[19]);
+  } else {
+    am_pm = &(strTimeDate[26]);
+  }
   if ((strncmp(am_pm, "pm", strlen("pm")) == 0) || (strncmp(am_pm, "PM", strlen("PM")) == 0)) {
     tm.tm_hour += 12;
   }
@@ -286,7 +291,6 @@ void UpdateReferenceTimeAtSeconds(time_t log_timestamp, time_t first_timestamp, 
   time_t updated_time =  first_timestamp + ntimes_real_time * (act_timebuffer.time - initial_time);
   if (log_timestamp > updated_time) {
     useconds_t time_to_sleep = 1000000*(log_timestamp - updated_time)/ntimes_real_time;
-    fprintf(stderr, "Sleeping for %u microseconds\n", time_to_sleep);
     int rc = usleep(time_to_sleep);
     if (rc != 0) {
       fprintf(stderr, "Error(%d)('%s') in usleep with %u microseconds\n", rc, strerror(rc), time_to_sleep);
@@ -347,11 +351,9 @@ int main(int argC, char **argV) {
   time_t first_timestamp_cmdline = 0;
   first_timestamp = first_timestamp_cmdline = GetTimeFromStrTimeDate(initial_timestamp_commandline_str, time_format);
 
-  // This block just is for checking the right conversion of the initial initial_timestamp_commandline_str
-  char *time_init_str = strdup(ctimeUTC(first_timestamp));
-  time_init_str[strlen(time_init_str) - 1] = '\0';
-  fprintf(stderr, "Final first_timestamp: %s", time_init_str);
-  free(time_init_str);
+  if (*initial_timestamp_commandline_str != '\0') {
+    fprintf(stderr, "Decoded initial timestamp:%s",ctimeUTC(first_timestamp));
+  }
 
   struct timeb prev_timebuffer;
   ftime(&prev_timebuffer);
@@ -371,7 +373,7 @@ int main(int argC, char **argV) {
       // Probably we want to skip logs before the initial time
       if (log_timestamp < first_timestamp_cmdline) {
         if (++num_skipped == 1000000) {
-          fprintf(stderr, "Skipping log with ts:'%s'", ctimeUTC(log_timestamp));
+          fprintf(stderr, "Skipping log with ts:%s", ctimeUTC(log_timestamp));
           num_skipped = 0;
         }
         continue;

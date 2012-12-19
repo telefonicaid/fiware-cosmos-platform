@@ -116,8 +116,9 @@ do
 	if [ "$node" != "$localMachine" ]
 	then
 		echo Installing samson in $node
-		rsync -r $SAMSON_HOME/modules         $node:$SAMSON_HOME
+		rsync -r $SAMSON_HOME/modules        $node:$SAMSON_HOME
 		rsync -r $SAMSON_HOME/bin	         $node:$SAMSON_HOME
+		rsync -r $SAMSON_HOME/lib	         $node:$SAMSON_HOME
 	fi
 done
 

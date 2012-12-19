@@ -121,6 +121,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
     // Uppdate information of the correct hash-group
     int hg = key->hash(KVFILE_NUM_HASHGROUPS);
+    kvs[i].hg = hg;
     info[hg].append(kvs[i].key_size + kvs[i].value_size, 1);
     // Check hg value
     if (hg < previous_hg) {

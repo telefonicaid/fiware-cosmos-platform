@@ -466,24 +466,6 @@ void StreamOperationRangeInfo::ReviewCurrentTask() {
   // Commit task to data model
   worker_task_->commit();
 
-  // Log for this task ( for ls_last_tasks command )
-  WorkerTaskLog worker_task_log;
-  worker_task_log.description = worker_task_->str();
-  worker_task_log.waiting_time_seconds = worker_task_->waiting_time_seconds();
-  worker_task_log.running_time_seconds = worker_task_->running_time_seconds();
-  worker_task_log.inputs = worker_task_->str_inputs();
-  worker_task_log.outputs = worker_task_->str_outputs();
-  worker_task_log.times = worker_task_->GetActivitySummary();
-  worker_task_log.process_time = worker_task_->GetProcessSummary();
-
-  if (worker_task_->error().HasErrors()) {
-    worker_task_log.result = worker_task_->error().GetLastError();
-  } else {
-    worker_task_log.result = "OK";
-  }
-
-  // add to the record of last tasks
-  samson_worker_->task_manager()->Push(worker_task_log);
 
   // Take statistics about stream operations
   std::string stream_operation_name = worker_task_->stream_operation_name();

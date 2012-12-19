@@ -45,7 +45,7 @@
 namespace samson {
 class SamsonWorker;
 namespace stream {
-class DefragTask;
+class WorkerTask;
 }
 
 /**
@@ -155,7 +155,7 @@ private:
 
   SamsonWorker *samson_worker_;
   au::map<size_t, BlockRequest> block_requests_;     // Block requests sent by this worker
-  au::Dictionary<std::string, stream::DefragTask > defrag_tasks_;
+  au::Dictionary<std::string, stream::WorkerTask > defrag_tasks_;
   std::list<WorkerPushItem> push_items_;  // List of push items pending to be confirmed
 };
 }

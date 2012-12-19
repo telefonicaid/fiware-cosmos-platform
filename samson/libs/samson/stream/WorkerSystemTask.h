@@ -50,7 +50,6 @@ class StreamManager;
  *
  * BlockDistributionTask: Distribute a particular block to a set of workers
  * PopBlockRequestTask:   Distribute a particular block to a delilah client
- * DefragTask:            Defrag a set of blocks in a queue to generate better alternatives to this block in the same queue
  *
  */
 
@@ -105,36 +104,6 @@ private:
   size_t delilah_id_;
   size_t delilah_component_id_;
   size_t pop_id_;
-};
-
-class DefragTask : public WorkerTaskBase {
-public:
-  DefragTask(SamsonWorker *samson_worker, const std::string& queue_name, size_t id,
-             const std::vector<KVRange>& ranges) :
-    WorkerTaskBase(samson_worker, id, "Defrag Operation") {
-    samson_worker_ = samson_worker;
-    queue_name_ = queue_name;
-    ranges_ = ranges;
-  }
-
-  // Virtual method from engine::ProcessItem
-  virtual void run();
-
-  // Generate the commit command necessary to update data model
-  std::string commit_command();
-
-  // Virtual method of WorkerTaskBase
-  virtual std::string str() {
-    return au::str("Task %lu: Defrag", worker_task_id());
-  }
-
-private:
-
-  void AddOutputBuffer(engine::BufferPointer buffer);
-
-  SamsonWorker *samson_worker_;
-  std::string queue_name_;     // Name of the queue we are processing
-  std::vector<KVRange> ranges_;
 };
 }
 }

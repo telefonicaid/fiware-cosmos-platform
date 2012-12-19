@@ -23,6 +23,6 @@ TEST(au_Rate, basic) {
   EXPECT_EQ((size_t)6, rate.size());
   EXPECT_EQ((size_t)3, rate.hits());
 
-  EXPECT_TRUE(rate.rate() > 0);
-  EXPECT_TRUE(rate.hit_rate() > 0);
+  EXPECT_TRUE(rate.rate() >= 0);
+  EXPECT_TRUE(rate.hit_rate() >= 0);
 }

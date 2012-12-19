@@ -149,8 +149,6 @@ void KVInputVector::addKVs(int input, KVInfo info, char *data) {
 
     kv[num_kvs].input = input;
 
-    kv[num_kvs].pos = num_kvs;
-
     num_kvs++;
   }
 

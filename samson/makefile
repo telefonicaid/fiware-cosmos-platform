@@ -250,9 +250,12 @@ test_report:
 	lcov -r coverage/samson.info "BUILD_COVERAGE/modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "libs/samson/common/samson.pb.*"  -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
 
 run_coverage: install_coverage setup_test_config test_init test_coverage test_report
+
+run_partial_coverage: install_coverage setup_test_config test_init test_coverage
 
 # There is a problem with coverage tool for mac.. please do use this output a mac environment
 
@@ -516,7 +519,7 @@ man_release:
 	mkdir -p BUILD_RELEASE/man/man7
 	help2man --name="Samson worker"  --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
 	help2man --name="Samson setup"   --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
-	help2man --name="Delilah"  --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah > ./BUILD_RELEASE_ALL/man/man1/delilah.1
+	help2man --name="Delilah"  --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah > ./BUILD_RELEASE/man/man1/delilah.1
 	cp man/samson-*.7 ./BUILD_RELEASE/man/man7
 
 man_release_all: release_all
@@ -568,7 +571,8 @@ test_makefile:
 
 # Verify that any new/changed source code is "compliant"
 code_lint:
-	for file in $$(git status --porcelain -s | grep -v \?\? | awk '{print $$2}'); \
+	git status --porcelain -s | grep -v \?\? | egrep 'A  | M ' | grep -v '\.txt'$ | grep -v makefile | awk '{ print $$2 }'
+	for file in $$(git status --porcelain -s | grep -v \?\? | egrep 'A  | M |AM ' | grep -v '\.txt'$ | grep -v makefile | awk '{ print $$2 }' ); \
 	do \
 		extension=$$(basename $${file} | sed 's/.*\.//'); \
 		case "$$extension" in \

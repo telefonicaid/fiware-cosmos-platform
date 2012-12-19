@@ -63,7 +63,7 @@ TEST(engine_ProcessManager, instantiationTest) {
 
     size_t x = 71;
     process_manager->Add(item.static_pointer_cast<engine::ProcessItem>(), x);
-    EXPECT_EQ(0, process_manager->num_used_procesors());
+    EXPECT_LT(process_manager->num_used_procesors(), 2);
 
     engine::Notification notification("notification_name");
     process_manager->notify(&notification);

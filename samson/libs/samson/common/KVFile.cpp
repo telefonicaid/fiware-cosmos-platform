@@ -32,7 +32,11 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   // Candidate instance
   au::SharedPointer<KVFile> kv_file(new KVFile());
   kv_file->buffer_ = buffer;
+  kv_file->key_    = NULL;
+  kv_file->value_  = NULL;
 
+  // buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
+  
   if (buffer->size() < sizeof(KVHeader)) {
     error.AddError(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
     return au::SharedPointer<KVFile>(NULL);
@@ -63,11 +67,13 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   if (key_data == NULL) {
     error.AddError(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
+	LM_E(("Unknown data type for key: %s", kv_file->header_.keyFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   if (value_data == NULL) {
     error.AddError(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
+    LM_E(("Unknown data type for value: %s", kv_file->header_.valueFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -123,6 +129,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
                 , i
                 , hg
                 , previous_hg));
+
+	  LM_E(("Error parsing a block."));
       return au::SharedPointer<KVFile>(NULL);
     }
 
@@ -141,12 +149,21 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   if ((total_info.size != kv_file->header_.info.size) || (total_info.kvs != kv_file->header_.info.kvs)) {
     error.AddError(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
                            kv_file->header_.info.str().c_str()));
+	LM_E(("Error creating KVInfo vector."));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Check correct final offset
   if (offset != kv_file->header_.info.size) {
     error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
+	LM_E(("Error parsing block."));
+    return au::SharedPointer<KVFile>(NULL);
+  }
+
+  // Check correct offset
+  if ((sizeof(KVHeader) + offset) != buffer->size()) {
+    error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
+    LM_E(("Error parsing block. Wrong buffer size %lu != %lu", buffer->size(), offset + sizeof(KVHeader)));
     return au::SharedPointer<KVFile>(NULL);
   }
 

@@ -320,9 +320,12 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddBoolOption("ls_workers", "-data_model", "Show information about data-model version at each worker");
   AddBoolOption("ls_workers", "-engine", "For each worker node, detail the state of the underlying engine");
   AddBoolOption("ls_workers", "-disk", "For each worker node, detail the state of the underlying disk manager");
-  AddBoolOption("ls_workers", "-blocks", "Show information about generated blocks");
-
   AddTag("ls_workers", "send_to_all_workers");
+
+  AddCommand("ls_workers_statistics", "stream", "Get a list of worker nodes");
+  AddStringArgument("ls_workers_statistics", "pattern", "*", "Pattern of the statistics names");
+  AddTag("ls_workers_statistics", "send_to_all_workers");
+
 
   AddCommand("init_stream", "stream", "Execute an script to initialize a set of automatic stream operations",
              "init_stream [-prefix pref] <script_name>\n"

@@ -312,8 +312,10 @@ int Connection::Exists(const std::string& path, struct Stat *stat) {
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
-  LOG_V(logs.zoo, ("Check exist node %s", path.c_str()));
-  return zoo_exists(handler_, path.c_str(), 0, stat);
+  int result =  zoo_exists(handler_, path.c_str(), 0, stat);
+
+  LOG_V(logs.zoo, ("Check exist node %s -> %s", path.c_str(), (result == 0) ? "yes" : "no"));
+  return result;
 }
 
 int Connection::Exists(const std::string& path, size_t engine_id,
@@ -321,12 +323,14 @@ int Connection::Exists(const std::string& path, size_t engine_id,
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
-  LOG_V(logs.zoo, ("Check exist node %s", path.c_str()));
-  return zoo_wexists(handler_
-                     , path.c_str()
-                     , static_watcher
-                     , (void *)engine_id
-                     , stat);
+  int result = zoo_wexists(handler_
+                           , path.c_str()
+                           , static_watcher
+                           , (void *)engine_id
+                           , stat);
+
+  LOG_V(logs.zoo, ("Check exist node %s -> %s", path.c_str(), (result == 0) ? "yes" : "no"));
+  return result;
 }
 
 int Connection::WaitUntilConnected(int milliseconds) {

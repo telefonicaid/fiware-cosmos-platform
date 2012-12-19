@@ -32,7 +32,7 @@
 #include "zoo/common.h"
 
 namespace au {
-const int node_commiter_num_commits_to_save_ = 10;
+const int node_commiter_num_commits_to_save_ = 1000;
 
 /**
  * \brief StringCommitRecord is a record-log for StringDataModel class
@@ -119,6 +119,13 @@ public:
    */
 
   virtual void notify(engine::Notification *notification) {
+    if (!notification->isName(notification_zoo_watcher)) {
+      LOG_W(logs.string_data_model, ("Unnexpected notification at StringDataModel: %s ", notification->name()));
+      return;
+    }
+
+    std::string path = notification->environment().Get("path", "");
+    LOG_V(logs.string_data_model, ("Notification zoo_watcher over path '%s'", path.c_str()));
     UpdateToLastVersion();   // Update to the last version
   }
 
@@ -145,7 +152,8 @@ public:
   /*
    * \brief Perform a new commit over data model
    */
-  au::SharedPointer<C> Commit(const std::string& caller, const std::string& commit_command, au::ErrorManager& error) {
+  virtual au::SharedPointer<C> Commit(const std::string& caller, const std::string& commit_command,
+                                      au::ErrorManager& error) {
     au::TokenTaker tt(&token_);
     au::Cronometer cronometer;  // Cronometer to measure how much time it takes to perform commit
 
@@ -186,6 +194,8 @@ public:
   int UpdateToLastVersion() {
     au::TokenTaker tt(&token_);
 
+    LOG_V(logs.string_data_model, ("StringDataModel: Updating to last version..."));
+
     // If version == -1 --> Recover the last version from /versions subdirectory
     if (version_ == -1) {
       au::StringVector str_versions;
@@ -215,6 +225,7 @@ public:
 
     // Update to the last commit...
     while (true) {
+      LOG_V(logs.string_data_model, ("StringDataModel: Updating to last version... check version %lu", version_));
       int rc = zoo_connection_->Exists(GetCommitPath(version_), engine_id());
       if (rc == ZNONODE) {
         return 0;   // This node still do not exist, so we are in the last available version
@@ -234,7 +245,7 @@ public:
       au::ErrorManager error;
       PerformCommit(c_, commit_command, version_, error);
       if (error.HasErrors()) {
-        LOG_E(logs.zoo, ("Error in commit %s", commit_command.c_str()));
+        LOG_E(logs.string_data_model, ("Error in commit %s", commit_command.c_str()));
       }
       version_++;
     }
@@ -272,10 +283,9 @@ public:
 private:
 
   au::SharedPointer<C> InternCommit(const std::string& commit_command, au::ErrorManager& error) {
+    LOG_V(logs.string_data_model, ("Commit %s", commit_command.c_str()));
     au::TokenTaker tt(&token_);    // Mutex protection
-
     int trial = 0;
-
     while (true) {
       trial++;
 
@@ -291,7 +301,8 @@ private:
       // Get a copy of the data model
       au::SharedPointer<C> c = getDuplicatedCurrentModel();
 
-      LOG_V(logs.zoo, ("trying to performing commit %s over path %s", commit_command.c_str(), path_.c_str()));
+      LOG_V(logs.string_data_model,
+            ("Trial %d to commit '%s' over path '%s'", trial, commit_command.c_str(), path_.c_str()));
       PerformCommit(c, commit_command, version_, error);     // Change on a duplicated data model
       if (error.HasErrors()) {          // If error in the operation itself, No commit is done at all
         return au::SharedPointer<C>(NULL);
@@ -302,9 +313,10 @@ private:
       int rc = zoo_connection_->Create(path, 0, commit_command);
 
       if (rc == ZNODEEXISTS) {
-        LOG_V(logs.zoo, ("Not possible to commit version %d (path %s).This mean another worker has commited first"
-                         , version_
-                         , path_.c_str()));
+        LOG_V(logs.string_data_model,
+              ("Not possible to commit version %d (path '%s').This mean another worker has commited first"
+          , version_
+          , path_.c_str()));
 
         int rc = UpdateToLastVersion();
         if (rc) {
@@ -330,14 +342,14 @@ private:
   void ReviewInternalCommit() {
     if ((version_ > 0) && (version_ % node_commiter_num_commits_to_save_ == 0)) {
       // Save this version to stable
-      LOG_V(logs.zoo, ("Review of version %d for path %s... saving data to do %s"
-                       , version_
-                       , path_.c_str()
-                       , GetVersionPath(version_).c_str()));
+      LOG_V(logs.string_data_model, ("Review of version %d for path %s... saving data to do %s"
+                                     , version_
+                                     , path_.c_str()
+                                     , GetVersionPath(version_).c_str()));
 
       int rc = zoo_connection_->Create(GetVersionPath(version_), 0, c_.shared_object());
       if (rc) {
-        LOG_E(logs.zoo,
+        LOG_E(logs.string_data_model,
               ("Not possible to create path %s: %s ", GetVersionPath(version_).c_str(), zoo::str_error(rc).c_str()));
         return;
       }
@@ -346,7 +358,7 @@ private:
       au::StringVector str_versions;
       rc = zoo_connection_->GetChildrens(GetVersionsPath(), str_versions);
       if (rc) {
-        LOG_E(logs.zoo,
+        LOG_E(logs.string_data_model,
               ("Not possible to get childrens of %s: %s ", GetVersionsPath().c_str(), zoo::str_error(rc).c_str()));
         return;
       }
@@ -361,8 +373,9 @@ private:
       int last_version = au::max_element(int_versions, 0);
       std::vector<int> int_old_versions = au::GetVectorOfElementsLowerThan(int_versions, last_version);
 
-      LOG_V(logs.zoo, ("Last version of data model in %sis %d ", path_.c_str(), last_version));
-      LOG_V(logs.zoo, ("Removing %lu old versions of data model in %s ", int_old_versions.size(), path_.c_str()));
+      LOG_V(logs.string_data_model, ("Last version of data model in '%s' is '%d'", path_.c_str(), last_version));
+      LOG_V(logs.string_data_model,
+            ("Removing %lu old versions of data model in %s ", int_old_versions.size(), path_.c_str()));
 
       for (size_t i = 0; i < int_old_versions.size(); i++) {
         zoo_connection_->Remove(GetVersionPath(int_old_versions[i]));    // We are not interested in errores
@@ -372,7 +385,7 @@ private:
       au::StringVector str_commits;
       rc = zoo_connection_->GetChildrens(GetCommitsPath(), str_commits);
       if (rc) {
-        LOG_E(logs.zoo,
+        LOG_E(logs.string_data_model,
               ("Not possible to get childrens of %s: %s ", GetCommitsPath().c_str(), zoo::str_error(rc).c_str()));
         return;
       }

@@ -104,10 +104,10 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
 
   engine::notify(notification_update_status, samson_setup->GetInt("general.update_status_period"));
   engine::notify(notification_samson_worker_check_finish_tasks, samson_setup->GetInt("worker.period_check_finish_tasks"));
-  engine::notify("samson_worker_review", 2);
+  engine::notify("samson_worker_review", 1);
   engine::notify("notification_freeze_data_model", samson_setup->GetInt("worker.period_to_freeze_data_model"));
 
-  engine::notify_extra("samson_worker_review");
+  // engine::notify_extra("samson_worker_review");
 }
 
 void SamsonWorker::Review() {
@@ -1057,6 +1057,24 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Vis
   return collection;
 }
 
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerStatisticsCollection(const Visualization& visualization) {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("workers_statistics");
+  gpb::CollectionRecord *record = collection->add_record();
+
+  au::DataStatistics *data_statistics = au::Singleton<au::DataStatistics>::shared();
+
+  std::vector<std::string> concepts = data_statistics->GetConcepts();
+
+  for (size_t i = 0; i < concepts.size(); i++) {
+    if (!visualization.match(concepts[i])) {
+      continue;
+    }
+    ::samson::add(record, concepts[i], data_statistics->GetRateString(concepts[i], "_"));
+  }
+  return collection;
+}
+
 au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
 
@@ -1108,12 +1126,6 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
     return collection;
   }
 
-  if (visualization.get_flag("blocks")) {
-    ::samson::add(record, "#Blocs/s", au::str(blocks_rate_.rate()));
-    ::samson::add(record, "Avg block size", au::str(block_size_average_.GetAverage()));
-    return collection;
-  }
-
   if (visualization.get_flag("traffic")) {
     ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->num_disk_operations(), "f=uint64,sum");
     ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
@@ -1126,7 +1138,8 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visua
   }
 
   if (visualization.get_flag("data_model")) {
-    ::samson::add(record, "DataModel", worker_controller_->GetMyLastCommitId(), "different");
+    ::samson::add(record, "Current DataModel", data_model_->GetLastCommitIdForCurrentDataModel(), "different");
+    ::samson::add(record, "Consolidated DataModel", worker_controller_->GetMyLastCommitId(), "different");
     return collection;
   }
 

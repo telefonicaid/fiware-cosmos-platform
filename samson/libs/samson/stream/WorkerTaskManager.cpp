@@ -373,7 +373,7 @@ void WorkerTaskManager::review_stream_operations() {
   }
 
   // Check current block generation at this worker
-  double block_rate = samson_worker_->blocks_rate().rate();
+  double block_rate = au::Singleton<au::DataStatistics>::shared()->GetRate("samson.output_blocks");
   if (block_rate > 10) {
     LOG_SW(("Not scheduling new stream-tasks to limit block rate (%s)", au::str(block_rate).c_str()));
     return;

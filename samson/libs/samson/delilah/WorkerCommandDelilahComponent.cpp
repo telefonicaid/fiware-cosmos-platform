@@ -47,6 +47,7 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
 
   // Old parsing stuff
   au::CommandLine cmdLine;
+  cmdLine.SetFlagBoolean("data_model");
   cmdLine.SetFlagBoolean("hidden");
   cmdLine.SetFlagBoolean("connected_workers");      // Flag to run the operation only with connected workers
   cmdLine.SetFlagUint64("w", static_cast<size_t>(-1));
@@ -55,7 +56,7 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   cmdLine.SetFlagString("sort", "");
   cmdLine.SetFlagUint64("limit", 0);
   cmdLine.SetFlagInt("timeout", 0);
-  cmdLine.Parse(command);
+  cmdLine.Parse(command, false);
 
   worker_id         = cmdLine.GetFlagUint64("w");
   hidden            = cmdLine.GetFlagBool("hidden");

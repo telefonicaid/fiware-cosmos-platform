@@ -131,6 +131,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
   cmd.SetFlagBoolean("vvv");
 
   cmd.SetFlagBoolean("new");
+  cmd.SetFlagBoolean("data_model");
   cmd.SetFlagBoolean("remove");
   cmd.SetFlagString("prefix", "", au::CommandLine::kCollisionInsertAtBegin);
   cmd.Parse(command, false);
@@ -487,6 +488,14 @@ void WorkerCommand::Run() {
 
   if (main_command == "ps_tasks") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->task_manager()->GetCollection(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
+
+  if (main_command == "ls_workers_statistics") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->GetWorkerStatisticsCollection(visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();

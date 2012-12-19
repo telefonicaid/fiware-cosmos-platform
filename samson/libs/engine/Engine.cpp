@@ -22,9 +22,9 @@
 #include "au/mutex/Token.h"       // au::Token
 #include "au/mutex/TokenTaker.h"  // au::TokenTake
 #include "au/singleton/Singleton.h"
+#include "au/statistics/DataStatistics.h"
 #include "au/string/StringUtilities.h"  // au::xml_...
 #include "au/string/xml.h"             // au::xml...
-
 
 #include "Notification.h"              // engine::Notification
 
@@ -109,11 +109,13 @@ void Engine::RunElement(EngineElement *running_element) {
   au::Cronometer cronometer;
 
   InternRunElement(running_element);
-  if (cronometer.seconds() > 3) {
-    LOG_W(logs.engine, ("EngineElement %s has being running for %s",
-                        running_element->str().c_str(),
-                        au::str_time(cronometer.seconds()).c_str()));
+  if (cronometer.seconds() > 5) {
+    LOG_X(1, ("EngineElement %s has being running for %s",
+              running_element->str().c_str(),
+              au::str_time(cronometer.seconds()).c_str()));
   }
+
+  au::Singleton<au::DataStatistics>::shared()->Push("engine.notifications", 1);
 }
 
 void Engine::InternRunElement(EngineElement *running_element) {
@@ -221,6 +223,8 @@ void Engine::RunThread() {
       continue;
     }
     activity_monitor_.StartActivity("sleep");
+
+    au::Singleton<au::DataStatistics>::shared()->Push("engine.sleeps", 1);
 
     usleep(300000);
 

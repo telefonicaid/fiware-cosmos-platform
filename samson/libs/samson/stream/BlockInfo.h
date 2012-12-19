@@ -73,6 +73,9 @@ struct BlockInfo {
   double lockedPercentadge();
 
   size_t average_block_size() {
+    if (num_blocks == 0) {
+      return num_blocks;
+    }
     return info.size / num_blocks;
   }
 

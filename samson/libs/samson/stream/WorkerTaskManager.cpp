@@ -292,7 +292,7 @@ std::vector<KVRange> WorkerTaskManager::CompressKVRanges(std::vector<KVRange> in
 }
 
 void WorkerTaskManager::review_stream_operations() {
-  au::ExecesiveTimeAlarm alarm("WorkerTaskManager::reviewStreamOperations");
+  au::ExecesiveTimeAlarm alarm(logs.task_manager, "Review stream operations");
   int num_processors = au::Singleton<SamsonSetup>::shared()->GetInt("general.num_processess");
 
   // If I have no information about ranges, do nothing...
@@ -373,7 +373,7 @@ void WorkerTaskManager::review_stream_operations() {
   }
 
   // Check current block generation at this worker
-  double block_rate = au::Singleton<au::DataStatistics>::shared()->GetRate("samson.output_blocks");
+  double block_rate = au::Singleton<au::RateStatistics>::shared()->GetRate("samson.output_blocks");
   if (block_rate > 10) {
     LOG_SW(("Not scheduling new stream-tasks to limit block rate (%s)", au::str(block_rate).c_str()));
     return;

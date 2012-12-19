@@ -115,7 +115,7 @@ void Engine::RunElement(EngineElement *running_element) {
               au::str_time(cronometer.seconds()).c_str()));
   }
 
-  au::Singleton<au::DataStatistics>::shared()->Push("engine.notifications", 1);
+  au::Singleton<au::RateStatistics>::shared()->Push("engine.notifications", 1);
 }
 
 void Engine::InternRunElement(EngineElement *running_element) {
@@ -224,7 +224,7 @@ void Engine::RunThread() {
     }
     activity_monitor_.StartActivity("sleep");
 
-    au::Singleton<au::DataStatistics>::shared()->Push("engine.sleeps", 1);
+    au::Singleton<au::RateStatistics>::shared()->Push("engine.sleeps", 1);
 
     usleep(300000);
 

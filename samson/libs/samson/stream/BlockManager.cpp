@@ -574,7 +574,7 @@ void BlockManager::Sort() {
     return;    // Still not connected to worker, nothing to sort
   }
 
-  au::ExecesiveTimeAlarm alarm("BlockManager::sort", 0.10);
+  au::ExecesiveTimeAlarm alarm(logs.block_manager, "BlockManager::sort", 0.10);
 
   // Get information for blocks in this woker
   au::SharedPointer<GlobalBlockSortInfo> info = samson_worker_->GetGlobalBlockSortInfo();

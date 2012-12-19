@@ -570,7 +570,8 @@ void WorkerTask::commit() {
   // Here output blocks are created and added to blockmanager
   // DataModel is updated to keep them in block manager
 
-  au::DataStatistics *data_statistics = au::Singleton<au::DataStatistics>::shared();
+  au::RateStatistics *rate_statistics = au::Singleton<au::RateStatistics>::shared();
+  au::AverageStatistics *average_statistics = au::Singleton<au::AverageStatistics>::shared();
 
   if (error_.HasErrors()) {
     std::string error_message = error_.GetLastError();
@@ -589,12 +590,13 @@ void WorkerTask::commit() {
                                 , worker_task_id()
                                 , error().GetLastError().c_str()));
 
-      data_statistics->Push("samson.commits_error", 1);
+      rate_statistics->Push("samson.commits_error", 1);
     } else {
       BlockInfo output_info = GetOutputDataInfo();
-      data_statistics->Push("samson.commits", 1);
-      data_statistics->Push("samson.output_blocks", output_info.num_blocks);
-      data_statistics->Push("samson.output_blocks_data", output_info.info.size);
+      rate_statistics->Push("samson.commits", 1);
+      rate_statistics->Push("samson.output_blocks", output_info.num_blocks);
+      rate_statistics->Push("samson.output_blocks_data", output_info.info.size);
+      average_statistics->Push("samson.block_size", output_info.average_block_size());
     }
   }
 }

@@ -835,6 +835,8 @@ void SamsonWorker::notify(engine::Notification *notification) {
            , au::str(network_write_rate, "Bs").c_str()
           ));
 
+    au::Singleton<au::AverageStatistics>::shared()->Push("samson.active_cores", num_processes);
+
     return;
   }
 
@@ -1062,16 +1064,32 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerStatisticsCollection(c
   collection->set_name("workers_statistics");
   gpb::CollectionRecord *record = collection->add_record();
 
-  au::DataStatistics *data_statistics = au::Singleton<au::DataStatistics>::shared();
-
-  std::vector<std::string> concepts = data_statistics->GetConcepts();
-
-  for (size_t i = 0; i < concepts.size(); i++) {
-    if (!visualization.match(concepts[i])) {
-      continue;
+  {
+    au::RateStatistics *rate_statistics = au::Singleton<au::RateStatistics>::shared();
+    std::vector<std::string> concepts = rate_statistics->GetConcepts();
+    for (size_t i = 0; i < concepts.size(); i++) {
+      if (!visualization.match(concepts[i])) {
+        continue;
+      }
+      ::samson::add(record, concepts[i], rate_statistics->GetRateString(concepts[i], "_"));
     }
-    ::samson::add(record, concepts[i], data_statistics->GetRateString(concepts[i], "_"));
   }
+
+  {
+    au::AverageStatistics *average_statistics = au::Singleton<au::AverageStatistics>::shared();
+    std::vector<std::string> concepts = average_statistics->GetConcepts();
+    for (size_t i = 0; i < concepts.size(); i++) {
+      if (!visualization.match(concepts[i])) {
+        continue;
+      }
+      ::samson::add(record, concepts[i], average_statistics->GetAverageString(concepts[i], "_"));
+    }
+  }
+
+
+
+
+
   return collection;
 }
 

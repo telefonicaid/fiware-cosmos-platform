@@ -19,8 +19,7 @@ namespace au {
 class ExecesiveTimeAlarm {
 public:
 
-  ExecesiveTimeAlarm(const std::string& title);
-  ExecesiveTimeAlarm(const std::string& title, double max_time);
+  ExecesiveTimeAlarm(int log_channel, const std::string& title, double max_time = 0.5);
   ~ExecesiveTimeAlarm();
 
 private:
@@ -28,6 +27,7 @@ private:
   Cronometer cronometer_;
   std::string title_;
   double max_time_;
+  int log_channel_;
 };
 }
 

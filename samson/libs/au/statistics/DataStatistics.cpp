@@ -5,14 +5,13 @@
 #include "au/mutex/TokenTaker.h"
 
 namespace au {
-void DataStatistics::Push(const std::string& concept, double value) {
+void RateStatistics::Push(const std::string& concept, double value) {
   TokenTaker tt(&token_);
 
   rates_.findOrCreate(concept)->Push(value);
-  averagers_.findOrCreate(concept)->Push(value);
 }
 
-double DataStatistics::GetRate(const std::string& concept) const {
+double RateStatistics::GetRate(const std::string& concept) const {
   TokenTaker tt(&token_);
   Rate *rate = rates_.findInMap(concept);
 
@@ -22,7 +21,7 @@ double DataStatistics::GetRate(const std::string& concept) const {
   return 0;
 }
 
-double DataStatistics::GetTotal(const std::string& concept) const {
+double RateStatistics::GetTotal(const std::string& concept) const {
   TokenTaker tt(&token_);
   Rate *rate = rates_.findInMap(concept);
 
@@ -32,7 +31,13 @@ double DataStatistics::GetTotal(const std::string& concept) const {
   return 0;
 }
 
-double DataStatistics::GetAverage(const std::string& concept, double default_value) const {
+void AverageStatistics::Push(const std::string& concept, double value) {
+  TokenTaker tt(&token_);
+
+  averagers_.findOrCreate(concept)->Push(value);
+}
+
+double AverageStatistics::GetAverage(const std::string& concept, double default_value) const {
   TokenTaker tt(&token_);
   Averager *averager = averagers_.findInMap(concept);
 
@@ -43,7 +48,7 @@ double DataStatistics::GetAverage(const std::string& concept, double default_val
   return default_value;
 }
 
-double DataStatistics::GetAverageDeviation(const std::string& concept, double default_value) const {
+double AverageStatistics::GetAverageDeviation(const std::string& concept, double default_value) const {
   TokenTaker tt(&token_);
   Averager *averager = averagers_.findInMap(concept);
 

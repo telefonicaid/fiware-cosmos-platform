@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "Connection.h"  // Own interface
+#include "au/ExecesiveTimeAlarm.h"
 #include "au/TemporalBuffer.h"
 #include "engine/Engine.h"
 #include "engine/Notification.h"
@@ -46,6 +47,7 @@ int Connection::Remove(const std::string&path, int version) {
   }
 
   LOG_V(logs.zoo, ("Delete node %s (version %d)", path.c_str(), version));
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK delete '%s'", path.c_str()));
   return zoo_delete(handler_, path.c_str(), version);
 }
 
@@ -62,6 +64,7 @@ int Connection::Set(const std::string& path, const char *value, int value_len, i
   // Create a node
   LOG_V(logs.zoo, ("Set node %s (value %d bytes ,version %d)", path.c_str(), value_len, version));
   rate_write_.Push(value_len);
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK set '%s'", path.c_str()));
   return zoo_set(handler_, path.c_str(), value, value_len, version);
 }
 
@@ -99,6 +102,7 @@ int Connection::Get(const std::string& path
 
   LOG_V(logs.zoo, ("Get node %s (buffer %d bytes)", path.c_str(), *buffer_len));
 
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK get '%s'", path.c_str()));
   int rc = zoo_wget(handler_
                     , path.c_str()
                     , static_watcher
@@ -283,6 +287,8 @@ int Connection::Get(const std::string& path, char *buffer, int *buffer_len, stru
 
   // We are interested in getting stat(
   LOG_V(logs.zoo, ("Get node %s (buffer %d bytes)", path.c_str(), buffer_len));
+
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK get '%s'", path.c_str()));
   int rc = zoo_get(handler_, path.c_str(), 0, buffer, buffer_len, stat);
 
   if (!rc) {
@@ -312,6 +318,7 @@ int Connection::Exists(const std::string& path, struct Stat *stat) {
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK check if exist '%s'", path.c_str()));
   int result =  zoo_exists(handler_, path.c_str(), 0, stat);
 
   LOG_V(logs.zoo, ("Check exist node %s -> %s", path.c_str(), (result == 0) ? "yes" : "no"));
@@ -323,6 +330,7 @@ int Connection::Exists(const std::string& path, size_t engine_id,
   au::TokenTaker tt(&token_);
 
   // We are interested in getting stat(
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK check if exist '%s'", path.c_str()));
   int result = zoo_wexists(handler_
                            , path.c_str()
                            , static_watcher
@@ -358,6 +366,7 @@ int Connection::GetChildrens(const std::string& path, String_vector *vector) {
     return rc;
   }
   LOG_V(logs.zoo, ("Get childrens of node %s", path.c_str()));
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK get childrens of '%s'", path.c_str()));
   return zoo_get_children(handler_, path.c_str(), 0, vector);
 }
 
@@ -486,6 +495,7 @@ int Connection::Create(std::string& path, int flags, const char *value, int valu
 
   // Create a node
   LOG_V(logs.zoo, ("Create node %s (Value: %d bytes )", path.c_str(), buffer_length));
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK create '%s'", path.c_str()));
   rc = zoo_create(handler_, path.c_str(), value, value_len, &ACL_VECTOR, flags, buffer, buffer_length - 1);
   if (!rc) {
     path = buffer;                     // Get the new name ( it is different when flag ZOO_SEQUETIAL is used )
@@ -535,6 +545,8 @@ int Connection::AddAuth(const std::string& user, const std::string& password) {
 
   std::string user_password = user + ":" + password;
   LOG_V(logs.zoo, ("Add auth  user: %s", user.c_str()));
+
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK add credentials"));
   rc = zoo_add_auth(handler_, "digest", user_password.c_str(), user_password.length(), 0, 0);
 
   // If corect, just wait until connected
@@ -560,6 +572,7 @@ bool Connection::IsConnected() {
   if (!handler_) {
     return false;
   }
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK check state"));
   return(zoo_state(handler_) == ZOO_CONNECTED_STATE);
 }
 
@@ -574,6 +587,7 @@ std::string Connection::GetStatusString() {
   }
 
   LOG_V(logs.zoo, ("Get connection status"));
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK check state"));
   rc = zoo_state(handler_);
 
   if (rc == ZOO_EXPIRED_SESSION_STATE) {

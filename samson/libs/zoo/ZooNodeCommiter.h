@@ -133,7 +133,7 @@ public:
    * \brief Get current data model
    */
   au::SharedPointer<C> getCurrentModel() const {
-    au::TokenTaker tt(&token_);
+    au::TokenTaker tt(&token_,"getCurrentModel");
 
     return c_;
   }
@@ -142,7 +142,7 @@ public:
    * \brief Get a copy of current data model
    */
   au::SharedPointer<C> getDuplicatedCurrentModel() {
-    au::TokenTaker tt(&token_);
+    au::TokenTaker tt(&token_,"getDuplicatedCurrentModel");
 
     au::SharedPointer<C> c(new C());
     c->CopyFrom(*c_.shared_object());
@@ -154,7 +154,7 @@ public:
    */
   virtual au::SharedPointer<C> Commit(const std::string& caller, const std::string& commit_command,
                                       au::ErrorManager& error) {
-    au::TokenTaker tt(&token_);
+    au::TokenTaker tt(&token_,"getDuplicatedCurrentModel");
     au::Cronometer cronometer;  // Cronometer to measure how much time it takes to perform commit
 
     // Multi-line commit allowed
@@ -192,7 +192,7 @@ public:
    */
 
   int UpdateToLastVersion() {
-    au::TokenTaker tt(&token_);
+    au::TokenTaker tt(&token_,"UpdateToLastVersion");
 
     LOG_V(logs.string_data_model, ("StringDataModel: Updating to last version..."));
 
@@ -284,7 +284,7 @@ private:
 
   au::SharedPointer<C> InternCommit(const std::string& commit_command, au::ErrorManager& error) {
     LOG_V(logs.string_data_model, ("Commit %s", commit_command.c_str()));
-    au::TokenTaker tt(&token_);    // Mutex protection
+    au::TokenTaker tt(&token_,"InternCommit");    // Mutex protection
     int trial = 0;
     while (true) {
       trial++;

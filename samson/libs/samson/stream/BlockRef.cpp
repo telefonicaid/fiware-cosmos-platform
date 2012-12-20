@@ -42,11 +42,9 @@ BlockRef::BlockRef(BlockPointer block, KVRange range, KVInfo info) {
   block_ = block;
   range_ = range;
   info_ = info;
-  LOG_M(logs.background_process, ("block_ref with block_id:%lu created", block_id()));
 }
 
 BlockRef::~BlockRef() {
-  LOG_M(logs.background_process, ("block_ref with block_id:%lu removed", block_id()));
 }
 
 BlockPointer BlockRef::block() {
@@ -102,9 +100,7 @@ void BlockRef::ReviewKVFile(au::ErrorManager& error) {
 
   if (buffer != NULL) {
     file_ = KVFile::create(buffer, error);
-    LOG_M(logs.background_process, ("KVFile created for block:%lu", block_id()));
   } else {
-    LOG_E(logs.background_process, ("Not possible to parse block %lu. Buffer not in memory", block_id()));
     error.AddError(au::str("Not possible to parse block %lu. Buffer not in memory", block_id()));
   }
 }

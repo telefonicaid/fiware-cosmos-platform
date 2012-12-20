@@ -12,7 +12,6 @@
 
 #include <list>
 
-#include "samson/common/Logs.h"
 #include "samson/stream/Block.h"              // Block
 #include "samson/stream/BlockList.h"          // BlockList
 

@@ -140,7 +140,8 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
   if (size) {
     *size = 0;
   }
-  s = fd->partRead(&header, sizeof(Message::Header), "Header", 300);                   // Timeout 300 secs for next packet
+  // Timeout 300 secs for next packet
+  s = fd->partRead(&header, sizeof(Message::Header), "Header", 300);
   if (s != au::OK) {
     return s;
   }
@@ -151,7 +152,6 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
   if (!header.Check()) {
     fd->Close();   // Close connection ( We close here since it is not a io error, is a protocol error )
     LOG_E(logs.out_messages, ("Error checking received header from %s", fd->name().c_str()));
-    LM_E(("Error checking received header from %s", fd->name().c_str()));
     return au::Error;   // Generic error
   }
 
@@ -174,9 +174,9 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
     message->ParseFromArray(dataP, header.gbufLen);
 
     if (message->IsInitialized() == false) {
-      LOG_E(logs.out_messages, ("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!", header.gbufLen, samson::Message::messageCode(header.code)));
-      LM_E(("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!",
-            header.gbufLen, samson::Message::messageCode(header.code)));
+      LOG_E(logs.out_messages,
+            ("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!",
+             header.gbufLen, samson::Message::messageCode(header.code)));
       // Close connection ( We close here since it is not a io error, is a protocol error )
       free(dataP);
       fd->Close();

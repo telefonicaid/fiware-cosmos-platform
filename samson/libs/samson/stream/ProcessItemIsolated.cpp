@@ -67,12 +67,14 @@ public:
         int s = WTERMSIG(stat_loc);
         LOG_E(logs.isolated_process, ("Background process (pid=%d) ended with signal with signal %d", pid, s));
       } else {
-        LOG_E(logs.isolated_process, ("Background process (pid=%d) 'crashed' with unknown reason, stat_loc:%d", pid, stat_loc));
+        LOG_E(logs.isolated_process, ("Background process (pid=%d) 'crashed' with unknown reason, stat_loc:%d",
+                                      pid, stat_loc));
       }
 
       return true;
     }
-    LOG_W(logs.isolated_process, ("Background process (pid=%d) waitpid() returned p:%d with, stat_loc:%d", pid, p, stat_loc));
+    LOG_W(logs.isolated_process, ("Background process (pid=%d) waitpid() returned p:%d with, stat_loc:%d",
+                                  pid, p, stat_loc));
 
     if (cronometer.seconds() > 3.0) {    // Three seconds to die
       // Send a kill signal to this process
@@ -638,7 +640,8 @@ void ProcessItemIsolated::reportProgress(double p, std::string status) {
 }
 
 void ProcessItemIsolated::runBackgroundProcessRun() {
-  LOG_M(logs.isolated_process, ("[Background] Running...on writing fd:%d and reading fd:%d", pipeFdPair1[1], pipeFdPair2[0]));
+  LOG_M(logs.isolated_process, ("[Background] Running...on writing fd:%d and reading fd:%d",
+                                pipeFdPair1[1], pipeFdPair2[0]));
 
   // Close the other side of the pipes ( if it is in thread-mode, we cannot close)
 

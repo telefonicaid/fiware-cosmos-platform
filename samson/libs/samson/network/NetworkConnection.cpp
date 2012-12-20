@@ -123,11 +123,7 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
       }
     }
 
-    {
-      // Wake up writing thread if necessary
-      au::TokenTaker tt(&token_);
-      tt.WakeUpAll();
-    }
+    WakeUpWriter();
 
     usleep(100000);
     if (cronometer.seconds() > 1) {
@@ -138,7 +134,7 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
 }
 
 void NetworkConnection::readerThread() {
-  while (1) {
+  while (true) {
     if (socket_connection_->IsClosed()) {
       // Wake up writing thread if necessary
       au::TokenTaker tt(&token_);

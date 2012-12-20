@@ -342,6 +342,8 @@ int Connection::Exists(const std::string& path, size_t engine_id,
 }
 
 int Connection::WaitUntilConnected(int milliseconds) {
+  au::ExecesiveTimeAlarm alarm(0, au::str("ZK waiting connected %d milisecs", milliseconds));
+
   if (!handler_) {
     return ZC_ERROR_NO_CONNECTION;                     // It will never became connected if no connection has been stablished
   }
@@ -507,13 +509,11 @@ int Connection::Create(std::string& path, int flags, const char *value, int valu
 int Connection::Connect(const std::string& host, const std::string& user,
                         const std::string& password) {
   au::TokenTaker tt(&token_);
-
   int rc = Connect(host);
 
   if (rc) {
     return rc;
   }
-
   return AddAuth(user, password);
 }
 
@@ -525,7 +525,7 @@ int Connection::Connect(const std::string& host) {
 
   // Init zookeerp
   LOG_V(logs.zoo, ("Init connection to %s", host.c_str()));
-  handler_ = zookeeper_init(host.c_str(), NULL, 5000, 0, NULL, 0);
+  handler_ = zookeeper_init(host.c_str(), NULL, 10000, 0, NULL, 0);  // 10 seconds
   if (handler_) {
     return WaitUntilConnected(1000);
   } else {

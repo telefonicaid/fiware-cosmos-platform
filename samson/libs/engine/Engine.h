@@ -39,12 +39,11 @@
 #include "au/Thread.h"
 #include "au/ThreadManager.h"
 #include "au/containers/list.h"                  // au::list
-#include "au/mutex/Token.h"                      // au::Token
-#include "au/statistics/Cronometer.h"            // au::Cronometer
-// NAMESPACE_BEGIN & }
 #include "au/containers/vector.h"
 #include "au/mutex/Token.h"
+#include "au/mutex/Token.h"                      // au::Token
 #include "au/mutex/TokenTaker.h"
+#include "au/statistics/Cronometer.h"            // au::Cronometer
 
 #include "engine/EngineElementCollection.h"
 #include "engine/NotificationListener.h"         // engine::EngineNotification

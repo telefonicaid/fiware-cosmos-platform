@@ -106,8 +106,6 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
   engine::notify(notification_samson_worker_check_finish_tasks, samson_setup->GetInt("worker.period_check_finish_tasks"));
   engine::notify("samson_worker_review", 1);
   engine::notify("notification_freeze_data_model", samson_setup->GetInt("worker.period_to_freeze_data_model"));
-
-  // engine::notify_extra("samson_worker_review");
 }
 
 void SamsonWorker::Review() {

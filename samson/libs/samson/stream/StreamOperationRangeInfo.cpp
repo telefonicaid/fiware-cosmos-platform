@@ -249,7 +249,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
   // Recover stream operation from data
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);
   if (!stream_operation) {
-    SetError(au::str("stream operation %s does not exist"));
+    SetError(au::str("stream operation %lu does not exist", stream_operation_id_));
     worker_task_.Reset();
     return;
   }

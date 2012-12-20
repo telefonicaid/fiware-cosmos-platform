@@ -28,6 +28,8 @@
 
 #include "samson_system/SpreadMapProcess.h"   // Own interface
 
+#include "au/log/LogMain.h"
+
 namespace samson {
 namespace system {
 
@@ -37,6 +39,8 @@ const std::string SpreadMapProcess::kNullDest("null");
 bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t num_values,
                               samson::KVWriter* const writer) {
   if (key->CheckMapValue(Value::kAppField.c_str(), name().c_str())) {
+    //LOG_SM(("SpreadMapProcess. Detected app:'%s' with %lu values in key:'%s'", name().c_str(), num_values,
+    //        key->str().c_str()));
     Value *additional_field_value = NULL;
     if (include_field_) {
       // If additional field, we must check it is present among keys
@@ -61,10 +65,13 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
       new_key.SetAsMap();
       new_key.AddValueToMap(Value::kAppField)->SetString(out_app_name_);
       new_key.AddValueToMap(Value::kConceptField)->SetString(keys[i]);
+      //LOG_SM(("SpreadMapProcess. Working with concept:'%s'", keys[i].c_str()));
 
+      // As we are running through all the fileds in the key, we are sure p_value exists
       Value *p_value = key->GetValueFromMap(keys[i].c_str());
 
       if (p_value->IsMap()) {
+        LOG_SE(("SpreadMapProcess. Error, don't know how to distribute concept '%s' being a map", keys[i].c_str()));
         LM_E(("Error, don't know how to distribute concept '%s' being a map", keys[i].c_str()));
         continue;
       } else if (p_value->IsVector()) {
@@ -77,6 +84,8 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
           }
           // In system.Value paradigm, input values are supposed to be 1.0, no fields information
           for (size_t k = 0; (k < num_values); ++k) {
+            //LOG_SM(("SpreadMapProcess: Emit feedback, key:'%s', vector value:'%s'", new_key.str().c_str(),
+            //        new_value.str().c_str()));
             EmitFeedback(&new_key, &new_value, writer);
           }
         }
@@ -88,6 +97,8 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
         }
         // In system.Value paradigm, input values are supposed to be 1.0, no fields information
         for (size_t j = 0; (j < num_values); j++) {
+          //LOG_SM(("SpreadMapProcess: Emit feedback, key:'%s', value:'%s'", new_key.str().c_str(),
+          //        new_value.str().c_str()));
           EmitFeedback(&new_key, &new_value, writer);
         }
       }
@@ -97,6 +108,8 @@ bool SpreadMapProcess::Update(Value *key, Value *state, Value **values, size_t n
       // Just reemit key-value pairs to the default output stream
       key->SetStringForMap(Value::kAppField.c_str(), out_def_name().c_str());
       for (size_t j = 0; (j < num_values); j++) {
+        //LOG_SM(("SpreadMapProcess: Emit next flow feedback, key:'%s', value:'%s'", key->str().c_str(),
+        //        values[j]->str().c_str()));
         EmitFeedback(key, values[j], writer);
       }
     }

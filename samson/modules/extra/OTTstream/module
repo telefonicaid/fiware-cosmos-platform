@@ -260,7 +260,7 @@ script init_stream_operations
        
             
 		# REDUCE information for every user ( information for all services )
-        add_stream_operation          [emit_service_levels]	OTTstream.red_update_last_user_profile	-input '[service_hits] [user_state]'   -output [level_commands] [service_hits_filtered] [user_state];
+        add_stream_operation          [emit_service_levels]	OTTstream.red_update_last_user_profile	-input '[service_hits] [user_state]'   -output '[level_commands] [service_hits_filtered] [user_state]';
         set_stream_operation_property [emit_service_levels] OTTstream.timespan 300;
 
 		# Add cluster information to hits

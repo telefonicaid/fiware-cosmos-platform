@@ -26,6 +26,8 @@
 #include <string>
 #include <vector>
 
+#include "samson/common/Logs.h"
+
 #include "au/containers/map.h"                      // au::map
 #include "samson/stream/BlockInfo.h"                // struct BlockInfo
 #include "samson/stream/BlockList.h"
@@ -90,6 +92,7 @@ public:
     for (iter = blockLists_.begin(); iter != blockLists_.end(); ++iter) {
       iter->second->ReviewKVFiles(error);
       if (error.HasErrors()) {
+        LOG_E(logs.background_process, ("Error in ReviewKVFiles for block_list:'%s', task_id:%lu", iter->first.c_str(), iter->second->task_id()));
         return;
       }
     }

@@ -43,16 +43,16 @@ class process : public Reduce {
     //
     //  helpLine: Bulk process operation for instant individual web profiling. Instances added at init()
     //  extendedHelp: Bulk process operation for instant individual web profiling. Instances added at init()
-    //  As all the system.Value process(), one of the outputs is fedback to the stream input
+    //  As all the system.Value process(), one of the outputs is fed back to the stream input
     //
     //  END_INFO_MODULE
 
     void init(KVWriter *writer) {
-      // TODO(@jges): Remove log messages
-      LM_M(("iwebp.process: init()"));
       {
-        system::SpreadMapProcess *p_operation = new system::SpreadMapProcess("agregatedKey", "individualConceptHits",
-                                                                             "agregatedKey2", system::Value::kTimestampField);
+        system::SpreadMapProcess *p_operation = new system::SpreadMapProcess("agregatedKey",
+                                                                             "individualConceptHits",
+                                                                             "agregatedKey2",
+                                                                             system::Value::kTimestampField);
         process_components_manager_.Add(p_operation);
       }
       {
@@ -69,14 +69,19 @@ class process : public Reduce {
         dependent_fields.push_back(system::Value::kUrlField);
         dependent_fields.push_back(system::Value::kDomainField);
         dependent_fields.push_back(system::Value::kUserField);
-        system::EmitFieldsProcess *p_operation = new system::EmitFieldsProcess("agregatedKey2", "hitsByCategory",
-                                                                               "agregatedKey3", dependent_fields,
-                                                                               system::Value::kCategoriesField, system::Value::kTimestampField);
+        system::EmitFieldsProcess *p_operation = new system::EmitFieldsProcess("agregatedKey2",
+                                                                               "hitsByCategory",
+                                                                               "agregatedKey3",
+                                                                               dependent_fields,
+                                                                               system::Value::kCategoriesField,
+                                                                               system::Value::kTimestampField);
         process_components_manager_.Add(p_operation);
       }
       {
         system::HitCountByConceptProcess *p_operation =
-            new system::HitCountByConceptProcess("hitsByCategory", system::Value::kCategoriesField, "hitsByCategory_counts",
+            new system::HitCountByConceptProcess("hitsByCategory",
+                                                 system::Value::kCategoriesField,
+                                                 "hitsByCategory_counts",
                                                  system::HitCountByConceptProcess::kNullDest);
         p_operation->AddUpdateCountFunction("short", 300, 100);
         p_operation->AddUpdateCountFunction("medium", 3600, 100);
@@ -89,14 +94,19 @@ class process : public Reduce {
         dependent_fields.push_back(system::Value::kDomainField);
         dependent_fields.push_back(system::Value::kCategoriesField);
         dependent_fields.push_back(system::Value::kQueryWordsField);
-        system::EmitFieldsProcess *p_operation = new system::EmitFieldsProcess("agregatedKey3", "hitsByUser",
-                                                                               system::EmitFieldsProcess::kNullField,
-                                                                               dependent_fields, "user", system::Value::kTimestampField);
+        system::EmitFieldsProcess *p_operation = new system::EmitFieldsProcess("agregatedKey3",
+                                                                               "hitsByUser",
+                                                                               system::EmitFieldsProcess::kNullDest,
+                                                                               dependent_fields,
+                                                                               "user",
+                                                                               system::Value::kTimestampField);
         process_components_manager_.Add(p_operation);
       }
       {
         system::HitCountByConceptProcess *p_operation =
-            new system::HitCountByConceptProcess("hitsByUser", system::Value::kUserField, "hitsByUser_counts",
+            new system::HitCountByConceptProcess("hitsByUser",
+                                                 system::Value::kUserField,
+                                                 "hitsByUser_counts",
                                                  system::HitCountByConceptProcess::kNullDest);
         p_operation->AddUpdateCountFunction("short", 300, 100);
         p_operation->AddUpdateCountFunction("medium", 3600, 100);
@@ -106,14 +116,10 @@ class process : public Reduce {
     }
 
     void run(KVSetStruct* inputs, KVWriter *writer) {
-      // TODO(@jges): Remove log messages
-      LM_M(("iwebp.process: run()"));
       process_components_manager_.Process(inputs, writer);
     }
 
     void finish(KVWriter *writer) {
-      // TODO(@jges): Remove log messages
-      LM_M(("iwebp.process: finish()"));
     }
 
   private:

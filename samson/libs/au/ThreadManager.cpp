@@ -188,6 +188,9 @@ void ThreadManager::AddThread(ThreadInfo *thread_info) {
   }
 
   LOG_E(logs.thread_manager, ("No space for more threads, all %d in use", AU_MAX_NUM_THREADS));
+  // TODO(@jges): Change exit for error management
+  // At the moment, give time to log system to receive the message
+  sleep(5);
   LM_X(1, ("No space for more threads"));
 }
 

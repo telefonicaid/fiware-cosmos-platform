@@ -1,3 +1,5 @@
+#ifndef _H_SAMSON_system_HIT_COUNT_BY_CONCEPT_PROCESS
+#define _H_SAMSON_system_HIT_COUNT_BY_CONCEPT_PROCESS
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -26,17 +28,43 @@
  *
  */
 
-#ifndef _H_SAMSON_system_HIT_COUNT_BY_CONCEPT_PROCESS
-#define _H_SAMSON_system_HIT_COUNT_BY_CONCEPT_PROCESS
-
 #include <string>
 #include <vector>
 
 #include "samson_system/ProcessComponent.h"
 #include "samson_system/UpdateCountFunction.h"
 
+/**
+ * \file HitCountByConceptProcess.h
+ * \mainpage HitCountByConceptProcess
+ * \author Gregorio Escalada
+ * \date August 2012
+ *
+ * Component for system.Value paradigm, for data flexible processing
+ *
+ */
+
+
 namespace samson {
 namespace system {
+/**
+ * \class HitCountByConceptProcess
+ * \brief Class to count item hits in input data
+ * Implements the Update() method for the system.Value process paradigm.
+ * Input data is identified with name_ as "app" field.
+ * Aggregated counts are held in the state queue, also with name_ in the "app" field
+ * Count of the items in the selected field are computed per the independent variable,
+ * allowing thus the creation of a profile for each of the members of this
+ * independent variable.
+ * This state has as value, under the field of "instant_profile", a vector
+ * with the n_top more frequent items, for each of the profiles (count functions)
+ * New values are written to the feedback queue with out_app_name_.
+ * Original data is written to the feedback queue with out_def_name_.
+ * Instant state values are also written to the output queue.
+ * Hits count can be performed with any number of count functions,
+ * allowing different time_stamps and number of items held,
+ * for different profiling scopes.
+ */
 class HitCountByConceptProcess : public ProcessComponent {
   public:
     static const std::string kNullDest;

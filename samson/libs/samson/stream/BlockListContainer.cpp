@@ -141,9 +141,10 @@ std::string BlockListContainer::str_inputs() const {
     BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
     if (!block_list) {
       output << "-";
+    } else {
+      BlockInfo block_info = block_list->getBlockInfo();
+      output << "[" << block_info.strShortInfo() << "]";
     }
-    BlockInfo block_info = block_list->getBlockInfo();
-    output << "[" << block_info.strShortInfo() << "]";
   }
   return output.str();
 }
@@ -162,9 +163,10 @@ std::string BlockListContainer::str_outputs() const {
     BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
     if (!block_list) {
       output << "-";
+    } else {
+      BlockInfo block_info = block_list->getBlockInfo();
+      output << "[" << block_info.strShortInfo() << "]";
     }
-    BlockInfo block_info = block_list->getBlockInfo();
-    output << "[" << block_info.strShortInfo() << "]";
   }
   return output.str();
 }

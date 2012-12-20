@@ -1,3 +1,5 @@
+#ifndef SAMSON_LIBS_SAMSON_SYSTEM_EMITFIELDSPROCESS_H_
+#define SAMSON_LIBS_SAMSON_SYSTEM_EMITFIELDSPROCESS_H_
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -24,10 +26,6 @@
  *  from a system.Value key, under the Process paradigm
  *
  */
-
-#ifndef SAMSON_LIBS_SAMSON_SYSTEM_EMITFIELDSPROCESS_H_
-#define SAMSON_LIBS_SAMSON_SYSTEM_EMITFIELDSPROCESS_H_
-
 #include <string>
 #include <vector>
 
@@ -35,8 +33,30 @@
 #include "samson_system/Value.h"
 #include "samson/module/KVWriter.h"
 
+/**
+ * \file EmitFieldsProcess.h
+ * \mainpage EmitFieldsProcess
+ * \author Gregorio Escalada
+ * \date August 2012
+ *
+ * Component for system.Value paradigm, for data flexible processing
+ *
+ */
+
 namespace samson {
 namespace system {
+/**
+ * \class EmitFieldsProcess
+ * \brief Class to emit specific fields from input key-values.
+ * Implements the Update() method for the system.Value process paradigm.
+ * Input data is identified with name_ as "app" field.
+ * Fields to be emitted are selected by name with the vector concepts_
+ * It is possible to associated them with an independent concept
+ * New values are written to the feedback queue with out_app_name_.
+ * Original data is written to the feedback queue with out_def_name_.
+ * New values can be created with an additional field (timestamp typically).
+ * This ProcessComponent just reemit data to the feedback queue, there is no output nor state associated
+ */
 class EmitFieldsProcess : public ProcessComponent {
   public:
     static const std::string kNullField;
@@ -62,7 +82,6 @@ class EmitFieldsProcess : public ProcessComponent {
     , concepts_(concepts)
     , independent_concept_(independent_concept)
     , additional_field_(additional_field) {
-      concepts_.clear();
       if (independent_concept_ != kNullField) {
         include_independent_ = true;
       }

@@ -56,21 +56,27 @@ class map_comscore_lookup : public samson::Map {
         value.parse(inputs[0].kvs[i]->value);
 
         if (!key.IsMap()) {
-          trace.value = "Key is not a map";
-          writer->emit(-1, &trace, &value_void);
+          // TODO(@jges): Pending of recovering logs on queues system
+          // trace.value = "Key is not a map";
+          // writer->emit(-1, &trace, &value_void);
+          O_LOG_W(("Key is not a map"));
           continue;
         }
 
         samson::system::Value* url = key.GetValueFromMap("url");
         if (!url) {
-          trace.value = "url is not present in the key ( a map )";
-          writer->emit(-1, &trace, &value_void);
+          // TODO(@jges): Pending of recovering logs on queues system
+          // trace.value = "url is not present in the key ( a map )";
+          // writer->emit(-1, &trace, &value_void);
+          O_LOG_W(("url is not present in the key ( a map )"));
           continue;
         }
 
         if (!url->IsString()) {
-          trace.value = "url is not a string";
-          writer->emit(-1, &trace, &value_void);
+          // TODO(@jges): Pending of recovering logs on queues system
+          // trace.value = "url is not a string";
+          // writer->emit(-1, &trace, &value_void);
+          O_LOG_W(("url is not a string"));
           continue;
         }
 

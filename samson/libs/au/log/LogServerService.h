@@ -49,7 +49,7 @@ class LogConnectionHello;
 class LogProbeConnection {
 public:
 
-  LogProbeConnection(const std::string& filter) {
+  LogProbeConnection(const std::string& filter) : token_("LogProbeConnection") {
     au::ErrorManager error;
 
     log_filter_ = LogFilter::Create(filter, error);  // Ignore error
@@ -58,7 +58,7 @@ public:
   void Push(LogPointer log) {
     au::TokenTaker tt(&token_);
 
-    if ((log_filter_ == NULL ) || (log_filter_->Accept(log))) {
+    if ((log_filter_ == NULL) || (log_filter_->Accept(log))) {
       log_queue_.Push(log);
     }
   }

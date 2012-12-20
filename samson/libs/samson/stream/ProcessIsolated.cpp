@@ -30,7 +30,8 @@ ProcessIsolated::ProcessIsolated(SamsonWorker *samson_worker
                                  , const std::string& operation
                                  , const std::string& concept
                                  , ProcessBaseType _type) :
-  ProcessItemIsolated(samson_worker, worker_task_id, operation, concept) {
+  ProcessItemIsolated(samson_worker, worker_task_id, operation, concept),
+  token_("ProcessIsolated") {
   num_outputs = 0;   // Outputs are defined calling "addOutput" with the rigth output format
   type = _type;   // Keep the type of operation ( data is generated differently )
 

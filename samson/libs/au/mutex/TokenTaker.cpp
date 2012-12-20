@@ -23,7 +23,7 @@
 
 namespace au {
 TokenTaker::TokenTaker(Token *token, const std::string& name) : name_(name), token_(token) {
-  au::ExecesiveTimeAlarm alarm(0, au::str("TokenTaker for token %s / %s" , token->name().c_str(), name.c_str() ));
+  au::ExecesiveTimeAlarm alarm(0, au::str("TokenTaker for token '%s' at '%s'", token->name().c_str(), name.c_str()));
 
   token->Retain();
 }

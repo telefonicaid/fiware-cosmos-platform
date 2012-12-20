@@ -31,7 +31,7 @@ namespace au {
 class SharedReferenceCounter {
 public:
   // Note: NULL is allowed
-  SharedReferenceCounter() : reference_counter_(1) {
+  SharedReferenceCounter() : token_("SharedReferenceCounter"), reference_counter_(1) {
   }
 
   ~SharedReferenceCounter() {

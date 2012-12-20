@@ -46,7 +46,7 @@ LogCentral *LogCentral::Shared() {
   return log_central;
 }
 
-LogCentral::LogCentral() : au::Thread("LogCentral") {
+LogCentral::LogCentral() : au::Thread("LogCentral"), token_plugins_("LogCentral::TokenPlugins") {
   fds_[0] = -1;
   fds_[1] = -1;
 

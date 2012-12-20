@@ -22,8 +22,9 @@
 #define Char_to_int(x) ((x) - 48)
 
 namespace au {
-LogServerService::LogServerService(int port, const std::string& _directory)
-  : network::Service(port), token("LogServerService") {
+LogServerService::LogServerService(int port, const std::string& _directory) :
+  network::Service(port), token("LogServerService"),
+  token_log_probe_connections_("LogServerSerice::token_log_probe_connections_") {
   directory = _directory;
 
   file_counter = 0;

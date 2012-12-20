@@ -35,7 +35,8 @@
 namespace samson {
 namespace stream {
 Block::Block(size_t block_id, engine::BufferPointer buffer) :
-  token_lookupList("token_lookupList") {
+  token_lookupList("Block::token_lookupList"),
+  token_file_("Block::token_file") {
   // Keep the buffer in this block
   buffer_ = buffer;
 
@@ -55,7 +56,8 @@ Block::Block(size_t block_id, engine::BufferPointer buffer) :
 }
 
 Block::Block(size_t block_id, KVHeader *_header) :
-  token_lookupList("token_lookupList") {
+  token_lookupList("token_lookupList"),
+  token_file_("Block::token_file") {
   // Unique identifier of the block across the cluster
   block_id_ = block_id;
 

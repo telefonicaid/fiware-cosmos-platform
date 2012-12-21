@@ -17,7 +17,7 @@
 *
 * PROJECT         au library
 *
-* DATE            Septembre 2011
+* DATE            September 2011
 *
 * DESCRIPTION
 *
@@ -44,6 +44,7 @@
 #include "au/Log.h"
 #include "au/Status.h"  // au::Status
 
+#define AU_GPB_HEADER_MAGIC_NUMBER 8537465
 
 namespace au {
 /**
@@ -61,11 +62,11 @@ struct GPBHeader {
 
   void init(ssize_t _size) {
     size = _size;
-    magic = 8537465;
+    magic = AU_GPB_HEADER_MAGIC_NUMBER;
   }
 
   bool check() {
-    return (magic == 8537465);
+    return (magic == AU_GPB_HEADER_MAGIC_NUMBER);
   }
 };
 
@@ -73,7 +74,7 @@ struct GPBHeader {
 
 template <class T>
 au::Status readGPB(int fd, T **t, int time_out) {
-  LOG_V(logs.gpb, ("Reading a GPB message from fd:%d with timeout %d", fd, time_out));
+  LOG_V(logs.gpb, ("Reading a GPB message from fd:%d with timeout %d secs", fd, time_out));
 
   Status iom = iomMsgAwait(fd, time_out);     // Wait until this is ready
 

@@ -79,7 +79,7 @@ public:
   ~Delilah();
 
   /**
-   * \brief Try to connect with a SAMSON cluster. Error is reported if not possible
+   * \brief Try to connect to a SAMSON cluster. Error is reported if not possible
    */
   bool Connect(const std::string& host, au::ErrorManager *error);
 
@@ -113,7 +113,7 @@ public:
   /**
    * \brief Process a packet received from other nodes ( SAMSON workers )
    */
-  void ProcessIncomePacket(const PacketPointer& packet);
+  void ProcessIncomingPacket(const PacketPointer& packet);
 
   /**
    * \brief Push a buffer with plain data to a queue ( expected to be a txt-txt queue )

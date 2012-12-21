@@ -160,7 +160,7 @@ int main(int argC, const char *argV[]) {
   LM_V(("Connecting to %s ...", controller));
 
   samson_client = new samson::SamsonClient("push");
-  if (!samson_client->connect(controller)) {
+  if (!samson_client->Connect(controller)) {
     LM_X(1, ("Unable to connect to %s", controller));
   }
   SamsonPushLogsConnectionsManager manager;

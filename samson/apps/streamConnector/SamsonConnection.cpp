@@ -48,7 +48,7 @@ void SamsonConnection::try_connect() {
   cronometer_reconnection.Reset();
 
   // Try to reconnect
-  if (client_->connect(au::str("%s:%d", host_.c_str(), port_))) {
+  if (client_->Connect(au::str("%s:%d", host_.c_str(), port_))) {
     // Note: At the moment, it is not possible to specify flags new of clear here
     if (getType() == connection_input) {
       client_->connect_to_queue(queue_, false, false);
@@ -68,7 +68,9 @@ void SamsonConnection::start_connection() {
 }
 
 void SamsonConnection::stop_connection() {
-  // TODO: Stop all theads since it will be removed
+  if (client_) {
+    client_->Disconnect();
+  }
 }
 
 void SamsonConnection::review_connection() {
@@ -89,9 +91,8 @@ void SamsonConnection::review_connection() {
 size_t SamsonConnection::bufferedSizeOnMemory() const {
   if (getType() == connection_output) {
     return Connection::bufferedSize() + client_->GetPendingSizeToPush();
-  } else {
-    return 0;
   }
+  return 0;
 }
 
 size_t SamsonConnection::bufferedSize() const {
@@ -114,7 +115,7 @@ void SamsonConnection::push(engine::BufferPointer buffer) {
   client_->push(buffer, queue_);
 }
 
-// Overwriteen method of SamsonClient
+// Overwriten method of SamsonClient
 void SamsonConnection::ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer) {
   // Transformation of buffer
   samson::KVHeader *header = (samson::KVHeader *)buffer->data();

@@ -56,7 +56,7 @@ public:
   void notify(engine::Notification *notification);
 
   /**
-   * \brief Process an incomming packet from a connection
+   * \brief Process an incoming packet from a connection
    */
   void receive(NetworkConnection *connection, const PacketPointer& packet);
 

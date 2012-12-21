@@ -181,9 +181,9 @@ private:
   BufferList *input_buffer_list;        // List of buffers at the input
   BufferList *output_buffer_list;       // List of buffers at the output to be sent ( in output connections )
 
-  bool initialized;                     // Falg to indicate init_connection has been called
+  bool initialized;                     // Flag to indicate init_connection has been called
   bool canceled;                        // Flag to indicate this is canceled ( not call review again )
-  bool finished;                        // Falg to indicate this is finished ( no more data )
+  bool finished;                        // Flag to indicate this is finished ( no more data )
 
 
   size_t id;                            // Assigned when added to a item

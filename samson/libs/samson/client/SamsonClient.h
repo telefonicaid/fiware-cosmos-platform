@@ -77,8 +77,11 @@ public:
   virtual ~SamsonClient();
 
   // connect to a cluster
-  bool connect(const std::vector<std::string>& hosts);
-  bool connect(const std::string& host);
+  bool Connect(const std::vector<std::string>& hosts);
+  bool Connect(const std::string& host);
+
+  // Disconnect
+  void Disconnect();
 
   // Check if connection is ready
   bool connection_ready();

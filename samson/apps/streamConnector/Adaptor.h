@@ -99,7 +99,7 @@ public:
 
 private:
 
-  // Mutex protextion
+  // Mutex protection
   au::Token token;
 
   // Name describing this item

@@ -141,7 +141,7 @@ int main(int argC, const char *argV[]) {
     my_zoo_host += ":2181";
   }
 
-  // connect with ZK
+  // connect to ZK
   au::zoo::Connection connection(my_zoo_host, "samson", "samson");
   connection.WaitUntilConnected(2000);
   if (!connection.IsConnected()) {

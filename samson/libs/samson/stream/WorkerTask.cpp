@@ -285,40 +285,42 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
 void WorkerTask::generateKeyValuesDefrag(samson::ProcessWriter *writer) {
   BlockList *list = block_list_container_.FindBlockList("input_0");
 
-  if (list != NULL) {
-    au::list<BlockRef>::iterator bi;
-    for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
-      BlockRef *block_ref = *bi;
-      BlockPointer block = block_ref->block();
-      engine::BufferPointer buffer = block->buffer();
+  if (list == NULL) {
+    return;
+  }
 
-      // Check header for valid block
-      KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
-      if (!header->Check()) {
-        setUserError(("Not valid header in block refernce"));
-        return;
-      }
+  au::list<BlockRef>::iterator bi;
+  for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
+    BlockRef *block_ref = *bi;
+    BlockPointer block = block_ref->block();
+    engine::BufferPointer buffer = block->buffer();
 
-      if (header->GetKVFormat() != defrag_format) {
-        setUserError(au::str("Error in defrag operation: Different KVFormat %s != %s",
-                             defrag_format.str().c_str(), header->GetKVFormat().str().c_str()));
-        return;
-      }
+    // Check header for valid block
+    KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
+    if (!header->Check()) {
+      setUserError(("Not valid header in block refernce"));
+      return;
+    }
 
-      // Analyse all key-values and hashgroups
-      au::SharedPointer<KVFile> file = block_ref->file();
-      if (file == NULL) {
-        setUserError("Error getting information about this block");
-        return;
-      }
+    if (header->GetKVFormat() != defrag_format) {
+      setUserError(au::str("Error in defrag operation: Different KVFormat %s != %s",
+                           defrag_format.str().c_str(), header->GetKVFormat().str().c_str()));
+      return;
+    }
 
-      // Use all key-values
-      KV *kvs = file->kvs;
-      size_t num_kvs = file->header().info.kvs;
+    // Analyse all key-values and hashgroups
+    au::SharedPointer<KVFile> file = block_ref->file();
+    if (file == NULL) {
+      setUserError("Error getting information about this block");
+      return;
+    }
 
-      for (size_t i = 0; i < num_kvs; i++) {
-        writer->internal_emit(0, kvs[i].hg, kvs[i].key, kvs[i].key_size + kvs[i].value_size);
-      }
+    // Use all key-values
+    KV *kvs = file->kvs;
+    size_t num_kvs = file->header().info.kvs;
+
+    for (size_t i = 0; i < num_kvs; i++) {
+      writer->internal_emit(0, kvs[i].hg, kvs[i].key, kvs[i].key_size + kvs[i].value_size);
     }
   }
 }

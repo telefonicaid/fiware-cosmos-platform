@@ -99,14 +99,14 @@ bool NetworkConnection::IsDisconnected() const {
 
 void NetworkConnection::Close() {
   if (!socket_connection_->IsClosed()) {
-    LOG_SW(("Closing connection %s", node_identifier_.str().c_str()));
+    LOG_SW(("Closing connection '%s'", node_identifier_.str().c_str()));
     socket_connection_->Close();
   }
 }
 
 void NetworkConnection::CloseAndStopBackgroundThreads() {
   if (!socket_connection_->IsClosed()) {
-    LOG_SW(("Closing connection %s", node_identifier_.str().c_str()));
+    LOG_SW(("Closing connection '%s'", node_identifier_.str().c_str()));
     socket_connection_->Close();
   }
 
@@ -154,7 +154,7 @@ void NetworkConnection::readerThread() {
       network_manager_->receive(this, packet);
     } else {
       if (!socket_connection_->IsClosed()) {
-        LOG_SW(("Closing connection %s: Error reading %s", node_identifier_.str().c_str(), au::status(s)));
+        LOG_SW(("Closing connection '%s': Error reading %s", node_identifier_.str().c_str(), au::status(s)));
         socket_connection_->Close();   // Close connection since a packet has not been received correctly
       }
     }
@@ -184,7 +184,7 @@ void NetworkConnection::writerThread() {
       if (s == au::OK) {
         network_manager_->multi_packet_queue_.Pop(node_identifier_);
       } else {
-        LOG_SW(("Closing connection %s: Error writing %s", node_identifier_.str().c_str(), au::status(s)));
+        LOG_SW(("Closing connection '%s': Error writing %s", node_identifier_.str().c_str(), au::status(s)));
         socket_connection_->Close();
       }
     } else {

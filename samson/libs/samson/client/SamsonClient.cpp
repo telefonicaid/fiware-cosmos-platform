@@ -63,18 +63,17 @@ SamsonClient::SamsonClient(std::string connection_type) {
   LM_V(("SamsonClient: Delilah client with id %s", au::code64_str(delilah_->delilah_id()).c_str()));
 }
 
-bool SamsonClient::connect(const std::vector<std::string>& hosts) {
+bool SamsonClient::Connect(const std::vector<std::string>& hosts) {
   // Try connection with all provided hosts
   for (size_t i = 0; i < hosts.size(); ++i) {
-    if (connect(hosts[i])) {
+    if (Connect(hosts[i])) {
       return true;
     }
   }
-
   return false;
 }
 
-bool SamsonClient::connect(const std::string& host) {
+bool SamsonClient::Connect(const std::string& host) {
   au::ErrorManager error;
   bool c = delilah_->Connect(host, &error);
 
@@ -82,6 +81,10 @@ bool SamsonClient::connect(const std::string& host) {
     LOG_SW(("Unable to connect to %s: %s", host.c_str(), error.GetLastError().c_str()));
   }
   return c;
+}
+
+void SamsonClient::Disconnect() {
+  delilah_->Disconnect();
 }
 
 SamsonClient::~SamsonClient() {

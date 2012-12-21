@@ -16,7 +16,7 @@
 *
 * PROJECT         au library
 *
-* DATE            Septembre 2011
+* DATE            September 2011
 *
 * DESCRIPTION
 *
@@ -188,7 +188,6 @@ public:
     if (iter == std::map<K, V *, _Compare>::end()) {
       return NULL;
     }
-    ;
 
     V *v = iter->second;
     std::map<K, V *, _Compare>::erase(iter);

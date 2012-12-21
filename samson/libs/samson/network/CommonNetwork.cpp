@@ -102,7 +102,7 @@ void CommonNetwork::ReviewConnections() {
     LOG_V(logs.network_connection, ("Checking connection %s at %s:%d",
                                     node_identifier.str().c_str(), host.c_str(), port));
 
-    // If I am a worker, do not connect with workers with a lower id since they will try to connect with me
+    // If I am a worker, do not connect to workers with a lower id since they will try to connect to me
     if (node_identifier_.node_type() == WorkerNode) {
       if (node_identifier_.id() < worker_id) {
         LOG_V(logs.network_connection, ("Skipping worker %lu (%s:%d): My id is lower", worker_id, host.c_str(), port));
@@ -461,7 +461,7 @@ size_t CommonNetwork::getRandomWorkerId(size_t previous_worker) {
 
   // If no worker connected, no worker selected
   if (connected_worker_ids.size() == 0) {
-    return -1;
+    return SIZE_T_UNDEFINED;
   }
 
   if (previous_worker == static_cast<size_t>(-1)) {

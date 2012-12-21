@@ -39,10 +39,10 @@ std::string LogCentralChannelsFilter::description() {
 std::string LogCentralChannelsFilter::GetHitDescriptionForChannel(int c) const {
   std::ostringstream output;
 
-  for (int j = 0; j < LOG_MAX_LEVELS; ++j) {
-    size_t hits = channels_hits_[c][j];
+  for (int l = 0; l < LOG_MAX_LEVELS; ++l) {
+    size_t hits = channels_hits_[c][l];
     if (hits > 0) {
-      output << au::str("%s x %s ", au::str(hits).c_str(), Log::GetLogLevel(j).c_str());
+      output << au::str("%s x %s ", au::str(hits).c_str(), Log::GetLogLevel(l).c_str());
     }
   }
   return output.str();

@@ -456,7 +456,7 @@ void ProcessItemIsolated::runExchangeMessages() {
     int timeout_setup = au::Singleton<SamsonSetup>::shared()->GetInt("isolated.timeout");
 
     LOG_V(logs.isolated_process,
-          ("Isolated process %s: Reading a new message with timeout %d", str().c_str(), timeout_setup));
+          ("Isolated process %s: Reading a new message with timeout %d secs", str().c_str(), timeout_setup));
 
     // Read a message from the process
     samson::gpb::MessageProcessPlatform *message;

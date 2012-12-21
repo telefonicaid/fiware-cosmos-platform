@@ -193,7 +193,7 @@ void Delilah::notify(engine::Notification *notification) {
     if (packet == NULL) {
       LOG_SW(("Received a notification to receive a packet without a packet"));
     }
-    ProcessIncomePacket(packet);
+    ProcessIncomingPacket(packet);
     return;
   }
 
@@ -237,7 +237,7 @@ void Delilah::notify(engine::Notification *notification) {
  *
  * receive -
  */
-void Delilah::ProcessIncomePacket(const PacketPointer& packet) {
+void Delilah::ProcessIncomingPacket(const PacketPointer& packet) {
   LOG_V(logs.in_messages, ("Delilah received packet type:%s", packet->str().c_str()));
 
   // Message received

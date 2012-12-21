@@ -81,7 +81,7 @@ public:
 private:
 
   int channels_level_[LOG_MAX_CHANNELS];
-  size_t channels_hits_[LOG_MAX_CHANNELS][256];  /**< Number of hits received for every channel */
+  size_t channels_hits_[LOG_MAX_CHANNELS][LOG_MAX_LEVELS];  /**< Number of hits received for every channel */
 };
 }  // end namespace au
 

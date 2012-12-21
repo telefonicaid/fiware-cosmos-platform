@@ -338,11 +338,11 @@ int main(int argC, const char *argV[]) {
 
         std::ostringstream message;
 
-        size_t memory = engine::Engine::memory_manager()->memory();
-        size_t used_memory = engine::Engine::memory_manager()->used_memory();
+        size_t engine_memory = engine::Engine::memory_manager()->memory();
+        size_t engine_used_memory = engine::Engine::memory_manager()->used_memory();
 
-        message << "Memory " << au::str(used_memory) << "/" << au::str(memory);
-        message << "(" << au::str_percentage(used_memory, memory) << ") ";
+        message << "Memory " << au::str(engine_used_memory) << "/" << au::str(engine_memory);
+        message << "(" << au::str_percentage(engine_used_memory, engine_memory) << ") ";
 
         LOG_SV(("%s", message.str().c_str()));
       }

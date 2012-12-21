@@ -210,7 +210,7 @@ bool captured_sigint = false;
 void captureSIGINT(int s) {
   LOG_SW(("Signal SIGINT %d", s));
 
-  // If two are captures, just exit
+  // If two are captured, just exit
   if (captured_sigint) {
     _exit(1);
   }

@@ -52,7 +52,7 @@ int Connection::Remove(const std::string&path, int version) {
 }
 
 int Connection::RecursiveRemove(const std::string& path) {
-  // Get childrens first...
+  // Get children first...
   au::StringVector paths;
   int rc = GetChildrens(path, paths);
 

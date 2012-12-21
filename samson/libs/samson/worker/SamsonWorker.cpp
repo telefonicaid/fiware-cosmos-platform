@@ -125,7 +125,7 @@ void SamsonWorker::Review() {
       zk_connection_cronometer_.Reset();
       zk_first_connection_ = false;
 
-      // Try to connect with ZK
+      // Try to connect to ZK
       LOG_M(logs.worker_controller, ("Trying to connect to zk at %s...", zoo_host_.c_str()));
       zoo_connection_.Reset(new au::zoo::Connection(zoo_host_, "samson", "samson"));
       int rc = zoo_connection_->WaitUntilConnected(5000);
@@ -1068,9 +1068,8 @@ const {
     std::vector<std::string> concepts = rate_statistics->GetConcepts();
     for (size_t i = 0; i < concepts.size(); ++i) {
       if (!visualization.match(concepts[i])) {
-        continue;
+        ::samson::add(record, concepts[i], rate_statistics->GetRateString(concepts[i], "_"));
       }
-      ::samson::add(record, concepts[i], rate_statistics->GetRateString(concepts[i], "_"));
     }
   }
 
@@ -1078,10 +1077,9 @@ const {
     au::AverageStatistics *average_statistics = au::Singleton<au::AverageStatistics>::shared();
     std::vector<std::string> concepts = average_statistics->GetConcepts();
     for (size_t i = 0; i < concepts.size(); ++i) {
-      if (!visualization.match(concepts[i])) {
-        continue;
+      if (visualization.match(concepts[i])) {
+        ::samson::add(record, concepts[i], average_statistics->GetAverageString(concepts[i], "_"));
       }
-      ::samson::add(record, concepts[i], average_statistics->GetAverageString(concepts[i], "_"));
     }
   }
 

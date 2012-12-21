@@ -43,7 +43,7 @@ public:
 
   void push(engine::BufferPointer buffer);
 
-  // Overwriteen method of SamsonClient
+  // Overwriten method of SamsonClient
   void ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer);
 
   std::string getStatus();

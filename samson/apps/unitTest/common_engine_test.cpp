@@ -60,7 +60,7 @@ samson::SamsonClient *init_samson_client_test() {
   samson::SamsonClient *samson_client = new samson::SamsonClient("SamsonClientTest");
   LOG_SM(("samson_client created"));
 
-  if (samson_client->connect("localhost")) {
+  if (samson_client->Connect("localhost")) {
     LOG_SW(("Not possible to samson_client to  localhost"));  // SamsonClient to play with
   }
   return samson_client;

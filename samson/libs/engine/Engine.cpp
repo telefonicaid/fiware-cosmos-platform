@@ -109,13 +109,13 @@ void Engine::RunElement(EngineElement *running_element) {
   au::Cronometer cronometer;
 
   InternRunElement(running_element);
-  if (cronometer.seconds() > 60) {  // Not allowed more thatn 1 minute per task
-    LOG_X(1, ("EngineElement %s has being running for %s",
+  if (cronometer.seconds() > 60) {  // Not allowed more than 1 minute per task
+    LOG_X(1, ("EngineElement %s has been running for %s",
               running_element->str().c_str(),
               au::str_time(cronometer.seconds()).c_str()));
   }
-  if (cronometer.seconds() > 5) {  // Not allowed more thatn 1 minute per task
-    LOG_W(logs.engine, ("EngineElement %s has being running for %s",
+  if (cronometer.seconds() > 5) {  // Not allowed more than 1 minute per task
+    LOG_W(logs.engine, ("EngineElement %s has been running for %s",
                         running_element->str().c_str(),
                         au::str_time(cronometer.seconds()).c_str()));
   }

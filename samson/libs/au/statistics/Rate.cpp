@@ -98,12 +98,12 @@ double Rate::rate() const {
 
   double total = 0;
   double alpha = 0.9;
-  double current_weigth = 1;
+  double current_weight = 1;
   double total_weigth = 0;
   for (int i = 1; i < num_samples_; ++i) {
-    total += current_weigth * size_[i];
-    current_weigth *= alpha;
-    total_weigth += current_weigth;
+    total += current_weight * size_[i];
+    current_weight *= alpha;
+    total_weigth += current_weight;
   }
   return total / total_weigth;
 }
@@ -115,12 +115,12 @@ double Rate::hit_rate() const {
 
   double total = 0;
   double alpha = 0.9;
-  double current_weigth = 1;
+  double current_weight = 1;
   double total_weigth = 0;
   for (int i = 1; i < num_samples_; ++i) {
-    total += current_weigth * (double)hits_[i];
-    current_weigth *= alpha;
-    total_weigth += current_weigth;
+    total += current_weight * (double)hits_[i];
+    current_weight *= alpha;
+    total_weigth += current_weight;
   }
   return total / total_weigth;
 }

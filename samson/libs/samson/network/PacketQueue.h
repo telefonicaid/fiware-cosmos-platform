@@ -34,7 +34,7 @@ namespace samson {
 class PacketQueue : public au::Queue<Packet>{
 public:
 
-  PacketQueue(const NodeIdentifier& node_identifier) {
+  explicit PacketQueue(const NodeIdentifier& node_identifier) {
     node_identifier_ = node_identifier;
   }
 
@@ -111,7 +111,7 @@ public:
   /**
    * \brief Remove the next packet to be sent to a particular SAMSON node
    *
-   * It is suppoused that this packet has been sent correctly, so we remove from pending paquests queue
+   * It is supposed that this packet has been sent correctly, so we remove from pending paquests queue
    */
   void Pop(const NodeIdentifier& node_identifier);
 

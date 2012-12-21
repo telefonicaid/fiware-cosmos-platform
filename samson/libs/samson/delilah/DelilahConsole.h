@@ -70,7 +70,7 @@ public:
   int _receive(const PacketPointer& packet);
 
   // Process buffers of data received in streaming from SAMSON
-  void receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer);
+  void ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer);
 
   virtual void WriteOnDelilah(const std::string& message) {
     Write(message);

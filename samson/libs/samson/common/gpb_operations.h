@@ -136,7 +136,7 @@ void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au
 /**
  * \brief Remove modules ( filtered with a pattern for the name of the module )
  */
-void RemoveModules(gpb::Data *data, const std::string pattern);
+void RemoveModules(gpb::Data *data, const std::string& pattern);
 }
 }   // End of namespace samson::gpb
 

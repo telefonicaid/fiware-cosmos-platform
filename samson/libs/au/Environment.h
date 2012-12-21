@@ -29,8 +29,9 @@
 #ifndef AU_ENVIRONMENT_H_
 #define AU_ENVIRONMENT_H_
 
-#include <map>             // std::map
 #include <math.h>
+
+#include <map>             // std::map
 #include <sstream>         // std::ostringstream
 #include <stdlib.h>
 

@@ -14,34 +14,38 @@
 
 namespace samson {
 NodeIdentifier::NodeIdentifier() {
-  node_type = UnknownNode;
-  id = SIZE_T_UNDEFINED;
+  node_type_ = UnknownNode;
+  id_ = SIZE_T_UNDEFINED;
 }
 
 NodeIdentifier::NodeIdentifier(gpb::NodeIdentifier pb_node_identifier) {
   switch (pb_node_identifier.node_type()) {
     case gpb::NodeIdentifier_NodeType_Delilah:
-      node_type = DelilahNode;
+      node_type_ = DelilahNode;
       break;
     case gpb::NodeIdentifier_NodeType_Worker:
-      node_type = WorkerNode;
+      node_type_ = WorkerNode;
       break;
 
     default:
-      node_type = UnknownNode;
+      node_type_ = UnknownNode;
       break;
   }
 
-  id = pb_node_identifier.id();
+  id_ = pb_node_identifier.id();
 }
 
-NodeIdentifier::NodeIdentifier (ClusterNodeType _node_type, size_t _id) {
-  node_type = _node_type;
-  id = _id;
+NodeIdentifier::NodeIdentifier(const NodeIdentifier& node_identifier) {
+  Set(node_identifier);
+}
+
+NodeIdentifier::NodeIdentifier (ClusterNodeType node_type, size_t id) {
+  node_type_ = node_type;
+  id_ = id;
 }
 
 void NodeIdentifier::fill(gpb::NodeIdentifier *pb_node_identifier) {
-  switch (node_type) {
+  switch (node_type_) {
     case DelilahNode:
       pb_node_identifier->set_node_type(gpb::NodeIdentifier_NodeType_Delilah);
       break;
@@ -52,14 +56,14 @@ void NodeIdentifier::fill(gpb::NodeIdentifier *pb_node_identifier) {
       LM_X(1, ("Internal error"));
       break;
   }
-  pb_node_identifier->set_id(id);
+  pb_node_identifier->set_id(id_);
 }
 
 bool NodeIdentifier::operator==(const NodeIdentifier&  other) const {
-  if (node_type != other.node_type) {
+  if (node_type_ != other.node_type_) {
     return false;
   }
-  if (id != other.id) {
+  if (id_ != other.id_) {
     return false;
   }
 
@@ -67,23 +71,23 @@ bool NodeIdentifier::operator==(const NodeIdentifier&  other) const {
 }
 
 std::string NodeIdentifier::str() const {
-  switch (node_type) {
+  switch (node_type_) {
     case UnknownNode:
-      return au::str("%s:Unknown", ClusterNodeType2str(node_type));
+      return au::str("%s:Unknown", ClusterNodeType2str(node_type_));
 
       break;
 
     case WorkerNode:
-      return au::str("%s_%lu", ClusterNodeType2str(node_type), id);
+      return au::str("%s_%lu", ClusterNodeType2str(node_type_), id_);
 
       break;
 
     case DelilahNode:
-      return au::str("%s_%s", ClusterNodeType2str(node_type), au::code64_str(id).c_str());
+      return au::str("%s_%s", ClusterNodeType2str(node_type_), au::code64_str(id_).c_str());
 
       break;
   }
 
-  return au::str("%s:Unknown", ClusterNodeType2str(node_type));
+  return au::str("%s:Unknown", ClusterNodeType2str(node_type_));
 }
 }

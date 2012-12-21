@@ -21,7 +21,7 @@
 namespace au {
 typedef enum {
   sequence_non_compatible,     // This sequence is non compatible with introduced sequence
-  sequence_unfinished,         // Compatible but not finihsed
+  sequence_unfinished,         // Compatible but not finished
   sequence_finished            // Compatible and finished
 } SequenceDetectionCode;
 

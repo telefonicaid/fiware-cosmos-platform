@@ -44,7 +44,7 @@ struct BlockInfo {
    */
   void AppendBlock(FullKVInfo _info) {
     info.append(_info);
-    num_blocks++;
+    ++num_blocks;
   }
 
   /**
@@ -72,18 +72,18 @@ struct BlockInfo {
   double onDiskPercentadge();
   double lockedPercentadge();
 
-  size_t average_block_size() {
+  size_t average_block_size() const {
     if (num_blocks == 0) {
-      return num_blocks;
+      return 0;
     }
     return info.size / num_blocks;
   }
 
   // Debug strings
   // ----------------------------------------------------------------
-  std::string str();
-  std::string strShort();
-  std::string strShortInfo();
+  std::string str() const;
+  std::string strShort() const;
+  std::string strShortInfo() const;
 };
 }
 

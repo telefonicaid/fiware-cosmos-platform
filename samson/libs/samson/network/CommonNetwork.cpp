@@ -22,7 +22,7 @@
 #include "samson/network/NetworkConnection.h"
 
 namespace samson {
-CommonNetwork::CommonNetwork(NodeIdentifier my_node_identifier) :
+CommonNetwork::CommonNetwork(const NodeIdentifier& my_node_identifier) :
   token_("CommonNetwork") {
   // Identify myself
   node_identifier_ = my_node_identifier;
@@ -64,7 +64,7 @@ void CommonNetwork::set_cluster_information(au::SharedPointer<gpb::ClusterInfo> 
   cluster_information_ = cluster_information;
 
   // If I am a worker, update all my delilah connections
-  if (node_identifier_.node_type == WorkerNode) {
+  if (node_identifier_.node_type() == WorkerNode) {
     PacketPointer ci_packet(new Packet(Message::ClusterInfoUpdate));
     ci_packet->message->mutable_cluster_info()->CopyFrom(*cluster_information_);
     ci_packet->from = node_identifier_;
@@ -103,12 +103,12 @@ void CommonNetwork::ReviewConnections() {
                                     node_identifier.str().c_str(), host.c_str(), port));
 
     // If I am a worker, do not connect with workers with a lower id since they will try to connect with me
-    if (node_identifier_.node_type == WorkerNode) {
-      if (node_identifier_.id < worker_id) {
+    if (node_identifier_.node_type() == WorkerNode) {
+      if (node_identifier_.id() < worker_id) {
         LOG_V(logs.network_connection, ("Skipping worker %lu (%s:%d): My id is lower", worker_id, host.c_str(), port));
         continue;
       }
-      if (node_identifier_.id == worker_id) {
+      if (node_identifier_.id() == worker_id) {
         LOG_V(logs.network_connection, ("Skipping worker %lu (%s:%d): It is me", worker_id, host.c_str(), port));
         continue;
       }
@@ -127,7 +127,7 @@ void CommonNetwork::ReviewConnections() {
   // Close old connections ( workers not included in the cluster or unconnected delilahs )
   {
     std::vector<NodeIdentifier> node_identifiers = GetAllNodeIdentifiers();
-    for (size_t i = 0; i < node_identifiers.size(); i++) {
+    for (size_t i = 0; i < node_identifiers.size(); ++i) {
       if (!IsNecessaryToProcess(node_identifiers[i])) {    // This packets are not necessary any more
         LOG_W(logs.network_connection, ("Removing connection to %s (not necessary any more)",
                                         node_identifiers[i].str().c_str()));
@@ -142,7 +142,7 @@ void CommonNetwork::ReviewConnections() {
   // Remove packets for unnecessary nodes
   {
     std::vector<NodeIdentifier> node_identifiers = multi_packet_queue_.GetAllNodeIdentifiers();
-    for (size_t i = 0; i < node_identifiers.size(); i++) {
+    for (size_t i = 0; i < node_identifiers.size(); ++i) {
       if (!IsNecessaryToProcess(node_identifiers[i])) {    // This packets are not necessary any more
         LOG_W(logs.network_connection,
               ("Removing packets for %s (not necessary any more)", node_identifiers[i].str().c_str()));
@@ -265,7 +265,7 @@ void CommonNetwork::Send(const PacketPointer& packet) {
 void CommonNetwork::SendToAllWorkers(const PacketPointer& packet, std::set<size_t>& workers) {
   au::TokenTaker tt(&token_);
 
-  for (int i = 0; i < cluster_information_->workers_size(); i++) {
+  for (int i = 0; i < cluster_information_->workers_size(); ++i) {
     size_t worker_id = cluster_information_->workers(i).worker_id();
     PacketPointer new_paket(new Packet(packet.shared_object()));
     new_paket->to = NodeIdentifier(WorkerNode, worker_id);
@@ -286,7 +286,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
   }
 
   if (packet->msgCode == Message::ClusterInfoUpdate) {
-    if (node_identifier_.node_type == WorkerNode) {
+    if (node_identifier_.node_type() == WorkerNode) {
       LOG_SW(("ClusterInfoUpdate packet received at a worker node from connection %s. Closing connection"
               , connection->node_identifier().str().c_str()));
       connection->Close();
@@ -294,7 +294,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
     }   // This is managed as a normal message in delilah
   }
   // Check we do now receive messages from unidenfitied node elements
-  if (connection->node_identifier().node_type == UnknownNode) {
+  if (connection->node_identifier().node_type() == UnknownNode) {
     LOG_SW(("Packet %s received from a non-identified node %s. Closing connection"
             , packet->str().c_str()
             , connection->node_identifier().str().c_str()));
@@ -305,15 +305,15 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
   schedule_receive(packet);
 }
 
-au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
+au::SharedPointer<au::tables::Table> CommonNetwork::GetClusterConnectionsTable() const {
   au::TokenTaker tt(&token_);
 
-  au::tables::Table *table = new au::tables::Table(au::StringVector("Worker", "Host", "Status"));
+  au::SharedPointer<au::tables::Table> table(new au::tables::Table(au::StringVector("Worker", "Host", "Status")));
 
   if (cluster_information_ != NULL) {
     table->setTitle("Cluster");
 
-    for (int i = 0; i < cluster_information_->workers_size(); i++) {
+    for (int i = 0; i < cluster_information_->workers_size(); ++i) {
       size_t worker_id = cluster_information_->workers(i).worker_id();
       std::string host = cluster_information_->workers(i).worker_info().host();
       int port = cluster_information_->workers(i).worker_info().port();
@@ -354,14 +354,14 @@ void CommonNetwork::schedule_receive(PacketPointer packet) {
   engine::Engine::shared()->notify(notification);
 }
 
-size_t CommonNetwork::cluster_information_version() {
+size_t CommonNetwork::cluster_information_version() const {
   if (cluster_information_ == NULL) {
-    return static_cast<size_t>(-1);
+    return SIZE_T_UNDEFINED;
   }
   return cluster_information_->version();
 }
 
-std::string CommonNetwork::getClusterConnectionStr() {
+std::string CommonNetwork::getClusterConnectionStr() const {
   if (cluster_information_ == NULL) {
     return "Disconnected";
   } else {
@@ -371,14 +371,14 @@ std::string CommonNetwork::getClusterConnectionStr() {
   }
 }
 
-std::string CommonNetwork::getClusterSetupStr() {
+std::string CommonNetwork::getClusterSetupStr() const {
   if (cluster_information_ == NULL) {
     return "Delilah is not connected to any SAMSON cluster\n";
   }
 
   au::tables::Table table("Worker|Host|Connected");
   table.setTitle(au::str("Cluster setup ( version %lu )", cluster_information_->version()));
-  for (int i = 0; i < cluster_information_->workers_size(); i++) {
+  for (int i = 0; i < cluster_information_->workers_size(); ++i) {
     size_t worker_id = cluster_information_->workers(i).worker_id();
 
     au::StringVector values;
@@ -399,7 +399,7 @@ std::string CommonNetwork::getClusterSetupStr() {
   return table.str();
 }
 
-std::string CommonNetwork::getClusterAssignationStr() {
+std::string CommonNetwork::getClusterAssignationStr() const {
   au::tables::Table table("ProcessUnit|Worker|Replicas");
 
   table.setTitle("Assignation");
@@ -447,12 +447,12 @@ size_t CommonNetwork::getRandomWorkerId(size_t previous_worker) {
 
   // If no information, no worker
   if (cluster_information_ == NULL) {
-    return -1;
+    return SIZE_T_UNDEFINED;
   }
 
   // Get list of connected workers
   std::vector<size_t> connected_worker_ids;
-  for (int i = 0; i < cluster_information_->workers_size(); i++) {
+  for (int i = 0; i < cluster_information_->workers_size(); ++i) {
     size_t worker_id = cluster_information_->workers(i).worker_id();
     if (IsConnected(NodeIdentifier(WorkerNode, worker_id))) {
       connected_worker_ids.push_back(worker_id);
@@ -483,8 +483,8 @@ size_t CommonNetwork::getRandomWorkerId(size_t previous_worker) {
   }
 }
 
-bool CommonNetwork::IsNecessaryToProcess(NodeIdentifier node) const {
-  switch (node.node_type) {
+bool CommonNetwork::IsNecessaryToProcess(const NodeIdentifier& node) const {
+  switch (node.node_type()) {
     case UnknownNode:
       return false;   // Never process packets to unknown nodes
 
@@ -493,7 +493,7 @@ bool CommonNetwork::IsNecessaryToProcess(NodeIdentifier node) const {
       if (cluster_information_ == NULL) {
         return false;   // If no cluster information , do not sent message to workers
       }
-      return gpb::isWorkerIncluded(cluster_information_.shared_object(), node.id);
+      return gpb::isWorkerIncluded(cluster_information_.shared_object(), node.id());
 
       break;
     case DelilahNode:
@@ -505,17 +505,17 @@ bool CommonNetwork::IsNecessaryToProcess(NodeIdentifier node) const {
   return false;
 }
 
-bool CommonNetwork::IsWorkerConnected(size_t worker_id) {
+bool CommonNetwork::IsWorkerConnected(size_t worker_id) const {
   return IsConnected(NodeIdentifier(WorkerNode, worker_id));
 }
 
 // Check if this worker id is valid
-bool CommonNetwork::IsWorkerInCluster(size_t worker_id) {
+bool CommonNetwork::IsWorkerInCluster(size_t worker_id) const {
   if (cluster_information_ == NULL) {
     return false;
   }
   // Check if this worker is part of the cluster
-  for (int i = 0; i < cluster_information_->workers_size(); i++) {
+  for (int i = 0; i < cluster_information_->workers_size(); ++i) {
     if (cluster_information_->workers(i).worker_id() == worker_id) {
       return true;
     }

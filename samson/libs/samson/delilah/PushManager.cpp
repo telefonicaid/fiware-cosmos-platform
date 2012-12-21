@@ -297,11 +297,11 @@ au::tables::Table *PushManager::getTableOfItems() {
   return table;
 }
 
-size_t PushManager::GetPendingSizeToPush() {
+size_t PushManager::GetPendingSizeToPush() const {
   size_t total = 0;
 
-  au::map<size_t, PushItem>::iterator iter;
-  for (iter = items_.begin(); iter != items_.end(); iter++) {
+  au::map<size_t, PushItem>::const_iterator iter;
+  for (iter = items_.begin(); iter != items_.end(); ++iter) {
     total += iter->second->size();
   }
   return total;

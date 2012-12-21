@@ -236,7 +236,7 @@ void LogCentral::RunThread() {
 
     if (!real_log) {
       if (IsThreadQuitting()) {
-        return;  // Finish this thread if I am suppoused to do so
+        return;  // Finish this thread if I am supposed to do so
       }
       continue;
     }

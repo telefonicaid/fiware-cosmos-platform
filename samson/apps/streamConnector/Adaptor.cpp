@@ -37,7 +37,7 @@ Adaptor::~Adaptor() {
   connections.clearMap();
 }
 
-ConnectionType Adaptor::getType() {
+ConnectionType Adaptor::getType() const {
   return type;
 }
 
@@ -63,9 +63,9 @@ void Adaptor::add(Connection *connection) {
   connections.insertInMap(next_id, connection);
   connection->id = next_id;
 
-  log("Message", au::str("Connection %s (%s) added"
-                         , connection->getFullName().c_str()
-                         , connection->getDescription().c_str()));
+  LOG_SV(("Connection %s (%s) added"
+          , connection->getFullName().c_str()
+          , connection->getDescription().c_str()));
 
   // Init the connection properly
   connection->init_connecton();
@@ -133,9 +133,6 @@ void Adaptor::set_as_finished() {
   if (finished) {
     return;
   }
-
-  // Log activity
-  log("Message", "Set as finished");
   finished = true;
 }
 
@@ -165,24 +162,11 @@ void Adaptor::remove_finished_connections(au::ErrorManager *error) {
   for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
     Connection *connection = it_connections->second;
     if (connection->is_finished()) {
-      log("Message", au::str("Removing connection %s", connection->getFullName().c_str()));
-
       connection->cancel_connecton();
       delete connection;
       connections.erase(it_connections);
     }
   }
-}
-
-// Log system
-void Adaptor::log(std::string type, std::string message) {
-  log(au::SharedPointer<Log> (new Log(getFullName(), type, message)));
-}
-
-void Adaptor::log(au::SharedPointer<Log> log) {
-  LogManager *log_manager = au::Singleton<LogManager>::shared();
-
-  log_manager->log(log);
 }
 
 void Adaptor::report_output_size(size_t size) {

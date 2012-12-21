@@ -2,7 +2,6 @@
 SET (HEADERS
   common.h
   message.pb.h
-  LogManager.h
   BufferList.h
   BufferProcessor.h
   Channel.h
@@ -14,6 +13,7 @@ SET (HEADERS
   DiskAdaptor.h
   ListenerAdaptor.h
   SamsonAdaptor.h
+  SamsonConnection.h
   InterChannelPacket.h
   InterChannelLink.h
   ChannelAdaptor.h
@@ -28,7 +28,6 @@ SET (HEADERS
 SET (SOURCES
   common.cpp
   message.pb.cc
-  LogManager.cpp
   BufferList.cpp
   BufferProcessor.cpp
   Channel.cpp
@@ -40,6 +39,7 @@ SET (SOURCES
   DiskAdaptor.cpp
   ListenerAdaptor.cpp
   SamsonAdaptor.cpp
+  SamsonConnection.cpp
   InterChannelPacket.cpp
   InterChannelLink.cpp
   ChannelAdaptor.cpp

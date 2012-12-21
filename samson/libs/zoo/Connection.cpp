@@ -51,6 +51,29 @@ int Connection::Remove(const std::string&path, int version) {
   return zoo_delete(handler_, path.c_str(), version);
 }
 
+int Connection::RecursiveRemove(const std::string& path) {
+  // Get childrens first...
+  au::StringVector paths;
+  int rc = GetChildrens(path, paths);
+
+  if (rc) {
+    return rc;
+  }
+
+  // Remove paths first
+  for (size_t i = 0; i < paths.size(); ++i) {
+    RecursiveRemove(path + "/" + paths[i]);
+  }
+
+  // Remove this path
+  rc = Remove(path);
+  if (rc) {
+    return rc;
+  }
+
+  return 0;   // OK
+}
+
 int Connection::Set(const std::string& path, const char *value, int value_len, int version) {
   au::TokenTaker tt(&token_);
 

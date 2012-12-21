@@ -314,9 +314,9 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
 
   // If an overload-error is received, add an alert to not send more request to this worker in the next seconds....
-  if (packet->from.node_type == WorkerNode) {
+  if (packet->from.node_type() == WorkerNode) {
     if (packet->message->has_error() && (packet->message->error().message() == SAMSON_ERROR_OVERLOADED)) {
-      worker_alert_.AddAlert(packet->from.id, 5);  // 5 seconds of peace for this worker
+      worker_alert_.AddAlert(packet->from.id(), 5);  // 5 seconds of peace for this worker
     }
   }
 
@@ -330,7 +330,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    if (packet->from.node_type == DelilahNode) {
+    if (packet->from.node_type() == DelilahNode) {
       LOG_W(logs.worker, ("Received a Message::BlockRequest from a delilah node"));
       return;
     }
@@ -338,13 +338,13 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     // Collect information for this request
     size_t block_id  = packet->message->block_id();
     stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
-    size_t worker_id = packet->from.id;
+    size_t worker_id = packet->from.id();
 
     // Check if we have this block
     if (block == NULL) {
       LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Unknown block... returning error"
                                  , str_block_id(block_id).c_str()
-                                 , packet->from.id));
+                                 , packet->from.id()));
       PacketPointer p(new Packet(Message::BlockRequestResponse));
       p->to = packet->from;
       p->message->set_block_id(block_id);
@@ -371,7 +371,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
       LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Answering now since block is in mem"
                                  , str_block_id(block_id).c_str()
-                                 , packet->from.id));
+                                 , packet->from.id()));
 
       PacketPointer p(new Packet(Message::BlockRequestResponse));
       p->to = packet->from;
@@ -387,11 +387,11 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
     // Schedule a task to make to answer this block request ( loading block in memory when possible )
     std::vector<size_t> worker_ids;
-    worker_ids.push_back(packet->from.id);
+    worker_ids.push_back(packet->from.id());
     size_t task_id = task_manager_->AddBlockRequestTask(block_id, worker_ids);
     LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Scheduling task W%lu"
                                , str_block_id(block_id).c_str()
-                               , packet->from.id
+                               , packet->from.id()
                                , task_id));
     return;
   }
@@ -406,13 +406,13 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    if (packet->from.node_type != WorkerNode) {
+    if (packet->from.node_type() != WorkerNode) {
       LOG_SW(("Received a Message::BlockRequestResponse from a delilah client. Ignoring..."));
       return;
     }
 
     size_t block_id = packet->message->block_id();
-    size_t worker_id = packet->from.id;
+    size_t worker_id = packet->from.id();
 
     if (block_id == static_cast<size_t>(-1)) {
       LOG_SW(("Received a Message::DuplicateBlock with incorrect block id"));
@@ -461,13 +461,13 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
 
-    if (packet->from.node_type != DelilahNode) {
+    if (packet->from.node_type() != DelilahNode) {
       LOG_SW(("Received a Message::PopBlockRequest from a worker node"));
       return;
     }
 
     size_t block_id  = packet->message->block_id();
-    size_t delilah_id = packet->from.id;
+    size_t delilah_id = packet->from.id();
     size_t delilah_component_id = packet->message->delilah_component_id();
     size_t pop_id = packet->message->pop_id();
 
@@ -506,12 +506,12 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    if (packet->from.node_type != DelilahNode) {
+    if (packet->from.node_type() != DelilahNode) {
       LOG_SW(("Received a push packet from a non delilah connection (%s)", packet->from.str().c_str()));
       return;
     }
 
-    if (packet->from.id == 0) {
+    if (packet->from.id() == 0) {
       LOG_SW(("Received a push packet from a delilah_id = 0. Rejected"));
       return;
     }
@@ -528,7 +528,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       queues.push_back(packet->message->queue(i));
     }
 
-    worker_block_manager_->ReceivedPushBlock(packet->from.id, push_id, packet->buffer(), queues);
+    worker_block_manager_->ReceivedPushBlock(packet->from.id(), push_id, packet->buffer(), queues);
     return;
   }
 
@@ -545,7 +545,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     bool continuous_pop = packet->message->pop_queue().continuous_pop();
     size_t commit_id = packet->message->pop_queue().commit_id();
     size_t min_commit_id = packet->message->pop_queue().min_commit_id();
-    size_t delilah_id = packet->from.id;
+    size_t delilah_id = packet->from.id();
     std::string original_queue = packet->message->pop_queue().queue();
     std::string pop_queue = au::str(".pop_%s_%lu_%s"
                                     , au::code64_str(delilah_id).c_str()
@@ -646,7 +646,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       return;
     }
 
-    size_t delilah_id = packet->from.id;
+    size_t delilah_id = packet->from.id();
     size_t delilah_component_id = packet->message->delilah_component_id();
 
     std::string worker_command_id = au::str("%s_%lu", au::code64_str(delilah_id).c_str(), delilah_component_id);
@@ -974,7 +974,7 @@ std::string SamsonWorker::GetPrompt() {
   return output.str();
 }
 
-au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerAllLogChannels(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerAllLogChannels(const Visualization& visualization) const {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
 
   collection->set_name("wlog channels");
@@ -996,7 +996,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerAllLogChannels(const V
   return collection;
 }
 
-au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerLogStatus(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerLogStatus(const Visualization& visualization) const {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
 
   collection->set_name("wlog status");
@@ -1008,7 +1008,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerLogStatus(const Visual
   return collection;
 }
 
-au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Visualization& visualization) const {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_title("KVRanges collection");
   collection->set_name("kv_ranges");
@@ -1057,7 +1057,8 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Vis
   return collection;
 }
 
-au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerStatisticsCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerStatisticsCollection(const Visualization& visualization)
+const {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
   collection->set_name("workers_statistics");
   gpb::CollectionRecord *record = collection->add_record();
@@ -1065,7 +1066,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerStatisticsCollection(c
   {
     au::RateStatistics *rate_statistics = au::Singleton<au::RateStatistics>::shared();
     std::vector<std::string> concepts = rate_statistics->GetConcepts();
-    for (size_t i = 0; i < concepts.size(); i++) {
+    for (size_t i = 0; i < concepts.size(); ++i) {
       if (!visualization.match(concepts[i])) {
         continue;
       }
@@ -1076,7 +1077,7 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerStatisticsCollection(c
   {
     au::AverageStatistics *average_statistics = au::Singleton<au::AverageStatistics>::shared();
     std::vector<std::string> concepts = average_statistics->GetConcepts();
-    for (size_t i = 0; i < concepts.size(); i++) {
+    for (size_t i = 0; i < concepts.size(); ++i) {
       if (!visualization.match(concepts[i])) {
         continue;
       }
@@ -1084,14 +1085,10 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerStatisticsCollection(c
     }
   }
 
-
-
-
-
   return collection;
 }
 
-au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visualization& visualization) const {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
 
   collection->set_name("workers");
@@ -1301,7 +1298,7 @@ bool SamsonWorker::IsConnected() {
 void SamsonWorker::fill(gpb::CollectionRecord *record
                         , const std::string& name
                         , gpb::Data *data
-                        , const Visualization& visualization) {
+                        , const Visualization& visualization) const {
   ::samson::add(record, "name", name, "different");
   FullKVInfo info = gpb::GetFullKVInfo(data);
   ::samson::add(record, "ZK size", data->ByteSize(), "uint64,different");
@@ -1309,7 +1306,7 @@ void SamsonWorker::fill(gpb::CollectionRecord *record
   ::samson::add(record, "#commit", data->commit_id(), "different");
 }
 
-au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visualization& visualization) const {
   // Get a copy of the current version
   au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
 
@@ -1386,7 +1383,8 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visu
   return collection;
 }
 
-au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelStatus(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelStatus(const Visualization& visualization)
+const {
   // Get a copy of the current version
   au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
 
@@ -1407,7 +1405,8 @@ au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelStatus
   return collection;
 }
 
-au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelCommits(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelCommits(const Visualization& visualization)
+const {
   // Get a copy of the current version
   au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
 

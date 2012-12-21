@@ -147,9 +147,9 @@ public:
   }
 
   /**
-   * \brief Get a vector of tokens to be retained-releaed during fork
+   * \brief Get a vector of tokens to be retained-released during fork
    */
-  std::vector<au::Token *> GetTokens();
+  std::vector<au::Token *> GetTokens() const;
 
 protected:
   // Container for all input/output blocks

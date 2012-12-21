@@ -10,9 +10,9 @@
  */
 /* ****************************************************************************
  *
- * FILE                     main_samsonWorker.cpp
+ * FILE                     main_samsonResetZookeeper.cpp
  *
- * AUTHOR                   Ken Zangelin
+ * AUTHOR                   Andreu Urruela
  *
  * CREATION DATE            Dec 14 2010
  *
@@ -103,31 +103,6 @@ static const char *manDescription = "\n"
 static const char *manExitStatus = "0      if OK\n 1-255  error\n";
 
 
-void Remove(au::zoo::Connection& connection, const std::string& path) {
-  LOG_SM(("Trying to remove '%s'", path.c_str()));
-
-  // Get childrens first...
-  au::StringVector paths;
-  int rc = connection.GetChildrens(path, paths);
-  if (rc) {
-    LOG_SW(("Error getting childrens of '%s': %s", path.c_str(), au::zoo::str_error(rc).c_str()));
-    return;
-  }
-
-  // Remove paths first
-  for (size_t i = 0; i < paths.size(); i++) {
-    Remove(connection, path + "/" + paths[i]);
-  }
-
-  // Remove this path
-  rc = connection.Remove(path);
-  if (rc) {
-    LOG_SW(("Error removing '%s': %s", path.c_str(), au::zoo::str_error(rc).c_str()));
-  } else {
-    LOG_SM(("Removed '%s'", path.c_str()));
-  }
-}
-
 int main(int argC, const char *argV[]) {
   paConfig("builtin prefix", (void *)"SS_WORKER_");
   paConfig("usage and exit on any warning", (void *)true);
@@ -173,7 +148,7 @@ int main(int argC, const char *argV[]) {
     LOG_X(1, ("Unable to connect to Zookeeper at %s.", zoo_host));
   } else {
     LOG_M(samson::logs.worker, ("Connection with ZK at %s OK", my_zoo_host.c_str()));
-    Remove(connection, "/samson");
+    connection.RecursiveRemove("/samson");
   }
 
   au::LogCentral::Shared()->Flush();

@@ -11,9 +11,9 @@
 #include "samson/common/gpb_operations.h"
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
-#include <set>
 
 #include "au/log/LogMain.h"
 #include "au/string/StringUtilities.h"
@@ -688,7 +688,7 @@ void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au
   }
 }
 
-void RemoveModules(gpb::Data *data, const std::string pattern) {
+void RemoveModules(gpb::Data *data, const std::string& pattern) {
   // Remove blocks in queue .modules
   gpb::Queue *queue = gpb::get_queue(data, ".modules");
 

@@ -109,10 +109,12 @@ public:
   /**
    * \brief Debug string
    */
-  std::string str();
+  std::string str() const;
 
-
-  size_t GetNumKVRanges() {
+  /**
+   * \brief Get number of KVRanges we are processing in this worker for this stream operation
+   */
+  size_t GetNumKVRanges() const {
     return stream_operations_range_info_.size();
   }
 

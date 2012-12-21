@@ -27,7 +27,7 @@ Rate::Rate(int num_samples)
   hits_ = (int *)malloc(num_samples_ * sizeof(int));
   size_ = (double *)malloc(num_samples_ * sizeof(double));
 
-  for (int i = 0; i < num_samples_; i++) {
+  for (int i = 0; i < num_samples_; ++i) {
     hits_[i] = 0;
     size_[i] = 0;
   }
@@ -105,8 +105,7 @@ double Rate::rate() const {
     current_weigth *= alpha;
     total_weigth += current_weigth;
   }
-  double tmp = total / total_weigth;
-  return tmp;
+  return total / total_weigth;
 }
 
 double Rate::hit_rate() const {
@@ -123,8 +122,7 @@ double Rate::hit_rate() const {
     current_weigth *= alpha;
     total_weigth += current_weigth;
   }
-  double tmp = total / total_weigth;
-  return tmp;
+  return total / total_weigth;
 }
 
 void Rate::UpdateTime() const {
@@ -139,7 +137,8 @@ void Rate::UpdateTime() const {
   size_t diff = time - last_time_correction;
 
   // Move samples "diff" slots
-  for (int i = 0; i < ((int)num_samples_ - (int)diff); ++i) {
+  int num_shifts = num_samples_ - diff;
+  for (int i = 0; i < num_shifts; ++i) {
     size_[num_samples_ - i - 1] = size_[num_samples_ - i - 2];
     hits_[num_samples_ - i - 1] = hits_[num_samples_ - i - 2];
   }
@@ -157,7 +156,7 @@ void Rate::UpdateTime() const {
 std::string Rate::str_debug() const {
   std::ostringstream output;
 
-  for (int i = 0; i < num_samples_; i++) {
+  for (int i = 0; i < num_samples_; ++i) {
     output << "[" << size_[i] << "]";
   }
   return output.str();

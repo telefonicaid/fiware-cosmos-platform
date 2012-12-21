@@ -26,10 +26,11 @@
 #ifndef _H_SAMSON_ENGINE
 #define _H_SAMSON_ENGINE
 
-#include <iostream>                              // std::cout
-#include <list>
 #include <math.h>
 #include <pthread.h>
+
+#include <iostream>                              // std::cout
+#include <list>
 #include <set>                                   // std::set
 #include <string>
 
@@ -116,7 +117,7 @@ private:
    *
    * RunThread
    *
-   * \brief Main loop to process engine-elements ( normal, periodic ande extra )
+   * \brief Main loop to process engine-elements ( normal, periodic and extra )
    *
    * Try to get the next element in the repeat_elements list
    * if not there , try normal elements...

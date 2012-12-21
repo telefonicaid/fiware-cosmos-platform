@@ -266,7 +266,7 @@ std::vector<KVRange> WorkerTaskManager::CompressKVRanges(std::vector<KVRange> in
   std::vector<KVRange> result;
 
   // Check coherence of input tranges
-  for (size_t i = 0; i < (input_ranges.size() - 1); i++) {
+  for (size_t i = 0; i < (input_ranges.size() - 1); ++i) {
     if (input_ranges[i].hg_end_  != input_ranges[i + 1].hg_begin_) {
       error.AddError("Non coherent ranges");
       return result;
@@ -279,7 +279,7 @@ std::vector<KVRange> WorkerTaskManager::CompressKVRanges(std::vector<KVRange> in
     int begin = pos;
     int end = pos;
     while ((end < num_input_ranges) && ((end - begin + 1) < reduction_factor)) {
-      end++;
+      ++end;
     }
 
     // Create a unified KVRange

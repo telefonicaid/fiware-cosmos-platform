@@ -20,6 +20,7 @@ extern size_t buffer_size;
 extern size_t input_buffer_size;  // Size of the chunks to read
 
 namespace stream_connector {
+const size_t FileDescriptorConnection::kMinInputbufferSize = 1024;
 const size_t FileDescriptorConnection::kMaxInputbufferSize = 100 * 1024 * 1024;
 
 void *run_FileDescriptorConnection(void *p) {
@@ -43,8 +44,8 @@ FileDescriptorConnection::FileDescriptorConnection(Adaptor *_item, ConnectionTyp
   // Init counter of connections
   num_connections_ = 0;
 
-  // Default input buffer size
-  input_buffer_size = 1024;
+  // Default input buffer size ( the minimum one )
+  input_buffer_size = kMinInputbufferSize;
 }
 
 void FileDescriptorConnection::start_connection() {
@@ -52,8 +53,6 @@ void FileDescriptorConnection::start_connection() {
 }
 
 void FileDescriptorConnection::stop_connection() {
-  log("Message", "Connection stoped");
-
   // Stop thread in the background
   if (file_descriptor_) {
     file_descriptor_->Close();
@@ -185,6 +184,10 @@ void FileDescriptorConnection::run_as_input() {
         input_buffer_size = max_mem;
       }
 
+      if (input_buffer_size < kMinInputbufferSize) {
+        input_buffer_size = kMinInputbufferSize;
+      }
+
       if (input_buffer_size > kMaxInputbufferSize) {
         input_buffer_size = kMaxInputbufferSize;
       }
@@ -199,9 +202,6 @@ void FileDescriptorConnection::run_as_input() {
 
     // If last read is not ok...
     if (s != au::OK) {
-      // Log activity
-      log("Message", au::str("Connection finished (%s) ", au::status(s)));
-
       // Close fd
       file_descriptor_->Close();
 

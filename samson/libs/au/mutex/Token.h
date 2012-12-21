@@ -62,7 +62,7 @@ private:
 class Token {
 public:
 
-  Token(const std::string& name);
+  explicit Token(const std::string& name);
   ~Token();
 
   std::string name() const {

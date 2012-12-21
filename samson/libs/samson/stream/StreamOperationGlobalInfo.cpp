@@ -89,7 +89,7 @@ void StreamOperationGlobalInfo::Review(gpb::Data *data) {
   }
 }
 
-std::string StreamOperationGlobalInfo::str() {
+std::string StreamOperationGlobalInfo::str() const {
   std::ostringstream output;
 
   output << "StreamOperation " << stream_operation_id_;

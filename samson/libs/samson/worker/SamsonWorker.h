@@ -114,16 +114,16 @@ public:
   std::string GetPrompt();
 
   // Function to get information about current status
-  au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetWorkerStatisticsCollection(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetWorkerAllLogChannels(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetKVRangesCollection(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetWorkerStatisticsCollection(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetWorkerAllLogChannels(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetKVRangesCollection(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualization) const;
 
-  bool IsReady();     // Method to access if worker is ready
+  bool IsReady();         // Method to access if worker is ready
   bool IsConnected();     // Method to access if worker is ready
 
   // Accessors to individual components of this worker
@@ -174,7 +174,8 @@ private:
   void ResetToConnected();     // Reset when come back to connected ( change cluster setup )
 
   // Visualitzation of current data model
-  void fill(gpb::CollectionRecord *record, const std::string& name, gpb::Data *data, const Visualization& visualization);
+  void fill(gpb::CollectionRecord *record, const std::string& name, gpb::Data *data,
+            const Visualization& visualization) const;
 
   // State of this worker
   std::string str_state();

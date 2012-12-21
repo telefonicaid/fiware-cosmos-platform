@@ -110,7 +110,7 @@ public:
   virtual void stop_connection();
   virtual void review_connection();
   virtual std::string getStatus();
-  virtual size_t bufferedSize();
+  virtual size_t bufferedSize() const;
 
 
 private:

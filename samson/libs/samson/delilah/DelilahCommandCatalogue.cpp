@@ -237,8 +237,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   AddCommand("ls_stream_operations_statistics", "stream", "Show stream operation statistics for the cluster");
   AddBoolOption("ls_stream_operations_statistics", "-input", "Include input data information");
-  AddBoolOption("ls_stream_operations_statistics", "-output", "Include input data information");
-  AddBoolOption("ls_stream_operations_statistics", "-state", "Include input data information");
+  AddBoolOption("ls_stream_operations_statistics", "-output", "Include output data information");
+  AddBoolOption("ls_stream_operations_statistics", "-state", "Include state data information");
   AddTag("ls_stream_operations_statistics", "send_to_all_workers");
 
   AddCommand("ps_stream_operations", "stream",

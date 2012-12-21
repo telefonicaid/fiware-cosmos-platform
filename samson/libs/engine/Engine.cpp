@@ -179,7 +179,7 @@ void Engine::RunThread() {
     if (num_engine_elements > 10000) {
       LOG_SW(("Execesive number of elements in the engine stack %lu", num_engine_elements));
       std::vector<std::string> descriptions = engine_element_collection_.GetAllElementDescription();
-      for (size_t i = 0; i < descriptions.size(); i++) {
+      for (size_t i = 0; i < descriptions.size(); ++i) {
         LOG_SW(("%s", descriptions[i].c_str()));
       }
       LOG_X(1, ("Execesive number of elements in the engine stack"));

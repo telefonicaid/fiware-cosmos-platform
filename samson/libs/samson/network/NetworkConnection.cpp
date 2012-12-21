@@ -39,18 +39,14 @@ void *NetworkConnection_writerThread(void *p) {
   return NULL;
 }
 
-NetworkConnection::NetworkConnection(NodeIdentifier node_identifier
+NetworkConnection::NetworkConnection(const NodeIdentifier& node_identifier
                                      , au::SocketConnection *socket_connection
                                      , NetworkManager *network_manager)
   : token_("NetworkConnection") {
-  // Name in NetworkManager
   node_identifier_ = node_identifier;
 
   // Connection we are managing
   socket_connection_ = socket_connection;
-
-  // Non identified
-  node_identifier = NodeIdentifier(UnknownNode, 0);
 
   // Manager to report received messages
   network_manager_ = network_manager;
@@ -97,7 +93,7 @@ void NetworkConnection::WakeUpWriter() {
   tt.WakeUpAll();
 }
 
-bool NetworkConnection::IsDisconnected() {
+bool NetworkConnection::IsDisconnected() const {
   return socket_connection_->IsClosed();
 }
 
@@ -201,7 +197,7 @@ void NetworkConnection::writerThread() {
   LM_X(1, ("Internal error"));  // No possible to get this line
 }
 
-std::string NetworkConnection::str() {
+std::string NetworkConnection::str() const {
   std::ostringstream output;
 
   output << "[" << (running_t_read_ ? "R" : " ") << (running_t_write_ ? "W" : " ") << "]";

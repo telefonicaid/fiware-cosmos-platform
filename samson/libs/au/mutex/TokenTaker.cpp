@@ -45,13 +45,13 @@ void TokenTaker::WakeUpAll() {
 }
 
 MultipleTokenTaker::MultipleTokenTaker(const std::vector<Token *>& tokens) : tokens_(tokens) {
-  for (size_t i = 0; i < tokens_.size(); i++) {
+  for (size_t i = 0; i < tokens_.size(); ++i) {
     tokens_[i]->Retain();
   }
 }
 
 MultipleTokenTaker::~MultipleTokenTaker() {
-  for (size_t i = 0; i < tokens_.size(); i++) {
+  for (size_t i = 0; i < tokens_.size(); ++i) {
     tokens_[i]->Release();
   }
 }

@@ -98,7 +98,7 @@ public:
   void set_receiver_interface(DelilahLiveDataReceiverInterface *interface);
 
   // DelilahLiveDataReceiverInterface
-  void receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer);
+  void ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer);
 
   // Wait until everything is finished
   void waitUntilFinish();

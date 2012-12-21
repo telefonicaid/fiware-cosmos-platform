@@ -37,7 +37,7 @@ BlockList::~BlockList() {
 void BlockList::clearBlockList() {
   // Make sure I am not in any list in the blocks I am retaining...
   au::list<BlockRef>::iterator it_blocks;   // List of blocks references
-  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); it_blocks++) {
+  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); ++it_blocks) {
     BlockRef *block_ref = *it_blocks;
     BlockPointer block = block_ref->block();
     block->remove_block_list(this);
@@ -65,7 +65,7 @@ void BlockList::Remove(BlockRef *block_ref) {
 
 void BlockList::lock_content_in_memory() {
   au::list<BlockRef>::iterator it_blocks;   // List of blocks references
-  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); it_blocks++) {
+  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); ++it_blocks) {
     BlockRef *block_ref = *it_blocks;
     BlockPointer block = block_ref->block();
     if (!block->is_content_in_memory()) {
@@ -144,9 +144,9 @@ bool BlockList::ContainsBlock(size_t block_id) {
   return false;
 }
 
-std::vector<au::SharedPointer<KVFile> > BlockList::GetKVFileVector(au::ErrorManager& error) {
+std::vector<au::SharedPointer<KVFile> > BlockList::GetKVFileVector(au::ErrorManager& error) const {
   std::vector<au::SharedPointer<KVFile> > kv_files;
-  au::list<BlockRef>::iterator bi;
+  au::list<BlockRef>::const_iterator bi;
   for (bi = blocks_.begin(); bi != blocks_.end(); ++bi) {
     BlockRef *block_ref = *bi;
     BlockPointer block = block_ref->block();
@@ -180,9 +180,9 @@ std::vector<au::SharedPointer<KVFile> > BlockList::GetKVFileVector(au::ErrorMana
   return kv_files;
 }
 
-std::vector<au::Token *> BlockList::GetTokens() {
+std::vector<au::Token *> BlockList::GetTokens() const {
   std::vector<au::Token *> tokens;
-  au::list<BlockRef>::iterator bi;
+  au::list<BlockRef>::const_iterator bi;
   for (bi = blocks_.begin(); bi != blocks_.end(); ++bi) {
     BlockRef *block_ref = *bi;
     BlockPointer block = block_ref->block();
@@ -195,7 +195,7 @@ std::vector<au::Token *> BlockList::GetTokens() {
 
 bool BlockList::IsContentInMemory() const {
   au::list<BlockRef>::const_iterator it_blocks;
-  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); it_blocks++) {
+  for (it_blocks = blocks_.begin(); it_blocks != blocks_.end(); ++it_blocks) {
     BlockRef *block_ref = *it_blocks;
     BlockPointer block = block_ref->block();
     if (!block->is_content_in_memory()) {

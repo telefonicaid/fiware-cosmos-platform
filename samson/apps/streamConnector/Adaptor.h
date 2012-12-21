@@ -18,7 +18,6 @@
 #include "samson/client/SamsonClient.h"
 
 #include "BufferProcessor.h"
-#include "LogManager.h"
 #include "TrafficStatistics.h"
 #include "common.h"
 
@@ -28,6 +27,78 @@ class Channel;
 class InputInterChannelConnection;
 
 class Adaptor {
+public:
+
+  Adaptor (Channel *_channel, ConnectionType _type, std::string description);
+  virtual ~Adaptor();
+
+  /**
+   * \brief Start adaptor activity
+   */
+  virtual void start_item() {
+  }
+
+  /**
+   * \brief Review this adaptor ( called periodically )
+   */
+  virtual void review_item() {
+  }
+
+  /**
+   * \brief Stop adaptor activity
+   *
+   * Stop all threads to be deleted
+   */
+  virtual void stop_item() {
+  };
+
+  /**
+   * \brief Get a status string for this adaptor
+   */
+  virtual std::string getStatus() {
+    return "";
+  }
+
+  // Check if we accept a particular inter channel connection
+  virtual bool accept(InputInterChannelConnection *connection);
+
+  // Add a connection
+  void add(Connection *Connection);
+
+  // Push a new buffer to all connections
+  void push(engine::BufferPointer buffer);
+
+  // Reviewing item and all associated connections
+  void review();
+
+  // Item management
+  void init_item();
+  void cancel_item();
+
+  // Getting information
+  int getNumConnections();
+  ConnectionType getType() const;
+  std::string getName();
+  std::string getFullName();
+  std::string getDescription();
+  const char *getTypeStr();
+  size_t getConnectionsBufferedSize();
+
+  // Finish managemnt
+  void set_as_finished();                                              // Mark this element as finished
+                                                                       // ( can be removed by remove_finished_* commands )
+  bool is_finished();                                                  // Check if the connection is finished
+  void remove_finished_connections(au::ErrorManager *error);           // Remove connections that are already finished
+
+  // Report size of data managed by this adaptor
+  void report_output_size(size_t size);
+  void report_input_size(size_t size);
+
+  // get first connection
+  Connection *getFirstConnection();
+
+private:
+
   // Mutex protextion
   au::Token token;
 
@@ -54,66 +125,6 @@ class Adaptor {
 
   bool canceled;       // Flag to indicate this is canceled ( not call review again )
   bool finished;       // Flag to indicate this component is finished
-
-public:
-
-  Adaptor (Channel *_channel, ConnectionType _type, std::string description);
-  virtual ~Adaptor();
-
-  // Virtual methods to be implemented in sub-classes
-  virtual void start_item() {
-  };
-  virtual void review_item() {
-  }                                                                  // Review connections ( overload in specific items )
-
-  virtual void stop_item() {
-  };                                                                 // Stop all threads to be deleted
-  virtual std::string getStatus() {
-    return "";
-  }                                                                  // Get information about status
-
-  // Check if we accept a particular inter channel connection
-  virtual bool accept(InputInterChannelConnection *connection);
-
-
-  // Add a connection
-  void add(Connection *Connection);
-
-  // Push a new buffer to all connections
-  void push(engine::BufferPointer buffer);
-
-  // Reviewing item and all associated connections
-  void review();
-
-  // Item management
-  void init_item();
-  void cancel_item();
-
-  // Getting information
-  int getNumConnections();
-  ConnectionType getType();
-  std::string getName();
-  std::string getFullName();
-  std::string getDescription();
-  const char *getTypeStr();
-  size_t getConnectionsBufferedSize();
-
-  // Finish managemnt
-  void set_as_finished();                                              // Mark this element as finished
-                                                                       // ( can be removed by remove_finished_* commands )
-  bool is_finished();                                                  // Check if the connection is finished
-  void remove_finished_connections(au::ErrorManager *error);           // Remove connections that are already finished
-
-  // Log system
-  void log(std::string type, std::string message);
-  void log(au::SharedPointer<Log> log);
-
-  // Report size of data managed by this adaptor
-  void report_output_size(size_t size);
-  void report_input_size(size_t size);
-
-  // get first connection
-  Connection *getFirstConnection();
 };
 }
 

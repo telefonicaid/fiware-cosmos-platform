@@ -143,8 +143,7 @@ void Block::freeBlock() {
 
 // Get information about this block
 void Block::update(BlockInfo &block_info) {
-  // Information about number of blocks
-  block_info.num_blocks++;
+  ++block_info.num_blocks;
 
   // Information about sizes
   block_info.size += header.info.size;

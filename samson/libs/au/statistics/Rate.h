@@ -30,12 +30,13 @@
 #ifndef _H_AU_RATE
 #define _H_AU_RATE
 
+#include <math.h>
+#include <time.h>
+
 #include <cstring>
 #include <list>
-#include <math.h>
 #include <memory>
-#include <string>    // std::String
-#include <time.h>
+#include <string>
 
 #include "au/statistics/Cronometer.h"
 #include "au/statistics/Cronometer.h"

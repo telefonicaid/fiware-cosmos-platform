@@ -33,9 +33,26 @@ namespace samson {
 class NodeIdentifier {
 public:
 
-  NodeIdentifier(ClusterNodeType _node_type, size_t _id);
+  NodeIdentifier(ClusterNodeType node_type, size_t id);
+  NodeIdentifier(const NodeIdentifier& node_identifier);
   NodeIdentifier(gpb::NodeIdentifier pb_node_identifier);
   NodeIdentifier();
+
+  /**
+   * \brief Set content manually
+   */
+  void Set(ClusterNodeType node_type, size_t id) {
+    node_type_ = node_type;
+    id_ = id;
+  }
+
+  /**
+   * \brief Copy content from another instance
+   */
+  void Set(const NodeIdentifier& node_identifier) {
+    node_type_ = node_identifier.node_type_;
+    id_ = node_identifier.id_;
+  }
 
   /**
    * \brief Fill a GoogleProtocolBuffer structure
@@ -48,13 +65,21 @@ public:
   bool operator==(const NodeIdentifier&  other) const;
 
   /**
+   * \brief Operator = to be able to do a=b;
+   */
+  NodeIdentifier& operator=(const NodeIdentifier& node_identifier) {
+    Set(node_identifier);
+    return *this;
+  }
+
+  /**
    * \brief Operator < to be used in maps
    */
   bool operator<(const NodeIdentifier&  other) const {
-    if (node_type != other.node_type) {
-      return node_type < other.node_type;
+    if (node_type_ != other.node_type_) {
+      return node_type_ < other.node_type_;
     }
-    return id < other.id;
+    return id_ < other.id_;
   }
 
   /**
@@ -62,8 +87,18 @@ public:
    */
   std::string str() const;
 
-  ClusterNodeType node_type;     /**< Node type (worker,delilah,unknown) */
-  size_t id;     /**< worker or delilah identifier */
+  ClusterNodeType node_type() const {
+    return node_type_;
+  };
+
+  size_t id() const {
+    return id_;
+  };
+
+private:
+
+  ClusterNodeType node_type_;     /**< Node type (worker,delilah,unknown) */
+  size_t id_;     /**< worker or delilah identifier */
 };
 }
 

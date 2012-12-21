@@ -89,7 +89,7 @@ public:
   // Check if it contains a particular block
   bool ContainsBlock(size_t block_id);
 
-  std::vector<au::SharedPointer<KVFile> > GetKVFileVector(au::ErrorManager& error);
+  std::vector<au::SharedPointer<KVFile> > GetKVFileVector(au::ErrorManager& error) const;
 
   // Check if content is in memory
   bool IsContentInMemory() const;
@@ -100,7 +100,7 @@ public:
   /**
    * \brief Get list of tokens to be retained for fork-save operation
    */
-  std::vector<au::Token *> GetTokens();
+  std::vector<au::Token *> GetTokens() const;
 
 private:
 

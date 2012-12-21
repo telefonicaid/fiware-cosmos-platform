@@ -783,8 +783,7 @@ void WorkerCommand::FinishWorkerTask() {
     p->message->set_delilah_component_id(delilah_component_id_);
 
     // Direction of this packets
-    p->to.node_type = DelilahNode;
-    p->to.id = delilah_id_;
+    p->to.Set(DelilahNode, delilah_id_);
 
     // Add collections as answers...
     for (size_t i = 0; i < collections_.size(); ++i) {

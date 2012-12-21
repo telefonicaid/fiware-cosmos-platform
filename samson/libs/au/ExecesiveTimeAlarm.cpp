@@ -28,11 +28,7 @@ ExecesiveTimeAlarm::~ExecesiveTimeAlarm() {
   double t = cronometer_.seconds();
 
   if (t > max_time_) {
-    LOG_W(log_channel_, ("Excessive time ( %.4f > %.4f secs ) for '%s' "
-                         , t
-                         , max_time_
-                         , title_.c_str()
-                         ));
+    LOG_W(log_channel_, ("Excessive time ( %.4f > %.4f secs ) for '%s'", t, max_time_, title_.c_str()));
   }
 }
 }

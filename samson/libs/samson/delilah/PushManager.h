@@ -94,7 +94,7 @@ public:
   au::tables::Table *getTableOfItems();
 
   // Get the number of pushing elments
-  size_t GetPendingSizeToPush();
+  size_t GetPendingSizeToPush() const;
 
 public:
 

@@ -119,11 +119,11 @@ void WorkerCommandDelilahComponent::run() {
 }
 
 void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
-  if (packet->from.node_type != WorkerNode) {
+  if (packet->from.node_type() != WorkerNode) {
     return;
   }
 
-  size_t worker_id = packet->from.id;
+  size_t worker_id = packet->from.id();
 
   if (packet->msgCode == Message::WorkerCommandResponse) {
     if (workers.find(worker_id) == workers.end()) {

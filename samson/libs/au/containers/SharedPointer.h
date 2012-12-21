@@ -165,7 +165,7 @@ public:
     return SharedPointer<T> (shared_reference_counter_, t);
   }
 
-  Token *GetRefCounterToken() {
+  Token *GetRefCounterToken() const {
     return shared_reference_counter_->token();
   }
 

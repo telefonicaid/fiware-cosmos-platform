@@ -197,7 +197,7 @@ std::string OutputInterChannelConnection::getStatus() {
 }
 
 // Get currect size accumulated here
-size_t OutputInterChannelConnection::bufferedSize() {
+size_t OutputInterChannelConnection::bufferedSize() const {
   // Base size ( internal list of buffers in class Connection )
   size_t total = Connection::bufferedSize();
 

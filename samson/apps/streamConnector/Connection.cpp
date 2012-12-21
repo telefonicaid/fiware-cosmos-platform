@@ -14,8 +14,8 @@
 #include "BufferProcessor.h"
 #include "Connection.h"  // Own interface
 #include "StreamConnector.h"
-#include "au/singleton/Singleton.h"
 #include "au/file.h"
+#include "au/singleton/Singleton.h"
 
 extern char working_directory[1024];
 
@@ -118,7 +118,7 @@ void Connection::push(engine::BufferPointer buffer) {
   output_buffer_list->push(buffer);
 }
 
-size_t Connection::bufferedSize() {
+size_t Connection::bufferedSize() const {
   if (type == connection_output) {
     if (!output_buffer_list) {
       return 0;
@@ -132,7 +132,7 @@ size_t Connection::bufferedSize() {
   }
 }
 
-size_t Connection::bufferedSizeOnMemory() {
+size_t Connection::bufferedSizeOnMemory() const {
   if (type == connection_output) {
     if (!output_buffer_list) {
       return 0;
@@ -147,7 +147,7 @@ size_t Connection::bufferedSizeOnMemory() {
 }
 
 // get type
-ConnectionType Connection::getType() {
+ConnectionType Connection::getType() const {
   return type;
 }
 
@@ -178,26 +178,11 @@ void Connection::set_as_finished() {
   if (finished) {
     return;
   }
-
-  // Log activity
-  log("Message", "Set as finished");
-
   finished = true;
 }
 
 bool Connection::is_finished() {
   return finished;
-}
-
-// Log system
-void Connection::log(std::string type, std::string message) {
-  log(au::SharedPointer<Log>(new Log(getFullName(), type, message)));
-}
-
-void Connection::log(au::SharedPointer<Log> log) {
-  LogManager *log_manager = au::Singleton<LogManager>::shared();
-
-  log_manager->log(log);
 }
 
 void Connection::init_connecton() {

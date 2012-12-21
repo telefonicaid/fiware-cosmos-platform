@@ -59,7 +59,8 @@ public:
    * \brief Inform about a finished task to update statistics
    */
 
-  void UpdateTaskInformation(int num_hgs, BlockInfo input, BlockInfo output, BlockInfo state, double process_time) {
+  void UpdateTaskInformation(int num_hgs, const BlockInfo& input, const BlockInfo& output, const BlockInfo& state,
+                             double process_time) {
     // Update information about input
     input_blocks_.Push(input.num_blocks);
     input_size_.Push(input.info.size);
@@ -218,9 +219,9 @@ public:
    */
   void UpdateStreamOperationStatistics(const std::string& stream_operation_name,
                                        int num_hgs,
-                                       BlockInfo input,
-                                       BlockInfo output,
-                                       BlockInfo state,
+                                       const BlockInfo& input,
+                                       const BlockInfo& output,
+                                       const BlockInfo& state,
                                        double process_time) {
     StreamOperationStatistics *statistics = stream_operations_statistics_.findOrCreate(stream_operation_name);
 

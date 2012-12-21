@@ -248,7 +248,7 @@ BlockInfo WorkerTaskBase::GetOutputInfo(int c) const {
   return BlockInfo();
 }
 
-std::vector<au::Token *> WorkerTaskBase::GetTokens() {
+std::vector<au::Token *> WorkerTaskBase::GetTokens() const {
   return block_list_container_.GetTokens();
 }
 }

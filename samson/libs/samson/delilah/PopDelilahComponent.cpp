@@ -232,7 +232,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
       check();
       return;
     } else
-    if (item->worker_id() == packet->from.id) {
+    if (item->worker_id() == packet->from.id()) {
       item->SetWorkerConfirmation();
       check();
     }

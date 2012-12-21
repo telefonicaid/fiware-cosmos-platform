@@ -31,12 +31,13 @@
 #ifndef _H_AU_DATA_STATISTICS
 #define _H_AU_DATA_STATISTICS
 
+#include <math.h>
+#include <time.h>
+
 #include <cstring>
 #include <list>
-#include <math.h>
 #include <memory>
-#include <string>    // std::String
-#include <time.h>
+#include <string>
 
 #include "au/containers/map.h"
 #include "au/mutex/Token.h"

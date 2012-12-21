@@ -52,7 +52,7 @@ void Channel::remove_finished_items_and_connections(au::ErrorManager *error) {
     item->remove_finished_connections(error);
 
     if ((item->getNumConnections() == 0) && (item->is_finished())) {
-      log("Message", au::str("Removing adaptor %s", item->getFullName().c_str()));
+      LOG_SV(("Removing adaptor %s", item->getFullName().c_str()));
       item->cancel_item();
       delete item;
       items.erase(it_items);
@@ -286,9 +286,7 @@ void Channel::add(std::string name, Adaptor *item) {
   items.insertInMap(name, item);
 
   // Log activity
-  log("Message", au::str("Adaptor %s (%s) added"
-                         , item->getFullName().c_str()
-                         , item->getDescription().c_str()));
+  LOG_SV(("Adaptor %s (%s) added", item->getFullName().c_str(), item->getDescription().c_str()));
 
   // Init the item
   item->init_item();
@@ -425,14 +423,6 @@ size_t Channel::getOutputConnectionsBufferedSize() {
     }
   }
   return total;
-}
-
-void Channel::log(std::string type, std::string message) {
-  log(au::SharedPointer<Log> (new Log(getName(), type, message)));
-}
-
-void Channel::log(au::SharedPointer<Log> log) {
-  connector_->log(log);
 }
 
 void Channel::report_output_size(size_t size) {

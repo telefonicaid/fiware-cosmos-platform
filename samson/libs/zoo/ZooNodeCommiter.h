@@ -80,7 +80,7 @@ private:
  * \brief StringDataModel is a distributed synchronous efficient data-model based on zookeeper where commits are strings
  */
 
-template<class C>     // C is suppoused to be a gpb message class
+template<class C>     // C is supposed to be a gpb message class
 class StringDataModel : public engine::NotificationListener {
 public:
 
@@ -133,7 +133,7 @@ public:
    * \brief Get current data model
    */
   au::SharedPointer<C> getCurrentModel() const {
-    au::TokenTaker tt(&token_,"getCurrentModel");
+    au::TokenTaker tt(&token_, "getCurrentModel");
 
     return c_;
   }
@@ -142,7 +142,7 @@ public:
    * \brief Get a copy of current data model
    */
   au::SharedPointer<C> getDuplicatedCurrentModel() {
-    au::TokenTaker tt(&token_,"getDuplicatedCurrentModel");
+    au::TokenTaker tt(&token_, "getDuplicatedCurrentModel");
 
     au::SharedPointer<C> c(new C());
     c->CopyFrom(*c_.shared_object());
@@ -154,7 +154,7 @@ public:
    */
   virtual au::SharedPointer<C> Commit(const std::string& caller, const std::string& commit_command,
                                       au::ErrorManager& error) {
-    au::TokenTaker tt(&token_,"getDuplicatedCurrentModel");
+    au::TokenTaker tt(&token_, "getDuplicatedCurrentModel");
     au::Cronometer cronometer;  // Cronometer to measure how much time it takes to perform commit
 
     // Multi-line commit allowed
@@ -192,7 +192,7 @@ public:
    */
 
   int UpdateToLastVersion() {
-    au::TokenTaker tt(&token_,"UpdateToLastVersion");
+    au::TokenTaker tt(&token_, "UpdateToLastVersion");
 
     LOG_V(logs.string_data_model, ("StringDataModel: Updating to last version..."));
 
@@ -284,7 +284,7 @@ private:
 
   au::SharedPointer<C> InternCommit(const std::string& commit_command, au::ErrorManager& error) {
     LOG_V(logs.string_data_model, ("Commit %s", commit_command.c_str()));
-    au::TokenTaker tt(&token_,"InternCommit");    // Mutex protection
+    au::TokenTaker tt(&token_, "InternCommit");    // Mutex protection
     int trial = 0;
     while (true) {
       trial++;
@@ -315,8 +315,8 @@ private:
       if (rc == ZNODEEXISTS) {
         LOG_V(logs.string_data_model,
               ("Not possible to commit version %d (path '%s').This mean another worker has commited first"
-          , version_
-          , path_.c_str()));
+               , version_
+               , path_.c_str()));
 
         int rc = UpdateToLastVersion();
         if (rc) {

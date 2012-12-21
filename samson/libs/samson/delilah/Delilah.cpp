@@ -49,7 +49,7 @@ namespace samson {
  *
  * Delilah::Delilah
  */
-Delilah::Delilah(std::string connection_type, size_t delilah_id) :
+Delilah::Delilah(const std::string& connection_type, size_t delilah_id) :
   push_manager_(new PushManager(this)),
   token_("Delilah_token") {
   // Random identifier for this delilah
@@ -85,11 +85,11 @@ Delilah::~Delilah() {
   ClearComponents();
 }
 
-std::string Delilah::GetClusterConnectionSummary() {
+std::string Delilah::GetClusterConnectionSummary() const {
   return network_->getClusterConnectionStr();
 }
 
-bool Delilah::Connect(std::string host, au::ErrorManager *error) {
+bool Delilah::Connect(const std::string& host, au::ErrorManager *error) {
   // Remove all internal state in this delilah....
   if (IsConnected()) {
     Disconnect();
@@ -182,7 +182,7 @@ void Delilah::Disconnect() {
   network_->remove_cluster_information();
 }
 
-bool Delilah::IsConnected() const{
+bool Delilah::IsConnected() const {
   // Check if have received an update from any worker
   return (network_->cluster_information_version() != static_cast<size_t>(-1));
 }
@@ -283,12 +283,12 @@ void Delilah::ProcessIncomePacket(const PacketPointer& packet) {
       LOG_SW(("Received a '%s' without a push_id", Message::messageCode(msgCode)));
       return;
     }
-    if (packet->from.node_type != WorkerNode) {
+    if (packet->from.node_type() != WorkerNode) {
       LOG_SW(("Received a '%s' from a non-worker nodeid", Message::messageCode(msgCode)));
       return;
     }
 
-    size_t worker_id = packet->from.id;
+    size_t worker_id = packet->from.id();
     size_t push_id = packet->message->push_id();
 
     // Redirect this message to push_manager
@@ -324,8 +324,8 @@ void Delilah::ProcessIncomePacket(const PacketPointer& packet) {
  */
 
 size_t Delilah::AddPushComponent(const std::vector<std::string>&file_names,
-                                   const std::vector<std::string>& queues,
-                                   au::ErrorManager& error) {
+                                 const std::vector<std::string>& queues,
+                                 au::ErrorManager& error) {
   // Data source with these files
   AgregatedFilesDataSource *data_source = new AgregatedFilesDataSource(file_names);
 
@@ -347,9 +347,9 @@ size_t Delilah::AddPushComponent(const std::vector<std::string>&file_names,
 }
 
 size_t Delilah::AddPushComponent(DataSource *data_source,
-                                   const std::vector<std::string>& queues,
-                                   bool modules,
-                                   au::ErrorManager& error) {
+                                 const std::vector<std::string>& queues,
+                                 bool modules,
+                                 au::ErrorManager& error) {
   PushDelilahComponent *d = new PushDelilahComponent(data_source, queues);
 
   if (modules) {
@@ -370,7 +370,8 @@ size_t Delilah::AddPushModuleComponent(const std::vector<std::string>& file_name
   return AddPushComponent(data_source, queues, true, error);
 }
 
-size_t Delilah::AddPopComponent(std::string queue_name, std::string fileName, bool force_flag, bool show_flag) {
+size_t Delilah::AddPopComponent(const std::string& queue_name, const std::string& fileName, bool force_flag,
+                                bool show_flag) {
   PopDelilahComponent *d = new PopDelilahComponent(queue_name, fileName, force_flag, show_flag);
   size_t tmp_id = AddComponent(d);
 
@@ -412,7 +413,7 @@ size_t Delilah::PushSamsonBlock(engine::BufferPointer buffer, const std::vector<
   return push_manager_->Push(buffer, queues);
 }
 
-size_t Delilah::GetPendingSizeToPush() {
+size_t Delilah::GetPendingSizeToPush() const {
   return push_manager_->GetPendingSizeToPush();
 }
 
@@ -518,7 +519,7 @@ std::string Delilah::GetListOfComponents() {
   return table.str();
 }
 
-size_t Delilah::SendWorkerCommand(std::string command, engine::BufferPointer buffer) {
+size_t Delilah::SendWorkerCommand(const std::string& command, engine::BufferPointer buffer) {
   // Add a components for the reception
   WorkerCommandDelilahComponent *c = new WorkerCommandDelilahComponent(command, buffer);
 
@@ -589,7 +590,7 @@ int Delilah::_receive(const PacketPointer& packet) {
   return 0;
 }
 
-std::string Delilah::GetLsLocal(std::string pattern, bool only_queues) {
+std::string Delilah::GetLsLocal(const std::string& pattern, bool only_queues) {
   au::tables::Table table("Name,left|Type,left|Size|Format,left|Error,left");
 
   // first off, we need to create a pointer to a directory

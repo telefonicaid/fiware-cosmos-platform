@@ -85,6 +85,9 @@ public:
   // Remove nodes
   int Remove(const std::string&path, int version = -1);
 
+  // Remove recursivelly
+  int RecursiveRemove(const std::string& path);
+
   // Set functions
   int Set(const std::string& path, const char *value = NULL, int value_len = 0, int version = -1);
   int Set(const std::string& path, ::google::protobuf::Message *value, int version = -1);

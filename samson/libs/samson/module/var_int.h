@@ -11,12 +11,15 @@
 #define _H_VAR_INT
 
 #include <math.h>                              /*                                          */
+#include <stdlib.h>                            /* malloc                                   */
+#include <string.h>                            /* memcpy                                   */
+
+#include <string>                              /* std::string                              */
+
 #include <samson/module/DataInstance.h>        /* DataInstance                             */
 #include <samson/module/KV.h>                  /* KV                                       */
 #include <samson/module/KVVector.h>            /* KVVector                                 */
-#include <stdlib.h>                            /* malloc                                   */
-#include <string.h>                            /* memcpy                                   */
-#include <string>                              /* std::string                              */
+
 
 namespace samson {
 /**

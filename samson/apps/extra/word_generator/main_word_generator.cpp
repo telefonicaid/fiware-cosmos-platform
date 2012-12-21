@@ -36,12 +36,12 @@ static const char *manShortDescription =
   "word_generator - a simple tool to generate a random sequence of words. Useful in demos on word counting and topic trending.";
 
 static const char *manSynopsis =
-  "   [-r] [-t secs] [-l len] num_words\n"
-  "       [-ramdon] flag to generate randomized sequence of words\n"
+  "   [-r] [-t secs] [-l len] [-alphabet alphabet size] [-progresive] [-repeat secs] num_words\n"
+  "       [-random] flag to generate randomized sequence of words\n"
   "       [-rate w] Max rate of words per second\n"
   "       [-l length] Number of letters of generated words ( default 9 ) \n"
-  "       [-alphabet alphabet size] Number of differnt letters used to generate words ( default 10 ) \n"
-  "       [-progresive] flag to generate sequences of numbers in incressing order ( hit demo )\n"
+  "       [-alphabet alphabet size] Number of different letters used to generate words ( default 10 ) \n"
+  "       [-progresive] flag to generate sequences of numbers in increasing order ( hit demo )\n"
   "       [-repeat secs] time_to_repeat in seconds with a new wave of words\n";
 
 int word_length;      // Number of different letters used to generate words
@@ -73,7 +73,7 @@ PaArgument paArgs[] =
   { "-progressive", &progresive,      "", PaBool, PaOpt,
     false,
     false, true,
-    "Flag to generate sequences of numbers in incressing order"                    },
+    "Flag to generate sequences of numbers in increasing order"                    },
   { "-rate",        &max_rate,        "", PaInt,  PaOpt, 0,
     0,
     10000000000, "Max rate in words / second"                 },
@@ -111,7 +111,7 @@ bool IsNecessaryToChangeWord() {
 }
 
 /**
- * \brief Get a new work to be emitted ( taking into account parameters provided at command line )
+ * \brief Get a new word to be emitted ( taking into account parameters provided at command line )
  */
 void GetNewWord() {
   if (!IsNecessaryToChangeWord()) {
@@ -153,16 +153,20 @@ void GetNewWord() {
 class BufferToStdout {
 public:
 
-  BufferToStdout(size_t max_size) {
-    max_size_ = max_size;
-    buffer_ = (char *)malloc(max_size);
-    size_ = 0;
+  explicit BufferToStdout(size_t max_size) : max_size_(max_size), size_(0) {
+    buffer_ = reinterpret_cast<char *>(malloc(max_size));
+  }
+
+  ~BufferToStdout() {
+    if (buffer_) {
+      free(buffer_);
+    }
   }
 
   /**
    * \brief Append content
    */
-  void Append(char *data, int len) {
+  void Append(const char *data, int len) {
     if ((size_ + len) > max_size_) {
       Flush();
     }
@@ -174,7 +178,7 @@ public:
    * \brief Flush current content
    */
   void Flush() {
-    size_t w = write(1, buffer_, size_);
+    size_t w = write(1, buffer_, size_);  // Write to output channel "1" ( stdout )
 
     if (w != size_) {
       LM_X(1, ("Problem writing %lu bytes to the screen", size_));
@@ -184,11 +188,10 @@ public:
 
 private:
 
-  char *buffer_;
-  size_t max_size_;
-  size_t size_;
+  char *buffer_;     /**< Data buffer ( it is not necessary terminated in \0 ) */
+  size_t max_size_;  /**< Size of buffer ( maximum number of bytes we can use ) */
+  size_t size_;      /**< Valid number of bytes in buffer */
 };
-
 
 int main(int argC, const char *argV[]) {
   paConfig("usage and exit on any warning", (void *)true);
@@ -275,7 +278,7 @@ int main(int argC, const char *argV[]) {
 
     // Compute the number of words per second, so far...
     if (total_seconds > 0) {
-      words_per_second = (double)num_words / (double)total_seconds;
+      words_per_second = static_cast<double>(num_words) / static_cast<double>(total_seconds);
     }
 
     // Generate a message every 5 seconds to report progress
@@ -288,15 +291,15 @@ int main(int argC, const char *argV[]) {
                 au::str(num_words).c_str(),
                 au::str(total_size).c_str(),
                 au::str_time(total_seconds).c_str(),
-                au::str((double)num_words / (double)total_seconds, "Lines/s").c_str(),
-                au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
+                au::str(static_cast<double>(num_words) / static_cast<double>(total_seconds), "Lines/s").c_str(),
+                au::str(static_cast<double>(total_size) / static_cast<double>(total_seconds), "Bps").c_str()));
       } else {
         LOG_SV(("Generated %s lines ( %s bytes ) in %s. Rate: %s / %s",
                 au::str(num_words).c_str(),
                 au::str(total_size).c_str(),
                 au::str_time(total_seconds).c_str(),
-                au::str((double)num_words / (double)total_seconds, "Lines/s").c_str(),
-                au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
+                au::str(static_cast<double>(num_words) / static_cast<double>(total_seconds), "Lines/s").c_str(),
+                au::str(static_cast<double>(total_size) / static_cast<double>(total_seconds), "Bps").c_str()));
       }
     }
 
@@ -314,7 +317,7 @@ int main(int argC, const char *argV[]) {
   size_t total_seconds = cronometer.seconds();
   LOG_SV(("Generated %s lines ( %s bytes ) in %s. Rate: %s / %s",
           au::str(num_words).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
-          au::str((double)num_words / (double)total_seconds, "Lines/s").c_str(),
-          au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
+          au::str(static_cast<double>(num_words) / static_cast<double>(total_seconds), "Lines/s").c_str(),
+          au::str(static_cast<double>(total_size) / static_cast<double>(total_seconds), "Bps").c_str()));
 }
 

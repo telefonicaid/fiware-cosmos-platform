@@ -82,7 +82,6 @@ public:
     if (iter == std::map<K, V *, _Compare>::end()) {
       return NULL;
     }
-
     return iter->second;
   }
 
@@ -121,11 +120,11 @@ public:
 
     if (iter == std::map<K, V *, _Compare>::end()) {
       return false;
-    } else {
-      delete iter->second;
-      std::map<K, V *, _Compare>::erase(iter);
-      return true;
     }
+
+    delete iter->second;
+    std::map<K, V *, _Compare>::erase(iter);
+    return true;
   }
 
   void removeInMap(const std::set<K>& keys) {
@@ -175,12 +174,12 @@ public:
 
     if (iter == std::map<K, V *, _Compare>::end()) {
       return false;
-    } else {
-      V *v = iter->second;
-      std::map<K, V *, _Compare>::erase(iter);
-      delete v;
-      return true;
     }
+
+    V *v = iter->second;
+    std::map<K, V *, _Compare>::erase(iter);
+    delete v;
+    return true;
   }
 
   V *extractFromMap(const K& key) {
@@ -188,11 +187,12 @@ public:
 
     if (iter == std::map<K, V *, _Compare>::end()) {
       return NULL;
-    } else {
-      V *v = iter->second;
-      std::map<K, V *, _Compare>::erase(iter);
-      return v;
     }
+    ;
+
+    V *v = iter->second;
+    std::map<K, V *, _Compare>::erase(iter);
+    return v;
   }
 
   void clearMap() {

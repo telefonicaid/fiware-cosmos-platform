@@ -36,7 +36,6 @@
 #include "samson/common/samsonVersion.h"
 
 
-#include "LogManager.h"
 #include "StreamConnector.h"
 #include "StreamConnectorService.h"
 #include "common.h"
@@ -241,8 +240,6 @@ int main(int argC, const char *argV[]) {
     int num_line = 0;
     char buffer_line[1024];
 
-    std::string message = au::str("Setup file %s. Opening...", file_name);
-    main_stream_connector->log("StreamConnector", "Message", message);
 
     while (fgets(buffer_line, sizeof(buffer_line), file) != NULL) {
       std::string line = ::au::StripString(buffer_line);
@@ -251,9 +248,6 @@ int main(int argC, const char *argV[]) {
       ++num_line;
 
       if ((line.length() > 0) && (line[0] != '#')) {
-        message = au::str("%s ( File %s )", line.c_str(), file_name);
-        main_stream_connector->log("StreamConnector", "Message", message);
-
         au::ErrorManager error;
         main_stream_connector->process_command(line, &error);
 
@@ -264,9 +258,6 @@ int main(int argC, const char *argV[]) {
       }
     }
 
-    // Print the error on screen
-    message = au::str("Setup file %s. Finished", file_name);
-    main_stream_connector->log("StreamConnector", "Message", message);
 
     fclose(file);
   } else {
@@ -275,7 +266,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(au::str("add_channel default %s", input_splitter_name), &error);
       if (error.HasErrors()) {
-        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
+        LOG_SE(("Error: %s", error.GetLastError().c_str()));
       }
     }
 
@@ -290,7 +281,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
       if (error.HasErrors()) {
-        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
+        LOG_SE(("Error: %s", error.GetLastError().c_str()));
       }
     }
 
@@ -303,7 +294,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
       if (error.HasErrors()) {
-        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
+        LOG_SE(("Error: %s", error.GetLastError().c_str()));
       }
     }
   }
@@ -354,24 +345,6 @@ int main(int argC, const char *argV[]) {
         message << "(" << au::str_percentage(used_memory, memory) << ") ";
 
         LOG_SV(("%s", message.str().c_str()));
-
-        /*
-         * if (lmVerbose) {
-         * std::cout << engine::Engine::memory_manager()->getTableOfBuffers().str() << std::endl;
-         * }
-         *
-         * if (lmVerbose) {
-         * au::tables::Table *table = main_stream_connector->getConnectionsTable();
-         * std::cerr << table->str();
-         * delete table;
-         * }
-         *
-         * if (lmVerbose) {
-         * au::tables::Table *table = main_stream_connector->getConnectionsTable("data");
-         * std::cerr << table->str();
-         * delete table;
-         * }
-         */
       }
 
       // Verify if can exit....

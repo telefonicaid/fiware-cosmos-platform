@@ -29,7 +29,7 @@ namespace samson {
 class CommonNetwork : public NetworkManager, public engine::NotificationListener {
 public:
 
-  CommonNetwork(NodeIdentifier my_node_identifier);
+  CommonNetwork(const NodeIdentifier& my_node_identifier);
   ~CommonNetwork() {
   }
 
@@ -55,6 +55,9 @@ public:
    */
   void notify(engine::Notification *notification);
 
+  /**
+   * \brief Process an incomming packet from a connection
+   */
   void receive(NetworkConnection *connection, const PacketPointer& packet);
 
   /**
@@ -63,7 +66,7 @@ public:
   void Send(const PacketPointer& packet);     // Bypass to avoid sending data to myself
 
   /**
-   * \brief Schedue a packet to be send to all workers ( usuaslly from delilah client )
+   * \brief Schedule a packet to be send to all workers ( usuaslly from delilah client )
    */
   void SendToAllWorkers(const PacketPointer& packet, std::set<size_t>& workers);
 
@@ -82,24 +85,24 @@ public:
   std::string str();
 
   // Get information to show on screen
-  au::tables::Table *getClusterConnectionsTable();
+  au::SharedPointer<au::tables::Table> GetClusterConnectionsTable() const;
 
   // Get the version of cluster information considered so far
-  size_t cluster_information_version();
+  size_t cluster_information_version() const;
 
   // Get txt information of the current cluster
-  std::string getClusterSetupStr();
-  std::string getClusterAssignationStr();
-  std::string getClusterConnectionStr();
+  std::string getClusterSetupStr() const;
+  std::string getClusterAssignationStr() const;
+  std::string getClusterConnectionStr() const;
+
+  // Check if this worker id is valid
+  bool IsWorkerConnected(size_t worker_id) const;
+
+  // Check if this worker id is valid
+  bool IsWorkerInCluster(size_t worker_id) const;
 
   // Get a random worker id ( connected )
   size_t getRandomWorkerId(size_t previous_worker = SIZE_T_UNDEFINED);
-
-  // Check if this worker id is valid
-  bool IsWorkerConnected(size_t worker_id);
-
-  // Check if this worker id is valid
-  bool IsWorkerInCluster(size_t worker_id);
 
 private:
 
@@ -110,7 +113,7 @@ private:
    * Packets to delilahs are only processed if they are connected to
    */
 
-  bool IsNecessaryToProcess(NodeIdentifier node) const;
+  bool IsNecessaryToProcess(const NodeIdentifier& node) const;
 
   // Add output worker connections
   Status addWorkerConnection(size_t worker_id, std::string host, int port);
@@ -125,7 +128,7 @@ private:
   au::SharedPointer<gpb::ClusterInfo> cluster_information_;
 
   // Mutex protection
-  au::Token token_;
+  mutable au::Token token_;
 };
 }
 

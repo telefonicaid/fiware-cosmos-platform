@@ -129,7 +129,7 @@ void SamsonClient::general_close() {
   engine::Engine::StopEngine();
 }
 
-void SamsonClient::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
+void SamsonClient::ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer) {
   // Accumulate buffers of data in this buffer container
   buffer_container_.Push(queue, buffer);
 }

@@ -722,7 +722,7 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
       std::string _context = packet->message->alert().context();
 
       // Add to the local collection of traces
-      trace_colleciton_.add(packet->from, _type, _context, _text);
+      trace_colleciton_.Add(packet->from, _type, _context, _text);
 
       // Write to disk if required
       if (trace_file_) {
@@ -791,7 +791,7 @@ void DelilahConsole::DelilahComponentFinishNotification(DelilahComponent *compon
 
 // Process received packets with data
 
-void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
+void DelilahConsole::ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer) {
   size_t counter = stream_out_queue_counters_.appendAndGetCounterFor(queue);
   size_t packet_size = buffer->size();
 

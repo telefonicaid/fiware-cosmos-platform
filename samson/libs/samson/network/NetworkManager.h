@@ -47,7 +47,7 @@ public:
   virtual ~NetworkManager();
 
   // Unique method to add connections
-  void AddConnection(NodeIdentifier new_node_identifier, au::SocketConnection *socket_connection);
+  void AddConnection(const NodeIdentifier& new_node_identifier, au::SocketConnection *socket_connection);
 
   // Interface to inform about a received packet from a network connection
   virtual void receive(NetworkConnection *connection, const PacketPointer& packet) {
@@ -65,11 +65,6 @@ public:
    * Track connection names to be able to say if I have been connected to a particular delilah
    */
   void Review();
-
-  /**
-   * \brief Remove a particular connection
-   */
-  // void Remove(NetworkConnection *network_connection);
 
   /**
    * \brief Remove a particular connection identifier by name

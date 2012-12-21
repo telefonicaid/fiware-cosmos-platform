@@ -98,7 +98,7 @@ public:
   /**
    * \brief Get a list of all tokens for fork-save operation
    */
-  std::vector<au::Token *> GetTokens();
+  std::vector<au::Token *> GetTokens() const;
 
 private:
   size_t task_id_;

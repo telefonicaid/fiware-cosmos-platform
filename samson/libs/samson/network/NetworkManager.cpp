@@ -33,26 +33,12 @@ std::vector<NodeIdentifier> NetworkManager::GetAllNodeIdentifiers() const {
   return connections_.getKeysVector();
 }
 
-/*
- * void NetworkManager::Remove(NetworkConnection *network_connection) {
- * au::map<std::string, NetworkConnection>::iterator it;
- * for (it = connections_.begin(); it != connections_.end(); ++it) {
- * if (it->second == network_connection) {
- *  connections_.extractFromMap(it->first);
- *  delete network_connection;
- *  break;
- * }
- * }
- *
- * LOG_SW(("Removing a network connection that is not part of this manager"));
- * }
- */
-
 bool NetworkManager::Remove(const NodeIdentifier& node_identifier) {
   return connections_.extractAndDeleteFromMap(node_identifier);  // Extract and remove if really present in the manager
 }
 
-void NetworkManager::AddConnection(NodeIdentifier new_node_identifier, au::SocketConnection *socket_connection) {
+void NetworkManager::AddConnection(const NodeIdentifier& new_node_identifier,
+                                   au::SocketConnection *socket_connection) {
   // Mutex protection
   au::TokenTaker tt(&token_connections_, "token_connections_.add");
 
@@ -135,8 +121,8 @@ std::vector<size_t> NetworkManager::GetDelilahIds() const {
   for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     NodeIdentifier _node_identifier = it_connections->second->node_identifier();
 
-    if (_node_identifier.node_type == DelilahNode) {
-      ids.push_back(_node_identifier.id);
+    if (_node_identifier.node_type() == DelilahNode) {
+      ids.push_back(_node_identifier.id());
     }
   }
 
@@ -190,7 +176,7 @@ void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
     NetworkConnection *connection = it_connections->second;
     NodeIdentifier connection_node_identifier = connection->node_identifier();
 
-    if (connection_node_identifier.node_type == DelilahNode) {
+    if (connection_node_identifier.node_type() == DelilahNode) {
       // Send to this one
       PacketPointer new_packet(new Packet(packet.shared_object()));
       new_packet->to = connection_node_identifier;

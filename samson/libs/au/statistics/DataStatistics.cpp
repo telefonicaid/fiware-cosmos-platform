@@ -44,7 +44,6 @@ double AverageStatistics::GetAverage(const std::string& concept, double default_
   if (averager != NULL) {
     return averager->GetAverage();
   }
-  ;
   return default_value;
 }
 

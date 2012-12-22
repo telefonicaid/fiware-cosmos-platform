@@ -82,8 +82,7 @@ unsigned short log_port;
 
 char host[1024];
 
-#define LOC      "localhost"
-#define LOG_PORT LOG_SERVER_DEFAULT_PORT
+#define LOC "localhost"
 /* ****************************************************************************
  *
  * parse arguments

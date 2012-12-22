@@ -153,7 +153,7 @@ void FileDescriptorConnection::run_as_input() {
         cronometer.Reset();
         double mem = engine::Engine::memory_manager()->memory_usage();
         LOG_SW(("Not reading from input connection '%s' since memory usage is %s",
-                getFullName().c_str(),
+                fullname().c_str(),
                 au::str_percentage(mem).c_str()));
       }
     }
@@ -215,7 +215,7 @@ void FileDescriptorConnection::run_as_input() {
 }
 
 void FileDescriptorConnection::run() {
-  if (getType() == connection_input) {
+  if (type() == connection_input) {
     run_as_input();
   } else {
     run_as_output();  // Mark as non thread_running
@@ -236,7 +236,7 @@ std::string FileDescriptorConnection::getStatus() {
     } output << au::str(" [fd:%d]", file_descriptor_->fd());
   }
 
-  if (getType() == connection_input) {
+  if (type() == connection_input) {
     output << au::str(" [buffer:%s]", au::str(input_buffer_size).c_str());
   }
   return output.str();

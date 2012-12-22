@@ -47,37 +47,37 @@ static const char *manSynopsis =
 int word_length;      // Number of different letters used to generate words
 int alphabet_length;  // Length of the word in letters
 bool rand_flag;       // Random words ( really random )
-int max_num_words;    // Max number of words to be generated
+size_t max_num_words;    // Max number of words to be generated
 bool progresive;      // Flag to indicate sequential generated words 0,1,2,3....
 int max_rate;         // Max rate of words per second
 int repeat;           // Repeat the same word a number of times before generating another one.
 
 PaArgument paArgs[] =
 {
-  { "-l",           &word_length,     "", PaInt,  PaOpt, 9,
+  { "-l",           &word_length,     "", PaInt,    PaOpt, 9,
     1,
     30,
     "Number of letters of generated words ( default 9 )"                           },
-  { "-repeat",      &repeat,          "", PaInt,  PaOpt, 1,
+  { "-repeat",      &repeat,          "", PaInt,    PaOpt, 1,
     1,
     100000,
     "Number of times the same word is generated ( default 1 )"                         },
-  { "-alphabet",    &alphabet_length, "", PaInt,  PaOpt, 10,
+  { "-alphabet",    &alphabet_length, "", PaInt,    PaOpt, 10,
     1,
     30,
     "Number of differnt letters used to generate words ( default 10 )"             },
-  { "-random",      &rand_flag,       "", PaBool, PaOpt,
+  { "-random",      &rand_flag,       "", PaBool,   PaOpt,
     false,
     false, true,
     "Flag to generate completelly randomized sequence of words"                    },
-  { "-progressive", &progresive,      "", PaBool, PaOpt,
+  { "-progressive", &progresive,      "", PaBool,   PaOpt,
     false,
     false, true,
     "Flag to generate sequences of numbers in increasing order"                    },
-  { "-rate",        &max_rate,        "", PaInt,  PaOpt, 0,
+  { "-rate",        &max_rate,        "", PaInt,    PaOpt, 0,
     0,
     10000000000, "Max rate in words / second"                 },
-  { " ",            &max_num_words,   "", PaInt,  PaOpt, 0,
+  { " ",            &max_num_words,   "", PaIntU64, PaOpt, 0,
     0,
     1000000000,
     "Number of words to be generated"                                              },
@@ -154,12 +154,13 @@ class BufferToStdout {
 public:
 
   explicit BufferToStdout(size_t max_size) : max_size_(max_size), size_(0) {
-    buffer_ = reinterpret_cast<char *>(malloc(max_size));
+    buffer_ = new char[max_size];
   }
 
   ~BufferToStdout() {
-    if (buffer_) {
-      free(buffer_);
+    if (buffer_ != NULL) {
+      delete[] buffer_;
+      buffer_ = NULL;
     }
   }
 
@@ -226,11 +227,7 @@ int main(int argC, const char *argV[]) {
   size_t total_size = 0;
 
   // Init real-random numbers if -random flag provided
-  if (rand_flag) {
-    srand(time(NULL));
-  } else {
-    srand(0);
-  }
+  srand(rand_flag ? time(NULL) : 0);
 
   // Time to show a message on screen in verbose mode
   size_t last_message_time = 0;

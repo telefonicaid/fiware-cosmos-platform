@@ -50,7 +50,7 @@ void SamsonConnection::try_connect() {
   // Try to reconnect
   if (client_->Connect(au::str("%s:%d", host_.c_str(), port_))) {
     // Note: At the moment, it is not possible to specify flags new of clear here
-    if (getType() == connection_input) {
+    if (type() == connection_input) {
       client_->connect_to_queue(queue_, false, false);
     }
   }
@@ -89,14 +89,14 @@ void SamsonConnection::review_connection() {
 }
 
 size_t SamsonConnection::bufferedSizeOnMemory() const {
-  if (getType() == connection_output) {
+  if (type() == connection_output) {
     return Connection::bufferedSize() + client_->GetPendingSizeToPush();
   }
   return 0;
 }
 
 size_t SamsonConnection::bufferedSize() const {
-  if (getType() == connection_output) {
+  if (type() == connection_output) {
     return Connection::bufferedSize() + client_->GetPendingSizeToPush();
   } else {
     return 0;
@@ -105,7 +105,7 @@ size_t SamsonConnection::bufferedSize() const {
 
 // Overload method to push blocks using samsonClient
 void SamsonConnection::push(engine::BufferPointer buffer) {
-  if (getType() == connection_input) {
+  if (type() == connection_input) {
     return;           // Nothing to do if we are input
   }
   // Report manually size ( not we are overloading Connection class )
@@ -131,7 +131,7 @@ void SamsonConnection::ReceiveBufferFromQueue(const std::string& queue, engine::
     pushInputBuffer(buffer2);
   } else {
     LOG_SW(("Received a binary buffer %s from %s. Still not implemented how to process this"
-            , au::str(buffer->size(), "B").c_str(), getFullName().c_str()));
+            , au::str(buffer->size(), "B").c_str(), fullname().c_str()));
   }
 }
 

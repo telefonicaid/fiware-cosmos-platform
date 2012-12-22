@@ -17,16 +17,16 @@
 #include "Connection.h"
 
 namespace stream_connector {
-Adaptor::Adaptor (Channel *_channel, ConnectionType _type, std::string description)
-  : token("connector::Item") {
-  channel = _channel;
-  type = _type;
+Adaptor::Adaptor (Channel *channel, ConnectionType type, std::string description)
+  : token_("connector::Item") {
+  channel_ = channel;
+  type_ = type;
   description_ = description;
 
-  next_id = 0;
+  next_id_ = 0;
 
-  canceled = false;       // Default value
-  finished = false;
+  canceled_ = false;       // Default value
+  finished_ = false;
 }
 
 Adaptor::~Adaptor() {
@@ -34,69 +34,69 @@ Adaptor::~Adaptor() {
   cancel_item();
 
   // Remover all connections
-  connections.clearMap();
+  connections_.clearMap();
 }
 
-ConnectionType Adaptor::getType() const {
-  return type;
+ConnectionType Adaptor::type() const {
+  return type_;
 }
 
-std::string Adaptor::getName() {
+std::string Adaptor::name() const {
   return name_;
 }
 
-std::string Adaptor::getFullName() {
-  return au::str("%s.%s", channel->getName().c_str(), name_.c_str());
+std::string Adaptor::fullname() const {
+  return au::str("%s.%s", channel_->getName().c_str(), name_.c_str());
 }
 
-std::string Adaptor::getDescription() {
+std::string Adaptor::description() const {
   return description_;
 }
 
-const char *Adaptor::getTypeStr() {
-  return str_ConnectionType(type);
+const char *Adaptor::GetTypeStr() const {
+  return str_ConnectionType(type_);
 }
 
 void Adaptor::add(Connection *connection) {
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
-  connections.insertInMap(next_id, connection);
-  connection->id = next_id;
+  connections_.insertInMap(next_id_, connection);
+  connection->id_ = next_id_;
 
   LOG_SV(("Connection %s (%s) added"
-          , connection->getFullName().c_str()
-          , connection->getDescription().c_str()));
+          , connection->fullname().c_str()
+          , connection->description().c_str()));
 
   // Init the connection properly
   connection->init_connecton();
 
-  next_id++;
+  next_id_++;
 }
 
 void Adaptor::push(engine::BufferPointer buffer) {
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
   au::map<int, Connection>::iterator it_connections;
-  for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     Connection *connection = it_connections->second;
-    if (connection->getType() == connection_output) {
+    if (connection->type() == connection_output) {
       connection->push(buffer);
     }
   }
 }
 
 void Adaptor::review() {
-  if (canceled) {
+  if (canceled_) {
     return;         // Not call review
   }
-  if (!finished) {
+  if (!finished_) {
     review_item();  // Review all connections
   }
   {
-    au::TokenTaker tt(&token);
+    au::TokenTaker tt(&token_);
     au::map<int, Connection>::iterator it_connections;
 
-    for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
+    for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
       Connection *connection = it_connections->second;
       connection->review();
     }
@@ -107,45 +107,45 @@ void Adaptor::init_item() {
   start_item();
 };
 void Adaptor::cancel_item() {
-  canceled = true;       // This will block future calls to review
+  canceled_ = true;       // This will block future calls to review
 
   stop_item();
   {
     // Mutex protectio
-    au::TokenTaker tt(&token);
+    au::TokenTaker tt(&token_);
 
     // Cancel all connections
     au::map<int, Connection>::iterator it_connections;
-    for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
+    for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
       Connection *connection = it_connections->second;
       connection->cancel_connecton();
     }
   }
 }
 
-int Adaptor::getNumConnections() {
-  au::TokenTaker tt(&token);
+int Adaptor::num_connections() const {
+  au::TokenTaker tt(&token_);
 
-  return connections.size();
+  return connections_.size();
 }
 
 void Adaptor::set_as_finished() {
-  if (finished) {
+  if (finished_) {
     return;
   }
-  finished = true;
+  finished_ = true;
 }
 
 bool Adaptor::is_finished() {
-  return finished;
+  return finished_;
 }
 
-size_t Adaptor::getConnectionsBufferedSize() {
-  au::TokenTaker tt(&token);
+size_t Adaptor::GetConnectionsBufferedSize() const {
+  au::TokenTaker tt(&token_);
   size_t total = 0;
 
-  au::map<int, Connection>::iterator it_connections;
-  for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
+  au::map<int, Connection>::const_iterator it_connections;
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     Connection *connection = it_connections->second;
     total += connection->bufferedSize();
   }
@@ -155,28 +155,28 @@ size_t Adaptor::getConnectionsBufferedSize() {
 
 void Adaptor::remove_finished_connections(au::ErrorManager *error) {
   // Mutex protectio
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
   // Cancel all connections
   au::map<int, Connection>::iterator it_connections;
-  for (it_connections = connections.begin(); it_connections != connections.end(); ++it_connections) {
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
     Connection *connection = it_connections->second;
     if (connection->is_finished()) {
       connection->cancel_connecton();
       delete connection;
-      connections.erase(it_connections);
+      connections_.erase(it_connections);
     }
   }
 }
 
 void Adaptor::report_output_size(size_t size) {
-  traffic_statistics.push_output(size);
-  channel->report_output_size(size);
+  traffic_statistics_.push_output(size);
+  channel_->report_output_size(size);
 }
 
 void Adaptor::report_input_size(size_t size) {
-  traffic_statistics.push_input(size);
-  channel->report_input_size(size);
+  traffic_statistics_.push_input(size);
+  channel_->report_input_size(size);
 }
 
 bool Adaptor::accept(InputInterChannelConnection *connection) {
@@ -186,9 +186,9 @@ bool Adaptor::accept(InputInterChannelConnection *connection) {
 }
 
 Connection *Adaptor::getFirstConnection() {
-  if (connections.size() == 0) {
+  if (connections_.size() == 0) {
     return NULL;
   }
-  return connections.begin()->second;
+  return connections_.begin()->second;
 }
 }

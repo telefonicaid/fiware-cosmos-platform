@@ -169,7 +169,7 @@ public:
 
   // Get status of this element
   std::string getStatus() {
-    return au::str("%lu connections", getNumConnections());
+    return au::str("%lu connections", num_connections());
   }
 
   void review_item() {

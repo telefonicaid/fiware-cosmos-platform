@@ -41,7 +41,7 @@ std::string SamsonAdaptor::getStatus() {
 
 void SamsonAdaptor::start_item() {
   // Add connection
-  add(new SamsonConnection(this, getType(), host, port, queue));
+  add(new SamsonConnection(this, type(), host, port, queue));
 }
 
 void SamsonAdaptor::review_item() {

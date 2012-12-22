@@ -768,10 +768,10 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
       Adaptor *item = it_items->second;
 
       // Lock the token in the item
-      au::TokenTaker tt(&item->token);
+      au::TokenTaker tt(&item->token_);
 
       au::map<int, Connection>::iterator it_connections;
-      for (it_connections = item->connections.begin(); it_connections != item->connections.end(); ++it_connections) {
+      for (it_connections = item->connections_.begin(); it_connections != item->connections_.end(); ++it_connections) {
         Connection *connection = it_connections->second;
 
         // Draw separation line if necessary
@@ -784,9 +784,9 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
         au::StringVector values;
 
         // Common fields
-        values.push_back(connection->getFullName());
-        values.push_back(connection->getTypeStr());
-        values.push_back(connection->getDescription());
+        values.push_back(connection->fullname());
+        values.push_back(connection->GetTypeStr());
+        values.push_back(connection->description());
 
         // Specific fields
         if (type == "data") {
@@ -860,16 +860,16 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
 
 
       au::StringVector values;
-      values.push_back(item->getFullName());
-      values.push_back(item->getTypeStr());
-      values.push_back(item->getDescription());
+      values.push_back(item->fullname());
+      values.push_back(item->GetTypeStr());
+      values.push_back(item->description());
 
       if (type == "data") {
-        values.push_back(au::str("%d", item->getNumConnections()));
-        values.push_back(au::str(item->traffic_statistics.get_input_total()));
-        values.push_back(au::str(item->traffic_statistics.get_input_rate()));
-        values.push_back(au::str(item->traffic_statistics.get_output_total()));
-        values.push_back(au::str(item->traffic_statistics.get_output_rate()));
+        values.push_back(au::str("%d", item->num_connections()));
+        values.push_back(au::str(item->traffic_statistics_.get_input_total()));
+        values.push_back(au::str(item->traffic_statistics_.get_input_rate()));
+        values.push_back(au::str(item->traffic_statistics_.get_output_total()));
+        values.push_back(au::str(item->traffic_statistics_.get_output_rate()));
       } else {
         if (item->is_finished()) {
           values.push_back("F");
@@ -930,7 +930,7 @@ void StreamConnector::select_channel(InputInterChannelConnection *connection, st
     // Check if this item can receive this connection
     if (item->accept(connection)) {
       // Set this item as connection's item
-      connection->item = item;
+      connection->item_ = item;
 
       // Extract from the list of pending connections
       input_inter_channel_connections.extractFromList(connection);

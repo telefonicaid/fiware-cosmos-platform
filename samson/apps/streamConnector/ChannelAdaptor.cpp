@@ -66,7 +66,7 @@ void InputInterChannelConnection::start_connection() {
   }
 
   // Create link
-  link_ = new InterChannelLink(getFullName(), socket_connection_, this);
+  link_ = new InterChannelLink(fullname(), socket_connection_, this);
 }
 
 void InputInterChannelConnection::stop_connection() {
@@ -166,7 +166,7 @@ void OutputInterChannelConnection::init_hand_shake(std::string target_channel) {
 
   // Select target channel
   packet->getMessage()->set_target_channel(target_channel);
-  packet->getMessage()->set_source_channel(getFullName());
+  packet->getMessage()->set_source_channel(fullname());
   link_->push(packet);
 }
 
@@ -292,7 +292,7 @@ void OutputInterChannelConnection::try_connect() {
   connection_trials++;
 
   if (s == au::OK) {
-    link_ = new InterChannelLink("link_" + getFullName(), socket_connection, this);
+    link_ = new InterChannelLink("link_" + fullname(), socket_connection, this);
 
     // Push pending packets ( if any )
     link_->push(pending_packets);

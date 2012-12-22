@@ -25,18 +25,35 @@ namespace samson {
  **/
 
 struct BlockInfo {
+  FullKVInfo info;          // Number of key-values and data size
   int num_blocks;           // Number of blocks
+
   size_t size;              // Size of the blocks ( including headers )
   size_t size_on_memory;    // Size contained in memory
   size_t size_on_disk;      // Size contained on disk
   size_t size_locked;       // Size locked in memory
-  FullKVInfo info;          // Number of key-values and data size
   KVFormat format;          // Common format for all the information
   time_t min_time;          // Min time of all blocks
   time_t max_time;          // Max time of all blocks
 
   // Default constructor to initialize all values
   BlockInfo();
+
+  /**
+   * \brief Append a block of data
+   */
+  void AppendBlock(FullKVInfo _info) {
+    info.append(_info);
+    ++num_blocks;
+  }
+
+  /**
+   * \brief Append from another block info
+   */
+  void Append(BlockInfo block_info) {
+    info.append(block_info.info);
+    num_blocks += block_info.num_blocks;
+  }
 
   // Push information
   // ----------------------------------------------------------------
@@ -55,11 +72,18 @@ struct BlockInfo {
   double onDiskPercentadge();
   double lockedPercentadge();
 
+  size_t average_block_size() const {
+    if (num_blocks == 0) {
+      return 0;
+    }
+    return info.size / num_blocks;
+  }
+
   // Debug strings
   // ----------------------------------------------------------------
-  std::string str();
-  std::string strShort();
-  std::string strShortInfo();
+  std::string str() const;
+  std::string strShort() const;
+  std::string strShortInfo() const;
 };
 }
 

@@ -16,7 +16,7 @@
 
 namespace stream_connector {
 ConnectionConnection::ConnectionConnection(Adaptor *item, ConnectionType type, std::string host, int port)
-  : FileDescriptorConnection(item, type,  au::str("CONNECTION(%s:%d)", host.c_str(), port)) {
+  : FileDescriptorConnection(item, type, au::str("CONNECTION(%s:%d)", host.c_str(), port)) {
   host_ = host;
   port_ = port;
 }
@@ -49,7 +49,7 @@ ConnectionItem::ConnectionItem(Channel *channel, ConnectionType type, std::strin
 }
 
 void ConnectionItem::start_item() {
-  add(new ConnectionConnection(this, getType(), host_, port_));
+  add(new ConnectionConnection(this, type(), host_, port_));
 }
 
 void ConnectionItem::review_item() {
@@ -75,7 +75,7 @@ StdinItem::StdinItem(Channel *_channel) : Adaptor(_channel, connection_input, "S
 
 // Information about status
 std::string StdinItem::getStatus() {
-  if (getNumConnections() > 0) {
+  if (num_connections() > 0) {
     return "connected";
   }
   return "closed";
@@ -110,7 +110,7 @@ StdoutItem::StdoutItem(Channel *_channel) : Adaptor(_channel, connection_output,
 
 // Information about status
 std::string StdoutItem::getStatus() {
-  if (getNumConnections() > 0) {
+  if (num_connections() > 0) {
     return "connected";
   }
   return "closed";

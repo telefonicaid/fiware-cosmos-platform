@@ -300,7 +300,7 @@ TokenVector Tokenizer::Parse(const std::string& txt) const {
       size_t pos_literal_begin = i + 1;
       size_t pos_literal_end = i + 1;
       while ((pos_literal_end < txt.length()) && (txt[pos_literal_end] != '"')) {
-        pos_literal_end++;
+        ++pos_literal_end;
       }
 
       // Add the literal
@@ -325,7 +325,7 @@ TokenVector Tokenizer::Parse(const std::string& txt) const {
       size_t pos_literal_begin = i + 1;
       size_t pos_literal_end = i + 1;
       while ((pos_literal_end < txt.length()) && (txt[pos_literal_end] != '\'')) {
-        pos_literal_end++;
+        ++pos_literal_end;
       }
 
       // Add the literal

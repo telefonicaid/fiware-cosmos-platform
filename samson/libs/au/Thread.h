@@ -15,6 +15,7 @@
 #include <string>
 
 #include "au/mutex/Token.h"
+#include "au/string/StringUtilities.h"
 
 namespace au {
 /**
@@ -27,7 +28,7 @@ namespace au {
 class Thread {
 public:
 
-  explicit Thread(const std::string& name) {
+  explicit Thread(const std::string& name) : token_(au::str("Thread %s", name.c_str())) {
     name_ = name;
     stopping_ = false;
     pthread_running_ = false;

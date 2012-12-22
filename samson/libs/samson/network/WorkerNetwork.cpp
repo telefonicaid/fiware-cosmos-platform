@@ -94,7 +94,11 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   // Identifier from the incoming hello packet
   NodeIdentifier new_node_identifier(packet.message->hello().node_identifier());
 
-  if (new_node_identifier.node_type == UnknownNode) {
+  LOG_V(logs.network_connection, ("New connection from %s proving node identifier %s",
+                                  socket_connection->host_and_port().c_str(), new_node_identifier.str().c_str()));
+
+
+  if (new_node_identifier.node_type() == UnknownNode) {
     LOG_SW(("Hello message received with nodetype unknown. Closing connection"));
     socket_connection->Close();
     delete socket_connection;
@@ -102,8 +106,8 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   }
 
   // Check valid delilah id ( if this is a delilah connection )
-  if (new_node_identifier.node_type == DelilahNode) {
-    size_t new_delilah_id = new_node_identifier.id;
+  if (new_node_identifier.node_type() == DelilahNode) {
+    size_t new_delilah_id = new_node_identifier.id();
     if (!au::code64_is_valid(new_delilah_id)) {
       LOG_SW(("No valid delilah_id (%lu). Closing conneciton...", new_delilah_id));
       socket_connection->Close();
@@ -113,7 +117,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
   }
 
   // If a delilah connection is received, send back a Cluster information message rigth now
-  if (new_node_identifier.node_type == DelilahNode) {
+  if (new_node_identifier.node_type() == DelilahNode) {
     PacketPointer ci_packet = getClusterInfoPacket();
     ci_packet->from = node_identifier();
     ci_packet->to = new_node_identifier;
@@ -125,6 +129,17 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
       socket_connection->Close();
       delete socket_connection;
       return;
+    }
+  }
+
+  // In case of worker connection, check it is defined in the cluster
+  if (new_node_identifier.node_type() == WorkerNode) {
+    if (IsWorkerInCluster(new_node_identifier.id())) {
+      LOG_W(logs.network_connection, ("Rejecting connection from %s since it worker is not in cluster %s",
+                                      socket_connection->host_and_port().c_str(), new_node_identifier.str().c_str()));
+    } else {
+      LOG_V(logs.network_connection, ("Worker %s is part of the cluster. Adding new connection...",
+                                      new_node_identifier.str().c_str()));
     }
   }
 

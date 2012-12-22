@@ -57,7 +57,7 @@ void ListenerAdaptor::newSocketConnection(au::NetworkListener *listener
   std::string name  = au::str("Socket %s", socket_connection->host_and_port().c_str());
 
   FileDescriptorConnection *new_connection = new SimpleFileDescriptorConnection(this
-                                                                                , getType()
+                                                                                , type()
                                                                                 , name
                                                                                 , socket_connection);
 

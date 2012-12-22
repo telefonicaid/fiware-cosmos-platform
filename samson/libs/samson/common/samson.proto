@@ -158,9 +158,11 @@ message DataModel
 
 	// Commit history to recover commands ( mainly add_stream_operation or run )
 	repeated DataCommit commit = 5;    // List of commits from previous_data to current_data
-
-	// Replication factor
-	required int32 replication_factor = 10;      // Number of times data  should be replicated to be considered "save"
+	
+	// Cluster parameters
+	required int32 replication_factor = 10;      // Number of times data  should be replicated to be considered "safe"
+	required int32 parallelization_factor = 11;  // Number of paralel process per worker per task
+	required int32 parallelization_reduction_factor= 12; // group process-units in forward operations ( map, parse, etc...)
 
 }
 
@@ -298,9 +300,10 @@ message MessagePlatformProcess
 
 message PopQueue
 {
-	required string queue		= 1;        // Queue we are interested in extracting data
-	required uint64 commit_id   = 2;    // Last commit_id requested for this queue ( -1 for initial popQueue request )
-  required uint64 min_commit_id = 3;  // Min commit id still pending to be "poped". Blocks with lower commit ids can be removed
+	required bool continuous_pop    = 1;  // Continuous pop operation( connect original queue to a tmp queue )
+	required string queue		    = 2;  // Queue we are interested in extracting data
+	required uint64 commit_id       = 3;  // Last commit_id requested for this queue ( -1 for initial popQueue request )
+    required uint64 min_commit_id   = 4;  // Min commit id still pending to be "poped". Blocks with lower commit ids can be removed
 }
 
 message PopQueueResponse

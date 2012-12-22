@@ -34,8 +34,8 @@ namespace samson {
 class PacketQueue : public au::Queue<Packet>{
 public:
 
-  PacketQueue(const std::string& name) {
-    name_ = name;
+  explicit PacketQueue(const NodeIdentifier& node_identifier) {
+    node_identifier_ = node_identifier;
   }
 
   size_t GetByteSize() const {
@@ -71,18 +71,18 @@ public:
   }
 
   void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
-    samson::add(record, "name", name_, "left,different");
+    samson::add(record, "name", node_identifier_.str(), "left,different");
     samson::add(record, "state", GetDescription(), "different");
   }
 
   std::string pattern_name() {
-    return name_;
+    return node_identifier_.str();
   }
 
 private:
 
   au::Cronometer cronometer_;
-  std::string name_;
+  NodeIdentifier node_identifier_;
 };
 
 
@@ -103,33 +103,67 @@ public:
   // Push a packet for a node
   void Push(au::SharedPointer<Packet> packet);
 
-  // Recover and remove a paquet for a node
+  /**
+   * \brief Get the next packet to be sent to a particular SAMSON node
+   */
   au::SharedPointer<Packet> Front(const NodeIdentifier& node_identifier);
+
+  /**
+   * \brief Remove the next packet to be sent to a particular SAMSON node
+   *
+   * It is supposed that this packet has been sent correctly, so we remove from pending paquests queue
+   */
   void Pop(const NodeIdentifier& node_identifier);
 
-  // Remove all pending packets
+  /**
+   * \brief Remove all pending packets
+   */
   void Clear();
 
-  // Get a descriptive table with current status of all the queues
+  /**
+   * \brief Get a table with current status of all the queues
+   */
   au::tables::Table *GetPendingPacketsTable() const;
 
-  // Check old messages to be removes
-  void RemoveOldConnections(const std::set<std::string> current_connections);
+  /**
+   * \brief Get a vector with all connection names
+   */
+  std::vector<NodeIdentifier> GetAllNodeIdentifiers() {
+    return packet_queues_.getKeysVector();
+  }
 
-  // Debug informaiton for a particular node
+  /**
+   * \brief Remove queue for a particular connection
+   */
+  void Remove(const NodeIdentifier& node_identifier) {
+    packet_queues_.extractAndDeleteFromMap(node_identifier);
+  }
+
+  /**
+   * \brief Debug information for a particular node
+   */
   std::string GetDescription(const NodeIdentifier& node_identifier) const;
 
-  // Collection to be displayes
+  /**
+   * \brief Get a collection to inform about current queues ( displaying table on delilah )
+   */
   au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization) const;
 
-  // Get information about output queues
+  /**
+   * \brief Get total size accumulated in all queues
+   */
   size_t GetAllQueuesSize();
-  size_t GetQueueSize(const std::string& name);
+
+  /**
+   * \brief Get total size accumulated in a particular queue
+   */
+  size_t GetQueueSize(const NodeIdentifier& node_identifier);
+
 
 private:
 
   // Pending packets for all nodes
-  au::map< std::string, PacketQueue > packet_queues_;
+  au::map< NodeIdentifier, PacketQueue > packet_queues_;
   mutable au::Token token_packet_queues_;
 };
 }

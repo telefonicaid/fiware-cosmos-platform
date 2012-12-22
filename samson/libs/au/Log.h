@@ -45,9 +45,9 @@ public:
     }
     registered_ = true;
     zoo  = LOG_REGISTER_CHANNEL("au::ZOO", "au library : Zookeeper wrapper");
+    string_data_model = LOG_REGISTER_CHANNEL("au::SDM", "au library : String Data model");
     gpb  = LOG_REGISTER_CHANNEL("au::GPB", "au library : Google Protocol Buffers wrapper");
     rest = LOG_REGISTER_CHANNEL("au::R", "au library : Rest interface");
-    excessive_time = LOG_REGISTER_CHANNEL("au::E", "au library : Excessive time");
     thread_manager = LOG_REGISTER_CHANNEL("au::TM", "au library : Thread manager");
     file_descriptor = LOG_REGISTER_CHANNEL("au::TM", "au library : File descriptor");
     listener = LOG_REGISTER_CHANNEL("au::L", "au library : Network listener");
@@ -55,9 +55,9 @@ public:
 
   // Channels definied in this library
   int zoo;
+  int string_data_model;
   int gpb;
   int rest;
-  int excessive_time;
   int thread_manager;
   int file_descriptor;
   int listener;

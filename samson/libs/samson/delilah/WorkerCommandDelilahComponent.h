@@ -82,6 +82,14 @@ public:
   // Get main table of result ( to show on screen )
   au::tables::Table *getMainTable();
 
+  // Virtual method of DelilahComponent
+  virtual void review() {
+    // Timeout if necessary
+    if( timeout_ > 0 )
+      if( cronometer.seconds() > timeout_ )
+        setComponentFinishedWithError(au::str("timeout (%s)",au::str_time(timeout_).c_str()));
+  };
+
 private:
 
   // Internal function to print content of received collection
@@ -107,12 +115,12 @@ private:
 
   size_t worker_id;                 // if != -1 --> worker to sent this command
   bool send_to_all_workers;         // -a
-  bool save_in_database;            // -save
   std::string group_field;          // -group
   std::string filter_field;         // -filter
   std::string sort_field;           // -sort
   bool connected_workers;           // -connected
   int limit;                        // -limit
+  int timeout_;                     /**< Max timeout for this command */
 };
 }
 

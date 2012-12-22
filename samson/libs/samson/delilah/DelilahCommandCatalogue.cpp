@@ -21,9 +21,6 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // SETUP
   // ------------------------------------------------------------------
 
-  AddCommand("show_cluster_setup", "setup", "Show cluster setup", "Display cluster configuration");
-  AddCommand("show_cluster_assignation", "setup", "Show cluster assignment",
-             "Display the hash-groups assigned to each worker");
   AddCommand("ls_local_connections", "delilah", "Display the connection status for this delilah session");
 
   // ------------------------------------------------------------------
@@ -101,6 +98,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   AddCommand("remove_all", "data", "Remove all queues and stream_operations in the SAMSON cluster");
 
+  AddCommand("reset_samson", "data", "Remove all queues, stream_operations & modules in the SAMSON cluster");
+
   AddCommand("rm", "data", "Remove a queue");
   AddMandatoryStringArgument("rm", "queue", "Queue to be removed");
 
@@ -168,9 +167,24 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
 
   AddCommand("ls_kv_ranges", "debug", "(Debug) Show a list of key-value ranges in this SAMSON cluster");
 
-  AddCommand("set_replication_factor", "debug", "(Experimental) Set replication factor in the cluster");
-  AddMandatoryUInt64Argument("set_replication_factor", "factor", "Number of times each block is present in cluster");
-  AddCommand("get_replication_factor", "debug", "Show a list of key-value ranges in this SAMSON cluster");
+  // ------------------------------------------------------------------
+  // CLUSTER
+  // ------------------------------------------------------------------
+
+  AddCommand("cluster_set_parameter", "cluster", "(Experimental) Set replication factor in the cluster");
+  AddMandatoryStringArgument("cluster_set_parameter", "parameter", "Name of the parameter to change");
+  AddMandatoryStringArgument("cluster_set_parameter", "value", "New value for selected parameter");
+
+  AddCommand("cluster_show_parameter", "cluster", "Show a list of key-value ranges in this SAMSON cluster");
+
+  AddCommand("cluster_create_new", "cluster", "Create a new cluster based on current setup");
+  AddTag("cluster_create_new", "send_to_all_workers");  // worker leader is the only one who can do this
+
+  AddCommand("cluster_show_setup", "cluster", "Show cluster setup", "Display cluster configuration");
+
+  AddCommand("cluster_show_assignation", "cluster", "Show cluster assignment",
+             "Display the hash-groups assigned to each worker");
+
 
   // ------------------------------------------------------------------
   // MODULES
@@ -204,6 +218,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddCommand("push_module", "modules", "Upload a module to the cluster");
   AddMandatoryStringArgument("push_module", "file", "Local file or directory")->set_options_group("#file");
 
+  AddCommand("push_internal_modules", "modules", "Upload internal modules to current cluster");
+
   AddCommand("clear_modules", "modules", "Remove all previously uploaded modules");
   AddStringArgument("clear_modules", "pattern", "*", "Block name attern ( see ls_modules_information)");
 
@@ -220,6 +236,9 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddBoolOption("ls_stream_operations", "-id", "Include numerical identifier of each operation");
 
   AddCommand("ls_stream_operations_statistics", "stream", "Show stream operation statistics for the cluster");
+  AddBoolOption("ls_stream_operations_statistics", "-input", "Include input data information");
+  AddBoolOption("ls_stream_operations_statistics", "-output", "Include output data information");
+  AddBoolOption("ls_stream_operations_statistics", "-state", "Include state data information");
   AddTag("ls_stream_operations_statistics", "send_to_all_workers");
 
   AddCommand("ps_stream_operations", "stream",
@@ -257,8 +276,13 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddCommand("remove_all_stream_operations", "stream", "Remove all stream operations");
 
   AddCommand("wait", "stream", "Wait for all input queues used in stream operations to empty");
+  AddIntOption("wait", "timeout", 0);
+
   AddCommand("wait_batch_tasks", "stream", "Wait for all batch operation tasks to complete");
+  AddIntOption("wait_batch_tasks", "timeout", 0);
+
   AddCommand("wait_my_batch_tasks", "stream", "Wait for my batch operations to complete");
+  AddIntOption("wait_my_batch_tasks", "timeout", 0);
 
   AddCommand("set_stream_operation_property", "stream",
              "Set value of an environment property associated to a stream operation (see add_stream_operation)",
@@ -296,8 +320,12 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddBoolOption("ls_workers", "-data_model", "Show information about data-model version at each worker");
   AddBoolOption("ls_workers", "-engine", "For each worker node, detail the state of the underlying engine");
   AddBoolOption("ls_workers", "-disk", "For each worker node, detail the state of the underlying disk manager");
-
   AddTag("ls_workers", "send_to_all_workers");
+
+  AddCommand("ls_workers_statistics", "stream", "Get a list of worker nodes");
+  AddStringArgument("ls_workers_statistics", "pattern", "*", "Pattern of the statistics names");
+  AddTag("ls_workers_statistics", "send_to_all_workers");
+
 
   AddCommand("init_stream", "stream", "Execute an script to initialize a set of automatic stream operations",
              "init_stream [-prefix pref] <script_name>\n"
@@ -379,6 +407,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   AddTag("wlog_status", "send_to_all_workers");
 
   AddCommand("wlog_all_channels", "log", "Show all possible log channels to be activated");
+  AddBoolOption("wlog_all_channels", "hits", "Show number of hits for each channel");
 
   AddCommand("wlog_set_log_server", "log", "Set the log server to be used by all workers");
   AddMandatoryStringArgument("wlog_set_log_server", "host", "Log server host");

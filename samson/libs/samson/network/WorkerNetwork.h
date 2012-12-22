@@ -24,6 +24,7 @@
 namespace samson {
 class WorkerNetwork : public CommonNetwork, public au::NetworkListenerInterface {
 public:
+
   WorkerNetwork(size_t worker_id, int port);
   ~WorkerNetwork();
 

@@ -72,8 +72,8 @@ public:
   std::string str_inputs() const;
   std::string str_outputs() const;
 
-  FullKVInfo GetInputsInfo() const;
-  FullKVInfo GetOutputsInfo() const;
+  BlockInfo GetInputsInfo() const;
+  BlockInfo GetOutputsInfo() const;
 
   void Review(au::ErrorManager& error) {
     au::map<std::string, BlockList>::iterator iter;
@@ -94,6 +94,11 @@ public:
       }
     }
   }
+
+  /**
+   * \brief Get a list of all tokens for fork-save operation
+   */
+  std::vector<au::Token *> GetTokens() const;
 
 private:
   size_t task_id_;

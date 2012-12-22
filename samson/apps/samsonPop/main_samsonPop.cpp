@@ -176,7 +176,7 @@ int main(int argC, const char *argV[]) {
   // Instance of the client to connect to SAMSON system
   samson::SamsonClient client("pop");
 
-  if (!client.connect(host)) {
+  if (!client.Connect(host)) {
     LM_X(1, ("Unable to connect to %s", host));  // Init connection
   }
   au::ErrorManager error;

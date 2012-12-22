@@ -54,7 +54,7 @@ Buffer::Buffer(const std::string& name, size_t max_size) {
     data_ = NULL;
   }
 
-  LOG_M(logs.buffer, ("Creating buffer %s", str().c_str()));
+  LOG_D(logs.buffer, ("Creating buffer %s", str().c_str()));
 
   // Register in the memory manager to track allocated memory
   Engine::memory_manager()->Add(this);
@@ -72,7 +72,7 @@ au::SharedPointer<Buffer> Buffer::Create(
 }
 
 Buffer::~Buffer() {
-  LOG_M(logs.buffer, ("Destroying buffer %s", str().c_str()));
+  LOG_D(logs.buffer, ("Destroying buffer %s", str().c_str()));
 
   // Unregister in the memory manager
   engine::MemoryManager *memory_manager = Engine::memory_manager();

@@ -50,13 +50,6 @@ public:
   virtual std::string GetPrompt();
   virtual void EvalCommand(const std::string& command);
   virtual void AutoComplete(au::console::ConsoleAutoComplete *info);
-  void autoCompleteOperations(au::console::ConsoleAutoComplete *info);
-  void autoCompleteOperations(au::console::ConsoleAutoComplete *info, std::string type);
-  void autoCompleteQueueForOperation(au::console::ConsoleAutoComplete *info, std::string operation_name,
-                                     int argument_pos);
-  void autoCompleteQueueWithFormat(au::console::ConsoleAutoComplete *info, std::string key_format,
-                                   std::string value_format);
-  void autoCompleteQueues(au::console::ConsoleAutoComplete *info);
   virtual void ProcessEscapeSequence(const std::string& sequence) {
     if (sequence == "samson") {
       WriteWarningOnConsole("SAMSON's cool ;)");
@@ -70,22 +63,14 @@ public:
 
   // Functions overloaded from Delilah
   // --------------------------------------------------------
-  void delilahComponentFinishNotification(DelilahComponent *component);
-  void delilahComponentStartNotification(DelilahComponent *component);
+  void DelilahComponentFinishNotification(DelilahComponent *component);
+  void DelilahComponentStartNotification(DelilahComponent *component);
 
   // Function to process messages from network elements not handled by Delila class ( with DelilahComponenets )
   int _receive(const PacketPointer& packet);
 
   // Process buffers of data received in streaming from SAMSON
-  void receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer);
-
-  // Notify that an operation hash finish
-  virtual void notifyFinishOperation(size_t id) {
-    std::ostringstream output;
-
-    output << "Finished local delilah process with : " << id;
-    Write(output.str());
-  }
+  void ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer);
 
   virtual void WriteOnDelilah(const std::string& message) {
     Write(message);
@@ -98,51 +83,6 @@ public:
   virtual void WriteErrorOnDelilah(const std::string& message) {
     WriteErrorOnConsole(message);
   }
-
-  // Show a message on screen
-  /*
-   * void showMessage(std::string message) {
-   * if (no_output_) {
-   *  LM_V(("%s", message.c_str()));
-   *  return;
-   * }
-   * if (simple_output_) {
-   *  std::cout << message;
-   *  return;
-   * }
-   * Write(au::StringInConsole(message));
-   * }
-   *
-   * void showWarningMessage(std::string message) {
-   * if (no_output_) {
-   *  LOG_SV(("%s", au::str(au::BoldMagenta, "%s", message.c_str()).c_str()));
-   *  return;
-   * }
-   * if (simple_output_) {
-   *  std::cout << au::str(au::BoldMagenta, "%s", message.c_str());
-   *  return;
-   * }
-   * WriteWarningOnConsole(au::StringInConsole(message));
-   * }
-   *
-   * void showErrorMessage(std::string message) {
-   * if (no_output_) {
-   *  LOG_SV(("%s", au::str(au::BoldRed, "%s", message.c_str()).c_str()));
-   *  return;
-   * }
-   * if (simple_output_) {
-   *  std::cout << au::str(au::BoldRed, "%s", message.c_str());
-   *  return;
-   * }
-   * WriteErrorOnConsole(au::StringInConsole(message));
-   * }
-   *
-   * virtual void showTrace(std::string message) {
-   * if (show_alerts_) {
-   *  WriteWarningOnConsole(message);
-   * }
-   * }
-   */
 
   void set_verbose(bool value) {
     verbose_ = value;

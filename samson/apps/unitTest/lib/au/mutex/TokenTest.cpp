@@ -16,7 +16,7 @@
 #include "unitTest/TestClasses.h"
 
 TEST(au_mutex_Token, basic) {
-  au::Token token;
+  au::Token token("Test au_mutex_Token");
 
   EXPECT_FALSE(token.IsRetainedByMe());
 

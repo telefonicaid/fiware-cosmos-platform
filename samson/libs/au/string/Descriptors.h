@@ -18,7 +18,7 @@
 *
 * PROJECT         au library
 *
-* DATE            Septembre 2011
+* DATE            September 2011
 *
 * DESCRIPTION
 *

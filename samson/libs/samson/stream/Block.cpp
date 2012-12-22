@@ -35,7 +35,8 @@
 namespace samson {
 namespace stream {
 Block::Block(size_t block_id, engine::BufferPointer buffer) :
-  token_lookupList("token_lookupList") {
+  token_lookupList("Block::token_lookupList"),
+  token_file_("Block::token_file") {
   // Keep the buffer in this block
   buffer_ = buffer;
 
@@ -51,11 +52,12 @@ Block::Block(size_t block_id, engine::BufferPointer buffer) :
   // No lookup list by default
   lookupList = NULL;
 
-  LOG_M(logs.block_manager, ("Block created from buffer: %s", str().c_str()));
+  LOG_V(logs.block_manager, ("Block created from buffer: %s", str().c_str()));
 }
 
 Block::Block(size_t block_id, KVHeader *_header) :
-  token_lookupList("token_lookupList") {
+  token_lookupList("token_lookupList"),
+  token_file_("Block::token_file") {
   // Unique identifier of the block across the cluster
   block_id_ = block_id;
 
@@ -71,7 +73,7 @@ Block::Block(size_t block_id, KVHeader *_header) :
   // Put cronometer to 1 hour before to remove blocks not included in the data model rigth now
   cronometer.AddOffset(-24 * 60 * 60);
 
-  LOG_M(logs.block_manager, ("Block created from id: %s", this->str().c_str()));
+  LOG_V(logs.block_manager, ("Block created from id: %s", this->str().c_str()));
 }
 
 Block::~Block() {
@@ -130,19 +132,18 @@ void Block::freeBlock() {
     return;
   }
 
-  LOG_M(logs.block_manager, ("Destroying buffer for block:'%s'", str().c_str()));
+  LOG_D(logs.block_manager, ("Destroying buffer for block:'%s'", str().c_str()));
 
   // Relase buffer
-  buffer_ = NULL;
+  buffer_.Reset();
 
   // Release KVFILE
-  file_ = NULL;
+  file_.Reset();
 }
 
 // Get information about this block
 void Block::update(BlockInfo &block_info) {
-  // Information about number of blocks
-  block_info.num_blocks++;
+  ++block_info.num_blocks;
 
   // Information about sizes
   block_info.size += header.info.size;
@@ -151,10 +152,6 @@ void Block::update(BlockInfo &block_info) {
   }
   if (is_content_in_disk()) {
     block_info.size_on_disk += header.info.size;
-    /*
-     * if (isLockedInMemory())
-     * block_info.size_locked += size;
-     */
   }
   // Key-Value information
   block_info.info.append(header.info);

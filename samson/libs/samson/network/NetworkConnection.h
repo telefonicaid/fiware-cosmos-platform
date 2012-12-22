@@ -33,7 +33,7 @@ class NetworkConnection {
 public:
 
   // Constructor & Destructor
-  NetworkConnection(NodeIdentifier node_identifier
+  NetworkConnection(const NodeIdentifier& node_identifier
                     , au::SocketConnection *socket_connection
                     , NetworkManager *network_manager);
 
@@ -45,17 +45,18 @@ public:
   // Close socket ( no waiting for backgroud threads )
   void Close();
 
-  // Wake up the writer thrad
+  // Wake up the writer thread if necessary
   void WakeUpWriter();
 
-  // Check if the socket is closed
-  bool isDisconnectd();
+  /**
+   * \brief Check if the socket is closed
+   */
+  bool IsDisconnected() const;
 
   // Debug string
-  std::string str();
+  std::string str() const;
 
   // Get some information
-  std::string name() const;
   std::string host() const;
   int port() const;
   size_t rate_in() const;

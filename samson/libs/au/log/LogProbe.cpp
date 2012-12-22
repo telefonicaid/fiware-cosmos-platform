@@ -51,7 +51,7 @@ void LogProbe::Disconnect() {
     socket_connection_->Close();
     void *ans;
     pthread_join(thread_id_, &ans);
-    socket_connection_ = NULL;
+    socket_connection_.Reset();
   }
 }
 
@@ -69,7 +69,7 @@ void LogProbe::ConnectAsProbe(const std::string& host, const std::string& filter
   // Create a socket connection with the provided host
   socket_connection_ = au::SocketConnection::Create(str_host, error);
   if (error.HasErrors()) {
-    socket_connection_ = NULL;
+    socket_connection_.Reset();
     return;
   }
 
@@ -103,7 +103,7 @@ void LogProbe::ConnectAsQuery(const std::string& host, const std::string& filter
   // Create a socket connection with the provided host
   socket_connection_ = au::SocketConnection::Create(str_host, error);
   if (error.HasErrors()) {
-    socket_connection_ = NULL;
+    socket_connection_.Reset();
     return;
   }
 
@@ -133,12 +133,12 @@ void LogProbe::Run() {
       Process(log);
     } else {
       error_.AddError("Error reading log");
-      socket_connection_ = NULL;
+      socket_connection_.Reset();
       return;
     }
 
     if (socket_connection_->IsClosed()) {
-      socket_connection_ = NULL;
+      socket_connection_.Reset();
       error_.AddError("Socket connection is closed");
       return;
     }

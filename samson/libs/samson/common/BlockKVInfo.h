@@ -35,13 +35,13 @@ struct BlockKVInfo {
   }
 
   void AppendBlock(size_t _size, size_t _kvs) {
-    num_blocks++;
+    ++num_blocks;
     size += _size;
     kvs += _kvs;
   }
 
   void AppendBlock(const FullKVInfo& info) {
-    num_blocks++;
+    ++num_blocks;
     size += info.size;
     kvs += info.kvs;
   }

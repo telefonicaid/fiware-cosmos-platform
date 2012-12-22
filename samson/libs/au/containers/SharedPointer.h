@@ -31,25 +31,36 @@ namespace au {
 class SharedReferenceCounter {
 public:
   // Note: NULL is allowed
-  SharedReferenceCounter() : reference_counter_(1) {
+  SharedReferenceCounter() : token_("SharedReferenceCounter"), reference_counter_(1) {
   }
 
   ~SharedReferenceCounter() {
   }
 
   void Retain() {
+    au::TokenTaker tt(&token_);
+
     reference_counter_++;
   }
 
   int Release() {
+    au::TokenTaker tt(&token_);
+
     return --reference_counter_;
   }
 
   int count() {
+    au::TokenTaker tt(&token_);
+
     return reference_counter_;
   }
 
+  Token *token() {
+    return &token_;
+  }
+
 private:
+  au::Token token_;  /**< Mutex protection for reference counter */
   int reference_counter_;
 };
 
@@ -97,16 +108,16 @@ public:
   }
 
   template<class T>
-  bool operator==(SharedPointer<T> shared_pointer) const {
+  bool operator==(const SharedPointer<T>& shared_pointer) const {
     return (shared_reference_counter_ == shared_pointer.shared_reference_counter_);
   }
 
   template<class T>
-  bool operator!=(SharedPointer<T> shared_pointer) const {
+  bool operator!=(const SharedPointer<T>& shared_pointer) const {
     return (shared_reference_counter_ != shared_pointer.shared_reference_counter_);
   }
 
-  SharedPointer<C>& operator=(SharedPointer<C> shared_pointer) {
+  SharedPointer<C>& operator=(const SharedPointer<C>& shared_pointer) {
     Release();
 
     shared_reference_counter_ = shared_pointer.shared_reference_counter_;
@@ -116,9 +127,8 @@ public:
     return *this;
   }
 
-  SharedPointer<C>& operator=(C *c) {
-    Reset(c);
-    return *this;
+  void Reset() {
+    Reset(NULL);
   }
 
   void Reset(C *c) {
@@ -155,6 +165,10 @@ public:
     return SharedPointer<T> (shared_reference_counter_, t);
   }
 
+  Token *GetRefCounterToken() const {
+    return shared_reference_counter_->token();
+  }
+
 private:
   // Release previous assignation
   void Release() {
@@ -165,6 +179,7 @@ private:
         c_ = NULL;
       }
       delete shared_reference_counter_;
+      shared_reference_counter_ = NULL;  // Just for debuggin correctly
     }
   }
 

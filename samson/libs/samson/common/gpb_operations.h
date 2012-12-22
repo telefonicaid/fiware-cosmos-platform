@@ -131,6 +131,12 @@ void Sort(gpb::Collection *collection, const std::string& field);
  */
 
 void UpdateEnvironment(gpb::Environment *environment, const std::string& env, au::ErrorManager &error);
+
+
+/**
+ * \brief Remove modules ( filtered with a pattern for the name of the module )
+ */
+void RemoveModules(gpb::Data *data, const std::string& pattern);
 }
 }   // End of namespace samson::gpb
 

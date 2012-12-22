@@ -12,6 +12,7 @@
 #ifndef _H_LogCentralChannelsFilter
 #define _H_LogCentralChannelsFilter
 
+#include <sstream>
 #include <vector>
 
 #include "au/log/LogCommon.h"
@@ -26,8 +27,11 @@ class LogCentralChannelsFilter {
 public:
 
   LogCentralChannelsFilter() {
-    for (int i = 0; i < LOG_MAX_CHANNELS; i++) {
-      channels_level_[i] = LOG_LEVEL_WARNING;  // Warning and Errors by default
+    for (int i = 0; i < LOG_MAX_CHANNELS; ++i) {
+      channels_level_[i] = LOG_LEVEL_MESSAGE;  // Messages, Warning and Errors by default
+      for (int j = 0; j < LOG_MAX_LEVELS; ++j) {
+        channels_hits_[i][j] = 0;
+      }
     }
   }
 
@@ -59,14 +63,25 @@ public:
   }
 
   inline bool IsLogAccepted(int channel, int level) {
-    return ( GetLevel(channel) >= level );
+    ++channels_hits_[channel][level];  // Simple counter of hits for each channel and level
+    return (GetLevel(channel) >= level);
   }
 
+  /**
+   * \brief Get a string with information about number of hits a particular channel has received
+   */
+  std::string GetHitDescriptionForChannel(int c) const;
+
+
+  /**
+   * \brief Debug string
+   */
   std::string description();
 
 private:
 
   int channels_level_[LOG_MAX_CHANNELS];
+  size_t channels_hits_[LOG_MAX_CHANNELS][LOG_MAX_LEVELS];  /**< Number of hits received for every channel */
 };
 }  // end namespace au
 

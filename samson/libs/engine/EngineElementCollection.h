@@ -18,9 +18,9 @@
 #include <set>                                   // std::set
 #include <string>
 
-#include "au/statistics/Cronometer.h"                       // au::Cronometer
 #include "au/containers/list.h"                  // au::list
 #include "au/mutex/Token.h"                      // au::Token
+#include "au/statistics/Cronometer.h"            // au::Cronometer
 // NAMESPACE_BEGIN & }
 #include "au/containers/vector.h"
 #include "au/mutex/Token.h"
@@ -73,6 +73,12 @@ public:
 
   // Debug method to log all elements
   void PrintElements();
+
+  /**
+   * \brief Get vector of strings with description of all engine elements
+   */
+
+  std::vector<std::string> GetAllElementDescription() const;
 
 private:
 

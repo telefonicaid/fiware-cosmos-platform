@@ -65,6 +65,7 @@ private:
 
   void connect();
 
+  static const size_t kMinInputbufferSize;
   static const size_t kMaxInputbufferSize;
 };
 

@@ -47,19 +47,19 @@ public:
    */
   void fill(gpb::CollectionRecord *record, const Visualization& visualization);
 
-  bool finished() {
+  bool finished() const {
     return finished_;
   }
 
-  size_t block_id() {
+  size_t block_id() const {
     return block_id_;
   }
 
-  std::string pattern_name() {
+  std::string pattern_name() const {
     return str_block_id(block_id_);
   }
 
-  size_t creation_time() {
+  size_t creation_time() const {
     return cronometer_.seconds();
   }
 

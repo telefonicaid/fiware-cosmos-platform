@@ -51,8 +51,8 @@ void Channel::remove_finished_items_and_connections(au::ErrorManager *error) {
     // Remove finished connections
     item->remove_finished_connections(error);
 
-    if ((item->getNumConnections() == 0) && (item->is_finished())) {
-      log("Message", au::str("Removing adaptor %s", item->getFullName().c_str()));
+    if ((item->num_connections() == 0) && (item->is_finished())) {
+      LOG_SV(("Removing adaptor %s", item->fullname().c_str()));
       item->cancel_item();
       delete item;
       items.erase(it_items);
@@ -82,8 +82,8 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
   Adaptor *previous_item = items.findInMap(name);
 
   if (previous_item) {
-    error->AddError(au::str("Item %s already exist (%s)", previous_item->getFullName().c_str(),
-                            previous_item->getDescription().c_str()));
+    error->AddError(au::str("Item %s already exist (%s)", previous_item->fullname().c_str(),
+                            previous_item->description().c_str()));
     return;
   }
 
@@ -183,7 +183,7 @@ void Channel::add_input(std::string name, std::string input_string, au::ErrorMan
   Adaptor *previous_item = items.findInMap(name);
 
   if (previous_item) {
-    error->AddError(au::str("Item %s already exist (%s)", name.c_str(), previous_item->getDescription().c_str()));
+    error->AddError(au::str("Item %s already exist (%s)", name.c_str(), previous_item->description().c_str()));
     return;
   }
 
@@ -286,9 +286,7 @@ void Channel::add(std::string name, Adaptor *item) {
   items.insertInMap(name, item);
 
   // Log activity
-  log("Message", au::str("Adaptor %s (%s) added"
-                         , item->getFullName().c_str()
-                         , item->getDescription().c_str()));
+  LOG_SV(("Adaptor %s (%s) added", item->fullname().c_str(), item->description().c_str()));
 
   // Init the item
   item->init_item();
@@ -316,7 +314,7 @@ void Channel::push(engine::BufferPointer buffer) {
 
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
-    if (it_items->second->getType() == connection_output) {
+    if (it_items->second->type() == connection_output) {
       it_items->second->push(buffer);
     }
   }
@@ -336,7 +334,7 @@ int Channel::getNumOutputItems() {
 
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
-    if (it_items->second->getType() == connection_output) {
+    if (it_items->second->type() == connection_output) {
       total++;
     }
   }
@@ -350,7 +348,7 @@ int Channel::getNumInputItems() {
 
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
-    if (it_items->second->getType() == connection_input) {
+    if (it_items->second->type() == connection_input) {
       total++;
     }
   }
@@ -364,7 +362,7 @@ int Channel::getNumConnections() {
 
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
-    total += it_items->second->getNumConnections();
+    total += it_items->second->num_connections();
   }
   return total;
 }
@@ -383,8 +381,8 @@ std::string Channel::getInputsString() {
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
     Adaptor *item = it_items->second;
-    if (item->getType() == connection_input) {
-      output << item->getDescription()  << " ";
+    if (item->type() == connection_input) {
+      output << item->description()  << " ";
     }
   }
   return output.str();
@@ -404,8 +402,8 @@ std::string Channel::getOutputsString() {
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
     Adaptor *item = it_items->second;
-    if (item->getType() == connection_output) {
-      output << item->getDescription() << " ";
+    if (item->type() == connection_output) {
+      output << item->description() << " ";
     }
   }
   return output.str();
@@ -420,19 +418,11 @@ size_t Channel::getOutputConnectionsBufferedSize() {
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
     Adaptor *item = it_items->second;
 
-    if (item->getType() == connection_output) {
-      total += item->getConnectionsBufferedSize();
+    if (item->type() == connection_output) {
+      total += item->GetConnectionsBufferedSize();
     }
   }
   return total;
-}
-
-void Channel::log(std::string type, std::string message) {
-  log(au::SharedPointer<Log> (new Log(getName(), type, message)));
-}
-
-void Channel::log(au::SharedPointer<Log> log) {
-  connector_->log(log);
 }
 
 void Channel::report_output_size(size_t size) {
@@ -451,7 +441,7 @@ void Channel::autoCompleteWithAdaptorsNames(au::console::ConsoleAutoComplete *in
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
     Adaptor *item = it_items->second;
-    info->add(item->getFullName());
+    info->add(item->fullname());
   }
 }
 }

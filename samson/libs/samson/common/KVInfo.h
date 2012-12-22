@@ -45,9 +45,6 @@ struct KVInfo {
 
 // Create an allocated vector of KVInfo with information for all hash-groups
 KVInfo *createKVInfoVector(char *data, au::ErrorManager *error);
-
-// Get the agregation of
-KVInfo selectRange(KVInfo *info, KVRange range);
 }
 
 #endif  // ifndef _H_SAMSON_KVINFO

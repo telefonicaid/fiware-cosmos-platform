@@ -17,7 +17,7 @@
 *
 * PROJECT         au library
 *
-* DATE            Septembre 2011
+* DATE            September 2011
 *
 * DESCRIPTION
 *
@@ -30,12 +30,13 @@
 #ifndef _H_AU_RATE
 #define _H_AU_RATE
 
+#include <math.h>
+#include <time.h>
+
 #include <cstring>
 #include <list>
-#include <math.h>
 #include <memory>
-#include <string>    // std::String
-#include <time.h>
+#include <string>
 
 #include "au/statistics/Cronometer.h"
 #include "au/statistics/Cronometer.h"
@@ -50,7 +51,7 @@ class Rate {
 public:
 
   // Constructor
-  Rate(int num_seconds_to_average = 10);
+  Rate(int num_seconds_to_average = 60);
   ~Rate();
 
   // Push new samples
@@ -69,6 +70,11 @@ public:
 
   // String to visualize this rate
   std::string str() const;
+
+  /**
+   * \brief Debug string with all internal accumulated values
+   */
+  std::string str_debug() const;
 
 private:
 

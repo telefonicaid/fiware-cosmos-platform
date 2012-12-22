@@ -62,7 +62,7 @@ private:
 class Token {
 public:
 
-  Token(const std::string& name = "no name");
+  explicit Token(const std::string& name);
   ~Token();
 
   std::string name() const {
@@ -80,6 +80,7 @@ private:
 
   // To avoid missing releases, we use helper class TokenTaker
   friend class TokenTaker;
+  friend class MultipleTokenTaker;
 
   void Retain();
   void Release();

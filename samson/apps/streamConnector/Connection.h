@@ -15,7 +15,6 @@
 #include "engine/Buffer.h"
 
 #include "BufferList.h"
-#include "LogManager.h"
 #include "TrafficStatistics.h"
 #include "common.h"
 #include "samson/client/SamsonClient.h"
@@ -75,16 +74,11 @@ public:
       nc += connection_cronometer.seconds();
     }
 
-
     double t = c + nc;
 
     if (t == 0) {
       return 0;
     }
-
-
-
-
 
     return c / (c + nc);
   }
@@ -117,61 +111,26 @@ public:
 };
 
 class Connection : public ConnectionBase {
-  friend class StreamConnector;
-  friend class Adaptor;
-
-  au::Token token;                      // Mutex protection for this connection
-
-  std::string description_;             // Description name
-  ConnectionType type;                  // Type of item ( input or output )
-  Adaptor *item;                        // My adaptor
-
-  BufferProcessor *buffer_processor;    // Processor for input buffers ( only in input )
-
-  BufferList *input_buffer_list;        // List of buffers at the input
-  BufferList *output_buffer_list;       // List of buffers at the output to be sent ( in output connections )
-
-  bool initialized;                     // Falg to indicate init_connection has been called
-  bool canceled;                        // Flag to indicate this is canceled ( not call review again )
-  bool finished;                        // Falg to indicate this is finished ( no more data )
-
-
-  size_t id;                            // Assigned when added to a item
-
-  // Information about this connection
-  au::Cronometer cronometer;            // Global cronometer
-
 public:
 
   TrafficStatistics traffic_statistics;  // Information about input & output
 
-protected:
-
-  // Method to recover buffers to be pushed to the output ( output connections )
-  engine::BufferPointer getNextBufferToSent();
-
-  // Method to push any input buffer ( input connections )
-  void pushInputBuffer(engine::BufferPointer buffer);
-  void flushInputBuffers();
-
-public:
-
   Connection(Adaptor *_item, ConnectionType _type, std::string _name);
   virtual ~Connection();
 
-  ConnectionType getType();                     // Get type
-  const char *getTypeStr();
-  std::string getDescription();                 // Get a name of this element
-  std::string getFullName();                    // Get a name of this element
-  size_t getId();
+  ConnectionType type() const;
+  const char *GetTypeStr() const;
+  std::string description() const;
+  std::string fullname() const;
+  size_t id() const;
 
 
   void setDescription(const std::string& description) {
     description_ = description;
   }
 
-  virtual size_t bufferedSize();                // Get currect size accumulated here
-  virtual size_t bufferedSizeOnMemory();        // Get current size accumulated in memory
+  virtual size_t bufferedSize() const;          // Get currect size accumulated here
+  virtual size_t bufferedSizeOnMemory() const;  // Get current size accumulated in memory
 
   // Method to push data from channel ( only output )
   virtual void push(engine::BufferPointer buffer);
@@ -197,9 +156,38 @@ public:
   void set_as_finished();
   bool is_finished();
 
-  // Log system
-  void log(std::string type, std::string message);
-  void log(au::SharedPointer<Log> log);
+protected:
+
+  // Method to recover buffers to be pushed to the output ( output connections )
+  engine::BufferPointer getNextBufferToSent();
+
+  // Method to push any input buffer ( input connections )
+  void pushInputBuffer(engine::BufferPointer buffer);
+  void flushInputBuffers();
+
+private:
+
+  friend class StreamConnector;
+  friend class Adaptor;
+
+  au::Token token;                      // Mutex protection for this connection
+
+  std::string description_;             // Description name
+  ConnectionType type_;                 // Type of item ( input or output )
+  Adaptor *item_;                       // My adaptor
+
+  BufferProcessor *buffer_processor_;   // Processor for input buffers ( only in input )
+
+  BufferList *input_buffer_list_;       // List of buffers at the input
+  BufferList *output_buffer_list_;      // List of buffers at the output to be sent ( in output connections )
+
+  bool initialized_;                    // Flag to indicate init_connection has been called
+  bool canceled_;                       // Flag to indicate this is canceled ( not call review again )
+  bool finished_;                       // Flag to indicate this is finished ( no more data )
+
+  size_t id_;                           // Assigned when added to a item
+
+  au::Cronometer cronometer;            // Global cronometer
 };
 }
 

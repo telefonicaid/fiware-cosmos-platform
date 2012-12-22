@@ -32,31 +32,33 @@ public:
     }
     registered_ = true;
 
-    samson                 = LOG_REGISTER_CHANNEL("samson::G",   "samson library : General channel");
-    in_messages            = LOG_REGISTER_CHANNEL("samson::IM",  "samson library : Input network messages");
-    out_messages           = LOG_REGISTER_CHANNEL("samson::OM",  "samson library : Output network messages");
-    worker                 = LOG_REGISTER_CHANNEL("samson::W",   "samson library : Worker");
-    block_manager          = LOG_REGISTER_CHANNEL("samson::BM",  "samson library : Block Manager");
-    task_manager           = LOG_REGISTER_CHANNEL("samson::TM",  "samson library : Task Manager");
-    worker_controller      = LOG_REGISTER_CHANNEL("samson::WC",  "samson library : WorkerController");
-    background_process     = LOG_REGISTER_CHANNEL("samson::BP",  "samson library : Background Process");
-    isolated_process       = LOG_REGISTER_CHANNEL("samson::IP",  "samson library : Isolated Process");
+    samson                 = LOG_REGISTER_CHANNEL("samson::G", "samson library : General channel");
+    in_messages            = LOG_REGISTER_CHANNEL("samson::IM", "samson library : Input network messages");
+    out_messages           = LOG_REGISTER_CHANNEL("samson::OM", "samson library : Output network messages");
+    worker                 = LOG_REGISTER_CHANNEL("samson::W", "samson library : Worker");
+    block_manager          = LOG_REGISTER_CHANNEL("samson::BM", "samson library : Block Manager");
+    task_manager           = LOG_REGISTER_CHANNEL("samson::TM", "samson library : Task Manager");
+    worker_controller      = LOG_REGISTER_CHANNEL("samson::WC", "samson library : WorkerController");
+    background_process     = LOG_REGISTER_CHANNEL("samson::BP", "samson library : Background Process");
+    isolated_process       = LOG_REGISTER_CHANNEL("samson::IP", "samson library : Isolated Process");
     worker_command_manager = LOG_REGISTER_CHANNEL("samson::WCM", "samson library : Worker Comamnd Manager");
-    worker_command         = LOG_REGISTER_CHANNEL("samson::WC",  "samson library : Worker Command");
-    worker_task            = LOG_REGISTER_CHANNEL("samson::WT",  "samson library : Worker Task");
+    worker_command         = LOG_REGISTER_CHANNEL("samson::WC", "samson library : Worker Command");
+    worker_task            = LOG_REGISTER_CHANNEL("samson::WT", "samson library : Worker Task");
     worker_block_manager   = LOG_REGISTER_CHANNEL("samson::WBM", "samson library : Worker Block Manager");
-    block_request          = LOG_REGISTER_CHANNEL("samson::BR",  "samson library : Block Request");
-    reduce_operation       = LOG_REGISTER_CHANNEL("samson::RO",  "samson library : Reduce Operation");
+    block_request          = LOG_REGISTER_CHANNEL("samson::BR", "samson library : Block Request");
+    reduce_operation       = LOG_REGISTER_CHANNEL("samson::RO", "samson library : Reduce Operation");
     kv_file                = LOG_REGISTER_CHANNEL("samson::KVF",
                                                   "samson library : KVFile ( key-values data interpretation )");
-    network_connection     = LOG_REGISTER_CHANNEL("samson::NC",  "samson library : Network Connection");
-    data_model             = LOG_REGISTER_CHANNEL("samson::DM",  "samson library : Data model");
-    rest                   = LOG_REGISTER_CHANNEL("samson::R",   "samson library : Rest interface");
-    modules_manager        = LOG_REGISTER_CHANNEL("samson::MM",  "samson library : Modules manager");
-    cleanup                = LOG_REGISTER_CHANNEL("samson::C",  "samson library : Clenaup");
-    shared_memory          = LOG_REGISTER_CHANNEL("samson::SH",  "samson library : Shared memory");
+    network_connection     = LOG_REGISTER_CHANNEL("samson::NC", "samson library : Network Connection");
+    data_model             = LOG_REGISTER_CHANNEL("samson::DM", "samson library : Data model");
+    rest                   = LOG_REGISTER_CHANNEL("samson::R", "samson library : Rest interface");
+    modules_manager        = LOG_REGISTER_CHANNEL("samson::MM", "samson library : Modules manager");
+    cleanup                = LOG_REGISTER_CHANNEL("samson::C", "samson library : Clenaup");
+    shared_memory          = LOG_REGISTER_CHANNEL("samson::SH", "samson library : Shared memory");
+    client                 = LOG_REGISTER_CHANNEL("samson::CL", "samson library : Samson client");
 
     delilah                = LOG_REGISTER_CHANNEL("delilah::G", "delilah library : General channel");
+    delilah_push_manager   = LOG_REGISTER_CHANNEL("delilah::PM", "delilah library : Push manager");
     delilah_components     = LOG_REGISTER_CHANNEL("delilah::C", "delilah library : Components");
   }
 
@@ -83,8 +85,10 @@ public:
   int network_connection;
   int cleanup;
   int shared_memory;
+  int client;
 
   int delilah;
+  int delilah_push_manager;
   int delilah_components;
 
 private:

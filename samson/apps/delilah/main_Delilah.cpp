@@ -82,8 +82,7 @@ unsigned short log_port;
 
 char host[1024];
 
-#define LOC      "localhost"
-#define LOG_PORT LOG_SERVER_DEFAULT_PORT
+#define LOC "localhost"
 /* ****************************************************************************
  *
  * parse arguments
@@ -172,18 +171,18 @@ void cleanup(void) {
   // Clear google protocol buffers library
   google::protobuf::ShutdownProtobufLibrary();
 
-  LOG_M(samson::logs.cleanup, ("Shutting down delilah components (delilahConsole at %p)", delilahConsole));
+  LOG_V(samson::logs.cleanup, ("Shutting down delilah components (delilahConsole at %p)", delilahConsole));
   if (delilahConsole != NULL) {
-    LOG_M(samson::logs.cleanup, ("deleting delilahConsole"));
+    LOG_V(samson::logs.cleanup, ("deleting delilahConsole"));
     delete delilahConsole;
     delilahConsole = NULL;
   }
 
-  LOG_M(samson::logs.cleanup, ("Calling paConfigCleanup"));
+  LOG_V(samson::logs.cleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
-  LOG_M(samson::logs.cleanup, ("Calling lmCleanProgName"));
+  LOG_V(samson::logs.cleanup, ("Calling lmCleanProgName"));
   lmCleanProgName();
-  LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
+  LOG_V(samson::logs.cleanup, ("Cleanup DONE"));
 
   engine::Engine::StopEngine();
 
@@ -375,7 +374,7 @@ int main(int argC, const char *argV[]) {
   std::vector<std::string> hosts = au::split(host, ' ');
   for (size_t i = 0; i < hosts.size(); ++i) {
     au::ErrorManager error;
-    if (delilahConsole->connect(hosts[i], &error)) {
+    if (delilahConsole->Connect(hosts[i], &error)) {
       LOG_M(samson::logs.delilah, ("Connected to %s", hosts[i].c_str()));
       break;
     } else {
@@ -388,7 +387,7 @@ int main(int argC, const char *argV[]) {
   if (commands_mode) {
     // Execute a set of commands sequentially and exit
 
-    if (!delilahConsole->isConnected()) {
+    if (!delilahConsole->IsConnected()) {
       // If not connected, exit here
       LOG_X(1, ("Delilah client not connected to any SAMSON cluster. Exiting..."));
     }
@@ -407,7 +406,7 @@ int main(int argC, const char *argV[]) {
         // Wait until this operation is finished
         au::Cronometer total_cronometer;
         au::Cronometer cronometer;
-        while (delilahConsole->isActive(id)) {
+        while (delilahConsole->DelilahComponentIsActive(id)) {
           usleep(1000);
           if (cronometer.seconds() > 1) {
             LOG_M(samson::logs.delilah,
@@ -419,13 +418,13 @@ int main(int argC, const char *argV[]) {
           }
         }
 
-        if (delilahConsole->hasError(id)) {
+        if (delilahConsole->DelilahComponentHasError(id)) {
           LOG_SE(("Error running '%s' (line %d)", commands[i].c_str(), i + 1));
-          LOG_SE(("Error: %s", delilahConsole->errorMessage(id).c_str()));
+          LOG_SE(("Error: %s", delilahConsole->GetErrorForDelilahComponent(id).c_str()));
         }
 
         // manual output
-        std::string output = delilahConsole->getOutputForComponent(id);
+        std::string output = delilahConsole->GetOutputForComponent(id);
         delilahConsole->WriteOnDelilah(output);
       }
     }
@@ -434,7 +433,7 @@ int main(int argC, const char *argV[]) {
     delilahConsole->FlushBackgroundMessages();
 
     if (!interactive_mode) {
-      delilahConsole->disconnect();
+      delilahConsole->Disconnect();
       LOG_SV(("delilah exits correctly"));
       au::LogCentral::StopLogSystem();
       exit(0);
@@ -451,7 +450,7 @@ int main(int argC, const char *argV[]) {
   }
 
   // Show a warning is console is still un connected
-  if (!delilahConsole->isConnected()) {
+  if (!delilahConsole->IsConnected()) {
     LOG_SW(("Delilah client not connected to any SAMSON cluster. ( see help connect )"));
   }
 
@@ -467,7 +466,7 @@ int main(int argC, const char *argV[]) {
   console_log_plugin->SetConsole(NULL);
 
   // Disconnect delilah
-  delilahConsole->disconnect();
+  delilahConsole->Disconnect();
 
   // Stopping the new log_central thread
   LOG_SM(("Calling au::log_central->Stop()"));

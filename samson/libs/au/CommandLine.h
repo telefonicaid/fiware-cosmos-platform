@@ -22,7 +22,7 @@
  * \file CommandLine.h
  * \mainpage CommandLine
  * \author Andreu Urruela
- * \date Septembre 2011
+ * \date September 2011
  *
  * Tool to configure and parse command line arguments
  *

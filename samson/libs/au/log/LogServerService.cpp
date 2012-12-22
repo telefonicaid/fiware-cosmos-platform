@@ -22,8 +22,9 @@
 #define Char_to_int(x) ((x) - 48)
 
 namespace au {
-LogServerService::LogServerService(int port, const std::string& _directory)
-  : network::Service(port), token("LogServerService") {
+LogServerService::LogServerService(int port, const std::string& _directory) :
+  network::Service(port), token("LogServerService"),
+  token_log_probe_connections_("LogServerSerice::token_log_probe_connections_") {
   directory = _directory;
 
   file_counter = 0;
@@ -160,7 +161,7 @@ void LogServerService::runLogProvider(gpb::LogConnectionHello *hello, au::Socket
     // Read a log
     au::SharedPointer<Log>log(new Log());
     if (!log->Read(socket_connection)) {
-      LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
+      // LM_V(("Closed connection from %s", socket_connection->host_and_port().c_str()));
       return;    // Not possible to read a log...
     }
 

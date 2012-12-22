@@ -19,10 +19,11 @@
 #include "au/ExecesiveTimeAlarm.h"
 #include "au/mutex/Token.h"             // au::Token
 #include "au/statistics/Cronometer.h"   // au::Cronometer
+#include "au/string/StringUtilities.h"
 
 namespace au {
 TokenTaker::TokenTaker(Token *token, const std::string& name) : name_(name), token_(token) {
-  au::ExecesiveTimeAlarm alarm("TokenTaker::TokenTaker");
+  au::ExecesiveTimeAlarm alarm(0, au::str("TokenTaker for token '%s' at '%s'", token->name().c_str(), name.c_str()));
 
   token->Retain();
 }
@@ -41,5 +42,17 @@ void TokenTaker::WakeUp() {
 
 void TokenTaker::WakeUpAll() {
   token_->WakeUpAll();
+}
+
+MultipleTokenTaker::MultipleTokenTaker(const std::vector<Token *>& tokens) : tokens_(tokens) {
+  for (size_t i = 0; i < tokens_.size(); ++i) {
+    tokens_[i]->Retain();
+  }
+}
+
+MultipleTokenTaker::~MultipleTokenTaker() {
+  for (size_t i = 0; i < tokens_.size(); ++i) {
+    tokens_[i]->Release();
+  }
 }
 }

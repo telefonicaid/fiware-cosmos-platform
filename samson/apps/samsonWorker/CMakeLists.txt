@@ -47,6 +47,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # SAMSON Executable
 ADD_EXECUTABLE(samsonWorker ${SOURCES} ${HEADERS})
 TARGET_LINK_LIBRARIES(samsonWorker ${LIBS})
+INSTALL(TARGETS               samsonWorker        RUNTIME DESTINATION   bin)
 
-INSTALL(TARGETS               samsonWorker
-        RUNTIME DESTINATION   bin)
+ADD_EXECUTABLE(samsonResetZookeeper main_samsonResetZookeeper.cpp ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonResetZookeeper ${LIBS})
+INSTALL(TARGETS               samsonResetZookeeper        RUNTIME DESTINATION   bin)

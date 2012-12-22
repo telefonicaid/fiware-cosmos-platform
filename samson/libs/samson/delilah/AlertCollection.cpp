@@ -18,7 +18,7 @@ AlertCollection::AlertCollection() {
   max_num_elements = 100;
 }
 
-void AlertCollection::add(NodeIdentifier node, std::string type, std::string context, std::string text) {
+void AlertCollection::Add(const NodeIdentifier& node, std::string type, std::string context, std::string text) {
   traces.push_back(new Alert(node, type, context, text));
 
   while (traces.size() > max_num_elements) {

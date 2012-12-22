@@ -29,11 +29,12 @@
 #ifndef _H_AU_POOL
 #define _H_AU_POOL
 
+#include <math.h>
+#include <time.h>
+
 #include <cstring>
 #include <list>
-#include <math.h>
-#include <string>    // std::String
-#include <time.h>
+#include <string>
 
 #include "au/statistics/Cronometer.h"
 #include "au/string/StringUtilities.h"
@@ -55,8 +56,8 @@ public:
     if (s == 0) {
       return NULL;
     }
-    
-    C *c = objects[ s - 1 ];
+
+    C *c = objects[s - 1];
     objects.pop_back();
     return c;
   }

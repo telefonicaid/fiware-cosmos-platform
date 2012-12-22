@@ -31,7 +31,6 @@ namespace Message {
  */
 typedef enum MessageCode {
   Hello,                        // Identification message in all interconnections worker - delilah or worker - worker
-  StatusReport,
   Alert,
   ClusterInfoUpdate,            // Update information about the cluster to a delilah node
   WorkerCommand,                // Command from a delilah node to a worker

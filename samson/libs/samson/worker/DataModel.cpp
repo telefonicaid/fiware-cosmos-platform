@@ -36,6 +36,7 @@ const std::string DataModel::kClearBatchOPerations("clear_batch_operations");
 const std::string DataModel::kClearModules("clear_modules");
 const std::string DataModel::kPushQueue("push_queue");
 const std::string DataModel::kRemoveAll("remove_all");
+const std::string DataModel::kResetSamson("reset_samson");
 const std::string DataModel::kRemoveAllData("remove_all_queues");
 const std::string DataModel::kRemoveAllStreamOperations("remove_all_stream_operations");
 const std::string DataModel::kRemoveStreamOperation("remove_stream_operation");
@@ -48,7 +49,7 @@ const std::string DataModel::kFreezeDataModel("data_model_freeze");
 const std::string DataModel::kCancelFreezeDataModel("data_model_cancel_freeze");
 const std::string DataModel::kRecoverDataModel("data_model_recover");
 const std::string DataModel::kConsolidateDataModel("consolidate_data_model");
-const std::string DataModel::kSetReplicationFactor("set_replication_factor");
+const std::string DataModel::kSetClusterParameter("cluster_set_parameter");
 
 
 
@@ -56,20 +57,20 @@ const std::string DataModel::commands[] = {
   DataModel::kAdd,             DataModel::kAddQueueConnection,
   kAddStreamOperation,         kBatch,                        kBlock,
   kClearBatchOPerations,       kClearModules,                 kPushQueue,
-  kRemoveAll,
+  kRemoveAll,                  kResetSamson,
   kRemoveAllData,              kRemoveAllStreamOperations,
   kRemoveStreamOperation,      kRm,                           kRmQueueConnection,
   kSetQueueProperty,
   kSetStreamOperationProperty, kUnsetStreamOperationProperty,
   kFreezeDataModel,            kCancelFreezeDataModel,        kRecoverDataModel,
-  kConsolidateDataModel,       kSetReplicationFactor
+  kConsolidateDataModel,       kSetClusterParameter
 };
 
 const std::string DataModel::recovery_commands[] = {
   DataModel::kAdd,            DataModel::kAddQueueConnection, kAddStreamOperation,
   kBatch,
   kClearBatchOPerations,      kClearModules,
-  kPushQueue,                 kRemoveAll,                     kRemoveAllData,
+  kPushQueue,                 kRemoveAll,                     kResetSamson,       kRemoveAllData,
   kRemoveAllStreamOperations,
   kRemoveStreamOperation,     kRm,                            kRmQueueConnection,
   kSetQueueProperty,          kSetStreamOperationProperty,    kUnsetStreamOperationProperty
@@ -102,8 +103,10 @@ au::SharedPointer<au::CommandLine> DataModel::GetCommandLine() {
 
 void DataModel::Init(au::SharedPointer<gpb::DataModel> data_model) {
   // Create an empty node
-  LOG_M(logs.data_model, ("Init a new instance of data model"));
+  LOG_V(logs.data_model, ("Init a new instance of data model"));
   data_model->set_replication_factor(3);
+  data_model->set_parallelization_factor(8);
+  data_model->set_parallelization_reduction_factor(1);
 
   gpb::Data *previous_data = data_model->mutable_previous_data();
   previous_data->set_next_stream_operation_id(1);
@@ -147,12 +150,50 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
     return;
   }
 
-  if (main_command == kSetReplicationFactor) {
+  if (main_command == kSetClusterParameter) {
     if (cmd->get_num_arguments() < 2) {
+      error.AddError("usage: cluster_set_parameter <parameter> <value>");
       return;
     }
-    size_t replication_factor = atoll(cmd->get_argument(1).c_str());
-    data->set_replication_factor(replication_factor);
+
+    std::string parameter = cmd->get_argument(1);
+    std::string value = cmd->get_argument(2);
+
+    if (parameter == "replication_factor") {
+      int replicas = atoi(value.c_str());
+      if ((replicas < 1) || (replicas > 10)) {
+        error.AddError(au::str("Invalid value '%s' for cluster parameter '%s' ", value.c_str(), parameter.c_str()));
+        return;
+      }
+
+      data->set_replication_factor(replicas);
+      return;
+    }
+
+    if (parameter == "worker_cores") {
+      int cores = atoi(value.c_str());
+      if ((cores < 1) || (cores > 200)) {
+        error.AddError(au::str("Invalid value '%s' for cluster parameter '%s' ", value.c_str(), parameter.c_str()));
+        return;
+      }
+      data->set_parallelization_factor(cores);
+      return;
+    }
+
+    if (parameter == "forward_reduction") {
+      int cores = atoi(value.c_str());
+      if ((cores < 1) || (cores > 200)) {
+        error.AddError(au::str("Invalid value '%s' for cluster parameter '%s' ", value.c_str(), parameter.c_str()));
+        return;
+      }
+      data->set_parallelization_reduction_factor(cores);
+      return;
+    }
+
+
+
+
+    error.AddError(au::str("Unknown parameter for cluster setup: '%s'", parameter.c_str()));
     return;
   }
 
@@ -164,7 +205,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::DataModel> data
   }
 
   size_t commit_id = data->mutable_current_data()->commit_id();
-  LOG_M(logs.data_model, ("Trying to perform commit over Data model [candidate for %lu] %s (data version  %d)"
+  LOG_V(logs.data_model, ("Trying to perform commit over Data model [candidate for %lu] %s (data version  %d)"
                           , commit_id, command.c_str(), version));
 
   // add to the list of last_commits
@@ -187,7 +228,7 @@ void DataModel::ProcessCommand(gpb::Data *data, au::SharedPointer<au::CommandLin
   // Reset error messages
   error.Reset();
 
-  LOG_M(logs.data_model, ("ProcessCommand %s", main_command.c_str()));
+  LOG_V(logs.data_model, ("ProcessCommand %s", main_command.c_str()));
 
   if (main_command == kAdd) {
     ProcessAddCommand(data, cmd, error);
@@ -205,6 +246,8 @@ void DataModel::ProcessCommand(gpb::Data *data, au::SharedPointer<au::CommandLin
     ProcessClearModulesCommand(data, cmd, error);
   } else if (main_command == kPushQueue) {
     ProcessPushQueueCommand(data, cmd, error);
+  } else if (main_command == kResetSamson) {
+    ProcessResetSamsonCommand(data, cmd, error);
   } else if (main_command == kRemoveAll) {
     ProcessRemoveAllCommand(data, cmd, error);
   } else if (main_command == kRemoveAllData) {
@@ -563,36 +606,13 @@ void DataModel::ProcessClearBatchOPerationsCommand(gpb::Data *data, au::SharedPo
 
 void DataModel::ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd  /* cmd */,
                                            au::ErrorManager &  /* error */) {
-  // Remove blocks in queue .modules
-  gpb::Queue *queue = gpb::get_queue(data, ".modules");
-
-  if (!queue) {
-    return;  // Nothing to remove
-  }
-  ::google::protobuf::RepeatedPtrField< ::samson::gpb::Block > *blocks = queue->mutable_blocks();
   std::string pattern = "*";
+
   if (cmd->get_num_arguments() > 1) {
     pattern = cmd->get_argument(1);
   }
-  au::SimplePattern simple_pattern(pattern);
-  bool update_queue_commit_id = false;
-  for (int i = 0; i < blocks->size(); ) {
-    size_t block_id = blocks->Get(i).block_id();
-    std::string block_name = str_block_id(block_id);
-    if (simple_pattern.match(block_name)) {
-      // Remove block
-      update_queue_commit_id = true;
-      blocks->SwapElements(i, blocks->size() - 1);
-      blocks->RemoveLast();
-    } else {
-      ++i;
-    }
-  }
 
-  if (update_queue_commit_id) {
-    queue->set_commit_id(data->commit_id());
-  }
-
+  gpb::RemoveModules(data, pattern);
   return;
 }
 
@@ -624,8 +644,14 @@ void DataModel::ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::C
   return;
 }
 
-// All
-
+void DataModel::ProcessResetSamsonCommand(gpb::Data *data
+                                          , au::SharedPointer<au::CommandLine>        /* cmd */
+                                          , au::ErrorManager&  /* error */) {
+  reset_stream_operations(data);
+  reset_data(data);
+  gpb::RemoveModules(data, "*");
+  return;
+}
 
 void DataModel::ProcessRemoveAllCommand(gpb::Data *data
                                         , au::SharedPointer<au::CommandLine>      /* cmd */
@@ -884,10 +910,31 @@ bool DataModel::IsValidCommand(const std::string& main_command) {
   return false;
 }
 
-au::SharedPointer<gpb::Collection> DataModel::GetCollectionForReplication(const Visualization& visualization) {
+au::SharedPointer<gpb::Collection> DataModel::GetCollectionForClusterParameters(const Visualization& visualization) {
   au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
-  gpb::CollectionRecord *record = collection->add_record();
-  ::samson::add(record, "Replication factor", getCurrentModel()->replication_factor(), "different");
+
+  {
+    gpb::CollectionRecord *record = collection->add_record();
+    ::samson::add(record, "name", "Replication factor", "different,left");
+    ::samson::add(record, "code_name", "replication_factor", "different,left");
+    ::samson::add(record, "value", getCurrentModel()->replication_factor(), "different");
+  }
+
+  {
+    gpb::CollectionRecord *record = collection->add_record();
+    ::samson::add(record, "name", "Worker parallelization factor", "different,left");
+    ::samson::add(record, "code_name", "worker_cores", "different,left");
+    ::samson::add(record, "value", getCurrentModel()->parallelization_factor(), "different");
+  }
+
+  {
+    gpb::CollectionRecord *record = collection->add_record();
+    ::samson::add(record, "name", "Worker parallelization reduction factor for forward operations", "different,left");
+    ::samson::add(record, "code_name", "forward_reduction", "different,left");
+    ::samson::add(record, "value", getCurrentModel()->parallelization_reduction_factor(), "different");
+  }
+
+
   collection->set_name("replication_factor");
   return collection;
 }

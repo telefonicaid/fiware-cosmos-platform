@@ -12,7 +12,6 @@
 #define _H_STREAM_CHANNEL
 
 #include "ConnectorCommand.h"
-#include "LogManager.h"
 #include "TrafficStatistics.h"
 #include "common.h"
 #include "engine/Buffer.h"
@@ -82,11 +81,6 @@ public:
   std::string getOutputsString();
 
   size_t getOutputConnectionsBufferedSize();
-
-
-  // Log system
-  void log(std::string type, std::string message);
-  void log(au::SharedPointer<Log> log);
 
   // Data report system
   void report_output_size(size_t size);

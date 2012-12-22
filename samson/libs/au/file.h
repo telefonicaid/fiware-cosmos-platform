@@ -17,7 +17,7 @@
 *
 * PROJECT         au library
 *
-* DATE            Septembre 2011
+* DATE            September 2011
 *
 * DESCRIPTION
 *
@@ -65,6 +65,7 @@ std::string get_directory_from_path(std::string path);
 Status CreateDirectory(std::string path);
 Status CreateFullDirectory(std::string path);
 std::string GetCannonicalPath(const std::string& path);
+std::string GetLastPathComponent(const std::string& path);
 
 // Get a fill path from a directory and file name
 std::string path_from_directory(const std::string& directory, const std::string& file);

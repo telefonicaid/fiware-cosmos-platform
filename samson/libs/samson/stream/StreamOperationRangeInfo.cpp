@@ -249,8 +249,8 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
   // Recover stream operation from data
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, stream_operation_id_);
   if (!stream_operation) {
-    SetError(au::str("stream operation %s does not exist"));
-    worker_task_ = NULL;       // Cancel task if any
+    SetError(au::str("stream operation %lu does not exist", stream_operation_id_));
+    worker_task_.Reset();
     return;
   }
 
@@ -258,7 +258,7 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
   au::ErrorManager error;
   if (!IsStreamOperationValid(data, *stream_operation, &error)) {
     SetError(au::str("Error validating stream operation: %s", error.GetLastError().c_str()));
-    worker_task_ = NULL;       // Cancel task if any
+    worker_task_.Reset();
     return;
   }
 
@@ -446,12 +446,45 @@ void StreamOperationRangeInfo::Review(gpb::Data *data) {
 }
 
 void StreamOperationRangeInfo::ReviewCurrentTask() {
-  if ((worker_task_ != NULL) && (worker_task_->IsWorkerTaskFinished())) {
-    if (worker_task_->error().HasErrors()) {
-      SetError(worker_task_->error().GetLastError());
-    }
-    worker_task_ = NULL;
+  if (worker_task_ == NULL) {
+    return;  // No worker task to be reviwed
   }
+  if (!worker_task_->IsWorkerTaskFinished()) {
+    worker_task_->ProcessOutputBuffers();
+    return;  // Task is still not finished
+  }
+
+  if (worker_task_->error().HasErrors()) {
+    // In case of error, notify about this error and reset task
+    SetError(worker_task_->error().GetLastError());
+    worker_task_.Reset();
+  }
+
+  // Process any missing output buffer
+  worker_task_->ProcessOutputBuffers();
+
+  // Commit task to data model
+  worker_task_->commit();
+
+
+  // Take statistics about stream operations
+  std::string stream_operation_name = worker_task_->stream_operation_name();
+
+  BlockInfo input_info = worker_task_->GetInputDataInfo();
+  BlockInfo output_info = worker_task_->GetOutputDataInfo();
+  BlockInfo state_info = worker_task_->GetStateDataInfo();
+
+  double time = worker_task_->GetProcessTime();
+  int num_ranges = stream_operation_global_info_->GetNumKVRanges();
+
+  if (stream_operation_name[0] != '.') {
+    samson_worker_->task_manager()->UpdateStreamOperationStatistics(stream_operation_name, num_ranges, input_info,
+                                                                    output_info, state_info,
+                                                                    time);
+  }
+
+  // Remove this task
+  worker_task_.Reset();
 }
 
 au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t task_id, gpb::Data *data) {
@@ -553,7 +586,7 @@ au::SharedPointer<WorkerTask> StreamOperationRangeInfo::schedule_new_task(size_t
   }
 
   if (accumulated_size > 2 * max_memory_per_task) {
-    worker_task_ = NULL;
+    worker_task_.Reset();
     SetError(au::str("Error: Memory footprint of %s for previous operation.", au::str(accumulated_size).c_str()));
     return au::SharedPointer<WorkerTask>(NULL);
   }

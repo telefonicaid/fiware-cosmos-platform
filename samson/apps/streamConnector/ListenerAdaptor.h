@@ -13,7 +13,6 @@
 #define _H_STREAM_CONNECTOR_LISTENER
 
 #include "Adaptor.h"
-#include "LogManager.h"
 #include "au/network/NetworkListener.h"
 #include "common.h"
 

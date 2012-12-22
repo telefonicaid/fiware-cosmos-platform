@@ -22,9 +22,9 @@
 #include "au/mutex/Token.h"       // au::Token
 #include "au/mutex/TokenTaker.h"  // au::TokenTake
 #include "au/singleton/Singleton.h"
+#include "au/statistics/DataStatistics.h"
 #include "au/string/StringUtilities.h"  // au::xml_...
 #include "au/string/xml.h"             // au::xml...
-
 
 #include "Notification.h"              // engine::Notification
 
@@ -52,7 +52,7 @@ DiskManager *Engine::disk_manager_ = NULL;
 ProcessManager *Engine::process_manager_ = NULL;
 
 void Engine::InitEngine(int num_cores, size_t memory, int num_disk_operations) {
-  LOG_M(logs.engine, ("Engine init"));
+  LOG_V(logs.engine, ("Engine init"));
   if (engine_) {
     LOG_W(logs.engine, ("Init engine twice... just ignoring"));
     return;
@@ -109,22 +109,29 @@ void Engine::RunElement(EngineElement *running_element) {
   au::Cronometer cronometer;
 
   InternRunElement(running_element);
-  if (cronometer.seconds() > 3) {
-    LOG_W(logs.engine, ("EngineElement %s has being running for %s"
-                        , running_element->str().c_str(), au::str_time(cronometer.seconds()).c_str()));
+  if (cronometer.seconds() > 60) {  // Not allowed more than 1 minute per task
+    LOG_X(1, ("EngineElement %s has been running for %s",
+              running_element->str().c_str(),
+              au::str_time(cronometer.seconds()).c_str()));
   }
+  if (cronometer.seconds() > 5) {  // Not allowed more than 1 minute per task
+    LOG_W(logs.engine, ("EngineElement %s has been running for %s",
+                        running_element->str().c_str(),
+                        au::str_time(cronometer.seconds()).c_str()));
+  }
+  au::Singleton<au::RateStatistics>::shared()->Push("engine.notifications", 1);
 }
 
 void Engine::InternRunElement(EngineElement *running_element) {
   activity_monitor_.StartActivity(running_element->name());
 
   // Execute the item selected as running_element
-  LOG_M(logs.engine, ("[START] Engine:  executing %s", running_element->str().c_str()));
+  LOG_V(logs.engine, ("[START] Engine:  executing %s", running_element->str().c_str()));
 
   // Print traces for debugging strange situations
   int waiting_time = running_element->GetWaitingTime();
   if (waiting_time > 10) {
-    LOG_SW(("Engine is running an element that has been waiting %d seconds", waiting_time));
+    LOG_SV(("Engine will run '%s' that has been waiting %d seconds", waiting_time));
 
     if (waiting_time > 100) {
       // Print all elements with traces for debuggin...
@@ -139,35 +146,16 @@ void Engine::InternRunElement(EngineElement *running_element) {
 
     // Run the running element ;)
     running_element->run();
-
-    int execution_time = c.seconds();
-    if (execution_time > 10) {
-      LOG_SW(("Engine has executed an item in %d seconds.", execution_time));
-      LOG_SW(("Engine Executed item: %s", running_element->str().c_str()));
-    }
   }
 
-  LOG_M(logs.engine, ("[DONE] Engine:  executing %s", running_element->str().c_str()));
+  LOG_V(logs.engine, ("[DONE] Engine:  executing %s", running_element->str().c_str()));
 
   // Collect information about this execution
   activity_monitor_.StartActivity("engine_management");
 }
 
-/**
- *
- * RunMainLoop
- *
- * \breif Main loop to process engine-elements ( normal, periodic ande extra )
- *
- * Try to get the next element in the repeat_elements list
- * if not there , try normal elements...
- * if not, run extra elements and loop again...
- *
- */
-
-
 void Engine::RunThread() {
-  LOG_M(logs.engine, ("Engine run"));
+  LOG_V(logs.engine, ("Engine run"));
 
   counter_ = 0;  // Init the counter to elements managed by this run-time
 
@@ -190,6 +178,11 @@ void Engine::RunThread() {
 
     if (num_engine_elements > 10000) {
       LOG_SW(("Execesive number of elements in the engine stack %lu", num_engine_elements));
+      std::vector<std::string> descriptions = engine_element_collection_.GetAllElementDescription();
+      for (size_t i = 0; i < descriptions.size(); ++i) {
+        LOG_SW(("%s", descriptions[i].c_str()));
+      }
+      LOG_X(1, ("Execesive number of elements in the engine stack"));
     }
 
     // Try if next repeated element is ready to be executed
@@ -234,6 +227,8 @@ void Engine::RunThread() {
       continue;
     }
     activity_monitor_.StartActivity("sleep");
+
+    au::Singleton<au::RateStatistics>::shared()->Push("engine.sleeps", 1);
 
     usleep(300000);
 

@@ -30,7 +30,8 @@ ProcessIsolated::ProcessIsolated(SamsonWorker *samson_worker
                                  , const std::string& operation
                                  , const std::string& concept
                                  , ProcessBaseType _type) :
-  ProcessItemIsolated(samson_worker, worker_task_id, operation, concept) {
+  ProcessItemIsolated(samson_worker, worker_task_id, operation, concept),
+  token_("ProcessIsolated") {
   num_outputs = 0;   // Outputs are defined calling "addOutput" with the rigth output format
   type = _type;   // Keep the type of operation ( data is generated differently )
 
@@ -101,7 +102,7 @@ void ProcessIsolated::runCode(int c) {
 void ProcessIsolated::flushBuffer(bool finish) {
   au::Cronometer cronometer;
 
-  LOG_M(logs.isolated_process,
+  LOG_V(logs.isolated_process,
         ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id, process_item_description().c_str()));
 
   switch (type) {
@@ -113,7 +114,7 @@ void ProcessIsolated::flushBuffer(bool finish) {
       break;
   }
 
-  LOG_M(logs.isolated_process, ("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s "
+  LOG_V(logs.isolated_process, ("Flush buffer finished ( shared memory id %d ) for operation %s atfer %s "
                                 , shm_id, process_item_description().c_str(), au::S(cronometer).str().c_str()));
 }
 

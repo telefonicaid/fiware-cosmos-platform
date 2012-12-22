@@ -15,6 +15,7 @@
 #include <math.h>                              /*                                          */
 #include <stdlib.h>                            /* malloc                                   */
 #include <string.h>                            /* memcpy                                   */
+
 #include <string>                              /* std::string                              */
 
 #include <samson/module/DataInstance.h>        /* DataInstance                             */

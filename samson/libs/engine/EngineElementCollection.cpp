@@ -33,10 +33,10 @@ void EngineElementCollection::Add(EngineElement *element) {
   au::TokenTaker tt(&token_);
 
   // Insert an element in the rigth queue
-  LOG_M(logs.engine, ("Adding Engineelement: %s", element->str().c_str()));
+  LOG_V(logs.engine, ("Adding Engineelement: %s", element->str().c_str()));
 
   if (element->IsRepeated()) {
-    repeated_elements_.insert(FindPositionForRepeatedEngineElement(element),  element);
+    repeated_elements_.insert(FindPositionForRepeatedEngineElement(element), element);
   } else if (element->IsExtra()) {
     extra_elements_.push_back(element);
   } else {
@@ -131,7 +131,7 @@ std::string EngineElementCollection::GetTableOfEngineElements() {
   au::tables::Table table("Type|Waiting,f=double|Period,f=double|Description,left");
 
   au::list<EngineElement>::iterator it_elements;
-  for (it_elements = repeated_elements_.begin(); it_elements != repeated_elements_.end(); it_elements++) {
+  for (it_elements = repeated_elements_.begin(); it_elements != repeated_elements_.end(); ++it_elements) {
     EngineElement *element = *it_elements;
 
     au::StringVector values;
@@ -143,7 +143,7 @@ std::string EngineElementCollection::GetTableOfEngineElements() {
     table.addRow(values);
   }
 
-  for (it_elements = normal_elements_.begin(); it_elements != normal_elements_.end(); it_elements++) {
+  for (it_elements = normal_elements_.begin(); it_elements != normal_elements_.end(); ++it_elements) {
     EngineElement *element = *it_elements;
 
     au::StringVector values;
@@ -155,7 +155,7 @@ std::string EngineElementCollection::GetTableOfEngineElements() {
     table.addRow(values);
   }
 
-  for (size_t i = 0; i < extra_elements_.size(); i++) {
+  for (size_t i = 0; i < extra_elements_.size(); ++i) {
     EngineElement *element = extra_elements_[i];
 
     au::StringVector values;
@@ -176,24 +176,24 @@ void EngineElementCollection::PrintElements() {
   // Print entire engine items...
 
   au::list<EngineElement>::iterator it_elements;
-  for (it_elements = repeated_elements_.begin(); it_elements != repeated_elements_.end(); it_elements++) {
+  for (it_elements = repeated_elements_.begin(); it_elements != repeated_elements_.end(); ++it_elements) {
     EngineElement *element = *it_elements;
     LOG_SM(("ENGINE REPEATED ELEMENT: %s", element->str().c_str()));
   }
 
-  for (it_elements = normal_elements_.begin(); it_elements != normal_elements_.end(); it_elements++) {
+  for (it_elements = normal_elements_.begin(); it_elements != normal_elements_.end(); ++it_elements) {
     EngineElement *element = *it_elements;
     LOG_SM(("ENGINE NORMAL ELEMENT: %s", element->str().c_str()));
   }
 
-  for (size_t i = 0; i < extra_elements_.size(); i++) {
+  for (size_t i = 0; i < extra_elements_.size(); ++i) {
     EngineElement *element = extra_elements_[i];
     LOG_SM(("ENGINE EXTRA ELEMENT: %s", element->str().c_str()));
   }
 }
 
 std::list<EngineElement *>::iterator EngineElementCollection::FindPositionForRepeatedEngineElement(EngineElement *e) {
-  for (std::list<EngineElement *>::iterator i = repeated_elements_.begin(); i != repeated_elements_.end(); i++) {
+  for (std::list<EngineElement *>::iterator i = repeated_elements_.begin(); i != repeated_elements_.end(); ++i) {
     if ((*i)->GetTimeToTrigger() > e->GetTimeToTrigger()) {
       return i;
     }
@@ -205,7 +205,7 @@ std::vector<EngineElement *> EngineElementCollection::ExtraElements() {
   au::TokenTaker tt(&token_);
 
   std::vector<EngineElement *> tmp;
-  for (size_t i = 0; i < extra_elements_.size(); i++) {
+  for (size_t i = 0; i < extra_elements_.size(); ++i) {
     EngineElement *element = extra_elements_[i];
     tmp.push_back(element);
   }
@@ -221,5 +221,22 @@ size_t EngineElementCollection::GetMaxWaitingTimeInEngineStack() {
 
   EngineElement *last_element =  normal_elements_.back();
   return last_element->GetWaitingTime();
+}
+
+std::vector<std::string> EngineElementCollection::GetAllElementDescription() const {
+  std::vector<std::string> descriptions;
+
+  au::list<EngineElement>::const_iterator it;
+  for (it = repeated_elements_.begin(); it != repeated_elements_.end(); ++it) {
+    descriptions.push_back((*it)->str());
+  }
+  for (it = normal_elements_.begin(); it != normal_elements_.end(); ++it) {
+    descriptions.push_back((*it)->str());
+  }
+  for (size_t i = 0; i < extra_elements_.size(); ++i) {
+    descriptions.push_back(extra_elements_[i]->str());
+  }
+
+  return descriptions;
 }
 }

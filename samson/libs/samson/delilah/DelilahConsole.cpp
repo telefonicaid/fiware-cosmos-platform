@@ -101,7 +101,7 @@ DelilahConsole::~DelilahConsole() {
 }
 
 std::string DelilahConsole::GetPrompt() {
-  return au::str("[%s] Delilah>", getClusterConnectionSummary().c_str());
+  return au::str("[%s] Delilah>", GetClusterConnectionSummary().c_str());
 }
 
 void DelilahConsole::EvalCommand(const std::string& command) {
@@ -120,10 +120,10 @@ void DelilahConsole::EvalCommand(const std::string& command) {
       }
       int s = WaitWithMessage(message, 0.2, &entry);
 
-      if (!isActive(_delilah_id)) {
+      if (!DelilahComponentIsActive(_delilah_id)) {
         // Print output in this thread to control pages using au::Console
         Refresh();
-        Write(getOutputForComponent(_delilah_id));
+        Write(GetOutputForComponent(_delilah_id));
         return;
       }
 
@@ -132,7 +132,7 @@ void DelilahConsole::EvalCommand(const std::string& command) {
           Refresh();
           WriteWarningOnConsole(au::str("Canceling process %lu : %s", _delilah_id, command.c_str()));
           au::ErrorManager error;
-          cancelComponent(_delilah_id, error);
+          CancelDelilahComponent(_delilah_id, error);
           Write(error);
           return;
         } else if (entry.isChar('b')) {
@@ -144,77 +144,8 @@ void DelilahConsole::EvalCommand(const std::string& command) {
   }
 }
 
-void DelilahConsole::autoCompleteOperations(au::console::ConsoleAutoComplete *info) {
-  std::vector<std::string> operation_names = getOperationNames();
-
-  for (size_t i = 0; i < operation_names.size(); i++) {
-    info->add(operation_names[i]);
-  }
-}
-
-void DelilahConsole::autoCompleteOperations(au::console::ConsoleAutoComplete *info, std::string type) {
-  std::vector<std::string> operation_names = getOperationNames(type);
-
-  for (size_t i = 0; i < operation_names.size(); i++) {
-    info->add(operation_names[i]);
-  }
-}
-
-void DelilahConsole::autoCompleteQueues(au::console::ConsoleAutoComplete *info) {
-  au::tables::Table *table = database.getTable("queues");
-
-  if (!table) {
-    return;
-  }
-  for (size_t r = 0; r < table->getNumRows(); r++) {
-    info->add(table->getValue(r, "name"));
-  }
-  delete table;
-}
-
-void DelilahConsole::autoCompleteQueueWithFormat(au::console::ConsoleAutoComplete *info, std::string key_format,
-                                                 std::string value_format) {
-  au::tables::Table *table = database.getTable("queues");
-
-  if (!table) {
-    return;
-  }
-
-  for (size_t r = 0; r < table->getNumRows(); r++) {
-    if (table->getValue(r, "format/key_format") == key_format) {
-      if (table->getValue(r, "format/value_format") == value_format) {
-        info->add(table->getValue(r, "name"));
-      }
-    }
-  }
-
-  delete table;
-}
-
-void DelilahConsole::autoCompleteQueueForOperation(au::console::ConsoleAutoComplete *info, std::string operation_name,
-                                                   int argument_pos) {
-  // Search in the operations
-  Operation *operation = au::Singleton<ModulesManager>::shared()->GetOperation(operation_name);
-
-  if (!operation) {
-    return;
-  }
-
-  if (argument_pos < operation->getNumInputs()) {
-    autoCompleteQueueWithFormat(info, operation->inputFormats[argument_pos].keyFormat,
-                                operation->inputFormats[argument_pos].valueFormat);
-  } else {
-    argument_pos -= operation->getNumInputs();
-    if (argument_pos < operation->getNumOutputs()) {
-      autoCompleteQueueWithFormat(info, operation->outputFormats[argument_pos].keyFormat,
-                                  operation->outputFormats[argument_pos].valueFormat);
-    }
-  }
-}
-
 void DelilahConsole::AutoComplete(au::console::ConsoleAutoComplete *info) {
-  // Use catalogue for auto-completion
-  delilah_command_catalogue_.AutoComplete(info);
+  delilah_command_catalogue_.AutoComplete(info);  // Use catalogue for auto-completion
   return;
 }
 
@@ -285,14 +216,14 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "wlog_show") {
     if (log_probe != NULL) {
-      log_probe = NULL;
+      log_probe.Reset();
     }
 
     std::string host = command_instance->GetStringArgument("host");
     std::string format = command_instance->GetStringOption("format");
     std::string filter = command_instance->GetStringOption("filter");
 
-    log_probe = new au::LogProbe();
+    log_probe.Reset(new au::LogProbe());
     log_probe->AddPlugin("console", new au::LogProbeConsole(this, format));
 
     au::ErrorManager error;
@@ -300,7 +231,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
     if (error.HasErrors()) {
       Write(error);
-      log_probe = NULL;
+      log_probe.Reset();
     } else {
       WriteWarningOnConsole(au::str("Connected to %s to get logs (Filter %s)", host.c_str(), filter.c_str()));
     }
@@ -310,7 +241,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "wlog_hide") {
     if (log_probe != NULL) {
-      log_probe = NULL;
+      log_probe.Reset();
     }
     WriteWarningOnConsole("Logs deactivated");
     return 0;
@@ -325,7 +256,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "connect") {
     // Disconnect first from whatever cluster I am connected to...
-    disconnect();
+    Disconnect();
 
     std::string host = command_instance->GetStringArgument("host");
     std::vector<std::string> hosts = au::split(host, ' ');
@@ -337,7 +268,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       Write(au::str("Connecting to %s...\n", hosts[i].c_str()));
 
       au::ErrorManager error;
-      if (connect(hosts[i], &error)) {
+      if (Connect(hosts[i], &error)) {
         Write("OK\n");
         return 0;
       } else {
@@ -352,17 +283,17 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "disconnect") {
-    disconnect();
+    Disconnect();
     return 0;
   }
 
-  if (mainCommand == "show_cluster_setup") {
-    Write(network->getClusterSetupStr() + "\n");
+  if (mainCommand == "cluster_show_setup") {
+    Write(network_->getClusterSetupStr() + "\n");
     return 0;
   }
 
-  if (mainCommand == "show_cluster_assignation") {
-    Write(network->getClusterAssignationStr() + "\n");
+  if (mainCommand == "cluster_show_assignation") {
+    Write(network_->getClusterAssignationStr() + "\n");
     return 0;
   }
 
@@ -443,8 +374,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       table.setTitle("Environent variables");
 
       std::map<std::string, std::string>::iterator it_environment;
-      for (it_environment = environment.environment.begin()
-           ; it_environment != environment.environment.end(); it_environment++)
+      for (it_environment = environment_.environment.begin()
+           ; it_environment != environment_.environment.end(); it_environment++)
       {
         table.addRow(au::StringVector(it_environment->first, it_environment->second));
       }
@@ -453,7 +384,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       return 0;
     }
 
-    environment.set(name, value);
+    environment_.set(name, value);
     WriteWarningOnConsole(au::str("Environment variable '%s' set to '%s'", name.c_str(), value.c_str()));
     return 0;
   }
@@ -461,18 +392,18 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (mainCommand == "unset") {
     std::string name = command_instance->GetStringArgument("name");
 
-    if (!environment.isSet(name)) {
+    if (!environment_.isSet(name)) {
       WriteErrorOnConsole(au::str("Variable %s is not set", name.c_str()));
       return 0;
     }
 
-    environment.unset(name);
+    environment_.unset(name);
     WriteWarningOnConsole(au::str("Environment variable '%s' is removed ", name.c_str()));
     return 0;
   }
 
   if (mainCommand == "ls_local_connections") {
-    Write(GetTableFromCollection(network->GetConnectionsCollection(samson::Visualization()))->str());
+    Write(GetTableFromCollection(network_->GetConnectionsCollection(samson::Visualization()))->str());
     return 0;
   }
 
@@ -564,7 +495,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "ps") {
     if (command_instance->GetBoolOption("-clear")) {
-      clearComponents();
+      ClearFinishedComponents();
     }
     std::string str_id = command_instance->GetStringArgument("id");
 
@@ -580,7 +511,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
         table.setTitle(au::str("Job %lu description ", id));
 
-        table.addRow(au::StringVector("Delilah", au::code64_str(get_delilah_id())));
+        table.addRow(au::StringVector("Delilah", au::code64_str(delilah_id())));
         table.addRow(au::StringVector("Job id", au::str("%lu", id)));
 
         if (component->isComponentFinished()) {
@@ -599,7 +530,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
       return 0;
     }
 
-    std::string txt = getListOfComponents();
+    std::string txt = GetListOfComponents();
     Write(au::StringInConsole(txt));
     return 0;
   }
@@ -607,7 +538,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   // Push data to a queue
 
   if (mainCommand == "ls_local_push_operations") {
-    au::tables::Table *table = push_manager->getTableOfItems();
+    au::tables::Table *table = push_manager_->getTableOfItems();
     Write(table->str());
     delete table;
     return 0;
@@ -624,7 +555,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     }
 
     au::ErrorManager error_push;
-    size_t id = add_push_module_component(file_names, error);
+    size_t id = AddPushModuleComponent(file_names, error);
     Write(error_push);  // Write any error message on screen
     return id;
   }
@@ -657,7 +588,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     }
 
     au::ErrorManager error_push;
-    size_t id = add_push_component(file_names, queues, error_push);
+    size_t id = AddPushComponent(file_names, queues, error_push);
     Write(error_push);
     return id;
   }
@@ -666,7 +597,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "connect_to_queue") {
     std::string queue = command_instance->GetStringArgument("queue");
-    size_t id = connect_to_queue(queue);
+    size_t id = ConnectToQueue(queue);
     WriteWarningOnConsole(au::str("Connected to queue %s using pop component %lu", queue.c_str(), id));
     return 0;
   }
@@ -704,14 +635,14 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (mainCommand == "ls_local") {
     std::string file = command_instance->GetStringArgument("file");
 
-    Write(getLsLocal(file, false));
+    Write(GetLsLocal(file, false));
     return 0;
   }
 
   if (mainCommand == "ls_local_queues") {
     std::string file = command_instance->GetStringArgument("file");
 
-    Write(getLsLocal(file, true));
+    Write(GetLsLocal(file, true));
     return 0;
   }
 
@@ -778,7 +709,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   // By default, it is considered a worker command
-  return sendWorkerCommand(command_instance->command_line());
+  return SendWorkerCommand(command_instance->command_line());
 
   return 0;
 }
@@ -791,7 +722,7 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
       std::string _context = packet->message->alert().context();
 
       // Add to the local collection of traces
-      trace_colleciton_.add(packet->from, _type, _context, _text);
+      trace_colleciton_.Add(packet->from, _type, _context, _text);
 
       // Write to disk if required
       if (trace_file_) {
@@ -830,24 +761,24 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
   return 0;
 }
 
-void DelilahConsole::delilahComponentStartNotification(DelilahComponent *component) {
+void DelilahConsole::DelilahComponentStartNotification(DelilahComponent *component) {
   if (component->hidden) {
     return;   // No notification for hidden processes
   }
   if (verbose_) {
-    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(get_delilah_id()).c_str(), component->getId());
+    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(delilah_id()).c_str(), component->getId());
     std::string message = component_id + " Process started: " + component->getConcept();
     Write(component->error, component_id);
     WriteBoldOnConsole(au::str("%s", message.c_str()));
   }
 }
 
-void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *component) {
+void DelilahConsole::DelilahComponentFinishNotification(DelilahComponent *component) {
   if (component->hidden) {
     return;   // No notification for hidden processes
   }
   if (verbose_) {
-    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(get_delilah_id()).c_str(), component->getId());
+    std::string component_id = au::str("[ %s_%lu ]", au::code64_str(delilah_id()).c_str(), component->getId());
     std::string message = component_id + " Process finished: " + component->getConcept();
     Write(component->error, component_id);
     if (component->error.HasErrors()) {
@@ -860,7 +791,7 @@ void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *compon
 
 // Process received packets with data
 
-void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
+void DelilahConsole::ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer) {
   size_t counter = stream_out_queue_counters_.appendAndGetCounterFor(queue);
   size_t packet_size = buffer->size();
 
@@ -905,7 +836,7 @@ void DelilahConsole::runAsyncCommandAndWait(std::string command) {
     return;   // Sync command
   }
   while (true) {
-    if (!isActive(tmp_id)) {
+    if (!DelilahComponentIsActive(tmp_id)) {
       return;
     }
     usleep(10000);

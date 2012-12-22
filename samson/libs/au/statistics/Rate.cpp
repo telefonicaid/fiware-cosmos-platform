@@ -27,7 +27,7 @@ Rate::Rate(int num_samples)
   hits_ = (int *)malloc(num_samples_ * sizeof(int));
   size_ = (double *)malloc(num_samples_ * sizeof(double));
 
-  for (int i = 0; i < num_samples_; i++) {
+  for (int i = 0; i < num_samples_; ++i) {
     hits_[i] = 0;
     size_[i] = 0;
   }
@@ -95,17 +95,17 @@ double Rate::rate() const {
   au::TokenTaker tt(&token_);
 
   UpdateTime();
+
   double total = 0;
-
+  double alpha = 0.9;
+  double current_weight = 1;
+  double total_weigth = 0;
   for (int i = 1; i < num_samples_; ++i) {
-    total += size_[i];
+    total += current_weight * size_[i];
+    current_weight *= alpha;
+    total_weigth += current_weight;
   }
-  double tmp = total / (double)(num_samples_ - 1);
-
-  if (tmp < size_[0]) {
-    return size_[0];                 // Size in the last second
-  }
-  return tmp;
+  return total / total_weigth;
 }
 
 double Rate::hit_rate() const {
@@ -114,15 +114,15 @@ double Rate::hit_rate() const {
   UpdateTime();
 
   double total = 0;
+  double alpha = 0.9;
+  double current_weight = 1;
+  double total_weigth = 0;
   for (int i = 1; i < num_samples_; ++i) {
-    total += hits_[i];
+    total += current_weight * (double)hits_[i];
+    current_weight *= alpha;
+    total_weigth += current_weight;
   }
-  double tmp = total / (double)(num_samples_ - 1);
-
-  if (tmp < hits_[0]) {
-    return hits_[0];                 // hits in the last second
-  }
-  return tmp;
+  return total / total_weigth;
 }
 
 void Rate::UpdateTime() const {
@@ -136,23 +136,29 @@ void Rate::UpdateTime() const {
   // Compute difference with the last reference
   size_t diff = time - last_time_correction;
 
-  if (diff == 0) {
-    return;
-  }
-
-  // Move samples
-  for (int i = 0; i < ((int)num_samples_ - (int)diff ); ++i) {
-    size_[ num_samples_ - i - 1 ] = size_[ num_samples_ - i - 2 ];
-    hits_[ num_samples_ - i - 1 ] = hits_[ num_samples_ - i - 2 ];
+  // Move samples "diff" slots
+  int num_shifts = num_samples_ - diff;
+  for (int i = 0; i < num_shifts; ++i) {
+    size_[num_samples_ - i - 1] = size_[num_samples_ - i - 2];
+    hits_[num_samples_ - i - 1] = hits_[num_samples_ - i - 2];
   }
 
   // Init the new slots
-  for (int i = 0; ( i < (int)diff ) && ( i < num_samples_ ); i++) {
+  for (int i = 0; (i < (int)diff) && (i < num_samples_); i++) {
     size_[i] = 0;
     hits_[i] = 0;
   }
 
   // Set the new reference
   last_time_correction = time;
+}
+
+std::string Rate::str_debug() const {
+  std::ostringstream output;
+
+  for (int i = 0; i < num_samples_; ++i) {
+    output << "[" << size_[i] << "]";
+  }
+  return output.str();
 }
 }                   // end of namespace au::rate

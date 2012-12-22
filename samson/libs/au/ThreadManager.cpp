@@ -46,7 +46,7 @@ int ThreadManager::AddThread(std::string thread_name, pthread_t *__restrict t, c
   thread_info->t_ = *t;
 
   if (s == 0) {
-    LOG_M(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
+    LOG_V(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
     AddThread(thread_info);
   } else {
     LOG_SW(("Not possible to create thread %s %d ", thread_name.c_str(), s));
@@ -74,7 +74,7 @@ int ThreadManager::AddNonDetachedThread(std::string thread_name
   thread_info->t_ = *t;
 
   if (s == 0) {
-    LOG_M(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
+    LOG_V(logs.thread_manager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
     AddThread(thread_info);
   } else {
     LOG_SW(("Not possible to create thread %s %d ", thread_name.c_str(), s));
@@ -177,7 +177,7 @@ void ThreadManager::wait(std::string title) {
 }
 
 void ThreadManager::AddThread(ThreadInfo *thread_info) {
-  LOG_M(logs.thread_manager, ("Adding  Thread '%s'", thread_info->str().c_str()));
+  LOG_V(logs.thread_manager, ("Adding  Thread '%s'", thread_info->str().c_str()));
 
   for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] == NULL) {
@@ -190,7 +190,7 @@ void ThreadManager::AddThread(ThreadInfo *thread_info) {
 }
 
 void ThreadManager::RemoveThread(ThreadInfo *thread_info) {
-  LOG_M(logs.thread_manager, ("Remove thead %s ", thread_info->str().c_str()));
+  LOG_V(logs.thread_manager, ("Remove thead %s ", thread_info->str().c_str()));
   for (int i = 0; i < AU_MAX_NUM_THREADS; ++i) {
     if (threads_[i] == thread_info) {
       threads_[i] = NULL;
@@ -211,7 +211,7 @@ void *run_ThreadInfo(void *p) {
 
   ThreadInfo *thread_info = (ThreadInfo *)p;
 
-  LM_VV(("Running thread %s", thread_info->name_.c_str()));
+  LOG_V(logs.thread_manager, ("Running thread %s", thread_info->name_.c_str()));
 
   // Execute the real function
   void *ans = thread_info->f_(thread_info->p_);
@@ -219,7 +219,7 @@ void *run_ThreadInfo(void *p) {
   // Notify my ThreadRunner
   au::Singleton<au::ThreadManager>::shared()->notify_finish_thread(thread_info);
 
-  LM_VV(("Finished thread %s", thread_info->name_.c_str()));
+  LOG_V(logs.thread_manager, ("Finished thread %s", thread_info->name_.c_str()));
 
   // Delete this structure
   delete thread_info;
@@ -230,7 +230,7 @@ void *run_ThreadInfo(void *p) {
 void *run_NonDetachedThreadInfo(void *p) {
   ThreadInfo *thread_info = (ThreadInfo *)p;
 
-  LM_VV(("Running thread %s", thread_info->name_.c_str()));
+  LOG_V(logs.thread_manager, ("Running thread %s", thread_info->name_.c_str()));
 
   // Execute the real function
   void *ans = thread_info->f_(thread_info->p_);
@@ -238,7 +238,7 @@ void *run_NonDetachedThreadInfo(void *p) {
   // Notify my ThreadRunner
   au::Singleton<au::ThreadManager>::shared()->notify_finish_thread(thread_info);
 
-  LM_VV(("Finished thread %s", thread_info->name_.c_str()));
+  LOG_V(logs.thread_manager, ("Finished thread %s", thread_info->name_.c_str()));
 
   // Delete this structure
   delete thread_info;

@@ -76,10 +76,6 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
     return;
   }
 
-  // Log activity
-  au::SharedPointer<stream_connector::Log> log(new stream_connector::Log("RemoteConsole", "Message", command));
-  samson_connector->log(log);
-
   // Direct activity
   samson_connector->process_command(command, error);
 }

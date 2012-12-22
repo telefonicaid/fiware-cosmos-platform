@@ -20,6 +20,7 @@ extern size_t buffer_size;
 extern size_t input_buffer_size;  // Size of the chunks to read
 
 namespace stream_connector {
+const size_t FileDescriptorConnection::kMinInputbufferSize = 1024;
 const size_t FileDescriptorConnection::kMaxInputbufferSize = 100 * 1024 * 1024;
 
 void *run_FileDescriptorConnection(void *p) {
@@ -43,8 +44,8 @@ FileDescriptorConnection::FileDescriptorConnection(Adaptor *_item, ConnectionTyp
   // Init counter of connections
   num_connections_ = 0;
 
-  // Default input buffer size
-  input_buffer_size = 1024;
+  // Default input buffer size ( the minimum one )
+  input_buffer_size = kMinInputbufferSize;
 }
 
 void FileDescriptorConnection::start_connection() {
@@ -52,8 +53,6 @@ void FileDescriptorConnection::start_connection() {
 }
 
 void FileDescriptorConnection::stop_connection() {
-  log("Message", "Connection stoped");
-
   // Stop thread in the background
   if (file_descriptor_) {
     file_descriptor_->Close();
@@ -145,6 +144,20 @@ void FileDescriptorConnection::run_as_input() {
     if (!file_descriptor_) {
       LM_X(1, ("Internal error"));  // Get a buffer
     }
+
+    // If memory usage is too high wait
+    au::Cronometer cronometer;
+    while (engine::Engine::memory_manager()->memory_usage() > 1) {
+      usleep(100000);
+      if (cronometer.seconds() > 2) {
+        cronometer.Reset();
+        double mem = engine::Engine::memory_manager()->memory_usage();
+        LOG_SW(("Not reading from input connection '%s' since memory usage is %s",
+                fullname().c_str(),
+                au::str_percentage(mem).c_str()));
+      }
+    }
+
     engine::BufferPointer buffer = engine::Buffer::Create("stdin buffer", input_buffer_size);
 
 
@@ -157,10 +170,22 @@ void FileDescriptorConnection::run_as_input() {
                                      , "read connector connections"
                                      , 300
                                      , &read_size);
+
+      // adapt size of input buffer
       if (c.seconds() < 0.1) {
         input_buffer_size *= 2;
       } else if (c.seconds() > 3) {
         input_buffer_size /= 2;
+      }
+
+      // Max by total memory available
+      size_t max_mem = engine::Engine::memory_manager()->memory() / 10;
+      if (input_buffer_size > max_mem) {
+        input_buffer_size = max_mem;
+      }
+
+      if (input_buffer_size < kMinInputbufferSize) {
+        input_buffer_size = kMinInputbufferSize;
       }
 
       if (input_buffer_size > kMaxInputbufferSize) {
@@ -177,9 +202,6 @@ void FileDescriptorConnection::run_as_input() {
 
     // If last read is not ok...
     if (s != au::OK) {
-      // Log activity
-      log("Message", au::str("Connection finished (%s) ", au::status(s)));
-
       // Close fd
       file_descriptor_->Close();
 
@@ -193,7 +215,7 @@ void FileDescriptorConnection::run_as_input() {
 }
 
 void FileDescriptorConnection::run() {
-  if (getType() == connection_input) {
+  if (type() == connection_input) {
     run_as_input();
   } else {
     run_as_output();  // Mark as non thread_running
@@ -214,7 +236,7 @@ std::string FileDescriptorConnection::getStatus() {
     } output << au::str(" [fd:%d]", file_descriptor_->fd());
   }
 
-  if (getType() == connection_input) {
+  if (type() == connection_input) {
     output << au::str(" [buffer:%s]", au::str(input_buffer_size).c_str());
   }
   return output.str();

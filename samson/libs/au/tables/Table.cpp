@@ -949,7 +949,7 @@ Table *Table::selectTable(SelectTableInformation *select) {
       while ((row_end < rows.size()) && (table->rows[row_begin]->compare(table->rows[row_end], select->group_columns)
                                          == 0))
       {
-        row_end++;
+        ++row_end;
       }
 
       // New normal cell is created

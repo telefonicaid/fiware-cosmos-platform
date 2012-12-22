@@ -14,8 +14,7 @@
 
 
 TEST(au_containers_SharedPointer, assignation) {
-  au::SharedPointer< TestBase > a;
-  a = new TestBase(10);
+  au::SharedPointer< TestBase > a(new TestBase(10));
   au::SharedPointer< TestBase > b = a;
 
   EXPECT_EQ(b->value(), 10) << "Error in au::SharedPointer assignation";
@@ -100,7 +99,7 @@ TEST(au_containers_SharedPointer, return_function) {
   au::SharedPointer< TestBase > a(new TestBase(10));
 
   TestSharedPointerReturnFunction *test = new TestSharedPointerReturnFunction(a);
-  a = NULL;
+  a.Reset();
 
   EXPECT_EQ(1, TestBase::num_instances());
 

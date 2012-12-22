@@ -42,11 +42,11 @@
 
 namespace samson {
 ModulesManager::ModulesManager() {
-  LOG_M(logs.modules_manager, ("Creating ModulesManager"));
+  LOG_V(logs.modules_manager, ("Creating ModulesManager"));
 }
 
 ModulesManager::~ModulesManager() {
-  LOG_M(logs.modules_manager, ("ModulesManager destructor, calling clearModulesManager"));
+  LOG_V(logs.modules_manager, ("ModulesManager destructor, calling clearModulesManager"));
   ClearModulesManager();
 }
 
@@ -79,7 +79,7 @@ void ModulesManager::AddModulesFromDirectory(const std::string& dir_name, au::Er
     }
 
     if (S_ISREG(info.st_mode)) {
-      LOG_M(logs.modules_manager, ("Adding module from path:'%s'!", path.c_str()));
+      LOG_V(logs.modules_manager, ("Adding module from path:'%s'!", path.c_str()));
       au::ErrorManager error_module;
       AddModule(path, error_module);
 
@@ -114,7 +114,7 @@ void ModulesManager::AddModule(const std::string& path, au::ErrorManager & error
     }
   }
 
-  LOG_M(logs.modules_manager, ("Adding module %s (%s) with %d ops & %d data-types",
+  LOG_V(logs.modules_manager, ("Adding module %s (%s) with %d ops & %d data-types",
                                module->name.c_str(),
                                path.c_str(),
                                static_cast<int>(module->operations.size()),
@@ -125,7 +125,7 @@ void ModulesManager::AddModule(const std::string& path, au::ErrorManager & error
 }
 
 Module *ModulesManager::LoadModule(const std::string& path, au::ErrorManager & error) {
-  LOG_M(logs.modules_manager, ("Adding module at path %s", path.c_str()));
+  LOG_V(logs.modules_manager, ("Adding module at path %s", path.c_str()));
 
   void *hndl = dlopen(path.c_str(), RTLD_NOW);
   if (hndl == NULL) {

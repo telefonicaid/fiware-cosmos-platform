@@ -50,7 +50,7 @@ DiskConnection::DiskConnection(Adaptor *_item
   input_buffer_size = 1024;
 
   // Open files if input
-  if (getType() == connection_input) {
+  if (type() == connection_input) {
     // Analyse files to be read...
     struct stat s;
     stat(file_name.c_str(), &s);
@@ -265,7 +265,7 @@ void DiskConnection::run() {
     return;
   }
 
-  if (getType() == connection_input) {
+  if (type() == connection_input) {
     run_as_input();
   } else {
     run_as_output();
@@ -284,7 +284,7 @@ std::string DiskConnection::getStatus() {
   } if (error.HasErrors()) {
     output << au::str(" [Error:%s]", error.GetLastError().c_str());
   }
-  if (getType() == connection_input) {
+  if (type() == connection_input) {
     output << au::str(" [Buffer:%s]", au::str(input_buffer_size).c_str());
   }
   return output.str();
@@ -305,7 +305,7 @@ DiskAdaptor::DiskAdaptor(Channel *_channel, ConnectionType _type, std::string _d
 
   // Add internal connection just once...
   // Add connection
-  add(new DiskConnection(this, getType(), directory));
+  add(new DiskConnection(this, type(), directory));
 }
 
 // Get status of this element

@@ -33,23 +33,72 @@ namespace samson {
 class NodeIdentifier {
 public:
 
-  ClusterNodeType node_type;
-  size_t id;
-
-  NodeIdentifier();
+  NodeIdentifier(ClusterNodeType node_type, size_t id);
+  NodeIdentifier(const NodeIdentifier& node_identifier);
   NodeIdentifier(gpb::NodeIdentifier pb_node_identifier);
-  NodeIdentifier(ClusterNodeType _node_type, size_t _id);
-  NodeIdentifier(const std::string& name);
+  NodeIdentifier();
 
+  /**
+   * \brief Set content manually
+   */
+  void Set(ClusterNodeType node_type, size_t id) {
+    node_type_ = node_type;
+    id_ = id;
+  }
+
+  /**
+   * \brief Copy content from another instance
+   */
+  void Set(const NodeIdentifier& node_identifier) {
+    node_type_ = node_identifier.node_type_;
+    id_ = node_identifier.id_;
+  }
+
+  /**
+   * \brief Fill a GoogleProtocolBuffer structure
+   */
   void fill(gpb::NodeIdentifier *pb_node_identifier);
 
-  bool operator==(const NodeIdentifier&  other);
+  /**
+   * \brief Operator to check equal
+   */
+  bool operator==(const NodeIdentifier&  other) const;
 
-  std::string str();
+  /**
+   * \brief Operator = to be able to do a=b;
+   */
+  NodeIdentifier& operator=(const NodeIdentifier& node_identifier) {
+    Set(node_identifier);
+    return *this;
+  }
 
-  std::string getCodeName() const;
+  /**
+   * \brief Operator < to be used in maps
+   */
+  bool operator<(const NodeIdentifier&  other) const {
+    if (node_type_ != other.node_type_) {
+      return node_type_ < other.node_type_;
+    }
+    return id_ < other.id_;
+  }
 
-  bool isDelilahOrUnknown();
+  /**
+   * \brief Debug string to show on screen
+   */
+  std::string str() const;
+
+  ClusterNodeType node_type() const {
+    return node_type_;
+  };
+
+  size_t id() const {
+    return id_;
+  };
+
+private:
+
+  ClusterNodeType node_type_;     /**< Node type (worker,delilah,unknown) */
+  size_t id_;     /**< worker or delilah identifier */
 };
 }
 

@@ -25,6 +25,10 @@ namespace samson {
 namespace stream {
 // Hand functiontion to get the type of ProcessIsolated based on the operation type
 ProcessIsolated::ProcessBaseType get_type(Operation *operation) {
+  if (!operation) {
+    return ProcessIsolated::key_value;  // Defrag task
+  }
+
   switch (operation->getType()) {
     case Operation::parserOut:
     case Operation::parserOutReduce:
@@ -49,11 +53,16 @@ WorkerTask::WorkerTask(SamsonWorker *samson_worker
   // Keep a pointer to samson_worker to create output blocks
   samson_worker_ = samson_worker;
 
+  // By defaul is is not a defrag
+  defrag_job_ = false;
+
   // Some environment variables
   set_process_item_description(stream_operation.operation());
 
   // Set output formats for this operation
-  addOutputsForOperation(operation);
+  if (operation) {
+    addOutputsForOperation(operation);
+  }
 
   // Keep a pointer to the operation
   operation_ = operation;
@@ -72,28 +81,32 @@ WorkerTask::WorkerTask(SamsonWorker *samson_worker
   if (operation_ && stream_operation_) {
     if (operation_->getType() == Operation::reduce) {
       num_input_channels_ = operation_->getNumInputs();
+      num_output_channels_ = operation->getNumOutputs();
       if (stream_operation_->batch_operation()) {
         state_input_channel_ = -1;
       } else {
         state_input_channel_ = num_input_channels_ - 1;
         num_input_channels_--;
+        num_output_channels_--;
       }
     } else {
       state_input_channel_ = -1;   // No state
       num_input_channels_ = 1;   // Only one input for all operations ( map, parse, parseout, etc...)
+      num_output_channels_ = operation->getNumOutputs();
     }
   } else {
     // No data to be collected
     state_input_channel_ = -1;
     num_input_channels_ = 0;
+    num_output_channels_ = 0;
   }
 
 
-  LOG_M(logs.worker_task, ("Worker task created WT%s", str().c_str()));
+  LOG_V(logs.worker_task, ("Worker task created WT%s", str().c_str()));
 }
 
 WorkerTask::~WorkerTask() {
-  LOG_M(logs.worker_task, ("Worker task destroyed WT%s", str().c_str()));
+  LOG_V(logs.worker_task, ("Worker task destroyed WT%s", str().c_str()));
   delete stream_operation_;
 }
 
@@ -120,7 +133,7 @@ std::vector<size_t> WorkerTask::ProcessOutputBuffers() {
     // Add output to this operation
     AddOutput(output, block, header->range, header->info);
 
-    LOG_M(logs.worker_task, ("Task WT%lu: Generated block %s ( %s ) for output %d "
+    LOG_V(logs.worker_task, ("Task WT%lu: Generated block %s ( %s ) for output %d "
                              , id()
                              , str_block_id(block_id).c_str()
                              , header->str().c_str()
@@ -161,7 +174,7 @@ std::string WorkerTask::commit_command() {
 }
 
 void WorkerTask::initProcessIsolated() {
-  LOG_M(logs.background_process, ("Init background process for task WT%lu", id()));
+  LOG_V(logs.background_process, ("Init background process for task WT%lu", id()));
   // Review input blocks to count key-values
   block_list_container_.Review(error_);
 }
@@ -169,12 +182,18 @@ void WorkerTask::initProcessIsolated() {
 void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
   au::Cronometer cronometer;
 
-  LOG_M(logs.background_process, ("Generate key-values for task WT%lu", id()));
+  LOG_V(logs.background_process, ("Generate key-values for task WT%lu", id()));
 
   // Get KVFiles scaning input data
   block_list_container_.ReviewKVFile(error_);
   if (error_.HasErrors()) {
     setUserError(error_.GetLastError());
+    return;
+  }
+
+
+  if (stream_operation_->name() == "defrag") {
+    generateKeyValuesDefrag(writer);
     return;
   }
 
@@ -198,7 +217,7 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
 }
 
 void WorkerTask::generateTXT(TXTWriter *writer) {
-  LOG_M(logs.background_process, ("Generate txt-data for task WT%lu", id()));
+  LOG_V(logs.background_process, ("Generate txt-data for task WT%lu", id()));
 
   // Type of inputs ( for selecting key-values )
   std::vector<KVFormat> inputFormats = operation_->getInputFormats();
@@ -263,8 +282,51 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
   delete parserOut;
 }
 
+void WorkerTask::generateKeyValuesDefrag(samson::ProcessWriter *writer) {
+  BlockList *list = block_list_container_.FindBlockList("input_0");
+
+  if (list == NULL) {
+    return;
+  }
+
+  au::list<BlockRef>::iterator bi;
+  for (bi = list->blocks_.begin(); bi != list->blocks_.end(); ++bi) {
+    BlockRef *block_ref = *bi;
+    BlockPointer block = block_ref->block();
+    engine::BufferPointer buffer = block->buffer();
+
+    // Check header for valid block
+    KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
+    if (!header->Check()) {
+      setUserError(("Not valid header in block refernce"));
+      return;
+    }
+
+    if (header->GetKVFormat() != defrag_format) {
+      setUserError(au::str("Error in defrag operation: Different KVFormat %s != %s",
+                           defrag_format.str().c_str(), header->GetKVFormat().str().c_str()));
+      return;
+    }
+
+    // Analyse all key-values and hashgroups
+    au::SharedPointer<KVFile> file = block_ref->file();
+    if (file == NULL) {
+      setUserError("Error getting information about this block");
+      return;
+    }
+
+    // Use all key-values
+    KV *kvs = file->kvs;
+    size_t num_kvs = file->header().info.kvs;
+
+    for (size_t i = 0; i < num_kvs; i++) {
+      writer->internal_emit(0, kvs[i].hg, kvs[i].key, kvs[i].key_size + kvs[i].value_size);
+    }
+  }
+}
+
 void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
-  LOG_M(logs.background_process, ("generateKeyValues_map task WT%lu", id()));
+  LOG_V(logs.background_process, ("generateKeyValues_map task WT%lu", id()));
 
   // Type of inputs ( for selecting key-values )
   std::vector<KVFormat> inputFormats = operation_->getInputFormats();
@@ -342,10 +404,10 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
 #pragma mark
 
 void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
-  LOG_M(logs.background_process, ("generateKeyValues_reduce task WT%lu", id()));
+  LOG_V(logs.background_process, ("generateKeyValues_reduce task WT%lu", id()));
 
   au::Cronometer cronometer;
-  LOG_M(logs.reduce_operation, ("[WT%lu:%s] Start reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
+  LOG_V(logs.reduce_operation, ("[WT%lu:%s] Start reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
 
   bool update_only = stream_operation_->has_reduce_update_only() && stream_operation_->reduce_update_only();
   bool reduce_forward = stream_operation_->has_reduce_forward() && stream_operation_->reduce_forward();
@@ -381,7 +443,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   // Init function
   reduce->init(writer);
 
-  LOG_M(logs.reduce_operation, ("[WT%lu:%s] Collecting data...", id(), au::str(cronometer.seconds(), "s").c_str()));
+  LOG_V(logs.reduce_operation, ("[WT%lu:%s] Collecting data...", id(), au::str(cronometer.seconds(), "s").c_str()));
 
   // Get the block reader list to prepare inputs for operation
   BlockReaderCollection blockreaderCollection(operation_);
@@ -430,7 +492,7 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
                                 , process_item_description().c_str()));
 
 
-  LOG_M(logs.reduce_operation, ("[WT%lu:%s] Processing data...", id(), au::str(cronometer.seconds(), "s").c_str()));
+  LOG_V(logs.reduce_operation, ("[WT%lu:%s] Processing data...", id(), au::str(cronometer.seconds(), "s").c_str()));
 
   for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; ++hg) {
     // Check if this is inside the range we are interested in processing
@@ -502,11 +564,11 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   // Detele the created instance
   delete reduce;
 
-  LOG_M(logs.reduce_operation, ("[WT%lu:%s] Finish reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
+  LOG_V(logs.reduce_operation, ("[WT%lu:%s] Finish reduce task", id(), au::str(cronometer.seconds(), "s").c_str()));
 }
 
 void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
-  LOG_M(logs.background_process, ("generateKeyValues_parser task WT%lu", id()));
+  LOG_V(logs.background_process, ("generateKeyValues_parser task WT%lu", id()));
 
   // Run the generator over the ProcessWriter to emit all key-values
   Parser *parser = (Parser *)operation_->getInstance();
@@ -562,22 +624,41 @@ std::string WorkerTask::str() {
 }
 
 void WorkerTask::commit() {
-  if (environment().Get("system.canceled_task", "no") == "yes") {
-    LOG_M(logs.worker_task, ("Task %s not commited since it has been deactivated", str().c_str()));
-    return;
-  }
-
   // Process & commit outputs generated by this task
   // Here output blocks are created and added to blockmanager
   // DataModel is updated to keep them in block manager
-  std::vector<size_t> new_block_ids = ProcessOutputBuffers();
+
+  // Just in case, we still have some output buffers to process
+  ProcessOutputBuffers();
+
+  // Log for this task ( for ls_last_tasks command )
+  WorkerTaskLog worker_task_log;
+  worker_task_log.description = str();
+  worker_task_log.waiting_time_seconds = waiting_time_seconds();
+  worker_task_log.running_time_seconds = running_time_seconds();
+  worker_task_log.inputs = str_inputs();
+  worker_task_log.outputs = str_outputs();
+  worker_task_log.times = GetActivitySummary();
+  worker_task_log.process_time = GetProcessSummary();
+
+  if (error().HasErrors()) {
+    worker_task_log.result = error().GetLastError();
+  } else {
+    worker_task_log.result = "OK";
+  }
+
+  samson_worker_->task_manager()->Push(worker_task_log);  // add to the record of last tasks
+
+
+  au::RateStatistics *rate_statistics = au::Singleton<au::RateStatistics>::shared();
+  au::AverageStatistics *average_statistics = au::Singleton<au::AverageStatistics>::shared();
 
   if (error_.HasErrors()) {
     std::string error_message = error_.GetLastError();
-    LOG_M(logs.task_manager, ("Error in task %lu (%s)", id(), error_message.c_str()));
+    LOG_V(logs.task_manager, ("Error in task %lu (%s)", id(), error_message.c_str()));
   } else {
     LOG_D(logs.task_manager, ("Task WT%lu blocks: %s", id(), str_block_ids().c_str()));
-    LOG_M(logs.task_manager, ("Commiting task W%lu (%s)", id(), str().c_str()));
+    LOG_V(logs.task_manager, ("Commiting task W%lu (%s)", id(), str().c_str()));
 
     // Commit changes and release task
     std::string my_commit_command = commit_command();
@@ -588,22 +669,39 @@ void WorkerTask::commit() {
       LOG_W(logs.task_manager, ("Error commiting task W%lu : %s"
                                 , worker_task_id()
                                 , error().GetLastError().c_str()));
+
+      rate_statistics->Push("samson.commits_error", 1);
+    } else {
+      BlockInfo output_info = GetOutputDataInfo();
+      rate_statistics->Push("samson.commits", 1);
+      rate_statistics->Push("samson.output_blocks", output_info.num_blocks);
+      rate_statistics->Push("samson.output_blocks_data", output_info.info.size);
+      average_statistics->Push("samson.block_size", output_info.average_block_size());
     }
   }
 }
 
-FullKVInfo WorkerTask::GetStateDataInfo() const {
+BlockInfo WorkerTask::GetStateDataInfo() const {
   if (state_input_channel_ == -1) {
-    return FullKVInfo();
+    return BlockInfo();
   }
   return GetInputInfo(state_input_channel_);
 }
 
-FullKVInfo WorkerTask::GetInputDataInfo() const {
-  FullKVInfo info;
+BlockInfo WorkerTask::GetInputDataInfo() const {
+  BlockInfo info;
 
   for (int i = 0; i < num_input_channels_; ++i) {
-    info.append(GetInputInfo(i));
+    info.Append(GetInputInfo(i));
+  }
+  return info;
+}
+
+BlockInfo WorkerTask::GetOutputDataInfo() const {
+  BlockInfo info;
+
+  for (int i = 0; i < num_output_channels_; ++i) {
+    info.Append(GetOutputInfo(i));
   }
   return info;
 }

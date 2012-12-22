@@ -81,6 +81,8 @@ private:
   void FinishWorkerTask();     // Mark this command as finished
   void CheckFinish();     // Function to check everything is finished
 
+  void PushInternalModules();
+
   std::string worker_command_id_;     // Unique identifier ( used to associate all items associated with this worker_command )
 
   bool notify_finish_;     // Flag to mark if it is necessary to notify when finish

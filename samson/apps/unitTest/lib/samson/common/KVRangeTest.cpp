@@ -25,7 +25,7 @@
 // Test  KVRange;
 TEST(samson_common_KVRange, test1) {
   samson::KVRange range_1;
-  
+
   EXPECT_EQ(range_1.isValid(), true) << "Error in KVRange isValid() for default constructor";
   range_1.set(0, 10);
   EXPECT_EQ(range_1.isValid(), true) << "Error in KVRange isValid() for set operation";
@@ -36,35 +36,35 @@ TEST(samson_common_KVRange, test1) {
   range_1.set(1, 0);
   EXPECT_EQ(range_1.isValid(), false) << "Error in KVRange isValid() for wrong set operation";
   range_1.set(0, 20);
-  
+
   samson::KVRange range_2(1, 10);
   EXPECT_EQ(range_1.isValid(), true) << "Error in KVRange isValid() for initialised constructor";
-  
-  
+
+
   EXPECT_EQ(range_2.str(), "[00001 00010)") << "Error in KVRange str";
   EXPECT_EQ(range_2.size(), 9) << "Error in KVRange getNumHashGroups";
-  
+
   EXPECT_EQ(range_1.IsOverlapped(range_2), true) << "Error in KVRange overlap true";
   EXPECT_EQ(range_2.IsOverlapped(range_1), true) << "Error in KVRange overlap true";
   samson::KVRange range_3(10, 30);
   EXPECT_EQ(range_3.IsOverlapped(range_1), true) << "Error in KVRange overlap true";
   EXPECT_EQ(range_3.IsOverlapped(range_2), false) << "Error in KVRange overlap false";
-  
+
   EXPECT_EQ(range_1.Includes(range_2), true) << "Error in KVRange includes true";
   EXPECT_EQ(range_2.Includes(range_1), false) << "Error in KVRange includes false";
   EXPECT_EQ(range_1.Contains(15), true) << "Error in KVRange contains true";
   EXPECT_EQ(range_1.Contains(20), false) << "Error in KVRange contains false";
   EXPECT_EQ(range_1.Contains(range_2), true) << "Error in KVRange includes true";
   EXPECT_EQ(range_2.Contains(range_1), false) << "Error in KVRange includes false";
-  
+
   EXPECT_EQ((range_1 < range_2), false) << "Error in KVRange operator < false";
   range_1.set(11, 20);
   EXPECT_EQ((range_2 < range_1), true) << "Error in KVRange operator < true";
-  
+
   EXPECT_EQ((range_1 == range_2), false) << "Error in KVRange operator == false";
   range_1.set(1, 10);
   EXPECT_EQ((range_2 == range_1), true) << "Error in KVRange operator == true";
-  
+
   EXPECT_EQ((range_1 != range_2), false) << "Error in KVRange operator != false";
   range_1.set(1, 11);
   EXPECT_EQ((range_2 != range_1), true) << "Error in KVRange operator != true";
@@ -73,11 +73,11 @@ TEST(samson_common_KVRange, test1) {
 // -----------------------------------------------------------------------------
 // KVRange::setFrom
 //
-static samson::KVInfo   infoV1[KVFILE_NUM_HASHGROUPS];
-static samson::KVInfo   infoV2[10];
+static samson::KVInfo infoV1[KVFILE_NUM_HASHGROUPS];
+static samson::KVInfo infoV2[10];
 TEST(samson_common_KVRange, setFrom) {
-  samson::KVRange  range;
-  
+  samson::KVRange range;
+
   range.setFrom(&infoV1[0]);
   EXPECT_EQ(range.isValid(), true) << "Error in KVRange isValid() for setFrom(KVInfo) operation";
 
@@ -89,11 +89,11 @@ TEST(samson_common_KVRange, setFrom) {
 // -----------------------------------------------------------------------------
 // KVRange::setFrom2
 //
-static samson::FullKVInfo   finfoV1[KVFILE_NUM_HASHGROUPS];
-static samson::FullKVInfo   finfoV2[10];
+static samson::FullKVInfo finfoV1[KVFILE_NUM_HASHGROUPS];
+static samson::FullKVInfo finfoV2[10];
 TEST(samson_common_KVRange, setFrom2) {
-  samson::KVRange  range;
-  
+  samson::KVRange range;
+
   range.setFrom(&finfoV1[0]);
   EXPECT_EQ(range.isValid(), true) << "Error in KVRange isValid() for setFrom(FullKVInfo) operation";
 
@@ -106,10 +106,10 @@ TEST(samson_common_KVRange, setFrom2) {
 // add
 //
 TEST(samson_common_KVRange, add) {
-  samson::KVRange  from1(0, 10);
-  samson::KVRange  from2(20, 30);
-  samson::KVRange  notValid(-1, -9);
-  samson::KVRange  to(5, 15);
+  samson::KVRange from1(0, 10);
+  samson::KVRange from2(20, 30);
+  samson::KVRange notValid(-1, -9);
+  samson::KVRange to(5, 15);
 
   EXPECT_EQ(to.hg_begin_, 5);
   EXPECT_EQ(to.hg_end_, 15);
@@ -131,16 +131,17 @@ TEST(samson_common_KVRange, add) {
 // overlap
 //
 TEST(samson_common_KVRange, overlap) {
-  samson::KVRange              range(0, 10);
-  samson::KVRange              overlap(5, 15);
-  samson::KVRange              notOverlap(11, 15);
-  samson::KVRange              overlapFactor(5, 15);
+  samson::KVRange range(0, 10);
+  samson::KVRange overlap(5, 15);
+  samson::KVRange notOverlap(11, 15);
+  samson::KVRange overlapFactor(5, 15);
+
   std::vector<samson::KVRange> rangeVector;
 
   EXPECT_TRUE(range.IsOverlapped(overlap));
   EXPECT_FALSE(range.IsOverlapped(notOverlap));
   EXPECT_EQ(0.50, range.GetOverlapFactor(overlapFactor));
-    
+
   rangeVector.push_back(notOverlap);
   rangeVector.push_back(notOverlap);
   rangeVector.push_back(notOverlap);
@@ -186,7 +187,7 @@ TEST(samson_common_KVRange, Contains) {
 // divisionForHashGroup
 //
 namespace samson {
-  extern int divisionForHashGroup(int hg, int num_division);
+extern int divisionForHashGroup(int hg, int num_division);
 }
 
 TEST(samson_common_KVRange, divisionForHashGroup) {
@@ -194,28 +195,13 @@ TEST(samson_common_KVRange, divisionForHashGroup) {
 }
 
 // -----------------------------------------------------------------------------
-// selectRange - 
-//
-namespace samson {
-  extern KVInfo selectRange(KVInfo *info, KVRange range);
-}
-
-TEST(samson_common_KVRange, selectRange) {
-  samson::KVInfo  info(256, 16);
-  samson::KVRange range(0, 10);
-  samson::KVInfo  info2 = selectRange(&info, range);
-
-  // No EXPECT here, not until the function selectRange is fixed ...
-}
-
-// -----------------------------------------------------------------------------
 // operator<
 //
 TEST(samson_common_KVRange, operatorLess) {
-  samson::KVRange  range1(5, 10);
-  samson::KVRange  range2(1, 4);
-  samson::KVRange  range3(5, 11);
-  
+  samson::KVRange range1(5, 10);
+  samson::KVRange range2(1, 4);
+  samson::KVRange range3(5, 11);
+
   EXPECT_FALSE(range1 < range2);
   EXPECT_TRUE(range1 < range3);
 }
@@ -224,8 +210,8 @@ TEST(samson_common_KVRange, operatorLess) {
 // operator!=
 //
 TEST(samson_common_KVRange, operatorNE) {
-  samson::KVRange  range1(5, 10);
-  samson::KVRange  range2(1, 4);
+  samson::KVRange range1(5, 10);
+  samson::KVRange range2(1, 4);
 
   EXPECT_TRUE(range1 != range2);
 }
@@ -234,9 +220,9 @@ TEST(samson_common_KVRange, operatorNE) {
 // operator==
 //
 TEST(samson_common_KVRange, operatorEQ) {
-  samson::KVRange  range1(5, 10);
-  samson::KVRange  range2(1, 4);
-  samson::KVRange  range3(5, 11);
+  samson::KVRange range1(5, 10);
+  samson::KVRange range2(1, 4);
+  samson::KVRange range3(5, 11);
 
   EXPECT_FALSE(range1 == range2);
   EXPECT_FALSE(range1 == range3);
@@ -246,8 +232,9 @@ TEST(samson_common_KVRange, operatorEQ) {
 // str(vector<KVRange>)
 //
 TEST(samson_common_KVRange, str) {
-  samson::KVRange               range1(5, 10);
-  samson::KVRange               range2(11, 20);
+  samson::KVRange range1(5, 10);
+  samson::KVRange range2(11, 20);
+
   std::vector<samson::KVRange>  rangeV;
 
   rangeV.push_back(range1);
@@ -261,8 +248,9 @@ TEST(samson_common_KVRange, str) {
 // CheckCompleteKVRanges
 //
 TEST(samson_common_KVRange, CheckCompleteKVRanges) {
-  samson::KVRange               range1(5, 10);
-  samson::KVRange               range2(11, 20);
+  samson::KVRange range1(5, 10);
+  samson::KVRange range2(11, 20);
+
   std::vector<samson::KVRange>  rangeV;
 
   rangeV.push_back(range1);
@@ -283,12 +271,13 @@ TEST(samson_common_KVRange, Intersection) {
   EXPECT_TRUE(output.isValid());
   EXPECT_TRUE(output2.isValid());
 }
-  
+
 // -----------------------------------------------------------------------------
 // divide
 //
 TEST(samson_common_KVRange, divide) {
-  samson::KVRange               range(10, 20);
+  samson::KVRange range(10, 20);
+
   std::vector<samson::KVRange>  rangeVec;
 
   rangeVec = range.divide(2);
@@ -301,10 +290,10 @@ TEST(samson_common_KVRange, divide) {
 // gpbConstructor
 //
 TEST(samson_common_KVRange, gpbConstructor) {
-  samson::gpb::KVRange  gpbRange;
-  samson::KVRange       range1(1, 2);
-  samson::KVRange       range2(range1);
-  samson::KVRange       range(gpbRange);
-  
+  samson::gpb::KVRange gpbRange;
+  samson::KVRange range1(1, 2);
+  samson::KVRange range2(range1);
+  samson::KVRange range(gpbRange);
+
   EXPECT_TRUE(range2.isValid());
 }

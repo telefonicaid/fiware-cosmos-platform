@@ -50,7 +50,7 @@ BlockLookupList::BlockLookupList(Block *block) {
     return;
   }
 
-  LOG_M(logs.rest, ("Creating lookup list"));
+  LOG_V(logs.rest, ("Creating lookup list"));
 
   // Store format locally
   kvFormat = block->getKVFormat();
@@ -70,7 +70,7 @@ BlockLookupList::BlockLookupList(Block *block) {
          ("Error allocating lookupList.hashInfo of %d bytes", KVFILE_NUM_HASHGROUPS *
           sizeof(BlockHashLookupRecord)));
   }
-  LOG_M(logs.rest,
+  LOG_V(logs.rest,
         ("Created a lookup list for %d records",
          block->header.info.kvs));
 
@@ -117,7 +117,7 @@ BlockLookupList::BlockLookupList(Block *block) {
       ++noOfKvs;
     }
   }
-  LOG_M(logs.rest, ("Hash Group %d has %d entries", maxEntryHashGroup, maxEntries));
+  LOG_V(logs.rest, ("Hash Group %d has %d entries", maxEntryHashGroup, maxEntries));
 
   // int wordIx = 0;
   // for (size_t ix = lookupList.hashInfo[maxEntryHashGroup].startIx; ix <= lookupList.hashInfo[maxEntryHashGroup].endIx; ix++)
@@ -129,7 +129,7 @@ BlockLookupList::BlockLookupList(Block *block) {
   //     ++wordIx;
   // }
 
-  LOG_M(logs.rest, ("lookup list created"));
+  LOG_V(logs.rest, ("lookup list created"));
   // semGive();
 
 
@@ -188,7 +188,7 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
 
   keySize = keyDataInstance->serialize(keyName);
   hashGroup = keyDataInstance->hash(KVFILE_NUM_HASHGROUPS);
-  LOG_M(logs.rest,
+  LOG_V(logs.rest,
         ("looking up key '%s'(keyDataInstance:name:%s, val:%s) in hashgroup:%d", key,
          keyDataInstance->getName().c_str(),
          keyDataInstance->str().c_str(), hashGroup));
@@ -213,7 +213,7 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
 
       valueDataInstance->parse(valueP);
 
-      LOG_M(logs.rest, ("Match key '%s' - at ix %d (testKeySize:%d, name:%s, path:%s)"
+      LOG_V(logs.rest, ("Match key '%s' - at ix %d (testKeySize:%d, name:%s, path:%s)"
                         , key
                         , testIx
                         , testKeySize
@@ -235,7 +235,7 @@ void BlockLookupList::lookup(const char *key, au::SharedPointer<au::network::RES
     testIx = (endIx - startIx) / 2 + startIx;
 
     if (startIx > endIx) {
-      LOG_M(logs.rest, ("Key '%s' not found", key));
+      LOG_V(logs.rest, ("Key '%s' not found", key));
       command->AppendFormatedError("Key not found");
       return;
     }

@@ -88,7 +88,7 @@ int main(int argC, const char *argV[]) {
   // lmAux((char*) "father");
   logFd = lmFirstDiskFileDescriptor();
 
-  LM_V(("Connecting to log server at %s:%d", target_host, target_port));
+  // LM_V(("Connecting to log server at %s:%d", target_host, target_port));
 
   // Default port for this client
   au::network::ConsoleServiceClient console(target_port);

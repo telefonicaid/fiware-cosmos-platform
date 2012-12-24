@@ -122,10 +122,11 @@ public:
   std::string GetActivitySummary();
   std::string GetProcessSummary();
   double GetProcessTime() const;
-  FullKVInfo GetInputsInfo() const;
-  FullKVInfo GetOutputsInfo() const;
-  FullKVInfo GetInputInfo(int channel) const;
-  FullKVInfo GetOutputInfo(int channel) const;
+
+  BlockInfo GetInputsInfo() const;
+  BlockInfo GetOutputsInfo() const;
+  BlockInfo GetInputInfo(int channel) const;
+  BlockInfo GetOutputInfo(int channel) const;
 
   // For block ordering
   const std::vector<size_t>& input_block_ids() {
@@ -144,6 +145,11 @@ public:
     }
     return block_list->ContainsBlock(block_id);
   }
+
+  /**
+   * \brief Get a vector of tokens to be retained-released during fork
+   */
+  std::vector<au::Token *> GetTokens() const;
 
 protected:
   // Container for all input/output blocks

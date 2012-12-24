@@ -67,11 +67,21 @@ public:
     return stream_operation_->name();
   }
 
-  FullKVInfo GetStateDataInfo() const;
-  FullKVInfo GetInputDataInfo() const;
+  BlockInfo GetStateDataInfo() const;
+  BlockInfo GetInputDataInfo() const;
+  BlockInfo GetOutputDataInfo() const;
 
   // Commit to data model
   void commit();
+
+  // Set this worker task as defrag
+  void SetDefragTask(const KVFormat& format) {
+    defrag_job_ = true;
+    defrag_format = format;
+
+    addOutput(format);
+    // addOutput(KVFormat("system.Value", "system.Value"));    // Add an additional output for log
+  }
 
 private:
 
@@ -79,6 +89,7 @@ private:
   void generateKeyValues_parser(samson::ProcessWriter *writer);
   void generateKeyValues_map(samson::ProcessWriter *writer);
   void generateKeyValues_reduce(samson::ProcessWriter *writer);
+  void generateKeyValuesDefrag(samson::ProcessWriter *writer);
 
   // Information about the operation to run
   gpb::StreamOperation *stream_operation_;
@@ -90,12 +101,17 @@ private:
   // Information to collect statistics
   int state_input_channel_;
   int num_input_channels_;
+  int num_output_channels_;
 
   // Range to apply this operation
   KVRange range_;
 
   // Pointer to samson worker to create new blocks
   SamsonWorker *samson_worker_;
+
+  // Specific data for defrag operation
+  bool defrag_job_;
+  KVFormat defrag_format;
 };
 }
 }

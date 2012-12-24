@@ -60,28 +60,31 @@ SamsonClient::SamsonClient(std::string connection_type) {
   delilah_ = new Delilah("client");
   delilah_->data_receiver_interface = this;  // By default, I am the default receiver
 
-  LM_V(("SamsonClient: Delilah client with id %s", au::code64_str(delilah_->get_delilah_id()).c_str()));
+  LM_V(("SamsonClient: Delilah client with id %s", au::code64_str(delilah_->delilah_id()).c_str()));
 }
 
-bool SamsonClient::connect(const std::vector<std::string>& hosts) {
+bool SamsonClient::Connect(const std::vector<std::string>& hosts) {
   // Try connection with all provided hosts
   for (size_t i = 0; i < hosts.size(); ++i) {
-    if (connect(hosts[i])) {
+    if (Connect(hosts[i])) {
       return true;
     }
   }
-
   return false;
 }
 
-bool SamsonClient::connect(const std::string& host) {
+bool SamsonClient::Connect(const std::string& host) {
   au::ErrorManager error;
-  bool c = delilah_->connect(host, &error);
+  bool c = delilah_->Connect(host, &error);
 
   if (error.HasErrors()) {
     LOG_SW(("Unable to connect to %s: %s", host.c_str(), error.GetLastError().c_str()));
   }
   return c;
+}
+
+void SamsonClient::Disconnect() {
+  delilah_->Disconnect();
 }
 
 SamsonClient::~SamsonClient() {
@@ -116,9 +119,6 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
   // Init Engine, DiskManager, ProcessManager and Memory manager
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->GetInt("general.num_processess");
   engine::Engine::InitEngine(num_cores, memory, 1);
-
-  // Init the modules manager
-  LOG_M(logs.modules_manager, ("Starting ModulesManager from SamsonClient::general_init()"));
 }
 
 void SamsonClient::general_close() {
@@ -132,13 +132,13 @@ void SamsonClient::general_close() {
   engine::Engine::StopEngine();
 }
 
-void SamsonClient::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
+void SamsonClient::ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer) {
   // Accumulate buffers of data in this buffer container
   buffer_container_.Push(queue, buffer);
 }
 
 size_t SamsonClient::push(engine::BufferPointer buffer, const std::string& queue) {
-  LM_V(("SamsonClient: Pushing buffer %s to %lu queues", au::str(buffer->size()).c_str(), queue.size()));
+  LOG_V(logs.client, ("SamsonClient: Pushing buffer %s to %lu queues", au::str(buffer->size()).c_str(), queue.size()));
 
   std::vector<std::string> queues;
   queues.push_back(queue);
@@ -151,11 +151,11 @@ size_t SamsonClient::push(engine::BufferPointer buffer, const std::vector<std::s
   }
 
   push_rate_.Push(buffer->size());     // Update statistics
-  return delilah_->push_txt(buffer, queues);
+  return delilah_->PushPlainData(buffer, queues);
 }
 
 bool SamsonClient::isFinishedPushingData() {
-  return (delilah_->get_num_push_items() == 0);
+  return (delilah_->GetPendingSizeToPush() == 0);
 }
 
 void SamsonClient::waitFinishPushingData() {
@@ -165,16 +165,17 @@ void SamsonClient::waitFinishPushingData() {
     } else {
       usleep(200000);
     }
-    LM_V(("Waiting delilah to finish push process. Still pending %lu push items", delilah_->get_num_push_items()));
+    LOG_SV(("Waiting delilah to finish push process. Still pending %s",
+            au::str(delilah_->GetPendingSizeToPush()).c_str()));
   }
 }
 
 void SamsonClient::connect_to_queue(std::string queue, bool flag_new, bool flag_remove) {
   // Update queue management in samsonClient in the same way as in delilah.
-  // Old strategy with delilah_->sendWorkerCommand("connect_to_queue") was not working
+  // Old strategy with delilah_->SendWorkerCommand("connect_to_queue") was not working
   size_t id = delilah_->AddPopComponent(queue, "", false, false);
 
-  LOG_M(logs.delilah_components, ("AddPopComponent for queue:'%s' returned id:%lu", queue.c_str(), id));
+  LOG_V(logs.delilah_components, ("AddPopComponent for queue:'%s' returned id:%lu", queue.c_str(), id));
 }
 
 SamsonClientBlockInterface *SamsonClient::getNextBlock(std::string queue) {
@@ -189,11 +190,11 @@ SamsonClientBlockInterface *SamsonClient::getNextBlock(std::string queue) {
 }
 
 bool SamsonClient::connection_ready() {
-  return delilah_->isConnected();
+  return delilah_->IsConnected();
 }
 
-size_t SamsonClient::getNumPendingPushItems() {
-  return delilah_->get_num_push_items();
+size_t SamsonClient::GetPendingSizeToPush() {
+  return delilah_->GetPendingSizeToPush();
 }
 
 void SamsonClient::waitUntilFinish() {

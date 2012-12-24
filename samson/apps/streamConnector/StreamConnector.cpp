@@ -58,16 +58,11 @@ void StreamConnector::init_remove_connections_service() {
   service = new StreamConnectorService(this);
   au::Status s = service->InitService();
   if (s != au::OK) {
-    log(au::SharedPointer<Log> (new Log("StreamConnector"
-                                        , "Warning"
-                                        ,
-                                        "Not possible to start service to receive connections from streamConnectorClient")));
+    LOG_SW(("Not possible to start service to receive connections from streamConnectorClient"));
     delete service;
     service = NULL;
   } else {
-    log(au::SharedPointer<Log> (new Log("StreamConnector"
-                                        , "Message"
-                                        , "Console Service started")));
+    LOG_SV(("StreamConnector: Console Service started"));
   }
 }
 
@@ -79,7 +74,7 @@ void StreamConnector::init_reset_service() {
   rest_service = new au::network::RESTService(sc_web_port, this);
   au::Status s = rest_service->InitService();
   if (s != au::OK) {
-    log(au::SharedPointer<Log> (new Log("REST", "error", au::str("Error opening REST interface on port %d", sc_web_port))));
+    LOG_SE(("Error opening REST interface on port %d", sc_web_port));
     delete rest_service;
     rest_service = NULL;
   }
@@ -96,19 +91,13 @@ void StreamConnector::init_inter_channel_connections_service() {
   au::Status s = inter_channel_listener->InitNetworkListener(p);
 
   if (s != au::OK) {
-    log(au::SharedPointer<Log> (new Log("StreamConnector"
-                                        , "Warning"
-                                        , au::str(
-                                          "Not possible to init inter-channel listener at port %d. This could be a major issue",
-                                          p))));
+    LOG_SW(("StreamConnector: Not possible to init inter-channel listener at port %d. This could be a major issue", p));
 
     // Delete instance
     delete inter_channel_listener;
     inter_channel_listener = NULL;
   } else {
-    log(au::SharedPointer<Log> (new Log("StreamConnector"
-                                        , "Message"
-                                        , "Interchannel service started")));
+    LOG_SV(("StreamConnector: Interchannel service started"));
   }
 }
 
@@ -125,14 +114,6 @@ void StreamConnector::process(au::SharedPointer<au::network::RESTServiceCommand>
 
   if (command->path_components()[0] == "summary") {
     au::tables::Table *table = getSummaryTable();
-    command->Append(table->strFormatted(command->format()));
-    delete table;
-    return;
-  }
-
-  if (command->path_components()[0] == "logs") {
-    LogManager *log_manager = au::Singleton<LogManager>::shared();
-    au::tables::Table *table = log_manager->getLogsTable(100);
     command->Append(table->strFormatted(command->format()));
     delete table;
     return;
@@ -280,10 +261,8 @@ std::string StreamConnector::GetPrompt() {
 }
 
 void StreamConnector::EvalCommand(const std::string& command) {
-  // Log activity
-  Log("Console", "Message", command);
-
   au::ErrorManager error;
+
   process_command(command, &error);
   Write(error);
 }
@@ -403,21 +382,6 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     au::tables::Table *table =  getSummaryTable();
     error->AddMessage(table->str());
     delete table;
-    return;
-  }
-
-  if (main_command == "logs") {
-    size_t limits = 0;
-
-    if (cmdLine.get_num_arguments() > 1) {
-      limits = atoi(cmdLine.get_argument(1).c_str());
-    }
-    LogManager *log_manager = au::Singleton<LogManager>::shared();
-    au::tables::Table *table = log_manager->getLogsTable(limits);
-
-    error->AddMessage(table->str());
-    delete table;
-
     return;
   }
 
@@ -542,9 +506,6 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     delete table;
     return;
   }
-
-  // Log activity ( command that modify state )
-  log(au::SharedPointer<Log> (new Log("StreamConnector", "Message", command)));
 
   if (main_command == "add_channel") {
     if (cmdLine.get_num_arguments() < 2) {
@@ -807,10 +768,10 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
       Adaptor *item = it_items->second;
 
       // Lock the token in the item
-      au::TokenTaker tt(&item->token);
+      au::TokenTaker tt(&item->token_);
 
       au::map<int, Connection>::iterator it_connections;
-      for (it_connections = item->connections.begin(); it_connections != item->connections.end(); ++it_connections) {
+      for (it_connections = item->connections_.begin(); it_connections != item->connections_.end(); ++it_connections) {
         Connection *connection = it_connections->second;
 
         // Draw separation line if necessary
@@ -823,9 +784,9 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
         au::StringVector values;
 
         // Common fields
-        values.push_back(connection->getFullName());
-        values.push_back(connection->getTypeStr());
-        values.push_back(connection->getDescription());
+        values.push_back(connection->fullname());
+        values.push_back(connection->GetTypeStr());
+        values.push_back(connection->description());
 
         // Specific fields
         if (type == "data") {
@@ -899,16 +860,16 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
 
 
       au::StringVector values;
-      values.push_back(item->getFullName());
-      values.push_back(item->getTypeStr());
-      values.push_back(item->getDescription());
+      values.push_back(item->fullname());
+      values.push_back(item->GetTypeStr());
+      values.push_back(item->description());
 
       if (type == "data") {
-        values.push_back(au::str("%d", item->getNumConnections()));
-        values.push_back(au::str(item->traffic_statistics.get_input_total()));
-        values.push_back(au::str(item->traffic_statistics.get_input_rate()));
-        values.push_back(au::str(item->traffic_statistics.get_output_total()));
-        values.push_back(au::str(item->traffic_statistics.get_output_rate()));
+        values.push_back(au::str("%d", item->num_connections()));
+        values.push_back(au::str(item->traffic_statistics_.get_input_total()));
+        values.push_back(au::str(item->traffic_statistics_.get_input_rate()));
+        values.push_back(au::str(item->traffic_statistics_.get_output_total()));
+        values.push_back(au::str(item->traffic_statistics_.get_output_rate()));
       } else {
         if (item->is_finished()) {
           values.push_back("F");
@@ -933,42 +894,6 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
   }
 
   return table;
-}
-
-void StreamConnector::log(const std::string& name, const std::string& type, const std::string& message) {
-  au::SharedPointer<stream_connector::Log> my_log(new stream_connector::Log(name, type, message));
-  log(my_log);
-}
-
-void StreamConnector::log(au::SharedPointer<Log> log) {
-  au::TokenTaker tt(&token);
-
-  // Create au::ErrorManager element
-  au::ErrorManager error;
-
-  std::string type = log->getType();
-
-  if (type == "Warning") {
-    error.AddWarning(log->getNameAndMessage());
-  } else if (type == "Error") {
-    error.AddError(log->getNameAndMessage());
-  } else {
-    error.AddMessage(log->getNameAndMessage());
-  } if (interactive) {
-    au::console::Console::Write(error);
-  } else if (run_as_daemon) {
-    // Nothing here
-  } else {
-    // Print on screen
-    if (lmVerbose) {
-      std::cerr << error.str();
-    }
-  }
-
-
-  // Add to the log system
-  LogManager *log_manager = au::Singleton<LogManager>::shared();
-  log_manager->log(log);
 }
 
 void StreamConnector::newSocketConnection(au::NetworkListener *listener
@@ -1005,7 +930,7 @@ void StreamConnector::select_channel(InputInterChannelConnection *connection, st
     // Check if this item can receive this connection
     if (item->accept(connection)) {
       // Set this item as connection's item
-      connection->item = item;
+      connection->item_ = item;
 
       // Extract from the list of pending connections
       input_inter_channel_connections.extractFromList(connection);

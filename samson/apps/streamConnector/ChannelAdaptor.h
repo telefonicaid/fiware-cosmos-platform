@@ -110,7 +110,7 @@ public:
   virtual void stop_connection();
   virtual void review_connection();
   virtual std::string getStatus();
-  virtual size_t bufferedSize();
+  virtual size_t bufferedSize() const;
 
 
 private:
@@ -169,7 +169,7 @@ public:
 
   // Get status of this element
   std::string getStatus() {
-    return au::str("%lu connections", getNumConnections());
+    return au::str("%lu connections", num_connections());
   }
 
   void review_item() {

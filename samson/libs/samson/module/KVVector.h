@@ -17,7 +17,7 @@
  *
  *
  * NOTES
- *   Variables num_kvs and kvs are not suppoused to be modified
+ *   Variables num_kvs and kvs are not supposed to be modified
  *   from outside this class
  */
 #include <errno.h>               /* errno                                    */

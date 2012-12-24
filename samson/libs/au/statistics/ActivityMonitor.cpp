@@ -12,8 +12,9 @@
 
 #include "ActivityMonitor.h"  // Own interface
 
-#include "au/log/LogMain.h"
 #include <math.h>
+
+#include "au/log/LogMain.h"
 
 namespace au {
 /**

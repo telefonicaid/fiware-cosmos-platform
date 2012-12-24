@@ -14,61 +14,61 @@
 #include "BufferProcessor.h"
 #include "Connection.h"  // Own interface
 #include "StreamConnector.h"
-#include "au/singleton/Singleton.h"
 #include "au/file.h"
+#include "au/singleton/Singleton.h"
 
 extern char working_directory[1024];
 
 namespace stream_connector {
-Connection::Connection(Adaptor *_item, ConnectionType _type, std::string _name) : token("Connection") {
+Connection::Connection(Adaptor *item, ConnectionType type, std::string name) : token("Connection") {
   // Keep information
-  type = _type;
-  item = _item;
-  description_ = _name;
+  type_ = type;
+  item_ = item;
+  description_ = name;
 
   // Buffer processor created on demand ( first time )
-  buffer_processor = NULL;
+  buffer_processor_ = NULL;
 
-  canceled = false;
-  finished = false;
-  initialized = false;
+  canceled_ = false;
+  finished_ = false;
+  initialized_ = false;
 
-  output_buffer_list = NULL;
-  input_buffer_list = NULL;
+  output_buffer_list_ = NULL;
+  input_buffer_list_ = NULL;
 
-  id = (size_t )-1;
+  id_ = SIZE_T_UNDEFINED;
 }
 
 Connection::~Connection() {
-  if (buffer_processor) {
-    delete buffer_processor;
+  if (buffer_processor_ != NULL) {
+    delete buffer_processor_;
   }
-  if (input_buffer_list) {
-    delete input_buffer_list;
+  if (input_buffer_list_ != NULL) {
+    delete input_buffer_list_;
   }
-  if (output_buffer_list) {
-    delete input_buffer_list;
+  if (output_buffer_list_ != NULL) {
+    delete input_buffer_list_;
   }
 }
 
 void Connection::report_output_size(size_t size) {
   traffic_statistics.push_output(size);
-  item->report_output_size(size);
+  item_->report_output_size(size);
 }
 
 void Connection::report_input_size(size_t size) {
   traffic_statistics.push_input(size);
-  item->report_input_size(size);
+  item_->report_input_size(size);
 }
 
 engine::BufferPointer Connection::getNextBufferToSent() {
   // If output list is not created, there are no output buffers
-  if (!output_buffer_list) {
+  if (output_buffer_list_ == NULL) {
     return engine::BufferPointer(NULL);
   }
 
   // Extract buffer from the list
-  engine::BufferPointer buffer = output_buffer_list->pop();
+  engine::BufferPointer buffer = output_buffer_list_->pop();
 
   if (buffer != NULL) {
     report_output_size(buffer->size());
@@ -84,8 +84,8 @@ void Connection::pushInputBuffer(engine::BufferPointer buffer) {
   // Report input block
   report_input_size(buffer->size());
 
-  if (item->channel->getSplitter() == "") {
-    item->channel->push(buffer);
+  if (item_->channel_->getSplitter() == "") {
+    item_->channel_->push(buffer);
   } else {
     // Put in the input buffer list ??
     //
@@ -93,148 +93,133 @@ void Connection::pushInputBuffer(engine::BufferPointer buffer) {
     // An option in the future could be to inject input data in input_buffer_process and use engine to process stuff
 
     // Create buffer processor to process all input buffers
-    if (!buffer_processor) {
-      buffer_processor = new BufferProcessor(item->channel);  // push the block processor
+    if (buffer_processor_ == NULL) {
+      buffer_processor_ = new BufferProcessor(item_->channel_);  // push the block processor
     }
-    buffer_processor->push(buffer);
+    buffer_processor_->push(buffer);
   }
 }
 
 void Connection::flushInputBuffers() {
-  if (buffer_processor) {
-    buffer_processor->flush();
+  if (buffer_processor_ != NULL) {
+    buffer_processor_->flush();
   }
 }
 
 void Connection::push(engine::BufferPointer buffer) {
-  if (!output_buffer_list) {
-    std::string directory = std::string(working_directory) + "/" + getFullName() + "/output";
+  if (output_buffer_list_ == NULL) {
+    std::string directory = std::string(working_directory) + "/" + fullname() + "/output";
     size_t max_memory_size =  5 * 1024 * 1024;
     au::CreateFullDirectory(directory);
-    output_buffer_list = new BufferList(directory, max_memory_size);
+    output_buffer_list_ = new BufferList(directory, max_memory_size);
   }
 
   // Put in the list to be emitted
-  output_buffer_list->push(buffer);
+  output_buffer_list_->push(buffer);
 }
 
-size_t Connection::bufferedSize() {
-  if (type == connection_output) {
-    if (!output_buffer_list) {
+size_t Connection::bufferedSize() const {
+  if (type_ == connection_output) {
+    if (output_buffer_list_ == NULL) {
       return 0;
     }
-    return output_buffer_list->getSize();
+    return output_buffer_list_->getSize();
   } else {
-    if (!input_buffer_list) {
+    if (input_buffer_list_ == NULL) {
       return 0;
     }
-    return input_buffer_list->getSize();
+    return input_buffer_list_->getSize();
   }
 }
 
-size_t Connection::bufferedSizeOnMemory() {
-  if (type == connection_output) {
-    if (!output_buffer_list) {
+size_t Connection::bufferedSizeOnMemory() const {
+  if (type_ == connection_output) {
+    if (output_buffer_list_ == NULL) {
       return 0;
     }
-    return output_buffer_list->getSizeOnMemory();
+    return output_buffer_list_->getSizeOnMemory();
   } else {
-    if (!input_buffer_list) {
+    if (!input_buffer_list_) {
       return 0;
     }
-    return input_buffer_list->getSizeOnMemory();
+    return input_buffer_list_->getSizeOnMemory();
   }
 }
 
 // get type
-ConnectionType Connection::getType() {
-  return type;
+ConnectionType Connection::type() const {
+  return type_;
 }
 
-const char *Connection::getTypeStr() {
-  return str_ConnectionType(type);
+const char *Connection::GetTypeStr() const {
+  return str_ConnectionType(type_);
 }
 
-std::string Connection::getDescription() {
+std::string Connection::description() const {
   return description_;
 }
 
-size_t Connection::getId() {
-  return id;
+size_t Connection::id() const {
+  return id_;
 }
 
-std::string Connection::getFullName() {
-  if (!item) {
+std::string Connection::fullname() const {
+  if (item_ == NULL) {
     return "[Unassigned connection]";
   }
 
   return au::str("%s.%lu"
-                 , item->getFullName().c_str()
-                 , getId()
+                 , item_->fullname().c_str()
+                 , id_
                  );
 }
 
 void Connection::set_as_finished() {
-  if (finished) {
+  if (finished_) {
     return;
   }
-
-  // Log activity
-  log("Message", "Set as finished");
-
-  finished = true;
+  finished_ = true;
 }
 
 bool Connection::is_finished() {
-  return finished;
-}
-
-// Log system
-void Connection::log(std::string type, std::string message) {
-  log(au::SharedPointer<Log>(new Log(getFullName(), type, message)));
-}
-
-void Connection::log(au::SharedPointer<Log> log) {
-  LogManager *log_manager = au::Singleton<LogManager>::shared();
-
-  log_manager->log(log);
+  return finished_;
 }
 
 void Connection::init_connecton() {
-  if (initialized) {
+  if (initialized_) {
     return;
   }
-  initialized = true;
+  initialized_ = true;
   start_connection();
 }
 
 void Connection::cancel_connecton() {
-  canceled = true;
+  canceled_ = true;
   stop_connection();
 }
 
 void Connection::review() {
-  if (canceled) {
+  if (canceled_) {
     return;   // Not call review
   }
-  if (!finished) {
+  if (!finished_) {
     review_connection();  // Review persistancy in input/output buffer lists
   }
-  if (input_buffer_list) {
-    input_buffer_list->review_persistence();
+  if (input_buffer_list_) {
+    input_buffer_list_->review_persistence();
   }
-  if (output_buffer_list) {
-    output_buffer_list->review_persistence();
+  if (output_buffer_list_) {
+    output_buffer_list_->review_persistence();
   }
 }
 
 std::string Connection::str() {
   return au::str("%s %s [%s] In: %s Out: %s"
-                 , getFullName().c_str()
-                 , getDescription().c_str()
+                 , fullname().c_str()
+                 , description().c_str()
                  , getStatus().c_str()
                  , au::str(traffic_statistics.get_input_total(), "B").c_str()
-                 , au::str(traffic_statistics.get_output_total(), "B").c_str()
+                 , au ::str(traffic_statistics.get_output_total(), "B").c_str()
                  );
 }
 

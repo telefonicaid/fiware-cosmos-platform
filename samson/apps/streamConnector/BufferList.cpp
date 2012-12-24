@@ -100,7 +100,7 @@ void BufferListItem::flush_to_disk() {
     {
       // Direct transition to on_disk
       state = on_disk;
-      buffer_ = NULL;
+      buffer_.Reset();
       break;
     }
 

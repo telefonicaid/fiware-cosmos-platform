@@ -169,6 +169,26 @@ public:
     return _type;
   }
 
+  bool IsForwardOperation() const {
+    switch (_type) {
+      case generator:
+      case map:
+      case parser:
+      case parserOut:
+        return true;
+
+      case system:
+      case reduce:
+      case parserOutReduce:
+      case splitter:
+      case unknown:
+      case script:
+        return false;
+    }
+
+    return false;
+  }
+
   std::string getTypeName() {
     switch (getType()) {
       case parser:

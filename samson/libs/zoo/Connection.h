@@ -51,10 +51,8 @@ class Connection {
 public:
 
   // Constructor & destructor
-  Connection(const std::string& host
-             , const std::string& user
-             , const std::string& password);
   Connection();
+  Connection(const std::string& host, const std::string& user, const std::string& password);
   ~Connection();
 
   // Register and unregister ConnetionWatcher objects
@@ -65,12 +63,7 @@ public:
    */
 
   // Static watcher method ( to be used in the zookepper C API )
-  static void static_watcher(zhandle_t *zzh
-                             , int type
-                             , int state
-                             , const char *path
-                             , void *watcherCtx);
-
+  static void static_watcher(zhandle_t *zzh, int type, int state, const char *path, void *watcherCtx);
 
   // Connection operations
   int Connect(const std::string& host, const std::string& user, const std::string& password);
@@ -92,6 +85,9 @@ public:
   // Remove nodes
   int Remove(const std::string&path, int version = -1);
 
+  // Remove recursivelly
+  int RecursiveRemove(const std::string& path);
+
   // Set functions
   int Set(const std::string& path, const char *value = NULL, int value_len = 0, int version = -1);
   int Set(const std::string& path, ::google::protobuf::Message *value, int version = -1);
@@ -109,9 +105,8 @@ public:
 
   // Exist functions
   int Exists(const std::string& path, struct Stat *stat = NULL);
-  int Exists(const std::string& path
-             , size_t engine_id
-             , struct Stat *stat = NULL);
+  int Exists(const std::string& path, size_t engine_id, struct Stat *stat = NULL);
+
   // Get childrens
   int GetChildrens(const std::string& path, String_vector *vector);
   int GetChildrens(const std::string& path, au::StringVector& childrens);

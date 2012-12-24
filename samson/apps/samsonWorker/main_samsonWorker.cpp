@@ -149,65 +149,73 @@ static const char *manDescription = "\n"
 static const char *manExitStatus = "0      if OK\n 1-255  error\n";
 
 void SamsonWorkerCleanUp() {
-  LOG_M(samson::logs.cleanup, ("Cleaning up samsonWorker"));
+  LOG_V(samson::logs.cleanup, ("Cleaning up samsonWorker"));
 
   // Stop console just in case it is not already stopped
-  LOG_M(samson::logs.cleanup, ("Stop worker console"));
+  LOG_V(samson::logs.cleanup, ("Stop worker console"));
   worker->StopConsole();
 
-  LOG_M(samson::logs.cleanup, ("Stopping REST service (worker at %p)", worker));
+  LOG_V(samson::logs.cleanup, ("Stopping REST service (worker at %p)", worker));
   worker->samson_worker_rest()->StopRestService();
 
-  LOG_M(samson::logs.cleanup, ("Stopping network listener (worker at %p)", worker));
+  LOG_V(samson::logs.cleanup, ("Stopping network listener (worker at %p)", worker));
   worker->network()->stop();
 
-  LOG_M(samson::logs.cleanup, ("destroying BlockManager"));
+  LOG_V(samson::logs.cleanup, ("destroying BlockManager"));
   samson::stream::BlockManager::destroy();
 
-  LOG_M(samson::logs.cleanup, ("destroying Engine"));
+  LOG_V(samson::logs.cleanup, ("destroying Engine"));
   engine::Engine::StopEngine();
 
   // Deleting worker
-  LOG_M(samson::logs.cleanup, ("Removing worker instance"));
+  LOG_V(samson::logs.cleanup, ("Removing worker instance"));
   if (worker != NULL) {
     delete worker;
     worker = NULL;
   }
   LOG_D(samson::logs.cleanup, ("Finished removing worker instance"));
 
-  LOG_M(samson::logs.cleanup, ("Calling paConfigCleanup"));
+  LOG_V(samson::logs.cleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
 
-  LOG_M(samson::logs.cleanup, ("Calling lmCleanProgName"));
+  LOG_V(samson::logs.cleanup, ("Calling lmCleanProgName"));
   lmCleanProgName();
 
   // Remove pid file
-  LOG_M(samson::logs.cleanup, ("Removing pid file for samsonWorker"));
+  LOG_V(samson::logs.cleanup, ("Removing pid file for samsonWorker"));
   std::string pid_file_name = au::str("%s/samsond.pid", paLogDir);
   if (remove(pid_file_name.c_str()) != 0) {
     LM_LW(("Error deleting the pid file %s", pid_file_name.c_str()));
   }
 
   // Destroy shared memory manager
-  LOG_M(samson::logs.cleanup, ("Destroying shared memory manager"));
+  LOG_V(samson::logs.cleanup, ("Destroying shared memory manager"));
   samson::SharedMemoryManager::Destroy();
 
   // Stop the logging system
-  LOG_M(samson::logs.cleanup, ("log_central stopping..."));
+  LOG_V(samson::logs.cleanup, ("log_central stopping..."));
   au::LogCentral::Shared()->StopLogSystem();
 
   // Wait for all background threads
-  LOG_M(samson::logs.cleanup, ("Waiting for threads (worker at %p)", worker));
+  LOG_V(samson::logs.cleanup, ("Waiting for threads (worker at %p)", worker));
   au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");
 
   // Shutdown all GPB stuff
   google::protobuf::ShutdownProtobufLibrary();
 
-  LOG_M(samson::logs.cleanup, ("Cleanup DONE"));
+  LOG_V(samson::logs.cleanup, ("Cleanup DONE"));
 }
 
+bool captured_sigint = false;
 void captureSIGINT(int s) {
   LOG_SW(("Signal SIGINT %d", s));
+
+  // If two are captured, just exit
+  if (captured_sigint) {
+    _exit(1);
+  }
+  captured_sigint = true;
+
   if (fg) {
     worker->StopConsole();
   } else {
@@ -275,13 +283,11 @@ int main(int argC, const char *argV[]) {
     std::string log_server_file = std::string(paLogDir) + "samsonWorker_" + log_server +  ".log";
     au::log_central->AddServerPlugin("server", log_server, log_server_file);
     au::log_central->EvalCommand("log_set * X server");
-    au::log_central->EvalCommand("log_set samson::W M server");
-    au::log_central->EvalCommand("log_set samson::OP W server");
   }
-
-  // Change channel levels by default
-  au::log_central->EvalCommand("log_set samson::W M");  // Set message level for the log channel samson::W
-  au::log_central->EvalCommand("log_set system M");     // Set message level for the log channel system
+  if (lmVerbose) {
+    au::log_central->EvalCommand("log_set samson::W V");
+    au::log_central->EvalCommand("log_set system V");
+  }
   if (lmDebug) {
     au::log_central->EvalCommand("log_set samson::W D");
     au::log_central->EvalCommand("log_set system D");

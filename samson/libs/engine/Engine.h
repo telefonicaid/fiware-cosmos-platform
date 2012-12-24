@@ -26,10 +26,11 @@
 #ifndef _H_SAMSON_ENGINE
 #define _H_SAMSON_ENGINE
 
-#include <iostream>                              // std::cout
-#include <list>
 #include <math.h>
 #include <pthread.h>
+
+#include <iostream>                              // std::cout
+#include <list>
 #include <set>                                   // std::set
 #include <string>
 
@@ -39,12 +40,11 @@
 #include "au/Thread.h"
 #include "au/ThreadManager.h"
 #include "au/containers/list.h"                  // au::list
-#include "au/mutex/Token.h"                      // au::Token
-#include "au/statistics/Cronometer.h"            // au::Cronometer
-// NAMESPACE_BEGIN & }
 #include "au/containers/vector.h"
 #include "au/mutex/Token.h"
+#include "au/mutex/Token.h"                      // au::Token
 #include "au/mutex/TokenTaker.h"
+#include "au/statistics/Cronometer.h"            // au::Cronometer
 
 #include "engine/EngineElementCollection.h"
 #include "engine/NotificationListener.h"         // engine::EngineNotification
@@ -110,9 +110,21 @@ public:
 
 private:
 
+
   Engine();     // Private constructor ( see Init static method )
 
-  void RunThread();  // Run method for background thread
+  /**
+   *
+   * RunThread
+   *
+   * \brief Main loop to process engine-elements ( normal, periodic and extra )
+   *
+   * Try to get the next element in the repeat_elements list
+   * if not there , try normal elements...
+   * if not, run extra elements and loop again...
+   *
+   */
+  void RunThread();
 
   // Methods to register and unregister listsners ( used from class NotificationListener )
   void AddListener(NotificationListener *object);

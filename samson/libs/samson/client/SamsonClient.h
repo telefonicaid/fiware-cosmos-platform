@@ -77,8 +77,11 @@ public:
   virtual ~SamsonClient();
 
   // connect to a cluster
-  bool connect(const std::vector<std::string>& hosts);
-  bool connect(const std::string& host);
+  bool Connect(const std::vector<std::string>& hosts);
+  bool Connect(const std::string& host);
+
+  // Disconnect
+  void Disconnect();
 
   // Check if connection is ready
   bool connection_ready();
@@ -86,9 +89,9 @@ public:
   // Push content to a particular queue ( returns a push_id )
   size_t push(engine::BufferPointer buffer, const std::string& queue);
   size_t push(engine::BufferPointer buffer, const std::vector<std::string>& queues);
-  size_t getNumPendingPushItems();              // Get number of operations we are waiting for...
-  bool isFinishedPushingData();                 // Check if all operations are finished
-  void waitFinishPushingData();                 // Wait until all operations are finished
+  size_t GetPendingSizeToPush();              // Get number of operations we are waiting for...
+  bool isFinishedPushingData();               // Check if all operations are finished
+  void waitFinishPushingData();               // Wait until all operations are finished
 
   // Live data connection
   void connect_to_queue(std::string queue, bool flag_new, bool flag_remove);
@@ -98,7 +101,7 @@ public:
   void set_receiver_interface(DelilahLiveDataReceiverInterface *interface);
 
   // DelilahLiveDataReceiverInterface
-  void receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer);
+  void ReceiveBufferFromQueue(const std::string& queue, engine::BufferPointer buffer);
 
   // Wait until everything is finished
   void waitUntilFinish();

@@ -23,15 +23,20 @@
 #include <iostream>                             // std::cout
 #include <string>
 
+#include "logMsg/logMsg.h"
+
+#include "au/console/Console.h"
 #include "au/console/Console.h"
 #include "au/containers/SharedPointer.h"
 #include "au/network/RESTService.h"
 #include "au/network/RESTServiceCommand.h"
+#include "au/statistics/DataStatistics.h"
 #include "au/string/StringUtilities.h"
+
 #include "zoo/Connection.h"
 
+
 #include "engine/EngineElement.h"               // samson::EngineElement
-#include "logMsg/logMsg.h"
 
 #include "samson/common/KVHeader.h"
 #include "samson/common/Macros.h"               // exit(.)
@@ -84,14 +89,14 @@ public:
   SamsonWorker(std::string zoo_host, int port, int web_port);
   ~SamsonWorker() {
     LOG_D(logs.cleanup, ("Entering ~SamsonWorker"));
-    worker_controller_ = NULL;
-    data_model_ = NULL;
-    network_ = NULL;
-    samson_worker_rest_ = NULL;
-    worker_block_manager_ = NULL;
-    task_manager_ = NULL;
-    workerCommandManager_ = NULL;
-    zoo_connection_ = NULL;
+    worker_controller_.Reset();
+    data_model_.Reset();
+    network_.Reset();
+    samson_worker_rest_.Reset();
+    worker_block_manager_.Reset();
+    task_manager_.Reset();
+    workerCommandManager_.Reset();
+    zoo_connection_.Reset();
     LOG_D(logs.cleanup, ("Finished ~SamsonWorker"));
   }
 
@@ -109,15 +114,16 @@ public:
   std::string GetPrompt();
 
   // Function to get information about current status
-  au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetWorkerAllLogChannels(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetKVRangesCollection(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetWorkerCollection(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetWorkerStatisticsCollection(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetWorkerLogStatus(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetWorkerAllLogChannels(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetCollectionForDataModelStatus(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetCollectionForDataModelCommits(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetKVRangesCollection(const Visualization& visualization) const;
+  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualization) const;
 
-  bool IsReady();     // Method to access if worker is ready
+  bool IsReady();         // Method to access if worker is ready
   bool IsConnected();     // Method to access if worker is ready
 
   // Accessors to individual components of this worker
@@ -155,21 +161,21 @@ private:
     unconnected, connected, ready
   };
 
-  // Main function to review samson worker and all its elements
-  // This function is preiodically called from engine
+  /**
+   * \brief ResetToConnected
+   */
   void Review();
 
   /**
    * \brief Review pop queues and queue_connections for unconnected delilahs ( remove them )
    */
-
   void ReviewPopQueues();
 
-  void ResetToUnconnected();     // Reset when come back to unconnected
   void ResetToConnected();     // Reset when come back to connected ( change cluster setup )
 
   // Visualitzation of current data model
-  void fill(gpb::CollectionRecord *record, const std::string& name, gpb::Data *data, const Visualization& visualization);
+  void fill(gpb::CollectionRecord *record, const std::string& name, gpb::Data *data,
+            const Visualization& visualization) const;
 
   // State of this worker
   std::string str_state();
@@ -203,7 +209,6 @@ private:
 
   bool modules_available_;          // Flag to determine if blocks for modules are available
   size_t last_modules_version_;     // Last version of the queue .modules observed so far
-
 
   // Cronometer for last candidate data model
   au::Cronometer cronometer_candidate_data_model_;

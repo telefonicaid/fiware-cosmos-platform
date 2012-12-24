@@ -109,11 +109,11 @@ void PushDelilahComponent::run_in_background() {
       current_status_ = "Waiting to finish scheduled push items...";
       while (true) {
         if (push_ids_.size() == 0) {
-          LOG_M(logs.delilah_components, ("push is finished"));
+          LOG_V(logs.delilah_components, ("push is finished"));
           setComponentFinished();
           return;
         }
-        LOG_M(logs.delilah_components, ("data_source is finished, sleeping with %lu push_ids", push_ids_.size()));
+        LOG_V(logs.delilah_components, ("data_source is finished, sleeping with %lu push_ids", push_ids_.size()));
         usleep(10000);
       }
     }
@@ -122,7 +122,7 @@ void PushDelilahComponent::run_in_background() {
     au::Cronometer cronometer;
     current_status_ = "Waiting until used memory is under 70%";
     while (engine::Engine::memory_manager()->memory_usage() > 0.7) {
-      LOG_M(logs.delilah_components,
+      LOG_V(logs.delilah_components,
             ("Waiting until used memory(%d) is under 70%", engine::Engine::memory_manager()->memory_usage()));
       usleep(10000);
     }
@@ -155,7 +155,7 @@ void PushDelilahComponent::run_in_background() {
 
     // Add this buffer to be pushed by delilah
     current_status_ = au::S() <<  "Pushing block " << buffer->str() << " using delilah component ";
-    size_t push_id = delilah->push(buffer, queues_);
+    size_t push_id = delilah->PushSamsonBlock(buffer, queues_);
 
     // Collect this push_id to be tracked...
     {

@@ -44,10 +44,12 @@
 // ------------------------------------------------------------------
 
 namespace samson {
+class SamsonWorker;
+
 class SamsonWorkerController : public engine::NotificationListener {
 public:
 
-  SamsonWorkerController(au::zoo::Connection *zoo_connection, int port, int port_web);
+  SamsonWorkerController(SamsonWorker *samson_worker, au::zoo::Connection *zoo_connection, int port, int port_web);
   ~SamsonWorkerController() {
   }
 
@@ -86,8 +88,10 @@ public:
   // Update worker-node with information about me
   int UpdateWorkerNode(size_t last_commit_id);
 
-  // Get a new identifier for a block
-  size_t get_new_block_id();
+  /**
+   * \brief Get a new identifier for a block ( using worker_id + an incremental counter )
+   */
+  size_t GetNewBlockId();
 
   // Get ranges to process data
   std::vector<KVRange> GetKVRanges() const {
@@ -117,6 +121,12 @@ public:
   bool IsSingleWorkerCluster() const {
     return (cluster_info_->workers_size() == 1);
   }
+
+  /**
+   * \brief Force a new cluster setup ( usually to use new cluster parameters )
+   */
+
+  int CreateNewClusterSetup();
 
 private:
 
@@ -148,6 +158,8 @@ private:
 
   // Recover cluster information setting up a watcher to observe updates
   int RecoverClusterInfo();
+
+  SamsonWorker *samson_worker_;  /**< Pointer to the main SamsonWorker */
 
   // Main connection with the zk
   au::zoo::Connection *zoo_connection_;

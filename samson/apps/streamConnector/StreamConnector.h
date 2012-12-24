@@ -29,7 +29,6 @@
 #include "au/network/RESTService.h"
 
 #include "DiskAdaptor.h"
-#include "LogManager.h"
 #include "SamsonAdaptor.h"
 #include "StreamConnector.h"
 #include "common.h"
@@ -152,10 +151,6 @@ public:
   // au::network::NetworkListenerInterface
   virtual void newSocketConnection(au::NetworkListener *listener
                                    , au::SocketConnection *socket_connection);
-
-  // Write errors depending on setup ( interactive, deamon, normal )
-  void log(au::SharedPointer<Log> log);
-  void log(const std::string& name, const std::string& type, const std::string& message);
 
 
   // Select channel for an interchannel connection

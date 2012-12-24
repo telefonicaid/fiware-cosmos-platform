@@ -30,11 +30,12 @@
 #ifndef _H_AU_STRING_COMPONENT
 #define _H_AU_STRING_COMPONENT
 
+#include <math.h>
+#include <time.h>
+
 #include <cstring>
 #include <list>
-#include <math.h>
 #include <string>    // std::String
-#include <time.h>
 
 #include "au/statistics/Cronometer.h"
 #include "au/string/StringUtilities.h"

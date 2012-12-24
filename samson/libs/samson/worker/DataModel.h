@@ -63,7 +63,7 @@ public:
   au::SharedPointer<gpb::Collection> GetCollectionForStreamOperations(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetCollectionForBatchOperations(const Visualization& visualization);
   au::SharedPointer<gpb::Collection> GetCollectionForQueueConnections(const Visualization& visualization);
-  au::SharedPointer<gpb::Collection> GetCollectionForReplication(const Visualization& visualization);
+  au::SharedPointer<gpb::Collection> GetCollectionForClusterParameters(const Visualization& visualization);
 
   // Get list of all block_ids in the current data ( previous, candidate and current )
   std::set<size_t> GetAllBlockIds();
@@ -110,6 +110,7 @@ private:
                                           au::ErrorManager& error);
   void ProcessClearModulesCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
   void ProcessPushQueueCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
+  void ProcessResetSamsonCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
   void ProcessRemoveAllCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
   void ProcessRemoveAllDataCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd, au::ErrorManager& error);
   void ProcessRemoveAllStreamOperationsCommand(gpb::Data *data, au::SharedPointer<au::CommandLine> cmd,
@@ -149,13 +150,14 @@ private:
   static const std::string kClearModules;
   static const std::string kPushQueue;
   static const std::string kRemoveAll;
+  static const std::string kResetSamson;
   static const std::string kRemoveAllData;
   static const std::string kRemoveAllStreamOperations;
   static const std::string kRemoveStreamOperation;
   static const std::string kRm;
   static const std::string kRmQueueConnection;
   static const std::string kSetQueueProperty;
-  static const std::string kSetReplicationFactor;
+  static const std::string kSetClusterParameter;
   static const std::string kSetStreamOperationProperty;
   static const std::string kUnsetStreamOperationProperty;
   static const std::string kFreezeDataModel;

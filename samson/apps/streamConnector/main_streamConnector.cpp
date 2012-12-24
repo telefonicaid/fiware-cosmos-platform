@@ -17,7 +17,9 @@
 
 
 #include "au/ThreadManager.h"
+#include "au/console/Console.h"
 #include "au/daemonize.h"
+#include "au/log/LogCentralPluginConsole.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 #include "au/string/StringUtilities.h"                  // au::str()
@@ -34,7 +36,6 @@
 #include "samson/common/samsonVersion.h"
 
 
-#include "LogManager.h"
 #include "StreamConnector.h"
 #include "StreamConnectorService.h"
 #include "common.h"
@@ -91,7 +92,8 @@ static const char *manSynopsis =
 int sc_console_port;
 int sc_web_port;
 int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
-
+size_t memory;
+char log_command[1024];
 
 PaArgument paArgs[] =
 {
@@ -127,6 +129,12 @@ PaArgument paArgs[] =
   { "-working",      working_directory,   "", PaString, PaOpt,
     _i ".", PaNL, PaNL,
     "Directory to store persistance data if necessary"                        },
+  { "-memory",       &memory,             "", PaIntU64, PaOpt,
+    1000000000, 1, 10000000000ULL,
+    "Port to receive REST connections"                                        },
+  { "-log",          log_command,         "", PaString,
+    PaOpt, _i "", PaNL,
+    PaNL, "log server host"                          },
   PA_END_OF_ARGS
 };
 
@@ -174,7 +182,21 @@ int main(int argC, const char *argV[]) {
   // Add plugins to report logs to file, server and console
   au::log_central->AddFilePlugin("file", std::string(paLogDir) + "/samsonWorker.log");
   au::log_central->AddFilePlugin("file2", samson::SharedSamsonSetup()->samson_working() + "/samsonWorker.log");
-  au::log_central->AddScreenPlugin("screen", "[type] text");  // Temporal plugin
+
+  au::LogCentralPluginConsole *log_plugin_console = new au::LogCentralPluginConsole(NULL, "[type][channel] text", true);
+  au::log_central->AddPlugin("console", log_plugin_console);
+
+  if (lmVerbose) {
+    au::LogCentral::Shared()->EvalCommand("log_set system V");
+  }
+  if (lmDebug) {
+    au::LogCentral::Shared()->EvalCommand("log_set system D");
+  }
+
+  // Additional log-command provided in command line
+  au::log_central->EvalCommand(log_command);
+
+  LOG_SV(("Setup memory at engine %s", au::str(memory).c_str()));
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
@@ -189,7 +211,7 @@ int main(int argC, const char *argV[]) {
   }
 
   // Engine and its associated elements
-  engine::Engine::InitEngine(2, 10000000000, 1);
+  engine::Engine::InitEngine(2, memory, 1);
 
   // Load modules
   au::ErrorManager error;
@@ -218,8 +240,6 @@ int main(int argC, const char *argV[]) {
     int num_line = 0;
     char buffer_line[1024];
 
-    std::string message = au::str("Setup file %s. Opening...", file_name);
-    main_stream_connector->log("StreamConnector", "Message", message);
 
     while (fgets(buffer_line, sizeof(buffer_line), file) != NULL) {
       std::string line = ::au::StripString(buffer_line);
@@ -228,9 +248,6 @@ int main(int argC, const char *argV[]) {
       ++num_line;
 
       if ((line.length() > 0) && (line[0] != '#')) {
-        message = au::str("%s ( File %s )", line.c_str(), file_name);
-        main_stream_connector->log("StreamConnector", "Message", message);
-
         au::ErrorManager error;
         main_stream_connector->process_command(line, &error);
 
@@ -241,9 +258,6 @@ int main(int argC, const char *argV[]) {
       }
     }
 
-    // Print the error on screen
-    message = au::str("Setup file %s. Finished", file_name);
-    main_stream_connector->log("StreamConnector", "Message", message);
 
     fclose(file);
   } else {
@@ -252,7 +266,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(au::str("add_channel default %s", input_splitter_name), &error);
       if (error.HasErrors()) {
-        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
+        LOG_SE(("Error: %s", error.GetLastError().c_str()));
       }
     }
 
@@ -267,7 +281,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
       if (error.HasErrors()) {
-        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
+        LOG_SE(("Error: %s", error.GetLastError().c_str()));
       }
     }
 
@@ -280,7 +294,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
       if (error.HasErrors()) {
-        main_stream_connector->log("Init", "Error", error.GetLastError().c_str());
+        LOG_SE(("Error: %s", error.GetLastError().c_str()));
       }
     }
   }
@@ -305,7 +319,9 @@ int main(int argC, const char *argV[]) {
     // Add service to accept inter-channel connections
     main_stream_connector->init_inter_channel_connections_service();
 
+    log_plugin_console->SetConsole(main_stream_connector);
     main_stream_connector->StartConsole();
+    log_plugin_console->SetConsole(NULL);
   } else {
     au::Cronometer cronometer_notification;
     while (true) {
@@ -320,21 +336,15 @@ int main(int argC, const char *argV[]) {
       if (cronometer_notification.seconds() > 1) {
         cronometer_notification.Reset();
 
-        LM_V(("Review samsonConnnector : %lu input-items & %s pending to be sent",
-              num_input_items, au::str(pending_size, "B").c_str()));
+        std::ostringstream message;
 
+        size_t engine_memory = engine::Engine::memory_manager()->memory();
+        size_t engine_used_memory = engine::Engine::memory_manager()->used_memory();
 
-        if (lmVerbose) {
-          au::tables::Table *table = main_stream_connector->getConnectionsTable();
-          std::cerr << table->str();
-          delete table;
-        }
+        message << "Memory " << au::str(engine_used_memory) << "/" << au::str(engine_memory);
+        message << "(" << au::str_percentage(engine_used_memory, engine_memory) << ") ";
 
-        if (lmVerbose) {
-          au::tables::Table *table = main_stream_connector->getConnectionsTable("data");
-          std::cerr << table->str();
-          delete table;
-        }
+        LOG_SV(("%s", message.str().c_str()));
       }
 
       // Verify if can exit....

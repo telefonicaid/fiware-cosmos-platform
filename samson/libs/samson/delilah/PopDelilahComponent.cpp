@@ -149,12 +149,13 @@ void PopDelilahComponent::SendMainRequest() {
     }
   }
 
-  worker_id_ = delilah->network->getRandomWorkerId(worker_id_);
+  worker_id_ = delilah->network_->getRandomWorkerId(worker_id_);
   au::SharedPointer<Packet> packet(new Packet(Message::PopQueue));
   gpb::PopQueue *pop_queue = packet->message->mutable_pop_queue();
   pop_queue->set_queue(queue_);
   pop_queue->set_commit_id(commit_id_);
   pop_queue->set_min_commit_id(min_commit_id);
+  pop_queue->set_continuous_pop(file_name_ != "");
 
   // Identifier of the component at this delilah
   packet->message->set_delilah_component_id(id);
@@ -163,12 +164,12 @@ void PopDelilahComponent::SendMainRequest() {
   packet->to = NodeIdentifier(WorkerNode, worker_id_);
 
   // Send message
-  delilah->network->Send(packet);
-  LOG_M(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
+  delilah->network_->Send(packet);
+  LOG_V(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
 }
 
 void PopDelilahComponent::receive(const PacketPointer& packet) {
-  LOG_M(logs.delilah_components, ("Received a packet:%s", Message::messageCode(packet->msgCode)));
+  LOG_V(logs.delilah_components, ("Received a packet:%s", Message::messageCode(packet->msgCode)));
   // Message::PopQueueResponse
   // Response to main request. It provides list of blocks to be downloaded
   if (packet->msgCode == Message::PopQueueResponse) {
@@ -181,9 +182,9 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
 
     // Add all element to the list
     const gpb::Queue& queue = packet->message->pop_queue_response().queue();
-    LOG_M(logs.delilah_components, ("Received PopQueueResponse. Queue:'%s' blocks_size:%d, num_pop_queue_responses_:%d",
+    LOG_V(logs.delilah_components, ("Received PopQueueResponse. Queue:'%s' blocks_size:%d, num_pop_queue_responses_:%d",
                                     queue.name().c_str(), queue.blocks_size(), num_pop_queue_responses_));
-    LOG_M(logs.delilah_components, ("Message:'%s'", packet->message->ShortDebugString().c_str()));
+    LOG_V(logs.delilah_components, ("Message:'%s'", packet->message->ShortDebugString().c_str()));
 
     for (int i = 0; i < queue.blocks_size(); ++i) {
       size_t commit_id = queue.blocks(i).commit_id();
@@ -196,18 +197,18 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
       PopDelilahComponentItem *item = new PopDelilahComponentItem(item_id, block_id, commit_id);
       items_.insertInMap(item_id, item);
 
-      LOG_M(logs.delilah_components, ("Activate component with started flag"));
+      LOG_V(logs.delilah_components, ("Activate component with started flag"));
       set_started(true);
 
       // Send first request for this item
-      LOG_M(logs.delilah_components, ("SendRequest called from PopDelilahComponent::receive(), first request"));
+      LOG_V(logs.delilah_components, ("SendRequest called from PopDelilahComponent::receive(), first request"));
       SendRequest(item);
 
       // total counter of blocks
       num_blocks_downloaded_++;
     }
 
-    LOG_M(logs.delilah_components,
+    LOG_V(logs.delilah_components,
           ("pop request response received (num_pop_queue_responses_:%d). Ready to check()", num_pop_queue_responses_));
     check();
     return;
@@ -231,7 +232,7 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
       check();
       return;
     } else
-    if (item->worker_id() == packet->from.id) {
+    if (item->worker_id() == packet->from.id()) {
       item->SetWorkerConfirmation();
       check();
     }
@@ -304,12 +305,12 @@ void PopDelilahComponent::check() {
       (
         engine::DiskOperation::newWriteOperation(buffer, file_name, engine_id()));
 
-      LOG_M(logs.delilah_components, ("Add write operation on file:'%s'", file_name.c_str()));
+      LOG_V(logs.delilah_components, ("Add write operation on file:'%s'", file_name.c_str()));
       engine::Engine::disk_manager()->Add(operation);
       num_pending_write_operations_++;
     } else {
       // Use delilah interface to report this block
-      LOG_M(logs.delilah_components, ("Use delilah interface to report this block"));
+      LOG_V(logs.delilah_components, ("Use delilah interface to report this block"));
       delilah->PublishBufferFromQueue(queue_, buffer);
     }
 
@@ -321,7 +322,7 @@ void PopDelilahComponent::check() {
   if (file_name_ != "") {
     // Adding stated() to avoid finishing a component before started
     if (started_ && (num_pending_write_operations_ == 0) && (items_.size() == 0)) {
-      LOG_M(logs.delilah_components, ("pop operation finished on file '%s'", file_name_.c_str()));
+      LOG_V(logs.delilah_components, ("pop operation finished on file '%s'", file_name_.c_str()));
       setComponentFinished();
 
       if (show_flag_) {
@@ -344,7 +345,7 @@ void PopDelilahComponent::check() {
       } else {
       }
     } else {
-      LOG_M(logs.delilah_components,
+      LOG_V(logs.delilah_components,
             ("Waiting for pop component started:%d with num_pending_write_operations_:%d, items.size():%lu",
              started_, num_pending_write_operations_, items_.size()));
     }
@@ -355,7 +356,7 @@ void PopDelilahComponent::SendRequest(PopDelilahComponentItem *item) const {
   item->ResetRequest();              // Reset request
 
   // Select a worker
-  size_t worker_id = delilah->network->getRandomWorkerId(item->worker_id());
+  size_t worker_id = delilah->network_->getRandomWorkerId(item->worker_id());
   item->set_worker_id(worker_id);
 
   // Build & sent the packet
@@ -366,7 +367,7 @@ void PopDelilahComponent::SendRequest(PopDelilahComponentItem *item) const {
   packet->message->set_pop_id(item->pop_id());
   packet->message->set_block_id(item->block_id());
 
-  LOG_M(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
-  delilah->network->Send(packet);
+  LOG_V(logs.delilah_components, ("pop request packet sent to worker_id_:%lu", worker_id_));
+  delilah->network_->Send(packet);
 }
 }

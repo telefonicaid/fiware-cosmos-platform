@@ -192,7 +192,7 @@ int main(int argC, const char *argV[]) {
   samson::SamsonClient::general_init(total_memory);
   samson_client = new samson::SamsonClient("push");
 
-  if (!samson_client->connect(host)) {
+  if (!samson_client->Connect(host)) {
     LM_X(1, ("Unable to connect to %s", host));
   }
   LM_V(("Trying to connect to %s", host));

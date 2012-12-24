@@ -16,7 +16,7 @@
 *
 * PROJECT         au library
 *
-* DATE            Septembre 2011
+* DATE            September 2011
 *
 * DESCRIPTION
 *
@@ -82,7 +82,6 @@ public:
     if (iter == std::map<K, V *, _Compare>::end()) {
       return NULL;
     }
-
     return iter->second;
   }
 
@@ -121,11 +120,11 @@ public:
 
     if (iter == std::map<K, V *, _Compare>::end()) {
       return false;
-    } else {
-      delete iter->second;
-      std::map<K, V *, _Compare>::erase(iter);
-      return true;
     }
+
+    delete iter->second;
+    std::map<K, V *, _Compare>::erase(iter);
+    return true;
   }
 
   void removeInMap(const std::set<K>& keys) {
@@ -170,16 +169,29 @@ public:
     }
   }
 
+  bool extractAndDeleteFromMap(const K& key) {
+    typename std::map<K, V *, _Compare>::iterator iter = std::map<K, V *, _Compare>::find(key);
+
+    if (iter == std::map<K, V *, _Compare>::end()) {
+      return false;
+    }
+
+    V *v = iter->second;
+    std::map<K, V *, _Compare>::erase(iter);
+    delete v;
+    return true;
+  }
+
   V *extractFromMap(const K& key) {
     typename std::map<K, V *, _Compare>::iterator iter = std::map<K, V *, _Compare>::find(key);
 
     if (iter == std::map<K, V *, _Compare>::end()) {
       return NULL;
-    } else {
-      V *v = iter->second;
-      std::map<K, V *, _Compare>::erase(iter);
-      return v;
     }
+
+    V *v = iter->second;
+    std::map<K, V *, _Compare>::erase(iter);
+    return v;
   }
 
   void clearMap() {

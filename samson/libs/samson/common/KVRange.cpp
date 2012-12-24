@@ -205,21 +205,6 @@ int divisionForHashGroup(int hg, int num_division) {
   return -1;
 }
 
-// Get the aggregation of
-KVInfo selectRange(KVInfo *info, KVRange range) {
-  KVInfo tmp;
-
-  tmp.clear();
-
-  for (int i = 0; i < KVFILE_NUM_HASHGROUPS; ++i) {
-    if (range.Contains(i)) {
-      tmp.append(info[i]);
-    }
-  }
-
-  return tmp;
-}
-
 bool operator<(const KVRange & left, const KVRange & right) {
   // What does exactly "<" mean? Previous version seemed to be copy-paste wrong
   if (left.hg_end_ < right.hg_begin_) {

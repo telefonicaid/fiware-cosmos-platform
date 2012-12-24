@@ -44,7 +44,7 @@ public:
   std::string context;
   std::string text;
 
-  Alert(NodeIdentifier _node, std::string _type, std::string _context, std::string _text) {
+  Alert(const NodeIdentifier& _node, std::string _type, std::string _context, std::string _text) {
     node = _node;
     type = _type;
     context = _context;
@@ -64,7 +64,7 @@ public:
   AlertCollection();
 
   // Add traces to this collection ( limited number will be stored in memory )
-  void add(NodeIdentifier node, std::string type, std::string context, std::string text);
+  void Add(const NodeIdentifier& node, std::string type, std::string context, std::string text);
 
   // Table with traces to be displayed on screen with show_traces command
   std::string str();

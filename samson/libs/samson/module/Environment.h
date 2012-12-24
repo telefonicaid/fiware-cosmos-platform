@@ -11,10 +11,11 @@
 #ifndef _H_ENVIRONMENT
 #define _H_ENVIRONMENT
 
-#include <map>                     // std::map
 #include <math.h>
-#include <sstream>                 // std::ostringstream
 #include <stdlib.h>
+
+#include <map>                     // std::map
+#include <sstream>                 // std::ostringstream
 #include <vector>
 
 namespace samson {

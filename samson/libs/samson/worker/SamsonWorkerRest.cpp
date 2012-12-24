@@ -57,7 +57,7 @@ SamsonWorkerRest::~SamsonWorkerRest() {
 }
 
 void SamsonWorkerRest::StopRestService() {
-  LOG_M(logs.cleanup, ("Calling rest_service->StopService()"));
+  LOG_V(logs.cleanup, ("Calling rest_service->StopService()"));
   rest_service_->StopService();
 }
 
@@ -317,7 +317,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
   if (!delilah_) {
     delilah_ = new Delilah("rest");
     au::ErrorManager error;
-    delilah_->connect(au::str("localhost:%d", samson_worker_->port()), &error);
+    delilah_->Connect(au::str("localhost:%d", samson_worker_->port()), &error);
 
     if (error.HasErrors()) {
       delete delilah_;
@@ -327,12 +327,12 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
   }
 
   LOG_M(logs.delilah, ("Sending delilah command: '%s'", delilah_command.c_str()));
-  size_t command_id = delilah_->sendWorkerCommand(delilah_command);
+  size_t command_id = delilah_->SendWorkerCommand(delilah_command);
 
   // Wait for the command to finish
   {
     au::Cronometer c;
-    while (delilah_->isActive(command_id)) {
+    while (delilah_->DelilahComponentIsActive(command_id)) {
       usleep(10000);
       if (c.seconds() > 2) {
         command->AppendFormatedError(500, au::str("Timeout awaiting response from REST client (task %lu)", command_id));
@@ -344,7 +344,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
 
   // Recover information
   WorkerCommandDelilahComponent *component =
-    reinterpret_cast<WorkerCommandDelilahComponent *>(delilah_->getComponent(command_id));
+    reinterpret_cast<WorkerCommandDelilahComponent *>(delilah_->GetComponent(command_id));
   if (!component) {
     command->AppendFormatedError(500, "Internal error recovering answer from REST client");
     LM_E(("Internal error recovering answer from REST client"));
@@ -360,7 +360,7 @@ void SamsonWorkerRest::ProcessDelilahCommand(std::string delilah_command,
     return;
   }
 
-  LOG_M(logs.rest, ("appending delilah output to command: '%s'", table->str().c_str()));
+  LOG_V(logs.rest, ("appending delilah output to command: '%s'", table->str().c_str()));
   command->Append(table->strFormatted(command->format()));
   delete table;
 }
@@ -387,7 +387,7 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
   // If debug is specified ( instead of "key" ) show more messages
   bool debug = (command->path_components()[3] == "debug");
 
-  LOG_M(logs.rest, ("looking up key '%s' in queue '%s'", key.c_str(), queue_name.c_str()));
+  LOG_V(logs.rest, ("looking up key '%s' in queue '%s'", key.c_str(), queue_name.c_str()));
 
   // Get  copy of the current data model
   au::SharedPointer<gpb::DataModel> data_model = samson_worker_->data_model()->getCurrentModel();
@@ -434,12 +434,12 @@ void SamsonWorkerRest::ProcessLookupSynchronized(au::SharedPointer<au::network::
                                          , key.c_str(), key_data->getName().c_str(), error_message.c_str()));
     return;
   }
-  LOG_M(logs.rest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
+  LOG_V(logs.rest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
 
 
   // Get hashgroup
   int hg = reference_key_data_instance->hash(KVFILE_NUM_HASHGROUPS);
-  LOG_M(logs.rest, ("Hash group: %d", hg));
+  LOG_V(logs.rest, ("Hash group: %d", hg));
 
   // Get the worker for this hash.group
   size_t worker_id = samson_worker_->worker_controller()->GetMainWorkerForHashGroup(hg);

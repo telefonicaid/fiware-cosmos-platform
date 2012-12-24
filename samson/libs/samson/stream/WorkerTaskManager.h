@@ -59,33 +59,48 @@ public:
    * \brief Inform about a finished task to update statistics
    */
 
-  void UpdateTaskInformation(int num_hgs, FullKVInfo input, FullKVInfo state, double process_time) {
+  void UpdateTaskInformation(int num_hgs, const BlockInfo& input, const BlockInfo& output, const BlockInfo& state,
+                             double process_time) {
     // Update information about input
-    input_size_.Push(input.size);
-    input_kvs_.Push(input.kvs);
+    input_blocks_.Push(input.num_blocks);
+    input_size_.Push(input.info.size);
+    input_kvs_.Push(input.info.kvs);
+
+    // Update information about input
+    output_blocks_.Push(output.num_blocks);
+    output_size_.Push(output.info.size);
+    output_kvs_.Push(output.info.kvs);
 
     // Update information about state
-    state_size_.Push(state.size);
-    state_kvs_.Push(state.kvs);
+    state_size_.Push(state.info.size);
+    state_kvs_.Push(state.info.kvs);
 
     // Update information about process
-    real_process_rate_.Push((double)( input.size ) / process_time);
-    process_rate_.Push((double)( input.size + state.size ) / process_time);
+    real_process_rate_.Push((double)(input.size) / process_time);
+    process_rate_.Push((double)(input.size + state.size) / process_time);
 
     // Just keep the number of divisions to compute erlangs
     num_hgs_ = num_hgs;
   }
 
   void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) const {
-    add(record, "Input", GetInputRateStr(), "left,different");
+    if (visualization.get_flag("input")) {
+      add(record, "Input", GetInputRateStr(), "left,different");
+      add(record, "Total input", GetInputTotalStr(), "left,different");
+    }
+
+    if (visualization.get_flag("output")) {
+      add(record, "Output", GetOutputRateStr(), "left,different");
+      add(record, "Total output", GetOutputTotalStr(), "left,different");
+    }
+
+    if (visualization.get_flag("state")) {
+      add(record, "#hgs", num_hgs_, "left,different");
+      add(record, "State", GetStateStr(), "left,different");
+    }
+
     add(record, "#Ops/s", GetOperationsRateStr(), "left,different");
-
-    add(record, "Total input", GetInputTotalStr(), "left,different");
     add(record, "Total #Ops", GetOperationsTotalStr(), "left,different");
-
-    add(record, "#hgs", num_hgs_, "left,different");
-    add(record, "State", GetStateStr(), "left,different");
-
     add(record, "Process", GetProcessRateStr(), "left,different");
   }
 
@@ -98,7 +113,13 @@ public:
   }
 
   std::string GetInputRateStr() const {
-    return au::str(input_kvs_.rate(), "kvs/s") + " " + au::str(input_size_.rate(), "B/s");
+    return au::str(input_blocks_.rate(), "blocks/s") + au::str(input_kvs_.rate(), "kvs/s") + " " + au::str(
+             input_size_.rate(), "B/s");
+  }
+
+  std::string GetOutputRateStr() const {
+    return au::str(output_blocks_.rate(), "blocks/s") + au::str(output_kvs_.rate(), "kvs/s") + " " + au::str(
+             output_size_.rate(), "B/s");
   }
 
   std::string GetOperationsRateStr() const {
@@ -106,7 +127,13 @@ public:
   }
 
   std::string GetInputTotalStr() const {
-    return au::str(input_kvs_.size(), "kvs") + " " + au::str(input_size_.size(), "B");
+    return au::str(input_blocks_.size(), "blocks") + au::str(input_kvs_.size(), "kvs") + " " + au::str(input_size_.size(
+                                                                                                         ), "B");
+  }
+
+  std::string GetOutputTotalStr() const {
+    return au::str(output_blocks_.size(), "blocks") + au::str(output_kvs_.size(), "kvs") + " " + au::str(
+             output_size_.size(), "B");
   }
 
   std::string GetOperationsTotalStr() const {
@@ -121,8 +148,13 @@ private:
 
   int num_hgs_;
 
+  au::Rate input_blocks_;
   au::Rate input_size_;
   au::Rate input_kvs_;
+
+  au::Rate output_blocks_;
+  au::Rate output_size_;
+  au::Rate output_kvs_;
 
   au::Averager state_size_;
   au::Averager state_kvs_;
@@ -172,10 +204,39 @@ public:
   // Update information about blocks
   void Update(GlobalBlockSortInfo *info) const;
 
+  /**
+   * \brief Receive a new worker task log to keep activity of tasks
+   */
+  void Push(WorkerTaskLog log) {
+    last_tasks_.push_back(log);
+    while (last_tasks_.size() > 100) {
+      last_tasks_.pop_back();
+    }
+  }
+
+  /**
+   * \brief Update statistics about a particular stream operation
+   */
+  void UpdateStreamOperationStatistics(const std::string& stream_operation_name,
+                                       int num_hgs,
+                                       const BlockInfo& input,
+                                       const BlockInfo& output,
+                                       const BlockInfo& state,
+                                       double process_time) {
+    StreamOperationStatistics *statistics = stream_operations_statistics_.findOrCreate(stream_operation_name);
+
+    statistics->UpdateTaskInformation(num_hgs, input, output, state, process_time);
+  }
+
 private:
 
   bool runNextWorkerTasksIfNecessary();
 
+  /**
+   * \brief Compress ranges in groups ( applyied to forward operations )
+   */
+  static std::vector<KVRange> CompressKVRanges(std::vector<KVRange> input_ranges, int reduction_factor,
+                                               au::ErrorManager& error);
 
   size_t id_;     // Id of the current task
   au::Queue<WorkerTaskBase> pending_tasks_;                  // List of pending task to be executed

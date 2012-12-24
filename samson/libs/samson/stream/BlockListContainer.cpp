@@ -182,7 +182,7 @@ FullKVInfo BlockListContainer::GetInputsInfo() const {
   for (int i = 0; i < num_inputs; ++i) {
     BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
     if (block_list) {
-      const BlockInfo& block_info = block_list->getBlockInfo();
+      BlockInfo block_info = block_list->getBlockInfo();
       info.append(block_info.info);
     }
   }
@@ -202,7 +202,7 @@ FullKVInfo BlockListContainer::GetOutputsInfo() const {
   for (int i = 0; i < num_outputs; ++i) {
     BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
     if (block_list) {
-      const BlockInfo& block_info = block_list->getBlockInfo();
+      BlockInfo block_info = block_list->getBlockInfo();
       info.append(block_info.info);
     }
   }

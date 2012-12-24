@@ -11,11 +11,12 @@
 
 #include <dirent.h>
 #include <math.h>
-#include <sstream>              // std::ostringstream
 #include <stdarg.h>             /* va_start, va_arg, va_end                  */
 #include <string.h>             // strchr
-#include <string>
 #include <sys/stat.h>   // stat(.)
+
+#include <sstream>              // std::ostringstream
+#include <string>
 
 #include "au/string/StringUtilities.h"
 #include "au/time.h"
@@ -58,15 +59,14 @@ size_t seconds_to_microseconds(double time) {
 size_t seconds_to_nanoseconds(double time) {
   return time * 1000000000;
 }
-  
-  std::string GetTimeStampString( time_t time )
-  {
-    struct tm timeinfo;
-    char buffer_time[1024];
-    localtime_r(&time, &timeinfo);
-    strftime(buffer_time, 1024, "%X %d/%m/%Y", &timeinfo);
-    return std::string(buffer_time);
-  }
 
+std::string GetTimeStampString(time_t time) {
+  struct tm timeinfo;
+  char buffer_time[1024];
+
+  localtime_r(&time, &timeinfo);
+  strftime(buffer_time, 1024, "%X %d/%m/%Y", &timeinfo);
+  return std::string(buffer_time);
+}
 }
 

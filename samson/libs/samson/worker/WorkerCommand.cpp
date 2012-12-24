@@ -119,7 +119,7 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
     return;
   }
 
-  LOG_M(logs.worker_command, ("[%s] Running command %s", worker_command_id_.c_str(), command.c_str()));
+  LOG_V(logs.worker_command, ("[%s] Running command %s", worker_command_id_.c_str(), command.c_str()));
 
   // Parse command
   au::CommandLine cmd;
@@ -131,9 +131,10 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
   cmd.SetFlagBoolean("vvv");
 
   cmd.SetFlagBoolean("new");
+  cmd.SetFlagBoolean("data_model");
   cmd.SetFlagBoolean("remove");
   cmd.SetFlagString("prefix", "", au::CommandLine::kCollisionInsertAtBegin);
-  cmd.Parse(command);
+  cmd.Parse(command, false);
 
   std::string prefix = cmd.GetFlagString("prefix");
 
@@ -216,6 +217,21 @@ void WorkerCommand::RunCommand(std::string command, au::ErrorManager& error) {
     return;
   }
 
+  // reset_samson is a mix command / it affects data-model and push_internal_modules
+  if (main_command == "reset_samson") {
+    // Reset data model
+    std::string caller = au::str("Command %s from delilah %s", main_command.c_str(), au::code64_str(delilah_id_).c_str());
+    samson_worker_->data_model()->Commit(caller, command, error);
+
+    if (error.HasErrors()) {
+      return;
+    }
+
+    // Push internal modules
+    PushInternalModules();
+    return;
+  }
+
   // If operation can be process by DataMode, go ahead
   if (samson_worker_->data_model()->IsValidCommand(main_command)) {
     std::string caller = au::str("Command %s from delilah %s", main_command.c_str(), au::code64_str(delilah_id_).c_str());
@@ -266,7 +282,7 @@ void WorkerCommand::Run() {
     return;
   }
 
-  LOG_M(logs.worker_command, ("[%s] Run", worker_command_id_.c_str()));
+  LOG_V(logs.worker_command, ("[%s] Run", worker_command_id_.c_str()));
 
   pending_to_be_executed_ = false;   // Not pending any more, except if something happen...
 
@@ -331,8 +347,9 @@ void WorkerCommand::Run() {
     return;
   }
 
-  if (main_command == "get_replication_factor") {
-    au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForReplication(visualization);
+  if (main_command == "cluster_show_parameter") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->data_model()->GetCollectionForClusterParameters(
+      visualization);
     c->set_title(command_);
     collections_.push_back(c);
     FinishWorkerTask();
@@ -477,6 +494,14 @@ void WorkerCommand::Run() {
     return;
   }
 
+  if (main_command == "ls_workers_statistics") {
+    au::SharedPointer<gpb::Collection> c = samson_worker_->GetWorkerStatisticsCollection(visualization);
+    c->set_title(command_);
+    collections_.push_back(c);
+    FinishWorkerTask();
+    return;
+  }
+
   if (main_command == "ls_workers") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->GetWorkerCollection(visualization);
     c->set_title(command_);
@@ -484,6 +509,13 @@ void WorkerCommand::Run() {
     FinishWorkerTask();
     return;
   }
+
+  if (main_command == "push_internal_modules") {
+    PushInternalModules();
+    FinishWorkerTask();
+    return;
+  }
+
 
   if (main_command == "ls_kv_ranges") {
     au::SharedPointer<gpb::Collection> c = samson_worker_->GetKVRangesCollection(visualization);
@@ -528,6 +560,14 @@ void WorkerCommand::Run() {
     au::log_central->EvalCommand("log_set samson::OP W server");
 
 
+    FinishWorkerTask();
+    return;
+  }
+
+  if (main_command == "cluster_create_new") {
+    if (samson_worker_->worker_controller()->cluster_leader()) {
+      samson_worker_->worker_controller()->CreateNewClusterSetup();
+    }
     FinishWorkerTask();
     return;
   }
@@ -594,7 +634,6 @@ void WorkerCommand::Run() {
   }
 
   if (main_command == "wait") {
-    // Recovering old wait command
     if (samson_worker_->data_model()->CheckForAllStreamOperationsFinished() == false) {
       pending_to_be_executed_ = true;
       return;
@@ -628,8 +667,6 @@ void WorkerCommand::Run() {
     FinishWorkerTask();
     return;
   }
-
-
 
   if (main_command == "send_alert") {
     std::string message = command_instance->GetStringArgument("message");
@@ -746,8 +783,7 @@ void WorkerCommand::FinishWorkerTask() {
     p->message->set_delilah_component_id(delilah_component_id_);
 
     // Direction of this packets
-    p->to.node_type = DelilahNode;
-    p->to.id = delilah_id_;
+    p->to.Set(DelilahNode, delilah_id_);
 
     // Add collections as answers...
     for (size_t i = 0; i < collections_.size(); ++i) {
@@ -776,6 +812,50 @@ void WorkerCommand::notify(engine::Notification *notification) {
   LOG_W(logs.worker_command, ("Unexpected notification at WorkerCommand"));
 }
 
+void WorkerCommand::PushInternalModules() {
+  std::string directory = au::Singleton<SamsonSetup>::shared()->samson_home() + "/modules";
+
+  std::vector<std::string> files =  au::getRegularFilesFromDirectory(directory);
+
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("modules");
+  collection->set_title(command_);
+
+  for (size_t i = 0; i < files.size(); ++i) {
+    gpb::CollectionRecord *record = collection->add_record();
+    add(record, "File", au::GetLastPathComponent(files[i]), "left");
+
+    size_t size = au::sizeOfFile(files[i]);
+
+    if (size == 0) {
+      add(record, "Result", "Error, size=0", "left");
+      continue;
+    }
+    if (size > 200000000) {
+      add(record, "Result", au::str("Error, excesive size %lu", size), "left");
+      continue;
+    }
+
+    engine::BufferPointer buffer(engine::Buffer::Create("push_internal_modules", size + sizeof(KVHeader)));
+    au::ErrorManager error;
+    KVHeader *header = reinterpret_cast<KVHeader *>(buffer->data());
+    buffer->SkipWrite(sizeof(KVHeader));
+    buffer->WriteFromFile(files[i], error);
+    header->InitForModule(size);
+
+    if (error.HasErrors()) {
+      add(record, "Result", error.GetLastError(), "left");
+      continue;
+    }
+
+    std::vector<std::string> queues;
+    queues.push_back(".modules");
+    samson_worker_->worker_block_manager()->ReceivedPushBlock(-1, -1, buffer, queues);
+    add(record, "Result", "OK", "left");
+  }
+  collections_.push_back(collection);
+}
+
 void WorkerCommand::CheckFinish() {
   if (error_.HasErrors()) {
     FinishWorkerTask();
@@ -785,8 +865,6 @@ void WorkerCommand::CheckFinish() {
 }
 
 void WorkerCommand::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
-  std::string name = NodeIdentifier(DelilahNode, delilah_id_).getCodeName();
-
   add(record, "id", worker_command_id_, "left,different");
 
   if (finished_) {

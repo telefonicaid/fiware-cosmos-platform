@@ -136,10 +136,23 @@ public:
   }
 
 private:
+
+  /**
+   * \brief Process generated buffers ( in a separate thread )
+   *
+   * Accumulate output buffers in a private output list
+   *
+   */
+  void processOutputBuffer(engine::BufferPointer buffer, int output) {
+    au::TokenTaker tt(&token_);
+
+    buffer->environment().Set("output", output);
+    output_buffers_.Push(buffer);
+  }
+
   ProcessBaseType type;     // Type of process( to generate key-values or generate txt content )
 
   std::vector<KVRange> output_ranges_;  // Ranges to emit separated packets
-
 
   int shm_id;     // Shared memory area used in this operation
   samson::SharedMemoryItem *item;     // Share memory item
@@ -151,14 +164,6 @@ private:
 
   std::vector<KVFormat> outputFormats;     // Auxiliar information to give correct format to output buffers
   Environment operation_environment;     // Environment for this process
-
-  void processOutputBuffer(engine::BufferPointer buffer, int output) {
-    // Accumulate output buffers in the output list
-    au::TokenTaker tt(&token_);
-
-    buffer->environment().Set("output", output);
-    output_buffers_.Push(buffer);
-  }
 
   // List of generated buffers at the output
   au::Token token_;

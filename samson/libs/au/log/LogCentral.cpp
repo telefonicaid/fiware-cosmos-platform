@@ -46,12 +46,12 @@ LogCentral *LogCentral::Shared() {
   return log_central;
 }
 
-LogCentral::LogCentral() : au::Thread("LogCentral") {
+LogCentral::LogCentral() : au::Thread("LogCentral"), token_plugins_("LogCentral::TokenPlugins") {
   fds_[0] = -1;
   fds_[1] = -1;
 
-  fd_read_logs_ = NULL;
-  fd_write_logs_ = NULL;
+  fd_read_logs_.Reset(NULL);;
+  fd_write_logs_.Reset(NULL);
 
   node_ = "Unknown";  // No default name for this
 }
@@ -119,11 +119,11 @@ void LogCentral::AddPlugin(const std::string& name, LogCentralPlugin *log_plugin
 void LogCentral::CreatePipeAndFileDescriptors() {
   if (fd_write_logs_ != NULL) {
     fd_write_logs_->Close();
-    fd_write_logs_ = NULL;
+    fd_write_logs_.Reset();
   }
   if (fd_read_logs_ != NULL) {
     fd_read_logs_->Close();
-    fd_read_logs_ = NULL;
+    fd_read_logs_.Reset();
   }
 
   int r = pipe(fds_);
@@ -133,8 +133,8 @@ void LogCentral::CreatePipeAndFileDescriptors() {
   }
 
   // Create file descriptor to write logs
-  fd_write_logs_ = new au::FileDescriptor("fd for writing logs", fds_[1]);
-  fd_read_logs_ = new au::FileDescriptor("fd for reading logs", fds_[0]);
+  fd_write_logs_.Reset(new au::FileDescriptor("fd for writing logs", fds_[1]));
+  fd_read_logs_.Reset(new au::FileDescriptor("fd for reading logs", fds_[0]));
 }
 
 void LogCentral::Init(const std::string& exec) {
@@ -152,7 +152,7 @@ void LogCentral::Stop() {
   // Close write file descriptor
   if (fd_write_logs_ != NULL) {
     fd_write_logs_->Close();
-    fd_write_logs_ = NULL;
+    fd_write_logs_.Reset();
   }
 
   // Stop background thread
@@ -161,7 +161,7 @@ void LogCentral::Stop() {
   // Close read pipe for logs
   if (fd_read_logs_ != NULL) {
     fd_read_logs_->Close();
-    fd_read_logs_ = NULL;
+    fd_read_logs_.Reset();
   }
 
   // Remove plugins
@@ -182,7 +182,7 @@ void LogCentral::Flush() {
   // Close write file descriptor
   if (fd_write_logs_ != NULL) {
     fd_write_logs_->Close();
-    fd_write_logs_ = NULL;
+    fd_write_logs_.Reset();
   }
 
   // Stop background thread
@@ -191,7 +191,7 @@ void LogCentral::Flush() {
   // Close read pipe for logs
   if (fd_read_logs_ != NULL) {
     fd_read_logs_->Close();
-    fd_read_logs_ = NULL;
+    fd_read_logs_.Reset();
   }
 
   CreatePipeAndFileDescriptors();
@@ -202,7 +202,7 @@ void LogCentral::Pause() {
   // Close write file descriptor
   if (fd_write_logs_ != NULL) {
     fd_write_logs_->Close();
-    fd_write_logs_ = NULL;
+    fd_write_logs_.Reset();
   }
 
   // Stop background thread
@@ -211,7 +211,7 @@ void LogCentral::Pause() {
   // Close read pipe for logs
   if (fd_read_logs_ != NULL) {
     fd_read_logs_->Close();
-    fd_read_logs_ = NULL;
+    fd_read_logs_.Reset();
   }
 }
 
@@ -236,7 +236,7 @@ void LogCentral::RunThread() {
 
     if (!real_log) {
       if (IsThreadQuitting()) {
-        return;  // Finish this thread if I am suppoused to do so
+        return;  // Finish this thread if I am supposed to do so
       }
       continue;
     }
@@ -530,7 +530,7 @@ void LogCentral::EvalCommand(const std::string& command, au::ErrorManager& error
       bool rates = command_instance->GetBoolOption("rates");
       bool verbose = command_instance->GetBoolOption("v");
 
-      std::string table_definition = "Channel,left|Level|Count";
+      std::string table_definition = "Channel,left|Hits|Level|Count";
 
       au::map<std::string, LogCentralPlugin>::iterator it;
       for (it = plugins_.begin(); it != plugins_.end(); ++it) {
@@ -547,6 +547,8 @@ void LogCentral::EvalCommand(const std::string& command, au::ErrorManager& error
 
         au::StringVector values;
         values.Push(name);
+        values.Push(main_log_channel_filter_.GetHitDescriptionForChannel(i));
+
         values.Push(Log::GetLogLevel(main_log_channel_filter_.GetLevel(i)));
 
         if (rates) {

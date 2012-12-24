@@ -36,7 +36,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   kv_file->value_  = NULL;
 
   // buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
-  
+
   if (buffer->size() < sizeof(KVHeader)) {
     error.AddError(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
     return au::SharedPointer<KVFile>(NULL);
@@ -67,7 +67,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
   if (key_data == NULL) {
     error.AddError(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
-	LM_E(("Unknown data type for key: %s", kv_file->header_.keyFormat));
+    LM_E(("Unknown data type for key: %s", kv_file->header_.keyFormat));
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -78,8 +78,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   }
 
   // Data instances for parsing and printing content
-  au::SharedPointer<DataInstance> key(key_data->getInstance());
-  au::SharedPointer<DataInstance> value(value_data->getInstance());
+  DataInstance *key = key_data->getInstance();
+  DataInstance *value = value_data->getInstance();
 
   // Create a unified buffer to hold all auxiliar data required
   size_t size_for_kvs  = sizeof(KV) * kv_file->header_.info.kvs;
@@ -121,16 +121,15 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
 
     // Uppdate information of the correct hash-group
     int hg = key->hash(KVFILE_NUM_HASHGROUPS);
+    kvs[i].hg = hg;
     info[hg].append(kvs[i].key_size + kvs[i].value_size, 1);
     // Check hg value
     if (hg < previous_hg) {
       error.AddError(
         au::str("Error parsing a block. Key-value #%lu belongs to hash-group %d and previous hg was %d"
-                , i
-                , hg
-                , previous_hg));
-
-	  LM_E(("Error parsing a block."));
+                , i, hg, previous_hg));
+      delete key;
+      delete value;
       return au::SharedPointer<KVFile>(NULL);
     }
 
@@ -149,32 +148,29 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   if ((total_info.size != kv_file->header_.info.size) || (total_info.kvs != kv_file->header_.info.kvs)) {
     error.AddError(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
                            kv_file->header_.info.str().c_str()));
-	LM_E(("Error creating KVInfo vector."));
+    delete key;
+    delete value;
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Check correct final offset
   if (offset != kv_file->header_.info.size) {
     error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
-	LM_E(("Error parsing block."));
-    return au::SharedPointer<KVFile>(NULL);
-  }
-
-  // Check correct offset
-  if ((sizeof(KVHeader) + offset) != buffer->size()) {
-    error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
-    LM_E(("Error parsing block. Wrong buffer size %lu != %lu", buffer->size(), offset + sizeof(KVHeader)));
+    delete key;
+    delete value;
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Everything correct, return generated kv_file
-  LOG_M(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
+  LOG_V(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
                        , au::str(size_total, "B").c_str()
                        , au::str(cronometer.seconds()).c_str()
                        , kv_file->header_.keyFormat
                        , kv_file->header_.valueFormat
                        , buffer->str().c_str()));
 
+  delete key;
+  delete value;
   return kv_file;
 }
 
@@ -187,7 +183,7 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
     size_t num_lines = 0;
     while (true) {
       size_t line_size = 0;
-      while ((data[line_begin + line_size ] != '\n') && ((line_begin + line_size) < data_size)) {
+      while ((data[line_begin + line_size] != '\n') && ((line_begin + line_size) < data_size)) {
         line_size++;
       }
 

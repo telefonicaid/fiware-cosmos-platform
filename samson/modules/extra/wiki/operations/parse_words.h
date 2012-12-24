@@ -40,7 +40,6 @@ public:
 #endif  // de INFO_COMMENT
 
   void init(samson::KVWriter *writer) {
-    // OLM_T(LMT_User06, ("parse_words: init"));
   }
 
   char *strnstr(char *text, const char *pattern, size_t max_length) {
@@ -147,13 +146,7 @@ public:
           }
         }
 
-        if (((p_end - p_tag_begin) > 100) || (p_end < p_tag_begin)) {
-//					char *copia;
-//					copia = strndup(p_tag_begin, 50);
-//					OLM_T(LMT_User06, ("p_tag_begin:%lu, p_end-p_tag_begin:%d, p_end:%lu, p_text_end:%lu", p_tag_begin-p_ini_text, p_end-p_tag_begin, p_text_end-p_ini_text, p_end-p_ini_text));
-//					OLM_T(LMT_User06, ("word too long:%s", copia));
-//					free(copia);
-        } else {
+        if (((p_end - p_tag_begin) <= 100) && (p_end > p_tag_begin)) {
           char *p_char = p_tag_begin;
           while ((p_char < p_end) && !isalpha(*p_char) && !isdigit(*p_char)) {
             p_char++;
@@ -171,8 +164,6 @@ public:
               continue;
             }
             word.value = std::string(p_tag_begin, p_end - p_tag_begin);
-            // OLM_T(LMT_User06, ("word:%s\n", word.value.c_str()));
-            // LM_M(("word:%s\n", word.value.c_str()));
             writer->emit(0, &word, &page);
           }
         }
@@ -180,13 +171,7 @@ public:
       }
       if (p_tag_begin != p_text_end) {
         p_end = p_text_end;
-        if (((p_end - p_tag_begin) > 100) || (p_end < p_tag_begin)) {
-//					char *copia;
-//					copia = strndup(p_tag_begin, 50);
-//					OLM_T(LMT_User06, ("p_tag_begin:%lu, p_end-p_tag_begin:%d, p_end:%lu, p_text_end:%lu", p_tag_begin-p_ini_text, p_end-p_tag_begin, p_text_end-p_ini_text, p_end-p_ini_text));
-//					OLM_T(LMT_User06, ("word too long:%s", copia));
-//					free(copia);
-        } else {
+        if (((p_end - p_tag_begin) <= 100) && (p_end > p_tag_begin)) {
           char *p_char = p_tag_begin;
           while ((p_char < p_end) && !isalpha(*p_char) && !isdigit(*p_char)) {
             p_char++;
@@ -203,8 +188,6 @@ public:
               continue;
             }
             word.value = std::string(p_tag_begin, p_text_end - p_tag_begin);
-            // OLM_T(LMT_User06, ("word:%s\n", word.value.c_str()));
-            // LM_M(("word:%s\n", word.value.c_str()));
             writer->emit(0, &word, &page);
           }
         }
@@ -246,7 +229,6 @@ public:
   }
 
   void finish(samson::KVWriter *writer) {
-    // OLM_T(LMT_User06, ("parse_words: finish"));
   }
 };
 }  // end of namespace wiki

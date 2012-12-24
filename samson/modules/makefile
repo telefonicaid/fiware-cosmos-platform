@@ -1,6 +1,5 @@
 CORE_MODULES=system \
 			 txt \
-			 example \
 			 shop
 
 EXTRA_MODULES= webp \
@@ -11,9 +10,6 @@ EXTRA_MODULES= webp \
 		web \
 		iwebp \
 		gg \
-		mobility \
-		simple_mobility \
-		passive_location \
 		OTTstream 
 #		pilotoOTT \
 

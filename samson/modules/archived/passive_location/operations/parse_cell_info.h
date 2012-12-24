@@ -91,7 +91,7 @@ namespace passive_location{
           }
 		  else
 		  {
-		      OLM_E(("Error, unknown network type(%s), not gsm-A nor UMTS\n", words[3]));
+		      O_LOG_E(("Error, unknown network type(%s), not gsm-A nor UMTS\n", words[3]));
 		      cell.type.value = 0;
 		  }
 

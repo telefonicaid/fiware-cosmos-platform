@@ -67,11 +67,14 @@ public:
         int s = WTERMSIG(stat_loc);
         LOG_E(logs.isolated_process, ("Background process (pid=%d) ended with signal with signal %d", pid, s));
       } else {
-        LOG_E(logs.isolated_process, ("Background process (pid=%d) 'crashed' with unknown reason", pid));
+        LOG_E(logs.isolated_process, ("Background process (pid=%d) 'crashed' with unknown reason, stat_loc:%d",
+                                      pid, stat_loc));
       }
 
       return true;
     }
+    LOG_W(logs.isolated_process, ("Background process (pid=%d) waitpid() returned p:%d with, stat_loc:%d",
+                                  pid, p, stat_loc));
 
     if (cronometer.seconds() > 3.0) {    // Three seconds to die
       // Send a kill signal to this process
@@ -218,15 +221,14 @@ void ProcessItemIsolated::run() {
     {
       LOG_V(logs.isolated_process, ("Retaining %lu locks to be fork-save", tokens.size()));
       au::MultipleTokenTaker mtt(tokens);  // Retain all significant tokens during call to fork
-      pid = fork();
-      if (pid < 0) {
-        LM_X(1, ("Fork return an error"));
-      }
-
-      if (pid == 0) {   // Children running the background process
-        runBackgroundProcessRun();
+    pid = fork();
+    if (pid < 0) {
+      LM_X(1, ("Fork return an error"));
+    }
+    if (pid == 0) {   // Children running the background process
+      runBackgroundProcessRun();
         LOG_V(logs.isolated_process, ("Child in Background process finished"));
-        _exit(1000);
+      _exit(1000);
       }
     }
   }
@@ -643,7 +645,8 @@ void ProcessItemIsolated::reportProgress(double p, std::string status) {
 }
 
 void ProcessItemIsolated::runBackgroundProcessRun() {
-  LOG_V(logs.isolated_process, ("[Background] Running..."));
+  LOG_M(logs.isolated_process, ("[Background] Running...on writing fd:%d and reading fd:%d",
+                                pipeFdPair1[1], pipeFdPair2[0]));
 
   // Close the other side of the pipes ( if it is in thread-mode, we cannot close)
 
@@ -686,7 +689,7 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
     }
   }
 
-  LOG_V(logs.isolated_process, ("[Background] Sending 'begin' message"));
+  LOG_V(logs.isolated_process, ("[Background] Sending 'begin' message to the platform, on fd:%d", pipeFdPair1[1]));
   // Send the "begin" message
   {
     samson::gpb::MessageProcessPlatform *message = new samson::gpb::MessageProcessPlatform();
@@ -698,7 +701,7 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
   LOG_V(logs.isolated_process, ("[Background] Running process"));
   runIsolated();
 
-  LOG_V(logs.isolated_process, ("[Background] Sends 'end' message"));
+  LOG_V(logs.isolated_process, ("[Background] Sending 'end' message to the platform, on fd:%d", pipeFdPair1[1]));
   // Send the "end" message
   {
     samson::gpb::MessageProcessPlatform *message = new samson::gpb::MessageProcessPlatform();

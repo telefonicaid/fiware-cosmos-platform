@@ -102,29 +102,29 @@ double BlockInfo::getOverhead() {
     return 0;
   }
 
-  return (double)(size - info.size) / (double)size;
+  return (double)( size - info.size  ) / (double)size;
 }
 
 bool BlockInfo::isContentOnMemory() {
-  return (size == size_on_memory);
+  return ( size == size_on_memory );
 }
 
 bool BlockInfo::isContentOnDisk() {
-  return (size == size_on_disk);
+  return ( size == size_on_disk );
 }
 
-std::string BlockInfo::str() const {
-  return au::str("%s [ %s | %s on memory / %s on disk / %s locked ] %s "
-                 , au::str(num_blocks, "Blocs").c_str()
-                 , au::str(size, "bytes").c_str()
-                 , au::str_percentage(size_on_memory, size).c_str()
-                 , au::str_percentage(size_on_disk, size).c_str()
-                 , au::str_percentage(size_locked, size).c_str()
-                 , info.str().c_str()
-                 );
-}
+  std::string BlockInfo::str() const {
+    return au::str("%s [ %s | %s on memory / %s on disk / %s locked ] %s "
+                   , au::str(num_blocks, "Blocs").c_str()
+                   , au::str(size, "bytes").c_str()
+                   , au::str_percentage(size_on_memory, size).c_str()
+                   , au::str_percentage(size_on_disk, size).c_str()
+                   , au::str_percentage(size_locked, size).c_str()
+                   , info.str().c_str()
+                   );
+  }
 
-std::string BlockInfo::strShort() const {
+  std::string BlockInfo::strShort() const {
   if (num_blocks == 0) {
     return "empty";
   }
@@ -133,20 +133,19 @@ std::string BlockInfo::strShort() const {
                  , num_blocks
                  , au::str(info.kvs, "kvs").c_str()
                  , au::str(info.size, "B").c_str()
-                 , (size_locked == size) ? 'L' : ((size_on_memory == size) ? 'M' : ' ')
-                 , (size_on_disk == size) ? 'D' : ' '
+                 , ( size_locked == size ) ? 'L' : (( size_on_memory == size ) ? 'M' : ' ')
+                 , ( size_on_disk == size ) ? 'D' : ' '
                  );
 }
-
-std::string BlockInfo::strShortInfo() const {
-  if (num_blocks == 0) {
-    return "empty";
+  std::string BlockInfo::strShortInfo() const {
+    if (num_blocks == 0) {
+      return "empty";
+    }
+    
+    return au::str("%3dbs %s %s"
+                   , num_blocks
+                   , au::str(info.kvs, "kvs").c_str()
+                   , au::str(info.size, "B").c_str()
+                   );
   }
-
-  return au::str("%3dbs %s %s"
-                 , num_blocks
-                 , au::str(info.kvs, "kvs").c_str()
-                 , au::str(info.size, "B").c_str()
-                 );
-}
 }

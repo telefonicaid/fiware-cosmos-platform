@@ -62,7 +62,8 @@ void EmitLog(const std::string& key, const std::string& message, samson::KVWrite
   key_message.value->SetString(key);
   value_message.value->SetString(message);
 
-  writer->emit(-1, key_message.value, value_message.value);
+  // TODO(@jges): Pending of recovering logs on queues system
+  //writer->emit(-1, key_message.value, value_message.value);
 }
 }
 }   // End of namespace

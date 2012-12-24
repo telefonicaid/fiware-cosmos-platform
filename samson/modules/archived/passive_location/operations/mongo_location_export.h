@@ -90,7 +90,6 @@ void init(samson::KVWriter* writer)
 	mongo_lkl_fill           = atoi(lkl_fill.c_str());
 
 
-	// OLM_M(("Recovering value mongo_lkl_fill %s %d" , lkl_fill.c_str() ,  mongo_lkl_fill));
 	LM_M(("Operation [START] "));
 
 

@@ -18,6 +18,7 @@
 
 #include "au/string/StringUtilities.h"
 
+#include "samson/common/Logs.h"
 #include "Packet.h"             // Own interface
 
 namespace samson {
@@ -88,7 +89,7 @@ au::Status Packet::write(au::FileDescriptor *fd, size_t *size) {
     *size += sizeof(header);
   }
   if (s != au::OK) {
-    // LM_RE(s, ("partWrite:header(%s): %s", name.c_str(), au::status(s)));
+    LOG_E(logs.out_messages, ("partWrite:header(%s): %s", fd->name().c_str(), au::status(s)));
     return s;
   }
 
@@ -100,14 +101,17 @@ au::Status Packet::write(au::FileDescriptor *fd, size_t *size) {
 
     outputVec = (char *)malloc(header.gbufLen + 2);
     if (outputVec == NULL) {
+      LOG_E(logs.out_messages, ("malloc(%d)", header.gbufLen));
       LM_XP(1, ("malloc(%d)", header.gbufLen));
     }
     if (message->SerializeToArray(outputVec, header.gbufLen) == false) {
+      LOG_E(logs.out_messages, ("SerializeToArray failed"));
       LM_X(1, ("SerializeToArray failed"));
     }
     s = fd->partWrite(outputVec, header.gbufLen, "Google Protocol Buffer");
     free(outputVec);
     if (s != au::OK) {
+      LOG_E(logs.out_messages, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
       LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
     }
     if (size) {
@@ -118,6 +122,7 @@ au::Status Packet::write(au::FileDescriptor *fd, size_t *size) {
   if (buffer_ != 0) {
     s = fd->partWrite(buffer_->data(), buffer_->size(), "KV data");
     if (s != au::OK) {
+      LOG_E(logs.out_messages, ("partWrite returned %d and not the expected %d", s, buffer_->size()));
       LM_RE(s, ("partWrite returned %d and not the expected %d", s, buffer_->size()));
     }
     if (size) {
@@ -135,7 +140,8 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
   if (size) {
     *size = 0;
   }
-  s = fd->partRead(&header, sizeof(Message::Header), "Header", 300);                   // Timeout 300 secs for next packet
+  // Timeout 300 secs for next packet
+  s = fd->partRead(&header, sizeof(Message::Header), "Header", 300);
   if (s != au::OK) {
     return s;
   }
@@ -145,7 +151,7 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
   }
   if (!header.Check()) {
     fd->Close();   // Close connection ( We close here since it is not a io error, is a protocol error )
-    LM_E(("Error checking received header from %s", fd->name().c_str()));
+    LOG_E(logs.out_messages, ("Error checking received header from %s", fd->name().c_str()));
     return au::Error;   // Generic error
   }
 
@@ -168,8 +174,9 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
     message->ParseFromArray(dataP, header.gbufLen);
 
     if (message->IsInitialized() == false) {
-      LM_E(("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!",
-            header.gbufLen, samson::Message::messageCode(header.code)));
+      LOG_E(logs.out_messages,
+            ("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!",
+             header.gbufLen, samson::Message::messageCode(header.code)));
       // Close connection ( We close here since it is not a io error, is a protocol error )
       free(dataP);
       fd->Close();

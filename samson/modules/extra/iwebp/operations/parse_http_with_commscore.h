@@ -115,9 +115,6 @@ public:
   void init(samson::KVWriter *writer) {
     sep_ = '\t';
 
-    // TODO(@jges): Remove log message
-    LM_M(("iwebp.parse: init()"));
-
     // Alloc space for the lines...
 #define MAX_LENGTH_LINE 20000
     line_ = static_cast<char *> (malloc(MAX_LENGTH_LINE + 1));
@@ -597,11 +594,6 @@ public:
 
     au::ErrorManager error;
 
-    // TODO(@jges): Remove log message
-    LM_M(("iwebp.parse: data block of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", length, data[0], data[1], data[2],
-          data[3], data[4], data[5], data[6], data[7], data[8], data[9]));
-    // LM_M(("line at %p of length:%d with '%c%c%c%c%c%c%c%c%c%c...'", line, 0, line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7], line[8], line[9]));
-
     while (p_data < p_data_end) {
       // LM_M(("Looking at p_data:'%c'", *p_data));
       if ((*p_data == '\n') || (*p_data == '\0')) {
@@ -631,9 +623,6 @@ public:
   }
 
   void finish(samson::KVWriter *writer) {
-    // TODO(@jges): Remove log message
-    LM_M(("iwebp.parse: finish()"));
-
     size_t services_size = services_.size();
     for (size_t i = 0; (i < services_size); ++i) {
       delete services_[i];

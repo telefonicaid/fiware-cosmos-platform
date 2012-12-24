@@ -51,8 +51,6 @@ public:
 
 	void init(samson::KVWriter *writer )
 	{
-		//OLM_T(LMT_User06, ("reduce_inverted_index: init"));
-		//LM_M(("reduce_inverted_index: init"));
 	}
 
 	void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -76,8 +74,6 @@ public:
 			wordInfo.count.valuesSetLength(0);
 			wordInfo.totalCount.value = 0;
 		}
-		//OLM_T(LMT_User06, ("key_word:'%s', num_pages:%d, inputs[0].num_kvs:%lu, inputs[1].num_kvs:%lu\n", word.value.c_str(), wordInfo.page.values_length, inputs[0].num_kvs, inputs[1].num_kvs));
-		//LM_M(("key_word:'%s', num_pages:%d, inputs[0].num_kvs:%lu, inputs[1].num_kvs:%lu\n", word.value.c_str(), wordInfo.page.values_length, inputs[0].num_kvs, inputs[1].num_kvs));
 
 		if (inputs[0].num_kvs > 0)
 		{
@@ -96,21 +92,13 @@ public:
 				{
 					if ((index = wordInfo.page.findIndexSortedFromEnd(prevPage)) == -1)
 					{
-						//OLM_T(LMT_User06, ("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value));
-						//LM_M(("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value));
-
 						//wordInfo.page.valuesAdd()->copyFrom(&prevPage);
 						//wordInfo.count.valuesAdd()->copyFrom(&prevCount);
 						int indexInsert = wordInfo.page.valuesAddSortedFromEnd(prevPage);
-						//LM_M(("word:'%s', added page:'%s' at indexInsert:%d\n", word.value.c_str(), prevPage.value.c_str(), indexInsert));
-
 						wordInfo.count.valuesAddAtIndex(prevCount, indexInsert);
 					}
 					else
 					{
-						//OLM_T(LMT_User06, ("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value));
-						//LM_M(("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value, index));
-
 						wordInfo.totalCount.value -= wordInfo.count.values[index].value;
 						wordInfo.count.values[index].value = prevCount.value;
 					}
@@ -121,36 +109,24 @@ public:
 			}
 			if ((index = wordInfo.page.findIndexSortedFromEnd(prevPage)) == -1)
 			{
-				//OLM_T(LMT_User06, ("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value));
-				//LM_M(("word:'%s', add page:'%s', count:%lu\n", word.value.c_str(), prevPage.value.c_str(), prevCount.value, index));
-
 				//wordInfo.page.valuesAdd()->copyFrom(&prevPage);
 				//wordInfo.count.valuesAdd()->copyFrom(&prevCount);
 				int indexInsert = wordInfo.page.valuesAddSortedFromEnd(prevPage);
-				//LM_M(("word:'%s', added page:'%s' at indexInsert:%d\n", word.value.c_str(), prevPage.value.c_str(), indexInsert));
-
 				wordInfo.count.valuesAddAtIndex(prevCount, indexInsert);
 			}
 			else
 			{
-				//OLM_T(LMT_User06, ("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value));
-				//LM_M(("word:'%s', found page:'%s' at index:%d, count:%lu\n", word.value.c_str(), prevPage.value.c_str(), index, prevCount.value));
-
 				wordInfo.totalCount.value -= wordInfo.count.values[index].value;
 				wordInfo.count.values[index].value = prevCount.value;
 			}
 			wordInfo.totalCount.value += prevCount.value;
 		}
 
-		//LM_M(("word:'%s', ready to emit", word.value.c_str()));
 		writer->emit(0, &word, &wordInfo);
-		//LM_M(("word:'%s', emitted", word.value.c_str()));
 	}
 
 	void finish(samson::KVWriter *writer )
 	{
-		//OLM_T(LMT_User06, ("reduce_inverted_index: finish"));
-		//LM_M(("reduce_inverted_index: finish"));
 	}
 
 

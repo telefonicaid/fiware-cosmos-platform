@@ -1,3 +1,5 @@
+#ifndef _H_SAMSON_system_HIT_COUNT_PROCESS
+#define _H_SAMSON_system_HIT_COUNT_PROCESS
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -26,17 +28,39 @@
  *
  */
 
-#ifndef _H_SAMSON_system_HIT_COUNT_PROCESS
-#define _H_SAMSON_system_HIT_COUNT_PROCESS
-
 #include <string>
 #include <vector>
 
 #include "samson_system/ProcessComponent.h"
 #include "samson_system/UpdateCountFunction.h"
 
+/**
+ * \file HitCountProcess.h
+ * \mainpage HitCountProcess
+ * \author Gregorio Escalada
+ * \date August 2012
+ *
+ * Component for system.Value paradigm, for data flexible processing
+ *
+ */
+
 namespace samson {
 namespace system {
+/**
+ * \class HitCountProcess
+ * \brief Class to count item hits in input data
+ * Implements the Update() method for the system.Value process paradigm.
+ * Input data is identified with name_ as "app" field.
+ * Aggregated counts are held in the state queue, also with name_ in the "app" field
+ * This state has as value a vector with the n_top more frequent items,
+ * for each of the profiles (count functions).
+ * New values are written to the feedback queue with out_app_name_.
+ * Original data is written to the feedback queue with out_def_name_.
+ * Instant state values are also written to the output queue
+ * Hits count can be performed with any number of count functions,
+ * allowing different time_stamps and number of items held,
+ * for different profiling scopes.
+ */
 class HitCountProcess : public ProcessComponent {
   public:
     static const std::string kNullDest;

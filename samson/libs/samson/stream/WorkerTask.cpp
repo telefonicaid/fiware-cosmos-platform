@@ -187,6 +187,7 @@ void WorkerTask::generateKeyValues(samson::ProcessWriter *writer) {
   // Get KVFiles scaning input data
   block_list_container_.ReviewKVFile(error_);
   if (error_.HasErrors()) {
+    LOG_E(logs.background_process, ("Error generating key-values for task WT%lu, block_id:'%s'", id(), block_list_container_.str_block_ids().c_str()));
     setUserError(error_.GetLastError());
     return;
   }
@@ -255,6 +256,7 @@ void WorkerTask::generateTXT(TXTWriter *writer) {
       // KV File to access content of this block
       au::SharedPointer<KVFile> file = block_ref->file();
       if (file == NULL) {
+        LOG_E(logs.background_process, ("Error getting input_0. NULL txt file for block:%lu", block_ref->block_id()));
         setUserError("Error getting information about this block");
         return;
       }
@@ -374,6 +376,7 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
       // Analyse all key-values and hashgroups
       au::SharedPointer<KVFile> file = block_ref->file();
       if (file == NULL) {
+        LOG_E(logs.background_process, ("Error getting input_0. NULL KVfile for block:%lu", block_ref->block_id()));
         setUserError("Error getting information about this block");
         return;
       }
@@ -663,6 +666,7 @@ void WorkerTask::commit() {
     // Commit changes and release task
     std::string my_commit_command = commit_command();
     std::string caller = au::str("task WT%lu", worker_task_id());
+    LOG_D(logs.task_manager, ("caller:'%s', commit_command:'%s'", caller.c_str(), my_commit_command.c_str()));
     samson_worker_->data_model()->Commit(caller, my_commit_command, error_);
 
     if (error_.HasErrors()) {

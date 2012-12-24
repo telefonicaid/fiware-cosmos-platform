@@ -92,25 +92,21 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
   size_t newest_timestamp = 0;
 
   if (key->CheckMapValue(Value::kAppField.c_str(), name().c_str())) {
-    LOG_SM(("Detected app:'%s'", name().c_str()));
     if (key->GetStringFromMap(Value::kConceptField.c_str()) == NULL) {
-      LM_E(("Error, no field 'concept' found in key:'%s'", key->str().c_str()));
+      LOG_SE(("HitCountByConceptProcess. Error, no field 'concept' found in key:'%s'", key->str().c_str()));
       return false;
     }
 
     if (state->IsVoid()) {
-      LOG_SM(("Init state for key app:'%s', concept:'%s'", name().c_str(),
-              key->GetStringFromMap(Value::kConceptField.c_str())));
       state->SetAsMap();
       p_instant_profile = state->AddValueToMap(Value::kInstantProfileField);
       p_instant_profile->SetAsVector();
     } else {
       p_instant_profile = state->GetValueFromMap(Value::kInstantProfileField.c_str());
       if (p_instant_profile == NULL) {
-        LM_E(("Error, no 'instant_profile' field in state"));
+        LOG_SE(("HitCountByConceptProcess. Error, no 'instant_profile' field in state"));
+        return false;
       }
-      return false;
-      // LOG_SM(("Existing state for key app:'%s', concept:'%s' (%lu global_count), with %lu items", name().c_str(), key->GetStringFromMap(Value::kConceptField.c_str()), state->GetDoubleFromMap(Value::kGlobalCountField.c_str()), state->GetValueFromMap(Value::kHitsField.c_str())->GetVectorSize()));
     }
 
     for (size_t i = 0; (i < num_values); ++i) {
@@ -126,7 +122,7 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
       std::string input_item = values[i]->GetStringFromMap(Value::kItemField.c_str());
       size_t timestamp = values[i]->GetDoubleFromMap(Value::kTimestampField.c_str());
       if (timestamp == 0) {
-        LOG_SW(("Warning, for concept:'%s', item:'%s' timestamp==0 ", val_concept.c_str(),
+        LOG_SW(("HitCountByConceptProcess. Warning, for concept:'%s', item:'%s' timestamp==0 ", val_concept.c_str(),
                 input_item.c_str()));
       }
       if (timestamp > newest_timestamp) {
@@ -140,7 +136,8 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
           p_concept_profile->GetValueFromMap(Value::kVectorProfileField.c_str())->GetValueFromVector(count_pos)->
           GetValueFromMap(Value::kHitsField.c_str());
         if (state_hits == NULL) {
-          LM_E(("Error, no 'hits' field found in state"));
+          LOG_SE(("HitCountByConceptProcess. Error, no 'hits' field found in state"));
+          LM_E(("HitCountByConceptProcess. Error, no 'hits' field found in state"));
           return false;
         }
 
@@ -156,8 +153,6 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
             double new_count = 1 + counts_[count_pos].UpdateCount(old_count, old_timestamp, timestamp);
             p_hit->SetDoubleForMap(Value::kTimestampField.c_str(), timestamp);
             p_hit->SetDoubleForMap(Value::kCountField.c_str(), new_count);
-            // LOG_SM(("Particular update count for item:'%s'(%lu of %lu), old_count:%lf, old_time:%lu, new_count:%lf, new_time:%lu",  input_item.c_str(), j, state_hits->GetVectorSize(), old_count, old_timestamp, new_count, timestamp));
-
             found_hit = true;
             break;
           }
@@ -168,7 +163,6 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
           new_hit->AddValueToMap(Value::kItemField)->SetString(input_item);
           new_hit->AddValueToMap(Value::kTimestampField)->SetDouble(static_cast<double> (timestamp));
           new_hit->AddValueToMap(Value::kCountField)->SetDouble(1.0);
-          // LOG_SM(("Added to state item:'%s'(count:%lf, time:%lf), now size:%lu", input_item.c_str(), new_hit->GetDoubleFromMap(Value::kCountField.c_str(), 0.0), new_hit->GetDoubleFromMap(Value::kTimestampField.c_str(), 0.0), state_hits->GetVectorSize()));
         }
       }
     }
@@ -193,8 +187,8 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
         p_profile->SetDoubleForMap(Value::kUpdatedCountField.c_str(), new_updated_count);
         p_profile->SetDoubleForMap(Value::kTimestampField.c_str(), newest_timestamp);
 
-        if (newest_timestamp == 0) {
-          LOG_SW(("Warning, for concept:'%s', newest_timestamp==0 with %lu values",
+        if ((newest_timestamp == 0) && (num_values > 0)) {
+          LOG_SW(("HitCountByConceptProcess. Warning, for concept:'%s', newest_timestamp==0 with %lu values",
                   key->GetStringFromMap(Value::kConceptField.c_str()), num_values));
         }
         Value *state_hits = p_profile->GetValueFromMap(Value::kHitsField.c_str());
@@ -207,35 +201,25 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
             double new_count = counts_[count_pos].UpdateCount(old_count, old_timestamp, newest_timestamp);
             p_hit->SetDoubleForMap(Value::kTimestampField.c_str(), newest_timestamp);
             p_hit->SetDoubleForMap(Value::kCountField.c_str(), new_count);
-            // LOG_SM(("General update count for item:'%s'(%lu of %lu), old_count:%lf, old_time:%lu, new_count:%lf, new_time:%lu",  p_hit->GetStringFromMap(Value::kItemField.c_str()), j, state_hits->GetVectorSize(), old_count, old_timestamp, new_count, newest_timestamp));
           }
         }
 
         // Sort the vector on the Value::kCountField field of the hits.
         // Sort just the number of hits that will be transferred to the final state
-        state_hits->PartialSortVectorOfMapsInDescendingOrder(Value::kCountField.c_str(), counts_[count_pos].n_top_items());
+        state_hits->PartialSortVectorOfMapsInDescendingOrder(Value::kCountField.c_str(),
+                                                             counts_[count_pos].n_top_items());
 
         while (state_hits->GetVectorSize() > counts_[count_pos].n_top_items()) {
-          // LOG_SM(("Pruning items from size:%lu to %lu", state_hits->GetVectorSize(), n_top_items_));
           state_hits->PopBackFromVector();
-        }
-        // LOG_SM(("End value sort and prune phase for %lu items", state_hits->GetVectorSize()));
-
-        for (size_t i = 0; (i < state_hits->GetVectorSize()); ++i) {
-          // LOG_SM(("Pruned state for concept:'%s,  prof:'%s', item i(%lu,'%s',%lf) of %lu", key->GetStringFromMap(Value::kConceptField.c_str()), p_profile->GetStringFromMap(Value::kNameField.c_str()), i, state_hits->GetValueFromVector(i)->GetStringFromMap(Value::kItemField.c_str()), state_hits->GetValueFromVector(i)->GetDoubleFromMap(Value::kCountField.c_str()), state_hits->GetVectorSize()));
         }
       }
     }
 
     ValueContainer new_key_container;
     new_key_container.value->AddValueToMap(Value::kAppField)->SetString(out_app_name().c_str());
-    new_key_container.value->AddValueToMap(Value::kConceptField)->SetString(key->GetStringFromMap(Value::kConceptField.
-                                                                                                  c_str()));
-
-    // LOG_SM(("Before emiting output  for concept:'%s' with %lu items", new_key_container.value->GetStringFromMap(Value::kConceptField.c_str()), state_hits->GetVectorSize()));
+    new_key_container.value->AddValueToMap(Value::kConceptField)->SetString(key->GetStringFromMap(Value::kConceptField.c_str()));
 
     EmitOutput(new_key_container.value, state, writer);
-
     EmitState(key, state, writer);
 
     if (out_def_name() != HitCountByConceptProcess::kNullDest) {
@@ -246,7 +230,6 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
     }
     return true;
   } else {
-    // LOG_SM(("key app:'%s' different from expected", key->GetStringFromMap(Value::kAppField.c_str()), name().c_str()));
     return false;
   }
 }

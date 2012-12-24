@@ -2,7 +2,7 @@ Module fiware_pos
 {
 
     title   "fiware_pos  module"
-    author  "Gregorio Escalada (jges@tid.es)"
+    author  "SAMSON team (e.samson@tid.es)"
     version "0.1"
     
 }

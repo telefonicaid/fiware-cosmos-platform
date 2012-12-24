@@ -1,3 +1,5 @@
+#ifndef _H_SAMSON_system_SPREAD_MAP_PROCESS
+#define _H_SAMSON_system_SPREAD_MAP_PROCESS
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -25,18 +27,35 @@
  *  The inclusion of a reference field (Value::kTimestampField, "timestamp" usually) is optional
  *
  */
-
-#ifndef _H_SAMSON_system_SPREAD_MAP_PROCESS
-#define _H_SAMSON_system_SPREAD_MAP_PROCESS
-
 #include <string>
 
 #include "samson_system/ProcessComponent.h"
 #include "samson_system/Value.h"
 #include "samson/module/KVWriter.h"
 
+/**
+ * \file SpreadMapProcess.h
+ * \mainpage SpreadMapProcess
+ * \author Gregorio Escalada
+ * \date August 2012
+ *
+ * Component for system.Value paradigm, for data flexible processing
+ *
+ */
+
 namespace samson {
 namespace system {
+/**
+ * \class SpreadMapProcess
+ * \brief Class to spread input key-values into as many key-values as fields in the input Value
+ * Implements the Update() method for the system.Value process paradigm.
+ * Input data is identified with name_ as "app" field.
+ * Spread data is written to the feedback queue with out_app_name_.
+ * Original data is written to the feedback queue with out_def_name_.
+ * New values can be created with an additional field (timestamp typically).
+ * This ProcessComponent just reemit data to the feedback queue, there is no output nor state associated
+ */
+
 class SpreadMapProcess : public ProcessComponent {
   public:
     static const std::string kNullField;

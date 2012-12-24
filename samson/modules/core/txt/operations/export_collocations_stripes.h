@@ -36,10 +36,8 @@ public:
       key.parse(inputs[0].kvs[i]->key);
       value.parse(inputs[0].kvs[i]->value);
       std::string keystr = key.value;
-      // OLM_T(LMT_User06,("Start key:'%s' with %d collocs", keystr.c_str(), value.colList_length));
       for (int j = 0; (j < value.colList_length); j++) {
         if (value.colList[j].count.value > 0) {
-          // OLM_M(("key: '%s' value[%d]:'%s', count:%d", keystr.c_str(), j, value.colList[j].word.value.c_str(), value.colList[j].count.value));
           snprintf(output, MAX_STR_LEN, "%s, %s: %lu\n", keystr.c_str(),
                    value.colList[j].word.value.c_str(), value.colList[j].count.value);
 

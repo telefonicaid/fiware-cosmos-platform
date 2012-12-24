@@ -39,3 +39,28 @@ reduce process
 	
 }
 
+
+script demo
+{
+    code
+    {
+        # Input queues
+        alias [input]             input_txt;
+
+        # Internal queues
+        alias [logs]              logs;
+        alias [state]             state;
+        alias [out]               out;
+
+        # Operations;
+        alias [parse]             parse;
+        alias [process]           process;
+ 
+        # Definitions;
+        add_stream_operation      [parse]    iwebp.parse_http_with_commscore  -input [input]           -output [logs];
+        add_stream_operation      [process]  iwebp.process                    -input '[logs] [state]'  -output '[out] [logs] [state]';
+    }
+
+    helpLine "Init stream operations for instant web profiling"
+}
+

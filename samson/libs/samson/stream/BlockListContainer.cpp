@@ -141,7 +141,7 @@ std::string BlockListContainer::str_inputs() const {
     if (!block_list) {
       output << "-";
     } else {
-      BlockInfo block_info = block_list->getBlockInfo();
+      const BlockInfo& block_info = block_list->getBlockInfo();
       output << "[" << block_info.strShortInfo() << "]";
     }
   }
@@ -163,7 +163,7 @@ std::string BlockListContainer::str_outputs() const {
     if (!block_list) {
       output << "-";
     } else {
-      BlockInfo block_info = block_list->getBlockInfo();
+      const BlockInfo& block_info = block_list->getBlockInfo();
       output << "[" << block_info.strShortInfo() << "]";
     }
   }
@@ -182,7 +182,7 @@ BlockInfo BlockListContainer::GetInputsInfo() const {
   for (int i = 0; i < num_inputs; ++i) {
     BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
     if (block_list) {
-      BlockInfo block_info = block_list->getBlockInfo();
+      const BlockInfo& block_info = block_list->getBlockInfo();
       info.info.append(block_info.info);
       info.num_blocks += block_info.num_blocks;
     }
@@ -203,7 +203,7 @@ BlockInfo BlockListContainer::GetOutputsInfo() const {
   for (int i = 0; i < num_outputs; ++i) {
     BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
     if (block_list) {
-      BlockInfo block_info = block_list->getBlockInfo();
+      const BlockInfo& block_info = block_list->getBlockInfo();
       info.info.append(block_info.info);
       info.num_blocks += block_info.num_blocks;
     }
@@ -216,7 +216,7 @@ std::vector<au::Token *> BlockListContainer::GetTokens() const {
   au::map<std::string, BlockList>::const_iterator iter;
   for (iter = blockLists_.begin(); iter != blockLists_.end(); ++iter) {
     std::vector<au::Token *> tmp_tokens = iter->second->GetTokens();
-    for (size_t i = 0; i < tmp_tokens.size(); i++) {
+    for (size_t i = 0; i < tmp_tokens.size(); ++i) {
       tokens.push_back(tmp_tokens[i]);
     }
   }

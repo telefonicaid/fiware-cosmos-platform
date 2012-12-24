@@ -88,8 +88,6 @@ public:
 
         struct tm timeExpanded;
 
-        //OLM_T(LMT_User06, ("parseXML called"));
-
         // Init everything
         record.imsi.value = 0;
         record.imei.value = 0;
@@ -110,21 +108,17 @@ public:
             p_tag_begin += strlen(XML_TAG_USERID);
             if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
             {
-                OLM_E(("xml without IMSI end"));
+                O_LOG_E(("xml without IMSI end"));
                 return;
             }
             *p_sep = '\0';
             record.imsi.value = strtoul(p_tag_begin, &endptr, 10 );
             if (*endptr != '\0')
             {
-                OLM_E(("xml with wrong userId:'%s'", p_tag_begin));
+                O_LOG_E(("xml with wrong userId:'%s'", p_tag_begin));
                 return;
             }
             p_xml = p_sep+1;
-        }
-        else
-        {
-            //OLM_E(("xml without userId"));
         }
 
 #define XML_TAG_PTMSI "<PTMSI>"
@@ -133,22 +127,19 @@ public:
             p_tag_begin += strlen(XML_TAG_PTMSI);
             if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
             {
-                OLM_E(("xml without PTMSI end"));
+                O_LOG_E(("xml without PTMSI end"));
                 return;
             }
             *p_sep = '\0';
             tmsi = strtoul(p_tag_begin, &endptr, 10 );
             if (*endptr != '\0')
             {
-                OLM_E(("xml with wrong userId:'%s'", p_tag_begin));
+                O_LOG_E(("xml with wrong userId:'%s'", p_tag_begin));
                 return;
             }
             p_xml = p_sep+1;
         }
-        else
-        {
-            //OLM_E(("xml without IMEI"));
-        }
+
 
 #define XML_TAG_IMEI "<IMEI>"
         if ((p_tag_begin = strstr(p_xml, XML_TAG_IMEI)) != NULL)
@@ -156,21 +147,17 @@ public:
             p_tag_begin += strlen(XML_TAG_IMEI);
             if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
             {
-                OLM_E(("xml without IMEI end"));
+                O_LOG_E(("xml without IMEI end"));
                 return;
             }
             *p_sep = '\0';
             record.imei.value = strtoul(p_tag_begin, &endptr, 10 );
             if (*endptr != '\0')
             {
-                OLM_E(("xml with wrong userId:'%s'", p_tag_begin));
+                O_LOG_E(("xml with wrong userId:'%s'", p_tag_begin));
                 return;
             }
             p_xml = p_sep+1;
-        }
-        else
-        {
-            //OLM_E(("xml without IMEI"));
         }
 
 #define XML_TAG_LACID "<LocationArea>"
@@ -180,7 +167,7 @@ public:
             p_tag_begin += strlen(XML_TAG_LACID);
             if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
             {
-                OLM_E(("xml without LAC end"));
+                O_LOG_E(("xml without LAC end"));
                 return;
             }
             *p_sep = '\0';
@@ -188,14 +175,10 @@ public:
             cellIdTmp = (LAC << 16) & 0xffff0000;
             if (*endptr != '\0')
             {
-                OLM_E(("xml with wrong LAC:'%s'", p_tag_begin));
+                O_LOG_E(("xml with wrong LAC:'%s'", p_tag_begin));
                 return;
             }
             p_xml = p_sep+1;
-        }
-        else
-        {
-            //OLM_E(("xml without XML_TAG_LACID"));
         }
 
 #define XML_TAG_CELLID "<CellID>"
@@ -204,7 +187,7 @@ public:
             p_tag_begin += strlen(XML_TAG_CELLID);
             if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
             {
-                OLM_E(("xml without cellId end"));
+                O_LOG_E(("xml without cellId end"));
                 return;
             }
             *p_sep = '\0';
@@ -212,14 +195,10 @@ public:
             record.cellId.value = cellIdTmp | (cellID%10000);
             if (*endptr != '\0')
             {
-                OLM_E(("xml with wrong cellId:'%s'", p_tag_begin));
+                O_LOG_E(("xml with wrong cellId:'%s'", p_tag_begin));
                 return;
             }
             p_xml = p_sep+1;
-        }
-        else
-        {
-            //OLM_E(("xml without cellId"));
         }
 
 #define XML_TAG_TIMESTAMP "<Timestamp>"
@@ -230,20 +209,20 @@ public:
             p_tag_begin += strlen(XML_TAG_TIMESTAMP);
             if ((p_sep = strchr(p_tag_begin, '<')) == NULL)
             {
-                OLM_E(("xml without timeStamp end"));
+                O_LOG_E(("xml without timeStamp end"));
                 return;
             }
             *p_sep = '\0';
             if (xmlStringToTime(p_tag_begin, &timeExpanded) == false)
             {
-                OLM_E(("xml with wrong timeStamp:'%s'", p_tag_begin));
+                O_LOG_E(("xml with wrong timeStamp:'%s'", p_tag_begin));
                 return;
             }
             record.timestamp.getTimeUTCFromCalendar(&timeExpanded);
         }
         else
         {
-            OLM_E(("xml without timeStamp"));
+            O_LOG_E(("xml without timeStamp"));
         }
 
         completeTMSI.tmsi.value = tmsi;
@@ -289,12 +268,12 @@ public:
         {
             if (strncmp(p_xml_begin, XML_BEGIN, strlen(XML_BEGIN)))
             {
-                OLM_E(("Error, bad formed XML (begin) starting at pos offset:%lu, (%s)", offset, p_xml_begin));
+                O_LOG_E(("Error, bad formed XML (begin) starting at pos offset:%lu, (%s)", offset, p_xml_begin));
                 return;
             }
             if ((p_xml_end = strstr(p_xml_begin, XML_END)) == NULL)
             {
-                OLM_E(("Error, bad formed XML (end) starting at pos offset:%d, (%s)", offset, p_xml_begin));
+                O_LOG_E(("Error, bad formed XML (end) starting at pos offset:%d, (%s)", offset, p_xml_begin));
                 return;
             }
 

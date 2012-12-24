@@ -75,7 +75,7 @@ namespace shop{
 
 	            // operation traces
 	            trace.SetString(au::str("No profile for user:%lu", user.value).c_str());
-	            writer->emit( -1 , &trace , &value_void );
+	            //writer->emit( -1 , &trace , &value_void );
 
 	            // platform logs
 	            LM_W(("No profile for user:%lu", user.value));
@@ -91,7 +91,7 @@ namespace shop{
 	            {
 	                // operation traces
 	                trace.SetString(au::str("Multiple profiles(%lu) for user:%lu", inputs[1].num_kvs, user.value).c_str());
-	                writer->emit( -1 , &trace , &value_void );
+	                //writer->emit( -1 , &trace , &value_void );
 
 	                // platform logs
 	                LM_W(("Multiple profiles(%lu) for user:%lu", inputs[1].num_kvs, user.value));
@@ -105,7 +105,7 @@ namespace shop{
 
 	            // operation traces
 	            trace.SetString(au::str("Processing product %lu for user:%lu", input_product.value, user.value).c_str());
-	            writer->emit( -1 , &trace , &value_void );
+	            //writer->emit( -1 , &trace , &value_void );
 
 	            // platform logs
 	            LM_M(("Processing product %lu for user:%lu", input_product.value, user.value));

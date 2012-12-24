@@ -256,10 +256,8 @@ void DataModel::ProcessAddCommand(gpb::Data *data, au::SharedPointer<au::Command
   return;
 }
 
-// All
-
 std::string ConcatPrefix(const std::string& prefix, const std::string& name) {
-  if (prefix.length() > 0) {
+  if (!prefix.empty() > 0) {
     return prefix + "." + name;
   } else {
     return name;
@@ -278,7 +276,7 @@ void DataModel::ProcessAddQueueConnectionCommand(gpb::Data *data, au::SharedPoin
   LOG_M(logs.data_model, ("command:'%s'", cmd->command().c_str()));
 
   // Recover prefix
-  std::string prefix = cmd->GetFlagString("prefix");
+  const std::string& prefix = cmd->GetFlagString("prefix");
   std::string queue_source = ConcatPrefix(prefix, cmd->get_argument(1));
   std::vector<std::string> target_queues = au::split(cmd->get_argument(2), ' ');
   for (size_t i = 0; i < target_queues.size(); ++i) {
@@ -301,8 +299,7 @@ void DataModel::ProcessAddStreamOperationCommand(gpb::Data *data, au::SharedPoin
     return;
   }
   // Recover prefix
-  std::string prefix = cmd->GetFlagString("prefix");
-
+  const std::string& prefix = cmd->GetFlagString("prefix");
   std::string name = ConcatPrefix(prefix, cmd->get_argument(1));
   std::string operation = cmd->get_argument(2);
   std::string inputs = cmd->GetFlagString("input");
@@ -658,7 +655,7 @@ void DataModel::ProcessRemoveStreamOperationCommand(gpb::Data *data
                                                     , au::SharedPointer<au::CommandLine> cmd
                                                     , au::ErrorManager& error) {
   // Recover prefix
-  std::string prefix = cmd->GetFlagString("prefix");
+  const std::string& prefix = cmd->GetFlagString("prefix");
   std::string name = ConcatPrefix(prefix, cmd->get_argument(1));
 
   gpb::StreamOperation *stream_operation = gpb::getStreamOperation(data, name);
@@ -726,8 +723,7 @@ void DataModel::ProcessSetStreamOperationPropertyCommand(gpb::Data *data, au::Sh
     return;
   }
   // Recover prefix
-  std::string prefix = cmd->GetFlagString("prefix");
-
+  const std::string& prefix = cmd->GetFlagString("prefix");
   std::string name = ConcatPrefix(prefix, cmd->get_argument(1));
   std::string property = cmd->get_argument(2);
   std::string value = cmd->get_argument(3);
@@ -762,8 +758,7 @@ void DataModel::ProcessUnsetStreamOperationPropertyCommand(gpb::Data *data,
     return;
   }
   // Recover prefix
-  std::string prefix = cmd->GetFlagString("prefix");
-
+  const std::string& prefix = cmd->GetFlagString("prefix");
   std::string name = ConcatPrefix(prefix, cmd->get_argument(1));
   std::string property = cmd->get_argument(2);
 
@@ -917,7 +912,7 @@ au::SharedPointer<gpb::Collection> DataModel::GetCollectionForStreamOperations(c
     }
     gpb::CollectionRecord *record = collection->add_record();
     if (id_flag) {
-    ::samson::add(record, "id", stream_operation.stream_operation_id(), "different");
+      ::samson::add(record, "id", stream_operation.stream_operation_id(), "different");
     }
     ::samson::add(record, "name", stream_operation.name(), "different,left");
     ::samson::add(record, "operation", stream_operation.operation(), "different");

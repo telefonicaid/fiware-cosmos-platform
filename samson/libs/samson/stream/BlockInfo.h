@@ -57,9 +57,9 @@ struct BlockInfo {
 
   // Debug strings
   // ----------------------------------------------------------------
-  std::string str();
-  std::string strShort();
-  std::string strShortInfo();
+  std::string str() const;
+  std::string strShort() const;
+  std::string strShortInfo() const;
 };
 }
 

@@ -92,24 +92,16 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
   size_t newest_timestamp = 0;
 
   if (key->CheckMapValue(Value::kAppField.c_str(), name().c_str())) {
-    //LOG_SM(("HitCountByConceptProcess. Detected app:'%s' with %lu values in key:'%s'", name().c_str(), num_values,
-    //        key->str().c_str()));
     if (key->GetStringFromMap(Value::kConceptField.c_str()) == NULL) {
       LOG_SE(("HitCountByConceptProcess. Error, no field 'concept' found in key:'%s'", key->str().c_str()));
       return false;
     }
 
     if (state->IsVoid()) {
-      //LOG_SM(("HitCountByConceptProcess. Init state for key app:'%s', concept:'%s'", name().c_str(),
-      //        key->GetStringFromMap(Value::kConceptField.c_str())));
       state->SetAsMap();
       p_instant_profile = state->AddValueToMap(Value::kInstantProfileField);
       p_instant_profile->SetAsVector();
     } else {
-      //LOG_SM(("HitCountByConceptProcess. Existing state for key app:'%s', concept:'%s' (%lu global_count)",
-      //        name().c_str(), key->GetStringFromMap(Value::kConceptField.c_str()),
-      //        state->GetDoubleFromMap(Value::kGlobalCountField.c_str())));
-
       p_instant_profile = state->GetValueFromMap(Value::kInstantProfileField.c_str());
       if (p_instant_profile == NULL) {
         LOG_SE(("HitCountByConceptProcess. Error, no 'instant_profile' field in state"));
@@ -218,12 +210,8 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
                                                              counts_[count_pos].n_top_items());
 
         while (state_hits->GetVectorSize() > counts_[count_pos].n_top_items()) {
-          //LOG_SM(("HitCountByConceptProcess. Pruning items from size:%lu to %lu", state_hits->GetVectorSize(),
-          //        counts_[count_pos].n_top_items()));
           state_hits->PopBackFromVector();
         }
-        //LOG_SM(("HitCountByConceptProcess. End value sort and prune phase for %lu items",
-        //        state_hits->GetVectorSize()));
       }
     }
 
@@ -231,20 +219,12 @@ bool HitCountByConceptProcess::Update(Value *key, Value *state, Value **values, 
     new_key_container.value->AddValueToMap(Value::kAppField)->SetString(out_app_name().c_str());
     new_key_container.value->AddValueToMap(Value::kConceptField)->SetString(key->GetStringFromMap(Value::kConceptField.c_str()));
 
-    //LOG_SM(("HitCountByConceptProcess: Emit output, key:'%s', value:'%s'", new_key_container.value->str().c_str(),
-    //        state->str().c_str()));
-
     EmitOutput(new_key_container.value, state, writer);
-
-    //LOG_SM(("HitCountByConceptProcess: Emit state, key:'%s', value:'%s'", key->str().c_str(), state->str().c_str()));
-
     EmitState(key, state, writer);
 
     if (out_def_name() != HitCountByConceptProcess::kNullDest) {
       key->SetStringForMap(Value::kAppField.c_str(), out_def_name().c_str());
       for (size_t j = 0; (j < num_values); ++j) {
-        //LOG_SM(("HitCountByConceptProcess: Emit next flow feedback, key:'%s', value:'%s'", key->str().c_str(),
-        //        values[j]->str().c_str()));
         EmitFeedback(key, values[j], writer);
       }
     }

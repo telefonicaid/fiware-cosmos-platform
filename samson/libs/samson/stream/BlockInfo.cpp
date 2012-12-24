@@ -113,7 +113,7 @@ bool BlockInfo::isContentOnDisk() {
   return ( size == size_on_disk );
 }
 
-  std::string BlockInfo::str() {
+  std::string BlockInfo::str() const {
     return au::str("%s [ %s | %s on memory / %s on disk / %s locked ] %s "
                    , au::str(num_blocks, "Blocs").c_str()
                    , au::str(size, "bytes").c_str()
@@ -124,7 +124,7 @@ bool BlockInfo::isContentOnDisk() {
                    );
   }
 
-  std::string BlockInfo::strShort() {
+  std::string BlockInfo::strShort() const {
   if (num_blocks == 0) {
     return "empty";
   }
@@ -137,7 +137,7 @@ bool BlockInfo::isContentOnDisk() {
                  , ( size_on_disk == size ) ? 'D' : ' '
                  );
 }
-  std::string BlockInfo::strShortInfo() {
+  std::string BlockInfo::strShortInfo() const {
     if (num_blocks == 0) {
       return "empty";
     }

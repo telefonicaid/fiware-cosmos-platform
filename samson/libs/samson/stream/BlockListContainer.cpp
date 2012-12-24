@@ -141,7 +141,7 @@ std::string BlockListContainer::str_inputs() const {
     if (!block_list) {
       output << "-";
     } else {
-      BlockInfo block_info = block_list->getBlockInfo();
+      const BlockInfo& block_info = block_list->getBlockInfo();
       output << "[" << block_info.strShortInfo() << "]";
     }
   }
@@ -163,7 +163,7 @@ std::string BlockListContainer::str_outputs() const {
     if (!block_list) {
       output << "-";
     } else {
-      BlockInfo block_info = block_list->getBlockInfo();
+      const BlockInfo& block_info = block_list->getBlockInfo();
       output << "[" << block_info.strShortInfo() << "]";
     }
   }
@@ -182,7 +182,7 @@ FullKVInfo BlockListContainer::GetInputsInfo() const {
   for (int i = 0; i < num_inputs; ++i) {
     BlockList *block_list = blockLists_.findInMap(au::str("input_%d", i));
     if (block_list) {
-      BlockInfo block_info = block_list->getBlockInfo();
+      const BlockInfo& block_info = block_list->getBlockInfo();
       info.append(block_info.info);
     }
   }
@@ -202,7 +202,7 @@ FullKVInfo BlockListContainer::GetOutputsInfo() const {
   for (int i = 0; i < num_outputs; ++i) {
     BlockList *block_list = blockLists_.findInMap(au::str("output_%d", i));
     if (block_list) {
-      BlockInfo block_info = block_list->getBlockInfo();
+      const BlockInfo& block_info = block_list->getBlockInfo();
       info.append(block_info.info);
     }
   }

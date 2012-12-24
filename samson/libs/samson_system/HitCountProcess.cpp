@@ -52,17 +52,12 @@ bool HitCountProcess::Update(Value *key, Value *state, Value **values, size_t nu
   size_t newest_timestamp = 0;
 
   if (key->CheckMapValue(Value::kAppField.c_str(), name().c_str())) {
-    //LOG_SM(("HitCountProcess. Detected app:'%s' with %lu values in key:'%s'", name().c_str(), num_values,
-    //        key->str().c_str()));
-
     if (key->GetStringFromMap(Value::kConceptField.c_str()) == NULL) {
       LOG_SE(("HitCountProcess. Error, no field 'concept' found in key:'%s'", key->str().c_str()));
       LM_E(("Error, no field 'concept' found in key:'%s'", key->str().c_str()));
       return false;
     }
     if (state->IsVoid()) {
-      //LOG_SM(("HitCountProcess. Init state for key app:'%s', concept:'%s'", name().c_str(),
-      //        key->GetStringFromMap(Value::kConceptField.c_str())));
       state->SetAsMap();
       state->SetDoubleForMap(Value::kGlobalCountField.c_str(), 0.0);
       Value *p_vector_profile = state->AddValueToMap(Value::kVectorProfileField);
@@ -75,14 +70,9 @@ bool HitCountProcess::Update(Value *key, Value *state, Value **values, size_t nu
         p_profile->SetDoubleForMap(Value::kTimestampField.c_str(), 0.0);
         p_profile->AddValueToMap(Value::kHitsField)->SetAsVector();
       }
-    } else {
-      //LOG_SM(("HitCountProcess. Existing state for key app:'%s', concept:'%s' (%lu global_count)", name().c_str(),
-      //        key->GetStringFromMap(Value::kConceptField.c_str()),
-      //        state->GetDoubleFromMap(Value::kGlobalCountField.c_str())));
     }
 
     for (size_t i = 0; (i < num_values); ++i) {
-      //LOG_SM(("HitCountProcess. Detected app:'%s'. Incoming value:'%s'", name().c_str(), values[i]->str().c_str()));
       if (values[i]->GetStringFromMap(Value::kItemField.c_str()) == NULL) {
         LOG_SW(("No item:'%s' in incoming value", Value::kItemField.c_str()));
         continue;
@@ -183,26 +173,18 @@ bool HitCountProcess::Update(Value *key, Value *state, Value **values, size_t nu
       while (state_hits->GetVectorSize() > counts_[count_pos].n_top_items()) {
         state_hits->PopBackFromVector();
       }
-      //LOG_SM(("HitCountProcess. End value sort and prune phase for %lu items", state_hits->GetVectorSize()));
     }
 
     Value new_key;
     new_key.AddValueToMap(Value::kAppField)->SetString(out_app_name().c_str());
     new_key.AddValueToMap(Value::kConceptField)->SetString(key->GetStringFromMap(Value::kConceptField.c_str()));
 
-    //LOG_SM(("HitCountProcess: Emit output, key:'%s', value:'%s'", new_key.str().c_str(), state->str().c_str()));
-
     EmitOutput(&new_key, state, writer);
-
-    //LOG_SM(("HitCountProcess: Emit state, key:'%s', value:'%s'", key->str().c_str(), state->str().c_str()));
-
     EmitState(key, state, writer);
 
     if (out_def_name() != HitCountProcess::kNullDest) {
       key->SetStringForMap(Value::kAppField.c_str(), out_def_name().c_str());
       for (size_t j = 0; (j < num_values); j++) {
-        //LOG_SM(("HitCountProcess: Emit next flow feedback, key:'%s', value:'%s'",
-        //        key->str().c_str(), values[j]->str().c_str()));
         EmitFeedback(key, values[j], writer);
       }
     }

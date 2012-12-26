@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 #ifndef MEMORY_CHECK_H
 #define MEMORY_CHECK_H
 
@@ -26,9 +36,17 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/common/MemoryCheck.h"          // samson::MemoryCheck
 
+
+#if defined (__sun__)
+typedef unsigned long long int samson_sysctl_t ;
+#else
+typedef unsigned long int samson_sysctl_t;
+#endif  /* __sun__ */
+
+
 namespace samson
 {
-    void sysctl_value(char *param_name, long int *param_value);
+    void sysctl_value(char *param_name, samson_sysctl_t *param_value);
     bool MemoryCheck();
 }
 #endif

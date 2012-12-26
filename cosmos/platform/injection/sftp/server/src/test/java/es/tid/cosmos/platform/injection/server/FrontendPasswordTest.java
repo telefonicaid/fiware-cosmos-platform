@@ -1,13 +1,26 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.platform.injection.server;
 
 import java.io.File;
 import java.sql.*;
 
+import com.google.common.io.Files;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import es.tid.cosmos.base.util.Logger;
+
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
@@ -15,22 +28,31 @@ import static junit.framework.Assert.assertTrue;
  * FrontendPasswordTest
  *
  * @author logc
- * @since 15/05/12
  */
-public class FrontendPasswordTest {
-    private static final Logger LOG = LoggerFactory.getLogger(
-            FrontendPasswordTest.class);
+public class FrontendPasswordTest extends BaseSftpTest {
+
+    private static final org.apache.log4j.Logger LOGGER =
+            Logger.get(FrontendPassword.class);
+    private static final org.apache.log4j.Logger TEST_LOGGER =
+            Logger.get(FrontendPasswordTest.class);
 
     private FrontendPassword instance;
     private String fileName;
     private String frontendDbUrl;
     private Connection connection;
+    private File tempDir;
+
+    public FrontendPasswordTest() {
+        super(LOGGER);
+    }
 
     @Before
     public void setUp() throws Exception {
         this.instance = new FrontendPassword();
+        this.tempDir = Files.createTempDir();
         this.fileName = "test.db";
-        this.frontendDbUrl = "jdbc:sqlite:" + fileName;
+        this.frontendDbUrl = "jdbc:sqlite:" + this.tempDir.toString() +
+                fileName;
         Class.forName("org.sqlite.JDBC").newInstance();
         this.connection = DriverManager.getConnection(this.frontendDbUrl);
         Statement stat = this.connection.createStatement();
@@ -80,12 +102,13 @@ public class FrontendPasswordTest {
 
     private void deleteDbFile() {
         boolean deleted = false;
-        File f = new File(this.fileName);
+        File f = new File(this.tempDir.toString() + this.fileName);
         if (f.exists() && f.canWrite() && !f.isDirectory()) {
             deleted = f.delete();
         }
         if (!deleted) {
-            LOG.error("test DB at " + this.fileName + "could not be deleted");
+            TEST_LOGGER.error("test DB at " + this.tempDir.toString() +
+                    this .fileName +  "could not be deleted");
         }
     }
 

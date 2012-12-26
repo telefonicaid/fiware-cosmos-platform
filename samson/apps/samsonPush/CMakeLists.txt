@@ -7,6 +7,10 @@ SET (HEADERS
 	SamsonPushConnectionsManager.h
 )
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+    set (SOLARIS_LIBS "-lsocket -lnsl")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+
 SET( STATIC_LIBS
      samsonClient
      samsonWorkerLib
@@ -24,6 +28,7 @@ SET( STATIC_LIBS
      protobuf
      dl
      pthread
+     ${SOLARIS_LIBS}
 )
 
 # Include directories

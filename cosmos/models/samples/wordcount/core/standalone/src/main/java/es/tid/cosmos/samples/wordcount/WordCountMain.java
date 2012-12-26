@@ -1,3 +1,14 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.samples.wordcount;
 
 import org.apache.hadoop.conf.Configuration;
@@ -47,7 +58,7 @@ public class WordCountMain extends Configured implements Tool {
             int res = ToolRunner.run(new Configuration(),
                                      new WordCountMain(), args);
             if (res != 0) {
-                throw new Exception("Uknown error");
+                throw new Exception("Unknown error");
             }
         } catch (Exception ex) {
             LOGGER.fatal(ex);

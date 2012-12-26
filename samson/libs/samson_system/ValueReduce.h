@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 #ifndef _H_SAMSON_system_reduce_VALUE_REDUCE
 #define _H_SAMSON_system_reduce_VALUE_REDUCE
@@ -505,7 +515,7 @@ namespace samson{
                         
                         // Forgetting factor 
                         size_t time_diff = t - value.get_value_from_vector(1)->get_double();
-                        total = total * pow( factor  , time_diff );
+                        total = total * pow( factor  , static_cast<int>(time_diff) );
                     }
                     
                     double tmp =  value.get_double();
@@ -685,7 +695,7 @@ namespace samson{
                 size_t time_diff = current_time - value->get_value_from_map("timestamp")->get_double();
                 system::Value * counter_value = value->get_value_from_map("counter");
                 double previous_counter = counter_value->get_double();
-                double counter = previous_counter * pow( factor  , time_diff );
+                double counter = previous_counter * pow( factor  , static_cast<int>(time_diff) );
                 
                 counter_value->set_double(counter );
             }
@@ -811,7 +821,7 @@ namespace samson{
                 // Forgetting factor 
                 size_t time_diff = current_time - value->get_value_from_map("timestamp")->get_double();
                 system::Value * counter_value = value->get_value_from_map("counter");
-                counter_value->set_double( counter_value->get_double() * pow( factor  , time_diff ) );
+                counter_value->set_double( counter_value->get_double() * pow( factor  , static_cast<int>(time_diff) ) );
             }
             
             void run( samson::KVSetStruct* inputs , samson::KVWriter *writer  )

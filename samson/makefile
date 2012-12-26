@@ -13,7 +13,7 @@ ifndef SAMSON_VERSION
 SAMSON_VERSION=0.7.0
 endif
 ifndef SAMSON_RELEASE
-	SAMSON_RELEASE:=$(shell svn info . | grep "Last Changed Rev: " | cut -f4 -d" ")
+	SAMSON_RELEASE=1
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -32,8 +32,11 @@ ifndef CPU_COUNT
 	OS=$(shell uname -s)
 	ifeq ($(OS),Darwin)
 		CPU_COUNT:=$(shell sysctl hw.ncpu | cut -f 2 -d" ")
-	else
+	endif
+	ifeq ($(OS),Linux)
 		CPU_COUNT:=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+	else
+		CPU_COUNT=1
 	endif
 endif
 
@@ -62,6 +65,10 @@ ifndef LOGSERVER_LOG_DIR
 LOGSERVER_LOG_DIR=/var/log/logserver
 endif
 
+# Lint for C/C++ code
+ifndef CPPLINT
+	CPPLINT:=$(shell pwd)/scripts/cpplint.py
+endif
 
 # ------------------------------------------------
 # Default compilation mode
@@ -415,12 +422,11 @@ publish_packages:
 		fi; \
 	fi
 
-rpm: clean cleansvn
+rpm: clean
 	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
 	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
 	tar cz --transform 's,^./,samson-$(SAMSON_VERSION)/,' .  --show-transformed-names --exclude=*.svn* -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
-	sed -e "s/SAMSON_VERSION/$(SAMSON_VERSION)/g" -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/g" rpm/samson.spec > rpm/samson-$(SAMSON_VERSION).spec
-	rpmbuild -bb rpm/samson-$(SAMSON_VERSION).spec
+	rpmbuild -bb rpm/samson.spec --define 'version $(SAMSON_VERSION)' --define 'release $(SAMSON_RELEASE)'
 
 publish_rpm: rpm
 	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
@@ -498,3 +504,20 @@ test_makefile:
 	make install_release_all
 	make install_debug_all
 	make install coverage
+
+# Verify that any new/changed source code is "compliant"
+code_lint:
+	for file in $$(git status --porcelain -s | grep -v \?\? | awk '{print $$2}'); \
+	do \
+		extension=$$(basename $${file} | sed 's/.*\.//'); \
+		case "$$extension" in \
+			c|h|cpp|hpp)  \
+				$(CPPLINT) $${file} ; \
+				;;  \
+			makefile)  \
+				;;  \
+			*)  \
+				echo "Lint for .$$extension files not currently supported" ;  \
+				;;  \
+		esac \
+	done

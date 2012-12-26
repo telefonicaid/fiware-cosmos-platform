@@ -1,3 +1,14 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.profile.dictionary.comscore;
 
 import java.io.FileInputStream;
@@ -84,7 +95,7 @@ public class CSDictionary implements Dictionary {
         } else if (patternId == 0) {
             throw new IllegalArgumentException("Invalid pattern ID.");
         } else if (patternId == 1) {
-            return this.processUknownUrl();
+            return this.processUnknownUrl();
         } else {
             return this.processKnownUrl(patternId);
         }
@@ -118,7 +129,7 @@ public class CSDictionary implements Dictionary {
         return categorization;
     }
 
-    private Categorization processUknownUrl() {
+    private Categorization processUnknownUrl() {
         Categorization categorization = new Categorization();
         categorization.setResult(CategorizationResult.UNKNOWN_URL);
         return categorization;

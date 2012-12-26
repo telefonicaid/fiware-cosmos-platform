@@ -163,9 +163,9 @@ def deploy_namenode_daemon():
 @roles('jobtracker')
 def deploy_jobtracker_daemon():
     """Deploys the jobtracker Hadoop daemon"""
-    iptables.add_rule("INPUT -p tcp --dport 8021 -j ACCEPT")
-    iptables.add_rule("INPUT -p tcp --dport 50030 -j ACCEPT")
-    iptables.add_rule("INPUT -p tcp --dport 9290 -j ACCEPT")
+    iptables.accept_in_tcp(8021)
+    iptables.accept_in_tcp(50030)
+    iptables.accept_in_tcp(9290)
     sudo("service iptables save")
     deploy_daemon('jobtracker')
     start_daemon('jobtracker')

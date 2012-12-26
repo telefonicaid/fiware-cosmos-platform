@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
 
 /* ****************************************************************************
@@ -14,8 +24,6 @@
  *
  *  Usefull functions to simplify development with pugi library
  *  Everything ready for running xpath queries over xml data
- *
- * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *
  * ****************************************************************************/
 

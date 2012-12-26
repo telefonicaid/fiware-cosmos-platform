@@ -6,9 +6,13 @@
     <parent>
         <groupId>es.tid.cosmos</groupId>
         <artifactId>individualprofile</artifactId>
-        <version>0.9.0.0-SNAPSHOT</version>
+        <version>0.9.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
+    <properties>
+        <springframework.version>3.0.0.RELEASE</springframework.version>
+    </properties>
 
     <artifactId>individualprofile-api</artifactId>
     <name>individualprofile-api</name>
@@ -16,29 +20,23 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>1.9.0</version>
-            <scope>test</scope>
-            <type>jar</type>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-hadoop</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${springframework.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-server</artifactId>
-            <version>${jersey-version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-grizzly2</artifactId>
-            <version>${jersey-version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>jersey-spring</artifactId>
-            <version>${jersey-version}</version>
+            <version>1.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -50,16 +48,6 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>3.0-beta-3</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -96,10 +84,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <distributionManagement>
-        <site>
-            <url>${repoSiteUrl}/${project.groupId}/individualprofile-api</url>
-        </site>
-    </distributionManagement>
 </project>

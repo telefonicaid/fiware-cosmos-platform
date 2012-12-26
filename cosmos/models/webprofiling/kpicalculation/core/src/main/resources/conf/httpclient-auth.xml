@@ -1,5 +1,16 @@
 <?xml version="1.0"?>
 <!--
+  ~ Telefónica Digital - Product Development and Innovation
+  ~
+  ~ THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+  ~ EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+  ~ WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+  ~
+  ~ Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+  ~ All rights reserved.
+  -->
+
+<!--
   This is the authentication configuration file for protocol-httpclient.
   Different credentials for different authentication scopes can be
   configured in this file. If a set of credentials is configured for a 

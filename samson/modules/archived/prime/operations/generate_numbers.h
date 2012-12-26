@@ -64,7 +64,7 @@ helpLine: Generate natural numbers from 1 to prime.limit
 			  return;
 
 		   // Recover the number of samples from the environment variables
-		   size_t num_samples = environment->getSizeT( "prime.limit" ,  100 );
+		   size_t num_samples = environment->get( "prime.limit" ,  100 );
 
 		   samson::system::UInt key;
 		   samson::system::Void value;

@@ -47,7 +47,7 @@ namespace url{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-			size_t num_hits = environment->getSizeT("url.num_hits", 3);
+			size_t num_hits = environment->get("url.num_hits", 3);
 
 			//OLM_T(LMT_User06,("Start: inputs[0].num_kvs:%d, inputs[1].num_kvs:%d", inputs[0].num_kvs, inputs[1].num_kvs));
 

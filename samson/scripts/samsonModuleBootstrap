@@ -26,7 +26,10 @@ process_module()
 {
   for file in `grep -rl moduletemplate $module_name`
   do
-    sed -i "s/moduletemplate/$module_name/g" $file
+    # sed in place -i option behaves different in Linux and Mac OS
+    # Changed to write on an output file
+    sed "s/moduletemplate/$module_name/g" $file > $file.bkup
+    mv $file.bkup $file
   done
 }
 

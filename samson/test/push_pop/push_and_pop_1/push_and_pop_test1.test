@@ -3,9 +3,9 @@ push_and_pop_test1 - Pushing and poping a file
 --SHELL--
 echo Begin
 rm -f /tmp/output.txt /tmp/pop_output.diff 
-delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command remove_all_stream
-samsonPush -port_node ${SAMSON_WORKER_PORT_ENV} input < input.txt
-samsonPop -port_node ${SAMSON_WORKER_PORT_ENV} -v input -max_size 1 > /tmp/output.txt
+delilah ${SAMSON_LOG_LEVELS} ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -command remove_all
+samsonPush -node ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} input < input.txt
+samsonPop -node ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV} -v input -max_size 1 > /tmp/output.txt
 diff /tmp/output.txt input.txt > /tmp/pop_output.diff
 cat /tmp/pop_output.diff
 echo Finish

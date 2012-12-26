@@ -13,96 +13,95 @@
 
 #include <cstring>
 
+#include "logMsg/logMsg.h"
 /* ****************************************************************************
-*
-* FILE                     Message.h - message definitions for all Samson IPC
-*
-*/
+ *
+ * FILE                     Message.h - message definitions for all Samson IPC
+ *
+ */
 
-namespace samson
-{
-namespace Message
-{
-
-
-
+namespace samson {
+/**
+ * \brief Namespace for messages used in SAMSON library
+ */
+namespace Message {
 /* ****************************************************************************
-*
-* CODE - Legible message codes and types
-*/
-#define CODE(c1, c2, c3, c4) ((c4 << 24) + (c3 << 16) + (c2 << 8) + c1)
-	
-/* ****************************************************************************
-*
-* MessageCode
-*/
-typedef enum MessageCode
-{
-	Hello							= CODE('H', 'e', 'l', 'l'), 
+ *
+ * MessageCode
+ */
+typedef enum MessageCode {
+  Hello,                        // Identification message in all interconnections worker - delilah or worker - worker
+  Alert,
+  ClusterInfoUpdate,            // Update information about the cluster to a delilah node
+  WorkerCommand,                // Command from a delilah node to a worker
+  WorkerCommandResponse,
+  PushBlock,                    // Push a block from delilah to a worker
+  PushBlockResponse,            // Confirmation from worker that block has been received
+  PushBlockConfirmation,        // Confirmation from worker that block has been confirmed in data model
 
-    NetworkNotification             = CODE('N', 'o', 't', 'i'),
-    
-    StatusReport					= CODE('S', 'R', 'p', ' '),
-    
-    Alert                           = CODE('A', 'l', 'e', 'r'),
+  PopQueue,                     // Request from delilah for a particular queue ( returns information about queue )
+  PopQueueResponse,             // Response from worker
 
-    WorkerCommand                   = CODE('W', 'C', '-', ' '),
-    WorkerCommandResponse           = CODE('W', 'C', 'R', ' '),
+  PopBlockRequest,              // Request from delilah for a block and range
+  PopBlockRequestConfirmation,      // Confirmation this block can be served
+  PopBlockRequestResponse,      // Block response from worker
 
-    PushBlock                       = CODE('P', 'B', 'l', ' '),
-    PushBlockResponse               = CODE('P', 'B', 'r', ' '),
-    PopQueue                        = CODE('P', 'Q', 'r', ' '),
-    PopQueueResponse                = CODE('P', 'Q', 'R', ' '),
-    
-    StreamOutQueue                  = CODE('S', 'O', 'Q', ' '),
-    
-	Message							= CODE('M', 'e', 's', 'g'),
-    
-    Unknown                         = CODE('U', 'n', 'k', ' ')
+  StreamOutQueue,               // Unused message?
+
+  Message,
+
+  BlockRequest,                 // Request a particular block to a worker
+  BlockRequestResponse,         // Answer to the block
+
+  Unknown,
 } MessageCode;
 
 
 
 /* ****************************************************************************
-*
-* Header - 
-*/
-typedef struct Header
-{
-	size_t magic;
-	MessageCode    code;
-	size_t gbufLen;
-	size_t kvDataLen;
-    
-    bool check()
-    {
-        if( magic != 4050769273219470657 )
-            return false;
-        
-        if( gbufLen > 10000000 )
-            return false;
-        
-        if( kvDataLen > ( 200 * 1024 * 1024 ) )
-            return false;
-        
-        return true;
+ *
+ * Header -
+ */
+
+typedef struct Header {
+  size_t magic;
+  MessageCode code;
+  size_t gbufLen;
+  size_t kvDataLen;
+
+  static const size_t kMagicNumber = 4050769273219470657;
+  static const size_t kMaxBufLen = 10000000;
+  static const size_t kMaxKvDataLen = 200 * 1024 * 1024;
+
+  bool Check() const {
+    if (magic != kMagicNumber) {
+      LM_E(("Error checking received header, wrong magic number header(%lu) != MagicNumber(%lu)", magic, kMagicNumber));
+      return false;
     }
-    
-    void setMagicNumber()
-    {
-        magic = 4050769273219470657;
+    if (gbufLen > kMaxBufLen) {
+      LM_E(("Error checking received header, wrong length(%lu) > MaxBufLen(%lu)", gbufLen, kMaxBufLen));
+      return false;
     }
-    
+    if (kvDataLen > kMaxKvDataLen) {
+      LM_E(("Error checking received header, wrong kvDataLen(%lu) > MaxKvDataLen(%lu)", kvDataLen, kMaxKvDataLen));
+      return false;
+    }
+    return true;
+  }
+
+  void setMagicNumber() {
+    magic = kMagicNumber;
+  }
 } Header;
 
 
 /* ****************************************************************************
-*
-* messageCode - 
-*/
-extern char* messageCode(MessageCode code);
+ *
+ * messageCode -
+ */
 
+const char *messageCode(MessageCode code);
 }
-}
+}      // end of namespace samson::Message
 
-#endif
+#endif  // ifndef SAMSON_MESSAGE_H

@@ -57,7 +57,7 @@ class map_by_user : public samson::Map
         // For the traces
         samson::system::Value trace;
         samson::system::Value value_void;
-        value_void.set_as_void();
+        value_void.SetAsVoid();
 
 
         for (uint64_t i = 0; (i < inputs[0].num_kvs); i++)
@@ -74,8 +74,8 @@ class map_by_user : public samson::Map
             output_value = input_value.product;
 
             // operation traces
-            trace.set_string(au::str("Mapped item %lu for user:%lu", output_value.value, output_key.value).c_str());
-            writer->emit( -1 , &trace , &value_void );
+            trace.SetString(au::str("Mapped item %lu for user:%lu", output_value.value, output_key.value).c_str());
+            // writer->emit( -1 , &trace , &value_void );
 
             writer->emit( 0 , &output_key, &output_value);
         }

@@ -12,16 +12,16 @@
 #define SAMSON_VERSION_H
 
 /* ****************************************************************************
-*
-* FILE                    samsonVersion.h - software version of samson
-*
-*
-*
-*/
+ *
+ * FILE                    samsonVersion.h - software version of samson
+ *
+ *
+ *
+ */
 
 
-#define SAMSON_VERSION				"0.7.0"
+#define SAMSON_VERSION "0.7.0"
 
-#define TEST $Rev$
+#define TEST           $Rev : 3517 $
 
 #endif

@@ -12,69 +12,47 @@
 
 #include <sys/time.h>                   // gettimeofday()
 
-#include "logMsg/logMsg.h"              // LM_M()
+#include "logMsg/logMsg.h"              // LOG_SM()
 
 #include "LockDebugger.h"               // LockDebugger
-#include "au/mutex/Token.h"                   // au::Token
-#include "au/Cronometer.h"              // au::Cronometer
-#include "TokenTaker.h"				    // Own interface
+#include "TokenTaker.h"                 // Own interface
+#include "au/ExecesiveTimeAlarm.h"
+#include "au/mutex/Token.h"             // au::Token
+#include "au/statistics/Cronometer.h"   // au::Cronometer
+#include "au/string/StringUtilities.h"
 
-//#define DEBUG_AU_TOKEN
+namespace au {
+TokenTaker::TokenTaker(Token *token, const std::string& name) : name_(name), token_(token) {
+  au::ExecesiveTimeAlarm alarm(0, au::str("TokenTaker for token '%s' at '%s'", token->name().c_str(), name.c_str()));
 
-NAMESPACE_BEGIN(au)
-
-TokenTaker::TokenTaker( Token* _token  )
-{
-    au::ExecesiveTimeAlarm alarm("TokenTaker::TokenTaker");
-    
-    token = _token;
-    name = "Unknown";
-    
-    //LM_M(("New TokenTaker %s for token %s", name ,  token->name));
-    token->retain();
+  token->Retain();
 }
 
-TokenTaker::TokenTaker( Token* _token , const char* _name )
-{
-    au::ExecesiveTimeAlarm alarm("TokenTaker::TokenTaker");
-    
-    token = _token;
-    name = _name;
-    
-    //LM_M(("New TokenTaker %s for token %s", name ,  token->name));
-    token->retain();
+TokenTaker::~TokenTaker() {
+  token_->Release();
 }
 
-TokenTaker::~TokenTaker()
-{
-    //LM_M(("Destroy TokenTaker %s for token %s", name ,  token->name));
-    token->release();
+void TokenTaker::Stop() {
+  token_->Stop();
 }
 
-
-void TokenTaker::stop(  )
-{
-    token->stop();
+void TokenTaker::WakeUp() {
+  token_->WakeUp();
 }
 
-void TokenTaker::wakeUp()
-{
-    // Wake up a thread that has been "stop"
-    //LM_M(("Wake up for token %s", token->name ));
-    
-    if( pthread_cond_signal(&token->_block) != 0)
-        LM_X(1, ("Internal error at au::TokenTaker"));
-    
-    
+void TokenTaker::WakeUpAll() {
+  token_->WakeUpAll();
 }
 
-void TokenTaker::wakeUpAll()
-{
-    // Wake up all stopped threads
-    //LM_M(("Wake up all for token %s", token->name ));
-    
-    if( pthread_cond_broadcast(&token->_block) != 0)
-        LM_X(1, ("Internal error at au::TokenTaker"));
+MultipleTokenTaker::MultipleTokenTaker(const std::vector<Token *>& tokens) : tokens_(tokens) {
+  for (size_t i = 0; i < tokens_.size(); ++i) {
+    tokens_[i]->Retain();
+  }
 }
 
-NAMESPACE_END
+MultipleTokenTaker::~MultipleTokenTaker() {
+  for (size_t i = 0; i < tokens_.size(); ++i) {
+    tokens_[i]->Release();
+  }
+}
+}

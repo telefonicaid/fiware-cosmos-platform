@@ -8,16 +8,15 @@ ValueReduce.h
 smaz.h
 ValueContainer.h
 ValueVector.h
+MapCompareFunctor.h
 ProcessComponent.h
 TopProcessComponent.h
 ProcessComponentManager.h
-HubMapProcess.h
-HubMapTimeProcess.h
-ExtractSingleFieldsProcess.h
-ExtractSingleFieldsTimeProcess.h
-ExtractDependentFieldsProcess.h
-ExtractDependentFieldsTimeProcess.h
+SpreadMapProcess.h
+EmitFieldsProcess.h
+UpdateCountFunction.h
 HitCountProcess.h
+HitCountByConceptProcess.h
 )
 
 SET (SOURCES
@@ -33,13 +32,11 @@ ValueVector.cpp
 ProcessComponent.cpp
 TopProcessComponent.cpp
 ProcessComponentManager.cpp
-HubMapProcess.cpp
-HubMapTimeProcess.cpp
-ExtractSingleFieldsProcess.cpp
-ExtractSingleFieldsTimeProcess.cpp
-ExtractDependentFieldsProcess.cpp
-ExtractDependentFieldsTimeProcess.cpp
+SpreadMapProcess.cpp
+EmitFieldsProcess.cpp
+UpdateCountFunction.cpp
 HitCountProcess.cpp
+HitCountByConceptProcess.cpp
 )
 
 # Include directories

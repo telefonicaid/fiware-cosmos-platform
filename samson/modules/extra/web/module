@@ -25,10 +25,10 @@ script init_stream_operations
 		alias [parse_web]   01.parse_web;
 
 		# Definitions;
-		add_stream_operation  [parse_web]  web.parse_web_hits [input] [words];
+		add_stream_operation  [parse_web]  web.parse_web_hits -input [input] -output [words];
 
 		# Auxiliar modules;
-		init_stream 99.hit hit.init_stream_operations
+		init_stream -prefix 99.hit hit.init_stream_operations
     }
 
     helpLine "Init stream operations"
@@ -38,7 +38,7 @@ script demo
 {
     code
     {
-		remove_all_stream;
+		remove_all;
 		init_stream demo web.init_stream_operations;
     }
 

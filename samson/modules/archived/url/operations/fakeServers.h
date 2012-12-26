@@ -37,7 +37,7 @@ namespace url{
 		    samson::system::UInt id; 
 
                    // Recover the number of servers from the environment
-                   size_t num_servers = environment->getSizeT( "url.num_servers" ,  1000000 );
+                   size_t num_servers = environment->get( "url.num_servers" ,  1000000 );
 		   for ( size_t i = 0 ; i < num_servers ; i++)
 		   {
 		     std::ostringstream o;

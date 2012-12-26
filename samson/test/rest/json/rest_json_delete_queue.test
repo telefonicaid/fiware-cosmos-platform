@@ -1,13 +1,12 @@
 --NAME--
 REST JSON /samson/queues delete
 --SHELL--
-delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command remove_all_stream 2>/dev/null
-delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command "add_stream_operation o1 txt.parser_words input words" 2>/dev/null
-delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2>/dev/null
-delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command "push input.txt input" 2>/dev/null
-delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command flush_buffers 2>/dev/null
-delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command wait 2>/dev/null
-curl -s --request DELETE http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/queues/input.txt/delete.json
+delilah  ${SAMSON_LOG_LEVELS} -command remove_all 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "add_stream_operation o1 txt.parser_words -input input -output words" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "add_stream_operation o2 txt.word_count_accumulate -input 'words words_count' -output  words_count" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command "push input.txt input" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -command wait 2>/dev/null
+curl -s --request DELETE http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/queues/input.json
+curl -s http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/queues.json
 --EXPECT--
-{"removed" : "input.txt"
-}
+{"command":"rm input","result":"OK",}{"table":{"items":[{"name":"words","format":"system.String-system.UInt","#kvs":"    0 ","size":"    0 "},{"name":"words_count","format":"system.String-system.UInt","#kvs":" 10.0 ","size":"  110 "}]},}

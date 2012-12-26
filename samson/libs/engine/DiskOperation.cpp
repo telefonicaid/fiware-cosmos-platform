@@ -8,351 +8,276 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-#include "engine/DiskOperation.h"       // Own interface
+
 #include "logMsg/logMsg.h"              // LM_T
 #include "logMsg/traceLevels.h"         // LmtDisk
-#include "engine/Engine.h"              // engine::Engine
+
 #include "engine/DiskManager.h"         // engine::DiskManager
+#include "engine/DiskOperation.h"       // Own interface
+#include "engine/Engine.h"              // engine::Engine
+#include "engine/Logs.h"
 #include "engine/ReadFile.h"            // engine::ReadFile
 
-NAMESPACE_BEGIN(engine)
 
-
-DiskOperation::DiskOperation( )
-{
-    // Some default values
-    read_buffer = NULL;
-    
+namespace engine {
+DiskOperation::DiskOperation() {
+  // Some default values
+  read_buffer = NULL;
 }
 
-DiskOperation::~DiskOperation()
-{
+DiskOperation::~DiskOperation() {
 }
 
+au::SharedPointer<DiskOperation> DiskOperation::newReadOperation(char *data, std::string fileName, size_t offset,
+                                                                 size_t size,
+                                                                 size_t _listenerId) {
+  au::SharedPointer<DiskOperation> o(new DiskOperation());
 
-DiskOperation* DiskOperation::newReadOperation( char *data , std::string fileName , size_t offset , size_t size , size_t _listenerId  )
-{
-    
-    DiskOperation *o = new DiskOperation();
-    
-    o->fileName = fileName;
-    o->type = DiskOperation::read;
-    o->read_buffer = data;
-    o->size = size;
-    o->offset = offset;
-    o->addListener( _listenerId );
-    
-    o->environment.set("type","read");
-    
-    return o;
+  o->fileName = fileName;
+  o->type = DiskOperation::read;
+  o->read_buffer = data;
+  o->size = size;
+  o->offset = offset;
+  o->addListener(_listenerId);
+
+  o->environment.Set("type", "read");
+
+  return o;
 }
 
-DiskOperation * DiskOperation::newReadOperation( std::string fileName , size_t offset , size_t size ,  SimpleBuffer simpleBuffer , size_t _listenerId)
-{
-    
-    DiskOperation *o = new DiskOperation();
-    
-    o->fileName = fileName;
-    o->type = DiskOperation::read;
-    o->read_buffer = simpleBuffer.getData();
-    o->size = size;
-    o->offset = offset;
-    o->addListener( _listenerId );
-    
-    o->environment.set("type","read");
-    
-    return o;
+au::SharedPointer<DiskOperation> DiskOperation::newReadOperation(std::string fileName, size_t offset, size_t size,
+                                                                 SimpleBuffer simpleBuffer,
+                                                                 size_t _listenerId) {
+  au::SharedPointer<DiskOperation> o(new DiskOperation());
+
+  o->fileName = fileName;
+  o->type = DiskOperation::read;
+  o->read_buffer = simpleBuffer.data();
+  o->size = size;
+  o->offset = offset;
+  o->addListener(_listenerId);
+
+  o->environment.Set("type", "read");
+
+  return o;
 }
 
+au::SharedPointer<DiskOperation> DiskOperation::newWriteOperation(BufferPointer buffer, std::string fileName,
+                                                                  size_t _listenerId) {
+  au::SharedPointer<DiskOperation>o(new DiskOperation());
 
+  o->fileName = fileName;
+  o->type = DiskOperation::write;
+  o->buffer = buffer;
+  o->size = buffer->size();
+  o->offset = 0;
+  o->addListener(_listenerId);
 
-DiskOperation* DiskOperation::newWriteOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId )
-{
-    DiskOperation *o = new DiskOperation();
-    
-    o->fileName = fileName;
-    o->type = DiskOperation::write;
-    o->buffer_container.setBuffer(buffer);
-    o->size = buffer->getSize();
-    o->offset = 0;
-    o->addListener( _listenerId );
-    
-    o->environment.set("type","write");
-    
-    return o;
+  o->environment.Set("type", "write");
+
+  return o;
 }
 
+au::SharedPointer<DiskOperation> DiskOperation::newAppendOperation(BufferPointer buffer, std::string fileName,
+                                                                   size_t _listenerId) {
+  au::SharedPointer<DiskOperation>o(new DiskOperation());
 
-DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string fileName, size_t _listenerId )
-{
-    DiskOperation *o = new DiskOperation();
-    
-    o->fileName = fileName;
-    o->type = DiskOperation::append;
-    o->buffer_container.setBuffer(buffer);
-    o->size = buffer->getSize();
-    o->offset = 0;
-    o->addListener( _listenerId );
-    
-    o->environment.set("type","append");
-    
-    return o;
+  o->fileName = fileName;
+  o->type = DiskOperation::append;
+  o->buffer = buffer;
+  o->size = buffer->size();
+  o->offset = 0;
+  o->addListener(_listenerId);
+
+  o->environment.Set("type", "append");
+
+  return o;
 }
 
-DiskOperation* DiskOperation::newRemoveOperation( std::string fileName , size_t _listenerId )
-{
-    DiskOperation *o = new DiskOperation();
-    
-    o->fileName = fileName;
-    o->type = DiskOperation::remove;
-    o->size = 0;
-    o->addListener( _listenerId );
-    
-    o->environment.set("type","remove");
-    
-    return o;
+au::SharedPointer<DiskOperation> DiskOperation::newRemoveOperation(std::string fileName, size_t _listenerId) {
+  au::SharedPointer<DiskOperation> o(new DiskOperation());
+
+  o->fileName = fileName;
+  o->type = DiskOperation::remove;
+  o->size = 0;
+  o->addListener(_listenerId);
+
+  o->environment.Set("type", "remove");
+
+  return o;
 }
 
-std::string DiskOperation::getDescription()
-{
-    std::ostringstream o;
-    
-    switch (type) {
-        case write:
-            o << "Write to file: '" << fileName << "' Size:" << au::str(size,"B");
-            break;
-        case append:
-            o << "Append to file: '" << fileName << "' Size:" << au::str(size,"B");
-            break;
-        case read:
-            o << "Read from file: '" << fileName << "' Size:" << au::str(size,"B") << " ["<< size << "B] Offset:" << offset;
-            break;
-        case remove:
-            o << "Remove file: '" << fileName << "'";
-            break;
-    }
-    
-    
-    return o.str();
+std::string DiskOperation::getDescription() {
+  std::ostringstream o;
+
+  switch (type) {
+    case write:
+      o << "Write to file: '" << fileName << "' Size:" << au::str(size, "B");
+      break;
+    case append:
+      o << "Append to file: '" << fileName << "' Size:" << au::str(size, "B");
+      break;
+    case read:
+      o << "Read from file: '" << fileName << "' Size:" << au::str(size, "B") << " [" << size << "B] Offset:" << offset;
+      break;
+    case remove:
+      o << "Remove file: '" << fileName << "'";
+      break;
+  }
+
+
+  return o.str();
 }
 
-std::string DiskOperation::getShortDescription()
-{
-    std::ostringstream o;
-    
-    switch (type) {
-        case write:
-            o << "W:" << au::str( size );
-            break;
-        case append:
-            o << "A:" << au::str( size );
-            break;
-        case read:
-            o << "R:" << au::str( size );
-            break;
-        case remove:
-            o << "X";
-            break;
-    }
-    
-    
-    return o.str();
+std::string DiskOperation::getShortDescription() {
+  std::ostringstream o;
+
+  switch (type) {
+    case write:
+      o << "W:" << au::str(size);
+      break;
+    case append:
+      o << "A:" << au::str(size);
+      break;
+    case read:
+      o << "R:" << au::str(size);
+      break;
+    case remove:
+      o << "X";
+      break;
+  }
+
+
+  return o.str();
 }
 
-void DiskOperation::setError( std::string message )
-{
-    
-    std::ostringstream o;
-    o << message << " ( " << getDescription() << " )";
-    error.set( o.str() );
+void DiskOperation::setError(std::string message) {
+  std::ostringstream o;
+
+  o << message << " ( " << getDescription() << " )";
+  error.AddError(o.str());
 }
 
+void DiskOperation::run() {
+  // Detect some slow disk access if rate is going bellow 10Mb/s in large operations
+  // double alarm_time_secs = std::max(  (double) size / 10000000.0 , 5.0 );
+  // au::ExecesiveTimeAlarm alarm( au::str("Disk Operation '%s;",getDescription().c_str() , alarm_time_secs ) );
 
-void DiskOperation::run(  )
-{
-    // Detect some slow disk access if rate is going bellow 10Mb/s in large operations
-    //double alarm_time_secs = std::max(  (double) size / 10000000.0 , 5.0 );
-    //au::ExecesiveTimeAlarm alarm( au::str("Disk Operation '%s;",getDescription().c_str() , alarm_time_secs ) );
+  LOG_D(logs.disk_manager, ("START DiskManager: Running operation %s", getDescription().c_str()));
 
-    LM_T(LmtDisk,  ("START DiskManager: Running operation %s" , getDescription().c_str() ));
-    
-    if( type == DiskOperation::write )
-    {
-        // Create a new file
-        
-        
-        LM_T( LmtDisk , ("DiskManager: Opening file %s to write", fileName.c_str() ));
-        FILE *file = fopen( fileName.c_str() , "w" );
-        if ( !file )
-        {
-            LM_E(("Error opening file for writing, fileName:%s, errno:%d", fileName.c_str(), errno));
-            setError("Error opening file");
+  if (type == DiskOperation::write) {
+    // Create a new file
+
+
+    LOG_D(logs.disk_manager, ("DiskManager: Opening file %s to write", fileName.c_str()));
+    FILE *file = fopen(fileName.c_str(), "w");
+    if (!file) {
+      LM_E(("Error opening file for writing, fileName:%s, errno:%d", fileName.c_str(), errno));
+      setError("Error opening file");
+    } else {
+      if (size > 0) {
+        if (fwrite(buffer->data(), size, 1, file) == 1) {
+          fflush(file);
+        } else {
+          LM_E(("Error writing data to file, fileName:%s, errno:%d", fileName.c_str(), errno));
+          setError("Error writing data to the file");
         }
-        else
-        {
-            if( size > 0 )
-            {
-                if( fwrite( buffer_container.getBuffer()->getData(), size, 1 , file) == 1 )
-                    fflush(file);
-                else
-                {
-                    LM_E(("Error writing data to file, fileName:%s, errno:%d", fileName.c_str(), errno));
-                    setError("Error writing data to the file");
-                }
-            }
-            
-            fclose(file);
-        }
+      }
+      LOG_D(logs.disk_manager, ("DiskManager: write operation on file %s completed", fileName.c_str()));
+      fclose(file);
     }
-    
-    if( type == DiskOperation::append )
-    {
-        // Create a new file
-        
-        
-        LM_T( LmtDisk , ("DiskManager: Opening file %s to append", fileName.c_str() ));
-        FILE *file = fopen( fileName.c_str() , "a" );
-        if ( !file )
-            setError("Error opening file");
-        else
-        {
-            if( size > 0 )
-            {
-                engine::Buffer* buffer = buffer_container.getBuffer();
-                if( !buffer )
-                    LM_X(1, ("Internal error"));
-                
-                if( fwrite(buffer->getData(), size, 1 , file) == 1 )
-                    fflush(file);
-                else
-                    setError("Error writing data to the file");
-            }
-            
-            fclose(file);
-        }
-    }
-    
-    
-    if( type == DiskOperation::read )
-    {
-        LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fileName.c_str() ));
-        
-        // Get the Read file from the Manager
-        ReadFile *rf = diskManager->fileManager.getReadFile( fileName );
-        
-        if( !rf->isValid() )
-        {
-            LM_E(("Internal error: Not valid read file %s" , fileName.c_str()));
-            setError( "Internal error: Not valid read file" );
-        }
-        else
-        {
-            if( rf->seek( offset ) )
-            {
-                LM_E(("Error while seeking data from file %s" , fileName.c_str()));
-                setError( au::str("Error while seeking data from file %s" , fileName.c_str()));
-            }
-            
-            
-            if( rf->read(read_buffer, size ) )
-            {
-                LM_E(("Error while reading data from file %s" , fileName.c_str()));
-                setError( au::str("Error while reading data from file %s" , fileName.c_str()));
-            }
-            
-        }
-        
-        // When to close rf ?
-        rf->close();
+  }
 
-#if 0
-        LM_T( LmtDisk , ("DiskManager: Opening file %s to read", fileName.c_str() ));
-         
-        FILE *file = fopen(fileName.c_str() , "r" );
-        if( !file )
-            setError("Error opening file");
-        else
-        {
-            if( fseek(file, offset, SEEK_SET) != 0)
-                setError("Error in fseek operation");
-            else
-            {
-                if(size > 0 )
-                {
-                    if ( fread(read_buffer, size, 1, file) == 1 )
-                    {
-                        gettimeofday(&stop, NULL);
-                        LM_TODO(("Fix statistics using Engine"));
-                        operation_time = DiskStatistics::timevaldiff( &start , &stop);
-                    }
-                    else
-                        setError("Error while reading data from file");
-                }
-                else
-                    operation_time = 0;
-            }
-            
-            fclose(file);
-        }
-#endif
-    }
-    
-    if( type == DiskOperation::remove)
-    {
-        
-        LM_T( LmtDisk , ("DiskManager: Removing file %s", fileName.c_str() ));
-        
-        // Remove the file
-        int c = ::remove( fileName.c_str() );
-        if( c != 0 )
-            setError("Error while removing file");
-    }
+  if (type == DiskOperation::append) {
+    // Create a new file
 
-    LM_T(LmtDisk, ("FINISH DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str() ));
-    // Notify to the engine
-    diskManager->finishDiskOperation( this );
+
+    LOG_D(logs.disk_manager, ("DiskManager: Opening file %s to append", fileName.c_str()));
+    FILE *file = fopen(fileName.c_str(), "a");
+    if (!file) {
+      setError("Error opening file");
+    } else {
+      if (size > 0) {
+        if (buffer == NULL) {
+          LM_X(1, ("Internal error"));
+        }
+        if (fwrite(buffer->data(), size, 1, file) == 1) {
+          fflush(file);
+        } else {
+          setError("Error writing data to the file");
+        }
+      }
+
+      fclose(file);
+    }
+  }
+
+
+  if (type == DiskOperation::read) {
+    LOG_D(logs.disk_manager, ("DiskManager: Opening file %s to read", fileName.c_str()));
+
+    // Get the Read file from the Manager
+    ReadFile *rf = diskManager->fileManager_.GetReadFile(fileName);
+
+    if ((rf == NULL) || (!rf->IsValid())) {
+      LM_E(("Internal error: Not valid read file %s", fileName.c_str()));
+      setError("Internal error: Not valid read file");
+    } else {
+      if (rf->Seek(offset)) {
+        LM_E(("Error while seeking data from file %s", fileName.c_str()));
+        setError(au::str("Error while seeking data from file %s", fileName.c_str()));
+      }
+
+
+      if (rf->Read(read_buffer, size)) {
+        LM_E(("Error while reading data from file %s", fileName.c_str()));
+        setError(au::str("Error while reading data from file %s", fileName.c_str()));
+      }
+    }
+  }
+
+  if (type == DiskOperation::remove) {
+    LOG_D(logs.disk_manager, ("DiskManager: Removing file %s", fileName.c_str()));
+
+    // Remove the file
+    int c = ::remove(fileName.c_str());
+    if (c != 0) {
+      setError("Error while removing file");
+    }
+  }
+
+  LOG_D(logs.disk_manager, ("FINISH DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str()));
+  // Notify to the engine
 }
 
-bool DiskOperation::compare( DiskOperation *operation )
-{
-    // Priority to append and write operations
-    if( ( type == append ) || ( type == write ) )
-        if( ( operation->type != append ) && ( operation->type != write ) )
-            return true;
-    
-    return false;
-}
+void DiskOperation::getInfo(std::ostringstream& output) {
+  output << "<disk_operation>\n";
 
-void DiskOperation::getInfo( std::ostringstream& output)
-{
-    output << "<disk_operation>\n";
-    
-    output << "<type>";
-    switch (type) {
-        case read:
-            output << "read";
-            break;
-        case write:
-            output << "write";
-            break;
-        case append:
-            output << "append";
-            break;
-        case remove:
-            output << "remove";
-            break;
-            
-        default:
-            break;
-    }
-    output << "</type>\n";
-    
-    output << "<file_name>" << fileName << "</file_name>\n";
-    
-    output << "<size>" << size << "</size>\n";
-    output << "<offset>" << offset << "</offset>\n";
-    
-    output << "</disk_operation>\n";
-}
+  output << "<type>";
+  switch (type) {
+    case read:
+      output << "read";
+      break;
+    case write:
+      output << "write";
+      break;
+    case append:
+      output << "append";
+      break;
+    case remove:
+      output << "remove";
+      break;
 
-NAMESPACE_END
+    default:
+      break;
+  }
+  output << "</type>\n";
+
+  output << "<file_name>" << fileName << "</file_name>\n";
+
+  output << "<size>" << size << "</size>\n";
+  output << "<offset>" << offset << "</offset>\n";
+
+  output << "</disk_operation>\n";
+}
+}

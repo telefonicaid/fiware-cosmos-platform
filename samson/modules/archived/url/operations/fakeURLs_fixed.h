@@ -42,16 +42,16 @@ namespace url{
 			samson::system::Void v;
 
 			// Recover the number of users in this demo
-			size_t num_users  = environment->getSizeT( "url.num_users" ,  1000000 );
+			size_t num_users  = environment->get( "url.num_users" ,  1000000 );
 
 			// Recover the number of urls per user
-			size_t num_urls_per_user = environment->getSizeT( "url.num_urls_per_user" ,  100 );
+			size_t num_urls_per_user = environment->get( "url.num_urls_per_user" ,  100 );
 
 			// Recover the number of paths per server
-			size_t num_paths_per_server = environment->getSizeT( "url.num_paths_per_server" ,  10 );
+			size_t num_paths_per_server = environment->get( "url.num_paths_per_server" ,  10 );
 
 			// Recover the number of servers from the environment
-			size_t num_servers = environment->getSizeT( "url.num_servers" ,  1000000 );
+			size_t num_servers = environment->get( "url.num_servers" ,  1000000 );
 
 			OLM_T(LMT_User06, ("Generating URLs per %lu users\n", num_users));
 			for (size_t u = 0 ; u < num_users ; u++ )

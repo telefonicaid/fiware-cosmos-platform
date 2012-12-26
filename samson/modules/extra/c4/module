@@ -1,0 +1,65 @@
+
+Module c4
+{
+	title	"Connect 4 solver"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+
+# Board of the game
+
+data Board
+{
+	system.UInt64 white;
+	system.UInt64 black;	
+	system.Int8 turn;    # Black or White
+}
+
+# Forward or backward message between nodes
+
+data Message
+{
+	# Type of message ( init, forward , backward )
+	# 0 -> Define init position
+	# 1 -> Request from another board
+	# 2 -> Response from requsted board
+	
+	system.Int8 type;   
+
+	# Board related with this message
+	c4.Board board;
+
+	# Solution
+	system.Int8 winner;
+
+}
+
+# information for each board
+
+data Info
+{
+	vector system.Int8 movement;   # Winner in each possible movement
+	vector c4.Board boards;        # List of boards to answer when finished
+	system.Int8 winner;            # Finnal winner ( when resolved )
+}
+
+parser parse
+{
+    out c4.Board c4.Message
+
+}
+
+reduce process
+{
+	in  c4.Board c4.Message      # Input messages
+	in  c4.Board c4.Info
+	out c4.Board c4.Message	     # Output messages
+	out c4.Board c4.Info	
+}
+
+map filter_solved
+{
+	in  c4.Board c4.Info
+	out c4.Board system.Void
+}

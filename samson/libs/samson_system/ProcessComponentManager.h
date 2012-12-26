@@ -5,55 +5,64 @@
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
  *
- * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * Copyright (c) 2012 Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
 
-#ifndef _H_SAMSON_system_PROCESS_COMPOENT_MANAGER
-#define _H_SAMSON_system_PROCESS_COMPOENT_MANAGER
+/*
+ * FILE            ProcessComponentsManager.h
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         SAMSON samson_system library
+ *
+ * DATE            2012
+ *
+ * DESCRIPTION
+ *
+ *  Declaration of ProcessComponentsManager class to prepare data and call
+ *  the Update method implemented in the different child classes
+ *
+ */
 
+#ifndef _H_SAMSON_system_PROCESS_COMPONENT_MANAGER
+#define _H_SAMSON_system_PROCESS_COMPONENT_MANAGER
 
-#include "au/containers/map.h"
-#include <samson/module/samson.h>
-#include <samson_system/Value.h>
+#include "au/containers/vector.h"
 #include "samson/module/KVWriter.h"
+#include "samson/module/KVSetStruct.h"
+#include "samson/module/samson.h"
+#include "samson_system/ProcessComponent.h"
+#include "samson_system/Value.h"
 
-namespace samson{ namespace system{
+namespace samson {
+namespace system {
+class ProcessComponent;
 
-    class ProcessComponent;
-    
-    /*
-     
-     Manager of ProcessComponent's
-     Used inside system.process operation to update states based on input values
-     
-     */
-    
-    class ProcessComponentsManager
-    {
+/*
+ *
+ * Manager of ProcessComponent's
+ * Used inside system.process operation to update states based on input values
+ *
+ */
 
-        // Vecor of components to be used to process this
-        au::vector<ProcessComponent> components_;
-        
-    public:
+class ProcessComponentsManager {
+  public:
+    ProcessComponentsManager();
 
-        ProcessComponentsManager( );
+    // Add new process components
+    void Add(ProcessComponent* const component);
 
-        // Add new process components
-        void add( ProcessComponent* component );
-        
-        // Function used in process function
-        void process( samson::KVSetStruct* inputs , samson::KVWriter *writer );
-        
-    private:
-        
-        void update( Value* key , Value * state , Value ** values , size_t num_values , samson::KVWriter *writer );
-        
-        
-    };
+    // Function used in process function
+    void Process(samson::KVSetStruct *inputs, samson::KVWriter* const writer);
 
-    
-}} // End of namespace samson.system        
+  private:
+    void Update(Value *key, Value *state, Value **values, size_t num_values, samson::KVWriter* const writer);
 
-#endif
+    // Vector of components to be used to process this
+     au::vector<ProcessComponent> components_;
+};
+}
+}   // End of namespace samson.system
 
+#endif  // ifndef _H_SAMSON_system_PROCESS_COMPONENT_MANAGER

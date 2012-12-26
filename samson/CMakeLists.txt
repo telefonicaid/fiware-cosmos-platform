@@ -32,10 +32,22 @@ MESSAGE( "Compiling in system ${CMAKE_SYSTEM_NAME}")
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     ADD_DEFINITIONS(-DOSX)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOSX")
-	# Use clang compiler in mac ( to support code coverage )
-	MESSAGE( "Using clang compilers" )
-	set( CMAKE_C_COMPILER "clang" )
-	set( CMAKE_CXX_COMPILER "clang++" )
+
+  # Several compilers are used in mac environment
+  #
+  # gcc 4.2  : Default in current Lion version
+  # clang    : useful for code-coverage
+  # gcc 4.7  : from mac ports
+
+  # By default if CC or CXX are set to default gcc 4.2
+  # to override this set CC or CXX to something other than /usr/bin/gcc or /usr/bin/g++
+  #
+  # e.g. CC=gcc-mp-4.7 CXX=g++-mp-4.7 make .....
+  # e.g. CC=clang  CXX=clang++ make .....
+
+  MESSAGE ("Using ${CMAKE_C_COMPILER} as our C compiler")
+  MESSAGE ("Using ${CMAKE_CXX_COMPILER} as our C++ compiler")
+
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -45,9 +57,18 @@ ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Disable unused but set variables - GCC 4.7+
 IF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable -m64 -std=c++0x")
+    set (SOLARIS_LIBS "-lsocket -lnsl")
+    set (CMAKE_MODULE_LINKER_FLAGS "-m64")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 
+# ---------------------------------------------------------------------------
+#
+# DEBUG
+#
+# RELEASE
+#
+# ---------------------------------------------------------------------------
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
@@ -98,10 +119,13 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 #
 
 include_directories("/opt/local/include")
+include_directories("/opt/local/include/json")
 include_directories("/usr/local/include")
 include_directories("/usr/include")
 include_directories("/usr/local/include/json")
 include_directories("/usr/include/json")
+include_directories("/usr/include/x86_64-linux-gnu") # Ubuntu 12.04
+include_directories("/usr/local/include/c-client-src")
 
 #
 # Library directories
@@ -110,6 +134,8 @@ include_directories("/usr/include/json")
 link_directories("/opt/local/lib")
 link_directories("/usr/local/lib")
 link_directories("/usr/lib64")
+link_directories("/usr/lib/x86_64-linux-gnu") # Ubuntu 12.04
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 link_directories("/usr/local/lib/amd64")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
@@ -127,16 +153,16 @@ if (HAVE_KDCHART)
   link_directories("${HAVE_KDCHART}/../lib")
 endif (HAVE_KDCHART)
 
-# QT check
-FIND_PATH( HAVE_QT Qt PATHS /opt/local/include /usr/include/qt4 )
-if ( HAVE_QT )
-    MESSAGE("Using ${HAVE_QT} for QT")
-else ( HAVE_QT )
-    MESSAGE("Not using QT library")
-endif (HAVE_QT)
+## QT check
+#FIND_PATH( HAVE_QT Qt PATHS /opt/local/include /usr/include/qt4 )
+#if ( HAVE_QT )
+#    MESSAGE("Using ${HAVE_QT} for QT")
+#else ( HAVE_QT )
+#    MESSAGE("Not using QT library")
+#endif (HAVE_QT)
 
 # Google Test - http://code.google.com/p/googletest/downloads/list
-FIND_LIBRARY ( HAVE_GTEST gtest PATHS /usr/lib /usr/lib64 /usr/local/lib64 )
+FIND_LIBRARY ( HAVE_GTEST gtest PATHS /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64 )
 if ( HAVE_GTEST )
     MESSAGE("Using ${HAVE_GTEST} for Google Test")
 else ( HAVE_GTEST )
@@ -170,3 +196,5 @@ if (error EQUAL 0)
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
+
+

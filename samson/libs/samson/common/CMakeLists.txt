@@ -1,40 +1,46 @@
 SET (HEADERS
 	common.h
+	Logs.h
 	KVInfo.h
 	FullKVInfo.h
+	BlockKVInfo.h
 	KVRange.h
+	KVRangeDivision.h
 	KVHeader.h
 	KVFile.h
 	Rate.h	
     NotificationMessages.h
 	samson.pb.h
+	gpb_operations.h
 	status.h
 	Visualitzation.h
 	ports.h
 	samsonDirectories.h
-	samsonLogMsg.h
 	SamsonSetup.h
-	traces.h
 	MessagesOperations.h
 	EnvironmentOperations.h
-	samsonConfig.h
 	coding.h
-	MemoryTags.h
 	KVInputVector.h
 	samsonVars.h
     MemoryCheck.h
+    SamsonDataSet.h
+    SamsonFile.h
 )
 
 SET (SOURCES
+	common.cpp
+	Logs.cpp
 	KVInfo.cpp
 	FullKVInfo.cpp
+	BlockKVInfo.cpp
 	KVRange.cpp
+    KVRangeDivision.cpp 
 	KVHeader.cpp
 	KVFile.cpp
     Rate.cpp
 	samson.pb.cc
+	gpb_operations.cpp
 	SamsonSetup.cpp
-	traces.cpp
 	MessagesOperations.cpp
 	EnvironmentOperations.cpp
 	coding.cpp
@@ -42,6 +48,8 @@ SET (SOURCES
 	status.cpp
 	Visualitzation.cpp 
     MemoryCheck.cpp
+    SamsonDataSet.cpp
+    SamsonFile.cpp
 )
 
 # Generate 'samson.pb.h' and 'samson.pb.cc' from ''samson.proto''
@@ -60,3 +68,8 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonCommon STATIC ${SOURCES} ${HEADERS})
+TARGET_LINK_LIBRARIES(samsonCommon engine)
+ADD_DEPENDENCIES(samsonCommon samson.pb.h)
+ADD_DEPENDENCIES(samsonCommon samson.pb.cc)
+
+INSTALL(FILES Logs.h DESTINATION include/samson/common)

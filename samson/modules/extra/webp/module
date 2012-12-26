@@ -78,7 +78,7 @@ map map_comscore_lookup
 
 	help
 	{
-     	"Lookup url agains the conscore_dictionary. Input is suppoused to be a map with url property as a string. categories property set at the output"
+     	"Lookup url against the conscore_dictionary. Input is supposed to be a map with url property as a string. categories property set at the output"
     }
 }			
 
@@ -128,14 +128,14 @@ script web_profiling
         alias [emit_hits]         emit_hits;
  
         # Definitions;
-        add_stream_operation      [parse_input]      webp.parse_web_logs      [input]       [logs];
-        add_stream_operation      [parse_input_tid]  webp.parse_tid_web_logs  [input_tid]   [logs];
-        add_stream_operation      [emit_hits]        webp.emit_hits           [logs]        [hits];
+        add_stream_operation      [parse_input]      webp.parse_web_logs      -input [input]       -output [logs];
+        add_stream_operation      [parse_input_tid]  webp.parse_tid_web_logs  -input [input_tid]   -output [logs];
+        add_stream_operation      [emit_hits]        webp.emit_hits           -input [logs]        -output [hits];
 
-		 # Auxiliar modules;
-        init_stream hit_5mins    hit.stream_block_simple;
-        init_stream hit_1hour    hit.stream_block_simple;
-        init_stream hit_24hours  hit.stream_block_simple;
+		 # Auxiliary modules;
+        init_stream -prefix hit_5mins    hit.stream_block_simple;
+        init_stream -prefix hit_1hour    hit.stream_block_simple;
+        init_stream -prefix hit_24hours  hit.stream_block_simple;
 
 		#Properties
 		set_stream_operation_property hit_5mins.01.reduce_hits time_span 300;
@@ -147,8 +147,8 @@ script web_profiling
 		set_stream_operation_property hit_24hours.01.reduce_hits time_span 86400;
 		set_stream_operation_property hit_24hours.20.reduce_tops time_span 86400;
 
-		# Connect quuees
-		add_queue_connection      [hits] hit_5mins.in_input  hit_1hour.in_input hit_24hours.in_input
+		# Connect queues
+		add_queue_connection      [hits] 'hit_5mins.in_input hit_1hour.in_input hit_24hours.in_input'
     }
 
     helpLine "Init stream operations"
@@ -170,7 +170,7 @@ script demo
 		# ----------------------------------------------------------------
 		# wep profiling stream block
 		# ----------------------------------------------------------------
-        init_stream webp    webp.web_profiling;
+        init_stream -prefix webp    webp.web_profiling;
  
 		add_queue_connection [input]     webp.in_input;
 		add_queue_connection [input_tid] webp.in_input_tid;

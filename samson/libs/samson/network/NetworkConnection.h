@@ -17,188 +17,96 @@
 
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 
 #include "au/network/SocketConnection.h"
 
-#include "samson/common/status.h"
 #include "samson/common/Visualitzation.h"
-#include "samson/network/PacketQueue.h"
+#include "samson/common/status.h"
 #include "samson/network/Packet.h"
+#include "samson/network/PacketQueue.h"
 
 namespace samson {
-    
-    class NetworkManager;
-    
-    class NetworkConnection
-    {
-        // Identifier of the node ( if available )
-        NodeIdentifier node_identifier;
+class NetworkManager;
 
-		// User and password for this connection
-		std::string user;
-		std::string password;
-		std::string connection_type;
-        
-        // Socket Connection
-        au::SocketConnection* socket_connection;
-        
-        // Token to block write thread when more packets have to be sent
-        au::Token token;
-        
-        // Pointer to the manager to report received messages
-        NetworkManager * network_manager;
+class NetworkConnection {
+public:
 
-        // Queue with pending packets for this element
-        PacketQueue packet_queue;
+  // Constructor & Destructor
+  NetworkConnection(const NodeIdentifier& node_identifier
+                    , au::SocketConnection *socket_connection
+                    , NetworkManager *network_manager);
 
-        // Threads for reading and writing packets to this socket
-        pthread_t t_read , t_write;
-        bool running_t_read;      // Flag to indicate that there is a thread using this endpoint writing data
-        bool running_t_write;     // Flag to indicate that there is a thread using this endpoint reading data
+  ~NetworkConnection();
 
-        bool quitting_t_reader;    // Flag to signal the reader thread to stop itself
-        bool quitting_t_writer;    // Flag to signal the writer thread to stop itself
+  // Close connection ( if still open ) and wait until threads are gone
+  void CloseAndStopBackgroundThreads();
 
-        friend class NetworkManager;
-        friend class CommonNetwork;
-        std::string name;         //Name in NetworkManager
+  // Close socket ( no waiting for backgroud threads )
+  void Close();
 
-        // Information about rate
-        au::rate::Rate rate_in;
-        au::rate::Rate rate_out;
-        
-    public:
+  // Wake up the writer thread if necessary
+  void WakeUpWriter();
 
-        // Constructor & Destructor
-        NetworkConnection( std::string _name , au::SocketConnection* socket_connection , NetworkManager * _network_manager );
-        ~NetworkConnection();
+  /**
+   * \brief Check if the socket is closed
+   */
+  bool IsDisconnected() const;
 
-        // Init io threads
-        void initReadWriteThreads();
-        
-        // to stop the reader and writer threads
-        void stopReadWriteThreads();
+  // Debug string
+  std::string str() const;
 
-        // Push a packet to this node
-        void push( Packet* p )
-        {
-            // Protect agains NULL Packets...
-            if ( !p )
-                return;
-            
-            // Push to the queue
-            packet_queue.push(p);
-            
-            // Wake up writing thread if necessary
-            au::TokenTaker tt(&token);
-            tt.wakeUpAll();
-        }
-        
-        void close()
-        {
-            // Set the flag to make sure all threads finish correctly
-            socket_connection->close();
-            
-            // Wake up writing thread if necessary
-            au::TokenTaker tt(&token);
-            tt.wakeUpAll();
-        }
-        
-        bool isDisconnected()
-        {
-            return socket_connection->isDisconnected();
-        }
-        
-        bool noThreadsRunning()
-        {
-            if ( running_t_write )
-                return false;
-            if ( running_t_read )
-                return false;
-            
-            return true;
-        }
-        
-        // Read & Write threads operations
-        void readerThread();
-        void writerThread();
+  // Get some information
+  std::string host() const;
+  int port() const;
+  size_t rate_in() const;
+  size_t rate_out() const;
+  NodeIdentifier node_identifier()  const;
+  std::string host_and_port()  const;
 
-        friend void* NetworkConnection_writerThread(void*p);
-        friend void* NetworkConnection_readerThread(void*p);
-        
-        
-        std::string getName()
-        {
-            return name;
-        }
-        
-        std::string getHost()
-        {
-            return socket_connection->getHost();
-        }
-        
-        int getPort()
-        {
-            return socket_connection->getPort();
-        }
-        
-        void setNodeIdentifier( NodeIdentifier _node_identifier )
-        {
-            node_identifier = _node_identifier;
-        }
+  // Function to generate lists of items in delilah console
+  void fill(gpb::CollectionRecord *record, const Visualization& visualization);
 
-        void setUserAndPassword( std::string _user , std::string _password )
-        {
-            user = _user;
-            password = _password;
-        }
-        
-        void setConnectionType( std::string _connection_type )
-        {
-            connection_type = _connection_type;
-        }
-        
-        NodeIdentifier getNodeIdentifier()
-        {
-            return node_identifier;
-        }
-        
-        std::string getHostAndPort()
-        {
-            return socket_connection->getHostAndPort();
-        }
-        
-        std::string str()
-        {
-            std::ostringstream output;
-            
-            output << "[" << (running_t_read?"R":" ") << (running_t_write?"W":" ") << "]";
-            
-            if ( socket_connection->isDisconnected() )
-                output << " Disconnected ";
-            else
-                output << " Connected    ";
-                
-            output << "[ " << node_identifier.str() << " ] ";
-            return output.str();
-        }
-        
-        void fill( network::CollectionRecord * record, Visualization* visualization);
-      
-        size_t get_rate_in()
-        {
-            return rate_in.getRate();
-        }
+private:
 
-        size_t get_rate_out()
-        {
-            return rate_out.getRate();
-        }
-        
-        
-    };
-    
+  // Friend functions to run both read and write threads
+  friend void *NetworkConnection_writerThread(void *p);
+  friend void *NetworkConnection_readerThread(void *p);
+
+  // Read & Write threads main functions
+  void readerThread();
+  void writerThread();
+
+  // Identifier of the node ( if available )
+  NodeIdentifier node_identifier_;
+
+  friend class NetworkManager;
+  friend class CommonNetwork;
+
+  // Socket Connection
+  au::SocketConnection *socket_connection_;
+
+  // User and password for this connection
+  std::string user_;
+  std::string password_;
+  std::string connection_type_;
+
+  // Token to block write thread when more packets have to be sent
+  au::Token token_;
+
+  // Pointer to the manager to report received messages
+  // and extrace message to send
+  NetworkManager *network_manager_;
+
+  // Threads for reading and writing packets to this socket
+  pthread_t t_read_, t_write_;
+  bool running_t_read_;        // Flag to indicate that there is a thread using this endpoint writing data
+  bool running_t_write_;       // Flag to indicate that there is a thread using this endpoint reading data
+
+  // Information about rate
+  au::Rate rate_in_;
+  au::Rate rate_out_;
+};
 }
 
-#endif
+#endif  // ifndef _H_SAMSON_NETWORK_CONNECTION

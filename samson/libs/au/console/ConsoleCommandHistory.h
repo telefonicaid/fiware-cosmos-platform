@@ -11,56 +11,87 @@
 #ifndef _AU_CONSOLE_COMMAND_HISTORY
 #define _AU_CONSOLE_COMMAND_HISTORY
 
-#include <vector>
-#include <string>
 #include <sstream>
-#include "au/namespace.h"
+#include <string>
+#include <vector>
 
-NAMESPACE_BEGIN(au)
 
+namespace au {
+namespace console {
 class ConsoleCommand;
 
-class ConsoleCommandHistory
-{
-    std::vector<ConsoleCommand*> commands;
-    size_t pos;
-    
-    std::string file_name;
-    
+/**
+ * \brief History commands introduced by user in a console
+ */
+
+class ConsoleCommandHistory {
 public:
-    
-    ConsoleCommandHistory();
-    ~ConsoleCommandHistory();
-    
-    ConsoleCommand* current();
-    
-    
-    void recover_history( );
-    void save_history();
-    
-    void move_up();
-    void move_down();
-    void new_command();
-  
-    
-    std::string str_history( size_t limit )
-    {
-        std::ostringstream output;
 
-        size_t pos = 0;
-        
-        if( limit > 0 )
-            if ( commands.size() > limit )
-                pos = commands.size() - limit;
+  ConsoleCommandHistory();
+  ~ConsoleCommandHistory();
 
-        for ( ; pos < commands.size() ; pos++)
-            output << commands[pos]->getCommand() << "\n";
-        
-        return output.str();
-    }
-    
+  /**
+   * \brief Get current command
+   */
+
+  ConsoleCommand *GetCurrentCommand() const;
+
+  /**
+   * \brief Recover history commands from file
+   */
+  void RecoverHistory();
+
+  /**
+   * \brief Save history commands to file
+   */
+  void SaveHistory();
+
+  /**
+   * \brief Move up in the list of history
+   */
+  void MoveUp();
+
+  /**
+   * \brief Mode down in the list of history
+   */
+  void MoveDown();
+
+  /**
+   * \brief Add an empty command to collect another command from user
+   */
+  void AddNewEmptyCommand();
+
+  /**
+   * \brief Get a string with command history to be displayed on console
+   */
+  std::string str_history(size_t limit) const;
+
+  /**
+   * \brief Find a string in the history
+   */
+  int Find(int pos, const std::string& message);
+
+  /**
+   * \brief Get string command at a particular position
+   */
+  std::string GetStringCommand(size_t pos) const;
+
+
+  /**
+   * \brief Move to the last command
+   */
+  void MoveToLastcommand();
+
+private:
+
+  // Reverse search mode
+  bool reverse_search_mode_;
+  ConsoleCommand reverse_search_command_;
+
+  std::string file_name_;  /**< Filename to store and recover history commands */
+  size_t pos_;  /**< Position inside commands_ vector */
+  std::vector<ConsoleCommand *> commands_;  /**< Commands instroduced so far */
 };
-
-NAMESPACE_END
-
-#endif
+}
+}
+#endif  // ifndef _AU_CONSOLE_COMMAND_HISTORY

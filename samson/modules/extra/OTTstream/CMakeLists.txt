@@ -86,6 +86,7 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 # Include directory pointing to current dir and /usr/local/include
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
+    include_directories("${PROJECT_SOURCE_DIR}/libs/extra")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
     include_directories("${PROJECT_SOURCE_DIR}/modules/core/system")
     include_directories("${PROJECT_SOURCE_DIR}/modules/extra/level")
@@ -109,7 +110,7 @@ MESSAGE( "----------------------------------------------------------------------
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
 TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME}  lm au )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME}  lm au samsonModule )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

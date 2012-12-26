@@ -9,7 +9,6 @@ SET (AUX_HEADERS
 	operations/parse_xml_documents.h
 	operations/parse_id_id.h
 	operations/parser_uint_void.h
-	operations/parse_http_with_commscore.h
 	operations/reduce.h
 	operations/process.h
 	operations/str.h
@@ -17,11 +16,6 @@ SET (AUX_HEADERS
 	operations/update_state.h
 
 )			  
-
-SET( SOURCES_TEST
-	 main_system_test.cpp
-)
-
 
 cmake_minimum_required(VERSION 2.6)
 
@@ -124,7 +118,7 @@ link_directories( "$ENV{SAMSON_HOME}/lib" )
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS}  )
 TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME}  samson_system lm au json )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME}  samson_system lm au json samsonModule )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

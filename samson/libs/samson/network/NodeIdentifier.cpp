@@ -9,109 +9,85 @@
  * All rights reserved.
  */
 
-#include "NodeIdentifier.h" // Own interfafe
+#include "NodeIdentifier.h"  // Own interfafe
 
 
 namespace samson {
+NodeIdentifier::NodeIdentifier() {
+  node_type_ = UnknownNode;
+  id_ = SIZE_T_UNDEFINED;
+}
 
-    NodeIdentifier::NodeIdentifier()
-    {
-        node_type = UnknownNode;
-        id = (size_t)-1;
-    }
-    
-    NodeIdentifier::NodeIdentifier( network::NodeIdentifier pb_node_identifier  )
-    {
-        
-        switch ( pb_node_identifier.node_type() ) 
-        {
-            case network::NodeIdentifier_NodeType_Delilah:
-                node_type = DelilahNode;
-                break;
-            case network::NodeIdentifier_NodeType_Worker:
-                node_type = WorkerNode;
-                break;
-            case network::NodeIdentifier_NodeType_Unknown:
-                node_type = UnknownNode;
-                break;
-                
-            default:
-                node_type = UnknownNode;
-                break;
-                
-        }
-        
-        id = pb_node_identifier.id();
-    }
-    
-    NodeIdentifier::NodeIdentifier ( ClusterNodeType _node_type , size_t _id )
-    {
-        node_type = _node_type;
-        id = _id;
-    }
+NodeIdentifier::NodeIdentifier(gpb::NodeIdentifier pb_node_identifier) {
+  switch (pb_node_identifier.node_type()) {
+    case gpb::NodeIdentifier_NodeType_Delilah:
+      node_type_ = DelilahNode;
+      break;
+    case gpb::NodeIdentifier_NodeType_Worker:
+      node_type_ = WorkerNode;
+      break;
 
-    
-    void NodeIdentifier::fill( network::NodeIdentifier* pb_node_identifier )
-    {
-        switch ( node_type ) 
-        {
-            case DelilahNode:
-                pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Delilah );
-                break;
-            case WorkerNode:
-                pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Worker );
-                break;
-            case UnknownNode:
-                pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Unknown );
-                break;
-        }            
-        pb_node_identifier->set_id(id);
-    }
-    
-    
-    bool NodeIdentifier::operator==(const NodeIdentifier&  other)
-    {
-        if ( node_type != other.node_type )
-            return false;
-        if ( id != other.id )
-            return false;
-        
-        return true;
-    }
-    
-    std::string NodeIdentifier::str()
-    {
-        if( id == (size_t) -1 )
-            return au::str("%s:Unknown" , ClusterNodeType2str( node_type ) );
-        
-        return au::str("%s:%lu" , ClusterNodeType2str( node_type ) , id );
-    }
-    
-    std::string NodeIdentifier::getCodeName()
-    {
-        if( node_type == DelilahNode )
-        {
-            std::string code_id = au::code64_str(id);
-            return au::str("%s_%s" , ClusterNodeType2str( node_type ) ,  code_id.c_str() );
-        }
-        else
-            return au::str("%s_%lu" , ClusterNodeType2str( node_type ) , id );
-        
-    }
-    
-    bool NodeIdentifier::isDelilahOrUnknown()
-    {
-        switch (node_type) 
-        {
-            case DelilahNode: 
-            case UnknownNode: 
-                return true;
-            case WorkerNode: 
-                return false;
-        }
-        
-        LM_X(1, ("Unknown error"));
-        return false;
-    }
+    default:
+      node_type_ = UnknownNode;
+      break;
+  }
 
+  id_ = pb_node_identifier.id();
+}
+
+NodeIdentifier::NodeIdentifier(const NodeIdentifier& node_identifier) {
+  Set(node_identifier);
+}
+
+NodeIdentifier::NodeIdentifier (ClusterNodeType node_type, size_t id) {
+  node_type_ = node_type;
+  id_ = id;
+}
+
+void NodeIdentifier::fill(gpb::NodeIdentifier *pb_node_identifier) {
+  switch (node_type_) {
+    case DelilahNode:
+      pb_node_identifier->set_node_type(gpb::NodeIdentifier_NodeType_Delilah);
+      break;
+    case WorkerNode:
+      pb_node_identifier->set_node_type(gpb::NodeIdentifier_NodeType_Worker);
+      break;
+    case UnknownNode:
+      LM_X(1, ("Internal error"));
+      break;
+  }
+  pb_node_identifier->set_id(id_);
+}
+
+bool NodeIdentifier::operator==(const NodeIdentifier&  other) const {
+  if (node_type_ != other.node_type_) {
+    return false;
+  }
+  if (id_ != other.id_) {
+    return false;
+  }
+
+  return true;
+}
+
+std::string NodeIdentifier::str() const {
+  switch (node_type_) {
+    case UnknownNode:
+      return au::str("%s:Unknown", ClusterNodeType2str(node_type_));
+
+      break;
+
+    case WorkerNode:
+      return au::str("%s_%lu", ClusterNodeType2str(node_type_), id_);
+
+      break;
+
+    case DelilahNode:
+      return au::str("%s_%s", ClusterNodeType2str(node_type_), au::code64_str(id_).c_str());
+
+      break;
+  }
+
+  return au::str("%s:Unknown", ClusterNodeType2str(node_type_));
+}
 }

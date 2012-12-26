@@ -11,118 +11,167 @@
 
 
 
-#include "au/console/ConsoleCommand.h" // Own interface
+#include "au/console/ConsoleCommand.h"  // Own interface
 
-NAMESPACE_BEGIN(au)
-
-ConsoleCommand::ConsoleCommand()
-{
-    pos=0;
+namespace au {
+namespace console {
+ConsoleCommand::ConsoleCommand() {
+  pos_ = 0;
 }
 
-ConsoleCommand::ConsoleCommand( std::string _command )
-{
-    command = _command;
-    pos = command.length();
+ConsoleCommand::ConsoleCommand(const std::string& command) {
+  command_ = command;
+  pos_ = command.length();
 }
 
-void ConsoleCommand::add( char c )
-{
-    command.insert(pos, 1, c );
-    pos++;
+void ConsoleCommand::AddChar(char c) {
+  command_.insert(pos_, 1, c);
+  ++pos_;
 }
 
-void ConsoleCommand::add( std::string txt )
-{
-    command.insert(pos, txt );
-    pos+=txt.length();
+void ConsoleCommand::AddString(const std::string& txt) {
+  command_.insert(pos_, txt);
+  pos_ += txt.length();
 }
 
-void ConsoleCommand::delete_char()
-{
-    //Delete last char introduced ( at pos )
-    if( pos > 0 )
-    {
-        command.erase( pos-1 , 1 );
-        pos--;
+void ConsoleCommand::DeleteChar() {
+  // Delete last char introduced ( at pos )
+  if (pos_ > 0) {
+    command_.erase(pos_ - 1, 1);
+    --pos_;
+  }
+}
+
+void ConsoleCommand::MoveHome() {
+  pos_ = 0;
+}
+
+void ConsoleCommand::MoveEnd() {
+  pos_ = command_.length();
+}
+
+void ConsoleCommand::MoveCursor(int offset) {
+  pos_ += offset;
+  if (pos_ < 0) {
+    pos_ = 0;
+  }
+  if (pos_ > static_cast<int>(command_.length())) {
+    pos_ = command_.length();
+  }
+}
+
+void ConsoleCommand::DeleteWord() {
+  do {
+    DeleteChar();
+  } while ((pos_ > 0) && (command_[pos_ - 1] != ' '));
+}
+
+void ConsoleCommand::Toggle() {
+  if (command_.length() < 2) {
+    return;
+  }
+  if (pos_ < 1) {
+    return;
+  }
+
+  int pos_toogle = pos_;
+  if (pos_toogle >= (int)command_.length()) {
+    pos_toogle = command_.length() - 1;
+  }
+  char a = command_[pos_toogle];
+  command_[pos_toogle] = command_[pos_toogle - 1];
+  command_[pos_toogle - 1] = a;
+
+  pos_ = pos_toogle + 1;
+}
+
+void ConsoleCommand::DeleteRestOfLine() {
+  command_.erase(pos_, command_.length() - pos_);
+}
+
+std::string ConsoleCommand::command() const {
+  return command_;
+}
+
+std::string ConsoleCommand::GetCommandUntilCursor() const {
+  return command_.substr(0, pos_);
+}
+
+void ConsoleCommand::SetCommand(const std::string& command) {
+  command_ = command;
+  pos_ = command.length();
+}
+
+int ConsoleCommand::cursor() const {
+  return pos_;
+}
+
+bool ConsoleCommand::IsCursorAtEnd() const {
+  return (pos_ == (int)command_.length());
+}
+
+bool ConsoleCommand::Contains(const std::string& message) {
+  return (command_.find(message) != std::string::npos);
+}
+
+void ConsoleCommand::ProcessEntry(ConsoleEntry& entry) {
+  if (entry.IsNormalChar()) {
+    AddChar(entry.getChar());
+    return;
+  }
+
+  if (entry.isChar()) {
+    char c = entry.getChar();
+    switch (c) {
+      case 1:  // C-a
+        MoveHome();
+        break;
+      case 5:  // C-e
+        MoveEnd();
+        break;
+      case 11:  // C-k
+        DeleteRestOfLine();
+        break;
+      case 20:  // C-t
+        Toggle();
+        break;
+      case 23:  // C-del
+        DeleteWord();
+        break;
+      case 127:  // del
+        DeleteChar();
+        break;
     }
+    return;
+  }
 }
 
-void ConsoleCommand::move_home()
-{
-    pos = 0;
+bool ConsoleCommand::CanProcessEntry(ConsoleEntry& entry) {
+  if (entry.IsNormalChar()) {
+    return true;
+  }
+
+  if (entry.isChar()) {
+    char c = entry.getChar();
+    switch (c) {
+      case 1:
+      case 5:
+      case 11:
+      case 20:
+      case 23:
+      case 127:
+        return true;
+
+        break;
+
+      default:
+        return false;
+
+        break;
+    }
+  }
+
+  return false;
 }
-
-void ConsoleCommand::move_end()
-{
-    pos = command.length();
 }
-
-void ConsoleCommand::move_cursor( int offset )
-{
-    pos += offset;
-    if ( pos < 0 )
-        pos = 0;
-    if (pos > (int)command.length() )
-        pos = command.length();
 }
-
-void ConsoleCommand::delete_word()
-{
-    do {
-        delete_char();
-    } while ( (pos>0) && ( command[pos-1] != ' ') );
-}
-
-void ConsoleCommand::toogle()
-{
-    if( command.length() < 2 )
-        return;
-    if( pos < 1 )
-        return;
-    
-    int pos_toogle = pos;
-    if( pos_toogle >= (int)command.length() )
-        pos_toogle = command.length() - 1;
-    
-    char a = command[pos_toogle];
-    command[pos_toogle] = command[pos_toogle-1];
-    command[pos_toogle-1] = a;
-    
-    pos = pos_toogle+1;
-    
-}
-
-
-void ConsoleCommand::delete_rest_line()
-{
-    command.erase( pos , command.length() - pos );
-}
-
-std::string ConsoleCommand::getCommand()
-{
-    return command;
-}
-
-std::string ConsoleCommand::getCommandUntilPointer()
-{
-    return command.substr( 0 , pos );
-}
-
-void ConsoleCommand::setCommand( std::string _command )
-{
-    command = _command;
-    pos = command.length();
-}
-
-int ConsoleCommand::getPos()
-{
-    return pos;
-}
-
-bool ConsoleCommand::isCursorAtEnd()
-{
-    return (pos == (int)command.length() );
-}
-
-NAMESPACE_END

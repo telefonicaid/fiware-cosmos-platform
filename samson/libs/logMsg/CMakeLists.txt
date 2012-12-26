@@ -1,12 +1,13 @@
 SET (HEADERS
-	logMsg.h
-	traceLevels.h
-	time.h
+logMsg.h
+time.h
+traceLevels.h
 )
 
 SET (SOURCES
-    logMsg.cpp
-	time.cpp
+logMsg.cpp
+time.cpp
+traceLevels.cpp
 )
 
 
@@ -17,11 +18,12 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 
-ADD_LIBRARY(lm STATIC ${SOURCES} ${HEADERS} )
-SET (LIBLM ${PROJECT_BINARY_DIR}/libs/logMsg/liblm.a CACHE INTERNAL "")
+ADD_LIBRARY(lm SHARED ${SOURCES} ${HEADERS} )
+#SET (LIBLM ${PROJECT_BINARY_DIR}/libs/logMsg/liblm.a CACHE INTERNAL "")
 
-# Only needed for the "samson" project
-IF (CMAKE_PROJECT_NAME STREQUAL "samson")
-    INSTALL(TARGETS lm ARCHIVE DESTINATION lib)
+# Only needed for the "Samson" project
+IF (CMAKE_PROJECT_NAME STREQUAL "Samson")
+    INSTALL(TARGETS lm  DESTINATION lib)
     INSTALL(FILES ${HEADERS} DESTINATION include/logMsg)
-ENDIF (CMAKE_PROJECT_NAME STREQUAL "samson")
+ENDIF (CMAKE_PROJECT_NAME STREQUAL "Samson")
+

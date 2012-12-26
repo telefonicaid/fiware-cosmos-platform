@@ -8,7 +8,6 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-
 #ifndef _H_NotificationMessages
 #define _H_NotificationMessages
 
@@ -16,29 +15,29 @@
 
 
 // Notification to report status-update to all connected delilahs
-#define notification_update_status                      "notification_update_status"
+#define notification_update_status                    "notification_update_status"
 
-#define notification_samson_worker_check_finish_tasks   "notification_samson_worker_check_finish_tasks"
+#define notification_samson_worker_check_finish_tasks "notification_samson_worker_check_finish_tasks"
 
-#define notification_samson_worker_send_packet          "notification_samson_worker_send_packet"
+#define notification_samson_worker_send_message         "notification_samson_worker_send_message"
 
-#define notification_samson_worker_send_trace           "notification_samson_worker_send_trace"
-
-
-#define notification_review_worker_command_manager       "notification_review_worker_command_manager"
+#define notification_review_worker_command_manager    "notification_review_worker_command_manager"
 
 // Notification to review stream manager
-#define notification_review_stream_manager_fast           "notification_review_stream_manager_fast"
-#define notification_review_stream_manager_save_state     "notification_review_stream_manager_save_state"
+#define notification_review_stream_manager_fast       "notification_review_stream_manager_fast"
+#define notification_review_stream_manager_save_state "notification_review_stream_manager_save_state"
 
 // Notification that a network element has been disconnected
-#define notification_network_diconnected                    "notification_network_diconnected"
+#define notification_network_diconnected              "notification_network_diconnected"
 
 // Notification to recover state from files
-#define notification_recoverStateFromDisk                   "notification_recoverStateFromDisk"
-
+#define notification_recoverStateFromDisk             "notification_recoverStateFromDisk"
 
 // Notification to review repeat commands in delilha
-#define notification_delilah_review_repeat_tasks            "notification_delilah_review_repeat_tasks"
+#define notification_delilah_review_repeat_tasks      "notification_delilah_review_repeat_tasks"
 
-#endif
+// Notification to review push manager in the worker
+
+#define notification_send_packet                      "notification_send_packet"   // Notification to send a packet
+#define notification_packet_received                  "notification_packet_received"   // Notification to receive a packet
+#endif  // ifndef _H_NotificationMessages

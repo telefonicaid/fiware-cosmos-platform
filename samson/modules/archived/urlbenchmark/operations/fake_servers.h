@@ -56,8 +56,8 @@ public:
 		samson::system::UInt categ;
 
 		// Recover the number of servers from the environment
-		size_t num_servers = environment->getSizeT( "urlbenchmark.num_servers" ,  1000000 );
-		size_t num_categories = environment->getSizeT("urlbenchmark.num_categories", 100);
+		size_t num_servers = environment->get( "urlbenchmark.num_servers" ,  1000000 );
+		size_t num_categories = environment->get("urlbenchmark.num_categories", 100);
 
 
 		for ( size_t i = 0 ; i < num_servers ; i++)

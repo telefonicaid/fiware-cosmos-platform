@@ -67,7 +67,7 @@ namespace hit{
 		   current_time = time(NULL);
 
            // Get time span for environment variables
-		   time_span = environment->getSizeT( "time_span" ,  300 ); // By default 5 minuts average
+		   time_span = environment->get( "time_span" ,  300 ); // By default 5 minuts average
 		   forgetting_factor = ((double)(time_span - 1)) / ((double) time_span);
 		}
 
@@ -103,16 +103,12 @@ namespace hit{
 			  manager.add( &hit );
 		   
 			  // Emit the state to keep track
-			  //OLM_M(("Emiting %s %lu" , concept.value.c_str() ,  count.value ));
-
 			  writer->emit( 1 , &concept , &hit );
-
 		   }
 		}
 
 		void finish( samson::KVWriter *writer )
 		{
-		   //OLM_M(("Emiting output hits...."));
 		   manager.emit_hits( writer );
 		}
 

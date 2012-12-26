@@ -62,7 +62,7 @@ namespace hit{
 		void init( samson::KVWriter *writer )
 		{
 		   // Get time span for environment variables
-           time_span = environment->getSizeT( "time_span" ,  300 ); // By default 5 minuts average
+           time_span = environment->get( "time_span" ,  300 ); // By default 5 minuts average
 
            forgetting_factor = ((double)(time_span - 1)) / ((double) time_span);
 		}

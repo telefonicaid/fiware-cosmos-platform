@@ -8,116 +8,164 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-#ifndef _H_AU_LOG_CENTRAL
-#define _H_AU_LOG_CENTRAL
 
-#include <sys/socket.h>         // socket, bind, listen
-#include <sys/un.h>             // sockaddr_un
-#include <netinet/in.h>         // struct sockaddr_in
-#include <netdb.h>              // gethostbyname
-#include <arpa/inet.h>          // inet_ntoa
-#include <netinet/tcp.h>        // TCP_NODELAY
-#include <signal.h>
-#include <unistd.h>
 
-#include "parseArgs/parseArgs.h"
-#include "parseArgs/paBuiltin.h"
-#include "parseArgs/paIsSet.h"
-#include "parseArgs/paConfig.h"
-#include "logMsg/logMsg.h"
-#include "logMsg/traceLevels.h"
 
-#include "au/network/SocketConnection.h"
-#include "au/string.h"
-#include "au/mutex/Token.h"
-#include "au/mutex/TokenTaker.h"
-#include "au/containers/list.h"
-#include "au/containers/set.h"
+#ifndef _H_AU_MAIN_LOG_CENTRAL
+#define _H_AU_MAIN_LOG_CENTRAL
 
-#include "au/log/Log.h"
-#include "au/log/LogPlugin.h"
-#include "log_server_common.h"
+#include <set>
 
-namespace au
-{
-        
-    class LogCentral
-    {
-        // Connection information
-        std::string host;
-        int port;
-        std::string local_file; // Name of the local file ( if not possible to connect with server )
-                
-        SocketConnection * socket_connection;       // Socket connection with the logServer
-        au::Cronometer time_since_last_connection;  // Cronometer with the time since last connection
-        size_t time_reconnect;                         // time for the next reconnection
-        
-        // Local file descriptor to write the log if not possible to connect
-        FileDescriptor* local_file_descriptor; 
-        
-        // Mutex to protect socket connection
-        au::Token token;
-        
-        // List of plugins
-        au::Token token_plugins;
-        au::set<LogPlugin> plugins;
-        
-        // Current thread loging
-        au::Token token_current_thread;
-        pthread_t current_thread;
-        bool current_thread_activated;
+#include "au/ThreadManager.h"
+#include "au/console/CommandCatalogue.h"
+#include "au/log/LogCentralChannels.h"
+#include "au/log/LogCentralChannelsFilter.h"
+#include "au/network/FileDescriptor.h"
+#include "au/singleton/Singleton.h"
 
-        // Bool direct mode is a non-blocking no-multi-thread no-reconnection way to send traces
-        bool direct_mode;
+namespace au {
+class Log;
+class LogCentralPluginScreen;
+class LogCentralPluginFile;
+class LogCentralPluginScerver;
+class LogCentral;
 
-        // Current fd we are using
-        int fd;
-        
-    public:
-        
-        LogCentral( std::string _host , int _port , std::string _local_file );
-        ~LogCentral();
-        
-        // In direct mode, we just try to send traces ( not reconnection, no blocking )
-        void set_direct_mode( bool flag );
-        
-        // Change the host and port
-        void set_host_and_port( std::string log_host , int log_port = AU_LOG_SERVER_PORT );
+/**
+ *
+ * LogCentral
+ *
+ * \brief Central element to emit logs using a secondary thread connected with a pipe
+ *
+ * Note: This strategy allow to receive logs from fork-generated children processes without any problem  with mutexes
+ *
+ */
 
-        // Write log
-        void write( Log *log );
-        
-        // Plugins
-        void addPlugin( LogPlugin* p );
-        void removePlugin( LogPlugin* p );
-        
-        // Get host
-        std::string getHost()
-        {
-            return host;
-        }
-        
-        int getPort()
-        {
-            return port;
-        }
-        
-        int getFd()
-        {
-            return fd;
-        }
-        
-    private:
-        
-        void write_to_server_or_file( Log *log );
-        void write_to_plugins( Log *log );
- 
-        void close_socket_connection();
-        void close_local_file();
-        
-    };
+extern LogCentral *log_central;   // Unique log_central variable used directly when emitting logs
+
+class LogCentral : public au::Thread {
+public:
+
+  virtual ~LogCentral() {
+    Stop();
+  }
+
+  static void InitLogSystem(const std::string& exec_name);
+  static void StopLogSystem();
+  static LogCentral *Shared();
+
+  // Flush pending logs to all plugins
+  void Flush();
+
+  // Pause an play background thread
+  void Pause();
+  void Play();
+
+  // Set name of this node
+  void set_node(const std::string& node) {
+    node_ = node;
+  }
+
+  // Inline method to quickly check if a log has to be generated
+  inline bool IsLogAccepted(int channel, int level) {
+    return main_log_channel_filter_.IsLogAccepted(channel, level);
+  }
+
+  // Emit a log thougth the pipe
+  void Emit(Log *log);
+
+  // Direct Console interface for this element
+  void EvalCommand(const std::string& command);
+  void EvalCommand(const std::string& command, au::ErrorManager& error);
+
+  // Plugins management
+  void AddPlugin(const std::string& name, LogCentralPlugin *p);
+  void AddPlugin(const std::string& name, LogCentralPlugin *p, au::ErrorManager& error);
+  void RemovePlugin(const std::string& plugin_name);
+  void AddFilePlugin(const std::string& plugin_name, const std::string& file_name);
+  void AddServerPlugin(const std::string& plugin_name, const std::string& host, const std::string file_name);
+  void AddScreenPlugin(const std::string& plugin_name, const std::string& format = LOG_DEFAULT_FORMAT);
+  std::string GetPluginStatus(const std::string& name);
+  std::string GetPluginChannels(const std::string& name);
+
+  // Accessors
+  LogCentralChannels& log_channels() {
+    return log_channels_;
+  }
+
+  LogCentralChannelsFilter& log_channels_filter() {
+    return main_log_channel_filter_;
+  }
+
+  int GetLogChannelLevel(int c) {
+    return main_log_channel_filter_.GetLevel(c);
+  }
+
+  LogCentralChannelsFilter& main_log_channel_filter() {
+    return main_log_channel_filter_;
+  }
+
+  int log_fd() const  // Return the file descriptor used to send traces
+  {
+    return fds_[1];
+  }
+
+private:
+
+  /**
+   * \brief Private constructor to make sure only InitLogSystem is used to init the log system
+   */
+
+  LogCentral();
+
+  // General management
+  void Init(const std::string& exec = "Unknown");  // Init log system
+  void Stop();                                     // Stop the loggin system unregistering all channels
+
+  friend void *RunLogCentral(void *p);
+
+  // Init pipe and file descriptors to comunicate all threads with background thread to process logs
+  void CreatePipeAndFileDescriptors();
+
+  // Main function for the background thread
+  void RunThread();
+
+  // Review if channles are activated
+  void ReviewChannelsLevels();
+
+  // Channel registration
+  LogCentralChannels log_channels_;
+
+  // Pipe to write and read logs
+  int fds_[2];
+
+  // File descriptor to emit logs
+  au::SharedPointer<au::FileDescriptor> fd_write_logs_;
+  au::SharedPointer<au::FileDescriptor> fd_read_logs_;
+
+  // Name of the main executalbe
+  std::string exec_;
+
+  // Name of this node in a distirbuted environment
+  std::string node_;
+
+  // Set of Plugins for logs
+  au::Token token_plugins_;
+  au::map<std::string, LogCentralPlugin> plugins_;
+
+  // Main elements to emit or not logs
+  LogCentralChannelsFilter main_log_channel_filter_;
+
+  // Counter of logs
+  LogCounter log_counter_;
+};
+
+
+class LogCentralCatalogue : public au::console::CommandCatalogue {
+public:
+
+  // Constructor with commands definitions
+  LogCentralCatalogue();
+};
 }
 
-#endif
-    
-    
+#endif  // ifndef _H_AU_MAIN_LOG_CENTRAL

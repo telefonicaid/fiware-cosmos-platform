@@ -1,51 +1,46 @@
 
 SET (HEADERS
-	BlockInfo.h
-    BlockManager.h
-    BlockList.h
-    Block.h
-	BlockLookupList.h
-    StreamManager.h
-	BlockListContainer.h
-    StreamOperation.h
-    QueueTaskManager.h
-    Queue.h
-	QueueConnections.h
-	QueueTaskBase.h
-    QueueTask.h
-	SystemQueueTask.h
-    StreamProcessBase.h
-	PopQueueTask.h
-	BlockBreakQueueTask.h
-    PopQueue.h
-    QueueTasks.h
-	StreamOutput.h
-	DistributionInformation.h
+Block.h
+BlockInfo.h
+BlockList.h
+BlockListContainer.h
+BlockLookupList.h
+BlockManager.h
+BlockReaderCollection.h
+BlockRef.h
+ProcessIsolated.h
+ProcessItemIsolated.h
+ProcessWriter.h
+SharedMemoryItem.h
+SharedMemoryManager.h
+StreamOperationGlobalInfo.h
+StreamOperationRangeInfo.h
+WorkerSystemTask.h
+WorkerTask.h
+WorkerTaskBase.h
+WorkerTaskManager.h
 )
 
-
 SET (SOURCES
-	BlockInfo.cpp
-    BlockManager.cpp
-    BlockList.cpp
-    Block.cpp
-	BlockLookupList.cpp
-    StreamManager.cpp
-	BlockListContainer.cpp
-    StreamOperation.cpp
-    QueueTaskManager.cpp
-    Queue.cpp
-	QueueConnections.cpp
-	QueueTaskBase.cpp
-    QueueTask.cpp
-	SystemQueueTask.cpp
-    StreamProcessBase.cpp
-	PopQueueTask.cpp
-	BlockBreakQueueTask.cpp
-    PopQueue.cpp
-    QueueTasks.cpp
-	StreamOutput.cpp
-	DistributionInformation.cpp
+Block.cpp
+BlockInfo.cpp
+BlockList.cpp
+BlockListContainer.cpp
+BlockLookupList.cpp
+BlockManager.cpp
+BlockReaderCollection.cpp
+BlockRef.cpp
+ProcessIsolated.cpp
+ProcessItemIsolated.cpp
+ProcessWriter.cpp
+SharedMemoryItem.cpp
+SharedMemoryManager.cpp
+StreamOperationGlobalInfo.cpp
+StreamOperationRangeInfo.cpp
+WorkerSystemTask.cpp
+WorkerTask.cpp
+WorkerTaskBase.cpp
+WorkerTaskManager.cpp
 )
 
 
@@ -53,19 +48,9 @@ SET (SOURCES
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 
-
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonStream STATIC ${SOURCES} ${HEADERS} )
-
-
-
-
-
-
-
-
-
-
+ADD_DEPENDENCIES(samsonStream samsonCommon)
 
 

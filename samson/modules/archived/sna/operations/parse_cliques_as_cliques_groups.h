@@ -55,7 +55,7 @@ namespace sna{
 					SNA_PARSER_NEXT_FIELD
 					SNA_PARSER_GET_UINT( nodeId.value );
 
-					//rest of the fields not interesting rigth now..
+					//rest of the fields not interesting right now..
 					writer->emit(0, &cliqueId, &nodeId);
 					line_begin = offset+1;
 				}
@@ -68,7 +68,7 @@ namespace sna{
 			SNA_PARSER_NEXT_FIELD
 			SNA_PARSER_GET_UINT( nodeId.value );
 
-			//rest of the fields not interesting rigth now..
+			//rest of the fields not interesting right now..
 			writer->emit(0, &cliqueId, &nodeId);
 		}
 

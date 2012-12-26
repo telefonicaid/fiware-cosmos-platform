@@ -1,0 +1,20 @@
+VM------------------------------------------------------------------
+
+push_module /home/samson/.samson-HEAD/home/modules/libsystem.so
+push_module /home/samson/.samson-HEAD/home/modules/libiwebp.so
+
+add_stream_operation p iwebp.parse_http_with_commscore -input input -output logs
+add_stream_operation r iwebp.process -input "logs state" -output "out logs state" 
+
+push /mnt/shared/BigDataHTTP_20111103.txt.timesorted.filepart input
+
+samson09--------------------------------------------------------------
+
+push_module /home/jges/.samson-HEAD/home/modules/libsystem.so
+push_module /home/jges/.samson-HEAD/home/modules/libiwebp.so
+
+add_stream_operation p iwebp.parse_http_with_commscore -input input -output logs
+add_stream_operation r iwebp.process -input "logs state" -output "out logs state" 
+
+push /home/jges/workspace/TRAFFICA/HTTP/BigDataHTTP_20111101.txt.timesorted input
+

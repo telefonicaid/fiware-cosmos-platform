@@ -9,564 +9,519 @@
  * All rights reserved.
  */
 /* ****************************************************************************
-*
-* FILE			paOptionsParse.c - 
-*
-* AUTHOR		Ken Zangelin
-*
-* HISTORY
-* $Log: $
-*
-*/
+ *
+ * FILE			paOptionsParse.c -
+ *
+ * AUTHOR		Ken Zangelin
+ *
+ * HISTORY
+ * $Log: $
+ *
+ */
 #include <stdio.h>              /* stderr, stdout, ...                       */
-#include <string.h>             /* strdup, strncmp                           */
 #include <stdlib.h>             /* atoi                                      */
+#include <string.h>             /* strdup, strncmp                           */
 
 #include "baStd.h"              /* BA standard header file                   */
 #include "logMsg/logMsg.h"      /* lmVerbose, lmDebug, ...                   */
 
-#include "parseArgs.h"          /* PaArgument                                */
-#include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
-#include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
-#include "paLog.h"              /* PA_XXX                                    */
-#include "paIterate.h"          /* paIterateInit, paIterateNext              */
+#include "paBuiltin.h"          /* paUsageVar, paEUsageVar, paHelpVar        */
+#include "paConfig.h"           /* paMsgsToStdout, paMsgsToStderr            */
+#include "paFullName.h"         /* paFullName                                */
 #include "paGetVal.h"           /* paGetVal                                  */
 #include "paIsOption.h"         /* paIsOption                                */
-#include "paWarning.h"          /* paWaringInit, paWarningAdd                */
-#include "paFullName.h"         /* paFullName                                */
-#include "paUsage.h"            /* paUsage, paExtendedUsage                  */
-#include "paConfig.h"           /* paMsgsToStdout, paMsgsToStderr            */
-#include "paBuiltin.h"          /* paUsageVar, paEUsageVar, paHelpVar        */
+#include "paIterate.h"          /* paIterateInit, paIterateNext              */
+#include "paLog.h"              /* PA_XXX                                    */
 #include "paOptionsParse.h"     /* Own interface                             */
+#include "paPrivate.h"          /* PaTypeUnion, config variables, ...        */
+#include "paTraceLevels.h"      /* LmtPaEnvVal, ...                          */
+#include "paUsage.h"            /* paUsage, paExtendedUsage                  */
+#include "paWarning.h"          /* paWaringInit, paWarningAdd                */
+#include "parseArgs.h"          /* PaArgument                                */
 
-
+// Constant to avoid string overflow when handling user parameters
+# define STRING_MAX_LENGTH 256
 
 /* ****************************************************************************
-*
-* stricts - argument for function argFind
-*
-* STRICT   - find argument strictly
-* UNSTRICT - find argument unstrictly
-*/
+ *
+ * stricts - argument for function argFind
+ *
+ * STRICT   - find argument strictly
+ * UNSTRICT - find argument unstrictly
+ */
 #define STRICT   1
 #define UNSTRICT 2
 
 
 
 /* ****************************************************************************
-*
-* REQUIRE - error handling for option requiring value
-*/
-#define REQUIRE(aP)                                                                            \
-do                                                                                             \
-{                                                                                              \
-    const int MAX_LENGTH_FULL_NAME=256;                                                               \
-    char e[MAX_LENGTH_FULL_NAME+1];                                                            \
-	char w[512];                                                                               \
-                                                                                               \
-	sprintf(w, "%s requires %s", paFullName(e, MAX_LENGTH_FULL_NAME, aP), require(aP->type));  \
-	PA_WARNING(PasMissingValue, w);                                                            \
-} while (0)
+ *
+ * REQUIRE - error handling for option requiring value
+ */
+#define REQUIRE(aP)                                                       \
+  do                                                                        \
+  {                                                                         \
+    char e[STRING_MAX_LENGTH];                                                           \
+    char w[STRING_MAX_LENGTH];                                                          \
+                                                                          \
+    snprintf(w, STRING_MAX_LENGTH, "%s requires %s", paFullName(e, aP), require(aP->type));   \
+    PA_WARNING(PasMissingValue, w);                                       \
+  } while (0)
 
 
 
 /* ****************************************************************************
-*
-* require - translate option type to string format
-*
-*/
-static char* require(PaType type)
-{
-	switch(type)
-	{
-	case PaString:  return (char*) "a string";                    break;
-	case PaInt:     return (char*) "an int";                      break;
-	case PaIntU:    return (char*) "an unsigned int";             break;
-	case PaInt64:   return (char*) "a 64-bit integer";            break;
-	case PaIntU64:  return (char*) "a 64-bit unsigned integer";   break;
-	case PaShort:   return (char*) "a short";                     break;
-	case PaFloat:   return (char*) "a float";                     break;
-	case PaDouble:  return (char*) "a double";                    break;
-	case PaShortU:  return (char*) "an unsigned short";           break;
-	case PaChar:    return (char*) "a char";                      break;
-	case PaCharU:   return (char*) "an unsigned char";            break;
-	default:        return (char*) "<yes, what?>";                break;
-	}
+ *
+ * require - translate option type to string format
+ *
+ */
+static char *require(PaType type) {
+  switch (type) {
+    case PaString:  return (char *)"a string";                    break;
+    case PaInt:     return (char *)"an int";                      break;
+    case PaIntU:    return (char *)"an unsigned int";             break;
+    case PaInt64:   return (char *)"a 64-bit integer";            break;
+    case PaIntU64:  return (char *)"a 64-bit unsigned integer";   break;
+    case PaShort:   return (char *)"a short";                     break;
+    case PaFloat:   return (char *)"a float";                     break;
+    case PaDouble:  return (char *)"a double";                    break;
+    case PaShortU:  return (char *)"an unsigned short";           break;
+    case PaChar:    return (char *)"a char";                      break;
+    case PaCharU:   return (char *)"an unsigned char";            break;
+    default:        return (char *)"<yes, what?>";                break;
+  }
 }
 
-
-
 /* ****************************************************************************
-*
-* argFind - search the slot in the argument list corresponding to 'string'
-*/
-static PaiArgument* argFind
+ *
+ * argFind - search the slot in the argument list corresponding to 'string'
+ */
+static PaiArgument *argFind
 (
-	PaiArgument*  paList,
-	char*         string,
-	int           strict,
-	int*          parNoP
-)
-{
-	PaiArgument*  aP;
-	PaiArgument*  foundP       = NULL;
-	int           foundNameLen = 0;
+  PaiArgument *paList,
+  char *string,
+  int strict,
+  int *parNoP
+) {
+  PaiArgument *aP;
+  PaiArgument *foundP       = NULL;
+  int foundNameLen = 0;
 
-	LM_ENTRY();
+  LM_ENTRY();
 
-	paIterateInit();
-	PA_M(("----- Looking up '%s' -----", string));
-	while ((aP = paIterateNext(paList)) != NULL)
-	{	
-		if (parNoP == NULL)
-		{
-			int len;
+  paIterateInit();
+  PA_M(("----- Looking up '%s' -----", string));
+  while ((aP = paIterateNext(paList)) != NULL) {
+    if (parNoP == NULL) {
+      int len;
 
-			PA_M(("Got option '%s' from itrration", aP->option));
-			if ((aP->option == NULL) || (aP->option[0] == 0))
-				continue;
-			
-			PA_M(("comparing '%s' to '%s'", string, aP->option));
+      PA_M(("Got option '%s' from itrration", aP->option));
+      if ((aP->option == NULL) || (aP->option[0] == 0)) {
+        continue;
+      }
+      PA_M(("comparing '%s' to '%s'", string, aP->option));
 
-			len = strlen(aP->option);
-			if (strict == STRICT)
-				len = MAX(strlen(string), (unsigned int) len);
+      len = strlen(aP->option);
+      if (strict == STRICT) {
+        len = MAX(strlen(string), (unsigned int)len);
+      }
+      if (len == 0) {
+        LM_EXIT();
+        return NULL;
+      }
 
-			if (len == 0)
-			{
-				LM_EXIT();
-				return NULL;
-			}
+      if (strncmp(aP->option, string, len) == 0) {
+        if (foundP == NULL) {
+          foundP = aP;
+          foundNameLen = strlen(aP->option);
+        } else if (strlen(aP->option) > (unsigned int)foundNameLen) {
+          foundP = aP;
+          foundNameLen = strlen(aP->option);
+        }
+      }
+    } else if ((aP->what & PawParameter) == PawParameter) {
+      if (aP->aux != 0) {
+        PA_W(("cant use this parameter"));
+      } else {
+        aP->aux = 1;
+        LM_EXIT();
+        return aP;
+      }
+    } else {
+      PA_M(("skipping option '%s'", aP->option));
+    }
+  }
 
-			if (strncmp(aP->option, string, len) == 0)
-			{
-				if (foundP == NULL)
-				{
-					foundP = aP;
-					foundNameLen = strlen(aP->option);
-				}
-				else if (strlen(aP->option) > (unsigned int) foundNameLen)
-				{
-					foundP = aP;
-					foundNameLen = strlen(aP->option);
-				}
-			}
-		}
-		else if ((aP->what & PawParameter) == PawParameter)
-		{
-			if (aP->aux != 0)
-				PA_W(("cant use this parameter"));
-			else
-			{
-				aP->aux = 1;
-				LM_EXIT();				
-				return aP;
-			}
-		}
-		else
-			PA_M(("skipping option '%s'", aP->option));
-	}
-	
-	PA_M(("----- returning foundP ... -----"));
+  PA_M(("----- returning foundP ... -----"));
 
-	LM_EXIT();
-	return foundP;
+  LM_EXIT();
+  return foundP;
 }
 
-
-
 /* ****************************************************************************
-*
-* iListFix - 
-*
-* NOTE
-* This function destroys its input string 's'.
-*/
-static int iListFix(int* iV, char* s, int* error)
-{
-	char* tmP   = s;
-	char* endP  = &s[strlen(s)];
-	int   ix    = 0;
+ *
+ * iListFix -
+ *
+ * NOTE
+ * This function destroys its input string 's'.
+ */
+static int iListFix(int *iV, char *s, int *error) {
+  char *tmP   = s;
+  char *endP  = &s[strlen(s)];
+  int ix    = 0;
 
-	PA_M(("incoming list: '%s'", s));
-	baWsStrip(s);
+  PA_M(("incoming list: '%s'", s));
+  baWsStrip(s);
 
-	while ((unsigned long) tmP < (unsigned long) endP)
-	{
-		tmP = strchr(s, ' ');
-		if (tmP == NULL)
-			tmP = strchr(s, '\t');
-		if (tmP >= endP)
-			break;
+  while ((unsigned long)tmP < (unsigned long)endP) {
+    tmP = strchr(s, ' ');
+    if (tmP == NULL) {
+      tmP = strchr(s, '\t');
+    }
+    if (tmP >= endP) {
+      break;
+    }
+    if (tmP == NULL) {                    /* last argument */
+      /* Check 's' for valid integer - reflect in *error parameter */
+      iV[ix + 1] = baStoi(s);
+      PA_M(("item %d in int-list: %d", ix + 1, iV[ix + 1]));
+      ++ix;
+      iV[0] = ix;
+      break;
+    }
 
-		if (tmP == NULL) /* last argument */
-		{
-			/* Check 's' for valid integer - reflect in *error parameter */
-			iV[ix + 1] = baStoi(s);
-			PA_M(("item %d in int-list: %d", ix + 1, iV[ix + 1]));
-			++ix;
-			iV[0] = ix;
-			break;
-		}
+    *tmP = 0;
 
-		*tmP = 0;
+    /* Check 's' for valid integer - reflect in *error parameter */
+    iV[ix + 1] = baStoi(s);
+    s = &tmP[1];
 
-		/* Check 's' for valid integer - reflect in *error parameter */
-		iV[ix + 1] = baStoi(s);
-		s = &tmP[1];
+    LM_T(LmtPaIList, ("item %d in int-list: %d", ix + 1, iV[ix + 1]));
+    LM_T(LmtPaIList, ("rest: '%s'", s));
+    ++ix;
 
-		LM_T(LmtPaIList, ("item %d in int-list: %d", ix + 1, iV[ix + 1]));
-		LM_T(LmtPaIList, ("rest: '%s'", s));
-		++ix;
+    baWsStrip(s);
+  }
 
-		baWsStrip(s);
-	}
+  LM_T(LmtPaIList, ("got %d items in int-list", ix));
 
-	LM_T(LmtPaIList, ("got %d items in int-list", ix));
-
-	*error = PaOk;
-	return ix;
+  *error = PaOk;
+  return ix;
 }
 
-
-
 /* ****************************************************************************
-*
-* sListFix - 
-*/
-static int sListFix(char** sV, char* s, int* error)
-{
-	char* tmP   = s;
-	char* endP  = &s[strlen(s)];
-	long   ix   = 0;
+ *
+ * sListFix -
+ */
+static int sListFix(char **sV, char *s, int *error) {
+  char *tmP   = s;
+  char *endP  = &s[strlen(s)];
+  long ix   = 0;
 
-	LM_T(LmtPaSList, ("incoming list: '%s'", s));
-	LM_T(LmtPaSList, ("list vector at %p", sV));
-	baWsStrip(s);
+  LM_T(LmtPaSList, ("incoming list: '%s'", s));
+  LM_T(LmtPaSList, ("list vector at %p", sV));
+  baWsStrip(s);
 
-	while ((unsigned long) tmP < (unsigned long) endP)
-	{
-		// 1. eat beginning whitespace
-		while ((*tmP == ' ') || (*tmP == '\t'))
-			++tmP;
-		if (*tmP == 0)
-			break;
-
-		s = tmP;
-
-
-		// 2. Now we're at the start of the string - find WS after it and NULL it (if needed)
-		tmP = strchr(s, ' ');
-		if (tmP)
-		{
-			*tmP = 0;
-			++tmP;
-		}
+  while ((unsigned long)tmP < (unsigned long)endP) {
+    // 1. eat beginning whitespace
+    while ((*tmP == ' ') || (*tmP == '\t')) {
+      ++tmP;
+    }
+    if (*tmP == 0) {
+      break;
+    }
+    s = tmP;
 
 
-		// 3. We have an option - record it!
-		++ix;
-		sV[ix] = s;
-		LM_T(LmtPaSList, ("Found item %d in string-list: '%s'", ix + 1, s));
-		LM_T(LmtPaSList, ("rest: '%s'", s));
+    // 2. Now we're at the start of the string - find WS after it and NULL it (if needed)
+    tmP = strchr(s, ' ');
+    if (tmP) {
+      *tmP = 0;
+      ++tmP;
+    }
 
-		// 4. Point 's' to end-of the recently found option (if needed)
-		if (tmP)
-		{
-			s = tmP;
-		}
-		else
-		{
-			LM_T(LmtPaSList, ("A total of %d items in string-list", ix));
-			sV[0] = (char*) ix;
-			break;
-		}
-	}
+
+    // 3. We have an option - record it!
+    ++ix;
+    sV[ix] = s;
+    LM_T(LmtPaSList, ("Found item %d in string-list: '%s'", ix + 1, s));
+    LM_T(LmtPaSList, ("rest: '%s'", s));
+
+    // 4. Point 's' to end-of the recently found option (if needed)
+    if (tmP) {
+      s = tmP;
+    } else {
+      LM_T(LmtPaSList, ("A total of %d items in string-list", ix));
+      sV[0] = (char *)ix;
+      break;
+    }
+  }
 
 #if 0
-	while ((unsigned long) tmP < (unsigned long) endP)
-	{
-		tmP = strchr(s, ' ');
-		if (tmP == NULL)
-			tmP = strchr(s, '\t');
-		if (tmP >= endP)
-			break;
+  while ((unsigned long)tmP < (unsigned long)endP) {
+    tmP = strchr(s, ' ');
+    if (tmP == NULL) {
+      tmP = strchr(s, '\t');
+    }
+    if (tmP >= endP) {
+      break;
+    }
 
-		if (tmP == NULL) /* last argument */
-		{
-			sV[ix + 1] = s;
-			LM_T(LmtPaSList, ("item %d in string-list: '%s' (pointer at %p)", ix + 1, sV[ix + 1], sV[ix + 1]));
-			++ix;
-			sV[0] = (char*) ix;
-			break;
-		}
+    if (tmP == NULL) {           /* last argument */
+      sV[ix + 1] = s;
+      LM_T(LmtPaSList, ("item %d in string-list: '%s' (pointer at %p)", ix + 1, sV[ix + 1], sV[ix + 1]));
+      ++ix;
+      sV[0] = (char *)ix;
+      break;
+    }
 
-		//while ((*tmP == ' ') || (*tmP == '\t'))
-		//   ++tmP;
+    // while ((*tmP == ' ') || (*tmP == '\t'))
+    //   ++tmP;
 
-		//if (*tmP == 0)
-		//   break;
+    // if (*tmP == 0)
+    //   break;
 
-		*tmP = 0;
-		if (s[0] == 0)
-			continue;
+    *tmP = 0;
+    if (s[0] == 0) {
+      continue;
+    }
 
-		sV[ix + 1] = s;
-		s = &tmP[1];
+    sV[ix + 1] = s;
+    s = &tmP[1];
 
-		LM_T(LmtPaSList, ("item %d in string-list: '%s'", ix + 1, sV[ix + 1]));
-		++ix;
-		LM_T(LmtPaSList, ("rest: '%s'", s));
-	}
-#endif
+    LM_T(LmtPaSList, ("item %d in string-list: '%s'", ix + 1, sV[ix + 1]));
+    ++ix;
+    LM_T(LmtPaSList, ("rest: '%s'", s));
+  }
+#endif  // if 0
 
-	LM_T(LmtPaSList, ("got %d items in string-list", ix));
+  LM_T(LmtPaSList, ("got %d items in string-list", ix));
 
-	*error = PaOk;
-	return ix;
+  *error = PaOk;
+  return ix;
 }
-
-
 
 /* ****************************************************************************
-*
-* optOrPar - 
-*/
-char* optOrPar(char* opt)
-{
-	if ((*opt == '-') || (*opt == '+'))
-		return (char*) "option";
-	else
-		return (char*) "parameter";
+ *
+ * optOrPar -
+ */
+char *optOrPar(char *opt) {
+  if ((*opt == '-') || (*opt == '+')) {
+    return (char *)"option";
+  } else {
+    return (char *)"parameter";
+  }
 }
-
-
 
 /* ****************************************************************************
-*
-* paOptionsParse - 
-*/
-int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
-{
-	PaiArgument*  aP;
-	char*         valueP;
-	int           argNo         = 0;
-	int           param         = 1;
-	bool          extendedUsage = false;
-	char          w[512];
+ *
+ * paOptionsParse -
+ */
+int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
+  PaiArgument *aP;
+  char *valueP;
+  int argNo         = 0;
+  int param         = 1;
+  bool extendedUsage = false;
+  char w[512];
 
-	LM_ENTRY();
-	w[0] = 0;
+  LM_ENTRY();
+  w[0] = 0;
 
-	PA_M(("incoming arg list of %d args", argC));
-	while (++argNo < argC)
-	{
-	    const int MAX_LENGTH_FULL_NAME=256;
-		char  e[MAX_LENGTH_FULL_NAME+1];
-		char  o[MAX_LENGTH_FULL_NAME+1];
-		int   eee;
-		int*  eP;
+  PA_M(("incoming arg list of %d args", argC));
+  while (++argNo < argC) {
+    char e[STRING_MAX_LENGTH];
+    char o[STRING_MAX_LENGTH];
+    int eee;
+    int *eP;
 
-		eP  = &eee;
-		*eP = PaNotOk;
+    eP  = &eee;
+    *eP = PaNotOk;
 
-		PA_M(("Looking up '%s'", argV[argNo]));
-		if ((aP = argFind(paList, argV[argNo], STRICT, NULL)) != NULL)
-		{
-			valueP = argV[++argNo];
-			if (aP->type == PaBoolean)
-				--argNo;
-		}			
-		else if ((aP = argFind(paList, argV[argNo], UNSTRICT, NULL)) != NULL)
-			valueP = &argV[argNo][strlen(aP->option)];
-		else if ((aP = argFind(paList, (char*) "", UNSTRICT, &param)) != NULL)
-			valueP = argV[argNo];
-		else
-		{
-			sprintf(w, "%s '%s' not recognized", optOrPar(argV[argNo]), argV[argNo]);
-			PA_W(("Warning: '%s'", w));
-			PA_WARNING(PasNoSuchOption, w);
-			continue;
-		}
+    PA_M(("Looking up '%s'", argV[argNo]));
+    if ((aP = argFind(paList, argV[argNo], STRICT, NULL)) != NULL) {
+      valueP = argV[++argNo];
+      if (aP->type == PaBoolean) {
+        --argNo;
+      }
+//    The UNSTRICT condition caused -port_node being detected as -port, without warning
+//    about the change in the syntax
+    } else if ((aP = argFind(paList, (char *)"", UNSTRICT, &param)) != NULL) {
+      if (argV[argNo][0] == '-') {
+        snprintf(w, STRING_MAX_LENGTH, "%s '%s' argument starts with '-'", optOrPar(argV[argNo]), argV[argNo]);
+        fprintf(stderr, "Warning: '%s'\n", w);
+      }
+      valueP = argV[argNo];
+    } else {
+      snprintf(w, STRING_MAX_LENGTH, "%s '%s' not recognized", optOrPar(argV[argNo]), argV[argNo]);
+      PA_W(("Warning: '%s'", w));
+      PA_WARNING(PasNoSuchOption, w);
+      fprintf(stderr, "Warning: '%s'\n", w);
+      continue;
+    }
 
-		LM_T(LmtPaApVals, ("found option '%s'", aP->name));
+    LM_T(LmtPaApVals, ("found option '%s'", aP->name));
 
-		if (aP->varP == (void*) &paUsageVar)
-		{
-			memset(paResultString, 0, sizeof(paResultString));
-			if (extendedUsage == false)
-			{
-				paUsage();
-				return -2;
-			}
-		}
-		else if (aP->varP == (void*) &paVersion)
-		{
-			paVersionPrint();
-			exit(1);
-		}
-		else if (aP->varP == (void*) &paLogDir)
-		{
-            if (valueP != NULL)
-            {
-                strcpy(paLogDir, strdup(valueP));
-                printf("log directory: '%s'\n", paLogDir);
-            }
-		}
-		else if (aP->varP == (void*) &paEUsageVar)
-			extendedUsage = true;
-		else if (aP->varP == (void*) &paHelpVar)
-		{
-			memset(paResultString, 0, sizeof(paResultString));
-			paHelp();
-			return -2;
-		}
+    if (aP->varP == (void *)&paUsageVar) {
+      memset(paResultString, 0, sizeof(paResultString));
+      if (extendedUsage == false) {
+        paUsage();
+        return -2;
+      }
+    } else if (aP->varP == (void *)&paVersion) {
+      paVersionPrint();
+      exit(1);
+    } else if (aP->varP == (void *)&paLogDir) {
+      if (valueP != NULL) {
+        strcpy(paLogDir, strdup(valueP));
+        printf("log directory: '%s'\n", paLogDir);
+      }
+    } else if (aP->varP == (void *)&paEUsageVar) {
+      extendedUsage = true;
+    } else if (aP->varP == (void *)&paHelpVar) {
+      memset(paResultString, 0, sizeof(paResultString));
+      paHelp();
+      return -2;
+    }
 
-		if (aP->used > 0)
-		{
-			if ((aP->type != PaSList) && (aP->type != PaIList) && (aP->what != PawParameter))
-			{
-				sprintf(w, "multiple use of %s", aP->name);
-				PA_WARNING(PasMultipleOptionUse, w);
-				continue;
-			}
-		}
-
-		aP->from = PafArgument;
+    if (aP->used > 0) {
+      if ((aP->type != PaSList) && (aP->type != PaIList) && (aP->what != PawParameter)) {
+        snprintf(w, STRING_MAX_LENGTH, "multiple use of %s", aP->name);
+        PA_WARNING(PasMultipleOptionUse, w);
+        continue;
+      }
+    }
+    aP->from = PafArgument;
 
 
-		if (aP->type == PaBoolean)
-		{
-			if (strlen(argV[argNo]) != strlen(aP->option))
-			{
-				char tmp[128];
-				sprintf(w, "boolean option '%s' doesn't take parameters",
-						paFullName(e, MAX_LENGTH_FULL_NAME, aP));
-				/* PA_WARNING(PasValueToBooleanOption, w); */
-				sprintf(tmp, "%c%s", argV[argNo][0], &argV[argNo][2]);
-				LM_W(("Changing arg %d from '%s' to '%s'", argNo, argV[argNo], tmp));
-				strcpy(argV[argNo], tmp);
-				--argNo;
-			}
-			
-			*((bool*) aP->varP) = 
-			  (((bool) ((int) aP->def)) == true)? false : true;
+    if (aP->type == PaBoolean) {
+      if (strlen(argV[argNo]) != strlen(aP->option)) {
+        char tmp[STRING_MAX_LENGTH];
+        snprintf(w, STRING_MAX_LENGTH, "boolean option '%s' doesn't take parameters",
+                paFullName(e, aP));
+        /* PA_WARNING(PasValueToBooleanOption, w); */
+        snprintf(tmp, STRING_MAX_LENGTH, "%c%s", argV[argNo][0], &argV[argNo][2]);
+        LM_W(("Changing arg %d from '%s' to '%s'", argNo, argV[argNo], tmp));
+        strcpy(argV[argNo], tmp);
+        --argNo;
+      }
 
-			aP->used++;
-			continue;
-		}
+      *((bool *)aP->varP) =
+        (((bool)((int)aP->def)) == true) ? false : true;
 
-		if ((argNo >= argC)	|| (paIsOption(paList, valueP) == true))
-		{
-			REQUIRE(aP);
-			break;
-		}
+      aP->used++;
+      continue;
+    }
 
-		paFullName(o, MAX_LENGTH_FULL_NAME, aP);
+    if ((argNo >= argC)     || (paIsOption(paList, valueP) == true)) {
+      REQUIRE(aP);
+      break;
+    }
 
-		switch (aP->type)
-		{
-		case PaInt:
-		case PaIntU:
-            *((int*) aP->varP) = (int) (long long) paGetVal(valueP, eP);
-            if (*eP != PaOk)
-                return -1;
+    paFullName(o, aP);
 
-			LM_T(LmtPaApVals, ("got value %d for %s", *((int*) aP->varP), aP->name)); 
-			break;
+    switch (aP->type) {
+      case PaInt:
+      case PaIntU:
+        *((int *)aP->varP) = (int)(long long)paGetVal(valueP, eP);
+        if (*eP != PaOk) {
+          return -1;
+        }
 
-		case PaInt64:
-		case PaIntU64:
-			*((long long*) aP->varP) = (long long) paGetVal(valueP, eP);
-            if (*eP != PaOk)
-                return -1;
+        LM_T(LmtPaApVals, ("got value %d for %s", *((int *)aP->varP), aP->name));
+        break;
 
-			LM_T(LmtPaApVals, ("got value %ul for %s", *((long long*) aP->varP), aP->name)); 
-			break;
+      case PaInt64:
+      case PaIntU64:
+        *((long long *)aP->varP) = (long long)paGetVal(valueP, eP);
+        if (*eP != PaOk) {
+          return -1;
+        }
 
-		case PaChar:
-		case PaCharU:
-            *((char*)  aP->varP) = (char) (long long) paGetVal(valueP, eP);
-            if (*eP != PaOk)
-                return -1;
+        LM_T(LmtPaApVals, ("got value %ul for %s", *((long long *)aP->varP), aP->name));
+        break;
 
-			LM_T(LmtPaApVals, ("got value %d for %s", *((char*) aP->varP), aP->name)); 
-			break;
+      case PaChar:
+      case PaCharU:
+        *((char *)aP->varP) = (char)(long long)paGetVal(valueP, eP);
+        if (*eP != PaOk) {
+          return -1;
+        }
 
-		case PaShort:
-		case PaShortU:
-            *((short*) aP->varP) = (short) (long long) paGetVal(valueP, eP);
-            if (*eP != PaOk)
-                return -1;
+        LM_T(LmtPaApVals, ("got value %d for %s", *((char *)aP->varP), aP->name));
+        break;
 
-            LM_T(LmtPaApVals, ("got value %d for %s", *((short*) aP->varP), aP->name));
-            break;
+      case PaShort:
+      case PaShortU:
+        *((short *)aP->varP) = (short)(long long)paGetVal(valueP, eP);
+        if (*eP != PaOk) {
+          return -1;
+        }
 
-		case PaFloat:
-			*((float*) aP->varP) = baStof(valueP);
-			*eP = PaOk;
-			LM_T(LmtPaApVals, ("got value %f for %s", *((float*) aP->varP), aP->name));
-			break;
+        LM_T(LmtPaApVals, ("got value %d for %s", *((short *)aP->varP), aP->name));
+        break;
 
-		case PaDouble:
-			*((double*) aP->varP) = baStof(valueP);
-			*eP = PaOk;
-			LM_T(LmtPaApVals, ("got value %f for %s", *((double*) aP->varP), aP->name));
-			break;
+      case PaFloat:
+        *((float *)aP->varP) = baStof(valueP);
+        *eP = PaOk;
+        LM_T(LmtPaApVals, ("got value %f for %s", *((float *)aP->varP), aP->name));
+        break;
 
-		case PaString:
-			strcpy((char*) aP->varP, valueP);
-			LM_T(LmtPaApVals, ("got value '%s' for %s", (char*) aP->varP, aP->name));
-			*eP = PaOk;
-			break;
+      case PaDouble:
+        *((double *)aP->varP) = baStof(valueP);
+        *eP = PaOk;
+        LM_T(LmtPaApVals, ("got value %f for %s", *((double *)aP->varP), aP->name));
+        break;
 
-		case PaIList:
-			LM_T(LmtPaIList, ("setting list '%s' to var %s", valueP, aP->name));
-			iListFix((int*) aP->varP, valueP, eP);
-			break;
+      case PaString:
+        strcpy((char *)aP->varP, valueP);
+        LM_T(LmtPaApVals, ("got value '%s' for %s", (char *)aP->varP, aP->name));
+        *eP = PaOk;
+        break;
 
-		case PaSList:
-			LM_T(LmtPaSList, ("setting list '%s' to var %s", valueP, aP->name));
-			sListFix((char**) aP->varP, valueP, eP);
-			break;
+      case PaIList:
+        LM_T(LmtPaIList, ("setting list '%s' to var %s", valueP, aP->name));
+        iListFix((int *)aP->varP, valueP, eP);
+        break;
 
-		case PaBoolean:
-		case PaLastArg:
-			LM_T(LmtPaApVals, ("PaList, PaBoolean, PaLastArg ..."));
-			*eP = PaOk;			
-			break;
+      case PaSList:
+        LM_T(LmtPaSList, ("setting list '%s' to var %s", valueP, aP->name));
+        sListFix((char **)aP->varP, valueP, eP);
+        break;
 
-		default:
-			LM_W(("bad type for option '%s'", aP->name));
-		}
+      case PaBoolean:
+      case PaLastArg:
+        LM_T(LmtPaApVals, ("PaList, PaBoolean, PaLastArg ..."));
+        *eP = PaOk;
+        break;
 
-		if (*eP != PaOk)
-			REQUIRE(aP);
+      default:
+        LM_W(("bad type for option '%s'", aP->name));
+    }
 
-		aP->used++;
-		LM_V(("%s used %d times", aP->name, aP->used));
-	}
+    if (*eP != PaOk) {
+      REQUIRE(aP);
+    }
+    aP->used++;
+    LM_V(("%s used %d times", aP->name, aP->used));
+  }
 
 
-	/* checking that all required arguments are set */
-	LM_T(LmtPaSList, ("Checking that all requires arguments are set"));
-	paIterateInit();
-	while ((aP = paIterateNext(paList)) != NULL)
-	{
-		if ((aP->sort == PaReq) && (aP->used == 0))
-		{
-			sprintf(w, "%s required", aP->name);
-			PA_WARNING(PasRequiredOption, w);
-		}
-	}		
+  /* checking that all required arguments are set */
+  paIterateInit();
+  while ((aP = paIterateNext(paList)) != NULL) {
+    if ((aP->sort == PaReq) && (aP->used == 0)) {
+      snprintf(w, STRING_MAX_LENGTH, "%s required", aP->name);
+      PA_WARNING(PasRequiredOption, w);
+    }
+  }
 
-	LM_T(LmtPaSList, ("Checking extended usage"));
-	if (extendedUsage == true)
-	{
-		paExtendedUsage();
-		return -2;
-	}
+  if (extendedUsage == true) {
+    paExtendedUsage();
+    return -2;
+  }
 
-	LM_EXIT();
-	return 0;
+  LM_EXIT();
+  return 0;
 }
+

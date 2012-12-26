@@ -12,128 +12,139 @@
 #ifndef _H_AU_LOG
 #define _H_AU_LOG
 
-
 #define DATE_FORMAT "%A %d %h %H:%M:%S %Y"
 
 #include <fcntl.h>
-#include <regex.h>
 
-#include "au/containers/vector.h"
-#include "au/Object.h"
 #include "au/Status.h"
-#include "au/containers/StringVector.h"
-#include "au/network/FileDescriptor.h"
-#include "au/Tokenizer.h"
-#include "au/string/split.h"
-#include "au/tables/Table.h"
 #include "au/TemporalBuffer.h"
+#include "au/containers/SharedPointer.h"
+#include "au/containers/StringVector.h"
+#include "au/containers/vector.h"
+#include "au/log/LogCommon.h"
+#include "au/network/FileDescriptor.h"
+#include "au/string/Pattern.h"
+#include "au/string/StringUtilities.h"
+#include "au/string/StringUtilities.h"
+#include "au/string/Tokenizer.h"
+#include "au/tables/Table.h"
+#include "au/tables/Table.h"
 
 namespace au {
-    
-    /*
-     
-     Known string fields
-     ---------------------------------------------------------------------------
-     "progName";
-     "text";
-     "file";
-     "fName";
-     "stre";
-     
-     Formats:
-     ---------------------------------------------------------------------------
+/*
+ *
+ * ---------------------------------------------------------------------------
+ * Fields of every log
+ * ---------------------------------------------------------------------------
+ *
+ * type        One letter describing severity of the log ( D,M,V,W,E,X )
+ * channel     Name of channel emited ( example message )
+ *
+ * host        Name of the host ( if recovered using LogServer )
+ *
+ * pid         Number of process that generated this
+ * tid         Identifier of the thread
+ *
+ * node Name of the node ( assigned with set_node(X) ) to identify the node in a distributed system
+ *
+ * DATE        Date and time formats
+ * date
+ * TIME
+ * time
+ * timestamp
+ * time_unix   Integuer version of the time
+ *
+ * file        Name of the source file
+ * line        Line inside the source file
+ * function    Function name
+ * exec        Name of the executable ( progname )
+ * text        Message
+ * text80      Message ( limited to 80 chars )
+ */
 
-     HOST     ( part of the logServer information )
-     
-     TYPE     ( in LogData )
-     PID      ( in LogData ) 
-     DATE     ( in LogData )
-     date     ( in LogData )
-     TIME     ( in LogData )
-     time     ( in LogData )
-     TID      ( in LogData )
-     LINE     ( in LogData )
-     TLEV     ( in LogData )
-     EXEC     progName     // Name of the executable ( progname )
-     AUX      aux          // aux variable to distinguish fork files...
-     FILE     file         // Name of the source file
-     TEXT     text         // Message
-     text     text         // Message limited to 60 chars
-     FUNC     fname        // Function name
-     STR      stre         // ?
-     time_unix
-     */
-    
-    extern const char*log_reseved_words[];
-    
-    // Entry in the log
-    class Log : public au::Object
-    {
-        
-    public:
-        
-        LogData log_data;  
 
-        std::map<std::string, std::string> fields;
-        
-        Log( )
-        {
-        }
-        
-        ~Log()
-        {
-        }
+struct LogData {
+  char level;             // Level of the channel ( D , M , W , E .... )
+  int channel;            // Channel where this log was emitted
+  int line;               // Line number
+  struct timeval tv;      // time since 1970
+  int timezone;           // The timezone
+  pid_t pid;              // pid of the process
+  size_t tid;             // Identifier of the thread ( opaque type over a size_t type )
+};
 
-        // Set and get methods for string-kind fields
-        void add_field( std::string field_name , std::string field_value );
-        std::string getField( std::string name , std::string default_value );
-        
-        // Read and Write over a file descriptor ( network or disk )
-        bool read( au::FileDescriptor *fd );
-        bool write( au::FileDescriptor *fd );
-        
-        // Debug string
-        std::string str();
-        
-        // Get information about a particular field
-        std::string get( std::string  name );
+// Entry in the log
+class Log {
+public:
 
-        // Get total number og bytes when serialized
-        size_t getTotalSerialitzationSize();
-        
-        // Match agains a particuar regular expression
-        bool match( const regex_t * preg )
-        {
-            std::map<std::string, std::string>::iterator it_fields;
-            for ( it_fields = fields.begin() ; it_fields != fields.end() ; it_fields++ )
-            {
-                std::string value = it_fields->second;
-                int c = regexec( preg, value.c_str(), 0, NULL , 0 );                
-                if( c == 0 )
-                    return true;
-                
-            }
-            
-            return false;
-        }
-        
-        bool check_time( time_t t )
-        {
-            return ( log_data.tv.tv_sec <= t );
-        }
-                   
-        // Spetial log to define mark of new session
-        void set_new_session();
-        bool is_new_session();
-        
-    private:
+  Log() {
+  }
 
-        // Methods to serialize string-kind fields
-        size_t getStringsSize();
-        void copyStrings( char * data );
-        void addStrings( char* strings , size_t len );
-        
-    };
+  ~Log() {
+  }
+
+  // Set methods
+  void Set(const std::string& field_name, const std::string& field_value);
+  template< typename T>
+  inline void Set(const std::string& field_name, const T& t) {
+    std::ostringstream output;
+
+    output << t;
+    Set(field_name, output.str());
+  }
+
+  // Get methods
+  std::string Get(const std::string& name, const std::string& default_value) const;
+  std::string Get(std::string name) const;
+  LogData& log_data();
+  int channel() const;
+  int level() const;
+
+  // Read and Write over a file descriptor ( network or disk )
+  bool Read(au::FileDescriptor *fd);
+  bool Write(au::FileDescriptor *fd);
+
+  // Debug string
+  std::string str() const;
+
+  // Get total number og bytes when serialized
+  size_t SerialitzationSize();
+
+  // Match agains a particuar regular expression
+  bool Match(Pattern& pattern) const;
+  bool Match(SimplePattern& pattern) const;
+
+  // Spetial log to define mark of new session
+  void SetNewSession();
+  bool IsNewSession() const;
+
+  // Fancy functions to get the color of this log on screen
+  au::Color GetColor();
+
+  // transform level in letter
+  static int GetLogLevel(const std::string& str_log_level);
+  static std::string GetLogLevel(int log_level);
+
+private:
+
+  // Methods to serialize string-kind fields
+  size_t GetStringsSize() const;
+  void CopyStrings(char *data);
+  void AddStrings(char *strings, size_t len);
+
+  LogData log_data_;
+  std::map<std::string, std::string> fields_;
+};
+
+/**
+ * \brief List of reserved words to specify fields in the log format
+ */
+extern const char *log_reseved_words[];
+
+
+std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error);
+au::SharedPointer<au::tables::Table> getTableOfFields();
+typedef au::SharedPointer<Log>   LogPointer;
 }
 
-#endif
+#endif  // ifndef _H_AU_LOG

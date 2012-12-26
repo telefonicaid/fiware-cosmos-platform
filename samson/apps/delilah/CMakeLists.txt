@@ -8,21 +8,21 @@ SET (HEADERS
 if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
     set (SOLARIS_LIBS "-lsocket -lnsl")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-
 SET (STATIC_LIBS
+  	 zookeeper_mt
      delilahLib
      pa
      lm
      protobuf
      pthread
-     curses
      samsonNetwork
      samsonStream
      samsonModule
      dl
      engine
+	 zoo
      samsonCommon	
-	 samson_system
+     samson_system
      au
      ${SOLARIS_LIBS}
      ${COMMON_SAMSON_LIBS}

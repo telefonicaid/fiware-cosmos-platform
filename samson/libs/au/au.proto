@@ -39,3 +39,21 @@ message ConsolePacket
 	
 }
 
+// Message used as first packet in connections to a log server
+
+message LogConnectionHello
+{
+    enum LogConnectionType
+    {
+        LogProvider    = 1;
+        LogProbe       = 2;
+		LogQuery       = 3;
+    }
+
+	// type of connection
+	required LogConnectionType type = 1;
+
+	// optional filters
+	optional string filter = 2;
+
+}

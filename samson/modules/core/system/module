@@ -2,10 +2,10 @@ Module system
 {
 	title	"System default elements"
 	author	"Andreu Urruela"
-	version "0.3"
+	version "0.4"
 }
 
-# System defaults ( to be implemented in the rigth file )
+# System defaults ( to be implemented in the right file )
 
 data Value {}
 data UInt {}
@@ -93,19 +93,13 @@ data StringVector
 parser parse
 {
 	out system.Value system.Value
-	helpLine "Parse lines with fields separated by a single char tab , space , coma , ..."
+	helpLine "Parse lines with fields separated by a single char tab , space , comma , ..."
 }
 
 parser parse_xml_documents
 {
 	out system.Value system.Value
 	helpLine "Parse xml documents and generate system.Values as maps"
-}
-
-parser parse_http_with_commscore
-{
-    out system.Value system.Value
-    helpLine "Parse lines from TRAFFICA http logs, enriching with commscore categories"
 }
 
 parserOut str
@@ -119,7 +113,7 @@ map map
 	in  system.Value system.Value
 	out system.Value system.Value
 
-	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+	helpLine "Generic map to transform values. User environment variable command to specify what to do..."
 }
 
 map map2
@@ -128,7 +122,7 @@ map map2
 	out system.Value system.Value
 	out system.Value system.Value
 
-	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+	helpLine "Generic map to transform values. User environment variable command to specify what to do..."
 }
 
 map map3
@@ -137,7 +131,7 @@ map map3
 	out system.Value system.Value
 	out system.Value system.Value
 
-	helpLine "Generic map to transform values. User enviroment variable command to specify what to do..."
+	helpLine "Generic map to transform values. User environment variable command to specify what to do..."
 }
 
 reduce reduce
@@ -178,13 +172,13 @@ script init_process
 {
 	code
 	{
-		add_stream_operation p system.process input state output input state;
+		add_stream_operation p system.process -input 'input state' -output 'output input state';
 	}					 
 }
 
 splitter lines
 {
-	helpLine "Parse input keeping lines toguether"
+	helpLine "Parse input keeping lines together"
 }
 
 

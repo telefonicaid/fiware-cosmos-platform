@@ -11,92 +11,63 @@
 #ifndef SAMSON_MODULES_MANAGER_H
 #define SAMSON_MODULES_MANAGER_H
 
-#include <map>					/* std::map */
-#include <string>				/* std::string */
+#include <map>                         /* std::map */
+#include <string>                      /* std::string */
 
-
-#include "au/mutex/Token.h"                /* Lock                            */
-#include "au/string.h"              // au::xml_...
-#include "au/ErrorManager.h"                /* Lock                            */
-#include "au/CommandLine.h"			/* AUCommandLine                            */
-#include "au/containers/map.h"                 // au::map
-
-#include "samson/common/samson.pb.h"			// samson::network::...
-#include "samson/common/coding.h"				// ss:KVInfo
-#include "samson/common/status.h"
-
-#include "samson/module/KVFormat.h"     // samson::KVFormat
-#include "samson/module/Module.h"		// samson::Module
-#include "samson/module/Factory.h"      // au::Factory
-
+#include "au/CommandLine.h"            /* AUCommandLine                            */
+#include "au/ErrorManager.h"           /* Lock                            */
+#include "au/containers/SharedPointer.h"
+#include "au/containers/map.h"       // au::map
+#include "au/mutex/Token.h"            /* Lock                            */
+#include "au/singleton/Singleton.h"
+#include "au/string/StringUtilities.h"  // au::xml_...
+#include "samson/common/coding.h"    // ss:KVInfo
+// samson::network::...
 #include "samson/common/Visualitzation.h"
-
+#include "samson/common/status.h"
+#include "samson/module/Factory.h"      // au::Factory
+#include "samson/module/KVFormat.h"     // samson::KVFormat
+#include "samson/module/Module.h"    // samson::Module
 namespace samson {
+class Data;
+class DataInstance;
+class Operation;
 
-	class Data;
-	class DataInstance;
-	class Operation;
-	
-	class ModulesManager 
-	{
-        std::string owner_;                         // Module who created the ModulesManager
-		au::Token token_modules;			               //!< General lock for modules accessquit
+class ModulesManager {
+public:
 
-        au::map< std::string  , Module > modules;  // Individual modules ( just for listing )
-        
+  ~ModulesManager();
 
-        std::vector<void*> handlers;               // Open handlers
-		
-        ModulesManager(std::string calling_module);		                   //!< Private constructor to implement singleton
-        
-	public:
+  void AddModulesFromDefaultDirectory(au::ErrorManager & error);
+  void AddModulesFromDirectory(const std::string& dir_name, au::ErrorManager & error);
+  void ClearModulesManager();
 
-		~ModulesManager();
-		
-		static void init(std::string calling_module);
-		static void destroy(std::string calling_module);
-		static ModulesManager* shared();
-		std::string get_owner(){return owner_;};
-		        
+  // Get collection for queries
+  au::SharedPointer<gpb::Collection> GetModulesCollection(const Visualization& visualitzation) const;
+  au::SharedPointer<gpb::Collection> GetDatasCollection(const Visualization& visualitzation) const;
+  au::SharedPointer<gpb::Collection> GetOperationsCollection(const Visualization& visualitzation) const;
 
-    public:
-        
-        static Status loadModule( std::string path , Module** module , std::string* version_string );
-        
-        std::string getModuleFileName( std::string module );
+  // Local table of modules
+  std::string GetTableOfModules() const;
 
-	public:
-		
-		// Reload modules from default directories
-		void reloadModules();
+  // Unique interface to get data and operations
+  Data *GetData(const std::string& name) const;
+  Operation *GetOperation(const std::string& name) const;
 
-        // get xml information
-        void getInfo( std::ostringstream& output);
-        
-        // Get collection for queries
-        samson::network::Collection* getModulesCollection(VisualitzationOptions options ,  std::string pattern );
-        samson::network::Collection* getDatasCollection(VisualitzationOptions options ,  std::string pattern );
-        samson::network::Collection* getOperationsCollection(VisualitzationOptions options ,  std::string pattern );
-        
+  // Static method to analyze module files
+  static Module *LoadModule(const std::string& path, au::ErrorManager & error);
 
-        // Get Data &* Operation
-        Data* getData( std::string name );
-        Operation* getOperation( std::string name );
+private:
 
-        
-    private:
-        
-        void closeHandlers();
-        void clearModulesManager();
-		
-		// Add Modules funcitons
-		void addModulesFromDirectory( std::string dir_name );
-		void addModule( std::string path );
-		void addModules();
-        
-        
-	};
-	
+  ModulesManager();     // !< Private constructor to implement singleton
+  friend class au::Singleton<ModulesManager>;
+
+  // Add Modules functions
+  void AddModules();
+  void AddModule(const std::string& path, au::ErrorManager & error);
+
+  au::map<std::string, Module> modules_;     // Individual modules ( just for listing )
+};
 }
 
-#endif
+#endif  // ifndef SAMSON_MODULES_MANAGER_H

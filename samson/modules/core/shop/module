@@ -1,10 +1,8 @@
 Module shop
 {
-
 	title	"shop  module"
 	author 	"Andreu Urruela (andreu@tid.es)"
-	version "0.1"
-	
+	version "0.2"
 }
 
 # ---------------------------------------------------------------------------
@@ -92,9 +90,9 @@ script init_stream
         # Definitions
         # ----------------------------------------------------------------
 
-		add_stream_operation [p] shop.parse_transactions [input] [transactions];
-		add_stream_operation [m] shop.map_by_user [transactions] [user_transactions];
-		add_stream_operation [r] shop.reduce_by_user_state [user_transactions] [user_state] [user_state]; 
+		add_stream_operation [p] shop.parse_transactions -input [input] -output [transactions];
+		add_stream_operation [m] shop.map_by_user -input [transactions] -output [user_transactions];
+		add_stream_operation [r] shop.reduce_by_user_state -input '[user_transactions] [user_state]' -output [user_state]; 
 		set_stream_operation_property [r] update_only true;
 	}
 }

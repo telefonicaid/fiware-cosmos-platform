@@ -1,7 +1,8 @@
 --NAME--
 samsonMemCheck - OK
 --SHELL--
-samsonMemCheck
+samsonMemCheck | sed 's/^..*samsonMemCheck: //'
 --EXPECT--
 Found enough shared memory for SAMSON, samson_required_mem(536870912) <= max_memory_size(8589934592)
 The maximum shared memory segment size is sufficent for SAMSON. shared_memory_size_per_buffer(268435456) <=  kernel_shmmax(268435456)
+samsonMemCheck ok

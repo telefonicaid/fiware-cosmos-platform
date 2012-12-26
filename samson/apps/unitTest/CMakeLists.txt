@@ -1,49 +1,145 @@
 SET (SOURCES
+
     main_UnitTest.cpp
 
-	#Common files
+	# Common files for all tests
+	TestClasses.h
+	TestClasses.cpp
+
+	# -----------------------------------------------------------
+	# AU library
+	# -----------------------------------------------------------
+
+
+	lib/au/CommandLineTest.cpp
+	lib/au/EnvironmentTest.cpp
+	lib/au/fileTest.cpp
+
+	# lib/au/string
+	
+	lib/au/string/DescriptorsTest.cpp
+	lib/au/string/STest.cpp
+	lib/au/string/StringCollectionTest.cpp
+	lib/au/string/StringComponentsTest.cpp
+	lib/au/string/StringUtilitiesTest.cpp
+	lib/au/string/TokenizerTest.cpp
+	lib/au/string/PatternTest.cpp
+
+
+	# AU SINGLETON 
+
+	lib/au/singleton/SingletonTest.cpp
+
+	# AU CONTAINERS LIBRARY
+	lib/au/containers/BoxTest.cpp
+	lib/au/containers/DictionaryTest.cpp
+	lib/au/containers/GlobalDictionaryTest.cpp
+	lib/au/containers/SharedPointerTest.cpp
+	lib/au/containers/StringVectorTest.cpp
+	lib/au/containers/QueueTest.cpp
+
+	# AU NETWORK LIBRARY
+	lib/au/network/FileDescriptorTest.cpp
+	lib/au/network/NetworkListenerTest.cpp
+	lib/au/network/RESTServiceTest.cpp
+	lib/au/network/ConsoleServiceTest.cpp
+
+	# AU STATISTICS LIBRARY
+    lib/au/statistics/ActivityMonitorTest.cpp
+	lib/au/statistics/CounterCollectionTest.cpp
+	lib/au/statistics/CronometerTest.cpp
+	lib/au/statistics/RateTest.cpp
+
+	# AU MUTEX LIBRARY
+    lib/au/mutex/TokenTest.cpp
+
+	# AU setup
+	lib/au/setup/SetupItemCollectionTest.cpp
+	lib/au/setup/SetupItemTest.cpp
+
+	# AU tables library
+	lib/au/tables/TableTest.cpp	
+
+	# -----------------------------------------------------------
+	# ENGINE library
+	# -----------------------------------------------------------
+
+	# Common files
 	common_engine_test.h
 	common_engine_test.cpp
 
-	#au
-	au/CommandLine_test.cpp
-	au/au.cpp
-	au/au_string_test.cpp
-	au/au_Token_test.cpp
-	au/au_Table_test.cpp
+	lib/engine/EngineTest.cpp
+	lib/engine/BufferTest.cpp
+	lib/engine/DiskManagerTest.cpp          
+    lib/engine/DiskOperationTest.cpp        
+	lib/engine/EngineElementCollectionTest.cpp
+	lib/engine/EngineElementTest.cpp
+	lib/engine/EngineTest.cpp               
+	lib/engine/MemoryManagerTest.cpp        
+	lib/engine/NotificationTest.cpp
+	lib/engine/NotificationElementTest.cpp
+	lib/engine/NotificationListenersManagerTest.cpp
+	lib/engine/NotificationListenerTest.cpp 
+	lib/engine/ProcessItemTest.cpp              
+	lib/engine/ProcessManagerTest.cpp       
+	lib/engine/ReadFileTest.cpp
+	lib/engine/statusTest.cpp
+	lib/engine/SimpleBufferTest.cpp
+	lib/engine/ReadFileManagerTest.cpp
 
-    #engine
-    engine/object_test.cpp
-    engine/engine_test.cpp
-    engine/memoryManager_test.cpp
-    engine/diskOperation_test.cpp
-    engine/diskManager_test.cpp
-	engine/processManager_test.cpp
-    engine/processItem_test.cpp
-    engine/buffer_test.cpp
-    engine/readFile_test.cpp
+	# -----------------------------------------------------------
+	# ETXRA libraries
+	# -----------------------------------------------------------
 
-	#samson_system lib
-	samson_system/samson_system.cpp
+	# EXTRA C4 LIBRARY
+	lib/extra/c4/BoardTest.cpp 
 
-	#comscore library
-	comscore/comscore.cpp
+	# EXTRA COMSCORE LIBRAY
+	lib/extra/comscore/comscore.cpp
+
+    # -----------------------------------------------------------
+    # SAMSON libraries
+    # -----------------------------------------------------------
+
+	# SAMSON COMMON LIBRARY
+	lib/samson/common/EnvironmentOperationsTest.cpp
+	lib/samson/common/FullKVInfoTest.cpp
+	lib/samson/common/KVHeaderTest.cpp
+	lib/samson/common/KVInfoTest.cpp
+	lib/samson/common/KVRangeDivisionTest.cpp
+	lib/samson/common/KVRangeTest.cpp
+	lib/samson/common/SamsonSetupTest.cpp 
+	lib/samson/common/SamsonFileTest.cpp
 	
-	#common library
-	common/common_test.cpp
+	lib/samson/common/EnvironmentOperationsTest.cpp
+	lib/samson/common/KVFileTest.cpp
+	lib/samson/common/KVInputVectorTest.cpp
+	lib/samson/common/LogsTest.cpp
+	lib/samson/common/MemoryCheckTest.cpp
+	lib/samson/common/RateTest.cpp
+	lib/samson/common/SamsonDataSetTest.cpp
+	lib/samson/common/VisualizationTest.cpp
+	lib/samson/common/statusTest.cpp
+	lib/samson/common/codingTest.cpp
+	lib/samson/common/BlockKVInfoTest.cpp
+	lib/samson/common/MessageOperationsTest.cpp
+	lib/samson/common/commonTest.cpp
+	lib/samson/common/gpb_operationsTest.cpp
 
-	#delilah library
-	delilah/common_delilah_test.h
-	delilah/common_delilah_test.cpp
-	delilah/delilahConsole_test.cpp
-	delilah/SamsonFile_test.cpp
-	delilah/PushDelilahComponent_test.cpp
-	
-	#samson/client library
-	samson/client/SamsonClient_test.cpp
+	# SAMSOM WORKER LIBRARY
+	lib/samson/worker/SamsonWorkerTest.cpp
 
-	#samon/isolated library
-	samson/isolated/SharedMemoryManager_test.cpp
+    #SAMSON SYSTEM LIBRARY
+    lib/samson_system/ValueTest.cpp
+
+	#SAMSON STREAM library
+	lib/samson/stream/SharedMemoryManagerTest.cpp
+
+	#SAMSON DELILAH LIBRARY
+	lib/samson/delilah/common_delilah_test.h
+	lib/samson/delilah/common_delilah_test.cpp
+	lib/samson/delilah/delilahConsole_test.cpp	
+
 )
 
 
@@ -67,34 +163,40 @@ SET (STATIC_LIBS
      engine
      protobuf
      pthread
-     samsonNetwork
-     samsonStream
+     samson_system
      samsonModule
      samsonWorkerLib
+     samsonStream
+     samsonNetwork
      samsonCommon
-	 samson_comscore
-	 samson_system
-	 samsonClient
-	 samsonIsolated
+     zookeeper_mt
+     samson_comscore    
+     samsonClient
      au
      xmlmarkup
-     xmlparser	
+     xmlparser  
      curses
      dl
+     zoo
      ${COMMON_SAMSON_LIBS}
 )
 
 # Include directories
 # ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
+include_directories("${PROJECT_SOURCE_DIR}/libs/extra")
 include_directories("${PROJECT_SOURCE_DIR}/apps")
 include_directories("${PROJECT_SOURCE_DIR}/extern")
+include_directories("/usr/include")
+
+link_directories("/usr/lib/x86_64-linux-gnu")
 
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} )
+ADD_EXECUTABLE(unitTest ${SOURCES} ${HEADERS})
+#TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS} libdl.so)
+TARGET_LINK_LIBRARIES(unitTest ${STATIC_LIBS})
 
 #INSTALL(TARGETS               unitTest
 #        RUNTIME DESTINATION   bin)

@@ -8,11 +8,13 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
+
+#include <dirent.h>
+#include <dlfcn.h>
 #include <iconv.h>
 #include <iostream>                               // std::cout ...
-#include <dlfcn.h>
 #include <sys/types.h>
-#include <dirent.h>
 
 #include "json.h"
 
@@ -20,1900 +22,1522 @@
 #include "logMsg/traceLevels.h"                   // Trace Levels
 
 #include "au/CommandLine.h"                       // CommandLine
-#include "au/string.h"                            // au::Format
-#include "au/time.h"                              // au::todayString
 #include "au/ThreadManager.h"
+#include "au/file.h"
+#include "au/log/LogMain.h"
+#include "au/network/RESTServiceCommand.h"
+#include "au/string/S.h"
+#include "au/string/StringUtilities.h"            // au::Format
 #include "au/tables/pugixml.hpp"                  // pugixml
+#include "au/time.h"                              // au::todayString
 
-#include "au/log/LogToServer.h"
-
-#include "engine/Notification.h"                  // engine::Notification
-
-#include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
-#include "samson/common/Macros.h"                 // EXIT, ...
-#include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
-#include "samson/common/MessagesOperations.h"
-
-#include "samson/module/samsonVersion.h"          // SAMSON_VERSION
-
-#include "samson/network/Message.h"               // Message
-#include "samson/network/Packet.h"                // samson::Packet
-#include "samson/network/NetworkInterface.h"      // NetworkInterface
-
-#include "engine/MemoryManager.h"                 // samson::SharedMemory
-
-#include "engine/Engine.h"                        // engine::Engine
-#include "engine/DiskOperation.h"                 // samson::DiskOperation
 #include "engine/DiskManager.h"                   // Notifications
+#include "engine/DiskOperation.h"                 // samson::DiskOperation
+#include "engine/Engine.h"                        // engine::Engine
+#include "engine/MemoryManager.h"                 // samson::SharedMemory
+#include "engine/Notification.h"                  // engine::Notification
 #include "engine/ProcessManager.h"                // engine::ProcessManager
-#include "samson/isolated/SharedMemoryManager.h"  // engine::SharedMemoryManager
 
-#include "samson/common/MemoryTags.h"             // MemoryInput , MemoryOutputNetwork ,...
-
+#include "samson/common/KVRange.h"
+#include "samson/common/Logs.h"
+#include "samson/common/Macros.h"                 // EXIT, ...
+#include "samson/common/MessagesOperations.h"
+#include "samson/common/NotificationMessages.h"
+#include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
+#include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
+#include "samson/common/gpb_operations.h"
+#include "samson/delilah/WorkerCommandDelilahComponent.h"
+#include "samson/module/ModulesManager.h"         // samson::ModulesManager
+#include "samson/module/samsonVersion.h"          // SAMSON_VERSION
+#include "samson/network/Message.h"               // Message
+#include "samson/network/NetworkInterface.h"      // NetworkInterface
+#include "samson/network/NetworkInterface.h"      // samson::NetworkInterface
+#include "samson/network/Packet.h"                // samson::Packet
+#include "samson/network/WorkerNetwork.h"
 #include "samson/stream/Block.h"                  // samson::stream::Block
 #include "samson/stream/BlockList.h"              // samson::stream::BlockList
 #include "samson/stream/BlockManager.h"           // samson::stream::BlockManager
+#include "samson/stream/SharedMemoryManager.h"  // samson::SharedMemoryManager
+#include "samson/stream/WorkerTaskManager.h"
+#include "samson/worker/SamsonWorkerRest.h"
+#include "samson/worker/WorkerCommand.h"  // samson::stream::WorkerCommand
 
-#include "samson/module/ModulesManager.h"         // samson::ModulesManager
+#include "samson/worker/SamsonWorker.h"  // Own interfce
 
-#include "samson/network/NetworkInterface.h"      // samson::NetworkInterface
-
-#include "samson/delilah/WorkerCommandDelilahComponent.h"
-
-#include "samson/worker/WorkerCommand.h"          // samson::stream::WorkerCommand
-#include "samson/worker/SamsonWorker.h"           // Own interfce
-
-#define notification_samson_worker_take_sample "notification_samson_worker_take_sample"
-
-extern size_t delilah_random_code;     // Random code for the rest delilah client
-extern int port;                       // Port where samsonWorker is started
-extern int web_port;                   
+#define SAMSON_ERROR_OVERLOADED    "Overloaded worker"
+#define SAMSON_ERROR_UNKNOWN_BLOCK "Unknown block"
 
 namespace samson {
-    
-    
-    /* ****************************************************************************
-     *
-     * Constructor
-     */
-    
-    SamsonWorker::SamsonWorker( NetworkInterface* _network ) : samson_worker_samples( this )
-    {
-        network = _network;
-        
-        // Auto-client init in first REST connection
-        delilah = NULL;
-        
-        // Init the stream manager
-        streamManager = new stream::StreamManager(this);
-        LM_T(LmtCleanup, ("Created streamManager: %p", streamManager));
-        
-        // Init worker command manager
-        workerCommandManager = new WorkerCommandManager(this);
-        LM_T(LmtCleanup, ("Created workerCommandManager: %p", workerCommandManager));
-        
-        // Set me as the packet receiver interface
-        network->setReceiver(this);
-        
-        // Random initialization
-        srand( time(NULL));
-        
-        // Listen this notification to send packets
-        listen( notification_samson_worker_send_packet );
-        
-        // Listen this notification to send traces
-        listen( notification_samson_worker_send_trace );
-        
-        // Notification to update state
-        listen( notification_update_status );
-        {
-            int update_period = samson::SamsonSetup::shared()->getInt("general.update_status_period" );
-            engine::Notification *notification = new engine::Notification(notification_update_status);
-            engine::Engine::shared()->notify( notification, update_period );
-        }        
-        
-        {
-            int check_finish_tasks_period = samson::SamsonSetup::shared()->getInt("worker.period_check_finish_tasks" );
-            engine::Notification *notification = new engine::Notification(notification_samson_worker_check_finish_tasks);
-            engine::Engine::shared()->notify( notification, check_finish_tasks_period );
-        }
-
-        // Take samples for the REST interface
-        listen(notification_samson_worker_take_sample);
-        {
-            engine::Notification *notification = new engine::Notification(notification_samson_worker_take_sample);
-            engine::Engine::shared()->notify( notification, 1 );
-        }
-        
-        // Notification with rest commands
-        listen("rest_operation_stream_manager");
-        
-        // Run REST interface
-        rest_service = new au::network::RESTService( web_port  , this );
-        rest_service->initRESTService();
-        
-    }
-    
-    
-    /* ****************************************************************************
-     *
-     * SamsonWorker::receive -
-     */
-    
-    void SamsonWorker::receive( Packet* packet )
-    {
-        LM_T(LmtNetworkNodeMessages, ("SamsonWorker received %s " , packet->str().c_str()));
-        
-        //int fromId = packet->fromId;
-        
-        Message::MessageCode msgCode = packet->msgCode;
-        
-        
-        // --------------------------------------------------------------------
-        // NetworkNotification messages
-        // --------------------------------------------------------------------
-        
-        if ( msgCode == Message::NetworkNotification )
-        {
-            if( packet->message->has_network_notification() )
-            {
-                
-                if( packet->message->network_notification().has_connected_worker_id() )
-                {
-                    size_t worker_id = packet->message->network_notification().connected_worker_id();
-                    LM_M(( "Connected worker %lu\n", worker_id ));
-                } else if( packet->message->network_notification().has_disconnected_worker_id() )
-                {
-                    size_t worker_id = packet->message->network_notification().disconnected_worker_id();
-                    LM_M(( "Disconnected worker %lu\n", worker_id ));
-                } else if( packet->message->network_notification().has_connected_delilah_id() )
-                {
-                    size_t delilah_id = packet->message->network_notification().connected_delilah_id();
-                    LM_M(( "Connected delilah %lu\n", delilah_id ));
-                } else if( packet->message->network_notification().has_disconnected_delilah_id() )
-                {
-                    size_t delilah_id = packet->message->network_notification().disconnected_delilah_id();
-                    LM_M(( "Disconnected delilah %lu\n", delilah_id ));
-                    streamManager->notify_delilah_disconnection( delilah_id );
-                    
-                }
-                else
-                    LM_W(("Notification from network without required information"));
-                
-            }
-            else
-                LM_W(("Notification from network without required information"));
-            
-            return;
-        }        
-        
-        
-        // --------------------------------------------------------------------
-        // StatusReport
-        // --------------------------------------------------------------------
-        
-        if( msgCode == Message::StatusReport )
-        {
-            //LM_M(("Recieved status report message from %s" , packet->from.str().c_str() ));
-            return;
-        }
-        
-        // --------------------------------------------------------------------
-        // push messages
-        // --------------------------------------------------------------------
-        
-        if( msgCode == Message::PushBlock )
-        {
-            if( !packet->message->has_push_block()  )
-            {
-                LM_W(("Internal error. Received a push block message without the push_object included"));
-                
-                return;
-            }
-            
-            // Get a pointer to the buffer ( retained inside packet )
-            engine::Buffer* buffer = packet->getBuffer();
-            
-            if ( !buffer )
-            {
-                LM_W(("Internal error. Received a push block message without a buffer of data"));
-                return;
-            }
-            
-            // Push the packet to a particular stream-queue
-            for ( int i = 0 ; i < packet->message->push_block().queue_size() ; i++)
-            {
-                std::string queue = packet->message->push_block().queue(i);
-                streamManager->addBuffer ( queue , buffer );
-            }
-            
-            // Send a message back if delilah_id is > 0
-            if( packet->message->delilah_component_id() > 0)
-            {
-                Packet *p = new Packet( Message::PushBlockResponse );
-                network::PushBlockResponse *pbr = p->message->mutable_push_block_response();
-                pbr->mutable_request()->CopyFrom( packet->message->push_block() );
-                p->message->set_delilah_component_id( packet->message->delilah_component_id()  );
-                
-                // Direction of the message ( answer to who send you the message )
-                p->to = packet->from;
-                
-                network->send( p );
-                
-                p->release();
-            }
-            return;
-        }
-        
-        // --------------------------------------------------------------------
-        // pop messages
-        // --------------------------------------------------------------------
-        
-        if( msgCode == Message::PopQueue )
-        {
-            
-            size_t delilah_id = packet->from.id;
-            size_t delilah_component_id = packet->message->delilah_component_id();
-            
-            streamManager->addPopQueue( packet->message->pop_queue() , delilah_id , delilah_component_id  );
-            
-            return;
-        }
-        
-        // --------------------------------------------------------------------
-        // Worker commands
-        // --------------------------------------------------------------------
-        
-        if( msgCode == Message::WorkerCommand )
-        {
-            if( !packet->message->has_worker_command() )
-            {
-                LM_W(("Trying to run a WorkerCommand from a packet without that message"));
-                return;
-            }
-            
-            size_t delilah_id = packet->from.id;
-            size_t delilah_component_id = packet->message->delilah_component_id();
-            
-            std::string worker_command_id = au::str( "%s_%lu" , au::code64_str(delilah_id).c_str() , delilah_component_id );
-            
-            WorkerCommand *workerCommand = new WorkerCommand(  worker_command_id
-                                                             , delilah_id 
-                                                             , delilah_component_id 
-                                                             , packet->message->worker_command() 
-                                                             );
-            
-            // If it comes with a buffer, set the buffer property
-            workerCommand->setBuffer( packet->getBuffer() );
-            
-            workerCommandManager->addWorkerCommand( workerCommand );
-            return;
-        }
-        
-        LM_W((" Received a message with type %s. Just ignoring...", messageCode( msgCode )  ));
-        
-    }
-    
-    // Receive notifications
-    void SamsonWorker::notify( engine::Notification* notification )
-    {
-        
-        if ( notification->isName("rest_operation_stream_manager"))
-        {
-            au::network::RESTServiceCommand* command = (au::network::RESTServiceCommand*)notification->getObject();
-            
-            if( command == NULL )
-            {
-                LM_W(("rest_connection notification without a command. This is probably an error..."));
-                return;
-            }
-
-            // Sync-Engine implementation of the rest command
-            streamManager->process( command );             // Get this from the stream manager
-            
-            // Mark as finish and wake up thread to answer this connection
-            command->finish();
-            return;
-        }
-        
-        
-        if ( notification->isName(notification_update_status))
-        {
-            // Create a xml version of monitorization ( common to all delilahs )
-            std::ostringstream info_str;
-            getInfo( info_str );
-            
-            // Get vector of connected delilahs
-            std::vector<size_t> delilahs = network->getDelilahIds();
-            std::vector<size_t> workers  = network->getWorkerIds();
-            if (workers.size() == 0)
-             {
-                 LM_W(("No workers connected"));
-             }
-
-            
-            // Send this message to all delilahs
-            for ( size_t i = 0 ; i < delilahs.size() ; i++ )
-            {
-                
-                Packet* p  = new Packet( Message::StatusReport );
-                
-                // This message is not critical - to be thrown away if worker not connected
-                p->disposable = true;
-                
-                // Include generic information about this worker
-                p->message->set_info( info_str.str() );
-                
-                // Packet direction
-                p->to.node_type = DelilahNode;
-                p->to.id = delilahs[i];
-                
-                // Send this message to all delilahs connected
-                network->send( p );
-                
-                // Release created packet
-                p->release();
-            }
-            
-            // Send this message to all workers ( even me ;) )
-            for ( size_t i = 0 ; i < workers.size() ; i++ )
-            {
-                Packet* p  = new Packet( Message::StatusReport );
-                
-                // This message is not critical - to be thrown away if worker not connected
-                p->disposable = true;
-                
-                // Include generic information about this worker
-                p->message->set_info( info_str.str() );
-                
-                // Packet direction
-                p->to.node_type = WorkerNode;
-                p->to.id = workers[i];
-                
-                // Send this message to all delilahs connected
-                network->send( p );
-                
-                // Release packet
-                p->release();
-            }
-            
-            // Some ancient samson-0.6 useful Status information
-            // Collect some information and print status...
-            int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
-            int max_processes = engine::ProcessManager::shared()->public_max_proccesses;
-            
-            size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
-            size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
-            
-            size_t disk_read_rate = (size_t) engine::DiskManager::shared()->get_rate_in();
-            size_t disk_write_rate = (size_t) engine::DiskManager::shared()->get_rate_out();
-            
-            size_t network_read_rate = (size_t) network->get_rate_in();
-            size_t network_write_rate = (size_t) network->get_rate_out();
-            
-            
-            LM_M(("Status [ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
-                  , au::str_percentage( num_processes, max_processes ).c_str()
-                  , au::str_percentage(used_memory, max_memory).c_str()
-                  , au::str( disk_read_rate , "Bs" ).c_str()
-                  , au::str( disk_write_rate , "Bs" ).c_str()
-                  , au::str( network_read_rate , "Bs" ).c_str()
-                  , au::str( network_write_rate , "Bs" ).c_str()
-                  ));
-            
-        }
-        else if( notification->isName( notification_samson_worker_send_packet ) )
-        {
-            if ( !notification->containsObject() )
-            {
-                LM_W(("SamsonWorker: received a notification_samson_worker_send_packet without an object"));
-                return;
-            }
-            else
-            {
-                Packet *packet = (Packet *) notification->getObject();
-                network->send( packet );
-            }
-        }
-        else if ( notification->isName( notification_samson_worker_send_trace ) )
-        {
-            std::string message = notification->environment.get("message","No message coming with trace-notification" );
-            std::string context = notification->environment.get("context","?" );
-            std::string type    = notification->environment.get("type","message" );
-            
-            sendTrace( type , context , message );
-        }
-        else if ( notification->isName( notification_samson_worker_take_sample ) )
-        {
-            // Take samples every second to check current status
-            samson_worker_samples.take_samples();
-        }
-        else
-            LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
-    }
-    
-    std::string getFormatedElement( std::string name , std::string value , std::string& format )
-    {
-        std::ostringstream output;
-        if (format == "xml")
-            au::xml_simple(output, name, value );
-        else if( format == "json" )
-            au::json_simple(output, name, value );
-        else if( format == "html" )
-            output << "<h1>" << name << "</h1>" << value;
-        else
-            output << name << ":\n" << value;
-        
-        return output.str();
-    }
-    
-    std::string getFormatedError( std::string message , std::string& format )
-    {
-        return  getFormatedElement( "error" , message , format );
-    }
-    
-    void SamsonWorker::process_delilah_command( std::string delilah_command , au::network::RESTServiceCommand* command )
-    {
-
-        // Create client if not created
-        if( !delilah )
-        {
-            delilah_random_code = au::code64_rand();
-            delilah = new Delilah();
-        }
-        
-        // Connect delilah if not connected
-        if( !delilah->isConnected() )
-        {
-            au::ErrorManager error;
-            delilah->delilah_connect("rest", "localhost", port, "anonymous", "anonymous", &error);
-            
-            if( error.isActivated() )
-            {
-                command->appendFormatedError(500, au::str("Error connecting to rest client (%s)" , error.getMessage().c_str() ) );
-                LM_E(("Error connecting to rest client (%s)", error.getMessage().c_str()));
-                return;
-            }
-        }
-        
-        // Wait for a fully connected client
-        {
-            au::Cronometer c;
-            while( !delilah->isConnectionReady() )
-            {
-                usleep(10000);
-                if( c.diffTimeInSeconds() > 1.0 )
-                {
-                    command->appendFormatedError(500, "Timeout connecting to REST client" );
-                    LM_E(("Timeout connecting to REST client"));
-                    return;
-                }
-            }
-        }
-
-        // Send the command
-        LM_T(LmtDelilahCommand, ("Sending delilah command: '%s'", delilah_command.c_str()));
-        size_t command_id = delilah->sendWorkerCommand( delilah_command , NULL );
-        
-        // Wait for the command to finish
-        {
-            au::Cronometer c;
-            while( delilah->isActive(command_id) )
-            {
-                usleep(10000);
-                if( c.diffTimeInSeconds() > 2 )
-                {
-                    command->appendFormatedError(500, au::str( "Timeout awaiting response from REST client (task %lu)" , command_id ));
-                    LM_E(("Timeout awaiting response from REST client"));
-                    return;
-                }
-            }
-        }
-        
-        // Recover information
-        WorkerCommandDelilahComponent* component = (WorkerCommandDelilahComponent*) delilah->getComponent( command_id );
-        if( !component )
-        {
-            command->appendFormatedError(500, "Internal error recovering answer from REST client" );
-            LM_E(("Internal error recovering answer from REST client"));
-            return;
-        }
-        
-        // Recover table from component
-        au::tables::Table* table = component->getMainTable();
-        
-        if( !table )
-        {
-            // command->appendFormatedError(500, "No content in answer from REST client" );
-            LM_E(("No content in answer from REST client"));
-            return;
-        }
-        
-        std::string output;
-        
-        LM_T(LmtRest, ("appending delilah output to command: '%s'", table->str().c_str()));
-
-        if( command->format == "xml" )
-            command->append( table->str_xml() );
-        else if( command->format == "json" )
-            command->append( table->str_json() );
-        else if( command->format == "html" )
-            command->append( table->str_html() );
-        else
-            command->append( table->str() ); // Default non-format
-        
-        delete table;
-        
-    }
-    
-#define TF(b) ((b == true)? "true" : "false")
-    void SamsonWorker::process_logging(au::network::RESTServiceCommand* command)
-    {
-        std::ostringstream  logdata;
-        std::string         logCommand  = "";
-        std::string         sub         = "";
-        std::string         arg         = "";
-
-        command->http_state = 200;
-
-        if (command->path_components.size() > 2)
-            logCommand = command->path_components[2];
-        if (command->path_components.size() > 3)
-            sub = command->path_components[3];
-        if (command->path_components.size() > 4)
-            arg = command->path_components[4];
-        
-        //
-        // Treat all possible errors
-        //
-        
-        if (logCommand == "")
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("no logging subcommand"));
-        }
-        else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand != "verbose") && (logCommand != "debug"))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad logging command: '%s'", logCommand.c_str()));
-        }
-        else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-        }
-        else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-        }
-        else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad logging argument for 'verbose': %s", arg.c_str()));
-        }
-        else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off") && (sub != ""))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-        }
-        else if ((logCommand == "traces") && ((sub != "set") || (sub != "add") || (sub != "remove")))
-        {
-            if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
-            {
-                command->http_state = 400;
-                command->appendFormatedElement("message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
-            }
-        }
-
-
-
-        //
-        // Checking the VERB
-        //
-        std::string verb = command->command;
-        std::string path = logCommand;
-
-        if (sub != "") path += '/' + sub;
-
-        if      ((path == "debug/on")      && (verb == "POST"));
-        else if ((path == "debug/off")     && (verb == "POST"));
-
-        else if ((path == "reads/on")      && (verb == "POST"));
-        else if ((path == "reads/off")     && (verb == "POST"));
-
-        else if ((path == "writes/on")     && (verb == "POST"));
-        else if ((path == "writes/off")    && (verb == "POST"));
-
-        else if ((path == "traces")        && (verb == "GET"));
-        else if ((path == "traces/off")    && (verb == "POST"));
-        else if ((path == "traces/get")    && (verb == "GET"));
-        else if ((path == "traces/set")    && (verb == "POST"));
-        else if ((path == "traces/add")    && (verb == "POST"));
-        else if ((path == "traces/remove") && (verb == "DELETE"));
-
-        else if ((path == "verbose")       && (verb == "GET"));
-        else if ((path == "verbose/off")   && (verb == "POST"));
-        else if ((path == "verbose/set")   && (verb == "POST"));
-        else
-        {
-            command->http_state = 404;
-            command->appendFormatedElement("error", "BAD VERB");
-            return;
-        }
-
-        if (command->http_state != 200)
-            return;
-        
-        //
-        // Treat the request
-        //
-        if (logCommand == "reads")
-        {
-            if (sub == "on")
-            {
-                process_delilah_command("wreads on", command);
-                command->appendFormatedElement("reads", au::str("reads turned ON"));
-                LM_F(("Turning on READS for entire cluster"));
-            }
-            else if (sub == "off")
-            {
-                process_delilah_command("wreads off", command);
-                command->appendFormatedElement("reads", au::str("reads turned OFF"));
-                LM_F(("Turning off READS for entire cluster"));
-            }
-        }
-        else if (logCommand == "writes")
-        {
-            if (sub == "on")
-            {
-                process_delilah_command("wwrites on", command);
-                command->appendFormatedElement("writes", au::str("writes turned ON"));
-                LM_F(("Turning on WRITES for entire cluster"));
-            }
-            else if (sub == "off")
-            {
-                process_delilah_command("wwrites off", command);
-                command->appendFormatedElement("writes", au::str("writes turned OFF"));
-                LM_F(("Turning off WRITES for entire cluster"));
-            }
-        }
-        else if (logCommand == "debug")
-        {
-            if (sub == "on")
-            {
-                process_delilah_command("wdebug on", command);
-                command->appendFormatedElement("debug", au::str("debug turned ON"));
-                LM_F(("Turning on DEBUG for entire cluster"));
-                LM_D(("Debug should be ON"));
-            }
-            else if (sub == "off")
-            {
-                process_delilah_command("wdebug off", command);
-                command->appendFormatedElement("debug", au::str("debug turned OFF"));
-                LM_F(("Turning off DEBUG for entire cluster"));
-                LM_D(("Debug should be OFF"));
-            }
-        }
-        else if (logCommand == "verbose")  // /samson/logging/verbose
-        {
-            if (sub == "")
-                sub = "get";
-
-            if ((sub == "set") && (arg == "0"))
-                sub = "off";
-
-            if (sub == "get")
-            {
-                process_delilah_command("wverbose get", command);
-            }
-            else if ((sub == "off") || (sub == "0"))
-            {
-                process_delilah_command("wverbose off", command);
-                command->appendFormatedElement("verbose", au::str("verbose mode turned OFF"));
-                LM_F(("Turning off VERBOSE for entire cluster"));
-                LM_V(("VERBOSE should be OFF"));
-            }
-            else
-            {
-                char delilahCommand[64];
-                
-                snprintf(delilahCommand, sizeof(delilahCommand), "wverbose %s", arg.c_str());
-                process_delilah_command(delilahCommand, command);
-                command->appendFormatedElement("verbose", au::str("verbose levels upto %s SET", arg.c_str()));
-                LM_F(("Setting VERBOSE level to %s for entire cluster", arg.c_str()));
-                LM_V(("VERBOSE level 1"));
-                LM_V2(("VERBOSE level 2"));
-                LM_V3(("VERBOSE level 3"));
-                LM_V4(("VERBOSE level 4"));
-                LM_V5(("VERBOSE level 5"));
-            }
-        }
-        else if (logCommand == "traces")
-        {
-            if (sub == "")
-                sub = "get";
-
-            if (sub == "set")
-            {
-                char delilahCommand[64];
-
-                snprintf(delilahCommand, sizeof(delilahCommand), "wtrace set %s",  arg.c_str());
-                process_delilah_command(delilahCommand, command);
-                command->appendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
-                LM_F(("Setting TRACE levels to '%s'", arg.c_str()));
-            }
-            else if (sub == "get")    // /samson/logging/trace/get
-            {
-                char delilahCommand[64];
-
-                snprintf(delilahCommand, sizeof(delilahCommand), "wtrace get");
-                process_delilah_command(delilahCommand, command);
-                // What is pushed back to the REST request?
-            }
-            else if (sub == "off")    // /samson/logging/trace/off
-            {
-                process_delilah_command("wtrace off", command);
-                command->appendFormatedElement("trace", au::str("all trace levels turned off"));
-                LM_F(("Resetting TRACE levels to 'NADA DE NADA'"));
-            }
-            else if (sub == "add")    // /samson/logging/trace/add
-            {
-                char delilahCommand[64];
-
-                snprintf(delilahCommand, sizeof(delilahCommand), "wtrace add %s", arg.c_str());
-                process_delilah_command(delilahCommand, command);
-                command->appendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
-                LM_F(("Adding TRACE levels '%s'", arg.c_str()));
-            }
-            else if (sub == "remove")     // /samson/logging/trace/remove
-            {
-                char delilahCommand[64];
-
-                snprintf(delilahCommand, sizeof(delilahCommand), "wtrace remove %s", arg.c_str());
-                process_delilah_command(delilahCommand, command);
-                command->appendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
-                LM_F(("Removing TRACE levels '%s'", arg.c_str()));
-            }
-        }
-    }
-
-#if 0
-    // ------------------------------------------------------------
-    //
-    // Future common check for path and verb in logging/ilogging
-    //
-
-    static bool restTraceCheck(au::network::RESTServiceCommand* command)
-    {
-        std::string arg = command->path_components[4];
-        if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
-            return false;
-        return true;
-    }
-
-    static bool restVerboseCheck(au::network::RESTServiceCommand* command)
-    {
-        std::string arg = command->path_components[4];
-
-        if ((arg == "0") || (arg == "1") || (arg == "2") || (arg == "3") || (arg == "4") || (arg == "5"))
-            return true;
-
-        return false;
-    }
-
-    typedef bool (*RestCheckFunc)(au::network::RESTServiceCommand* command);
-    typedef struct RestCheck
-    {
-        std::string    verb;
-        std::string    path;
-        int            components;   // Not counting '/samson/XXX' ,,,
-        RestCheckFunc  checkFunc;
-    } RestCheck;
-
-    RestCheck restCheck[] = 
-    {
-        { "POST",   "debug/on",       2, NULL             },
-        { "POST",   "debug/off",      2, NULL             },
-        { "POST",   "reads/on",       2, NULL             },
-        { "POST",   "reads/off",      2, NULL             },
-        { "POST",   "writes/on",      2, NULL             },
-        { "POST",   "writes/off",     2, NULL             },
-        { "GET",    "traces",         1, NULL             },
-        { "POST",   "traces/off",     2, NULL             },
-        { "POST",   "traces/set",     3, restTraceCheck   },
-        { "POST",   "traces/add",     3, restTraceCheck   },
-        { "DELETE", "traces/remove",  3, restTraceCheck   },
-        { "GET",    "verbose",        1, NULL             },
-        { "POST",   "verbose/off",    2, NULL             },
-        { "POST",   "verbose/set",    3, restVerboseCheck },
-    };
-
-    static bool process_logging_check(au::network::RESTServiceCommand* command)
-    {
-        std::string  verb = command->command;
-        std::string  path = command->path_components[2];
-        bool         ok   = false;
-
-        if (command->path_components[3] != "")
-            path += '/' + command->path_components[3];
-
-        for (unsigned int ix = 0; ix < sizeof(restCheck) / sizeof(restCheck[0]); ix++)
-        {
-            if ((path == restCheck[ix].path) && (verb == restCheck[ix].verb) && (command->path_components.size() == restCheck[ix].components + 2))
-            {
-                // A match - now just lets see if the argument is OK also ...
-                if (restCheck[ix].check != NULL)
-                    return restCheck[ix].check(command);
-                return true;
-            }
-        }
-
-        return ok;
-    }
-#endif
-
-    void SamsonWorker::process_ilogging(au::network::RESTServiceCommand* command)
-    {
-        std::ostringstream  logdata;
-        std::string         logCommand  = "";
-        std::string         sub         = "";
-        std::string         arg         = "";
-
-        command->http_state = 200;
-
-        if (command->path_components.size() > 2)
-            logCommand = command->path_components[2];
-        if (command->path_components.size() > 3)
-            sub = command->path_components[3];
-        if (command->path_components.size() > 4)
-            arg = command->path_components[4];
-        
-        //
-        // Treat all possible errors
-        //
-        
-        if (logCommand == "")
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("no ilogging subcommand"));
-        }
-        else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand != "verbose") && (logCommand != "debug"))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad ilogging command: '%s'", logCommand.c_str()));
-        }
-        else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-        }
-        else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off") && (sub != ""))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-        }
-        else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad ilogging argument for 'verbose': %s", arg.c_str()));
-        }
-        else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off") && (sub != ""))
-        {
-            command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-        }
-        else if ((logCommand == "traces") && ((sub != "set") || (sub != "add") || (sub != "remove")))
-        {
-            if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
-            {
-                command->http_state = 400;
-                command->appendFormatedElement("message", au::str("bad ilogging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
-            }
-        }
-        
-
-        //
-        // Checking the VERB
-        //
-        std::string verb = command->command;
-        std::string path = logCommand;
-
-        if (sub != "") path += '/' + sub;
-
-        if      ((path == "debug/on")      && (verb == "POST"));
-        else if ((path == "debug/off")     && (verb == "POST"));
-
-        else if ((path == "reads/on")      && (verb == "POST"));
-        else if ((path == "reads/off")     && (verb == "POST"));
-
-        else if ((path == "writes/on")     && (verb == "POST"));
-        else if ((path == "writes/off")    && (verb == "POST"));
-
-        else if ((path == "traces")        && (verb == "GET"));
-        else if ((path == "traces/off")    && (verb == "POST"));
-        else if ((path == "traces/get")    && (verb == "GET"));
-        else if ((path == "traces/set")    && (verb == "POST"));
-        else if ((path == "traces/add")    && (verb == "POST"));
-        else if ((path == "traces/remove") && (verb == "DELETE"));
-
-        else if ((path == "verbose")       && (verb == "GET"));
-        else if ((path == "verbose/off")   && (verb == "POST"));
-        else if ((path == "verbose/set")   && (verb == "POST"));
-        else
-        {
-            command->http_state = 404;
-            command->appendFormatedElement("error", "BAD VERB");
-            return;
-        }
-
-        if (command->http_state != 200)
-            return;
-        
-        //
-        // Treat the request
-        //
-        if (logCommand == "reads")
-        {
-            if (sub == "on")
-            {
-                lmReads  = true;
-                command->appendFormatedElement("reads", au::str("reads turned ON"));
-                LM_F(("Turned on READS for this node only"));
-            }
-            else if (sub == "off")
-            {
-                lmReads  = false;
-                command->appendFormatedElement("reads", au::str("reads turned OFF"));
-                LM_F(("Turned off READS for this node only"));
-            }
-        }
-        else if (logCommand == "writes")
-        {
-            if (sub == "on")
-            {
-                lmWrites  = true;
-                command->appendFormatedElement("writes", au::str("writes turned ON"));
-                LM_F(("Turned on WRITES for this node only"));
-            }
-            else if (sub == "off")
-            {
-                lmWrites  = false;
-                command->appendFormatedElement("writes", au::str("writes turned OFF"));
-                LM_F(("Turned off WRITES for this node only"));
-            }
-        }
-        else if (logCommand == "debug")
-        {
-            if (sub == "on")
-            {
-                lmDebug  = true;
-                command->appendFormatedElement("debug", au::str("debug turned ON"));
-                LM_F(("Turned on DEBUG for this node only"));
-                LM_D(("Turned on DEBUG for this node only"));
-            }
-            else if (sub == "off")
-            {
-                lmDebug  = false;
-                command->appendFormatedElement("debug", au::str("debug turned OFF"));
-                LM_F(("Turned off DEBUG for this node only"));
-                LM_D(("This line should not be seen ..."));
-            }
-        }
-        else if (logCommand == "verbose")  // /samson/ilogging/verbose
-        {
-            if (sub == "")
-                sub = "get";
-
-            if ((sub == "set") && (arg == "0"))
-                sub = "off";
-
-            if (sub == "get")
-            {
-                int vLevel;
-                
-                if      (lmVerbose5 == true)  vLevel = 5;
-                else if (lmVerbose4 == true)  vLevel = 4;
-                else if (lmVerbose3 == true)  vLevel = 3;
-                else if (lmVerbose2 == true)  vLevel = 2;
-                else if (lmVerbose  == true)  vLevel = 1;
-                else                          vLevel = 0;
-                
-                command->appendFormatedElement("verbose", au::str("verbosity level: %d", vLevel));
-            }
-            else
-            {
-                // Turn all verbose levels OFF
-                lmVerbose  = false;
-                lmVerbose2 = false;
-                lmVerbose3 = false;
-                lmVerbose4 = false;
-                lmVerbose5 = false;
-                
-                if (sub == "off")
-                    arg = "0";
-                
-                int verboseLevel = arg[0] - '0';
-                
-                // Turn on the desired verbose levels
-                switch (verboseLevel)
-                {
-                    case 5: lmVerbose5 = true;
-                    case 4: lmVerbose4 = true;
-                    case 3: lmVerbose3 = true;
-                    case 2: lmVerbose2 = true;
-                    case 1: lmVerbose  = true;
-                }
-                
-                command->appendFormatedElement("verbose", au::str("verbosity level: %d", verboseLevel));
-                LM_F(("New verbose level for this node only: %d", verboseLevel));
-            }
-        }
-        else if (logCommand == "traces")
-        {
-            if (sub == "")
-                sub = "get";
-
-            if (sub == "set")
-            {
-                lmTraceSet((char*) arg.c_str());
-                command->appendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
-                LM_F(("Set trace levels to '%s' for this node only", arg.c_str()));
-            }
-            else if (sub == "get")    // /samson/ilogging/trace/get
-            {
-                char traceLevels[1024];
-                lmTraceGet(traceLevels);
-                
-                command->appendFormatedElement("trace", au::str("trace level: %s", traceLevels));
-            }
-            else if (sub == "off")    // /samson/ilogging/trace/off
-            {
-                lmTraceSet(NULL);
-                command->appendFormatedElement("trace", au::str("all trace levels turned off"));
-                LM_F(("Turned off trace levels for this node only"));
-            }
-            else if (sub == "add")    // /samson/ilogging/trace/add
-            {
-                lmTraceAdd((char*) arg.c_str());
-                command->appendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
-                LM_F(("Added trace levels '%s' for this node only", arg.c_str()));
-            }
-            else if (sub == "remove")     // /samson/ilogging/trace/remove
-            {
-                lmTraceSub((char*) arg.c_str());
-                command->appendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
-                LM_F(("Removed trace levels '%s' for this node only", arg.c_str()));
-            }
-        }
-    }        
-
-
-    
-    void SamsonWorker::process( au::network::RESTServiceCommand* command )
-    {
-        // Default format
-        if( command->format == "" )
-            command->format = "xml";
-
-        
-        // Begin data for each format
-        // ---------------------------------------------------
-        if ( command->format == "xml" )
-        {
-            command->append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-            command->append("<!-- SAMSON Rest interface -->\n" );
-            command->append( "<samson>\n" );
-        }
-        else if ( command->format == "html" )
-        {
-            command->append("<html><body>");
-        }
-        else if ( command->format == "json" )
-        {
-            command->append("{");
-        }
-
-        // Internal process of the command
-        process_intern(command);
-        
-        // Close data content
-        // ---------------------------------------------------
-        if (command->format == "xml")
-            command->append("\n</samson>\n");
-        else if (command->format == "html")
-            command->append("</body></html>");
-        else if( command->format == "json" )
-            command->append("}");
-    }
-    
-    
 /* ****************************************************************************
-*
-* jsonTypeName - 
-*/
-static const char* jsonTypeName(json_type type)
-{
-	switch (type)
-	{
-	case json_type_null:       return "json_type_null";
-	case json_type_boolean:    return "json_type_boolean";
-	case json_type_double:     return "json_type_double";
-	case json_type_int:        return "json_type_int";
-	case json_type_object:     return "json_type_object";
-	case json_type_array:      return "json_type_array";
-	case json_type_string:     return "json_type_string";
-	}
+ *
+ * Constructor
+ */
 
-	return "json_type_unknown";
+SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) :
+  zoo_host_(zoo_host)
+  , port_(port)
+  , web_port_(web_port)
+  , zk_first_connection_(true)
+  , last_modules_version_(SIZE_T_UNDEFINED) {
+  // Random initialization
+  srand(time(NULL));
+
+  // Some components ( independent of ZK connection ) can be initialized here
+  worker_block_manager_.Reset(new WorkerBlockManager(this));
+  workerCommandManager_.Reset(new WorkerCommandManager(this));
+  samson_worker_rest_.Reset(new SamsonWorkerRest(this, web_port_));
+  task_manager_.Reset(new stream::WorkerTaskManager(this));
+
+  // Initial state of this worker ( unconnected )
+  state_ = unconnected;
+  state_message_ = "Worker starting...";
+
+  listen(notification_samson_worker_send_message);              // Listen this notification to send traces
+  listen(notification_update_status);                           // Notification to update state
+  listen("notification_cluster_info_changed_in_worker");        // Cluster setup changes
+  listen("samson_worker_review");                               // Review notification ( in this review all connections are stablished )
+  listen(notification_packet_received);
+  listen("notification_freeze_data_model");                     // Notification to freexe data model periodically
+  listen("notification_new_cluster_setup");
+
+  samson::SamsonSetup *samson_setup = au::Singleton<samson::SamsonSetup>::shared();
+
+  engine::notify(notification_update_status, samson_setup->GetInt("general.update_status_period"));
+  engine::notify(notification_samson_worker_check_finish_tasks, samson_setup->GetInt("worker.period_check_finish_tasks"));
+  engine::notify("samson_worker_review", 1);
+  engine::notify("notification_freeze_data_model", samson_setup->GetInt("worker.period_to_freeze_data_model"));
 }
 
+void SamsonWorker::Review() {
+  // If zoo connection is not valid any more, quit...
+  if (state_ != unconnected) {
+    if ((zoo_connection_ != NULL) && (zoo_connection_->GetConnectionTime() > 5)  && !zoo_connection_->IsConnected()) {
+      LOG_X(1, ("Worker lost connection with zookeeper"));
+    }
+  }
 
+  switch (state_) {
+    case unconnected:
+    {
+      if (!zk_first_connection_  && zk_connection_cronometer_.seconds() < 2) {
+        return;
+      }
+      zk_connection_cronometer_.Reset();
+      zk_first_connection_ = false;
+
+      // Try to connect to ZK
+      LOG_M(logs.worker_controller, ("Trying to connect to zk at %s...", zoo_host_.c_str()));
+      zoo_connection_.Reset(new au::zoo::Connection(zoo_host_, "samson", "samson"));
+      int rc = zoo_connection_->WaitUntilConnected(5000);
+      if (rc) {
+        state_message_ = au::str("Unable to connect to zookeeper at %s (%s)"
+                                 , zoo_host_.c_str()
+                                 , au::zoo::str_error(rc).c_str());
+        LOG_SW(("%s", state_message_.c_str()));
+        zoo_connection_.Reset();  // Remove current connection
+        return;
+      }
+
+      // Once connected, init the rest of worker components
+      worker_controller_.Reset(new SamsonWorkerController(this, zoo_connection_.shared_object(), port_, web_port_));
+      data_model_.Reset(new DataModel(zoo_connection_));
+      data_model_->UpdateToLastVersion();
+
+      // Init main worker controller ( based on zookeeper connection )
+      rc = worker_controller_->init();
+      if (rc) {
+        LOG_W(logs.worker_controller, ("Error creating worker controller: %s", au::zoo::str_error(rc).c_str()));
+        zoo_connection_.Reset();
+        worker_controller_.Reset();
+        return;
+      }
+
+      // Init network element here since we need the worker_id we have been assigned
+      network_.Reset(new WorkerNetwork(worker_controller_->worker_id(), port_));
+
+      // Now we are connected
+      state_ = connected;
+      state_message_ = "Connected";
+      LOG_M(logs.worker, ("Worker connected to Zookeeper at %s:%d", zoo_host_.c_str()));
+      break;
+    }
+
+    case connected:
+    {
+      // Let see if we can promote to "included in the cluster" = ready
+      au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
+      if (isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
+        network_->set_cluster_information(cluster_info);     // Inform network about cluster setup
+        state_message_ = "Ready";
+        state_ = ready;
+        LOG_M(logs.worker, ("Worker connected to Zookeeper. This worker is now included in the cluster"));
+      } else {
+        state_message_ = "Still not included in the cluster";
+        LOG_M(logs.worker, ("Worker still not included in cluster"));
+      }
+    }
+    break;
+
+    case ready:
+    {
+      // Review all internal components
+      worker_block_manager_->Review();
+      task_manager_->review_stream_operations();
+      ReloadModulesIfNecessary();
+
+      // Take a list of all the blocks considered in data model
+      std::set<size_t> all_block_ids = data_model_->GetAllBlockIds();
+
+      // Remove all block request for blocks not belonging to data model
+      worker_block_manager_->RemoveRequestIfNecessary(all_block_ids);
+
+      // Request blocks I am suppouse to have for previous and possible candidate data-models
+      std::vector<KVRange> my_ranges = worker_controller_->GetAllMyKVRanges();
+      std::set<size_t> my_block_ids = data_model_->GetMyBlockIdsForPreviousAndCandidateDataModel(my_ranges);
+      for (std::set<size_t>::iterator it = my_block_ids.begin(); it != my_block_ids.end(); ++it) {
+        if (stream::BlockManager::shared()->Contains(*it)) {
+          continue;  // This block is contained in the local manager
+        }
+        worker_block_manager_->RequestBlock(*it);        // Add block request
+      }
+
+      // Check what commit_id can guarantee this worker
+      size_t last_commit_id = worker_controller_->GetMyLastCommitId();  // This is the currently guanrantee commit_id
+      size_t current_data_commit_id = data_model_->GetLastCommitIdForCurrentDataModel();
+      size_t previous_data_commit_id = data_model_->GetLastCommitIdForPreviousDataModel();
+      size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
+
+      // Confirm all push block operations previous to this commit
+      worker_block_manager_->ReviewPushItems(previous_data_commit_id, current_data_commit_id);
+
+      if (previous_data_commit_id > last_commit_id) {
+        // Check I can confirm this level of data model
+        std::set<size_t> block_ids = data_model_->GetMyBlockIdsForPreviousDataModel(my_ranges);
+        if (stream::BlockManager::shared()->CheckBlocks(block_ids)) {
+          last_commit_id = previous_data_commit_id;
+        }
+      }
+
+      if (candidate_data_commit_id != static_cast<size_t>(-1)) {
+        if (candidate_data_commit_id > last_commit_id) {
+          // Check I can confirm this level of data model
+          std::set<size_t> block_ids = data_model_->GetMyBlockIdsForCandidateDataModel(my_ranges);
+          if (stream::BlockManager::shared()->CheckBlocks(block_ids)) {
+            last_commit_id = candidate_data_commit_id;
+          }
+        }
+      }
+
+      // Update if necessary my current information
+      worker_controller_->UpdateWorkerNode(last_commit_id);
+
+      // Check to see if I need to remove any pop queue or queue_connections for disconnected delilah clients
+      if (worker_controller_->cluster_leader()) {
+        ReviewPopQueues();
+      }
+
+      // If I am the cluster leader, consolidate next frozen data model if necessary
+      if (worker_controller_->cluster_leader()) {
+        size_t candidate_data_commit_id = data_model_->GetLastCommitIdForCandidateDataModel();
+
+        if (candidate_data_commit_id != static_cast<size_t>(-1)) {
+          // Checkk all workers satisfy this level of data model
+          if (worker_controller_->CheckDataModelCommitId(candidate_data_commit_id)) {
+            data_model_->FreezeCandidateDataModel();
+          }
+        }
+      }
+    }
+    break;
+  }
+}
+
+void SamsonWorker::ReviewPopQueues() {
+  au::SharedPointer<gpb::DataModel> data_model =  data_model_->getCurrentModel();
+  gpb::Data *current_data = data_model->mutable_current_data();
+
+  for (int i = 0; i < current_data->queue_size(); i++) {
+    std::string queue = current_data->queue(i).name();
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues names matchs ".pop_delilah_id_XXX"
+      size_t p = queue.find('_', 5);
+      if (p == std::string::npos) {
+        LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
+        continue;
+      }
+      size_t delilah_id = au::code64_num(queue.substr(5, p - 5));
+      // Check if this delilah is connected or has been connected in the last minute
+      if (!network_->CheckValidNode(NodeIdentifier(DelilahNode, delilah_id))) {
+        // Remove this queue
+        au::ErrorManager error;
+        std::string command = au::str("rm %s", queue.c_str());
+        data_model_->Commit("pop_review", command, error);
+      }
+    }
+  }
+
+  for (int i = 0; i < current_data->queue_connections_size(); i++) {
+    std::string source_queue = current_data->queue_connections(i).queue_source();
+    std::string queue = current_data->queue_connections(i).queue_target();
+    if (queue.substr(0, 5) == ".pop_") {           // Pop queues names matchs ".pop_delilah_id_XXX"
+      size_t p = queue.find('_', 5);
+      if (p == std::string::npos) {
+        LOG_W(logs.worker, ("Strange queue format for pop queue %s", queue.c_str()));
+        continue;
+      }
+      size_t delilah_id = au::code64_num(queue.substr(5, p - 5));
+      // Check if this delilah is connected or has been connected in the last minute
+      if (!network_->CheckValidNode(NodeIdentifier(DelilahNode, delilah_id))) {
+        // Remove this queue
+        au::ErrorManager error;
+        std::string command = au::str("rm_queue_connection %s %s", source_queue.c_str(), queue.c_str());
+        data_model_->Commit("pop_review", command, error);
+      }
+    }
+  }
+}
 
 /* ****************************************************************************
-*
-* jsonParse - 
-*/
-static int jsonParse(char* in, char* host, char* port)
-{
-	struct json_object* json;
-	struct json_object* jsonObj;
-	struct lh_table*    table;
-	lh_entry*           entry;
-	char*               key;
+ *
+ * SamsonWorker::receive -
+ */
 
-	json  = json_tokener_parse(in);
-	table = json_object_get_object(json);
-	entry = table->head;
-	
-	while (entry != NULL)
-	{
-		key     = (char*) entry->k;
-		jsonObj = json_object_object_get(json, key);
-		
-		json_type type = json_object_get_type(jsonObj);
+void SamsonWorker::receive(const PacketPointer& packet) {
+  LOG_V(logs.in_messages, ("Received packet from %s : %s", packet->from.str().c_str(), packet->str().c_str()));
 
-        LM_T(LmtRestData, ("got a '%s'", jsonTypeName(type)));
-        if (type == json_type_object)
-        {
-            struct lh_table*    table2;
-            lh_entry*           entry2;
+  if (!IsConnected()) {
+    LOG_SW(("Ignoring packet %s since we are not connected any more", packet->str().c_str()));
+    return;
+  }
 
-            table2 = json_object_get_object(jsonObj);
-            entry2 = table2->head;
+  // Type of message received
+  Message::MessageCode msgCode = packet->msgCode;
 
-            LM_T(LmtRestData, ("Starting while 2 (%p)", entry2));
-            while (entry2 != NULL)
-            {
-                char*                key2     = (char*) entry2->k;
-                struct json_object*  jsonObj2 = json_object_object_get(jsonObj, key2);
-                json_type            type2    = json_object_get_type(jsonObj2);
 
-                if (type2 == json_type_string)
-                {
-                    const char* s = json_object_get_string(jsonObj2);
-                    LM_T(LmtRestData, ("json: '%s' : %s (%s)", key2, s, jsonTypeName(type2)));
+  // If an overload-error is received, add an alert to not send more request to this worker in the next seconds....
+  if (packet->from.node_type() == WorkerNode) {
+    if (packet->message->has_error() && (packet->message->error().message() == SAMSON_ERROR_OVERLOADED)) {
+      worker_alert_.AddAlert(packet->from.id(), 5);  // 5 seconds of peace for this worker
+    }
+  }
 
-                    if (strcmp(key2, "name") == 0)
-                        strcpy(host, s);
-                    else if (strcmp(key2, "port") == 0)
-                        strcpy(port, s);
-                }
-                else if (type2 == json_type_int)
-                {
-                    int i = json_object_get_int(jsonObj2);
-                    LM_T(LmtRestData, ("json: '%s' : %d (%s)", key2, i, jsonTypeName(type)));
+  // --------------------------------------------------------------------
+  // BlockRequest
+  // --------------------------------------------------------------------
 
-                    if (strcmp(key2, "port") == 0)
-                    {
-                        LM_T(LmtRestData, ("found an integer port: %d", i));
-                        sprintf(port, "%d", i);
-                        LM_T(LmtRestData, ("found an integer port: '%s'", port));
-                    }
-                }
+  if (msgCode == Message::BlockRequest) {
+    if (!packet->message->has_block_id()) {
+      LOG_W(logs.worker, ("Received a Message::BlockRequest without block id"));
+      return;
+    }
 
-                entry2 = entry2->next;
+    if (packet->from.node_type() == DelilahNode) {
+      LOG_W(logs.worker, ("Received a Message::BlockRequest from a delilah node"));
+      return;
+    }
+
+    // Collect information for this request
+    size_t block_id  = packet->message->block_id();
+    stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
+    size_t worker_id = packet->from.id();
+
+    // Check if we have this block
+    if (block == NULL) {
+      LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Unknown block... returning error"
+                                 , str_block_id(block_id).c_str()
+                                 , packet->from.id()));
+      PacketPointer p(new Packet(Message::BlockRequestResponse));
+      p->to = packet->from;
+      p->message->set_block_id(block_id);
+      p->message->mutable_error()->set_message(SAMSON_ERROR_UNKNOWN_BLOCK);
+      network_->Send(p);
+      return;
+    }
+
+    // Check if this request has to be rejected because I am overloaded
+    if (!IsWorkerReadyForBlockRequest(worker_id)) {
+      PacketPointer p(new Packet(Message::BlockRequestResponse));
+      p->to = packet->from;
+      p->message->set_block_id(block_id);
+      p->message->mutable_error()->set_message(SAMSON_ERROR_OVERLOADED);
+      network_->Send(p);
+    }
+
+    // If block is in memory, we can anser rigth now
+    if (block->is_content_in_memory()) {
+      engine::BufferPointer buffer = block->buffer();
+      if (buffer == NULL) {
+        LM_X(1, ("Internal error"));
+      }
+
+      LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Answering now since block is in mem"
+                                 , str_block_id(block_id).c_str()
+                                 , packet->from.id()));
+
+      PacketPointer p(new Packet(Message::BlockRequestResponse));
+      p->to = packet->from;
+      p->message->set_block_id(block_id);
+      p->set_buffer(buffer);
+
+      LOG_V(logs.block_request, ("Sending packet %s to %s"
+                                 , p->str().c_str()
+                                 , p->to.str().c_str()));
+      network_->Send(p);
+      return;
+    }
+
+    // Schedule a task to make to answer this block request ( loading block in memory when possible )
+    std::vector<size_t> worker_ids;
+    worker_ids.push_back(packet->from.id());
+    size_t task_id = task_manager_->AddBlockRequestTask(block_id, worker_ids);
+    LOG_V(logs.block_request, ("Received block request for %s from worker %lu. Scheduling task W%lu"
+                               , str_block_id(block_id).c_str()
+                               , packet->from.id()
+                               , task_id));
+    return;
+  }
+
+  // --------------------------------------------------------------------
+  // BlockRequestResponse
+  // --------------------------------------------------------------------
+
+  if (msgCode == Message::BlockRequestResponse) {
+    if (!packet->message->has_block_id()) {
+      LOG_SW(("Received a Message::BlockRequestResponse without block id. Ignoring..."));
+      return;
+    }
+
+    if (packet->from.node_type() != WorkerNode) {
+      LOG_SW(("Received a Message::BlockRequestResponse from a delilah client. Ignoring..."));
+      return;
+    }
+
+    size_t block_id = packet->message->block_id();
+    size_t worker_id = packet->from.id();
+
+    if (block_id == static_cast<size_t>(-1)) {
+      LOG_SW(("Received a Message::DuplicateBlock with incorrect block id"));
+      return;
+    }
+
+    if (packet->message->has_error()) {
+      std::string error_message = packet->message->error().message();
+      LOG_V(logs.block_request, ("Received block request response for %s from worker %lu with error %s"
+                                 , str_block_id(block_id).c_str()
+                                 , worker_id
+                                 , error_message.c_str()
+                                 ));
+      worker_block_manager_->ReceivedBlockRequestResponse(block_id, worker_id, error_message);
+      return;
+    }
+
+    if (packet->buffer() == NULL) {
+      LOG_W(logs.block_request, ("Received a Message::BlockRequestResponse without a buffer. Ignoring..."));
+      return;
+    }
+
+    LOG_V(logs.block_request, ("Received block request response for %s from worker %lu"
+                               , str_block_id(block_id).c_str()
+                               , worker_id
+                               ));
+
+    // Add the block to the block manager
+    if (!stream::BlockManager::shared()->Contains(block_id)) {
+      stream::BlockManager::shared()->CreateBlock(block_id, packet->buffer());
+    }
+
+    // Notify about the correct reception of this block
+    worker_block_manager_->ReceivedBlockRequestResponse(block_id, worker_id);
+    return;
+  }
+
+  // --------------------------------------------------------------------
+  // PopBlockRequest
+  // --------------------------------------------------------------------
+
+  if (msgCode == Message::PopBlockRequest) {
+    if (!packet->message->has_block_id()) {
+      LOG_SW(("Received an incorrect Message::PopBlockRequest. No block id"));
+      return;
+    }
+
+
+    if (packet->from.node_type() != DelilahNode) {
+      LOG_SW(("Received a Message::PopBlockRequest from a worker node"));
+      return;
+    }
+
+    size_t block_id  = packet->message->block_id();
+    size_t delilah_id = packet->from.id();
+    size_t delilah_component_id = packet->message->delilah_component_id();
+    size_t pop_id = packet->message->pop_id();
+
+    PacketPointer p(new Packet(Message::PopBlockRequestConfirmation, packet->from));
+    p->message->set_delilah_component_id(packet->message->delilah_component_id());
+    p->message->set_pop_id(packet->message->pop_id());
+
+    // Schedule operations to send this block to this user
+    if (!stream::BlockManager::shared()->Contains(block_id)) {
+      LOG_SW(("Unknown block_id(%d) in PopBlockRequest", block_id));
+      p->message->mutable_error()->set_message("Unknown block");
+    } else {
+      // Schedule task
+      au::SharedPointer<stream::WorkerTaskBase> task(new stream::PopBlockRequestTask(this,
+                                                                                     task_manager_->getNewId(),
+                                                                                     block_id,
+                                                                                     delilah_id,
+                                                                                     delilah_component_id,
+                                                                                     pop_id));
+      task_manager_->Add(task);
+    }
+
+    // Send confirmation packet
+    network_->Send(p);
+    return;
+  }
+
+
+  // --------------------------------------------------------------------
+  // push messages
+  // --------------------------------------------------------------------
+
+  if (msgCode == Message::PushBlock) {
+    if (!packet->message->has_push_id()) {
+      LOG_SW(("Received a push block message without the push_id"));
+      return;
+    }
+
+    if (packet->from.node_type() != DelilahNode) {
+      LOG_SW(("Received a push packet from a non delilah connection (%s)", packet->from.str().c_str()));
+      return;
+    }
+
+    if (packet->from.id() == 0) {
+      LOG_SW(("Received a push packet from a delilah_id = 0. Rejected"));
+      return;
+    }
+
+    if (packet->buffer() == NULL) {
+      LOG_SW(("Received a push block message without a buffer with data"));
+      return;
+    }
+
+    // Recover push_id and the list queue queues
+    size_t push_id = packet->message->push_id();
+    std::vector<std::string> queues;
+    for (int i = 0; i < packet->message->queue_size(); ++i) {
+      queues.push_back(packet->message->queue(i));
+    }
+
+    worker_block_manager_->ReceivedPushBlock(packet->from.id(), push_id, packet->buffer(), queues);
+    return;
+  }
+
+  // --------------------------------------------------------------------
+  // pop messages
+  // --------------------------------------------------------------------
+
+  if (msgCode == Message::PopQueue) {
+    if (!packet->message->has_pop_queue()) {
+      LOG_SW(("Received a pop message without pop information.Ignoring..."));
+      return;
+    }
+
+    bool continuous_pop = packet->message->pop_queue().continuous_pop();
+    size_t commit_id = packet->message->pop_queue().commit_id();
+    size_t min_commit_id = packet->message->pop_queue().min_commit_id();
+    size_t delilah_id = packet->from.id();
+    std::string original_queue = packet->message->pop_queue().queue();
+    std::string pop_queue = au::str(".pop_%s_%lu_%s"
+                                    , au::code64_str(delilah_id).c_str()
+                                    , packet->message->delilah_component_id()
+                                    , original_queue.c_str());
+
+    // Generate packet with all queue content
+    au::SharedPointer<Packet> p(new Packet(Message::PopQueueResponse));
+    p->message->set_delilah_component_id(packet->message->delilah_component_id());
+    p->to = packet->from;
+    gpb::Queue *gpb_queue = p->message->mutable_pop_queue_response()->mutable_queue();
+    gpb_queue->set_name(original_queue);
+    gpb_queue->set_key_format("?");             // It is necessary to fill these fields
+    gpb_queue->set_value_format("?");
+    gpb_queue->set_commit_id(SIZE_T_UNDEFINED);
+
+
+    // Get a copy of the entire data model
+    au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
+    gpb::Data *data = data_model->mutable_current_data();
+
+    if (commit_id == static_cast<size_t>(-1)) {
+      // Duplicate queue
+      {
+        au::ErrorManager error;
+        std::string command = au::str("push_queue %s %s", original_queue.c_str(), pop_queue.c_str());
+        data_model_->Commit("pop", command, error);
+
+        if (error.HasErrors()) {
+          LOG_SW(("Internal error with push_queue command in pop request: %s", error.GetLastError().c_str()));
+          return;
+        }
+      }
+
+      // Link content to the new queue if required
+      if (continuous_pop) {
+        au::ErrorManager error;
+        std::string command = au::str("add_queue_connection %s %s", original_queue.c_str(), pop_queue.c_str());
+        data_model_->Commit("pop", command, error);
+
+        if (error.HasErrors()) {
+          LOG_SW(("Internal error with add_queue_connection command in pop request: %s", error.GetLastError().c_str()));
+          return;
+        }
+      }
+
+      // If the queue really exist, return all its content to be popped
+      gpb::Queue *queue = get_queue(data, original_queue);
+      if (queue) {
+        gpb_queue->CopyFrom(*queue);
+      }
+    } else {
+      // Copy blocks newer than commit_id
+      gpb::Queue *queue = get_queue(data, pop_queue);
+      if (queue) {
+        for (int i = 0; i < queue->blocks_size(); ++i) {
+          if (queue->blocks(i).commit_id() > commit_id) {
+            gpb_queue->add_blocks()->CopyFrom(queue->blocks(i));
+          }
+        }
+      }
+
+      // Remove old unnecessary blocks from queue
+      if (queue) {
+        CommitCommand commit_command;
+        for (int i = 0; i < queue->blocks_size(); ++i) {
+          if (queue->blocks(i).commit_id() <= commit_id) {  // Not new
+            if ((min_commit_id == SIZE_T_UNDEFINED) || (queue->blocks(i).commit_id() < min_commit_id)) {
+              // Add to be removed from this queue
+              size_t block_id =  queue->blocks(i).block_id();
+              KVFormat format(queue->key_format(), queue->value_format());
+              KVRange range = queue->blocks(i).range();  // Implicit conversion
+              KVInfo info(queue->blocks(i).size(), queue->blocks(i).kvs());
+              commit_command.RemoveBlock(pop_queue, block_id, queue->blocks(i).block_size(), format, range, info);
             }
+          }
         }
-		else if (type == json_type_boolean)
-		{
-			bool b = json_object_get_boolean(jsonObj);
-			LM_T(LmtRestData, ("json: '%s' : %s (%s)", key, (b==true)? "true" : "false", jsonTypeName(type)));
-		}
-		else if (type == json_type_double)
-		{
-			double d = json_object_get_double(jsonObj);
-			LM_T(LmtRestData, ("json: '%s' : %f (%s)", key, d, jsonTypeName(type)));
-		}
-		else if (type == json_type_int)
-		{
-			int i = json_object_get_int(jsonObj);
-			LM_T(LmtRestData, ("json: '%s' : %d (%s)", key, i, jsonTypeName(type)));
+        if (commit_command.size() > 0) {
+          au::ErrorManager error;
+          data_model_->Commit("pop", commit_command.GetCommitCommand(), error);
+        }
+      }
+    }
 
-            if (strcmp(key, "port") == 0)
-                sprintf(port, "%d", i);
-		}
-		else if (type == json_type_string)
-		{
-			const char* s = json_object_get_string(jsonObj);
-			LM_T(LmtRestData, ("json: '%s' : %s (%s)", key, s, jsonTypeName(type)));
+    // Send packet with information
+    network_->Send(p);
 
-            if (strcmp(key, "host") == 0)
-                strcpy(host, s);
-            else if (strcmp(key, "port") == 0)
-                strcpy(port, s);
-		}
-			
-		entry = entry->next;
-	}
+    return;
+  }
 
-	return 0;
+  // --------------------------------------------------------------------
+  // Worker commands
+  // --------------------------------------------------------------------
+
+  if (msgCode == Message::WorkerCommand) {
+    if (!packet->message->has_worker_command()) {
+      LOG_SW(("Trying to run a WorkerCommand from a packet without that message"));
+      return;
+    }
+
+    size_t delilah_id = packet->from.id();
+    size_t delilah_component_id = packet->message->delilah_component_id();
+
+    std::string worker_command_id = au::str("%s_%lu", au::code64_str(delilah_id).c_str(), delilah_component_id);
+
+    WorkerCommand *workerCommand = new WorkerCommand(this
+                                                     , worker_command_id
+                                                     , delilah_id
+                                                     , delilah_component_id
+                                                     , packet->message->worker_command()
+                                                     );
+
+    workerCommandManager_->Add(workerCommand);
+    return;
+  }
+
+  LOG_SW(("Received a message with type %s. Just ignoring...", messageCode(msgCode)));
 }
 
+std::string SamsonWorker::str_state() {
+  switch (state_) {
+    case unconnected:
+      return au::str("Not connected to ZK at %s:%d", zoo_host_.c_str(), port_);
 
+      break;
+    case connected:
+      return au::str("Connected ZK at %s:%d. Still not included in cluster", zoo_host_.c_str(), port_);
 
-/* ****************************************************************************
-*
-* clusterNodeAdd - 
-*/
-void SamsonWorker::process_clusterNodeAdd(au::network::RESTServiceCommand* command)
-{
-    char delilahCommand[256];
+      break;
+    case ready:
+      return au::str("Connected ZK at %s:%d & included in cluster", zoo_host_.c_str(), port_);
 
-    if (command->data == NULL)
-    {
-        command->appendFormatedError(404, au::str("no data"));
-        return;
-    }
-
-    if (command->format == "xml")
-    {
-        char*                   commandData = (char*) malloc(command->data_size + 1);
-        char                    delilahCommand[256];
-        pugi::xml_document      doc;
-        pugi::xml_parse_result  pugiResult;
-        
-        strncpy(commandData, command->data, command->data_size);
-        commandData[command->data_size] = 0;
-
-        LM_T(LmtRest, ("Adding a node - parse the data '%s' of size %d", commandData, command->data_size));
-        pugiResult = doc.load(commandData);
-        free(commandData);
-        if (!pugiResult)
-        {
-            command->appendFormatedError(404, au::str("error in XML data: '%s'", pugiResult.description()));
-            return;
-        }
-
-        pugi::xml_node  samson = doc.child("samson");
-        pugi::xml_node  node   = samson.child("node");
-        char*           host = (char*) node.child_value("name");
-        char*           port = (char*) node.child_value("port");
-                            
-        snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s:%s", host, port);
-        LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
-        process_delilah_command(delilahCommand, command);
-
-        // How do I know that the 'cluster add' command worked ... ?
-        // command->error ?
-
-        // Now, as there is no output from this command, I need to 'reset' the return buffer
-        command->output.str("");
-
-        // And as the trailing '</samson>' is appended, I start the chain here ...
-        command->output << "<samson>" << "\n" << "<result>OK</result>";
-    }
-    else if (command->format == "json")
-    {
-        char* commandData = (char*) malloc(command->data_size + 1);
-        char  host[256];
-        char  port[32];
-
-        strncpy(commandData, command->data, command->data_size);
-        commandData[command->data_size] = 0;
-        LM_T(LmtRestData, ("commandData: '%s'", commandData));
-        
-        if (jsonParse(commandData, host, port) != 0)
-        {
-            command->appendFormatedError(404, au::str("JSON parse error"));
-            return;
-        }
-
-        LM_T(LmtRestData, ("host: '%s'", host));
-        LM_T(LmtRestData, ("port: '%s'", port));
-
-        snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s %s", host, port);
-        LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
-        process_delilah_command(delilahCommand, command);
-
-        command->output.str("");
-        command->output << "{ \"result\" : \"OK\" }";
-    }
+      break;
+  }
+  return "Unknown";
 }
 
+// Receive notifications
+void SamsonWorker::notify(engine::Notification *notification) {
+  if (notification->isName("notification_new_cluster_setup")) {
+    if (data_model_ == NULL) {
+      return;
+    }
+    au::ErrorManager error;
+    LOG_W(logs.worker, ("New cluster setup..."));
+    if (worker_controller_->cluster_leader()) {
+      data_model_->Commit("SAMSON cluster leader", "data_model_recover", error);
+      LOG_W(logs.worker, ("Reset data model since a new cluster setup is defined"));
+    }
+    return;
+  }
 
+  if (notification->isName("notification_freeze_data_model")) {
+    if (state_ == unconnected) {
+      // If we are not connected, we cannot handle this notification
+      return;
+    }
 
-/* ****************************************************************************
-*
-* clusterNodeDelete - 
-*/
-void SamsonWorker::process_clusterNodeDelete(au::network::RESTServiceCommand* command)
-{
-    char delilahCommand[256];
+    if (!worker_controller_->cluster_leader()) {
+      return;
+    }
 
-    if (command->data == NULL)
-    {
-        command->appendFormatedError(404, au::str("no data"));
+    // Freeze data model ( Create a candidate and so.... )
+    au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
+    if (data_model == NULL) {
+      return;
+    }
+
+    // If a candidate data model is too old, remove it
+    if (data_model->has_candidate_data()) {
+      if (cronometer_candidate_data_model_.seconds() > 300) {
+        LOG_W(logs.worker, ("Canceling data model candidate for timeout"));
+        au::ErrorManager error;
+        data_model_->Commit("SAMSON cluster leader", "data_model_cancel_freeze", error);
+      }
+    }
+
+    // Create a candidate if necessary
+    if (!data_model->has_candidate_data()) {
+      if (data_model->current_data().commit_id() > data_model->previous_data().commit_id()) {
+        au::ErrorManager error;
+        data_model_->Commit("SAMSON cluster leader", "data_model_freeze", error);
+        cronometer_candidate_data_model_.Reset();
+      }
+    }
+    return;
+  }
+
+  if (notification->isName(notification_packet_received)) {
+    au::SharedPointer<Packet> packet = notification->dictionary().Get<Packet>("packet");
+    if (packet == NULL) {
+      LOG_SW(("Received a notification to receive a packet without a packet"));
+    }
+
+    if (state_ == unconnected) {
+      LOG_SW(("Received a packet while unconnected, ignoring..."));
+      return;
+    }
+
+    receive(packet);
+    return;
+  }
+
+  if (notification->isName("samson_worker_review")) {
+    Review();
+    return;
+  }
+
+  if (notification->isName("notification_cluster_info_changed_in_worker")) {
+    // Recover new cluster setup
+    au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
+    LOG_M(logs.worker, ("New cluster setup (version %lu)", cluster_info->version()));
+
+    if (state_ == unconnected) {
+      LOG_SW(("New cluster setup cannot be processed since we are disconnected"));
+      return;
+    }
+
+    if (state_ == connected) {
+      if (!isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
+        LOG_V(logs.worker, ("Still not part of cluster (version %lu)", cluster_info->version()));
         return;
+      }
     }
 
-    if (command->format == "xml")
-    {
-        char*                   commandData = (char*) malloc(command->data_size + 1);
-        char                    delilahCommand[256];
-        pugi::xml_document      doc;
-        pugi::xml_parse_result  pugiResult;
-                   
-        strncpy(commandData, command->data, command->data_size);
-        commandData[command->data_size] = 0;
-
-        LM_T(LmtRest, ("Removing a node - parse the data '%s' of size %d", commandData, command->data_size));
-        pugiResult = doc.load(commandData);
-        free(commandData);
-        if (!pugiResult)
-        {
-            command->appendFormatedError(404, au::str("error in XML data: '%s'", pugiResult.description()));
-            return;
-        }
-
-        pugi::xml_node  samson = doc.child("samson");
-        pugi::xml_node  node   = samson.child("node");
-        char*           host = (char*) node.child_value("name");
-        char*           port = (char*) node.child_value("port");
-    
-        snprintf(delilahCommand, sizeof(delilahCommand), "cluster remove %s:%s", host, port);
-        LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
-        process_delilah_command(delilahCommand, command);
-
-        // How do I know that the 'cluster add' command worked ... ?
-        // command->error ?
-
-        // Now, as there is no output from this command, I need to 'reset' the return buffer
-        command->output.str("");
-
-        // And as the trailing '</samson>' is appended, I start the chain here ...
-        command->output << "<samson>" << "\n" << "<result>OK</result>";
+    if (state_ == ready) {
+      // If I am not part of this cluster any more, exit!
+      if (!isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
+        LOG_X(1, ("We are not included in cluster (version %lu). Exiting...", cluster_info->version()));
+      }
     }
-    else if (command->format == "json")
-    {
-        char* commandData = (char*) malloc(command->data_size + 1);
-        char  host[256];
-        char  port[32];
 
-        strncpy(commandData, command->data, command->data_size);
-        commandData[command->data_size] = 0;
-        LM_T(LmtRestData, ("commandData: '%s'", commandData));
+    // Reset worker components
+    task_manager_->Reset();
+    worker_block_manager_->Reset();
 
-        if (jsonParse(commandData, host, port) != 0)
-        {
-            command->appendFormatedError(404, au::str("JSON parse error"));
-            return;
-        }
+    // Change network setup to adapt to the new scenario ( close& open connections to all workers )
+    network_->set_cluster_information(cluster_info);
 
-        LM_T(LmtRestData, ("host: '%s'", host));
-        LM_T(LmtRestData, ("port: '%s'", port));
+    // Show a label with all the new ranges I am responsible for
+    std::vector<KVRange> ranges = worker_controller_->GetMyKVRanges();
+    LOG_M(logs.worker, ("Cluster setup change: Assgined ranges %s", str(ranges).c_str()));
+    return;
+  }
 
-        snprintf(delilahCommand, sizeof(delilahCommand), "cluster remove %s %s", host, port);
-        LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
-        process_delilah_command(delilahCommand, command);
-
-        command->output.str("");
-        command->output << "{ \"result\" : \"OK\" }";
+  if (notification->isName(notification_update_status)) {
+    if ((state_ ==  connected) || (state_ ==  unconnected)) {
+      LOG_W(logs.worker, ("Not reporting state of this worker since it is not fully connected to ZK"));
+      return;
     }
+
+    // Some ancient samson-0.6 useful Status information
+    // Collect some information and print status...
+    int num_processes = engine::Engine::process_manager()->num_used_procesors();
+    int max_processes = engine::Engine::process_manager()->max_num_procesors();
+
+    size_t used_memory = engine::Engine::memory_manager()->used_memory();
+    size_t max_memory = engine::Engine::memory_manager()->memory();
+
+    size_t disk_read_rate = (size_t) engine::Engine::disk_manager()->rate_in();
+    size_t disk_write_rate = (size_t) engine::Engine::disk_manager()->rate_out();
+
+    size_t network_read_rate = 0;
+    size_t network_write_rate = 0;
+    if (network_ != NULL) {
+      network_read_rate = network_->get_rate_in();
+      network_write_rate = network_->get_rate_out();
+    }
+
+    // Pointer to cluster info
+    au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
+    size_t worker_id = worker_controller_->worker_id();
+    LOG_M(logs.worker,
+          ("[ Worker %lu / %d workers ] (%s) [ %d/%d HashGroups ][ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
+           , worker_id
+           , cluster_info->workers_size()
+           , au::str_time(cronometer_.seconds()).c_str()
+           , static_cast<int>(GetNumKVRanges(cluster_info.shared_object(), worker_id))
+           , cluster_info->process_units_size()
+           , au::str_percentage(num_processes, max_processes).c_str()
+           , au::str_percentage(used_memory, max_memory).c_str()
+           , au::str(disk_read_rate, "Bs").c_str()
+           , au::str(disk_write_rate, "Bs").c_str()
+           , au::str(network_read_rate, "Bs").c_str()
+           , au::str(network_write_rate, "Bs").c_str()
+          ));
+
+    au::Singleton<au::AverageStatistics>::shared()->Push("samson.active_cores", num_processes);
+
+    return;
+  }
+
+  if (notification->isName(notification_samson_worker_send_message)) {
+    if (state_ == unconnected) {
+      LOG_SW(("Cannot sent packet since we are unconnected, ignoring..."));
+      return;
+    }
+
+    std::string message = notification->environment().Get("message", "No message coming with trace-notification");
+    std::string context = notification->environment().Get("context", "?");
+    std::string type    = notification->environment().Get("type", "message");
+
+    size_t delilah_id = notification->environment().Get("delilah_id", static_cast<size_t>(-1));
+    if (delilah_id == static_cast<size_t>(-1)) {
+      network_->SendAlertToAllDelilahs(type, context, message);
+    } else {
+      network_->SendAlertToDelilah(delilah_id, type, context, message);
+    }
+    return;
+  }
+
+  LOG_SW(("SamsonWorker received an unexpected notification %s. Ignoring...", notification->GetDescription().c_str()));
 }
 
-void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
-{
-    std::string         main_command  = command->path_components[1];
-    std::string         path          = "";
-    std::string         verb          = command->command;
-    unsigned int        components    = command->path_components.size();
+std::string getFormatedElement(const std::string& name, const std::string& value, const std::string& format) {
+  std::ostringstream output;
 
-    for (unsigned int ix = 0; ix < components; ix++)
-        path += std::string("/") + command->path_components[ix];
-    LM_T(LmtRest, ("Incoming REST request: %s '%s'", verb.c_str(), path.c_str()));
-
-
-    //
-    // Quick sanity check
-    //
-    
-    if (components < 2)
-    {
-        command->appendFormatedError(400 , "Only /samson/option paths are valid");
-        return;
-    }
-
-    if (command->path_components[0] != "samson")
-    {
-        command->appendFormatedError(400 , "Only /samson/option paths are valid");
-        return;
-    }
-
-    //
-    // Treat the message
-    //
-    
-    if ((path == "/samson/version") && (verb == "GET"))
-    {
-        command->appendFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ));
-    }
-    else if ((path == "/samson/status") && (verb == "GET"))
-    {
-        std::ostringstream data;
-        network->getInfo(data, "cluster", command->format);
-        command->append( data.str() );
-    }
-    else if ((path == "/samson/cluster") && (verb == "GET"))
-    {
-        std::ostringstream data;
-        network->getInfo(data, "cluster", command->format);
-        command->append( data.str() );
-    }
-    else if ((path == "/samson/cluster/add_node") && (verb == "POST"))
-    {
-        process_clusterNodeAdd(command);
-    }
-    else if ((path == "/samson/cluster/remove_node") && (verb == "DELETE"))
-    {
-        process_clusterNodeDelete(command);
-    }
-    else if (main_command == "ilogging")
-    {
-        process_ilogging(command);
-    }
-    else if (main_command == "logging")
-    {
-        process_logging(command);
-    }
-    else if (main_command == "node")
-    {
-        process_node(command);
-    }
-    else if ((path == "/samson/queues") && (verb == "GET"))
-    {
-        process_delilah_command( "ls -group name -sort name", command);
-    }
-    else if ((path == "/samson/queues_rates") && (verb == "GET"))
-    {
-        process_delilah_command( "ls -group name -sort name -rates", command);
-    }
-    else if ( main_command == "queues" )
-    {
-        char delilahCommand[256];
-
-        if ((components == 3) && (verb == "GET"))
-        {
-            snprintf(delilahCommand, sizeof(delilahCommand), "ls %s", command->path_components[2].c_str());
-            process_delilah_command(delilahCommand, command);
-        }
-        else if ((components == 4) && (command->path_components[3] == "delete") && (verb == "DELETE"))
-        {
-            snprintf(delilahCommand, sizeof(delilahCommand), "rm %s", command->path_components[2].c_str());
-            process_delilah_command(delilahCommand, command);
-        }
-        else if ((components == 5) && (command->path_components[3] == "state") && (verb == "GET"))
-        {
-            // This is done synchronous with engine
-            
-            // Add element to the engine
-            engine::Engine::shared()->notify( new engine::Notification( "rest_operation_stream_manager"  , command ) );
-           
-            // Wait until it is resolved
-            command->wait();
-        }
-        else
-            command->appendFormatedError(404, au::str("Bad VERB or PATH"));
-    }
-    else if (main_command == "command" ) /* /samson/command */
-    {
-        std::string delilah_command = "";
-
-        if (command->command != "GET")
-        {
-            command->appendFormatedError(404, au::str("bad VERB for command"));
-            return;
-        }
-
-        if (components == 2)
-            delilah_command = "ls"; // 'ls' is the default command
-        else if (components == 3)
-            delilah_command = command->path_components[2];
-        
-        if (delilah_command != "")
-            process_delilah_command(delilah_command, command);
-        else
-            command->appendFormatedError(404, au::str("bad path for command"));
-    }
-    else if ((path == "/samson/modules") && (verb == "GET"))
-    {
-        process_delilah_command("ls_modules -group name", command);
-    }
-    else if ((main_command == "modules") && (components == 3) && (verb == "GET"))
-    {
-        char delilahCommand[256];
-
-        snprintf(delilahCommand, sizeof(delilahCommand), "ls_modules %s -group name", command->path_components[2].c_str());
-        process_delilah_command(delilahCommand, command);
-    }
-    else if ( main_command == "stream_operations" )
-    {
-        if(command->command != "GET")
-        {
-            command->appendFormatedError(404, au::str("bad VERB for command"));
-            return;
-        }
-        std::string filter;
-        if( components == 3 )
-            filter = command->path_components[2];
-        process_delilah_command( au::str("ls_stream_operations %s -group name" , filter.c_str())  , command);
-    }
-    else if ( main_command == "workers" )
-    {
-        if(command->command != "GET")
-        {
-            command->appendFormatedError(404, au::str("bad VERB for command"));
-            return;
-        }
-        process_delilah_command( "ls_workers" , command );
-    }
-    else if ( main_command == "connections" )
-    {
-        if(command->command != "GET")
-        {
-            command->appendFormatedError(404, au::str("bad VERB for command"));
-            return;
-        }
-        process_delilah_command( "ls_connections -group name" , command );
-    }
-    else if ( main_command == "stream_operations_instances" )
-    {
-        if(command->command != "GET")
-        {
-            command->appendFormatedError(404, au::str("bad VERB for command"));
-            return;
-        }
-        process_delilah_command( "ps_stream" , command );
-    }
-    else if (main_command == "operations" )  /* /samson/operations */
-    {
-        char delilahCommand[256];
-        
-        if ((command->command == "GET") && (components == 2))
-        {
-            snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations -group name");
-            process_delilah_command(delilahCommand, command);
-        }
-        else if ((command->command == "GET") && (components == 3))
-        {
-            snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations %s -group name", command->path_components[2].c_str());
-            process_delilah_command(delilahCommand, command);
-        }
-        else if ((command->command == "PUT") && (components == 3))
-        {
-            // Need to parse the XML here ...
-            command->appendFormatedError(400, au::str("Not Implemented"));
-        }
-        else if ((command->command == "DELETE") && (components == 4) && (command->path_components[2] == "delete"))
-        {
-            // snprintf(delilahCommand, sizeof(delilahCommand), "rm_stream_operation %s", command->path_components[3].c_str());
-            // process_delilah_command(delilahCommand, command);
-            command->appendFormatedError(400, au::str("Not Implemented"));
-        }
-        else
-            command->appendFormatedError(404, au::str("bad path/verb"));
-    }
-#if 0
-    else if( ( main_command == "state" ) || ( main_command == "queue" ) ) 
-    {
-        /* /samson/state/queue/key */
-        if ( components < 4 )
-            command->appendFormatedError(400 , "Only /samson/state/queue/key paths are valid");
-        else
-            streamManager->process( command );             // Get this from the stream manager
-    }
-    else if( main_command == "data_test" )
-    {
-        command->appendFormatedElement("data_size", au::str("%lu" , command->data_size));
-            
-        if( command->data_size == 0 )
-            command->appendFormatedElement("Data", "No data provided in the REST request");
-        else
-        {
-            // Return with provided data
-            std::string data;
-            data.append( command->data , command->data_size );
-            command->appendFormatedElement("data", data );
-        }
-    }
-#endif
-    else
-    {
-        command->appendFormatedError(404, au::str("Bad VERB or PATH"));
-    }
+  if (format == "xml") {
+    au::xml_simple(output, name, value);
+  } else if (format == "json") {
+    au::json_simple(output, name, value);
+  } else if (format == "html") {
+    output << "<h1>" << name << "</h1>" << value;
+  } else {
+    output << name << ":\n" << value;
+  }
+  return output.str();
 }
-    
 
+std::string getFormatedError(std::string message, std::string& format) {
+  return getFormatedElement("error", message, format);
+}
 
-    void SamsonWorker::process_node(  au::network::RESTServiceCommand* command  )
-    {
-        
-        if( command->format != "json" )
-        {
-            command->appendFormatedError(400, "Only json format is supported in samson/node/*");
-            return;
-        }
-        
-        if( command->path_components.size() <= 2 )
-        {
-            command->appendFormatedError(400, "Bad path. Supported: samson/node/general.json");
-            return;
-        }
-        
-        //  /samson/status/
-        std::string sub_command = command->path_components[2];
-        
-        if( sub_command == "general" )
-        {
-            command->append( samson_worker_samples.getJson() );
-            return;
-        }
-        else
-        {
-            command->appendFormatedError(400, "Bad path. Supported: samson/node/general.json");
-            return;
-        }
-        
+void SamsonWorker::AutoComplete(au::console::ConsoleAutoComplete *info) {
+  if (info->completingFirstWord()) {
+    info->add("quit");
+    info->add("exit");
+    info->add("threads");
+    info->add("show_engine_statistics");
+    info->add("show_engine_last_items");
+    info->add("show_engine_elements");
+    info->add("show_engine_current_element");
+  }
+}
+
+void SamsonWorker::EvalCommand(const std::string& command) {
+  au::CommandLine cmdLine;
+
+  cmdLine.Parse(command, false);
+  if (cmdLine.get_num_arguments() == 0) {
+    return;
+  }
+
+  std::string main_command = cmdLine.get_argument(0);
+
+  au::ErrorManager error;
+
+  if (au::CheckIfStringsBeginWith(main_command, "log_")) {
+    au::log_central->EvalCommand(command, error);
+    Write(error);          // Write the output of the command
+    return;
+  }
+
+  if (main_command == "quit") {
+    StopConsole();
+    return;
+  }
+  if (main_command == "exit") {
+    StopConsole();
+    return;
+  }
+
+  if (main_command == "threads") {
+    Write(au::Singleton<au::ThreadManager>::shared()->str_table());
+    return;
+  }
+
+  if (main_command == "show_engine_current_element") {
+    Write(engine::Engine::shared()->activity_monitor()->GetCurrentActivity() + "\n");
+    return;
+  }
+
+  if (main_command == "show_engine_statistics") {
+    Write(engine::Engine::shared()->activity_monitor()->GetElementsTable() + "\n");
+    return;
+  }
+
+  if (main_command == "show_engine_last_items") {
+    Write(engine::Engine::shared()->activity_monitor()->GetLastItemsTable() + "\n");
+    return;
+  }
+
+  if (main_command == "show_engine_elements") {
+    Write(engine::Engine::shared()->GetTableOfEngineElements() + "\n");
+    return;
+  }
+
+  // More command to check what is going on inside a worker
+  WriteErrorOnConsole("Unknown command for samsonWorker");
+}
+
+std::string SamsonWorker::GetPrompt() {
+  if (worker_controller_ == NULL) {
+    return "[Unconnected] SamsonWorker > ";
+  }
+
+  size_t worker_id = worker_controller_->worker_id();
+  if (worker_id == static_cast<size_t>(-1)) {
+    return "[Unconnected] SamsonWorker > ";
+  }
+
+  std::ostringstream output;
+  if (data_model_ != NULL) {
+    size_t commit_id = data_model_->getCurrentModel()->current_data().commit_id();
+    if (commit_id > 0) {
+      output << "[ DM Commit " << (commit_id - 1) << " ]";
     }
-    
-    // Get information for monitoring
-    void SamsonWorker::getInfo( std::ostringstream& output)
-    {
-        // Engine
-        //engine::Engine::shared()->getInfo( output );
-        
-        // Engine system
-        //samson::getInfoEngineSystem(output, network);
-        
-        // Modules manager
-        //ModulesManager::shared()->getInfo( output );
-        
-        // Block manager
-        //stream::BlockManager::shared()->getInfo( output );
-        
-        // Queues manager information
-        streamManager->getInfo(output);
-        
-        
-        // WorkerCommandManager
-        //workerCommandManager->getInfo(output);
-        
-        // Network
-        //network->getInfo( output , "main" );
-        
-    }
-    
-    void SamsonWorker::autoComplete( au::ConsoleAutoComplete* info )
-    {
-        if( info->completingFirstWord() )
-        {
-            info->add( "quit" );
-            info->add( "exit" );
-            info->add( "threads" );
-            info->add( "cluster" );
-            info->add( "show_logs" );
-            info->add( "hide_logs" );
-            info->add( "show_engine_statistics" );
-            info->add( "show_engine_last_items" );
-            info->add( "show_engine_elements" );
-            info->add( "show_engine_current_element" );
-        }
-    }
-    
-    void SamsonWorker::evalCommand( std::string command )
-    {
-        au::CommandLine cmdLine;
-        cmdLine.parse(command);
-        
-        if( cmdLine.get_num_arguments() == 0 )
-            return;
-        
-        std::string main_command = cmdLine.get_argument(0);
-        
-        if ( main_command == "quit" )
-            quitConsole();
+  }
 
-        if ( main_command == "exit" )
-            quitConsole();
-        
-        if ( main_command == "threads" )
-            writeOnConsole( au::ThreadManager::shared()->str() );
-        
-        if ( main_command == "cluster" )
-            writeOnConsole( network->cluster_command(command) );
-        
-        if( main_command == "show_logs" )
-        {
-            au::add_log_plugin( this );
-            writeOnConsole("OK\n");
-        }
-        if( main_command == "hide_logs" )
-        {
-            au::remove_log_plugin( this );
-            writeOnConsole("OK\n");
-        }
+  if (network_ != NULL) {
+    output << "[ " << network_->getClusterConnectionStr().c_str() << " ]";
+  }
 
-        if( main_command == "show_engine_current_element" )
-        {
-            writeOnConsole( engine::Engine::shared()->get_activity_monitor()->getCurrentActivity() + "\n" );
-            return;
-        }
-        
-        if( main_command == "show_engine_statistics" )
-        {
-            writeOnConsole( engine::Engine::shared()->get_activity_monitor()->str_elements() + "\n" );
-            return;
-        }
-        
-        if( main_command == "show_engine_last_items" )
-        {
-            writeOnConsole( engine::Engine::shared()->get_activity_monitor()->str_last_items() + "\n" );
-            return;
-        }
-        
-        if( main_command == "show_engine_elements" )
-        {
-            writeOnConsole( engine::Engine::shared()->getTableOfEngineElements() + "\n" );
-            return;
-        }
-        
-        
-        // More command to check what is going on inside a worker
-        
-    }
-    
-    std::string SamsonWorker::getPrompt()
-    {
-        return "SamsonWorker> ";
-    }
-    
-    void SamsonWorker::sendTrace( std::string type , std::string context , std::string message  )
-    {
-        
-        
-        // Send message to all delilahs
-        std::vector<size_t> delilahs = network->getDelilahIds();
-        
-        for ( size_t i = 0 ; i < delilahs.size() ; i++ )
-        {
-            
-            Packet * p = new Packet( Message::Alert );
-            
-            network::Alert * alert = p->message->mutable_alert();
-            alert->set_type(type);
-            alert->set_context(context);
-            alert->set_text( message );
-            
-            p->message->set_delilah_component_id( (size_t)-1 ); // This message do not belong to the operation executing it
-            
-            // Direction of this paket
-            p->to.node_type = DelilahNode;
-            p->to.id = delilahs[i];
-            
-            // Send packet
-            network->send( p );
-            
-            //  Release created packet
-            p->release();
-        }            
-        
-    }
-    
-    network::Collection* SamsonWorker::getWorkerCollection( Visualization* visualization )
-    {
-        network::Collection* collection = new network::Collection();
-        collection->set_name("workers");
-        
-        network::CollectionRecord* record = collection->add_record();            
-        
-        // Common type to joint queries ls_workers -group type
-        ::samson::add( record , "Type" , "worker" , "different" );
-        
-        if( visualization->options == engine )
-        {
-            
-            size_t num_elements= engine::Engine::shared()->getNumElementsInEngineStack();
-            double waiting_time = engine::Engine::shared()->getMaxWaitingTimeInEngineStack();
-            ::samson::add( record , "#elements in engine" , num_elements , "f=uint64,sum" );
-            ::samson::add( record , "Max waiting time" , waiting_time , "f=double,different" );
-            
-        }
-        else if( visualization->options == disk )
-        {
-            // Disk activiry
-            
-            ::samson::add( record , "Disk in B/s" , engine::DiskManager::shared()->get_rate_in() , "f=uint64,sum" );
-            ::samson::add( record , "Disk out B/s" , engine::DiskManager::shared()->get_rate_out() , "f=uint64,sum" );
-            
-            double op_in = engine::DiskManager::shared()->get_rate_operations_in();
-            double op_out = engine::DiskManager::shared()->get_rate_operations_out();
-            
-            ::samson::add( record , "Disk in Ops/s" , op_in  , "f=double , sum" );
-            ::samson::add( record , "Disk out Ops/s" , op_out , "f=double,sum" );
-            
-            
-            double on_time = engine::DiskManager::shared()->on_off_monitor.get_on_time(); 
-            double off_time = engine::DiskManager::shared()->on_off_monitor.get_off_time(); 
-            ::samson::add( record , "On time" , on_time , "f=double,differet" );
-            ::samson::add( record , "Off time" , off_time , "f=double,differet" );
-            
-            ::samson::add( record , "BM writing" ,  stream::BlockManager::shared()-> get_scheduled_write_size() , "f=uint64,sum" );
-            ::samson::add( record , "BM reading" ,  stream::BlockManager::shared()->get_scheduled_read_size() , "f=uint64,sum" );
-            
-            double usage =  engine::DiskManager::shared()->get_on_off_activity();
-            ::samson::add( record , "Disk usage" , au::str_percentage(usage) , "differet" );
-            
-        }
-        else
-        {
-            
-            ::samson::add( record , "Mem used" , engine::MemoryManager::shared()->getUsedMemory() , "f=uint64,sum" );
-            ::samson::add( record , "Mem total" , engine::MemoryManager::shared()->getMemory() , "f=uint64,sum" );
-            
-            ::samson::add( record , "Cores used" , engine::ProcessManager::shared()->getNumUsedCores() , "f=uint64,sum" );
-            ::samson::add( record , "Cores total" , engine::ProcessManager::shared()->getNumCores() , "f=uint64,sum" );
-            
-            ::samson::add( record , "#Disk ops" , engine::DiskManager::shared()->getNumOperations() , "f=uint64,sum" );
-            
-            ::samson::add( record , "Disk in B/s" , engine::DiskManager::shared()->get_rate_in() , "f=uint64,sum" );
-            ::samson::add( record , "Disk out B/s" , engine::DiskManager::shared()->get_rate_out() , "f=uint64,sum" );
-            
-            ::samson::add( record , "Net in B/s" , network->get_rate_in() , "f=uint64,sum" );
-            ::samson::add( record , "Net out B/s" , network->get_rate_out() , "f=uint64,sum" );
-        }
-        
-        if (visualization == NULL)
-            return collection;
-        
-        return collection;
-    }
-    
-    
-    void SamsonWorkerSamples::take_samples()
-    {
-        
+  output << au::str(" SamsonWorker %lu > ", worker_id);
 
-        int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
-        int max_processes = engine::ProcessManager::shared()->public_max_proccesses;
-        
-        size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
-        size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
-        
-        size_t disk_read_rate = (size_t) engine::DiskManager::shared()->get_rate_in();
-        size_t disk_write_rate = (size_t) engine::DiskManager::shared()->get_rate_out();
-        
-        size_t network_read_rate = (size_t) samsonWorker_->network->get_rate_in();
-        size_t network_write_rate = (size_t) samsonWorker_->network->get_rate_out();
+  return output.str();
+}
 
-        cpu.push( 100.0 *  (double)  num_processes / (double)  max_processes );
-        memory.push( 100.0 * (double) used_memory / (double)  max_memory );
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerAllLogChannels(const Visualization& visualization) const {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
 
-        disk_in.push( disk_read_rate / 1000000  );
-		disk_out.push( disk_write_rate / 1000000  );
+  collection->set_name("wlog channels");
 
-        net_in.push( network_read_rate / 1000000  );
-		net_out.push( network_write_rate / 1000000 );
-                    
+  for (int i = 0; i < au::log_central->log_channels().num_channels(); ++i) {
+    gpb::CollectionRecord *record = collection->add_record();
+    std::string name = au::log_central->log_channels().channel_name(i);
+    std::string description = au::log_central->log_channels().channel_description(i);
+
+    ::samson::add(record, "Channel", name, "different,left");
+
+    if (visualization.get_flag("-hits")) {
+      ::samson::add(record, "Hits", au::log_central->log_channels_filter().GetHitDescriptionForChannel(
+                      i), "different,left");
     }
 
+    ::samson::add(record, "Description", description, "different,left");
+  }
+  return collection;
+}
+
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerLogStatus(const Visualization& visualization) const {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+
+  collection->set_name("wlog status");
+  gpb::CollectionRecord *record = collection->add_record();
+
+  ::samson::add(record, "log server", au::log_central->GetPluginStatus("server"), "different");
+  ::samson::add(record, "Channels", au::log_central->GetPluginChannels("server"), "different");
+
+  return collection;
+}
+
+au::SharedPointer<gpb::Collection> SamsonWorker::GetKVRangesCollection(const Visualization& visualization) const {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_title("KVRanges collection");
+  collection->set_name("kv_ranges");
+
+  // Get current version of the cluster
+  au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
+
+  // Get current data model
+  au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
+
+  if ((cluster_info == NULL) || (data_model == NULL)) {
+    return collection;
+  }
+
+  for (int i = 0; i < cluster_info->process_units_size(); ++i) {
+    gpb::CollectionRecord *record = collection->add_record();
+
+    KVRange range(cluster_info->process_units(i).hg_begin(), cluster_info->process_units(i).hg_end());
+
+    add(record, "KVRange", range.str(), "different");
+    add(record, "Worker", cluster_info->process_units(i).worker_id(), "different");
+
+    std::ostringstream replica_workers;
+    for (int r = 0; r < cluster_info->process_units(i).replica_worker_id_size(); ++r) {
+      replica_workers << cluster_info->process_units(i).replica_worker_id(r) << " ";
+    }
+    add(record, "Worker replicas", replica_workers.str(), "different");
+
+    // Information about data for this range
+    BlockKVInfo info;
+    BlockKVInfo max_info;
+    const gpb::Data& data = data_model->current_data();
+    for (int q = 0; q < data.queue_size(); ++q) {
+      BlockKVInfo queue_info = gpb::getBlockKVInfoForQueue(data.queue(q), range);
+
+      info.Append(queue_info);
+      if (queue_info.size > max_info.size) {
+        max_info = queue_info;
+      }
+    }
+
+    add(record, "KVInfo", info.str(), "different");
+    add(record, "Max KVInfo per queue", max_info.str(), "different");
+  }
+
+  return collection;
+}
+
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerStatisticsCollection(const Visualization& visualization)
+const {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("workers_statistics");
+  gpb::CollectionRecord *record = collection->add_record();
+
+  {
+    au::RateStatistics *rate_statistics = au::Singleton<au::RateStatistics>::shared();
+    std::vector<std::string> concepts = rate_statistics->GetConcepts();
+    for (size_t i = 0; i < concepts.size(); ++i) {
+      if (!visualization.match(concepts[i])) {
+        ::samson::add(record, concepts[i], rate_statistics->GetRateString(concepts[i], "_"));
+      }
+    }
+  }
+
+  {
+    au::AverageStatistics *average_statistics = au::Singleton<au::AverageStatistics>::shared();
+    std::vector<std::string> concepts = average_statistics->GetConcepts();
+    for (size_t i = 0; i < concepts.size(); ++i) {
+      if (visualization.match(concepts[i])) {
+        ::samson::add(record, concepts[i], average_statistics->GetAverageString(concepts[i], "_"));
+      }
+    }
+  }
+
+  return collection;
+}
+
+au::SharedPointer<gpb::Collection> SamsonWorker::GetWorkerCollection(const Visualization& visualization) const {
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+
+  collection->set_name("workers");
+
+  gpb::CollectionRecord *record = collection->add_record();
+
+
+  // Common fields
+  ::samson::add(record, "Status", state_message_, "different");
+
+  if (visualization.get_flag("engine")) {
+    size_t num_elements = engine::Engine::shared()->GetNumElementsInEngineStack();
+    double waiting_time = engine::Engine::shared()->GetMaxWaitingTimeInEngineStack();
+    size_t num_buffers = engine::Engine::memory_manager()->num_buffers();
+    ::samson::add(record, "#buffers in memory", num_buffers, "f=uint64,sum");
+    ::samson::add(record, "#elements in engine", num_elements, "f=uint64,sum");
+    ::samson::add(record, "Max waiting time", waiting_time, "f=double,different");
+    return collection;
+  }
+
+
+  if (visualization.get_flag("disk")) {
+    ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
+    ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
+    double op_in = engine::Engine::disk_manager()->rate_operations_in();
+    double op_out = engine::Engine::disk_manager()->rate_operations_out();
+    ::samson::add(record, "Disk in Ops/s", op_in, "f=double , sum");
+    ::samson::add(record, "Disk out Ops/s", op_out, "f=double,sum");
+    double on_time = engine::Engine::disk_manager()->on_time();
+    double off_time = engine::Engine::disk_manager()->off_time();
+    ::samson::add(record, "On time", on_time, "f=double,differet");
+    ::samson::add(record, "Off time", off_time, "f=double,differet");
+    ::samson::add(record, "BM writing", stream::BlockManager::shared()->scheduled_write_size(), "f=uint64,sum");
+    ::samson::add(record, "BM reading", stream::BlockManager::shared()->scheduled_read_size(), "f=uint64,sum");
+    double usage =  engine::Engine::disk_manager()->on_off_activity();
+    ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
+    return collection;
+  }
+
+  if (visualization.get_flag("modules")) {
+    if (!modules_available_) {
+      ::samson::add(record, "Modules", "No", "different");
+    } else if (last_modules_version_ != SIZE_T_UNDEFINED) {
+      ::samson::add(record, "Modules", au::str("Yes (commit %lu)", last_modules_version_), "different");
+    } else {
+      ::samson::add(record, "Modules", "No modules", "different");
+    }
+    return collection;
+  }
+
+  if (visualization.get_flag("traffic")) {
+    ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->num_disk_operations(), "f=uint64,sum");
+    ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
+    ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
+    ::samson::add(record, "Net in B/s", network_->get_rate_in(), "f=uint64,sum");
+    ::samson::add(record, "Net out B/s", network_->get_rate_out(), "f=uint64,sum");
+    ::samson::add(record, "ZK in B/s", zoo_connection_->get_rate_in(), "f=uint64,sum");
+    ::samson::add(record, "ZK out B/s", zoo_connection_->get_rate_out(), "f=uint64,sum");
+    return collection;
+  }
+
+  if (visualization.get_flag("data_model")) {
+    ::samson::add(record, "Current DataModel", data_model_->GetLastCommitIdForCurrentDataModel(), "different");
+    ::samson::add(record, "Consolidated DataModel", worker_controller_->GetMyLastCommitId(), "different");
+    return collection;
+  }
+
+  ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
+  ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
+  ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
+  ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
+  return collection;
+}
+
+au::SharedPointer<au::zoo::Connection> SamsonWorker::zoo_connection() {
+  return zoo_connection_;
+}
+
+au::SharedPointer<SamsonWorkerController> SamsonWorker::worker_controller() {
+  return worker_controller_;
+}
+
+au::SharedPointer<DataModel> SamsonWorker::data_model() {
+  return data_model_;
+}
+
+au::SharedPointer<WorkerNetwork> SamsonWorker::network() {
+  return network_;
+}
+
+au::SharedPointer<SamsonWorkerRest> SamsonWorker::samson_worker_rest() {
+  return samson_worker_rest_;
+}
+
+au::SharedPointer<WorkerBlockManager> SamsonWorker::worker_block_manager() {
+  return worker_block_manager_;
+}
+
+au::SharedPointer<stream::WorkerTaskManager> SamsonWorker::task_manager() {
+  return task_manager_;
+}
+
+au::SharedPointer<WorkerCommandManager> SamsonWorker::workerCommandManager() {
+  return workerCommandManager_;
+}
+
+void SamsonWorker::ReloadModulesIfNecessary() {
+  // Recover current data model
+  au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
+  gpb::Data *data = data_model->mutable_current_data();
+
+  // Get .modules queue
+  gpb::Queue *queue = get_queue(data, ".modules");
+
+  // If no .modules queue, remove local directory and clear ModuleManager
+  if (!queue) {
+    // Clear modules
+    au::Singleton<ModulesManager>::shared()->ClearModulesManager();
+    last_modules_version_ = SIZE_T_UNDEFINED;
+    modules_available_ = true;
+    return;
+  }
+
+  // Check if we have all necessary blocks
+  int missing_blocks = 0;
+  for (int b = 0; b < queue->blocks_size(); ++b) {
+    size_t block_id = queue->blocks(b).block_id();
+    if (stream::BlockManager::shared()->GetBlock(block_id) == NULL) {
+      // Add this block to be requested to other workers
+      worker_block_manager_->RequestBlock(block_id);
+      LOG_V(logs.modules_manager, ("Missing block(%lu) detected and requested, pos(%d)", block_id, b));
+      ++missing_blocks;
+    }
+  }
+
+  if (missing_blocks > 0) {
+    modules_available_ = false;
+    last_modules_version_ = SIZE_T_UNDEFINED;
+    LOG_W(logs.modules_manager, ("Not possible to load modules because there are %d missing_blocks", missing_blocks));
+    au::Singleton<ModulesManager>::shared()->ClearModulesManager();
+    return;
+  }
+
+  modules_available_ = true;
+  size_t commit_id = queue->commit_id();
+  if ((last_modules_version_ != SIZE_T_UNDEFINED) && (commit_id <= last_modules_version_)) {
+    LOG_V(logs.modules_manager,
+          ("Not necessary to reaload modules since we have the last version %lu", last_modules_version_));
+    return;     // Not necessary to update since we have the last version
+  }
+
+  // Update this version
+  last_modules_version_ = commit_id;
+
+  // Clear modules
+  au::Singleton<ModulesManager>::shared()->ClearModulesManager();
+
+  // Clear directory
+  au::ErrorManager error_rm_directory;
+  std::string directory = au::Singleton<SamsonSetup>::shared()->worker_modules_directory();
+  au::RemoveDirectory(directory, error_rm_directory);
+  au::CreateDirectory(directory);
+
+  // Write each loaded file
+  for (int i = 0; i < queue->blocks_size(); ++i) {
+    size_t block_id = queue->blocks(i).block_id();
+
+    // Recover block
+    stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
+
+    if (block == NULL) {
+      LOG_SW(("Block %lu necessary for a module not found. Skipping..."));
+      continue;
+    }
+
+    engine::BufferPointer buffer = block->buffer();
+    if (buffer == NULL) {
+      buffer = block->GetBufferFromDisk();
+    }
+    if (buffer == NULL) {
+      LOG_SW(("Error reading module from block %lu file %s", block->block_id(), block->file_name().c_str()));
+      continue;
+    }
+
+    std::string target_file_name = au::str("%s/module_%05d", directory.c_str(), i);
+    FILE *target_file = fopen(target_file_name.c_str(), "w");
+    fwrite(buffer->data() + sizeof(KVHeader), buffer->size() - sizeof(KVHeader), 1, target_file);
+    fclose(target_file);
+  }
+
+  // Reload modules from this directory
+  au::ErrorManager error;
+  au::Singleton<ModulesManager>::shared()->AddModulesFromDirectory(directory, error);
+  if (error.HasErrors()) {
+    LOG_W(logs.worker, ("Error reloading modules: %s", error.GetLastError().c_str()));
+  }
+}
+
+bool SamsonWorker::IsReady() {
+  return (state_ == ready);
+}
+
+bool SamsonWorker::IsConnected() {
+  return state_ != unconnected;
+}
+
+void SamsonWorker::fill(gpb::CollectionRecord *record
+                        , const std::string& name
+                        , gpb::Data *data
+                        , const Visualization& visualization) const {
+  ::samson::add(record, "name", name, "different");
+  FullKVInfo info = gpb::GetFullKVInfo(data);
+  ::samson::add(record, "ZK size", data->ByteSize(), "uint64,different");
+  ::samson::add(record, "data", info.str(), "different");
+  ::samson::add(record, "#commit", data->commit_id(), "different");
+}
+
+au::SharedPointer<gpb::Collection> SamsonWorker::GetModulesCollection(const Visualization& visualization) const {
+  // Get a copy of the current version
+  au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
+
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("modules");
+
+  gpb::Queue *queue = gpb::get_queue(data_model->mutable_current_data(), ".modules");
+
+  // Create a tmp directory
+  std::string directory = au::GetRandomTmpFileOrDirectory();
+  au::CreateDirectory(directory);
+
+  // Set of names used so far to detect colision name...
+  std::set<std::string> module_names;
+
+  if (queue) {
+    for (int i = 0; i < queue->blocks_size(); i++) {
+      size_t block_id = queue->blocks(i).block_id();
+
+      gpb::CollectionRecord *record = collection->add_record();
+      ::samson::add(record, "block_id", str_block_id(block_id), "different");
+
+      stream::BlockPointer block = stream::BlockManager::shared()->GetBlock(block_id);
+      if (block == NULL) {
+        ::samson::add(record, "description", "", "left,diferent");
+        ::samson::add(record, "error", "Block not found in this worker. Waiting for it!", "left,different");
+        continue;
+      }
+
+      // Save to a temporal file
+      engine::BufferPointer buffer = block->buffer();
+      if (buffer == NULL) {
+        buffer = block->GetBufferFromDisk();
+      }
+      if (buffer == NULL) {
+        ::samson::add(record, "description", "", "left,diferent");
+        ::samson::add(record, "error", "Not possible to load content of this block", "left,different");
+        continue;
+      }
+
+      std::string target_file_name = au::str("%s/modules_%05d", directory.c_str(), i);
+      FILE *target_file = fopen(target_file_name.c_str(), "w");
+      fwrite(buffer->data() + sizeof(KVHeader), buffer->size() - sizeof(KVHeader), 1, target_file);
+      fclose(target_file);
+
+      au::ErrorManager error;
+      Module *module = ModulesManager::LoadModule(target_file_name, error);
+
+      if (error.HasErrors()) {
+        ::samson::add(record, "description", "", "left,diferent");
+        ::samson::add(record, "error", au::str("Error: %s", error.GetLastError().c_str()), "left,different");
+        continue;
+      }
+
+      std::string description = au::str("Module %s / %lu operations / %lu datas"
+                                        , module->name.c_str()
+                                        , module->operations.size()
+                                        , module->datas.size());
+      ::samson::add(record, "description", description, "left,diferent");
+
+      if (module_names.find(module->name) != module_names.end()) {
+        ::samson::add(record, "error", "Previous module with the same name", "left,diferent");
+      } else {
+        ::samson::add(record, "error", "", "left,diferent");
+        module_names.insert(module->name);
+      }
+      delete module;
+    }
+  }
+
+  au::ErrorManager error;
+  au::RemoveDirectory(directory, error);
+
+  return collection;
+}
+
+au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelStatus(const Visualization& visualization)
+const {
+  // Get a copy of the current version
+  au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
+
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("data_model");
+
+  // Frozen data model
+  fill(collection->add_record(), "frozen", data_model->mutable_previous_data(), visualization);
+
+  // Candidate
+  if (data_model->has_candidate_data()) {
+    fill(collection->add_record(), "candidate", data_model->mutable_candidate_data(), visualization);
+  }
+
+  // Current data model
+  fill(collection->add_record(), "current", data_model->mutable_current_data(), visualization);
+
+  return collection;
+}
+
+au::SharedPointer<gpb::Collection> SamsonWorker::GetCollectionForDataModelCommits(const Visualization& visualization)
+const {
+  // Get a copy of the current version
+  au::SharedPointer<gpb::DataModel> data_model = data_model_->getCurrentModel();
+
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("data_model_commits");
+
+  for (int i = 0; i < data_model->commit_size(); ++i) {
+    gpb::CollectionRecord *record = collection->add_record();
+    ::samson::add(record, "commit_id", data_model->commit(i).id(), "different");
+    ::samson::add(record, "message", data_model->commit(i).message(), "different");
+  }
+
+  return collection;
+}
+
+au::SharedPointer<GlobalBlockSortInfo> SamsonWorker::GetGlobalBlockSortInfo() {
+  if ((worker_controller_ == NULL) || (data_model_ == NULL)) {
+    return au::SharedPointer<GlobalBlockSortInfo>(NULL);
+  }
+
+  au::SharedPointer<GlobalBlockSortInfo> blocks_sort_info(new GlobalBlockSortInfo());
+
+  // Update with task manager
+  task_manager_->Update(blocks_sort_info.shared_object());
+
+  // Get ranges of this worker
+  std::vector<KVRange> ranges = worker_controller_->GetMyKVRanges();
+
+  // Update with Data model information
+  au::SharedPointer<gpb::DataModel> data = data_model_->getCurrentModel();
+  if (data != NULL) {
+    const gpb::Data& current_data =  data->current_data();   // Get current data model
+    for (int q = 0; q < current_data.queue_size(); q++) {
+      const gpb::Queue& queue = current_data.queue(q);
+      for (int b = 0; b < queue.blocks_size(); b++) {
+        blocks_sort_info->NotifyQueue(queue.blocks(b).block_id(), queue.name());
+      }
+    }
+
+    // Past data models
+    for (int q = 0; q < data->previous_data().queue_size(); q++) {
+      const gpb::Queue& queue = data->previous_data().queue(q);
+      for (int b = 0; b < queue.blocks_size(); b++) {
+        blocks_sort_info->NotifyQueueInPreviousDataModel(queue.blocks(b).block_id(), queue.name());
+      }
+    }
+    if (data->has_candidate_data()) {
+      for (int q = 0; q < data->candidate_data().queue_size(); q++) {
+        const gpb::Queue& queue = data->candidate_data().queue(q);
+        for (int b = 0; b < queue.blocks_size(); b++) {
+          blocks_sort_info->NotifyQueueInPreviousDataModel(queue.blocks(b).block_id(), queue.name());
+        }
+      }
+    }
+
+    // Inform about stream operations in ther worker or in exterior workers
+    for (size_t r = 0; r < ranges.size(); r++) {
+      for (int o = 0; o < current_data.operations_size(); o++) {
+        std::string name = au::str("%s %s", current_data.operations(o).name().c_str(), ranges[r].str().c_str());
+
+        for (int i = 0; i < current_data.operations(o).inputs_size(); i++) {
+          std::string queue_name = current_data.operations(o).inputs(i);
+          // Consider only blocks of data for this worker
+          gpb::Queue *queue = gpb::get_queue(data->mutable_current_data(), queue_name);
+          if (!queue) {
+            continue;
+          }
+
+          bool state = false;
+          if (current_data.operations(o).inputs_size() > 1) {
+            if (!current_data.operations(o).batch_operation()) {
+              if (!current_data.operations(o).reduce_forward()) {
+                if (i == (current_data.operations(o).inputs_size() - 1)) {
+                  state = true;
+                }
+              }
+            }
+          }
+
+          size_t total = 0;  // Total accumulated size for stream operation in this worker
+          size_t extern_total = 0;  // Total accumuated size for strema operations in other workers
+          for (int b = 0; b < queue->blocks_size(); b++) {
+            const gpb::Block& block = queue->blocks(b);
+            KVRange range = block.range();
+            if (range.IsOverlapped(ranges[r])) {
+              blocks_sort_info->NotifyInputForStreamOperation(block.block_id()
+                                                              , name
+                                                              , queue_name
+                                                              , state
+                                                              , total);
+              total += block.size();
+            } else {
+              blocks_sort_info->NotifyInputForExternStreamOperation(block.block_id()
+                                                                    , name
+                                                                    , queue_name
+                                                                    , extern_total);
+              extern_total += block.size();
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return blocks_sort_info;
+}
+
+bool SamsonWorker::IsWorkerReadyForBlockRequest(size_t worker_id) {
+  // Reject for memory ?
+  double mem_usage = engine::Engine::memory_manager()->memory_usage();
+
+  if (mem_usage >= 1.0) {
+    LOG_W(logs.worker, ("Rejecting block request since memory usage is %s", au::str_percentage(mem_usage).c_str()));
+    return false;
+  }
+
+  // Reject for output network queues
+  size_t memory = engine::Engine::memory_manager()->memory();
+  size_t all_queue_size = network_->GetAllQueuesSize();
+  if (all_queue_size > (0.25 * (double)memory)) {
+    LOG_W(logs.worker, ("Rejecting block request: Size of all output-queue %s", au::str(all_queue_size).c_str()));
+    return false;
+  }
+
+  size_t queue_size = network_->GetQueueSizeForWorker(worker_id);
+  if (queue_size > (0.2 * (double)memory)) {
+    LOG_W(logs.worker, ("Rejecting block request: Size of output-queue %s", au::str(queue_size).c_str()));
+    return false;
+  }
+
+  // If number of scheduled block_request task is Excessive, also stop
+  // TODO
+
+  return true;
+}
 }

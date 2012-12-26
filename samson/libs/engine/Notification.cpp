@@ -8,83 +8,68 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+#include "engine/Notification.h"   // Own interface
+
+#include "au/string/StringUtilities.h"      // au::Format
+
+#include "engine/NotificationListener.h"         // engine::NotificationListener
 
 #include "logMsg/logMsg.h"      // Log system
-#include "logMsg/traceLevels.h" // LmtEngine
+#include "logMsg/traceLevels.h"  // LmtEngine
 
-#include "au/string.h"          // au::Format
-
-#include "Object.h"         // engine::Object
-
-#include "Notification.h"   // Own interface
-
-NAMESPACE_BEGIN(engine)
-
+namespace engine {
 // Simples constructor
-Notification::Notification( const char* _name )
-{
-    name = _name;
+Notification::Notification(const char *name) {
+  name_ = name;
 }
 
-// Constructor with one object
-Notification::Notification( const char* _name , au::Object * _object )
-{
-    name = _name;
-    object_container.setObject( _object );
+Notification::~Notification() {
 }
 
-Notification::Notification( const char* _name , au::Object * _object , size_t _listener_id )
-{
-    name = _name;
-    object_container.setObject( _object );
-    
-    // Insert this as the first listener to receive this notification
-    targets.insert( _listener_id );
+void Notification::AddEngineListener(size_t listener_id) {
+  targets_.insert(listener_id);
 }
 
-Notification::Notification( const char* _name , au::Object * _object , std::set<size_t>& _listeners_id )
-{
-    name = _name;
-    object_container.setObject( _object );
-    
-    // Insert this as the first listener to receive this notification
-    targets.insert( _listeners_id.begin() , _listeners_id.end() );
+void Notification::AddEngineListeners(const std::set<size_t>& _listeners_id) {
+  // Insert this as the first listener to receive this notification
+  targets_.insert(_listeners_id.begin(), _listeners_id.end());
 }
 
-Notification::~Notification()
-{
+const char *Notification::name() {
+  return name_;
 }
 
-
-
-std::string Notification::getDescription()
-{
-    std::ostringstream output;
-    output << name << " [ Notification " << name << " ";
-    output << "Targets: (";
-    std::set<size_t>::iterator iterator_listener_id; 
-    for ( iterator_listener_id = targets.begin() ; iterator_listener_id != targets.end() ; iterator_listener_id++)
-        output  << *iterator_listener_id << " ";
-    output << ") ";
-    output << environment.getEnvironmentDescription().c_str() << " ]";
-    return output.str();
-}    
-
-std::string Notification::getShortDescription()
-{
-    return au::str("[ Not: %s ]" , name );
+au::GeneralDictionary& Notification::dictionary() {
+  return dictionary_;
 }
 
-// Extract the object of this notification
-au::Object* Notification::getObject()
-{
-    return object_container.getObject();
+au::Environment& Notification::environment() {
+  return environment_;
 }
 
-// Check if there is an object in this notification
-bool Notification::containsObject()
-{
-    return ( object_container.getObject() != NULL );
+bool Notification::isName(const char *name) {
+  return strcmp(name_, name) == 0;
 }
 
-NAMESPACE_END
+const std::set<size_t>& Notification::targets() {
+  return targets_;
+}
+
+std::string Notification::GetDescription() {
+  std::ostringstream output;
+
+  output << name_ << " [ Notification " << name_ << " ";
+  output << "Targets: (";
+  std::set<size_t>::iterator iterator_listener_id;
+  for (iterator_listener_id = targets_.begin(); iterator_listener_id != targets_.end(); iterator_listener_id++) {
+    output << *iterator_listener_id << " ";
+  }
+  output << ") ";
+  output << environment_ << " ]";
+  return output.str();
+}
+
+std::string Notification::GetShortDescription() {
+  return au::str("[ Not: %s ]", name_);
+}
+}

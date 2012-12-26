@@ -91,6 +91,7 @@ include_directories("/usr/include/json")
 # Include directory pointing to current dir and /usr/local/include
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
+    include_directories("${PROJECT_SOURCE_DIR}/libs/extra")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
     include_directories("${PROJECT_SOURCE_DIR}/modules/core/system")
     include_directories("${PROJECT_BINARY_DIR}/modules/${MODULE_NAME}")
@@ -111,12 +112,8 @@ MESSAGE( "----------------------------------------------------------------------
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS} )
 
-# Link agains samson_comscore library
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} au )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} json )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_system json)
+# Link against samson_comscore library
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_system samson_comscore samsonModule lm au json)
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

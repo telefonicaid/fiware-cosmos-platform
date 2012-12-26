@@ -1,58 +1,59 @@
 
 SET (HEADERS
-	common.h
-	message.pb.h
-	LogManager.h
-	BufferList.h
-	BufferProcessor.h
-	Channel.h
-	Connection.h
-	ConnectorCommand.h
-	FileDescriptorConnection.h
-	Adaptor.h
-	SingleConnectionAdaptor.h
-	DiskAdaptor.h
-	ListenerAdaptor.h
-	SamsonAdaptor.h
-	InterChannelPacket.h
-	InterChannelLink.h
-	ChannelAdaptor.h
-	HDFSAdaptor.h
-	StreamConnector.h
-	StreamConnectorService.h
-	ServerConnection.h
-	TrafficStatistics.h
+  common.h
+  message.pb.h
+  BufferList.h
+  BufferProcessor.h
+  Channel.h
+  Connection.h
+  ConnectorCommand.h
+  FileDescriptorConnection.h
+  Adaptor.h
+  SingleConnectionAdaptor.h
+  DiskAdaptor.h
+  ListenerAdaptor.h
+  SamsonAdaptor.h
+  SamsonConnection.h
+  InterChannelPacket.h
+  InterChannelLink.h
+  ChannelAdaptor.h
+  HDFSAdaptor.h
+  StreamConnector.h
+  StreamConnectorService.h
+  ServerConnection.h
+  TrafficStatistics.h
+  PacketReaderWriter.h
 )
 
 SET (SOURCES
-	common.cpp
-	message.pb.cc
-	LogManager.cpp
-	BufferList.cpp
-	BufferProcessor.cpp
-	Channel.cpp
-	Connection.cpp
-	SingleConnectionAdaptor.cpp
-	ConnectorCommand.cpp
-	FileDescriptorConnection.cpp
-	Adaptor.cpp
-	DiskAdaptor.cpp
-	ListenerAdaptor.cpp
-	SamsonAdaptor.cpp
-	InterChannelPacket.cpp
-	InterChannelLink.cpp
-	ChannelAdaptor.cpp
-	HDFSAdaptor.cpp
-	StreamConnector.cpp
-	StreamConnectorService.cpp
-	ServerConnection.cpp
-	TrafficStatistics.cpp
+  common.cpp
+  message.pb.cc
+  BufferList.cpp
+  BufferProcessor.cpp
+  Channel.cpp
+  Connection.cpp
+  SingleConnectionAdaptor.cpp
+  ConnectorCommand.cpp
+  FileDescriptorConnection.cpp
+  Adaptor.cpp
+  DiskAdaptor.cpp
+  ListenerAdaptor.cpp
+  SamsonAdaptor.cpp
+  SamsonConnection.cpp
+  InterChannelPacket.cpp
+  InterChannelLink.cpp
+  ChannelAdaptor.cpp
+  HDFSAdaptor.cpp
+  StreamConnector.cpp
+  StreamConnectorService.cpp
+  ServerConnection.cpp
+  TrafficStatistics.cpp
+  PacketReaderWriter.cpp
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
     set (SOLARIS_LIBS "-lsocket -lnsl")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-
 SET( STATIC_LIBS
      samsonClient
      samsonWorkerLib
@@ -60,12 +61,12 @@ SET( STATIC_LIBS
      engine
      samsonModule
      samsonStream
-     samsonIsolated
      samsonNetwork
      samsonCommon
+     zookeeper_mt
      au
      lm
-	au
+     au
      pa
      protobuf
      dl

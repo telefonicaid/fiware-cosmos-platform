@@ -35,21 +35,6 @@ Description: SAMSON is a high-performance MapReduce platform that is designed
  ability to continuously process new inputs and output states without
  restriction.
 
-Package: samson-gui
-Section: tid
-Priority: optional
-Architecture: amd64
-Depends: samson, kdchart
-Description: SAMSON is a high-performance MapReduce platform that is designed
- for scaling tasks on a cluster of commodity hardware. This platform removes the
- need to develop a system for parallelizing and synchronizing work between
- servers, allowing a person to develop the analytical models needed to solve
- both current and future problems.  SAMSON extends the traditional MapReduce
- paradigm by allowing an external data source to stream data into and out of the
- cluster. This allows the system to handle any volume of data thus providing the
- ability to continuously process new inputs and output states without
- restriction.
-
 Package: samson-logserver
 Section: tid
 Priority: optional

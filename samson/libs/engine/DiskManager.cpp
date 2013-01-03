@@ -9,358 +9,265 @@
  * All rights reserved.
  */
 
-
-#include <time.h>
 #include <sys/time.h>
+#include <time.h>
 
-#include "logMsg/logMsg.h"				// LM_X
-
-#include "au/xml.h"         // au::xml...
-#include "au/mutex/TokenTaker.h"         // au::TokenTaker...
 #include "au/ThreadManager.h"
+#include "au/containers/SharedPointer.h"
+#include "au/mutex/TokenTaker.h"  // au::TokenTaker...
+#include "au/singleton/Singleton.h"
+#include "au/string/Descriptors.h"       // au::Descriptors
+#include "au/string/xml.h"        // au::xml...
 
-#include "engine/Engine.h"							// engine::Engine
-#include "engine/EngineElement.h"					// engine::EngineElement
-#include "engine/Notification.h"                    // engine::Notification
-#include "engine/ProcessItem.h"                     // engine::ProcessItem
-#include "engine/DiskOperation.h"					// engine::DiskOperation
+#include "engine/DiskManager.h"   // Own interface
+#include "engine/DiskOperation.h"  // engine::DiskOperation
+#include "engine/Engine.h"        // engine::Engine
+#include "engine/EngineElement.h"  // engine::EngineElement
+#include "engine/Logs.h"
+#include "engine/Notification.h"  // engine::Notification
 #include "engine/NotificationElement.h"      // engine::EngineNotificationElement
-#include "au/Descriptors.h"                         // au::Descriptors
+#include "engine/ProcessItem.h"   // engine::ProcessItem
 
-#include "engine/DiskManager.h"                    // Own interface
+#include "logMsg/logMsg.h"        // LM_X
 
-
-NAMESPACE_BEGIN(engine)
-
-
-//iniitalise singleton instance pointer to NULL
-DiskManager* DiskManager::diskManager = NULL;
-
-void DiskManager::init( int _num_disk_operations )
-{
-    LM_V(("DiskManager init with %d max background operations" , _num_disk_operations ));
-    
-    if( diskManager )
-	{
-        LM_W(("Please, init diskManager only once. Ignoring..."));
-		return;
-	}
-    
-    diskManager = new DiskManager ( _num_disk_operations );
-}
-
-void DiskManager::stop( )
-{
-    if( diskManager )
-        diskManager->quitting = true;
-}
-
-
-void DiskManager::destroy( )
-{
-    LM_V(("DiskManager destroy"));
-
-    if( !diskManager )
-    {
-        LM_W(("Please init diskManager before destroying it"));
-        return;
-    }
-    delete diskManager;
-    diskManager = NULL;
-}
-
-
-DiskManager* DiskManager::shared()
-{
-    if (!diskManager)
-        LM_E(("Please init DiskManager before using it, calling DiskManager::init()"));
-    return diskManager;
-}
-
+namespace engine {
 #pragma mark DiskManager
 
-void* run_disk_manager_worker( void* p )
-{
-    DiskManager* dm = (DiskManager*) p;
-    dm->run_worker();
-    return NULL;
+void *run_disk_manager_worker(void *p) {
+  DiskManager *dm = reinterpret_cast<DiskManager *>(p);
+
+  dm->run_worker();
+  return NULL;
 }
 
-DiskManager::DiskManager( int _num_disk_operations ) : token("engine::DiskManager")
-{
-    // Number of parallel disk operations
-    num_disk_operations = _num_disk_operations;
-    
-    // Init counter for number of workers
-    num_disk_manager_workers = 0;
-    
-    quitting = false;
-
-    // Create as many threads as required
-    createThreads();
-
+DiskManager::DiskManager(int max_num_disk_operations) :
+  token_("engine::DiskManager"), quitting_(false),
+  max_num_disk_operations_(max_num_disk_operations), num_disk_manager_workers_(0) {
+  // Create as many threads as required
+  CreateThreads();
 }
 
+void DiskManager::CreateThreads() {
+  au::TokenTaker tt(&token_);   // Mutex protection
 
-void DiskManager::createThreads()
-{
-    // Create as many workers as necessary
-    while( get_num_disk_manager_workers() < num_disk_operations )
-    {
-        // Increse the counter of worker
-        add_worker();
-        
-        pthread_t t;
-        au::ThreadManager::shared()->addThread("DiskManager_worker",&t, NULL, run_disk_manager_worker, this);
+
+  // Create as many workers as necessary
+  while (num_disk_manager_workers_ < max_num_disk_operations_) {
+    LOG_D(logs.disk_manager, ("create threads %d/%d", num_disk_manager_workers_, max_num_disk_operations_));
+
+    num_disk_manager_workers_++;
+
+    pthread_t t;
+    int rc = au::Singleton<au::ThreadManager>::shared()->AddThread("DiskManager_worker", &t, NULL,
+                                                                   run_disk_manager_worker, this);
+    if (rc) {
+      LOG_SW(("Error creating background thread for disk operations..."));
+      num_disk_manager_workers_--;
+    }
+  }
+
+  LOG_D(logs.disk_manager, ("created %d threads", num_disk_manager_workers_));
+}
+
+DiskManager::~DiskManager() {
+  Stop();
+}
+
+void DiskManager::Stop() {
+  // Flag to indicate background threads to finish
+  quitting_ = true;
+
+  // Wait all background workers
+  au::Cronometer cronometer;
+  while (true) {
+    if (num_disk_manager_workers_ == 0) {
+      return;
     }
 
-}
-
-DiskManager::~DiskManager()
-{
-    // Remove pending elements
-    pending_operations.clearList();
-}
-
-void DiskManager::add( DiskOperation *operation )
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    
-    // Set the pointer to myself
-    operation->diskManager = this;
-
-    // Retain operation
-    operation->retain();
-    
-    // Insert the operation in the queue of pending operations
-    pending_operations.insert( _find_pos(operation), operation );
-    
-}
-
-void DiskManager::cancel( DiskOperation *operation )
-{
-    au::TokenTaker tt(&token);
-    if( pending_operations.extractFromList( operation ) )
-    {
-        // Add a notification for this operation ( removed when delegate is notified )
-        Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listeners );
-        notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
-        Engine::shared()->notify(notification);            
-        
-        // Release object
-        operation->release();
+    usleep(100000);
+    if (cronometer.seconds() > 1) {
+      cronometer.Reset();
+      LOG_SW(("Waiting for background threads of engine::DiskManager"));
     }
+  }
 }
 
-void DiskManager::finishDiskOperation( DiskOperation *operation )
-{
-    // Callback received from background process
-    
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    
-    running_operations.erase( operation );
-    
-    
-    if( operation->getType() == DiskOperation::read )
-        rate_in.push( operation->getSize() );
-    if( operation->getType() == DiskOperation::write )
-        rate_out.push( operation->getSize() );
-    if( operation->getType() == DiskOperation::append )
-        rate_out.push( operation->getSize() );
-    
-    LM_T( LmtDisk , ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s", 
-                     operation->fileName.c_str() 
-                     ));
-    
-    // Add a notification for this operation to the required target listener
-    Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listeners );
-    notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
-    
-    LM_T( LmtDisk , ("DiskManager::finishDiskOperation notification sent on file:%s and ready to share and checkDiskOperations", operation->fileName.c_str() ));
-    Engine::shared()->notify(notification);    
-    
-    // Release object
-    operation->release();
+void DiskManager::Add(au::SharedPointer<engine::DiskOperation> operation) {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  // Set the pointer to myself
+  operation->diskManager = this;
+
+  // Insert the operation in the queue of pending operations
+  pending_operations_.Push(operation);
 }
 
+void DiskManager::Cancel(au::SharedPointer<engine::DiskOperation> operation) {
+  au::TokenTaker tt(&token_);
 
-DiskOperation * DiskManager::getNextDiskOperation(  )
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    
-    if( pending_operations.size() == 0 )
-    {
-        on_off_monitor.set_on( !(running_operations.size() == 0) );
-        return NULL;
-    }
-    
-    // Extract the next operation
-    DiskOperation *operation = pending_operations.extractFront();
-    
-    // Insert in the running list
-    running_operations.insert( operation );
+  // If it is still in the pending queue
+  if (pending_operations_.Contains(operation)) {
+    // Operation is still retained at least by the argument provided
+    pending_operations_.ExtractAll(operation);
 
-    // We are runnin one, so it is on
-    on_off_monitor.set_on(true);
-    
-    return operation;
+    // Add a notification for this operation ( removed when delegate is notified )
+    Notification *notification = new Notification(notification_disk_operation_request_response);
+
+    // Add disk operation to the notification dictionary
+    notification->dictionary().Set<DiskOperation> ("disk_operation", operation);
+
+    notification->AddEngineListeners(operation->listeners);
+    notification->environment().Add(operation->environment);
+    // Recover the environment variables to identify this request
+    Engine::shared()->notify(notification);
+  }
 }
 
+void DiskManager::FinishDiskOperation(au::SharedPointer<engine::DiskOperation> operation) {
+  // Callback received from background process
 
-int DiskManager::get_num_disk_manager_workers(  )
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    return num_disk_manager_workers;
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  // remove from the box of running operations
+  running_operations_.Erase(operation);
+
+  if (operation->getType() == DiskOperation::read) {
+    rate_in_.Push(operation->getSize());
+  }
+  if (operation->getType() == DiskOperation::write) {
+    rate_out_.Push(operation->getSize());
+  }
+  if (operation->getType() == DiskOperation::append) {
+    rate_out_.Push(operation->getSize());
+  }
+  LOG_D(logs.disk_manager,
+        ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s",
+         operation->fileName.c_str()));
+
+  // Add a notification for this operation to the required target listener
+  Notification *notification = new Notification(notification_disk_operation_request_response);
+
+  notification->dictionary().Set<DiskOperation> ("disk_operation", operation);
+  notification->AddEngineListeners(operation->listeners);
+  notification->environment().Add(operation->environment);   // Recover the environment variables to identify this request
+
+  LOG_D(logs.disk_manager,
+        ("DiskManager::finishDiskOperation notification sent on file:%s and ready to share and checkDiskOperations",
+         operation->fileName.c_str()));
+  Engine::shared()->notify(notification);
 }
 
+au::SharedPointer<engine::DiskOperation> DiskManager::getNextDiskOperation() {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
 
-void DiskManager::add_worker(  )
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    num_disk_manager_workers ++;
+  if (pending_operations_.size() == 0) {
+    on_off_monitor_.Set(!(running_operations_.size() == 0));
+    return au::SharedPointer<engine::DiskOperation>(NULL);
+  }
+
+  // Extract the next operation
+  au::SharedPointer<engine::DiskOperation> operation = pending_operations_.Pop();
+
+  // Insert in the running list
+  running_operations_.Insert(operation);
+
+  // We are runnin one, so it is on
+  on_off_monitor_.Set(true);
+
+  return operation;
 }
 
+int DiskManager::num_disk_manager_workers() const {
+  return num_disk_manager_workers_;
+}
 
 // Check if we can run more disk operations
-void DiskManager::run_worker()
-{
-    
-    while( true )
-    {
-        
-        
-        // Check if I should quit
-        if( check_quit_worker() )
-            return;
-        
-        DiskOperation* operation = getNextDiskOperation();
-        if (operation)
-		{
-            operation->run();
-		}
-        else
-            usleep(100000);
-    }
-    
-    
-}
+void DiskManager::run_worker() {
+  LOG_D(logs.disk_manager, ("Running worker...", num_disk_manager_workers_));
 
-bool DiskManager::check_quit_worker(  )
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-
-    // If quitting the disk manager.. just quit.
-    if (quitting)
-    {
-        num_disk_manager_workers--;
-        return true;
+  while (true) {
+    // If quitting or too many workers... just quit.
+    if (quitting_ || (num_disk_manager_workers_ > max_num_disk_operations_)) {
+      LOG_D(logs.disk_manager, ("Quitting worker...", num_disk_manager_workers_));
+      au::TokenTaker tt(&token_);
+      num_disk_manager_workers_--;
+      return;
     }
 
-    if( num_disk_manager_workers > num_disk_operations )
-    {
-        num_disk_manager_workers--;
-        return true;
+    au::SharedPointer<engine::DiskOperation> operation = getNextDiskOperation();
+    if (operation != NULL) {
+      operation->run();
+      FinishDiskOperation(operation);   // Process finish of this task
+    } else {
+      usleep(100000);
     }
-    
-    return false;
-    
+  }
 }
 
-int DiskManager::getNumOperations()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    
-    return pending_operations.size() + diskManager->running_operations.size();
+int DiskManager::num_disk_operations() const {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  return pending_operations_.size() + running_operations_.size();
 }
 
-void DiskManager::setNumOperations( int _num_disk_operations )
-{
-    {
-        // Mutex protection
-        au::TokenTaker tt(&token);
-        num_disk_operations = _num_disk_operations;
-    }
-    
-    // Create as many threads as required
-    createThreads();
-    
+void DiskManager::set_max_num_disk_operations(int max_num_disk_operations) {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  // Set a new limit
+  max_num_disk_operations_ = max_num_disk_operations;
+  // Create as many threads as required
+  CreateThreads();
 }
 
-size_t DiskManager::get_rate_in()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    return rate_in.getRate();
+size_t DiskManager::rate_in() const {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  return rate_in_.rate();
 }
 
-size_t DiskManager::get_rate_out()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    return rate_out.getRate();
+size_t DiskManager::rate_out() const {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  return rate_out_.rate();
 }
 
-double DiskManager::get_rate_operations_in()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    return rate_in.getHitRate();
+double DiskManager::rate_operations_in() const {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  return rate_in_.hit_rate();
 }
 
-double DiskManager::get_rate_operations_out()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    return rate_out.getHitRate();
+double DiskManager::rate_operations_out() const {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  return rate_out_.hit_rate();
 }
 
-double DiskManager::get_on_off_activity()
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    return on_off_monitor.getActivity();
+double DiskManager::on_off_activity() const {
+  // Mutex protection
+  au::TokenTaker tt(&token_);
+
+  return on_off_monitor_.activity_percentadge();
 }
 
-
-void DiskManager::getInfo( std::ostringstream& output)
-{
-    // Mutex protection
-    au::TokenTaker tt(&token);
-    
-    output << "<disk_manager>\n";
-    
-    au::xml_simple( output , "num_pending_operations" , pending_operations.size() );
-    au::xml_simple( output , "num_running_operations" , pending_operations.size() );
-    
-    output << "<running>\n";
-    for ( std::set<DiskOperation*>::iterator i = running_operations.begin() ; i != running_operations.end() ; i++)
-        (*i)->getInfo(output);
-    output << "</running>\n";
-    
-    output << "<queued>\n";
-    for ( std::list<DiskOperation*>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
-        (*i)->getInfo(output);
-    output << "</queued>\n";
-    
-    output << "</disk_manager>\n";
-    
+double DiskManager::on_time() const {
+  return on_off_monitor_.on_time();
 }
 
-au::list<DiskOperation>::iterator DiskManager::_find_pos( DiskOperation *diskOperation )
-{
-    for (au::list<DiskOperation>::iterator i = pending_operations.begin() ; i != pending_operations.end() ; i++)
-    {
-        if( diskOperation->compare(*i) )
-            return i;
-    }
-    return pending_operations.end();
+double DiskManager::off_time() const {
+  return on_off_monitor_.off_time();
 }
- 
-NAMESPACE_END
+
+int DiskManager::max_num_disk_operations() const {
+  return max_num_disk_operations_;
+}
+}

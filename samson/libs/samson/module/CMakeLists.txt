@@ -23,15 +23,21 @@ SET (HEADERS_INSTALL
 
 SET (HEADERS
 	ModulesManager.h
-	select.h
 	List.h
 )
 
 SET (SOURCES
     ModulesManager.cpp
-    select.cpp
+	samson.cpp
 )
 
+SET (LIBRARIES 
+   lm 
+   au 
+   samsonCommon 
+   dl
+)
+   
 # Inclue directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
@@ -39,9 +45,10 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(samsonModule STATIC ${SOURCES} ${HEADERS} ${HEADERS_INSTALL} )
-
+ADD_LIBRARY(samsonModule SHARED ${SOURCES} ${HEADERS} ${HEADERS_INSTALL} )
+TARGET_LINK_LIBRARIES(samsonModule ${LIBRARIES})
 
 # Instalation header files
 # -----------------------------------------------------------------
 INSTALL(FILES ${HEADERS_INSTALL} DESTINATION include/samson/module )
+INSTALL(TARGETS samsonModule  DESTINATION   lib)

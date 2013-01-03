@@ -8,19 +8,35 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+#include "TemporalBuffer.h"  // Own interface
 #include <stdlib.h>
-#include "TemporalBuffer.h" // Own interface
 
-namespace au 
-{
-    TemporalBuffer::TemporalBuffer( size_t size )
-    {
-        data = (char*) malloc(size);
-    }
-    
-    TemporalBuffer::~TemporalBuffer()
-    {
-        if(data)
-            free (data);
-    }
+namespace au {
+TemporalBuffer::TemporalBuffer(size_t size) {
+  data_ =  reinterpret_cast<char *>(malloc(size));
+  size_ = size;
+}
+
+void TemporalBuffer::Reset(size_t size) {
+  if (data_) {
+    free(data_);
+  }
+  data_ =  reinterpret_cast<char *>(malloc(size));
+  size_ = size;
+}
+
+char *TemporalBuffer::data() {
+  return data_;
+}
+
+size_t TemporalBuffer::size() {
+  return size_;
+}
+
+TemporalBuffer::~TemporalBuffer() {
+  if (data_) {
+    free(data_);
+    data_ = NULL;
+  }
+}
 }

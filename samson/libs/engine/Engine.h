@@ -10,55 +10,64 @@
  */
 
 /* ****************************************************************************
- *
- * FILE            Engine.h
- *
- * AUTHOR          Andreu Urruela
- *
- * DATE            July 2011
- *
- * DESCRIPTION
- *
- * Engine: Singlenton object with all the main funcitonalities of the engine library
- *
- * ****************************************************************************/
+*
+* FILE            Engine.h
+*
+* AUTHOR          Andreu Urruela
+*
+* DATE            July 2011
+*
+* DESCRIPTION
+*
+* Engine: Singlenton object with all the main funcitonalities of the engine library
+*
+* ****************************************************************************/
 
 #ifndef _H_SAMSON_ENGINE
 #define _H_SAMSON_ENGINE
 
-#include <pthread.h>
-#include <list>
-#include <string>
-#include <iostream>                         // std::cout
-#include <set>                              // std::set
 #include <math.h>
+#include <pthread.h>
 
-#include "au/Object.h"
-#include "au/tables/Table.h"
+#include <iostream>                              // std::cout
+#include <list>
+#include <set>                                   // std::set
+#include <string>
+
 #include "au/statistics/ActivityMonitor.h"
+#include "au/tables/Table.h"
 
-#include "au/containers/list.h"                        // au::list
-#include "au/mutex/Token.h"                       // au::Token
-#include "au/Cronometer.h"                  // au::Cronometer
-#include "au/namespace.h"                // NAMESPACE_BEGIN & NAMESPACE_END
+#include "au/Thread.h"
+#include "au/ThreadManager.h"
+#include "au/containers/list.h"                  // au::list
 #include "au/containers/vector.h"
-#include "au/mutex/TokenTaker.h"
 #include "au/mutex/Token.h"
+#include "au/mutex/Token.h"                      // au::Token
+#include "au/mutex/TokenTaker.h"
+#include "au/statistics/Cronometer.h"            // au::Cronometer
 
-#include "engine/Object.h"                  // engine::EngineNotification
-#include "engine/ObjectsManager.h"          // engine::ObjectsManager
 #include "engine/EngineElementCollection.h"
+#include "engine/NotificationListener.h"         // engine::EngineNotification
+#include "engine/NotificationListenersManager.h"  // engine::NotificationListenersManager
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 class Error;
 class Token;
-NAMESPACE_END
+}
 
-NAMESPACE_BEGIN(engine)
+/**
+ * \brief Namespace for engine library
+ * @author Andreu Urruela, Gregorio Escalada & Ken Zangelin
+ */
 
+namespace engine {
 class EngineElement;
 class ProcessItem;
 class DiskOperation;
+class DiskManager;
+class ProcessManager;
+class MemoryManager;
 class Notification;
 
 // ---------------------------------------------------
@@ -69,111 +78,94 @@ class Notification;
 // ---------------------------------------------------
 
 
-class Engine
-{
-    // Common engine instance
-    static Engine* engine;
-
-    // Statistics
-    au::statistics::ActivityMonitor activity_monitor;
-
-    // Collection of items
-    EngineElementCollection engine_element_collection;
-    
-    // Management of all objects
-    ObjectsManager objectsManager;                  
-
-    // Counter of EngineElement processed
-    size_t counter;                                 
-
-    // Thread to run the engine in background ( if necessary )
-    pthread_t t;                                    
-    
+class Engine : public au::Thread {
 public:
-    
-    bool quitting;                                  // Flag used to indicate to threads that engine will finish
-    bool running_thread;                            // Flag to indicate that background thread is running
 
-private:    
-    
-    Engine();
-    
-public:
-    
-    au::Cronometer uptime;                          // Total up time
-    double last_uptime_mark;                        // Last mark used to spent time
-    
-    ~Engine();
-    
-    static void destroy();
-    static void init();
-    static void stop();
-    static Engine* shared();
-    
-public:
-    
-    // Methods only executed from the thread-creation-functions ( never use directly )
-    void run();
-        
-    
-public:
-    
-    // get xml information
-    void getInfo( std::ostringstream& output);
-    
+  virtual ~Engine();
+
+  // Static methods to init and close engine ( all included )
+  static void InitEngine(int num_cores, size_t memory, int num_disk_operations);
+  static void StopEngine();
+  static bool IsEngineWorking();
+
+  // Accessorts to main components
+  static Engine *shared();
+  static DiskManager *disk_manager();
+  static MemoryManager *memory_manager();
+  static ProcessManager *process_manager();
+
+  // Function to add a simple foreground tasks to this runloop
+  void Add(EngineElement *element);
+
+  // Methods to add notifictions
+  void notify(Notification *notification);
+  void notify(Notification *notification, int seconds);   // Repeated notification
+  void notify_extra(Notification *notification);
+
+  // Debug information
+  int GetNumElementsInEngineStack();
+  double GetMaxWaitingTimeInEngineStack();
+  std::string GetTableOfEngineElements();      // Get information about current elements in engine
+  au::statistics::ActivityMonitor *activity_monitor();      // Return activity monitor to print some statistics
+
 private:
-    
-    friend class Object;
-    
-    // Functions to register objects ( general and for a particular notification )
-    void register_object( Object* object );
-    void register_object_for_channel( Object* object, const char* channel );
-    
-    // Generic method to unregister an object
-    void unregister_object( Object* object );
-    
-public:
-    
-    // Add a notification
-    void notify( Notification*  notification );
-    void notify_extra( Notification*  notification );
-    void notify( Notification*  notification , int seconds ); // Repeated notification
-    
-    // Function to add a simple foreground tasks 
-    void add( EngineElement *element );	
-    
-    // Get an object by its registry names
-    Object* getObjectByName( const char *name );
-    
-    // Info functions 
-    int getNumElementsInEngineStack();
-    double getMaxWaitingTimeInEngineStack();
 
-    // Return activity monitor to print some statistics
-    au::statistics::ActivityMonitor * get_activity_monitor()
-    {
-        return &activity_monitor;
-    }
-    
-    // Get information about current elements in engine
-    std::string getTableOfEngineElements()
-    {
-        return engine_element_collection.getTableOfEngineElements();
-    }
-    
-private:
-    
-    friend class NotificationElement;
-    
-    // Run a particular notification
-    // Only executed from friend class "NotificationElement"
-    void send( Notification * notification );
-    
-    // Run a particular engine element
-    void runElement( EngineElement* running_element );
-    
+
+  Engine();     // Private constructor ( see Init static method )
+
+  /**
+   *
+   * RunThread
+   *
+   * \brief Main loop to process engine-elements ( normal, periodic and extra )
+   *
+   * Try to get the next element in the repeat_elements list
+   * if not there , try normal elements...
+   * if not, run extra elements and loop again...
+   *
+   */
+  void RunThread();
+
+  // Methods to register and unregister listsners ( used from class NotificationListener )
+  void AddListener(NotificationListener *object);
+  void AddListenerToChannel(NotificationListener *object, const char *channel);
+  void RemoveListener(NotificationListener *object);
+
+  // Really sent a notification to required targets
+  void Send(Notification *notification);
+
+  // Run a particular engine element
+  void RunElement(EngineElement *running_element);
+  void InternRunElement(EngineElement *running_element);
+
+  // Common engine instance
+  static Engine *engine_;
+  static MemoryManager *memory_manager_;
+  static DiskManager *disk_manager_;
+  static ProcessManager *process_manager_;
+
+  // Collection of Engine Elements to be executed
+  EngineElementCollection engine_element_collection_;
+
+  // Management of listeners for notifications
+  NotificationListenersManager notification_listeners_manager_;
+
+  // Statistics
+  au::statistics::ActivityMonitor activity_monitor_;
+
+  // Internal counter for debuggin
+  size_t counter_;
+
+  // Total up time
+  au::Cronometer uptime_;
+
+  friend class NotificationListener;
+  friend class NotificationElement;
 };
 
-NAMESPACE_END
-
-#endif
+// Handy methods to add notifications
+void notify(const char *notification_name);
+void notify(const char *notification_name, double period);
+void notify_extra(const char *notification_name);
+}
+#endif  // ifndef _H_SAMSON_ENGINE

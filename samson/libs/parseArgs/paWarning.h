@@ -12,41 +12,41 @@
 #define PA_WARNINGS_H
 
 /* ****************************************************************************
-*
-* FILE                  paWarning.h
-*
-* AUTHOR                Ken Zangelin
-*
-*/
+ *
+ * FILE                  paWarning.h
+ *
+ * AUTHOR                Ken Zangelin
+ *
+ */
 #include "logMsg/logMsg.h"             /* LM_W                                      */
 #include "parseArgs/parseArgs.h"       /* PaSeverity, PaWarning                     */
 
 
 
 /* ****************************************************************************
-*
-* PA_WARNING
-*/
+ *
+ * PA_WARNING
+ */
 #define PA_WARNING(s, txt) \
-do                         \
-{                          \
+  do                         \
+  {                          \
     paWarningAdd(s, txt);  \
-} while (0)
+  } while (0)
 
 
 
 /* ****************************************************************************
-*
-* paWarningInit - 
-*/
+ *
+ * paWarningInit -
+ */
 extern void paWarningInit(void);
 
 
 
 /* ****************************************************************************
-*
-* paWarningAdd - 
-*/
-extern void paWarningAdd(PaSeverity severity, char* txt);
+ *
+ * paWarningAdd -
+ */
+extern void paWarningAdd(PaSeverity severity, char *txt);
 
-#endif
+#endif  // ifndef PA_WARNINGS_H

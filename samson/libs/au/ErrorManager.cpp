@@ -12,78 +12,108 @@
 #include "au/ErrorManager.h"      // Own interface
 
 namespace au {
-    
-    ErrorManager::ErrorManager()
-    {
-    }
-    
-    void ErrorManager::set( std::string message )
-    {
-        errors.push_back( new ErrorMessage( item_error , contexts , message ) );
-    }
-    
-    void ErrorManager::add_error( std::string message )
-    {
-        errors.push_back( new ErrorMessage( item_error , contexts , message ) );
-    }
+void ErrorManager::AddError(std::string message) {
+  items_.push_back(new ErrorManagerItem(au::error, message));
+}
 
-    void ErrorManager::add_warning( std::string message )
-    {
-        errors.push_back( new ErrorMessage( item_warning , contexts , message ) );
-    }
+void ErrorManager::AddWarning(std::string message) {
+  items_.push_back(new ErrorManagerItem(au::warning, message));
+}
 
-    void ErrorManager::add_message( std::string message )
-    {
-        errors.push_back( new ErrorMessage( item_message , contexts , message ) );
-    }
+void ErrorManager::AddMessage(std::string message) {
+  items_.push_back(new ErrorManagerItem(au::message, message));
+}
 
-    bool ErrorManager::isActivated()
-    {
-        for( size_t i = 0 ; i < errors.size() ; i++ )
-            if( errors[i]->getType() == item_error )
-                return true;
-        return false;
-    }
-    
-    std::string ErrorManager::getMessage()
-    {
-        // Get one line of the last error
-        if( errors.size() == 0 )
-            return "No errors";
-        else
-            return errors.back()->getMessage();
-    }
-    
-    std::string ErrorManager::getCompleteMessage()
-    {
-        std::ostringstream output;
+void ErrorManager::Add(const ErrorManager& error, const std::string& prefix_message) {
+  for (size_t i = 0; i < error.items_.size(); ++i) {
+    std::string message = prefix_message + " " + error.items_[i]->message();
+    items_.push_back(new ErrorManagerItem(error.items_[i]->type(), message));
+  }
+}
 
-        for( size_t i = 0 ; i < errors.size() ; i++ )
-            output << errors[i]->getMultiLineMessage();
-        return output.str();
-    }
-    
-    void ErrorManager::push_context( std::string context )
-    {
-        contexts.push_back( context );
-        
-    }
-    
-    void ErrorManager::pop_context( )
-    {
-        contexts.pop_back();
-    }
-    
-    ErrorContext::ErrorContext( ErrorManager* _error , std::string context )
-    {
-        error = _error;
-        error->push_context( context );
-    }
-    
-    ErrorContext::~ErrorContext()
-    {
-        error->pop_context();
-    }
+void ErrorManager::operator<<(const std::string& error_message) {
+  AddError(error_message);
+}
 
-    
+bool ErrorManager::Has(ErrorManagerItemType type) const {
+  for (size_t i = 0; i < items_.size(); ++i) {
+    if (items_[i]->type() == type) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::string ErrorManager::GetLast(ErrorManagerItemType type) const {
+  size_t num_errors = items_.size();
+
+  for (size_t i = 0; i < num_errors; ++i) {
+    if (items_[num_errors - 1 - i]->type() == type) {
+      return items_[num_errors - 1 - i]->message();
+    }
+  }
+  return "";
+}
+
+bool ErrorManager::HasErrors() const {
+  return Has(au::error);
+}
+
+bool ErrorManager::HasWarnings() const {
+  return Has(au::warning);
+}
+
+bool ErrorManager::HasMessages() const {
+  return Has(au::message);
+}
+
+std::string ErrorManager::GetLastError() const {
+  return GetLast(au::error);
+}
+
+std::string ErrorManager::GetLastWarning() const {
+  return GetLast(au::warning);
+}
+
+std::string ErrorManager::GetLastMessage() const {
+  return GetLast(au::message);
+}
+
+size_t ErrorManager::GetNumItems() const {
+  return items_.size();
+}
+
+void ErrorManager::Reset() {
+  // Reset messages and errors.
+  items_.clearVector();
+}
+
+std::string ErrorManager::str() {
+  std::ostringstream output;
+
+  // Transform the error message in something to print on screen
+  for (size_t i = 0; i < items_.size(); ++i) {
+    ErrorManagerItem *item = items_[i];
+
+    switch (item->type()) {
+      case au::message:
+        output << item->message();
+        break;
+
+      case au::warning:
+        output << "\033[1;35m" << item->message() << "\033[0m";
+        break;
+      case au::error:
+        output << "\033[1;31m" << item->message() << "\033[0m";
+        break;
+    }
+  }
+
+  return output.str();
+}
+
+// Accessor methods
+const au::vector<ErrorManagerItem>& ErrorManager::items() {
+  return items_;
+}
 }

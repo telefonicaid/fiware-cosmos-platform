@@ -1,34 +1,33 @@
 SET (SOURCES
-	SamsonPushConnectionsManager.cpp
+  SamsonPushConnectionsManager.cpp
     main_samsonPush.cpp
 )
 
 SET (HEADERS
-	SamsonPushConnectionsManager.h
+  SamsonPushConnectionsManager.h
 )
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
     set (SOLARIS_LIBS "-lsocket -lnsl")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-
 SET( STATIC_LIBS
-     samsonClient
-     samsonWorkerLib
-     delilahLib
-     engine
-     samsonModule
-     samsonStream
-     samsonIsolated
-     samsonNetwork
-     samsonCommon
-     au
-     lm
-	au
-     pa
-     protobuf
-     dl
-     pthread
-     ${SOLARIS_LIBS}
+    samsonClient
+    samsonWorkerLib
+    delilahLib
+    engine
+    samsonModule
+    samsonStream
+    samsonNetwork
+    samsonCommon
+    zookeeper_mt
+    au
+    lm
+    au
+    pa
+    protobuf
+    dl
+    pthread
+    ${SOLARIS_LIBS}
 )
 
 # Include directories

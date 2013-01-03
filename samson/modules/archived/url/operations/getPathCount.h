@@ -48,7 +48,7 @@ namespace url{
 			samson::system::String pathStrPrev;
 			int count = 0;
 
-			size_t num_hits = environment->getSizeT("url.num_hits", 3);
+			size_t num_hits = environment->get("url.num_hits", 3);
 
 			serverId.parse(inputs[0].kvs[0]->key);
 			pathStdVector.clear();

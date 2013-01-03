@@ -12,19 +12,19 @@
 #define PA_VALUE_FROM
 
 /* ****************************************************************************
-*
-* FILE                  paValueFrom.h
-*
-* AUTHOR                Ken Zangelin
-*
-*/
+ *
+ * FILE                  paValueFrom.h
+ *
+ * AUTHOR                Ken Zangelin
+ *
+ */
 
 
 
 /* ****************************************************************************
-*
-* paValueFrom - 
-*/
-extern PaFrom paValueFrom(char* oName);
+ *
+ * paValueFrom -
+ */
+extern PaFrom paValueFrom(char *oName);
 
 #endif

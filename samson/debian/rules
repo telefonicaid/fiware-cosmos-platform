@@ -37,7 +37,7 @@ clean:
 	rm -rf $(CURDIR)/debian/samson-log
 	rm -rf $(CURDIR)/debian/MANIFEST*
 	rm -rf $(CURDIR)/debian/samson*.tar
-	rm -rf BUILD_RELEASE
+	rm -rf BUILD_RELEASE_ALL
 	dh_clean debian/files
 
 install: build
@@ -48,7 +48,6 @@ install: build
 	make install_release_all SAMSON_HOME=$(CURDIR)/debian/samson/opt/samson
 	# Generate a list of files for each package 
 	(cd $(CURDIR)/debian/samson; find . -type f -or -type l | sed -e '/^$$/d') > $(CURDIR)/debian/MANIFEST
-	grep "samsonTopicMonitor\|delilah_graph\|samsonLocal" $(CURDIR)/debian/MANIFEST > $(CURDIR)/debian/MANIFEST.samson-gui
 	grep "include\/\|lib\/\|samsonModule" $(CURDIR)/debian/MANIFEST > $(CURDIR)/debian/MANIFEST.samson-dev
 	grep "logCat\|logServer\|logClient\|logserver" $(CURDIR)/debian/MANIFEST > $(CURDIR)/debian/MANIFEST.samson-log
 	grep -v "samsonTopicMonitor\|delilah_graph\|samsonLocal\|include\|lib\/\|samsonModule\|logCat\|logServer\|logClient\|logserver" $(CURDIR)/debian/MANIFEST > $(CURDIR)/debian/MANIFEST.samson
@@ -72,12 +71,8 @@ install: build
 	cp $(CURDIR)/etc/setup.txt                                                $(CURDIR)/debian/tmp/var/samson/etc
 	cp $(CURDIR)/etc/profile.d/samson.sh                                      $(CURDIR)/debian/tmp/etc/profile.d/samson.sh
 	cp $(CURDIR)/etc/init.d/samson.ubuntu                                     $(CURDIR)/debian/tmp/etc/init.d/samson
-	cp $(CURDIR)/README                                                       $(CURDIR)/debian/tmp/opt/samson/share
+	#cp $(CURDIR)/README                                                       $(CURDIR)/debian/tmp/opt/samson/share
 	cp $(CURDIR)/scripts/samsonInitSetup                                      $(CURDIR)/debian/tmp/opt/samson/bin
-	# Copy files needed for the samson-gui package
-	mkdir -p  $(CURDIR)/debian/samson-gui
-	tar -cvf $(CURDIR)/debian/samson-gui.tar -C $(CURDIR)/debian/samson -T $(CURDIR)/debian/MANIFEST.samson-gui --transform 's,^/,./,' --show-transformed-names
-	tar -xf $(CURDIR)/debian/samson-gui.tar  -C $(CURDIR)/debian/samson-gui
 	# Copy files needed for the samson-dev package
 	mkdir -p  $(CURDIR)/debian/samson-dev
 	tar -cvf $(CURDIR)/debian/samson-dev.tar -C $(CURDIR)/debian/samson -T $(CURDIR)/debian/MANIFEST.samson-dev --transform 's,^/,./,' --show-transformed-names

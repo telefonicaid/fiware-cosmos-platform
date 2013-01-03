@@ -11,147 +11,71 @@
 #ifndef _H_SAMSON_SETUP
 #define _H_SAMSON_SETUP
 
-#include <map>				// std::map
-#include <string>			// std::string
-#include <iostream>			// std::cout
-#include <stdlib.h>         // atoll
-#include <sys/stat.h>		// mkdir
+#include <iostream>            // std::cout
+#include <map>                 // std::map
+#include <stdlib.h>            // atoll
+#include <string>              // std::string
+#include <sys/stat.h>          // mkdir
 
 #include "logMsg/logMsg.h"
 
-#include "au/containers/map.h"         // au::map
+#include "au/Environment.h"  // au::Environment
+#include "au/singleton/Singleton.h"
+#include "au/file.h"
 #include "au/containers/StringVector.h"
-#include "au/Environment.h" // au::Environment
-
+#include "au/containers/map.h"  // au::map
+#include "au/setup/SetupItemCollection.h"
+#include "samson/stream/Block.h"
 #include "samson/common/status.h"
 
 
-NAMESPACE_BEGIN(au)
-class ErrorManager;
+namespace samson {
+
+class SamsonSetup : public au::SetupItemCollection {
+
+public:
+
+  // Modify main working directories
+  void SetWorkerDirectories( const std::string& samson_home, const std::string& samson_working );
+
+  // Save to file in samson_working directory
+  bool Save();
+
+  // Get names of files and directories based on current setup
+  std::string setup_filename() const;
+  std::string shared_memory_log_filename() const;
+  std::string modules_directory() const;
+  std::string worker_modules_directory() const;
+  std::string blocks_directory() const;
+  std::string block_filename(size_t block_id) const;
+  size_t block_id_from_filename(const std::string& fileName) const;
+  std::string stream_manager_log_filename() const;
+  std::string cluster_information_filename() const;
+  std::vector<std::string> items_names() const;
+
+  std::string samson_home()
+  {
+    return samson_home_;
+  }
+  
+  std::string samson_working()
+  {
+    return samson_working_;
+  }
+
+private:
+
+  friend class au::Singleton<SamsonSetup>;
+  SamsonSetup();  // Constructor to be used only with au::Singleton
+  
+  std::string samson_home_;                 // Home directory for SAMSON system
+  std::string samson_working_;              // Working directory for SAMSON system
+
+  
+};
+  
+  SamsonSetup* SharedSamsonSetup();
+  
 }
 
-namespace samson 
-{
-
-Status createDirectory( std::string path );
-Status createFullDirectory( std::string path );
-std::string cannonical_path( std::string path );
-
-typedef enum
-{
-    SetupItem_uint64,
-    SetupItem_string
-} SamsonAdaptorType;
-
-class SetupItem
-{
-        std::string name;
-        std::string default_value;
-
-        std::string value;
-
-        std::string description;
-        SamsonAdaptorType type;
-
-    public:
-
-        SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType _type );
-
-        bool setValue( std::string _value );
-        bool check_valid( std::string _value );        
-        std::string getValue();
-        std::string getDefaultValue();
-        std::string getSetValue();
-        std::string getDescription();
-        std::string getConcept();
-        void resetToDefaultValue();
-        void clearCustumValue();
-};
-
-
-class SetupItemCollection
-{
-    protected:
-
-        au::map< std::string , SetupItem > items;
-
-        // Add a new parameter to consider
-        void  add( std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType type );
-
-    public:
-
-        ~SetupItemCollection();
-
-        // Load a particular file to include all setup parameters
-        void load( std::string file );
-
-        // get the value of a parameter
-        std::string getValueForParameter( std::string name );
-
-        // Set manually a particular parameter ( special case )
-        bool setValueForParameter( std::string name ,std::string value );
-
-        // Check if a particular property if defined
-        bool isParameterDefined( std::string name );
-
-        // Come back to default parameters
-        void resetToDefaultValues();
-
-        std::string str();
-
-};
-
-
-class SamsonSetup : public SetupItemCollection
-{
-        SamsonSetup( std::string samson_home , std::string samson_working );
-
-        std::string _samson_home;           // Home directory for SAMSON system
-        std::string _samson_working;        // Working directory for SAMSON system
-
-    public:
-
-        static void init( std::string samson_home , std::string samson_working );
-        static void destroy();
-        static SamsonSetup *shared();
-
-        // Used only in unitTests, to have them more complete
-        void addItem(std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType type);
-
-        // Get access to parameters
-        std::string get( std::string name );
-        size_t getUInt64( std::string name );
-        int getInt( std::string name );
-
-        std::string get_default( std::string name );
-
-
-        // Get names fo files
-        std::string setupFileName();                         // Get the Steup file
-        std::string sharedMemoryLogFileName();
-        std::string modulesDirectory();
-        std::string blocksDirectory();
-
-        std::string blockFileName( size_t worker_id , size_t id );
-        bool blockIdFromFileName( std::string fileName , size_t* worker_id , size_t *id );
-
-        std::string streamManagerLogFileName();
-
-        std::string clusterInformationFileName();
-
-        std::vector<std::string> getItemNames();
-
-
-        // Create working directories
-        void createWorkingDirectories();
-
-        // Clear values specified manually
-        void clearCustumValues();
-
-        int save();
-
-};
-
-}
-
-#endif
+#endif  // ifndef _H_SAMSON_SETUP

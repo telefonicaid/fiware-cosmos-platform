@@ -10,50 +10,50 @@
  */
 
 /* ****************************************************************************
- *
- * FILE            ReadFile
- *
- * AUTHOR          Andreu Urruela
- *
- * DATE            July 2011
- *
- * DESCRIPTION
- *
- * ReadFile describes an open file to be read
- * It is managed by ReadFileManager inside DiskManager
- *
- * ****************************************************************************/
+*
+* FILE            ReadFile
+*
+* AUTHOR          Andreu Urruela
+*
+* DATE            July 2011
+*
+* DESCRIPTION
+*
+* ReadFile describes an open file to be read
+* It is managed by ReadFileManager inside DiskManager
+*
+* ****************************************************************************/
 
 #ifndef _H_ENGINE_READFILE
 #define _H_ENGINE_READFILE
 
-#include <string>           // std::string
 #include <stdio.h>          // FILE*
-#include "au/namespace.h"
+#include <string>           // std::string
 
-NAMESPACE_BEGIN(engine)
 
-class ReadFile
-{
-    std::string fileName;   // Filename
-    
-    size_t offset;          // Offset positiong while reading the file
-    
+namespace engine {
+class ReadFile {
 public:
-    FILE *file;             // File pointer to access this file
-    
-    ReadFile( std::string _fileName );
-    
-    int seek( size_t offset );
-    
-    int read( char * read_buffer , size_t size );
-    
-    bool isValid();
-    
-    void close();
-    
+
+  ReadFile(const std::string& file_Name);
+  ~ReadFile();
+
+  int Seek(size_t offset);
+  int Read(char *read_buffer, size_t size);
+  bool IsValid() const;
+  void Close();
+
+  // Accessorts
+  std::string file_name() const;
+  size_t offset() const;
+
+private:
+
+  std::string file_name_;     // Filename
+  size_t      offset_;        // Offset positiong while reading the file
+  FILE*       file_;          // File pointer to access this file
+  size_t      file_size_;     // Size of file
 };
+}
 
-NAMESPACE_END
-
-#endif
+#endif  // ifndef _H_ENGINE_READFILE

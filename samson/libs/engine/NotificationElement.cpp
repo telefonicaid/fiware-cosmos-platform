@@ -9,41 +9,36 @@
  * All rights reserved.
  */
 
-#include "engine/Engine.h"                         // engine::Engine
-#include "engine/Object.h"             // engine::EngineNotification
-#include "engine/Notification.h"                    // engine::Notification
-
 #include "engine/NotificationElement.h"      // Own interface
 
+#include "engine/Engine.h"               // engine::Engine
+#include "engine/Logs.h"
+#include "engine/Notification.h"       // engine::Notification
+#include "engine/NotificationListener.h"  // engine::EngineNotification
 
-NAMESPACE_BEGIN(engine)
 
-NotificationElement::NotificationElement(  Notification * _notification ) 
-: EngineElement( au::str("notification_%s" , _notification->getName()) )
-{
-    notification      = _notification;
-    description       =  notification->getDescription();
-    shortDescription  =  notification->getShortDescription();
+
+namespace engine {
+NotificationElement::NotificationElement(Notification *notification)
+  : EngineElement(au::str("notification_%s", notification->name())) {
+  notification_      = notification;
+  set_description(notification_->GetDescription());
+  set_short_description(notification_->GetShortDescription());
 }
 
-NotificationElement::~NotificationElement()
-{
-    delete notification;
+NotificationElement::~NotificationElement() {
+  delete notification_;
 }
 
-
-NotificationElement::NotificationElement(  Notification * _notification , int seconds ) 
-: EngineElement( au::str("notification_%s_repeated_%d" , _notification->getName()  , seconds ) , seconds )
-{
-    notification = _notification;
-    description = au::str("%s", notification->getDescription().c_str() );
-    shortDescription = "Not:" + notification->getShortDescription();
+NotificationElement::NotificationElement(Notification *notification, int seconds)
+  : EngineElement(au::str("notification_%s_repeated_%d", notification->name(), seconds), seconds) {
+  notification_ = notification;
+  set_description(notification_->GetDescription());
+  set_short_description(notification_->GetShortDescription());
 }
 
-void NotificationElement::run()
-{
-    LM_T(LmtEngineNotification, ("Running notification %s", notification->getDescription().c_str() ));
-    Engine::shared()->send( notification );
+void NotificationElement::run() {
+  LOG_V(logs.notifications, ("Running notification %s", notification_->GetDescription().c_str()));
+  Engine::shared()->Send(notification_);
 }
-
-NAMESPACE_END
+}

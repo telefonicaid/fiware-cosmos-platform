@@ -45,7 +45,7 @@ namespace url{
 
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-		  size_t num_top_urls = environment->getSizeT( "url.num_top_urls" ,  10 );
+		  size_t num_top_urls = environment->get( "url.num_top_urls" ,  10 );
 
 		  //OLM_M(("Init map operation with top %d urls", num_top_urls));
 

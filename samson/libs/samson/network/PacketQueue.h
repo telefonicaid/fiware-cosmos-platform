@@ -14,260 +14,158 @@
 
 #include <string>
 
+#include "au/containers/Queue.h"
+#include "au/containers/SharedPointer.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/Rate.h"
+#include "au/statistics/Rate.h"
 
-#include "samson/common/status.h"
+#include "samson/common/MessagesOperations.h"
 #include "samson/common/Visualitzation.h"
+#include "samson/common/status.h"
 
 #include "samson/network/Packet.h"
 
 namespace samson {
-    
-    
-    class NetworkManager;
-    
-    // List of packets ( retained )
-    
-    class PacketQueue
-    {
-        au::Token            token;
-        au::list<Packet>     queue;
-        
-        au::Cronometer cronometer;
-        
-    public:
-        
-        PacketQueue() : token("PacketQueue") 
-        {
-        }
-        
-        ~PacketQueue()
-        {
-            // Remove pending packets
-            clear();
-        }
+/**
+ * \brief Queue of pending packets for a particular connection (identified by a string)
+ */
 
-        size_t getSeconds()
-        {
-            return cronometer.diffTimeInSeconds();
-        }
-        
-        size_t getNumPackets()
-        {
-            au::TokenTaker tt(&token);
-            return queue.size();
-        }
-        
-        size_t getTotalSize()
-        {
-            au::TokenTaker tt(&token);
-            
-            size_t total = 0;
-            au::list<Packet>::iterator it_queue;
-            for ( it_queue = queue.begin() ; it_queue != queue.end() ; it_queue++ )
-            {
-                Packet * packet = *it_queue;
-                total += packet->getSize();
-            }
-            return total;
-        }
-        
-        void push( Packet* p )
-        {
-            au::TokenTaker tt(&token);
-            p->retain();
-            queue.push_back(p);
-        }
-        
-        Packet* next()
-        {
-            au::TokenTaker tt(&token);
-            Packet* packet = queue.findFront();
-            return packet;
-        }
-        
-        void pop()
-        {
-            au::TokenTaker tt(&token);
-            Packet* packet = queue.extractFront();
-            
-            if( !packet )
-            {
-                LM_W(("pop without packet called at PacketQueue"));
-                return;
-            }
+class PacketQueue : public au::Queue<Packet>{
+public:
 
-            packet->release();
-            
-        }
-        
-        std::string str()
-        {
-            au::TokenTaker tt(&token);
-            return au::str("PaquetQueue: %lu packets" , queue.size() );
-        }
-        
-        
-        void clear()
-        {
-            // Clear queues, removing packages and alloc buffers
-            au::TokenTaker tt(&token);
-            
-            // Release all packets
-            au::list<Packet>::iterator it_queue;
-            for ( it_queue = queue.begin() ; it_queue != queue.end() ; it_queue++ )
-                (*it_queue)->release();
-            
-            // Note that this is not clearList since elements should not be deleted
-            // We have a retain/release model over instances of Packet
-            queue.clear();
-        }
-        
-        void pushTo( PacketQueue* target_packet_queue )
-        {
-            // Etxratc all packets pushing them to another packet_queue
-            while( true )
-            {
-                Packet* packet = next();
-                
-                if( packet )
-                {
-                    target_packet_queue->push( packet );
-                    pop();
-                }
-                else
-                    return;
-            }
-        }
-        
-    };    
-    
-    
-    class MultiPacketQueue
-    {
-        // Pending packets ( only used while disconnected )
-        au::map<std::string , PacketQueue> packet_queues;
-        au::Token token_packet_queues;
-        
-    public:
-        
-        MultiPacketQueue() : token_packet_queues("token_packet_queues")
-        {
-            
-        }
-        
-        ~MultiPacketQueue()
-        {
-            packet_queues.clearMap();
-        }
+  explicit PacketQueue(const NodeIdentifier& node_identifier) {
+    node_identifier_ = node_identifier;
+  }
 
-        void clear()
-        {
-            au::TokenTaker tt(&token_packet_queues);
-            packet_queues.clearMap();
-        }
-        
-        // Pending packets
-        void push_pending_packet( std::string name , Packet * packet )
-        {
-            std::string prefix = "worker_";
-            if( name.substr( 0 , prefix.length() ) == prefix )
-            {
-                au::TokenTaker tt(&token_packet_queues);
-                packet_queues.findOrCreate(name)->push(packet);                
-            }
-            else
-            {
-                LM_W(("Destroying packet %s for unconnected node (%s) since it is not a worker" 
-                      , packet->str().c_str(), name.c_str() ));
-            }
-        }
-        
-        void push_pending_packet( std::string name , PacketQueue * packet_queue )
-        {
-            std::string prefix = "worker_";
-            if( name.substr( 0 , prefix.length() ) == prefix )
-            {
-                au::TokenTaker tt(&token_packet_queues);
-                PacketQueue * target_paquet_queue = packet_queues.findOrCreate(name);                
+  size_t GetByteSize() const {
+    // Get packets in this queue
+    std::vector< au::SharedPointer<Packet> > packets = items();
+    size_t total_size = 0;
+    for (size_t i = 0; i > packets.size(); i++) {
+      total_size += packets[i]->buffer()->size();
+    }
+    return total_size;
+  }
 
-                // Move all packets to the target queue
-                packet_queue->pushTo(target_paquet_queue);                
-            }
-            else
-            {
-                packet_queue->clear();
-            }
-        }
-        
-        void pop_pending_packet( std::string name , PacketQueue * packet_queue )
-        {
-            //LM_W(("Popping pending packets for connection %s" , name.c_str()));
-            
-            au::TokenTaker tt(&token_packet_queues);
-            PacketQueue * source_paquet_queue = packet_queues.extractFromMap(name);                
-            
-            if( !source_paquet_queue )
-                return; // No pending packets
-            
-            // Push packets to the provided queue
-            source_paquet_queue->pushTo(packet_queue);
+  void ResetInactivityCronometer() {
+    cronometer_.Reset();
+  }
 
-            // remove the original paquet queue
-            delete source_paquet_queue;
-        }
-        
-        au::tables::Table * getPendingPacketsTable()
-        {
-            au::tables::Table* table = new au::tables::Table( au::StringVector( "Connection" , "#Packets" , "Size" ) );
-            
-            au::map<std::string , PacketQueue>::iterator it;
-            
-            for( it = packet_queues.begin() ; it != packet_queues.end() ; it++ )
-            {
-                au::StringVector values;
-                
-                values.push_back( it->first ); // Name of the connection
-                
-                PacketQueue* packet_queue = it->second;
-                
-                values.push_back( au::str( packet_queue->getNumPackets() ) );
-                values.push_back( au::str( packet_queue->getTotalSize() ) );
-                
-                table->addRow( values );
-                
-            }
-            
-            table->setTitle("Pending packets");
-            
-            return table;
-            
-        }        
-        
-        void check()
-        {
-            au::TokenTaker tt(&token_packet_queues);
-            
-            au::map<std::string , PacketQueue>::iterator it_packet_queues;
-            for( it_packet_queues = packet_queues.begin() ; it_packet_queues != packet_queues.end() ;  )
-            {
-                if( it_packet_queues->second->getSeconds() > 60 )
-                {
-                    std::string name = it_packet_queues->first;
-                    LM_W(("Removing  pending packets for %s since it has been disconnected mote thatn 60 secs",name.c_str()));
-                    it_packet_queues->second->clear();   
-                    packet_queues.erase( it_packet_queues++ );
-                }
-                else
-                    ++it_packet_queues;
-            }
-        }
+  size_t inactivity_time() {
+    return cronometer_.seconds();
+  }
 
-        
-    };
+  std::string GetDescription() {
+    // Get packets in this queue
+    std::vector< au::SharedPointer<Packet> > packets = items();
+    size_t total_size = 0;
+    for (size_t i = 0; i > packets.size(); i++) {
+      total_size += packets[i]->buffer()->size();
+    }
 
+    if (packets.size() == 0) {
+      return "[]";
+    }
+    return au::str("%lu packets (%s)", packets.size(), au::str(total_size).c_str());
+  }
+
+  void fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
+    samson::add(record, "name", node_identifier_.str(), "left,different");
+    samson::add(record, "state", GetDescription(), "different");
+  }
+
+  std::string pattern_name() {
+    return node_identifier_.str();
+  }
+
+private:
+
+  au::Cronometer cronometer_;
+  NodeIdentifier node_identifier_;
+};
+
+
+/**
+ * \brief Collection of queues for all connections
+ */
+
+class MultiPacketQueue {
+public:
+
+  MultiPacketQueue() : token_packet_queues_("token_packet_queues") {
+  }
+
+  ~MultiPacketQueue() {
+    packet_queues_.clearMap();
+  }
+
+  // Push a packet for a node
+  void Push(au::SharedPointer<Packet> packet);
+
+  /**
+   * \brief Get the next packet to be sent to a particular SAMSON node
+   */
+  au::SharedPointer<Packet> Front(const NodeIdentifier& node_identifier);
+
+  /**
+   * \brief Remove the next packet to be sent to a particular SAMSON node
+   *
+   * It is supposed that this packet has been sent correctly, so we remove from pending paquests queue
+   */
+  void Pop(const NodeIdentifier& node_identifier);
+
+  /**
+   * \brief Remove all pending packets
+   */
+  void Clear();
+
+  /**
+   * \brief Get a table with current status of all the queues
+   */
+  au::tables::Table *GetPendingPacketsTable() const;
+
+  /**
+   * \brief Get a vector with all connection names
+   */
+  std::vector<NodeIdentifier> GetAllNodeIdentifiers() {
+    return packet_queues_.getKeysVector();
+  }
+
+  /**
+   * \brief Remove queue for a particular connection
+   */
+  void Remove(const NodeIdentifier& node_identifier) {
+    packet_queues_.extractAndDeleteFromMap(node_identifier);
+  }
+
+  /**
+   * \brief Debug information for a particular node
+   */
+  std::string GetDescription(const NodeIdentifier& node_identifier) const;
+
+  /**
+   * \brief Get a collection to inform about current queues ( displaying table on delilah )
+   */
+  au::SharedPointer<gpb::Collection> GetQueuesCollection(const Visualization& visualization) const;
+
+  /**
+   * \brief Get total size accumulated in all queues
+   */
+  size_t GetAllQueuesSize();
+
+  /**
+   * \brief Get total size accumulated in a particular queue
+   */
+  size_t GetQueueSize(const NodeIdentifier& node_identifier);
+
+
+private:
+
+  // Pending packets for all nodes
+  au::map< NodeIdentifier, PacketQueue > packet_queues_;
+  mutable au::Token token_packet_queues_;
+};
 }
 
-#endif
+#endif  // ifndef _H_SAMSON_PACKET_QUEUE

@@ -9,157 +9,139 @@
  * All rights reserved.
  */
 /* ****************************************************************************
- *
- * FILE            Buffer.h
- *
- * AUTHOR          Andreu Urruela
- *
- * DATE            July 2011
- *
- * DESCRIPTION
- *
- * Buffer is a memory region allocated and controlled by MemoryManager
- * It can be requested and used by any element in the application
- * It can only be destroyed calling "destroyBuffer" at MemoryMamager
- * It comes with some usufull function to interact with its contect
- *
- * ****************************************************************************/
+*
+* FILE            Buffer.h
+*
+* AUTHOR          Andreu Urruela
+*
+* DATE            July 2011
+*
+* DESCRIPTION
+*
+* Buffer is a memory region allocated and controlled by MemoryManager
+* It can be requested and used by any element in the application
+* It can only be destroyed calling "destroyBuffer" at MemoryMamager
+* It comes with some usufull function to interact with its contect
+*
+* ****************************************************************************/
 
-#ifndef _H_BUFFER
-#define _H_BUFFER
+#ifndef _ENGINE_BUFFER_H_
+#define _ENGINE_BUFFER_H_
 
-#include <cstring>			// size_t
-#include <cstdlib>			// malloc, ...
-#include <fstream>			// std::ifstream
+#include <cstdlib>                       // malloc, ...
+#include <cstring>                       // size_t
+#include <fstream>                       // std::ifstream
+#include <set>
+#include <string>
 
+#include "au/ErrorManager.h"
+#include "au/containers/SharedPointer.h"
 #include "au/mutex/Token.h"
-#include "au/Object.h"
-#include "engine/SimpleBuffer.h"        // engine::SimpleBuffer
-#include "engine/Object.h"  // engine::EngineNotificationObject
+#include "engine/Notification.h"
+#include "engine/NotificationListener.h"  // engine::EngineNotificationObject
+#include "engine/SimpleBuffer.h"         // engine::SimpleBuffer
+namespace engine {
+class Buffer {
+  Buffer(const std::string& name, size_t max_size);
 
+public:
+  static au::SharedPointer<Buffer> Create(const std::string& name, size_t max_size);
+  ~Buffer();
 
-namespace engine 
-{
-    
-    /**
-     Buffer class to hold data managed by MemoryManager
-     */
-    
-    class Buffer : public au::Object
-    {
-        
-        char * _data;			// Buffer of data
-        size_t _max_size;		// Maximum size of this buffer
-        
-        std::string _name;		// Internal name for debugging
-        std::string _type;      // Identifier of groups of blocks
-        
-        /**
-         Current size used in this buffer 
-         This is the one that should be used when transmitting the buffer across the network
-         This variable is updated with calls to "write" or set manually in setSize
-         */
-        
-        size_t _size;			
-        
-        /**
-         Internal variable used for the read process
-         */
-        
-        size_t _offset;
-        
-        // Private constructor/destructors since it can be only access by MemoryManager
-        Buffer( std::string name , std::string type , size_t max_size );
-        ~Buffer();
-        
-        // Free internal buffer
-        void free();
-        
-        
-        // Managed from Memory manager class
-        friend class MemoryManager;
-        
-    public:
+  // Get the maximum size of the buffer
+  size_t max_size() const;
 
-        // au::Object implementtion
-        void self_destroy();
+  // Get used size of this buffer ( not necessary the maximum )
+  size_t size() const;
+  void set_size(size_t size);
 
-        // Get the maximum size of the buffer
-        size_t getMaxSize();
-        
-        // Get used size of this buffer ( not necessary the maximum )
-        size_t getSize();
-        
-        // Get internal name for debuggin
-        std::string getName();
-        
-        // Get internal type for debuggin
-        std::string getType();
-        
-        // Get a description of the buffer ( debugging )
-        std::string str();
-        
-        // Set internal name and type for debuggin
-        void setNameAndType( std::string name , std::string type );
-        
-        // Add string to the internal name
-        void addToName( std::string description );
-                
-        // Write content to this buffer
-        bool write( char * input_buffer , size_t input_size );
-        
-        // Skip some space without writing anything ( usefull to fix-size headers )
-        bool skipWrite( size_t size );
-        
-        // Write on the buffer the maximum possible ammount of data
-        void write( std::ifstream &inputStream );
-        
-        // Get available space to write with "write call"
-        size_t getAvailableWrite();
-        
-        // Reading content from the buffer
-        // ------------------------------------------
-        
-        // Skip some space without reading
-        size_t skipRead( size_t size );
-        
-        // Read command
-        size_t read( char *output_buffer, size_t output_size);
-        
-        // Get pending bytes to be read
-        size_t getSizePendingRead();
-        
-        // Manual manipulation of data
-        // ------------------------------------------
-        
-        // Get a pointer to the data full space ( not related with write calls )
-        char *getData();
-        
-        // Set used size manually
-        void setSize( size_t size );
-        
-        // Interface with SimpleBuffer ( simplified view of the internal buffer )
-        // ------------------------------------------
-        
-        SimpleBuffer getSimpleBuffer();
-        SimpleBuffer getSimpleBufferAtOffset(size_t offset);
-        
-        // Spetial functions
-        // ------------------------------------------
-        
-        // Remove the last characters of an unfinished line and put them in buffer.
-        int removeLastUnfinishedLine( char *& buffer , size_t& buffer_size);
-        
-        
-        // Public identifiers to be removed
-        
-        int worker;     // Identifier of the worker
-        int hg_set;     // Identifier of ther hash_group-set
-        bool finish;    // Flag ot the finish hash-group-set
-        
-    };
-    
-    
+  // Get internal name for debugging
+  std::string name() const;
+
+  // Get a description of the buffer ( debugging )
+  std::string str() const;
+
+  // Environment variable
+  au::Environment& environment() {
+    return environment_;
+  }
+
+  // Set internal name for debugging
+  void set_name(const std::string& name);
+
+  // Write content to this buffer
+  bool Write(const char *input_buffer, size_t input_size);
+
+  // Skip some space without writing anything ( useful to fix-size headers )
+  bool SkipWrite(size_t size);
+
+  // Write on the buffer the maximum possible ammount of data
+  void Write(std::ifstream &inputStream);
+
+  // Get available space to write with "write call"
+  size_t GetAvailableSizeToWrite() const;
+
+  // Reading content from the buffer
+  // ------------------------------------------
+
+  // Skip some space without reading
+  size_t SkipRead(size_t size);
+
+  // Read command
+  size_t Read(char *output_buffer, size_t output_size);
+
+  // Get pending bytes to be read
+  size_t GetAvailableSizeToRead() const;
+
+  // Manual manipulation of data
+  // ------------------------------------------
+
+  char *data();
+
+  // Interface with SimpleBuffer ( simplified view of the internal buffer )
+  // ------------------------------------------
+
+  SimpleBuffer GetSimpleBuffer();
+  SimpleBuffer GetSimpleBufferAtOffset(size_t offset);
+
+  // Special functions
+  // ------------------------------------------
+
+  // Remove the last characters of an unfinished line and put them in buffer.
+  int RemoveLastUnfinishedLine(char *& buffer, size_t& buffer_size);
+
+  // Read a file and write to this buffer
+  void WriteFromFile(const std::string& file_name, au::ErrorManager& error);
+
+  // Access to tags
+
+private:
+
+  size_t buffer_id_;     // Unique identifier of this buffer
+  char *data_;           // Buffer of data
+  size_t max_size_;      // Maximum size of this buffer
+  std::string name_;     // Internal name for debugging
+
+  /**
+   * Current size used in this buffer
+   * This is the one that should be used when transmitting the buffer across the network
+   * This variable is updated with calls to "write" or set manually in set_size
+   */
+
+  size_t size_;
+
+  /**
+   * Internal variable used for the read process
+   */
+
+  size_t offset_;
+
+  au::Environment environment_;
+
+  static size_t static_buffer_id_;
+};
+// Buffer Shared Pointer
+typedef au::SharedPointer<Buffer>   BufferPointer;
 }
 
-#endif
+#endif  // ifndef _ENGINE_BUFFER_H_

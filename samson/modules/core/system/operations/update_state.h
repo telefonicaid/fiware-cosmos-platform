@@ -73,7 +73,7 @@ namespace samson{
             else if ( inputs[0].num_kvs > 0 )
             {
 			   key.parse( inputs[0].kvs[0]->key);
-			   value.set_as_void();
+			   value.SetAsVoid();
             }
             else
 			   return;

@@ -12,20 +12,20 @@
 #define PA_OPTIONS_PARSE_H
 
 /* ****************************************************************************
-*
-* FILE                  paOptionsParse.c - 
-*
-* AUTHOR                Ken Zangelin
-*
-*/
+ *
+ * FILE                  paOptionsParse.c -
+ *
+ * AUTHOR                Ken Zangelin
+ *
+ */
 #include "parseArgs/parseArgs.h"          /* PaArgument                                */
 
 
 
 /* ****************************************************************************
-*
-* paOptionsParse - 
-*/
-extern int paOptionsParse(PaiArgument* paList, char* argV[], int argC);
+ *
+ * paOptionsParse -
+ */
+extern int paOptionsParse(PaiArgument * paList, char *argV[], int argC);
 
 #endif

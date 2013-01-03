@@ -12,7 +12,9 @@ Packager:  Samson Development <samson-dev@tid.es>
 URL:       http://wikis.hi.inet/samson
 Source:    http://www.tid.es/%{name}-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-buildroot
-Requires:  protobuf, json-c
+Requires:  protobuf, json-c, libzookeeper
+Buildrequires: protobuf-compiler protobuf-devel cmake boost-devel libedit-devel ncurses-devel gcc gcc-c++ make help2man libzookeeper-devel json-c-devel mongo-devel
+
 Requires(pre): shadow-utils
 
 %description
@@ -66,8 +68,6 @@ chmod 755 $RPM_BUILD_ROOT/etc/profile.d/samson.sh
 echo "%%defattr(-, %{owner}, %{owner}, - )" > MANIFEST
 (cd %{buildroot}; find . -type f -or -type l | sed -e s/^.// -e /^$/d) >>MANIFEST
 cp MANIFEST /tmp
-echo "%%defattr(-, %{owner}, %{owner}, - )" > MANIFEST.samson-gui
-grep "samsonLevelMonitor\|samsonTopicMonitor\|delilah_graph\|samsonLocal" MANIFEST >> MANIFEST.samson-gui
 echo "%%defattr(-, %{owner}, %{owner}, - )" > MANIFEST.samson-devel
 grep "include\/\|lib\/\|samsonModule" MANIFEST >> MANIFEST.samson-devel
 echo "%%defattr(-, %{owner}, %{owner}, - )" > MANIFEST.samson-modules
@@ -88,7 +88,7 @@ grep -v "samsonLevelMonitor\|samsonTopicMonitor\|delilah_graph\|samsonLocal\|inc
 %package server
 Summary: SAMSON Platform server component
 Group: Applications/Engineering
-Requires: %{name} = %{version}-%{release}, %{name}-logserver == %{version}-%{release}, protobuf, ntp,tid-mongodb, json-c
+Requires: %{name} = %{version}-%{release}, %{name}-logserver == %{version}-%{release}, protobuf, ntp, json-c
 %description server
 
 %post server
@@ -107,17 +107,9 @@ bash /opt/samson/bin/samsonInitSetup
 Summary: SAMSON Platform analytical modules
 Group: Applications/Engineering
 %description modules
+Requires: %{name} = %{version}-%{release}, mongo
 
 %files modules -f MANIFEST.samson-modules
-
-# QT based GUI tools
-%package gui
-Summary: GUI tools for the SAMSON Platform
-Group: Applications/Engineering
-Requires: %{name} = %{version}-%{release}, kdchart
-%description gui
-
-%files gui -f MANIFEST.%{name}-gui
 
 # logging server
 %package logserver

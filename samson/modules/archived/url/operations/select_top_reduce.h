@@ -39,7 +39,7 @@ namespace url{
 		void run(KVSetStruct* inputs , TXTWriter *writer )
 		{
 
-		  size_t num_top_urls = environment->getSizeT( "url.num_top_urls" ,  10 );
+		  size_t num_top_urls = environment->get( "url.num_top_urls" ,  10 );
 
 		  serverHitsAccumulator.init( num_top_urls);
 

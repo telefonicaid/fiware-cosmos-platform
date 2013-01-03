@@ -8,100 +8,93 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
+#include "au/utils.h"  // Own interface
+
 #include <iostream>
-#include <termios.h>                // termios
-#include <sstream>
-#include <sys/ioctl.h>
-#include <stdio.h>
 #include <signal.h>
+#include <sstream>
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <termios.h>
 #include <unistd.h>
 
-#include "au/string.h"
-
-#include "au/utils.h" // Own interface
-
-NAMESPACE_BEGIN(au)
+#include "au/string/StringUtilities.h"
 
 
-const char * valid_chars = "01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRTSUVXYZ";
+namespace au {
+const char *valid_chars = "01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRTSUVXYZ";
 
-int getColumns()
-{
-    int x,y;
-    get_term_size( 0 , &x, &y );
-    
-    return x;
+int getTerminalColumns() {
+  int x, y;
+
+  GetTerminalSize(0, &x, &y);
+  return x;
 }
 
-void clear_line()
-{
-    printf("\r");
-    for (int i = 0 ;  i < getColumns() ; i++ )
-        printf(" ");
-    printf("\r");
-    fflush(stdout);
+size_t code64_rand() {
+  size_t v;
+  char *c =  reinterpret_cast<char *>(&v);
+
+  for (size_t i = 0; i < sizeof(size_t) / sizeof(char); ++i) {
+    c[i] = rand() % strlen(valid_chars);
+  }
+  return v;
 }
 
+bool code64_is_valid(size_t v) {
+  char *c =  reinterpret_cast<char *>(&v);
 
-size_t code64_rand()
-{
-    size_t v;
-    char* c = (char*)&v;
-
-    for ( size_t i = 0 ; i < sizeof(size_t) / sizeof(char) ; i++ )
-    {
-        c[i] = rand()%strlen(valid_chars);
+  for (size_t i = 0; i < sizeof(size_t) / sizeof(char); ++i) {
+    if (c[i] >= (int)strlen(valid_chars)) {
+      return false;
     }
-    return v;
-} 
-
-bool code64_is_valid( size_t v )
-{
-    char* c = (char*)&v;
-    for ( size_t i = 0 ; i < sizeof(size_t) / sizeof(char) ; i++ )
-        if( c[i] >= (int)strlen(valid_chars) )
-            return false;
-    return true;
+  }
+  return true;
 }
 
-std::string code64_str( size_t v )
-{
-    char str[sizeof(size_t)+1];
-    char* c = (char*)&v;
-
-    for ( size_t i = 0 ; i < sizeof(size_t) ; i++ )
-    {
-        int p = c[i];
-        if( p >= (int)strlen(valid_chars) )
-            str[i] = '?';
-        else
-            str[i] = valid_chars[p];
+int GetCode64Base(char v) {
+  for (size_t i = 0; i < strlen(valid_chars); ++i) {
+    if (v == valid_chars[i]) {
+      return i;
     }
-    
-    str[sizeof(size_t)] = '\0';
-    
-    return str;
+  }
+  return -1;
 }
 
-void remove_return_chars( char* line )
-{
-    while( true )
-    {
-        size_t l = strlen(line);
-        
-        if( l == 0 )
-            return;
-        
-        if( line[l-1] == '\n' )
-            line[l-1] = '\0';
-        else if( line[l-1] == '\r' )
-            line[l-1] = '\0';
-        else
-            return;
-        
+size_t code64_num(const std::string& value) {
+  size_t v;
+  char *c =  reinterpret_cast<char *>(&v);
+
+  if (value.length() != sizeof(size_t)) {
+    return static_cast<size_t>(-1);
+  }
+
+  for (size_t i = 0; i < sizeof(size_t); ++i) {
+    int num_value = GetCode64Base(value[i]);
+    if (num_value == -1) {
+      return static_cast<size_t>(-1);  // Not possible to transform this letter
     }
-    
+    c[i] = num_value;
+  }
+  return v;
 }
 
+std::string code64_str(size_t v) {
+  char str[sizeof(size_t) + 1];
+  char *c =  reinterpret_cast<char *>(&v);
 
-NAMESPACE_END
+  for (size_t i = 0; i < sizeof(size_t); ++i) {
+    int p = c[i];
+    if (p >= (int)strlen(valid_chars)) {
+      str[i] = '?';
+    } else {
+      str[i] = valid_chars[p];
+    }
+  }
+
+  str[sizeof(size_t)] = '\0';
+
+  return str;
+}
+}

@@ -244,10 +244,10 @@ script init_stream_operations
 		# ----------------------------------------------------------------
 
 		# Parse operations        
-        add_stream_operation            [parse_http]	 OTTstream.parse_logs	[input_http]    [service_hits] [web_hits] [service_commands] [category_hits];
-        add_stream_operation            [parse_dns]		 OTTstream.parse_logs	[input_dns]     [service_hits] [web_hits] [service_commands] [category_hits];
-        add_stream_operation            [parse_sms]		 OTTstream.parse_logs	[input_sms]     [service_hits] [web_hits] [service_commands] [category_hits];
-        add_stream_operation            [parse_voice]	 OTTstream.parse_logs	[input_voice]   [service_hits] [web_hits] [service_commands] [category_hits];
+        add_stream_operation            [parse_http]	 OTTstream.parse_logs	-input [input_http]    -output '[service_hits] [web_hits] [service_commands] [category_hits]';
+        add_stream_operation            [parse_dns]		 OTTstream.parse_logs	-input [input_dns]     -output '[service_hits] [web_hits] [service_commands] [category_hits]';
+        add_stream_operation            [parse_sms]		 OTTstream.parse_logs	-input [input_sms]     -output '[service_hits] [web_hits] [service_commands] [category_hits]';
+        add_stream_operation            [parse_voice]	 OTTstream.parse_logs	-input [input_voice]   -output '[service_hits] [web_hits] [service_commands] [category_hits]';
 
 		# Setup parse operations
         set_stream_operation_property   [parse_http]     OTTstream.source          HTTP;
@@ -256,39 +256,35 @@ script init_stream_operations
         set_stream_operation_property   [parse_voice]    OTTstream.source          voice;        
 
 		# Parse operation for cluster-user information
-        add_stream_operation        [parse_clusters]     OTTstream.parse_user_cluster         [input_user_cluster] [user_clusters];
+        add_stream_operation        [parse_clusters]     OTTstream.parse_user_cluster   -input [input_user_cluster]  -output [user_clusters];
        
             
 		# REDUCE information for every user ( information for all services )
-        add_stream_operation          [emit_service_levels]	OTTstream.red_update_last_user_profile	[service_hits] [user_state]	        [level_commands] [service_hits_filtered] [user_state];
+        add_stream_operation          [emit_service_levels]	OTTstream.red_update_last_user_profile	-input '[service_hits] [user_state]'   -output '[level_commands] [service_hits_filtered] [user_state]';
         set_stream_operation_property [emit_service_levels] OTTstream.timespan 300;
 
 		# Add cluster information to hits
-        add_stream_operation      [red_user_cluster]      OTTstream.red_class_by_cluster        [service_hits_filtered] [user_clusters] [user_hits] -forward;
+        add_stream_operation      [red_user_cluster]      OTTstream.red_class_by_cluster     -input '[service_hits_filtered] [user_clusters]'  -output [user_hits] -forward;
 
 		# REDUCE information for every service             
-        add_stream_operation      [update_service_state]  OTTstream.red_update_service_profile	[user_hits] [service_state]	[alerts] [service_state];
+        add_stream_operation      [update_service_state]  OTTstream.red_update_service_profile	-input '[user_hits] [service_state]'  -output '[alerts] [service_state]';
         set_stream_operation_property [update_service_state] update_only true;
-        set_stream_operation_property [update_service_state] num_divisions 4;
-        
 
         # REDUCE to keep updated a state with all generated alerts (to be accessible by REST interface) 
-        add_stream_operation      [update_alerts]  OTTstream.red_update_alerts  [alerts] [alerts_state] [alerts_state];
+        add_stream_operation      [update_alerts]  OTTstream.red_update_alerts  -input '[alerts] [alerts_state]'  -output [alerts_state];
         set_stream_operation_property [update_alerts] update_only true;
-        set_stream_operation_property [update_alerts] num_divisions 4;
-
 
 	    # Individual web profiling     
-        add_stream_operation        [update_web_profile] OTTstream.red_update_user_web_profile  [web_hits] [user_webprofile_state]      [user_webprofile_state];
+        add_stream_operation        [update_web_profile] OTTstream.red_update_user_web_profile  -input '[web_hits] [user_webprofile_state]'   -output [user_webprofile_state];
         set_stream_operation_property [update_web_profile] update_only true;
 
         
         # Direct Command interface
-        add_stream_operation      [parse_commands]          OTTstream.parse_logs                                    [input_commands]         [service_hits] [web_hits] [service_commands] [category_hits];
+        add_stream_operation      [parse_commands]          OTTstream.parse_logs                 -input [input_commands]   -output '[service_hits] [web_hits] [service_commands] [category_hits]';
         set_stream_operation_property   [parse_commands]      OTTstream.source          commands;
                
-        add_stream_operation      [emit_service_users]          OTTstream.red_commands_on_service_profile [service_commands] [service_state] [service_users] -forward;
-        add_stream_operation      [publish_alerts]              OTTstream.publish_alerts_on_services [service_users] [service_users_txt];
+        add_stream_operation      [emit_service_users]          OTTstream.red_commands_on_service_profile   -input '[service_commands] [service_state]'  -output [service_users] -forward;
+        add_stream_operation      [publish_alerts]              OTTstream.publish_alerts_on_services        -input [service_users]      -output  [service_users_txt];
 
     }
 
@@ -328,7 +324,7 @@ script demo
 		# OTTstream profiling stream block
 		# ----------------------------------------------------------------
 
-        init_stream 01.OTTstream    OTTstream.init_stream_operations;
+        init_stream -prefix 01.OTTstream    OTTstream.init_stream_operations;
 
 		add_queue_connection [input_http]		01.OTTstream.logs_http;
 		add_queue_connection [input_dns]		01.OTTstream.logs_dns;
@@ -343,8 +339,8 @@ script demo
 		# Level module
 		# ----------------------------------------------------------------
         
-        # Connect with the level module to keep uptated the number of users active in last timespan, for every service        
-		init_stream 02.level level.init_stream_operations_timed;
+        # Connect with the level module to keep updated the number of users active in last timespan, for every service        
+		init_stream -prefix 02.level level.init_stream_operations_timed;
 		
 		add_queue_connection 02.level.04.levels_updates_txt    output_levels;
 		add_queue_connection 01.OTTstream.level_commands 	02.level.01.input;
@@ -354,7 +350,7 @@ script demo
 		# ----------------------------------------------------------------
 		
 		# Connect with the hit stream_block to accumulate topics
-	    init_stream 03.hit hit.init_stream_operations;
+	    init_stream -prefix 03.hit hit.init_stream_operations;
 		
 		add_queue_connection category_hits 01.OTTstream.category_hits;
 		add_queue_connection 01.OTTstream.category_hits 03.hit.01.input;

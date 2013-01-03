@@ -9,98 +9,243 @@
  * All rights reserved.
  */
 
-#include <stdlib.h> // malloc
+#include "au/string/StringUtilities.h"
 #include "logMsg/logMsg.h"
-#include "KVFile.h" // Own interface
+#include <stdlib.h>  // malloc
+
+#include "samson/common/Logs.h"
+#include "samson/module/Data.h"
+#include "samson/module/ModulesManager.h"
+
+
+#include "KVFile.h"  // Own interface
 
 namespace samson {
+au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::ErrorManager& error) {
+  au::Cronometer cronometer;
 
-KVFile::KVFile( char *_data )
-{
-    if (_data == NULL)
-    {
-        info = NULL;
-        data = NULL;
-        offsets = NULL;
-        LM_E(("NULL _data"));
-        error.set("NULL _data");
-        return;
+  if (buffer == NULL) {
+    error.AddError("NULL buffer provided");
+    return au::SharedPointer<KVFile>(NULL);
+  }
+
+  // Candidate instance
+  au::SharedPointer<KVFile> kv_file(new KVFile());
+  kv_file->buffer_ = buffer;
+  kv_file->key_    = NULL;
+  kv_file->value_  = NULL;
+
+  // buffer->SetTag( au::str("kvfile_%p" , kv_file.shared_object() ) );
+
+  if (buffer->size() < sizeof(KVHeader)) {
+    error.AddError(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
+    return au::SharedPointer<KVFile>(NULL);
+  }
+
+  // Copy & check header of this packet
+  memcpy(&kv_file->header_, buffer->data(), sizeof(KVHeader));
+  if (!kv_file->header_.Check()) {
+    error.AddError("KVHeader error: wrong magic number");
+    return au::SharedPointer<KVFile>(NULL);
+  }
+
+  // General pointer to data
+  kv_file->data = buffer->data() + sizeof(KVHeader);
+  kv_file->data_size = buffer->size() - sizeof(KVHeader);
+
+
+  // If txt content
+  if (kv_file->header_.IsTxt()) {
+    kv_file->kvs = NULL;
+    kv_file->info = NULL;
+    kv_file->kvs_index = NULL;
+    return kv_file;
+  }
+
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(kv_file->header_.valueFormat);
+
+  if (key_data == NULL) {
+    error.AddError(au::str("Unknown data type for key: %s", kv_file->header_.keyFormat));
+    LM_E(("Unknown data type for key: %s", kv_file->header_.keyFormat));
+    return au::SharedPointer<KVFile>(NULL);
+  }
+
+  if (value_data == NULL) {
+    error.AddError(au::str("Unknown data type for value: %s", kv_file->header_.valueFormat));
+    LM_E(("Unknown data type for value: %s", kv_file->header_.valueFormat));
+    return au::SharedPointer<KVFile>(NULL);
+  }
+
+  // Data instances for parsing and printing content
+  DataInstance *key = key_data->getInstance();
+  DataInstance *value = value_data->getInstance();
+
+  // Create a unified buffer to hold all auxiliar data required
+  size_t size_for_kvs  = sizeof(KV) * kv_file->header_.info.kvs;
+  size_t size_for_info = sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS;
+  size_t size_for_kvs_idnex = sizeof(int) * KVFILE_NUM_HASHGROUPS;
+  size_t size_total = size_for_kvs + size_for_info + size_for_kvs_idnex;
+
+  kv_file->auxiliar_buffer_.Reset(size_total);
+
+  kv_file->kvs       = (KV *)kv_file->auxiliar_buffer_.data();
+  kv_file->info      = (KVInfo *)(kv_file->auxiliar_buffer_.data() + size_for_kvs);
+  kv_file->kvs_index = (int *)(kv_file->auxiliar_buffer_.data() + size_for_kvs + size_for_info);
+
+  // Local pointer fo easy access
+  KV *kvs = kv_file->kvs;
+  KVInfo *info = kv_file->info;
+  int *kvs_index = kv_file->kvs_index;
+
+  for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; hg++) {
+    info[hg].clear();
+    kvs_index[hg] = -1;
+  }
+
+  // Point to the initial point of data content
+  char *data = buffer->data() + sizeof(KVHeader);
+  size_t offset = 0;
+  int previous_hg = -1;
+  KVInfo total_info;
+  for (size_t i = 0; i < kv_file->header_.info.kvs; i++) {
+    // Parsing key
+    kvs[i].key = data + offset;
+    kvs[i].key_size = key->parse(data + offset);
+    offset += kvs[i].key_size;
+
+    // Parsing value
+    kvs[i].value = data + offset;
+    kvs[i].value_size = value->parse(data + offset);
+    offset += kvs[i].value_size;
+
+    // Uppdate information of the correct hash-group
+    int hg = key->hash(KVFILE_NUM_HASHGROUPS);
+    kvs[i].hg = hg;
+    info[hg].append(kvs[i].key_size + kvs[i].value_size, 1);
+    // Check hg value
+    if (hg < previous_hg) {
+      error.AddError(
+        au::str("Error parsing a block. Key-value #%lu belongs to hash-group %d and previous hg was %d"
+                , i, hg, previous_hg));
+      delete key;
+      delete value;
+      return au::SharedPointer<KVFile>(NULL);
     }
-    // Keep a pointer to data
-    data   = _data;
 
-    // Keep a pointer to the header
-    header = (KVHeader*) data;
-
-    // Check valid header
-    if( !header->check() )
-    {
-        info = NULL;
-        data = NULL;
-        offsets = NULL;
-        LM_W(("Not valid KVHeader when creating a KVFile"));
-        error.set("KVHeader error: wrong magic number");
-        return;
+    // Update kvs_index if necessart
+    if (hg != previous_hg) {
+      kvs_index[hg] = i;
     }
+    previous_hg = hg;
 
-    // Create the key-value data
-    info   = createKVInfoVector(_data , &error);
+    // Update total counter ( for final check )
+    total_info.append(kvs[i].key_size + kvs[i].value_size, 1);
+  }
 
-    if( info )
-    {
-        // Vector containing offsets to each hash-group
-        offsets = (size_t *) malloc( sizeof(size_t) * KVFILE_NUM_HASHGROUPS );
+  // Check correct formatted block
 
-        offsets[0] = sizeof( KVHeader );
-        for (int i = 1 ; i < KVFILE_NUM_HASHGROUPS ; i++ )
-            offsets[i] = offsets[i-1] + info[i-1].size;
+  if ((total_info.size != kv_file->header_.info.size) || (total_info.kvs != kv_file->header_.info.kvs)) {
+    error.AddError(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
+                           kv_file->header_.info.str().c_str()));
+    delete key;
+    delete value;
+    return au::SharedPointer<KVFile>(NULL);
+  }
 
-    }
-    else
-    {
-        offsets = NULL;
-    }
+  // Check correct final offset
+  if (offset != kv_file->header_.info.size) {
+    error.AddError(au::str("Error parsing block. Wrong block size %lu != %lu\n", offset, kv_file->header_.info.size));
+    delete key;
+    delete value;
+    return au::SharedPointer<KVFile>(NULL);
+  }
+
+  // Everything correct, return generated kv_file
+  LOG_V(logs.kv_file, ("Created KVFile (%s) in %s using <%s,%s> for buffer %s"
+                       , au::str(size_total, "B").c_str()
+                       , au::str(cronometer.seconds()).c_str()
+                       , kv_file->header_.keyFormat
+                       , kv_file->header_.valueFormat
+                       , buffer->str().c_str()));
+
+  delete key;
+  delete value;
+  return kv_file;
 }
 
-KVFile::~KVFile()
-{
-    if( info )
-    {
-        free( info );
-        info = NULL;
+KVFile::~KVFile() {
+}
+
+size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
+  if (header_.IsTxt()) {
+    size_t line_begin = 0;
+    size_t num_lines = 0;
+    while (true) {
+      size_t line_size = 0;
+      while ((data[line_begin + line_size] != '\n') && ((line_begin + line_size) < data_size)) {
+        line_size++;
+      }
+
+      std::string line;
+      line.append(&data[line_begin], line_size);
+      output << line << std::endl;
+
+      line_begin += line_size + 1;
+
+      num_lines++;
+      if (limit > 0) {
+        if (num_lines >= limit) {
+          return num_lines;
+        }
+      }
+
+      if (line_begin >= data_size) {
+        return num_lines;
+      }
     }
+  }
 
-    if( offsets )
-    {
-        free(offsets);
-        offsets = NULL;
+
+  Data *key_data = au::Singleton<ModulesManager>::shared()->GetData(header_.keyFormat);
+  Data *value_data = au::Singleton<ModulesManager>::shared()->GetData(header_.valueFormat);
+
+  if (key_data == NULL) {
+    output << au::str("Unknown data type for key: %s", header_.keyFormat);
+    return 0;
+  }
+
+  if (value_data == NULL) {
+    output << au::str("Unknown data type for value: %s", header_.valueFormat);
+    return 0;
+  }
+
+  // Data instances for parsing and printing content
+  au::SharedPointer<DataInstance> key(key_data->getInstance());
+  au::SharedPointer<DataInstance> value(value_data->getInstance());
+
+  for (size_t i = 0; i < header_.info.kvs; i++) {
+    key->parse(kvs[i].key);
+    value->parse(kvs[i].value);
+
+    if (show_hg) {
+      output << "[ hg " << key->hash(KVFILE_NUM_HASHGROUPS) << " ] ";
     }
-}
+    output << key->str() << " " << value->str() << std::endl;
 
-// Get pointer to data for a particular hash-group
-char * KVFile::dataForHashGroup( int hg )
-{
-    return data + offset(hg);
-}
-
-KVInfo KVFile::getKVInfoForHashGroup( int hg )
-{
-    if( !info )
-    {
-        return KVInfo(0,0);
+    if (limit > 0) {
+      if (i >= limit) {
+        return i;
+      }
     }
-    else
-        return info[hg];
+  }
+
+  // All records have been printed out
+  return header_.info.kvs;
 }
 
-KVHeader* KVFile::getKVHeader()
-{
-    return header;
+// Get header information
+KVHeader KVFile::header() {
+  return header_;
 }
-
-size_t KVFile::offset( int hg )
-{
-    return offsets[hg];
-}
-
 }

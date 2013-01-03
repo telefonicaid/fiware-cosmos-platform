@@ -10,183 +10,119 @@
  */
 
 /* ****************************************************************************
- *
- * FILE            ErrorManager.h
- *
- * AUTHOR          Andreu Urruela
- *
- * PROJECT         au library
- *
- * DATE            Septembre 2011
- *
- * DESCRIPTION
- *
- * Simple but usefull error mesasage information
- * Whatever sistem that can report an error can activate this error providing a message
- *
- * ****************************************************************************/
+*
+* FILE            ErrorManager.h
+*
+* AUTHOR          Andreu Urruela
+*
+* PROJECT         au library
+*
+* DATE            September 2011
+*
+* DESCRIPTION
+*
+* Simple but useful error mesasage information
+* Whatever sistem that can report an error can activate this error providing a message
+*
+* ****************************************************************************/
 
-#ifndef _H_AU_ERROR
-#define _H_AU_ERROR
+#ifndef AU_ERROR_MANAGER_H_
+#define AU_ERROR_MANAGER_H_
 
-#include <set>
 #include "au/containers/list.h"
 #include "au/containers/vector.h"
+#include <set>
+#include <sstream>              // std::ostringstream
 #include <vector>
-#include <sstream>		// std::ostringstream
 
-namespace au 
-{
-    typedef enum 
-    {
-        item_message,
-        item_warning,
-        item_error
-    } ErrorType;
-    
-    class ErrorMessage
-    {
-        std::vector<std::string> contexts; // List of context where this error happened
-        std::string message;
-        ErrorType type;
-        
-    public:
+namespace au {
+enum ErrorManagerItemType {
+  message,
+  warning,
+  error
+};
 
-        ErrorMessage( ErrorType _type ,std::list<std::string> &_contexts , std::string _message )
-        {
-            std::list<std::string>::iterator it_contexts;
-            for( it_contexts = _contexts.begin() ; it_contexts != _contexts.end() ; it_contexts ++ )
-                contexts.push_back( *it_contexts );
-            message = _message;
-            type = _type;
-        }
-        
-        // Get message in one line
-        std::string getMessage()
-        {
-            std::ostringstream output;
-            for ( size_t i = 0 ; i < contexts.size() ; i ++ )
-                output << contexts[i] << " >> ";
-            
-            output << message;
-            
-            return output.str();
-        }
-        
-        std::string getMultiLineMessage()
-        {
-            std::ostringstream output;
-            
-            if( item_message == item_error )
-                output << "ERROR: ";
-            
-            for ( size_t i = 0 ; i < contexts.size() ; i ++ )
-                output << ">> " << contexts[i] << "\n";
-            output << message << "\n";
-            return output.str();
-        }
-        
-        ErrorType getType()
-        {
-            return type;
-        }
-        
-    };
-    
-    
-    class ErrorManager
-    {
-        // List of errors ocurred so far
-        au::vector<ErrorMessage> errors; 
-        
-        // Current list of context to emit errors
-        std::list<std::string> contexts;
-        
-    public:
-        
-        ErrorManager();
-        
-        // Old method to add an error
-        void set( std::string _message );
+class ErrorManagerItem {
+public:
 
-        // Methods to add elements
-        void add_error( std::string message );
-        void add_warning( std::string message );
-        void add_message( std::string message );
-        
-        
-        // Check if there is at least one error
-        bool isActivated();
-        
-        // Get the last error message
-        std::string getMessage(); 
+  ErrorManagerItem(ErrorManagerItemType type, const std::string& message) : type_(type), message_(message) {
+  }
 
-        // Get the all errors message in multiple lines
-        std::string getCompleteMessage(); 
-        
-        // Access individual items
-        size_t getNumItems()
-        {
-            return errors.size();
-        }
-        
-        ErrorMessage* getItem( size_t i )
-        {
-            if( i < errors.size() )
-                return errors[i];
-            return NULL;
-        }
-        
-        
-        
-        std::string str()
-        {
-            std::ostringstream output;
-            
-            // Transform the error message in something to print on screen
-            for ( size_t i = 0 ; i < getNumItems() ; i++ )
-            {
-                ErrorMessage * item = getItem(i);
-                
-                switch (item->getType()) 
-                {
-                    case item_message:
-                        output << item->getMultiLineMessage();
-                        break;
-                        
-                    case item_warning:
-                        output << "\033[1;35m"<< item->getMultiLineMessage() << "\033[0m";
-                        break;
-                    case item_error:
-                        output << "\033[1;31m"<< item->getMultiLineMessage() << "\033[0m";
-                        break;
-                }
-            }
-            
-            return output.str();
-        }
-        
-    private:
-        
-        friend class ErrorContext;
-        // Add a context to this error manager
-        void push_context( std::string context );
-        void pop_context( );
-        
-    };
+  ErrorManagerItemType type() const {
+    return type_;
+  }
 
-    // Class to define context over error messages
-    
-    class ErrorContext
-    {
-        ErrorManager* error;
-        
-    public:
-        
-        ErrorContext( ErrorManager* error , std::string content );
-        ~ErrorContext();
-    };
-    
-    
+  std::string message() const {
+    return message_;
+  }
+
+private:
+
+  ErrorManagerItemType type_;
+  std::string message_;
+};
+
+
+class ErrorManager {
+public:
+
+  ErrorManager() {
+  }
+
+  ~ErrorManager() {
+    items_.clearVector();
+  };
+
+  // Methods to add elements
+  void AddError(std::string message);
+  void AddWarning(std::string message);
+  void AddMessage(std::string message);
+
+  // Add all elements from another Error manager adding some string to the messages
+  void Add(const ErrorManager& error, const std::string& prefix_message);
+
+  // Check if there are elements of a particular type
+  bool HasMessages() const;
+  bool HasErrors() const;
+  bool HasWarnings() const;
+
+  // Check the number of a particular type
+  size_t GetNumErrors() const;
+  size_t GetNumWarnings() const;
+  size_t GetNumMessages() const;
+
+  // Get the last error message
+  std::string GetLastError() const;
+
+  // Get first warning
+  std::string GetLastWarning() const;
+
+  // Get the last message
+  std::string GetLastMessage() const;
+
+  // Get total number of items
+  size_t GetNumItems() const;
+
+  // Reset messages and errors.
+  void Reset();
+
+  // Concert into something printable at console
+  std::string str();
+
+  // Accessor methods
+  const au::vector<ErrorManagerItem>& items();
+
+  // Add error with <<
+  void operator<<(const std::string& error_message);
+
+private:
+
+  // Generic methos for a type
+  bool Has(ErrorManagerItemType type) const;
+  std::string GetLast(ErrorManagerItemType type) const;
+
+  // List of errors messages
+  au::vector<ErrorManagerItem> items_;
+};
 }
-#endif
+#endif  // ifndef AU_ERROR_MANAGER_H_

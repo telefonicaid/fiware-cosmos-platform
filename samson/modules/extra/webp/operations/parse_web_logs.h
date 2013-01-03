@@ -17,7 +17,7 @@
 #define _H_SAMSON_webp_parse_web_logs
 
 
-#include "au/Cronometer.h"
+#include "au/statistics/Cronometer.h"
 
 #include <samson/module/samson.h>
 #include <samson/modules/system/String.h>

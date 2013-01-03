@@ -9,30 +9,29 @@
  * All rights reserved.
  */
 /* ****************************************************************************
-*
-* FILE            main_UnitTest.cpp
-*
-* AUTHOR          Javier Lois
-*
-* DATE            December 2011
-*
-* DESCRIPTION
-*
-* Main file for the automatic unit testing application
-*
-*/
+ *
+ * FILE            main_UnitTest.cpp
+ *
+ * AUTHOR          Javier Lois
+ *
+ * DATE            December 2011
+ *
+ * DESCRIPTION
+ *
+ * Main file for the automatic unit testing application
+ *
+ */
 
-#include <stdio.h>
+#include "au/log/LogCentral.h"
+#include "au/log/LogCommon.h"
 #include "gtest/gtest.h"
 #include "logMsg/logMsg.h"
-#include "au/log/log_server_common.h"
-#include "au/log/LogToServer.h"
-#include "parseArgs/parseArgs.h"
 #include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"         // paConfig()
 #include "parseArgs/paIsSet.h"
-#include "samson/common/traces.h"
+#include "parseArgs/parseArgs.h"
 #include "samson/common/SamsonSetup.h"
+#include <stdio.h>
 
 
 extern bool lmAssertAtExit;
@@ -43,7 +42,7 @@ extern bool lmAssertAtExit;
  */
 PaArgument paArgs[] =
 {
-    PA_END_OF_ARGS
+  PA_END_OF_ARGS
 };
 
 
@@ -51,46 +50,48 @@ PaArgument paArgs[] =
  *
  * global variables
  */
-int              logFd             = -1;
+int logFd             = -1;
 
 /* ****************************************************************************
-*
-* main - 
-*/
+ *
+ * main -
+ */
 
 int main(int argC, char **argV) {
+  paConfig("usage and exit on any warning", (void *)true);
+  paConfig("log to screen", (void *)"only errors");
+  paConfig("log to screen", (void *)false);
+  paConfig("log to file", (void *)true);
+  paConfig("log file line format", (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+  paConfig("screen line format", (void *)"TYPE@TIME  EXEC: TEXT");
+  paConfig("default value", "-logDir", (void *)"/var/log/samson");
+  paConfig("man author", "Samson team");
 
-    paConfig("usage and exit on any warning", (void*) true);
-//  paConfig("log to screen",                 (void*) "only errors");
-    paConfig("log to screen",                 (void*) false);
-    paConfig("log to file",                   (void*) true);
-    paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-    paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
-    paConfig("default value", "-logDir",      (void*) "/var/log/samson");
-    
-    paConfig("man author",                    "Samson team");
+  // Parse incoming arguments without being altered by google test library arguments
+  if ((argC > 2) &&  (strcmp(argV[1], "-t") == 0)) {
+    paParse(paArgs, 3, (char **)argV, 3, false);
+  } else {
+    // Avoid parsing any argument
+    paParse(paArgs, 1, (char **)argV, 1, false);
+  }
 
+  // Set assert flag to true ro force asserts instead of exits
+  lmAssertAtExit = true;
 
-    // Goyo. trying to get traces	
-	if( ( argC > 2 ) &&  (strcmp(argV[1], "-t") == 0) )
-	{
-	   paParse(paArgs, 3, (char**) argV, 3, false);
-	}
-	else
-	{
-	   // Avoid parsing any argument
-	   paParse(paArgs, 1, (char**) argV, 1, false);
-	}
+  // Init log sytem
+  au::LogCentral::InitLogSystem(argV[0]);
+  au::log_central->AddScreenPlugin("screen", "[type][channel] text");
 
-    // Set assert flag to true ro force asserts instead of exits
-	lmAssertAtExit = true;
+  // Set Error level for this channel to avoid unnecessary warning messages when testing stuff
+  au::log_central->EvalCommand("log_set system E");
 
-	// Start login to server ( this avoids warning )
-	au::start_log_to_server( "localhost" , AU_LOG_SERVER_PORT , "/tmp/smson_unitTest" );
+  // Run all tests
+  LM_M(("calling ::testing::InitGoogleTest"));
+  ::testing::InitGoogleTest(&argC, argV);
+  int r = RUN_ALL_TESTS();
 
-    // Run all tests
-    ::testing::InitGoogleTest(&argC, argV);
-    return RUN_ALL_TESTS();
+  au::LogCentral::StopLogSystem();
+
+  return r;
 }
-
 

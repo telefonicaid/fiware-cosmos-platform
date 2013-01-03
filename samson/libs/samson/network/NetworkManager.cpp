@@ -8,319 +8,264 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+#include "samson/network/NetworkManager.h"  // Own interface
 
-#include "samson/network/NetworkConnection.h"
+#include <set>
+
+#include "au/log/LogMain.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
+#include "samson/common/Logs.h"
 #include "samson/network/NetworkConnection.h"
-#include "NetworkManager.h" // Own interface
 
 namespace samson {
-    
+NetworkManager::~NetworkManager() {
+  // Remove all pending packets to be sent
+  multi_packet_queue_.Clear();
+  // Close all connections
+  connections_.clearMap();
+}
 
+// Get all connections
+std::vector<NodeIdentifier> NetworkManager::GetAllNodeIdentifiers() const {
+  au::TokenTaker tt(&token_connections_);
 
-    Status NetworkManager::move_connection( std::string connection_from , std::string connection_to )
-    {
-        au::TokenTaker tt(&token_connections_, "token_connections_.move_connection");
+  return connections_.getKeysVector();
+}
 
-        if( connections.findInMap(connection_to) != NULL )
-            return Error;
-        
-        NetworkConnection * network_connection = connections.extractFromMap( connection_from );
-        
-        if( !network_connection )
-            return Error;
-        
-        network_connection->name = connection_to;
-        connections.insertInMap(connection_to, network_connection);
+bool NetworkManager::Remove(const NodeIdentifier& node_identifier) {
+  return connections_.extractAndDeleteFromMap(node_identifier);  // Extract and remove if really present in the manager
+}
 
-        // recover pending packets if any...
-        multi_packet_queue.pop_pending_packet( connection_to,  &network_connection->packet_queue );
-        
-        return OK;
+void NetworkManager::AddConnection(const NodeIdentifier& new_node_identifier,
+                                   au::SocketConnection *socket_connection) {
+  // Mutex protection
+  au::TokenTaker tt(&token_connections_, "token_connections_.add");
+
+  LOG_V(logs.network_connection, ("Adding network_connection:%s", new_node_identifier.str().c_str()));
+
+  if (connections_.findInMap(new_node_identifier) != NULL) {
+    LOG_SW(("Rejecting an incoming connection (%s) since it already exists", new_node_identifier.str().c_str()));
+    delete socket_connection;
+    return;
+  }
+
+  // Add to the map of connections
+  LOG_V(logs.network_connection, ("Inserted new connection %s", new_node_identifier.str().c_str()));
+  NetworkConnection *network_connection = new NetworkConnection(new_node_identifier, socket_connection, this);
+  connections_.insertInMap(new_node_identifier, network_connection);
+}
+
+size_t NetworkManager::GetNumConnections() const {
+  au::TokenTaker tt(&token_connections_, "token_connections_.getNumConnections");
+
+  return connections_.size();
+}
+
+bool NetworkManager::IsConnected(const NodeIdentifier& node_identifier) const {
+  au::TokenTaker tt(&token_connections_, "token_connections_.isConnected");
+  bool connected = (connections_.findInMap(node_identifier) != NULL);
+
+  return connected;
+}
+
+au::tables::Table *NetworkManager::GetConnectionsTable() const {
+  au::TokenTaker tt(&token_connections_, "token_connections_.getConnectionsTable");
+
+  au::tables::Table *table = new au::tables::Table(au::StringVector("Name", "Host", "In", "Out"));
+
+  au::map<NodeIdentifier, NetworkConnection>::const_iterator it_connections;
+
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
+    au::StringVector values;
+
+    values.push_back(it_connections->first.str());   // Name of the connection
+
+    NetworkConnection *connection = it_connections->second;
+    au::SocketConnection *socket_connection = connection->socket_connection_;
+    values.push_back(socket_connection->host_and_port());
+    values.push_back(au::str(connection->rate_in(), "B/s"));
+    values.push_back(au::str(connection->rate_out(), "B/s"));
+
+    table->addRow(values);
+  }
+
+  table->setTitle("Connections");
+
+  return table;
+}
+
+void NetworkManager::RemoveDisconnectedConnections() {
+  au::map<NodeIdentifier, NetworkConnection>::iterator it;
+  for (it = connections_.begin(); it != connections_.end(); ) {
+    NetworkConnection *connection = it->second;
+    if (connection->IsDisconnected()) {
+      // Extract connection
+      LOG_SW(("Removing connection %s (%s) since it is disconnected",
+              it->first.str().c_str(), connection->node_identifier().str().c_str()));
+      connections_.erase(it++);
+      delete connection;
+    } else {
+      ++it;
     }
- 
-    Status NetworkManager::add( NetworkConnection * network_connection )
-    {
-        std::string name = network_connection->getName();
-        LM_T(LmtNetworkConnection, ("Adding network_connection:%s", name.c_str()));
+  }
+}
 
-        au::TokenTaker tt(&token_connections_, "token_connections_.add");
+std::vector<size_t> NetworkManager::GetDelilahIds() const {
+  // Return all connections with pattern delilah_X
+  std::vector<size_t> ids;
 
-        if( connections.findInMap( name ) != NULL )
-        {
-            LM_W(("network_connection:%s already connected", name.c_str()));
-            return Error;
-        }
-        
-        // Add to the map of connections
-        connections.insertInMap( name , network_connection );
-        LM_T(LmtNetworkConnection, ("Inserted in map network_connection:%s", name.c_str()));
+  au::TokenTaker tt(&token_connections_);
 
-        // recover pending packets if any...
-        multi_packet_queue.pop_pending_packet( name,  &network_connection->packet_queue );
-        
-        // Init threads once included in the map
-        network_connection->initReadWriteThreads();
-        
-        return OK;
+  au::map<NodeIdentifier, NetworkConnection>::const_iterator it_connections;
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
+    NodeIdentifier _node_identifier = it_connections->second->node_identifier();
+
+    if (_node_identifier.node_type() == DelilahNode) {
+      ids.push_back(_node_identifier.id());
     }
+  }
 
-    size_t NetworkManager::getNumConnections()
-    {
-        au::TokenTaker tt(&token_connections_, "token_connections_.getNumConnections");
-        return connections.size();
+  return ids;
+}
+
+std::string NetworkManager::str() const {
+  au::TokenTaker tt(&token_connections_);
+
+  std::ostringstream output;
+
+  au::map<NodeIdentifier, NetworkConnection>::const_iterator it_connections;
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
+    output << it_connections->first.str() << " : " << it_connections->second->str() << "\n";
+  }
+  return output.str();
+}
+
+void NetworkManager::Review() {
+  // Remove all unconnected elements to make sure we try to connect again if necessary
+  RemoveDisconnectedConnections();
+
+  // Track name of connections
+  au::map<NodeIdentifier, NetworkConnection>::iterator iter;
+  for (iter = connections_.begin(); iter != connections_.end(); ++iter) {
+    connections_names_.Add(iter->first.str());
+  }
+  connections_names_.Review();
+}
+
+void NetworkManager::Send(const PacketPointer& packet) {
+  au::TokenTaker tt(&token_connections_);
+
+  // Accumulated packet in the global queue
+  multi_packet_queue_.Push(packet);
+
+  // Wakeup writer in the connection if necessary
+  NodeIdentifier node_identifier  = packet->to;
+  NetworkConnection *connection = connections_.findInMap(node_identifier);
+  if (connection) {
+    connection->WakeUpWriter();
+  }
+}
+
+void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
+  au::TokenTaker tt(&token_connections_);
+
+  // Send to all involved workers
+  au::map<NodeIdentifier, NetworkConnection>::iterator it_connections;
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
+    NetworkConnection *connection = it_connections->second;
+    NodeIdentifier connection_node_identifier = connection->node_identifier();
+
+    if (connection_node_identifier.node_type() == DelilahNode) {
+      // Send to this one
+      PacketPointer new_packet(new Packet(packet.shared_object()));
+      new_packet->to = connection_node_identifier;
+      Send(new_packet);
     }
-    
-    bool NetworkManager::isConnected( std::string connection_name )
-    {
-        au::TokenTaker tt(&token_connections_, "token_connections_.isConnected");
+  }
+}
 
-        LM_T(LmtNetworkConnection, ("Asked for connections for network_connection:%s", connection_name.c_str()));
+au::SharedPointer<gpb::Collection> NetworkManager::GetQueuesCollection(const Visualization& visualization) const {
+  return multi_packet_queue_.GetQueuesCollection(visualization);
+}
 
-        return (connections.findInMap(connection_name) != NULL);
-    }
-    
-    au::tables::Table * NetworkManager::getConnectionsTable()
-    {
-        au::TokenTaker tt(&token_connections_, "token_connections_.getConnectionsTable");
-        
-        au::tables::Table* table = new au::tables::Table( au::StringVector( "Name" , "Host" , "In" , "Out" ) );
-        
-        au::map<std::string , NetworkConnection>::iterator it_connections;
-        
-        for( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-        {
-            au::StringVector values;
-            
-            values.push_back( it_connections->first ); // Name of the connection
+au::SharedPointer<gpb::Collection> NetworkManager::GetConnectionsCollection(const Visualization& visualization) const {
+  au::TokenTaker tt(&token_connections_);
 
-            NetworkConnection* connection = it_connections->second;
-            au::SocketConnection* socket_connection = connection->socket_connection;
-            values.push_back( socket_connection->getHostAndPort() );
-            values.push_back( au::str( connection->get_rate_in() , "B/s" ) );
-            values.push_back( au::str( connection->get_rate_out() , "B/s" ) );
-            
-            table->addRow( values );
-            
-        }
-        
-        table->setTitle("Connections");
-        
-        return table;
-    }
-    
-    void NetworkManager::remove_disconnected_connections()
-    {
-        while (true) 
-        {
-            NetworkConnection* connection = extractNextDisconnectedConnection();
-            if( connection )
-            {
-                delete connection;
-            }
-            else
-                return;
-        }
-        
-    }
+  au::SharedPointer<gpb::Collection> collection(new gpb::Collection());
+  collection->set_name("connections");
+  au::map<NodeIdentifier, NetworkConnection>::const_iterator it_connections;
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
+    gpb::CollectionRecord *record = collection->add_record();
+    it_connections->second->fill(record, visualization);
+  }
 
-    NetworkConnection* NetworkManager::extractNextDisconnectedConnection( )
-    {
-        au::TokenTaker tt(&token_connections_, "token_connections_.extractNextDisconnectedConnection");
+  return collection;
+}
 
-        au::map<std::string , NetworkConnection>::iterator it_connections;
-        for (it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-        {
-            NetworkConnection * network_connection = it_connections->second;
-            
-            if( network_connection->isDisconnected() )
-                if( network_connection->noThreadsRunning() )
-                {
-                    LM_T(LmtNetworkConnection, ("Removing connection '%s' because disconnected and no threads running", it_connections->first.c_str()));
+void NetworkManager::Reset() {
+  au::TokenTaker tt(&token_connections_);
 
-                    connections.erase( it_connections );
-                    return network_connection;
-                }
-        }
-        return NULL; // No next unconnected
-    }
-    
-    std::vector<size_t> NetworkManager::getDelilahIds()
-    {
-        // Return all connections with pattern delilah_X
-        std::vector<size_t> ids;
-        
-        au::TokenTaker tt(&token_connections_);
+  // Detele all connections
+  connections_.clearMap();
 
-        au::map<std::string , NetworkConnection>::iterator it_connections;
-        for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-        {
-            NodeIdentifier _node_identifier = it_connections->second->getNodeIdentifier();
-            
-            if( _node_identifier.node_type  == DelilahNode )
-            {
-                size_t id = _node_identifier.id;
-                
-                if( it_connections->first == _node_identifier.getCodeName() )
-                {
-                    // Add this id to the list
-                    ids.push_back(id);
-                }
-                else
-                    LM_W(("Delilah %lu (%s) connected using wrong connection name %s",
-                          _node_identifier.id,
-                          _node_identifier.getCodeName().c_str(),
-                          it_connections->first.c_str()
-                          ));
-            }
-        }
-        
-        return ids;
-    }
-    
-    std::string NetworkManager::str()
-    {
-        au::TokenTaker tt(&token_connections_);
+  au::map<NodeIdentifier, NetworkConnection>::iterator it_connections;
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
+    NetworkConnection *connection = it_connections->second;
+    connection->Close();
+  }
 
-        std::ostringstream output;
-        
-        au::map<std::string , NetworkConnection>::iterator it_connections;
-        for (it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++)
-            output << it_connections->first << " : " << it_connections->second->str() << "\n";
-        
-        return output.str();
-    }
-    
-    Status NetworkManager::send( Packet* packet )
-    {
-        au::TokenTaker tt(&token_connections_);
+  // Node: We cannot wait for all connections to be disconnected because reset command is originated in a delilah connection
+}
 
-        // Recover connection name
-        std::string name = packet->to.getCodeName();
-        
-        NetworkConnection* connection = connections.findInMap( name );
-        
-        if( !connection )
-        {
-            // Only messages to workers are saved to be sended when reconnecting
-            if(  !packet->disposable && (packet->to.node_type == WorkerNode) )
-            {
-                // Save this messages appart
-                multi_packet_queue.push_pending_packet( name , packet );
-                return OK;
-            }
-            else
-            {
-                // Delilah messages, just discard them
-                LM_W(("Packet %s destroyed since connection %s is not available" , packet->str().c_str(), name.c_str() ));
-                return Error;
-            }
-        }
-        
-        connection->push( packet );   
-        return OK;
-    }
+size_t NetworkManager::GetRateIn() const {
+  au::TokenTaker tt(&token_connections_);
 
-    network::Collection* NetworkManager::getConnectionsCollection( Visualization* visualization )
-    {
-        network::Collection* collection = new network::Collection();
-        collection->set_name("connections");
-        
-        au::TokenTaker tt(&token_connections_);
+  size_t total = 0;
 
-        au::map<std::string , NetworkConnection>::iterator it_connections;
-        
-        for ( it_connections =connections.begin() ; it_connections != connections.end() ; it_connections++ )
-        {
-            network::CollectionRecord* record = collection->add_record();            
-            it_connections->second->fill( record , visualization );
-            
-        }
-        
-        return collection;
-    }
-    
-    void NetworkManager::reset()
-    {
-        au::TokenTaker tt(&token_connections_);
+  au::map<NodeIdentifier, NetworkConnection>::const_iterator it_connections;
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
+    total += it_connections->second->rate_in();
+  }
 
-        au::map<std::string , NetworkConnection>::iterator it_connections;
-        for( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-        {
-            std::string name = it_connections->first;
-            
-            NetworkConnection * connection = it_connections->second;
+  return total;
+}
 
-            connection->close();
+size_t NetworkManager::GetRateOut() const {
+  au::TokenTaker tt(&token_connections_);
 
-            // Setting the quitting flags to stop reader and writer threads
-            LM_W(("Setting the quitting flags to stop reader and writer threads"));
+  size_t total = 0;
 
-            connection->quitting_t_reader = true;
-            connection->quitting_t_writer = true;
-            connection->setNodeIdentifier( NodeIdentifier(UnknownNode,-1) );
-        }
-        
-        // We cannot wait for all connections to be disconnected because reset command is originated in a delilah connection
-        
-        
-    }
-    
-    size_t NetworkManager::get_rate_in()
-    {
-        au::TokenTaker tt(&token_connections_);
+  au::map<NodeIdentifier, NetworkConnection>::const_iterator it_connections;
+  for (it_connections = connections_.begin(); it_connections != connections_.end(); ++it_connections) {
+    total += it_connections->second->rate_out();
+  }
 
-        size_t total = 0;
-        
-        au::map<std::string , NetworkConnection>::iterator it_connections;
-        for (it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-            total += it_connections->second->get_rate_in();
-        
-        return total;
-    }
-    
-    size_t NetworkManager::get_rate_out()
-    {
-        au::TokenTaker tt(&token_connections_);
+  return total;
+}
 
-        size_t total = 0;
-        
-        au::map<std::string , NetworkConnection>::iterator it_connections;
-        for (it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
-            total += it_connections->second->get_rate_out();
-        
-        return total;
-    }
+std::string NetworkManager::GetStatusForConnection(const NodeIdentifier& node_identifier) const {
+  au::TokenTaker tt(&token_connections_);
 
-    std::string NetworkManager::getStatusForConnection( std::string connection_name )
-    {
-        au::TokenTaker tt(&token_connections_);
+  // Find this connection...
+  NetworkConnection *connection = connections_.findInMap(node_identifier);
 
-        // Find this connection...
-        NetworkConnection* connection = connections.findInMap( connection_name );
-        
-        if (!connection )
-            return "Non connected";
-        else if ( connection->isDisconnected() )
-            return "Disconnecting";
-        else
-            return au::str( "Connected In: %s Out: %s " , au::str( connection->get_rate_in() , "B/s" ).c_str() , au::str( connection->get_rate_out() , "B/s" ).c_str() );
-    }
-    
-    au::tables::Table * NetworkManager::getPendingPacketsTable()
-    {
-        return multi_packet_queue.getPendingPacketsTable();
-    }
+  if (!connection) {
+    return "Unknown connection";
+  } else if (connection->IsDisconnected()) {
+    return "Disconnected";
+  } else {
+    return au::str("Connected In: %s Out: %s ", au::str(connection->rate_in(), "B/s").c_str(),
+                   au::str(connection->rate_out(), "B/s").c_str());
+  }
+}
 
-    void NetworkManager::check()
-    {
-        multi_packet_queue.check();
-    }
-    
-    void NetworkManager::push_pending_packet( std::string name , PacketQueue * packet_queue )
-    {
-        multi_packet_queue.push_pending_packet(name, packet_queue );
-    }
+au::tables::Table *NetworkManager::GetPendingPacketsTable() const {
+  return multi_packet_queue_.GetPendingPacketsTable();
+}
 
+void NetworkManager::ClearConnections() {
+  connections_.clearMap();
+  multi_packet_queue_.Clear();
+}
 }

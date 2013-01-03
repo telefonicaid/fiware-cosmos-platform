@@ -1,257 +1,40 @@
 
 # ---------------------------------------------------
-# mutex directory
-# ---------------------------------------------------
-
-SET( MUTEX_FILES
-mutex/Lock.h
-mutex/StopLock.h
-mutex/LockDebugger.h
-mutex/Token.h
-mutex/TokenTaker.h
-mutex/Lock.cpp
-mutex/LockDebugger.cpp
-mutex/Token.cpp
-mutex/TokenTaker.cpp
-)
-
-
-# ---------------------------------------------------
-# statistics directory
-# ---------------------------------------------------
-
-SET( STATISTICS_FILES
-statistics/ActivityMonitor.h
-statistics/ActivityMonitor.cpp
-)
-
-# ---------------------------------------------------
-# log directory
-# ---------------------------------------------------
-
-SET( LOG_FILES
-log/log_server_common.h
-
-log/LogCentral.h
-log/LogPlugin.h
-log/Log.h
-log/LogClient.h
-log/LogServer.h
-log/LogServerChannel.h
-log/LogServerQuery.h
-log/LogToServer.h
-log/LogFile.h
-log/LogFormatter.h
-log/TableLogFormatter.h
-
-log/LogCentral.cpp
-log/LogPlugin.cpp
-log/Log.cpp
-log/LogClient.cpp
-log/LogServer.cpp
-log/LogServerChannel.cpp
-log/LogServerQuery.cpp
-log/LogToServer.cpp
-log/LogFile.cpp
-log/LogFormatter.cpp
-log/TableLogFormatter.cpp
-)
-
-# ---------------------------------------------------
-# containers directory
-# ---------------------------------------------------
-
-SET( CONTAINERS_FILES
-
-containers/map.h
-containers/simple_map.h
-containers/list.h
-containers/set.h
-containers/vector.h
-containers/ListMap.h
-
-containers/StringVector.h
-containers/Uint64Vector.h
-containers/StringVector.cpp
-containers/Uint64Vector.cpp
-)
-
-# ---------------------------------------------------
-# tables directory
-# ---------------------------------------------------
-
-SET( TABLES_FILES
-tables/Select.h
-tables/Table.h
-tables/Tree.h
-tables/Collection.h
-tables/DataBase.h
-tables/pugi.h
-tables/pugixml.hpp
-tables/pugiconfig.hpp
-
-tables/Select.cpp
-tables/Table.cpp
-tables/Tree.cpp
-tables/Collection.cpp
-tables/DataBase.cpp
-tables/pugi.cpp
-tables/pugixml.cpp
-)
-
-# ---------------------------------------------------
-# network directory
-# ---------------------------------------------------
-
-SET( NETWORK_FILES
-network/FileDescriptor.cpp
-network/FileDescriptor.h
-network/NetworkListener.cpp
-network/NetworkListener.h
-network/Service.cpp
-network/Service.h
-network/ConsoleService.h
-network/ConsoleService.cpp
-network/RESTService.h
-network/RESTService.cpp
-network/SocketConnection.cpp
-network/SocketConnection.h
-network/misc.cpp
-network/misc.h
-network/PacketReaderWriter.h
-network/PacketReaderWriter.cpp
-)
-
-# ---------------------------------------------------
-# console directory
-# ---------------------------------------------------
-
-SET( CONSOLE_FILES
-console/Console.h
-console/ConsoleEntry.h
-console/ConsoleCommand.h
-console/ConsoleCommandHistory.h
-console/ConsoleEscapeSequence.h
-console/ConsoleCode.h
-console/ConsoleAutoComplete.h
-
-console/Console.cpp
-console/ConsoleEntry.cpp
-console/ConsoleCommand.cpp
-console/ConsoleCommandHistory.cpp
-console/ConsoleEscapeSequence.cpp
-console/ConsoleCode.cpp
-console/ConsoleAutoComplete.cpp
-)
-
-
-# ---------------------------------------------------
-# string directory
-# ---------------------------------------------------
-
-SET( STRING_FILES
-string/split.h
-string/split.cpp
-)
-
-# ---------------------------------------------------
 # HEADERS & SOURCES
 # ---------------------------------------------------
 
-SET (HEADERS
-Status.h
-Object.h
-Singleton.h
+  FILE( GLOB headers_au            "*.h" )
+  FILE( GLOB headers_au_console    "console/*.h" )
+  FILE( GLOB headers_au_containers "containers/*.h" )
+  FILE( GLOB headers_au_log        "log/*.h" )
+  FILE( GLOB headers_au_mutex      "mutex/*.h" )
+  FILE( GLOB headers_au_network    "network/*.h" )
+  FILE( GLOB headers_au_setup      "setup/*.h" )
+  FILE( GLOB headers_au_singleton  "singleton/*.h" )
+  FILE( GLOB headers_au_statistics "statistics/*.h" )
+  FILE( GLOB headers_au_string     "string/*.h" )
+  FILE( GLOB headers_au_tables     "tables/*.h" )
+
+  FILE( GLOB source_au            "*.cpp" )
+  FILE( GLOB source_au_console    "console/*.cpp" )
+  FILE( GLOB source_au_containers "containers/*.cpp" )
+  FILE( GLOB source_au_log        "log/*.cpp" )
+  FILE( GLOB source_au_mutex      "mutex/*.cpp" )
+  FILE( GLOB source_au_network    "network/*.cpp" )
+  FILE( GLOB source_au_setup      "setup/*.cpp" )
+  FILE( GLOB source_au_singleton  "singleton/*.cpp" )
+  FILE( GLOB source_au_statistics "statistics/*.cpp" )
+  FILE( GLOB source_au_string     "string/*.cpp" )
+  FILE( GLOB source_au_tables     "tables/*.cpp" )
+
+
+SET (EXTRA_HEADERS
 au.pb.h
-TemporalBuffer.h
-namespace.h
-charset.h
-utils.h
-Descriptors.h
-gpb.h
-Environment.h
-CommandLine.h
-
-ErrorManager.h
-varint.h
-Cronometer.h
-Rate.h
-CounterCollection.h
-file.h
-time.h
-string.h
-xml.h
-RRT.h
-cpu.h
-ProcessStats.h
-
-ThreadManager.h
-
-StringCollection.h
-StructCollection.h
-
-Pool.h
-StringComponents.h
-
-Tokenizer.h
-
-OnOffMonitor.h
-
-daemonize.h
 )
 
-SET (SOURCES
-Status.cpp
-Object.cpp
-au.pb.cc
-TemporalBuffer.cpp
-charset.cpp
-utils.cpp
-
-Descriptors.cpp
-gpb.cpp
-CommandLine.cpp
-Environment.cpp
-
-
-ErrorManager.cpp
-Cronometer.cpp
-Rate.cpp
-CounterCollection.cpp
-file.cpp
-time.cpp
-string.cpp
-xml.cpp
-RRT.cpp
-cpu.cpp
-ProcessStats.cpp
-
-ThreadManager.cpp
-
-StringCollection.cpp
-StructCollection.cpp
-
-Pool.cpp
-StringComponents.cpp
-
-Tokenizer.cpp
-
-OnOffMonitor.cpp
-
-daemonize.cpp
+SET (EXTRA_SOURCES
+au.pb.cc 
 )
-
-# Source groups to organize Xcode project
-# -----------------------------------------------------------------
-
-SOURCE_GROUP( mutex      FILES ${MUTEX_FILES} )
-SOURCE_GROUP( log        FILES ${LOG_FILES} )
-SOURCE_GROUP( statistics FILES ${STATISTICS_FILES} )
-SOURCE_GROUP( containers FILES ${CONTAINERS_FILES} )
-SOURCE_GROUP( tables     FILES ${TABLES_FILES} )
-SOURCE_GROUP( network    FILES ${NETWORK_FILES} )
-SOURCE_GROUP( console    FILES ${CONSOLE_FILES} )
-SOURCE_GROUP( string     FILES ${STRING_FILES} )
 
 # Generate 'au.pb.h' and 'au.pb.cc' from ''au.proto''
 add_custom_command (
@@ -267,26 +50,31 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS} ${MUTEX_FILES} ${LOG_FILES} ${STATISTICS_FILES}
-${CONTAINERS_FILES} ${TABLES_FILES} ${NETWORK_FILES} ${CONSOLE_FILES}
-${STRING_FILES})
+ADD_LIBRARY(au SHARED ${EXTRA_SOURCES} ${source_au} ${source_au_console} ${source_au_containers} ${source_au_log} ${source_au_log} ${source_au_mutex} ${source_au_network} ${source_au_network} ${source_au_network} ${source_au_setup} ${source_au_singleton} ${source_au_statistics} ${source_au_string} ${source_au_tables} ${headers_au} ${headers_au_console} ${headers_au_containers} ${headers_au_log} ${headers_au_mutex} ${headers_au_network} ${headers_au_setup} ${headers_au_singleton} ${headers_au_statistics} ${headers_au_statistics} ${headers_au_string} ${headers_au_tables} )
+ADD_DEPENDENCIES(au au.pb.h)
+ADD_DEPENDENCIES(au au.pb.cc)
+TARGET_LINK_LIBRARIES( au protobuf pa lm )
 
 # Only needed for the "samson" project
 IF (CMAKE_PROJECT_NAME STREQUAL "Samson")
-    INSTALL(TARGETS au ARCHIVE DESTINATION lib)
-    INSTALL(FILES ${HEADERS}          DESTINATION include/au)
-    INSTALL(FILES ${STATISTICS_FILES} DESTINATION include/au/statistics)
-    INSTALL(FILES ${MUTEX_FILES}      DESTINATION include/au/mutex)
-    INSTALL(FILES ${LOG_FILES}        DESTINATION include/au/log)
-    INSTALL(FILES ${CONTAINERS_FILES} DESTINATION include/au/containers)
-    INSTALL(FILES ${TABLES_FILES}     DESTINATION include/au/tables)
-    INSTALL(FILES ${NETWORK_FILES}    DESTINATION include/au/network)
-    INSTALL(FILES ${CONSOLE_FILES}    DESTINATION include/au/console)
-    INSTALL(FILES ${STRING_FILES}     DESTINATION include/au/string)
+  INSTALL(TARGETS au DESTINATION lib)
+
+  INSTALL(FILES ${EXTRA_HEADERS}         DESTINATION include/au )
+  INSTALL(FILES ${headers_au}            DESTINATION include/au )
+  INSTALL(FILES ${headers_au_console}    DESTINATION include/au/console )
+  INSTALL(FILES ${headers_au_containers} DESTINATION include/au/containers )
+  INSTALL(FILES ${headers_au_log}        DESTINATION include/au/log )
+  INSTALL(FILES ${headers_au_mutex}      DESTINATION include/au/mutex )
+  INSTALL(FILES ${headers_au_network}    DESTINATION include/au/network )
+  INSTALL(FILES ${headers_au_setup}      DESTINATION include/au/setup )
+  INSTALL(FILES ${headers_au_singleton}  DESTINATION include/au/singleton )
+  INSTALL(FILES ${headers_au_statistics} DESTINATION include/au/statistics )
+  INSTALL(FILES ${headers_au_string}     DESTINATION include/au/string )
+  INSTALL(FILES ${headers_au_tables}     DESTINATION include/au/tables )
+
 ENDIF (CMAKE_PROJECT_NAME STREQUAL "Samson")
 
 SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
-
 
 # au_test ( for debuggin )
 #ADD_EXECUTABLE(au_test au_test_main.cpp )
@@ -297,6 +85,24 @@ SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 #ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )
 #TARGET_LINK_LIBRARIES(au_sleep_test ${LIBS} au lm pa )
 #INSTALL(TARGETS au_sleep_test        RUNTIME DESTINATION   bin)
+
+# -----------------------------------------------------------------
+# Source groups to organize Xcode project
+# -----------------------------------------------------------------
+
+SOURCE_GROUP( au          FILES ${headers_au} )
+SOURCE_GROUP( extra       FILES ${EXTRA_HEADERS} )
+SOURCE_GROUP( mutex       FILES ${headers_au_mutex} )
+SOURCE_GROUP( singleton   FILES ${headers_au_singleton} )
+SOURCE_GROUP( zoo         FILES ${headers_au_zoo} )
+SOURCE_GROUP( setup       FILES ${headers_au_setup} )
+SOURCE_GROUP( log         FILES ${headers_au_log} )
+SOURCE_GROUP( statistics  FILES ${headers_au_statistics} )
+SOURCE_GROUP( containers  FILES ${headers_au_containers} )
+SOURCE_GROUP( tables      FILES ${headers_au_tables} )
+SOURCE_GROUP( network     FILES ${headers_au_network} )
+SOURCE_GROUP( console     FILES ${headers_au_console} )
+SOURCE_GROUP( string      FILES ${headers_au_string} )
 
 
 

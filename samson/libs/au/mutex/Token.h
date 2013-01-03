@@ -10,61 +10,97 @@
  */
 
 /* ****************************************************************************
- *
- * FILE            Token
- *
- * AUTHOR          Andreu Urruela
- *
- * PROJECT         au library
- *
- * DATE            Septembre 2011
- *
- * DESCRIPTION
- *
- *  Wrapper of the mutex included in pthread library.
- *  Used to simplify development of multi-thread apps
- *
- * ****************************************************************************/
+*
+* FILE            Token
+*
+* AUTHOR          Andreu Urruela
+*
+* PROJECT         au library
+*
+* DATE            September 2011
+*
+* DESCRIPTION
+*
+*  Wrapper of the mutex included in pthread library.
+*  Used to simplify development of multi-thread apps
+*
+* ****************************************************************************/
 
 #ifndef _H_AU_TOCKEN
 #define _H_AU_TOCKEN
 
 #include <pthread.h>             /* pthread_mutex_t                          */
+#include <string>
+#include <sys/types.h>
 
-#include "au/namespace.h"
+namespace au {
+// Handy method to identify threads with strings
+std::string GetThreadId(pthread_t t);
 
-
-NAMESPACE_BEGIN(au)
-
-class Token
-{
-    const char * name;              // Name of the token
-    
-    pthread_mutex_t _lock;			// Mutex to protect this tocken
-    pthread_cond_t _block;          // Condition to block threads that call stop
-    
-    // Mechanism to discover if you have locked this mutex
-    pthread_t t;
-    bool locked;
-    int counter; // Number of times this token is taken
-    
+class TokenOwner {
 public:
-    
-    Token( const char * name );
-    ~Token();
-    
-private:
-    
-    // It is only possible to retain teh token with the class TokenTaker
-    friend class TokenTaker;
-    
-    void retain();
-    void release();
 
-    void stop();
-    
+  TokenOwner();
+
+  void SetMe();
+  bool IsMe();
+  void ClearMe();
+  bool HasOwner();
+
+  // Debug string
+  std::string str();
+
+private:
+
+  pthread_mutex_t lock_;     // Mutex to protect this token
+
+  volatile pthread_t token_owner_thread_t_;
+  std::string token_owner_thread_description_;
+  volatile bool locked_;
 };
 
-NAMESPACE_END
+class Token {
+public:
 
-#endif
+  explicit Token(const std::string& name);
+  ~Token();
+
+  std::string name() const {
+    return name_;
+  }
+
+  bool IsRetainedByMe() {
+    return owner_.IsMe();
+  }
+
+  void WakeUpAll();
+  void WakeUp();
+
+private:
+
+  // To avoid missing releases, we use helper class TokenTaker
+  friend class TokenTaker;
+  friend class MultipleTokenTaker;
+
+  void Retain();
+  void Release();
+  void Stop();
+
+
+  pthread_mutex_t lock_;   // Main mutex
+  pthread_cond_t block_;   // Condition to block threads that call "Stop"
+
+  std::string name_;       // Name of the token for debugging
+
+  TokenOwner owner_;  // Owner of this mutex
+
+  volatile int counter_;   // Number of times this token is taken
+
+  // syscall(SYS_gettid) is not supported on mac, so we come back to pthread_t
+  // Specific implementation for solaris may be necessary.
+
+  std::string str_debug();
+};
+}
+
+#endif  // ifndef _H_AU_TOCKEN

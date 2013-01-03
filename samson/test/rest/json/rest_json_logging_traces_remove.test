@@ -1,8 +1,0 @@
---NAME--
-REST JSON /samson/logging/traces/remove
---SHELL-INIT--
-curl -s --request POST http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/logging/traces/set/1,56.json  > /dev/null
---SHELL--
-curl -s --request DELETE http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/logging/traces/remove/1.json
---EXPECT--
-{{"trace":"removed level(s) 1"}}

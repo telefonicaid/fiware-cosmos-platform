@@ -27,144 +27,120 @@
 #ifndef _H_PROCESS_ITEM
 #define _H_PROCESS_ITEM
 
-
-#include <string>
+#include <set>
 #include <sstream>
+#include <string>
 
-#include "au/Cronometer.h"              // au::CronometerSystem
-#include "au/Environment.h"            // au::Environment
-#include "au/mutex/Token.h"                  // au::Token
-#include "au/ErrorManager.h"           // au::ErrorManager
-#include "au/namespace.h"
+#include "au/statistics/CronometerSystem.h"
+#include "au/Environment.h"             // au::Environment
+#include "au/ErrorManager.h"            // au::ErrorManager
+#include "au/mutex/Token.h"             // au::Token
+#include "engine/Notification.h"
 
-#include "au/Object.h"
-
-#define PI_PRIORITY_NORMAL_OPERATION	1
-#define PI_PRIORITY_NORMAL_COMPACT		5		// Compact operation
-#define PI_PRIORITY_BUFFER_PREWRITE		10		// Processing an output buffer to generate what is stored on disk
-
-
+#define PI_PRIORITY_NORMAL_OPERATION 1
+#define PI_PRIORITY_NORMAL_COMPACT   5   // Compact operation
+#define PI_PRIORITY_BUFFER_PREWRITE  10  // Processing an output buffer to generate what is stored on disk
 /**
- 
- ProcessItem
- 
- item inside the ProcessManager
- 
- An item is a task to do without any IO operation in the middle.
- It only requires processing time
+ *
+ * ProcessItem
+ *
+ * item inside the ProcessManager
+ *
+ * An item is a task to do without any IO operation in the middle.
+ * It only requires processing time
  */
 
-NAMESPACE_BEGIN(engine)
-
-
+namespace engine {
 class ProcessItem;
 class ProcessManagerDelegate;
 class ProcessManager;
 
-class ProcessItem  : public au::Object
-{
-    
-    // Identifiers of the listeners that should be notified when operation is finished
-    std::set<size_t> listeners;
-    
-    friend class ProcessManager;
-    
-protected:
-    
-    // Operation name for statistics
-    std::string operation_name;
-    size_t working_size;
-    
-public:
-    
-    typedef enum 
-    {
-        queued,         // In the queue waiting to be executed
-        running,        // Running in a background process
-    } ProcessItemStatus;
-    
-    bool canceled;      // Flag to indicate that this process has been cancelled ( not forced exit )
-    
-    // Internal state of the process
-    ProcessItemStatus  state;
-    
-    // Pointer to the process manager to notify 'halt' 'finish' and so...
-    ProcessManager* processManager;
-    
-    // Thread used to run this in background
-    pthread_t t;
-    
-public:
-    
-    //Cronometer to measure time running
-    au::CronometerSystem cronometer;
-    
-private:
-    
-    // Token used to protect state and block main thread when necessary
-    au::Token token;	
-    
-protected:
-    
-    // Information about the status of this process
-    double progress;					// Progress of the operation ( if internally reported somehow )
-    std::string sub_status;				// Letter describing internal status
-    
-public:
-    
-    // Error management
-    au::ErrorManager error;                     
-    
-    // Priority level ( 0 = low priority ,  10 = high priority )
-    int priority;                               
-    
-    // Environment variables
-    au::Environment environment;
-    
+// Note: NotificationObject is an empty class base to allo us to include a process item in a notification
+
+class ProcessItem {
+  public:
     // Constructor with priority
-    ProcessItem( int _priority = 5 );
+    explicit ProcessItem(int _priority = 5);
     virtual ~ProcessItem();
-    
-    // Status management
-    std::string getStatus();
-    
+
     // What to do when processor is available
-    virtual void run()=0;
-    
-    // Function to create a new thread and run "run" in background
-    void runInBackground();
+    virtual void run() = 0;
 
-    // Get description of this process item
-    std::string getDescription();
-    
-protected:
-    
-    void halt();			// command executed inside run() to stop the task until ready returns true
-    
-public:
-        
-    void setCanceled();
-    bool isProcessItemCanceled();
-    
-    bool isRunning();
-    
-public:
-    
-    void addListenerId( size_t _listenerId );
-    
-public:
-    
-    // Get information for xml monitoring
-    void getInfo( std::ostringstream& output);
-    
-protected:
-    
+    // Add additional listsners
+    void AddListener(size_t _listenerId);
+
+    // Accessors
+    std::set<size_t> listeners() const;
+    std::string process_item_description() const;
+    std::string process_item_current_task_description() const;
+    std::string process_item_status() const;   // Status management
+    double progress() const;   // Get progress of this task
+    bool finished() const;
+    bool running() const;
+
+    // Debug string
+    std::string str() const;
+
+    // Methods to indicate that we start and stop activty ( cronometers for time measumenet )
+    void StartActivity();
+    void StopActivity();
+
+    au::Environment& environment();
+    au::ErrorManager& error();
+
+    const au::CronometerSystem& running_cronometer() const;
+    const au::CronometerSystem& waiting_cronometer() const;
+
+    // Information about times
+    size_t waiting_time_seconds() {
+      return waiting_cronometer_.seconds();
+    }
+    size_t running_time_seconds() {
+      return running_cronometer_.seconds();
+    }
+
+  double GetTotalTime()
+  {
+    return cronometer_.seconds();
+  }
+  
+  protected:
     // Interface to monitor operations performance
-    void setProcessItemOperationName( std::string _operation_name );
-    void setProcessItemWorkingSize( size_t size );
-	
+    void set_progress(double p);
+    void set_process_item_description(const std::string& message);
+    void set_process_item_current_task_description(const std::string& message);
+
+    // Error management
+    au::ErrorManager error_;
+
+    // Environment variables
+    au::Environment environment_;
+
+  private:
+    // Operation name for statistics
+    std::string process_item_description_;
+    std::string process_item_current_task_description_;
+
+    // Priority level ( 0 = low priority ,  10 = high priority )
+    int priority_;
+
+    // Cronometer to measure time waiting and running
+    au::CronometerSystem waiting_cronometer_;
+    au::CronometerSystem running_cronometer_;
+
+  // Global time
+  au::Cronometer cronometer_;
+  
+    // Identifiers of the listeners that should be notified when operation is finished
+    std::set<size_t> listeners_;
+
+    // Internal falgs
+    bool running_;
+    bool finished_;
+
+    // Progress of the operation ( if internally reported somehow )
+    double progress_;
 };
+}
 
-NAMESPACE_END
-
-#endif
+#endif  // ifndef _H_PROCESS_ITEM

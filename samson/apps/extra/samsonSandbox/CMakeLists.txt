@@ -1,5 +1,4 @@
 SET (SOURCES
-	main_samsonSandbox.cpp
 )
 
 SET (HEADERS
@@ -11,15 +10,15 @@ SET( STATIC_LIBS
     samsonNetwork
     samsonModule
     samsonStream
-    samsonIsolated
     samsonCommon
     samson_system
     engine
     au
     ${ICONV_LIB}
+	zookeeper_mt
     pa
     lm
-au
+    au
     protobuf
     pthread
     dl
@@ -35,9 +34,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(samsonSandbox ${SOURCES} ${HEADERS} )
+ADD_EXECUTABLE(samsonSandbox main_samsonSandbox.cpp ${SOURCES} ${HEADERS} )
+
 TARGET_LINK_LIBRARIES(samsonSandbox ${STATIC_LIBS})
 
-INSTALL(TARGETS               samsonSandbox
-        RUNTIME DESTINATION   bin)
+INSTALL(TARGETS samsonSandbox  RUNTIME DESTINATION   bin)
 

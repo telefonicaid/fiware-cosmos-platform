@@ -1,9 +1,6 @@
 SET (HEADERS	
 	ClusterNodeType.h
 
-	HostMgr.h
-	Host.h
-
 	PacketQueue.h
 	NetworkManager.h
 	NetworkConnection.h
@@ -18,16 +15,10 @@ SET (HEADERS
 	PacketReceivedNotification.h
 	Packet.h
 	Message.h
-
-	ClusterInformation.h
-
 )
 
 SET (SOURCES
 	ClusterNodeType.cpp
-
-	HostMgr.cpp
-	Host.cpp
 
 	PacketQueue.cpp
 	NetworkManager.cpp
@@ -43,9 +34,6 @@ SET (SOURCES
 	PacketReceivedNotification.cpp
 	Packet.cpp
 	Message.cpp
-
-	ClusterInformation.cpp
-
 )
 
 # Include directories
@@ -56,4 +44,4 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Library declaration
 # -----------------------------------------------------------------
 ADD_LIBRARY(samsonNetwork STATIC ${SOURCES} ${HEADERS} )
-
+ADD_DEPENDENCIES(samsonNetwork samsonCommon)

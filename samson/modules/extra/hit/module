@@ -70,9 +70,9 @@ script init_stream_operations
 
 
 	# Definitions;
-    add_stream_operation [reduce_words] hit.reduceHits              [input] [words]              [words_updats] [words];
-    add_stream_operation [reduce_tops]  hit.reduceHitCollections    [words_updats] [tops]        [tops_out] [tops];
-    add_stream_operation [export_tops]  hit.export_hit_collection   [tops_out]                   [tops_out_txt];
+    add_stream_operation [reduce_words] hit.reduceHits              -input '[input] [words]'         -output '[words_updats] [words]';
+    add_stream_operation [reduce_tops]  hit.reduceHitCollections    -input '[words_updats] [tops]'   -output '[tops_out] [tops]';
+    add_stream_operation [export_tops]  hit.export_hit_collection   -input [tops_out]                -output [tops_out_txt];
 
   }
 
@@ -99,10 +99,10 @@ script stream_block_simple
     alias [reduce_tops]     20.reduce_tops;
 
     # Definitions;
-    add_stream_operation [reduce_words] hit.reduceHits              [input] [words]              [words_updats] [words];
-    set_stream_operation_property [update_service_state] update_only true;
-    add_stream_operation [reduce_tops]  hit.reduceHitCollections    [words_updats] [tops]        null           [tops];
-    set_stream_operation_property [update_service_state] update_only true;
+    add_stream_operation [reduce_words] hit.reduceHits              -input '[input] [words]'        -output '[words_updats] [words]';
+    set_stream_operation_property [reduce_words] update_only true;
+    add_stream_operation [reduce_tops]  hit.reduceHitCollections    -input '[words_updats] [tops]'  -output 'null [tops]';
+    set_stream_operation_property [reduce_tops] update_only true;
 
   }
 

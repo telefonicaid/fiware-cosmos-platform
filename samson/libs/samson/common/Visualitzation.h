@@ -9,9 +9,6 @@
  * All rights reserved.
  */
 
-
-
-
 #ifndef SAMSON_VISUALITZATION_H
 #define SAMSON_VISUALITZATION_H
 
@@ -19,63 +16,55 @@
  *
  * FILE                     Visualitzation.h
  *
- * DESCRIPTION              Information about what to visualize 
+ * DESCRIPTION              Information about what to visualize
  *
  * AUTHOR                   Andreu Urruela
  *
  * CREATION DATE            02/2012
  *
+ * Information required for visualitzation of tables
  */
 
+
+#include <set>
 #include <string>
 
 #include "au/Environment.h"
+#include "au/string/Pattern.h"
+#include "logMsg/logMsg.h"
 
-namespace samson
-{
+namespace samson {
 
-    // Main visual options
-    
-    typedef enum 
-    { 
-        normal,        // Normal visualitzation
-        properties,    // Properties ( queues and stream operations )
-        rates,         // Total and current reate ( queues , connections )
-        blocks,        // Detailes block information ( queues )
-        running,       // Operations being executed ( stream_operations )
-        in,            // total and current rate in ( stream_operations )
-        out,           // total and current rate in ( stream_operations )
-        disk,          // Disk activity ( ls_workers )
-        engine,        // Engine activity ( ls_workers )
-        verbose,
-        verbose2,
-        verbose3,
-        all,
-        stream_block,        // Mode only used in show_block_stream
-        stream_block_rates    // Mode only used in show_block_stream
-    } VisualitzationOptions;
+class Visualization {
 
-    
-    
-    // All informaiton required for visualitzation
-    
-    class Visualization
-    {
-        
-    public:
-        
-        VisualitzationOptions options;
-        std::string pattern;
+  public:
+  
+    Visualization() {
+    }
 
-        // Environemnt properties
-        au::Environment environment;
-        
-    };
+  // Check a string match provided pattern
+    bool match(const std::string& value) const;
 
-    // Simplified match 
-    bool match( std::string pattern , std::string name );
+  // Set and Get flags
+    void set_flag(const std::string& name, bool value);
+    bool get_flag(const std::string& name) const;
+
+  // Pattern operations
+    void set_pattern(const std::string& pattern);
+    std::string pattern() const;
+
+  // Environment properties
+    const au::Environment& environment();
+  
+private:
+  
+  std::set<std::string> flags_activated_;
+  std::set<std::string> flags_not_activated_;
+  au::SimplePattern pattern_;
+  au::Environment environment_;
+  
+};
 
 }
 
-
-#endif
+#endif  // ifndef SAMSON_VISUALITZATION_H

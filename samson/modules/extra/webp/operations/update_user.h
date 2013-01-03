@@ -61,7 +61,7 @@ namespace webp{
 		   {
 			  user_id.parse( inputs[1].kvs[0]->key );
 			  user.parse( inputs[1].kvs[0]->value );
-			  user.update(); // Update counter with time after the last update
+			  user.update();   // Update counter with time after the last update
 		   }
 		   else if ( inputs[0].num_kvs > 0 )
 		   {
@@ -69,7 +69,7 @@ namespace webp{
 			  user.init( user_id.value );
 		   }
 		   else
-			  return; // No key values at 0 or 1
+			  return;   // No key values at 0 or 1
 
 
 		   for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )

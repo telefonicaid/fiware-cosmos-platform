@@ -9,75 +9,86 @@
  * All rights reserved.
  */
 
+#include <string>
 
-#include "ReadFile.h"       // Own interface
-#include "logMsg/logMsg.h"         // LM_M ...
+#include "logMsg/logMsg.h"         // LOG_SM ...
 
-NAMESPACE_BEGIN(engine)
+#include "./ReadFile.h"            // Own interface
 
-ReadFile::ReadFile( std::string _fileName )
-{
-    fileName = _fileName;
-    file = fopen( fileName.c_str() , "r" );
-    offset = 0;
+namespace engine {
+ReadFile::ReadFile(const std::string& file_name) {
+  file_name_ = file_name;
+  file_      = fopen(file_name_.c_str(), "r");
+  offset_    = 0;
+
+  if (file_ != NULL) {
+    fseek(file_, 0, SEEK_END);
+    file_size_ = ftell(file_);
+    fseek(file_, 0, SEEK_SET);
+  } else {
+    LM_E(("The file '%s' doesn't exist", file_name.c_str()));
+  }
 }
 
-int ReadFile::seek( size_t _offset )
-{
-    if( !file )
-        return 1;
-    
-    if ( offset == _offset )
-        return 0;   // Correct... just do not move
-    
-#if 0
-    // Get a warning to be aware of this seeks if it is too large
-    if( llabs( _offset - offset ) > 100000  ) 
-        LM_W(("Seeking file %s from %lu to %lu" , fileName.c_str() , offset , _offset));
-#endif
-    
-    // Set the current offset
-    offset = _offset;
-    
-    if( fseek(file, offset, SEEK_SET) != 0 )
-    {
-        close();
-        return 3;
-    }
-    
-    // Everything corrent
+ReadFile::~ReadFile() {
+  Close();
+}
+
+int ReadFile::Seek(size_t offset) {
+  if (!file_) {
+    return 1;
+  }
+
+  if (offset_ == offset) {
+    return 0;       // Correct... just do not move
+  }
+
+  if (offset > file_size_) {
+    return 2;
+  }
+
+  if (fseek(file_, offset, SEEK_SET) != 0) {
+    Close();
+    return 3;
+  }
+
+  // Set the current offset
+  offset_ = offset;
+
+  // Everything correct
+  return 0;
+}
+
+int ReadFile::Read(char *read_buffer, size_t size) {
+  if (size == 0) {
     return 0;
-    
+  }
+
+  if (fread(read_buffer, size, 1, file_) == 1) {
+    offset_ += size;     // Move the offset according to the bytes read
+    return 0;
+  } else {
+    return 1;       // Error at reading
+  }
 }
 
-int ReadFile::read( char * read_buffer , size_t size )
-{
-    if ( size == 0)
-        return 0;
-    
-    if ( fread( read_buffer, size, 1, file ) == 1 )
-    {
-        offset += size; // Move the offser according to the read bytes
-        return 0;
-    }
-    else 
-        return 1;   // Error at reading
-    
+bool ReadFile::IsValid() const {
+  return (file_ != NULL);
 }
 
-bool ReadFile::isValid()
-{
-    return (file!=NULL);
+void ReadFile::Close() {
+  if (file_) {
+    fclose(file_);
+    file_ = NULL;
+    offset_ = 0;
+  }
 }
 
-void ReadFile::close()
-{
-    if( file )
-    {
-        fclose( file );
-        file = NULL;
-        offset = 0;
-    }
+std::string ReadFile::file_name() const {
+  return file_name_;
 }
 
-NAMESPACE_END
+size_t ReadFile::offset() const {
+  return offset_;
+}
+}

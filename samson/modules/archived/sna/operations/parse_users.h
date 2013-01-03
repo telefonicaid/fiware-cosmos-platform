@@ -45,7 +45,7 @@ bool getUserFromLine_TME ( char*linea, samson::system::UInt*node, User* user)
 	SNA_PARSER_GET_DATE( user->activationDate );
 	//MRData_Date_computeDayOfTheWeek( &user.activationDate );
 
-	//rest of the fields not interesting rigth now..
+	//rest of the fields not interesting right now..
 	return true;
 }
 
@@ -74,7 +74,7 @@ bool getUserFromLine_JAJAH_interm ( char*linea, samson::system::UInt*node, User*
 	user->activationDate.month		= CHAR_TO_INT( line[pos_field+5] ) *10 + CHAR_TO_INT( line[pos_field+6] );
 	user->activationDate.day		= CHAR_TO_INT( line[pos_field+8] ) *10 + CHAR_TO_INT( line[pos_field+9] );
 
-	//rest of the fields not interesting rigth now..
+	//rest of the fields not interesting right now..
 	return true;
 }
 
@@ -102,7 +102,7 @@ bool getUserFromLine_JAJAH ( char*linea, samson::system::UInt*node, User* user)
 	user->activationDate.month		= CHAR_TO_INT( line[pos_field+5] ) *10 + CHAR_TO_INT( line[pos_field+6] );
 	user->activationDate.day		= CHAR_TO_INT( line[pos_field+8] ) *10 + CHAR_TO_INT( line[pos_field+9] );
 
-	//rest of the fields not interesting rigth now..
+	//rest of the fields not interesting right now..
 	return true;
 }
 
@@ -129,7 +129,7 @@ bool getUserFromLine_TEMM ( char*linea, samson::system::UInt*node, User* user)
 	user->churnDate.day		= 0;
 
 
-	//rest of the fields not interesting rigth now..
+	//rest of the fields not interesting right now..
         return true;
 }
 

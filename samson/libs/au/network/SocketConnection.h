@@ -10,65 +10,68 @@
  */
 
 
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 #ifndef _H_AU_SOCKET_CONNECTION
 #define _H_AU_SOCKET_CONNECTION
 
-#include "au/mutex/Token.h"
-#include "au/string.h"
+#include "au/statistics/Cronometer.h"
+#include "au/containers/SharedPointer.h"
 #include "au/Status.h"
-#include "au/Cronometer.h"
+#include "au/mutex/Token.h"
 #include "au/network/FileDescriptor.h"
+#include "au/string/StringUtilities.h"
 
-namespace au 
-{
-    
-    class SocketConnection : public FileDescriptor
-    {
-        // Andreu note: Use only LM_LM or LM_LW in this class since it is used in hoock function
-        
-        au::Cronometer cronometer; // Creation time cronometer
-        std::string host;          // Name of this element for traces
-        int port;                  // Port in outputgoing connections ( -1 in receiving connections )
-        
-        
-    public:
-        
-        SocketConnection( int _fd , std::string _host , int _port );        
-        
-        // Debug information information
-        std::string str();
+/*****************************************************************************
+*
+*  SocketConnection
+*
+*  Handy class to work with a socket connection
+*  It is used in NetworkListener and directly to establish an output connection
+*  Note: Use only LM_LM or LM_LW in this class since it is used in hoock function
+*
+*****************************************************************************/
 
-        // Get host name
-        std::string getHost();
+namespace au {
+class SocketConnection : public FileDescriptor {
+public:
 
-        // Get used port
-        int getPort();
-        
-        // Get host and port name
-        std::string getHostAndPort();
-        
-        // Connect to another element in the SAMSON network
-        static Status newSocketConnection( std::string host , int port , SocketConnection** socket_connection );
+  SocketConnection(int _fd, std::string _host, int _port);
+  ~SocketConnection();
 
-        // Get connection time;
-        size_t getTime()
-        {
-            return cronometer.diffTimeInSeconds();
-        }
-        
-        // Duplicate this socket connection invalidating this instance
-        // It is a mechanism to extrat this connection and avoid this one to close the socket
-        SocketConnection* duplicateAndInvalidate()
-        {
-            int fd = getFdAndinvalidate();
-            if( fd == -1 )
-                return NULL;
-            
-            return new SocketConnection( fd , host , port );
-        }
-        
-    };
-    
+  // Main method to establish a new output socket connection
+  static Status Create(std::string host, int port,
+                       SocketConnection **socket_connection);
+
+  // Secondary method to create a socket connection
+  static SharedPointer<SocketConnection> Create( const std::string& host , au::ErrorManager& error );
+  
+  // Accesors
+  std::string host();
+  int port();
+  std::string host_and_port();
+
+  // Get connection time;
+  size_t GetConnectionTime();
+
+  // Debug information information
+  std::string str();
+
+private:
+
+  au::Cronometer cronometer_;   // Creation time cronometer
+  std::string host_;            // Name of this element for traces
+  int port_;                    // Port in outputgoing connections ( -1 in receiving connections )
+};
 }
 
-#endif
+#endif  // ifndef _H_AU_SOCKET_CONNECTION

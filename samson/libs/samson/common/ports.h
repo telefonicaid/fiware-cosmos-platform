@@ -12,21 +12,21 @@
 #define SAMSON_PORTS_H
 
 /* ****************************************************************************
-*
-* FILE                     ports.h
-*
-* AUTHOR                   Ken Zangelin
-*
-* CREATION DATE            Jan 13 2011
-*
-*/
+ *
+ * FILE                     ports.h
+ *
+ * AUTHOR                   Ken Zangelin
+ *
+ * CREATION DATE            Jan 13 2011
+ *
+ */
 
 
 
 /* ****************************************************************************
-*
-* Common ports for the Samson platform
-*/
+ *
+ * Common ports for the Samson platform
+ */
 
 /* Judges 13:24
  *
@@ -36,11 +36,11 @@
 #define SAMSON_WORKER_PORT     1324
 
 
-/* Genisis 2:2 (Book 1) 
+/* Genisis 2:2 (Book 1)
  *
  * And on the seventh day God ended his work which he had made; and he rested
  * on the seventh day from all his work which he had made
  */
-#define SAMSON_WORKER_WEB_PORT 1202 //RESTful API
+#define SAMSON_WORKER_WEB_PORT 1202  // RESTful API
 
 #endif

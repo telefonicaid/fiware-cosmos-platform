@@ -13,38 +13,42 @@
 
 #include <cstring>
 #include <string>
-#include "au/namespace.h"
-
-NAMESPACE_BEGIN(au)
-
-template<typename T,typename T2>
-void replaceIfLower(T &t,T2 v)
-{
-    if( (T)v < t )
-        t = v;
-}
-
-template<typename T,typename T2>
-void replaceIfHiger(T &t,T2 v)
-{
-    if( (T)v > t )
-        t = v;
-}
-
-int getColumns();
-void clear_line();
 
 
-// Random 64 bit number
+namespace au {
+// Information about terminal
+int getTerminalColumns();
+void ClearTerminalLine();
+
+/**
+ * \brief Get a random valid "code64 number"
+ * "code64 number" and size_t numbers that satisfy minor restrictions in order to be printable as strings ( see code64_str )
+ */
 size_t code64_rand();
-bool code64_is_valid( size_t v );
-std::string code64_str( size_t );
 
+/**
+ * \brief Check if a provided "code64 number" is value
+ * This checks if the provided size_t satisfy minor conditions to be printed as string
+ */
+bool code64_is_valid(size_t v);
 
-// Remove '\n's at the end of the line
-void remove_return_chars( char* line );
+/**
+ * \brief Get string for a provided "code64 number"
+ * All "code64 number" can be transformed to a string in order to be displayed.
+ */
+std::string code64_str(size_t);
 
+/**
+ * \brief Get "code64 number" based on its string representation
+ * Inverse of code64_str
+ */
 
-NAMESPACE_END
+size_t code64_num(const std::string& value);
+/**
+ * \brief Get position in valid_chars vector for a particular char
+ * Used inside code64_num to recover original number based on its string representation
+ */
+int GetCode64Base(char v);
+}
 
-#endif
+#endif  // ifndef _H_AU_UTILS

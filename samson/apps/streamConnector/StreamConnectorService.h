@@ -10,35 +10,35 @@
  */
 
 
-#ifndef _H_SAMSON_CONNECTOR_SERVICE
-#define _H_SAMSON_CONNECTOR_SERVICE
+#ifndef _H_STREAM_CONNECTOR_SERVICE
+#define _H_STREAM_CONNECTOR_SERVICE
 
 #include <set>
 
 #include "logMsg/logMsg.h"
 
+#include "au/console/Console.h"
 #include "au/containers/map.h"
 #include "au/containers/vector.h"
 #include "au/mutex/Token.h"
-#include "au/string.h"
-#include "au/console/Console.h"
+#include "au/string/StringUtilities.h"
 
 #include "engine/Buffer.h"
 
-#include "au/network/NetworkListener.h"
 #include "au/network/ConsoleService.h"
-#include "au/network/RESTService.h"
 #include "au/network/NetworkListener.h"
+#include "au/network/NetworkListener.h"
+#include "au/network/RESTService.h"
 
-#include "common.h"
-#include "StreamConnector.h"
 #include "DiskAdaptor.h"
 #include "SamsonAdaptor.h"
+#include "StreamConnector.h"
+#include "common.h"
 
 #include "BufferProcessor.h"
 
-#include "Channel.h"
 #include "Adaptor.h"
+#include "Channel.h"
 #include "ConnectorCommand.h"
 #include "ConnectorCommand.h"
 
@@ -49,23 +49,19 @@ extern int sc_web_port;
 
 
 namespace stream_connector {
-    
-    // Class to accept connection to monitor
-    class StreamConnectorService : public au::network::ConsoleService
-    {
-        StreamConnector * samson_connector;
-        
-    public:
-        
-        StreamConnectorService( StreamConnector * _samson_connector );        
-        virtual ~StreamConnectorService();
-        
-        virtual void runCommand( std::string command , au::Environment* environment , au::ErrorManager* error );        
-        virtual void autoComplete( au::ConsoleAutoComplete* info , au::Environment* environment );
-        virtual std::string getPrompt( au::Environment* environment );
-        
-    };
-    
-} // End of namespace stream_connector
+// Class to accept connection to monitor
+class StreamConnectorService : public au::network::ConsoleService {
+  StreamConnector *samson_connector;
 
-#endif
+public:
+
+  StreamConnectorService(StreamConnector *_samson_connector);
+  virtual ~StreamConnectorService();
+
+  virtual void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error);
+  virtual void AutoComplete(au::console::ConsoleAutoComplete *info, au::Environment *environment);
+  virtual std::string GetPrompt(au::Environment *environment);
+};
+}  // End of namespace stream_connector
+
+#endif  // ifndef _H_STREAM_CONNECTOR_SERVICE

@@ -1,6 +1,0 @@
---NAME--
-REST JSON /samson/logging/traces/off
---SHELL--
-curl -s --request POST http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/logging/traces/off.json
---EXPECT--
-{{"trace":"all trace levels turned off"}}

@@ -13,7 +13,8 @@ ifndef SAMSON_VERSION
 SAMSON_VERSION=0.7.0
 endif
 ifndef SAMSON_RELEASE
-	SAMSON_RELEASE=1
+	# Use the current timestamp guarantee unique builds
+	SAMSON_RELEASE:=$(shell echo `date +%Y%m%d`)
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -29,14 +30,14 @@ DISTRO:=$(shell lsb_release -is)
 DISTRO_CODENAME:=$(shell lsb_release -cs)
 
 ifndef CPU_COUNT
-	OS=$(shell uname -s)
+	OS=$(uname -s)
 	ifeq ($(OS),Darwin)
-		CPU_COUNT:=$(shell sysctl hw.ncpu | cut -f 2 -d" ")
+		CPU_COUNT=$(shell sysctl hw.ncpu | cut -f 2 -d" ")
 	endif
 	ifeq ($(OS),Linux)
 		CPU_COUNT:=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 	else
-		CPU_COUNT=1
+		CPU_COUNT=8
 	endif
 endif
 
@@ -63,6 +64,16 @@ endif
 # Log dir to handle tests for multiple version simultaneously
 ifndef LOGSERVER_LOG_DIR
 LOGSERVER_LOG_DIR=/var/log/logserver
+endif
+
+# Zookeeper server hostname
+ifndef ZOOKEEPER_SERVER
+ZOOKEEPER_SERVER=localhost
+endif
+
+# Log dir to handle tests for multiple version simultaneously
+ifndef ZOOKEEPER_PORT
+ZOOKEEPER_PORT=2181
 endif
 
 # Lint for C/C++ code
@@ -163,8 +174,16 @@ install_debug_all: debug_all
 
 install_coverage: coverage
 	make -C BUILD_COVERAGE install -j $(CPU_COUNT)
+	
+setup_test_config:
 	mkdir -p  $(SAMSON_WORKING)/etc
+	# Trying to fix the setup uncertainty for all environments
+	if [ -f ${SAMSON_WORKING}/etc/setup.txt ] ; then mv ${SAMSON_WORKING}/etc/setup.txt  ${SAMSON_WORKING}/etc/setup.txt.old ; fi
 	cp etc/setup.txt.test $(SAMSON_WORKING)/etc/setup.txt
+
+recover_setup_config:
+	# Restoring the old setup (if any)
+	if [ -f ${SAMSON_WORKING}/etc/setup.txt.old ] ; then mv ${SAMSON_WORKING}/etc/setup.txt.old  ${SAMSON_WORKING}/etc/setup.txt ; fi
 
 install_man_release: man_release
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
@@ -211,9 +230,12 @@ test_init:
 	#killall samsonWorker || true
 	kill `ps -efl | fgrep "logServer -port ${SAMSON_LOG_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 	bash -x scripts/lib_shared_memory.scr || true
-	lcov --directory BUILD_COVERAGE --zerocounters	
+	mkdir -p coverage
+	lcov --zerocounters --directory BUILD_COVERAGE/
+	lcov --capture --initial --directory BUILD_COVERAGE -b BUILD_COVERAGE --output-file coverage/samson.init.info
+	mkdir -p $(LOG_DIR) || true
 	logServer -port ${SAMSON_LOG_PORT_ENV} -dir ${LOGSERVER_LOG_DIR} -query_port ${SAMSON_LOGQUERY_PORT_ENV}
-	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS}
+	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} ${SAMSON_LOG_LEVELS} -zk ${ZOOKEEPER_SERVER}:${ZOOKEEPER_PORT}
 
 test_teardown:
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
@@ -221,20 +243,23 @@ test_teardown:
 	bash -x scripts/lib_shared_memory.scr
 
 test_report:
-	mkdir -p coverage
-	lcov --directory BUILD_COVERAGE --capture --output-file coverage/samson.info
+	lcov --directory BUILD_COVERAGE --capture -b BUILD_COVERAGE --output-file coverage/samson.test.info 
+	lcov --add-tracefile coverage/samson.init.info --add-tracefile coverage/samson.test.info --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "BUILD_COVERAGE/modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "libs/samson/common/samson.pb.*"  -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
 
-run_coverage: install_coverage test_init test_coverage test_teardown test_report
+run_coverage: install_coverage setup_test_config test_init test_coverage test_report
+
+run_partial_coverage: install_coverage setup_test_config test_init test_coverage
 
 # There is a problem with coverage tool for mac.. please do use this output a mac environment
 
-run_mac_coverage: install_coverage
+run_mac_coverage: install_coverage setup_test_config
 	export GCOV_PREFIX=$(PWD)
 	make begin_mac_coverage
 	make process_mac_coverage
@@ -249,7 +274,7 @@ begin_mac_coverage:
 
 process_mac_coverage:
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
-	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS}
+	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} ${SAMSON_LOG_LEVELS}
 	make test_coverage
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 
@@ -271,11 +296,12 @@ finish_mac_coverage:
 test: ctest
 ctest: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
-	cp apps/unitTest/delilah/words_input.txt /tmp
+	cp apps/unitTest/words_input.txt /tmp
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
-	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	cp apps/unitTest/words_input.txt /tmp/dir_test
+	make setup_test_config
 	make test -C BUILD_DEBUG_ALL ARGS="-D ExperimentalTest" TEST_VERBOSE=1
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
@@ -283,36 +309,41 @@ ctest: debug_all
 	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest ${SAMSON_LOG_LEVELS} --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
+	make recover_setup_config
 
 unit_test: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
-	cp apps/unitTest/delilah/words_input.txt /tmp
+	cp apps/unitTest/words_input.txt /tmp
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
-	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	make setup_test_config
+	cp apps/unitTest/words_input.txt /tmp/dir_test
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest  ${SAMSON_LOG_LEVELS} --gtest_shuffle --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
+	make recover_setup_config
 
 test_coverage:
 	cp BUILD_COVERAGE/modules/core/txt/libtxt.so /tmp
-	cp apps/unitTest/delilah/words_input.txt /tmp
+	cp apps/unitTest/words_input.txt /tmp
 	mkdir -p /tmp/dir_test
-	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	make setup_test_config
+	cp apps/unitTest/words_input.txt /tmp/dir_test
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_COVERAGE/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_COVERAGE/DartConfiguration.tcl
-	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" TEST_VERBOSE=1 || true
+	# Disable functional testing until we can sort out zookeeper
+	# make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" TEST_VERBOSE=1 || true
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest  ${SAMSON_LOG_LEVELS} --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' -e 's,\(<testcase name="\)DISABLED_\(.*status="notrun".*\) />,\1\2>\n      <skipped/>\n    </testcase>,' BUILD_COVERAGE/samson_test.xml
-
+	make recover_setup_config
 
 test_samsonWorker: install_debug
 	scripts/samsonTest test/samsonWorker
@@ -364,7 +395,11 @@ testdistribute: install
 
 xcode:
 	mkdir xcode_proj || true
-	cd xcode_proj; cmake .. -DIGNORE_UNI_TEST=1 -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=False -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) -G Xcode
+	cd xcode_proj; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=False -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) -G Xcode
+
+xcode_modules:
+	mkdir xcode_proj || true
+	cd xcode_proj; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) -G Xcode
 
 eclipse:	
 	./scripts/prepareEclipse
@@ -376,16 +411,16 @@ reset:
 	rm -Rf BUILD_RELEASE
 	rm -Rf BUILD_RELEASE_ALL
 	rm -Rf BUILD_COVERAGE
-	rm -Rf xcode_proj
-	rm -f libs/common/samson.pb.*
-	rm -f libs/data/data.pb.*
+	rm -Rf coverage
+	rm -f libs/samson/common/samson.pb.*
+	rm -f libs/au/au.pb.*
 	rm -Rf /usr/local/include/samson || true
 	rm -f testing/module_test/Module.*
 	rm -f /etc/init/samson.conf || true
 	rm -f /etc/profile.d/samson.sh || true
 
-cleansvn: 
-	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done
+reset_xcode:
+	rm -Rf xcode_proj
 
 # Remove /opt/samson to guarantee a clean build
 cleanhudson:
@@ -399,12 +434,18 @@ cleanhudson:
 
 
 v: valgrind
-valgrind: di
-	valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> output_valgrind_samsonLocal
+valgrind: dia
+		  rm -f output_valgrind_samsonWorker 
+	valgrind -v --gen-suppressions=all --suppressions=valgrind_exceptions.txt --leak-check=full --track-origins=yes --show-reachable=yes  samsonWorker -fg -log "log_set samson::C D"  2> output_valgrind_samsonWorker
 
+v_gen:
+	cat output_valgrind_samsonWorker  | grep -v '\-\-' | grep -v "==" >> valgrind_exceptions.txt
 
 clear_ipcs:
 	for mem in `sudo ipcs -m  | awk '{ if ($$6 == 0) print $$2;}'`; do ipcrm -m $$mem; done
+
+clear_ipcs_mac:
+	for mem in `sudo ipcs -m  | awk '{ if ($$1 == "m") print $$2;}'`; do ipcrm -m $$mem; done
 
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
@@ -422,16 +463,39 @@ publish_packages:
 		fi; \
 	fi
 
-rpm: clean
+# Create a source tarball
+# Note that this only uses the checked in source, any non-committed code 
+# will not be archived
+tarball:
+	git archive --format=tar --prefix=./samson-$(SAMSON_VERSION)/ HEAD | gzip > samson-$(SAMSON_VERSION).tar.gz
+
+rpm:
 	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
 	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
-	tar cz --transform 's,^./,samson-$(SAMSON_VERSION)/,' .  --show-transformed-names --exclude=*.svn* -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
+	# Generate a tarball from the latest checked in code
+	git archive --format=tar --prefix=./samson-$(SAMSON_VERSION)/ HEAD | gzip > ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
 	rpmbuild -bb rpm/samson.spec --define 'version $(SAMSON_VERSION)' --define 'release $(SAMSON_RELEASE)'
+
+mock: /var/lib/mock/epel-6-x86_64-samson
+	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
+	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
+	# Generate a tarball from the latest checked in code
+	git archive --format=tar --prefix=./samson-$(SAMSON_VERSION)/ HEAD | gzip > ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
+	rpmbuild -bs rpm/samson.spec --define 'version $(SAMSON_VERSION)' --define 'release $(SAMSON_RELEASE)'
+	/usr/bin/mock   -r epel-6-x86_64-samson ~/rpmbuild/SRPMS/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).src.rpm -v --define='version $(SAMSON_VERSION)' --define='release $(SAMSON_RELEASE)' 
+
+/var/lib/mock/epel-6-x86_64-samson: /etc/mock/epel-6-x86_64-samson.cfg
+	/usr/bin/mock --init -r epel-6-x86_64-samson
+
+# We use a custom mock config file for CentOS 6 that references the RPM repo on
+# http://samson09.hi.inet/repository/redhat/6 for libzookeeper
+/etc/mock/epel-6-x86_64-samson.cfg:
+	sudo cp scripts/mock/epel-6-x86_64-samson.cfg /etc/mock/epel-6-x86_64-samson.cfg
 
 publish_rpm: rpm
 	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
-	rsync  -v  ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@$(REPO_SERVER):/var/repository/redhat/6/x86_64
-	ssh repo@$(REPO_SERVER) createrepo -q -d /var/repository/redhat/6/x86_64
+	rsync  -e 'ssh -i package/ssh/repository' -v  ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@$(REPO_SERVER):/var/repository/redhat/6/x86_64
+	ssh -i package/ssh/repository repo@$(REPO_SERVER) createrepo -q -d /var/repository/redhat/6/x86_64
 
 # currently the deb scripts require Samson be installed before 
 # the package can be generated. Using SAMSON_HOME we can override
@@ -445,7 +509,7 @@ deb:
 
 publish_deb: deb
 	# Upload the files. A cron job on the server will include them in the repository
-	scp package/deb/* repo@$(REPO_SERVER):/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
+	rsync -e 'ssh -i package/ssh/repository' -v  package/deb/* repo@$(REPO_SERVER):/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
 
 man_release:
 	if [ ! -d BUILD_RELEASE ]; then \
@@ -455,7 +519,7 @@ man_release:
 	mkdir -p BUILD_RELEASE/man/man7
 	help2man --name="Samson worker"  --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
 	help2man --name="Samson setup"   --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
-	help2man --name="Delilah"  --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah > ./BUILD_RELEASE_ALL/man/man1/delilah.1
+	help2man --name="Delilah"  --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah > ./BUILD_RELEASE/man/man1/delilah.1
 	cp man/samson-*.7 ./BUILD_RELEASE/man/man7
 
 man_release_all: release_all
@@ -507,7 +571,8 @@ test_makefile:
 
 # Verify that any new/changed source code is "compliant"
 code_lint:
-	for file in $$(git status --porcelain -s | grep -v \?\? | awk '{print $$2}'); \
+	git status --porcelain -s | grep -v \?\? | egrep 'A  | M ' | grep -v '\.txt'$ | grep -v makefile | awk '{ print $$2 }'
+	for file in $$(git status --porcelain -s | grep -v \?\? | egrep 'A  | M |AM ' | grep -v '\.txt'$ | grep -v makefile | awk '{ print $$2 }' ); \
 	do \
 		extension=$$(basename $${file} | sed 's/.*\.//'); \
 		case "$$extension" in \
@@ -521,3 +586,26 @@ code_lint:
 				;;  \
 		esac \
 	done
+
+# Uncrusfity all files in libs and apps directory
+uncrustify:
+	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find libs -name *.cpp)
+	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find libs -name *.h)
+	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find apps -name *.cpp)
+	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find apps -name *.h)
+	rm -f $$(find . -name *.uncrustify)
+
+
+
+# Handy targets for mac compilation
+di_47:
+	CC=gcc-mp-4.7 CXX=g++-mp-4.7 make di
+
+di_clang:
+	CC=clang CXX=clang++ make di
+
+gcovr:
+	scripts/gcovr --object-directory=$(PWD)/BUILD_COVERAGE -f $(PWD)/ -e BUILD_COVERAGE/modules -e modules
+
+docs:
+	doxygen doc/doxygen.setup 2>&1 

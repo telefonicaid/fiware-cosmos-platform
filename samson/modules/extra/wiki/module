@@ -42,14 +42,32 @@ reduce reduce_inverted_index
 	helpLine "Builds an inverted index (words or links), working on a state"
 }
 
+script demo_inverted_index_links
+{
+    code
+    {
+        remove_all;
+        add_stream_operation parser wiki.parse_links -input input   -output links;
+        add_stream_operation reduce wiki.reduce_inverted_index -input 'links inv_index'  -output inv_index;
+    }
+}
 
+script demo_inverted_index_words
+{
+    code
+    {
+        remove_all;
+        add_stream_operation parser wiki.parse_words -input input   -output words;
+        add_stream_operation reduce wiki.reduce_inverted_index   -input 'words inv_index'   -output inv_index;
+    }
+}
 
 script init_stream_operations
 {
 	code
 	{
-		rm_stream_operation wiki.parser -f;
-		add_stream_operation wiki.parser  txt.parser_words wiki.01.input.txt hit.01.input_words;
+		add_stream_operation wiki.parser  txt.parser_words   -input wiki.01.input.txt   -output output_words;
+		add_queue_connection output_words hit.01.input;
 	}
 }
 
@@ -57,9 +75,9 @@ script demo
 {
     code
     {
-        remove_all_stream;
+        remove_all;
         init_stream wiki.init_stream_operations;
-        init_stream hit.init_stream_operations;
+        init_stream -prefix hit hit.init_stream_operations;
     }
 
     helpLine "Init stream operations"

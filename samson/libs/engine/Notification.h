@@ -23,7 +23,7 @@
  *
  *
  * --> A notification is a "message" sent in the main-thread runloop to a set of objects ( targets )
- * --> The notification is also delivered to all the objects that "listen" 
+ * --> The notification is also delivered to all the objects that "listen"
  *     the notification chanel ( defined by notification's name)
  * --> Internall information is contained in environemnt variable and the optional object parameter
  *
@@ -32,75 +32,53 @@
 #ifndef _H_ENGINE_NOTIFICATION
 #define _H_ENGINE_NOTIFICATION
 
-#include <set>                  // std::set
-
-#include "au/Environment.h"     // au::Enrivonment
-#include "au/namespace.h"
-#include "au/Object.h"
-
 #include <string.h>
 
-NAMESPACE_BEGIN(engine)
+#include <set>                  // std::set
+#include <string>
 
-class Object;
+#include "au/containers/Dictionary.h"
+#include "au/containers/GeneralDictionary.h"
+#include "au/Environment.h"     // au::Enrivonment
 
+namespace engine {
 
-/**
- Main class for Notifications
- */
-
-class Notification
-{
-    friend class ObjectsManager;
-    
-    const char* name;                       // Name of the notification
-    
-    // Single object to be used as parameter ( note retain / release model associated to au::Object )
-    au::ObjectContainer<au::Object> object_container;   
-    
-    std::set<size_t> targets;               // Identifiers that should receive this notification
-    
-public:
-    
-    au::Environment environment;            // Dictionary of properties for maximum flexibility
-    
-    const char* getName()
-    {
-        return name;
-    }
-    
-    bool isName( const char * _name )
-    {
-        return strcmp( name , _name ) == 0;
-    }
-    
-    // Simples constructor
-    Notification( const char* _name );
-    
-    // Constructor with one object as "main"
-    Notification( const char* _name , au::Object * _object );
-    
-    // Constructor with one object and a target listener
-    Notification( const char* _name , au::Object * _object , size_t _listener_id );
-    
-    // Constructor with one object and a multiple targets listener
-    Notification( const char* _name , au::Object * _object , std::set<size_t>& _listeners_id );
-    
-    // Destructor
+class Notification {
+  public:
+    // Constructor and destructor
+    explicit Notification(const char *_name);
     ~Notification();
-    
+
+    // Add listeners
+    void AddEngineListener(size_t listener_id);
+    void AddEngineListeners(const std::set<size_t>& _listeners_id);
+
+    // Accessorts
+    const char *name();
+    au::GeneralDictionary& dictionary();
+    au::Environment& environment();
+    bool isName(const char *name);
+    const std::set<size_t>& targets();
+
     // Get a string for debug
-    std::string getDescription();
-    std::string getShortDescription();
-    
-    // Extract the object of this notification
-    au::Object* getObject();
-    
-    // Check if there is an object in this notification
-    bool containsObject();
-    
+    std::string GetDescription();
+    std::string GetShortDescription();
+
+  private:
+    // Name of the notification
+    const char *name_;
+
+    // Generic dictionary ob objects ( shared pointers )
+    au::GeneralDictionary dictionary_;
+
+    // Identifiers that should receive this notification
+    std::set<size_t> targets_;
+
+    // Dictionary of properties for maximum flexibility
+    au::Environment environment_;
+
+    friend class ObjectsManager;
 };
+}
 
-NAMESPACE_END
-
-#endif
+#endif  // ifndef _H_ENGINE_NOTIFICATION

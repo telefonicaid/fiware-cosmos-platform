@@ -12,12 +12,11 @@ SET( STATIC_LIBS
      engine
      samsonModule
      samsonStream
-     samsonIsolated
      samsonNetwork
      samsonCommon
      au
      lm
-au
+     au
      pa
      protobuf
      dl

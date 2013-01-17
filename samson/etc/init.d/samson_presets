@@ -1,7 +1,0 @@
-#! /bin/bash
-
-#
-# ---- sysadmin : init.d script for SAMSON needed PRESETS 
-#
-
-/sbin/sysctl -w kernel.shmmax=270000000

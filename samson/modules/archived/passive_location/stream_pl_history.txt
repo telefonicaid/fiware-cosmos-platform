@@ -1,7 +1,0 @@
-add_stream_operation           ps.export_mongo  passive_location.mongo_location_export  common.mobility_records
-set_stream_operation_property  ps.export_mongo  delayed_processing  no
-
-# Specific environemnt variables for "ps.export_mongo" operation
-set_stream_operation_property ps.export_mongo    mongo.ip                  samson05
-set_stream_operation_property ps.export_mongo    mongo.db                  PassiveLocation
-set_stream_operation_property ps.export_mongo    mongo.collection          History

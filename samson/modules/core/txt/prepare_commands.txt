@@ -1,5 +1,0 @@
-add_stream_operation parser txt.parser_words txt words
-add_stream_operation reduce txt.word_count2 words all_words all_words
-
-# Set properties for this queues
-

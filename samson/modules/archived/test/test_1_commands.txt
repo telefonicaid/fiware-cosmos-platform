@@ -1,4 +1,0 @@
-remove_all
-test.test_1
-download out.txt out.txt
-remove_all

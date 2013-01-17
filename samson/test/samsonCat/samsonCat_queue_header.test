@@ -1,6 +1,0 @@
---NAME--
-samsonCat - queue_header
---SHELL--
-samsonCat -header words | sed 's/\(\[[0-9]* [0-9]*\]\)/[***** *****]/' | head -1
---EXPECT--
-Total: ( 16 kvs [ 16.0 ] in 176 bytes [  176 ] )

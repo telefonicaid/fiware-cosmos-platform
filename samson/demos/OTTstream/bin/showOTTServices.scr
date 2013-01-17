@@ -1,4 +1,0 @@
-samsonPop -port_node 1236 output_levels | samsonLevelMonitor -time -nr 20.0 -refresh 10 -concept Skype,Viber,Facebook,GTalk,WhatsApp,Facebook,Tuenti,Google+ -title "Number of users in last 5 minutes" &
-samsonPop -port_node 1236 output_levels | samsonLevelMonitor -time -nr 20.0 -refresh 10 -concept COMMS,SOCIAL -title "Number of users in last 5 minutes" &
-samsonPop -port_node 1236 output_levels | samsonLevelMonitor -time -nr 20.0 -refresh 10 -concept Vodafone,Orange,Yoigo -title "Number of users in last 5 minutes" &
-

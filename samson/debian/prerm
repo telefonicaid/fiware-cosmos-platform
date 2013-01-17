@@ -1,4 +1,0 @@
-#!/bin/bash
-/etc/init.d/samson stop
-update-rc.d -f samson remove > /dev/null
-userdel samson

@@ -1,1 +1,0 @@
-./test_disk -working .. >test_disk_stdout 2>test_disk_stderr

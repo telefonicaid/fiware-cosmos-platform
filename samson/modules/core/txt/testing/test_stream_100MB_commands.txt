@@ -1,8 +1,0 @@
-rm_local out_100MB
-add_stream_operation parser txt.parser_words words parsed_words
-add_stream_operation counter txt.word_count2 parsed_words counted_words counted_words
-set_stream_operation_property parser delayed_processing no
-set_stream_operation_property counter delayed_processing no
-wait
-pop counted_words out_100MB 
-#remove_all_stream

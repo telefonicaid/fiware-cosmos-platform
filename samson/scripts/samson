@@ -1,7 +1,0 @@
-for mach in samson02 samson03 samson04 samson05 samson06 samson07 samson08 samson09
-do
-	echo \'$*\' \(as samson\) in $mach
-	ssh samson@$mach $*
-    echo '============================================='
-	echo
-done

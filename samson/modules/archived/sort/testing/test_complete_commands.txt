@@ -1,7 +1,0 @@
-remove_all
-rm_local out
-add data.txt -txt
-upload in.txt data.txt
-sort.sort data.txt out.txt -create
-#rm_local in.txt
-download out.txt out

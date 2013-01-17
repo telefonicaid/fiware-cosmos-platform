@@ -1,7 +1,0 @@
-remove_all
-example.generator_list a -c
-example.map_list a b -c
-example.map_list b c -c
-download a a -force
-download b b -force
-download c c -force

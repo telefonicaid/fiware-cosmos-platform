@@ -1,4 +1,0 @@
-svn status | grep -v ^\?
-echo
-svn status | grep ^\? | grep -v "    build/" | grep -v libs/samson/common/samson.pb | grep -v libs/samson/data/data.pb | grep -v '?       testing/module_test/Module' | grep -v '?       images' | grep -v '?       BUILD_' | grep -v build\$ | grep -v _base.h\$
-

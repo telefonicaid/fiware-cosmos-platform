@@ -1,8 +1,0 @@
---NAME--
-samsonModuleEditor - version
---SHELL--
-samsonModuleEditor -version
---EXPECT--
-No MAN version
-No MAN Copyright
-No MAN Author

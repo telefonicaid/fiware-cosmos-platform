@@ -1,9 +1,0 @@
-
-In RedHat, we had a problem related with PHP access to HTTP connections
-This is caused by the extra protection of SELINUX
-
-Check if SELinux is enabled:
-# /usr/sbin/sestatus -v
-
-In case it is, you can just type the command:
-# setsebool httpd_can_network_connect=1

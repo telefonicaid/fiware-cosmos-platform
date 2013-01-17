@@ -1,4 +1,0 @@
-cat: 0: [0/path_to_somewhere_0; 8/path_to_somewhere_8; 7/path_to_somewhere_7; ]
-cat: 1: [2/path_to_somewhere_2; 1/path_to_somewhere_1; 5/path_to_somewhere_5; ]
-cat: 2: [4/path_to_somewhere_4; 3/path_to_somewhere_3; 9/path_to_somewhere_9; ]
-cat: 3: [6/path_to_somewhere_6; 3/path_to_somewhere_3; 7/path_to_somewhere_7; ]

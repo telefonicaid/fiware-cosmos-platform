@@ -1,2 +1,0 @@
-samsonPushLogs -ti "2011-11-03 01:00:00" -nr 5.0 -node overthetop01 -port_node 1236 -dl "HTTP,timesorted,16,9,2,logs_http DNS,timesorted,11,4,2,logs_dns SMS,timesorted,18,12:14,2,logs_sms Voice,timesorted,35,1,1,logs_voice"
-

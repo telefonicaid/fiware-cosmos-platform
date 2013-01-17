@@ -1,8 +1,0 @@
---NAME--
-samsonModuleCat - version
---SHELL--
-samsonModuleCat -version
---EXPECT--
-No MAN version
-No MAN Copyright
-No MAN Author

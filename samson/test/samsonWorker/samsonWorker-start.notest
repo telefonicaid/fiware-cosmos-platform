@@ -1,8 +1,0 @@
---NAME--
-samsonWorker: worker start
---SHELL-INIT--
-killall samsonWorker || true
---SHELL--
-samsonWorker | uniq
---EXPECT--
-OK. samsonWorker is now working in background.

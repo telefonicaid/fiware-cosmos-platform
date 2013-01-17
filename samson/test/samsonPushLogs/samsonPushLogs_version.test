@@ -1,8 +1,0 @@
---NAME--
-streamConnector - version
---SHELL--
-streamConnector -version
---EXPECT--
-No MAN version
-No MAN Copyright
-No MAN Author

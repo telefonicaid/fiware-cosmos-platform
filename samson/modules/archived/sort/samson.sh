@@ -1,1 +1,0 @@
-samsonLocal -f sort_commands.txt

@@ -1,3 +1,0 @@
-samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept category -title "Top categories"  > /tmp/topic_categ 2>&1 &
-samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept domain -title "Top domains" > /tmp/topic_domain 2>&1   &
-samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept url -title "Top urls" > /tmp/topic_url 2>&1  &

@@ -1,7 +1,0 @@
-
-
-
-* Pasar la cadena SNA de macro a SAMSON
-* Procesado de OSN de O2-UK
-* Ejemplo de procesado de URLs generadas sinteticamente.
-

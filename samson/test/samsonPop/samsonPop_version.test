@@ -1,9 +1,0 @@
---NAME--
-samsonPop - version
---SHELL--
-samsonPop -node ${SAMSON_TEST_HOST}:${SAMSON_WORKER_PORT_ENV}  -version
---EXPECT--
-0.7.0
-Copyright (C) 2011 Telefonica Investigacion y Desarrollo
-
-Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.

@@ -121,7 +121,7 @@ def install_cosmos_app(config):
         run("rm -rf cosmos-app")
     run("mkdir cosmos-app")
     local_cosmos_app = os.path.join(BASEPATH,
-                                "../cosmos/platform/frontend/hue-apps/cosmos")
+                                "../platform/frontend/hue-apps/cosmos")
     if os.path.exists(os.path.join(local_cosmos_app, "parts")):
         warn(yellow("Project root was built with buildout"))
         warn(yellow("Going to remove all buildout by-products"))

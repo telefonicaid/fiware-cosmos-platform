@@ -19,9 +19,9 @@ BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 def get_cosmos_version():
     """
-    Reads the Cosmos version from the root POM in the cosmos folder
+    Reads the Cosmos version from the root POM in the root folder
     """
-    root_pom = parse(os.path.join(BASEPATH, "../cosmos/pom.xml"))
+    root_pom = parse(os.path.join(BASEPATH, "../pom.xml"))
     version_node = (node for node in root_pom.childNodes[0].childNodes
                             if node.nodeName == "version").next()
     return version_node.childNodes[0].nodeValue

@@ -126,7 +126,7 @@ def add_test_setup():
     Installs any test-specific setup components
     """
     files_to_delete = put(os.path.join(BASEPATH,
-                          '../cosmos/tests/testUser.json'), 'testUser.json')
+                          '../tests/testUser.json'), 'testUser.json')
     with cd('/usr/share/hue'):
         run('build/env/bin/hue loaddata ~/testUser.json')
     for file_to_delete in files_to_delete:

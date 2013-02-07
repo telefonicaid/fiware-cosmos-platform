@@ -23,7 +23,7 @@
         <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
 
         <jvm.version>1.6</jvm.version>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
+        <org.apache.hadoop>1.0.4</org.apache.hadoop>
     </properties>
 
     <build>
@@ -208,7 +208,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
-            <version>${org.apache.hadoop}-cdh3u4</version>
+            <version>${org.apache.hadoop}</version>
         </dependency>
         <dependency>
             <groupId>com.hadoop.compression</groupId>

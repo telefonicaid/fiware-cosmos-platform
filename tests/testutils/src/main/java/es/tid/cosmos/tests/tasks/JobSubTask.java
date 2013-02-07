@@ -27,12 +27,13 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
 
 import es.tid.cosmos.tests.environment.Environment;
 import es.tid.cosmos.tests.environment.EnvironmentSetting;
 import es.tid.cosmos.tests.jobsub.om.generated.*;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNull;
 
 /**
  *
@@ -117,9 +118,8 @@ public class JobSubTask extends Task {
                          "Verifying task is completed");
             final String frontendName = this.env.getProperty(
                     EnvironmentSetting.FrontendServer);
-            fs = FileSystem.newInstance(
-                    new URI("hdfs://" + frontendName),
-                    new Configuration());
+            fs = FileSystem.get(
+                    new URI("hdfs://" + frontendName), new Configuration());
         } catch (URISyntaxException ex) {
             throw new TestException("Bad URI", ex);
         } catch (IOException ex) {

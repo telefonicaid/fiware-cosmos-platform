@@ -184,7 +184,7 @@ public class HadoopSshFile implements SshFile {
      * References
      * In contrast to the POSIX model, there are no sticky, setuid or setgid
      * bits for files as there is no notion of executable files.
-     * http://hadoop.apache.org/common/docs/r0.20.2/hdfs_permissions_guide.html
+     * http://hadoop.apache.org/common/docs/r1.0.4/hdfs_permissions_guide.html
      *
      * @return is this user allowed to execute this path?
      */

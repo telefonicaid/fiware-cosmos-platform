@@ -14,11 +14,11 @@ package es.tid.cosmos.platform.injection.server;
 import java.io.*;
 import java.util.List;
 
+import com.google.common.io.Files;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.AccessControlException;
-import org.apache.hadoop.thirdparty.guava.common.io.Files;
 import org.apache.sshd.server.SshFile;
 import org.junit.After;
 import org.junit.Before;

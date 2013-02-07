@@ -22,7 +22,7 @@
 
         <!-- platform-wide dependency versions -->
         <jvm.version>1.6</jvm.version>
-        <org.apache.hadoop>0.20.2</org.apache.hadoop>
+        <org.apache.hadoop>1.0.4</org.apache.hadoop>
     </properties>
 
     <build>
@@ -49,6 +49,7 @@
                     <artifactId>maven-protoc-plugin</artifactId>
                     <version>0.1.10</version>
                     <configuration>
+                        <protocExecutable>${protoc.path}</protocExecutable>
                         <checkStaleness>true</checkStaleness>
                     </configuration>
                     <executions>
@@ -286,12 +287,12 @@
             <dependency>
                 <groupId>es.tid.cosmos</groupId>
                 <artifactId>cosmos-common</artifactId>
-                <version>0.11.1</version>
+                <version>1.0.0-20130206.230358-7</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-core</artifactId>
-                <version>${org.apache.hadoop}-cdh3u4</version>
+                <version>${org.apache.hadoop}</version>
             </dependency>
             <dependency>
                 <groupId>com.hadoop.compression</groupId>

@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.platform.injection.server.config.Configuration;
 
 import static junit.framework.Assert.assertTrue;
 
@@ -40,7 +41,7 @@ public class InjectionServerTest extends BaseSftpTest {
         Configuration configuration = new Configuration(
                 InjectionServerMain.class
                                    .getResource("/injection_server.dev.properties"));
-        this.instance = new InjectionServer(configuration);
+        this.instance = new InjectionServer(configuration, null, null);
     }
 
     @Test

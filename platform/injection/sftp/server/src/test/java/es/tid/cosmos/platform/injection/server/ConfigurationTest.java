@@ -17,6 +17,8 @@ import java.net.URL;
 import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Test;
 
+import es.tid.cosmos.platform.injection.server.config.Configuration;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -26,12 +28,12 @@ public class ConfigurationTest {
 
     @Test(expected = ConfigurationException.class)
     public void shouldThrowExceptionWhenNotFound() throws Exception {
-        new Configuration(getClass().getResource("/not/existing"));
+        new Configuration(this.getClass().getResource("/not/existing"));
     }
 
     @Test
     public void shouldParseProperties() throws Exception {
-        URL testConfig = getClass().getResource("test_config.properties");
+        URL testConfig = this.getClass().getResource("test_config.properties");
         Configuration instance = new Configuration(testConfig);
 
         assertEquals(2222, instance.getPort());

@@ -12,7 +12,6 @@
 package es.tid.cosmos.platform.injection.server;
 
 import org.apache.commons.cli.ParseException;
-import org.apache.log4j.Level;
 import org.junit.Before;
 import org.junit.Test;
 

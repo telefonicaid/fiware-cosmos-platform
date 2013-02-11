@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.injection.server;
+package es.tid.cosmos.platform.injection.server.config;
 
 import java.net.URI;
 import java.net.URL;

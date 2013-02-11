@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.injection.server;
+package es.tid.cosmos.platform.injection.server.hadoopfs;
 
 import java.io.*;
 import java.util.List;
@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.platform.injection.server.BaseSftpTest;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -216,9 +217,7 @@ public class HadoopSshFileTest extends BaseSftpTest {
     @Test
     public void testGetParentFile() throws Exception {
         this.hadoopSshFile.create();
-        assertTrue(this.hadoopSshFile.getParentFile().toString()
-                .startsWith("es.tid.cosmos.platform.injection" +
-                        ".server.HadoopSshFile@"));
+        assertNotNull(this.hadoopSshFile.getParentFile());
     }
 
     @Test

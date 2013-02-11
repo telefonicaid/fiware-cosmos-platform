@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.injection.server;
+package es.tid.cosmos.platform.injection.server.hadoopfs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +33,8 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class HadoopSshFile implements SshFile {
-    private static final org.apache.log4j.Logger LOG =
+
+    private static final org.apache.log4j.Logger LOGGER =
             Logger.get(HadoopSshFile.class);
 
     private final Path hadoopPath;
@@ -42,7 +43,7 @@ public class HadoopSshFile implements SshFile {
     private FSDataOutputStream fsDataOutputStream;
     private FSDataInputStream fsDataInputStream;
 
-    protected HadoopSshFile(final String fileName, String userName,
+    public HadoopSshFile(final String fileName, String userName,
             FileSystem hadoopFS) throws IOException, InterruptedException {
         this.hadoopPath = new Path(fileName);
         this.userName = userName;
@@ -77,7 +78,7 @@ public class HadoopSshFile implements SshFile {
         try {
             return this.hadoopFS.getFileStatus(this.hadoopPath).getOwner();
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return this.userName;
         }
     }
@@ -92,7 +93,7 @@ public class HadoopSshFile implements SshFile {
         try {
             return this.hadoopFS.getFileStatus(this.hadoopPath).isDir();
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return false;
         }
     }
@@ -107,7 +108,7 @@ public class HadoopSshFile implements SshFile {
         try {
             return this.hadoopFS.isFile(this.hadoopPath);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return false;
         }
     }
@@ -123,7 +124,7 @@ public class HadoopSshFile implements SshFile {
         try {
             return this.hadoopFS.exists(this.hadoopPath);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return false;
         }
     }
@@ -146,7 +147,7 @@ public class HadoopSshFile implements SshFile {
                     permission.getUserAction() : permission.getOtherAction());
             return action.implies(queriedFsAction);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return false;
         }
     }
@@ -158,7 +159,7 @@ public class HadoopSshFile implements SshFile {
      */
     @Override
     public boolean isReadable() {
-        return isAllowed(FsAction.READ);
+        return this.isAllowed(FsAction.READ);
     }
 
     /**
@@ -169,8 +170,8 @@ public class HadoopSshFile implements SshFile {
      */
     @Override
     public boolean isWritable() {
-        if (this.doesExist()){
-            return isAllowed(FsAction.WRITE);
+        if (this.doesExist()) {
+            return this.isAllowed(FsAction.WRITE);
         } else {
             return this.getParentFile().isWritable();
         }
@@ -190,7 +191,7 @@ public class HadoopSshFile implements SshFile {
      */
     @Override
     public boolean isExecutable() {
-        return isAllowed(FsAction.EXECUTE);
+        return this.isAllowed(FsAction.EXECUTE);
     }
 
     /**
@@ -208,7 +209,7 @@ public class HadoopSshFile implements SshFile {
      */
     @Override
     public boolean isRemovable() {
-        return isAllowed(FsAction.WRITE);
+        return this.isAllowed(FsAction.WRITE);
     }
 
     /**
@@ -223,10 +224,10 @@ public class HadoopSshFile implements SshFile {
             return new HadoopSshFile(this.hadoopPath.getParent().toString(),
                                      this.userName, this.hadoopFS);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return null;
         } catch (InterruptedException e) {
-            LOG.error(e.getMessage());
+            LOGGER.error(e.getMessage());
             return null;
         }
     }
@@ -243,7 +244,7 @@ public class HadoopSshFile implements SshFile {
                     this.hadoopPath);
             return fileStatus.getModificationTime();
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return 0L;
         }
     }
@@ -266,7 +267,7 @@ public class HadoopSshFile implements SshFile {
             this.hadoopFS.setTimes(this.hadoopPath, time, -1);
             return true;
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return false;
     }
@@ -281,7 +282,7 @@ public class HadoopSshFile implements SshFile {
         try {
             return this.hadoopFS.getFileStatus(this.hadoopPath).getLen();
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return 0L;
         }
     }
@@ -297,13 +298,13 @@ public class HadoopSshFile implements SshFile {
             if (this.getParentFile().doesExist() &&
                     this.getParentFile().isWritable() &&
                     this.hadoopFS.mkdirs(this.hadoopPath)) {
-                LOG.info("directory " + this.getAbsolutePath() +
+                LOGGER.info("directory " + this.getAbsolutePath() +
                          "created by user" + this.userName);
                 return true;
             }
             return false;
         } catch (IOException e) {
-            LOG.error(String.format("cannot create dir: %s because of %s",
+            LOGGER.error(String.format("cannot create dir: %s because of %s",
                       this.getAbsolutePath(), e.getMessage()), e);
             return false;
         }
@@ -319,7 +320,7 @@ public class HadoopSshFile implements SshFile {
         try {
             return this.hadoopFS.delete(this.hadoopPath, this.isDirectory());
         } catch (IOException e) {
-            LOG.error(String.format("cannot delete path: %s because of %s",
+            LOGGER.error(String.format("cannot delete path: %s because of %s",
                                     this.getAbsolutePath(),e.getMessage()), e);
             return false;
         }
@@ -360,7 +361,7 @@ public class HadoopSshFile implements SshFile {
             Path dest = new Path(destination.getAbsolutePath());
             return this.hadoopFS.rename(this.hadoopPath, dest);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return false;
     }
@@ -386,19 +387,19 @@ public class HadoopSshFile implements SshFile {
             }
             return Collections.unmodifiableList(files);
         } catch (AccessControlException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             try {
                 return Collections.singletonList((SshFile)new HadoopSshFile(
                         Path.CUR_DIR, this.userName, this.hadoopFS));
             } catch (IOException e1) {
-                LOG.error(e1.getMessage(), e);
+                LOGGER.error(e1.getMessage(), e);
             } catch (InterruptedException e1) {
-                LOG.error(e1.getMessage(), e);
+                LOGGER.error(e1.getMessage(), e);
             }
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         } catch (InterruptedException e) {
-            LOG.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         }
         return null;
     }
@@ -456,11 +457,11 @@ public class HadoopSshFile implements SshFile {
             if (this.fsDataOutputStream != null) {
                 this.fsDataOutputStream.close();
             }
-            if (this.fsDataInputStream != null){
+            if (this.fsDataInputStream != null) {
                 this.fsDataInputStream.close();
             }
         } catch (Exception e) {
-            LOG.info("closed path handle that was not open", e);
+            LOGGER.info("closed path handle that was not open", e);
         }
     }
 }

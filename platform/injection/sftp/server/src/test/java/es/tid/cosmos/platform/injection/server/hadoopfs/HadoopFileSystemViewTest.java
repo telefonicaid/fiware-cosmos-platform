@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.injection.server;
+package es.tid.cosmos.platform.injection.server.hadoopfs;
 
 import java.net.URI;
 
@@ -19,6 +19,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.platform.injection.server.BaseSftpTest;
+import es.tid.cosmos.platform.injection.server.hadoopfs.HadoopFileSystemView;
+import es.tid.cosmos.platform.injection.server.hadoopfs.HadoopSshFile;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;

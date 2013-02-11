@@ -15,8 +15,22 @@ import java.io.File;
 
 import org.apache.commons.cli.*;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.sshd.server.PasswordAuthenticator;
+import org.apache.sshd.server.PublickeyAuthenticator;
 
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.platform.injection.server.auth.DaoPasswordAuthenticator;
+import es.tid.cosmos.platform.injection.server.auth.DaoPublicKeyAuthenticator;
+import es.tid.cosmos.platform.injection.server.auth.UsersDao;
+import es.tid.cosmos.platform.injection.server.config.Configuration;
+import es.tid.cosmos.platform.injection.server.persistence.db
+        .JDBCPersistenceManager;
+import es.tid.cosmos.platform.injection.server.persistence.file.FileBackedUsersDao;
+import es.tid.cosmos.platform.injection.server.persistence.db.MysqlUsersDao;
+import es.tid.cosmos.platform.injection.server.persistence.db.PersistenceManager;
+
+import es.tid.cosmos.platform.injection.server.persistence.file
+        .LocalFileSshKeyReader;
 
 /**
  * InjectionServerMain is the main entry point to this application
@@ -25,11 +39,12 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public final class InjectionServerMain {
+
     private static final String DEFAULT_EXTERNAL_CONFIGURATION =
             "file:///etc/cosmos/injection.properties";
     private static final String INTERNAL_CONFIGURATION =
             "/injection_server.prod.properties";
-    private static final org.apache.log4j.Logger LOG =
+    private static final org.apache.log4j.Logger LOGGER =
             Logger.get(InjectionServerMain.class);
 
     private InjectionServerMain() {
@@ -59,13 +74,48 @@ public final class InjectionServerMain {
         }
 
         try {
-            InjectionServer server = new InjectionServer(config);
+            InjectionServer server = new InjectionServer(
+                    config, setupPasswordAuthenticator(config),
+                    setupPublicKeyAuthenticator());
             server.setupSftpServer();
         } catch (Exception ex) {
-            LOG.error(ex.getMessage(), ex);
+            LOGGER.error(ex.getMessage(), ex);
             System.exit(1);
         }
     }
 
+    private static PasswordAuthenticator setupPasswordAuthenticator(
+            Configuration config) {
+        String url = config.getFrontendDbUrl();
+        String dbName = config.getDbName();
+        String userName = config.getDbUser();
+        String password = config.getDbPassword();
+        if (isNullOrEmpty(url)
+                || isNullOrEmpty(dbName)
+                || isNullOrEmpty(userName)
+                || password == null) {
+            throw new IllegalArgumentException("no database URL set up");
+        }
+        PersistenceManager pm;
+        pm = new JDBCPersistenceManager(
+                config.getFrontendDbUrl(),
+                config.getDbName(),
+                config.getDbUser(),
+                config.getDbPassword());
 
+        return new DaoPasswordAuthenticator(new MysqlUsersDao(pm));
+    }
+
+    private static PublickeyAuthenticator setupPublicKeyAuthenticator() {
+        UsersDao userDao = new FileBackedUsersDao(new LocalFileSshKeyReader());
+        return new DaoPublicKeyAuthenticator(userDao);
+    }
+
+    private static boolean isNullOrEmpty(String string) {
+        if (string == null || string.equals("")) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

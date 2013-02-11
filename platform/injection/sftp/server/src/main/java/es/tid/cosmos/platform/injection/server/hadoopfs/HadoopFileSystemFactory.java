@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.injection.server;
+package es.tid.cosmos.platform.injection.server.hadoopfs;
 
 import java.io.IOException;
 
@@ -26,7 +26,7 @@ import org.apache.sshd.server.FileSystemView;
  * @since  CTP 2
  */
 public class HadoopFileSystemFactory implements FileSystemFactory {
-    private static final org.apache.log4j.Logger LOG =
+    private static final org.apache.log4j.Logger LOGGER =
             Logger.get(HadoopFileSystemFactory.class);
 
     private final Configuration configuration;
@@ -42,7 +42,7 @@ public class HadoopFileSystemFactory implements FileSystemFactory {
             return new HadoopFileSystemView(session.getUsername(),
                     this.configuration);
         } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             return null;
         }
     }

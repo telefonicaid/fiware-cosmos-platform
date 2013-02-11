@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.injection.server;
+package es.tid.cosmos.platform.injection.server.hadoopfs;
 
 import java.io.IOException;
 import java.net.URI;
@@ -29,7 +29,7 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class HadoopFileSystemView implements FileSystemView {
-    private static final org.apache.log4j.Logger LOG =
+    private static final org.apache.log4j.Logger LOGGER =
             Logger.get(HadoopFileSystemView.class);
 
     private String homePath;
@@ -46,10 +46,10 @@ public class HadoopFileSystemView implements FileSystemView {
             this.homePath = this.hadoopFS.getHomeDirectory().toString()
                     .replaceFirst(this.hadoopFS.getUri().toString(), "");
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
             throw e;
         }
     }
@@ -59,9 +59,9 @@ public class HadoopFileSystemView implements FileSystemView {
         try {
             return this.getFile("", file);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return null;
     }
@@ -71,9 +71,9 @@ public class HadoopFileSystemView implements FileSystemView {
         try {
             return this.getFile(baseDir.getAbsolutePath(), file);
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
         return null;
     }
@@ -86,7 +86,7 @@ public class HadoopFileSystemView implements FileSystemView {
                 requestedFile.equals(Path.CUR_DIR))) {
             requestedDir = this.homePath;
             requestedFile = "";
-            LOG.debug("redirecting to home path: " + this.homePath);
+            LOGGER.debug("redirecting to home path: " + this.homePath);
         }
         String wholePath = requestedDir + requestedFile;
         if (!requestedDir.endsWith(Path.SEPARATOR) &&

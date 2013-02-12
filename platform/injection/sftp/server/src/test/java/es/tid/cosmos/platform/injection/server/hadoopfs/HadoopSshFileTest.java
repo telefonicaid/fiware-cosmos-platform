@@ -12,6 +12,7 @@
 package es.tid.cosmos.platform.injection.server.hadoopfs;
 
 import java.io.*;
+import java.net.URI;
 import java.util.List;
 
 import com.google.common.io.Files;
@@ -38,7 +39,9 @@ public class HadoopSshFileTest extends BaseSftpTest {
 
     private static final org.apache.log4j.Logger LOGGER =
             Logger.get(HadoopSshFile.class);
-    public static final String USER01 = "/user01";
+    private static final String USERNAME = System.getProperty("user.name");
+    private static final String DEFAULT_FILESYSTEM_NAME = "fs.default.name";
+    private static final String FILE_URI_PREAMBLE = "file:///";
 
     private HadoopSshFile hadoopSshFile;
     private HadoopSshFile hadoopSshDir;
@@ -60,12 +63,15 @@ public class HadoopSshFileTest extends BaseSftpTest {
             throw new IllegalStateException("could not set to writable: " +
                     this.tempDir.toString());
         }
-        String foodir = this.tempDir.getAbsolutePath().concat(USER01);
-        configuration.set("fs.default.name", "file:///" + this.tempDir.toString());
+
+        configuration.set(
+                DEFAULT_FILESYSTEM_NAME, FILE_URI_PREAMBLE
+                + this.tempDir.toURI());
+        String foodir = createUserTempURI("").toString();
         this.hadoopFS = FileSystem.get(configuration);
-        this.hadoopSshDir = new HadoopSshFile(foodir, "user01", this.hadoopFS);
+        this.hadoopSshDir = new HadoopSshFile(foodir, USERNAME, this.hadoopFS);
         this.hadoopSshFile = new HadoopSshFile(foodir + "/file01",
-                "user01", this.hadoopFS);
+                USERNAME, this.hadoopFS);
 
         this.mockedFileSystem = mock(FileSystem.class);
 
@@ -76,10 +82,11 @@ public class HadoopSshFileTest extends BaseSftpTest {
     @After
     public void tearDown() throws IOException {
         if (this.hadoopSshFile.doesExist()) {
-            this.hadoopSshFile.delete();
+            this.hadoopSshFile.handleClose();
+            assertTrue(this.hadoopSshFile.delete());
         }
         if (this.hadoopSshDir.doesExist()) {
-            this.hadoopSshDir.delete();
+            assertTrue(this.hadoopSshDir.delete());
         }
         boolean success = this.tempDir.delete();
         if (!success) {
@@ -92,7 +99,7 @@ public class HadoopSshFileTest extends BaseSftpTest {
 
     @Test
     public void testGetAbsolutePath() throws Exception {
-        assertEquals(this.tempDir.getAbsolutePath().concat(USER01)
+        assertEquals(this.tempDir.toURI().toString().concat(USERNAME)
                 .concat("/file01"), this.hadoopSshFile.getAbsolutePath());
     }
 
@@ -113,10 +120,10 @@ public class HadoopSshFileTest extends BaseSftpTest {
      */
     @Test
     public void testGetOwner() throws Exception {
-        assertEquals("user01", this.hadoopSshFile.getOwner());
+        assertEquals(USERNAME, this.hadoopSshFile.getOwner());
         assertFalse(this.hadoopSshFile.doesExist());
         this.hadoopSshFile.create();
-        assertNotSame("user01", this.hadoopSshFile.getOwner());
+        assertNotSame(USERNAME, this.hadoopSshFile.getOwner());
     }
 
     @Test
@@ -319,10 +326,9 @@ public class HadoopSshFileTest extends BaseSftpTest {
 
     @Test
     public void testMove() throws Exception {
-        String newsubdir = this.tempDir.getAbsolutePath()
-                .concat("/user01/new/file01");
-        HadoopSshFile newfoo = new HadoopSshFile(newsubdir, "user01",
-                this.hadoopFS);
+        String newsubdir = createUserTempURI("/new/file01").toString();
+        HadoopSshFile newfoo = new HadoopSshFile(
+                newsubdir, USERNAME, this.hadoopFS);
         this.hadoopSshFile.create();
         assertFalse(newfoo.doesExist());
         this.hadoopSshFile.move(newfoo);
@@ -385,5 +391,11 @@ public class HadoopSshFileTest extends BaseSftpTest {
             writer.write(byteRead);
         }
         assertEquals(written, writer.toString());
+    }
+
+    private URI createUserTempURI(String pathExtension) {
+        return URI.create(
+                this.tempDir.toURI().toString().concat(
+                        USERNAME + pathExtension));
     }
 }

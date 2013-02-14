@@ -193,7 +193,7 @@
         </repository>
         <repository>
             <id>nexus</id>
-            <url>http://cosmos-ci/nexus/content/repositories/releases</url>
+            <url>http://cosmos10/nexus/content/groups/public</url>
         </repository>
     </repositories>
 

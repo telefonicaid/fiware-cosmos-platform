@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.platform.injection.server.persistence.db;
 
+import java.net.ConnectException;
 import java.security.PublicKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -45,10 +46,12 @@ public class MysqlUsersDao implements UsersDao {
      * Search user's password on a MySQL Database
      *
      * @param username Username on login process.
-     * @return User's password codified as hashType$seed$passwordHash
+     * @return User's password codified as hashType$seed$passwordHash.
+     * @throws ConnectException if cannot instantiate any connection.
      */
     @Override
-    public String findPasswordByUsername(String username) {
+    public String findPasswordByUsername(String username)
+            throws ConnectException {
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         Connection connection = null;

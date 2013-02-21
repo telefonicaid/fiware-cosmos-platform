@@ -27,8 +27,7 @@ public interface UsersDao {
      * @param username Username used on login process.
      * @return user's password on encoding$seed$passwordHash format
      */
-    String findPasswordByUsername(String username)
-            throws Exception;
+    String findPasswordByUsername(String username) throws Exception;
 
     /**
      * Return the Public Keys of user

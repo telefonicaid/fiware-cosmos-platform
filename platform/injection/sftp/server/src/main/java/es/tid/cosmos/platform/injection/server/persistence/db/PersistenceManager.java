@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.platform.injection.server.persistence.db;
 
+import java.net.ConnectException;
 import java.sql.Connection;
 
 /**
@@ -20,5 +21,5 @@ import java.sql.Connection;
  */
 public interface PersistenceManager {
 
-    Connection getConnection();
+    Connection getConnection() throws ConnectException;
 }

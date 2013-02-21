@@ -287,7 +287,7 @@
             <dependency>
                 <groupId>es.tid.cosmos</groupId>
                 <artifactId>cosmos-common</artifactId>
-                <version>1.0.0-20130221.132911-12</version>
+                <version>1.0.0-20130221.163804-13</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>

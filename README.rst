@@ -2,6 +2,8 @@
 Big Data Platform (codenamed Cosmos)
 ====================================
 
+.. image:: http://cosmos10.hi.inet/jenkins/job/platform-commit/badge/icon
+
 The Big Data Platform is a product that allows you to:
 
 - run map-reduce jobs in both batch and near-real-time modes

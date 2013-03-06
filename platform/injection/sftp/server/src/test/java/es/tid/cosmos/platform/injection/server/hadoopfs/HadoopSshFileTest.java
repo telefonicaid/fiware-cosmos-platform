@@ -42,6 +42,7 @@ public class HadoopSshFileTest extends BaseSftpTest {
     private static final String USERNAME = System.getProperty("user.name");
     private static final String DEFAULT_FILESYSTEM_NAME = "fs.default.name";
     private static final String FILE_URI_PREAMBLE = "file:///";
+    private static final String CYGWIN_FOLDER = "cygwin";
 
     private HadoopSshFile hadoopSshFile;
     private HadoopSshFile hadoopSshDir;
@@ -59,7 +60,14 @@ public class HadoopSshFileTest extends BaseSftpTest {
         Configuration configuration = new Configuration();
         this.tempDir = Files.createTempDir();
         boolean success = this.tempDir.setWritable(true, false);
-        if (!success) {
+
+        /*
+         * ignore error condition if running under Windows with cygwin
+         * because apparently it is close to impossible to change folder
+         * permissions under win7 and later versions
+         */
+        if (!success &&
+                !this.tempDir.getAbsolutePath().contains(CYGWIN_FOLDER)) {
             throw new IllegalStateException("could not set to writable: " +
                     this.tempDir.toString());
         }

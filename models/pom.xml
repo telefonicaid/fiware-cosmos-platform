@@ -24,6 +24,5 @@
 
     <modules>
         <module>samples</module>
-        <module>webprofiling</module>
     </modules>
 </project>

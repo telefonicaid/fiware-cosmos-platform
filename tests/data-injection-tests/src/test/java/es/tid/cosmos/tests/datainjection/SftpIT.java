@@ -30,10 +30,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
-import es.tid.cosmos.tests.sftp.om.CosmosSftp;
-import es.tid.cosmos.tests.environment.Environment;
-import es.tid.cosmos.tests.environment.EnvironmentSetting;
-
 @Test
 public class SftpIT {
     private Environment env;

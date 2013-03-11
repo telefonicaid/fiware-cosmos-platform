@@ -1,6 +1,0 @@
-copyright: Telefonica Investigacion y Desarrollo S.A.U. All Rights Reserved
-version: 0.1
-description: Cosmos shell app
-name: cosmos
-sources: [Source/third-party/jquery.js,
-          Source/Cosmos/Cosmos.js]

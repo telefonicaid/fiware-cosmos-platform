@@ -13,10 +13,6 @@
     <name>tests</name>
     <modules>
         <module>data-injection-tests</module>
-        <module>e2e-tests</module>
-        <module>frontend-tests</module>
-        <module>hadoopjobs</module>
-        <module>testutils</module>
     </modules>
     <dependencies>
         <dependency>

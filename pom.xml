@@ -75,6 +75,32 @@
         </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>com.mycila.maven-license-plugin</groupId>
+                <artifactId>maven-license-plugin</artifactId>
+                <version>1.10.b1</version>
+                <configuration>
+                    <header>license.txt</header>
+                    <strictCheck>false</strictCheck>
+                    <excludes>
+                        <exclude>target/**</exclude>
+                        <exclude>**/*.properties</exclude>
+                        <exclude>**/*.proto</exclude>
+                        <exclude>**/*.json</exclude>
+                        <exclude>**/*.py</exclude>
+                        <exclude>**/resources/**/*</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-headers</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>1.3.1</version>

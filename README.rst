@@ -2,7 +2,12 @@
 Big Data Platform (codenamed Cosmos)
 ====================================
 
-.. image:: http://cosmos10.hi.inet/jenkins/job/platform-commit/badge/icon
+Commit build status:  |commit_build_status|
+
+Nightly build status: |nightly_build_status|
+
+.. |commit_build_status| image:: http://cosmos10.hi.inet/jenkins/job/platform-commit/badge/icon
+.. |nightly_build_status| image:: http://cosmos10.hi.inet/jenkins/job/platform-nightly/badge/icon
 
 The Big Data Platform is a product that allows you to:
 

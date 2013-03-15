@@ -2,19 +2,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>es.tid.cosmos</groupId>
-    <artifactId>cosmos</artifactId>
+    <artifactId>platform</artifactId>
     <version>0.10.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>cosmos</name>
-    <description>Project Cosmos</description>
+    <name>platform</name>
+    <description>Cosmos Big Data Platform</description>
     <organization>
         <name>Telefónica Digital</name>
         <url>http://www.tid.es</url>
     </organization>
 
     <properties>
-        <copyright.year>2012</copyright.year>
+        <copyright.year>2013</copyright.year>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -22,7 +22,7 @@
 
         <!-- platform-wide dependency versions -->
         <jvm.version>1.6</jvm.version>
-        <org.apache.hadoop>0.20.2-cdh3u4</org.apache.hadoop>
+        <org.apache.hadoop>1.0.4</org.apache.hadoop>
     </properties>
 
     <build>
@@ -395,8 +395,8 @@
     </distributionManagement>
 
     <modules>
+        <module>injection</module>
         <module>models</module>
-        <module>platform</module>
         <module>tests</module>
     </modules>
 </project>

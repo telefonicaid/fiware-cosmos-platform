@@ -88,6 +88,7 @@
                         <exclude>**/*.json</exclude>
                         <exclude>**/*.py</exclude>
                         <exclude>**/resources/**/*</exclude>
+                        <exclude>**/.idea/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

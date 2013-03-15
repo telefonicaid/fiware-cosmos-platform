@@ -396,7 +396,7 @@
 
     <modules>
         <module>injection</module>
-        <module>models</module>
+        <module>samples</module>
         <module>tests</module>
     </modules>
 </project>

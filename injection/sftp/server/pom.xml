@@ -47,7 +47,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>es.tid.cosmos.platform.injection.server.InjectionServerMain</mainClass>
+                            <mainClass>es.tid.cosmos.injection.server.InjectionServerMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -59,7 +59,7 @@
                     <transformers>
                         <transformer
                             implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>es.tid.cosmos.platform.injection.server.InjectionServerMain</mainClass>
+                            <mainClass>es.tid.cosmos.injection.server.InjectionServerMain</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>

@@ -1,13 +1,17 @@
 import sbt._
 import Keys._
+import play.Project._
 
 object CosmosBuild extends Build {
   lazy val root = (Project(id = "cosmos-platform", base = file("."))
     settings (ScctPlugin.mergeReportSettings: _*)
     aggregate(cosmosApi, serviceManager))
+
   lazy val serviceManager = (Project(id = "service-manager", base = file("service-manager"))
     settings (ScctPlugin.instrumentSettings: _*))
-  lazy val cosmosApi = (Project(id = "cosmos-api", base = file("cosmos-api"))
+
+  lazy val cosmosApi = (play.Project("cosmos-api", "1.0-SNAPSHOT", path = file("cosmos-api"),
+                        dependencies = Seq(PlayKeys.anorm))
     settings (ScctPlugin.instrumentSettings: _*)
     dependsOn(serviceManager))
 }

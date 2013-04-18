@@ -21,8 +21,10 @@ class MockedServiceManager(
   private class FakeCluster(override val name: String, override val size: Int,
                             override val id: String = UUID.randomUUID().toString)
     extends ClusterDescription {
+
     override def state = currentState
     var currentState: ClusterState = Provisioning
+
     def completeProvision() {
       if (currentState == Provisioning) currentState = Running
     }
@@ -30,6 +32,8 @@ class MockedServiceManager(
     def completeTermination() {
       if (currentState == Terminating) currentState = Terminated
     }
+
+    defer(transitionDelay, completeProvision())
   }
 
   private val clusters: mutable.Map[ClusterId, FakeCluster] =
@@ -44,7 +48,6 @@ class MockedServiceManager(
   def createCluster(name: String, clusterSize: Int): ClusterId = {
     val cluster = new FakeCluster(name, clusterSize)
     clusters.put(cluster.id, cluster)
-    defer(transitionDelay, cluster.completeProvision())
     cluster.id
   }
 

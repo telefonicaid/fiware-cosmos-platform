@@ -3,7 +3,14 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
+GET     /                               controllers.Application.index
+
+# API
+GET     /cosmos                         es.tid.cosmos.api.controllers.Cosmos.version()
+GET     /cosmos/cluster                 es.tid.cosmos.api.controllers.Clusters.list()
+POST    /cosmos/cluster                 es.tid.cosmos.api.controllers.Clusters.createCluster()
+GET     /cosmos/cluster/:id             es.tid.cosmos.api.controllers.Cluster.listDetails(id)
+POST    /cosmos/cluster/:id/terminate   es.tid.cosmos.api.controllers.Cluster.terminate(id)
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /assets/*file                   controllers.Assets.at(path="/public", file)

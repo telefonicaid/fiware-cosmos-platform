@@ -11,9 +11,11 @@ import play.api.libs.json.Json
 trait Cosmos {
   self: Controller =>
 
-  val apiVersion = "1.0.0"
-
   def version = Action {
-    Ok(Json.toJson(Map("version" -> apiVersion)))
+    Ok(Json.toJson(Map("version" -> Cosmos.apiVersion)))
   }
+}
+
+object Cosmos {
+  val apiVersion = "1.0.0"
 }

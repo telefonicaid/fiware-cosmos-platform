@@ -7,7 +7,6 @@ import scala.util.{Failure, Success, Try}
 
 import es.tid.cosmos.sm.ClusterDescription
 import es.tid.cosmos.api.sm.ServiceManagerComponent
-import es.tid.cosmos.api.routes
 
 /**
  * @author sortega
@@ -42,5 +41,5 @@ trait Cluster {
 
 object Cluster {
   def clusterUrl(id: String)(implicit request: RequestHeader): String =
-    routes.ProductionApplication.listDetails(id).absoluteURL(secure = false) // This is deeply wrong
+    routes.Application.listDetails(id).absoluteURL(secure = false)
 }

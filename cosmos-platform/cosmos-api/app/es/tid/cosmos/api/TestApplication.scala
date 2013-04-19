@@ -4,10 +4,10 @@ import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.sm.MockedServiceManagerComponent
 
 /**
- * TODO: use real service manager
+ * Application configured with mocked services to be tested in isolation.
  *
  * @author sortega
  */
-object ProductionApplication
+object TestApplication
   extends Application
   with MockedServiceManagerComponent

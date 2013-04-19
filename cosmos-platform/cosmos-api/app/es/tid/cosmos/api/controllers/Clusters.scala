@@ -6,12 +6,13 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.mvc.{SimpleResult, Action, Controller}
 
-import es.tid.cosmos.api.Components
+import es.tid.cosmos.api.sm.ServiceManagerComponent
 
 /**
  * @author sortega
  */
-object Clusters extends Controller with Components {
+trait Clusters {
+  self: Controller with ServiceManagerComponent =>
 
   case class CreateClusterParams(name: String, size: Int)
 

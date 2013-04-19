@@ -1,4 +1,4 @@
-package es.tid.cosmos.api.mock
+package es.tid.cosmos.api.sm
 
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FlatSpec

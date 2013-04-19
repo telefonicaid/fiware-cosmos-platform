@@ -5,13 +5,15 @@ import play.api.mvc.{RequestHeader, Action, Controller}
 import scala.Some
 import scala.util.{Failure, Success, Try}
 
-import es.tid.cosmos.api.Components
 import es.tid.cosmos.sm.ClusterDescription
+import es.tid.cosmos.api.sm.ServiceManagerComponent
+import es.tid.cosmos.api.routes
 
 /**
  * @author sortega
  */
-object Cluster extends Controller with Components {
+trait Cluster {
+  self: Controller with ServiceManagerComponent =>
 
   implicit object ClusterDescriptionWrites extends Writes[ClusterDescription] {
     def writes(desc: ClusterDescription): JsValue = JsObject(Seq(
@@ -36,7 +38,9 @@ object Cluster extends Controller with Components {
       case Failure(ex) => InternalServerError(ex.getMessage)
     }
   }
+}
 
-  def clusterUrl(id: String)(implicit request: RequestHeader) =
-    routes.Cluster.listDetails(id).absoluteURL(secure = false)
+object Cluster {
+  def clusterUrl(id: String)(implicit request: RequestHeader): String =
+    routes.ProductionApplication.listDetails(id).absoluteURL(secure = false) // This is deeply wrong
 }

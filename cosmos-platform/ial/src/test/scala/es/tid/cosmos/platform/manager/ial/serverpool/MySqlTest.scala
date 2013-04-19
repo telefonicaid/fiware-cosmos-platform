@@ -1,5 +1,7 @@
 package es.tid.cosmos.platform.manager.ial.serverpool
 
+import scala.util.{Success, Failure, Try, Random}
+
 import org.scalatest.{Suite, BeforeAndAfter}
 import org.scalatest.matchers.{MatchResult, Matcher}
 import org.squeryl.PrimitiveTypeMode._
@@ -7,8 +9,19 @@ import org.squeryl.PrimitiveTypeMode._
 import es.tid.cosmos.platform.manager.ial.{MachineProfile, Id}
 import es.tid.cosmos.platform.manager.ial.MachineState
 import es.tid.cosmos.platform.manager.ial.MachineStatus._
+import java.sql.{Connection, Statement}
 
 /**
+ * A convenient trait for testing against MySQL DBMS. In order to it to work, you must:
+ *
+ *  - Have a mysqld running on localhost (or any other host overriding dbHost), port 3306 (or override dbPort)
+ *
+ *  - A username 'cosmos' (or any other overriding dbUser) with password 'cosmos' (or any other overriding dbPassword)
+ *    E.g., create user 'cosmos'@'localhost' identified by 'cosmos'
+ *
+ *  - Select, create, drop and insert privileges on databases with 'test_' prefix to user 'cosmos'
+ *    E.g., grant all on `test_%`.* to 'cosmos'@'localhost'
+ *
  * @author apv
  */
 trait MySqlTest extends BeforeAndAfter {
@@ -49,7 +62,12 @@ trait MySqlTest extends BeforeAndAfter {
     def apply(machines: Iterable[Machine]) = new ContainMachinesMatcher(machines)
   }
 
-  val db = new MySqlDatabase("localhost", 3306, "cosmos", "cosmos", "ial_test")
+  val dbHost = "localhost"
+  val dbPort = 3306
+  val dbUser = "cosmos"
+  val dbPassword = "cosmos"
+  val dbName = s"test_${math.abs(Random.nextInt())}"
+  val db = new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword, dbName)
   val dao = new SqlServerPoolDao(db)
 
   val cosmos02 = Machine("cosmos02", available = true, MachineProfile.S, Running, "cosmos02.hi.inet", "10.95.106.182")
@@ -64,7 +82,23 @@ trait MySqlTest extends BeforeAndAfter {
   val availableMachines = List(cosmos02, cosmos03, cosmos04, cosmos05, cosmos06)
   val assignedMachines = List(cosmos07, cosmos08, cosmos09)
 
+  private def createDatabase() { updateDatabase(s"create database $dbName") }
+  private def dropDatabase() { updateDatabase(s"drop database $dbName") }
+
+  private def updateDatabase(updateQuery: String) {
+    new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword, "mysql").connect match {
+      case Success(c) => {
+        val stmt = c.createStatement()
+        stmt.executeUpdate(updateQuery)
+        stmt.close()
+        c.close()
+      }
+      case Failure(e) => throw e
+    }
+  }
+
   before {
+    createDatabase()
     transaction(db.newSession) {
       InfraDb.create
       InfraDb.machines.insert(availableMachines ++ assignedMachines)
@@ -75,5 +109,6 @@ trait MySqlTest extends BeforeAndAfter {
     transaction(db.newSession) {
       InfraDb.drop
     }
+    dropDatabase()
   }
 }

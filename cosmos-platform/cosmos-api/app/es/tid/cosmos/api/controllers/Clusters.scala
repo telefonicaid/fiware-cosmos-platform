@@ -25,7 +25,7 @@ trait Clusters {
 
   def list = Action { implicit request =>
     Ok(Json.toJson(Map("clusters" -> serviceManager.clusterIds.map(id =>
-      Map("id" -> id, "href" -> Cluster.clusterUrl(id))))))
+      Map("id" -> id.toString, "href" -> Cluster.clusterUrl(id))))))
   }
 
   def createCluster = Action(parse.tolerantJson) { implicit request =>
@@ -33,7 +33,7 @@ trait Clusters {
       case JsSuccess(params, _) => Try(serviceManager.createCluster(params.name, params.size)) match {
         case Success(id) => {
           val url = Cluster.clusterUrl(id)
-          Created(Json.toJson(Map("id" -> id, "href" -> url))).withHeaders(LOCATION -> url)
+          Created(Json.toJson(Map("id" -> id.toString, "href" -> url))).withHeaders(LOCATION -> url)
         }
         case Failure(ex) => BadRequest(Json.toJson(Map("error" -> ex.getMessage)))
       }

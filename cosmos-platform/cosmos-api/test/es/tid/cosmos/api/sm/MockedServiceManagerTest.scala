@@ -2,7 +2,7 @@ package es.tid.cosmos.api.sm
 
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FlatSpec
-import es.tid.cosmos.sm.{Provisioning, Running, Terminating, Terminated}
+import es.tid.cosmos.servicemanager.{Provisioning, Running, Terminating, Terminated}
 
 /**
  * @author sortega

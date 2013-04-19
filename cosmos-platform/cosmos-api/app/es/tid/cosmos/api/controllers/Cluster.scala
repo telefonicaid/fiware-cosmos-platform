@@ -5,7 +5,7 @@ import play.api.mvc.{RequestHeader, Action, Controller}
 import scala.Some
 import scala.util.{Failure, Success, Try}
 
-import es.tid.cosmos.sm.ClusterDescription
+import es.tid.cosmos.servicemanager.{ClusterId, ClusterDescription}
 import es.tid.cosmos.api.sm.ServiceManagerComponent
 
 /**
@@ -16,7 +16,7 @@ trait Cluster {
 
   implicit object ClusterDescriptionWrites extends Writes[ClusterDescription] {
     def writes(desc: ClusterDescription): JsValue = JsObject(Seq(
-      "id" -> JsString(desc.id),
+      "id" -> JsString(desc.id.toString),
       "name" -> JsString(desc.name),
       "size" -> JsNumber(desc.size),
       "state" -> JsString(desc.state.name),
@@ -25,14 +25,14 @@ trait Cluster {
   }
 
   def listDetails(id: String) = Action {
-    serviceManager.describeCluster(id) match {
+    serviceManager.describeCluster(ClusterId(id)) match {
       case Some(description) => Ok(Json.toJson(description))
       case None => NotFound(s"No cluster '${id}' exists")
     }
   }
 
   def terminate(id: String) = Action {
-    Try(serviceManager.terminateCluster(id)) match {
+    Try(serviceManager.terminateCluster(ClusterId(id))) match {
       case Success(_) => Ok("Terminating cluster")
       case Failure(ex) => InternalServerError(ex.getMessage)
     }
@@ -40,6 +40,6 @@ trait Cluster {
 }
 
 object Cluster {
-  def clusterUrl(id: String)(implicit request: RequestHeader): String =
-    routes.Application.listDetails(id).absoluteURL(secure = false)
+  def clusterUrl(id: ClusterId)(implicit request: RequestHeader): String =
+    routes.Application.listDetails(id.toString).absoluteURL(secure = false)
 }

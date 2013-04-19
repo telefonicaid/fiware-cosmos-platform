@@ -5,7 +5,8 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scala.collection.mutable
 
-import es.tid.cosmos.sm._
+import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.ServiceException
 
 /**
  * In-memory, simulated
@@ -16,10 +17,10 @@ class MockedServiceManager(
     transitionDelay: Int
   ) extends ServiceManager {
 
-  val defaultClusterId = "UUID"
+  val defaultClusterId = new ClusterId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
 
   private class FakeCluster(override val name: String, override val size: Int,
-                            override val id: String = UUID.randomUUID().toString)
+                            override val id: ClusterId = new ClusterId)
     extends ClusterDescription {
 
     override def state = currentState

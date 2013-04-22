@@ -12,7 +12,7 @@ package es.tid.cosmos.servicemanager
 
 import java.util.UUID
 
-class ClusterId(val uuid: UUID = UUID.randomUUID()) {
+case class ClusterId(uuid: UUID = UUID.randomUUID()) {
   override def toString = uuid.toString
   override def equals(other: Any): Boolean = other match {
     case that: ClusterId => this.uuid.compareTo(that.uuid) == 0

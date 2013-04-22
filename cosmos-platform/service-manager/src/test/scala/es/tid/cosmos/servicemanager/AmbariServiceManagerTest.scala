@@ -29,7 +29,7 @@ class AmbariServiceManagerTest extends FlatSpec with MustMatchers {
   }
 
   "Ambari server" should "create server" in {
-    val sm = new AmbariServiceManager(new AmbariServer("192.168.140.128", 8080, "admin", "admin"))
+    val sm = new AmbariServiceManager(new AmbariServer("cosmos.local", 8080, "admin", "admin"))
       with FakeInfraProviderComponent
     try {
       val id = sm.createCluster(name = "test", 1)

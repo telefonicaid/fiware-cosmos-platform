@@ -50,8 +50,6 @@ class AmbariServiceManager(ambari: AmbariServer) extends ServiceManager {
     clusters.synchronized {
       clusters = clusters.updated(id, description)
     }
-
-    val value = Await.result(deployedClusterFuture, Duration.Inf)
     id
   }
 

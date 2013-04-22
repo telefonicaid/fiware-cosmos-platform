@@ -12,14 +12,21 @@ package es.tid.cosmos.servicemanager
 
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
-import es.tid.cosmos.ila.{MachineState, InfrastructureProvider, InfrastructureProviderComponent}
+import es.tid.cosmos.servicemanager.ila.InfrastructureProviderComponent
+import es.tid.cosmos.platform.manager.ial._
+import scala.util.Try
 
 trait FakeInfraProviderComponent extends InfrastructureProviderComponent {
   val infrastructureProvider = new InfrastructureProvider {
-    override def createMachines(namePrefix: String, profile: Unit, count: Int): Seq[Future[MachineState]] = count match {
-      case 1 => List( future { blocking { new MachineState {
-        override val name: String = "localhost.localdomain"
-      }}})
+    override def createMachines(namePrefix: String, profile: MachineProfile.Value, count: Int):
+      Try[Seq[Future[MachineState]]] = count match {
+      case 1 => Try(List( future { blocking { new MachineState(
+              id = new Id[MachineState]("cosmosLocalID"),
+              name = "cosmos.local",
+              profile = MachineProfile.XS,
+              status = MachineStatus.Running,
+              hostname = "cosmos.local",
+              ipAddress = "192.168.50.4")}}))
       case _ => throw new Error
     }
   }

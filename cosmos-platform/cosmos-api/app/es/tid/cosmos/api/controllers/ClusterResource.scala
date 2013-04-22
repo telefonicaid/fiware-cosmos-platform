@@ -5,8 +5,7 @@ import play.api.mvc.{RequestHeader, Action, Controller}
 import scala.Some
 import scala.util.{Failure, Success, Try}
 
-import es.tid.cosmos.servicemanager.{ClusterId, ClusterDescription}
-import es.tid.cosmos.api.sm.ServiceManagerComponent
+import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ClusterId, ClusterDescription}
 
 /**
  * @author sortega

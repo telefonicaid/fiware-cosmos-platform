@@ -18,11 +18,10 @@ import ambari._
 import scala.util.{Success, Try, Failure}
 import net.liftweb.json._
 import net.liftweb.json.JsonAST.JObject
-import es.tid.cosmos.servicemanager.ila.InfrastructureProviderComponent
-import es.tid.cosmos.platform.manager.ial.{MachineProfile, MachineState}
+import es.tid.cosmos.platform.manager.ial.{InfrastructureProviderComponent, InfrastructureProvider, MachineProfile, MachineState}
 
-class AmbariServiceManager(ambari: AmbariServer) extends ServiceManager {
-  this: InfrastructureProviderComponent =>
+class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: InfrastructureProvider)
+  extends ServiceManager {
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
 
@@ -53,8 +52,7 @@ class AmbariServiceManager(ambari: AmbariServer) extends ServiceManager {
     id
   }
 
-  override def terminateCluster(id: ClusterId): Unit = ()
-
+  override def terminateCluster(id: ClusterId) {}
 
   private def createService(clusterFuture: Future[Cluster], hostFutures: List[Future[Host]],
                     serviceDescription: ServiceDescription): Future[Service] = {

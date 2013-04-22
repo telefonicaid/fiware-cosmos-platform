@@ -6,8 +6,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import play.api.mvc.{SimpleResult, Action, Controller}
 
-import es.tid.cosmos.api.sm.ServiceManagerComponent
-import es.tid.cosmos.servicemanager.ClusterId
+import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ClusterId}
 
 /**
  * @author sortega

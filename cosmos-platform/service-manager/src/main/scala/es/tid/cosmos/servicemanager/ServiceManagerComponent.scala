@@ -1,6 +1,4 @@
-package es.tid.cosmos.api.sm
-
-import es.tid.cosmos.servicemanager.ServiceManager
+package es.tid.cosmos.servicemanager
 
 /**
  * @author sortega

@@ -17,8 +17,6 @@ class MockedServiceManager(
     transitionDelay: Int
   ) extends ServiceManager {
 
-  val defaultClusterId = new ClusterId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
-
   private class FakeCluster(override val name: String, override val size: Int,
                             override val id: ClusterId = new ClusterId)
     extends ClusterDescription {
@@ -40,7 +38,9 @@ class MockedServiceManager(
   private val clusters: mutable.Map[ClusterId, FakeCluster] =
     new mutable.HashMap[ClusterId, FakeCluster]
       with mutable.SynchronizedMap[ClusterId, FakeCluster] {
-      val cluster0 = new FakeCluster(id = defaultClusterId, name = "cluster0", size = 100)
+      val cluster0 = new FakeCluster(
+        id = MockedServiceManager.defaultClusterId,
+        name = "cluster0", size = 100)
       put(cluster0.id, cluster0)
     }
 
@@ -68,4 +68,8 @@ class MockedServiceManager(
       action
     }
   }
+}
+
+object MockedServiceManager {
+  val defaultClusterId = new ClusterId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
 }

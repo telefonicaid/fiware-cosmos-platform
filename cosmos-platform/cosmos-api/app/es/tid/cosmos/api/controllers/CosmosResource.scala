@@ -8,14 +8,14 @@ import play.api.libs.json.Json
  *
  * @author sortega
  */
-trait Cosmos {
+trait CosmosResource {
   self: Controller =>
 
   def version = Action {
-    Ok(Json.toJson(Map("version" -> Cosmos.apiVersion)))
+    Ok(Json.toJson(Map("version" -> CosmosResource.apiVersion)))
   }
 }
 
-object Cosmos {
+object CosmosResource {
   val apiVersion = "1.0.0"
 }

@@ -11,7 +11,7 @@ import es.tid.cosmos.api.sm.ServiceManagerComponent
 /**
  * @author sortega
  */
-trait Cluster {
+trait ClusterResource {
   self: Controller with ServiceManagerComponent =>
 
   implicit object ClusterDescriptionWrites extends Writes[ClusterDescription] {
@@ -39,7 +39,7 @@ trait Cluster {
   }
 }
 
-object Cluster {
+object ClusterResource {
   def clusterUrl(id: ClusterId)(implicit request: RequestHeader): String =
     routes.Application.listDetails(id.toString).absoluteURL(secure = false)
 }

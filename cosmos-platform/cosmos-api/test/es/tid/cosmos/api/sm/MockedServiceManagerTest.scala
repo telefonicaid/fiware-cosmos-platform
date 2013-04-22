@@ -2,7 +2,7 @@ package es.tid.cosmos.api.sm
 
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FlatSpec
-import es.tid.cosmos.servicemanager.{Provisioning, Running, Terminating, Terminated}
+import es.tid.cosmos.servicemanager._
 
 /**
  * @author sortega
@@ -27,9 +27,10 @@ class MockedServiceManagerTest extends FlatSpec with MustMatchers {
   }
 
   it must "start terminating a cluster and then transition to terminated state" in new Instance {
-    instance.terminateCluster(instance.defaultClusterId)
-    instance.describeCluster(instance.defaultClusterId).get must have ('state (Terminating))
+    val id: ClusterId = MockedServiceManager.defaultClusterId
+    instance.terminateCluster(id)
+    instance.describeCluster(id).get must have ('state (Terminating))
     Thread.sleep(2 * transitionDelay)
-    instance.describeCluster(instance.defaultClusterId).get must have ('state (Terminated))
+    instance.describeCluster(id).get must have ('state (Terminated))
   }
 }

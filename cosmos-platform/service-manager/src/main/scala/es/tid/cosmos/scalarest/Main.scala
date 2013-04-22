@@ -7,7 +7,11 @@ import scala.util.control.NonFatal
 
 import es.tid.cosmos.servicemanager.ambari._
 import es.tid.cosmos.servicemanager.{ClusterId, AmbariServiceManager}
-import es.tid.cosmos.ila.{MachineState, InfrastructureProvider, InfrastructureProviderComponent}
+import es.tid.cosmos.servicemanager.ila.InfrastructureProviderComponent
+import es.tid.cosmos.platform.manager.ial._
+import es.tid.cosmos.platform.manager.ial.MachineState
+import scala.util.Try
+import scala.concurrent.Future
 
 object Main {
 
@@ -23,11 +27,18 @@ object Main {
 
   trait Fake extends InfrastructureProviderComponent {
     override val infrastructureProvider = new InfrastructureProvider{
-      val machine = new MachineState {
-              val name: String = "cosmos.local"
-            }
+      val machine = new MachineState(
+        id = new Id[MachineState]("cosmosLocalID"),
+        name = "cosmos.local",
+        profile = MachineProfile.XS,
+        status = MachineStatus.Running,
+        hostname = "cosmos.local",
+        ipAddress = "192.168.50.4")
+
       val machineFuture: Future[MachineState] = Future { machine }
-      def createMachines(namePrefix: String, profile: Unit, count: Int): Seq[Future[MachineState]] = List(machineFuture)
+
+      override def createMachines(namePrefix: String, profile: MachineProfile.Value, count: Int):
+        Try[Seq[Future[MachineState]]] = Try(List(machineFuture))
     }
   }
 }

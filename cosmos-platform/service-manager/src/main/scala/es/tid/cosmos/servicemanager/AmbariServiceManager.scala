@@ -18,7 +18,8 @@ import ambari._
 import scala.util.{Success, Try, Failure}
 import net.liftweb.json._
 import net.liftweb.json.JsonAST.JObject
-import es.tid.cosmos.ila.{MachineState, InfrastructureProviderComponent}
+import es.tid.cosmos.servicemanager.ila.InfrastructureProviderComponent
+import es.tid.cosmos.platform.manager.ial.{MachineProfile, MachineState}
 
 class AmbariServiceManager(ambari: AmbariServer) extends ServiceManager {
   this: InfrastructureProviderComponent =>
@@ -35,7 +36,8 @@ class AmbariServiceManager(ambari: AmbariServer) extends ServiceManager {
   def close() { clusters.values.foreach(description => Await.ready(description.deployment, Duration.Inf))}
 
   override def createCluster(name: String, clusterSize: Int): ClusterId = {
-    val machineFutures: List[Future[MachineState]] = infrastructureProvider.createMachines(name, (), clusterSize).toList
+    val machineFutures: List[Future[MachineState]] =
+      infrastructureProvider.createMachines(name, MachineProfile.XS, clusterSize).get.toList
     val clusterFuture: Future[Cluster] = applyGlobalConfiguration(ambari.createCluster(name = name, version = "HDP-1.2.0"))
     val hostFutures: List[Future[Host]] = addHosts(machineFutures, clusterFuture)
     val services: List[Future[Service]] = List(HdfsServiceDescription, MapReduceServiceDescription)

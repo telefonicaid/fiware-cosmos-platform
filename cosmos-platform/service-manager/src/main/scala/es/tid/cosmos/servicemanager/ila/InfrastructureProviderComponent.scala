@@ -8,7 +8,9 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-package es.tid.cosmos.ila
+package es.tid.cosmos.servicemanager.ila
+
+import es.tid.cosmos.platform.manager.ial.InfrastructureProvider
 
 trait InfrastructureProviderComponent {
   def infrastructureProvider: InfrastructureProvider

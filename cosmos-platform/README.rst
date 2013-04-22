@@ -11,7 +11,7 @@ To that end the prototype consists of 3 layers:
 
 These are the layer interdependencies:
 
-cosmos-api -> service-manager -> ILA
+cosmos-api -> service-manager -> IAL
 
 ==========================
 Current scope limitations:

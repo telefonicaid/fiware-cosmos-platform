@@ -12,17 +12,7 @@ package es.tid.cosmos.servicemanager
 
 import java.util.UUID
 
-case class ClusterId(uuid: UUID = UUID.randomUUID()) {
-  override def toString = uuid.toString
-  override def equals(other: Any): Boolean = other match {
-    case that: ClusterId => this.uuid.compareTo(that.uuid) == 0
-    case _ => false
-  }
-  private lazy val cachedHashCode: Int = (17 +
-    31 * uuid.getLeastSignificantBits.hashCode() +
-    31 * uuid.getMostSignificantBits.hashCode())
-  override def hashCode: Int = cachedHashCode
-}
+case class ClusterId(uuid: UUID = UUID.randomUUID())
 
 object ClusterId{
   /**

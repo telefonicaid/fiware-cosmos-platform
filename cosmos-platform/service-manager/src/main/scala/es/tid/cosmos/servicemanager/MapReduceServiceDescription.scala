@@ -10,11 +10,13 @@
  */
 package es.tid.cosmos.servicemanager
 
-import ambari.{Host, Cluster}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
 import net.liftweb.json._
 import net.liftweb.json.JsonAST.JObject
+
+import es.tid.cosmos.servicemanager.ambari.{Host, Cluster}
 
 object MapReduceServiceDescription extends ServiceDescription {
   val name: String = "MAPREDUCE"

@@ -10,11 +10,13 @@
  */
 package es.tid.cosmos.servicemanager
 
-import ambari.{Service, Host, Cluster}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+
 import net.liftweb.json._
 import net.liftweb.json.JsonAST.JObject
+
+import es.tid.cosmos.servicemanager.ambari.{Host, Cluster}
 
 object HdfsServiceDescription extends ServiceDescription {
   override val name: String = "HDFS"

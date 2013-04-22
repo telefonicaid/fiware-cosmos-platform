@@ -8,5 +8,5 @@ import play.api.Play.current
  */
 object Global extends GlobalSettings {
   override def getControllerInstance[A](controllerClass: Class[A]): A =
-    (if (Play.isProd) ProductionApplication else TestApplication).asInstanceOf[A]
+    (if (Play.isTest) TestApplication else ProductionApplication).asInstanceOf[A]
 }

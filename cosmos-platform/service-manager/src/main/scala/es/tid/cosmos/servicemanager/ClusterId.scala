@@ -12,7 +12,9 @@ package es.tid.cosmos.servicemanager
 
 import java.util.UUID
 
-case class ClusterId(uuid: UUID = UUID.randomUUID())
+case class ClusterId(uuid: UUID = UUID.randomUUID()) {
+  override def toString: String = uuid.toString
+}
 
 object ClusterId{
   /**

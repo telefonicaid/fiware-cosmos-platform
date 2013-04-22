@@ -1,6 +1,6 @@
 package es.tid.cosmos.platform.manager.ial.serverpool
 
-import scala.util.{Success, Failure, Try, Random}
+import scala.util.{Success, Failure, Random}
 
 import org.scalatest.{Suite, BeforeAndAfter}
 import org.scalatest.matchers.{MatchResult, Matcher}
@@ -9,7 +9,6 @@ import org.squeryl.PrimitiveTypeMode._
 import es.tid.cosmos.platform.manager.ial.{MachineProfile, Id}
 import es.tid.cosmos.platform.manager.ial.MachineState
 import es.tid.cosmos.platform.manager.ial.MachineStatus._
-import java.sql.{Connection, Statement}
 
 /**
  * A convenient trait for testing against MySQL DBMS. In order to it to work, you must:

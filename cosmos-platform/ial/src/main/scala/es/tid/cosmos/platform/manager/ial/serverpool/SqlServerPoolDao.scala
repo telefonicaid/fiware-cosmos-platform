@@ -1,7 +1,7 @@
 package es.tid.cosmos.platform.manager.ial.serverpool
 
 import java.sql.{DriverManager, Connection}
-import scala.util.{Random, Try}
+import scala.util.Try
 
 import org.squeryl._
 import org.squeryl.adapters.MySQLAdapter

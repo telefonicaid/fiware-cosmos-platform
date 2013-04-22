@@ -10,7 +10,7 @@
  */
 package es.tid.cosmos.servicemanager.ambari
 
-import net.liftweb.json.JsonAST.{JString, JValue}
+import net.liftweb.json.JsonAST.JString
 import net.liftweb.json._
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._

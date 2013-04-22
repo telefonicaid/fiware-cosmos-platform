@@ -15,10 +15,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import ambari._
-import scala.util.{Success, Try, Failure}
 import net.liftweb.json._
 import net.liftweb.json.JsonAST.JObject
-import es.tid.cosmos.platform.manager.ial.{InfrastructureProviderComponent, InfrastructureProvider, MachineProfile, MachineState}
+import es.tid.cosmos.platform.manager.ial.{InfrastructureProvider, MachineProfile, MachineState}
 
 class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: InfrastructureProvider)
   extends ServiceManager {

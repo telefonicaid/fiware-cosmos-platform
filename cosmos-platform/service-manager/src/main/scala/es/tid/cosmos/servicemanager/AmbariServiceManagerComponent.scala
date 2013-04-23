@@ -9,6 +9,6 @@ import es.tid.cosmos.platform.manager.ial.InfrastructureProviderComponent
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   self: InfrastructureProviderComponent =>
 
-  val serviceManager: ServiceManager = new AmbariServiceManager(
-    new AmbariServer("cosmos.local", 8080, "admin", "admin"), infrastructureProvider)
+  lazy val serviceManager: ServiceManager = new AmbariServiceManager(
+    new AmbariServer("localhost", 8080, "admin", "admin"), infrastructureProvider)
 }

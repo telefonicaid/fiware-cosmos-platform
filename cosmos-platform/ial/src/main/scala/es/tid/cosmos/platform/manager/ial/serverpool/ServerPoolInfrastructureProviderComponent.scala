@@ -8,13 +8,15 @@ import es.tid.cosmos.platform.manager.ial.{InfrastructureProvider, Infrastructur
  * @author sortega
  */
 trait ServerPoolInfrastructureProviderComponent extends InfrastructureProviderComponent {
-  val dbHost = "localhost"
-  val dbPort = 3306
-  val dbUser = "cosmos"
-  val dbPassword = "cosmos"
-  val dbName = s"test_${math.abs(Random.nextInt())}"
-  private lazy val db = new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword, dbName)
-  private lazy val dao = new SqlServerPoolDao(db)
-  lazy val infrastructureProvider: InfrastructureProvider =
+
+  override lazy val infrastructureProvider = {
+    val dbHost = "localhost"
+    val dbPort = 3306
+    val dbUser = "cosmos"
+    val dbPassword = "cosmos"
+    val dbName = "cosmos"
+    val db = new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword, dbName)
+    val dao = new SqlServerPoolDao(db)
     new ServerPoolInfrastructureProvider(dao)
+  }
 }

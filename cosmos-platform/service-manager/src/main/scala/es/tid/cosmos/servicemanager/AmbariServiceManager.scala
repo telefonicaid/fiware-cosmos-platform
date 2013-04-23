@@ -35,7 +35,7 @@ class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: Infras
 
   override def createCluster(name: String, clusterSize: Int): ClusterId = {
     val machineFutures: List[Future[MachineState]] =
-      infrastructureProvider.createMachines(name, MachineProfile.XS, clusterSize).get.toList
+      infrastructureProvider.createMachines(name, MachineProfile.M, clusterSize).get.toList
     val clusterFuture: Future[Cluster] = applyGlobalConfiguration(ambari.createCluster(name = name, version = "HDP-1.2.0"))
     val hostFutures: List[Future[Host]] = addHosts(machineFutures, clusterFuture)
     val serviceFutures: List[Future[Service]] = List(HdfsServiceDescription, MapReduceServiceDescription)

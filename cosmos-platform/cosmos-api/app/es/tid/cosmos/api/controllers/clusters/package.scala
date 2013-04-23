@@ -43,7 +43,10 @@ package object clusters {
             Created(Json.toJson(Map("id" -> id.uuid.toString, "href" -> url)))
               .withHeaders(LOCATION -> url)
           }
-          case Failure(ex) => BadRequest(Json.toJson(Map("error" -> ex.getMessage)))
+          case Failure(ex) => BadRequest(Json.toJson(Map(
+            "error" -> ex.getMessage,
+            "exception" -> ex.getClass.getCanonicalName,
+            "stacktrace" -> ex.getStackTraceString)))
         }
         case error @ JsError(_) => formatJsError(error)
       }

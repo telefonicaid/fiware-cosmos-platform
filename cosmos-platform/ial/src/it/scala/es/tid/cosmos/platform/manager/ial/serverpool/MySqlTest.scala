@@ -27,20 +27,11 @@ trait MySqlTest extends BeforeAndAfter {
 
   self: Suite =>
 
-  class ContainMachineMatcher(m: Machine) extends Matcher[Seq[MachineState]] {
-    def apply(left: Seq[MachineState]) = MatchResult(
-      left.exists(m == _),
-      s"expected one machine state equivalent to ${m.toString} in iteration $left",
-      s"expected none machine state equivalent to ${m.toString} in iteration $left"
-    )
-  }
-
-  class ContainMachineWithIdMatcher(id: Id[MachineState]) extends Matcher[Seq[MachineState]] {
-    def apply(left: Seq[MachineState]) = MatchResult(
-      left.exists(id == _.id),
-      s"expected one machine with ID $id in iteration $left",
-      s"expected no machine with ID $id in iteration $left"
-    )
+  class ContainOneMachineMatcher(matcherDesc: String)
+                                (pred: MachineState => Boolean) extends Matcher[Seq[MachineState]] {
+    def apply(left: Seq[MachineState]) = MatchResult(left.exists(pred(_)),
+      s"expected one $matcherDesc in iteration $left",
+      s"expected none $matcherDesc in iteration $left")
   }
 
   class ContainMachinesMatcher(machines: Iterable[Machine]) extends Matcher[Seq[MachineState]] {
@@ -52,9 +43,9 @@ trait MySqlTest extends BeforeAndAfter {
   }
 
   object containMachine {
-    def apply(m: Machine) = new ContainMachineMatcher(m)
-
-    def apply(id: Id[MachineState]) = new ContainMachineWithIdMatcher(id)
+    def apply(m: Machine) = new ContainOneMachineMatcher(s"state equivalent to ${m.toString}")(m == _)
+    def apply(id: Id[MachineState]) = new ContainOneMachineMatcher(s"machine with id $id")(id == _.id)
+    def apply(name: String) = new ContainOneMachineMatcher(s"machine with name $name") (_.name == name)
   }
 
   object containMachines {

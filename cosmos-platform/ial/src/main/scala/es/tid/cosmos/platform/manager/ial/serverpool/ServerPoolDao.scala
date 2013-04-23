@@ -12,8 +12,9 @@ private case class ServerPoolDaoInitException(msg: String, cause: Throwable)
  */
 trait ServerPoolDao {
 
-    def getAvailableMachinesWith(f: MachineState => Boolean) : Seq[MachineState]
-    def getAvailableMachines: Seq[MachineState] = getAvailableMachinesWith(m => true)
-    def getMachine(machineId: Id[MachineState]): Option[MachineState]
-    def setMachineAvailability(machineId: Id[MachineState], available: Boolean): Option[MachineState]
+  def getAvailableMachinesWith(f: MachineState => Boolean) : Seq[MachineState]
+  def getAvailableMachines: Seq[MachineState] = getAvailableMachinesWith(m => true)
+  def getMachine(machineId: Id[MachineState]): Option[MachineState]
+  def setMachineAvailability(machineId: Id[MachineState], available: Boolean): Option[MachineState]
+  def setMachineName(machineId: Id[MachineState], name: String): Option[MachineState]
 }

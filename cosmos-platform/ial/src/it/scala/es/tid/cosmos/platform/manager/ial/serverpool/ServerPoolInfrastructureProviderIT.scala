@@ -20,10 +20,10 @@ class ServerPoolInfrastructureProviderIT extends FlatSpec with MySqlTest with Mu
   val timeout: FiniteDuration = Duration(2, TimeUnit.SECONDS)
 
   "Server pool infrastructure provider" must "create machines when available" in {
-    val result = provider.createMachines("pre", MachineProfile.M, 2)
+    val result = provider.createMachines("cosmos", MachineProfile.M, 2)
     result must be ('success)
     val machines = result.get.map(Await.result(_, timeout))
-    machines must containMachines(List(cosmos03, cosmos04))
+    machines must (containMachine("cosmos0") and containMachine("cosmos1"))
   }
 
   it must "throw when creating machines when unavailable" in {

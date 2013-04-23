@@ -38,10 +38,9 @@ class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: Infras
       infrastructureProvider.createMachines(name, MachineProfile.XS, clusterSize).get.toList
     val clusterFuture: Future[Cluster] = applyGlobalConfiguration(ambari.createCluster(name = name, version = "HDP-1.2.0"))
     val hostFutures: List[Future[Host]] = addHosts(machineFutures, clusterFuture)
-    val services: List[Future[Service]] = List(HdfsServiceDescription, MapReduceServiceDescription)
+    val serviceFutures: List[Future[Service]] = List(HdfsServiceDescription, MapReduceServiceDescription)
       .map(createService(clusterFuture, hostFutures, _))
-    val deployedClusterFuture: Future[List[Service]] = Future.sequence(services.map(
-      service => installAndStart(service)))
+    val deployedClusterFuture: Future[List[Service]] = installInOrder(serviceFutures)
 
     val id = new ClusterId
     val description = new MutableClusterDescription(id, name, clusterSize, deployedClusterFuture)
@@ -54,13 +53,45 @@ class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: Infras
   override def terminateCluster(id: ClusterId) {}
 
   private def createService(clusterFuture: Future[Cluster], hostFutures: List[Future[Host]],
-                    serviceDescription: ServiceDescription): Future[Service] = {
+                            serviceDescription: ServiceDescription): Future[Service] = {
     for {
       cluster <- clusterFuture
-      master <- hostFutures.head
-      slaves <- Future.sequence(hostFutures.tail)
-      service <- serviceDescription.createService(cluster, master, slaves)
+      hosts <- Future.sequence(hostFutures)
+      service <- serviceDescription.createService(cluster, masterAndSlaves(hosts).head, masterAndSlaves(hosts).tail)
     } yield service
+  }
+
+  private def masterAndSlaves(hosts: Seq[Host]): Seq[Host] = hosts match {
+    case oneHost::Nil => oneHost::List(oneHost)
+    case first::rest => hosts
+    case _ => throw new IllegalArgumentException("Need at least one host")
+  }
+
+  private def installInOrder(serviceFutures: List[Future[Service]]): Future[List[Service]] = {
+    def doInstall(installedServicesFuture: Future[List[Service]], serviceFuture: Future[Service]): Future[List[Service]] = {
+      for {
+        installedServices <- installedServicesFuture
+        service <- installAndStart(serviceFuture)
+      } yield {
+        service::installedServices
+      }
+    }
+    serviceFutures.foldLeft(Future{List[Service]()})(doInstall)
+  }
+
+  private def installAndStart(serviceFuture: Future[Service]): Future[Service] = {
+    for {
+      service <- serviceFuture
+      installedService <- service.install
+      startedService <- installedService.start
+    } yield startedService
+  }
+
+  private def applyGlobalConfiguration(clusterFuture: Future[Cluster]): Future[Cluster] = {
+    for {
+      cluster <- clusterFuture
+      _ <- applyGlobalProperties(cluster)
+    } yield cluster
   }
 
   private def addHosts(machineFutures: List[Future[MachineState]], clusterFuture: Future[Cluster]): List[Future[Host]] = {
@@ -156,20 +187,5 @@ class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: Infras
       case _ => throw new Error
     }
     cluster.applyConfiguration("global", "version1", properties)
-  }
-
-  private def installAndStart(serviceFuture: Future[Service]): Future[Service] = {
-    for {
-      service <- serviceFuture
-      installedService <- service.install
-      startedService <- installedService.start
-    } yield startedService
-  }
-
-  private def applyGlobalConfiguration(clusterFuture: Future[Cluster]): Future[Cluster] = {
-    for {
-      cluster <- clusterFuture
-      _ <- applyGlobalProperties(cluster)
-    } yield cluster
   }
 }

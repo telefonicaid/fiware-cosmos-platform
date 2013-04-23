@@ -21,5 +21,6 @@ class MutableClusterDescription(val id: ClusterId, val name: String, val size: I
     override val id: ClusterId = MutableClusterDescription.this.id
   }
   @volatile var state: ClusterState = Provisioning
+  deployment.onSuccess({case _ => state = Running})
   deployment.onFailure({case err => { state = new Failed(err) }})
 }

@@ -10,6 +10,16 @@
  */
 package es.tid.cosmos.platform.manager.ial
 
+/**
+ * Infrastructure provider component trait. This trait is aimed to implement a cake pattern to declare an artifact
+ * that requires a infrastructure provider as one of its components.
+ *
+ * @author sortega
+ */
 trait InfrastructureProviderComponent {
+
+  /**
+   * Obtain the infrastructure provider instance for this component.
+   */
   def infrastructureProvider: InfrastructureProvider
 }

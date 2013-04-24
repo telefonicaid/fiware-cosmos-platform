@@ -7,6 +7,8 @@ import es.tid.cosmos.platform.manager.ial._
 import es.tid.cosmos.platform.manager.ial.MachineState
 
 /**
+ * An infrastructure provider supported by a server pool.
+ *
  * @author apv
  */
 class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends InfrastructureProvider {
@@ -15,7 +17,7 @@ class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends Infrastru
                      profile: MachineProfile.Value,
                      count: Int): Try[Seq[Future[MachineState]]] = {
     val machineIds = dao.getAvailableMachinesWith(_.profile == profile).take(count).map(_.id)
-    if (machineIds.length < count) Failure(ResourceExhaustedException(count, machineIds.length))
+    if (machineIds.length < count) Failure(ResourceExhaustedException(profile.toString, count, machineIds.length))
     else {
       var machines: List[MachineState] = List()
       machineIds.zip(0 to machineIds.length).foreach {

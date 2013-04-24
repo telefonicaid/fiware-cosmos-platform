@@ -30,7 +30,7 @@ class ServerPoolInfrastructureProviderIT extends FlatSpec with MySqlTest with Mu
     val result = provider.createMachines("pre", MachineProfile.XL, 1500)
     result must be ('failure)
     (result match {
-      case Failure(ResourceExhaustedException(1500, 1)) => true
+      case Failure(ResourceExhaustedException(r, 1500, 1)) => true
       case _ => false
     }) must be (true)
   }

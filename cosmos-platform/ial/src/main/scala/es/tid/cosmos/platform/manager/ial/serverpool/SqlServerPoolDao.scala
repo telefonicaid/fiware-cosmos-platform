@@ -11,6 +11,9 @@ import org.squeryl.PrimitiveTypeMode._
 import es.tid.cosmos.platform.manager.ial._
 import java.util.UUID
 
+/**
+ * A class used to maintain persistent information of machines.
+ */
 class Machine(var machineId: UUID,
               var name: String,
               var available: Boolean,
@@ -27,6 +30,9 @@ class Machine(var machineId: UUID,
 
   def this() = this(UUID.randomUUID(), "unknown", false, MachineProfile.M, MachineStatus.Provisioning, "", "")
 
+  /**
+   * Transform this DB oriented data object into machine state.
+   */
   def toMachineState: MachineState = {
       new MachineState(Id(machineId), name, profile, status, hostname, ipAddress)
   }
@@ -49,15 +55,36 @@ object InfraDb extends Schema {
     val machines = table[Machine]
 }
 
+/**
+ * A trait of an SQL databse.
+ */
 trait SqlDatabase extends SessionFactory {
 
+  /**
+   * Obtain the Squeryl database adapter corresponding to this SQL database.
+   */
   val adapter: DatabaseAdapter
 
+  /**
+   * Create a new connection to the database.
+   */
   def connect: Try[Connection]
 
+  /**
+   * Create a new Squeryl session from a connection to the database.
+   */
   def newSession: Session = Session.create(connect.get, adapter)
 }
 
+/**
+ * A trait of a MySQL database.
+ *
+ * @param host the hostname of MySQL server
+ * @param port the port MySQL server is listening to
+ * @param username the username used to connect to MySQL
+ * @param password the password used to connect to MySQL
+ * @param dbName the database to connect
+ */
 class MySqlDatabase(val host: String,
                     val port: Int,
                     val username: String,
@@ -73,7 +100,7 @@ class MySqlDatabase(val host: String,
 }
 
 /**
- * A data access object implementation for MySQL database.
+ * A data access object implementation for SQL database.
  *
  * @author apv
  */
@@ -110,5 +137,14 @@ class SqlServerPoolDao(val db: SqlDatabase) extends ServerPoolDao {
   }
 }
 
+/**
+ * A server pool DAO supported by a MySQL database.
+ *
+ * @param host the hostname of MySQL server
+ * @param port the port MySQL server is listening to
+ * @param username the username used to connect to MySQL
+ * @param password the password used to connect to MySQL
+ * @param dbName the database to connect
+ */
 class MySqlServerPoolDao(host: String, port: Int, username: String, password: String, dbName: String)
   extends SqlServerPoolDao(new MySqlDatabase(host, port, username, password, dbName))

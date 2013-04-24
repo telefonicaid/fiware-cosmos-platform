@@ -5,6 +5,8 @@ import scala.util.Random
 import es.tid.cosmos.platform.manager.ial.{InfrastructureProvider, InfrastructureProviderComponent}
 
 /**
+ * A trait satisfying infrastructure provider component supported by a server pool based provider.
+ *
  * @author sortega
  */
 trait ServerPoolInfrastructureProviderComponent extends InfrastructureProviderComponent {

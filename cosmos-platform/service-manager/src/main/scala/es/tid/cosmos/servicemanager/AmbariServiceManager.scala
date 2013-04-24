@@ -100,7 +100,7 @@ class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: Infras
     } yield for {
       cluster <- clusterFuture
       machine <- machineFuture
-      host <- cluster.addHost(machine.name)
+      host <- cluster.addHost(machine.hostname)
     } yield host
   }
 

@@ -18,6 +18,7 @@ import ambari._
 import net.liftweb.json._
 import net.liftweb.json.JsonAST.JObject
 import es.tid.cosmos.platform.manager.ial.{InfrastructureProvider, MachineProfile, MachineState}
+import es.tid.cosmos.servicemanager.services.{ServiceDescription, MapReduceServiceDescription, HdfsServiceDescription}
 
 class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: InfrastructureProvider)
   extends ServiceManager {

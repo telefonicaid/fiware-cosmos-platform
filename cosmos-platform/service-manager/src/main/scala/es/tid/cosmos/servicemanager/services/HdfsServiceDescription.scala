@@ -8,7 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.services
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global

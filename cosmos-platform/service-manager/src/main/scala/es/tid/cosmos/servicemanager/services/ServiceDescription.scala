@@ -8,11 +8,11 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.services
 
-import ambari.{Host, Service, Cluster}
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import es.tid.cosmos.servicemanager.ambari.{Service, Host, Cluster}
 
 trait ServiceDescription {
   val name: String

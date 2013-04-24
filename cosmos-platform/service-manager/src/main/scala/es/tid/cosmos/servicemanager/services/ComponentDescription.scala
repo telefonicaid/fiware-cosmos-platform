@@ -8,6 +8,6 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.services
 
 class ComponentDescription(val name: String, val isMaster: Boolean)

@@ -17,11 +17,15 @@ import com.ning.http.client.RequestBuilder
 
 class AmbariServer(serverUrl: String, port: Int, username: String, password: String) extends JsonHttpRequest {
   private[this] def baseUrl: RequestBuilder = host(serverUrl, port).as_!(username, password) / "api" / "v1"
-  def listClusterNames = performRequest(baseUrl / "clusters").map(json => for {
-    JField("cluster_name", JString(name)) <- (json \\ "cluster_name").children
-  } yield name)
+
+  def listClusterNames = performRequest(baseUrl / "clusters").map(json =>
+    for {
+      JField("cluster_name", JString(name)) <- (json \\ "cluster_name").children
+    } yield name)
+
   def getCluster(name: String): Future[Cluster] = performRequest(baseUrl / "clusters" / name)
-    .map({new Cluster(_, baseUrl.build)})
+    .map(new Cluster(_, baseUrl.build))
+
   def createCluster(name: String, version: String): Future[Cluster] =
     performRequest(baseUrl / "clusters" / name << s"""{"Clusters": {"version": "$version"}}""")
       .flatMap(_ => getCluster(name))

@@ -16,12 +16,14 @@ import java.util.concurrent.ExecutionException
 
 trait JsonHttpRequest {
   def performRequest(request: RequestBuilder) = Http(request.OK(asJson))
-    .transform(identity, {
-      case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => new ServiceException(
-        s"""Error when performing Http request. Http code ${ex.getCause.asInstanceOf[StatusCode].code}
-        Request: ${request.build.toString}
-        Body: ${request.build.getStringData}
-        """, ex.getCause)
-      case other => other
+    .transform(
+      identity, // success case
+      {         // failure case
+        case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => new ServiceException(
+          s"""Error when performing Http request. Http code ${ex.getCause.asInstanceOf[StatusCode].code}
+          AmbariRequest: ${request.build.toString}
+          Body: ${request.build.getStringData}
+          """, ex.getCause)
+        case other => other
     })
 }

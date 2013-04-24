@@ -15,6 +15,7 @@ import net.liftweb.json._
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
 import scala.concurrent.Future
+import es.tid.cosmos.servicemanager.InternalError
 
 class Host(hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
   val name = hostInfo \ "Hosts" \ "public_host_name" match {
@@ -22,10 +23,13 @@ class Host(hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
     case _ =>
       throw new InternalError("Ambari's host information response doesn't contain a Hosts/public_host_name element")
   }
+
   private[this] def baseUrl = new RequestBuilder(clusterBaseUrl) / "hosts" / name
+
   def addComponents(componentNames: String*): Future[Unit] = {
+    def getJsonForComponent(componentName: String): String = s"""{"HostRoles": {"component_name": "$componentName"}}"""
     val hostsJsonStr = componentNames
-      .fold("[")((str, name) => str + s"""{"HostRoles": {"component_name": "$name"}},""")
+      .fold("[")((str, name) => str + getJsonForComponent(name) + ",")
       .dropRight(1) + "]"
     performRequest(new RequestBuilder(clusterBaseUrl) / "hosts"
       <<? Map("Hosts/host_name" -> name)

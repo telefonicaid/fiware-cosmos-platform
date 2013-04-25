@@ -15,7 +15,8 @@ import play.api.mvc._
 
 trait Pages extends Controller {
 
-  def index = Action {
-    Ok(views.html.index("Your new application is ready."))
+  def index = Action { implicit request =>
+    val baseUrl: String = routes.Application.version().absoluteURL(secure = false)
+    Ok(views.html.index(baseUrl, CosmosResource.apiVersion))
   }
 }

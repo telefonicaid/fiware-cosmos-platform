@@ -26,12 +26,12 @@ class Service(serviceInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequ
   def addComponent(componentName: String): Future[String] =
     performRequest(baseUrl / "components" / componentName << "").map(_ => componentName)
 
-  def install: Future[Service] =
+  def install(): Future[Service] =
     performRequest(baseUrl.PUT.setBody("""{"ServiceInfo": {"state": "INSTALLED"}}""")).flatMap(ensureFinished)
 
-  def stop = install
+  def stop() = install
 
-  def start: Future[Service] =
+  def start(): Future[Service] =
     performRequest(baseUrl.PUT.setBody("""{"ServiceInfo": {"state": "STARTED"}}""")).flatMap(ensureFinished)
 
   private[this] def ensureFinished(json: JValue): Future[Service] = {

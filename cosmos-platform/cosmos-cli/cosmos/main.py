@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Telefónica Digital - Product Development and Innovation
@@ -182,8 +181,9 @@ def add_create_command(subcommands):
     parser.set_defaults(func=create_cluster)
 
 
-def main():
-    """Register all subcommands and parse the command line"""
+def run():
+    """Register all subcommands, parse the command line and run the function
+    set as default for the parsed command"""
     parser = argparse.ArgumentParser(prog='cosmos')
     subparsers = parser.add_subparsers(help='sub-command help',
                                        title="subcommands",
@@ -200,6 +200,5 @@ def main():
         print "Command cancelled by the user"
         sys.exit(-1)
 
-
 if __name__ == "__main__":
-    main()
+    run()

@@ -10,6 +10,6 @@
  */
 package es.tid.cosmos.servicemanager.ambari
 
-class Configuration(val configType: String, val tag: String) {
+case class Configuration(val configType: String, val tag: String) {
   override def toString = "[Configuration] Type = " + configType + ", Tag = " + tag
 }

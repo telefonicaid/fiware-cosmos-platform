@@ -27,11 +27,11 @@ class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpReque
   private[this] def baseUrl: RequestBuilder = new RequestBuilder(serverBaseUrl) / "clusters" / name
 
   val serviceNames = for {
-    JString(serviceName) <- clusterInfo \ "services" \ "ServiceInfo" \ "service_name"
+    JString(serviceName) <- clusterInfo \\ "service_name"
   } yield serviceName
 
   val hostNames = for {
-    JString(hostName) <- clusterInfo \ "hosts" \ "Hosts" \ "host_name"
+    JString(hostName) <- clusterInfo \\ "host_name"
   } yield hostName
 
   val configurations = for {

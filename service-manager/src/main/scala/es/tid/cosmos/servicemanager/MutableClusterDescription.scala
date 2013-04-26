@@ -11,17 +11,21 @@
 
 package es.tid.cosmos.servicemanager
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-class MutableClusterDescription(val id: ClusterId, val name: String, val size: Int, val deployment: Future[Any]) {
+class MutableClusterDescription(
+    val id: ClusterId, val name: String, val size: Int, val deployment: Future[Any]) {
+
   def getView: ClusterDescription = new ClusterDescription {
     override val state: ClusterState = MutableClusterDescription.this.state
     override val size: Int = MutableClusterDescription.this.size
     override val name: String = MutableClusterDescription.this.name
     override val id: ClusterId = MutableClusterDescription.this.id
   }
+
   @volatile var state: ClusterState = Provisioning
+
   deployment.onSuccess({case _ => state = Running})
   deployment.onFailure({case err => { state = new Failed(err) }})
 }

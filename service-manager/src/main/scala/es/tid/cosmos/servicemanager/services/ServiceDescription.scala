@@ -11,23 +11,40 @@
 
 package es.tid.cosmos.servicemanager.services
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import es.tid.cosmos.servicemanager.ambari.{Service, Host, Cluster}
+import scala.concurrent.Future
 
-trait ServiceDescription {
+import es.tid.cosmos.servicemanager.ambari.{Service, Host, Cluster}
+import es.tid.cosmos.servicemanager.ConfigurationContributor
+
+/**
+ * Representation of a service definition that allows service instantiation for a given cluster.
+ * The service definition is also capable of contributing to the cluster configuration.
+ *
+ * @see ConfigurationContributor
+ * @author ximo, adamos
+ */
+trait ServiceDescription extends ConfigurationContributor {
+
   val name: String
+
   val components: Seq[ComponentDescription]
+
+  /**
+   * Create a service instance on a given cluster.
+   *
+   * @param cluster the cluster for which to instantiate the service
+   * @param master the cluster's master node
+   * @param slaves the cluster's slave nodes
+   * @return the future of the service instance for the given cluster
+   */
   final def createService(cluster: Cluster, master: Host, slaves: Seq[Host]): Future[Service] = {
-    val configurationFuture = applyConfiguration(cluster, master)
     for {
       service <- cluster.addService(name)
-      _ <- configurationFuture
       _ <- Future.sequence(components.map(component => service.addComponent(component.name)))
       _ <- master.addComponents(components.filter(_.isMaster).map(_.name): _*)
-      _ <- Future.sequence(slaves.map(slave => slave.addComponents(components.filter(!_.isMaster).map(_.name): _*)))
+      _ <- Future.sequence(
+        slaves.map(slave => slave.addComponents(components.filter(!_.isMaster).map(_.name): _*)))
     } yield service
   }
-
-  protected def applyConfiguration(cluster: Cluster, master: Host): Future[Unit]
 }

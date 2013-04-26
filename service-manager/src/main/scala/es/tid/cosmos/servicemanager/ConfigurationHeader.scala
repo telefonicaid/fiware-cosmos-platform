@@ -11,16 +11,11 @@
 
 package es.tid.cosmos.servicemanager
 
-import es.tid.cosmos.servicemanager.ambari.AmbariServer
-import es.tid.cosmos.platform.manager.ial.InfrastructureProviderComponent
+trait ConfigurationHeader {
+  def configType: String
+  def tag: String
+}
 
-/**
- * @author sortega
- */
-trait AmbariServiceManagerComponent extends ServiceManagerComponent {
-  self: InfrastructureProviderComponent =>
-
-  lazy val serviceManager: ServiceManager = new AmbariServiceManager(
-    new AmbariServer("localhost", 8080, "admin", "admin"),
-    infrastructureProvider)
+case class HeaderOnlyConfiguration(configType: String, tag: String) extends ConfigurationHeader {
+  override def toString = "[Configuration] Type = " + configType + ", Tag = " + tag
 }

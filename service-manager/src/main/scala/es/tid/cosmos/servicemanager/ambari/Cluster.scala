@@ -15,10 +15,12 @@ import scala.concurrent.Future
 
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
-import net.liftweb.json.JsonAST._
-import net.liftweb.json.{compact, render}
+import net.liftweb.json._
+import net.liftweb.json.JsonAST.{JValue, JString, JArray}
+import net.liftweb.json.Extraction._
 
-import es.tid.cosmos.servicemanager.Bug
+import es.tid.cosmos.servicemanager.{Bug, Configuration, HeaderOnlyConfiguration}
+
 
 class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpRequest {
   val name = clusterInfo \ "Clusters" \ "cluster_name" match {
@@ -27,7 +29,7 @@ class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpReque
       "Clusters/cluster_name element")
   }
 
-  private def baseUrl = new RequestBuilder(serverBaseUrl) / "clusters" / name
+  private[this] def baseUrl: RequestBuilder = new RequestBuilder(serverBaseUrl) / "clusters" / name
 
   val serviceNames = for {
     JString(serviceName) <- clusterInfo \\ "service_name"
@@ -42,24 +44,24 @@ class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpReque
     configuration <- configurations
     JString(tag) <- configuration \ "tag"
     JString(configType) <- configuration \ "type"
-  } yield new Configuration(configType, tag)
+  } yield HeaderOnlyConfiguration(configType, tag)
 
   def getService(serviceName: String): Future[Service] =
-    performRequest(baseUrl / "services" / serviceName)
-      .map(new Service(_, baseUrl.build))
+    performRequest(baseUrl / "services" / serviceName).map(new Service(_, baseUrl.build))
 
   def addService(serviceName: String): Future[Service] =
     performRequest(baseUrl / "services" << s"""{"ServiceInfo": {"service_name": "$serviceName"}}""")
       .flatMap(_ => getService(serviceName))
 
-  def applyConfiguration(configType: String, tag: String, properties: JObject): Future[Unit] = {
-    val propertiesString = compact(render(properties))
+  def applyConfiguration(configuration: Configuration): Future[Unit] = {
+    implicit val formats = net.liftweb.json.DefaultFormats
+    val propertiesString = compact(render(decompose(configuration.properties)))
     val requestBody = s"""
       {
         "Clusters": {
           "desired_configs": {
-            "type": "$configType",
-            "tag": "$tag",
+            "type": "${configuration.configType}",
+            "tag": "${configuration.tag}",
             "properties": $propertiesString
           }
         }
@@ -67,11 +69,10 @@ class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpReque
     performRequest(baseUrl.PUT.setBody(requestBody)).map(_ => ())
   }
 
-  def getHost(hostName: String) : Future[Host] = performRequest(baseUrl / "hosts" / hostName)
-    .map(new Host(_, baseUrl.build))
+  def getHost(hostName: String): Future[Host] =
+    performRequest(baseUrl / "hosts" / hostName).map(new Host(_, baseUrl.build))
 
   def addHost(hostName: String): Future[Host] =
     performRequest(baseUrl / "hosts" << s"""{"Hosts":{"host_name":"$hostName"}}""")
       .flatMap(_ => getHost(hostName))
-
 }

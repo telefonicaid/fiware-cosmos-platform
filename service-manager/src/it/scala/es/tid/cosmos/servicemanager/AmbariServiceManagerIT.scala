@@ -13,8 +13,12 @@ package es.tid.cosmos.servicemanager
 
 import scala.annotation.tailrec
 
-import es.tid.cosmos.servicemanager.ambari.AmbariServer
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.MustMatchers
+
 import es.tid.cosmos.scalarest.FakeInfrastructureProviderComponent
+import es.tid.cosmos.servicemanager.ambari.AmbariServer
+import es.tid.cosmos.servicemanager.services.DefaultServices
 
 @tailrec
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with FakeInfrastructureProviderComponent {
@@ -31,9 +35,12 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with FakeInfrast
   }
 
   "Ambari server" should "create server" in {
-    val sm = new AmbariServiceManager(new AmbariServer("cosmos.local", 8080, "admin", "admin"), infrastructureProvider)
+    val sm = new AmbariServiceManager(
+      new AmbariServer("cosmos.local", 8080, "admin", "admin"),
+      infrastructureProvider)
     try {
-      val id = sm.createCluster(name = "test", 1)
+      val id = sm.createCluster(
+        name = "test", 1, DefaultServices.serviceDescriptions)
       val description = sm.describeCluster(id)
       description.get.state must be (Provisioning)
       val endState = waitForClusterCompletion(id, sm)

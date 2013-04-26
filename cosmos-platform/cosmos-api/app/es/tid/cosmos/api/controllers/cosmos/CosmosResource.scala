@@ -9,13 +9,25 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.sm
+package es.tid.cosmos.api.controllers.cosmos
 
-import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ServiceManager}
+import play.api.mvc.{Action, Controller}
+import play.api.libs.json.Json
 
 /**
+ * Root API resource
+ *
  * @author sortega
  */
-trait MockedServiceManagerComponent extends ServiceManagerComponent {
-  val serviceManager: ServiceManager = new MockedServiceManager(10000)
+trait CosmosResource {
+  self: Controller =>
+
+  def version = Action {
+    Ok(Json.toJson(CosmosResource.apiDescription))
+  }
+}
+
+object CosmosResource {
+  val apiVersion = "1.0.0"
+  val apiDescription = ApiDescription(apiVersion)
 }

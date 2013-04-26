@@ -11,13 +11,11 @@
 
 package es.tid.cosmos.api.controllers
 
-import scala.util.{Failure, Success, Try}
-
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import play.api.mvc.{SimpleResult, Action, Controller}
-
-import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ClusterId}
+import es.tid.cosmos.servicemanager.ClusterId
+import play.api.mvc.RequestHeader
+import es.tid.cosmos.api.controllers.cluster.ClusterResource
 
 /**
  * @author sortega
@@ -26,48 +24,35 @@ package object clusters {
 
   case class CreateClusterParams(name: String, size: Int)
 
-  implicit val jsonReader: Reads[CreateClusterParams] = (
+  implicit val createClusterParamsReads: Reads[CreateClusterParams] = (
     (__ \ "name").read[String] ~
     (__ \ "size").read[Int]
   )(CreateClusterParams.apply _)
 
-  implicit object CreateClusterParamsWriter extends Writes[CreateClusterParams] {
+  implicit object CreateClusterParamsWrites extends Writes[CreateClusterParams] {
     def writes(params: CreateClusterParams) = Json.obj(
       "name" -> JsString(params.name),
       "size" -> JsNumber(params.size)
     )
   }
 
-  trait ClustersResource {
-    self: Controller with ServiceManagerComponent =>
+  case class ClusterReference(id: String, href: String)
+  object ClusterReference {
+    def apply(clusterId: ClusterId)(implicit request: RequestHeader): ClusterReference =
+      ClusterReference(clusterId.toString, ClusterResource.clusterUrl(clusterId))
+  }
+  case class ClusterList(clusterReferences: Seq[ClusterReference])
 
-    def list = Action { implicit request =>
-      Ok(Json.toJson(Map("clusters" -> serviceManager.clusterIds.map(id =>
-        Map("id" -> id.toString, "href" -> ClusterResource.clusterUrl(id))))))
-    }
+  implicit object ClusterReferenceWrites extends Writes[ClusterReference] {
+    def writes(ref: ClusterReference): JsValue = Json.obj(
+      "id" -> ref.id,
+      "href" -> ref.href
+    )
+  }
 
-    def createCluster = Action(parse.tolerantJson) { implicit request =>
-      Json.fromJson[CreateClusterParams](request.body) match {
-        case JsSuccess(params, _) => Try(serviceManager.createCluster(params.name, params.size)) match {
-          case Success(id: ClusterId) => {
-            val url = ClusterResource.clusterUrl(id)
-            Created(Json.toJson(Map("id" -> id.uuid.toString, "href" -> url)))
-              .withHeaders(LOCATION -> url)
-          }
-          case Failure(ex) => InternalServerError(Json.toJson(Map(
-            "error" -> ex.getMessage,
-            "exception" -> ex.getClass.getCanonicalName,
-            "stacktrace" -> ex.getStackTraceString)))
-        }
-        case error @ JsError(_) => formatJsError(error)
-      }
-    }
-
-    def formatJsError(jsError: JsError): SimpleResult[JsValue] = {
-      val errorMap = Map(jsError.errors.toList.map {
-        case (path, errors) => (path.toString(), errors.map(_.message).toList)
-      }: _*)
-      BadRequest(Json.toJson(errorMap))
-    }
+  implicit object ClusterListWrites extends Writes[ClusterList] {
+    def writes(list: ClusterList): JsValue = Json.obj(
+      "clusters" -> JsArray(list.clusterReferences.map(ref => Json.toJson(ref)))
+    )
   }
 }

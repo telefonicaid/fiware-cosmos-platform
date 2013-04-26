@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.sm
+package es.tid.cosmos.api.servicemanager
 
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FlatSpec
@@ -18,7 +18,7 @@ import es.tid.cosmos.servicemanager._
 /**
  * @author sortega
  */
-class MockedServiceManagerTest extends FlatSpec with MustMatchers {
+class MockedServiceManagerIT extends FlatSpec with MustMatchers {
 
   val transitionDelay = 100
 

@@ -13,6 +13,8 @@ package es.tid.cosmos.api.controllers
 
 import play.api.mvc._
 
+import es.tid.cosmos.api.controllers.cosmos.CosmosResource
+
 trait Pages extends Controller {
 
   def index = Action { implicit request =>

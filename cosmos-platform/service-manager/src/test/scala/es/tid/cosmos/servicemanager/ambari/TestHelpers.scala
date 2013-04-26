@@ -11,9 +11,14 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import com.ning.http.client.{Request, RequestBuilder}
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import net.liftweb.json.JsonAST._
 import net.liftweb.json.parse
+import org.mockito.Mockito._
+import es.tid.cosmos.servicemanager.ambari.ServiceException
+import scala.concurrent.duration.Duration
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.MustMatchers
 
 trait FakeAmbariRestReplies extends JsonHttpRequest {
   this: RestResponsesComponent =>
@@ -62,5 +67,20 @@ trait RestResponsesComponent {
     def getHost(name: String): Future[JValue]
     def addHost(body: String): Future[JValue]
     def applyConfiguration(name: String, properties: JValue): Future[JValue]
+  }
+}
+
+trait AmbariTestBase extends FlatSpec with MustMatchers {
+  def addMock(mockCall: () => Future[JValue], success: JValue) {
+    when(mockCall()).thenReturn(Future.successful(success))
+  }
+
+  def get[T](future: Future[T]) = Await.result(future, Duration.Inf)
+
+  def errorPropagation(mockCall: () => Future[JValue], call: () => Future[Any]) {
+    when(mockCall()).thenReturn(Future.failed(ServiceException("Error")))
+    evaluating {
+      Await.result(call(), Duration.Inf)
+    } must produce [ServiceException]
   }
 }

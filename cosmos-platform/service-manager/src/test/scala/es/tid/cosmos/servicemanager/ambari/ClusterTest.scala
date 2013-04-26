@@ -21,9 +21,8 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{when, verify}
 import com.ning.http.client.Request
-import net.liftweb.json.JsonAST
 
-class ClusterTest extends FlatSpec with MustMatchers with BeforeAndAfter with MockitoSugar {
+class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var cluster: Cluster with RestResponsesComponent = _
 
   before {
@@ -76,19 +75,6 @@ class ClusterTest extends FlatSpec with MustMatchers with BeforeAndAfter with Mo
     cluster.configurations must contain (new Configuration("type1", "tag1"))
     cluster.configurations must contain (new Configuration("type1", "tag2"))
     cluster.configurations must contain (new Configuration("type2", "tag1"))
-  }
-
-  def addMock(mockCall: () => Future[JValue], success: JValue) {
-    when(mockCall()).thenReturn(Future.successful(success))
-  }
-
-  def get[T](future: Future[T]) = Await.result(future, Duration.Inf)
-
-  def errorPropagation(mockCall: () => Future[JValue], call: () => Future[Any]) {
-    when(mockCall()).thenReturn(Future.failed(ServiceException("Error")))
-    evaluating {
-      Await.result(call(), Duration.Inf)
-    } must produce [ServiceException]
   }
 
   it must "be able to get a service" in {

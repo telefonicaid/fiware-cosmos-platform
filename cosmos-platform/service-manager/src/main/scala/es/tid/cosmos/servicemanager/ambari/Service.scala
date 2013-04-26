@@ -12,12 +12,14 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import net.liftweb.json.JsonAST.{JString, JValue}
+import net.liftweb.json.{compact, render}
+import net.liftweb.json.JsonDSL._
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
-import scala.concurrent.{Future, future, blocking}
+import scala.concurrent.Future
 import es.tid.cosmos.servicemanager.InternalError
 
-class Service(serviceInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
+class Service(serviceInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest with RequestHandlerFactory {
   val name = serviceInfo \ "ServiceInfo" \ "service_name" match {
     case JString(serviceName) => serviceName
     case _ => throw new InternalError("Ambari's state information response doesn't contain a " +
@@ -29,21 +31,23 @@ class Service(serviceInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequ
   def addComponent(componentName: String): Future[String] =
     performRequest(baseUrl / "components" / componentName << "").map(_ => componentName)
 
-  def install(): Future[Service] =
-    performRequest(baseUrl.PUT.setBody("""{"ServiceInfo": {"state": "INSTALLED"}}"""))
+  def install: Future[Service] =
+    performRequest(baseUrl.PUT.setBody(createStateChangeBody("INSTALLED")))
       .flatMap(ensureFinished)
 
-  def stop() = install
+  def stop = install
 
-  def start(): Future[Service] =
-    performRequest(baseUrl.PUT.setBody("""{"ServiceInfo": {"state": "STARTED"}}"""))
+  def start: Future[Service] =
+    performRequest(baseUrl.PUT.setBody(createStateChangeBody("STARTED")))
       .flatMap(ensureFinished)
+
+  private[this] def createStateChangeBody(state: String): String = compact(render("ServiceInfo" -> ("state" -> state)))
 
   private[this] def ensureFinished(json: JValue): Future[Service] = {
     val requestUrl = baseUrl.setUrl(json \ "href" match {
       case JString(href) => href
       case _ => throw new InternalError("Ambari's response doesn't contain a href element")
     })
-    new AmbariRequest(requestUrl).ensureFinished().map(_ => this)
+    createRequestHandler(requestUrl).ensureFinished.map(_ => this)
    }
 }

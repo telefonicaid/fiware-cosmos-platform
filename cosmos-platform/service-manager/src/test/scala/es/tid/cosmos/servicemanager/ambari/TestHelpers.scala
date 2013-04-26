@@ -18,9 +18,11 @@ import org.mockito.Mockito._
 import scala.concurrent.duration.Duration
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import org.scalatest.mock.MockitoSugar
+import org.mockito.Matchers._
 
 trait FakeAmbariRestReplies extends JsonHttpRequest {
-  this: RestResponsesComponent =>
+  this: MockedRestResponsesComponent =>
 
   override def performRequest(requestBuilder: RequestBuilder): Future[JValue] = {
     val request= requestBuilder.build()
@@ -34,11 +36,12 @@ trait FakeAmbariRestReplies extends JsonHttpRequest {
     val PUT = "PUT"
     val AllClusters = ".+/api/v1/clusters".r
     val SpecificCluster = ".+/api/v1/clusters/([^/]+)".r
-    val AllServices = ".+/api/v1/clusters/[^/]+/services".r
-    val SpecificService = ".+/api/v1/clusters/[^/]+/services/([^/]+)".r
+    val AllServices = ".+/api/v1/.*services".r
+    val SpecificService = ".+/api/v1/.*services/([^/]+)".r
+    val SpecificComponent = ".+/api/v1/.+/components/([^/]+)".r
     val AllHosts = ".+/api/v1/clusters/[^/]+/hosts".r
-    val SpecificHostQuery = """.+/api/v1/hosts\?Hosts%2Fhost_name=(.+)""".r
-    val SpecificHost = ".+/api/v1/clusters/[^/]+/hosts/([^/]+)".r
+    val SpecificHostQuery = """.+/api/v1/.*hosts\?Hosts%2Fhost_name=(.+)""".r
+    val SpecificHost = ".+/api/v1/.*hosts/([^/]+)".r
     (request.getMethod, request.getUrl) match {
       case (GET, AllClusters()) => responses.listClusters
       case (GET, SpecificCluster(name)) => responses.getCluster(name)
@@ -50,12 +53,15 @@ trait FakeAmbariRestReplies extends JsonHttpRequest {
       case (GET, SpecificHost(name)) => responses.getHost(name)
       case (POST, AllHosts()) => responses.addHost(request.getStringData)
       case (POST, SpecificHostQuery(name)) => responses.addHostComponent(name, request.getStringData)
+      case (POST, SpecificComponent(name)) => responses.addServiceComponent(name)
+      case (PUT, SpecificService(name)) => responses.changeServiceState(name, request.getStringData)
     }
   }
 }
 
-trait RestResponsesComponent {
-  val responses: RestResponses
+trait MockedRestResponsesComponent extends MockitoSugar {
+  val responses = mock[RestResponses]
+  when(responses.authorize(any[Request])).thenReturn(None)
 
   trait RestResponses {
     def authorize(request: Request): Option[Future[JValue]]
@@ -69,20 +75,22 @@ trait RestResponsesComponent {
     def addHost(body: String): Future[JValue]
     def applyConfiguration(name: String, properties: JValue): Future[JValue]
     def addHostComponent(name: String, body: String): Future[JValue]
+    def addServiceComponent(name: String): Future[JValue]
+    def changeServiceState(name: String, body: String): Future[JValue]
   }
 }
 
 trait AmbariTestBase extends FlatSpec with MustMatchers {
-  def addMock(mockCall: () => Future[JValue], success: JValue) {
-    when(mockCall()).thenReturn(Future.successful(success))
+  def addMock(mockCall: => Future[JValue], success: JValue) {
+    when(mockCall).thenReturn(Future.successful(success))
   }
 
   def get[T](future: Future[T]) = Await.result(future, Duration.Inf)
 
-  def errorPropagation(mockCall: () => Future[JValue], call: () => Future[Any]) {
-    when(mockCall()).thenReturn(Future.failed(ServiceException("Error")))
+  def errorPropagation(mockCall: => Future[JValue], call: => Future[Any]) {
+    when(mockCall).thenReturn(Future.failed(ServiceException("Error")))
     evaluating {
-      Await.result(call(), Duration.Inf)
+      Await.result(call, Duration.Inf)
     } must produce [ServiceException]
   }
 }

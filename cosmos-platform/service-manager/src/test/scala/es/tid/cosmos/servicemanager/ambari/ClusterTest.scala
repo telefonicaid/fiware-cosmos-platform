@@ -10,20 +10,17 @@
  */
 package es.tid.cosmos.servicemanager.ambari
 
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.{BeforeAndAfter, FlatSpec}
+import org.scalatest.BeforeAndAfter
 import net.liftweb.json.JsonAST.{JObject, JNothing, JValue}
 import net.liftweb.json.JsonDSL._
-import scala.concurrent.{Await, Future}
 import dispatch.url
-import scala.concurrent.duration.Duration
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{when, verify}
 import com.ning.http.client.Request
 
 class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
-  var cluster: Cluster with RestResponsesComponent = _
+  var cluster: Cluster with MockedRestResponsesComponent = _
 
   before {
     val clusterName = "test"
@@ -53,10 +50,7 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
         ("type" -> config._1) ~
         ("Config" -> ("cluster_name" -> clusterName))
       )),
-      url("http://localhost/api/v1/").build) with FakeAmbariRestReplies with RestResponsesComponent {
-      override val responses = mock[RestResponses]
-      when(responses.authorize(any[Request])).thenReturn(None)
-    }
+      url("http://localhost/api/v1/").build) with FakeAmbariRestReplies with MockedRestResponsesComponent
   }
 
   it must "correctly parse the Ambari JSON response that describes the cluster" in {
@@ -79,7 +73,7 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
 
   it must "be able to get a service" in {
     addMock(
-      () => cluster.responses.getService("service1"),
+      cluster.responses.getService("service1"),
       ("href" -> "some-service-url") ~
       ("ServiceInfo" -> (
         ("cluster_name" -> cluster.name) ~
@@ -90,15 +84,15 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   }
 
   it must "propagate failures when getting a service" in errorPropagation(
-    () => cluster.responses.getService("bad"),
-    () => cluster.getService("bad"))
+    cluster.responses.getService("bad"),
+    cluster.getService("bad"))
 
   it must "be able to add a service" in {
     addMock(
-      () => cluster.responses.addService("""{"ServiceInfo": {"service_name": "new"}}"""),
+      cluster.responses.addService("""{"ServiceInfo": {"service_name": "new"}}"""),
       JNothing)
     addMock(
-      () => cluster.responses.getService("new"),
+      cluster.responses.getService("new"),
       ("href" -> "some-service-url") ~
         ("ServiceInfo" -> (
         ("cluster_name" -> cluster.name) ~
@@ -110,16 +104,16 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   }
 
   it must "propagate failures when adding a service" in errorPropagation(
-    () => cluster.responses.addService(any[String]),
-    () => cluster.addService("bad"))
+    cluster.responses.addService(any[String]),
+    cluster.addService("bad"))
 
   it must "be able to add a host" in {
     addMock(
-      () => cluster.responses.addHost("""{"Hosts":{"host_name":"host1"}}"""),
+      cluster.responses.addHost("""{"Hosts":{"host_name":"host1"}}"""),
       JNothing
     )
     addMock(
-      () => cluster.responses.getHost("host1"),
+      cluster.responses.getHost("host1"),
       ("Hosts" -> ("public_host_name" -> "host1"))
     )
     get(cluster.addHost("host1")).name must be ("host1")
@@ -127,27 +121,27 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   }
 
   it must "propagate failures when adding a host" in errorPropagation(
-    () => cluster.responses.addHost(any[String]),
-    () => cluster.addHost("bad")
+    cluster.responses.addHost(any[String]),
+    cluster.addHost("bad")
   )
 
   it must "be able to get hosts" in {
     addMock(
-      () => cluster.responses.getHost("host1"),
+      cluster.responses.getHost("host1"),
       ("Hosts" -> ("public_host_name" -> "host1"))
     )
     get(cluster.getHost("host1")).name must be ("host1")
   }
 
   it must "propagate failures when getting a host" in errorPropagation(
-    () => cluster.responses.getHost(any[String]),
-    () => cluster.getHost("bad")
+    cluster.responses.getHost(any[String]),
+    cluster.getHost("bad")
   )
 
   it must "be able to apply configurations" in {
     val properties: JObject = ("test" -> "config")
     addMock(
-      () => cluster.responses.applyConfiguration("test", properties),
+      cluster.responses.applyConfiguration("test", properties),
       JNothing
     )
     get(cluster.applyConfiguration("type1", "tag1", properties))
@@ -155,7 +149,7 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   }
 
   it must "propagate failures when applying configurations" in errorPropagation(
-    () => cluster.responses.applyConfiguration(any[String], any[JValue]),
-    () => cluster.applyConfiguration("type", "tag", ("some" -> "config"))
+    cluster.responses.applyConfiguration(any[String], any[JValue]),
+    cluster.applyConfiguration("type", "tag", ("some" -> "config"))
   )
 }

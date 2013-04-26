@@ -21,17 +21,14 @@ import net.liftweb.json.JsonAST.JNothing
 import net.liftweb.json.{compact, render}
 
 class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
-  var host: Host with RestResponsesComponent = _
+  var host: Host with MockedRestResponsesComponent = _
   val hostName = "testhost"
 
   before {
     host = new Host(
       ("Hosts" -> ("public_host_name" -> hostName)),
       url("http://localhost/api/v1/").build)
-      with FakeAmbariRestReplies with RestResponsesComponent {
-      override val responses = mock[RestResponses]
-      when(responses.authorize(any[Request])).thenReturn(None)
-    }
+      with FakeAmbariRestReplies with MockedRestResponsesComponent
   }
 
   it must "correctly parse the Ambari JSON host description" in  {
@@ -44,7 +41,7 @@ class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
       "HostRoles" -> ("component_name" -> "SuperComponent2")
     )))
     addMock(
-      () => host.responses.addHostComponent(hostName, jsonPayload),
+      host.responses.addHostComponent(hostName, jsonPayload),
       JNothing
     )
     get(host.addComponents("SuperComponent1", "SuperComponent2"))
@@ -56,7 +53,7 @@ class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
       "HostRoles" -> ("component_name" -> "SuperComponent")
     )))
     addMock(
-      () => host.responses.addHostComponent(hostName, jsonPayload),
+      host.responses.addHostComponent(hostName, jsonPayload),
       JNothing
     )
     get(host.addComponents("SuperComponent"))
@@ -64,7 +61,7 @@ class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   }
 
   it must "propagate failures when adding components" in errorPropagation(
-    () => host.responses.addHostComponent(the(hostName), any[String]),
-    () => host.addComponents("BadComponent")
+    host.responses.addHostComponent(the(hostName), any[String]),
+    host.addComponents("BadComponent")
   )
 }

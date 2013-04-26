@@ -11,9 +11,9 @@
 
 package es.tid.cosmos.api
 
+import com.typesafe.config.ConfigFactory
 import play.api.{Play, GlobalSettings}
 import play.api.Play.current
-import com.typesafe.config.ConfigFactory
 
 /**
  * @author sortega

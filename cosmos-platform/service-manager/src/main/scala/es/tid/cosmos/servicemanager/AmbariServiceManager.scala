@@ -20,7 +20,7 @@ import net.liftweb.json.JsonAST.JObject
 import es.tid.cosmos.platform.manager.ial.{InfrastructureProvider, MachineProfile, MachineState}
 import es.tid.cosmos.servicemanager.services.{ServiceDescription, MapReduceServiceDescription, HdfsServiceDescription}
 
-class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: InfrastructureProvider)
+class AmbariServiceManager(provisioner: ProvisioningServer,  infrastructureProvider: InfrastructureProvider)
   extends ServiceManager {
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
@@ -37,7 +37,7 @@ class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: Infras
   override def createCluster(name: String, clusterSize: Int): ClusterId = {
     val machineFutures: List[Future[MachineState]] =
       infrastructureProvider.createMachines(name, MachineProfile.M, clusterSize).get.toList
-    val clusterFuture: Future[Cluster] = applyGlobalConfiguration(ambari.createCluster(name = name, version = "HDP-1.2.0"))
+    val clusterFuture: Future[Cluster] = applyGlobalConfiguration(provisioner.createCluster(name = name, version = "HDP-1.2.0"))
     val hostFutures: List[Future[Host]] = addHosts(machineFutures, clusterFuture)
     val serviceFutures: List[Future[Service]] = List(HdfsServiceDescription, MapReduceServiceDescription)
       .map(createService(clusterFuture, hostFutures, _))
@@ -83,8 +83,8 @@ class AmbariServiceManager(ambari: AmbariServer,  infrastructureProvider: Infras
   private def installAndStart(serviceFuture: Future[Service]): Future[Service] = {
     for {
       service <- serviceFuture
-      installedService <- service.install
-      startedService <- installedService.start
+      installedService <- service.install()
+      startedService <- installedService.start()
     } yield startedService
   }
 

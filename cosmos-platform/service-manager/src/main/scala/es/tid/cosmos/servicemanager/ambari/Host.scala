@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import net.liftweb.json.JsonAST.JString
+import net.liftweb.json.JsonDSL._
 import net.liftweb.json._
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
@@ -28,12 +29,9 @@ class Host(hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
   private[this] def baseUrl = new RequestBuilder(clusterBaseUrl) / "hosts" / name
 
   def addComponents(componentNames: String*): Future[Unit] = {
-    def getJsonForComponent(componentName: String): String = s"""{"HostRoles": {"component_name": "$componentName"}}"""
-    val hostsJsonStr = componentNames
-      .fold("[")((str, name) => str + getJsonForComponent(name) + ",")
-      .dropRight(1) + "]"
+    def getJsonForComponent(componentName: String): JValue = ("HostRoles" -> ("component_name" -> componentName))
     performRequest(new RequestBuilder(clusterBaseUrl) / "hosts"
       <<? Map("Hosts/host_name" -> name)
-      << s"""{"host_components": $hostsJsonStr}""").map(_ => ())
+      << compact(render(("host_components" -> componentNames.map(getJsonForComponent))))).map(_ => ())
   }
 }

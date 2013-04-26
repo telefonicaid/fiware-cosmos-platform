@@ -15,7 +15,6 @@ import scala.concurrent.{Await, Future}
 import net.liftweb.json.JsonAST._
 import net.liftweb.json.parse
 import org.mockito.Mockito._
-import es.tid.cosmos.servicemanager.ambari.ServiceException
 import scala.concurrent.duration.Duration
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -38,6 +37,7 @@ trait FakeAmbariRestReplies extends JsonHttpRequest {
     val AllServices = ".+/api/v1/clusters/[^/]+/services".r
     val SpecificService = ".+/api/v1/clusters/[^/]+/services/([^/]+)".r
     val AllHosts = ".+/api/v1/clusters/[^/]+/hosts".r
+    val SpecificHostQuery = """.+/api/v1/hosts\?Hosts%2Fhost_name=(.+)""".r
     val SpecificHost = ".+/api/v1/clusters/[^/]+/hosts/([^/]+)".r
     (request.getMethod, request.getUrl) match {
       case (GET, AllClusters()) => responses.listClusters
@@ -49,6 +49,7 @@ trait FakeAmbariRestReplies extends JsonHttpRequest {
       case (POST, AllServices()) => responses.addService(request.getStringData)
       case (GET, SpecificHost(name)) => responses.getHost(name)
       case (POST, AllHosts()) => responses.addHost(request.getStringData)
+      case (POST, SpecificHostQuery(name)) => responses.addHostComponent(name, request.getStringData)
     }
   }
 }
@@ -67,6 +68,7 @@ trait RestResponsesComponent {
     def getHost(name: String): Future[JValue]
     def addHost(body: String): Future[JValue]
     def applyConfiguration(name: String, properties: JValue): Future[JValue]
+    def addHostComponent(name: String, body: String): Future[JValue]
   }
 }
 

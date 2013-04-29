@@ -92,6 +92,7 @@
                         <exclude>**/*.rst</exclude>
                         <exclude>**/*.html</exclude>
                         <exclude>**/*.css</exclude>
+                        <exclude>**/*.ttf</exclude>
                         <exclude>**/resources/**/*</exclude>
                         <exclude>**/.idea/**</exclude>
                     </excludes>

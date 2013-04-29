@@ -20,7 +20,7 @@ import play.api.test.{FakeRequest, FakeApplication}
 import play.api.libs.json.Json
 
 import es.tid.cosmos.api.Global
-import es.tid.cosmos.api.sm.MockedServiceManager
+import es.tid.cosmos.api.servicemanager.MockedServiceManager
 import es.tid.cosmos.servicemanager.ClusterId
 
 /**

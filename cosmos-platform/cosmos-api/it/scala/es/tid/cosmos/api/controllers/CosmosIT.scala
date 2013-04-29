@@ -17,6 +17,7 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.Global
+import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 
 /**
  * @author sortega

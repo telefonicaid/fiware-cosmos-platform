@@ -9,16 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers
+package es.tid.cosmos.api.servicemanager
 
-import play.api.mvc._
+import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
 
-import es.tid.cosmos.api.controllers.cosmos.CosmosResource
-
-trait Pages extends Controller {
-
-  def index = Action { implicit request =>
-    val baseUrl: String = routes.Application.version().absoluteURL(secure = false)
-    Ok(views.html.index(baseUrl, CosmosResource.apiVersion))
-  }
+/**
+ * @author sortega
+ */
+trait MockedServiceManagerComponent extends ServiceManagerComponent {
+  val serviceManager: ServiceManager = new MockedServiceManager(10000)
 }

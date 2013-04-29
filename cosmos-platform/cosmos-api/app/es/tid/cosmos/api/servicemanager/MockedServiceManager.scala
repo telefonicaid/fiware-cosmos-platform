@@ -9,24 +9,23 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.sm
+package es.tid.cosmos.api.servicemanager
 
 import java.util.UUID
 import scala.concurrent._
-import ExecutionContext.Implicits.global
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.mutable
 
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ServiceException
 
 /**
- * In-memory, simulated
+ * In-memory, simulated service manager.
+ *
+ * @param transitionDelay Cluster state transition delay in millis
  * @author sortega
  */
-class MockedServiceManager(
-    /** Cluster state transition delay in millis */
-    transitionDelay: Int
-  ) extends ServiceManager {
+class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   private class FakeCluster(override val name: String, override val size: Int,
                             override val id: ClusterId = new ClusterId)

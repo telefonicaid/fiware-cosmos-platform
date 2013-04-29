@@ -9,13 +9,20 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.sm
+package es.tid.cosmos.api.controllers.common
 
-import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ServiceManager}
+import play.api.libs.json.{JsString, Json, JsValue, Writes}
 
 /**
- * @author sortega
+ * Represents a simple text message to the client.
+ * @param m Text of the message
  */
-trait MockedServiceManagerComponent extends ServiceManagerComponent {
-  val serviceManager: ServiceManager = new MockedServiceManager(10000)
+case class Message(m: String)
+
+object Message {
+  implicit object MessageWrites extends Writes[Message]{
+    def writes(instance: Message): JsValue = Json.obj(
+      "message" -> JsString(instance.m)
+    )
+  }
 }

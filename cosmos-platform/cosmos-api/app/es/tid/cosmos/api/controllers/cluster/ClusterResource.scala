@@ -9,20 +9,25 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers
+package es.tid.cosmos.api.controllers.cluster
 
-import play.api.libs.json._
-import play.api.mvc.{RequestHeader, Action, Controller}
 import scala.Some
 import scala.util.{Failure, Success, Try}
 
+import play.api.libs.json._
+import play.api.mvc.{RequestHeader, Action, Controller}
+
+import es.tid.cosmos.api.controllers.common.Message
+import es.tid.cosmos.api.controllers.routes
 import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ClusterId, ClusterDescription}
 
 /**
+ * Resource that represents a single cluster.
+ *
  * @author sortega
  */
-trait ClusterResource {
-  self: Controller with ServiceManagerComponent =>
+trait ClusterResource extends Controller {
+  this: ServiceManagerComponent =>
 
   implicit object ClusterDescriptionWrites extends Writes[ClusterDescription] {
     def writes(desc: ClusterDescription): JsValue = JsObject(Seq(
@@ -37,13 +42,13 @@ trait ClusterResource {
   def listDetails(id: String) = Action {
     serviceManager.describeCluster(ClusterId(id)) match {
       case Some(description) => Ok(Json.toJson(description))
-      case None => NotFound(s"No cluster '${id}' exists")
+      case None => NotFound(Json.toJson(Message(s"No cluster '${id}' exists")))
     }
   }
 
   def terminate(id: String) = Action {
     Try(serviceManager.terminateCluster(ClusterId(id))) match {
-      case Success(_) => Ok("Terminating cluster")
+      case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))
       case Failure(ex) => InternalServerError(ex.getMessage)
     }
   }

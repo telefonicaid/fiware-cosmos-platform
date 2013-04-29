@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.api
 
+import com.typesafe.config.ConfigFactory
 import play.api.{Play, GlobalSettings}
 import play.api.Play.current
 
@@ -18,6 +19,9 @@ import play.api.Play.current
  * @author sortega
  */
 object Global extends GlobalSettings {
-  override def getControllerInstance[A](controllerClass: Class[A]): A =
-    (if (Play.isTest) TestApplication else ProductionApplication).asInstanceOf[A]
+  override def getControllerInstance[A](controllerClass: Class[A]): A = {
+    val mockServices = ConfigFactory.load().getBoolean("application.mock-services")
+    val application = if (Play.isTest || mockServices) TestApplication else ProductionApplication
+    application.asInstanceOf[A]
+  }
 }

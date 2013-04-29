@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers
+package es.tid.cosmos.api.controllers.cosmos
 
 import play.api.mvc.{Action, Controller}
 import play.api.libs.json.Json
@@ -19,14 +19,13 @@ import play.api.libs.json.Json
  *
  * @author sortega
  */
-trait CosmosResource {
-  self: Controller =>
-
+trait CosmosResource extends Controller {
   def version = Action {
-    Ok(Json.toJson(Map("version" -> CosmosResource.apiVersion)))
+    Ok(Json.toJson(CosmosResource.apiDescription))
   }
 }
 
 object CosmosResource {
   val apiVersion = "1.0.0"
+  val apiDescription = ApiDescription(apiVersion)
 }

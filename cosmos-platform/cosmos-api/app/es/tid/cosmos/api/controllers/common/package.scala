@@ -1,27 +1,25 @@
-package es.tid.cosmos.api
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+package es.tid.cosmos.api.controllers
 
 import play.api.Play
 import play.api.Play.current
 import play.api.libs.json._
-import play.api.libs.json.JsString
 
 
 /**
  * @author sortega
  */
-package object controllers {
-
-  /**
-   * Represents a simple text message to the client.
-   * @param m Text of the message
-   */
-  case class Message(m: String)
-
-  implicit object MessageWrites extends Writes[Message]{
-    def writes(instance: Message): JsValue = Json.obj(
-      "message" -> JsString(instance.m)
-    )
-  }
+package object common {
 
   /**
    * Formats an internal server exception to JSON.

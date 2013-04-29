@@ -17,13 +17,13 @@ import net.liftweb.json._
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
 import scala.concurrent.Future
-import es.tid.cosmos.servicemanager.InternalError
+import es.tid.cosmos.servicemanager.Bug
 
 class Host(hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
   val name = hostInfo \ "Hosts" \ "public_host_name" match {
     case JString(hostName) => hostName
     case _ =>
-      throw new InternalError("Ambari's host information response doesn't contain a Hosts/public_host_name element")
+      throw new Bug("Ambari's host information response doesn't contain a Hosts/public_host_name element")
   }
 
   private[this] def baseUrl = new RequestBuilder(clusterBaseUrl) / "hosts" / name

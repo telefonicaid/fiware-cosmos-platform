@@ -11,13 +11,15 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import scala.concurrent._
-import es.tid.cosmos.servicemanager.InternalError
-import dispatch.{Future => _, _}, Defaults._
-import net.liftweb.json.JsonAST.{JString, JValue}
 import com.ning.http.client.RequestBuilder
+import net.liftweb.json.JsonAST.JValue
+import scala.concurrent._
+import dispatch.{Future => _, _}, Defaults._
+import net.liftweb.json.JsonAST.JString
+import scala.concurrent.duration.Duration
+import es.tid.cosmos.servicemanager.Bug
 
-class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest {
+class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHandler {
   private object Status extends Enumeration {
     type Status = Value
     val FINISHED, WAITING, ERROR = Value
@@ -25,7 +27,7 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest {
       case "COMPLETED" => Status.FINISHED
       case "FAILED" | "TIMEDOUT" | "ABORTED" => Status.ERROR
       case "PENDING" | "QUEUED" | "IN_PROGRESS" => Status.WAITING
-      case _ => throw new InternalError("Unexpected status string from Amabari: " + str)
+      case _ => throw new Bug("Unexpected status string from Amabari: " + str)
     }
 
     def combine(prev: Status.Value, next: Status.Value): Status.Value = prev match {
@@ -40,20 +42,20 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest {
 
   private def extractStatusString(tasksObj: JValue): String  = (tasksObj \ "Tasks" \ "status") match {
     case JString(statusStr) => statusStr
-    case _ => throw new InternalError("Ambari's request information response doesn't contain a Tasks/status element")
+    case _ => throw new Bug("Ambari's request information response doesn't contain a Tasks/status element")
   }
 
-  private def getStatusFromJson(statusJson: JValue): Status.Value = (statusJson \ "tasks").children
+  private def getStatusFromJson(statusJson: JValue): Future[Status.Value] = FutureTry((statusJson \ "tasks").children
     .map(extractStatusString)
-    .foldLeft(Status.FINISHED)((status, str) => Status.combine(status, Status.fromString(str)))
+    .foldLeft(Status.FINISHED)((status, str) => Status.combine(status, Status.fromString(str))))
 
-  def ensureFinished(): Future[Unit] = {
+  override def ensureFinished: Future[Unit] = {
     performRequest(url <<? Map("fields" -> "tasks/*"))
-      .map(getStatusFromJson)
+      .flatMap(getStatusFromJson)
       .flatMap({
       case Status.WAITING => future { blocking {
         Thread.sleep(1000)
-        ensureFinished()()
+        Await.result(ensureFinished, Duration.Inf)
       } }
       case Status.FINISHED => Future.successful(())
       case Status.ERROR => Future.failed[Unit](new ServiceException(

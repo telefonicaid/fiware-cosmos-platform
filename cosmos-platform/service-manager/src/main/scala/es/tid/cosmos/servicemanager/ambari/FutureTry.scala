@@ -10,13 +10,12 @@
  */
 package es.tid.cosmos.servicemanager.ambari
 
-import com.ning.http.client.RequestBuilder
-import scala.concurrent._
+import scala.util.{Failure, Success, Try}
+import scala.concurrent.Future
 
-trait RequestHandlerFactory {
-  def createRequestHandler(url: RequestBuilder): RequestHandler = new AmbariRequest(url)
-}
-
-trait RequestHandler {
-  def ensureFinished: Future[Unit]
+object FutureTry {
+  def apply[T](r: =>T): Future[T] = Try(r) match {
+    case Success(ret) => Future.successful(ret)
+    case Failure(ex) => Future.failed(ex)
+  }
 }

@@ -17,12 +17,12 @@ import net.liftweb.json.JsonDSL._
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
 import scala.concurrent.Future
-import es.tid.cosmos.servicemanager.InternalError
+import es.tid.cosmos.servicemanager.Bug
 
 class Service(serviceInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest with RequestHandlerFactory {
   val name = serviceInfo \ "ServiceInfo" \ "service_name" match {
     case JString(serviceName) => serviceName
-    case _ => throw new InternalError("Ambari's state information response doesn't contain a " +
+    case _ => throw new Bug("Ambari's state information response doesn't contain a " +
       "ServiceInfo/service_name element")
   }
 
@@ -46,7 +46,7 @@ class Service(serviceInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequ
   private[this] def ensureFinished(json: JValue): Future[Service] = {
     val requestUrl = baseUrl.setUrl(json \ "href" match {
       case JString(href) => href
-      case _ => throw new InternalError("Ambari's response doesn't contain a href element")
+      case _ => throw new Bug("Ambari's response doesn't contain a href element")
     })
     createRequestHandler(requestUrl).ensureFinished.map(_ => this)
    }

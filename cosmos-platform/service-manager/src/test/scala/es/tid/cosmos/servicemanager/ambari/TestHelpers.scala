@@ -42,6 +42,7 @@ trait FakeAmbariRestReplies extends JsonHttpRequest {
     val AllHosts = ".+/api/v1/clusters/[^/]+/hosts".r
     val SpecificHostQuery = """.+/api/v1/.*hosts\?Hosts%2Fhost_name=(.+)""".r
     val SpecificHost = ".+/api/v1/.*hosts/([^/]+)".r
+    val SpecificRequest = """.+/api/v1/.*request/([^/]+)\?.+""".r
     (request.getMethod, request.getUrl) match {
       case (GET, AllClusters()) => responses.listClusters
       case (GET, SpecificCluster(name)) => responses.getCluster(name)
@@ -55,6 +56,7 @@ trait FakeAmbariRestReplies extends JsonHttpRequest {
       case (POST, SpecificHostQuery(name)) => responses.addHostComponent(name, request.getStringData)
       case (POST, SpecificComponent(name)) => responses.addServiceComponent(name)
       case (PUT, SpecificService(name)) => responses.changeServiceState(name, request.getStringData)
+      case (GET, SpecificRequest(name)) => responses.getRequest(name)
     }
   }
 }
@@ -77,6 +79,7 @@ trait MockedRestResponsesComponent extends MockitoSugar {
     def addHostComponent(name: String, body: String): Future[JValue]
     def addServiceComponent(name: String): Future[JValue]
     def changeServiceState(name: String, body: String): Future[JValue]
+    def getRequest(name: String): Future[JValue]
   }
 }
 

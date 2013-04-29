@@ -16,13 +16,13 @@ import net.liftweb.json.{compact, render}
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
 import scala.concurrent.Future
-import es.tid.cosmos.servicemanager.InternalError
+import es.tid.cosmos.servicemanager.Bug
 
 class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpRequest {
   val name = clusterInfo \ "Clusters" \ "cluster_name" match {
     case JString(clusterName) => clusterName
     case _ =>
-      throw new InternalError("Ambari's cluster information response doesn't contain a Clusters/cluster_name element")
+      throw new Bug("Ambari's cluster information response doesn't contain a Clusters/cluster_name element")
   }
 
   private[this] def baseUrl: RequestBuilder = new RequestBuilder(serverBaseUrl) / "clusters" / name

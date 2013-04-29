@@ -28,5 +28,5 @@ trait Application extends Controller
   with CosmosResource
   with ClustersResource
   with ClusterResource {
-  self: ServiceManagerComponent =>
+  this: ServiceManagerComponent =>
 }

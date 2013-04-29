@@ -27,7 +27,7 @@ import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ClusterId, Cluster
  * @author sortega
  */
 trait ClusterResource extends Controller {
-  self: ServiceManagerComponent =>
+  this: ServiceManagerComponent =>
 
   implicit object ClusterDescriptionWrites extends Writes[ClusterDescription] {
     def writes(desc: ClusterDescription): JsValue = JsObject(Seq(

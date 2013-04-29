@@ -16,7 +16,7 @@ import es.tid.cosmos.api.controllers.common.JsonController
  * @author sortega
  */
 trait ClustersResource extends JsonController {
-  self: ServiceManagerComponent =>
+  this: ServiceManagerComponent =>
 
   /**
    * List existing clusters.

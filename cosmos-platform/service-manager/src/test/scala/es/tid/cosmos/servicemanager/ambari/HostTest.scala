@@ -16,7 +16,6 @@ import net.liftweb.json.JsonDSL._
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.mockito.Matchers.{eq => the, _}
-import com.ning.http.client.Request
 import net.liftweb.json.JsonAST.JNothing
 import net.liftweb.json.{compact, render}
 

@@ -16,8 +16,7 @@ import net.liftweb.json.JsonDSL._
 import dispatch.url
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{when, verify}
-import com.ning.http.client.Request
+import org.mockito.Mockito.verify
 
 class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var cluster: Cluster with MockedRestResponsesComponent = _

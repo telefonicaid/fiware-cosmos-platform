@@ -85,8 +85,8 @@ class AmbariServiceManager(provisioner: ProvisioningServer,  infrastructureProvi
   private def installAndStart(serviceFuture: Future[Service]): Future[Service] = {
     for {
       service <- serviceFuture
-      installedService <- service.install
-      startedService <- installedService.start
+      installedService <- service.install()
+      startedService <- installedService.start()
     } yield startedService
   }
 

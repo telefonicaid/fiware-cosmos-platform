@@ -27,16 +27,18 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
       case "COMPLETED" => Status.FINISHED
       case "FAILED" | "TIMEDOUT" | "ABORTED" => Status.ERROR
       case "PENDING" | "QUEUED" | "IN_PROGRESS" => Status.WAITING
-      case _ => throw new Bug("Unexpected status string from Amabari: " + str)
+      case _ => throw new Bug(s"Unexpected status string from Ambari: $str")
     }
 
-    def combine(prev: Status.Value, next: Status.Value): Status.Value = prev match {
-      case Status.FINISHED => next
-      case Status.ERROR => Status.ERROR
-      case Status.WAITING => next match {
-        case Status.ERROR => Status.ERROR
-        case _ => Status.WAITING
-      }
+    /**
+     * Combines the states of two operations and returns the state of the operation
+     * that aggregates both.
+     */
+    def combine(left: Status.Value, right: Status.Value): Status.Value = (left, right) match {
+      case (Status.FINISHED, other) => other
+      case (Status.ERROR, _) => Status.ERROR
+      case (_, Status.ERROR) => Status.ERROR
+      case (Status.WAITING, _) => Status.WAITING
     }
   }
 
@@ -45,18 +47,18 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
     case _ => throw new Bug("Ambari's request information response doesn't contain a Tasks/status element")
   }
 
-  private def getStatusFromJson(statusJson: JValue): Future[Status.Value] = FutureTry((statusJson \ "tasks").children
+  private def getStatusFromJson(statusJson: JValue): Status.Value = (statusJson \ "tasks").children
     .map(extractStatusString)
-    .foldLeft(Status.FINISHED)((status, str) => Status.combine(status, Status.fromString(str))))
+    .foldLeft(Status.FINISHED)((status, str) => Status.combine(status, Status.fromString(str)))
 
   override def ensureFinished: Future[Unit] = {
     performRequest(url <<? Map("fields" -> "tasks/*"))
-      .flatMap(getStatusFromJson)
+      .map(getStatusFromJson)
       .flatMap({
       case Status.WAITING => future { blocking {
         Thread.sleep(1000)
         Await.result(ensureFinished, Duration.Inf)
-      } }
+      }}
       case Status.FINISHED => Future.successful(())
       case Status.ERROR => Future.failed[Unit](new ServiceException(
         s"The cluster did not finish installing correctly. See ${url.build.getUrl} for more information"))

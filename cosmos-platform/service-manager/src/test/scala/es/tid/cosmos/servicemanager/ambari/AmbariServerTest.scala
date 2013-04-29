@@ -24,7 +24,11 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
   var ambariServer: AmbariServer with MockedRestResponsesComponent = _
 
   before {
-    ambariServer = new AmbariServer("", 0, "", "") with FakeAmbariRestReplies with MockedRestResponsesComponent
+    ambariServer = new AmbariServer(
+      serverUrl = "",
+      port = 0,
+      username = "",
+      password = "") with FakeAmbariRestReplies with MockedRestResponsesComponent
   }
 
   it must "fail when server authentication fails" in {

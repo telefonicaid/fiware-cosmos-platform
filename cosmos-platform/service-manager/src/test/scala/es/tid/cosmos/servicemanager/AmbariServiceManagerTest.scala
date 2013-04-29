@@ -99,10 +99,10 @@ with OneInstancePerTest with GivenWhenThen with MockitoSugar {
       givenMock(cluster.addHost(machine.hostname)).willReturn(fakeFuture(host))}
     givenMock(cluster.addService("HDFS")).willReturn(fakeFuture(hdfs))
     givenMock(cluster.addService("MAPREDUCE")).willReturn(fakeFuture(mapreduce))
-    givenMock(hdfs.install).willReturn(fakeFuture(hdfs))
-    givenMock(mapreduce.install).willReturn(fakeFuture(mapreduce))
-    givenMock(hdfs.start).willReturn(fakeFuture(hdfs))
-    givenMock(mapreduce.start).willReturn(fakeFuture(mapreduce))
+    givenMock(hdfs.install()).willReturn(fakeFuture(hdfs))
+    givenMock(mapreduce.install()).willReturn(fakeFuture(mapreduce))
+    givenMock(hdfs.start()).willReturn(fakeFuture(hdfs))
+    givenMock(mapreduce.start()).willReturn(fakeFuture(mapreduce))
     givenMock(hdfs.addComponent(any())).willReturn(fakeFuture("A Service1 Component"))
     givenMock(mapreduce.addComponent(any())).willReturn(fakeFuture("A Service2 Component"))
     hosts.foreach(host => givenMock(host.addComponents(any())).willReturn(fakeFuture()))
@@ -137,10 +137,10 @@ with OneInstancePerTest with GivenWhenThen with MockitoSugar {
     verify(mapreduce).addComponent("JOBTRACKER")
     verify(mapreduce).addComponent("TASKTRACKER")
     verify(mapreduce).addComponent("MAPREDUCE_CLIENT")
-    verify(hdfs).install
-    verify(hdfs).start
-    verify(mapreduce).install
-    verify(mapreduce).start
+    verify(hdfs).install()
+    verify(hdfs).start()
+    verify(mapreduce).install()
+    verify(mapreduce).start()
     verifyNoMoreInteractions(infrastructureProvider, provisioner, cluster, hdfs, mapreduce)
   }
 

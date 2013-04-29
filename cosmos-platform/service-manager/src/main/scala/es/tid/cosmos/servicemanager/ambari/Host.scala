@@ -26,8 +26,6 @@ class Host(hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
       throw new Bug("Ambari's host information response doesn't contain a Hosts/public_host_name element")
   }
 
-  private[this] def baseUrl = new RequestBuilder(clusterBaseUrl) / "hosts" / name
-
   def addComponents(componentNames: String*): Future[Unit] = {
     def getJsonForComponent(componentName: String): JValue = ("HostRoles" -> ("component_name" -> componentName))
     performRequest(new RequestBuilder(clusterBaseUrl) / "hosts"

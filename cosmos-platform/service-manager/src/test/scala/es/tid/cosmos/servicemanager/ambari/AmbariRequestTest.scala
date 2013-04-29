@@ -34,20 +34,20 @@ class AmbariRequestTest extends AmbariTestBase {
   it must "handle waterfalled completions of multiple tasks" in {
     val request = new AmbariRequest(url("http://www.some.request.url.com/api/v1/request/1"))
       with FakeAmbariRestReplies with MockedRestResponsesComponent {
-      when(responses.getRequest("1"))
-        .thenReturn(
-          Future.successful[JValue]("tasks" -> List(
-            "Tasks" -> ("status" -> "QUEUED"),
-            "Tasks" -> ("status" -> "PENDING"),
-            "Tasks" -> ("status" -> "PENDING"))),
-          Future.successful[JValue]("tasks" -> List(
-            "Tasks" -> ("status" -> "PENDING"),
-            "Tasks" -> ("status" -> "COMPLETED"),
-            "Tasks" -> ("status" -> "IN_PROGRESS"))),
-          Future.successful[JValue]("tasks" -> List(
-            "Tasks" -> ("status" -> "COMPLETED"),
-            "Tasks" -> ("status" -> "COMPLETED"),
-            "Tasks" -> ("status" -> "COMPLETED"))))
+      addMock(
+        responses.getRequest("1"),
+        "tasks" -> List(
+          "Tasks" -> ("status" -> "QUEUED"),
+          "Tasks" -> ("status" -> "PENDING"),
+          "Tasks" -> ("status" -> "PENDING")),
+        "tasks" -> List(
+          "Tasks" -> ("status" -> "PENDING"),
+          "Tasks" -> ("status" -> "COMPLETED"),
+          "Tasks" -> ("status" -> "IN_PROGRESS")),
+        "tasks" -> List(
+          "Tasks" -> ("status" -> "COMPLETED"),
+          "Tasks" -> ("status" -> "COMPLETED"),
+          "Tasks" -> ("status" -> "COMPLETED")))
     }
     get(request.ensureFinished)
     verify(request.responses, times(3)).getRequest("1")
@@ -56,20 +56,20 @@ class AmbariRequestTest extends AmbariTestBase {
   it must "error if a single task ends up in a failed state" in {
     val request = new AmbariRequest(url("http://www.some.request.url.com/api/v1/request/1"))
       with FakeAmbariRestReplies with MockedRestResponsesComponent {
-      when(responses.getRequest("1"))
-        .thenReturn(
-        Future.successful[JValue]("tasks" -> List(
+      addMock(
+        responses.getRequest("1"),
+        "tasks" -> List(
           "Tasks" -> ("status" -> "QUEUED"),
           "Tasks" -> ("status" -> "PENDING"),
-          "Tasks" -> ("status" -> "PENDING"))),
-        Future.successful[JValue]("tasks" -> List(
+          "Tasks" -> ("status" -> "PENDING")),
+        "tasks" -> List(
           "Tasks" -> ("status" -> "PENDING"),
           "Tasks" -> ("status" -> "COMPLETED"),
-          "Tasks" -> ("status" -> "IN_PROGRESS"))),
-        Future.successful[JValue]("tasks" -> List(
+          "Tasks" -> ("status" -> "IN_PROGRESS")),
+        "tasks" -> List(
           "Tasks" -> ("status" -> "PENDING"),
           "Tasks" -> ("status" -> "COMPLETED"),
-          "Tasks" -> ("status" -> "TIMEDOUT"))))
+          "Tasks" -> ("status" -> "TIMEDOUT")))
     }
     evaluating {
       get(request.ensureFinished)
@@ -78,20 +78,20 @@ class AmbariRequestTest extends AmbariTestBase {
 
     val request2 = new AmbariRequest(url("http://www.some.request.url.com/api/v1/request/1"))
       with FakeAmbariRestReplies with MockedRestResponsesComponent {
-      when(responses.getRequest("1"))
-        .thenReturn(
-        Future.successful[JValue]("tasks" -> List(
+      addMock(
+        responses.getRequest("1"),
+        "tasks" -> List(
           "Tasks" -> ("status" -> "QUEUED"),
           "Tasks" -> ("status" -> "PENDING"),
-          "Tasks" -> ("status" -> "PENDING"))),
-        Future.successful[JValue]("tasks" -> List(
+          "Tasks" -> ("status" -> "PENDING")),
+        "tasks" -> List(
           "Tasks" -> ("status" -> "PENDING"),
           "Tasks" -> ("status" -> "COMPLETED"),
-          "Tasks" -> ("status" -> "IN_PROGRESS"))),
-        Future.successful[JValue]("tasks" -> List(
+          "Tasks" -> ("status" -> "IN_PROGRESS")),
+        "tasks" -> List(
           "Tasks" -> ("status" -> "FAILED"),
           "Tasks" -> ("status" -> "COMPLETED"),
-          "Tasks" -> ("status" -> "TIMEDOUT"))))
+          "Tasks" -> ("status" -> "TIMEDOUT")))
     }
     evaluating {
       get(request2.ensureFinished)

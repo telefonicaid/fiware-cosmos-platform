@@ -75,10 +75,10 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     errorPropagation(service.responses.changeServiceState(any[String], any[String]), operation)
   }
 
-  it must "be able to install the service" in validateStateChange("INSTALLED", service.install)
-  it must "propagate failures during install" in stateChangeErrorPropagation(service.install)
-  it must "be able to start the service" in validateStateChange("STARTED", service.start)
-  it must "propagate failures during start" in stateChangeErrorPropagation(service.start)
-  it must "be able to stop the service" in validateStateChange("INSTALLED", service.stop)
-  it must "propagate failures during stop" in stateChangeErrorPropagation(service.stop)
+  it must "be able to install the service" in validateStateChange("INSTALLED", service.install())
+  it must "propagate failures during install" in stateChangeErrorPropagation(service.install())
+  it must "be able to start the service" in validateStateChange("STARTED", service.start())
+  it must "propagate failures during start" in stateChangeErrorPropagation(service.start())
+  it must "be able to stop the service" in validateStateChange("INSTALLED", service.stop())
+  it must "propagate failures during stop" in stateChangeErrorPropagation(service.stop())
 }

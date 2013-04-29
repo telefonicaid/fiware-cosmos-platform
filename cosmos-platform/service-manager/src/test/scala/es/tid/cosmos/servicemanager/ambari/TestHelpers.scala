@@ -84,8 +84,8 @@ trait MockedRestResponsesComponent extends MockitoSugar {
 }
 
 trait AmbariTestBase extends FlatSpec with MustMatchers {
-  def addMock(mockCall: => Future[JValue], success: JValue) {
-    when(mockCall).thenReturn(Future.successful(success))
+  def addMock(mockCall: => Future[JValue], success: JValue, subsequentValues: JValue*) {
+    when(mockCall).thenReturn(Future.successful(success), subsequentValues.map(Future.successful(_)): _*)
   }
 
   def get[T](future: Future[T]) = Await.result(future, Duration.Inf)

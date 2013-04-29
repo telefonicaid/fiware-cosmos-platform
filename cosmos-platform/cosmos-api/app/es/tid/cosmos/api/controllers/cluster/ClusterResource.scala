@@ -25,8 +25,8 @@ import es.tid.cosmos.api.controllers.{Message, routes}
  *
  * @author sortega
  */
-trait ClusterResource {
-  self: Controller with ServiceManagerComponent =>
+trait ClusterResource extends Controller {
+  self: ServiceManagerComponent =>
 
   implicit object ClusterDescriptionWrites extends Writes[ClusterDescription] {
     def writes(desc: ClusterDescription): JsValue = JsObject(Seq(

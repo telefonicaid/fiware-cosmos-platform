@@ -38,11 +38,4 @@ package object controllers {
                              "stack_trace" -> ex.getStackTraceString)
     Json.toJson(errorMessage)
   }
-
-  def formatJsError(jsError: JsError): JsValue = {
-    val formattedErrors = jsError.errors.toList.map {
-      case (path, errors) => (path.toString(), errors.map(_.message).toList)
-    }
-    Json.toJson(Map(formattedErrors: _*))
-  }
 }

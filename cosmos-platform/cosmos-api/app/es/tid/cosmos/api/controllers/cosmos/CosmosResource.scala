@@ -19,9 +19,7 @@ import play.api.libs.json.Json
  *
  * @author sortega
  */
-trait CosmosResource {
-  self: Controller =>
-
+trait CosmosResource extends Controller {
   def version = Action {
     Ok(Json.toJson(CosmosResource.apiDescription))
   }

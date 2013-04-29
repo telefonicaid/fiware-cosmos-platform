@@ -8,6 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager
 
 import java.util.UUID
@@ -16,7 +17,7 @@ case class ClusterId(uuid: UUID = UUID.randomUUID()) {
   override def toString: String = uuid.toString
 }
 
-object ClusterId{
+object ClusterId {
   /**
    * Creates a cluster ID using UUID.randomUUID
    * @return the ID

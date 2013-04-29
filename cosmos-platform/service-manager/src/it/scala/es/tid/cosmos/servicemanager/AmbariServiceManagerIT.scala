@@ -8,11 +8,11 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager
 
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.FlatSpec
 import scala.annotation.tailrec
+
 import es.tid.cosmos.servicemanager.ambari.AmbariServer
 import es.tid.cosmos.scalarest.FakeInfrastructureProviderComponent
 

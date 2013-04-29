@@ -1,4 +1,3 @@
-
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -9,6 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,7 +37,8 @@ class AmbariServiceManager(provisioner: ProvisioningServer,  infrastructureProvi
   override def createCluster(name: String, clusterSize: Int): ClusterId = {
     val machineFutures: List[Future[MachineState]] =
       infrastructureProvider.createMachines(name, MachineProfile.M, clusterSize).get.toList
-    val clusterFuture: Future[Cluster] = applyGlobalConfiguration(provisioner.createCluster(name = name, version = "HDP-1.2.0"))
+    val clusterFuture: Future[Cluster] =
+      applyGlobalConfiguration(provisioner.createCluster(name = name, version = "HDP-1.2.0"))
     val hostFutures: List[Future[Host]] = addHosts(machineFutures, clusterFuture)
     val serviceFutures: List[Future[Service]] = List(HdfsServiceDescription, MapReduceServiceDescription)
       .map(createService(clusterFuture, hostFutures, _))
@@ -69,7 +70,8 @@ class AmbariServiceManager(provisioner: ProvisioningServer,  infrastructureProvi
   }
 
   private def installInOrder(serviceFutures: List[Future[Service]]): Future[List[Service]] = {
-    def doInstall(installedServicesFuture: Future[List[Service]], serviceFuture: Future[Service]): Future[List[Service]] = {
+    def doInstall(installedServicesFuture: Future[List[Service]], serviceFuture: Future[Service]):
+        Future[List[Service]] = {
       for {
         installedServices <- installedServicesFuture
         service <- installAndStart(serviceFuture)
@@ -95,7 +97,8 @@ class AmbariServiceManager(provisioner: ProvisioningServer,  infrastructureProvi
     } yield cluster
   }
 
-  private def addHosts(machineFutures: List[Future[MachineState]], clusterFuture: Future[Cluster]): List[Future[Host]] = {
+  private def addHosts(machineFutures: List[Future[MachineState]], clusterFuture: Future[Cluster]):
+      List[Future[Host]] = {
     for {
       machineFuture <- machineFutures
     } yield for {

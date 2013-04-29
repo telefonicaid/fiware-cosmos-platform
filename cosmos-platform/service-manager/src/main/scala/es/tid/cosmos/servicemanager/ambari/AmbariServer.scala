@@ -8,6 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager.ambari
 
 import dispatch.{Future => _, _}, Defaults._
@@ -15,7 +16,8 @@ import scala.concurrent.Future
 import net.liftweb.json.JsonAST._
 import com.ning.http.client.RequestBuilder
 
-class AmbariServer(serverUrl: String, port: Int, username: String, password: String) extends ProvisioningServer with JsonHttpRequest {
+class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
+    extends ProvisioningServer with JsonHttpRequest {
 
   private[this] def baseUrl: RequestBuilder = host(serverUrl, port).as_!(username, password) / "api" / "v1"
 

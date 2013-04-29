@@ -8,6 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager
 
 case class InternalError(message: String, cause: Throwable = null) extends RuntimeException(message, cause)

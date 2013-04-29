@@ -8,6 +8,7 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager.ambari
 
 case class ServiceException(message: String, cause: Throwable = null) extends RuntimeException(message, cause)

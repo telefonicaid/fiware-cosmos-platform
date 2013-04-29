@@ -1,8 +1,17 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.platform.manager.ial.serverpool
 
-import scala.util.Random
-
-import es.tid.cosmos.platform.manager.ial.{InfrastructureProvider, InfrastructureProviderComponent}
+import es.tid.cosmos.platform.manager.ial.InfrastructureProviderComponent
 
 /**
  * A trait satisfying infrastructure provider component supported by a server pool based provider.

@@ -13,11 +13,8 @@ package es.tid.cosmos.servicemanager.ambari
 import dispatch.url
 import net.liftweb.json.JsonDSL._
 import org.mockito.Mockito._
-import scala.concurrent.Future
-import net.liftweb.json.JsonAST.JValue
 
 class AmbariRequestTest extends AmbariTestBase {
-
   it must "handle instant completions" in {
     val request = new AmbariRequest(url("http://www.some.request.url.com/api/v1/request/1"))
       with FakeAmbariRestReplies with MockedRestResponsesComponent {
@@ -26,7 +23,7 @@ class AmbariRequestTest extends AmbariTestBase {
           ("tasks" -> List(
             "Tasks" -> ("status" -> "COMPLETED")
         )))
-    }
+      }
     get(request.ensureFinished)
     verify(request.responses).getRequest("1")
   }
@@ -48,7 +45,7 @@ class AmbariRequestTest extends AmbariTestBase {
           "Tasks" -> ("status" -> "COMPLETED"),
           "Tasks" -> ("status" -> "COMPLETED"),
           "Tasks" -> ("status" -> "COMPLETED")))
-    }
+      }
     get(request.ensureFinished)
     verify(request.responses, times(3)).getRequest("1")
   }
@@ -70,7 +67,7 @@ class AmbariRequestTest extends AmbariTestBase {
           "Tasks" -> ("status" -> "PENDING"),
           "Tasks" -> ("status" -> "COMPLETED"),
           "Tasks" -> ("status" -> "TIMEDOUT")))
-    }
+      }
     evaluating {
       get(request.ensureFinished)
     } must produce [ServiceException]
@@ -92,7 +89,7 @@ class AmbariRequestTest extends AmbariTestBase {
           "Tasks" -> ("status" -> "FAILED"),
           "Tasks" -> ("status" -> "COMPLETED"),
           "Tasks" -> ("status" -> "TIMEDOUT")))
-    }
+      }
     evaluating {
       get(request2.ensureFinished)
     } must produce [ServiceException]

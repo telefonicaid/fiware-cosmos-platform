@@ -10,14 +10,14 @@
  */
 package es.tid.cosmos.servicemanager.ambari
 
-import org.scalatest.BeforeAndAfter
 import dispatch.url
 import net.liftweb.json.JsonDSL._
-import org.scalatest.mock.MockitoSugar
-import org.mockito.Mockito._
-import org.mockito.Matchers.{eq => the, _}
 import net.liftweb.json.JsonAST.JNothing
 import net.liftweb.json.{compact, render}
+import org.mockito.Matchers.{eq => the, _}
+import org.mockito.Mockito._
+import org.scalatest.BeforeAndAfter
+import org.scalatest.mock.MockitoSugar
 
 class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var host: Host with MockedRestResponsesComponent = _
@@ -37,24 +37,20 @@ class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   it must "be able to add multiple components to the host" in {
     val jsonPayload = compact(render("host_components" -> List(
       "HostRoles" -> ("component_name" -> "SuperComponent1"),
-      "HostRoles" -> ("component_name" -> "SuperComponent2")
-    )))
+      "HostRoles" -> ("component_name" -> "SuperComponent2"))))
     addMock(
       host.responses.addHostComponent(hostName, jsonPayload),
-      JNothing
-    )
+      JNothing)
     get(host.addComponents("SuperComponent1", "SuperComponent2"))
     verify(host.responses).addHostComponent(hostName, jsonPayload)
   }
 
   it must "be able to add a single component to the host" in {
     val jsonPayload = compact(render("host_components" -> List(
-      "HostRoles" -> ("component_name" -> "SuperComponent")
-    )))
+      "HostRoles" -> ("component_name" -> "SuperComponent"))))
     addMock(
       host.responses.addHostComponent(hostName, jsonPayload),
-      JNothing
-    )
+      JNothing)
     get(host.addComponents("SuperComponent"))
     verify(host.responses).addHostComponent(hostName, jsonPayload)
   }

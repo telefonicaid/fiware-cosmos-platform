@@ -11,25 +11,29 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import scala.concurrent.Future
+
+import com.ning.http.client.{RequestBuilder, Request}
+import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json.JsonAST.{JString, JValue}
 import net.liftweb.json.{compact, render}
 import net.liftweb.json.JsonDSL._
-import com.ning.http.client.{RequestBuilder, Request}
-import dispatch.{Future => _, _}, Defaults._
-import scala.concurrent.Future
+
 import es.tid.cosmos.servicemanager.Bug
 
-class Service(serviceInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest with RequestHandlerFactory {
+class Service(serviceInfo: JValue, clusterBaseUrl: Request)
+  extends JsonHttpRequest with RequestHandlerFactory {
   val name = serviceInfo \ "ServiceInfo" \ "service_name" match {
     case JString(serviceName) => serviceName
     case _ => throw new Bug("Ambari's state information response doesn't contain a " +
       "ServiceInfo/service_name element")
   }
 
-  private[this] def baseUrl = new RequestBuilder(clusterBaseUrl) / "services" / name
+  private def baseUrl = new RequestBuilder(clusterBaseUrl) / "services" / name
 
   def addComponent(componentName: String): Future[String] =
-    performRequest(baseUrl / "components" / componentName << "").map(_ => componentName)
+    performRequest(baseUrl / "components" / componentName << "")
+      .map(_ => componentName)
 
   def install(): Future[Service] =
     performRequest(baseUrl.PUT.setBody(createStateChangeBody("INSTALLED")))
@@ -41,9 +45,10 @@ class Service(serviceInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequ
     performRequest(baseUrl.PUT.setBody(createStateChangeBody("STARTED")))
       .flatMap(ensureFinished)
 
-  private[this] def createStateChangeBody(state: String): String = compact(render("ServiceInfo" -> ("state" -> state)))
+  private def createStateChangeBody(state: String) =
+    compact(render("ServiceInfo" -> ("state" -> state)))
 
-  private[this] def ensureFinished(json: JValue): Future[Service] = {
+  private def ensureFinished(json: JValue) = {
     val requestUrl = baseUrl.setUrl(json \ "href" match {
       case JString(href) => href
       case _ => throw new Bug("Ambari's response doesn't contain a href element")

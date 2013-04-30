@@ -8,18 +8,20 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager.ambari
 
-import com.ning.http.client.{Request, RequestBuilder}
 import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
+
+import com.ning.http.client.{Request, RequestBuilder}
 import net.liftweb.json.JsonAST._
 import net.liftweb.json.parse
+import org.mockito.Matchers._
 import org.mockito.Mockito._
-import scala.concurrent.duration.Duration
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
-import org.mockito.Matchers._
 
 trait FakeAmbariRestReplies extends JsonHttpRequest {
   this: MockedRestResponsesComponent =>
@@ -48,12 +50,14 @@ trait FakeAmbariRestReplies extends JsonHttpRequest {
       case (GET, SpecificCluster(name)) => responses.getCluster(name)
       case (POST, SpecificCluster(name)) => responses.createCluster(name)
       case (DELETE, SpecificCluster(name)) => responses.removeCluster(name)
-      case (PUT, SpecificCluster(name)) => responses.applyConfiguration(name, parse(request.getStringData) \\ "properties")
+      case (PUT, SpecificCluster(name)) =>
+        responses.applyConfiguration(name, parse(request.getStringData) \\ "properties")
       case (GET, SpecificService(name)) => responses.getService(name)
       case (POST, AllServices()) => responses.addService(request.getStringData)
       case (GET, SpecificHost(name)) => responses.getHost(name)
       case (POST, AllHosts()) => responses.addHost(request.getStringData)
-      case (POST, SpecificHostQuery(name)) => responses.addHostComponent(name, request.getStringData)
+      case (POST, SpecificHostQuery(name)) =>
+        responses.addHostComponent(name, request.getStringData)
       case (POST, SpecificComponent(name)) => responses.addServiceComponent(name)
       case (PUT, SpecificService(name)) => responses.changeServiceState(name, request.getStringData)
       case (GET, SpecificRequest(name)) => responses.getRequest(name)
@@ -85,7 +89,9 @@ trait MockedRestResponsesComponent extends MockitoSugar {
 
 trait AmbariTestBase extends FlatSpec with MustMatchers {
   def addMock(mockCall: => Future[JValue], success: JValue, subsequentValues: JValue*) {
-    when(mockCall).thenReturn(Future.successful(success), subsequentValues.map(Future.successful(_)): _*)
+    when(mockCall).thenReturn(
+      Future.successful(success),
+      subsequentValues.map(Future.successful(_)): _*)
   }
 
   def get[T](future: Future[T]) = Await.result(future, Duration.Inf)
@@ -93,7 +99,7 @@ trait AmbariTestBase extends FlatSpec with MustMatchers {
   def errorPropagation(mockCall: => Future[JValue], call: => Future[Any]) {
     when(mockCall).thenReturn(Future.failed(ServiceException("Error")))
     evaluating {
-      Await.result(call, Duration.Inf)
+      get(call)
     } must produce [ServiceException]
   }
 }

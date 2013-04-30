@@ -11,24 +11,23 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import dispatch.{Future => _, _}, Defaults._
 import scala.concurrent.Future
+
+import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json.JsonAST._
-import com.ning.http.client.RequestBuilder
 
 class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
     extends ProvisioningServer with JsonHttpRequest {
+  private def baseUrl = host(serverUrl, port).as_!(username, password) / "api" / "v1"
 
-  private[this] def baseUrl: RequestBuilder = host(serverUrl, port).as_!(username, password) / "api" / "v1"
+  override def listClusterNames: Future[Seq[String]] = performRequest(baseUrl / "clusters")
+    .map(json => for {
+      JField("cluster_name", JString(name)) <- (json \\ "cluster_name").children
+    } yield name)
 
-  override def listClusterNames: Future[Seq[String]] = performRequest(baseUrl / "clusters").map(json => for {
-    JField("cluster_name", JString(name)) <- (json \\ "cluster_name").children
-  } yield name)
-
-  override def getCluster(name: String): Future[Cluster] = performRequest(baseUrl / "clusters" / name)
-    .map({
-    new Cluster(_, baseUrl.build)
-  })
+  override def getCluster(name: String): Future[Cluster] =
+    performRequest(baseUrl / "clusters" / name)
+      .map(new Cluster(_, baseUrl.build))
 
   override def createCluster(name: String, version: String): Future[Cluster] =
     performRequest(baseUrl / "clusters" / name << s"""{"Clusters": {"version": "$version"}}""")

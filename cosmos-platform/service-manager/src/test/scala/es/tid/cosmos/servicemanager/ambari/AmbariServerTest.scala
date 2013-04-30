@@ -10,14 +10,14 @@
  */
 package es.tid.cosmos.servicemanager.ambari
 
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{when, verify}
-import org.scalatest.BeforeAndAfter
-import scala.concurrent.{Future, Await}
-import scala.concurrent.duration.Duration
+import scala.concurrent.Future
+
 import com.ning.http.client.Request
 import net.liftweb.json.JsonAST.JNothing
 import net.liftweb.json.JsonDSL._
+import org.mockito.Matchers.any
+import org.mockito.Mockito.{when, verify}
+import org.scalatest.BeforeAndAfter
 import org.scalatest.mock.MockitoSugar
 
 class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
@@ -35,7 +35,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
     when(ambariServer.responses.authorize(any[Request])).thenReturn(Some(
       Future.failed(ServiceException("Invalid password"))))
     evaluating {
-      Await.result(ambariServer.listClusterNames, Duration.Inf)
+      get(ambariServer.listClusterNames)
     } must produce [ServiceException]
   }
 
@@ -48,8 +48,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
         ("Clusters" -> (
           ("cluster_name" -> name) ~
           ("version" -> "banana")
-        ))))
-    )
+        )))))
     val clusterNames = get(ambariServer.listClusterNames)
     clusterNames must have size (3)
     clusterNames(0) must be ("test1")
@@ -62,7 +61,8 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
       ambariServer.responses.getCluster("test1"),
       ("href" -> "http://cluster-url") ~
       ("Clusters" -> ("cluster_name" -> "test1")))
-    Await.result(ambariServer.getCluster("test1"), Duration.Inf).name must be ("test1")
+    get(ambariServer.getCluster("test1")).name must be ("test1")
+    get(ambariServer.getCluster("test1")).name must be ("test1")
   }
 
   it must "propagate failures when getting a cluster" in errorPropagation(

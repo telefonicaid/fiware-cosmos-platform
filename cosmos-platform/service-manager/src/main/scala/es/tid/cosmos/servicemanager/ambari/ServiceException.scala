@@ -11,4 +11,5 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-case class ServiceException(message: String, cause: Throwable = null) extends RuntimeException(message, cause)
+case class ServiceException(message: String, cause: Throwable = null)
+  extends RuntimeException(message, cause)

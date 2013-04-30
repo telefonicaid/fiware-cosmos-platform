@@ -10,16 +10,17 @@
  */
 package es.tid.cosmos.servicemanager.ambari
 
-import org.scalatest.BeforeAndAfter
-import org.scalatest.mock.MockitoSugar
+import scala.concurrent.Future
+
+import com.ning.http.client.RequestBuilder
 import dispatch.url
 import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST.JNothing
 import net.liftweb.json.{compact, render}
 import org.mockito.Mockito._
 import org.mockito.Matchers.any
-import com.ning.http.client.RequestBuilder
-import scala.concurrent.Future
+import org.scalatest.BeforeAndAfter
+import org.scalatest.mock.MockitoSugar
 
 class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   val serviceName = "SuperService"
@@ -31,14 +32,14 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
       ("ServiceInfo" -> (
         ("cluster_name" -> "some_name") ~
         ("state" -> "INIT") ~
-        ("service_name" -> serviceName)
-      )) ~
+        ("service_name" -> serviceName))) ~
       ("components" -> List()),
       url("http://localhost/api/v1/").build)
       with FakeAmbariRestReplies with MockedRestResponsesComponent with RequestHandlerFactory {
-        override def createRequestHandler(url: RequestBuilder): RequestHandler = new RequestHandler {
-          def ensureFinished: Future[Unit] = Future.successful()
-        }
+        override def createRequestHandler(url: RequestBuilder): RequestHandler =
+          new RequestHandler {
+            def ensureFinished: Future[Unit] = Future.successful()
+          }
     }
   }
 
@@ -50,8 +51,7 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     val componentName = "Component1"
     addMock(
       service.responses.addServiceComponent(componentName),
-      JNothing
-    )
+      JNothing)
     get(service.addComponent(componentName)) must be (componentName)
     verify(service.responses).addServiceComponent(componentName)
   }
@@ -65,8 +65,7 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     val jsonRequestPayload = compact(render("ServiceInfo" -> ("state" -> state)))
     addMock(
       service.responses.changeServiceState(serviceName, jsonRequestPayload),
-      ("href" -> "http://www.some.url.com")
-    )
+      ("href" -> "http://www.some.url.com"))
     get(operation) must be (service)
     verify(service.responses).changeServiceState(serviceName, jsonRequestPayload)
   }

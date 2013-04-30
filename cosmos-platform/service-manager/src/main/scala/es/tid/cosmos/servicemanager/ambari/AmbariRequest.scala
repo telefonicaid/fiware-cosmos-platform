@@ -11,19 +11,20 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import com.ning.http.client.RequestBuilder
-import net.liftweb.json.JsonAST.JValue
 import scala.concurrent._
-import dispatch.{Future => _, _}, Defaults._
-import net.liftweb.json.JsonAST.JString
 import scala.concurrent.duration.Duration
+
+import com.ning.http.client.RequestBuilder
+import dispatch.{Future => _, _}, Defaults._
+import net.liftweb.json.JsonAST.{JValue, JString}
+
 import es.tid.cosmos.servicemanager.Bug
 
 class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHandler {
   private object Status extends Enumeration {
     type Status = Value
     val FINISHED, WAITING, ERROR = Value
-    def fromString(str: String): Status.Value = str match {
+    def fromString(str: String) = str match {
       case "COMPLETED" => Status.FINISHED
       case "FAILED" | "TIMEDOUT" | "ABORTED" => Status.ERROR
       case "PENDING" | "QUEUED" | "IN_PROGRESS" => Status.WAITING
@@ -34,7 +35,7 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
      * Combines the states of two operations and returns the state of the operation
      * that aggregates both.
      */
-    def combine(left: Status.Value, right: Status.Value): Status.Value = (left, right) match {
+    def combine(left: Status.Value, right: Status.Value) = (left, right) match {
       case (Status.FINISHED, other) => other
       case (Status.ERROR, _) => Status.ERROR
       case (_, Status.ERROR) => Status.ERROR
@@ -42,26 +43,27 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
     }
   }
 
-  private def extractStatusString(tasksObj: JValue): String  = (tasksObj \ "Tasks" \ "status") match {
+  private def extractStatusString(tasksObj: JValue)  = (tasksObj \ "Tasks" \ "status") match {
     case JString(statusStr) => statusStr
-    case _ => throw new Bug("Ambari's request information response doesn't contain a Tasks/status element")
+    case _ => throw new Bug(
+      "Ambari's request information response doesn't contain a Tasks/status element")
   }
 
-  private def getStatusFromJson(statusJson: JValue): Status.Value = (statusJson \ "tasks").children
+  private def getStatusFromJson(statusJson: JValue) = (statusJson \ "tasks").children
     .map(extractStatusString)
-    .foldLeft(Status.FINISHED)((status, str) => Status.combine(status, Status.fromString(str)))
+    .map(Status.fromString)
+    .foldLeft(Status.FINISHED)(Status.combine)
 
-  override def ensureFinished: Future[Unit] = {
-    performRequest(url <<? Map("fields" -> "tasks/*"))
-      .map(getStatusFromJson)
-      .flatMap({
+  override def ensureFinished: Future[Unit] = performRequest(url <<? Map("fields" -> "tasks/*"))
+    .map(getStatusFromJson)
+    .flatMap({
       case Status.WAITING => future { blocking {
         Thread.sleep(1000)
         Await.result(ensureFinished, Duration.Inf)
       }}
-      case Status.FINISHED => Future.successful(())
-      case Status.ERROR => Future.failed[Unit](new ServiceException(
-        s"The cluster did not finish installing correctly. See ${url.build.getUrl} for more information"))
+      case Status.FINISHED => Future.successful()
+      case Status.ERROR => Future.failed(new ServiceException(
+        s"The cluster did not finish installing correctly. See ${url.build.getUrl} for more " +
+        "information"))
     })
-  }
 }

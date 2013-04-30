@@ -11,20 +11,21 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import com.ning.http.client.RequestBuilder
-import dispatch.{Future => _, _}, Defaults._
 import java.util.concurrent.ExecutionException
 
+import com.ning.http.client.RequestBuilder
+import dispatch.{Future => _, _}, Defaults._
+
 trait JsonHttpRequest {
-  def performRequest(request: RequestBuilder) = Http(request.OK(asJson))
-    .transform(
-      identity, // success case
-      {         // failure case
-        case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => new ServiceException(
-          s"""Error when performing Http request. Http code ${ex.getCause.asInstanceOf[StatusCode].code}
+  def performRequest(request: RequestBuilder) = {
+    def handleFailure(throwable: Throwable) = throwable match {
+      case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => new ServiceException(
+        s"""Error when performing Http request. Http code ${ex.getCause.asInstanceOf[StatusCode].code}
           AmbariRequest: ${request.build.toString}
           Body: ${request.build.getStringData}
           """, ex.getCause)
-        case other => other
-    })
+      case other => other
+    }
+    Http(request.OK(asJson)).transform(identity, handleFailure)
+  }
 }

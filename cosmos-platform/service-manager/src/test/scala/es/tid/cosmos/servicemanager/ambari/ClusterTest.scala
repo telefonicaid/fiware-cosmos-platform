@@ -8,15 +8,16 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager.ambari
 
-import org.scalatest.BeforeAndAfter
+import dispatch.url
 import net.liftweb.json.JsonAST.{JObject, JNothing, JValue}
 import net.liftweb.json.JsonDSL._
-import dispatch.url
-import org.scalatest.mock.MockitoSugar
 import org.mockito.Matchers.any
 import org.mockito.Mockito.verify
+import org.scalatest.BeforeAndAfter
+import org.scalatest.mock.MockitoSugar
 
 class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var cluster: Cluster with MockedRestResponsesComponent = _
@@ -27,29 +28,27 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
       ("href" -> "some-url") ~
       ("Clusters" -> (
         ("cluster_name" -> clusterName) ~
-        ("version" -> "orange")
-      )) ~
+        ("version" -> "orange"))) ~
       ("services" -> List("service1", "service2", "service3").map(name =>
         ("href" -> "service-url") ~
         ("ServiceInfo" -> (
           ("cluster_name" -> clusterName) ~
           ("service_name" -> name)
-        ))
-      )) ~
+        )))) ~
       ("hosts" -> List("host1", "host2").map(name =>
         ("href" -> "host-url") ~
         ("Hosts" -> (
           ("cluster_name" -> clusterName) ~
           ("host_name" -> name)
-        ))
-      )) ~
-      ("configurations" -> List(("type1", "tag1"), ("type1", "tag2"), ("type2", "tag1")).map(config =>
-        ("href" -> "config-url") ~
-        ("tag" -> config._2) ~
-        ("type" -> config._1) ~
-        ("Config" -> ("cluster_name" -> clusterName))
-      )),
-      url("http://localhost/api/v1/").build) with FakeAmbariRestReplies with MockedRestResponsesComponent
+        )))) ~
+      ("configurations" -> List(("type1", "tag1"), ("type1", "tag2"), ("type2", "tag1"))
+        .map(config =>
+          ("href" -> "config-url") ~
+          ("tag" -> config._2) ~
+          ("type" -> config._1) ~
+          ("Config" -> ("cluster_name" -> clusterName)))),
+      url("http://localhost/api/v1/").build)
+        with FakeAmbariRestReplies with MockedRestResponsesComponent
   }
 
   it must "correctly parse the Ambari JSON response that describes the cluster" in {
@@ -77,8 +76,7 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
       ("ServiceInfo" -> (
         ("cluster_name" -> cluster.name) ~
         ("state" -> "INIT") ~
-        ("service_name" -> "service1")
-      )))
+        ("service_name" -> "service1"))))
     get(cluster.getService("service1")).name must be ("service1")
   }
 
@@ -96,8 +94,7 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
         ("ServiceInfo" -> (
         ("cluster_name" -> cluster.name) ~
           ("state" -> "INIT") ~
-          ("service_name" -> "new")
-      )))
+          ("service_name" -> "new"))))
     get(cluster.addService("new")).name must be ("new")
     verify(cluster.responses).addService("""{"ServiceInfo": {"service_name": "new"}}""")
   }
@@ -109,12 +106,10 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   it must "be able to add a host" in {
     addMock(
       cluster.responses.addHost("""{"Hosts":{"host_name":"host1"}}"""),
-      JNothing
-    )
+      JNothing)
     addMock(
       cluster.responses.getHost("host1"),
-      ("Hosts" -> ("public_host_name" -> "host1"))
-    )
+      ("Hosts" -> ("public_host_name" -> "host1")))
     get(cluster.addHost("host1")).name must be ("host1")
     verify(cluster.responses).addHost("""{"Hosts":{"host_name":"host1"}}""")
   }
@@ -127,8 +122,7 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   it must "be able to get hosts" in {
     addMock(
       cluster.responses.getHost("host1"),
-      ("Hosts" -> ("public_host_name" -> "host1"))
-    )
+      ("Hosts" -> ("public_host_name" -> "host1")))
     get(cluster.getHost("host1")).name must be ("host1")
   }
 
@@ -141,14 +135,13 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     val properties: JObject = ("test" -> "config")
     addMock(
       cluster.responses.applyConfiguration("test", properties),
-      JNothing
-    )
+      JNothing)
     get(cluster.applyConfiguration("type1", "tag1", properties))
     verify(cluster.responses).applyConfiguration("test", properties)
   }
 
   it must "propagate failures when applying configurations" in errorPropagation(
-    cluster.responses.applyConfiguration(any[String], any[JValue]),
+    cluster.responses.applyConfiguration(any[String], any[String]),
     cluster.applyConfiguration("type", "tag", ("some" -> "config"))
   )
 }

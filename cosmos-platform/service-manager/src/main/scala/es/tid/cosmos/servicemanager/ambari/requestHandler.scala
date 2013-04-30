@@ -8,15 +8,18 @@
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
  */
+
 package es.tid.cosmos.servicemanager.ambari
 
-import com.ning.http.client.RequestBuilder
 import scala.concurrent._
+
+import com.ning.http.client.RequestBuilder
+
+trait RequestHandler {
+  def ensureFinished: Future[Unit]
+}
 
 trait RequestHandlerFactory {
   def createRequestHandler(url: RequestBuilder): RequestHandler = new AmbariRequest(url)
 }
 
-trait RequestHandler {
-  def ensureFinished: Future[Unit]
-}

@@ -11,21 +11,23 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import net.liftweb.json.JsonAST._
-import net.liftweb.json.{compact, render}
+import scala.concurrent.Future
+
 import com.ning.http.client.{RequestBuilder, Request}
 import dispatch.{Future => _, _}, Defaults._
-import scala.concurrent.Future
+import net.liftweb.json.JsonAST._
+import net.liftweb.json.{compact, render}
+
 import es.tid.cosmos.servicemanager.Bug
 
 class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpRequest {
   val name = clusterInfo \ "Clusters" \ "cluster_name" match {
     case JString(clusterName) => clusterName
-    case _ =>
-      throw new Bug("Ambari's cluster information response doesn't contain a Clusters/cluster_name element")
+    case _ => throw new Bug("Ambari's cluster information response doesn't contain a " +
+      "Clusters/cluster_name element")
   }
 
-  private[this] def baseUrl: RequestBuilder = new RequestBuilder(serverBaseUrl) / "clusters" / name
+  private def baseUrl = new RequestBuilder(serverBaseUrl) / "clusters" / name
 
   val serviceNames = for {
     JString(serviceName) <- clusterInfo \\ "service_name"
@@ -42,8 +44,9 @@ class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpReque
     JString(configType) <- configuration \ "type"
   } yield new Configuration(configType, tag)
 
-  def getService(serviceName: String): Future[Service] = performRequest(baseUrl / "services" / serviceName)
-    .map(new Service(_, baseUrl.build))
+  def getService(serviceName: String): Future[Service] =
+    performRequest(baseUrl / "services" / serviceName)
+      .map(new Service(_, baseUrl.build))
 
   def addService(serviceName: String): Future[Service] =
     performRequest(baseUrl / "services" << s"""{"ServiceInfo": {"service_name": "$serviceName"}}""")
@@ -64,11 +67,10 @@ class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpReque
     performRequest(baseUrl.PUT.setBody(requestBody)).map(_ => ())
   }
 
-  def getHost(hostName: String) : scala.concurrent.Future[Host] =
-    performRequest(baseUrl / "hosts" / hostName)
-      .map(new Host(_, baseUrl.build))
+  def getHost(hostName: String) : Future[Host] = performRequest(baseUrl / "hosts" / hostName)
+    .map(new Host(_, baseUrl.build))
 
-  def addHost(hostName: String): scala.concurrent.Future[Host] =
+  def addHost(hostName: String): Future[Host] =
     performRequest(baseUrl / "hosts" << s"""{"Hosts":{"host_name":"$hostName"}}""")
       .flatMap(_ => getHost(hostName))
 

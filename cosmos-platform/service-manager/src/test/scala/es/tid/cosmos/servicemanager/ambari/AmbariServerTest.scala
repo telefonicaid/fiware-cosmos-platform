@@ -21,14 +21,14 @@ import net.liftweb.json.JsonDSL._
 import org.scalatest.mock.MockitoSugar
 
 class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
-  var ambariServer: AmbariServer with RestResponsesComponent = _
+  var ambariServer: AmbariServer with MockedRestResponsesComponent = _
 
   before {
-    ambariServer = new AmbariServer("", 0, "", "") with FakeAmbariRestReplies
-      with RestResponsesComponent {
-      override val responses = mock[RestResponses]
-      when(responses.authorize(any[Request])).thenReturn(None)
-    }
+    ambariServer = new AmbariServer(
+      serverUrl = "",
+      port = 0,
+      username = "",
+      password = "") with FakeAmbariRestReplies with MockedRestResponsesComponent
   }
 
   it must "fail when server authentication fails" in {
@@ -41,7 +41,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
 
   it must "return a list of cluster names" in {
     addMock(
-      () => ambariServer.responses.listClusters,
+      ambariServer.responses.listClusters,
       ("href" -> "http://some-bad-url") ~
       ("items" -> List("test1", "test2", "test3").map(name =>
         ("href" -> "http://another-bad-url") ~
@@ -59,44 +59,44 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
 
   it must "return a cluster given a cluster name" in {
     addMock(
-      () => ambariServer.responses.getCluster("test1"),
+      ambariServer.responses.getCluster("test1"),
       ("href" -> "http://cluster-url") ~
       ("Clusters" -> ("cluster_name" -> "test1")))
     Await.result(ambariServer.getCluster("test1"), Duration.Inf).name must be ("test1")
   }
 
   it must "propagate failures when getting a cluster" in errorPropagation(
-    () => ambariServer.responses.getCluster("badCluster"),
-    () => ambariServer.getCluster("badCluster")
+    ambariServer.responses.getCluster("badCluster"),
+    ambariServer.getCluster("badCluster")
   )
 
   it must "be able to create a cluster" in {
     addMock(
-      () => ambariServer.responses.getCluster("foo"),
+      ambariServer.responses.getCluster("foo"),
       ("href" -> "http://cluster-url") ~
       ("Clusters" -> ("cluster_name" -> "foo")))
     addMock(
-      () => ambariServer.responses.createCluster("foo"),
+      ambariServer.responses.createCluster("foo"),
       JNothing)
     get(ambariServer.createCluster("foo", "bar")).name must be ("foo")
     verify(ambariServer.responses).createCluster("foo")
   }
 
   it must "propagate failures when creating a cluster" in errorPropagation(
-    () => ambariServer.responses.createCluster("test1"),
-    () => ambariServer.createCluster("test1", "bar")
+    ambariServer.responses.createCluster("test1"),
+    ambariServer.createCluster("test1", "bar")
   )
 
   it must "be able to remove a cluster" in {
     addMock(
-      () => ambariServer.responses.removeCluster("foo"),
+      ambariServer.responses.removeCluster("foo"),
       JNothing)
     get(ambariServer.removeCluster("foo"))
     verify(ambariServer.responses).removeCluster("foo")
   }
 
   it must "propagate failures when removing" in errorPropagation(
-    () => ambariServer.responses.removeCluster("badcluster"),
-    () => ambariServer.removeCluster("badcluster")
+    ambariServer.responses.removeCluster("badcluster"),
+    ambariServer.removeCluster("badcluster")
   )
 }

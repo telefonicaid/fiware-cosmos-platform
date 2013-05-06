@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.api.controllers.cosmos
 
-import play.api.mvc.{Action, Controller}
 import play.api.libs.json.Json
+import play.api.mvc.{Action, Controller}
 
 /**
  * Root API resource

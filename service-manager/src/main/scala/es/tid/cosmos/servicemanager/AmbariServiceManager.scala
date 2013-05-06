@@ -49,7 +49,9 @@ class AmbariServiceManager(
   }
 
   override def createCluster(
-    name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescription]): ClusterId = {
+    name: String,
+    clusterSize: Int,
+    serviceDescriptions: Seq[ServiceDescription]): ClusterId = {
     val machineFutures: List[Future[MachineState]] =
       infrastructureProvider.createMachines(name, MachineProfile.M, clusterSize).get.toList
     val clusterFuture: Future[Cluster] =
@@ -70,7 +72,9 @@ class AmbariServiceManager(
     id
   }
 
-  override def terminateCluster(id: ClusterId) {}
+  override def terminateCluster(id: ClusterId): Future[Unit] = {
+    throw new UnsupportedOperationException("terminate cluster operation not implemented")
+  }
 
   private def createService(
     clusterFuture: Future[Cluster],

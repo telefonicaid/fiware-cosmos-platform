@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.servicemanager
 
+import scala.concurrent.Future
+
 import es.tid.cosmos.servicemanager.services.ServiceDescription
 
 /**
@@ -51,5 +53,5 @@ trait ServiceManager {
    *
    * @param id the ID of the cluster to terminate
    */
-  def terminateCluster(id: ClusterId): Unit
+  def terminateCluster(id: ClusterId): Future[Unit]
 }

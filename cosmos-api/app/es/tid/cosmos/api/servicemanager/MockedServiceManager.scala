@@ -66,7 +66,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   def describeCluster(clusterId: ClusterId): Option[ClusterDescription] = clusters.get(clusterId)
 
-  def terminateCluster(id: ClusterId) {
+  def terminateCluster(id: ClusterId): Future[Unit] = {
     if (!clusters.contains(id))
       throw new ServiceException("Unknown cluster")
     val cluster = clusters.get(id).get
@@ -74,7 +74,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     defer(transitionDelay, cluster.completeTermination())
   }
 
-  private def defer(delay: Int, action: => Unit) {
+  private def defer(delay: Int, action: => Unit) = {
     future {
       Thread.sleep(delay)
       action

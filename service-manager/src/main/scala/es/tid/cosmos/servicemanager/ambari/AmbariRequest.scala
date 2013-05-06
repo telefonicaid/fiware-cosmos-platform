@@ -20,6 +20,9 @@ import net.liftweb.json.JsonAST.{JValue, JString}
 
 import es.tid.cosmos.servicemanager.Bug
 
+/**
+ * Handles pending Ambari requests and lets you block until the request finishes.
+ */
 class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHandler {
   private object Status extends Enumeration {
     type Status = Value
@@ -54,6 +57,10 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
     .map(Status.fromString)
     .foldLeft(Status.FINISHED)(Status.combine)
 
+  /**
+   * Returns a future that blocks until the request is finished. If the finished state it not successful, the future
+   * contains a failed value.
+   */
   override def ensureFinished: Future[Unit] = performRequest(url <<? Map("fields" -> "tasks/*"))
     .map(getStatusFromJson)
     .flatMap({

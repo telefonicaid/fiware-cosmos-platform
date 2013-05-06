@@ -16,6 +16,15 @@ import scala.concurrent.Future
 import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json.JsonAST._
 
+/**
+ * Root class that enables REST calls to the Ambari server.
+ *
+ * @constructor
+ * @param serverUrl the url of the server
+ * @param port      the port where the server is listening to REST calls
+ * @param username  the username used for authentication
+ * @param password  the password used for authentication
+ */
 class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
   extends ClusterProvisioner with JsonHttpRequest {
 

@@ -21,7 +21,13 @@ import net.liftweb.json.JsonDSL._
 
 import es.tid.cosmos.servicemanager.Bug
 
-class Host(hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
+/**
+ * Wraps Ambari's host-related REST API calls.
+ *
+ * @param hostInfo       the Ambari JSON response that describes the host
+ * @param clusterBaseUrl the base url of the cluster
+ */
+class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
   val name = hostInfo \ "Hosts" \ "public_host_name" match {
     case JString(hostName) => hostName
     case _ =>
@@ -29,6 +35,10 @@ class Host(hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
         "Hosts/public_host_name element")
   }
 
+  /**
+   * Given a sequence of component names, add each component to the host. The services of each of
+   * the components must have been added to the cluster previously.
+   */
   def addComponents(componentNames: String*): Future[Unit] = {
     def getJsonForComponent(componentName: String) =
       ("HostRoles" -> ("component_name" -> componentName))

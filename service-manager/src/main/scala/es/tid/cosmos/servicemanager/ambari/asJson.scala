@@ -15,6 +15,9 @@ import com.ning.http.client
 import net.liftweb.json
 import json.JsonAST.JValue
 
+/**
+ * Helper object to translate HTTP responses to JSON.
+ */
 object asJson extends (client.Response => JValue) {
   def apply(r: client.Response) = json.parse(r.getResponseBody)
 }

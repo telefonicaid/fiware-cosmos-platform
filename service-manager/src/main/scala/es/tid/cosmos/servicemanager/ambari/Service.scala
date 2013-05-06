@@ -21,7 +21,14 @@ import net.liftweb.json.JsonDSL._
 
 import es.tid.cosmos.servicemanager.Bug
 
-class Service(serviceInfo: JValue, clusterBaseUrl: Request)
+/**
+ * Wraps Ambari's service-related REST API calls.
+ *
+ * @constructor
+ * @param serviceInfo    the Ambari JSON response that describes the service
+ * @param clusterBaseUrl the base url that describes the cluster
+ */
+class Service private[ambari](serviceInfo: JValue, clusterBaseUrl: Request)
   extends JsonHttpRequest with RequestHandlerFactory {
   val name = serviceInfo \ "ServiceInfo" \ "service_name" match {
     case JString(serviceName) => serviceName

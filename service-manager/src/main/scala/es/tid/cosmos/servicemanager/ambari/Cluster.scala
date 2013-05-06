@@ -22,7 +22,14 @@ import net.liftweb.json.Extraction._
 import es.tid.cosmos.servicemanager.{Bug, Configuration, HeaderOnlyConfiguration}
 
 
-class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpRequest {
+/**
+ * Wraps Ambari's cluster-related REST API calls.
+ *
+ * @constructor
+ * @param clusterInfo   the Ambari JSON response that describes the cluster
+ * @param serverBaseUrl the base url that describes the server
+ */
+class Cluster private[ambari] (clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpRequest {
   val name = clusterInfo \ "Clusters" \ "cluster_name" match {
     case JString(clusterName) => clusterName
     case _ => throw new Bug("Ambari's cluster information response doesn't contain a " +
@@ -39,6 +46,9 @@ class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpReque
     JString(hostName) <- clusterInfo \\ "host_name"
   } yield hostName
 
+  /**
+   * Configurations that have been added to the cluster (not necessary applied).
+   */
   val configurations = for {
     JArray(configurations) <- clusterInfo \ "configurations"
     configuration <- configurations
@@ -53,6 +63,9 @@ class Cluster(clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpReque
     performRequest(baseUrl / "services" << s"""{"ServiceInfo": {"service_name": "$serviceName"}}""")
       .flatMap(_ => getService(serviceName))
 
+  /**
+   * Apply (which will also add) a configuration with the given type, tag and properties to the cluster.
+   */
   def applyConfiguration(configuration: Configuration): Future[Unit] = {
     implicit val formats = net.liftweb.json.DefaultFormats
     val propertiesString = compact(render(decompose(configuration.properties)))

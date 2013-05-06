@@ -17,6 +17,9 @@ import com.ning.http.client.RequestBuilder
 import dispatch.{Future => _, _}, Defaults._
 
 trait JsonHttpRequest {
+  /**
+   * Executes the given request, handles error cases and returns the body as JSON in the success case.
+   */
   def performRequest(request: RequestBuilder) = {
     def handleFailure(throwable: Throwable) = throwable match {
       case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => new ServiceException(

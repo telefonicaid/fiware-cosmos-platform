@@ -23,16 +23,19 @@ import es.tid.cosmos.platform.manager.ial.MachineState
  */
 class FakeInfrastructureProvider extends InfrastructureProvider {
 
-  val machine = new MachineState(
-    id = new Id[MachineState]("cosmosLocalID"),
-    name = "cosmos.local",
-    profile = MachineProfile.XS,
-    status = MachineStatus.Running,
-    hostname = "cosmos.local",
-    ipAddress = "192.168.50.4")
+  override def createMachines(
+      namePrefix: String,
+      profile: MachineProfile.Value,
+      count: Int): Try[Seq[Future[MachineState]]] = Try(
+    for (index <- 1 to count)
+      yield Future.successful(buildMachineState(index, profile)))
 
-  val machineFuture: Future[MachineState] = Future { machine }
-
-  override def createMachines(namePrefix: String, profile: MachineProfile.Value, count: Int):
-    Try[Seq[Future[MachineState]]] = Try(List(machineFuture))
+  private def buildMachineState(index: Int, profile: MachineProfile.Value) =
+    new MachineState(
+      id = new Id[MachineState](s"cosmosLocalID$index"),
+      name = "cosmos.local",
+      profile = profile,
+      status = MachineStatus.Running,
+      hostname = s"cosmos.local$index",
+      ipAddress = s"192.168.50.${index + 4}")
 }

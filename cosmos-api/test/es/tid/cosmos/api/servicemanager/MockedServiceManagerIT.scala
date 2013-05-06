@@ -31,7 +31,7 @@ class MockedServiceManagerIT extends FlatSpec with MustMatchers {
   }
 
   it must "create a new cluster in provisioning state and then transition to running state" in new Instance {
-    val id = instance.createCluster("small cluster", 10)
+    val id = instance.createCluster("small cluster", 10, serviceDescriptions = Seq())
     instance.describeCluster(id).get must have ('state (Provisioning))
     Thread.sleep(2 * transitionDelay)
     instance.describeCluster(id).get must have ('state (Running))

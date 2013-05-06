@@ -18,6 +18,7 @@ import scala.collection.mutable
 
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ServiceException
+import es.tid.cosmos.servicemanager.services.ServiceDescription
 
 /**
  * In-memory, simulated service manager.
@@ -56,7 +57,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
-  def createCluster(name: String, clusterSize: Int): ClusterId = {
+  def createCluster(
+    name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescription]): ClusterId = {
     val cluster = new FakeCluster(name, clusterSize)
     clusters.put(cluster.id, cluster)
     cluster.id

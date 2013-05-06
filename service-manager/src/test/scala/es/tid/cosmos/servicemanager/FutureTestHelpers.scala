@@ -9,8 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari
+package es.tid.cosmos.servicemanager
 
-case class Configuration(val configType: String, val tag: String) {
-  override def toString = "[Configuration] Type = " + configType + ", Tag = " + tag
+import scala.concurrent.Future
+
+/**
+ * @author adamos
+ */
+object FutureTestHelpers {
+  def fakeFuture[T](thing: T) = Future.successful(thing)
 }

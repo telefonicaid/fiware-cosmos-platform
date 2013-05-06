@@ -12,12 +12,14 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import dispatch.url
-import net.liftweb.json.JsonAST.{JObject, JNothing, JValue}
+import net.liftweb.json.JsonAST.{JObject, JNothing}
 import net.liftweb.json.JsonDSL._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.verify
 import org.scalatest.BeforeAndAfter
 import org.scalatest.mock.MockitoSugar
+
+import es.tid.cosmos.servicemanager.{Configuration, HeaderOnlyConfiguration}
 
 class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var cluster: Cluster with MockedRestResponsesComponent = _
@@ -64,9 +66,9 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     cluster.hostNames must contain ("host2")
 
     cluster.configurations must have size (3)
-    cluster.configurations must contain (new Configuration("type1", "tag1"))
-    cluster.configurations must contain (new Configuration("type1", "tag2"))
-    cluster.configurations must contain (new Configuration("type2", "tag1"))
+    cluster.configurations must contain (HeaderOnlyConfiguration("type1", "tag1"))
+    cluster.configurations must contain (HeaderOnlyConfiguration("type1", "tag2"))
+    cluster.configurations must contain (HeaderOnlyConfiguration("type2", "tag1"))
   }
 
   it must "be able to get a service" in {
@@ -136,12 +138,15 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     addMock(
       cluster.responses.applyConfiguration("test", properties),
       JNothing)
-    get(cluster.applyConfiguration("type1", "tag1", properties))
+    get(cluster.applyConfiguration(MockConfiguration("type1", "tag1", Map("test" -> "config"))))
     verify(cluster.responses).applyConfiguration("test", properties)
   }
 
   it must "propagate failures when applying configurations" in errorPropagation(
     cluster.responses.applyConfiguration(any[String], any[String]),
-    cluster.applyConfiguration("type", "tag", ("some" -> "config"))
+    cluster.applyConfiguration(MockConfiguration("type1", "tag1", Map("come" -> "config")))
   )
+
+  case class MockConfiguration(configType: String, tag: String, properties: Map[String, Any]) extends Configuration
+
 }

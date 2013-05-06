@@ -17,17 +17,17 @@ import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json.JsonAST._
 
 class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
-    extends ProvisioningServer with JsonHttpRequest {
-  private def baseUrl = host(serverUrl, port).as_!(username, password) / "api" / "v1"
+  extends ClusterProvisioner with JsonHttpRequest {
 
-  override def listClusterNames: Future[Seq[String]] = performRequest(baseUrl / "clusters")
-    .map(json => for {
+  private[this] def baseUrl = host(serverUrl, port).as_!(username, password) / "api" / "v1"
+
+  override def listClusterNames: Future[Seq[String]] =
+    performRequest(baseUrl / "clusters").map(json => for {
       JField("cluster_name", JString(name)) <- (json \\ "cluster_name").children
     } yield name)
 
   override def getCluster(name: String): Future[Cluster] =
-    performRequest(baseUrl / "clusters" / name)
-      .map(new Cluster(_, baseUrl.build))
+    performRequest(baseUrl / "clusters" / name).map(new Cluster(_, baseUrl.build))
 
   override def createCluster(name: String, version: String): Future[Cluster] =
     performRequest(baseUrl / "clusters" / name << s"""{"Clusters": {"version": "$version"}}""")

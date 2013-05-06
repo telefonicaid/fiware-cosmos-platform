@@ -11,8 +11,9 @@
 
 package es.tid.cosmos.api.servicemanager
 
-import org.scalatest.matchers.MustMatchers
 import org.scalatest.FlatSpec
+import org.scalatest.matchers.MustMatchers
+
 import es.tid.cosmos.servicemanager._
 
 /**

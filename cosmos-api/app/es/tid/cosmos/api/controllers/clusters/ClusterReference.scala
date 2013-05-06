@@ -14,8 +14,8 @@ package es.tid.cosmos.api.controllers.clusters
 import play.api.libs.json.{Json, JsValue, Writes}
 import play.api.mvc.RequestHeader
 
-import es.tid.cosmos.servicemanager.ClusterId
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
+import es.tid.cosmos.servicemanager.ClusterId
 
 /**
  * @author sortega

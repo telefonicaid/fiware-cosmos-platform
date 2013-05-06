@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.api.controllers.clusters
 
-import play.api.libs.json._
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
 /**
  * Parameters for cluster creation.

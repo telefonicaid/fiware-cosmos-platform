@@ -13,12 +13,11 @@ package es.tid.cosmos.api.controllers.clusters
 
 import scala.util.{Failure, Success, Try}
 
+import play.Logger
 import play.api.libs.json._
 import play.api.mvc._
-import play.Logger
 
-import es.tid.cosmos.api.controllers.common
-import es.tid.cosmos.api.controllers.common.JsonController
+import es.tid.cosmos.api.controllers.common.{formatInternalException, JsonController}
 import es.tid.cosmos.servicemanager.{ClusterId, ServiceManagerComponent}
 import es.tid.cosmos.servicemanager.services.DefaultServices
 
@@ -52,7 +51,7 @@ trait ClustersResource extends JsonController {
       case Failure(ex) => {
         val message = "Error when requesting a new cluster"
         Logger.error(message, ex)
-        InternalServerError(common.formatInternalException(message, ex))
+        InternalServerError(formatInternalException(message, ex))
       }
     }
   }

@@ -12,7 +12,7 @@
 package es.tid.cosmos.api.controllers.common
 
 import play.api.libs.json._
-import play.api.mvc.{Controller, Action, Result, Request}
+import play.api.mvc.{Action, Controller, Request, Result}
 
 /**
  * @author sortega

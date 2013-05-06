@@ -12,9 +12,9 @@
 package es.tid.cosmos.api.servicemanager
 
 import java.util.UUID
+import scala.collection.mutable
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.collection.mutable
 
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ServiceException

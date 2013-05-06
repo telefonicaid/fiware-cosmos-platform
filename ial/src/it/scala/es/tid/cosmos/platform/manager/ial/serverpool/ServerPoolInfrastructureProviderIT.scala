@@ -12,13 +12,13 @@
 package es.tid.cosmos.platform.manager.ial.serverpool
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.Await
-
-import org.scalatest.matchers.MustMatchers
-import org.scalatest.FlatSpec
-
+import scala.concurrent.{Await, Future}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{FiniteDuration, Duration}
 import scala.util.Failure
+
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.platform.manager.ial.{ResourceExhaustedException, MachineProfile}
 
@@ -33,16 +33,15 @@ class ServerPoolInfrastructureProviderIT extends FlatSpec with MySqlTest with Mu
   "Server pool infrastructure provider" must "create machines when available" in {
     val result = provider.createMachines("cosmos", MachineProfile.M, 2)
     result must be ('success)
-    val machines = result.get.map(Await.result(_, timeout))
+    val machines = Await.result(Future.sequence(result.get), timeout)
     machines must (containMachine("cosmos0") and containMachine("cosmos1"))
   }
 
   it must "throw when creating machines when unavailable" in {
     val result = provider.createMachines("pre", MachineProfile.XL, 1500)
     result must be ('failure)
-    (result match {
-      case Failure(ResourceExhaustedException(r, 1500, 1)) => true
-      case _ => false
-    }) must be (true)
+    val Failure(exception: ResourceExhaustedException) = result
+    exception.available must be (1)
+    exception.requested must be (1500)
   }
 }

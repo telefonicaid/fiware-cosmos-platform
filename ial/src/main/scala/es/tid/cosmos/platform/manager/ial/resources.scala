@@ -89,12 +89,13 @@ object MachineStatus extends Enumeration {
  * @param hostname the hostname of the machine
  * @param ipAddress the IP address for that machine
  */
-case class MachineState(id: Id[MachineState],
-                        name: String,
-                        profile: MachineProfile.Value,
-                        status: MachineStatus.Value,
-                        hostname: String,
-                        ipAddress: String) extends Resource(id, name) {
+case class MachineState(
+    id: Id[MachineState],
+    name: String,
+    profile: MachineProfile.Value,
+    status: MachineStatus.Value,
+    hostname: String,
+    ipAddress: String) extends Resource(id, name) {
 
   override def toString: String =
     s"{ id: '$id', name: '$name', profile: '$profile', status: '$status', " +

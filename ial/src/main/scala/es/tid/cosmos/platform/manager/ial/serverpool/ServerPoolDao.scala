@@ -19,21 +19,20 @@ import es.tid.cosmos.platform.manager.ial._
  * @author apv
  */
 trait ServerPoolDao {
-
   /**
    * Obtain the list of available machines which satisfies the given predicate.
    *
    * @param f the predicate the available machines must satisfy¡
    * @return the sequence of machines which are available and satisfy the predicate
    */
-  def getAvailableMachinesWith(f: MachineState => Boolean) : Seq[MachineState]
+  def availableMachinesWith(f: MachineState => Boolean) : Seq[MachineState]
 
   /**
    * Obtain the list of available machines.
    *
    * @return a sequence of available machines
    */
-  def getAvailableMachines: Seq[MachineState] = getAvailableMachinesWith(m => true)
+  def availableMachines: Seq[MachineState] = availableMachinesWith(m => true)
 
   /**
    * Get status of the machine with given identifier.
@@ -41,7 +40,7 @@ trait ServerPoolDao {
    * @param machineId the identifier of the machine which status is to be obtained
    * @return the machine state
    */
-  def getMachine(machineId: Id[MachineState]): Option[MachineState]
+  def machine(machineId: Id[MachineState]): Option[MachineState]
 
   /**
    * Set the availability of the machine with given identifier.

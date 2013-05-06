@@ -22,25 +22,26 @@ import es.tid.cosmos.platform.manager.ial.MachineState
 import es.tid.cosmos.platform.manager.ial.MachineStatus._
 
 /**
- * A convenient trait for testing against MySQL DBMS. In order to it to work, you must:
+ * A convenient trait for testing against MySQL DBMS. In order for it to work, you must:
  *
- *  - Have a mysqld running on localhost (or any other host overriding dbHost), port 3306 (or override dbPort)
- *
- *  - A username 'cosmos' (or any other overriding dbUser) with password 'cosmos' (or any other overriding dbPassword)
- *    E.g., create user 'cosmos'@'localhost' identified by 'cosmos'
- *
- *  - Select, create, drop and insert privileges on databases with 'test_' prefix to user 'cosmos'
- *    E.g., grant all on `test_%`.* to 'cosmos'@'localhost'
+ * <ul>
+ *  <li>Have a mysqld running on localhost (or any other host overriding dbHost), port 3306 (or
+ *  override dbPort)</li>
+ *  <li>A username 'cosmos' (or any other overriding dbUser) with password 'cosmos' (or any other
+ *  overriding dbPassword). E.g., create user 'cosmos'@'localhost' identified by 'cosmos'</li>
+ *  <li>Select, create, drop and insert privileges on databases with 'test_' prefix to user
+ *  'cosmos'. E.g., grant all on `test_%`.* to 'cosmos'@'localhost'</li>
+ * </ul>
  *
  * @author apv
  */
 trait MySqlTest extends BeforeAndAfter {
+  this: Suite =>
 
-  self: Suite =>
-
-  class ContainOneMachineMatcher(matcherDesc: String)
-                                (pred: MachineState => Boolean) extends Matcher[Seq[MachineState]] {
-    def apply(left: Seq[MachineState]) = MatchResult(left.exists(pred(_)),
+  class ContainSomeMachineMatcher(matcherDesc: String) (pred: MachineState => Boolean)
+        extends Matcher[Seq[MachineState]] {
+    def apply(left: Seq[MachineState]) = MatchResult(
+      left.exists(pred),
       s"expected one $matcherDesc in iteration $left",
       s"expected none $matcherDesc in iteration $left")
   }
@@ -54,9 +55,9 @@ trait MySqlTest extends BeforeAndAfter {
   }
 
   object containMachine {
-    def apply(m: Machine) = new ContainOneMachineMatcher(s"state equivalent to ${m.toString}")(m == _)
-    def apply(id: Id[MachineState]) = new ContainOneMachineMatcher(s"machine with id $id")(id == _.id)
-    def apply(name: String) = new ContainOneMachineMatcher(s"machine with name $name") (_.name == name)
+    def apply(m: Machine) = new ContainSomeMachineMatcher(s"state equivalent to ${m.toString}")(m == _)
+    def apply(id: Id[MachineState]) = new ContainSomeMachineMatcher(s"machine with id $id")(id == _.id)
+    def apply(name: String) = new ContainSomeMachineMatcher(s"machine with name $name") (_.name == name)
   }
 
   object containMachines {
@@ -87,11 +88,13 @@ trait MySqlTest extends BeforeAndAfter {
   private def dropDatabase() { updateDatabase(s"drop database $dbName") }
 
   private def updateDatabase(updateQuery: String) {
+    var stmt: Option[java.sql.Statement] = None
     new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword, "mysql").connect match {
-      case Success(c) => {
-        val stmt = c.createStatement()
-        stmt.executeUpdate(updateQuery)
-        stmt.close()
+      case Success(c) => try {
+        stmt = Some(c.createStatement())
+        stmt.get.executeUpdate(updateQuery)
+      } finally {
+        stmt.map(_.close())
         c.close()
       }
       case Failure(e) => throw e

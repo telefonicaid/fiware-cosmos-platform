@@ -12,6 +12,7 @@
 package es.tid.cosmos.platform.manager.ial.serverpool
 
 import java.sql.{DriverManager, Connection}
+import java.util.UUID
 import scala.util.Try
 
 import org.squeryl._
@@ -20,7 +21,6 @@ import org.squeryl.internals.DatabaseAdapter
 import org.squeryl.PrimitiveTypeMode._
 
 import es.tid.cosmos.platform.manager.ial._
-import java.util.UUID
 
 /**
  * A class used to maintain persistent information of machines.
@@ -39,7 +39,8 @@ class Machine(var machineId: UUID,
       s"{ name: '$name', available: $available, profile: '$profile', " +
           s"status: '$status', hostname:'$hostname', ipAddress: '$ipAddress' }"
 
-  def this() = this(UUID.randomUUID(), "unknown", false, MachineProfile.M, MachineStatus.Provisioning, "", "")
+  def this() = this(
+    UUID.randomUUID(), "unknown", false, MachineProfile.M, MachineStatus.Provisioning, "", "")
 
   /**
    * Transform this DB oriented data object into machine state.
@@ -48,9 +49,9 @@ class Machine(var machineId: UUID,
       new MachineState(Id(machineId), name, profile, status, hostname, ipAddress)
   }
 
-  def == (state: MachineState) = (machineId.toString == state.id.toString) && (name == state.name) &&
-      (profile == state.profile) && (status == state.status) && (hostname == state.hostname) &&
-      (ipAddress == state.ipAddress)
+  def ==(state: MachineState) = (machineId.toString == state.id.toString) &&
+    (name == state.name) && (profile == state.profile) && (status == state.status) &&
+    (hostname == state.hostname) && (ipAddress == state.ipAddress)
 }
 
 object Machine {
@@ -119,29 +120,33 @@ class SqlServerPoolDao(val db: SqlDatabase) extends ServerPoolDao {
 
   import InfraDb._
 
-  def getAvailableMachinesWith(f: MachineState => Boolean): Seq[MachineState] = transaction(db.newSession) {
-    from(machines)(s => where(s.available === true) select(s)).map(_.toMachineState).toArray.filter(f)
-  }
+  def availableMachinesWith(f: MachineState => Boolean): Seq[MachineState] =
+    transaction(db.newSession) {
+      from(machines)(s => where(s.available === true) select(s))
+        .map(_.toMachineState).toArray.filter(f)
+    }
 
-  def getMachine(machineId: Id[MachineState]): Option[MachineState] =
-    getMachineInternal(machineId).map(_.toMachineState)
+  def machine(machineId: Id[MachineState]): Option[MachineState] =
+    machineInternal(machineId).map(_.toMachineState)
 
-  def setMachineAvailability(machineId: Id[MachineState], available: Boolean): Option[MachineState] =
+  def setMachineAvailability(
+      machineId: Id[MachineState], available: Boolean): Option[MachineState] =
     modifyMachineInternal(machineId)(m => m.available = available)
 
   def setMachineName(machineId: Id[MachineState], name: String): Option[MachineState] =
     modifyMachineInternal(machineId)(m => m.name = name)
 
-  def getMachineInternal(machineId: Id[MachineState]): Option[Machine] = transaction(db.newSession) {
+  def machineInternal(machineId: Id[MachineState]): Option[Machine] = transaction(db.newSession) {
       from(machines)(s => where(s.machineId.toString === machineId.toString) select(s)).headOption
   }
 
-  def modifyMachineInternal(machineId: Id[MachineState])(mod: Machine => Unit): Option[MachineState] = {
-    getMachineInternal(machineId) match {
+  def modifyMachineInternal(
+      machineId: Id[MachineState])(mod: Machine => Unit): Option[MachineState] = {
+    machineInternal(machineId) match {
       case Some(m) => transaction(db.newSession) {
         mod(m)
         machines.update(m)
-        return Some(m.toMachineState)
+        Some(m.toMachineState)
       }
       case None => None
     }

@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.controllers
 
-import play.api.mvc._
+import play.api.mvc.{Action, Controller}
 
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 

@@ -11,16 +11,23 @@
 
 package es.tid.cosmos.servicemanager
 
+import com.typesafe.config.ConfigFactory
+
 import es.tid.cosmos.servicemanager.ambari.AmbariServer
 import es.tid.cosmos.platform.manager.ial.InfrastructureProviderComponent
 
-/**
- * @author sortega
- */
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
-  self: InfrastructureProviderComponent =>
+  this: InfrastructureProviderComponent =>
 
-  lazy val serviceManager: ServiceManager = new AmbariServiceManager(
-    new AmbariServer("localhost", 8080, "admin", "admin"),
-    infrastructureProvider)
+  lazy val serviceManager: ServiceManager = {
+    val config = ConfigFactory.load()
+    new AmbariServiceManager(
+      new AmbariServer(
+        config.getString("ambari.server.url"),
+        config.getInt("ambari.server.port"),
+        config.getString("ambari.server.username"),
+        config.getString("ambari.server.password")),
+      infrastructureProvider)
+  }
+
 }

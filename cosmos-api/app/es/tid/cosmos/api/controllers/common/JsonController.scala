@@ -18,7 +18,6 @@ import play.api.mvc.{Controller, Action, Result, Request}
  * @author sortega
  */
 trait JsonController extends Controller {
-
   def JsonBodyAction[Payload: Reads](f: (Request[JsValue], Payload) => Result): Action[JsValue] =
     Action(parse.tolerantJson) { request =>
       val parsedJson: JsResult[Payload] = Json.fromJson[Payload](request.body)

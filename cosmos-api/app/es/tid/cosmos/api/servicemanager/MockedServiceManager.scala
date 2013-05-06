@@ -27,7 +27,6 @@ import es.tid.cosmos.servicemanager.services.ServiceDescription
  * @author sortega
  */
 class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
-
   private class FakeCluster(override val name: String, override val size: Int,
                             override val id: ClusterId = new ClusterId)
     extends ClusterDescription {

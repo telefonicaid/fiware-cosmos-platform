@@ -23,7 +23,6 @@ import es.tid.cosmos.api.controllers.cosmos.CosmosResource
  * @author sortega
  */
 class CosmosIT extends FlatSpec with MustMatchers {
-
   "The Cosmos resource" must "return the version as JSON" in {
     running(FakeApplication(withGlobal = Some(Global))) {
       val resource = route(FakeRequest(GET, "/cosmos")).get

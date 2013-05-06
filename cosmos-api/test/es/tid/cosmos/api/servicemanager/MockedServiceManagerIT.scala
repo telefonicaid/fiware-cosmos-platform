@@ -19,7 +19,6 @@ import es.tid.cosmos.servicemanager._
  * @author sortega
  */
 class MockedServiceManagerIT extends FlatSpec with MustMatchers {
-
   val transitionDelay = 100
 
   trait Instance {

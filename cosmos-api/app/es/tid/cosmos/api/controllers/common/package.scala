@@ -15,12 +15,10 @@ import play.api.Play
 import play.api.Play.current
 import play.api.libs.json._
 
-
 /**
  * @author sortega
  */
 package object common {
-
   /**
    * Formats an internal server exception to JSON.
    * Stack traces are not shown in production mode.

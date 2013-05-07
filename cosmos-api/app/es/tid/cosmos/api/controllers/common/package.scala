@@ -25,7 +25,7 @@ package object common {
    * @return        Error description
    */
   def formatInternalException(message: String, ex: Throwable): JsValue = {
-    val basicMessage = Map("error" -> "%s: %s".format(message, ex.getMessage))
+    val basicMessage = Map("error" -> s"${message}: ${ex.getMessage}")
     val errorMessage =
       if (Play.isProd) basicMessage
       else basicMessage ++ Map("exception" -> ex.getClass.getCanonicalName,

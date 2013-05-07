@@ -30,8 +30,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
                             override val id: ClusterId = new ClusterId)
     extends ClusterDescription {
 
-    override def state = currentState
     var currentState: ClusterState = Provisioning
+    override def state = currentState
 
     def completeProvision() {
       if (currentState == Provisioning) currentState = Running

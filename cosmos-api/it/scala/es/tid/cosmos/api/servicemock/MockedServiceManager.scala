@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.servicemanager
+package es.tid.cosmos.api.servicemock
 
 import java.util.UUID
 import scala.collection.mutable

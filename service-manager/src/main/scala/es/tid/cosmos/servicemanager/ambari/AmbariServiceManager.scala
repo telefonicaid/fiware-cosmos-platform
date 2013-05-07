@@ -49,27 +49,25 @@ class AmbariServiceManager(
    * Wait until all pending operations are finished
    */
   def close() {
-    clusters.values.foreach(description => Await.ready(description.deployment, Duration.Inf))
+    clusters.values.foreach(description => Await.ready(description.deployment_>, Duration.Inf))
   }
 
   override def createCluster(
     name: String,
     clusterSize: Int,
     serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
-    val machineFutures: List[Future[MachineState]] =
-      infrastructureProvider.createMachines(name, MachineProfile.M, clusterSize).get.toList
-    val clusterFuture: Future[Cluster] =
-      provisioner.createCluster(name = name, version = "HDP-1.2.0")
-    val (master: Future[Host], slaves: List[Future[Host]]) =
-      masterAndSlaves(addHosts(machineFutures, clusterFuture))
-    val configuredCluster: Future[Cluster] = applyConfiguration(
-      clusterFuture, masterFuture = master, this::serviceDescriptions.toList)
-    val serviceFutures: List[Future[Service]] =
-      serviceDescriptions.map(createService(configuredCluster, master, slaves, _)).toList
-    val deployedClusterFuture: Future[List[Service]] = installInOrder(serviceFutures)
+    val machineFutures = infrastructureProvider.createMachines(
+      name, MachineProfile.M, clusterSize).get.toList
+    val cluster_> = provisioner.createCluster(name, version = "HDP-1.2.0")
+    val (master_>, slaveFutures) = masterAndSlaves(addHosts(machineFutures, cluster_>))
+    val configuredCluster_> = applyConfiguration(
+      cluster_>, master_>, this::serviceDescriptions.toList)
+    val serviceFutures  = serviceDescriptions.map(
+      createService(configuredCluster_>, master_>, slaveFutures, _)).toList
+    val deployedServices_> = installInOrder(serviceFutures)
 
     val id = new ClusterId
-    val description = new MutableClusterDescription(id, name, clusterSize, deployedClusterFuture)
+    val description = new MutableClusterDescription(id, name, clusterSize, deployedServices_>)
     clusters.synchronized {
       clusters = clusters.updated(id, description)
     }
@@ -81,64 +79,64 @@ class AmbariServiceManager(
   }
 
   private def createService(
-    clusterFuture: Future[Cluster],
-    masterFuture: Future[Host],
+    cluster_> : Future[Cluster],
+    master_> : Future[Host],
     slaveFutures: List[Future[Host]],
     serviceDescription: AmbariServiceDescription): Future[Service] = {
     for {
-      cluster <- clusterFuture
-      master <- masterFuture
+      cluster <- cluster_>
+      master <- master_>
       slaves <- Future.sequence(slaveFutures)
       service <- serviceDescription.createService(cluster, master, slaves)
     } yield service
   }
 
-  private def masterAndSlaves(hosts: List[Future[Host]]) = hosts match {
-    case oneHost :: Nil => (oneHost, List(oneHost))
-    case first :: rest => (first, rest)
+  private def masterAndSlaves(hostFutures: List[Future[Host]]) = hostFutures match {
+    case oneHost_> :: Nil => (oneHost_>, List(oneHost_>))
+    case first_> :: restFutures => (first_>, restFutures)
     case _ => throw new IllegalArgumentException("Need at least one host")
   }
 
   private def installInOrder(serviceFutures: List[Future[Service]]): Future[List[Service]] = {
 
     def doInstall(
-      installedServicesFuture: Future[List[Service]],
-      serviceFuture: Future[Service]): Future[List[Service]] = {
+      installedServices_> : Future[List[Service]],
+      service_> : Future[Service]): Future[List[Service]] = {
       for {
-        installedServices <- installedServicesFuture
-        service <- installAndStart(serviceFuture)
+        installedServices <- installedServices_>
+        service <- installAndStart(service_>)
       } yield service :: installedServices
     }
     serviceFutures.foldLeft(Future.successful(List[Service]()))(doInstall)
   }
 
-  private def installAndStart(serviceFuture: Future[Service]): Future[Service] = {
+  private def installAndStart(service_> : Future[Service]): Future[Service] = {
     for {
-      service <- serviceFuture
+      service <- service_>
       installedService <- service.install()
       startedService <- installedService.start()
     } yield startedService
   }
 
   private def applyConfiguration(
-    clusterFuture: Future[Cluster],
-    masterFuture: Future[Host],
+    cluster_> : Future[Cluster],
+    master_> : Future[Host],
     contributors: List[ConfigurationContributor]): Future[Cluster] = {
     for {
-      cluster <- clusterFuture
-      master <- masterFuture
+      cluster <- cluster_>
+      master <- master_>
       _ <- Configurator.applyConfiguration(cluster, master, contributors)
     } yield cluster
   }
 
   private def addHosts(
     machineFutures: List[Future[MachineState]],
-    clusterFuture: Future[Cluster]): List[Future[Host]] = {
+    cluster_> : Future[Cluster]): List[Future[Host]] = {
     for {
-      machineFuture <- machineFutures
+      machine_> <- machineFutures
     } yield for {
-      cluster <- clusterFuture
-      machine <- machineFuture
+      cluster <- cluster_>
+      machine <- machine_>
       host <- cluster.addHost(machine.hostname)
     } yield host
   }

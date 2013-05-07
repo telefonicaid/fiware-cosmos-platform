@@ -19,7 +19,7 @@ import play.api.test.Helpers._
 import play.api.test.FakeRequest
 import play.api.libs.json.Json
 
-import es.tid.cosmos.api.servicemanager.MockedServiceManager
+import es.tid.cosmos.api.servicemock.MockedServiceManager
 import es.tid.cosmos.servicemanager.ClusterId
 
 class ClusterIT extends FlatSpec with MustMatchers with MockedServices {

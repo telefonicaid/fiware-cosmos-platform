@@ -21,7 +21,7 @@ case class ClusterList(clusterReferences: Seq[ClusterReference])
 object ClusterList {
   implicit object ClusterListWrites extends Writes[ClusterList] {
     def writes(list: ClusterList): JsValue = Json.obj(
-      "clusters" -> JsArray(list.clusterReferences.map(ref => Json.toJson(ref)))
+      "clusters" -> list.clusterReferences.map(ref => Json.toJson(ref))
     )
   }
 }

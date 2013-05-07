@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.api.controllers.common
 
+import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import play.api.mvc.{Action, Controller, Request, Result}
 
@@ -20,17 +21,15 @@ import play.api.mvc.{Action, Controller, Request, Result}
 trait JsonController extends Controller {
   def JsonBodyAction[Payload: Reads](f: (Request[JsValue], Payload) => Result): Action[JsValue] =
     Action(parse.tolerantJson) { request =>
-      val parsedJson: JsResult[Payload] = Json.fromJson[Payload](request.body)
-      parsedJson match {
-        case JsSuccess(payload, _) => f(request, payload)
-        case error@JsError(_) => BadRequest(formatJsError(error))
-      }
+      Json.fromJson[Payload](request.body).fold(
+        invalid = formatErrors,
+        valid = payload => f(request, payload))
     }
 
-  private def formatJsError(jsError: JsError): JsValue = {
-    val formattedErrors = jsError.errors.toList.map {
-      case (path, errors) => (path.toString(), errors.map(_.message).toList)
+  private def formatErrors(errors: Seq[(JsPath, Seq[ValidationError])]) = {
+    val formattedErrors = errors.map {
+      case (path, errors) => (path.toString(), errors.map(_.message))
     }
-    Json.toJson(Map(formattedErrors: _*))
+    BadRequest(Json.toJson(Map(formattedErrors: _*)))
   }
 }

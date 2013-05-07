@@ -22,7 +22,7 @@ case class Message(m: String)
 object Message {
   implicit object MessageWrites extends Writes[Message]{
     def writes(instance: Message): JsValue = Json.obj(
-      "message" -> JsString(instance.m)
+      "message" -> instance.m
     )
   }
 }

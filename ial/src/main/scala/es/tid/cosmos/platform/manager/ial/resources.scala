@@ -61,6 +61,7 @@ object MachineProfile extends Enumeration {
 
   type MachineProfile = Value
 
+  /* Uses indices for backwards compability while serializing. */
   val XS = Value(1, "XS machine")
   val S = Value(2, "S machine")
   val M = Value(3, "M machine")
@@ -75,6 +76,7 @@ object MachineStatus extends Enumeration {
 
   type MachineStatus = Value
 
+  /* Uses indices for backwards compability while serializing. */
   val Provisioning = Value(1, "provisioning")
   val Running = Value(2, "running")
 }
@@ -83,7 +85,7 @@ object MachineStatus extends Enumeration {
  * A class representing the state of a machine resource.
  *
  * @param id the identifier of the resource
- * @param name the (human) name of the resource
+ * @param name the (human-readable) name of the resource
  * @param profile the profile of the machine
  * @param status the status of the machine
  * @param hostname the hostname of the machine

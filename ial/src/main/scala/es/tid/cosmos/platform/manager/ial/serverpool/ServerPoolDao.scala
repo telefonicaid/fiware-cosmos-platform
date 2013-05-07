@@ -22,7 +22,7 @@ trait ServerPoolDao {
   /**
    * Obtain the list of available machines which satisfies the given predicate.
    *
-   * @param f the predicate the available machines must satisfy¡
+   * @param f the predicate the available machines must satisfy
    * @return the sequence of machines which are available and satisfy the predicate
    */
   def availableMachinesWith(f: MachineState => Boolean) : Seq[MachineState]
@@ -35,26 +35,26 @@ trait ServerPoolDao {
   def availableMachines: Seq[MachineState] = availableMachinesWith(m => true)
 
   /**
-   * Get status of the machine with given identifier.
+   * Get the status of the machine with the given identifier.
    *
-   * @param machineId the identifier of the machine which status is to be obtained
+   * @param machineId the identifier of the machine whose status is to be obtained
    * @return the machine state
    */
   def machine(machineId: Id[MachineState]): Option[MachineState]
 
   /**
-   * Set the availability of the machine with given identifier.
+   * Set the availability of the machine with the given identifier.
    *
-   * @param machineId the identifier of the machine which availability is to be modified
+   * @param machineId the identifier of the machine whose availability is to be modified
    * @param available the new availability of the machine (true is available, false is unavailable)
    * @return the new state of the machine
    */
   def setMachineAvailability(machineId: Id[MachineState], available: Boolean): Option[MachineState]
 
   /**
-   * Set the name of the machine with given identifier.
+   * Set the name of the machine with the given identifier.
    *
-   * @param machineId the identifier of the machine which name is to be modified
+   * @param machineId the identifier of the machine whose name is to be modified
    * @param name the new name of the machine
    * @return the new state of the machine
    */

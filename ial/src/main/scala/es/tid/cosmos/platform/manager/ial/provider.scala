@@ -27,8 +27,6 @@ case class ResourceExhaustedException(resource: String, requested: Int, availabl
 
 /**
  * An abstraction for an infrastructure provider
- *
- * @author apv
  */
 trait InfrastructureProvider {
   /**
@@ -51,10 +49,8 @@ trait InfrastructureProvider {
 }
 
 /**
- * Infrastructure provider component trait. This trait is aimed to implement a cake pattern to
- * declare an artifact that requires a infrastructure provider as one of its components.
- *
- * @author sortega
+ * This trait is aimed to implement a cake pattern to declare an artifact that requires an
+ * infrastructure provider as one of its components.
  */
 trait InfrastructureProviderComponent {
 

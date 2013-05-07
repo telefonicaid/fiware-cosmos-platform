@@ -49,9 +49,14 @@ class Machine(var machineId: UUID,
       new MachineState(Id(machineId), name, profile, status, hostname, ipAddress)
   }
 
-  def ==(state: MachineState) = (machineId.toString == state.id.toString) &&
-    (name == state.name) && (profile == state.profile) && (status == state.status) &&
-    (hostname == state.hostname) && (ipAddress == state.ipAddress)
+  override def equals(state: Any) = state match {
+    case st: MachineState => {
+      (machineId.toString == st.id.toString) &&
+      (name == st.name) && (profile == st.profile) && (status == st.status) &&
+      (hostname == st.hostname) && (ipAddress == st.ipAddress)
+    }
+    case _ => false
+  }
 }
 
 object Machine {
@@ -103,7 +108,11 @@ class MySqlDatabase(val host: String,
                     val password: String,
                     val dbName: String) extends SqlDatabase {
 
+  /* Initialize MySQL JDBC driver, which registers the connection chain prefix on DriverManager. */
   Class.forName("com.mysql.jdbc.Driver")
+
+  def this(host: String, port: Int, username: String, password: String) =
+    this(host, port, username, password, "")
 
   def connect: Try[Connection] =
       Try(DriverManager.getConnection(s"jdbc:mysql://$host:$port/$dbName", username, password))
@@ -131,17 +140,17 @@ class SqlServerPoolDao(val db: SqlDatabase) extends ServerPoolDao {
 
   def setMachineAvailability(
       machineId: Id[MachineState], available: Boolean): Option[MachineState] =
-    modifyMachineInternal(machineId)(m => m.available = available)
+    modifyMachineInternal(machineId, m => m.available = available)
 
   def setMachineName(machineId: Id[MachineState], name: String): Option[MachineState] =
-    modifyMachineInternal(machineId)(m => m.name = name)
+    modifyMachineInternal(machineId, m => m.name = name)
 
   def machineInternal(machineId: Id[MachineState]): Option[Machine] = transaction(db.newSession) {
       from(machines)(s => where(s.machineId.toString === machineId.toString) select(s)).headOption
   }
 
   def modifyMachineInternal(
-      machineId: Id[MachineState])(mod: Machine => Unit): Option[MachineState] = {
+      machineId: Id[MachineState], mod: Machine => Unit): Option[MachineState] = {
     machineInternal(machineId) match {
       case Some(m) => transaction(db.newSession) {
         mod(m)

@@ -23,7 +23,7 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.platform.manager.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.FutureTestHelpers.fakeFuture
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfiguratorTestHelpers._
+import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvisioner, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 

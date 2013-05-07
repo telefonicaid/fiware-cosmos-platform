@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.configuration
+package es.tid.cosmos.servicemanager.ambari
 
 import org.mockito.BDDMockito.given
 import org.mockito.Mockito.{verify, verifyNoMoreInteractions}
@@ -18,11 +18,13 @@ import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfiguratorTestHelpers._
-import es.tid.cosmos.servicemanager.ambari.configuration.Configurator.ConfigurationConflict
+import es.tid.cosmos.servicemanager.ambari.Configurator.ConfigurationConflict
+import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers.contributionsWithNumber
+import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
 
-class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatchers with MockitoSugar {
+class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatchers
+    with MockitoSugar {
 
   val cluster = mock[Cluster]
   val master = mock[Host]
@@ -51,8 +53,10 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
       Map("someGlobalContent1" -> "somevalue1", "someGlobalContent2" -> "somevalue2")))
     verify(cluster).applyConfiguration(CoreConfiguration("version1",
         Map("someCoreContent1" -> "somevalue1", "someCoreContent2" -> "somevalue2")))
-    verify(cluster).applyConfiguration(ServiceConfiguration("service-site1", "version1", Map("someServiceContent1" -> "somevalue1")))
-    verify(cluster).applyConfiguration(ServiceConfiguration("service-site2", "version1", Map("someServiceContent2" -> "somevalue2")))
+    verify(cluster).applyConfiguration(
+      ServiceConfiguration("service-site1", "version1", Map("someServiceContent1" -> "somevalue1")))
+    verify(cluster).applyConfiguration(
+      ServiceConfiguration("service-site2", "version1", Map("someServiceContent2" -> "somevalue2")))
   }
 
   it must "fail when more than one service configurations have the same type" in {

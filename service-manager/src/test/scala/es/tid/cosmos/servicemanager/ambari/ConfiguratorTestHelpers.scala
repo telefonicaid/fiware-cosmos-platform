@@ -9,10 +9,9 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.configuration
+package es.tid.cosmos.servicemanager.ambari
 
-import es.tid.cosmos.servicemanager.ambari._
-import scala.Some
+import es.tid.cosmos.servicemanager.ambari.configuration._
 
 object ConfiguratorTestHelpers {
 

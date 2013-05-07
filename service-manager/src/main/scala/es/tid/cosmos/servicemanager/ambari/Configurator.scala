@@ -9,17 +9,16 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.configuration
+package es.tid.cosmos.servicemanager.ambari
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.configuration._
 
 /**
  * Class for consolidating configuration from multiple contributors and applying it to a cluster.
- *
- * @author adamos
  */
 object Configurator {
   private val empty = ConfigurationBundle(None, None, List())

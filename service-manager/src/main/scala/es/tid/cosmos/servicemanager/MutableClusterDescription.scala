@@ -14,6 +14,15 @@ package es.tid.cosmos.servicemanager
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+/**
+ * Provides up-to-date information on the state of a cluster.
+ *
+ * @constructor
+ * @param id          Id of the cluster
+ * @param name        Name of the cluster
+ * @param size        Size of the cluster
+ * @param deployment  Future that represents the deployment of the cluster
+ */
 class MutableClusterDescription(
     val id: ClusterId, val name: String, val size: Int, val deployment: Future[Any]) {
 

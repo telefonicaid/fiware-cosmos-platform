@@ -30,5 +30,4 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
         config.getString("ambari.server.password")),
       infrastructureProvider)
   }
-
 }

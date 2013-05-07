@@ -17,8 +17,6 @@ import es.tid.cosmos.servicemanager.ComponentDescription
 
 /**
  * Representation of the Map Reduce service.
- *
- * @author adamos
  */
 object MapReduceServiceDescription extends AmbariServiceDescription {
 

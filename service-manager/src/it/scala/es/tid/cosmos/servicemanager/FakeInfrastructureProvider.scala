@@ -18,9 +18,6 @@ import scala.util.Try
 import es.tid.cosmos.platform.manager.ial._
 import es.tid.cosmos.platform.manager.ial.MachineState
 
-/**
- * @author sortega
- */
 class FakeInfrastructureProvider extends InfrastructureProvider {
 
   override def createMachines(

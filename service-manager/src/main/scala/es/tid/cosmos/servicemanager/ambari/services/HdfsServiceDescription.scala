@@ -16,8 +16,6 @@ import es.tid.cosmos.servicemanager.ambari.configuration._
 
 /**
  * Representation of the HDFS service.
- *
- * @author adamos
  */
 object HdfsServiceDescription extends AmbariServiceDescription {
 

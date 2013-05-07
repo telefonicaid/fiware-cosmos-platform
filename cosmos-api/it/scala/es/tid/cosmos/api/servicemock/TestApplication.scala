@@ -12,7 +12,6 @@
 package es.tid.cosmos.api.servicemock
 
 import es.tid.cosmos.api.controllers.Application
-import es.tid.cosmos.api.servicemanager.MockedServiceManager
 
 /**
  * Application configured with mocked services to be tested in isolation.

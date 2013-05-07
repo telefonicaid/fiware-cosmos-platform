@@ -27,8 +27,8 @@ object CreateClusterParams {
 
   implicit object CreateClusterParamsWrites extends Writes[CreateClusterParams] {
     def writes(params: CreateClusterParams) = Json.obj(
-      "name" -> JsString(params.name),
-      "size" -> JsNumber(params.size)
+      "name" -> params.name,
+      "size" -> params.size
     )
   }
 }

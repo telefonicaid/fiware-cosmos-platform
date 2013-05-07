@@ -26,7 +26,7 @@ import net.liftweb.json.JsonAST._
  * @param password  the password used for authentication
  */
 class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
-  extends ClusterProvisioner with JsonHttpRequest {
+  extends ClusterProvisioner with RequestProcessor {
 
   private[this] def baseUrl = host(serverUrl, port).as_!(username, password) / "api" / "v1"
 

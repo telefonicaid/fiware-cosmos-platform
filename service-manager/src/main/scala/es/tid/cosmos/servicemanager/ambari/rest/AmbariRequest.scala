@@ -18,12 +18,12 @@ import com.ning.http.client.RequestBuilder
 import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json.JsonAST.{JValue, JString}
 
-import es.tid.cosmos.servicemanager.Bug
+import es.tid.cosmos.servicemanager.{DeploymentException, ServiceError}
 
 /**
  * Handles pending Ambari requests and lets you block until the request finishes.
  */
-class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHandler {
+class AmbariRequest(url: RequestBuilder) extends RequestProcessor with RequestHandler {
   private object Status extends Enumeration {
     type Status = Value
     val FINISHED, WAITING, ERROR = Value
@@ -31,7 +31,7 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
       case "COMPLETED" => Status.FINISHED
       case "FAILED" | "TIMEDOUT" | "ABORTED" => Status.ERROR
       case "PENDING" | "QUEUED" | "IN_PROGRESS" => Status.WAITING
-      case _ => throw new Bug(s"Unexpected status string from Ambari: $str")
+      case _ => throw new ServiceError(s"Unexpected status string from Ambari: $str")
     }
 
     /**
@@ -48,7 +48,7 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
 
   private def extractStatusString(tasksObj: JValue)  = (tasksObj \ "Tasks" \ "status") match {
     case JString(statusStr) => statusStr
-    case _ => throw new Bug(
+    case _ => throw new ServiceError(
       "Ambari's request information response doesn't contain a Tasks/status element")
   }
 
@@ -71,9 +71,7 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
           Await.result(ensureFinished, Duration.Inf)
         }}
         case Status.FINISHED => Future.successful()
-        case Status.ERROR => Future.failed(new ServiceException(
-          s"The cluster did not finish installing correctly. See ${url.build.getUrl} for more " +
-            "information"))
+        case Status.ERROR => Future.failed(DeploymentException(url.build.getUrl))
       })
   }
 }

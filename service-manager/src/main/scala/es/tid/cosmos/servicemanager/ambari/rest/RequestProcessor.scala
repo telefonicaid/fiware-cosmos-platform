@@ -17,17 +17,19 @@ import scala.concurrent.Future
 import com.ning.http.client.RequestBuilder
 import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json.JsonAST.JValue
+import es.tid.cosmos.servicemanager.RequestException
 
-trait JsonHttpRequest {
+trait RequestProcessor {
   /**
    * Executes the given request, handles error cases and returns the body as JSON in the success case.
    */
   def performRequest(request: RequestBuilder): Future[JValue] = {
     def handleFailure(throwable: Throwable) = throwable match {
-      case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => new ServiceException(
+      case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => RequestException(
+        request.build,
         s"""Error when performing Http request. Http code ${ex.getCause.asInstanceOf[StatusCode].code}
-          Body: ${request.build.getStringData}
-          """, ex.getCause)
+          Body: ${request.build.getStringData}""",
+        ex.getCause)
       case other => other
     }
     Http(request.OK(as.Json)).transform(identity, handleFailure)

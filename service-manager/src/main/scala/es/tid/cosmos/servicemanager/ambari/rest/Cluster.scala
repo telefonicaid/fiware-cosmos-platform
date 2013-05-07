@@ -19,7 +19,7 @@ import net.liftweb.json._
 import net.liftweb.json.JsonAST.{JValue, JString, JArray}
 import net.liftweb.json.Extraction._
 
-import es.tid.cosmos.servicemanager.Bug
+import es.tid.cosmos.servicemanager.ServiceError
 import es.tid.cosmos.servicemanager.ambari.configuration.{Configuration, HeaderOnlyConfiguration}
 
 
@@ -30,10 +30,10 @@ import es.tid.cosmos.servicemanager.ambari.configuration.{Configuration, HeaderO
  * @param clusterInfo   the Ambari JSON response that describes the cluster
  * @param serverBaseUrl the base url that describes the server
  */
-class Cluster private[ambari] (clusterInfo: JValue, serverBaseUrl: Request) extends JsonHttpRequest {
+class Cluster private[ambari] (clusterInfo: JValue, serverBaseUrl: Request) extends RequestProcessor {
   val name = clusterInfo \ "Clusters" \ "cluster_name" match {
     case JString(clusterName) => clusterName
-    case _ => throw new Bug("Ambari's cluster information response doesn't contain a " +
+    case _ => throw new ServiceError("Ambari's cluster information response doesn't contain a " +
       "Clusters/cluster_name element")
   }
 

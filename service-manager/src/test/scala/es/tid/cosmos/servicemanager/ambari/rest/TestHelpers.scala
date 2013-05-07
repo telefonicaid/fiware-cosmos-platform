@@ -22,8 +22,9 @@ import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
+import es.tid.cosmos.servicemanager.ServiceException
 
-trait FakeAmbariRestReplies extends JsonHttpRequest {
+trait FakeAmbariRestReplies extends RequestProcessor {
   this: MockedRestResponsesComponent =>
 
   override def performRequest(requestBuilder: RequestBuilder): Future[JValue] = {
@@ -97,7 +98,7 @@ trait AmbariTestBase extends FlatSpec with MustMatchers {
   def get[T](future: Future[T]) = Await.result(future, Duration.Inf)
 
   def errorPropagation(mockCall: => Future[JValue], call: => Future[Any]) {
-    when(mockCall).thenReturn(Future.failed(ServiceException("Error")))
+    when(mockCall).thenReturn(Future.failed(new ServiceException("Error")))
     evaluating {
       get(call)
     } must produce [ServiceException]

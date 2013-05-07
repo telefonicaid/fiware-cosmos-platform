@@ -19,7 +19,7 @@ import net.liftweb.json.JsonAST.{JString, JValue}
 import net.liftweb.json.{compact, render}
 import net.liftweb.json.JsonDSL._
 
-import es.tid.cosmos.servicemanager.Bug
+import es.tid.cosmos.servicemanager.ServiceError
 
 /**
  * Wraps Ambari's service-related REST API calls.
@@ -29,10 +29,10 @@ import es.tid.cosmos.servicemanager.Bug
  * @param clusterBaseUrl the base url that describes the cluster
  */
 class Service private[ambari](serviceInfo: JValue, clusterBaseUrl: Request)
-  extends JsonHttpRequest with RequestHandlerFactory {
+  extends RequestProcessor with RequestHandlerFactory {
   val name = serviceInfo \ "ServiceInfo" \ "service_name" match {
     case JString(serviceName) => serviceName
-    case _ => throw new Bug("Ambari's state information response doesn't contain a " +
+    case _ => throw new ServiceError("Ambari's state information response doesn't contain a " +
       "ServiceInfo/service_name element")
   }
 
@@ -57,7 +57,7 @@ class Service private[ambari](serviceInfo: JValue, clusterBaseUrl: Request)
   private def ensureFinished(json: JValue) = {
     val requestUrl = baseUrl.setUrl(json \ "href" match {
       case JString(href) => href
-      case _ => throw new Bug("Ambari's response doesn't contain a href element")
+      case _ => throw new ServiceError("Ambari's response doesn't contain a href element")
     })
     createRequestHandler(requestUrl).ensureFinished.map(_ => this)
    }

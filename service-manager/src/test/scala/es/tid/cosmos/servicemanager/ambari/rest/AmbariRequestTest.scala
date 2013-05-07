@@ -13,6 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.rest
 import dispatch.url
 import net.liftweb.json.JsonDSL._
 import org.mockito.Mockito._
+import es.tid.cosmos.servicemanager.ServiceException
 
 class AmbariRequestTest extends AmbariTestBase {
   it must "handle instant completions" in {

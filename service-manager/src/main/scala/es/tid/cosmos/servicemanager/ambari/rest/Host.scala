@@ -19,7 +19,7 @@ import net.liftweb.json._
 import net.liftweb.json.JsonAST.JString
 import net.liftweb.json.JsonDSL._
 
-import es.tid.cosmos.servicemanager.Bug
+import es.tid.cosmos.servicemanager.ServiceError
 
 /**
  * Wraps Ambari's host-related REST API calls.
@@ -27,11 +27,11 @@ import es.tid.cosmos.servicemanager.Bug
  * @param hostInfo       the Ambari JSON response that describes the host
  * @param clusterBaseUrl the base url of the cluster
  */
-class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Request) extends JsonHttpRequest {
+class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Request) extends RequestProcessor {
   val name = hostInfo \ "Hosts" \ "public_host_name" match {
     case JString(hostName) => hostName
     case _ =>
-      throw new Bug("Ambari's host information response doesn't contain a " +
+      throw new ServiceError("Ambari's host information response doesn't contain a " +
         "Hosts/public_host_name element")
   }
 

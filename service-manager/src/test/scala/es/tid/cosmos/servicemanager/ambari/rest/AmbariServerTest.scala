@@ -19,6 +19,7 @@ import org.mockito.Matchers.any
 import org.mockito.Mockito.{when, verify}
 import org.scalatest.BeforeAndAfter
 import org.scalatest.mock.MockitoSugar
+import es.tid.cosmos.servicemanager.ServiceException
 
 class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var ambariServer: AmbariServer with MockedRestResponsesComponent = _
@@ -33,7 +34,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
 
   it must "fail when server authentication fails" in {
     when(ambariServer.responses.authorize(any[Request])).thenReturn(Some(
-      Future.failed(ServiceException("Invalid password"))))
+      Future.failed(new ServiceException("Invalid password"))))
     evaluating {
       get(ambariServer.listClusterNames)
     } must produce [ServiceException]

@@ -17,7 +17,6 @@ import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.rest.ServiceException
 
 /**
  * In-memory, simulated service manager.

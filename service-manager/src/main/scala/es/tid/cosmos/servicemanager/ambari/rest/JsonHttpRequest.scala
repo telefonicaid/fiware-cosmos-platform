@@ -30,6 +30,6 @@ trait JsonHttpRequest {
           """, ex.getCause)
       case other => other
     }
-    Http(request.OK(asJson)).transform(identity, handleFailure)
+    Http(request.OK(as.Json)).transform(identity, handleFailure)
   }
 }

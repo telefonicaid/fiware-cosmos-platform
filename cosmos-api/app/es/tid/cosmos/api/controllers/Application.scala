@@ -20,8 +20,6 @@ import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
 /**
  * Web application template to be mixed-in with its dependencies.
- *
- * @author sortega
  */
 trait Application extends Controller
   with Pages

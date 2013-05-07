@@ -20,9 +20,6 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.Global
 import es.tid.cosmos.api.controllers.clusters.CreateClusterParams
 
-/**
- * @author sortega
- */
 class ClustersIT extends FlatSpec with MustMatchers {
   "The clusters resource" must "list all existing clusters" in {
     running(FakeApplication(withGlobal = Some(Global))) {

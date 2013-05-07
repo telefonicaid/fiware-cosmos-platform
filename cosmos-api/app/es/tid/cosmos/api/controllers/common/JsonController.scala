@@ -15,7 +15,7 @@ import play.api.libs.json._
 import play.api.mvc.{Action, Controller, Request, Result}
 
 /**
- * @author sortega
+ * JSON consuming controller.
  */
 trait JsonController extends Controller {
   def JsonBodyAction[Payload: Reads](f: (Request[JsValue], Payload) => Result): Action[JsValue] =

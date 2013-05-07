@@ -17,8 +17,6 @@ import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 
 /**
  * Controller for the web pages of the service.
- *
- * @author sortega
  */
 trait Pages extends Controller {
   def index = Action { implicit request =>

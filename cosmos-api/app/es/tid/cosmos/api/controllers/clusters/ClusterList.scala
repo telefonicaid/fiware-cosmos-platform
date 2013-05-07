@@ -15,8 +15,6 @@ import play.api.libs.json.{JsArray, Json, JsValue, Writes}
 
 /**
  * List of clusters as seen by the client.
- *
- * @author sortega
  */
 case class ClusterList(clusterReferences: Seq[ClusterReference])
 

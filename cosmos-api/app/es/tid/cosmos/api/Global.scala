@@ -16,7 +16,7 @@ import play.api.{Play, GlobalSettings}
 import play.api.Play.current
 
 /**
- * @author sortega
+ * Custom global Play! settings to override controller instantiation.
  */
 object Global extends GlobalSettings {
   override def getControllerInstance[A](controllerClass: Class[A]): A = {

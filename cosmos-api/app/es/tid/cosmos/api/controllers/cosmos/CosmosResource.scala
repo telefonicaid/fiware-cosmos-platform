@@ -16,8 +16,6 @@ import play.api.mvc.{Action, Controller}
 
 /**
  * Root API resource
- *
- * @author sortega
  */
 trait CosmosResource extends Controller {
   def version = Action {

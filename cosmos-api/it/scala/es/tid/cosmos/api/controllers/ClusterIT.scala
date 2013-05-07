@@ -23,9 +23,6 @@ import es.tid.cosmos.api.Global
 import es.tid.cosmos.api.servicemanager.MockedServiceManager
 import es.tid.cosmos.servicemanager.ClusterId
 
-/**
- * @author sortega
- */
 class ClusterIT extends FlatSpec with MustMatchers {
   val resourcePath = s"/cosmos/cluster/${MockedServiceManager.defaultClusterId.uuid.toString}"
 

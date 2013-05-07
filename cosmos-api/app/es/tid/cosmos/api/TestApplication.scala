@@ -16,9 +16,6 @@ import es.tid.cosmos.api.servicemanager.MockedServiceManagerComponent
 
 /**
  * Application configured with mocked services to be tested in isolation.
- *
- * @author sortega
  */
-object TestApplication
-  extends Application
+object TestApplication extends Application
   with MockedServiceManagerComponent

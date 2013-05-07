@@ -23,8 +23,6 @@ import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ClusterId, Cluster
 
 /**
  * Resource that represents a single cluster.
- *
- * @author sortega
  */
 trait ClusterResource extends Controller {
   this: ServiceManagerComponent =>

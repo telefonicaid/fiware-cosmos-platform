@@ -16,9 +16,8 @@ import es.tid.cosmos.platform.manager.ial.serverpool.ServerPoolInfrastructurePro
 import es.tid.cosmos.servicemanager.ambari.AmbariServiceManagerComponent
 
 /**
- * @author sortega
+ * Application tied to real services.
  */
-object ProductionApplication
-  extends Application
+object ProductionApplication extends Application
   with AmbariServiceManagerComponent
   with ServerPoolInfrastructureProviderComponent

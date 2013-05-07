@@ -17,9 +17,6 @@ import play.api.mvc.RequestHeader
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.servicemanager.ClusterId
 
-/**
- * @author sortega
- */
 case class ClusterReference(id: String, href: String)
 
 object ClusterReference {

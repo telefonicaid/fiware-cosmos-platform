@@ -16,8 +16,6 @@ import play.api.libs.json._
 
 /**
  * Parameters for cluster creation.
- *
- * @author sortega
  */
 case class CreateClusterParams(name: String, size: Int)
 

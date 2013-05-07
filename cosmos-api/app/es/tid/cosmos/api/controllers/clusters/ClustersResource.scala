@@ -22,8 +22,6 @@ import es.tid.cosmos.servicemanager.{ClusterId, ServiceManagerComponent}
 
 /**
  * Resource that represents the whole set of clusters.
- *
- * @author sortega
  */
 trait ClustersResource extends JsonController {
   this: ServiceManagerComponent =>

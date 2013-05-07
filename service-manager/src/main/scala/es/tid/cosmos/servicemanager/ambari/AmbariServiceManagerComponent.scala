@@ -21,7 +21,7 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   this: InfrastructureProviderComponent =>
 
   lazy val serviceManager: ServiceManager = {
-    val config = ConfigFactory.load()
+    val config = ConfigFactory.load("servicemanager")
     new AmbariServiceManager(
       new AmbariServer(
         config.getString("ambari.server.url"),

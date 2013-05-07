@@ -41,7 +41,7 @@ trait ClustersResource extends JsonController {
     Try(serviceManager.createCluster(
       body.name, body.size, serviceManager.services)) match {
       case Success(id: ClusterId) => {
-        Logger.info(s"Provisioning new cluster ${id}")
+        Logger.info(s"Provisioning new cluster $id")
         val reference: ClusterReference = ClusterReference(id)(request)
         Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
       }

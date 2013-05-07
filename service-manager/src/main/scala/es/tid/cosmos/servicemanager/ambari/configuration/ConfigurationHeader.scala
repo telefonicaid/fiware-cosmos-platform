@@ -9,8 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.ambari.configuration
 
-trait ServiceManagerComponent {
-  val serviceManager: ServiceManager
+trait ConfigurationHeader {
+  def configType: String
+  def tag: String
+}
+
+case class HeaderOnlyConfiguration(configType: String, tag: String) extends ConfigurationHeader {
+  override def toString = "[Configuration] Type = " + configType + ", Tag = " + tag
 }

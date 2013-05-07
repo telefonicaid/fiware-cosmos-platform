@@ -9,16 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api
+package es.tid.cosmos.servicemanager.ambari.rest
 
-import es.tid.cosmos.api.controllers.Application
-import es.tid.cosmos.platform.manager.ial.serverpool.ServerPoolInfrastructureProviderComponent
-import es.tid.cosmos.servicemanager.ambari.AmbariServiceManagerComponent
+import com.ning.http.client
+import net.liftweb.json
+import json.JsonAST.JValue
 
 /**
- * @author sortega
+ * Helper object to translate HTTP responses to JSON.
  */
-object ProductionApplication
-  extends Application
-  with AmbariServiceManagerComponent
-  with ServerPoolInfrastructureProviderComponent
+object asJson extends (client.Response => JValue) {
+  def apply(r: client.Response) = json.parse(r.getResponseBody)
+}

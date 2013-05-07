@@ -9,8 +9,17 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.ambari.rest
 
-trait ServiceManagerComponent {
-  val serviceManager: ServiceManager
+import scala.concurrent._
+
+import com.ning.http.client.RequestBuilder
+
+trait RequestHandler {
+  def ensureFinished: Future[Unit]
 }
+
+trait RequestHandlerFactory {
+  def createRequestHandler(url: RequestBuilder): RequestHandler = new AmbariRequest(url)
+}
+

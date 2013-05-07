@@ -16,8 +16,8 @@ import scala.annotation.tailrec
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.ambari.AmbariServer
-import es.tid.cosmos.servicemanager.services.DefaultServices
+import es.tid.cosmos.servicemanager.ambari.AmbariServiceManager
+import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 
 @tailrec
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers
@@ -40,7 +40,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers
       infrastructureProvider)
     try {
       val id = sm.createCluster(
-        name = "test", 1, DefaultServices.serviceDescriptions)
+        name = "test", 1, sm.services)
       val description = sm.describeCluster(id)
       description.get.state must be (Provisioning)
       val endState = waitForClusterCompletion(id, sm)

@@ -13,21 +13,24 @@ package es.tid.cosmos.servicemanager
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.services.ServiceDescription
-
 /**
  * Cluster manager that allows cluster creation, termination as well as
  * querying about the state of a managed cluster.
- *
- * @author ximo, adamos
  */
 trait ServiceManager {
+
+  type ServiceDescriptionType <: ServiceDescription
 
   /**
    * Get the IDs of the existing clusters managed by this manager.
    * @return the IDs of the existing clusters
    */
   def clusterIds: Seq[ClusterId]
+
+  /**
+   * A sequence of all services this service manager supports
+   */
+  def services: Seq[ServiceDescriptionType]
 
   /**
    * Create a cluster of a given size with a specified set of services.
@@ -38,7 +41,7 @@ trait ServiceManager {
    * @return the ID of the newly created cluster
    */
   def createCluster(
-    name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescription]): ClusterId
+    name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId
 
   /**
    * Obtain information of an existing cluster's state.

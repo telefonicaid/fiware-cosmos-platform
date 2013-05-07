@@ -17,8 +17,7 @@ import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.ServiceException
-import es.tid.cosmos.servicemanager.services.ServiceDescription
+import es.tid.cosmos.servicemanager.ambari.rest.ServiceException
 
 /**
  * In-memory, simulated service manager.
@@ -45,6 +44,10 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     defer(transitionDelay, completeProvision())
   }
 
+  override type ServiceDescriptionType = ServiceDescription
+
+  override val services: Seq[ServiceDescriptionType] = Seq()
+
   private val clusters: mutable.Map[ClusterId, FakeCluster] =
     new mutable.HashMap[ClusterId, FakeCluster]
       with mutable.SynchronizedMap[ClusterId, FakeCluster] {
@@ -57,7 +60,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
   def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
   def createCluster(
-    name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescription]): ClusterId = {
+    name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
     val cluster = new FakeCluster(name, clusterSize)
     clusters.put(cluster.id, cluster)
     cluster.id

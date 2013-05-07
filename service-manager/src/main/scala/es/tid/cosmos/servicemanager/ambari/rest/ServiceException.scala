@@ -9,8 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.ambari.rest
 
-trait ServiceManagerComponent {
-  val serviceManager: ServiceManager
-}
+case class ServiceException(message: String, cause: Throwable = null)
+  extends RuntimeException(message, cause)

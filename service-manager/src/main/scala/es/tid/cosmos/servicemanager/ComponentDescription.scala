@@ -11,6 +11,4 @@
 
 package es.tid.cosmos.servicemanager
 
-trait ServiceManagerComponent {
-  val serviceManager: ServiceManager
-}
+case class ComponentDescription(name: String, isMaster: Boolean)

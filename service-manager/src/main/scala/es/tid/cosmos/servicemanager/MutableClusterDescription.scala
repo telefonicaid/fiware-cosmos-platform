@@ -17,7 +17,7 @@ import scala.concurrent.Future
 class MutableClusterDescription(
     val id: ClusterId, val name: String, val size: Int, val deployment: Future[Any]) {
 
-  def getView: ClusterDescription = new ClusterDescription {
+  def view: ClusterDescription = new ClusterDescription {
     override val state: ClusterState = MutableClusterDescription.this.state
     override val size: Int = MutableClusterDescription.this.size
     override val name: String = MutableClusterDescription.this.name

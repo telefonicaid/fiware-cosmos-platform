@@ -16,18 +16,17 @@ import scala.Some
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers._
-import play.api.test.{FakeRequest, FakeApplication}
+import play.api.test.FakeRequest
 import play.api.libs.json.Json
 
-import es.tid.cosmos.api.Global
 import es.tid.cosmos.api.servicemanager.MockedServiceManager
 import es.tid.cosmos.servicemanager.ClusterId
 
-class ClusterIT extends FlatSpec with MustMatchers {
+class ClusterIT extends FlatSpec with MustMatchers with MockedServices {
   val resourcePath = s"/cosmos/cluster/${MockedServiceManager.defaultClusterId.uuid.toString}"
 
   "Cluster resource" must "list cluster details on GET request" in {
-    running(FakeApplication(withGlobal = Some(Global))) {
+    runWithMockedServices {
       val resource = route(FakeRequest(GET, resourcePath)).get
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
@@ -38,7 +37,7 @@ class ClusterIT extends FlatSpec with MustMatchers {
 
   it must "return 404 on unknown cluster" in {
     val unknownClusterId = ClusterId()
-    running(FakeApplication(withGlobal = Some(Global))) {
+    runWithMockedServices {
       val resource = route(FakeRequest(GET, s"/cosmos/cluster/${unknownClusterId}")).get
       status(resource) must equal (NOT_FOUND)
     }

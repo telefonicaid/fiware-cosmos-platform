@@ -11,8 +11,6 @@
 
 package es.tid.cosmos.api.controllers
 
-import play.api.mvc.Controller
-
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.clusters.ClustersResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
@@ -21,8 +19,7 @@ import es.tid.cosmos.servicemanager.ServiceManagerComponent
 /**
  * Web application template to be mixed-in with its dependencies.
  */
-trait Application extends Controller
-  with Pages
+trait Application extends Pages
   with CosmosResource
   with ClustersResource
   with ClusterResource {

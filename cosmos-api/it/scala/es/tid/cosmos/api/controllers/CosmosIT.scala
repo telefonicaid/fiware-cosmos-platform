@@ -16,12 +16,11 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.Global
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 
-class CosmosIT extends FlatSpec with MustMatchers {
+class CosmosIT extends FlatSpec with MustMatchers with MockedServices {
   "The Cosmos resource" must "return the version as JSON" in {
-    running(FakeApplication(withGlobal = Some(Global))) {
+    runWithMockedServices {
       val resource = route(FakeRequest(GET, "/cosmos")).get
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))

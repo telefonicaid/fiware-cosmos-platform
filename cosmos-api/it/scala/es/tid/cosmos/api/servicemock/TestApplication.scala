@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api
+package es.tid.cosmos.api.servicemock
 
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.servicemanager.MockedServiceManagerComponent

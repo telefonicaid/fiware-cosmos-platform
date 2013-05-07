@@ -9,14 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api
+package es.tid.cosmos.api.servicemock
 
 import play.api.GlobalSettings
 
 /**
  * Custom global Play! settings to override controller instantiation.
  */
-object Global extends GlobalSettings {
-  override def getControllerInstance[A](controllerClass: Class[A]): A =
-    ProductionApplication.asInstanceOf[A]
+object TestGlobal extends GlobalSettings {
+  override def getControllerInstance[A](controllerClass: Class[A]): A = {
+    TestApplication.asInstanceOf[A]
+  }
 }

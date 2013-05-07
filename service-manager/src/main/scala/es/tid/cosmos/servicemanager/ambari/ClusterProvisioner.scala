@@ -12,12 +12,11 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import scala.concurrent.Future
+
 import net.liftweb.json.JsonAST.JValue
 
 /**
  * Representation of a server capable of provisioning clusters.
- *
- * @author ximo, adamos
  */
 trait ClusterProvisioner {
   /**

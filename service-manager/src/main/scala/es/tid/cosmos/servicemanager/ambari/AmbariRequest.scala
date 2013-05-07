@@ -61,16 +61,19 @@ class AmbariRequest(url: RequestBuilder) extends JsonHttpRequest with RequestHan
    * Returns a future that blocks until the request is finished. If the finished state it not successful, the future
    * contains a failed value.
    */
-  override def ensureFinished: Future[Unit] = performRequest(url <<? Map("fields" -> "tasks/*"))
-    .map(getStatusFromJson)
-    .flatMap({
-      case Status.WAITING => future { blocking {
-        Thread.sleep(1000)
-        Await.result(ensureFinished, Duration.Inf)
-      }}
-      case Status.FINISHED => Future.successful()
-      case Status.ERROR => Future.failed(new ServiceException(
-        s"The cluster did not finish installing correctly. See ${url.build.getUrl} for more " +
-        "information"))
-    })
+  override def ensureFinished: Future[Unit] = {
+    val request = url <<? Map("fields" -> "tasks/*")
+    performRequest(request)
+      .map(getStatusFromJson)
+      .flatMap({
+        case Status.WAITING => future { blocking {
+          Thread.sleep(1000)
+          Await.result(ensureFinished, Duration.Inf)
+        }}
+        case Status.FINISHED => Future.successful()
+        case Status.ERROR => Future.failed(new ServiceException(
+          s"The cluster did not finish installing correctly. See ${url.build.getUrl} for more " +
+            "information"))
+      })
+  }
 }

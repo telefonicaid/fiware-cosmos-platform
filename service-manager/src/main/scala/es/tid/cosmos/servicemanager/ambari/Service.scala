@@ -42,18 +42,17 @@ class Service private[ambari](serviceInfo: JValue, clusterBaseUrl: Request)
     performRequest(baseUrl / "components" / componentName << "")
       .map(_ => componentName)
 
-  def install(): Future[Service] =
-    performRequest(baseUrl.PUT.setBody(createStateChangeBody("INSTALLED")))
-      .flatMap(ensureFinished)
+  def install(): Future[Service] = changeState("INSTALLED")
 
   def stop() = install()
 
-  def start(): Future[Service] =
-    performRequest(baseUrl.PUT.setBody(createStateChangeBody("STARTED")))
-      .flatMap(ensureFinished)
+  def start(): Future[Service] = changeState("STARTED")
 
-  private def createStateChangeBody(state: String) =
-    compact(render("ServiceInfo" -> ("state" -> state)))
+  private def changeState(state: String) = {
+    val body = compact(render("ServiceInfo" -> ("state" -> state)))
+    performRequest(baseUrl.PUT.setBody(body))
+      .flatMap(ensureFinished)
+  }
 
   private def ensureFinished(json: JValue) = {
     val requestUrl = baseUrl.setUrl(json \ "href" match {

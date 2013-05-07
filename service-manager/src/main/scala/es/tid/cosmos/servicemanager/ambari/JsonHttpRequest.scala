@@ -12,19 +12,20 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import java.util.concurrent.ExecutionException
+import scala.concurrent.Future
 
 import com.ning.http.client.RequestBuilder
 import dispatch.{Future => _, _}, Defaults._
+import net.liftweb.json.JsonAST.JValue
 
 trait JsonHttpRequest {
   /**
    * Executes the given request, handles error cases and returns the body as JSON in the success case.
    */
-  def performRequest(request: RequestBuilder) = {
+  def performRequest(request: RequestBuilder): Future[JValue] = {
     def handleFailure(throwable: Throwable) = throwable match {
       case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => new ServiceException(
         s"""Error when performing Http request. Http code ${ex.getCause.asInstanceOf[StatusCode].code}
-          AmbariRequest: ${request.build.toString}
           Body: ${request.build.getStringData}
           """, ex.getCause)
       case other => other

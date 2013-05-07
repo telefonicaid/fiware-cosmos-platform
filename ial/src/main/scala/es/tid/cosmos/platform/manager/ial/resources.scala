@@ -20,14 +20,13 @@ import java.util.UUID
  * @tparam T the type of resource which is being identified
  */
 case class Id[+T](id: String) {
-    override def toString = id
+  override def toString = id
 }
 
 /**
  * Id class companion object.
  */
 object Id {
-
   /**
    * Obtain a new Id object from a random UUID.
    *

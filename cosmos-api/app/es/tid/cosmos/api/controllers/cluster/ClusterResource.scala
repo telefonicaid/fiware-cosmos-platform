@@ -28,19 +28,19 @@ trait ClusterResource extends Controller {
   this: ServiceManagerComponent =>
 
   implicit object ClusterDescriptionWrites extends Writes[ClusterDescription] {
-    def writes(desc: ClusterDescription): JsValue = JsObject(Seq(
-      "id" -> JsString(desc.id.toString),
-      "name" -> JsString(desc.name),
-      "size" -> JsNumber(desc.size),
-      "state" -> JsString(desc.state.name),
-      "state_description" -> JsString(desc.state.descLine)
-    ))
+    def writes(desc: ClusterDescription): JsValue = Json.obj(
+      "id" -> desc.id.toString,
+      "name" -> desc.name,
+      "size" -> desc.size,
+      "state" -> desc.state.name,
+      "state_description" -> desc.state.descLine
+    )
   }
 
   def listDetails(id: String) = Action {
     serviceManager.describeCluster(ClusterId(id)) match {
       case Some(description) => Ok(Json.toJson(description))
-      case None => NotFound(Json.toJson(Message(s"No cluster '${id}' exists")))
+      case None => NotFound(Json.toJson(Message(s"No cluster '$id' exists")))
     }
   }
 

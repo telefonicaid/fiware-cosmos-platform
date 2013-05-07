@@ -19,13 +19,13 @@ import play.api.mvc.{RequestHeader, Action, Controller}
 
 import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.api.controllers.routes
-import es.tid.cosmos.servicemanager.{ServiceManagerComponent, ClusterId, ClusterDescription}
+import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent, ClusterId, ClusterDescription}
 
 /**
  * Resource that represents a single cluster.
  */
 trait ClusterResource extends Controller {
-  this: ServiceManagerComponent =>
+  val serviceManager: ServiceManager
 
   implicit object ClusterDescriptionWrites extends Writes[ClusterDescription] {
     def writes(desc: ClusterDescription): JsValue = Json.obj(

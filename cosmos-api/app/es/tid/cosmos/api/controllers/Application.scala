@@ -22,6 +22,4 @@ import es.tid.cosmos.servicemanager.ServiceManagerComponent
 trait Application extends Pages
   with CosmosResource
   with ClustersResource
-  with ClusterResource {
-  this: ServiceManagerComponent =>
-}
+  with ClusterResource

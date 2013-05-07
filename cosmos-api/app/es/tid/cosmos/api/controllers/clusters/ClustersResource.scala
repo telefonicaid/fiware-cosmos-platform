@@ -18,13 +18,13 @@ import play.api.libs.json._
 import play.api.mvc._
 
 import es.tid.cosmos.api.controllers.common.{formatInternalException, JsonController}
-import es.tid.cosmos.servicemanager.{ClusterId, ServiceManagerComponent}
+import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId, ServiceManagerComponent}
 
 /**
  * Resource that represents the whole set of clusters.
  */
 trait ClustersResource extends JsonController {
-  this: ServiceManagerComponent =>
+  val serviceManager: ServiceManager
 
   /**
    * List existing clusters.

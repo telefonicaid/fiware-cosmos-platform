@@ -18,6 +18,7 @@ import es.tid.cosmos.servicemanager.ambari.AmbariServiceManagerComponent
 /**
  * Application tied to real services.
  */
-object ProductionApplication extends Application
-  with AmbariServiceManagerComponent
-  with ServerPoolInfrastructureProviderComponent
+object ProductionApplication extends Application {
+  private val components = new AmbariServiceManagerComponent with ServerPoolInfrastructureProviderComponent
+  lazy val serviceManager = components.serviceManager
+}

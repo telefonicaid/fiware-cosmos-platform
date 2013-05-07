@@ -11,6 +11,9 @@
 
 package es.tid.cosmos.servicemanager
 
+/**
+ * Provider of ServiceManagers
+ */
 trait ServiceManagerComponent {
-  val serviceManager: ServiceManager
+  def serviceManager(): ServiceManager
 }

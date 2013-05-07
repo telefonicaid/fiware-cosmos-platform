@@ -98,7 +98,6 @@ class AmbariServiceManager(
   }
 
   private def installInOrder(serviceFutures: List[Future[Service]]): Future[List[Service]] = {
-
     def doInstall(
       installedServices_> : Future[List[Service]],
       service_> : Future[Service]): Future[List[Service]] = {

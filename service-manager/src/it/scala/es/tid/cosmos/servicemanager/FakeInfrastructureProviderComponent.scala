@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.scalarest
+package es.tid.cosmos.servicemanager
 
 import es.tid.cosmos.platform.manager.ial.{InfrastructureProviderComponent, InfrastructureProvider}
 

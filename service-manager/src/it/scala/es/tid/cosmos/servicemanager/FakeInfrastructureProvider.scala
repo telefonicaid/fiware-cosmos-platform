@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.scalarest
+package es.tid.cosmos.servicemanager
 
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global

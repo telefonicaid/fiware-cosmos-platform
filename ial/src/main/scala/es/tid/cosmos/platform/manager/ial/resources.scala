@@ -51,7 +51,7 @@ object Id {
  * @param id the identifier of the resource
  * @param name the (human) name of the resource
  */
-sealed abstract class Resource(id: Id[_ <: Resource], name: String)
+sealed abstract class Resource(id: Id[Resource], name: String)
 
 /**
  * An enumeration of the available machine profiles.

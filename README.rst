@@ -22,9 +22,9 @@ The Big Data Platform is a product that allows you to:
 - provide fast, scalable consumption APIs
 - support for productized analytical models and base ML techniques
 
-======================================================
-Big Data Platform (codenamed Cosmos) - Scala Prototype
-======================================================
+=========================
+Current status: Prototype
+=========================
 
 This is a work-in-progress prototype for achieving the platform's `Objective 0 <https://pdihub.hi.inet/Cosmos/cosmos-platform/wiki/Objective-0>`_.
 To that end the prototype consists of 3 layers:

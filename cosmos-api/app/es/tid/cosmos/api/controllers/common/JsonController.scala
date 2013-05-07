@@ -26,8 +26,8 @@ trait JsonController extends Controller {
         valid = payload => f(request, payload))
     }
 
-  private def formatErrors(errors: Seq[(JsPath, Seq[ValidationError])]) = {
-    val formattedErrors = errors.map {
+  private def formatErrors(errorsByPath: Seq[(JsPath, Seq[ValidationError])]) = {
+    val formattedErrors = errorsByPath.map {
       case (path, errors) => (path.toString(), errors.map(_.message))
     }
     BadRequest(Json.toJson(Map(formattedErrors: _*)))

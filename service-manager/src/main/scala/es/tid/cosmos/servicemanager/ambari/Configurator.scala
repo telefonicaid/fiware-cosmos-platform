@@ -14,8 +14,9 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
 import es.tid.cosmos.servicemanager.ambari.configuration._
+import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Factory
+import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
 
 /**
  * Class for consolidating configuration from multiple contributors and applying it to a cluster.
@@ -55,7 +56,7 @@ object Configurator {
   private val mergeGlobal = merge(GlobalConfiguration)_
   private val mergeCore = merge(CoreConfiguration)_
 
-  private def merge[T <: Configuration](factory: (String, Map[String, Any]) => T)
+  private def merge[T <: Configuration](factory: Factory[T])
                                        (left: Option[T], right: Option[T]): Option[T] =
     (left, right) match {
       case (None, _) => right

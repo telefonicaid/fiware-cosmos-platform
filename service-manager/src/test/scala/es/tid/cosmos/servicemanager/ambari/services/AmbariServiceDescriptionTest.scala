@@ -48,6 +48,6 @@ class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with Mocki
     val component1 = ComponentDescription("component1", isMaster = true)
     val component2 = ComponentDescription("component2", isMaster = false)
     val components: Seq[ComponentDescription] = Seq(component1, component2)
-    def contributions(masterName: String) = ConfigurationBundle(None, None, List())
+    override def contributions(masterName: String) = ConfigurationBundle(None, None, List())
   }
 }

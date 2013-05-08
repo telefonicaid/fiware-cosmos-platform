@@ -19,6 +19,13 @@ trait Configuration extends ConfigurationHeader {
 }
 
 /**
+ * Types for configuration factories.
+ */
+object FactoryTypes {
+  type Factory[T <:Configuration] = (String, Map[String, Any]) => T
+}
+
+/**
  * Representation of a cluster's global configuration. Can be partial.
  *
  * @param tag the Ambari version tag e.g. `"version1"`

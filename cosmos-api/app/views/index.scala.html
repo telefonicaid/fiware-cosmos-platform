@@ -1,0 +1,11 @@
+@(baseUrl: String, version: String)
+
+@main("Cosmos API") {
+    <h1>Cosmos REST API <span class="version">Version @version</span></h1>
+
+    <p>To use the cluster from your command line configure
+       <a href="@baseUrl">@baseUrl</a> as the base API URL
+       in your client configuration.</p>
+
+    <p>In the case of the <tt>cosmos</tt> script, use: <tt>cosmos configure</tt></p>
+}

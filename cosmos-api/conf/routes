@@ -1,0 +1,16 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                               @es.tid.cosmos.api.controllers.Application.index
+
+# API
+GET     /cosmos                         @es.tid.cosmos.api.controllers.Application.version()
+GET     /cosmos/cluster                 @es.tid.cosmos.api.controllers.Application.list()
+POST    /cosmos/cluster                 @es.tid.cosmos.api.controllers.Application.createCluster()
+GET     /cosmos/cluster/:id             @es.tid.cosmos.api.controllers.Application.listDetails(id)
+POST    /cosmos/cluster/:id/terminate   @es.tid.cosmos.api.controllers.Application.terminate(id)
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file                   controllers.Assets.at(path="/public", file)

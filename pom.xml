@@ -86,7 +86,13 @@
                         <exclude>**/*.properties</exclude>
                         <exclude>**/*.proto</exclude>
                         <exclude>**/*.json</exclude>
+                        <exclude>**/*.js</exclude>
                         <exclude>**/*.py</exclude>
+                        <exclude>**/*.sbt</exclude>
+                        <exclude>**/*.rst</exclude>
+                        <exclude>**/*.html</exclude>
+                        <exclude>**/*.css</exclude>
+                        <exclude>**/*.ttf</exclude>
                         <exclude>**/resources/**/*</exclude>
                         <exclude>**/.idea/**</exclude>
                     </excludes>
@@ -94,7 +100,7 @@
                 <executions>
                     <execution>
                         <id>check-headers</id>
-                        <phase>verify</phase>
+                        <phase>test</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
@@ -314,7 +320,7 @@
             <dependency>
                 <groupId>es.tid.cosmos</groupId>
                 <artifactId>cosmos-common</artifactId>
-                <version>1.0.0-20130221.163804-13</version>
+                <version>1.0.0-20130403.082949-16</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>

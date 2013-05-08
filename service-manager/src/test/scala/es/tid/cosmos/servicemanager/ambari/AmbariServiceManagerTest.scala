@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import scala.util.Try
+import scala.concurrent.Future.successful
 
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.any
@@ -22,7 +23,6 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.platform.manager.ial._
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.FutureTestHelpers.fakeFuture
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvisioner, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
@@ -67,25 +67,25 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
 
   def setExpectations(machines: Seq[MachineState], hosts: Seq[Host]) {
     given(infrastructureProvider.createMachines(any(), any(), any()))
-      .willReturn(Try(machines.map(machine => fakeFuture(machine))))
-    given(provisioner.createCluster(any(), any())).willReturn(fakeFuture(cluster))
-    given(cluster.applyConfiguration(any())).willReturn(fakeFuture())
+      .willReturn(Try(machines.map(machine => successful(machine))))
+    given(provisioner.createCluster(any(), any())).willReturn(successful(cluster))
+    given(cluster.applyConfiguration(any())).willReturn(successful())
     machines.zip(hosts).foreach {
       case (machine, host) =>
-        given(cluster.addHost(machine.hostname)).willReturn(fakeFuture(host))
+        given(cluster.addHost(machine.hostname)).willReturn(successful(host))
     }
     serviceDescriptions.zip(services).foreach({
       case (description, service) =>
         given(description.createService(any(), any(), any()))
-          .willReturn(fakeFuture(service))
+          .willReturn(successful(service))
     })
     serviceDescriptions.zip(configurationContributions).foreach({
       case (description, contribution) =>
         given(description.contributions(any())).willReturn(contribution)
     })
     services.foreach(service => {
-      given(service.install()).willReturn(fakeFuture(service))
-      given(service.start()).willReturn(fakeFuture(service))
+      given(service.install()).willReturn(successful(service))
+      given(service.start()).willReturn(successful(service))
     })
   }
 

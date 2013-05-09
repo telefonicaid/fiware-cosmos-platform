@@ -17,7 +17,6 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.servicemanager.ComponentDescription
 
 class MapReduceTest extends FlatSpec with MustMatchers {
-
   "A MapReduce service" must "have a jobtracker, tasktracker and mapreduce client" in {
     val description = MapReduce
     description.name must equal ("MAPREDUCE")

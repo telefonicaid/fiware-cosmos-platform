@@ -17,7 +17,6 @@ import es.tid.cosmos.servicemanager.ComponentDescription
  * Representation of the Oozie service.
  */
 object Oozie extends AmbariServiceDescription {
-
   override val name: String = "OOZIE"
 
   override val components: Seq[ComponentDescription] = Seq(

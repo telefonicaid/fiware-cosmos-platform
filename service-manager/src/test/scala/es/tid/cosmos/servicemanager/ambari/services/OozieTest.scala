@@ -16,7 +16,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 class OozieTest extends FlatSpec with MustMatchers  {
-
   "An Oozie service" must "have an oozie server and a client" in {
     val description = Oozie
     description.name must equal("OOZIE")

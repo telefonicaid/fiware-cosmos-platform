@@ -17,7 +17,6 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.servicemanager.ComponentDescription
 
 class HdfsTest extends FlatSpec with MustMatchers {
-
   "An Hdfs service" must "have a namenode, datanode and hdfs client" in {
     val description = Hdfs
     description.name must equal("HDFS")

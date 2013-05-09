@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.controllers
 
+import play.api.mvc.Controller
+
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.clusters.ClustersResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
@@ -19,7 +21,16 @@ import es.tid.cosmos.servicemanager.ServiceManagerComponent
 /**
  * Web application template to be mixed-in with its dependencies.
  */
-trait Application extends Pages
-  with CosmosResource
-  with ClustersResource
-  with ClusterResource
+abstract class Application {
+  self: ServiceManagerComponent =>
+  lazy val controllers: Map[Class[Controller], Controller] = controllerMap(
+    new Pages(),
+    new CosmosResource(),
+    new ClustersResource(self.serviceManager),
+    new ClusterResource(self.serviceManager)
+  )
+
+  private def controllerMap(controllers: Controller*) = Map(
+    (for (controller <- controllers)
+      yield controller.getClass.asInstanceOf[Class[Controller]] -> controller): _*)
+}

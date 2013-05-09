@@ -16,6 +16,4 @@ import es.tid.cosmos.api.controllers.Application
 /**
  * Application configured with mocked services to be tested in isolation.
  */
-object TestApplication extends Application {
-  lazy val serviceManager = new MockedServiceManager(transitionDelay = 10000)
-}
+object TestApplication extends Application with MockedServiceManagerComponent

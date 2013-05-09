@@ -11,18 +11,18 @@
 
 package es.tid.cosmos.api.controllers.common
 
-import play.api.libs.json.{JsString, Json, JsValue, Writes}
+import play.api.libs.json.{Json, JsValue, Writes}
 
 /**
  * Represents a simple text message to the client.
- * @param m Text of the message
+ * @param message Text of the message
  */
-case class Message(m: String)
+case class Message(message: String)
 
 object Message {
   implicit object MessageWrites extends Writes[Message]{
     def writes(instance: Message): JsValue = Json.obj(
-      "message" -> instance.m
+      "message" -> instance.message
     )
   }
 }

@@ -30,11 +30,10 @@ import es.tid.cosmos.servicemanager.ServiceError
  */
 class Service private[ambari](serviceInfo: JValue, clusterBaseUrl: Request)
   extends RequestProcessor with RequestHandlerFactory {
-  val name = serviceInfo \ "ServiceInfo" \ "service_name" match {
-    case JString(serviceName) => serviceName
-    case _ => throw new ServiceError("Ambari's state information response doesn't contain a " +
-      "ServiceInfo/service_name element")
-  }
+
+  val name = extractInfo("service_name")
+
+  override val toString = s"Service($name)[Cluster(${extractInfo("cluster_name")})]"
 
   private def baseUrl = new RequestBuilder(clusterBaseUrl) / "services" / name
 
@@ -63,4 +62,10 @@ class Service private[ambari](serviceInfo: JValue, clusterBaseUrl: Request)
     })
     createRequestHandler(request).ensureFinished.map(_ => this)
    }
+
+  private def extractInfo(key: String) = serviceInfo \ "ServiceInfo" \ key match {
+    case JString(value) => value
+    case _ => throw new ServiceError("Ambari's state information response doesn't contain a " +
+      s"ServiceInfo/$key element")
+  }
 }

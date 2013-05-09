@@ -59,4 +59,9 @@ class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     host.responses.addHostComponent(the(hostName), any[String]),
     host.addComponents("BadComponent")
   )
+
+  it must "allow empty list of components without making any requests" in {
+    get(host.addComponents())
+    verify(host.responses, never()).addHostComponent(any(), any())
+  }
 }

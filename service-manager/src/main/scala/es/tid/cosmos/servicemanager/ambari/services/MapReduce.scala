@@ -16,12 +16,12 @@ import es.tid.cosmos.servicemanager.ComponentDescription
 /**
  * Representation of the Map Reduce service.
  */
-object MapReduceServiceDescription extends AmbariServiceDescription {
+object MapReduce extends AmbariServiceDescription {
 
-  val name: String = "MAPREDUCE"
+  override val name: String = "MAPREDUCE"
 
-  val components: Seq[ComponentDescription] = Seq(
-    new ComponentDescription("JOBTRACKER", isMaster = true),
-    new ComponentDescription("TASKTRACKER", isMaster = false),
-    new ComponentDescription("MAPREDUCE_CLIENT", isMaster = true))
+  override val components: Seq[ComponentDescription] = Seq(
+    ComponentDescription("JOBTRACKER", isMaster = true),
+    ComponentDescription("TASKTRACKER", isMaster = false),
+    ComponentDescription("MAPREDUCE_CLIENT", isMaster = true))
 }

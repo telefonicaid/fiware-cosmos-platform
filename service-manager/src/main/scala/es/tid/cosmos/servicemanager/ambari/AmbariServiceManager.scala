@@ -43,7 +43,7 @@ class AmbariServiceManager(
     clusters.get(id).map(_.view)
 
   override val services: Seq[ServiceDescriptionType] =
-    Seq(HdfsServiceDescription, MapReduceServiceDescription)
+    Seq(Hdfs, MapReduce)
 
   /**
    * Wait until all pending operations are finished

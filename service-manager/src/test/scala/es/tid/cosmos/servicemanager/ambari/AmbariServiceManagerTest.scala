@@ -27,9 +27,6 @@ import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvisioner, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 
-/**
- * @author adamos
- */
 class AmbariServiceManagerTest extends FlatSpec
 with OneInstancePerTest with MustMatchers with MockitoSugar {
 

@@ -32,7 +32,7 @@ import es.tid.cosmos.servicemanager.ambari.services._
 class AmbariServiceManager(
     provisioner: ClusterProvisioner,
     infrastructureProvider: InfrastructureProvider)
-  extends ServiceManager with ConfigurationContributor {
+  extends ServiceManager with ConfigurationContributor with ConfigurationLoader {
   override type ServiceDescriptionType = AmbariServiceDescription
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
@@ -77,6 +77,8 @@ class AmbariServiceManager(
   override def terminateCluster(id: ClusterId): Future[Unit] = {
     throw new UnsupportedOperationException("terminate cluster operation not implemented")
   }
+
+  override def contributions(masterName: String) = load("global-basic").build(masterName)
 
   private def createService(
     cluster_> : Future[Cluster],
@@ -139,45 +141,4 @@ class AmbariServiceManager(
       host <- cluster.addHost(machine.hostname)
     } yield host
   }
-
-  override def contributions(masterName: String) =
-    ConfigurationBundle(GlobalConfiguration("version1", globalProperties))
-
-  private val globalProperties = Map(
-      "hadoop_pid_dir_prefix" -> "/var/run/hadoop",
-      "hadoop_heapsize" -> "1024",
-      "security_enabled" -> false,
-      "kerberos_domain" -> "EXAMPLE.COM",
-      "kadmin_pw" -> "",
-      "keytab_path" -> "/etc/security/keytabs",
-      "hcat_conf_dir" -> "",
-      "scheduler_name" -> "org.apache.hadoop.mapred.CapacityTaskScheduler",
-      "jtnode_opt_newsize" -> "200m",
-      "jtnode_opt_maxnewsize" -> "200m",
-      "jtnode_heapsize" -> "1024m",
-      "io_sort_mb" -> "200",
-      "io_sort_spill_percent" -> "0.9",
-      "lzo_enabled" -> false,
-      "snappy_enabled" -> true,
-      "rca_enabled" -> true,
-      "hbase_conf_dir" -> "/etc/hbase",
-      "proxyuser_group" -> "users",
-      "gpl_artifacts_download_url" -> "",
-      "apache_artifacts_download_url" -> "",
-      "ganglia_runtime_dir" -> "/var/run/ganglia/hdp",
-      "gmetad_user" -> "nobody",
-      "gmond_user" -> "nobody",
-      "java64_home" -> "/usr/jdk/jdk1.6.0_31",
-      "run_dir" -> "/var/run/hadoop",
-      "hadoop_conf_dir" -> "/etc/hadoop",
-      "hbase_user" -> "hbase",
-      "hive_user" -> "hive",
-      "hcat_user" -> "hcat",
-      "webhcat_user" -> "hcat",
-      "oozie_user" -> "oozie",
-      "zk_user" -> "zookeeper",
-      "smokeuser" -> "ambari-qa",
-      "user_group" -> "hadoop",
-      "rrdcached_base_dir" -> "/var/lib/ganglia/rrds"
-      )
 }

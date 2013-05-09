@@ -15,8 +15,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 import es.tid.cosmos.servicemanager.ServiceDescription
+import es.tid.cosmos.servicemanager.ambari.configuration.{
+  ConfigurationLoader, ConfigurationContributor}
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributor
 
 /**
  * Representation of a service definition that allows service instantiation for a given Ambari
@@ -25,7 +26,8 @@ import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributo
  * @see ConfigurationContributor
  * @see ServiceDescription
  */
-trait AmbariServiceDescription extends ConfigurationContributor with ServiceDescription {
+trait AmbariServiceDescription extends ConfigurationContributor
+    with ConfigurationLoader with ServiceDescription {
   /**
    * Create a service instance on a given cluster.
    *
@@ -43,4 +45,8 @@ trait AmbariServiceDescription extends ConfigurationContributor with ServiceDesc
         slaves.map(slave => slave.addComponents(components.filter(!_.isMaster).map(_.name): _*)))
     } yield service
   }
+
+  private lazy val config = load(name)
+
+  override def contributions(masterNode: String) = config.build(masterNode)
 }

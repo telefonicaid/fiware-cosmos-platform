@@ -16,6 +16,7 @@ import scala.collection.JavaConversions.mapAsScalaMap
 import com.typesafe.config.{ConfigFactory, Config}
 
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Factory
+import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
 
 /**
  * Trait for mixing-in configuration loading capabilities.
@@ -74,7 +75,16 @@ trait ConfigurationLoader {
  * @param config the configuration for this service
  */
 case class ConfigurationBuilder(serviceName: String, config: Config) {
-  // Note: need this to be defined before being used by the val definitions
+  /**
+   * Get the value of a configuration path comprising of its parent and leaf paths.
+   *
+   * ''Note'': this employs ''currying'' and needs to be ''defined before'' being used by
+   * any val definitions that use it.
+   *
+   * @param leaf the last part of the configuration path
+   * @param parentPath the configuration path's parent path
+   * @return the value for the given assembled path
+   */
   private def valueOf(leaf: String)(parentPath: String) = config.getString(s"$parentPath.$leaf")
 
   private val tag = valueOf("tag") _
@@ -89,13 +99,13 @@ case class ConfigurationBuilder(serviceName: String, config: Config) {
    */
   def build(masterNodeName: String): ConfigurationBundle =
     ConfigurationBundle(
-      optional("global", masterNodeName, GlobalConfiguration),
-      optional("core", masterNodeName, CoreConfiguration),
+      optional[GlobalConfiguration]("global", masterNodeName),
+      optional[CoreConfiguration]("core", masterNodeName),
       service(masterNodeName)
     )
 
-  private def optional[T <:Configuration](
-    name: String, masterNodeName: String, factory: Factory[T]): Option[T] =
+  private def optional[T <:Configuration](name: String, masterNodeName: String)
+                                         (implicit factory: Factory[T]): Option[T] =
     if (config.hasPath(name)) Some(factory(tag(name), properties(name, masterNodeName)))
     else None
 

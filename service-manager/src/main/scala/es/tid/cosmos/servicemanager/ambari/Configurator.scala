@@ -16,6 +16,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Factory
+import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits.{
+  coreFactory, globalFactory}
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
 
 /**
@@ -48,16 +50,13 @@ object Configurator {
       val ConfigurationBundle(globalLeft, coreLeft, services) = alreadyMerged
       val ConfigurationBundle(globalRight, coreRight, servicesToAdd) = toMerge
       ConfigurationBundle(
-        mergeGlobal(globalLeft, globalRight),
-        mergeCore(coreLeft, coreRight),
+        merge[GlobalConfiguration](globalLeft, globalRight),
+        merge[CoreConfiguration](coreLeft, coreRight),
         concatenateIfNoDuplicates(servicesToAdd, services))
     }
 
-  private val mergeGlobal = merge(GlobalConfiguration)_
-  private val mergeCore = merge(CoreConfiguration)_
-
-  private def merge[T <: Configuration](factory: Factory[T])
-                                       (left: Option[T], right: Option[T]): Option[T] =
+  private def merge[T <: Configuration](left: Option[T], right: Option[T])
+                                       (implicit factory: Factory[T]): Option[T] =
     (left, right) match {
       case (None, _) => right
       case (_, None) => left

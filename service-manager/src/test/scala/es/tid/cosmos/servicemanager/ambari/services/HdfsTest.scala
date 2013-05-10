@@ -16,19 +16,18 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 
-class MapReduceServiceDescriptionTest extends FlatSpec with MustMatchers {
-
-  "A MapReduceDescription" must "have a jobtracker, tasktracker and mapreduce client" in {
-    val description = MapReduceServiceDescription
-    description.name must equal ("MAPREDUCE")
+class HdfsTest extends FlatSpec with MustMatchers {
+  "An Hdfs service" must "have a namenode, datanode and hdfs client" in {
+    val description = Hdfs
+    description.name must equal("HDFS")
     description.components must (
       have length (3) and
-      contain (new ComponentDescription("JOBTRACKER", isMaster = true)) and
-      contain (new ComponentDescription("TASKTRACKER", isMaster = false)) and
-      contain (new ComponentDescription("MAPREDUCE_CLIENT", isMaster = true)))
-    val contributions = description.contributions("aMasterNodeName")
-    contributions.global must be ('defined)
-    contributions.core must be ('empty)
+      contain(ComponentDescription("NAMENODE", isMaster = true)) and
+      contain(ComponentDescription("DATANODE", isMaster = false)) and
+      contain(ComponentDescription("HDFS_CLIENT", isMaster = true)))
+    val contributions = description.contributions("aNameNodeName")
+    contributions.global must be('defined)
+    contributions.core must be('defined)
     contributions.services must have length(1)
   }
 }

@@ -14,14 +14,12 @@ package es.tid.cosmos.servicemanager.ambari.services
 import es.tid.cosmos.servicemanager.ComponentDescription
 
 /**
- * Representation of the Map Reduce service.
+ * Representation of the Oozie service.
  */
-object MapReduceServiceDescription extends AmbariServiceDescription {
+object Oozie extends AmbariServiceDescription {
+  override val name: String = "OOZIE"
 
-  val name: String = "MAPREDUCE"
-
-  val components: Seq[ComponentDescription] = Seq(
-    new ComponentDescription("JOBTRACKER", isMaster = true),
-    new ComponentDescription("TASKTRACKER", isMaster = false),
-    new ComponentDescription("MAPREDUCE_CLIENT", isMaster = true))
+  override val components: Seq[ComponentDescription] = Seq(
+    ComponentDescription("OOZIE_SERVER", isMaster = true),
+    ComponentDescription("OOZIE_CLIENT", isMaster = true))
 }

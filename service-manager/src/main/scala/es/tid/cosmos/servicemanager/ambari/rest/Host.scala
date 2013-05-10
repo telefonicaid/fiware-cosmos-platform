@@ -43,9 +43,11 @@ class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Request) extends Re
     def getJsonForComponent(componentName: String) =
       ("HostRoles" -> ("component_name" -> componentName))
     def ignoreResult(result: JValue) {}
-    performRequest(new RequestBuilder(clusterBaseUrl) / "hosts"
-        <<? Map("Hosts/host_name" -> name)
-        << compact(render(("host_components" -> componentNames.map(getJsonForComponent)))))
-      .map(ignoreResult)
+    if (!componentNames.isEmpty)
+      performRequest(new RequestBuilder(clusterBaseUrl) / "hosts"
+          <<? Map("Hosts/host_name" -> name)
+          << compact(render(("host_components" -> componentNames.map(getJsonForComponent)))))
+        .map(ignoreResult)
+    else Future.successful()
   }
 }

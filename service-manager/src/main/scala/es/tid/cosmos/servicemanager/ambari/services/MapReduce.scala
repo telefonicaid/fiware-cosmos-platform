@@ -14,14 +14,13 @@ package es.tid.cosmos.servicemanager.ambari.services
 import es.tid.cosmos.servicemanager.ComponentDescription
 
 /**
- * Representation of the HDFS service.
+ * Representation of the Map Reduce service.
  */
-object HdfsServiceDescription extends AmbariServiceDescription {
-
-  override val name: String = "HDFS"
+object MapReduce extends AmbariServiceDescription {
+  override val name: String = "MAPREDUCE"
 
   override val components: Seq[ComponentDescription] = Seq(
-    new ComponentDescription("NAMENODE", isMaster = true),
-    new ComponentDescription("DATANODE", isMaster = false),
-    new ComponentDescription("HDFS_CLIENT", isMaster = true))
+    ComponentDescription("JOBTRACKER", isMaster = true),
+    ComponentDescription("TASKTRACKER", isMaster = false),
+    ComponentDescription("MAPREDUCE_CLIENT", isMaster = true))
 }

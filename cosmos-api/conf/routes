@@ -3,14 +3,21 @@
 # ~~~~
 
 # Home page
-GET     /                               @es.tid.cosmos.api.controllers.Application.index
+GET     /                               @es.tid.cosmos.api.controllers.Pages.index
+GET     /doc.html                       @es.tid.cosmos.api.controllers.Pages.swaggerUI
+GET     /doc                            controllers.ApiHelpController.getResources()
 
 # API
-GET     /cosmos                         @es.tid.cosmos.api.controllers.Application.version()
-GET     /cosmos/cluster                 @es.tid.cosmos.api.controllers.Application.list()
-POST    /cosmos/cluster                 @es.tid.cosmos.api.controllers.Application.createCluster()
-GET     /cosmos/cluster/:id             @es.tid.cosmos.api.controllers.Application.listDetails(id)
-POST    /cosmos/cluster/:id/terminate   @es.tid.cosmos.api.controllers.Application.terminate(id)
+GET     /cosmos                         @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version()
+GET     /doc/cosmos                     controllers.ApiHelpController.getResource(path = "/doc/cosmos")
+
+GET     /cosmos/cluster                 @es.tid.cosmos.api.controllers.clusters.ClustersResource.list()
+POST    /cosmos/cluster                 @es.tid.cosmos.api.controllers.clusters.ClustersResource.createCluster()
+GET     /doc/cosmos/clusters            controllers.ApiHelpController.getResource(path = "/doc/cosmos/clusters")
+
+GET     /cosmos/cluster/:id             @es.tid.cosmos.api.controllers.cluster.ClusterResource.listDetails(id)
+POST    /cosmos/cluster/:id/terminate   @es.tid.cosmos.api.controllers.cluster.ClusterResource.terminate(id)
+GET     /doc/cosmos/cluster             controllers.ApiHelpController.getResource(path = "/doc/cosmos/cluster")
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)

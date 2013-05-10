@@ -57,7 +57,8 @@ To execute a development server go to the project root directory and enter
      $ sbt
      > compile
      > project cosmos-api
-     > run <<port>>
+     > run
 
-where ``<<port>>`` is the port in which the application will listen for
-incoming connections. The API will have the following base path ``http://host:port/cosmos``.
+The application will start at http://localhost:9000. To change the listen path
+just edit the ``application.baseurl`` setting on the ``application.conf``
+file.

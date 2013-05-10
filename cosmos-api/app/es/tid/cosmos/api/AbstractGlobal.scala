@@ -11,14 +11,16 @@
 
 package es.tid.cosmos.api
 
+import play.api.GlobalSettings
+import play.api.mvc.Controller
+
 import es.tid.cosmos.api.controllers.Application
-import es.tid.cosmos.platform.manager.ial.serverpool.ServerPoolInfrastructureProviderComponent
-import es.tid.cosmos.servicemanager.ambari.AmbariServiceManagerComponent
 
 /**
- * Application tied to real services.
+ * Custom global Play! settings to override controller instantiation.
  */
-object ProductionApplication extends Application {
-  private val components = new AmbariServiceManagerComponent with ServerPoolInfrastructureProviderComponent
-  lazy val serviceManager = components.serviceManager
+abstract class AbstractGlobal(application: Application) extends GlobalSettings {
+  override def getControllerInstance[A](controllerClass: Class[A]): A = {
+    application.controllers(controllerClass.asInstanceOf[Class[Controller]]).asInstanceOf[A]
+  }
 }

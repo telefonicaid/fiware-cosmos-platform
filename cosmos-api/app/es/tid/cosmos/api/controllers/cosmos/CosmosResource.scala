@@ -11,19 +11,25 @@
 
 package es.tid.cosmos.api.controllers.cosmos
 
+import com.typesafe.config.ConfigFactory
+import com.wordnik.swagger.annotations.{ApiOperation, Api}
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 
 /**
  * Root API resource
  */
-trait CosmosResource extends Controller {
+@Api(value = "/cosmos", listingPath = "/doc/cosmos", description = "API description")
+class CosmosResource extends Controller {
+  @ApiOperation(value = "Get API version", httpMethod = "GET",
+    notes = "Root API resource with version information",
+    responseClass = "es.tid.cosmos.api.controllers.cosmos.ApiDescription")
   def version = Action {
     Ok(Json.toJson(CosmosResource.apiDescription))
   }
 }
 
 object CosmosResource {
-  val apiVersion = "1.0.0"
-  val apiDescription = ApiDescription(apiVersion)
+  lazy val apiVersion = ConfigFactory.load().getString("api.version")
+  lazy val apiDescription = ApiDescription(apiVersion)
 }

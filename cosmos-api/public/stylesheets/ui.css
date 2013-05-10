@@ -9,12 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.servicemock
-
-import es.tid.cosmos.api.AbstractGlobal
-import es.tid.cosmos.api.controllers.Application
-
-/**
- * Custom global Play! settings to configure mocked services.
- */
-object TestGlobal extends AbstractGlobal(new Application with MockedServiceManagerComponent)
+body #header {
+    background-color: #222;
+    color: #ccc;
+}

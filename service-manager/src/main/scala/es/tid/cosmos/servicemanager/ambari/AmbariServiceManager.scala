@@ -55,17 +55,17 @@ class AmbariServiceManager(
     name: String,
     clusterSize: Int,
     serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
+    val id = new ClusterId
     val machineFutures = infrastructureProvider.createMachines(
       name, MachineProfile.M, clusterSize).get.toList
-    val cluster_> = provisioner.createCluster(name, version = "HDP-1.2.0")
+    val cluster_> = provisioner.createCluster(id.toString, version = "HDP-1.2.0")
     val (master_>, slaveFutures) = masterAndSlaves(addHosts(machineFutures, cluster_>))
     val configuredCluster_> = applyConfiguration(
       cluster_>, master_>, this::serviceDescriptions.toList)
     val serviceFutures  = serviceDescriptions.map(
       createService(configuredCluster_>, master_>, slaveFutures, _)).toList
-    val deployedServices_> = installInOrder(serviceFutures)
 
-    val id = new ClusterId
+    val deployedServices_> = installInOrder(serviceFutures)
     val description = new MutableClusterDescription(id, name, clusterSize, deployedServices_>)
     clusters.synchronized {
       clusters = clusters.updated(id, description)

@@ -13,8 +13,13 @@ package es.tid.cosmos.servicemanager
 
 import java.util.UUID
 
-case class ClusterId(uuid: UUID = UUID.randomUUID()) {
-  override def toString: String = uuid.toString
+case class ClusterId(val id: String) {
+  require(
+    id.forall(Character.isLetterOrDigit),
+    s"Cluster IDs can only contain alphanumeric characters. Provided id: %id")
+
+  def this(uuid: UUID = UUID.randomUUID()) = this(uuid.toString.replace("-", ""))
+  override def toString: String = id
 }
 
 object ClusterId {
@@ -24,5 +29,5 @@ object ClusterId {
    */
   def apply() = new ClusterId(UUID.randomUUID())
 
-  def apply(id: String) = new ClusterId(UUID.fromString(id))
+  def apply(uuid: UUID) = new ClusterId(uuid)
 }

@@ -47,7 +47,7 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
     setExpectations(machines, hosts)
     val clusterId = instance.createCluster("clusterName", 1, serviceDescriptions)
     val state = waitForClusterCompletion(clusterId, instance)
-    verifyClusterAndServices(machines, hosts.head, hosts)
+    verifyClusterAndServices(machines, hosts.head, hosts, clusterId)
     clusterId must not be null
     state must equal(Running)
   }
@@ -57,7 +57,7 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
     setExpectations(machines, hosts)
     val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions)
     val state = waitForClusterCompletion(clusterId, instance)
-    verifyClusterAndServices(machines, hosts.head, hosts.tail)
+    verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
     clusterId must not be null
     state must equal(Running)
   }
@@ -86,12 +86,14 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
     })
   }
 
-  def verifyClusterAndServices(machines: Seq[MachineState],
-                               master: Host,
-                               slaves: Seq[Host]) {
+  def verifyClusterAndServices(
+    machines: Seq[MachineState],
+    master: Host,
+    slaves: Seq[Host],
+    clusterId: ClusterId) {
     verify(infrastructureProvider)
       .createMachines("clusterName", MachineProfile.M, machines.size)
-    verify(provisioner).createCluster("clusterName", "HDP-1.2.0")
+    verify(provisioner).createCluster(clusterId.toString, "HDP-1.2.0")
     verify(cluster).applyConfiguration(mergedGlobalConfiguration(2, instance, master.name))
     verify(cluster).applyConfiguration(mergedCoreConfiguration(2))
     verify(cluster).applyConfiguration(contributionsWithNumber(1).services(0))

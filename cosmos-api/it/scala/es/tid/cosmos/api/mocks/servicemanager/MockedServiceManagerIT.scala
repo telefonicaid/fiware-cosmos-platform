@@ -14,7 +14,7 @@ package es.tid.cosmos.api.servicemanager
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.servicemock.MockedServiceManager
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.servicemanager._
 
 class MockedServiceManagerIT extends FlatSpec with MustMatchers {

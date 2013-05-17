@@ -17,6 +17,7 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
+import es.tid.cosmos.api.mocks.MockedServices
 
 class CosmosIT extends FlatSpec with MustMatchers with MockedServices {
   "The Cosmos resource" must "return the version as JSON" in {

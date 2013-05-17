@@ -1,0 +1,45 @@
+@(tuProfile: es.tid.cosmos.api.oauth2.UserProfile,
+  cosmosProfile: es.tid.cosmos.api.controllers.pages.CosmosProfile)(implicit request: RequestHeader)
+@import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
+@import es.tid.cosmos.api.controllers.pages
+@import es.tid.cosmos.api.controllers.pages.NamedKey
+<!--
+ Telefónica Digital - Product Development and Innovation
+
+ THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+ Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ All rights reserved.
+ -->
+@main("Cosmos user profile for @profile.fullName") {
+    <ul id="headernav">
+        <li><a href="@pages.routes.Pages.index()">Home</a></li>
+        <li><a href="@pages.routes.Pages.logout()">Logout</a></li>
+    </ul>
+
+    <h1 class="page-title">Profile for @tuProfile.contact</h1>
+
+    <ul>
+        <li>User handle: <strong>@cosmosProfile.handle</strong></li>
+        <li>Public keys
+            @for(NamedKey(name, signature) <- cosmosProfile.keys) {
+                <div class="key">
+                    <div class="name">@name</div>
+                    <div class="signature">@signature</div>
+                </div>
+            }
+        </li>
+    </ul>
+
+    <h2>Cosmos usage details</h2>
+
+    <p>To use the cluster from your command line configure
+       <a href="@cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)">
+        @cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)</a>
+        as the base API URL in your client configuration.
+        You can also <a href="doc.html">play with the API</a></p>
+
+    <p>In the case of the <tt>cosmos</tt> script, use: <tt>cosmos configure</tt></p>
+}

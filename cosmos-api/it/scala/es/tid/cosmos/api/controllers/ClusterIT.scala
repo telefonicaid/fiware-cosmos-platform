@@ -19,8 +19,9 @@ import play.api.test.Helpers._
 import play.api.test.FakeRequest
 import play.api.libs.json.Json
 
-import es.tid.cosmos.api.servicemock.MockedServiceManager
 import es.tid.cosmos.servicemanager.ClusterId
+import es.tid.cosmos.api.mocks.MockedServices
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 
 class ClusterIT extends FlatSpec with MustMatchers with MockedServices {
   val resourcePath = s"/cosmos/cluster/${MockedServiceManager.defaultClusterId.toString}"

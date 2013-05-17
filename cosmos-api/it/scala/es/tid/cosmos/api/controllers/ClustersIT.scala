@@ -18,6 +18,7 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.clusters.CreateClusterParams
+import es.tid.cosmos.api.mocks.MockedServices
 
 class ClustersIT extends FlatSpec with MustMatchers with MockedServices {
   "The clusters resource" must "list all existing clusters" in {

@@ -9,18 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.manager.ial.serverpool
+package es.tid.cosmos.platform.ial.serverpool
 
-import scala.util.{Success, Failure, Random}
-
-import org.scalatest.{Suite, BeforeAndAfter}
+import org.scalatest.Suite
 import org.scalatest.matchers.{MatchResult, Matcher}
-import org.squeryl.PrimitiveTypeMode._
 
-import es.tid.cosmos.platform.common.MySqlDatabase
-import es.tid.cosmos.platform.manager.ial.{MachineProfile, Id}
-import es.tid.cosmos.platform.manager.ial.MachineState
-import es.tid.cosmos.platform.manager.ial.MachineStatus._
+import es.tid.cosmos.platform.common.MySqlTest
+import es.tid.cosmos.platform.ial.{MachineProfile, Id, MachineState, MachineStatus}
 
 /**
  * A convenient trait for testing against MySQL DBMS. In order for it to work, you must:
@@ -32,8 +27,21 @@ import es.tid.cosmos.platform.manager.ial.MachineStatus._
  * - Select, create, drop and insert privileges on databases with 'test_' prefix to user
  *  'cosmos'. E.g., grant all on `test_%`.* to 'cosmos'@'localhost'
  */
-trait MySqlTest extends BeforeAndAfter {
+trait ServerPoolSqlTest extends MySqlTest {
   this: Suite =>
+
+  val dbUser = "cosmos"
+  val dbPassword = "cosmos"
+  val dbHost = "localhost"
+  val dbPort = 3306
+
+  val dao = new SqlServerPoolDao(db)
+
+  val schema = InfraDb
+
+  override def populateInitialData {
+    InfraDb.machines.insert(availableMachines ++ assignedMachines)
+  }
 
   class ContainSomeMachineMatcher(matcherDesc: String) (pred: MachineState => Boolean)
         extends Matcher[Seq[MachineState]] {
@@ -64,64 +72,32 @@ trait MySqlTest extends BeforeAndAfter {
     def apply(machines: Iterable[Machine]) = new ContainMachinesMatcher(machines)
   }
 
-  val dbHost = "localhost"
-  val dbPort = 3306
-  val dbUser = "cosmos"
-  val dbPassword = "cosmos"
-  val dbName = s"test_${math.abs(Random.nextInt())}"
-  val db = new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword, dbName)
-  val dao = new SqlServerPoolDao(db)
-
   val machines = List(
     Machine(
-      "cosmos02", available = true, MachineProfile.S, Running, "cosmos02.hi.inet", "10.95.106.182"),
+      "cosmos02", available = true, MachineProfile.S,
+      MachineStatus.Running, "cosmos02.hi.inet", "10.95.106.182"),
     Machine(
-      "cosmos03", available = true, MachineProfile.M, Running, "cosmos03.hi.inet", "10.95.105.184"),
+      "cosmos03", available = true, MachineProfile.M,
+      MachineStatus.Running, "cosmos03.hi.inet", "10.95.105.184"),
     Machine(
-      "cosmos04", available = true, MachineProfile.M, Running, "cosmos04.hi.inet", "10.95.106.179"),
+      "cosmos04", available = true, MachineProfile.M,
+      MachineStatus.Running, "cosmos04.hi.inet", "10.95.106.179"),
     Machine(
-      "cosmos05", available = true, MachineProfile.X, Running, "cosmos05.hi.inet", "10.95.106.184"),
+      "cosmos05", available = true, MachineProfile.X,
+      MachineStatus.Running, "cosmos05.hi.inet", "10.95.106.184"),
     Machine(
-      "cosmos06", available = true, MachineProfile.XL, Running, "cosmos06.hi.inet", "10.95.110.99"),
+      "cosmos06", available = true, MachineProfile.XL,
+      MachineStatus.Running, "cosmos06.hi.inet", "10.95.110.99"),
     Machine(
-      "cosmos07", available = false, MachineProfile.S, Running, "cosmos07.hi.inet", "10.95.110.203"),
+      "cosmos07", available = false, MachineProfile.S,
+      MachineStatus.Running, "cosmos07.hi.inet", "10.95.110.203"),
     Machine(
-      "cosmos08", available = false, MachineProfile.M, Running, "cosmos08.hi.inet", "10.95.111.160"),
+      "cosmos08", available = false, MachineProfile.M,
+      MachineStatus.Running, "cosmos08.hi.inet", "10.95.111.160"),
     Machine(
-      "cosmos09", available = false, MachineProfile.X, Running, "cosmos09.hi.inet", "10.95.108.75"))
+      "cosmos09", available = false, MachineProfile.X,
+      MachineStatus.Running, "cosmos09.hi.inet", "10.95.108.75"))
 
   def availableMachines = machines.filter(m => m.available)
   def assignedMachines = machines.filter(m => !m.available)
-
-  private def createDatabase() { updateDatabase(s"create database $dbName") }
-  private def dropDatabase() { updateDatabase(s"drop database $dbName") }
-
-  private def updateDatabase(updateQuery: String) {
-    var stmt: Option[java.sql.Statement] = None
-    new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword).connect match {
-      case Success(c) => try {
-        stmt = Some(c.createStatement())
-        stmt.get.executeUpdate(updateQuery)
-      } finally {
-        stmt.map(_.close())
-        c.close()
-      }
-      case Failure(e) => throw e
-    }
-  }
-
-  before {
-    createDatabase()
-    transaction(db.newSession) {
-      InfraDb.create
-      InfraDb.machines.insert(availableMachines ++ assignedMachines)
-    }
-  }
-
-  after {
-    transaction(db.newSession) {
-      InfraDb.drop
-    }
-    dropDatabase()
-  }
 }

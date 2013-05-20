@@ -16,11 +16,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 
-import es.tid.cosmos.platform.manager.ial.{InfrastructureProvider, MachineProfile, MachineState}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvisioner, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services._
+import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureProvider}
 
 /**
  * Manager of the Ambari service configuration workflow.

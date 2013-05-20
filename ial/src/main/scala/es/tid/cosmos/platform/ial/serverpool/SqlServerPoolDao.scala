@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.manager.ial.serverpool
+package es.tid.cosmos.platform.ial.serverpool
 
 import java.util.UUID
 
@@ -17,7 +17,7 @@ import org.squeryl._
 import org.squeryl.PrimitiveTypeMode._
 
 import es.tid.cosmos.platform.common._
-import es.tid.cosmos.platform.manager.ial._
+import es.tid.cosmos.platform.ial.{MachineState, MachineStatus, MachineProfile, Id}
 
 /**
  * A class used to maintain persistent information of machines.

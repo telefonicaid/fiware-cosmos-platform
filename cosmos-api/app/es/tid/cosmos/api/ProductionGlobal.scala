@@ -12,7 +12,7 @@
 package es.tid.cosmos.api
 
 import es.tid.cosmos.api.controllers.Application
-import es.tid.cosmos.platform.manager.ial.serverpool.ServerPoolInfrastructureProviderComponent
+import es.tid.cosmos.platform.ial.serverpool.ServerPoolInfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ambari.AmbariServiceManagerComponent
 
 /**

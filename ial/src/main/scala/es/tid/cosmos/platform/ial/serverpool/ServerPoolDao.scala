@@ -9,9 +9,9 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.manager.ial.serverpool
+package es.tid.cosmos.platform.ial.serverpool
 
-import es.tid.cosmos.platform.manager.ial._
+import es.tid.cosmos.platform.ial.{MachineState, Id}
 
 /**
  * A data access object for server pool state.

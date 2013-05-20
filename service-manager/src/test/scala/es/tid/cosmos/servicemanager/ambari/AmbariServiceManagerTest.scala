@@ -21,11 +21,12 @@ import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.platform.manager.ial._
+import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvisioner, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
+import es.tid.cosmos.servicemanager.Failed
 
 class AmbariServiceManagerTest extends FlatSpec
 with OneInstancePerTest with MustMatchers with MockitoSugar {

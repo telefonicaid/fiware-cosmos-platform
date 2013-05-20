@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager
 
-import es.tid.cosmos.platform.manager.ial.{InfrastructureProviderComponent, InfrastructureProvider}
+import es.tid.cosmos.platform.ial.{InfrastructureProviderComponent, InfrastructureProvider}
 
 trait FakeInfrastructureProviderComponent extends InfrastructureProviderComponent {
   def infrastructureProvider: InfrastructureProvider = new FakeInfrastructureProvider

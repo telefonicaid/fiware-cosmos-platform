@@ -9,10 +9,10 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.manager.ial.serverpool
+package es.tid.cosmos.platform.ial.serverpool
 
 import es.tid.cosmos.platform.common.MySqlDatabase
-import es.tid.cosmos.platform.manager.ial.InfrastructureProviderComponent
+import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 
 /**
  * A trait satisfying infrastructure provider component supported by a server pool based provider.

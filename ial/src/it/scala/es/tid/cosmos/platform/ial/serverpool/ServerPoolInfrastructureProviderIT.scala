@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.manager.ial.serverpool
+package es.tid.cosmos.platform.ial.serverpool
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.{Await, Future}
@@ -20,12 +20,12 @@ import scala.util.Failure
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.manager.ial.{ResourceExhaustedException, MachineProfile}
+import es.tid.cosmos.platform.ial.{MachineProfile, ResourceExhaustedException}
 
 /**
  * @author apv
  */
-class ServerPoolInfrastructureProviderIT extends FlatSpec with MySqlTest with MustMatchers {
+class ServerPoolInfrastructureProviderIT extends FlatSpec with ServerPoolSqlTest with MustMatchers {
 
   val provider = new ServerPoolInfrastructureProvider(dao)
   val timeout: FiniteDuration = Duration(2, TimeUnit.SECONDS)

@@ -13,9 +13,9 @@ package es.tid.cosmos.servicemanager.ambari
 
 import com.typesafe.config.ConfigFactory
 
-import es.tid.cosmos.platform.manager.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
+import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   this: InfrastructureProviderComponent =>

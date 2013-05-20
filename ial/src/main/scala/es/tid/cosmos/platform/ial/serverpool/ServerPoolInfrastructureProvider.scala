@@ -9,12 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.manager.ial.serverpool
+package es.tid.cosmos.platform.ial.serverpool
 
 import scala.concurrent.Future
 import scala.util.{Success, Failure, Try}
 
-import es.tid.cosmos.platform.manager.ial._
+import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureProvider, ResourceExhaustedException}
 
 /**
  * An infrastructure provider supported by a server pool.

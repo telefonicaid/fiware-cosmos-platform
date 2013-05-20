@@ -9,19 +9,19 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.manager.ial.serverpool
+package es.tid.cosmos.platform.ial.serverpool
 
 import scala.Some
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.manager.ial._
+import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, Id}
 
 /**
  * @author apv
  */
-class SqlServerPoolDaoIT extends FlatSpec with MySqlTest with MustMatchers {
+class SqlServerPoolDaoIT extends FlatSpec with ServerPoolSqlTest with MustMatchers {
 
   "The SQL server pool DAO" must "list available machines" in {
       val machines = dao.availableMachines

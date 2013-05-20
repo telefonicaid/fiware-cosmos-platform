@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.manager.ial
+package es.tid.cosmos.platform.ial
 
 import scala.concurrent.Future
 import scala.util.Try

@@ -15,8 +15,8 @@ import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 
-import es.tid.cosmos.platform.manager.ial._
-import es.tid.cosmos.platform.manager.ial.MachineState
+import es.tid.cosmos.platform.ial._
+import es.tid.cosmos.platform.ial.MachineState
 
 class FakeInfrastructureProvider extends InfrastructureProvider {
 

@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.platform.manager.ial.serverpool
 
+import es.tid.cosmos.platform.common.MySqlDatabase
 import es.tid.cosmos.platform.manager.ial.InfrastructureProviderComponent
 
 /**

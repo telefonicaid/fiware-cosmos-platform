@@ -17,6 +17,7 @@ import org.scalatest.{Suite, BeforeAndAfter}
 import org.scalatest.matchers.{MatchResult, Matcher}
 import org.squeryl.PrimitiveTypeMode._
 
+import es.tid.cosmos.platform.common.MySqlDatabase
 import es.tid.cosmos.platform.manager.ial.{MachineProfile, Id}
 import es.tid.cosmos.platform.manager.ial.MachineState
 import es.tid.cosmos.platform.manager.ial.MachineStatus._

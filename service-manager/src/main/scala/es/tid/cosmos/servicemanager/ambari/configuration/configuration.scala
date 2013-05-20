@@ -89,4 +89,7 @@ object ConfigurationBundle {
     core: CoreConfiguration,
     services: ServiceConfiguration*): ConfigurationBundle =
     ConfigurationBundle(Some(global), Some(core), services.toList)
+
+  def apply(services: ServiceConfiguration*): ConfigurationBundle =
+    ConfigurationBundle(None, None, services.toList)
 }

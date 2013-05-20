@@ -93,7 +93,7 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
     clusterId: ClusterId) {
     verify(infrastructureProvider)
       .createMachines("clusterName", MachineProfile.M, machines.size)
-    verify(provisioner).createCluster(clusterId.toString, "HDP-1.2.0")
+    verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
     verify(cluster).applyConfiguration(mergedGlobalConfiguration(2, instance, master.name))
     verify(cluster).applyConfiguration(mergedCoreConfiguration(2))
     verify(cluster).applyConfiguration(contributionsWithNumber(1).services(0))

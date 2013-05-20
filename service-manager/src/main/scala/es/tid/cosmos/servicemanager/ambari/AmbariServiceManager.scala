@@ -35,6 +35,8 @@ class AmbariServiceManager(
   extends ServiceManager with ConfigurationContributor with ConfigurationLoader {
   override type ServiceDescriptionType = AmbariServiceDescription
 
+  private val stackVersion = "Cosmos-0.1.0"
+
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
 
   override def clusterIds: Seq[ClusterId] = clusters.keys.toSeq
@@ -58,7 +60,7 @@ class AmbariServiceManager(
     val id = new ClusterId
     val machineFutures = infrastructureProvider.createMachines(
       name, MachineProfile.M, clusterSize).get.toList
-    val cluster_> = provisioner.createCluster(id.toString, version = "HDP-1.2.0")
+    val cluster_> = provisioner.createCluster(id.toString, stackVersion)
     val (master_>, slaveFutures) = masterAndSlaves(addHosts(machineFutures, cluster_>))
     val configuredCluster_> = applyConfiguration(
       cluster_>, master_>, this::serviceDescriptions.toList)

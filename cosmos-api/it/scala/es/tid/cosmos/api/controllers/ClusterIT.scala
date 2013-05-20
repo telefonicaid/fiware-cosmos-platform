@@ -23,7 +23,7 @@ import es.tid.cosmos.api.servicemock.MockedServiceManager
 import es.tid.cosmos.servicemanager.ClusterId
 
 class ClusterIT extends FlatSpec with MustMatchers with MockedServices {
-  val resourcePath = s"/cosmos/cluster/${MockedServiceManager.defaultClusterId.uuid.toString}"
+  val resourcePath = s"/cosmos/cluster/${MockedServiceManager.defaultClusterId.toString}"
 
   "Cluster resource" must "list cluster details on GET request" in {
     runWithMockedServices {
@@ -31,7 +31,7 @@ class ClusterIT extends FlatSpec with MustMatchers with MockedServices {
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       val description = Json.parse(contentAsString(resource))
-      (description \ "id").as[String] must equal (MockedServiceManager.defaultClusterId.uuid.toString)
+      (description \ "id").as[String] must equal (MockedServiceManager.defaultClusterId.toString)
     }
   }
 

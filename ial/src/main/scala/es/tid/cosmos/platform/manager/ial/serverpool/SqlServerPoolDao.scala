@@ -11,15 +11,12 @@
 
 package es.tid.cosmos.platform.manager.ial.serverpool
 
-import java.sql.{DriverManager, Connection}
 import java.util.UUID
-import scala.util.Try
 
 import org.squeryl._
-import org.squeryl.adapters.MySQLAdapter
-import org.squeryl.internals.DatabaseAdapter
 import org.squeryl.PrimitiveTypeMode._
 
+import es.tid.cosmos.platform.common._
 import es.tid.cosmos.platform.manager.ial._
 
 /**
@@ -70,54 +67,6 @@ object Machine {
 
 object InfraDb extends Schema {
     val machines = table[Machine]
-}
-
-/**
- * A trait of an SQL databse.
- */
-trait SqlDatabase extends SessionFactory {
-
-  /**
-   * Obtain the Squeryl database adapter corresponding to this SQL database.
-   */
-  val adapter: DatabaseAdapter
-
-  /**
-   * Create a new connection to the database.
-   */
-  def connect: Try[Connection]
-
-  /**
-   * Create a new Squeryl session from a connection to the database.
-   */
-  def newSession: Session = Session.create(connect.get, adapter)
-}
-
-/**
- * A trait of a MySQL database.
- *
- * @param host the hostname of MySQL server
- * @param port the port MySQL server is listening to
- * @param username the username used to connect to MySQL
- * @param password the password used to connect to MySQL
- * @param dbName the database to connect
- */
-class MySqlDatabase(val host: String,
-                    val port: Int,
-                    val username: String,
-                    val password: String,
-                    val dbName: String) extends SqlDatabase {
-
-  /* Initialize MySQL JDBC driver, which registers the connection chain prefix on DriverManager. */
-  Class.forName("com.mysql.jdbc.Driver")
-
-  def this(host: String, port: Int, username: String, password: String) =
-    this(host, port, username, password, "")
-
-  def connect: Try[Connection] =
-      Try(DriverManager.getConnection(s"jdbc:mysql://$host:$port/$dbName", username, password))
-
-  override val adapter = new MySQLAdapter
 }
 
 /**

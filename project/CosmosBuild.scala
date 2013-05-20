@@ -20,10 +20,17 @@ object CosmosBuild extends Build {
     aggregate(cosmosApi, serviceManager, ial)
   )
 
+  lazy val common = (Project(id = "common", base = file("common"))
+    settings(ScctPlugin.instrumentSettings: _*)
+    configs(IntegrationTest)
+    settings(Defaults.itSettings : _*)
+    )
+
   lazy val ial = (Project(id = "ial", base = file("ial"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
+    dependsOn(common)
   )
 
   lazy val serviceManager = (Project(id = "service-manager", base = file("service-manager"))

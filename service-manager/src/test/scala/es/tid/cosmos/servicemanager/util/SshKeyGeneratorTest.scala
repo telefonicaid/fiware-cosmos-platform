@@ -15,7 +15,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 class SshKeyGeneratorTest extends FlatSpec with MustMatchers {
-
   "A generator" must "create a new pair of public private keys" in {
     val keys1a = SshKeyGenerator.newKeys("user1", "host")
     val keys1b = SshKeyGenerator.newKeys("user1", "host")
@@ -36,7 +35,3 @@ class SshKeyGeneratorTest extends FlatSpec with MustMatchers {
     keys.authorizedKey must equal(s"${keys.publicKey.stripLineEnd}@$host\n")
   }
 }
-
-
-
-

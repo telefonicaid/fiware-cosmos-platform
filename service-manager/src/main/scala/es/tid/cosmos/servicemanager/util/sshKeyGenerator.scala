@@ -19,8 +19,8 @@ import com.jcraft.jsch.{KeyPair, JSch}
  * Utility for generating SSH keys.
  */
 object SshKeyGenerator {
-
   private val charset = "US-ASCII"
+
   private lazy val generator = new JSch()
 
   /**

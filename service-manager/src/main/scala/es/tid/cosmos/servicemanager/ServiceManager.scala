@@ -29,8 +29,10 @@ trait ServiceManager {
 
   /**
    * A sequence of all services this service manager supports
+   *
+   * @param user the primary cluster user of these services
    */
-  def services: Seq[ServiceDescriptionType]
+  def services(user: ClusterUser): Seq[ServiceDescriptionType]
 
   /**
    * Create a cluster of a given size with a specified set of services.

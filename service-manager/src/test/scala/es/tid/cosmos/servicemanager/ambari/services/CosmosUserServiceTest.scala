@@ -14,11 +14,11 @@ package es.tid.cosmos.servicemanager.ambari.services
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.{ClusterUser, ComponentDescription}
 
-class CosmosUserTest extends FlatSpec with MustMatchers {
+class CosmosUserServiceTest extends FlatSpec with MustMatchers {
   "A Cosmos user service" must "have a master and a slave components" in {
-    val description = new CosmosUser("userName", "password")
+    val description = new CosmosUserService(ClusterUser("userName", "public_key"))
     description.name must equal("COSMOS_USER")
     description.components must (
       have length (2) and

@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.{ClusterUser, ComponentDescription}
 import es.tid.cosmos.servicemanager.ambari.configuration.{ServiceConfiguration, ConfigurationBundle}
 import es.tid.cosmos.servicemanager.util.SshKeyGenerator
 
@@ -19,7 +19,7 @@ import es.tid.cosmos.servicemanager.util.SshKeyGenerator
  * Class for setting up a cluster user by presenting the configuration as
  * a service description.
  */
-class CosmosUser(userName: String, passwordHash: String) extends AmbariServiceDescription {
+class CosmosUserService(user: ClusterUser) extends AmbariServiceDescription {
   override val name: String = "COSMOS_USER"
 
   override val components: Seq[ComponentDescription] = Seq(
@@ -31,13 +31,14 @@ class CosmosUser(userName: String, passwordHash: String) extends AmbariServiceDe
     ConfigurationBundle(userConfiguration(masterName))
 
   private def userConfiguration(masterName: String) = {
-    val sshKeys = SshKeyGenerator.newKeys(userName, masterName)
+    val sshKeys = SshKeyGenerator.newKeys(user.userName, masterName)
     ServiceConfiguration("cosmos-user", "version1", Map(
-      "user" -> userName,
-      "password" -> passwordHash,
-      "ssh_private_key" -> sshKeys.privateKey,
-      "ssh_public_key" -> sshKeys.publicKey,
-      "ssh_authorized_keys" -> sshKeys.authorizedKey
+      "user" -> user.userName,
+      "master" -> masterName,
+      "ssh_master_private_key" -> sshKeys.privateKey,
+      "ssh_master_public_key" -> sshKeys.publicKey,
+      "ssh_master_authorized_keys" -> user.publicKey,
+      "ssh_slave_authorized_keys" -> sshKeys.authorizedKey
     ))
   }
 }

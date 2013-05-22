@@ -38,9 +38,10 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers
     val sm = new AmbariServiceManager(
       new AmbariServer("cosmos.local", 8080, "admin", "admin"),
       infrastructureProvider)
+    val user = ClusterUser("username", "publicKey")
     try {
       val id = sm.createCluster(
-        name = "test", 1, sm.services)
+        name = "test", 1, sm.services(user))
       val description = sm.describeCluster(id)
       description.get.state must be (Provisioning)
       val endState = waitForClusterCompletion(id, sm)

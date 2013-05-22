@@ -19,7 +19,7 @@ import play.api.libs.json._
 import play.api.mvc._
 
 import es.tid.cosmos.api.controllers.common.{formatInternalException, JsonController}
-import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
+import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager, ClusterId}
 
 /**
  * Resource that represents the whole set of clusters.
@@ -49,8 +49,10 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController {
       dataType = "es.tid.cosmos.api.controllers.clusters.CreateClusterParams")
   ))
   def createCluster = JsonBodyAction[CreateClusterParams] { (request, body) =>
+    // FIXME: Replace with actual user
+    val user = ClusterUser("replaceMe", "replaceMe")
     Try(serviceManager.createCluster(
-      body.name, body.size, serviceManager.services)) match {
+      body.name, body.size, serviceManager.services(user))) match {
       case Success(id: ClusterId) => {
         Logger.info(s"Provisioning new cluster $id")
         val reference: ClusterReference = ClusterReference(id)(request)

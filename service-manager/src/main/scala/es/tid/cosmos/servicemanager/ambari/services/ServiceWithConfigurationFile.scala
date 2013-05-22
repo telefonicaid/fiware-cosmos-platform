@@ -11,15 +11,13 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationLoader
 
 /**
- * Representation of the Oozie service.
+ * Trait for service descriptions that have a configuration file.
  */
-object Oozie extends ServiceWithConfigurationFile {
-  override val name: String = "OOZIE"
+trait ServiceWithConfigurationFile extends AmbariServiceDescription with ConfigurationLoader {
+  private lazy val config = load(name)
 
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("OOZIE_SERVER", isMaster = true),
-    ComponentDescription("OOZIE_CLIENT", isMaster = true))
+  override def contributions(masterNode: String) = config.build(masterNode)
 }

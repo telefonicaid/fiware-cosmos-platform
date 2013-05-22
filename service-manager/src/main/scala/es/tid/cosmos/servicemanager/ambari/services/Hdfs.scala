@@ -16,7 +16,7 @@ import es.tid.cosmos.servicemanager.ComponentDescription
 /**
  * Representation of the HDFS service.
  */
-object Hdfs extends AmbariServiceDescription {
+object Hdfs extends ServiceWithConfigurationFile {
   override val name: String = "HDFS"
 
   override val components: Seq[ComponentDescription] = Seq(

@@ -20,6 +20,13 @@ trait RequestHandler {
 }
 
 trait RequestHandlerFactory {
-  def createRequestHandler(url: RequestBuilder): RequestHandler = new AmbariRequest(url)
+  def createRequestHandler(url: RequestBuilder): RequestHandler
 }
 
+trait ServiceRequestHandlerFactory extends RequestHandlerFactory {
+  def createRequestHandler(url: RequestBuilder): RequestHandler = new ServiceRequest(url.build)
+}
+
+trait BootstrapRequestHandlerFactory extends RequestHandlerFactory {
+  def createRequestHandler(url: RequestBuilder): RequestHandler = new BootstrapRequest(url.build)
+}

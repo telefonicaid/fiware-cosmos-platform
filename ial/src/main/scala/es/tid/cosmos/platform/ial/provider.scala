@@ -43,9 +43,22 @@ trait InfrastructureProvider {
    *         wrapped by a Try object.
    */
   def createMachines(
-      namePrefix: String,
-      profile: MachineProfile.Value,
-      numberOfMachines: Int): Try[Seq[Future[MachineState]]]
+    namePrefix: String,
+    profile: MachineProfile.Value,
+    numberOfMachines: Int): Try[Seq[Future[MachineState]]]
+
+  /**
+   * Release the machines so that its resources can be reused in further createMachine requests
+   *
+   * @param machines The set of machines to be released.
+   * @return         a future which terminates once the release has completed
+   */
+  def releaseMachines(machines: MachineState*): Future[Unit]
+
+  /**
+   * The ssh key that enables root access to the machines
+   */
+  val rootSshKey: String
 }
 
 /**

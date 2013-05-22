@@ -1,4 +1,3 @@
-
 /*
  * Telefónica Digital - Product Development and Innovation
  *
@@ -26,6 +25,7 @@ import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureP
  * Manager of the Ambari service configuration workflow.
  * It allows creating clusters with specified services using Ambari.
  *
+ * @constructor
  * @param provisioner the cluster provisioner
  * @param infrastructureProvider the host-machines provider
  */
@@ -60,24 +60,58 @@ class AmbariServiceManager(
     serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
     val id = new ClusterId
     val machineFutures = infrastructureProvider.createMachines(
-      name, MachineProfile.M, clusterSize).get.toList
-    val cluster_> = provisioner.createCluster(id.toString, stackVersion)
-    val (master_>, slaveFutures) = masterAndSlaves(addHosts(machineFutures, cluster_>))
+      name, MachineProfile.M, clusterSize).get
+    val cluster_> = for {
+      machines <- Future.sequence(machineFutures)
+      _ <- provisioner.bootstrapMachines(machines, infrastructureProvider.rootSshKey)
+      _ <- ensureHostsRegistered(machines.map(_.hostname))
+      cluster <- provisioner.createCluster(id.toString, stackVersion)
+    } yield cluster
+    val (master_>, slaveFutures) = masterAndSlaves(addHosts(machineFutures, cluster_>).toList)
     val configuredCluster_> = applyConfiguration(
       cluster_>, master_>, this::serviceDescriptions.toList)
     val serviceFutures  = serviceDescriptions.map(
       createService(configuredCluster_>, master_>, slaveFutures, _)).toList
 
     val deployedServices_> = installInOrder(serviceFutures)
-    val description = new MutableClusterDescription(id, name, clusterSize, deployedServices_>)
+    val description = new MutableClusterDescription(
+      id, name, clusterSize, deployedServices_>, Future.sequence(machineFutures))
     clusters.synchronized {
       clusters = clusters.updated(id, description)
     }
     id
   }
 
+  private def ensureHostsRegistered(hostnames: Seq[String]): Future[Unit] =
+    provisioner.registeredHostnames.flatMap(registeredHostnames =>
+      if (hostnames.diff(registeredHostnames).nonEmpty) {
+        Thread.sleep(1000)
+        ensureHostsRegistered(hostnames)
+      } else
+        Future.successful())
+
+  private def stopService(cluster: Cluster)(name: String): Future[Service] =
+    for {
+      service <- cluster.getService(name)
+      stoppedService <- service.stop()
+    } yield stoppedService
+
   override def terminateCluster(id: ClusterId): Future[Unit] = {
-    throw new UnsupportedOperationException("terminate cluster operation not implemented")
+    require(clusters.contains(id), s"Cluster $id does not exist")
+    val stoppedServices_> = for {
+      cluster <- provisioner.getCluster(id.toString)
+      stoppedServices <- Future.traverse(cluster.serviceNames)(stopService(cluster))
+    } yield stoppedServices
+
+    val termination_> = for {
+      _ <- stoppedServices_>
+      _ <- provisioner.removeCluster(id.toString)
+      machines <- clusters(id).machines_>
+      _ <- provisioner.teardownMachines(machines, infrastructureProvider.rootSshKey)
+      _ <- infrastructureProvider.releaseMachines(machines: _*)
+    } yield ()
+    clusters(id).terminate(termination_>)
+    termination_>
   }
 
   override def contributions(masterName: String) = load("global-basic").build(masterName)
@@ -133,8 +167,8 @@ class AmbariServiceManager(
   }
 
   private def addHosts(
-    machineFutures: List[Future[MachineState]],
-    cluster_> : Future[Cluster]): List[Future[Host]] = {
+    machineFutures: Seq[Future[MachineState]],
+    cluster_> : Future[Cluster]): Seq[Future[Host]] = {
     for {
       machine_> <- machineFutures
     } yield for {

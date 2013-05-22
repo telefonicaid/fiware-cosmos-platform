@@ -17,7 +17,7 @@ class ServiceException(message: String, cause: Throwable = null)
   extends RuntimeException(message, cause)
 
 case class RequestException(request: Request, message: String, cause: Throwable = null)
-  extends ServiceException(message, cause)
+  extends ServiceException(s"""$message \n Request: $request""", cause)
 
 case class DeploymentException(href: String, cause: Throwable = null)
   extends ServiceException(

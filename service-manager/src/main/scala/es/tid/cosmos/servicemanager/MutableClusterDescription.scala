@@ -14,6 +14,8 @@ package es.tid.cosmos.servicemanager
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+import es.tid.cosmos.platform.ial.MachineState
+
 /**
  * Provides up-to-date information on the state of a cluster.
  *
@@ -24,7 +26,11 @@ import scala.concurrent.Future
  * @param deployment_>  Future that represents the deployment of the cluster
  */
 class MutableClusterDescription(
-    val id: ClusterId, val name: String, val size: Int, val deployment_> : Future[Any]) {
+    val id: ClusterId,
+    val name: String,
+    val size: Int,
+    val deployment_> : Future[Any],
+    val machines_> : Future[Seq[MachineState]]) {
 
   def view: ClusterDescription = new ClusterDescription {
     override val state: ClusterState = MutableClusterDescription.this.state
@@ -34,6 +40,21 @@ class MutableClusterDescription(
   }
 
   @volatile var state: ClusterState = Provisioning
+
+  /**
+   * Signals that the cluster is entering termination
+   *
+   * @param termination_> The termination future
+   */
+  def terminate(termination_> : Future[Any]) {
+    state = Terminating
+    for {
+      _ <- deployment_>
+      _ <- termination_>
+    } state = Terminated
+
+    termination_>.onFailure({case err => { state = new Failed(err)}})
+  }
 
   deployment_>.onSuccess({case _ => state = Running})
   deployment_>.onFailure({case err => { state = new Failed(err) }})

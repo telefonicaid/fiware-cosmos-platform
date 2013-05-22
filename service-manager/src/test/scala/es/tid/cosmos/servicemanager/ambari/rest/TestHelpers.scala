@@ -44,8 +44,11 @@ trait FakeAmbariRestReplies extends RequestProcessor {
     val SpecificComponent = ".+/api/v1/.+/components/([^/]+)".r
     val AllHosts = ".+/api/v1/clusters/[^/]+/hosts".r
     val SpecificHostQuery = """.+/api/v1/.*hosts\?Hosts%2Fhost_name=(.+)""".r
+    val AllServerHosts = ".+/api/v1/hosts".r
     val SpecificHost = ".+/api/v1/.*hosts/([^/]+)".r
     val SpecificRequest = """.+/api/v1/.*request/([^/]+)\?.+""".r
+    val BootStrap = """.+/api/v1/bootstrap""".r
+    val BootStrapRequest = """.+/api/v1/bootstrap/([^/]+)""".r
     (request.getMethod, request.getUrl) match {
       case (GET, AllClusters()) => responses.listClusters
       case (GET, SpecificCluster(name)) => responses.getCluster(name)
@@ -54,6 +57,7 @@ trait FakeAmbariRestReplies extends RequestProcessor {
       case (PUT, SpecificCluster(name)) =>
         responses.applyConfiguration(name, parse(request.getStringData) \\ "properties")
       case (GET, SpecificService(name)) => responses.getService(name)
+      case (GET, AllServerHosts()) => responses.serverHosts
       case (POST, AllServices()) => responses.addService(request.getStringData)
       case (GET, SpecificHost(name)) => responses.getHost(name)
       case (POST, AllHosts()) => responses.addHost(request.getStringData)
@@ -62,6 +66,9 @@ trait FakeAmbariRestReplies extends RequestProcessor {
       case (POST, SpecificComponent(name)) => responses.addServiceComponent(name)
       case (PUT, SpecificService(name)) => responses.changeServiceState(name, request.getStringData)
       case (GET, SpecificRequest(name)) => responses.getRequest(name)
+      case (POST, BootStrap()) => responses.bootstrap(request.getStringData)
+      case (DELETE, BootStrap()) => responses.teardown(request.getStringData)
+      case (GET, BootStrapRequest(id)) => responses.bootstrapRequest(id)
     }
   }
 }
@@ -85,6 +92,10 @@ trait MockedRestResponsesComponent extends MockitoSugar {
     def addServiceComponent(name: String): Future[JValue]
     def changeServiceState(name: String, body: String): Future[JValue]
     def getRequest(name: String): Future[JValue]
+    def bootstrap(body: String): Future[JValue]
+    def teardown(body: String): Future[JValue]
+    def bootstrapRequest(id: String): Future[JValue]
+    def serverHosts: Future[JValue]
   }
 }
 

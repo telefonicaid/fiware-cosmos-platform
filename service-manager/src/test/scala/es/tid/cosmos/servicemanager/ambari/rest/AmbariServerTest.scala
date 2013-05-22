@@ -12,14 +12,16 @@ package es.tid.cosmos.servicemanager.ambari.rest
 
 import scala.concurrent.Future
 
-import com.ning.http.client.Request
+import com.ning.http.client.{RequestBuilder, Request}
 import net.liftweb.json.JsonAST.JNothing
 import net.liftweb.json.JsonDSL._
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{when, verify}
 import org.scalatest.BeforeAndAfter
 import org.scalatest.mock.MockitoSugar
-import es.tid.cosmos.servicemanager.ServiceException
+
+import es.tid.cosmos.platform.ial.{MachineStatus, MachineProfile, Id, MachineState}
+import es.tid.cosmos.servicemanager.{RequestException, ServiceException}
 
 class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var ambariServer: AmbariServer with MockedRestResponsesComponent = _
@@ -29,7 +31,13 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
       serverUrl = "",
       port = 0,
       username = "",
-      password = "") with FakeAmbariRestReplies with MockedRestResponsesComponent
+      password = "")
+      with FakeAmbariRestReplies with MockedRestResponsesComponent with RequestHandlerFactory {
+      override def createRequestHandler(url: RequestBuilder): RequestHandler =
+        new RequestHandler {
+          def ensureFinished: Future[Unit] = Future.successful()
+        }
+    }
   }
 
   it must "fail when server authentication fails" in {
@@ -100,4 +108,124 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
     ambariServer.responses.removeCluster("badcluster"),
     ambariServer.removeCluster("badcluster")
   )
+
+  it must "be able to bootstrap a set of machines" in {
+    addMock(
+      ambariServer.responses.bootstrap(any()),
+      ("requestId" -> 1) ~
+      ("status" -> "OK")
+    )
+    get(ambariServer.bootstrapMachines(
+      Seq(MachineState(
+        id = Id[MachineState]("foo"),
+        name = "foo",
+        profile = MachineProfile.X,
+        status = MachineStatus.Running,
+        hostname = "foo.com",
+        ipAddress = "127.0.0.1")),
+      "dummy-ssh-key"))
+    verify(ambariServer.responses).bootstrap(any())
+  }
+
+  it must "raise an error on failed bootstrap" in {
+    addMock(
+      ambariServer.responses.bootstrap(any()),
+      ("status" -> "ERROR")
+    )
+    evaluating {
+      get(ambariServer.bootstrapMachines(
+        Seq(MachineState(
+          id = Id[MachineState]("foo"),
+          name = "foo",
+          profile = MachineProfile.X,
+          status = MachineStatus.Running,
+          hostname = "foo.com",
+          ipAddress = "127.0.0.1")),
+        "dummy-ssh-key"))
+    } must produce [RequestException]
+    verify(ambariServer.responses).bootstrap(any())
+  }
+
+  it must "propagate errors when bootstrapping" in errorPropagation(
+    ambariServer.responses.bootstrap(any()),
+    ambariServer.bootstrapMachines(
+      Seq(MachineState(
+        id = Id[MachineState]("foo"),
+        name = "foo",
+        profile = MachineProfile.X,
+        status = MachineStatus.Running,
+        hostname = "foo.com",
+        ipAddress = "127.0.0.1")),
+      "dummy-ssh-key")
+  )
+
+  it must "be able to teardown a set of machines" in {
+    addMock(
+      ambariServer.responses.teardown(any()),
+      ("requestId" -> 1) ~
+      ("status" -> "OK")
+    )
+    get(ambariServer.teardownMachines(
+      Seq(MachineState(
+        id = Id[MachineState]("foo"),
+        name = "foo",
+        profile = MachineProfile.X,
+        status = MachineStatus.Running,
+        hostname = "foo.com",
+        ipAddress = "127.0.0.1")),
+      "dummy-ssh-key"))
+    verify(ambariServer.responses).teardown(any())
+  }
+
+  it must "propagate errors when teardown" in errorPropagation(
+    ambariServer.responses.teardown(any()),
+    ambariServer.teardownMachines(
+      Seq(MachineState(
+        id = Id[MachineState]("foo"),
+        name = "foo",
+        profile = MachineProfile.X,
+        status = MachineStatus.Running,
+        hostname = "foo.com",
+        ipAddress = "127.0.0.1")),
+      "dummy-ssh-key")
+  )
+
+  it must "raise an error on failed teardown" in {
+    addMock(
+      ambariServer.responses.teardown(any()),
+      ("status" -> "ERROR")
+    )
+    evaluating {
+      get(ambariServer.teardownMachines(
+        Seq(MachineState(
+          id = Id[MachineState]("foo"),
+          name = "foo",
+          profile = MachineProfile.X,
+          status = MachineStatus.Running,
+          hostname = "foo.com",
+          ipAddress = "127.0.0.1")),
+        "dummy-ssh-key"))
+    } must produce [RequestException]
+    verify(ambariServer.responses).teardown(any())
+  }
+
+  it must "provide the list of registered hostnames (multiple hosts)" in {
+    addMock(
+      ambariServer.responses.serverHosts,
+      ("href" -> "www.some.server.com/api/v1/hosts") ~
+      ("items" -> List("Hosts" -> ("host_name" -> "foo"), "Hosts" -> ("host_name" -> "bar")))
+    )
+    get(ambariServer.registeredHostnames) must be (Seq("foo", "bar"))
+    verify(ambariServer.responses).serverHosts
+  }
+
+  it must "provide the list of registered hostnames (single host)" in {
+    addMock(
+      ambariServer.responses.serverHosts,
+      ("href" -> "www.some.server.com/api/v1/hosts") ~
+      ("items" -> List("Hosts" -> ("host_name" -> "foo")))
+    )
+    get(ambariServer.registeredHostnames) must be (Seq("foo"))
+    verify(ambariServer.responses).serverHosts
+  }
 }

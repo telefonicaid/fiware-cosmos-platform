@@ -29,7 +29,7 @@ import es.tid.cosmos.servicemanager.ServiceError
  * @param clusterBaseUrl the base url that describes the cluster
  */
 class Service private[ambari](serviceInfo: JValue, clusterBaseUrl: Request)
-  extends RequestProcessor with RequestHandlerFactory {
+  extends RequestProcessor with ServiceRequestHandlerFactory {
   val name = extractInfo("service_name")
 
   override val toString = s"Service($name)[Cluster(${extractInfo("cluster_name")})]"

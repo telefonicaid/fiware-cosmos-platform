@@ -25,11 +25,15 @@ trait RequestProcessor {
    */
   def performRequest(request: RequestBuilder): Future[JValue] = {
     def handleFailure(throwable: Throwable) = throwable match {
-      case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => RequestException(
-        request.build,
-        s"""Error when performing Http request. Http code ${ex.getCause.asInstanceOf[StatusCode].code}
-          Body: ${request.build.getStringData}""",
-        ex.getCause)
+      case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => {
+        RequestException(
+          request.build,
+          s"""Error when performing Http request.
+          Http code ${ex.getCause.asInstanceOf[StatusCode].code}
+          Body: ${request.build.getStringData}"
+          Message: ${ex.getMessage}""",
+          ex.getCause)
+      }
       case other => other
     }
     Http(request.OK(as.Json)).transform(identity, handleFailure)

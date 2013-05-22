@@ -35,4 +35,8 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
       status = MachineStatus.Running,
       hostname = s"cosmos.local$index",
       ipAddress = s"192.168.50.${index + 4}")
+
+  def releaseMachines(machines: MachineState*): Future[Unit] = Future.successful()
+
+  val rootSshKey: String = "FIXME"
 }

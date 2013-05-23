@@ -49,8 +49,7 @@ abstract class AmbariRequest(url: Request) extends RequestProcessor with Request
    * not successful, the future contains a failed value.
    */
   override def ensureFinished: Future[Unit] = {
-    val request = getRequest(url)
-    performRequest(request)
+    performRequest(getRequest(url))
       .map(getStatusFromJson)
       .flatMap({
         case Status.WAITING => future { blocking {

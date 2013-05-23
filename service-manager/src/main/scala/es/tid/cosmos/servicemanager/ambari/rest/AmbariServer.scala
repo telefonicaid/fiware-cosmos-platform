@@ -13,11 +13,12 @@ package es.tid.cosmos.servicemanager.ambari.rest
 
 import scala.concurrent.Future
 
-import dispatch.{Future => _, _}, Defaults._
-import net.liftweb.json.{compact, render}
-import net.liftweb.json.JsonAST._
-import net.liftweb.json.JsonDSL._
 import com.ning.http.client.RequestBuilder
+import dispatch.{Future => _, _}, Defaults._
+import net.liftweb.json._
+import net.liftweb.json.JsonDSL._
+import net.liftweb.json.JsonAST.{JField, JString}
+import net.liftweb.json.render
 
 import es.tid.cosmos.platform.ial.MachineState
 import es.tid.cosmos.servicemanager.{ServiceError, RequestException}
@@ -33,6 +34,7 @@ import es.tid.cosmos.servicemanager.{ServiceError, RequestException}
  */
 class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
   extends ClusterProvisioner with RequestProcessor with BootstrapRequestHandlerFactory {
+  implicit private val formats = DefaultFormats
 
   private[this] def baseUrl = host(serverUrl, port).as_!(username, password) / "api" / "v1"
 
@@ -52,24 +54,28 @@ class AmbariServer(serverUrl: String, port: Int, username: String, password: Str
     performRequest(baseUrl.DELETE / "clusters" / name).map(_ => ())
 
   private def performBootstrapAction(
-    machines: Seq[MachineState],
-    sshKey: String,
-    builderWithMethod: RequestBuilder): Future[Unit] = {
-    val hosts = compact(render(machines.map(_.hostname)))
+      machines: Seq[MachineState],
+      sshKey: String,
+      builderWithMethod: RequestBuilder): Future[Unit] = {
     val configuredBuilder = (builderWithMethod / "bootstrap")
-      .setBody(s"""{"hosts": $hosts, "sshKey": "$sshKey", "verbose": true}""")
+      .setBody(compact(render(
+        ("hosts" -> machines.map(_.hostname)) ~
+        ("sshKey" -> sshKey) ~
+        ("verbose" -> true))))
       .addHeader("Content-Type", "application/json")
-    performRequest(configuredBuilder)
-      .map(response => response \ "status" match {
+    def extractId(response: JValue) = response \ "status" match {
       case JString("OK") => {
-        val JInt(a) = (response \ "requestId")
-        a.toInt
+        (response \ "requestId").extract[Int]
       }
       case JString("ERROR") => throw RequestException(
         configuredBuilder.build,
         s"Bootstrap request returned an error: ${response \\ "log"}")
       case _ => throw ServiceError(s"Unexpected Ambari response for bootstrap request: $response")
-    }).flatMap(requestId => createRequestHandler(baseUrl / "bootstrap" / requestId).ensureFinished)
+    }
+    for {
+      response <- performRequest(configuredBuilder)
+      _ <- createRequestHandler(baseUrl / "bootstrap" / extractId(response)).ensureFinished
+    } yield ()
   }
 
   override def bootstrapMachines(machines: Seq[MachineState], sshKey: String): Future[Unit] =
@@ -77,12 +83,14 @@ class AmbariServer(serverUrl: String, port: Int, username: String, password: Str
 
   override def teardownMachines(machines: Seq[MachineState], sshKey: String): Future[Unit] =
     performBootstrapAction(machines, sshKey, baseUrl.DELETE)
-
   override def registeredHostnames: Future[Seq[String]] =
     performRequest(baseUrl / "hosts").map(json =>
       (json \ "items").children.map(item =>
         item \\ "host_name" match {
           case JString(hostname) => hostname
           case _ => throw ServiceError("Ambari's host response does not contain a host_name element")
-    }))
+        }))
+}
+
+object AmbariServer {
 }

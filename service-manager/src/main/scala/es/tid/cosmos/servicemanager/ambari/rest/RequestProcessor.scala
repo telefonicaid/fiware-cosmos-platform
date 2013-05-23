@@ -29,9 +29,9 @@ trait RequestProcessor {
         RequestException(
           request.build,
           s"""Error when performing Http request.
-          Http code ${ex.getCause.asInstanceOf[StatusCode].code}
-          Body: ${request.build.getStringData}"
-          Message: ${ex.getMessage}""",
+          |Http code ${ex.getCause.asInstanceOf[StatusCode].code}
+          |Body: ${request.build.getStringData}"
+          |Message: ${ex.getMessage}""".stripMargin,
           ex.getCause)
       }
       case other => other

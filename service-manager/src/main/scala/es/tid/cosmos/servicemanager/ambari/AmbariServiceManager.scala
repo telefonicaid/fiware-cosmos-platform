@@ -108,7 +108,7 @@ class AmbariServiceManager(
       _ <- provisioner.removeCluster(id.toString)
       machines <- clusters(id).machines_>
       _ <- provisioner.teardownMachines(machines, infrastructureProvider.rootSshKey)
-      _ <- infrastructureProvider.releaseMachines(machines: _*)
+      _ <- infrastructureProvider.releaseMachines(machines)
     } yield ()
     clusters(id).terminate(termination_>)
     termination_>

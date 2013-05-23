@@ -10,15 +10,18 @@
  */
 package es.tid.cosmos.servicemanager.ambari.rest
 
+import com.ning.http.client.Request
 import dispatch.url
 import net.liftweb.json.JsonDSL._
 import org.mockito.Mockito._
+
 import es.tid.cosmos.servicemanager.ServiceException
 
 class ServiceRequestTest extends AmbariTestBase {
+  var dummyUrl: Request = url("http://www.some.request.url.com/api/v1/request/1").build
+
   it must "handle instant completions" in {
-    val request = new ServiceRequest(
-      url("http://www.some.request.url.com/api/v1/request/1").build)
+    val request = new ServiceRequest(dummyUrl)
       with FakeAmbariRestReplies with MockedRestResponsesComponent {
         addMock(
           responses.getRequest("1"),
@@ -31,8 +34,7 @@ class ServiceRequestTest extends AmbariTestBase {
   }
 
   it must "handle waterfalled completions of multiple tasks" in {
-    val request = new ServiceRequest(
-      url("http://www.some.request.url.com/api/v1/request/1").build)
+    val request = new ServiceRequest(dummyUrl)
       with FakeAmbariRestReplies with MockedRestResponsesComponent {
       addMock(
         responses.getRequest("1"),
@@ -54,8 +56,7 @@ class ServiceRequestTest extends AmbariTestBase {
   }
 
   it must "error if a single task ends up in a failed state" in {
-    val request = new ServiceRequest(
-      url("http://www.some.request.url.com/api/v1/request/1").build)
+    val request = new ServiceRequest(dummyUrl)
       with FakeAmbariRestReplies with MockedRestResponsesComponent {
       addMock(
         responses.getRequest("1"),
@@ -77,8 +78,7 @@ class ServiceRequestTest extends AmbariTestBase {
     } must produce [ServiceException]
     verify(request.responses, times(3)).getRequest("1")
 
-    val request2 = new ServiceRequest(
-      url("http://www.some.request.url.com/api/v1/request/1").build)
+    val request2 = new ServiceRequest(dummyUrl)
       with FakeAmbariRestReplies with MockedRestResponsesComponent {
       addMock(
         responses.getRequest("1"),

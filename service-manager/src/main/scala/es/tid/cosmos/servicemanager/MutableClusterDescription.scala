@@ -20,10 +20,12 @@ import es.tid.cosmos.platform.ial.MachineState
  * Provides up-to-date information on the state of a cluster.
  *
  * @constructor
- * @param id          Id of the cluster
- * @param name        Name of the cluster
- * @param size        Size of the cluster
+ * @param id            Id of the cluster
+ * @param name          Name of the cluster
+ * @param size          Size of the cluster
  * @param deployment_>  Future that represents the deployment of the cluster
+ * @param machines_>    Future that represents the machines of the cluster.
+ *                      Used to terminate the cluster at the IAL level
  */
 class MutableClusterDescription(
     val id: ClusterId,
@@ -48,10 +50,11 @@ class MutableClusterDescription(
    */
   def terminate(termination_> : Future[Any]) {
     state = Terminating
-    for {
-      _ <- deployment_>
-      _ <- termination_>
-    } state = Terminated
+    for (
+      _ <- deployment_>;
+      _ <- termination_>) {
+      state = Terminated
+    }
 
     termination_>.onFailure({case err => { state = new Failed(err)}})
   }

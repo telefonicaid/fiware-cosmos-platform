@@ -39,7 +39,7 @@ class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends Infrastru
     }
   }
 
-  def releaseMachines(machines: MachineState*): Future[Unit] =
+  def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
     throw new UnsupportedOperationException("This method is not yet implemented")
 
   val rootSshKey: String =  throw new UnsupportedOperationException("This method is not yet implemented")

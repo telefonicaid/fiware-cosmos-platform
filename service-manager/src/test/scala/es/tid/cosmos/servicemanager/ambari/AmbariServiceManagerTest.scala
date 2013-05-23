@@ -106,7 +106,7 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
     clusterId: ClusterId) {
     verify(infrastructureProvider)
       .createMachines("clusterName", MachineProfile.M, machines.size)
-    verify(infrastructureProvider).releaseMachines(machines: _*)
+    verify(infrastructureProvider).releaseMachines(machines)
     verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
     verify(provisioner).bootstrapMachines(machines, infrastructureProvider.rootSshKey)
     verify(provisioner).removeCluster(clusterId.toString)

@@ -11,14 +11,21 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import es.tid.cosmos.api.authorization.ApiCredentials
+
 /**
  * Represents the Cosmos-specific user profile.
  *
- * @param id      Internal user id
- * @param handle  User login
- * @param keys    Public keys
+ * @param id             Internal user id
+ * @param handle         User login
+ * @param apiCredentials Credentials for the REST API
+ * @param keys           Public keys
  */
-case class CosmosProfile(id: Long, handle: String, keys: NamedKey*)
+case class CosmosProfile(
+    id: Long,
+    handle: String,
+    apiCredentials: ApiCredentials,
+    keys: NamedKey*)
 
 /**
  * A public key annotated with a user-defined name.

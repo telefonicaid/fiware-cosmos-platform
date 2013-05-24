@@ -56,7 +56,7 @@ class Pages(oauthClient: OAuthClient) extends Controller {
         (for {
           token <- oauthClient.requestAccessToken(code)
           userProfile <- oauthClient.requestUserProfile(token)
-          maybeCosmosId = DB.withConnection { implicit c => ProfileDao.getCosmosId(userProfile.id) }
+          maybeCosmosId = DB.withConnection { implicit c => CosmosProfileDao.getCosmosId(userProfile.id) }
         } yield {
           Logger.info(s"Authorized with token $token")
           Redirect(routes.Pages.index()).withSession(session
@@ -77,7 +77,7 @@ class Pages(oauthClient: OAuthClient) extends Controller {
         formWithErrors => registrationPage(userProfile, formWithErrors),
         registration => {
           val newUserId: Long = DB.withConnection { implicit c =>
-            ProfileDao.registerUserInDatabase(userProfile.id, registration)
+            CosmosProfileDao.registerUserInDatabase(userProfile.id, registration)
           }
           Redirect(routes.Pages.index()).withSession(session.setCosmosId(newUserId))
         })
@@ -103,7 +103,7 @@ class Pages(oauthClient: OAuthClient) extends Controller {
   private def userProfile(implicit request: RequestHeader) = {
     DB.withConnection { implicit c =>
       val userProfile = session.userProfile.get
-      Ok(views.html.profile(userProfile, ProfileDao.lookupByUserId(userProfile.id).get))
+      Ok(views.html.profile(userProfile, CosmosProfileDao.lookupByUserId(userProfile.id).get))
     }
   }
 

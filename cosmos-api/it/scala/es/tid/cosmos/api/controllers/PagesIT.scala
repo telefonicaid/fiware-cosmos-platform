@@ -22,7 +22,7 @@ import play.api.mvc.{Session, Result}
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.pages.{CosmosSession, Registration, ProfileDao}
+import es.tid.cosmos.api.controllers.pages.{CosmosSession, Registration, CosmosProfileDao}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.UserProfile
 import es.tid.cosmos.api.mocks.{User, MockedServices}
@@ -118,7 +118,7 @@ class PagesIT extends FlatSpec with MustMatchers with MockedServices {
     DB.withConnection { implicit c =>
       for (User(tuId, _, _, email) <- users) {
         val handle = email.map(_.split('@')(0)).getOrElse("root")
-        ProfileDao.registerUserInDatabase(tuId, Registration(handle, "pk1234"))
+        CosmosProfileDao.registerUserInDatabase(tuId, Registration(handle, "pk1234"))
       }
     }
   }

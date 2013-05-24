@@ -16,11 +16,18 @@ import java.sql.Connection
 import anorm._
 import anorm.SqlParser._
 
-object ProfileDao {
+import es.tid.cosmos.api.authorization.ApiCredentials
+
+object CosmosProfileDao {
   def registerUserInDatabase(userId: String, reg: Registration)(implicit c: Connection): Long = {
-    val cosmosId = SQL("INSERT INTO user(user_id, handle) VALUES ({user_id}, {handle})")
-      .on("user_id" -> userId, "handle" -> reg.handle)
-      .executeInsert(scalar[Long].single)
+    val credentials = ApiCredentials.random
+    val cosmosId = SQL("""INSERT INTO user(user_id, handle, api_key, api_secret)
+                        | VALUES ({user_id}, {handle}, {api_key}, {api_secret})""".stripMargin).on(
+      "user_id" -> userId,
+      "handle" -> reg.handle,
+      "api_key" -> credentials.apiKey,
+      "api_secret" -> credentials.apiSecret
+    ).executeInsert(scalar[Long].single)
     SQL("""INSERT INTO public_key(cosmos_id, name, signature)
            VALUES ({cosmos_id}, 'default', {signature})""")
       .on("cosmos_id" -> cosmosId, "signature" -> reg.publicKey)
@@ -34,18 +41,16 @@ object ProfileDao {
       .as(scalar[Long].singleOpt)
 
   def lookupByUserId(userId: String)(implicit c: Connection): Option[CosmosProfile] = {
-    val rows = SQL("""SELECT u.cosmos_id, u.handle, p.name, p.signature
+    val rows = SQL("""SELECT u.cosmos_id, u.handle, u.api_key, u.api_secret, p.name, p.signature
                      | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                      | WHERE u.user_id = {user_id}""".stripMargin)
       .on("user_id" -> userId)
       .apply()
       .toList
     rows.headOption.map {
-      case Row(id: Int, handle: String, _, _) => {
-        val namedKeys = rows.collect {
-          case Row(_, _, name: String, signature: String) => NamedKey(name, signature)
-        }
-        CosmosProfile(id, handle, namedKeys: _*)
+      case Row(id: Int, handle: String, apiKey: String, apiSecret: String, _, _) => {
+        val namedKeys = rows.map(row => NamedKey(row[String]("name"), row[String]("signature")))
+        CosmosProfile(id, handle, ApiCredentials(apiKey, apiSecret), namedKeys: _*)
       }
     }
   }

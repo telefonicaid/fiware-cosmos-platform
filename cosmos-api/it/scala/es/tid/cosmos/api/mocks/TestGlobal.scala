@@ -9,12 +9,16 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.servicemock
+package es.tid.cosmos.api.mocks
 
 import es.tid.cosmos.api.AbstractGlobal
 import es.tid.cosmos.api.controllers.Application
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
+import es.tid.cosmos.api.oauth2.TuIdOAuthClientComponent
 
 /**
  * Custom global Play! settings to configure mocked services.
  */
-object TestGlobal extends AbstractGlobal(new Application with MockedServiceManagerComponent)
+object TestGlobal extends AbstractGlobal(new Application
+  with TuIdOAuthClientComponent
+  with MockedServiceManagerComponent)

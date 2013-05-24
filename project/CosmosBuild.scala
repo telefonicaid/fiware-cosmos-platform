@@ -47,7 +47,7 @@ object CosmosBuild extends Build {
   )
 
   lazy val cosmosApi = (play.Project("cosmos-api", "1.0-SNAPSHOT", path = file("cosmos-api"),
-                        dependencies = Seq(PlayKeys.anorm))
+                        dependencies = Seq(PlayKeys.anorm, PlayKeys.jdbc))
     settings(ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)

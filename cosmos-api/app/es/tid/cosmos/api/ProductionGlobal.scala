@@ -12,11 +12,14 @@
 package es.tid.cosmos.api
 
 import es.tid.cosmos.api.controllers.Application
+import es.tid.cosmos.api.oauth2.TuIdOAuthClientComponent
 import es.tid.cosmos.platform.ial.serverpool.ServerPoolInfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ambari.AmbariServiceManagerComponent
 
 /**
  * Global application settings tied to real services.
  */
-object ProductionGlobal extends AbstractGlobal(
-  new Application with AmbariServiceManagerComponent with ServerPoolInfrastructureProviderComponent)
+object ProductionGlobal extends AbstractGlobal(new Application
+  with TuIdOAuthClientComponent
+  with AmbariServiceManagerComponent
+  with ServerPoolInfrastructureProviderComponent)

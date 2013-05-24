@@ -1,0 +1,48 @@
+@(profile: es.tid.cosmos.api.oauth2.UserProfile,
+    form: Form[es.tid.cosmos.api.controllers.pages.Registration])
+@import es.tid.cosmos.api.controllers.pages
+<!--
+ Telefónica Digital - Product Development and Innovation
+
+ THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+ Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ All rights reserved.
+ -->
+@main("Cosmos API - User registration") {
+    <div class="section">
+        <h1 class="page-title">User registration for @profile.contact</h1>
+
+        <p>Your TU account is not yet associated with cosmos. To get started with us,
+            please add the following details.</p>
+
+        <p>You can generate the required public key with PuTTY
+           (<a href="http://the.earth.li/~sgtatham/putty/0.62/htmldoc/Chapter8.html#pubkey">official docs</a>)
+           OpenSSH (<a href="http://www.openssl.org/docs/HOWTO/keys.txt">official HOWTO</a>)
+           or any other SSH client.</p>
+
+        @helper.form(action = pages.routes.Pages.registerUser) {
+            @helper.inputText(
+                form("handle"),
+                '_label -> "Handle",
+                '_help -> "Used as login name on Cosmos provisioned clusters",
+                '_error -> form.error("handle")
+            )
+
+            @helper.textarea(
+                form("publicKey"),
+                'rows -> 3, 'cols -> 80,
+                '_label -> "Public key",
+                '_help -> "Key for passwordless access to provisioned machines.",
+                '_error -> form.error("publicKey")
+            )
+
+            <div class="actions">
+                <input type="submit" class="btn primary" value="Register"/>
+                <a href="@pages.routes.Pages.logout()" class="btn">Cancel</a>
+            </div>
+        }
+    </div>
+}

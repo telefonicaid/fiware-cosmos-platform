@@ -16,19 +16,24 @@ import play.api.mvc.Controller
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.clusters.ClustersResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
+import es.tid.cosmos.api.controllers.pages.Pages
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
+import es.tid.cosmos.api.oauth2.OAuthClientComponent
 
 /**
  * Web application template to be mixed-in with its dependencies.
  */
 abstract class Application {
-  self: ServiceManagerComponent =>
-  lazy val controllers: Map[Class[Controller], Controller] = controllerMap(
-    new Pages(),
-    new CosmosResource(),
-    new ClustersResource(self.serviceManager),
-    new ClusterResource(self.serviceManager)
-  )
+  self: ServiceManagerComponent with OAuthClientComponent =>
+  lazy val controllers: Map[Class[Controller], Controller] = {
+    val sm = self.serviceManager()
+    controllerMap(
+      new Pages(self.oAuthClient()),
+      new CosmosResource(),
+      new ClustersResource(sm),
+      new ClusterResource(sm)
+    )
+  }
 
   private def controllerMap(controllers: Controller*) = Map(
     (for (controller <- controllers)

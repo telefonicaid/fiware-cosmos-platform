@@ -1,0 +1,36 @@
+@(newAccountUrl: String, authenticateUrl: String, message: Option[String] = None)
+<!--
+ Telefónica Digital - Product Development and Innovation
+
+ THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+ Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ All rights reserved.
+ -->
+@main("Cosmos API") {
+    <div class="section">
+        @if(message.isDefined) {
+            <div class="message">
+                @message.get
+            </div>
+        }
+
+        <h1>Cosmos Platform</h1>
+
+        <h2>Manage your Big Data assets.</h2>
+
+        <img id="tu-id" src="@routes.Assets.at("images/tu.png")" alt="TU logo"/>
+        <ul>
+            <li>Log in with your <a id="login" href="@authenticateUrl">TU|Id</a> identity</li>
+            <li>Or get a <a href="@newAccountUrl/signup/validate/" class="tu-id" target="_blank">new
+                account</a> first</li>
+        </ul>
+
+        <hr/>
+
+        <p>For more information contact us a at
+            <a href="mailto:cosmos-platform@@tid.es">cosmos@@tid.es</a></p>
+    </div>
+}

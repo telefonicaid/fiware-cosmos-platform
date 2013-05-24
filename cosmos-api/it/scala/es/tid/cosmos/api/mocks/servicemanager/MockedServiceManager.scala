@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.servicemock
+package es.tid.cosmos.api.mocks.servicemanager
 
 import java.util.UUID
 import scala.collection.mutable
@@ -22,7 +22,6 @@ import es.tid.cosmos.servicemanager._
  * In-memory, simulated service manager.
  *
  * @param transitionDelay Cluster state transition delay in millis
- * @author sortega
  */
 class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
   private class FakeCluster(override val name: String, override val size: Int,
@@ -45,7 +44,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   override type ServiceDescriptionType = ServiceDescription
 
-  override val services: Seq[ServiceDescriptionType] = Seq()
+  override def services(user: ClusterUser): Seq[ServiceDescriptionType] = Seq()
 
   private val clusters: mutable.Map[ClusterId, FakeCluster] =
     new mutable.HashMap[ClusterId, FakeCluster]

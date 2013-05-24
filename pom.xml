@@ -82,19 +82,21 @@
                     <header>license.txt</header>
                     <strictCheck>false</strictCheck>
                     <excludes>
-                        <exclude>target/**</exclude>
+                        <exclude>**/*.css</exclude>
+                        <exclude>**/*.html</exclude>
+                        <exclude>**/*.js</exclude>
+                        <exclude>**/*.json</exclude>
+                        <exclude>**/*.log</exclude>
+                        <exclude>**/*.md</exclude>
                         <exclude>**/*.properties</exclude>
                         <exclude>**/*.proto</exclude>
-                        <exclude>**/*.json</exclude>
-                        <exclude>**/*.js</exclude>
                         <exclude>**/*.py</exclude>
-                        <exclude>**/*.sbt</exclude>
                         <exclude>**/*.rst</exclude>
-                        <exclude>**/*.html</exclude>
-                        <exclude>**/*.css</exclude>
+                        <exclude>**/*.sbt</exclude>
                         <exclude>**/*.ttf</exclude>
-                        <exclude>**/resources/**/*</exclude>
                         <exclude>**/.idea/**</exclude>
+                        <exclude>**/resources/**/*</exclude>
+                        <exclude>**/target/**</exclude>
                     </excludes>
                 </configuration>
                 <executions>

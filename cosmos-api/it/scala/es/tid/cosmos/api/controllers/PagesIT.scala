@@ -22,10 +22,11 @@ import play.api.mvc.{Session, Result}
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.pages.{CosmosSession, Registration, CosmosProfileDao}
+import es.tid.cosmos.api.controllers.pages.{CosmosSession, Registration}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.UserProfile
 import es.tid.cosmos.api.mocks.{User, MockedServices}
+import es.tid.cosmos.api.profile.CosmosProfileDao
 
 class PagesIT extends FlatSpec with MustMatchers with MockedServices {
   "A non registered user" must "be authenticated and get to the registration page" in {

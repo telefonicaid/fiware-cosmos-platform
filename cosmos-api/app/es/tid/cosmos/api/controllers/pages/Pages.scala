@@ -26,6 +26,7 @@ import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.oauth2.{UserProfile, OAuthClient, OAuthError, OAuthException}
+import es.tid.cosmos.api.profile.CosmosProfileDao
 
 /**
  * Controller for the web pages of the service.

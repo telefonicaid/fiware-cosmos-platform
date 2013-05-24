@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.pages
+package es.tid.cosmos.api.profile
 
 import java.sql.Connection
 
@@ -17,6 +17,7 @@ import anorm._
 import anorm.SqlParser._
 
 import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.controllers.pages.{NamedKey, CosmosProfile, Registration}
 
 object CosmosProfileDao {
   def registerUserInDatabase(userId: String, reg: Registration)(implicit c: Connection): Long = {

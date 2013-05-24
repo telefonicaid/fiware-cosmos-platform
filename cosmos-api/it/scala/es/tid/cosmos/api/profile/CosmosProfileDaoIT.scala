@@ -1,10 +1,12 @@
-package es.tid.cosmos.api.controllers.pages
+package es.tid.cosmos.api.profile
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.db.DB
 import play.api.test.{FakeApplication, WithApplication}
 import play.api.test.Helpers._
+import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.controllers.pages.Registration
 
 class CosmosProfileDaoIT extends FlatSpec with MustMatchers {
 

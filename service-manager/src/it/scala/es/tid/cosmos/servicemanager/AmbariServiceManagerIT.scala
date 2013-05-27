@@ -26,7 +26,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers
   def waitForClusterCompletion(id: ClusterId, sm: ServiceManager): ClusterState = {
     val description = sm.describeCluster(id)
     description.get.state match {
-      case Provisioning => {
+      case Provisioning | Terminating => {
         Thread.sleep(1000)
         waitForClusterCompletion(id, sm)
       }
@@ -34,7 +34,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers
     }
   }
 
-  "Ambari server" should "create server" in {
+  "Ambari server" should "create and terminate cluster" in {
     val sm = new AmbariServiceManager(
       new AmbariServer("cosmos.local", 8080, "admin", "admin"),
       infrastructureProvider)
@@ -44,8 +44,13 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers
         name = "test", 1, sm.services(user))
       val description = sm.describeCluster(id)
       description.get.state must be (Provisioning)
-      val endState = waitForClusterCompletion(id, sm)
-      endState must be === (Running)
+      val runningState = waitForClusterCompletion(id, sm)
+      runningState must be === (Running)
+      sm.terminateCluster(id)
+      val terminatingState = sm.describeCluster(id).get.state
+      terminatingState must (be (Terminated) or be (Terminating))
+      waitForClusterCompletion(id, sm)
+      sm.describeCluster(id).get.state must be (Terminated)
     } finally {
       sm.close()
     }

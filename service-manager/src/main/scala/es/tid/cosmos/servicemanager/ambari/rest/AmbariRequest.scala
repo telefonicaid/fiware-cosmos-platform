@@ -14,25 +14,19 @@ package es.tid.cosmos.servicemanager.ambari.rest
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 
-import com.ning.http.client.RequestBuilder
+import com.ning.http.client.{Request, RequestBuilder}
 import dispatch.{Future => _, _}, Defaults._
-import net.liftweb.json.JsonAST.{JValue, JString}
+import net.liftweb.json.JsonAST.JValue
 
-import es.tid.cosmos.servicemanager.{DeploymentException, ServiceError}
+import es.tid.cosmos.servicemanager.DeploymentException
 
 /**
  * Handles pending Ambari requests and lets you block until the request finishes.
  */
-class AmbariRequest(url: RequestBuilder) extends RequestProcessor with RequestHandler {
-  private object Status extends Enumeration {
+abstract class AmbariRequest(url: Request) extends RequestProcessor with RequestHandler {
+  protected object Status extends Enumeration {
     type Status = Value
     val FINISHED, WAITING, ERROR = Value
-    def fromString(str: String) = str match {
-      case "COMPLETED" => Status.FINISHED
-      case "FAILED" | "TIMEDOUT" | "ABORTED" => Status.ERROR
-      case "PENDING" | "QUEUED" | "IN_PROGRESS" => Status.WAITING
-      case _ => throw new ServiceError(s"Unexpected status string from Ambari: $str")
-    }
 
     /**
      * Combines the states of two operations and returns the state of the operation
@@ -46,24 +40,16 @@ class AmbariRequest(url: RequestBuilder) extends RequestProcessor with RequestHa
     }
   }
 
-  private def extractStatusString(tasksObj: JValue)  = (tasksObj \ "Tasks" \ "status") match {
-    case JString(statusStr) => statusStr
-    case _ => throw new ServiceError(
-      "Ambari's request information response doesn't contain a Tasks/status element")
-  }
+  protected def getStatusFromJson(statusJson: JValue): Status.Value
 
-  private def getStatusFromJson(statusJson: JValue) = (statusJson \ "tasks").children
-    .map(extractStatusString)
-    .map(Status.fromString)
-    .foldLeft(Status.FINISHED)(Status.combine)
+  protected def getRequest(url: Request): RequestBuilder
 
   /**
-   * Returns a future that blocks until the request is finished. If the finished state it not successful, the future
-   * contains a failed value.
+   * Returns a future that blocks until the request is finished. If the finished state is
+   * not successful, the future contains a failed value.
    */
   override def ensureFinished: Future[Unit] = {
-    val request = url <<? Map("fields" -> "tasks/*")
-    performRequest(request)
+    performRequest(getRequest(url))
       .map(getStatusFromJson)
       .flatMap({
         case Status.WAITING => future { blocking {
@@ -71,7 +57,7 @@ class AmbariRequest(url: RequestBuilder) extends RequestProcessor with RequestHa
           Await.result(ensureFinished, Duration.Inf)
         }}
         case Status.FINISHED => Future.successful()
-        case Status.ERROR => Future.failed(DeploymentException(url.build.getUrl))
+        case Status.ERROR => Future.failed(DeploymentException(url.getUrl))
       })
   }
 }

@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.rest
 
 import scala.concurrent.Future
 
-import net.liftweb.json.JsonAST.JValue
+import es.tid.cosmos.platform.ial.MachineState
 
 /**
  * Representation of a server capable of provisioning clusters.
@@ -47,7 +47,22 @@ trait ClusterProvisioner {
    * Remove the specified cluster.
    *
    * @param name the cluster's name
-   * @return the future of the cluster removal response from Ambari
+   * @return the future of the cluster removal
    */
-  def removeCluster(name: String): Future[JValue]
+  def removeCluster(name: String): Future[Unit]
+
+  /**
+   * Installs and launches Ambari agent
+   */
+  def bootstrapMachines(machines: Seq[MachineState], sshKey: String): Future[Unit]
+
+  /**
+   * Stops and unregisters Ambari agent from Ambari server
+   */
+  def teardownMachines(machines: Seq[MachineState], sshKey: String): Future[Unit]
+
+  /**
+   * Returns the list of hostnames that are registered in Ambari server
+   */
+  def registeredHostnames: Future[Seq[String]]
 }

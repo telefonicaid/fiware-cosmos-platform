@@ -11,12 +11,13 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import scala.util.Try
+import scala.annotation.tailrec
 import scala.concurrent.Future.successful
+import scala.util.Try
 
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{verify, verifyNoMoreInteractions}
+import org.mockito.Mockito.verify
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
@@ -43,31 +44,42 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
     instance.clusterIds must be('empty)
   }
 
-  it should "be able to create a single machine cluster" in {
+  it must "be able to create and terminate a single machine cluster" in {
     val (machines, hosts) = machinesAndHostsOf(1)
     setExpectations(machines, hosts)
     val clusterId = instance.createCluster("clusterName", 1, serviceDescriptions)
-    val state = waitForClusterCompletion(clusterId, instance)
-    verifyClusterAndServices(machines, hosts.head, hosts, clusterId)
     clusterId must not be null
+    val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
+    terminateAndVerify(clusterId, instance)
+    verifyClusterAndServices(machines, hosts.head, hosts, clusterId)
   }
 
-  it should "be able to create a multi-machine cluster" in {
+  it must "be able to create and terminate a multi-machine cluster" in {
     val (machines, hosts) = machinesAndHostsOf(3)
     setExpectations(machines, hosts)
     val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions)
-    val state = waitForClusterCompletion(clusterId, instance)
-    verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
     clusterId must not be null
+    val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
+    terminateAndVerify(clusterId, instance)
+    verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
   }
 
   def setExpectations(machines: Seq[MachineState], hosts: Seq[Host]) {
     given(infrastructureProvider.createMachines(any(), any(), any()))
       .willReturn(Try(machines.map(machine => successful(machine))))
+    given(infrastructureProvider.releaseMachines(any()))
+      .willReturn(successful())
+    given(infrastructureProvider.rootSshKey).willReturn("sshKey")
+    given(provisioner.bootstrapMachines(any(), any())).willReturn(successful())
+    given(provisioner.teardownMachines(any(), any())).willReturn(successful())
     given(provisioner.createCluster(any(), any())).willReturn(successful(cluster))
+    given(provisioner.removeCluster(any())).willReturn(successful())
+    given(provisioner.getCluster(any())).willReturn(successful(cluster))
+    given(provisioner.registeredHostnames).willReturn(successful(machines.map(_.hostname).toSeq))
     given(cluster.applyConfiguration(any())).willReturn(successful())
+    given(cluster.serviceNames).willReturn(List())
     machines.zip(hosts).foreach {
       case (machine, host) =>
         given(cluster.addHost(machine.hostname)).willReturn(successful(host))
@@ -94,7 +106,11 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
     clusterId: ClusterId) {
     verify(infrastructureProvider)
       .createMachines("clusterName", MachineProfile.M, machines.size)
+    verify(infrastructureProvider).releaseMachines(machines)
     verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
+    verify(provisioner).bootstrapMachines(machines, infrastructureProvider.rootSshKey)
+    verify(provisioner).removeCluster(clusterId.toString)
+    verify(provisioner).teardownMachines(machines, infrastructureProvider.rootSshKey)
     verify(cluster).applyConfiguration(mergedGlobalConfiguration(2, instance, master.name))
     verify(cluster).applyConfiguration(mergedCoreConfiguration(2))
     verify(cluster).applyConfiguration(contributionsWithNumber(1).services(0))
@@ -108,8 +124,6 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
       verify(service).install()
       verify(service).start()
     })
-    verifyNoMoreInteractions(infrastructureProvider, provisioner, cluster,
-      services(0), services(1), serviceDescriptions(0), serviceDescriptions(1))
   }
 
   def machinesOf(numberOfMachines: Int): Seq[MachineState] =
@@ -124,16 +138,24 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
   def machinesAndHostsOf(numberOfInstances: Int)=
     (machinesOf(numberOfInstances), hostsOf(numberOfInstances))
 
-  def waitForClusterCompletion(id: ClusterId, sm: ServiceManager):
-  ClusterState = {
+  @tailrec
+  private def waitForClusterCompletion(id: ClusterId, sm: ServiceManager): ClusterState = {
     val description = sm.describeCluster(id)
     description.get.state match {
-      case Provisioning => {
-        Thread.sleep(1000)
+      case Provisioning | Terminating => {
+        Thread.sleep(500)
         waitForClusterCompletion(id, sm)
       }
       case Failed(reason) => throw reason
       case _ => description.get.state
     }
+  }
+
+  def terminateAndVerify(id: ClusterId, sm: ServiceManager) {
+    sm.terminateCluster(id)
+    val Some(terminatingDescription) = sm.describeCluster(id)
+    terminatingDescription.state must (be (Terminated) or be (Terminating))
+    waitForClusterCompletion(id, sm)
+    sm.describeCluster(id).get.state must be (Terminated)
   }
 }

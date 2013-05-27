@@ -16,7 +16,7 @@ object ApiCredentials {
   val ApiIdLength = 40
   val ApiSecretLength = 40
 
-  def random: ApiCredentials =
+  def random(): ApiCredentials =
     ApiCredentials(randomToken(ApiIdLength), randomToken(ApiSecretLength))
 
   private def randomToken(length: Int): String = {

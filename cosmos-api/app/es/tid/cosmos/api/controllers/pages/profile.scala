@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.controllers.pages
 
 import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.servicemanager.ClusterUser
 
 /**
  * Represents the Cosmos-specific user profile.

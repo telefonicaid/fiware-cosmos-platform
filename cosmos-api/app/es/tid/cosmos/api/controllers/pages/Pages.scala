@@ -27,11 +27,12 @@ import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.oauth2.{UserProfile, OAuthClient, OAuthError, OAuthException}
 import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.servicemanager.ServiceManager
 
 /**
  * Controller for the web pages of the service.
  */
-class Pages(oauthClient: OAuthClient) extends Controller {
+class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Controller {
   private val registrationForm = Form(mapping(
     "handle" -> text.verifying(minLength(3), pattern("^[a-zA-Z][a-zA-Z0-9]*$".r,
       error="Not a valid unix handle, please use a-z letters and numbers " +
@@ -76,12 +77,14 @@ class Pages(oauthClient: OAuthClient) extends Controller {
     session.userProfile.map(userProfile =>
       registrationForm.bindFromRequest().fold(
         formWithErrors => registrationPage(userProfile, formWithErrors),
-        registration => {
-          val newUserId: Long = DB.withConnection { implicit c =>
-            CosmosProfileDao.registerUserInDatabase(userProfile.id, registration)
-          }
-          Redirect(routes.Pages.index()).withSession(session.setCosmosId(newUserId))
-        })
+        registration => { DB.withConnection { implicit c =>
+          val newCosmosId = CosmosProfileDao.registerUserInDatabase(userProfile.id, registration)
+          val profile = CosmosProfileDao.lookupByUserId(userProfile.id).getOrElse(
+            throw new IllegalStateException(
+              "Could not read registration information from database"))
+          serviceManager.addUsers(serviceManager.persistentHdfsId, profile.toClusterUser)
+          Redirect(routes.Pages.index()).withSession(session.setCosmosId(newCosmosId))
+        }})
     ).getOrElse(
       Forbidden(Json.toJson(Message("Not authenticated")))
     )

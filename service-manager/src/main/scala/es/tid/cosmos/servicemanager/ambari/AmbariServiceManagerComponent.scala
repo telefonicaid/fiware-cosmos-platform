@@ -13,8 +13,8 @@ package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.platform.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
-import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
+import es.tid.cosmos.servicemanager._
 
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   this: InfrastructureProviderComponent with ConfigComponent =>
@@ -26,6 +26,7 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
         config.getInt("ambari.server.port"),
         config.getString("ambari.server.username"),
         config.getString("ambari.server.password")),
-      infrastructureProvider)
+      infrastructureProvider,
+      ClusterId(config.getString("hdfs.cluster.id")))
   }
 }

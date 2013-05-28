@@ -55,17 +55,18 @@ sealed abstract class Resource(id: Id[Resource], name: String)
 
 /**
  * An enumeration of the available machine profiles.
+ *
+ * Gx refers to the hardware's revision / generation.
+ * G1's codename is "Little Joe"
  */
 object MachineProfile extends Enumeration {
 
   type MachineProfile = Value
 
   /* Uses indices for backwards compability while serializing. */
-  val XS = Value(1, "XS machine")
-  val S = Value(2, "S machine")
-  val M = Value(3, "M machine")
-  val X = Value(4, "X machine")
-  val XL = Value(5, "XL machine")
+  val G1_COMPUTE = Value(1, "Compute machine version 1")
+  val HDFS_SLAVE = Value(2, "Persistent HDFS DataNode")
+  val HDFS_MASTER = Value(3, "Persistent HDFS Namenode")
 }
 
 /**

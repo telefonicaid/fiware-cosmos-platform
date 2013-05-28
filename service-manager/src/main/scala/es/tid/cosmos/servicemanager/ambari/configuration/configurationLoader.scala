@@ -87,7 +87,6 @@ case class ConfigurationBuilder(serviceName: String, config: Config) {
    */
   private def valueOf(leaf: String)(parentPath: String) = config.getString(s"$parentPath.$leaf")
 
-  private val tag = valueOf("tag") _
   private val configType = valueOf("configType") _
 
   /**
@@ -104,21 +103,21 @@ case class ConfigurationBuilder(serviceName: String, config: Config) {
       service(masterNodeName)
     )
 
-  private def optional[T <:Configuration](name: String, masterNodeName: String)
-                                         (implicit factory: Factory[T]): Option[T] =
-    if (config.hasPath(name)) Some(factory(tag(name), properties(name, masterNodeName)))
+  private def optional[T <: Configuration](name: String, masterNodeName: String)
+                                          (implicit factory: Factory[T]): Option[T] =
+    properties(name, masterNodeName).map(props => factory(props))
+
+  private def service(masterNodeName: String) = properties(serviceName, masterNodeName)
+    .map(props => ServiceConfiguration(configType(serviceName), props))
+    .toList
+
+  private def properties(configName: String, masterNodeName: String) =
+    getScalaMap(config, s"$configName.properties").map(_.mapValues(inject(masterNodeName)))
+
+  private def getScalaMap(config: Config, key: String) =
+    if (config.hasPath(key))
+      Some(mapAsScalaMap(config.getObject(key).unwrapped()).toMap)
     else None
-
-  private def service(masterNodeName: String) = {
-    if (config.hasPath(serviceName))
-      List(ServiceConfiguration(
-        configType(serviceName), tag(serviceName), properties(serviceName, masterNodeName)))
-    else List()
-  }
-
-  private def properties(configName: String, masterNodeName: String): Map[String, Any] =
-    mapAsScalaMap(config.getObject(s"$configName.properties").unwrapped()).toMap
-      .mapValues(inject(masterNodeName))
 
   private def inject(value: String)(target: Any) = target match {
     case x: String => x.replaceAll("\\$\\{masternode\\}", value)

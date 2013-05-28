@@ -18,7 +18,7 @@ import es.tid.cosmos.servicemanager.{ClusterUser, ComponentDescription}
 
 class CosmosUserServiceTest extends FlatSpec with MustMatchers {
   "A Cosmos user service" must "have a master and a slave components" in {
-    val description = new CosmosUserService(ClusterUser("userName", "public_key"))
+    val description = new CosmosUserService(Seq(ClusterUser("userName", "public_key")))
     description.name must equal("COSMOS_USER")
     description.components must (
       have length (2) and

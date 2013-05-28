@@ -28,7 +28,7 @@ import es.tid.cosmos.servicemanager.ServiceError
  * @param serviceInfo    the Ambari JSON response that describes the service
  * @param clusterBaseUrl the base url that describes the cluster
  */
-class Service private[ambari](serviceInfo: JValue, clusterBaseUrl: Request)
+private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
   extends RequestProcessor with ServiceRequestHandlerFactory {
   val name = extractInfo("service_name")
 

@@ -23,37 +23,25 @@ import es.tid.cosmos.servicemanager.ambari.configuration.{Configuration, HeaderO
 
 class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var cluster: Cluster with MockedRestResponsesComponent = _
+  var clusterOf1: Cluster with MockedRestResponsesComponent = _
 
   before {
-    val clusterName = "test"
-    cluster = new Cluster(
-      ("href" -> "some-url") ~
-      ("Clusters" -> (
-        ("cluster_name" -> clusterName) ~
-        ("version" -> "orange"))) ~
-      ("services" -> List("service1", "service2", "service3").map(name =>
-        ("href" -> "service-url") ~
-        ("ServiceInfo" -> (
-          ("cluster_name" -> clusterName) ~
-          ("service_name" -> name)
-        )))) ~
-      ("hosts" -> List("host1", "host2").map(name =>
-        ("href" -> "host-url") ~
-        ("Hosts" -> (
-          ("cluster_name" -> clusterName) ~
-          ("host_name" -> name)
-        )))) ~
-      ("configurations" -> List(("type1", "tag1"), ("type1", "tag2"), ("type2", "tag1"))
-        .map(config =>
-          ("href" -> "config-url") ~
-          ("tag" -> config._2) ~
-          ("type" -> config._1) ~
-          ("Config" -> ("cluster_name" -> clusterName)))),
-      url("http://localhost/api/v1/").build)
-        with FakeAmbariRestReplies with MockedRestResponsesComponent
+    clusterOf1 = clusterWith(
+          name = "testWith1",
+          services = List("service1"),
+          hosts = List("host1"),
+          configHeaders = List(("type1", "tag1"))
+    )
+    cluster = clusterWith(
+      name = "test",
+      services = List("service1", "service2", "service3"),
+      hosts = List("host1", "host2"),
+      configHeaders = List(("type1", "tag1"), ("type1", "tag2"), ("type2", "tag1"))
+    )
   }
 
-  it must "correctly parse the Ambari JSON response that describes the cluster" in {
+  it must "correctly parse the Ambari JSON response that describes the cluster," +
+    " multiple services and hosts" in {
     cluster.name must be ("test")
 
     cluster.serviceNames must have size (3)
@@ -69,6 +57,20 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     cluster.configurations must contain (HeaderOnlyConfiguration("type1", "tag1"))
     cluster.configurations must contain (HeaderOnlyConfiguration("type1", "tag2"))
     cluster.configurations must contain (HeaderOnlyConfiguration("type2", "tag1"))
+  }
+
+  it must "correctly parse the Ambari JSON response that describes the cluster," +
+      " one service and one host" in {
+    clusterOf1.name must be ("testWith1")
+
+    clusterOf1.serviceNames must have size (1)
+    clusterOf1.serviceNames must contain ("service1")
+
+    clusterOf1.hostNames must have size (1)
+    clusterOf1.hostNames must contain ("host1")
+
+    clusterOf1.configurations must have size (1)
+    clusterOf1.configurations must contain (HeaderOnlyConfiguration("type1", "tag1"))
   }
 
   it must "be able to get a service" in {
@@ -138,15 +140,43 @@ class ClusterTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     addMock(
       cluster.responses.applyConfiguration("test", properties),
       JNothing)
-    get(cluster.applyConfiguration(MockConfiguration("type1", "tag1", Map("test" -> "config"))))
+    get(cluster.applyConfiguration(MockConfiguration("type1", "tag1", Map("test" -> "config")), "version1"))
     verify(cluster.responses).applyConfiguration("test", properties)
   }
 
   it must "propagate failures when applying configurations" in errorPropagation(
     cluster.responses.applyConfiguration(any[String], any[String]),
-    cluster.applyConfiguration(MockConfiguration("type1", "tag1", Map("come" -> "config")))
+    cluster.applyConfiguration(MockConfiguration("type1", "tag1", Map("come" -> "config")), "version1")
   )
 
   case class MockConfiguration(configType: String, tag: String, properties: Map[String, Any]) extends Configuration
+
+  private def clusterWith(
+    name: String,
+    services: List[String], hosts: List[String], configHeaders: List[(String, String)]) =
+    new Cluster(
+      ("href" -> "some-url") ~
+        ("Clusters" -> (
+          ("cluster_name" -> name) ~
+            ("version" -> "orange"))) ~
+        ("services" -> services.map(name =>
+          ("href" -> "service-url") ~
+            ("ServiceInfo" -> (
+              ("cluster_name" -> name) ~
+                ("service_name" -> name)
+              )))) ~
+        ("hosts" -> hosts.map(name =>
+          ("href" -> "host-url") ~
+            ("Hosts" -> (
+              ("cluster_name" -> name) ~
+                ("host_name" -> name)
+              )))) ~
+        ("configurations" -> configHeaders.map(config =>
+          ("href" -> "config-url") ~
+            ("tag" -> config._2) ~
+            ("type" -> config._1) ~
+            ("Config" -> ("cluster_name" -> name)))),
+      url("http://localhost/api/v1/").build)
+      with FakeAmbariRestReplies with MockedRestResponsesComponent
 
 }

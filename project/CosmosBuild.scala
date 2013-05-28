@@ -17,7 +17,7 @@ object CosmosBuild extends Build {
     settings(ScctPlugin.mergeReportSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
-    aggregate(cosmosApi, serviceManager, ial)
+    aggregate(cosmosApi, serviceManager, ial, cosmosAdmin)
   )
 
   lazy val common = (Project(id = "common", base = file("common"))
@@ -52,5 +52,12 @@ object CosmosBuild extends Build {
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(serviceManager)
+  )
+
+  lazy val cosmosAdmin = (Project(id = "cosmos-admin", base = file("cosmos-admin"))
+    settings(ScctPlugin.instrumentSettings: _*)
+    configs(IntegrationTest)
+    settings(Defaults.itSettings : _*)
+    dependsOn(serviceManager, common)
   )
 }

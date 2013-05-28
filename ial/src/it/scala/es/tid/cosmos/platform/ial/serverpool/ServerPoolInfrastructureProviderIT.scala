@@ -33,12 +33,12 @@ class ServerPoolInfrastructureProviderIT
   def nop(state: MachineState): Future[Unit] = Future.successful(())
 
   "Server pool infrastructure provider" must "create machines when available" in {
-    val machines = Await.result(provider.createMachines("cosmos", MachineProfile.M, 2, nop), timeout)
+    val machines = Await.result(provider.createMachines("cosmos", MachineProfile.G1_COMPUTE, 2, nop), timeout)
     machines must (containMachine("cosmos0") and containMachine("cosmos1"))
   }
 
   it must "throw when creating machines when unavailable" in {
-    val result = provider.createMachines("pre", MachineProfile.XL, 1500, nop)
+    val result = provider.createMachines("pre", MachineProfile.HDFS_SLAVE, 1500, nop)
     Await.ready(result, timeout)
     result.value match {
       case Some(Failure(ResourceExhaustedException(_, requested, available))) => {

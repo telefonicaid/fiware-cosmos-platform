@@ -17,7 +17,7 @@ import net.liftweb.json.JsonAST.{JString, JValue}
 
 import es.tid.cosmos.servicemanager.ServiceError
 
-class ServiceRequest(url: Request) extends AmbariRequest(url) {
+private[ambari] class ServiceRequest(url: Request) extends AmbariRequest(url) {
   private def extractStatusString(tasksObj: JValue) = (tasksObj \ "Tasks" \ "status") match {
     case JString(statusStr) => statusStr
     case _ => throw new ServiceError(

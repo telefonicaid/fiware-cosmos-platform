@@ -23,16 +23,16 @@ object ConfiguratorTestHelpers {
 
   def contributionsWithNumber(number: Int) = {
     ConfigurationBundle(
-      Some(GlobalConfiguration("version1", properties("Global", number))),
-      Some(CoreConfiguration("version1", properties("Core", number))),
-      List(ServiceConfiguration(s"service-site$number", "version1", properties("Service", number))))
+      Some(GlobalConfiguration(properties("Global", number))),
+      Some(CoreConfiguration(properties("Core", number))),
+      List(ServiceConfiguration(s"service-site$number", properties("Service", number))))
   }
 
   def mergedCoreConfiguration(number: Int) =
-    new CoreConfiguration("version1", propertiesUpTo("Core", number))
+    new CoreConfiguration(propertiesUpTo("Core", number))
 
   def mergedGlobalConfiguration(number: Int, instance: AmbariServiceManager, masterName: String) =
-    GlobalConfiguration("version1",
+    GlobalConfiguration(
       instance.contributions(masterName).global.get.properties ++ propertiesUpTo("Global", number))
 
   def expectedConfigurationOf(number: Int) = properties("Service", number)

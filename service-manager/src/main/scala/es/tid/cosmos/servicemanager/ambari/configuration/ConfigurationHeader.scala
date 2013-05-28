@@ -13,7 +13,6 @@ package es.tid.cosmos.servicemanager.ambari.configuration
 
 trait ConfigurationHeader {
   def configType: String
-  def tag: String
 }
 
 case class HeaderOnlyConfiguration(configType: String, tag: String) extends ConfigurationHeader {

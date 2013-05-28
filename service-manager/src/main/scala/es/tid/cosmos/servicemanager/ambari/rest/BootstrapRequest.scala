@@ -16,7 +16,7 @@ import net.liftweb.json.JsonAST.{JString, JValue}
 
 import es.tid.cosmos.servicemanager.ServiceError
 
-class BootstrapRequest(url: Request) extends AmbariRequest(url) {
+private[ambari] class BootstrapRequest(url: Request) extends AmbariRequest(url) {
   private def statusFromString(str: String) = str match {
     case "RUNNING" => Status.WAITING
     case "SUCCESS" => Status.FINISHED

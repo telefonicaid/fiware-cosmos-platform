@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.mocks.servicemanager
 
-import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -80,6 +79,14 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
       action
     }
   }
+
+  def persistentHdfsId: ClusterId = ClusterId("PersistendHdfsId")
+
+  def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = Future.successful()
+
+  def deployPersistentHdfsCluster(): Future[Unit] = Future.successful()
+
+  def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit] = Future.successful()
 }
 
 object MockedServiceManager {

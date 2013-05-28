@@ -20,7 +20,6 @@ import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST.{JField, JString}
 import net.liftweb.json.render
 
-import es.tid.cosmos.platform.ial.MachineState
 import es.tid.cosmos.servicemanager.{ServiceError, RequestException}
 
 /**
@@ -32,7 +31,7 @@ import es.tid.cosmos.servicemanager.{ServiceError, RequestException}
  * @param username  the username used for authentication
  * @param password  the password used for authentication
  */
-class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
+private[ambari] class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
   extends ClusterProvisioner with RequestProcessor with BootstrapRequestHandlerFactory {
   implicit private val formats = DefaultFormats
 
@@ -43,8 +42,8 @@ class AmbariServer(serverUrl: String, port: Int, username: String, password: Str
       JField("cluster_name", JString(name)) <- (json \\ "cluster_name").children
     } yield name)
 
-  override def getCluster(name: String): Future[Cluster] =
-    performRequest(baseUrl / "clusters" / name).map(new Cluster(_, baseUrl.build))
+  override def getCluster(id: String): Future[Cluster] =
+    performRequest(baseUrl / "clusters" / id).map(new Cluster(_, baseUrl.build))
 
   override def createCluster(name: String, version: String): Future[Cluster] =
     performRequest(baseUrl / "clusters" / name << s"""{"Clusters": {"version": "$version"}}""")
@@ -54,12 +53,12 @@ class AmbariServer(serverUrl: String, port: Int, username: String, password: Str
     performRequest(baseUrl.DELETE / "clusters" / name).map(_ => ())
 
   private def performBootstrapAction(
-      machines: Seq[MachineState],
+      hostnames: Seq[String],
       sshKey: String,
       builderWithMethod: RequestBuilder): Future[Unit] = {
     val configuredBuilder = (builderWithMethod / "bootstrap")
       .setBody(compact(render(
-        ("hosts" -> machines.map(_.hostname)) ~
+        ("hosts" -> hostnames) ~
         ("sshKey" -> sshKey) ~
         ("verbose" -> true))))
       .addHeader("Content-Type", "application/json")
@@ -78,11 +77,11 @@ class AmbariServer(serverUrl: String, port: Int, username: String, password: Str
     } yield ()
   }
 
-  override def bootstrapMachines(machines: Seq[MachineState], sshKey: String): Future[Unit] =
-    performBootstrapAction(machines, sshKey, baseUrl.POST)
+  override def bootstrapMachines(hostnames: Seq[String], sshKey: String): Future[Unit] =
+    performBootstrapAction(hostnames, sshKey, baseUrl.POST)
 
-  override def teardownMachines(machines: Seq[MachineState], sshKey: String): Future[Unit] =
-    performBootstrapAction(machines, sshKey, baseUrl.DELETE)
+  override def teardownMachines(hostnames: Seq[String], sshKey: String): Future[Unit] =
+    performBootstrapAction(hostnames, sshKey, baseUrl.DELETE)
   override def registeredHostnames: Future[Seq[String]] =
     performRequest(baseUrl / "hosts").map(json =>
       (json \ "items").children.map(item =>
@@ -90,7 +89,4 @@ class AmbariServer(serverUrl: String, port: Int, username: String, password: Str
           case JString(hostname) => hostname
           case _ => throw ServiceError("Ambari's host response does not contain a host_name element")
         }))
-}
-
-object AmbariServer {
 }

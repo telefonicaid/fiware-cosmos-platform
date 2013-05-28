@@ -22,7 +22,7 @@ trait Configuration extends ConfigurationHeader {
  * Types for configuration factories.
  */
 object FactoryTypes {
-  type Factory[T <:Configuration] = (String, Map[String, Any]) => T
+  type Factory[T <:Configuration] = Map[String, Any] => T
   object Implicits {
     implicit val globalFactory: Factory[GlobalConfiguration] = GlobalConfiguration
     implicit val coreFactory: Factory[CoreConfiguration] = CoreConfiguration
@@ -32,31 +32,28 @@ object FactoryTypes {
 /**
  * Representation of a cluster's global configuration. Can be partial.
  *
- * @param tag the Ambari version tag e.g. `"version1"`
  * @param properties the global configuration properties
  */
-case class GlobalConfiguration(tag: String, properties: Map[String, Any]) extends Configuration {
+case class GlobalConfiguration(properties: Map[String, Any]) extends Configuration {
   final val configType: String = "global"
 }
 
 /**
  * Representation of a cluster's core configuration. Can be partial.
  *
- * @param tag the Ambari version tag e.g. `"version1"`
  * @param properties the core configuration properties
  */
-case class CoreConfiguration(tag: String, properties: Map[String, Any]) extends Configuration {
+case class CoreConfiguration(properties: Map[String, Any]) extends Configuration {
   final val configType: String = "core-site"
 }
 /**
  * Representation of a service <b>complete</b> configuration.
  *
  * @param configType the type for this service configuration
- * @param tag the Ambari version tag e.g. `"version1"`
  * @param properties the service configuration properties
  */
 case class ServiceConfiguration(
-    final val configType: String, tag: String, properties: Map[String, Any]) extends Configuration
+    final val configType: String, properties: Map[String, Any]) extends Configuration
 
 /**
  * Container of different types of cluster configuration.

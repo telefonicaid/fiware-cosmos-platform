@@ -11,13 +11,14 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import java.util.Date
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Factory
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits.{
-  coreFactory, globalFactory}
+coreFactory, globalFactory}
 import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
 
 /**
@@ -38,8 +39,11 @@ object Configurator {
    */
   def applyConfiguration(
     cluster: Cluster, master: Host,
-    contributors: Seq[ConfigurationContributor]): Future[Seq[Unit]] =
-    Future.sequence(consolidateConfiguration(contributors, master).map(cluster.applyConfiguration))
+    contributors: Seq[ConfigurationContributor]): Future[Seq[Unit]] = {
+    val tag = timestampedTag()
+    Future.sequence(consolidateConfiguration(contributors, master).map(
+      cluster.applyConfiguration(_, tag)))
+  }
 
   private def consolidateConfiguration(
     contributors: Seq[ConfigurationContributor], master: Host): List[Configuration] =
@@ -63,7 +67,7 @@ object Configurator {
       case (Some(leftValue), Some(rightValue)) => {
         val conflictingKeys = leftValue.properties.filterKeys(rightValue.properties.contains)
         if (conflictingKeys.isEmpty)
-          Some(factory(leftValue.tag, leftValue.properties ++ rightValue.properties))
+          Some(factory(leftValue.properties ++ rightValue.properties))
         else
           throw new ConfigurationConflict(s"Found keys in conflict: $conflictingKeys")
       }
@@ -79,6 +83,8 @@ object Configurator {
       else throw new ConfigurationConflict(
         s"Already found a service configuration for type [${typesInConflict.mkString(", ")}")
   }
+
+  private def timestampedTag() = s"version${new Date().getTime}"
 
   class ConfigurationConflict(message: String) extends Exception(message)
 }

@@ -128,6 +128,9 @@
         <repository>
             <id>nexus</id>
             <url>http://cosmos10/nexus/content/groups/public/</url>
+            <snapshots>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -143,7 +146,7 @@
             <dependency>
                 <groupId>es.tid.cosmos</groupId>
                 <artifactId>cosmos-common</artifactId>
-                <version>1.0.0-20130403.082949-16</version>
+                <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>

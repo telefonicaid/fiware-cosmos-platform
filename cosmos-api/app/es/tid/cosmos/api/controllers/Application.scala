@@ -35,6 +35,8 @@ abstract class Application {
     )
   }
 
+  def services: ServiceManagerComponent with OAuthClientComponent = self
+
   private def controllerMap(controllers: Controller*) = Map(
     (for (controller <- controllers)
       yield controller.getClass.asInstanceOf[Class[Controller]] -> controller): _*)

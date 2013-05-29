@@ -7,9 +7,11 @@ import java.security.SecureRandom
  */
 case class ApiCredentials(apiKey: String, apiSecret: String) {
   require(apiKey.length == ApiCredentials.ApiIdLength,
-    s"API identifier must have a length of ${ApiCredentials.ApiIdLength}")
+    s"API identifier must have a length of ${ApiCredentials.ApiIdLength} " +
+      s"but got ${apiKey.length}: $apiKey")
   require(apiSecret.length == ApiCredentials.ApiSecretLength,
-    s"API secret must have a length of ${ApiCredentials.ApiSecretLength}")
+    s"API secret must have a length of ${ApiCredentials.ApiSecretLength} " +
+      s"but got ${apiSecret.length}: $apiSecret")
 }
 
 object ApiCredentials {

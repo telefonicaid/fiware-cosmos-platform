@@ -19,7 +19,7 @@ import es.tid.cosmos.api.controllers.Application
 /**
  * Custom global Play! settings to override controller instantiation.
  */
-abstract class AbstractGlobal(application: Application) extends GlobalSettings {
+abstract class AbstractGlobal(val application: Application) extends GlobalSettings {
   override def getControllerInstance[A](controllerClass: Class[A]): A = {
     application.controllers(controllerClass.asInstanceOf[Class[Controller]]).asInstanceOf[A]
   }

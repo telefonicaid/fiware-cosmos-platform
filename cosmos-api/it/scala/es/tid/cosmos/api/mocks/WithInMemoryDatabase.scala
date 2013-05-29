@@ -9,12 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.mocks.servicemanager
+package es.tid.cosmos.api.mocks
 
-import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
+import play.api.test.{FakeApplication, WithApplication}
+import play.api.test.Helpers._
 
-trait MockedServiceManagerComponent extends ServiceManagerComponent {
-  lazy val TransitionDelay: Int = 1000
-  lazy val serviceManager: ServiceManager =
-    new MockedServiceManager(transitionDelay = TransitionDelay)
+class WithInMemoryDatabase
+  extends WithApplication(
+    FakeApplication(
+      withGlobal = Some(TestGlobal),
+      additionalConfiguration = inMemoryDatabase(name="default", options=Map("MODE" -> "MYSQL")))) {
+  def services = TestGlobal.application.services
 }

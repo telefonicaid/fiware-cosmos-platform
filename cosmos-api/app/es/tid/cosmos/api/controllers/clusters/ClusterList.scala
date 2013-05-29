@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.controllers.clusters
 
-import play.api.libs.json.{JsArray, Json, JsValue, Writes}
+import play.api.libs.json.{Json, JsValue, Writes}
 
 /**
  * List of clusters as seen by the client.

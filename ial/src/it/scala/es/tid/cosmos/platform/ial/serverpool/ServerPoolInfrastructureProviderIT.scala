@@ -31,17 +31,18 @@ class ServerPoolInfrastructureProviderIT extends FlatSpec with ServerPoolSqlTest
   val timeout: FiniteDuration = Duration(2, TimeUnit.SECONDS)
 
   "Server pool infrastructure provider" must "create machines when available" in {
-    val result = provider.createMachines("cosmos", MachineProfile.M, 2)
-    result must be ('success)
-    val machines = Await.result(Future.sequence(result.get), timeout)
+    val machines = Await.result(provider.createMachines("cosmos", MachineProfile.M, 2), timeout)
     machines must (containMachine("cosmos0") and containMachine("cosmos1"))
   }
 
   it must "throw when creating machines when unavailable" in {
     val result = provider.createMachines("pre", MachineProfile.XL, 1500)
-    result must be ('failure)
-    val Failure(exception: ResourceExhaustedException) = result
-    exception.available must be (1)
-    exception.requested must be (1500)
+    Await.ready(result, timeout)
+    result.value match {
+      case Some(Failure(ResourceExhaustedException(_, requested, available))) => {
+        requested must be (1500)
+        available must be (1)
+      }
+    }
   }
 }

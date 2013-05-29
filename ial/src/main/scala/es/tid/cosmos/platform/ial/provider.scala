@@ -39,13 +39,12 @@ trait InfrastructureProvider {
    *                   be "foobar0", "foobar1" and "foobar2".
    * @param profile the machine profile for the machines to be created.
    * @param numberOfMachines the amount of machines to be created.
-   * @return a sequence of futures, each one representing the instantiation process of each machine,
-   *         wrapped by a Try object.
+   * @return a future which after success provides the sequence of newly created machines
    */
   def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
-      numberOfMachines: Int): Try[Seq[Future[MachineState]]]
+      numberOfMachines: Int): Future[Seq[MachineState]]
 
   /**
    * Release the machines so that its resources can be reused in further createMachine requests

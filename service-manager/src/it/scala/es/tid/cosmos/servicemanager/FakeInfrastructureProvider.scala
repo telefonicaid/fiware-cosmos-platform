@@ -23,9 +23,8 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
   override def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
-      count: Int): Try[Seq[Future[MachineState]]] = Try(
-    for (index <- 1 to count)
-      yield Future.successful(buildMachineState(index, profile)))
+      count: Int): Future[Seq[MachineState]] = Future.successful(
+    for (index <- 1 to count) yield (buildMachineState(index, profile)))
 
   private def buildMachineState(index: Int, profile: MachineProfile.Value) =
     new MachineState(

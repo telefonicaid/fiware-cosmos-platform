@@ -22,18 +22,19 @@ import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureP
  * @author apv
  */
 class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends InfrastructureProvider {
+
   def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
-      count: Int): Try[Seq[Future[MachineState]]] = {
+      count: Int): Future[Seq[MachineState]] = {
     val machineIds = dao.availableMachinesWith(_.profile == profile).take(count).map(_.id)
-    if (machineIds.length < count) Failure(ResourceExhaustedException(
-      profile.toString, count, machineIds.length))
+    if (machineIds.length < count)
+      Future.failed(ResourceExhaustedException(profile.toString, count, machineIds.length))
     else {
-      Success((machineIds.zip(0 to machineIds.length).map({
+      Future.successful((machineIds.zip(0 to machineIds.length).map({
         case (id, idx) => {
           dao.setMachineAvailability(id, available = false)
-          Future.successful(dao.setMachineName(id, s"$namePrefix$idx").get)
+          dao.setMachineName(id, s"$namePrefix$idx").get
         }
       })))
     }
@@ -42,5 +43,6 @@ class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends Infrastru
   def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
     throw new UnsupportedOperationException("This method is not yet implemented")
 
-  val rootSshKey: String =  throw new UnsupportedOperationException("This method is not yet implemented")
+  // TODO: fix me
+  val rootSshKey: String =  ""
 }

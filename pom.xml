@@ -8,7 +8,7 @@
     <parent>
         <artifactId>basepom</artifactId>
         <groupId>es.tid.cosmos</groupId>
-        <version>1.0.2</version>
+        <version>1.0.3</version>
     </parent>
 
     <name>platform</name>

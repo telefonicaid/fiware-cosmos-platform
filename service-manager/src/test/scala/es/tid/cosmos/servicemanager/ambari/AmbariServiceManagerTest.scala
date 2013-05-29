@@ -13,7 +13,6 @@ package es.tid.cosmos.servicemanager.ambari
 
 import scala.annotation.tailrec
 import scala.concurrent.Future.successful
-import scala.util.Try
 
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.any
@@ -68,7 +67,7 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
 
   def setExpectations(machines: Seq[MachineState], hosts: Seq[Host]) {
     given(infrastructureProvider.createMachines(any(), any(), any()))
-      .willReturn(Try(machines.map(machine => successful(machine))))
+      .willReturn(successful(machines))
     given(infrastructureProvider.releaseMachines(any()))
       .willReturn(successful())
     given(infrastructureProvider.rootSshKey).willReturn("sshKey")

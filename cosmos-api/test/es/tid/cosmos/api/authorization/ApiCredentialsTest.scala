@@ -28,7 +28,7 @@ class ApiCredentialsTest extends FlatSpec with MustMatchers {
 
   it must "preserve API secret size invariant" in {
     val ex = evaluating {
-      ApiCredentials("justright,justright,justright,justright,", "small")
+      ApiCredentials("justright,justright,", "small")
     } must produce [IllegalArgumentException]
     ex.getMessage must include ("API secret")
   }

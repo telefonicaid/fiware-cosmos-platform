@@ -11,9 +11,9 @@
 
 package es.tid.cosmos.api.controllers.common
 
+import com.ning.http.util.Base64
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import com.ning.http.util.Base64
 
 class BasicAuthTest extends FlatSpec with MustMatchers {
   "BasicAuth" must "support roundtrip conversion" in {
@@ -28,7 +28,7 @@ class BasicAuthTest extends FlatSpec with MustMatchers {
     BasicAuth.unapply("Basic ññññññ") must not be ('defined)
   }
 
-  it must "not be extracted for values with more than two fields" in {
+  it must "not be extracted for values with other than two fields" in {
     val value = Base64.encode("field1:field2:field3".getBytes)
     BasicAuth.unapply(s"Basic $value") must not be ('defined)
   }

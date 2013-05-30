@@ -17,8 +17,8 @@ import java.security.SecureRandom
  * Represents the api access credentials
  */
 case class ApiCredentials(apiKey: String, apiSecret: String) {
-  require(apiKey.length == ApiCredentials.ApiIdLength,
-    s"API identifier must have a length of ${ApiCredentials.ApiIdLength} " +
+  require(apiKey.length == ApiCredentials.ApiKeyLength,
+    s"API identifier must have a length of ${ApiCredentials.ApiKeyLength} " +
       s"but got ${apiKey.length}: $apiKey")
   require(apiSecret.length == ApiCredentials.ApiSecretLength,
     s"API secret must have a length of ${ApiCredentials.ApiSecretLength} " +
@@ -26,16 +26,16 @@ case class ApiCredentials(apiKey: String, apiSecret: String) {
 }
 
 object ApiCredentials {
-  val ApiIdLength = 40
+  val ApiKeyLength = 20
   val ApiSecretLength = 40
 
   def random(): ApiCredentials =
-    ApiCredentials(randomToken(ApiIdLength), randomToken(ApiSecretLength))
+    ApiCredentials(randomToken(ApiKeyLength), randomToken(ApiSecretLength))
 
   private def randomToken(length: Int): String = {
-    val r: SecureRandom = new java.security.SecureRandom()
+    val r = new SecureRandom()
     val tokenCharacters = "0123456789abcdefghijklmnopqrstuvwzABCDEFGHIJKLMNOPQRSTUVWZ"
     def randomChar = tokenCharacters.charAt(r.nextInt(tokenCharacters.length))
-    (1 to length).map(_ => randomChar).mkString("")
+    List.fill(length)(randomChar).mkString("")
   }
 }

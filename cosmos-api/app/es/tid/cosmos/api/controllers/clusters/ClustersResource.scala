@@ -16,13 +16,13 @@ import scala.util.{Failure, Success, Try}
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.Play.current
+import play.api.db.DB
 import play.api.libs.json._
 import play.api.mvc._
 
-import es.tid.cosmos.api.controllers.common.{AuthController, formatInternalException, JsonController}
-import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager, ClusterId}
-import play.api.db.DB
+import es.tid.cosmos.api.controllers.common.{AuthController, JsonController}
 import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager, ClusterId}
 
 /**
  * Resource that represents the whole set of clusters.
@@ -61,6 +61,7 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
       val clusterUser: ClusterUser = ClusterUser(profile.handle, key)
       Try(serviceManager.createCluster(
         body.name, body.size, serviceManager.services(clusterUser))) match {
+        case Failure(ex) => throw ex
         case Success(clusterId: ClusterId) => {
           Logger.info(s"Provisioning new cluster $clusterId")
           DB.withTransaction { implicit c =>
@@ -68,11 +69,6 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
           }
           val reference: ClusterReference = ClusterReference(clusterId)(request)
           Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
-        }
-        case Failure(ex) => {
-          val message = "Error when requesting a new cluster"
-          Logger.error(message, ex)
-          InternalServerError(formatInternalException(message, ex))
         }
       }
     }

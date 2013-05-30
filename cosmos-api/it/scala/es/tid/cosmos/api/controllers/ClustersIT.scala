@@ -22,18 +22,23 @@ import es.tid.cosmos.api.controllers.clusters.CreateClusterParams
 import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.servicemanager.ClusterId
 
 class ClustersIT extends FlatSpec with MustMatchers {
   val validCreationParams: JsValue = Json.toJson(CreateClusterParams("cluster_new", 120))
   val inValidCreationParams: JsValue = Json.obj("invalid" -> "json")
 
-  "The clusters resource" must "list all existing clusters" in new WithSampleUsers {
+  "The clusters resource" must "list user clusters" in new WithSampleUsers {
     DB.withConnection { implicit c =>
-      CosmosProfileDao.assignCluster(MockedServiceManager.defaultClusterId, user1.id)
+      val ownCluster = MockedServiceManager.defaultClusterId
+      val otherCluster = ClusterId()
+      CosmosProfileDao.assignCluster(ownCluster, user1.id)
+      CosmosProfileDao.assignCluster(otherCluster, user2.id)
       val resource = route(FakeRequest(GET, "/cosmos/cluster").authorizedBy(user1)).get
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
-      contentAsString(resource) must include (MockedServiceManager.defaultClusterId.toString)
+      contentAsString(resource) must include (ownCluster.toString)
+      contentAsString(resource) must not include (otherCluster.toString)
     }
   }
 

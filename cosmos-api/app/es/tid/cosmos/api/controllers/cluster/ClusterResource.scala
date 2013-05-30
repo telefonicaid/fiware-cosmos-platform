@@ -15,15 +15,15 @@ import javax.ws.rs.PathParam
 import scala.util.{Failure, Success, Try}
 
 import com.wordnik.swagger.annotations._
-import play.Logger
 import play.api.Play.current
 import play.api.db.DB
 import play.api.libs.json._
-import play.api.mvc.{RequestHeader, Action}
+import play.api.mvc.{Result, RequestHeader, Action}
 
 import es.tid.cosmos.api.controllers.common.{AuthController, Message}
-import es.tid.cosmos.servicemanager.{ClusterId, ServiceManager}
+import es.tid.cosmos.api.controllers.pages.CosmosProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
 
 /**
  * Resource that represents a single cluster.
@@ -42,17 +42,8 @@ class ClusterResource(serviceManager: ServiceManager) extends AuthController {
       @PathParam("id")
       id: String) = Action { implicit request =>
     Authenticated(request) { profile =>
-      val clusterId = ClusterId(id)
-      val owned = isOwnCluster(profile.id, clusterId)
-      val description = serviceManager.describeCluster(clusterId)
-      (owned, description) match {
-        case (false, Some(_)) => unauthorizedAccessTo(clusterId)
-        case (false, None) => notFound(clusterId)
-        case (true, None) => {
-          Logger.error(s"Cluster '$id' is on app database but not found in Service Manager")
-          InternalServerError(Json.toJson(Message(s"Cluster '$id' not found")))
-        }
-        case (true, Some(description)) => Ok(Json.toJson(ClusterDetails(description)))
+      OwnedCluster(profile, ClusterId(id)) { cluster =>
+        Ok(Json.toJson(ClusterDetails(cluster)))
       }
     }
   }
@@ -68,17 +59,25 @@ class ClusterResource(serviceManager: ServiceManager) extends AuthController {
        @PathParam("id")
        id: String) = Action { request =>
     Authenticated(request) { profile =>
-      val clusterId = ClusterId(id)
-      val clusterExists = serviceManager.describeCluster(clusterId).isDefined
-      val owned = isOwnCluster(profile.id, clusterId)
-      (owned, clusterExists) match {
-        case (_, false) => notFound(clusterId)
-        case (true, _) => Try(serviceManager.terminateCluster(ClusterId(id))) match {
+      OwnedCluster(profile, ClusterId(id)) { cluster =>
+        Try(serviceManager.terminateCluster(cluster.id)) match {
           case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))
-          case Failure(ex) => InternalServerError(ex.getMessage)
+          case Failure(ex) => throw ex
         }
-        case (false, _) => unauthorizedAccessTo(clusterId)
       }
+    }
+  }
+
+  private def OwnedCluster(
+      profile: CosmosProfile, clusterId: ClusterId)(f: ClusterDescription => Result) = {
+    val owned = isOwnCluster(profile.id, clusterId)
+    val maybeDescription = serviceManager.describeCluster(clusterId)
+    (owned, maybeDescription) match {
+      case (true, None) => throw new IllegalStateException(
+        s"Cluster '$clusterId' is on app database but not found in Service Manager")
+      case (false, None) => notFound(clusterId)
+      case (false, Some(_)) => unauthorizedAccessTo(clusterId)
+      case (true, Some(description)) => f(description)
     }
   }
 

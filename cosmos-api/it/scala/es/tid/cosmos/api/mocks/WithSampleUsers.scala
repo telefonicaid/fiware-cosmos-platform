@@ -23,9 +23,9 @@ import es.tid.cosmos.api.authorization.ApiCredentials
 class WithSampleUsers extends WithInMemoryDatabase {
 
   lazy val user1 = CosmosProfile(1, "user1", ApiCredentials(
-    "7qGr9DNvfsh0tQbGofs7DNROLdce7zQurd1B6pHV", "QvD79TLRlNRZ20JaVi6BevN5SdBLt0T8hL29tugo"))
+    "7qGr9DNvfsh0tQbGofs7", "QvD79TLRlNRZ20JaVi6BevN5SdBLt0T8hL29tugo"))
   lazy val user2 = CosmosProfile(2, "user2", ApiCredentials(
-    "AAAAB3NzaC1yc2EAAAABIAAAAB3NzaC1yc2EAAAA", "cUN1cxN4x4XYIqVIeYEAYQUKQExd0HNWzd4Y8DiD"))
+    "IAAAAB3NzaC1yc2EAAAA", "cUN1cxN4x4XYIqVIeYEAYQUKQExd0HNWzd4Y8DiD"))
 
   override def around[T: AsResult](t: => T): Result = {
     super.around {

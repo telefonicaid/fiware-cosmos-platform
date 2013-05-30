@@ -16,15 +16,15 @@ import scala.Some
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.db.DB
+import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
-import play.api.libs.json.Json
 
-import es.tid.cosmos.servicemanager.{ClusterDescription, Terminating, Terminated, ClusterId}
+import es.tid.cosmos.api.controllers.ResultMatchers.failWith
+import es.tid.cosmos.servicemanager.{Terminating, Terminated, ClusterId}
 import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile.CosmosProfileDao
-
 
 class ClusterIT extends FlatSpec with MustMatchers {
   val resourcePath = s"/cosmos/cluster/${MockedServiceManager.defaultClusterId.toString}"
@@ -56,12 +56,12 @@ class ClusterIT extends FlatSpec with MustMatchers {
     status(resource) must equal (UNAUTHORIZED)
   }
 
-  it must "return with 500 if the service manager has no associated information" in
+  it must "throw if the service manager has no associated information" in
     new WithSampleUsers {
       val clusterId = ClusterId()
       CosmosProfileDao.assignCluster(clusterId, user1.id)(DB.getConnection())
       val resource = route(FakeRequest(GET, s"/cosmos/cluster/$clusterId").authorizedBy(user1)).get
-      status(resource) must equal (INTERNAL_SERVER_ERROR)
+      resource must failWith (classOf[IllegalStateException])
     }
 
   it must "terminate cluster" in new WithSampleUsers {

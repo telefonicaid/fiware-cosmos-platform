@@ -15,13 +15,14 @@ import java.net.URI
 
 import org.apache.commons.lang3.StringEscapeUtils
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
+import org.scalatest.matchers.MustMatchers
 import play.api.Play.current
 import play.api.db.DB
-import play.api.mvc.{Session, Result}
+import play.api.mvc.Session
 import play.api.test._
 import play.api.test.Helpers._
 
+import es.tid.cosmos.api.controllers.ResultMatchers.redirectTo
 import es.tid.cosmos.api.controllers.pages.{CosmosSession, Registration}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.UserProfile
@@ -125,22 +126,4 @@ class PagesIT extends FlatSpec with MustMatchers {
     val uri = URI.create(url)
     s"${uri.getPath}?${uri.getQuery}"
   }
-
-  private def redirectTo(path: String): Matcher[Result] =
-    new Matcher[Result] {
-      def apply(r: Result): MatchResult =
-        if (status(r) != SEE_OTHER) {
-          MatchResult(
-            matches = false,
-            failureMessage = s"${status(r)} status found when $SEE_OTHER were expected",
-            negatedFailureMessage = s"${status(r)} status not found when $SEE_OTHER were expected"
-          )
-        } else {
-          MatchResult(
-            matches = header("Location", r) == Some(path),
-            failureMessage = s"result does not redirect to $path",
-            negatedFailureMessage = s"result redirects to $path"
-          )
-        }
-    }
 }

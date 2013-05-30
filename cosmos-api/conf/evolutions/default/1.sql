@@ -17,7 +17,7 @@ CREATE TABLE user (
   cosmos_id INT NOT NULL AUTO_INCREMENT,
   user_id VARCHAR(45) NULL,
   handle VARCHAR(45) NOT NULL,
-  api_key CHAR(40) NOT NULL,
+  api_key CHAR(20) NOT NULL,
   api_secret CHAR(40) NOT NULL,
   PRIMARY KEY (cosmos_id),
   UNIQUE INDEX tu_id_UNIQUE (user_id ASC),

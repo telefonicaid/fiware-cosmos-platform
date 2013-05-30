@@ -23,20 +23,20 @@ import es.tid.cosmos.platform.ial.MachineProfile
 trait LibVirtSqlTest extends MySqlTest {
   this: Suite =>
 
-  val dbUser = "cosmos"
-  val dbPassword = "cosmos"
-  val dbHost = "localhost"
-  val dbPort = 3306
+  override val dbUser = "cosmos"
+  override val dbPassword = "cosmos"
+  override val dbHost = "localhost"
+  override val dbPort = 3306
 
   val dao = new SqlLibVirtDao(db)
 
-  val schema = LibVirtDb
+  override val schema = LibVirtDb
 
   val servers = List(
     new PersistentLibVirtServerProperties(
       name = "andromeda02",
       description = "Andromeda 02",
-      MachineProfile.M,
+      profile = MachineProfile.M,
       connectionChain = "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -44,11 +44,11 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda52",
       domainIpAddress = "192.168.63.62",
-      true),
+      enabled = true),
     new PersistentLibVirtServerProperties(
       name = "andromeda03",
       description = "Andromeda 03",
-      MachineProfile.M,
+      profile = MachineProfile.M,
       connectionChain = "openvz+ssh://cosmos@192.168.63.13/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -56,11 +56,11 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda53",
       domainIpAddress = "192.168.63.63",
-      true),
+      enabled = true),
     new PersistentLibVirtServerProperties(
       name = "andromeda04",
       description = "Andromeda 04",
-      MachineProfile.M,
+      profile = MachineProfile.M,
       connectionChain = "openvz+ssh://cosmos@192.168.63.14/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -68,11 +68,11 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda54",
       domainIpAddress = "192.168.63.64",
-      true),
+      enabled = true),
     new PersistentLibVirtServerProperties(
       name = "andromeda05",
       description = "Andromeda 05",
-      MachineProfile.M,
+      profile = MachineProfile.M,
       connectionChain = "openvz+ssh://cosmos@192.168.63.15/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -80,11 +80,11 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda55",
       domainIpAddress = "192.168.63.65",
-      true),
+      enabled = true),
     new PersistentLibVirtServerProperties(
       name = "andromeda06",
       description = "Andromeda 06",
-      MachineProfile.M,
+      profile = MachineProfile.M,
       connectionChain = "openvz+ssh://cosmos@192.168.63.16/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -92,7 +92,7 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda56",
       domainIpAddress = "192.168.63.66",
-      true)
+      enabled = true)
   )
 
   override def populateInitialData {

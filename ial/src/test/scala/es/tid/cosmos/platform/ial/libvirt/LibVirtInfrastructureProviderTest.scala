@@ -1,23 +1,32 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.platform.ial.libvirt
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
-import es.tid.cosmos.platform.ial.{ResourceExhaustedException, MachineState, MachineProfile}
-import scala.concurrent.Await
-import scala.concurrent.duration.Duration
-import es.tid.cosmos.platform.common.scalatest.matchers.{ForAllMatcher, ContainSomeMatcher}
 
-/**
- * @author apv
- */
+import es.tid.cosmos.platform.common.scalatest.matchers.{ForAllMatcher, ContainSomeMatcher}
+import es.tid.cosmos.platform.ial.{ResourceExhaustedException, MachineState, MachineProfile}
+
 class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with BeforeAndAfter {
 
   var infraProvider: LibVirtInfrastructureProvider = null
 
   before {
-    val serverFactory = new FakeLibVirtServerFactory
     infraProvider = new LibVirtInfrastructureProvider(
-      new FakeLibVirtDao, props => serverFactory(props))
+      new FakeLibVirtDao, new FakeLibVirtServerFactory)
   }
 
   after {}
@@ -67,9 +76,6 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
 
     Await.result(infraProvider.createMachines("test_", MachineProfile.M, 2), Duration.Inf)
     Await.result(infraProvider.createMachines("test_", MachineProfile.M, 2), Duration.Inf)
-  }
-
-  object containSomeMachine {
   }
 
   object matchAll {

@@ -1,7 +1,18 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.platform.ial.libvirt
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{Future, future}
 
 import es.tid.cosmos.platform.ial._
 
@@ -38,33 +49,34 @@ class LibVirtInfrastructureProvider(
    * @param machines The set of machines to be released.
    * @return         a future which terminates once the release has completed
    */
-  def releaseMachines(machines: Seq[MachineState]): Future[Unit] = {
+  def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
     for {
       servers <- serversForMachines(machines)
-    } yield Future.sequence(servers.map(srv => srv.destroyDomain()))
-  }
+      _ <- Future.sequence(servers.map(srv => srv.destroyDomain()))
+    } yield ()
 
-  private def serversForMachines(machines: Seq[MachineState]): Future[Seq[LibVirtServer]] = Future {
-      for {
-        machine <- machines
-        server <- dao.libVirtServers if (server.domainHostname == machine.hostname)
-      } yield libvirtServerFactory(server)
+  private def serversForMachines(machines: Seq[MachineState]): Future[Seq[LibVirtServer]] = future {
+    for {
+      machine <- machines
+      server <- dao.libVirtServers if (server.domainHostname == machine.hostname)
+    } yield libvirtServerFactory(server)
   }
 
   val rootSshKey: String = "FIXME"
 
-
-  private def createMachines(
-      servers: Seq[LibVirtServer]): Future[Seq[MachineState]] = {
+  private def createMachines(servers: Seq[LibVirtServer]): Future[Seq[MachineState]] = {
     Future.sequence(servers.map(srv => srv.createDomain().map(dom => domainToMachineState(dom))))
   }
 
   private def availableServers(profile: MachineProfile.Value): Future[Seq[LibVirtServer]] = {
-    val servers = dao.libVirtServers
-      .filter(_.profile == profile)
-      .map(prop => libvirtServerFactory(prop))
-    Future.sequence(servers.map(srv => for (created <- srv.isCreated()) yield (srv, created)))
-      .map(_.collect { case (srv, false) => srv})
+
+    def availableServer(srv: LibVirtServer): Future[Option[LibVirtServer]] =
+      for (created <- srv.isCreated()) yield if (created) None else Some(srv)
+
+    val servers = for {
+      serverProps <- dao.libVirtServers if (serverProps.profile == profile)
+    } yield libvirtServerFactory(serverProps)
+    Future.sequence(servers.map(availableServer)).map(_.flatten)
   }
 
   private def domainToMachineState(domain : DomainProperties): MachineState =
@@ -76,6 +88,6 @@ class LibVirtInfrastructureProvider(
       domain.hostname,
       domain.ipAddress)
 
-  private def domainStatus(dom: DomainProperties) : MachineStatus.Value =
+  private def domainStatus(dom: DomainProperties): MachineStatus.Value =
     if (dom.isActive) MachineStatus.Running else MachineStatus.Provisioning
 }

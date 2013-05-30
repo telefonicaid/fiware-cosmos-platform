@@ -11,16 +11,13 @@
 
 package es.tid.cosmos.platform.common.db
 
-import scala.Some
-import scala.util.{Failure, Success, Random}
+import scala.util.{Random, Success, Failure}
 
-import org.scalatest.{Suite, BeforeAndAfter}
+import org.scalatest.{BeforeAndAfter, Suite}
 import org.squeryl.Schema
 import org.squeryl.PrimitiveTypeMode._
+
 import es.tid.cosmos.platform.common.MySqlDatabase
-import scala.util.Success
-import scala.util.Failure
-import scala.Some
 
 /**
  * A trait for testing against MySQL databases.

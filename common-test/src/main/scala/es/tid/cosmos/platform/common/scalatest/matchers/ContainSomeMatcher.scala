@@ -3,7 +3,7 @@ package es.tid.cosmos.platform.common.scalatest.matchers
 import org.scalatest.matchers.{MatchResult, Matcher}
 
 /**
- * A matcher which verifies whether there is at least one element matching a given predicate in
+ * A matcher that verifies whether there is at least one element matching a given predicate in
  * a sequence.
  */
 class ContainSomeMatcher[T](matcherDesc: String)(pred: T => Boolean)

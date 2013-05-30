@@ -1,3 +1,14 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.platform.ial.libvirt.jna
 
 import java.util.{NoSuchElementException, UUID}
@@ -14,7 +25,7 @@ import es.tid.cosmos.platform.ial.libvirt.{LibVirtServerProperties, DomainProper
 /**
  * A JNA based libvirt server
  */
-class JnaLibVirtServer(val properties: LibVirtServerProperties) extends LibVirtServer {
+case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends LibVirtServer {
 
   val domainId: Int = 101
   val domainName: String = domainId.toString
@@ -59,12 +70,14 @@ class JnaLibVirtServer(val properties: LibVirtServerProperties) extends LibVirtS
       _ <- future { domain.undefine() }
       } yield ()
     ) recover {
+      // domain not created, so drop the exception and return Unit
       case _: NoSuchElementException => ()
     }
 
   private def shutdownDomain(domain: Domain) : Future[Unit] =
     future { domain.shutdown() } recover {
-      case LibvirtError(code) => println(code)
+      // Raised if domain doesn't exist, just ignore
+      case LibvirtError(code) => ()
     }
 
   private object LibvirtError {
@@ -89,14 +102,9 @@ class JnaLibVirtServer(val properties: LibVirtServerProperties) extends LibVirtS
 
   private def mapDomain(domain: Domain): DomainProperties =
     new DomainProperties(
-      UUID.nameUUIDFromBytes(domain.getUUID.map(_.toByte)),
-      domain.getName,
-      domain.isActive > 0,
-      properties.domainHostname,
-      properties.domainIpAddress)
-}
-
-object JnaLibVirtServer {
-
-  def apply(props: LibVirtServerProperties) = new JnaLibVirtServer(props)
+      uuid = UUID.nameUUIDFromBytes(domain.getUUID.map(_.toByte)),
+      name = domain.getName,
+      isActive = domain.isActive > 0,
+      hostname = properties.domainHostname,
+      ipAddress = properties.domainIpAddress)
 }

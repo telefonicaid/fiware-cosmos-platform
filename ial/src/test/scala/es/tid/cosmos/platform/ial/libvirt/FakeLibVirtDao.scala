@@ -1,3 +1,14 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.platform.ial.libvirt
 
 import es.tid.cosmos.platform.ial.MachineProfile
@@ -7,61 +18,21 @@ import es.tid.cosmos.platform.ial.MachineProfile
  */
 class FakeLibVirtDao extends LibVirtDao {
 
-  val libVirtServers: Seq[LibVirtServerProperties] = Seq(
+  val libVirtServers = for (i <- 1 to 5) yield {
     new TransientLibVirtServerProperties(
-      name = "andromeda02",
-      description = "Andromeda 02",
+      name = s"andromeda0$i",
+      description = s"Andromeda 0$i",
       profile = MachineProfile.M,
-      connectionChain = "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
+      connectionChain = connChain(s"192.168.63.$i"),
       numberOfCpus = 4,
       totalMemory = 32768,
       domainTemplate = "centos-6-x86_64",
       bridgeName = "vzbr0",
-      domainHostname = "andromeda52",
-      domainIpAddress = "192.168.63.62"),
-    new TransientLibVirtServerProperties(
-      name = "andromeda03",
-      description = "Andromeda 03",
-      profile = MachineProfile.M,
-      connectionChain = "openvz+ssh://cosmos@192.168.63.13/system?socket=/var/run/libvirt/libvirt-sock",
-      numberOfCpus = 4,
-      totalMemory = 32768,
-      domainTemplate = "centos-6-x86_64",
-      bridgeName = "vzbr0",
-      domainHostname = "andromeda53",
-      domainIpAddress = "192.168.63.63"),
-    new TransientLibVirtServerProperties(
-      name = "andromeda04",
-      description = "Andromeda 04",
-      profile = MachineProfile.M,
-      connectionChain = "openvz+ssh://cosmos@192.168.63.14/system?socket=/var/run/libvirt/libvirt-sock",
-      numberOfCpus = 4,
-      totalMemory = 32768,
-      domainTemplate = "centos-6-x86_64",
-      bridgeName = "vzbr0",
-      domainHostname = "andromeda54",
-      domainIpAddress = "192.168.63.64"),
-    new TransientLibVirtServerProperties(
-      name = "andromeda05",
-      description = "Andromeda 05",
-      profile = MachineProfile.M,
-      connectionChain = "openvz+ssh://cosmos@192.168.63.15/system?socket=/var/run/libvirt/libvirt-sock",
-      numberOfCpus = 4,
-      totalMemory = 32768,
-      domainTemplate = "centos-6-x86_64",
-      bridgeName = "vzbr0",
-      domainHostname = "andromeda55",
-      domainIpAddress = "192.168.63.65"),
-    new TransientLibVirtServerProperties(
-      name = "andromeda06",
-      description = "Andromeda 06",
-      profile = MachineProfile.M,
-      connectionChain = "openvz+ssh://cosmos@192.168.63.16/system?socket=/var/run/libvirt/libvirt-sock",
-      numberOfCpus = 4,
-      totalMemory = 32768,
-      domainTemplate = "centos-6-x86_64",
-      bridgeName = "vzbr0",
-      domainHostname = "andromeda56",
-      domainIpAddress = "192.168.63.66")
-  )
+      domainHostname = s"andromeda${50 + i}",
+      domainIpAddress = s"192.168.63.${50 + i}"
+    )
+  }
+
+  private def connChain(hostname: String) =
+    s"openvz+ssh://cosmos@$hostname/system?socket=/var/run/libvirt/libvirt-sock"
 }

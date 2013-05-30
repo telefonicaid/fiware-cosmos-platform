@@ -83,5 +83,5 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 }
 
 object MockedServiceManager {
-  val defaultClusterId = new ClusterId(UUID.fromString("00000000-0000-0000-0000-000000000000"))
+  val defaultClusterId = new ClusterId("00000000000000000000000000000000")
 }

@@ -22,9 +22,14 @@ import requests
 import yaml
 from pymlconf import ConfigManager
 
-
+CONFIG_KEYS = ["api_url", "api_key", "api_secret"]
 DEFAULT_CONFIG = {
     "api_url": "http://localhost:9000/cosmos"
+}
+CONFIG_DESCRIPTIONS = {
+    "api_url": "Base API URL",
+    "api_key": "API key",
+    "api_secret": "API secret"
 }
 
 
@@ -74,14 +79,11 @@ def add_configure_command(subcommands):
 
     def ask_for_setting(config, setting):
         """Interactively ask for a setting using current value as a default"""
-        try:
-            default = config[setting]
-        except AttributeError:
-            default = ""
-        answer = raw_input("Base API URL [%s]: " % default)
+        default = config.get(setting, "")
+        answer = raw_input("%s [%s]: " % (CONFIG_DESCRIPTIONS[setting], default))
         if not answer.strip():
             answer = default
-        return answer
+        config[setting] = answer
 
     def ask_binary_question(question, defaultAnswer=False):
         answerText = "Y" if defaultAnswer else "N"
@@ -91,7 +93,8 @@ def add_configure_command(subcommands):
     def configure(args):
         """Create a configuration file by asking for the settings"""
         config = ConfigManager(DEFAULT_CONFIG)
-        config.api_url = ask_for_setting(config, "api_url")
+        for setting in CONFIG_KEYS:
+            ask_for_setting(config, setting)
         filename = get_config_path()
         if exists(filename) and not ask_binary_question(
                 "%s already exists. Overwrite?" % filename):
@@ -107,12 +110,16 @@ def add_configure_command(subcommands):
     parser.set_defaults(func=configure)
 
 
+def credentials(config):
+    return (config.api_key, config.api_secret)
+
+
 def add_list_command(subcommands):
 
     @with_config
     def list_clusters(args):
         """List existing clusters"""
-        r = requests.get(cluster_resource(args))
+        r = requests.get(cluster_resource(args), auth=credentials(args.config))
         if r.status_code != 200:
             print "Something bad happened: %d" % r.status_code
             return r.status_code
@@ -130,7 +137,7 @@ def add_list_command(subcommands):
 
 
 def add_show_command(subcommands):
-    uuid_pattern = re.compile(r"^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$")
+    uuid_pattern = re.compile(r"^[0-9a-f]{32}$")
 
     @with_config
     def cluster_details(args):
@@ -139,7 +146,8 @@ def add_show_command(subcommands):
             return -1
 
         r = requests.get("%s/cluster/%s" % (args.config["api_url"],
-                                            args.cluster_id))
+                                            args.cluster_id),
+                         auth=credentials(args.config))
         if r.status_code != 200:
             print "Cannot get details for %s: %d" % (args.cluster_id,
                                                      r.status_code)
@@ -159,7 +167,8 @@ def add_create_command(subcommands):
     def create_cluster(args):
         """Trigger cluster provisioning"""
         r = requests.post(cluster_resource(args),
-                          json.dumps({"name": args.name, "size": args.size}))
+                          json.dumps({"name": args.name, "size": args.size}),
+                          auth=credentials(args.config))
         if r.status_code != 201:
             print "Cluster creation problem: %d" % r.status_code
             print "Error: %s" % r.json()["error"]

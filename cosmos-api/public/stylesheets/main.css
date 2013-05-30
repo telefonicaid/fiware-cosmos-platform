@@ -105,6 +105,10 @@ hr {
     background-color: #FF7E14;
 }
 
+/*
+ * User profile
+ */
+
 .key {
     display: block;
     background-color: white;
@@ -125,6 +129,24 @@ hr {
     font-family: "Courier New", Courier, monospace;
     word-break: break-all;
     margin-top: 1ex;
+}
+
+.credentials {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+}
+.credentials tr:hover {
+    background-color: #ddd;
+}
+.credentials th, td {
+    border: 1px solid black;
+}
+.credentials th {
+    text-align: left;
+}
+.credentials td {
+    font-family: "Courier New", Courier, monospace;
 }
 
 /*

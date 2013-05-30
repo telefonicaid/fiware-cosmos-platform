@@ -15,10 +15,13 @@ import scala.util.{Failure, Success, Try}
 
 import com.wordnik.swagger.annotations._
 import play.Logger
+import play.api.Play.current
+import play.api.db.DB
 import play.api.libs.json._
 import play.api.mvc._
 
-import es.tid.cosmos.api.controllers.common.{formatInternalException, JsonController}
+import es.tid.cosmos.api.controllers.common.{AuthController, JsonController}
+import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager, ClusterId}
 
 /**
@@ -26,15 +29,19 @@ import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager, ClusterId}
  */
 @Api(value = "/cosmos/clusters", listingPath = "/doc/cosmos/clusters",
   description = "Represents all the clusters in the platform")
-class ClustersResource(serviceManager: ServiceManager) extends JsonController {
+class ClustersResource(serviceManager: ServiceManager) extends JsonController with AuthController {
   /**
-   * List existing clusters.
+   * List user clusters.
    */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.clusters.ClusterList")
   def list = Action { implicit request =>
-    val body = ClusterList(serviceManager.clusterIds.map(id => ClusterReference(id)))
-    Ok(Json.toJson(body))
+    Authenticated(request) { profile =>
+      val userClusters = Set(CosmosProfileDao.clustersOf(profile.id)(DB.getConnection()): _*)
+      val clusters = serviceManager.clusterIds.filter(userClusters).toList.sorted
+      val body = ClusterList(clusters.map(id => ClusterReference(id)))
+      Ok(Json.toJson(body))
+    }
   }
 
   /**
@@ -49,19 +56,20 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController {
       dataType = "es.tid.cosmos.api.controllers.clusters.CreateClusterParams")
   ))
   def createCluster = JsonBodyAction[CreateClusterParams] { (request, body) =>
-    // FIXME: Replace with actual user
-    val user = ClusterUser("replaceMe", "replaceMe")
-    Try(serviceManager.createCluster(
-      body.name, body.size, serviceManager.services(user))) match {
-      case Success(id: ClusterId) => {
-        Logger.info(s"Provisioning new cluster $id")
-        val reference: ClusterReference = ClusterReference(id)(request)
-        Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
-      }
-      case Failure(ex) => {
-        val message = "Error when requesting a new cluster"
-        Logger.error(message, ex)
-        InternalServerError(formatInternalException(message, ex))
+    Authenticated(request) { profile =>
+      val key = profile.keys.head.signature
+      val clusterUser: ClusterUser = ClusterUser(profile.handle, key)
+      Try(serviceManager.createCluster(
+        body.name, body.size, serviceManager.services(clusterUser))) match {
+        case Failure(ex) => throw ex
+        case Success(clusterId: ClusterId) => {
+          Logger.info(s"Provisioning new cluster $clusterId")
+          DB.withTransaction { implicit c =>
+            CosmosProfileDao.assignCluster(clusterId, profile.id)
+          }
+          val reference: ClusterReference = ClusterReference(clusterId)(request)
+          Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
+        }
       }
     }
   }

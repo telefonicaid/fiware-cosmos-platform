@@ -17,8 +17,11 @@ CREATE TABLE user (
   cosmos_id INT NOT NULL AUTO_INCREMENT,
   user_id VARCHAR(45) NULL,
   handle VARCHAR(45) NOT NULL,
+  api_key CHAR(20) NOT NULL,
+  api_secret CHAR(40) NOT NULL,
   PRIMARY KEY (cosmos_id),
-  UNIQUE INDEX tu_id_UNIQUE (user_id ASC)
+  UNIQUE INDEX tu_id_UNIQUE (user_id ASC),
+  UNIQUE INDEX api_key_UNIQUE (api_key ASC)
 );
 
 CREATE TABLE public_key (
@@ -28,6 +31,16 @@ CREATE TABLE public_key (
   PRIMARY KEY (cosmos_id, name),
   CONSTRAINT fk_public_key_user
     FOREIGN KEY (cosmos_id)
+    REFERENCES user (cosmos_id)
+);
+
+CREATE TABLE cluster (
+  cluster_id VARCHAR(45) NOT NULL,
+  owner INT NOT NULL,
+  PRIMARY KEY (cluster_id),
+  INDEX owner_INDEX (owner ASC),
+  CONSTRAINT fk_public_key_owner
+    FOREIGN KEY (owner)
     REFERENCES user (cosmos_id)
 );
 

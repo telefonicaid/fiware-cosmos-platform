@@ -15,7 +15,6 @@
  -->
 @main("Cosmos user profile for @profile.fullName") {
     <ul id="headernav">
-        <li><a href="@pages.routes.Pages.index()">Home</a></li>
         <li><a href="@pages.routes.Pages.logout()">Logout</a></li>
     </ul>
 
@@ -42,4 +41,19 @@
         You can also <a href="doc.html">play with the API</a></p>
 
     <p>In the case of the <tt>cosmos</tt> script, use: <tt>cosmos configure</tt></p>
+
+    <p>Your API credentials (please, don't share with anyone) are:</p>
+
+    <table class="credentials">
+        <tbody>
+            <tr>
+                <th>API key</th>
+                <td>@cosmosProfile.apiCredentials.apiKey</td>
+            </tr>
+            <tr>
+                <th>API secret</th>
+                <td>@cosmosProfile.apiCredentials.apiSecret</td>
+            </tr>
+        </tbody>
+    </table>
 }

@@ -17,15 +17,13 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
-import es.tid.cosmos.api.mocks.MockedServices
+import es.tid.cosmos.api.mocks.WithInMemoryDatabase
 
-class CosmosIT extends FlatSpec with MustMatchers with MockedServices {
-  "The Cosmos resource" must "return the version as JSON" in {
-    runWithMockedServices {
-      val resource = route(FakeRequest(GET, "/cosmos")).get
-      status(resource) must equal (OK)
-      contentType(resource) must be (Some("application/json"))
-      contentAsString(resource) must include (CosmosResource.apiVersion)
-    }
+class CosmosIT extends FlatSpec with MustMatchers {
+  "The Cosmos resource" must "return the version as JSON" in new WithInMemoryDatabase {
+    val resource = route(FakeRequest(GET, "/cosmos")).get
+    status(resource) must equal (OK)
+    contentType(resource) must be (Some("application/json"))
+    contentAsString(resource) must include (CosmosResource.apiVersion)
   }
 }

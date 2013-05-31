@@ -9,10 +9,17 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.api
 
-import es.tid.cosmos.platform.ial.{InfrastructureProviderComponent, InfrastructureProvider}
+import com.typesafe.config.Config
+import play.api.Play
 
-trait FakeInfrastructureProviderComponent extends InfrastructureProviderComponent {
-  val infrastructureProvider: InfrastructureProvider = new FakeInfrastructureProvider
+import es.tid.cosmos.platform.common.ConfigComponent
+
+/**
+ * Component that pulls configuration from Play! configuration.
+ */
+trait PlayConfigComponent extends ConfigComponent {
+
+  def config: Config = Play.current.configuration.underlying
 }

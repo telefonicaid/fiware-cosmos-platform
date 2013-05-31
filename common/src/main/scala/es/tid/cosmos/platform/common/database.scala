@@ -14,6 +14,7 @@ package es.tid.cosmos.platform.common
 import java.sql.{DriverManager, Connection}
 import scala.util.Try
 
+import com.typesafe.config._
 import org.squeryl.{Session, SessionFactory}
 import org.squeryl.internals.DatabaseAdapter
 import org.squeryl.adapters.MySQLAdapter
@@ -37,6 +38,33 @@ trait SqlDatabase extends SessionFactory {
    * Create a new Squeryl session from a connection to the database.
    */
   def newSession: Session = Session.create(connect.get, adapter)
+}
+
+/**
+ * All the information needed to create a database connection.
+ */
+case class MySqlConnDetails(
+    host: String,
+    port: Int,
+    username: String,
+    password: String,
+    dbName: String)
+
+object MySqlConnDetails {
+  private val DefaultPort: Int = 3306
+
+  def apply(host: String, port: Int, username: String, password: String): MySqlConnDetails =
+    MySqlConnDetails(host, port, username, password, dbName = "")
+
+  def fromConfig(c: Config) =
+    MySqlConnDetails(
+      host = c.getString("ial.db.host"),
+      port = c.withFallback(ConfigValueFactory.fromAnyRef(DefaultPort))
+        .getInt("ial.db.port"),
+      username = c.getString("ial.db.username"),
+      password = c.getString("ial.db.password"),
+      dbName = c.getString("ial.db.name")
+    )
 }
 
 /**

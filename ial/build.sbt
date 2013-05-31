@@ -6,6 +6,7 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++=  Seq(
+  "com.typesafe" % "config" % "1.0.0",
   "net.java.dev.jna" % "jna" % "3.4.0",
   "net.java.dev.jna" % "platform" % "3.4.0",
   "org.libvirt" % "libvirt" % "0.4.9",

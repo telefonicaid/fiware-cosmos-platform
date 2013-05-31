@@ -12,7 +12,6 @@
 package es.tid.cosmos.platform.ial
 
 import scala.concurrent.Future
-import scala.util.Try
 
 /**
  * Resource exhausted exception class. This exception is thrown when there are not enough

@@ -11,17 +11,15 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import com.typesafe.config.ConfigFactory
-
-import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
-import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
+import es.tid.cosmos.platform.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
+import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
+import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
-  this: InfrastructureProviderComponent =>
+  this: InfrastructureProviderComponent with ConfigComponent =>
 
   lazy val serviceManager: ServiceManager = {
-    val config = ConfigFactory.load("servicemanager")
     new AmbariServiceManager(
       new AmbariServer(
         config.getString("ambari.server.url"),

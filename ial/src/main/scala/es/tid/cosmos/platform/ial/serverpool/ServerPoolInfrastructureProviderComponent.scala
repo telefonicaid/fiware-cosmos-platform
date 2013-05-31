@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.platform.ial.serverpool
 
-import es.tid.cosmos.platform.common.{MySqlConnDetailsComponent, MySqlDatabase}
+import es.tid.cosmos.platform.common.{ConfigComponent, MySqlConnDetails, MySqlDatabase}
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 
 /**
@@ -20,10 +20,10 @@ import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
  * @author sortega
  */
 trait ServerPoolInfrastructureProviderComponent extends InfrastructureProviderComponent {
-  this: MySqlConnDetailsComponent =>
+  this: ConfigComponent =>
 
-  override lazy val infrastructureProvider = {
-    val db = new MySqlDatabase(connectionDetails)
+  lazy val infrastructureProvider = {
+    val db = new MySqlDatabase(MySqlConnDetails.fromConfig(config))
     val dao = new SqlServerPoolDao(db)
     new ServerPoolInfrastructureProvider(dao)
   }

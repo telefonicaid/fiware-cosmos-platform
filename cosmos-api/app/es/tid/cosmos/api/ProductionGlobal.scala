@@ -29,7 +29,7 @@ object ProductionGlobal extends AbstractGlobal(new Application
   with TuIdOAuthClientComponent
   with AmbariServiceManagerComponent
   with ServerPoolInfrastructureProviderComponent
-  with PlayMySqlConnDetailsComponent) {
+  with PlayConfigComponent) {
 
   override def onError(request: RequestHeader, ex: Throwable): Result = {
     InternalServerError(formatInternalException(ex.getMessage, ex))

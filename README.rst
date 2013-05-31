@@ -62,3 +62,16 @@ To execute a development server go to the project root directory and enter
 The application will start at http://localhost:9000. To change the listen path
 just edit the ``application.baseurl`` setting on the ``application.conf``
 file.
+
+========
+Glossary
+========
+
+Cosmos does automatic deployment of clusters and needs to be deployed itself
+--as all systems. To avoid confusion in this and other areas we define here
+some terms.
+
+- *Service*: piece of software that gets deployed by Cosmos. E.g. mapred daemon,
+  oozie...
+- *Component*: piece of software that constitutes a part of Cosmos and gets
+  deployed as part of Cosmos deployment.

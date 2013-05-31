@@ -41,27 +41,14 @@ trait SqlDatabase extends SessionFactory {
 
 /**
  * A trait of a MySQL database.
- *
- * @param host the hostname of MySQL server
- * @param port the port MySQL server is listening to
- * @param username the username used to connect to MySQL
- * @param password the password used to connect to MySQL
- * @param dbName the database to connect
  */
-class MySqlDatabase(val host: String,
-                    val port: Int,
-                    val username: String,
-                    val password: String,
-                    val dbName: String) extends SqlDatabase {
+class MySqlDatabase(c: MySqlConnDetails) extends SqlDatabase {
 
   /* Initialize MySQL JDBC driver, which registers the connection chain prefix on DriverManager. */
   Class.forName("com.mysql.jdbc.Driver")
 
-  def this(host: String, port: Int, username: String, password: String) =
-    this(host, port, username, password, "")
-
-  def connect: Try[Connection] =
-    Try(DriverManager.getConnection(s"jdbc:mysql://$host:$port/$dbName", username, password))
+  def connect: Try[Connection] = Try(DriverManager.getConnection(
+    s"jdbc:mysql://${c.host}:${c.port}/${c.dbName}", c.username, c.password))
 
   override val adapter = new MySQLAdapter
 }

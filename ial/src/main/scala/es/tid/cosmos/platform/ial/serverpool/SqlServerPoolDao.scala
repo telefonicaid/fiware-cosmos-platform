@@ -114,11 +114,6 @@ class SqlServerPoolDao(val db: SqlDatabase) extends ServerPoolDao {
 /**
  * A server pool DAO supported by a MySQL database.
  *
- * @param host the hostname of MySQL server
- * @param port the port MySQL server is listening to
- * @param username the username used to connect to MySQL
- * @param password the password used to connect to MySQL
- * @param dbName the database to connect
+ * @param c connection details of MySQL server
  */
-class MySqlServerPoolDao(host: String, port: Int, username: String, password: String, dbName: String)
-  extends SqlServerPoolDao(new MySqlDatabase(host, port, username, password, dbName))
+class MySqlServerPoolDao(c: MySqlConnDetails) extends SqlServerPoolDao(new MySqlDatabase(c))

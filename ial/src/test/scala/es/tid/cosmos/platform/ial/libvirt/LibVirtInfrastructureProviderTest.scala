@@ -26,7 +26,7 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
 
   before {
     infraProvider = new LibVirtInfrastructureProvider(
-      new FakeLibVirtDao, new FakeLibVirtServerFactory)
+      new FakeLibVirtDao, new FakeLibVirtServerFactory, "DUMMY-SSH-KEY")
   }
 
   after {}

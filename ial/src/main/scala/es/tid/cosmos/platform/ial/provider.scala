@@ -56,7 +56,7 @@ trait InfrastructureProvider {
   /**
    * The ssh key that enables root access to the machines
    */
-  val rootSshKey: String
+  val rootPrivateSshKey: String
 }
 
 /**

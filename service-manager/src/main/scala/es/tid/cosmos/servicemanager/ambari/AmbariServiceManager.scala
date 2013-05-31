@@ -80,7 +80,7 @@ class AmbariServiceManager(
 
   private def initCluster(id: ClusterId, machines: Seq[MachineState]) : Future[Cluster] =
     for {
-      _ <- provisioner.bootstrapMachines(machines, infrastructureProvider.rootSshKey)
+      _ <- provisioner.bootstrapMachines(machines, infrastructureProvider.rootPrivateSshKey)
       _ <- ensureHostsRegistered(machines.map(_.hostname))
       cluster <- provisioner.createCluster(id.toString, stackVersion)
     } yield cluster
@@ -110,7 +110,7 @@ class AmbariServiceManager(
       _ <- stoppedServices_>
       _ <- provisioner.removeCluster(id.toString)
       machines <- clusters(id).machines_>
-      _ <- provisioner.teardownMachines(machines, infrastructureProvider.rootSshKey)
+      _ <- provisioner.teardownMachines(machines, infrastructureProvider.rootPrivateSshKey)
       _ <- infrastructureProvider.releaseMachines(machines)
     } yield ()
     clusters(id).terminate(termination_>)

@@ -25,6 +25,8 @@ trait LibVirtInfrastructureProviderComponent extends InfrastructureProviderCompo
   override val infrastructureProvider = {
     val db = new MySqlDatabase(MySqlConnDetails.fromConfig(config))
     val dao = new SqlLibVirtDao(db)
-    new LibVirtInfrastructureProvider(dao, props => new JnaLibVirtServer(props))
+    new LibVirtInfrastructureProvider(dao,
+      libvirtServerFactory = props => new JnaLibVirtServer(props),
+      rootPrivateSshKey = config.getString("ial.root.ssh.private_key"))
   }
 }

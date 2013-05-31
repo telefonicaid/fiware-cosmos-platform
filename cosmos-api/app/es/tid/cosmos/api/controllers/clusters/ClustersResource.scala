@@ -37,7 +37,9 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
     responseClass = "es.tid.cosmos.api.controllers.clusters.ClusterList")
   def list = Action { implicit request =>
     Authenticated(request) { profile =>
-      val userClusters = Set(CosmosProfileDao.clustersOf(profile.id)(DB.getConnection()): _*)
+      val userClusters = DB.withConnection { implicit c =>
+        Set(CosmosProfileDao.clustersOf(profile.id): _*)
+      }
       val clusters = serviceManager.clusterIds.filter(userClusters).toList.sorted
       val body = ClusterList(clusters.map(id => ClusterReference(id)))
       Ok(Json.toJson(body))

@@ -82,7 +82,7 @@ function process_file {
         file_exists_or_exit "$resolv_conf_file"
         file_exists_or_exit "$root_ssh_public_key_file"
 
-        WORK_DIR=`mktemp -d -t cosmos-configure-template`
+        WORK_DIR=`mktemp -d -t cosmos-configure-template_XXXX`
         TARGET_DIR="$input_file-output"
         TARGET_FILE="$TARGET_DIR/`basename $template`"
         SYSCONFIG_DIR="$WORK_DIR/etc/sysconfig"

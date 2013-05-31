@@ -14,8 +14,8 @@ package es.tid.cosmos.platform.ial.serverpool
 import org.scalatest.Suite
 import org.scalatest.matchers.{MatchResult, Matcher}
 
-import es.tid.cosmos.platform.common.MySqlTest
 import es.tid.cosmos.platform.ial.{MachineProfile, Id, MachineState, MachineStatus}
+import es.tid.cosmos.platform.common.db.MySqlTest
 
 /**
  * A convenient trait for testing against MySQL DBMS. In order for it to work, you must:

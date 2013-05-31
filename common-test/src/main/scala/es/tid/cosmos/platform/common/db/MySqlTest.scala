@@ -17,7 +17,7 @@ import org.scalatest.{BeforeAndAfter, Suite}
 import org.squeryl.Schema
 import org.squeryl.PrimitiveTypeMode._
 
-import es.tid.cosmos.platform.common.MySqlDatabase
+import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
 
 /**
  * A trait for testing against MySQL databases.
@@ -30,7 +30,7 @@ trait MySqlTest extends BeforeAndAfter {
   def dbHost: String
   def dbPort: Int
   val dbName = s"test_${math.abs(Random.nextInt())}"
-  lazy val db = new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword, dbName)
+  lazy val db = new MySqlDatabase(MySqlConnDetails(dbHost, dbPort, dbUser, dbPassword, dbName))
 
   /**
    * The schema of the database. Override in extensions to set the Squeryl schema to use.
@@ -48,7 +48,8 @@ trait MySqlTest extends BeforeAndAfter {
 
   private def updateDatabase(updateQuery: String) {
     var stmt: Option[java.sql.Statement] = None
-    new MySqlDatabase(dbHost, dbPort, dbUser, dbPassword).connect match {
+    new MySqlDatabase(MySqlConnDetails(dbHost, dbPort, dbUser, dbPassword))
+      .connect match {
       case Success(c) => try {
         stmt = Some(c.createStatement())
         stmt.get.executeUpdate(updateQuery)

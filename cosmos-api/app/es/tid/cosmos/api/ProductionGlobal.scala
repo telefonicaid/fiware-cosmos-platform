@@ -19,7 +19,7 @@ import play.api.mvc.Results.InternalServerError
 
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.oauth2.TuIdOAuthClientComponent
-import es.tid.cosmos.platform.ial.serverpool.ServerPoolInfrastructureProviderComponent
+import es.tid.cosmos.platform.ial.libvirt.LibVirtInfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ambari.AmbariServiceManagerComponent
 
 /**
@@ -28,8 +28,8 @@ import es.tid.cosmos.servicemanager.ambari.AmbariServiceManagerComponent
 object ProductionGlobal extends AbstractGlobal(new Application
   with TuIdOAuthClientComponent
   with AmbariServiceManagerComponent
-  with ServerPoolInfrastructureProviderComponent
-  with PlayConfigComponent) {
+  with LibVirtInfrastructureProviderComponent
+  with ApplicationConfigComponent) {
 
   override def onError(request: RequestHeader, ex: Throwable): Result = {
     InternalServerError(formatInternalException(ex.getMessage, ex))

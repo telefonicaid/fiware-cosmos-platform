@@ -11,15 +11,14 @@
 
 package es.tid.cosmos.api
 
-import com.typesafe.config.Config
-import play.api.Play
+import com.typesafe.config.{ConfigFactory, Config}
 
 import es.tid.cosmos.platform.common.ConfigComponent
 
 /**
- * Component that pulls configuration from Play! configuration.
+ * Component that pulls configuration application.conf.
  */
-trait PlayConfigComponent extends ConfigComponent {
+trait ApplicationConfigComponent extends ConfigComponent {
 
-  def config: Config = Play.current.configuration.underlying
+  def config: Config = ConfigFactory.load()
 }

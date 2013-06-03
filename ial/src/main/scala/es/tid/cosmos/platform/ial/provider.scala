@@ -38,12 +38,15 @@ trait InfrastructureProvider {
    *                   be "foobar0", "foobar1" and "foobar2".
    * @param profile the machine profile for the machines to be created.
    * @param numberOfMachines the amount of machines to be created.
+   * @param bootstrapAction action to be performed on every host just after it starts running and
+   *                        to be finished to consider the provision successful
    * @return a future which after success provides the sequence of newly created machines
    */
   def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
-      numberOfMachines: Int): Future[Seq[MachineState]]
+      numberOfMachines: Int,
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]]
 
   /**
    * Release the machines so that its resources can be reused in further createMachine requests

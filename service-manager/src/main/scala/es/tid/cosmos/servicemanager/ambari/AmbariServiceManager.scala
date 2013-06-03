@@ -15,11 +15,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 
+import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureProvider}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvisioner, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services._
-import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureProvider}
+import es.tid.cosmos.servicemanager.util.TcpServer
+import es.tid.cosmos.servicemanager.util.TcpServer.SshService
 
 /**
  * Manager of the Ambari service configuration workflow.
@@ -59,7 +61,8 @@ class AmbariServiceManager(
       clusterSize: Int,
       serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
     val id = new ClusterId
-    val machines_> = infrastructureProvider.createMachines(name, MachineProfile.M, clusterSize)
+    val machines_> =
+      infrastructureProvider.createMachines(name, MachineProfile.M, clusterSize, waitForSsh)
     val deployedServices_> = for {
       machines <- machines_>
       cluster <- initCluster(id, machines)
@@ -77,6 +80,9 @@ class AmbariServiceManager(
     }
     id
   }
+
+  private def waitForSsh(state: MachineState): Future[Unit] =
+    TcpServer(state.hostname, SshService).waitForServer()
 
   private def initCluster(id: ClusterId, machines: Seq[MachineState]) : Future[Cluster] =
     for {

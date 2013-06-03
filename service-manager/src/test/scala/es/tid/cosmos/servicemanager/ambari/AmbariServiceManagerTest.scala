@@ -15,7 +15,7 @@ import scala.annotation.tailrec
 import scala.concurrent.Future.successful
 
 import org.mockito.BDDMockito.given
-import org.mockito.Matchers.any
+import org.mockito.Matchers.{any, eq => equalTo}
 import org.mockito.Mockito.verify
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
@@ -66,7 +66,7 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
   }
 
   def setExpectations(machines: Seq[MachineState], hosts: Seq[Host]) {
-    given(infrastructureProvider.createMachines(any(), any(), any()))
+    given(infrastructureProvider.createMachines(any(), any(), any(), any()))
       .willReturn(successful(machines))
     given(infrastructureProvider.releaseMachines(any()))
       .willReturn(successful())
@@ -103,8 +103,8 @@ with OneInstancePerTest with MustMatchers with MockitoSugar {
     master: Host,
     slaves: Seq[Host],
     clusterId: ClusterId) {
-    verify(infrastructureProvider)
-      .createMachines("clusterName", MachineProfile.M, machines.size)
+    verify(infrastructureProvider).createMachines(
+      equalTo("clusterName"), equalTo(MachineProfile.M), equalTo(machines.size), any())
     verify(infrastructureProvider).releaseMachines(machines)
     verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
     verify(provisioner).bootstrapMachines(machines, infrastructureProvider.rootPrivateSshKey)

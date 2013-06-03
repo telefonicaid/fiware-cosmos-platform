@@ -11,32 +11,32 @@
 
 package es.tid.cosmos.platform.ial.serverpool
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Success, Failure, Try}
 
-import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureProvider, ResourceExhaustedException}
+import es.tid.cosmos.platform.ial._
 
 /**
  * An infrastructure provider supported by a server pool.
- *
- * @author apv
  */
 class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends InfrastructureProvider {
 
   def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
-      count: Int): Future[Seq[MachineState]] = {
+      count: Int,
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
     val machineIds = dao.availableMachinesWith(_.profile == profile).take(count).map(_.id)
     if (machineIds.length < count)
       Future.failed(ResourceExhaustedException(profile.toString, count, machineIds.length))
     else {
-      Future.successful((machineIds.zip(0 to machineIds.length).map({
-        case (id, idx) => {
-          dao.setMachineAvailability(id, available = false)
-          dao.setMachineName(id, s"$namePrefix$idx").get
-        }
-      })))
+      val states: Seq[MachineState] = for {
+        (id, idx) <- machineIds.zip(0 to machineIds.length)
+      } yield {
+        dao.setMachineAvailability(id, available = false)
+        dao.setMachineName(id, s"$namePrefix$idx").get
+      }
+      Future.sequence(states.map(bootstrapAction)).map(_ => states)
     }
   }
 

@@ -12,7 +12,7 @@
 package es.tid.cosmos.platform.ial.serverpool
 
 import java.util.concurrent.TimeUnit
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Future, Await}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{FiniteDuration, Duration}
 import scala.util.Failure
@@ -20,23 +20,25 @@ import scala.util.Failure
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.ial.{MachineProfile, ResourceExhaustedException}
+import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, ResourceExhaustedException}
 
 /**
  * @author apv
  */
-class ServerPoolInfrastructureProviderIT extends FlatSpec with ServerPoolSqlTest with MustMatchers {
+class ServerPoolInfrastructureProviderIT
+  extends FlatSpec with ServerPoolSqlTest with MustMatchers {
 
   val provider = new ServerPoolInfrastructureProvider(dao)
   val timeout: FiniteDuration = Duration(2, TimeUnit.SECONDS)
+  def nop(state: MachineState): Future[Unit] = Future.successful(())
 
   "Server pool infrastructure provider" must "create machines when available" in {
-    val machines = Await.result(provider.createMachines("cosmos", MachineProfile.M, 2), timeout)
+    val machines = Await.result(provider.createMachines("cosmos", MachineProfile.M, 2, nop), timeout)
     machines must (containMachine("cosmos0") and containMachine("cosmos1"))
   }
 
   it must "throw when creating machines when unavailable" in {
-    val result = provider.createMachines("pre", MachineProfile.XL, 1500)
+    val result = provider.createMachines("pre", MachineProfile.XL, 1500, nop)
     Await.ready(result, timeout)
     result.value match {
       case Some(Failure(ResourceExhaustedException(_, requested, available))) => {

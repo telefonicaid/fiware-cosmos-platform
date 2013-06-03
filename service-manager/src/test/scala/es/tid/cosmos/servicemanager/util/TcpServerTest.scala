@@ -47,10 +47,10 @@ class TcpServerTest extends FlatSpec with MustMatchers {
   }
 
   it must "be waited for until timeout is exceeded" in new RandomServer {
-    val f = server.waitForServer(1 second)
+    val f = server.waitForServer(1500 milliseconds)
     f must not be ('completed)
     val ex = evaluating {
-      Await.result(f, 1 seconds)
+      Await.result(f, 4 seconds)
     } must produce[RuntimeException]
     ex.getMessage must include ("not found")
   }

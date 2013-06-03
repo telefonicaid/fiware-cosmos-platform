@@ -13,7 +13,6 @@ package es.tid.cosmos.servicemanager
 
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Try
 
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.platform.ial.MachineState
@@ -23,7 +22,8 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
   override def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
-      count: Int): Future[Seq[MachineState]] = Future.successful(
+      count: Int,
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = Future.successful(
     for (index <- 1 to count) yield (buildMachineState(index, profile)))
 
   private def buildMachineState(index: Int, profile: MachineProfile.Value) =

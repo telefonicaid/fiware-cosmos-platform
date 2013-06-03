@@ -32,9 +32,7 @@ case class TcpServer(host: String, port: Int) {
 
   @tailrec
   private def blockForServer(timeout: FiniteDuration) {
-    val requestTimeout = pollingPeriod min (timeout - pollingPeriod)
-    val available = isPortAvailable(requestTimeout)
-    if (available) return
+    if (isPortAvailable(pollingPeriod min timeout)) return
     if (timeout <= pollingPeriod) throw TcpServerNotFound(this)
     else blockForServer(timeout - pollingPeriod)
   }
@@ -51,7 +49,10 @@ case class TcpServer(host: String, port: Int) {
       s.connect(new InetSocketAddress(host, port), timeout.toMillis.toInt)
       true
     } catch {
-      case ex: ConnectException => false
+      case ex: ConnectException => {
+        Thread.sleep(timeout.toMillis)
+        false
+      }
       case ex: SocketTimeoutException => false
     } finally {
       s.close()

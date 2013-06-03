@@ -39,7 +39,7 @@ trait ConfigurationLoader {
    */
   def load(configName: String) = {
     val name = configName.toLowerCase
-    ConfigurationBuilder(name, ConfigFactory.load(name))
+    ConfigurationBuilder(name, ConfigFactory.load(classOf[ConfigurationLoader].getClassLoader, name))
   }
 }
 

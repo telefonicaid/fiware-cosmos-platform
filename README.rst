@@ -71,7 +71,33 @@ Cosmos does automatic deployment of clusters and needs to be deployed itself
 --as all systems. To avoid confusion in this and other areas we define here
 some terms.
 
-- *Service*: piece of software that gets deployed by Cosmos. E.g. mapred daemon,
-  oozie...
+
 - *Component*: piece of software that constitutes a part of Cosmos and gets
   deployed as part of Cosmos deployment.
+
+- *Cosmos Public API*: the API to service the end user tools.
+
+- *Deployment*: given a set of machines, the action of deploying a cluster
+  will install and configure all requested software in those machines.
+
+- *Head Node*: in a cluster, the Head Node is the server which holds the
+  master components for all services (NameNode for HDFS, JobTracker for
+  MapRed, etc.).
+
+- *IAL*: see *Infrastructure Abstraction Layer*.
+
+- *Infrastructure Abstraction Layer*: the software component that provides
+  provisioning mechanism for the different infrastructure resources.
+
+- *Master Node*: the server which runs all administration components like
+  the IAL and the Service Manager.
+
+- *Provision*: provisioning a set of machines implies creating and booking
+  the needed resources for the specific user or cluster that initiated the
+  request.
+
+- *Service*: piece of software that gets deployed by Cosmos. E.g. mapred daemon,
+  oozie...
+
+- *Service Manager*: the software component that provides deployment
+  mechanisms for the different services in the cluster.

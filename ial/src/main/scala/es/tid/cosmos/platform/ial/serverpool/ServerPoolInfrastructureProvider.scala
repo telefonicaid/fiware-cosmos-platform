@@ -44,5 +44,5 @@ class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends Infrastru
     throw new UnsupportedOperationException("This method is not yet implemented")
 
   // TODO: fix me
-  val rootSshKey: String =  ""
+  val rootPrivateSshKey: String =  ""
 }

@@ -37,5 +37,5 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
 
   def releaseMachines(machines: Seq[MachineState]): Future[Unit] = Future.successful()
 
-  val rootSshKey: String = "FIXME"
+  val rootPrivateSshKey: String = "FIXME"
 }

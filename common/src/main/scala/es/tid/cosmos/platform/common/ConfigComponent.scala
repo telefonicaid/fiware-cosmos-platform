@@ -9,10 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.platform.common
 
-import es.tid.cosmos.platform.ial.{InfrastructureProviderComponent, InfrastructureProvider}
+import com.typesafe.config.Config
 
-trait FakeInfrastructureProviderComponent extends InfrastructureProviderComponent {
-  val infrastructureProvider: InfrastructureProvider = new FakeInfrastructureProvider
+/**
+ * Configuration provider
+ */
+trait ConfigComponent {
+  def config: Config
 }

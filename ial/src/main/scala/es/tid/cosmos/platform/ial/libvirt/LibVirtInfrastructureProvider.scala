@@ -21,8 +21,9 @@ import es.tid.cosmos.platform.ial._
  */
 class LibVirtInfrastructureProvider(
     val dao: LibVirtDao,
-    val libvirtServerFactory: LibVirtServerProperties => LibVirtServer)
-    extends InfrastructureProvider {
+    val libvirtServerFactory: LibVirtServerProperties => LibVirtServer,
+    val rootPrivateSshKey: String)
+  extends InfrastructureProvider {
 
   def createMachines(
       namePrefix: String,
@@ -61,8 +62,6 @@ class LibVirtInfrastructureProvider(
       server <- dao.libVirtServers if (server.domainHostname == machine.hostname)
     } yield libvirtServerFactory(server)
   }
-
-  val rootSshKey: String = "FIXME"
 
   private def createMachines(servers: Seq[LibVirtServer]): Future[Seq[MachineState]] = {
     Future.sequence(servers.map(srv => srv.createDomain().map(dom => domainToMachineState(dom))))

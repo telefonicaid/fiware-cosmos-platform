@@ -14,7 +14,7 @@ package es.tid.cosmos.api.mocks.servicemanager
 import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
 
 trait MockedServiceManagerComponent extends ServiceManagerComponent {
-  lazy val serviceManager: ServiceManager =
+  val serviceManager: ServiceManager =
     new MockedServiceManager(transitionDelay = MockedServiceManagerComponent.TransitionDelay)
 }
 

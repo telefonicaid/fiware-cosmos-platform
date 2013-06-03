@@ -83,8 +83,7 @@ class ClusterResource(serviceManager: ServiceManager) extends AuthController {
 
   private def isOwnCluster(cosmosId: Long, cluster: ClusterId): Boolean =
     DB.withConnection { implicit c =>
-      val ownedClusters = CosmosProfileDao.clustersOf(cosmosId)(DB.getConnection())
-      ownedClusters.contains(cluster)
+      CosmosProfileDao.clustersOf(cosmosId).contains(cluster)
     }
 
   private def unauthorizedAccessTo(cluster: ClusterId) =

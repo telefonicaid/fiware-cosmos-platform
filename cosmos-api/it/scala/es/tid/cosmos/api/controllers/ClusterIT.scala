@@ -59,7 +59,9 @@ class ClusterIT extends FlatSpec with MustMatchers {
   it must "throw if the service manager has no associated information" in
     new WithSampleUsers {
       val clusterId = ClusterId()
-      CosmosProfileDao.assignCluster(clusterId, user1.id)(DB.getConnection())
+      DB.withConnection { implicit c =>
+        CosmosProfileDao.assignCluster(clusterId, user1.id)
+      }
       val resource = route(FakeRequest(GET, s"/cosmos/cluster/$clusterId").authorizedBy(user1)).get
       resource must failWith (classOf[IllegalStateException])
     }

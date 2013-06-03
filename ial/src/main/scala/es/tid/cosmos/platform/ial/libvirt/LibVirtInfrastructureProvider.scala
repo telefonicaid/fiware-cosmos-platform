@@ -28,7 +28,8 @@ class LibVirtInfrastructureProvider(
   def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
-      numberOfMachines: Int): Future[Seq[MachineState]] = {
+      numberOfMachines: Int,
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
 
     def takeServers(servers: Seq[LibVirtServer]) = {
       val available = servers.length
@@ -40,7 +41,7 @@ class LibVirtInfrastructureProvider(
 
     for {
       servers <- availableServers(profile)
-      machines <- createMachines(takeServers(servers))
+      machines <- createMachines(bootstrapAction, takeServers(servers))
     } yield machines
   }
 
@@ -63,9 +64,15 @@ class LibVirtInfrastructureProvider(
     } yield libvirtServerFactory(server)
   }
 
-  private def createMachines(servers: Seq[LibVirtServer]): Future[Seq[MachineState]] = {
-    Future.sequence(servers.map(srv => srv.createDomain().map(dom => domainToMachineState(dom))))
-  }
+  private def createMachines(
+      bootstrapAction: MachineState => Future[Unit],
+      servers: Seq[LibVirtServer]): Future[Seq[MachineState]] = Future.sequence(servers.map(srv =>
+    for {
+      domain <- srv.createDomain()
+      state = domainToMachineState(domain)
+      _      <- bootstrapAction(state)
+    } yield state
+  ))
 
   private def availableServers(profile: MachineProfile.Value): Future[Seq[LibVirtServer]] = {
 

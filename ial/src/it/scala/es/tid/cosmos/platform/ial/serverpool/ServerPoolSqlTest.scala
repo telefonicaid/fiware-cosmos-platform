@@ -74,28 +74,28 @@ trait ServerPoolSqlTest extends MySqlTest {
 
   val machines = List(
     Machine(
-      "cosmos02", available = true, MachineProfile.S,
+      "cosmos02", available = true, MachineProfile.G1_COMPUTE,
       MachineStatus.Running, "cosmos02.hi.inet", "10.95.106.182"),
     Machine(
-      "cosmos03", available = true, MachineProfile.M,
+      "cosmos03", available = true, MachineProfile.G1_COMPUTE,
       MachineStatus.Running, "cosmos03.hi.inet", "10.95.105.184"),
     Machine(
-      "cosmos04", available = true, MachineProfile.M,
+      "cosmos04", available = true, MachineProfile.G1_COMPUTE,
       MachineStatus.Running, "cosmos04.hi.inet", "10.95.106.179"),
     Machine(
-      "cosmos05", available = true, MachineProfile.X,
+      "cosmos05", available = true, MachineProfile.G1_COMPUTE,
       MachineStatus.Running, "cosmos05.hi.inet", "10.95.106.184"),
     Machine(
-      "cosmos06", available = true, MachineProfile.XL,
+      "cosmos06", available = true, MachineProfile.HDFS_MASTER,
       MachineStatus.Running, "cosmos06.hi.inet", "10.95.110.99"),
     Machine(
-      "cosmos07", available = false, MachineProfile.S,
+      "cosmos07", available = false, MachineProfile.HDFS_SLAVE,
       MachineStatus.Running, "cosmos07.hi.inet", "10.95.110.203"),
     Machine(
-      "cosmos08", available = false, MachineProfile.M,
+      "cosmos08", available = false, MachineProfile.HDFS_SLAVE,
       MachineStatus.Running, "cosmos08.hi.inet", "10.95.111.160"),
     Machine(
-      "cosmos09", available = false, MachineProfile.X,
+      "cosmos09", available = false, MachineProfile.HDFS_SLAVE,
       MachineStatus.Running, "cosmos09.hi.inet", "10.95.108.75"))
 
   def availableMachines = machines.filter(m => m.available)

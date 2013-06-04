@@ -22,7 +22,7 @@ class FakeLibVirtDao extends LibVirtDao {
     new TransientLibVirtServerProperties(
       name = s"andromeda0$i",
       description = s"Andromeda 0$i",
-      profile = MachineProfile.M,
+      profile = MachineProfile.G1_COMPUTE,
       connectionChain = connChain(s"192.168.63.$i"),
       numberOfCpus = 4,
       totalMemory = 32768,

@@ -1,7 +1,5 @@
 name := "service-manager"
 
-mainClass := Some("scalarest.Main")
-
 libraryDependencies ++= Seq(
   "com.jcraft" % "jsch" % "0.1.49",
   "com.typesafe" % "config" % "1.0.0",

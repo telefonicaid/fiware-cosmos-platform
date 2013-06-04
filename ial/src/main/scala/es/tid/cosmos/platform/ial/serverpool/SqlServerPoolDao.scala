@@ -37,7 +37,7 @@ class Machine(var machineId: UUID,
           s"status: '$status', hostname:'$hostname', ipAddress: '$ipAddress' }"
 
   def this() = this(
-    UUID.randomUUID(), "unknown", false, MachineProfile.M, MachineStatus.Provisioning, "", "")
+    UUID.randomUUID(), "unknown", false, MachineProfile.G1_COMPUTE, MachineStatus.Provisioning, "", "")
 
   /**
    * Transform this DB oriented data object into machine state.

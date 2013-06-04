@@ -89,11 +89,13 @@ class LibVirtInfrastructureProvider(
     new MachineState(
       Id(domain.uuid),
       domain.name,
-      MachineProfile.M,
+      MachineProfile.G1_COMPUTE, // FIXME
       domainStatus(domain),
       domain.hostname,
       domain.ipAddress)
 
   private def domainStatus(dom: DomainProperties): MachineStatus.Value =
     if (dom.isActive) MachineStatus.Running else MachineStatus.Provisioning
+
+  def availableMachineCount(profile: MachineProfile.Value): Future[Int] = ??? // FIXME
 }

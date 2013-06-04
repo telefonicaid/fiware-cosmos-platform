@@ -21,17 +21,33 @@ import org.scalatest.mock.MockitoSugar
 
 class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var host: Host with MockedRestResponsesComponent = _
+  var hostOf1: Host with MockedRestResponsesComponent = _
   val hostName = "testhost"
 
   before {
     host = new Host(
-      ("Hosts" -> ("public_host_name" -> hostName)),
+      ("Hosts" -> ("public_host_name" -> hostName) ~
+      ("host_components"-> List(
+        "HostRoles" -> ("component_name" -> "ExistingComponent1"),
+        "HostRoles" -> ("component_name" -> "ExistingComponent2")))),
       url("http://localhost/api/v1/").build)
+      with FakeAmbariRestReplies with MockedRestResponsesComponent
+    hostOf1 = new Host(
+        ("Hosts" -> ("public_host_name" -> hostName) ~
+        ("host_components"-> List(
+          "HostRoles" -> ("component_name" -> "ExistingComponent1")))),
+        url("http://localhost/api/v1/").build)
       with FakeAmbariRestReplies with MockedRestResponsesComponent
   }
 
-  it must "correctly parse the Ambari JSON host description" in  {
+  it must "correctly parse the Ambari JSON host description with 1 component" in {
+    hostOf1.name must be ("testhost")
+    hostOf1.getComponentNames must equal(List("ExistingComponent1"))
+  }
+
+  it must "correctly parse the Ambari JSON host description with multiple components" in {
     host.name must be ("testhost")
+    host.getComponentNames must equal(List("ExistingComponent1", "ExistingComponent2"))
   }
 
   it must "be able to add multiple components to the host" in {

@@ -22,7 +22,7 @@ import play.api.mvc._
 
 import es.tid.cosmos.api.controllers.common.{AuthController, JsonController}
 import es.tid.cosmos.api.profile.CosmosProfileDao
-import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager, ClusterId}
+import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
 
 /**
  * Resource that represents the whole set of clusters.
@@ -59,10 +59,8 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
   ))
   def createCluster = JsonBodyAction[CreateClusterParams] { (request, body) =>
     Authenticated(request) { profile =>
-      val key = profile.keys.head.signature
-      val clusterUser: ClusterUser = ClusterUser(profile.handle, key)
       Try(serviceManager.createCluster(
-        body.name, body.size, serviceManager.services(clusterUser))) match {
+        body.name, body.size, serviceManager.services(profile.toClusterUser))) match {
         case Failure(ex) => throw ex
         case Success(clusterId: ClusterId) => {
           Logger.info(s"Provisioning new cluster $clusterId")

@@ -59,4 +59,22 @@ trait ServiceManager {
    * @param id the ID of the cluster to terminate
    */
   def terminateCluster(id: ClusterId): Future[Unit]
+
+  /**
+   * The cluster id of the persistent HDFS cluster
+   */
+  def persistentHdfsId: ClusterId
+
+  /**
+   * Deploys the persistent HDFS cluster.
+   */
+  def deployPersistentHdfsCluster(): Future[Unit]
+
+  /**
+   * Add users to the CosmosUser service for the given cluster.
+   *
+   * @param clusterId the cluster id where the users will be added
+   * @param users the users to be added to the CosmosUser service
+   */
+  def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit]
 }

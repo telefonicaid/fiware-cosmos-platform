@@ -15,18 +15,18 @@ import scala.concurrent._
 
 import com.ning.http.client.RequestBuilder
 
-trait RequestHandler {
+private[ambari] trait RequestHandler {
   def ensureFinished: Future[Unit]
 }
 
-trait RequestHandlerFactory {
+private[ambari] trait RequestHandlerFactory {
   def createRequestHandler(url: RequestBuilder): RequestHandler
 }
 
-trait ServiceRequestHandlerFactory extends RequestHandlerFactory {
+private[ambari] trait ServiceRequestHandlerFactory extends RequestHandlerFactory {
   def createRequestHandler(url: RequestBuilder): RequestHandler = new ServiceRequest(url.build)
 }
 
-trait BootstrapRequestHandlerFactory extends RequestHandlerFactory {
+private[ambari] trait BootstrapRequestHandlerFactory extends RequestHandlerFactory {
   def createRequestHandler(url: RequestBuilder): RequestHandler = new BootstrapRequest(url.build)
 }

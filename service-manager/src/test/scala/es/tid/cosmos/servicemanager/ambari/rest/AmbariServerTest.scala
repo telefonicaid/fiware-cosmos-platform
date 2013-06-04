@@ -20,7 +20,6 @@ import org.mockito.Mockito.{when, verify}
 import org.scalatest.BeforeAndAfter
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.platform.ial.{MachineStatus, MachineProfile, Id, MachineState}
 import es.tid.cosmos.servicemanager.{RequestException, ServiceException}
 
 class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
@@ -109,20 +108,14 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
     ambariServer.removeCluster("badcluster")
   )
 
-  it must "be able to bootstrap a set of machines" in {
+  it must "be able to bootstrap a set of hostnames" in {
     addMock(
       ambariServer.responses.bootstrap(any()),
       ("requestId" -> 1) ~
       ("status" -> "OK")
     )
     get(ambariServer.bootstrapMachines(
-      Seq(MachineState(
-        id = Id[MachineState]("foo"),
-        name = "foo",
-        profile = MachineProfile.X,
-        status = MachineStatus.Running,
-        hostname = "foo.com",
-        ipAddress = "127.0.0.1")),
+      Seq("foo.com"),
       "dummy-ssh-key"))
     verify(ambariServer.responses).bootstrap(any())
   }
@@ -134,13 +127,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
     )
     evaluating {
       get(ambariServer.bootstrapMachines(
-        Seq(MachineState(
-          id = Id[MachineState]("foo"),
-          name = "foo",
-          profile = MachineProfile.X,
-          status = MachineStatus.Running,
-          hostname = "foo.com",
-          ipAddress = "127.0.0.1")),
+        Seq("foo.com"),
         "dummy-ssh-key"))
     } must produce [RequestException]
     verify(ambariServer.responses).bootstrap(any())
@@ -149,30 +136,18 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
   it must "propagate errors when bootstrapping" in errorPropagation(
     ambariServer.responses.bootstrap(any()),
     ambariServer.bootstrapMachines(
-      Seq(MachineState(
-        id = Id[MachineState]("foo"),
-        name = "foo",
-        profile = MachineProfile.X,
-        status = MachineStatus.Running,
-        hostname = "foo.com",
-        ipAddress = "127.0.0.1")),
+      Seq("foo.com"),
       "dummy-ssh-key")
   )
 
-  it must "be able to teardown a set of machines" in {
+  it must "be able to teardown a set of hostnames" in {
     addMock(
       ambariServer.responses.teardown(any()),
       ("requestId" -> 1) ~
       ("status" -> "OK")
     )
     get(ambariServer.teardownMachines(
-      Seq(MachineState(
-        id = Id[MachineState]("foo"),
-        name = "foo",
-        profile = MachineProfile.X,
-        status = MachineStatus.Running,
-        hostname = "foo.com",
-        ipAddress = "127.0.0.1")),
+      Seq("foo.com"),
       "dummy-ssh-key"))
     verify(ambariServer.responses).teardown(any())
   }
@@ -180,13 +155,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
   it must "propagate errors when teardown" in errorPropagation(
     ambariServer.responses.teardown(any()),
     ambariServer.teardownMachines(
-      Seq(MachineState(
-        id = Id[MachineState]("foo"),
-        name = "foo",
-        profile = MachineProfile.X,
-        status = MachineStatus.Running,
-        hostname = "foo.com",
-        ipAddress = "127.0.0.1")),
+      Seq("foo.com"),
       "dummy-ssh-key")
   )
 
@@ -197,13 +166,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
     )
     evaluating {
       get(ambariServer.teardownMachines(
-        Seq(MachineState(
-          id = Id[MachineState]("foo"),
-          name = "foo",
-          profile = MachineProfile.X,
-          status = MachineStatus.Running,
-          hostname = "foo.com",
-          ipAddress = "127.0.0.1")),
+        Seq("foo.com"),
         "dummy-ssh-key"))
     } must produce [RequestException]
     verify(ambariServer.responses).teardown(any())

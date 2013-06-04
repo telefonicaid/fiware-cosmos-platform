@@ -28,7 +28,7 @@ abstract class Application {
   lazy val controllers: Map[Class[Controller], Controller] = {
     val sm = self.serviceManager()
     controllerMap(
-      new Pages(self.oAuthClient()),
+      new Pages(self.oAuthClient(), sm),
       new CosmosResource(),
       new ClustersResource(sm),
       new ClusterResource(sm)

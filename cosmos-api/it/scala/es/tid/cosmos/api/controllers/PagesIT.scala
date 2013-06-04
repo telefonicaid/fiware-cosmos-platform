@@ -42,6 +42,48 @@ class PagesIT extends FlatSpec with MustMatchers {
       cosmosSession must not be ('registered)
     }
 
+  it must "be registered upon adding the necessary registration information" in
+    new WithMockedIdentityService {
+      val authUrl = mustLinkTheAuthorizationProvider()
+      val redirectUrl = identityService.requestAuthorizationCode(
+        authUrl, identityService.users.head.id)
+      val redirection = route(FakeRequest(GET, relativePath(redirectUrl))).get
+      redirection must redirectTo ("/")
+      val resultSession = session(redirection)
+      val cosmosSession: CosmosSession = resultSession
+      cosmosSession must be ('authenticated)
+      cosmosSession must not be ('registered)
+      val registrationPage = route(FakeRequest(GET, "/").withSession(resultSession.data.toSeq: _*)).get
+      val regRedirection = route(FakeRequest(POST, registrationUrl(contentAsString(registrationPage)))
+        .withFormUrlEncodedBody("handle" -> "user1", "publicKey" -> "SSH_PUBLIC_KEY")
+        .withSession(resultSession.data.toSeq: _*)).get
+      regRedirection must redirectTo ("/")
+      val registeredCosmosSession: CosmosSession = session(regRedirection)
+      registeredCosmosSession must be ('authenticated)
+      registeredCosmosSession must be ('registered)
+    }
+
+  it must "not be authenticated after cancelling the registration process" in
+    new WithMockedIdentityService {
+      val authUrl = mustLinkTheAuthorizationProvider()
+      val redirectUrl = identityService.requestAuthorizationCode(
+        authUrl, identityService.users.head.id)
+      val redirection = route(FakeRequest(GET, relativePath(redirectUrl))).get
+      redirection must redirectTo ("/")
+      val resultSession = session(redirection)
+      val cosmosSession: CosmosSession = resultSession
+      cosmosSession must be ('authenticated)
+      cosmosSession must not be ('registered)
+      val registrationPage = route(FakeRequest(GET, "/").withSession(resultSession.data.toSeq: _*)).get
+      val cancelRegistrationRedirection = route(
+        FakeRequest(GET, cancelRegistrationUrl(contentAsString(registrationPage)))
+        .withSession(resultSession.data.toSeq: _*)).get
+      cancelRegistrationRedirection must redirectTo ("/")
+      val registeredCosmosSession: CosmosSession = session(cancelRegistrationRedirection)
+      registeredCosmosSession must not be ('authenticated)
+      registeredCosmosSession must not be ('registered)
+    }
+
   "A registered user" must "be authenticated and redirected to its profile" in
     new WithMockedIdentityService {
       registerUsers(identityService.users)
@@ -121,6 +163,14 @@ class PagesIT extends FlatSpec with MustMatchers {
   private def authenticationUrl(page: String) =
     """<a id="login" href="(.*?)">""".r.findFirstMatchIn(page)
       .map(m => StringEscapeUtils.unescapeHtml4(m.group(1)))
+
+  private def registrationUrl(page: String) =
+    """<form .*action="(.*?)".*>""".r.findFirstMatchIn(page)
+      .map(m => StringEscapeUtils.unescapeHtml4(m.group(1))).get
+
+  private def cancelRegistrationUrl(page: String) =
+    """<a href="(.*?)" class="btn cancel">""".r.findFirstMatchIn(page)
+      .map(m => StringEscapeUtils.unescapeHtml4(m.group(1))).get
 
   private def relativePath(url: String) = {
     val uri = URI.create(url)

@@ -13,12 +13,10 @@ package es.tid.cosmos.servicemanager.ambari.rest
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.platform.ial.MachineState
-
 /**
  * Representation of a server capable of provisioning clusters.
  */
-trait ClusterProvisioner {
+private[ambari] trait ClusterProvisioner {
   /**
    * Get a list of the names of the existing, managed clusters.
    *
@@ -29,10 +27,10 @@ trait ClusterProvisioner {
   /**
    * Get the cluster specified by the given name.
    *
-   * @param name the name of the cluster
+   * @param id the id of the cluster
    * @return the future of the cluster iff found
    */
-  def getCluster(name: String): Future[Cluster]
+  def getCluster(id: String): Future[Cluster]
 
   /**
    * Create a cluster.
@@ -54,12 +52,12 @@ trait ClusterProvisioner {
   /**
    * Installs and launches Ambari agent
    */
-  def bootstrapMachines(machines: Seq[MachineState], sshKey: String): Future[Unit]
+  def bootstrapMachines(hostnames: Seq[String], sshKey: String): Future[Unit]
 
   /**
    * Stops and unregisters Ambari agent from Ambari server
    */
-  def teardownMachines(machines: Seq[MachineState], sshKey: String): Future[Unit]
+  def teardownMachines(hostnames: Seq[String], sshKey: String): Future[Unit]
 
   /**
    * Returns the list of hostnames that are registered in Ambari server

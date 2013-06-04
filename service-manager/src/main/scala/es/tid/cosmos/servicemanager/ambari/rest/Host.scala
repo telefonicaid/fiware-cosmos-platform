@@ -27,7 +27,7 @@ import es.tid.cosmos.servicemanager.ServiceError
  * @param hostInfo       the Ambari JSON response that describes the host
  * @param clusterBaseUrl the base url of the cluster
  */
-class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Request) extends RequestProcessor {
+private[ambari] class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Request) extends RequestProcessor {
   val name = hostInfo \ "Hosts" \ "public_host_name" match {
     case JString(hostName) => hostName
     case _ =>
@@ -50,4 +50,6 @@ class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Request) extends Re
         .map(ignoreResult)
     else Future.successful()
   }
+
+  def getComponentNames: Seq[String] = as.FlatValues(hostInfo,  "host_components", "component_name")
 }

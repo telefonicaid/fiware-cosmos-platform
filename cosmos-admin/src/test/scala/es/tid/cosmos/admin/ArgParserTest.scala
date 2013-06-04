@@ -9,16 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api
+package es.tid.cosmos.admin
 
-import com.typesafe.config.{ConfigFactory, Config}
+import org.scalatest.matchers.MustMatchers
+import org.scalatest.FlatSpec
 
-import es.tid.cosmos.platform.common.ConfigComponent
+class ArgParserTest extends FlatSpec with MustMatchers {
 
-/**
- * Component that pulls configuration application.conf.
- */
-trait ApplicationConfigComponent extends ConfigComponent {
-
-  def config: Config = ConfigFactory.load()
+  it must "support the setup subcommand" in {
+    val parsedArgs = new ArgParser(Seq("setup"))
+    parsedArgs.subcommand must be (Some(parsedArgs.setup))
+  }
 }

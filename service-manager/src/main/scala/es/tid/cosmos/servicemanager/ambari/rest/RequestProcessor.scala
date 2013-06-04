@@ -19,7 +19,7 @@ import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json.JsonAST.JValue
 import es.tid.cosmos.servicemanager.RequestException
 
-trait RequestProcessor {
+private[ambari] trait RequestProcessor {
   /**
    * Executes the given request, handles error cases and returns the body as JSON in the success case.
    */

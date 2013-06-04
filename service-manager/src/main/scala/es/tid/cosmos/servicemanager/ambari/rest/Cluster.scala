@@ -30,7 +30,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.{Configuration, HeaderO
  * @param clusterInfo   the Ambari JSON response that describes the cluster
  * @param serverBaseUrl the base url that describes the server
  */
-class Cluster private[ambari] (clusterInfo: JValue, serverBaseUrl: Request)
+private[ambari] class Cluster (clusterInfo: JValue, serverBaseUrl: Request)
   extends RequestProcessor {
   val name = clusterInfo \ "Clusters" \ "cluster_name" match {
     case JString(clusterName) => clusterName
@@ -40,13 +40,9 @@ class Cluster private[ambari] (clusterInfo: JValue, serverBaseUrl: Request)
 
   private[this] def baseUrl: RequestBuilder = new RequestBuilder(serverBaseUrl) / "clusters" / name
 
-  val serviceNames: List[String] = for {
-    JField(_, JString(serviceName)) <- (clusterInfo \\ "service_name").children
-  } yield serviceName
+  val serviceNames: Seq[String] = as.FlatValues(clusterInfo, "services", "service_name")
 
-  val hostNames: List[String] = for {
-    JField(_, JString(hostName)) <- (clusterInfo \\ "host_name").children
-  } yield hostName
+  val hostNames: Seq[String] = as.FlatValues(clusterInfo, "hosts", "host_name")
 
   /**
    * Configurations that have been added to the cluster (not necessary applied).
@@ -69,7 +65,7 @@ class Cluster private[ambari] (clusterInfo: JValue, serverBaseUrl: Request)
    * Apply (which will also add) a configuration with the given type,
    * tag and properties to the cluster.
    */
-  def applyConfiguration(configuration: Configuration): Future[Unit] = {
+  def applyConfiguration(configuration: Configuration, versionTag: String): Future[Unit] = {
     implicit val formats = net.liftweb.json.DefaultFormats
     val propertiesString = compact(render(decompose(configuration.properties)))
     val requestBody = s"""
@@ -77,7 +73,7 @@ class Cluster private[ambari] (clusterInfo: JValue, serverBaseUrl: Request)
         "Clusters": {
           "desired_configs": {
             "type": "${configuration.configType}",
-            "tag": "${configuration.tag}",
+            "tag": "$versionTag",
             "properties": $propertiesString
           }
         }
@@ -88,7 +84,11 @@ class Cluster private[ambari] (clusterInfo: JValue, serverBaseUrl: Request)
   def getHost(hostName: String): Future[Host] =
     performRequest(baseUrl / "hosts" / hostName).map(new Host(_, baseUrl.build))
 
+  def getHosts = Future.sequence(hostNames.map(getHost(_)))
+
   def addHost(hostName: String): Future[Host] =
     performRequest(baseUrl / "hosts" << s"""{"Hosts":{"host_name":"$hostName"}}""")
       .flatMap(_ => getHost(hostName))
+
+  def addHosts(hostNames: Seq[String]): Future[Seq[Host]] = Future.traverse(hostNames)(addHost)
 }

@@ -36,23 +36,25 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
   after {}
 
   "Libvirt Infra Provider" must "create machines when available" in {
-    val machines_> = infraProvider.createMachines("test_", MachineProfile.M, 3, action)
+    val machines_> = infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 3, action)
     machines_> must runUnder (timeout)
     machines_> must eventually(have length 3)
-    machines_> must eventually(matchAll.withProfile(MachineProfile.M))
+    machines_> must eventually(matchAll.withProfile(MachineProfile.G1_COMPUTE))
     action.bootstrappedMachines must have size (3)
   }
 
   it must "not create machines when unavailable" in {
     evaluating {
-      infraProvider.createMachines("test_", MachineProfile.M, 30, action) must runUnder (timeout)
+      infraProvider.createMachines(
+        "test_", MachineProfile.G1_COMPUTE, 30, action) must runUnder (timeout)
     } must produce [ResourceExhaustedException]
     action.bootstrappedMachines must be ('empty)
   }
 
   it must "not create machines when unavailable for requested profile" in {
     evaluating {
-      infraProvider.createMachines("test_", MachineProfile.XL, 1, action) must runUnder (timeout)
+      infraProvider.createMachines(
+        "test_", MachineProfile.HDFS_MASTER, 1, action) must runUnder (timeout)
     } must produce [ResourceExhaustedException]
     action.bootstrappedMachines must be ('empty)
   }
@@ -60,7 +62,8 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
   it must "not create machines after several requests and resources exhausted" in {
     evaluating {
       for (i <- 0 to 3) {
-        val machines_> = infraProvider.createMachines(s"test${i}_", MachineProfile.M, 3, action)
+        val machines_> = infraProvider.createMachines(
+          s"test${i}_", MachineProfile.G1_COMPUTE, 3, action)
         machines_> must runUnder (timeout)
       }
     } must produce [ResourceExhaustedException]
@@ -68,21 +71,21 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
 
   it must "release machines" in {
     val machines = Await.result(
-      infraProvider.createMachines("test_", MachineProfile.M, 3, action), timeout)
+      infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 3, action), timeout)
     infraProvider.releaseMachines(machines) must runUnder (timeout)
   }
 
   it must "create machines after some are released" in {
     val machines1 = Await.result(
-      infraProvider.createMachines("test_", MachineProfile.M, 2, action), timeout)
+      infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 2, action), timeout)
     val machines2 = Await.result(
-      infraProvider.createMachines("test_", MachineProfile.M, 2, action), timeout)
+      infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 2, action), timeout)
 
     infraProvider.releaseMachines(machines1) must runUnder (timeout)
     infraProvider.releaseMachines(machines2) must runUnder (timeout)
 
-    infraProvider.createMachines("test_", MachineProfile.M, 2, action) must runUnder (timeout)
-    infraProvider.createMachines("test_", MachineProfile.M, 2, action) must runUnder (timeout)
+    infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 2, action) must runUnder (timeout)
+    infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 2, action) must runUnder (timeout)
   }
 
   object matchAll {

@@ -17,15 +17,15 @@ import org.scalatest.matchers.MustMatchers
 
 class ConfigurationBuilderTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   val masterName = "myMasterNode"
-  val expectedGlobal = GlobalConfiguration("aTag", Map(
+  val expectedGlobal = GlobalConfiguration(Map(
     "global.example.string" -> s"global-$masterName",
     "global.example.boolean" -> true,
     "global.example.number" -> 29
   ))
-  val expectedCore = CoreConfiguration("aTag", Map("core.example" -> s"core-$masterName"))
-  val expectedService = ServiceConfiguration("test-service-site", "aTag", Map(
-    "service.example" -> s"service-$masterName"
-  ))
+  val expectedCore = CoreConfiguration(Map("core.example" -> s"core-$masterName"))
+  val expectedService = ServiceConfiguration("test-service-site",
+    Map("service.example" -> s"service-$masterName")
+  )
   val full = ConfigFactory.load("global-core-service")
   val noGlobal = ConfigFactory.load("core-service")
   val noCore = ConfigFactory.load("global-service")

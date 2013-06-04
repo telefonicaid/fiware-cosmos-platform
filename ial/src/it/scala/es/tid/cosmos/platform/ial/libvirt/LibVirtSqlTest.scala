@@ -36,7 +36,7 @@ trait LibVirtSqlTest extends MySqlTest {
     new PersistentLibVirtServerProperties(
       name = "andromeda02",
       description = "Andromeda 02",
-      profile = MachineProfile.M,
+      profile = MachineProfile.G1_COMPUTE,
       connectionChain = "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -48,7 +48,7 @@ trait LibVirtSqlTest extends MySqlTest {
     new PersistentLibVirtServerProperties(
       name = "andromeda03",
       description = "Andromeda 03",
-      profile = MachineProfile.M,
+      profile = MachineProfile.G1_COMPUTE,
       connectionChain = "openvz+ssh://cosmos@192.168.63.13/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -60,7 +60,7 @@ trait LibVirtSqlTest extends MySqlTest {
     new PersistentLibVirtServerProperties(
       name = "andromeda04",
       description = "Andromeda 04",
-      profile = MachineProfile.M,
+      profile = MachineProfile.G1_COMPUTE,
       connectionChain = "openvz+ssh://cosmos@192.168.63.14/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -72,7 +72,7 @@ trait LibVirtSqlTest extends MySqlTest {
     new PersistentLibVirtServerProperties(
       name = "andromeda05",
       description = "Andromeda 05",
-      profile = MachineProfile.M,
+      profile = MachineProfile.G1_COMPUTE,
       connectionChain = "openvz+ssh://cosmos@192.168.63.15/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,
@@ -84,7 +84,7 @@ trait LibVirtSqlTest extends MySqlTest {
     new PersistentLibVirtServerProperties(
       name = "andromeda06",
       description = "Andromeda 06",
-      profile = MachineProfile.M,
+      profile = MachineProfile.G1_COMPUTE,
       connectionChain = "openvz+ssh://cosmos@192.168.63.16/system?socket=/var/run/libvirt/libvirt-sock",
       numberOfCpus = 4,
       totalMemory = 32768,

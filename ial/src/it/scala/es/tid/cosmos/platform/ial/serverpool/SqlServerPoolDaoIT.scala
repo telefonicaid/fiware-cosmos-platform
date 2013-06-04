@@ -30,9 +30,9 @@ class SqlServerPoolDaoIT extends FlatSpec with ServerPoolSqlTest with MustMatche
   }
 
   it must "list available machines of given profile" in {
-      val machines = dao.availableMachinesWith(_.profile == MachineProfile.M)
-      machines must have size (2)
-      machines must containMachines(List(availableMachines(1), availableMachines(2)))
+      val machines = dao.availableMachinesWith(_.profile == MachineProfile.G1_COMPUTE)
+      machines must have size (4)
+      machines must containMachines((1 to 4).map(availableMachines(_)))
   }
 
   it must "not list assigned machines as available" in {

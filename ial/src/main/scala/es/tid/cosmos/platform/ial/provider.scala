@@ -60,6 +60,8 @@ trait InfrastructureProvider {
    * The ssh key that enables root access to the machines
    */
   val rootPrivateSshKey: String
+
+  def availableMachineCount(profile: MachineProfile.Value): Future[Int]
 }
 
 /**

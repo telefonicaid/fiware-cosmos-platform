@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.platform.ial.serverpool
 
+import scala.concurrent.{Future, blocking}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 import es.tid.cosmos.platform.ial._
 
@@ -21,7 +21,7 @@ import es.tid.cosmos.platform.ial._
  */
 class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends InfrastructureProvider {
 
-  def createMachines(
+  override def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
       count: Int,
@@ -40,9 +40,16 @@ class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends Infrastru
     }
   }
 
-  def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
+  override def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
     throw new UnsupportedOperationException("This method is not yet implemented")
 
   // TODO: fix me
   val rootPrivateSshKey: String =  ""
+
+  // TODO: This implementation is very inefficient. We should probably rethink how the ServerPoolDao
+  // works, but I'm leaving it for now since I'm not sure if this class is going to be removed
+  override def availableMachineCount(profile: MachineProfile.Value): Future[Int] =
+    Future { blocking {
+      dao.availableMachinesWith(_.profile == profile).length
+    }}
 }

@@ -23,7 +23,7 @@ import es.tid.cosmos.servicemanager.DeploymentException
 /**
  * Handles pending Ambari requests and lets you block until the request finishes.
  */
-abstract class AmbariRequest(url: Request) extends RequestProcessor with RequestHandler {
+private[ambari] abstract class AmbariRequest(url: Request) extends RequestProcessor with RequestHandler {
   protected object Status extends Enumeration {
     type Status = Value
     val FINISHED, WAITING, ERROR = Value

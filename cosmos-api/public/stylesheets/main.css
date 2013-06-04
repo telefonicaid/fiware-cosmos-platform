@@ -47,6 +47,13 @@ body {
     border: 1px solid black;
 }
 
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
 hr {
     clear: both;
     width: 80%;
@@ -131,21 +138,21 @@ hr {
     margin-top: 1ex;
 }
 
-.credentials {
+#credentials {
     width: 100%;
     background-color: white;
     border-collapse: collapse;
 }
-.credentials tr:hover {
+#credentials tr:hover {
     background-color: #ddd;
 }
-.credentials th, td {
+#credentials th, td {
     border: 1px solid black;
 }
-.credentials th {
+#credentials th {
     text-align: left;
 }
-.credentials td {
+#credentials td {
     font-family: "Courier New", Courier, monospace;
 }
 

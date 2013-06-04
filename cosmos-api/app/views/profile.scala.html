@@ -1,5 +1,6 @@
 @(tuProfile: es.tid.cosmos.api.oauth2.UserProfile,
   cosmosProfile: es.tid.cosmos.api.controllers.pages.CosmosProfile)(implicit request: RequestHeader)
+@import play.api.Play.current
 @import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
 @import es.tid.cosmos.api.controllers.pages
 @import es.tid.cosmos.api.controllers.pages.NamedKey
@@ -34,17 +35,11 @@
 
     <h2>Cosmos usage details</h2>
 
-    <p>To use the cluster from your command line configure
-       <a href="@cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)">
-        @cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)</a>
-        as the base API URL in your client configuration.
-        You can also <a href="doc.html">play with the API</a></p>
+    <p>Your API credentials (please, don't share with anyone) are needed to use Cosmos.</p>
 
-    <p>In the case of the <tt>cosmos</tt> script, use: <tt>cosmos configure</tt></p>
-
-    <p>Your API credentials (please, don't share with anyone) are:</p>
-
-    <table class="credentials">
+    <a id="show-credentials" href="#">Show credentials</a>
+    <a id="hide-credentials" href="#" style="display: none">Hide credentials</a>
+    <table id="credentials" style="display: none">
         <tbody>
             <tr>
                 <th>API key</th>
@@ -56,4 +51,32 @@
             </tr>
         </tbody>
     </table>
+
+    <h3>Use Cosmos CLI</h3>
+
+    <p>Cosmos CLI is a script that allows you to create, list and, work in general, with Cosmos
+       clusters from the command line.
+        @if(current.configuration.getString("cli.url").isDefined) {
+            Download the
+            <a href="@{current.configuration.getString("cli.url").get}">Cosmos CLI package</a>.
+        }
+    </p>
+
+    <p>System requirements are
+       <a href="http://www.python.org/download/releases/2.7/">python 2.7</a> with
+       <a href="https://pypi.python.org/pypi/setuptools">setuptools</a>.
+    </p>
+
+    <p>The first step after installing the script is to configure it by writing
+        <tt>cosmos configure</tt> on the console.  When prompted provide
+        <a href="@cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)">
+        @cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)</a> as the API base URL
+        and your credentials.
+    </p>
+
+    <h3>Use the REST API</h3>
+
+    <p>You can also integrate directly with the REST API to automate tasks.</p>
+
+    <p><a href="doc.html">Play with the API</a> and learn by doing!</p>
 }

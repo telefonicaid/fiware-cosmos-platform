@@ -1,3 +1,7 @@
+# The master node
+192.168.63.11       andromeda01
+
+# The compute nodes
 192.168.63.62       andromeda52
 192.168.63.63       andromeda53
 192.168.63.64       andromeda54

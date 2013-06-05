@@ -22,6 +22,9 @@ import requests
 import yaml
 from pymlconf import ConfigManager
 
+from cosmos.routes import Routes
+
+
 CONFIG_KEYS = ["api_url", "api_key", "api_secret"]
 DEFAULT_CONFIG = {
     "api_url": "http://localhost:9000/cosmos"
@@ -69,19 +72,6 @@ def with_config(command):
         return command(args)
 
     return decorated_command
-
-
-def clusters_resource(args):
-    """Forms clusters resource url"""
-    return "/".join([args.config.api_url, "cluster"])
-
-
-def cluster_resource(args, action=None):
-    """Forms a cluster url"""
-    parts = [clusters_resource(args), args.cluster_id]
-    if action:
-        parts.append(action)
-    return "/".join(parts)
 
 
 def print_error_response(description, response):
@@ -137,7 +127,8 @@ def add_list_command(subcommands):
     @with_config
     def list_clusters(args):
         """List existing clusters"""
-        r = requests.get(clusters_resource(args), auth=credentials(args.config))
+        r = requests.get(Routes(args.config.api_url).clusters(),
+                         auth=credentials(args.config))
         if r.status_code != 200:
             print_error_response("Cannot list clusters", r)
             return r.status_code
@@ -164,7 +155,7 @@ def add_show_command(subcommands):
 
     @with_config
     def cluster_details(args):
-        r = requests.get(cluster_resource(args),
+        r = requests.get(Routes(args.config.api_url).cluster(args.cluster_id),
                          auth=credentials(args.config))
         if r.status_code != 200:
             print_error_response(
@@ -184,7 +175,7 @@ def add_create_command(subcommands):
     @with_config
     def create_cluster(args):
         """Trigger cluster provisioning"""
-        r = requests.post(clusters_resource(args),
+        r = requests.post(Routes(args.config.api_url).clusters(),
                           json.dumps({"name": args.name, "size": args.size}),
                           auth=credentials(args.config))
         if r.status_code != 201:
@@ -212,8 +203,10 @@ def add_terminate_command(subcommands):
     @with_config
     def terminate_cluster(args):
         """Trigger cluster termination"""
-        r = requests.post(cluster_resource(args, action="terminate"),
-                          auth=credentials(args.config))
+        r = requests.post(
+            Routes(args.config.api_url).cluster(
+                args.cluster_id, action="terminate"),
+            auth=credentials(args.config))
         if r.status_code != 200:
             print_error_response(
                 "Cannot terminate cluster %s" % args.cluster_id, r)

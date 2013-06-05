@@ -14,6 +14,7 @@ import doctest
 
 def test_suite():
     return unittest.TestSuite([
-        doctest.DocTestSuite("cosmos.routes")
+        doctest.DocTestSuite("cosmos.config"),
+        doctest.DocTestSuite("cosmos.routes"),
     ])
 

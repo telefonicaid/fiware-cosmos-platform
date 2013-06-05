@@ -12,7 +12,6 @@
 package es.tid.cosmos.servicemanager
 
 import scala.concurrent._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.platform.ial.MachineState

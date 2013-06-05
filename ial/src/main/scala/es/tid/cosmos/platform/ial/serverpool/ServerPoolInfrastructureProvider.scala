@@ -31,7 +31,7 @@ class ServerPoolInfrastructureProvider(val dao: ServerPoolDao) extends Infrastru
       Future.failed(ResourceExhaustedException(profile.toString, count, machineIds.length))
     else {
       val states: Seq[MachineState] = for {
-        (id, idx) <- machineIds.zip(0 to machineIds.length)
+        (id, idx) <- machineIds.zipWithIndex
       } yield {
         dao.setMachineAvailability(id, available = false)
         dao.setMachineName(id, s"$namePrefix$idx").get

@@ -22,11 +22,13 @@ import play.api.libs.json.Json
 import play.api.mvc.{RequestHeader, Action, Controller}
 
 import _root_.controllers.{routes => rootRoutes}
+import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.oauth2.{UserProfile, OAuthClient, OAuthError, OAuthException}
 import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /**
@@ -121,14 +123,4 @@ class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Co
 
   private def authenticateUrl(implicit request: RequestHeader) =
     oauthClient.authenticateUrl(routes.Pages.authorize(None, None).absoluteURL(secure = false))
-
-  /**
-   * Extractor of exception causes.
-   */
-  private object Wrapped {
-    def unapply(ex: Throwable): Option[Throwable] =
-      if (ex == null) None
-      else if (ex.getCause == null) None
-      else Some(ex.getCause)
-  }
 }

@@ -29,15 +29,16 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescriptio
 
   private def usersConfiguration(masterName: String) = {
     val properties = (("number_of_users" -> users.size) +: (for {
-      (user, index) <- users.zip(1 to users.size)
+      (user, index) <- users.zipWithIndex
       sshKeys = SshKeyGenerator.newKeys(user.userName, masterName)
+      prefix = s"user${index + 1}_"
       pair <- Seq(
-        s"user${index}_username" -> user.userName,
-        s"user${index}_master" -> masterName,
-        s"user${index}_ssh_master_private_key" -> sshKeys.privateKey,
-        s"user${index}_ssh_master_public_key" -> sshKeys.publicKey,
-        s"user${index}_ssh_master_authorized_keys" -> user.publicKey,
-        s"user${index}_ssh_slave_authorized_keys" -> sshKeys.authorizedKey)
+        s"${prefix}username" -> user.userName,
+        s"${prefix}master" -> masterName,
+        s"${prefix}ssh_master_private_key" -> sshKeys.privateKey,
+        s"${prefix}ssh_master_public_key" -> sshKeys.publicKey,
+        s"${prefix}ssh_master_authorized_keys" -> user.publicKey,
+        s"${prefix}ssh_slave_authorized_keys" -> sshKeys.authorizedKey)
     } yield pair)).toMap
 
     ServiceConfiguration("cosmos-user", properties)

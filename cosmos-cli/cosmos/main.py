@@ -31,6 +31,7 @@ CONFIG_DESCRIPTIONS = {
     "api_key": "API key",
     "api_secret": "API secret"
 }
+UUID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 
 
 def get_config_path():
@@ -70,9 +71,26 @@ def with_config(command):
     return decorated_command
 
 
-def cluster_resource(args):
+def clusters_resource(args):
+    """Forms clusters resource url"""
+    return "/".join([args.config.api_url, "cluster"])
+
+
+def cluster_resource(args, action=None):
     """Forms a cluster url"""
-    return args.config.api_url + "/cluster"
+    parts = [clusters_resource(args), args.cluster_id]
+    if action:
+        parts.append(action)
+    return "/".join(parts)
+
+
+def print_error_response(description, response):
+    print "%s: %d" % (description, response.status_code)
+    try:
+      error = response.json()["error"]
+    except ValueError:
+      error = response.text
+    print "Error: %s" % error
 
 
 def add_configure_command(subcommands):
@@ -119,9 +137,9 @@ def add_list_command(subcommands):
     @with_config
     def list_clusters(args):
         """List existing clusters"""
-        r = requests.get(cluster_resource(args), auth=credentials(args.config))
+        r = requests.get(clusters_resource(args), auth=credentials(args.config))
         if r.status_code != 200:
-            print "Something bad happened: %d" % r.status_code
+            print_error_response("Cannot list clusters", r)
             return r.status_code
         clusters = r.json()["clusters"]
         if not clusters:
@@ -136,28 +154,28 @@ def add_list_command(subcommands):
     parser.set_defaults(func=list_clusters)
 
 
+def clusterId(argument):
+    if not UUID_PATTERN.match(argument):
+        raise argparse.ArgumentTypeError("Not a valid cluster id")
+    return argument
+
+
 def add_show_command(subcommands):
-    uuid_pattern = re.compile(r"^[0-9a-f]{32}$")
 
     @with_config
     def cluster_details(args):
-        if not uuid_pattern.match(args.cluster_id):
-            print "Not a valid id: '%s'" % args.cluster_id
-            return -1
-
-        r = requests.get("%s/cluster/%s" % (args.config["api_url"],
-                                            args.cluster_id),
+        r = requests.get(cluster_resource(args),
                          auth=credentials(args.config))
         if r.status_code != 200:
-            print "Cannot get details for %s: %d" % (args.cluster_id,
-                                                     r.status_code)
+            print_error_response(
+                "Cannot get details for %s" % args.cluster_id, r)
             return r.status_code
 
         print json.dumps(r.json(), sort_keys=True, indent=4)
         return 0
 
     parser = subcommands.add_parser("show", help="show cluster details")
-    parser.add_argument("cluster_id", help="cluster id")
+    parser.add_argument("cluster_id", type=clusterId, help="cluster id")
     parser.set_defaults(func=cluster_details)
 
 
@@ -166,12 +184,11 @@ def add_create_command(subcommands):
     @with_config
     def create_cluster(args):
         """Trigger cluster provisioning"""
-        r = requests.post(cluster_resource(args),
+        r = requests.post(clusters_resource(args),
                           json.dumps({"name": args.name, "size": args.size}),
                           auth=credentials(args.config))
         if r.status_code != 201:
-            print "Cluster creation problem: %d" % r.status_code
-            print "Error: %s" % r.json()["error"]
+            print_error_response("Cluster creation problem", r)
             return r.status_code
 
         print "Provisioning new cluster %s" % r.json()["id"]
@@ -190,6 +207,25 @@ def add_create_command(subcommands):
     parser.set_defaults(func=create_cluster)
 
 
+def add_terminate_command(subcommands):
+
+    @with_config
+    def terminate_cluster(args):
+        """Trigger cluster termination"""
+        r = requests.post(cluster_resource(args, action="terminate"),
+                          auth=credentials(args.config))
+        if r.status_code != 200:
+            print_error_response(
+                "Cannot terminate cluster %s" % args.cluster_id, r)
+            return r.status_code
+
+        print "Terminating cluster %s" % args.cluster_id
+
+    parser = subcommands.add_parser("terminate", help="terminate cluster")
+    parser.add_argument("cluster_id", type=clusterId, help="cluster id")
+    parser.set_defaults(func=terminate_cluster)
+
+
 def run():
     """Register all subcommands, parse the command line and run the function
     set as default for the parsed command"""
@@ -201,6 +237,7 @@ def run():
     add_list_command(subparsers)
     add_show_command(subparsers)
     add_create_command(subparsers)
+    add_terminate_command(subparsers)
 
     args = parser.parse_args()
     try:

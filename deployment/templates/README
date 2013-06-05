@@ -1,0 +1,19 @@
+After checking out the source code, this directory will be empty. It is a good practice to use it
+as working directory for customizing the OpenVZ templates for your deployment. It works as follows.
+
+ - Copy the OpenVZ template you want to customize to this directory (e.g. centos-6-x86_64.tar.gz)
+ - Put the replacement files in replacements/<template>, where <template> is the filename of
+   your template. Such directory should contain the files that will be replaced in the original
+   template tarball. E.g., replacements/centos-6-x86_64.tar.gz/etc/hosts will replace the original
+   /etc/hosts of the template.
+ - Execute the generate-template.sh script to generate the customized template, indicating the
+   input and output templates as argument. E.g.:
+
+    generate-template.sh templates/centos-6-x86_64.tar.gz templates/centos-6-cosmos-x86_64.tar.gz
+
+After template is customized with platform-dependent configuration, you may want to apply
+node-specific configuration (e.g., network config). You may use configure-template.sh script
+to do that. Just create a config file (check conf/ directory for examples) and execute on it. E.g.:
+
+    configure-template.sh conf/andromeda02.conf
+

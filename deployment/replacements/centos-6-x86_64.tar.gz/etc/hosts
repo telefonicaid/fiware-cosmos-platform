@@ -1,0 +1,13 @@
+# Localhost in all its variants
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# The master node
+192.168.63.11       andromeda01.hi.inet andromeda01
+
+# The compute nodes
+192.168.63.62       andromeda52.hi.inet andromeda52
+192.168.63.63       andromeda53.hi.inet andromeda53
+192.168.63.64       andromeda54.hi.inet andromeda54
+192.168.63.65       andromeda55.hi.inet andromeda55
+192.168.63.66       andromeda56.hi.inet andromeda56

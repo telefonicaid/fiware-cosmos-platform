@@ -69,7 +69,7 @@
         <dependency>
             <groupId>org.apache.sshd</groupId>
             <artifactId>sshd-core</artifactId>
-            <version>0.6.0-Cosmos-0.9b</version>
+            <version>0.8.0</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>

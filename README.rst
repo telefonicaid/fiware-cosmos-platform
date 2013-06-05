@@ -37,16 +37,6 @@ These are the layer interdependencies:
 
 cosmos-api -> service-manager -> IAL
 
--------------------------
-Current scope limitations
--------------------------
-
-This is a working skeleton and as such is limited to the following assumptions:
-
-* It assumes a cluster of 1 machine
-* That machine is already available, running with Ambari installed and setup accordingly
-* The Service Manager only supports deploying HDFS and MapReduce services that will be deployed in that single 1 machine of the cluster
-
 ---------------------------
 Execute in development mode
 ---------------------------

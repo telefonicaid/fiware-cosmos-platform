@@ -28,6 +28,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/*.css</exclude>
+                        <exclude>**/*.egg-info/**</exclude>
                         <exclude>**/*.html</exclude>
                         <exclude>**/*.js</exclude>
                         <exclude>**/*.json</exclude>
@@ -40,6 +41,8 @@
                         <exclude>**/*.sbt</exclude>
                         <exclude>**/*.ttf</exclude>
                         <exclude>**/.idea/**</exclude>
+                        <exclude>**/build/**</exclude>
+                        <exclude>**/dist/**</exclude>
                         <exclude>**/resources/**/*</exclude>
                         <exclude>**/target/**</exclude>
                     </excludes>

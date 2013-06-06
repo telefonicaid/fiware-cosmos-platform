@@ -54,13 +54,13 @@ private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
 
   private def createAuthenticatedRequest(url: String) = baseUrl.setUrl(url)
 
-  private def ensureFinished(json: JValue) = {
-    val request = createAuthenticatedRequest(json \ "href" match {
-      case JString(href) => href
-      case _ => throw new ServiceError("Ambari's response doesn't contain a href element")
-    })
-    createRequestHandler(request).ensureFinished.map(_ => this)
-   }
+  private def ensureFinished(json: JValue) = json \ "href" match {
+    case JString(href) => {
+      val request = createAuthenticatedRequest(href)
+      createRequestHandler(request).ensureFinished.map(_ => this)
+    }
+    case _ => Future.successful(this)
+  }
 
   private def extractInfo(key: String) = serviceInfo \ "ServiceInfo" \ key match {
     case JString(value) => value

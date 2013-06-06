@@ -25,7 +25,7 @@ import es.tid.cosmos.api.profile.CosmosProfileDao
  */
 trait AuthController extends Controller {
   private val AuthErrorResponse =
-    Unauthorized(Json.toJson(Message("Invalid or missing Authorization header")))
+    Unauthorized(Json.toJson(ErrorMessage("Invalid or missing Authorization header")))
 
   def Authenticated(request: Request[Any])(userAction: CosmosProfile => Result): Result = {
     (for {

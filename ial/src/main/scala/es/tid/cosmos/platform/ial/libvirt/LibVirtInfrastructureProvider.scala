@@ -98,4 +98,5 @@ class LibVirtInfrastructureProvider(
     if (dom.isActive) MachineStatus.Running else MachineStatus.Provisioning
 
   def availableMachineCount(profile: MachineProfile.Value): Future[Int] = ??? // FIXME
+  def getMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = ???   // FIXME
 }

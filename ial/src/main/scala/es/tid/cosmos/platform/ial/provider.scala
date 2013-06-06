@@ -48,6 +48,8 @@ trait InfrastructureProvider {
       numberOfMachines: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]]
 
+  def getMachines(hostNames: Seq[String]): Future[Seq[MachineState]]
+
   /**
    * Release the machines so that its resources can be reused in further createMachine requests
    *

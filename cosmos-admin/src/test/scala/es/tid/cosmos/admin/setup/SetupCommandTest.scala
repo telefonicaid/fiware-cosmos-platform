@@ -46,7 +46,7 @@ class SetupCommandTest extends FlatSpec with MustMatchers with MockitoSugar {
       val name = ""
       val size = 3
       val state = Running
-      val nameNode = new URI("hdfs://host:1234")
+      val nameNode_> = Future.successful(new URI("hdfs://host:1234"))
     }))
     new SetupCommand(sm).run() must be (true)
     verify(sm).describeCluster(hdfsId)

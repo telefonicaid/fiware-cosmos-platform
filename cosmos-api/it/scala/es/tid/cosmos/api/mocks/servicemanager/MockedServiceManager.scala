@@ -33,7 +33,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
     var currentState: ClusterState = Provisioning
     override def state = currentState
-    override def nameNode = new URI(s"hdfs://10.0.0.${Random.nextInt(256)}:8084")
+    override def nameNode_> = Future.successful(new URI(s"hdfs://10.0.0.${Random.nextInt(256)}:8084"))
 
     def completeProvision() {
       if (currentState == Provisioning) currentState = Running
@@ -90,7 +90,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
   private val persistentHdfsCluster = new ClusterDescription {
     @volatile var enabled: Boolean = false
     override val id = ClusterId("PersistendHdfsId")
-    override val nameNode = MockedServiceManager.PersistentHdfsUrl
+    override val nameNode_> = Future.successful(MockedServiceManager.PersistentHdfsUrl)
     override val state = Running
     override val size = 4
     override val name = "Persistent HDFS cluster"

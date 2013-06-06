@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager
 
 import java.net.URI
+import scala.concurrent.Future
 
 /**
  * An immutable description of a cluster
@@ -42,5 +43,5 @@ trait ClusterDescription {
    * Name node URI with hdfs scheme.
    * For instance: hdfs://localhost:54310
    */
-  def nameNode: URI
+  def nameNode_> : Future[URI]
 }

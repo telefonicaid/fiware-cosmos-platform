@@ -31,6 +31,7 @@ import es.tid.cosmos.servicemanager.ServiceError
 private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
   extends RequestProcessor with ServiceRequestHandlerFactory {
   val name = extractInfo("service_name")
+  val state = extractInfo("state")
 
   override val toString = s"Service($name)[Cluster(${extractInfo("cluster_name")})]"
 
@@ -45,6 +46,8 @@ private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
   def stop() = install()
 
   def start(): Future[Service] = changeState("STARTED")
+
+
 
   private def changeState(state: String) = {
     val body = compact(render("ServiceInfo" -> ("state" -> state)))
@@ -62,7 +65,7 @@ private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
     case _ => Future.successful(this)
   }
 
-  private def extractInfo(key: String) = serviceInfo \ "ServiceInfo" \ key match {
+  private def extractInfo(key: String, from: JValue = serviceInfo) = from \ "ServiceInfo" \ key match {
     case JString(value) => value
     case _ => throw new ServiceError("Ambari's state information response doesn't contain a " +
       s"ServiceInfo/$key element")

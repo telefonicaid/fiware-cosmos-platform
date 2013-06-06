@@ -22,6 +22,8 @@ import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvision
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.util.TcpServer
 import es.tid.cosmos.servicemanager.util.TcpServer.SshService
+import com.typesafe.scalalogging.slf4j.Logging
+import java.net.URI
 
 /**
  * Manager of the Ambari service configuration workflow.
@@ -31,18 +33,24 @@ import es.tid.cosmos.servicemanager.util.TcpServer.SshService
  * @param provisioner the cluster provisioner
  * @param infrastructureProvider the host-machines provider
  * @param persistentHdfsId the id of the persistent hdfs cluster
+ * @param refreshGracePeriod the grace period in milliseconds
+ *                           to allow for a discovered cluster to stabilize
  */
 class AmbariServiceManager(
-    provisioner: ClusterProvisioner,
-    infrastructureProvider: InfrastructureProvider,
+    override protected val provisioner: ClusterProvisioner,
+    override protected val infrastructureProvider: InfrastructureProvider,
+    override protected val refreshGracePeriod: Int,
     override val persistentHdfsId: ClusterId)
-  extends ServiceManager with ConfigurationContributor with ConfigurationLoader {
+  extends ServiceManager with ConfigurationContributor with ConfigurationLoader
+  with Refreshing with Logging {
 
   override type ServiceDescriptionType = AmbariServiceDescription
 
   private val stackVersion = "Cosmos-0.1.0"
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
+
+  refresh() // perform a sync with Ambari upon initialization
 
   override def clusterIds: Seq[ClusterId] = clusters.keys.toSeq
 
@@ -71,7 +79,12 @@ class AmbariServiceManager(
       (master, slaves) = masterAndSlaves(machines)
       deployment <- createUnregisteredCluster(id, name, serviceDescriptions, master, slaves)
     } yield deployment
-    registerCluster(new MutableClusterDescription(id, name, clusterSize, deployment_>, machines_>))
+    val nameNode_> = for {
+      machines <- machines_>
+      (master, _) = masterAndSlaves(machines)
+    } yield new URI(s"hdfs://${master.hostname}:${Hdfs.nameNodeHttpPort}")
+    registerCluster(new MutableClusterDescription(
+      id, name, clusterSize, deployment_>, machines_>, nameNode_>))
     id
   }
 
@@ -96,9 +109,10 @@ class AmbariServiceManager(
     } yield deployedServices
   }
 
-  private def registerCluster(description: MutableClusterDescription) {
+  override protected def registerCluster(description: MutableClusterDescription) {
     clusters.synchronized {
       clusters = clusters.updated(description.id, description)
+      logger.info(s"Cluster [${description.id}] registered")
     }
   }
 
@@ -222,3 +236,5 @@ class AmbariServiceManager(
     } yield ()
   }
 }
+
+

@@ -31,12 +31,14 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
       name = "cosmos.local",
       profile = profile,
       status = MachineStatus.Running,
-      hostname = s"localhost.localdomain",
-      ipAddress = s"10.95.162.103")
+      hostname = s"cosmos.local",
+      ipAddress = s"192.168.50.4")
 
   val rootPrivateSshKey: String = "FIXME"
 
   override def releaseMachines(machines: Seq[MachineState]): Future[Unit] = Future.successful()
  
   def availableMachineCount(profile: MachineProfile.Value): Future[Int] = Future.successful(1)
+
+  def getMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = ???
 }

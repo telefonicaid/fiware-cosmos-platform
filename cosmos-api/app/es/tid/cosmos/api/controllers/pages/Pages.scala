@@ -23,7 +23,7 @@ import play.api.mvc.{RequestHeader, Action, Controller}
 
 import _root_.controllers.{routes => rootRoutes}
 import es.tid.cosmos.api.controllers._
-import es.tid.cosmos.api.controllers.common.Message
+import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.oauth2.{UserProfile, OAuthClient, OAuthError, OAuthException}
@@ -71,7 +71,7 @@ class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Co
           case Wrapped(Wrapped(ex: OAuthException)) => unauthorizedPage(ex)
         }
       }
-      case _ => BadRequest(Json.toJson(Message("Missing code")))
+      case _ => BadRequest(Json.toJson(ErrorMessage("Missing code")))
     }
   }
 
@@ -88,7 +88,7 @@ class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Co
           Redirect(routes.Pages.index()).withSession(session.setCosmosId(newCosmosId))
         }})
     ).getOrElse(
-      Forbidden(Json.toJson(Message("Not authenticated")))
+      Forbidden(Json.toJson(ErrorMessage("Not authenticated")))
     )
   }
 

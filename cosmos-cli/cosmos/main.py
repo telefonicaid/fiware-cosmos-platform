@@ -28,10 +28,14 @@ UUID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 def print_error_response(description, response):
     print "%s: %d" % (description, response.status_code)
     try:
-        error = response.json()["error"]
-    except ValueError:
-        error = response.text
-    print "Error: %s" % error
+        message = response.json()["error"]
+    except (ValueError, KeyError):
+        message = response.text
+    if response.status_code == 401:
+        error = "Unauthorized request"
+    else:
+        error = "Error"
+    print "%s: %s" % (error, message)
 
 
 def add_configure_command(subcommands):

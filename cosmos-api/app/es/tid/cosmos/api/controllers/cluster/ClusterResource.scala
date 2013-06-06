@@ -20,7 +20,7 @@ import play.api.db.DB
 import play.api.libs.json._
 import play.api.mvc.{Result, RequestHeader, Action}
 
-import es.tid.cosmos.api.controllers.common.{AuthController, Message}
+import es.tid.cosmos.api.controllers.common.{AuthController, ErrorMessage, Message}
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
@@ -87,10 +87,10 @@ class ClusterResource(serviceManager: ServiceManager) extends AuthController {
     }
 
   private def unauthorizedAccessTo(cluster: ClusterId) =
-    Unauthorized(Json.toJson(Message(s"Cannot access cluster '$cluster'")))
+    Unauthorized(Json.toJson(ErrorMessage(s"Cannot access cluster '$cluster'")))
 
   private def notFound(cluster: ClusterId) =
-    NotFound(Json.toJson(Message(s"No cluster '$cluster' exists")))
+    NotFound(Json.toJson(ErrorMessage(s"No cluster '$cluster' exists")))
 }
 
 object ClusterResource {

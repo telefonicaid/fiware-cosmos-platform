@@ -39,6 +39,7 @@ CREATE TABLE `SERVERS` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `profile` int(11) NOT NULL,
   `totalMemory` int(11) NOT NULL,
+  `domainFilesystemQuota` bigint(20) NOT NULL,
   `domainIpAddress` varchar(128) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;

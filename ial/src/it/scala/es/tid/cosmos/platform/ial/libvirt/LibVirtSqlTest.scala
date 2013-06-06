@@ -44,6 +44,7 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda52",
       domainIpAddress = "192.168.63.62",
+      domainFilesystemQuota = 20,
       enabled = true),
     new PersistentLibVirtServerProperties(
       name = "andromeda03",
@@ -56,6 +57,7 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda53",
       domainIpAddress = "192.168.63.63",
+      domainFilesystemQuota = 20,
       enabled = true),
     new PersistentLibVirtServerProperties(
       name = "andromeda04",
@@ -68,6 +70,7 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda54",
       domainIpAddress = "192.168.63.64",
+      domainFilesystemQuota = 20,
       enabled = true),
     new PersistentLibVirtServerProperties(
       name = "andromeda05",
@@ -80,6 +83,7 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda55",
       domainIpAddress = "192.168.63.65",
+      domainFilesystemQuota = 20,
       enabled = true),
     new PersistentLibVirtServerProperties(
       name = "andromeda06",
@@ -92,6 +96,7 @@ trait LibVirtSqlTest extends MySqlTest {
       bridgeName = "vzbr0",
       domainHostname = "andromeda56",
       domainIpAddress = "192.168.63.66",
+      domainFilesystemQuota = 20,
       enabled = true)
   )
 

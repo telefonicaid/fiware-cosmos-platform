@@ -28,17 +28,18 @@ protected class PersistentLibVirtServerProperties(
     val bridgeName: String,
     val domainHostname: String,
     val domainIpAddress: String,
+    val domainFilesystemQuota: Long,
     val enabled: Boolean) extends LibVirtServerProperties with KeyedEntity[Long] {
   override val id: Long = 0
 
   /**
    * Fake constructor required by Squeryl to map the class and the table name.
    */
-  def this() = this("", "", MachineProfile.G1_COMPUTE, "", 0, 0, "", "", "", "", true)
+  def this() = this("", "", MachineProfile.G1_COMPUTE, "", 0, 0, "", "", "", "", 0, true)
 
   def toTransient = new TransientLibVirtServerProperties(
     name, description, profile, connectionChain, numberOfCpus, totalMemory,
-    domainTemplate, bridgeName, domainHostname, domainIpAddress)
+    domainTemplate, bridgeName, domainHostname, domainIpAddress, domainFilesystemQuota)
 }
 
 object LibVirtDb extends Schema {

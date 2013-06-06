@@ -26,4 +26,5 @@ class TransientLibVirtServerProperties(
     val domainTemplate: String,
     val bridgeName: String,
     val domainHostname: String,
-    val domainIpAddress: String) extends LibVirtServerProperties
+    val domainIpAddress: String,
+    val domainFilesystemQuota: Long) extends LibVirtServerProperties

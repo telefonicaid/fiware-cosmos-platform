@@ -29,7 +29,8 @@ class FakeLibVirtDao extends LibVirtDao {
       domainTemplate = "centos-6-x86_64",
       bridgeName = "vzbr0",
       domainHostname = s"andromeda${50 + i}",
-      domainIpAddress = s"192.168.63.${50 + i}"
+      domainIpAddress = s"192.168.63.${50 + i}",
+      domainFilesystemQuota = 20
     )
   }
 

@@ -28,6 +28,7 @@ INSERT INTO `SERVERS` VALUES
         1,
         3,
         32768,
+        20,
         '192.168.63.62'
     ),
     (
@@ -42,6 +43,7 @@ INSERT INTO `SERVERS` VALUES
         2,
         3,
         32768,
+        20,
         '192.168.63.63'
     ),
     (
@@ -56,6 +58,7 @@ INSERT INTO `SERVERS` VALUES
         3,
         3,
         32768,
+        20,
         '192.168.63.64'
     ),
     (
@@ -70,6 +73,7 @@ INSERT INTO `SERVERS` VALUES
         4,
         3,
         32768,
+        20,
         '192.168.63.65'
     ),
     (
@@ -84,6 +88,7 @@ INSERT INTO `SERVERS` VALUES
         5,
         3,
         32768,
+        20,
         '192.168.63.66'
     );
 

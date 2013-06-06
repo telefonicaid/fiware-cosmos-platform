@@ -33,7 +33,8 @@ class JnaLibVirtServerIT extends FlatSpec with MustMatchers with BeforeAndAfter 
     domainTemplate = "centos-6-x86_64",
     bridgeName = "vzbr0",
     domainHostname = "andromeda52",
-    domainIpAddress = "192.168.63.62"))
+    domainIpAddress = "192.168.63.62",
+    domainFilesystemQuota = 20))
 
   before { Await.ready(server.destroyDomain(), Duration.Inf) }
 

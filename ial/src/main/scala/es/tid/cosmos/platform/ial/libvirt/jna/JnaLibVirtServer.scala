@@ -45,6 +45,8 @@ case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends Lib
         <filesystem type='template'>
           <source name={properties.domainTemplate}/>
           <target dir='/'/>
+          <space_hard_limit unit='GiB'>{properties.domainFilesystemQuota}</space_hard_limit>
+          <space_soft_limit unit='GiB'>{properties.domainFilesystemQuota}</space_soft_limit>
         </filesystem>
         <interface type='bridge'>
           <mac address={randomMacAddress}/>

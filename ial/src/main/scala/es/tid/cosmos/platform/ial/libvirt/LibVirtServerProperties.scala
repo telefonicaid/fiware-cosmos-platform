@@ -27,4 +27,5 @@ trait LibVirtServerProperties {
   val bridgeName: String
   val domainHostname: String
   val domainIpAddress: String
+  val domainFilesystemQuota: Long
 }

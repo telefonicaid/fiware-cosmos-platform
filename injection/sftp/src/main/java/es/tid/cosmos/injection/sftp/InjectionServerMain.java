@@ -13,30 +13,21 @@ package es.tid.cosmos.injection.sftp;
 
 import java.io.File;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.sshd.server.PasswordAuthenticator;
+import org.apache.log4j.Logger;
 import org.apache.sshd.server.PublickeyAuthenticator;
 
-import es.tid.cosmos.base.util.Logger;
-import es.tid.cosmos.injection.sftp.auth.DaoPasswordAuthenticator;
 import es.tid.cosmos.injection.sftp.auth.DaoPublicKeyAuthenticator;
 import es.tid.cosmos.injection.sftp.auth.UsersDao;
 import es.tid.cosmos.injection.sftp.config.Configuration;
-import es.tid.cosmos.injection.sftp.persistence.db
-        .JDBCPersistenceManager;
 import es.tid.cosmos.injection.sftp.persistence.file.FileBackedUsersDao;
-import es.tid.cosmos.injection.sftp.persistence.db.MysqlUsersDao;
-import es.tid.cosmos.injection.sftp.persistence.db.PersistenceManager;
-
-import es.tid.cosmos.injection.sftp.persistence.file
-        .LocalFileSshKeyReader;
+import es.tid.cosmos.injection.sftp.persistence.file.LocalFileSshKeyReader;
 
 /**
  * InjectionServerMain is the main entry point to this application
  *
  * @author logc
- * @since  CTP 2
  */
 public final class InjectionServerMain {
 
@@ -44,11 +35,10 @@ public final class InjectionServerMain {
             "file:///etc/cosmos/injection.properties";
     private static final String INTERNAL_CONFIGURATION =
             "/injection_server.prod.properties";
-    private static final org.apache.log4j.Logger LOGGER =
-            Logger.get(InjectionServerMain.class);
+    private static final Logger LOGGER =
+            Logger.getLogger(InjectionServerMain.class);
 
-    private InjectionServerMain() {
-    }
+    private InjectionServerMain() {}
 
     public static void main(String[] args) throws ConfigurationException {
         ServerCommandLine commandLine = new ServerCommandLine();
@@ -66,17 +56,17 @@ public final class InjectionServerMain {
 
         Configuration config;
         try {
-            config = new Configuration(new File(externalConfiguration)
-                                               .toURI().toURL());
+            config = new Configuration(
+                    new File(externalConfiguration).toURI().toURL());
         } catch(Exception ex) {
-            config = new Configuration(InjectionServerMain.class
-                                         .getResource(INTERNAL_CONFIGURATION));
+            config = new Configuration(
+                    InjectionServerMain.class.getResource(
+                            INTERNAL_CONFIGURATION));
         }
 
         try {
             InjectionServer server = new InjectionServer(
-                    config, setupPasswordAuthenticator(config),
-                    setupPublicKeyAuthenticator());
+                    config, setupPublicKeyAuthenticator());
             server.setupSftpServer();
         } catch (Exception ex) {
             LOGGER.error(ex.getMessage(), ex);
@@ -84,38 +74,8 @@ public final class InjectionServerMain {
         }
     }
 
-    private static PasswordAuthenticator setupPasswordAuthenticator(
-            Configuration config) {
-        String url = config.getFrontendDbUrl();
-        String dbName = config.getDbName();
-        String userName = config.getDbUser();
-        String password = config.getDbPassword();
-        if (isNullOrEmpty(url)
-                || isNullOrEmpty(dbName)
-                || isNullOrEmpty(userName)
-                || password == null) {
-            throw new IllegalArgumentException("no database URL set up");
-        }
-        PersistenceManager pm;
-        pm = new JDBCPersistenceManager(
-                config.getFrontendDbUrl(),
-                config.getDbName(),
-                config.getDbUser(),
-                config.getDbPassword());
-
-        return new DaoPasswordAuthenticator(new MysqlUsersDao(pm));
-    }
-
     private static PublickeyAuthenticator setupPublicKeyAuthenticator() {
         UsersDao userDao = new FileBackedUsersDao(new LocalFileSshKeyReader());
         return new DaoPublicKeyAuthenticator(userDao);
-    }
-
-    private static boolean isNullOrEmpty(String string) {
-        if (string == null || string.equals("")) {
-            return true;
-        } else {
-            return false;
-        }
     }
 }

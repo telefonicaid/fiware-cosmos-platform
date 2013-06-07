@@ -41,7 +41,7 @@ public class InjectionServerTest extends BaseSftpTest {
         Configuration configuration = new Configuration(
                 InjectionServerMain.class
                                    .getResource("/injection_server.dev.properties"));
-        this.instance = new InjectionServer(configuration, null, null);
+        this.instance = new InjectionServer(configuration, null);
     }
 
     @Test

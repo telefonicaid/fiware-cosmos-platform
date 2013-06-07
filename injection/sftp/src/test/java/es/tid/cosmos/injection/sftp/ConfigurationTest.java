@@ -39,9 +39,5 @@ public class ConfigurationTest {
         assertEquals(2222, instance.getPort());
         assertEquals(URI.create("hdfs://pshdp01:8011"), instance.getHdfsUrl());
         assertEquals("pshdp01:8012", instance.getJobTrackerUrl());
-        assertEquals("jdbc:mysql:localhost", instance.getFrontendDbUrl());
-        assertEquals("database", instance.getDbName());
-        assertEquals("root", instance.getDbUser());
-        assertEquals("toor", instance.getDbPassword());
     }
 }

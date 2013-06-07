@@ -22,20 +22,17 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.AccessControlException;
+import org.apache.log4j.Logger;
 import org.apache.sshd.server.SshFile;
-
-import es.tid.cosmos.base.util.Logger;
 
 /**
  * HadoopSshFile
  *
  * @author logc
- * @since  CTP 2
  */
 public class HadoopSshFile implements SshFile {
 
-    private static final org.apache.log4j.Logger LOGGER =
-            Logger.get(HadoopSshFile.class);
+    private static final Logger LOGGER = Logger.getLogger(HadoopSshFile.class);
 
     private final Path hadoopPath;
     private final String userName;
@@ -43,8 +40,9 @@ public class HadoopSshFile implements SshFile {
     private FSDataOutputStream fsDataOutputStream;
     private FSDataInputStream fsDataInputStream;
 
-    public HadoopSshFile(final String fileName, String userName,
-            FileSystem hadoopFS) throws IOException, InterruptedException {
+    public HadoopSshFile(
+            String fileName, String userName, FileSystem hadoopFS)
+            throws IOException, InterruptedException {
         this.hadoopPath = new Path(fileName);
         this.userName = userName;
         this.hadoopFS = hadoopFS;

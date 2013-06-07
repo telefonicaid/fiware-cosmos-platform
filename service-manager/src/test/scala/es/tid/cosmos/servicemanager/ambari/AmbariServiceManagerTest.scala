@@ -21,7 +21,7 @@ import scala.concurrent.duration._
 import org.mockito.ArgumentMatcher
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.{any, eq => the, matches, argThat}
-import org.mockito.Mockito.{verify, never}
+import org.mockito.Mockito.verify
 import org.scalatest.OneInstancePerTest
 import org.scalatest.mock.MockitoSugar
 
@@ -191,126 +191,6 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
     terminateAndVerify(clusterId, instance)
     evaluating (get(instance.addUsers(clusterId, ClusterUser("username", "publicKey")))) must
       produce [IllegalArgumentException]
-  }
-
-  it must "refresh to no clusters when Ambari has none" in {
-      given(provisioner.listClusterNames).willReturn(successful(Seq()))
-      get(instance.refresh())
-      instance.clusterIds must be ('empty)
-    }
-
-  it must "not refresh when Ambari yields no new clusters" in {
-    val (machines, hosts) = machinesAndHostsOf(3)
-    setMachineExpectations(machines, hosts)
-    setServiceExpectations()
-    val clusterId = instance.createCluster("mycluster", 3, serviceDescriptions)
-    waitForClusterCompletion(clusterId, instance)
-    val clustersBefore = instance.clusterIds
-    clustersBefore must have length(1)
-    val descriptionBefore = instance.describeCluster(clustersBefore.head)
-    given(provisioner.listClusterNames).willReturn(successful(Seq(clusterId.id)))
-    given(provisioner.getCluster(clusterId.id)).willReturn(successful(cluster))
-    given(cluster.name).willReturn(clusterId.id)
-    get(instance.refresh())
-    instance.clusterIds must equal(clustersBefore)
-    instance.describeCluster(clustersBefore.head) must equal(descriptionBefore)
-    verify(provisioner, never()).getCluster(any())
-  }
-
-  it must "register only any unregistered clusters that Ambari yields upon a refresh" in {
-    val (machines, hosts) = machinesAndHostsOf(3)
-    setMachineExpectations(machines, hosts)
-    setServiceExpectations()
-    val registeredClusterId = instance.createCluster("registeredCluster", 3, serviceDescriptions)
-    val registeredClusterState = waitForClusterCompletion(registeredClusterId, instance)
-    val unregisteredClusterId = "unregisteredCluster"
-    val serviceName = "myService"
-    val unregisteredCluster = mock[Cluster]
-    val service = mock[Service]
-    val host = mock[Host]
-    given(provisioner.listClusterNames).willReturn(
-      successful(Seq(unregisteredClusterId, registeredClusterId.id)))
-    given(provisioner.getCluster(unregisteredClusterId)).willReturn(successful(unregisteredCluster))
-    given(unregisteredCluster.name).willReturn(unregisteredClusterId)
-    given(unregisteredCluster.hostNames).willReturn(Seq(s"hostFor:$unregisteredClusterId"))
-    given(unregisteredCluster.getHosts).willReturn(successful(Seq(host)))
-    given(unregisteredCluster.serviceNames).willReturn(Seq(serviceName))
-    given(unregisteredCluster.getService(serviceName)).willReturn(successful(service))
-    given(service.state).willReturn("STARTED")
-    given(host.getComponentNames).willReturn(Seq("NAMENODE"))
-    get(instance.refresh())
-    instance.clusterIds must (
-      have length (2) and
-      contain(ClusterId(unregisteredClusterId)) and
-      contain(registeredClusterId))
-    instance.describeCluster(ClusterId(unregisteredClusterId)).get must (
-      have ('state (Running)) and
-      have ('size (1)) and
-      have ('name (unregisteredClusterId)) and
-      have ('id (ClusterId(unregisteredClusterId))))
-    instance.describeCluster(registeredClusterId).get must have ('state (registeredClusterState))
-  }
-
-  it must "refresh cluster state to Running if all services are Started" in {
-    val clusterName = "myCluster"
-    val serviceName = "myService"
-    val cluster = mock[Cluster]
-    val service = mock[Service]
-    val host = mock[Host]
-    given(provisioner.listClusterNames).willReturn(successful(Seq(clusterName)))
-    given(provisioner.getCluster(clusterName)).willReturn(successful(cluster))
-    given(cluster.name).willReturn(clusterName)
-    given(cluster.hostNames).willReturn(Seq(s"hostFor:$clusterName"))
-    given(cluster.getHosts).willReturn(successful(Seq(host)))
-    given(cluster.serviceNames).willReturn(Seq(serviceName))
-    given(cluster.getService(serviceName)).willReturn(successful(service))
-    given(service.state).willReturn("STARTED")
-    given(host.getComponentNames).willReturn(Seq("NAMENODE"))
-    get(instance.refresh())
-    instance.clusterIds must (have length (1) and contain(ClusterId(clusterName)))
-    instance.describeCluster(ClusterId(clusterName)).get must have ('state (Running))
-  }
-
-  it must "fail refreshing a cluster that does not stabilize within grace period" in {
-    val clusterName = "myCluster"
-    val serviceName = "myService"
-    val cluster = mock[Cluster]
-    val service = mock[Service]
-    val host = mock[Host]
-    given(provisioner.listClusterNames).willReturn(successful(Seq(clusterName)))
-    given(provisioner.getCluster(clusterName)).willReturn(successful(cluster))
-    given(cluster.name).willReturn(clusterName)
-    given(cluster.hostNames).willReturn(Seq(s"hostFor:$clusterName"))
-    given(cluster.getHosts).willReturn(successful(Seq(host)))
-    given(cluster.serviceNames).willReturn(Seq(serviceName))
-    given(cluster.getService(serviceName)).willReturn(successful(service))
-    given(service.state).willReturn("INSTALLED")
-    given(host.getComponentNames).willReturn(Seq("NAMENODE"))
-    evaluating (get(instance.refresh())) must produce [IllegalStateException]
-    val clusterId: ClusterId = ClusterId(clusterName)
-    instance.clusterIds must (have length (1) and contain(clusterId))
-    evaluating (waitForClusterCompletion(clusterId, instance)) must produce [IllegalStateException]
-  }
-
-  it must "refresh a cluster that stabilizes within grace period" in {
-    val clusterName = "myCluster"
-    val serviceName = "myService"
-    val cluster = mock[Cluster]
-    val service = mock[Service]
-    val host = mock[Host]
-    given(provisioner.listClusterNames).willReturn(successful(Seq(clusterName)))
-    given(provisioner.getCluster(clusterName)).willReturn(successful(cluster))
-    given(cluster.name).willReturn(clusterName)
-    given(cluster.hostNames).willReturn(Seq(s"hostFor:$clusterName"))
-    given(cluster.getHosts).willReturn(successful(Seq(host)))
-    given(cluster.serviceNames).willReturn(Seq(serviceName))
-    given(cluster.getService(serviceName)).willReturn(successful(service))
-    given(host.getComponentNames).willReturn(Seq("NAMENODE"))
-    given(service.state).willReturn("INSTALLED").willReturn("STARTED")
-    get(instance.refresh())
-    val clusterId: ClusterId = ClusterId(clusterName)
-    instance.clusterIds must (have length (1) and contain(clusterId))
-    waitForClusterCompletion(clusterId, instance) must equal (Running)
   }
 
   def initializeProvisioner = {

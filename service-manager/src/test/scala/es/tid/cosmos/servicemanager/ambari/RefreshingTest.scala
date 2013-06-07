@@ -1,3 +1,14 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 package es.tid.cosmos.servicemanager.ambari
 
 import scala.concurrent.Future._
@@ -6,10 +17,11 @@ import org.mockito.BDDMockito._
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.servicemanager.ambari.rest._
-import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.platform.ial.InfrastructureProvider
 import es.tid.cosmos.platform.ial.MachineState
-import es.tid.cosmos.platform.ial.MachineState
+import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.rest.{
+  ClusterProvisioner, AmbariTestBase, Service, Cluster}
 
 class RefreshingTest extends AmbariTestBase with MockitoSugar {
 
@@ -113,10 +125,8 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
     def checkClusterHasState(state: ClusterState, description: MutableClusterDescription) {
       checkDescriptionInfo(description)
       get(description.deployment_>)
+      Thread.sleep(50)
       description.view.state must equal(state)
     }
   }
-
-
-
 }

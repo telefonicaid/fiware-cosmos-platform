@@ -25,7 +25,7 @@ class LibVirtInfrastructureProvider(
     val rootPrivateSshKey: String)
   extends InfrastructureProvider {
 
-  def createMachines(
+  override def createMachines(
       namePrefix: String,
       profile: MachineProfile.Value,
       numberOfMachines: Int,
@@ -51,11 +51,15 @@ class LibVirtInfrastructureProvider(
    * @param machines The set of machines to be released.
    * @return         a future which terminates once the release has completed
    */
-  def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
+  override def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
     for {
       servers <- serversForMachines(machines)
       _ <- Future.sequence(servers.map(srv => srv.destroyDomain()))
     } yield ()
+
+  override def availableMachineCount(profile: MachineProfile.Value): Future[Int] = ??? // FIXME
+
+  override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = ???   // FIXME
 
   private def serversForMachines(machines: Seq[MachineState]): Future[Seq[LibVirtServer]] = future {
     for {
@@ -96,7 +100,4 @@ class LibVirtInfrastructureProvider(
 
   private def domainStatus(dom: DomainProperties): MachineStatus.Value =
     if (dom.isActive) MachineStatus.Running else MachineStatus.Provisioning
-
-  def availableMachineCount(profile: MachineProfile.Value): Future[Int] = ??? // FIXME
-  def getMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = ???   // FIXME
 }

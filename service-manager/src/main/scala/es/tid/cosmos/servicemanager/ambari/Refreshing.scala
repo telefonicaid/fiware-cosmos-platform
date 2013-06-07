@@ -64,7 +64,7 @@ trait Refreshing extends Logging {
 
   private def register(cluster: Cluster) = {
     val clusterState_> = resolveState(cluster)
-    val machines_> = infrastructureProvider.getMachines(cluster.hostNames)
+    val machines_> = infrastructureProvider.assignedMachines(cluster.hostNames)
     val nameNode_> = for {
       host <- ServiceMasterExtractor.getServiceMaster(cluster, Hdfs)
     } yield new URI(s"hdfs://${host.name}:${Hdfs.nameNodeHttpPort}")

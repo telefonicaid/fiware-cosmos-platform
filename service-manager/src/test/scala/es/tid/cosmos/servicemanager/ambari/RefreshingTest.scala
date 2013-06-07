@@ -99,7 +99,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
     given(cluster.serviceNames).willReturn(Seq(serviceName))
     given(cluster.getService(serviceName)).willReturn(successful(service))
     given(host.getComponentNames).willReturn(Seq("NAMENODE"))
-    given(infrastructureProvider.getMachines(Seq(hostName))).willReturn(cluster_machines_>)
+    given(infrastructureProvider.assignedMachines(Seq(hostName))).willReturn(cluster_machines_>)
 
     def checkDescriptionInfo(description: MutableClusterDescription) {
       description must (

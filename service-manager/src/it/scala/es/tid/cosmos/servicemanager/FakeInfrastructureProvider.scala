@@ -38,7 +38,8 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
 
   override def releaseMachines(machines: Seq[MachineState]): Future[Unit] = Future.successful()
  
-  def availableMachineCount(profile: MachineProfile.Value): Future[Int] = Future.successful(1)
+  override def availableMachineCount(profile: MachineProfile.Value): Future[Int] = Future.successful(1)
 
-  def getMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = ???
+  override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] =
+    Future.successful(Seq())
 }

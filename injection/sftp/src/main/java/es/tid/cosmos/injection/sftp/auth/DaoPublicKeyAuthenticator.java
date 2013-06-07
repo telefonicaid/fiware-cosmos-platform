@@ -14,10 +14,9 @@ package es.tid.cosmos.injection.sftp.auth;
 import java.security.PublicKey;
 
 import com.google.common.collect.Iterables;
+import org.apache.log4j.Logger;
 import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
-
-import es.tid.cosmos.base.util.Logger;
 
 /**
  * Implements Public Key authentication
@@ -26,8 +25,8 @@ import es.tid.cosmos.base.util.Logger;
  */
 public class DaoPublicKeyAuthenticator implements PublickeyAuthenticator {
 
-    private static final org.apache.log4j.Logger LOGGER =
-            Logger.get(DaoPublicKeyAuthenticator.class);
+    private static final Logger LOGGER =
+            Logger.getLogger(DaoPublicKeyAuthenticator.class);
 
     private final UsersDao userDao;
 

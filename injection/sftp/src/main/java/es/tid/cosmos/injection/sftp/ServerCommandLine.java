@@ -17,6 +17,7 @@ import org.apache.commons.cli.*;
  * @author sortega
  */
 public class ServerCommandLine {
+
     private static final String SHORT_CONFIG_FILE = "c";
     private static final String LONG_CONFIG_FILE = "config";
 
@@ -26,9 +27,9 @@ public class ServerCommandLine {
 
     public ServerCommandLine() {
         this.parser = new GnuParser();
-        this.options = new Options().addOption(SHORT_CONFIG_FILE,
-                                               LONG_CONFIG_FILE,
-                                               true, "Configuration file");
+        this.options = new Options().addOption(
+                SHORT_CONFIG_FILE, LONG_CONFIG_FILE, true,
+                "Configuration file");
     }
 
     public void parse(String[] args) throws ParseException {

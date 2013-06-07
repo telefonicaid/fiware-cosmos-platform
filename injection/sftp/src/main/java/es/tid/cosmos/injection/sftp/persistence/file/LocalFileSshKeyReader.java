@@ -18,24 +18,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.annotation.Nullable;
 
-import es.tid.cosmos.base.util.Logger;
+import org.apache.log4j.Logger;
+
 import es.tid.cosmos.injection.sftp.auth.PublicKeyUtils;
 
 /**
  * Read User PublicKeys from a local file System.
  *
- * @author AG453
+ * @author ag453
  */
 public class LocalFileSshKeyReader implements SshKeyReader {
 
     private static final String USERNAME_STRING_PATTERN = "^[a-z0-9_-]{3,15}$";
     private static final Pattern USERNAME_PATTERN =
             Pattern.compile(USERNAME_STRING_PATTERN);
-    private static final org.apache.log4j.Logger LOGGER =
-            Logger.get(LocalFileSshKeyReader.class);
+    private static final Logger LOGGER =
+            Logger.getLogger(LocalFileSshKeyReader.class);
 
     @Override
     public List<PublicKey> readKeys(String username) {

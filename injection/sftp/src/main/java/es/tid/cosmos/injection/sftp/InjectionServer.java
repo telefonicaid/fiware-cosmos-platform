@@ -17,10 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.log4j.Logger;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.server.Command;
-import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.PublickeyAuthenticator;
 import org.apache.sshd.server.UserAuth;
 import org.apache.sshd.server.auth.UserAuthPassword;
@@ -29,7 +29,6 @@ import org.apache.sshd.server.command.ScpCommandFactory;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.sftp.SftpSubsystem;
 
-import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.injection.sftp.config.Configuration;
 import es.tid.cosmos.injection.sftp.hadoopfs.HadoopFileSystemFactory;
 
@@ -37,16 +36,14 @@ import es.tid.cosmos.injection.sftp.hadoopfs.HadoopFileSystemFactory;
  * InjectionServer connects an SFTP client to an HDFS filesystem
  *
  * @author logc
- * @since  CTP 2
  */
 public class InjectionServer {
 
-    private static final org.apache.log4j.Logger LOGGER =
-            Logger.get(InjectionServer.class);
+    private static final Logger LOGGER =
+            Logger.getLogger(InjectionServer.class);
 
     private HadoopFileSystemFactory hadoopFileSystemFactory;
     private final Configuration configuration;
-    private final PasswordAuthenticator passwordAuthenticator;
     private final PublickeyAuthenticator publicKeyAuthenticator;
 
     /**
@@ -57,7 +54,6 @@ public class InjectionServer {
      */
     public InjectionServer(
             Configuration serverConfig,
-            PasswordAuthenticator passwordAuthenticator,
             PublickeyAuthenticator publicKeyAuthenticator)
             throws IOException, URISyntaxException, ConfigurationException {
         this.configuration = serverConfig;
@@ -67,7 +63,6 @@ public class InjectionServer {
                 serverConfig.getHdfsUrl().toString());
         hadoopConfig.set("mapred.job.tracker", serverConfig.getJobTrackerUrl());
         this.hadoopFileSystemFactory = new HadoopFileSystemFactory(hadoopConfig);
-        this.passwordAuthenticator = passwordAuthenticator;
         this.publicKeyAuthenticator = publicKeyAuthenticator;
     }
 
@@ -82,7 +77,6 @@ public class InjectionServer {
         sshd.setKeyPairProvider(
                 new SimpleGeneratorHostKeyProvider("hostkey.ser"));
         // User authentication settings
-        sshd.setPasswordAuthenticator(this.passwordAuthenticator);
         sshd.setPublickeyAuthenticator(this.publicKeyAuthenticator);
         List<NamedFactory<UserAuth>> userAuthFactories =
                 new ArrayList<NamedFactory<UserAuth>>();

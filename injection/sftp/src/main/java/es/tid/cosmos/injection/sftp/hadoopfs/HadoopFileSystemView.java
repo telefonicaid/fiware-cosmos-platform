@@ -17,20 +17,19 @@ import java.net.URI;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
-
-import es.tid.cosmos.base.util.Logger;
 
 /**
  * HadoopFileSystemView
  *
  * @author logc
- * @since  CTP 2
  */
 public class HadoopFileSystemView implements FileSystemView {
-    private static final org.apache.log4j.Logger LOGGER =
-            Logger.get(HadoopFileSystemView.class);
+
+    private static final Logger LOGGER =
+            Logger.getLogger(HadoopFileSystemView.class);
 
     private String homePath;
     private FileSystem hadoopFS;

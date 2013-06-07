@@ -14,21 +14,20 @@ package es.tid.cosmos.injection.sftp.hadoopfs;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.log4j.Logger;
 import org.apache.sshd.common.Session;
 import org.apache.sshd.server.FileSystemFactory;
 import org.apache.sshd.server.FileSystemView;
-
-import es.tid.cosmos.base.util.Logger;
 
 /**
  * HadoopFileSystemFactory
  *
  * @author logc
- * @since  CTP 2
  */
 public class HadoopFileSystemFactory implements FileSystemFactory {
-    private static final org.apache.log4j.Logger LOGGER =
-            Logger.get(HadoopFileSystemFactory.class);
+
+    private static final Logger LOGGER =
+            Logger.getLogger(HadoopFileSystemFactory.class);
 
     private final Configuration configuration;
 

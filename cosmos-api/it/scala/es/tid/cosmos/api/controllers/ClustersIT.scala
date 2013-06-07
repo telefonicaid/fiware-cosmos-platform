@@ -30,7 +30,7 @@ class ClustersIT extends FlatSpec with MustMatchers {
 
   "The clusters resource" must "list user clusters" in new WithSampleUsers {
     DB.withConnection { implicit c =>
-      val ownCluster = MockedServiceManager.defaultClusterId
+      val ownCluster = MockedServiceManager.DefaultClusterId
       val otherCluster = ClusterId()
       CosmosProfileDao.assignCluster(ownCluster, user1.id)
       CosmosProfileDao.assignCluster(otherCluster, user2.id)

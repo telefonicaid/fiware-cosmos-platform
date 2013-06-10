@@ -47,8 +47,6 @@ private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
 
   def start(): Future[Service] = changeState("STARTED")
 
-
-
   private def changeState(state: String) = {
     val body = compact(render("ServiceInfo" -> ("state" -> state)))
     performRequest(baseUrl.PUT.setBody(body))
@@ -65,7 +63,7 @@ private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
     case _ => Future.successful(this)
   }
 
-  private def extractInfo(key: String, from: JValue = serviceInfo) = from \ "ServiceInfo" \ key match {
+  private def extractInfo(key: String) = serviceInfo \ "ServiceInfo" \ key match {
     case JString(value) => value
     case _ => throw new ServiceError("Ambari's state information response doesn't contain a " +
       s"ServiceInfo/$key element")

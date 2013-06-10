@@ -72,8 +72,8 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   def infoWithState(state: String) = ("href" -> "http://some-service-url") ~
     ("ServiceInfo" -> (
       ("cluster_name" -> "some_name") ~
-        ("state" -> s"$state") ~
-        ("service_name" -> serviceName))) ~
+      ("state" -> s"$state") ~
+      ("service_name" -> serviceName))) ~
     ("components" -> List())
 
   it must "be able to install the service" in validateStateChange("INSTALLED", service.install())

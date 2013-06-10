@@ -24,8 +24,7 @@ import es.tid.cosmos.servicemanager.ambari.rest.{
   ClusterProvisioner, AmbariTestBase, Service, Cluster}
 
 class RefreshingTest extends AmbariTestBase with MockitoSugar {
-
-  "A refreshable" must "refresh to no clusters when provisioner offers none" in new NoRefresh {
+  "A refreshable" must "refresh no clusters when provisioner offers none" in new NoRefresh {
     val clusterIds = Seq()
     given(provisioner.listClusterNames).willReturn(successful(Seq()))
     get(refresh())

@@ -27,7 +27,6 @@ import java.net.URI
  * Ambari that are unregistered.
  */
 trait Refreshing extends Logging {
-
   protected def infrastructureProvider: InfrastructureProvider
   protected def provisioner: ClusterProvisioner
   protected def refreshGracePeriod: Int
@@ -52,10 +51,9 @@ trait Refreshing extends Logging {
   private def stateFrom(serviceStates: Seq[String]) =
     if (serviceStates.forall(_ == "STARTED")) Running else Provisioning
 
-  private def state(cluster: Cluster): Future[ClusterState] = for {
+  private def state(cluster: Cluster): Future[ClusterState] = for (
     services <- Future.traverse(cluster.serviceNames)(cluster.getService)
-    clusterState = stateFrom(services.map(_.state))
-  } yield clusterState
+  ) yield stateFrom(services.map(_.state))
 
   private def resolveState(cluster: Cluster, isWithGracePeriod : Boolean = true): Future[ClusterState] = {
     val state_> = state(cluster)

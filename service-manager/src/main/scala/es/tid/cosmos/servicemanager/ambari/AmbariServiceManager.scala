@@ -11,9 +11,12 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
+
+import com.typesafe.scalalogging.slf4j.Logging
 
 import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureProvider}
 import es.tid.cosmos.servicemanager._
@@ -22,8 +25,6 @@ import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvision
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.util.TcpServer
 import es.tid.cosmos.servicemanager.util.TcpServer.SshService
-import com.typesafe.scalalogging.slf4j.Logging
-import java.net.URI
 
 /**
  * Manager of the Ambari service configuration workflow.
@@ -50,7 +51,8 @@ class AmbariServiceManager(
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
 
-  refresh() // perform a sync with Ambari upon initialization
+  // perform a sync with Ambari upon initialization
+  refresh()
 
   override def clusterIds: Seq[ClusterId] = clusters.keys.toSeq
 
@@ -236,5 +238,3 @@ class AmbariServiceManager(
     } yield ()
   }
 }
-
-

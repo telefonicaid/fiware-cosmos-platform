@@ -26,7 +26,7 @@ import java.net.URI
  * Trait for refreshing cluster state by picking up clusters from
  * Ambari that are unregistered.
  */
-trait Refreshing extends Logging {
+trait Refreshing extends Refreshable with Logging {
   protected def infrastructureProvider: InfrastructureProvider
   protected def provisioner: ClusterProvisioner
   protected def refreshGracePeriod: Int
@@ -39,7 +39,7 @@ trait Refreshing extends Logging {
    *
    * @return the completion future of the refresh task
    */
-  def refresh() : Future[Unit] =
+  override def refresh() : Future[Unit] =
     for {
       names <- provisioner.listClusterNames
       unregisteredNames = names.filterNot(name => clusterIds.contains(ClusterId(name)))

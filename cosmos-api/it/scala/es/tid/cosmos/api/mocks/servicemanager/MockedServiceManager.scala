@@ -106,6 +106,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
   }
 
   def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit] = Future.successful()
+
+  def refresh() = Future.successful()
 }
 
 object MockedServiceManager {

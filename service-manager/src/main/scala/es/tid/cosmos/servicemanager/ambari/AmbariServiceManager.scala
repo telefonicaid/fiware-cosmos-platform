@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager.ambari
 import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{FiniteDuration, Duration}
 
 import com.typesafe.scalalogging.slf4j.Logging
 
@@ -40,7 +40,7 @@ import es.tid.cosmos.servicemanager.util.TcpServer.SshService
 class AmbariServiceManager(
     override protected val provisioner: ClusterProvisioner,
     override protected val infrastructureProvider: InfrastructureProvider,
-    override protected val refreshGracePeriod: Int,
+    override protected val refreshGracePeriod: FiniteDuration,
     override val persistentHdfsId: ClusterId)
   extends ServiceManager with ConfigurationContributor with ConfigurationLoader
   with Refreshing with Logging {

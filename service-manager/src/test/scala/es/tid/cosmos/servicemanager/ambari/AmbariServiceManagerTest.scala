@@ -42,7 +42,7 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
   val services = List(mock[Service], mock[Service])
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
   val instance = new AmbariServiceManager(provisioner, infrastructureProvider,
-    1000, ClusterId("HDFS"))
+    refreshGracePeriod = FiniteDuration(1, SECONDS), ClusterId("HDFS"))
 
   "A ServiceManager" must "have no Clusters by default" in {
     instance.clusterIds must be('empty)

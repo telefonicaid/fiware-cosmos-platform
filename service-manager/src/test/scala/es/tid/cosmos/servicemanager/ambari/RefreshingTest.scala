@@ -12,13 +12,13 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import scala.concurrent.Future._
+import scala.concurrent.duration._
 
 import org.mockito.BDDMockito._
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.servicemanager.ambari.rest._
-import es.tid.cosmos.platform.ial.InfrastructureProvider
-import es.tid.cosmos.platform.ial.MachineState
+import es.tid.cosmos.platform.ial.{InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.rest.{
   ClusterProvisioner, AmbariTestBase, Service, Cluster}
@@ -85,7 +85,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
   trait BaseRefreshable extends Refreshing {
     val infrastructureProvider = mock[InfrastructureProvider]
     val provisioner = mock[ClusterProvisioner]
-    val refreshGracePeriod: Int = 50
+    val refreshGracePeriod = FiniteDuration(50, MILLISECONDS)
   }
 
   trait NoRefresh extends BaseRefreshable {

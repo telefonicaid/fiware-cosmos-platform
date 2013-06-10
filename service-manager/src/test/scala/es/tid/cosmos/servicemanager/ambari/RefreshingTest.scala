@@ -11,11 +11,17 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import scala.annotation.tailrec
+import scala.concurrent.Future
 import scala.concurrent.Future._
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
+import com.ning.http.client.Request
+import dispatch.StatusCode
 import org.mockito.BDDMockito._
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.matchers.{MatchResult, BeMatcher}
 
 import es.tid.cosmos.servicemanager.ambari.rest._
 import es.tid.cosmos.platform.ial.{InfrastructureProvider, MachineState}
@@ -41,9 +47,10 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
     def clusterName = "unregistered"
     given(service.state).willReturn("STARTED")
     def registerCluster(description: MutableClusterDescription) {
-      checkClusterHasState(Running, description)
+      checkDescriptionInfo(description)
     }
     get(refresh())
+    finalState() must equal(Running)
   }
 
   it must "register only any unregistered clusters the provisioner yields upon a refresh" in
@@ -52,9 +59,10 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
       def clusterName = "unregistered"
       given(service.state).willReturn("STARTED")
       def registerCluster(description: MutableClusterDescription) {
-        checkClusterHasState(Running, description)
+        checkDescriptionInfo(description)
       }
       get(refresh())
+      finalState() must equal(Running)
     }
 
   it must "must fail refreshing a cluster that does not stabilize within grace period" in
@@ -66,6 +74,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
         checkDescriptionInfo(description)
       }
       evaluating (get(refresh())) must produce [IllegalStateException]
+      finalState() must be (failedWithIllegalState)
     }
 
   it must "must refresh a cluster that stabilizes within grace period" in new ExpectRefresh {
@@ -75,17 +84,30 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
     def registerCluster(description: MutableClusterDescription) {
       checkDescriptionInfo(description)
       description.view.state must equal(Provisioning)
-      get(description.deployment_>)
-      Thread.sleep(50)
-      description.view.state must equal(Running)
     }
     get(refresh())
+    finalState() must equal(Running)
   }
+
+  it must "must refresh a cluster in Terminated state if accessing its info returns 404 not found" in
+    new ExpectRefresh {
+      val clusterIds = Seq()
+      def clusterName = "unregistered"
+      given(service.state).willReturn("INSTALLED")
+      val notFound: Future[Service] =
+        failed(RequestException(mock[Request], "errorMessage", StatusCode(404)))
+      given(cluster.getService(serviceName)).willReturn(notFound)
+      def registerCluster(description: MutableClusterDescription) {
+        checkDescriptionInfo(description)
+      }
+      get(refresh())
+      finalState(attempts = 1 to 5) must equal (Terminated)
+    }
 
   trait BaseRefreshable extends Refreshing {
     val infrastructureProvider = mock[InfrastructureProvider]
     val provisioner = mock[ClusterProvisioner]
-    val refreshGracePeriod = FiniteDuration(50, MILLISECONDS)
+    val refreshGracePeriod = 50.milliseconds
   }
 
   trait NoRefresh extends BaseRefreshable {
@@ -96,6 +118,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
 
   trait ExpectRefresh extends BaseRefreshable {
     def clusterName: String
+    private var descriptionHandle: MutableClusterDescription = null
     val serviceName = "myService"
     val hostName = "myhost"
     val cluster = mock[Cluster]
@@ -119,13 +142,40 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
           have ('size (1)) and
           have ('machines_> (cluster_machines_>))
         )
+      description.deployment_>.onComplete(_ => descriptionHandle = description)
     }
 
-    def checkClusterHasState(state: ClusterState, description: MutableClusterDescription) {
-      checkDescriptionInfo(description)
-      get(description.deployment_>)
-      Thread.sleep(50)
-      description.view.state must equal(state)
+    /**
+     * Wait for the generated description to obtain the final cluster state and return that state.
+     *
+     * @param attempts (optional). Use it for tests of Terminated state where the refresher
+     *                 will temporarily switch from Provisioning to Running before finally resolving
+     *                 to Terminated. For each entry in attempts and when the state becomes Running
+     *                 it will retry reading the state until it changes from Running or it runs out
+     *                 of attempts.
+     * @return
+     */
+    @tailrec
+    final def finalState(attempts: Seq[Any] = Seq()): ClusterState =  {
+      if (descriptionHandle == null) { Thread.sleep(50); finalState() }
+      else descriptionHandle.state match {
+        case Provisioning | Terminating => Thread.sleep(50); finalState()
+        case Running =>
+          if (!attempts.isEmpty) { Thread.sleep(500); finalState(attempts.tail) }
+          else Running
+        case other@_ => other
+      }
     }
   }
+
+  def failedWithIllegalState: BeMatcher[ClusterState] = new BeMatcher[ClusterState] {
+    def apply(state: ClusterState): MatchResult = state match {
+      case Failed(e:IllegalStateException) =>
+        MatchResult(matches = true, "", "Expected Failed(IllegalStateException(...) state")
+      case oops@_ =>
+        MatchResult(matches = false,
+          s"Unexpected state: Expected Failed(IllegalStateException(...) but got $oops", "")
+    }
+  }
+
 }

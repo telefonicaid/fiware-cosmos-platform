@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import scala.concurrent.duration.{FiniteDuration, SECONDS}
+import scala.concurrent.duration._
 
 import es.tid.cosmos.platform.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
@@ -29,7 +29,7 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
         config.getString("ambari.server.username"),
         config.getString("ambari.server.password")),
       infrastructureProvider,
-      FiniteDuration(config.getInt("ambari.servicemanager.refresh.graceperiod.seconds"), SECONDS),
+      config.getInt("ambari.servicemanager.refresh.graceperiod.seconds").seconds,
       ClusterId(config.getString("hdfs.cluster.id"))
     )
   }

@@ -26,7 +26,7 @@ class SetupCommand(serviceManager: ServiceManager) {
     })
     hdfsDeploy_>.onFailure({
       case throwable => {
-        println("ERROR: Persistend HDFS deployment failure")
+        println("ERROR: Persistent HDFS deployment failure")
         println(throwable.getMessage)
         println()
         println(throwable.getStackTrace)

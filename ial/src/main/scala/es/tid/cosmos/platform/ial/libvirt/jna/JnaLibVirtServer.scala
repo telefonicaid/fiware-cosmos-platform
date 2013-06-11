@@ -35,24 +35,21 @@ case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends Lib
   private val openVzDomainXmlDoc = {
     <domain type='openvz' id={domainId.toString}>
       <name>{domainName}</name>
-      <vcpu>{properties.numberOfCpus}</vcpu>
+
+      <!-- VZ driver replaces the VCPU value by the available physical CPUs when that first
+           is greater than the second. We set 9999 to allocate all available CPUs to the domain.
+           Unfortunately, this software will be obsolet before a regular server have thousand
+           CPUs -->
+      <vcpu>9999</vcpu>
+
+      <!-- This property is not used by OpenVZ but required by libvirt. VZ assigns the memory
+           specified in the config file. -->
       <memory unit='KiB'>0</memory>
+
       <os>
         <type>exe</type>
         <init>/sbin/init</init>
       </os>
-      <devices>
-        <filesystem type='template'>
-          <source name={properties.domainTemplate}/>
-          <target dir='/'/>
-          <space_hard_limit unit='GiB'>{properties.domainFilesystemQuota}</space_hard_limit>
-          <space_soft_limit unit='GiB'>{properties.domainFilesystemQuota}</space_soft_limit>
-        </filesystem>
-        <interface type='bridge'>
-          <mac address={randomMacAddress}/>
-          <source bridge={properties.bridgeName}/>
-        </interface>
-      </devices>
     </domain>
   }
 

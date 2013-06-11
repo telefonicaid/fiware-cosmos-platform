@@ -13,9 +13,6 @@ package es.tid.cosmos.platform.ial.libvirt
 
 import es.tid.cosmos.platform.ial.MachineProfile
 
-/**
- * @author apv
- */
 class FakeLibVirtDao extends LibVirtDao {
 
   val libVirtServers = for (i <- 1 to 5) yield {
@@ -24,13 +21,8 @@ class FakeLibVirtDao extends LibVirtDao {
       description = s"Andromeda 0$i",
       profile = MachineProfile.G1_COMPUTE,
       connectionChain = connChain(s"192.168.63.$i"),
-      numberOfCpus = 4,
-      totalMemory = 32768,
-      domainTemplate = "centos-6-x86_64",
-      bridgeName = "vzbr0",
       domainHostname = s"andromeda${50 + i}",
-      domainIpAddress = s"192.168.63.${50 + i}",
-      domainFilesystemQuota = 20
+      domainIpAddress = s"192.168.63.${50 + i}"
     )
   }
 

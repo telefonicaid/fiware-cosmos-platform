@@ -28,13 +28,8 @@ class JnaLibVirtServerIT extends FlatSpec with MustMatchers with BeforeAndAfter 
     description = "Test libvirt Server",
     MachineProfile.G1_COMPUTE,
     connectionChain = "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
-    numberOfCpus = 2,
-    totalMemory = 32768,
-    domainTemplate = "centos-6-x86_64",
-    bridgeName = "vzbr0",
     domainHostname = "andromeda52",
-    domainIpAddress = "192.168.63.62",
-    domainFilesystemQuota = 20))
+    domainIpAddress = "192.168.63.62"))
 
   before { Await.ready(server.destroyDomain(), Duration.Inf) }
 

@@ -36,7 +36,7 @@ class MockedServiceManagerIT extends FlatSpec with MustMatchers {
   }
 
   it must "start terminating a cluster and then transition to terminated state" in new Instance {
-    val id: ClusterId = MockedServiceManager.defaultClusterId
+    val id: ClusterId = MockedServiceManager.DefaultClusterId
     instance.terminateCluster(id)
     instance.describeCluster(id).get must have ('state (Terminating))
     Thread.sleep(2 * transitionDelay)

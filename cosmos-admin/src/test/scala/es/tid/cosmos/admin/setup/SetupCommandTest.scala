@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.admin.setup
 
+import java.net.URI
 import scala.concurrent.Future
 
 import org.mockito.BDDMockito.given
@@ -45,6 +46,7 @@ class SetupCommandTest extends FlatSpec with MustMatchers with MockitoSugar {
       val name = ""
       val size = 3
       val state = Running
+      val nameNode = new URI("hdfs://host:1234")
     }))
     new SetupCommand(sm).run() must be (true)
     verify(sm).describeCluster(hdfsId)

@@ -19,6 +19,7 @@ import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.Pages
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 import es.tid.cosmos.api.oauth2.OAuthClientComponent
+import es.tid.cosmos.api.controllers.hdfs.PersistentHdfsResource
 
 /**
  * Web application template to be mixed-in with its dependencies.
@@ -31,7 +32,8 @@ abstract class Application {
       new Pages(self.oAuthClient(), sm),
       new CosmosResource(),
       new ClustersResource(sm),
-      new ClusterResource(sm)
+      new ClusterResource(sm),
+      new PersistentHdfsResource(sm)
     )
   }
 

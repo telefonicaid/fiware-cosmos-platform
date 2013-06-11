@@ -27,18 +27,18 @@ import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 class ClusterIT extends FlatSpec with MustMatchers {
-  val resourcePath = s"/cosmos/cluster/${MockedServiceManager.defaultClusterId.toString}"
+  val resourcePath = s"/cosmos/cluster/${MockedServiceManager.DefaultClusterId.toString}"
   val unknownClusterId = ClusterId()
   val unknownResourcePath = s"/cosmos/cluster/$unknownClusterId"
 
   "Cluster resource" must "list cluster details on GET request" in new WithSampleUsers {
     CosmosProfileDao.assignCluster(
-      MockedServiceManager.defaultClusterId, user1.id)(DB.getConnection())
+      MockedServiceManager.DefaultClusterId, user1.id)(DB.getConnection())
     val resource = route(FakeRequest(GET, resourcePath).authorizedBy(user1)).get
     status(resource) must equal (OK)
     contentType(resource) must be (Some("application/json"))
     val description = Json.parse(contentAsString(resource))
-    (description \ "id").as[String] must equal (MockedServiceManager.defaultClusterId.toString)
+    (description \ "id").as[String] must equal (MockedServiceManager.DefaultClusterId.toString)
   }
 
   it must "reject unauthorized detail listing" in new WithSampleUsers {
@@ -68,7 +68,7 @@ class ClusterIT extends FlatSpec with MustMatchers {
 
   it must "terminate cluster" in new WithSampleUsers {
     DB.withConnection { implicit c =>
-      val clusterId = MockedServiceManager.defaultClusterId
+      val clusterId = MockedServiceManager.DefaultClusterId
       CosmosProfileDao.assignCluster(clusterId, user1.id)
       val resource = route(FakeRequest(POST, s"$resourcePath/terminate").authorizedBy(user1)).get
       status(resource) must equal (OK)
@@ -95,7 +95,7 @@ class ClusterIT extends FlatSpec with MustMatchers {
 
   it must "be idempotent respect to cluster termination" in new WithSampleUsers {
     DB.withConnection { implicit c =>
-      val clusterId = MockedServiceManager.defaultClusterId
+      val clusterId = MockedServiceManager.DefaultClusterId
       CosmosProfileDao.assignCluster(clusterId, user1.id)
       val terminateRequest= FakeRequest(POST, s"$resourcePath/terminate").authorizedBy(user1)
       for (_ <- 1 to 2) {

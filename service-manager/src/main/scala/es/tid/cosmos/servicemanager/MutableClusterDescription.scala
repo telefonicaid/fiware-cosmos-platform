@@ -15,6 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 import es.tid.cosmos.platform.ial.MachineState
+import java.net.URI
 
 /**
  * Provides up-to-date information on the state of a cluster.
@@ -39,6 +40,7 @@ class MutableClusterDescription(
     override val size: Int = MutableClusterDescription.this.size
     override val name: String = MutableClusterDescription.this.name
     override val id: ClusterId = MutableClusterDescription.this.id
+    override def nameNode: URI = new URI("hdfs://fixmeup:8084") // TODO: replace by actual value
   }
 
   @volatile var state: ClusterState = Provisioning

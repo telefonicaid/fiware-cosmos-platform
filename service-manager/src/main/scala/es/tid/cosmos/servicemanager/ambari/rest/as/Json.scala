@@ -19,5 +19,8 @@ import json.JsonAST.JValue
  * Helper object to translate HTTP responses to JSON.
  */
 object Json extends (client.Response => JValue) {
-  def apply(r: client.Response) = json.parse(r.getResponseBody)
+  def apply(r: client.Response) = json.parse(r.getResponseBody match {
+    case "" => "{}"
+    case body => body
+  })
 }

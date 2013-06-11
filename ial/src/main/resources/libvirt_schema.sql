@@ -29,17 +29,12 @@ DROP TABLE IF EXISTS `SERVERS`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `SERVERS` (
   `name` varchar(128) NOT NULL,
-  `numberOfCpus` int(11) NOT NULL,
-  `bridgeName` varchar(128) NOT NULL,
   `description` varchar(128) NOT NULL,
   `enabled` tinyint(1) NOT NULL,
   `domainHostname` varchar(128) NOT NULL,
-  `domainTemplate` varchar(128) NOT NULL,
   `connectionChain` varchar(128) NOT NULL,
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `profile` int(11) NOT NULL,
-  `totalMemory` int(11) NOT NULL,
-  `domainFilesystemQuota` bigint(20) NOT NULL,
   `domainIpAddress` varchar(128) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
@@ -52,3 +47,4 @@ CREATE TABLE `SERVERS` (
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

@@ -38,7 +38,7 @@ case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends Lib
 
       <!-- VZ driver replaces the VCPU value by the available physical CPUs when that first
            is greater than the second. We set 9999 to allocate all available CPUs to the domain.
-           Unfortunately, this software will be obsolet before a regular server have thousand
+           Unfortunately, this software will be obsolete before a regular server have thousand
            CPUs -->
       <vcpu>9999</vcpu>
 

@@ -49,6 +49,14 @@ trait InfrastructureProvider {
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]]
 
   /**
+   * Get the machines already in use for the given host names.
+   *
+   * @param hostNames the host names of the machines to look for
+   * @return the future of the machine list corresponding to the given host names
+   */
+  def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]]
+
+  /**
    * Release the machines so that its resources can be reused in further createMachine requests
    *
    * @param machines The set of machines to be released.

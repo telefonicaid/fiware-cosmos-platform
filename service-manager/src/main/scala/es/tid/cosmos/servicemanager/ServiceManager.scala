@@ -17,7 +17,7 @@ import scala.concurrent.Future
  * Cluster manager that allows cluster creation, termination as well as
  * querying about the state of a managed cluster.
  */
-trait ServiceManager {
+trait ServiceManager extends Refreshable {
 
   type ServiceDescriptionType <: ServiceDescription
 

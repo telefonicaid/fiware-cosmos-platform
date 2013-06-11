@@ -11,37 +11,17 @@
 
 package es.tid.cosmos.servicemanager
 
-import java.net.URI
 import scala.concurrent.Future
 
 /**
- * An immutable description of a cluster
+ * Trait adding refreshing capabilities.
  */
-trait ClusterDescription {
-
+trait Refreshable {
   /**
-   * Unique cluster identifier.
+   * Perform a refresh.
+   * Note: this operation can have <b>side effects</b>.
+   *
+   * @return the completion future of the operation
    */
-  def id: ClusterId
-
-  /**
-   * Human-readable name of the cluster.
-   */
-  def name: String
-
-  /**
-   * Number of machines.
-   */
-  def size: Int
-
-  /**
-   * Lifecycle state of the cluster.
-   */
-  def state: ClusterState
-
-  /**
-   * Name node URI with hdfs scheme.
-   * For instance: hdfs://localhost:54310
-   */
-  def nameNode_> : Future[URI]
+  def refresh(): Future[Unit]
 }

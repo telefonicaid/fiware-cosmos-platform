@@ -31,6 +31,7 @@ import es.tid.cosmos.servicemanager.ServiceError
 private[ambari] class Service (serviceInfo: JValue, clusterBaseUrl: Request)
   extends RequestProcessor with ServiceRequestHandlerFactory {
   val name = extractInfo("service_name")
+  val state = extractInfo("state")
 
   override val toString = s"Service($name)[Cluster(${extractInfo("cluster_name")})]"
 

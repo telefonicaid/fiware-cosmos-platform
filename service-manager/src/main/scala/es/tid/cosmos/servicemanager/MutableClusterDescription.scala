@@ -33,14 +33,22 @@ class MutableClusterDescription(
     val name: String,
     val size: Int,
     val deployment_> : Future[Any],
-    val machines_> : Future[Seq[MachineState]]) {
+    val machines_> : Future[Seq[MachineState]],
+    val nameNode_> : Future[URI]) {
 
   def view: ClusterDescription = new ClusterDescription {
     override val state: ClusterState = MutableClusterDescription.this.state
     override val size: Int = MutableClusterDescription.this.size
     override val name: String = MutableClusterDescription.this.name
     override val id: ClusterId = MutableClusterDescription.this.id
-    override def nameNode: URI = new URI("hdfs://fixmeup:8084") // TODO: replace by actual value
+    override def nameNode_> : Future[URI] = MutableClusterDescription.this.nameNode_>
+
+    override def equals(other: Any) = other match {
+      case that: ClusterDescription =>
+        this.state == that.state && this.size == that.size &&
+          this.name == that.name && this.id == that.id
+      case _ => false
+    }
   }
 
   @volatile var state: ClusterState = Provisioning

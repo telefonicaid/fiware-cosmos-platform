@@ -27,14 +27,7 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   var service: Service with MockedRestResponsesComponent = _
 
   before {
-    service = new Service(
-      ("href" -> "http://some-service-url") ~
-      ("ServiceInfo" -> (
-        ("cluster_name" -> "some_name") ~
-        ("state" -> "INIT") ~
-        ("service_name" -> serviceName))) ~
-      ("components" -> List()),
-      url("http://localhost/api/v1/").build)
+    service = new Service(infoWithState("INIT"), url("http://localhost/api/v1/").build)
       with FakeAmbariRestReplies with MockedRestResponsesComponent with RequestHandlerFactory {
         override def createRequestHandler(url: RequestBuilder): RequestHandler =
           new RequestHandler {
@@ -45,6 +38,7 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
 
   it must "correctly parse the Service information JSON from Ambari" in {
     service.name must be (serviceName)
+    service.state must be ("INIT")
   }
 
   it must "be able to add components to the service" in {
@@ -66,6 +60,7 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     addMock(
       service.responses.changeServiceState(serviceName, jsonRequestPayload),
       ("href" -> "http://www.some.url.com"))
+    addMock(service.responses.getService(service.name), infoWithState(state))
     get(operation) must be (service)
     verify(service.responses).changeServiceState(serviceName, jsonRequestPayload)
   }
@@ -73,6 +68,13 @@ class ServiceTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
   def stateChangeErrorPropagation(operation: => Future[Service]) {
     errorPropagation(service.responses.changeServiceState(any[String], any[String]), operation)
   }
+
+  def infoWithState(state: String) = ("href" -> "http://some-service-url") ~
+    ("ServiceInfo" -> (
+      ("cluster_name" -> "some_name") ~
+      ("state" -> s"$state") ~
+      ("service_name" -> serviceName))) ~
+    ("components" -> List())
 
   it must "be able to install the service" in validateStateChange("INSTALLED", service.install())
   it must "propagate failures during install" in stateChangeErrorPropagation(service.install())

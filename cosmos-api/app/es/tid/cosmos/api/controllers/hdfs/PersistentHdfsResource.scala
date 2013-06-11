@@ -12,6 +12,8 @@
 package es.tid.cosmos.api.controllers.hdfs
 
 import java.net.URI
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 import com.wordnik.swagger.annotations.{ApiOperation, Api}
 import play.api.libs.json.Json
@@ -39,7 +41,8 @@ class PersistentHdfsResource(serviceManager: ServiceManager) extends AuthControl
     Authenticated(request) { profile =>
       (for {
         description <- serviceManager.describeCluster(serviceManager.persistentHdfsId)
-        webHdfsUri = toWebHdfsUri(description.nameNode)
+        if description.nameNode_>.isCompleted
+        webHdfsUri = toWebHdfsUri(Await.result(description.nameNode_>, 100 milliseconds))
       } yield Ok(Json.toJson(WebHdfsConnection(location = webHdfsUri, user = profile.handle))))
       .getOrElse(UnavailableHdfsResponse)
     }

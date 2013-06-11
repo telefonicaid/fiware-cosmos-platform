@@ -35,13 +35,14 @@ import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterN
 
 class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest with MockitoSugar {
 
-  val provisioner = mock[ClusterProvisioner]
+  val provisioner = initializeProvisioner
   val infrastructureProvider = mock[InfrastructureProvider]
   val cluster = mock[Cluster]
   val serviceDescriptions = List(mock[AmbariServiceDescription], mock[AmbariServiceDescription])
   val services = List(mock[Service], mock[Service])
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
-  val instance = new AmbariServiceManager(provisioner, infrastructureProvider, ClusterId("HDFS"))
+  val instance = new AmbariServiceManager(provisioner, infrastructureProvider,
+    refreshGracePeriod = 1.seconds, ClusterId("HDFS"))
 
   "A ServiceManager" must "have no Clusters by default" in {
     instance.clusterIds must be('empty)
@@ -188,12 +189,17 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
     val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions)
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
-    evaluating { Await.result(
-        instance.addUsers(clusterId, ClusterUser("username", "publicKey")), Duration.Inf)
-    } must produce [IllegalArgumentException]
+    evaluating (get(instance.addUsers(clusterId, ClusterUser("username", "publicKey")))) must
+      produce [IllegalArgumentException]
   }
 
-  def setMachineExpectations(
+  private def initializeProvisioner = {
+    val provisionerMock = mock[ClusterProvisioner]
+    given(provisionerMock.listClusterNames).willReturn(successful(Seq()))
+    provisionerMock
+  }
+
+  private def setMachineExpectations(
       machines: Seq[MachineState],
       hosts: Seq[Host],
       profile: MachineProfile.Value = MachineProfile.G1_COMPUTE,
@@ -228,7 +234,7 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
     given(cluster.addHosts(machines.tail.map(_.hostname))).willReturn(successful(hosts.tail))
   }
 
-  def setServiceExpectations() {
+  private def setServiceExpectations() {
     serviceDescriptions.zip(services).foreach({
       case (description, service) =>
         given(description.createService(any(), any(), any()))
@@ -244,9 +250,9 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
     })
   }
 
-  def tagPattern = matches("version\\d+")
+  private def tagPattern = matches("version\\d+")
 
-  def verifyClusterAndServices(
+  private def verifyClusterAndServices(
     machines: Seq[MachineState],
     master: Host,
     slaves: Seq[Host],
@@ -276,16 +282,16 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
     })
   }
 
-  def machinesOf(numberOfMachines: Int, prefix: String): Seq[MachineState] =
+  private def machinesOf(numberOfMachines: Int, prefix: String): Seq[MachineState] =
     (1 to numberOfMachines).map(number =>
       MachineState(
         new Id(s"ID$number"), s"aMachineName$number",
         MachineProfile.G1_COMPUTE, MachineStatus.Running,
         s"hostname$prefix$number", s"ipAddress$number"))
 
-  def hostsOf(numberOfHosts: Int): Seq[Host] = (1 to numberOfHosts).map(_ => mock[Host])
+  private def hostsOf(numberOfHosts: Int): Seq[Host] = (1 to numberOfHosts).map(_ => mock[Host])
 
-  def machinesAndHostsOf(numberOfInstances: Int, prefix: String = "") =
+  private def machinesAndHostsOf(numberOfInstances: Int, prefix: String = "") =
     (machinesOf(numberOfInstances, prefix), hostsOf(numberOfInstances))
 
   @tailrec
@@ -301,7 +307,7 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
     }
   }
 
-  def terminateAndVerify(id: ClusterId, sm: ServiceManager) {
+  private def terminateAndVerify(id: ClusterId, sm: ServiceManager) {
     sm.terminateCluster(id)
     val Some(terminatingDescription) = sm.describeCluster(id)
     terminatingDescription.state must (be (Terminated) or be (Terminating))

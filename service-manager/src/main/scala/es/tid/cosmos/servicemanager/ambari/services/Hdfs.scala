@@ -23,4 +23,6 @@ object Hdfs extends ServiceWithConfigurationFile {
     ComponentDescription("NAMENODE", isMaster = true),
     ComponentDescription("DATANODE", isMaster = false),
     ComponentDescription("HDFS_CLIENT", isMaster = true))
+
+  lazy val nameNodeHttpPort: Int = config.config.getString("dfs.http.address").split(":").last.toInt
 }

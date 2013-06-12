@@ -19,12 +19,14 @@ import scala.util.Random
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-class TcpServerTest extends FlatSpec with MustMatchers {
+import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
-  val timeout: FiniteDuration = 1 second
+class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
+
+  val timeout: FiniteDuration = 3 second
 
   class RandomServer {
-    val server = TcpServer(host="localhost", port=(1000 + Random.nextInt(4000)))
+    val server = TcpServer(host = "localhost", port = 1000 + Random.nextInt(4000))
 
     def withServerMock[T](f: LocalServer => T): T = {
       val serverMock = new LocalServer(server.port)
@@ -41,7 +43,7 @@ class TcpServerTest extends FlatSpec with MustMatchers {
       val f = server.waitForServer()
       f must not be ('completed)
       mock.acceptClient()
-      Await.result(f, timeout)
+      f must runUnder(timeout)
       f must be ('completed)
     }
   }

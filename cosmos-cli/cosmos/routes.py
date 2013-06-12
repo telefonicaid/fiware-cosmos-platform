@@ -18,7 +18,7 @@ class Routes(object):
         self.base_url = base_url
         if not self.base_url.endswith("/"):
             self.base_url = self.base_url + "/"
-        self.hdfs = self.base_url + "hdfs"
+        self.storage = self.base_url + "storage"
 
     def clusters(self):
         """Construct the clusters resource URL.

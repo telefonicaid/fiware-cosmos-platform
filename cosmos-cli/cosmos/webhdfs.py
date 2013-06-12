@@ -121,7 +121,7 @@ class WebHdfsClient(object):
 
 
 def webhdfs_client_from_config(config):
-    r = requests.get(Routes(config.api_url).hdfs, auth=config.credentials)
+    r = requests.get(Routes(config.api_url).storage, auth=config.credentials)
     if r.status_code != 200:
         raise ResponseError("Cannot get WebHDFS details", r)
     details = r.json()

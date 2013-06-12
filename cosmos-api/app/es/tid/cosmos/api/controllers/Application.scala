@@ -17,9 +17,9 @@ import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.clusters.ClustersResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.Pages
-import es.tid.cosmos.servicemanager.ServiceManagerComponent
+import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.oauth2.OAuthClientComponent
-import es.tid.cosmos.api.controllers.hdfs.PersistentHdfsResource
+import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
 /**
  * Web application template to be mixed-in with its dependencies.
@@ -33,7 +33,7 @@ abstract class Application {
       new CosmosResource(),
       new ClustersResource(sm),
       new ClusterResource(sm),
-      new PersistentHdfsResource(sm)
+      new StorageResource(sm)
     )
   }
 

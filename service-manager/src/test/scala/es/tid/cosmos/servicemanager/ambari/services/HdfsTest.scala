@@ -30,4 +30,8 @@ class HdfsTest extends FlatSpec with MustMatchers {
     contributions.core must be('defined)
     contributions.services must have length(1)
   }
+
+  it must "return the namenode port" in {
+    Hdfs.nameNodeHttpPort must be (50070)
+  }
 }

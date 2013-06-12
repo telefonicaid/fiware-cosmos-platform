@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.{ServiceError, ComponentDescription}
 
 /**
  * Representation of the HDFS service.
@@ -24,5 +24,25 @@ object Hdfs extends ServiceWithConfigurationFile {
     ComponentDescription("DATANODE", isMaster = false),
     ComponentDescription("HDFS_CLIENT", isMaster = true))
 
-  lazy val nameNodeHttpPort: Int = config.config.getString("dfs.http.address").split(":").last.toInt
+  lazy val nameNodeHttpPort: Int = {
+    try {
+      val port = config.config
+        .getObject("hdfs.properties")
+        .unwrapped()
+        .get("dfs.http.address")
+        .toString
+        .split(":")
+        .last
+        .toInt
+      if (port == 0) {
+        throw new ServiceError("Namenode port 0 is not supported in Cosmos.")
+      }
+      port
+    }
+    catch {
+      case e: NumberFormatException =>
+        throw new ServiceError("Could not read namenode Http port. Please check the configuration" +
+          " file.")
+    }
+  }
 }

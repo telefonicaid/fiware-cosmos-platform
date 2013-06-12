@@ -60,11 +60,11 @@ class LibVirtInfrastructureProvider(
     for {
       servers <- servers(srv => hostNames.contains(srv.domainHostname))
       domains <- domainsFromServers(servers)
-    } yield domains.map(dom => domainToMachineState(dom))
+    } yield domains.map(domainToMachineState)
   }
 
   private def domainsFromServers(servers: Seq[LibVirtServer]): Future[Seq[DomainProperties]] =
-    Future.sequence(servers.map(srv => srv.domain()))
+    Future.traverse(servers)(srv => srv.domain())
 
   private def serversForMachines(machines: Seq[MachineState]): Future[Seq[LibVirtServer]] = future {
     for {

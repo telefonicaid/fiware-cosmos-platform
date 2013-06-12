@@ -42,7 +42,7 @@ class AmbariServiceManager(
     override protected val infrastructureProvider: InfrastructureProvider,
     override protected val refreshGracePeriod: FiniteDuration,
     override val persistentHdfsId: ClusterId)
-  extends ServiceManager with ConfigurationContributor with ConfigurationLoader
+  extends ServiceManager with FileConfigurationContributor
   with Refreshing with Logging {
 
   override type ServiceDescriptionType = AmbariServiceDescription
@@ -182,8 +182,7 @@ class AmbariServiceManager(
     } yield ()
   }
 
-  override def contributions(properties: Map[ConfigurationKeys.Value, String]) =
-    load("global-basic").build(properties)
+  override val configName = "global-basic"
 
   private def installInOrder(services: Seq[Service]): Future[List[Service]] = {
     def doInstall(

@@ -14,3 +14,12 @@ package es.tid.cosmos.servicemanager.ambari.configuration
 object ConfigurationKeys extends Enumeration {
   val MasterNode, MaxMapTasks, MaxReduceTasks = Value
 }
+
+class ConfigurationProperties(map: Map[ConfigurationKeys.Value, String]) {
+  lazy val toStringMap: Map[String, String] = map.map(tuple => (tuple._1.toString, tuple._2)).toMap
+}
+
+object Implicits {
+  implicit def configurationMaker(map: Map[ConfigurationKeys.Value, String]) =
+    new ConfigurationProperties(map)
+}

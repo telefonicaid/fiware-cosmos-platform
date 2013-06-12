@@ -70,15 +70,14 @@ object Configurator {
         concatenateIfNoDuplicates(servicesToAdd, services))
     }
 
-  private def merge[T <: Configuration](left: Option[T], right: Option[T])
-                                       (implicit factory: Factory[T]): Option[T] =
+  private def merge[T <: Configuration : Factory](left: Option[T], right: Option[T]): Option[T] =
     (left, right) match {
       case (None, _) => right
       case (_, None) => left
       case (Some(leftValue), Some(rightValue)) => {
         val conflictingKeys = leftValue.properties.filterKeys(rightValue.properties.contains)
         if (conflictingKeys.isEmpty)
-          Some(factory(leftValue.properties ++ rightValue.properties))
+          Some(implicitly[Factory[T]].apply(leftValue.properties ++ rightValue.properties))
         else
           throw new ConfigurationConflict(s"Found keys in conflict: $conflictingKeys")
       }

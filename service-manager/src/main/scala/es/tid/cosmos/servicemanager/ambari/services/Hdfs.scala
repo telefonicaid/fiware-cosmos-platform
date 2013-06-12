@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.{ServiceError, ComponentDescription}
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 /**
  * Representation of the HDFS service.
@@ -26,7 +27,7 @@ object Hdfs extends ServiceWithConfigurationFile {
 
   lazy val nameNodeHttpPort: Int = {
     try {
-      val port = config.config
+      val port = resolveConfig(Map(ConfigurationKeys.MasterNode -> ""))
         .getObject("hdfs.properties")
         .unwrapped()
         .get("dfs.http.address")

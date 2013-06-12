@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.hdfs
+package es.tid.cosmos.api.controllers.storage
 
 import java.net.URI
 import scala.concurrent.Await
@@ -25,18 +25,18 @@ import es.tid.cosmos.servicemanager.ServiceManager
 /**
  * Resource that represents the persistent HDFS shared by all clusters.
  */
-@Api(value = "/cosmos/hdfs", listingPath = "/doc/cosmos/hdfs",
-  description = "Represents the persistent HDFS shared by all clusters")
-class PersistentHdfsResource(serviceManager: ServiceManager) extends AuthController {
+@Api(value = "/cosmos/storage", listingPath = "/doc/cosmos/storage",
+  description = "Represents the persistent storage shared by all clusters")
+class StorageResource(serviceManager: ServiceManager) extends AuthController {
 
   private val UnavailableHdfsResponse =
-    ServiceUnavailable(Json.toJson(ErrorMessage("HDFS service not available")))
+    ServiceUnavailable(Json.toJson(ErrorMessage("persistent storage service not available")))
 
   /**
    * Returns HDFS connection details.
    */
-  @ApiOperation(value = "Persistent WebHDFS connection details", httpMethod = "GET",
-    responseClass = "es.tid.cosmos.api.controllers.hdfs.WebHdfs")
+  @ApiOperation(value = "Persistent storage connection details", httpMethod = "GET",
+    responseClass = "es.tid.cosmos.api.controllers.storage.WebHdfsConnection")
   def details() = Action { implicit request =>
     Authenticated(request) { profile =>
       (for {

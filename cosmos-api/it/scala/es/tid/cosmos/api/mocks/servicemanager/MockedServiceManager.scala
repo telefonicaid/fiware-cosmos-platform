@@ -89,11 +89,11 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   private val persistentHdfsCluster = new ClusterDescription {
     @volatile var enabled: Boolean = false
-    override val id = ClusterId("PersistendHdfsId")
+    override val id = ClusterId("PersistentStorageClusterId")
     override val nameNode_> = Future.successful(MockedServiceManager.PersistentHdfsUrl)
     override val state = Running
     override val size = 4
-    override val name = "Persistent HDFS cluster"
+    override val name = "Persistent storage cluster"
   }
 
   def persistentHdfsId: ClusterId = persistentHdfsCluster.id

@@ -12,8 +12,8 @@ POST    /register                       @es.tid.cosmos.api.controllers.pages.Pag
 GET     /cosmos                         @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version()
 GET     /doc/cosmos                     controllers.ApiHelpController.getResource(path = "/doc/cosmos")
 
-GET     /cosmos/hdfs                    @es.tid.cosmos.api.controllers.hdfs.PersistentHdfsResource.details()
-GET     /doc/cosmos/hdfs                controllers.ApiHelpController.getResource(path = "/doc/cosmos/hdfs")
+GET     /cosmos/storage                 @es.tid.cosmos.api.controllers.storage.StorageResource.details()
+GET     /doc/cosmos/storage             controllers.ApiHelpController.getResource(path = "/doc/cosmos/storage")
 
 GET     /cosmos/cluster                 @es.tid.cosmos.api.controllers.clusters.ClustersResource.list()
 POST    /cosmos/cluster                 @es.tid.cosmos.api.controllers.clusters.ClustersResource.createCluster()

@@ -38,9 +38,7 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
   private[this] def baseUrl = host(serverUrl, port).as_!(username, password) / "api" / "v1"
 
   override def listClusterNames: Future[Seq[String]] =
-    performRequest(baseUrl / "clusters").map(json => for {
-      JField("cluster_name", JString(name)) <- (json \\ "cluster_name").children
-    } yield name)
+    performRequest(baseUrl / "clusters").map(json => as.FlatValues(json, "items", "cluster_name"))
 
   override def getCluster(id: String): Future[Cluster] =
     performRequest(baseUrl / "clusters" / id).map(new Cluster(_, baseUrl.build))
@@ -82,11 +80,7 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
 
   override def teardownMachines(hostnames: Seq[String], sshKey: String): Future[Unit] =
     performBootstrapAction(hostnames, sshKey, baseUrl.DELETE)
+
   override def registeredHostnames: Future[Seq[String]] =
-    performRequest(baseUrl / "hosts").map(json =>
-      (json \ "items").children.map(item =>
-        item \\ "host_name" match {
-          case JString(hostname) => hostname
-          case _ => throw ServiceError("Ambari's host response does not contain a host_name element")
-        }))
+    performRequest(baseUrl / "hosts").map(json => as.FlatValues(json, "items", "host_name"))
 }

@@ -22,4 +22,11 @@ setup(name='cosmos',
           'pyyaml',
           'pymlconf',
           'requests',
-      ])
+      ],
+      extras_require=dict(
+          test=[
+              'mock',
+              'web.py',
+              'testfixtures'
+          ])
+     )

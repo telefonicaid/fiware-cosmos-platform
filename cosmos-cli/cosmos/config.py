@@ -18,6 +18,8 @@ import sys
 from pymlconf import ConfigManager
 import yaml
 
+from cosmos.util import ExitWithError
+
 
 CONFIG_KEYS = ["api_url", "api_key", "api_secret"]
 DEFAULT_CONFIG = {
@@ -44,30 +46,27 @@ def get_config_path():
         return p.expanduser("~/.cosmosrc")
 
 
+def load_config():
+    """Tries to load the configuration file or throws ExitWithError."""
+    filename = get_config_path()
+    try:
+        config = ConfigManager(files=[filename])
+    except Exception as ex:
+        print "Error reading configuration from %s: %s" % (
+            filename, ex.message)
+        config = ConfigManager(DEFAULT_CONFIG)
+    if not config.keys():
+        raise ExitWithError(
+            -1, ("Cosmos command is unconfigured. Use '%s configure' to " +
+                 "create a valid configuration") % sys.argv[0])
+    config.credentials = (config.api_key, config.api_secret)
+    return config
+
+
 def with_config(command):
     """Decorates a command to append the configuration as an extra argument.
     This is intended to be use as a decorator.
-
-    >>> decorated = with_config(lambda arg, config: arg)
-    >>> decorated(20)
-    20
     """
-
-    def load_config():
-        """Tries to load the configuration file. In any case a configuration is
-        created."""
-        filename = get_config_path()
-        try:
-            config = ConfigManager(files=[filename])
-        except Exception as ex:
-            print "Error reading configuration from %s: %s" % (
-                filename, ex.message)
-            config = ConfigManager(DEFAULT_CONFIG)
-        if not config.keys():
-            print ("Using default settings. Use '%s configure' to create "
-                   "a valid configuration" % sys.argv[0])
-            config = ConfigManager(DEFAULT_CONFIG)
-        return config
 
     def decorated_command(*args, **kwargs):
         extended_args = list(args)
@@ -78,17 +77,19 @@ def with_config(command):
 
 
 def ask_for_setting(config, setting):
-    """Interactively ask for a setting using current value as a default"""
+    """Interactively ask for a setting using current value as a default."""
     default = config.get(setting, "")
-    answer = raw_input("%s [%s]: " % (CONFIG_DESCRIPTIONS[setting], default))
-    if not answer.strip():
+    answer = raw_input(
+        "%s [%s]: " % (CONFIG_DESCRIPTIONS[setting], default)).strip()
+    if not answer:
         answer = default
     config[setting] = answer
 
 
-def ask_binary_question(question, defaultAnswer=False):
-    answerText = "Y" if defaultAnswer else "N"
-    answer = raw_input("%s [%s]: " % (question, answerText))
+def ask_binary_question(question, default_answer=False):
+    """Interactively asks a Y/N question on the console."""
+    answer_text = "Y" if default_answer else "N"
+    answer = raw_input("%s [%s]: " % (question, answer_text))
     return answer.lower() in ("y", "yes")
 
 
@@ -99,7 +100,7 @@ def command(args):
         ask_for_setting(config, setting)
     filename = get_config_path()
     if p.exists(filename) and not ask_binary_question(
-            "%s already exists. Overwrite?" % filename):
+        "%s already exists. Overwrite?" % filename):
         return 0
     with open(filename, 'w') as outfile:
         outfile.write(yaml.dump(dict(config.items()),

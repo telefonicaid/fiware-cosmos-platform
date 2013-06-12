@@ -12,8 +12,9 @@
 package es.tid.cosmos.platform.ial.libvirt
 
 import scala.collection.concurrent
-import scala.concurrent.{Future, Await}
 import scala.concurrent.duration._
+import scala.concurrent.{Future, Await}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
@@ -86,6 +87,31 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
 
     infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 2, action) must runUnder (timeout)
     infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 2, action) must runUnder (timeout)
+  }
+
+  it must "provide available machine count for full availability" in {
+    val count_> = infraProvider.availableMachineCount(MachineProfile.G1_COMPUTE)
+    count_> must runUnder(timeout)
+    count_> must eventually(equal (5))
+  }
+
+  it must "provide available machine count when some are assigned" in {
+    val machines_> = infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 2, action)
+    machines_> must runUnder(timeout)
+
+    val count_> = infraProvider.availableMachineCount(MachineProfile.G1_COMPUTE)
+    count_> must runUnder(timeout)
+    count_> must eventually(equal (3))
+  }
+
+  it must "provide the machine state from assigned hostnames" in {
+    val machines_> = for {
+      createdMachines <- infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 2, action)
+      assignedMachines <- infraProvider.assignedMachines(createdMachines.map(m => m.hostname))
+    } yield assignedMachines
+
+    machines_> must runUnder(timeout)
+    machines_> must eventually(have size 2)
   }
 
   object matchAll {

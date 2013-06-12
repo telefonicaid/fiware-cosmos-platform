@@ -22,6 +22,15 @@ trait LibVirtServer {
   def createDomain(): Future[DomainProperties]
 
   /**
+   * Get the existing domain for this server. If there is no such domain, a NoSuchElementException
+   * is encapsulated as error in the resulting future.
+   *
+   * @return the properties of the existing domain, or NoSuchElementException error if there is
+   *         no domain for this server
+   */
+  def domain(): Future[DomainProperties]
+
+  /**
    * Indicates whether the domain is created
    */
   def isCreated(): Future[Boolean]

@@ -19,24 +19,28 @@ import java.util.UUID
  */
 class FakeLibVirtServer(val properties: LibVirtServerProperties) extends LibVirtServer {
 
-  var created: Boolean = false
+  private var dom: Option[DomainProperties] = None
 
   def createDomain(): Future[DomainProperties] =
-    if (created)
+    if (dom.isDefined)
       Future.failed(new IllegalStateException("server is already created"))
     else {
       val uuid = UUID.randomUUID()
-      created = true
-      Future.successful(DomainProperties(
+
+      dom = Some(DomainProperties(
         uuid = uuid,
         name = s"fake_${uuid.toString}",
         isActive = true,
         hostname = properties.domainHostname,
         ipAddress = properties.domainIpAddress
       ))
+
+      Future.successful(dom.get)
     }
 
-  def isCreated(): Future[Boolean] = Future.successful(created)
+  def domain(): Future[DomainProperties] = Future.successful(dom.get)
 
-  def destroyDomain(): Future[Unit] = Future.successful((created = false))
+  def isCreated(): Future[Boolean] = Future.successful(dom.isDefined)
+
+  def destroyDomain(): Future[Unit] = Future.successful((dom = None))
 }

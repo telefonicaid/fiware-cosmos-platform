@@ -45,21 +45,26 @@ class LibVirtInfrastructureProvider(
     } yield machines
   }
 
-  /**
-   * Release the machines so that its resources can be reused in further createMachine requests
-   *
-   * @param machines The set of machines to be released.
-   * @return         a future which terminates once the release has completed
-   */
   override def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
     for {
       servers <- serversForMachines(machines)
       _ <- Future.sequence(servers.map(srv => srv.destroyDomain()))
     } yield ()
 
-  override def availableMachineCount(profile: MachineProfile.Value): Future[Int] = ??? // FIXME
+  override def availableMachineCount(profile: MachineProfile.Value): Future[Int] =
+    for {
+      servers <- availableServers(profile)
+    } yield servers.size
 
-  override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = ???   // FIXME
+  override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = {
+    for {
+      servers <- servers(srv => hostNames.contains(srv.domainHostname))
+      domains <- domainsFromServers(servers)
+    } yield domains.map(dom => domainToMachineState(dom))
+  }
+
+  private def domainsFromServers(servers: Seq[LibVirtServer]): Future[Seq[DomainProperties]] =
+    Future.sequence(servers.map(srv => srv.domain()))
 
   private def serversForMachines(machines: Seq[MachineState]): Future[Seq[LibVirtServer]] = future {
     for {
@@ -78,16 +83,28 @@ class LibVirtInfrastructureProvider(
     } yield state
   ))
 
-  private def availableServers(profile: MachineProfile.Value): Future[Seq[LibVirtServer]] = {
+  private def servers(
+      pred: LibVirtServerProperties => Boolean): Future[Seq[LibVirtServer]] = future {
+    for {
+      serverProps <- dao.libVirtServers
+      if pred(serverProps)
+    } yield libvirtServerFactory(serverProps)
+  }
+
+  private def availableServers(
+      pred: LibVirtServerProperties => Boolean): Future[Seq[LibVirtServer]] = {
 
     def availableServer(srv: LibVirtServer): Future[Option[LibVirtServer]] =
       for (created <- srv.isCreated()) yield if (created) None else Some(srv)
 
     val servers = for {
-      serverProps <- dao.libVirtServers if (serverProps.profile == profile)
+      serverProps <- dao.libVirtServers if (pred(serverProps))
     } yield libvirtServerFactory(serverProps)
     Future.sequence(servers.map(availableServer)).map(_.flatten)
   }
+
+  private def availableServers(profile: MachineProfile.Value): Future[Seq[LibVirtServer]] =
+    availableServers(srv => srv.profile == profile)
 
   private def domainToMachineState(domain : DomainProperties): MachineState =
     new MachineState(

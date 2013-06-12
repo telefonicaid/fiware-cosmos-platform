@@ -57,6 +57,15 @@ case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends Lib
     mapDomain(conn.domainCreateXML(openVzDomainXmlDoc.toString(), 0))
   )
 
+  def domain(): Future[DomainProperties] = future {
+    try {
+      mapDomain(conn.domainLookupByID(domainId))
+    } catch {
+      case ex: LibvirtException => throw new NoSuchElementException(
+        s"there is no domain for ID $domainId in libvirt server ${properties.name}")
+    }
+  }
+
   def isCreated(): Future[Boolean] = future {
     conn.listDomains().filter(dom => dom == domainId).length == 1
   }

@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.{FiniteDuration, Duration}
@@ -21,6 +20,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 import es.tid.cosmos.platform.ial.{MachineState, MachineProfile, InfrastructureProvider}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
+import es.tid.cosmos.servicemanager.ambari.machines._
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, ClusterProvisioner, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.util.TcpServer
@@ -81,10 +81,7 @@ class AmbariServiceManager(
       (master, slaves) = masterAndSlaves(machines)
       deployment <- createUnregisteredCluster(id, name, serviceDescriptions, master, slaves)
     } yield deployment
-    val nameNode_> = for {
-      machines <- machines_>
-      (master, _) = masterAndSlaves(machines)
-    } yield new URI(s"hdfs://${master.hostname}:${Hdfs.nameNodeHttpPort}")
+    val nameNode_> = mapMaster(machines_>, toNameNodeUri)
     registerCluster(new MutableClusterDescription(
       id, name, clusterSize, deployment_>, machines_>, nameNode_>))
     id
@@ -177,12 +174,6 @@ class AmbariServiceManager(
   }
 
   override def contributions(masterName: String) = load("global-basic").build(masterName)
-
-  private def masterAndSlaves(machines: Seq[MachineState]) = machines match {
-    case Seq(master) => (master, machines)
-    case Seq(master, slaves @ _*) => (master, slaves)
-    case _ => throw new IllegalArgumentException("Need at least one machine")
-  }
 
   private def installInOrder(services: Seq[Service]): Future[List[Service]] = {
     def doInstall(

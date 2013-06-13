@@ -20,6 +20,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 import dispatch.StatusCode
 
 import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.machines._
 import es.tid.cosmos.servicemanager.ambari.rest.{ClusterProvisioner, Cluster}
 import es.tid.cosmos.platform.ial.InfrastructureProvider
 import es.tid.cosmos.servicemanager.ambari.services.Hdfs

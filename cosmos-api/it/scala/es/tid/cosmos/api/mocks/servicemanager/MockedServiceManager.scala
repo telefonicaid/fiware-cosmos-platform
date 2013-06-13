@@ -14,6 +14,8 @@ package es.tid.cosmos.api.mocks.servicemanager
 import java.net.URI
 import scala.collection.mutable
 import scala.concurrent._
+import scala.concurrent.duration._
+import scala.concurrent.Future.successful
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
 
@@ -26,14 +28,22 @@ import es.tid.cosmos.servicemanager._
  */
 class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
-  private class FakeCluster(
+  trait FakeCluster extends ClusterDescription {
+    var currentState: ClusterState
+    def completeProvision()
+    def completeTermination()
+  }
+
+  private class TransitioningCluster (
       override val name: String,
       override val size: Int,
-      override val id: ClusterId = new ClusterId) extends ClusterDescription {
+      override val id: ClusterId = new ClusterId) extends FakeCluster {
 
     var currentState: ClusterState = Provisioning
     override def state = currentState
-    override def nameNode_> = Future.successful(new URI(s"hdfs://10.0.0.${Random.nextInt(256)}:8084"))
+    override def nameNode_> = successful(new URI(s"hdfs://10.0.0.${Random.nextInt(256)}:8084"))
+    override val master_> = successful(HostDetails("fakeHostname", "fakeAddress"))
+    override val slaves_> = successful(Seq(HostDetails("fakeHostname", "fakeAddress")))
 
     def completeProvision() {
       if (currentState == Provisioning) currentState = Running
@@ -46,6 +56,24 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     defer(transitionDelay, completeProvision())
   }
 
+  private class InProgressCluster(
+       override val name: String,
+       override val size: Int,
+       override val id: ClusterId = new ClusterId) extends FakeCluster {
+
+    private val resolutionDelay = 10 seconds
+    override var currentState: ClusterState = Provisioning
+    override def state = currentState
+    override def nameNode_> = successful(new URI(s"hdfs://10.0.0.${Random.nextInt(256)}:8084"))
+    override def master_> = defer(HostDetails("fakeHostname", "fakeAddress"))
+    override def slaves_> = defer(Seq(HostDetails("fakeHostname", "fakeAddress")))
+    override def completeProvision() {}
+    override def completeTermination() {}
+
+    def defer[T](result: T):Future[T] =
+          future { blocking { Thread.sleep(resolutionDelay.toMillis); result } }
+  }
+
   override type ServiceDescriptionType = ServiceDescription
 
   override def services(user: ClusterUser): Seq[ServiceDescriptionType] = Seq()
@@ -53,17 +81,23 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
   private val clusters: mutable.Map[ClusterId, FakeCluster] =
     new mutable.HashMap[ClusterId, FakeCluster]
       with mutable.SynchronizedMap[ClusterId, FakeCluster] {
-      val cluster0 = new FakeCluster(
+      val cluster0 = new TransitioningCluster(
         id = MockedServiceManager.DefaultClusterId,
         name = "cluster0", size = 100)
       put(cluster0.id, cluster0)
+      val clusterInProgress = new InProgressCluster(
+        id = MockedServiceManager.InProgressClusterId,
+        name = "clusterInProgress",
+        size = 100
+      )
+      put(clusterInProgress.id, clusterInProgress)
     }
 
   def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
   def createCluster(
     name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
-    val cluster = new FakeCluster(name, clusterSize)
+    val cluster = new TransitioningCluster(name, clusterSize)
     clusters.put(cluster.id, cluster)
     cluster.id
   }
@@ -89,28 +123,31 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   private val persistentHdfsCluster = new ClusterDescription {
     @volatile var enabled: Boolean = false
-    override val id = ClusterId("PersistentStorageClusterId")
+    override val id = ClusterId("PersistendHdfsId")
     override val nameNode_> = Future.successful(MockedServiceManager.PersistentHdfsUrl)
     override val state = Running
     override val size = 4
     override val name = "Persistent storage cluster"
+    override val master_> = successful(HostDetails("stoarge", "storageAddress"))
+    override val slaves_> = successful(Seq(HostDetails("storage", "storageAddress")))
   }
 
   def persistentHdfsId: ClusterId = persistentHdfsCluster.id
 
-  def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = Future.successful()
+  def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = successful()
 
   def deployPersistentHdfsCluster(): Future[Unit] = {
     persistentHdfsCluster.enabled = true
-    Future.successful()
+    successful()
   }
 
-  def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit] = Future.successful()
+  def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit] = successful()
 
-  def refresh() = Future.successful()
+  def refresh() = successful()
 }
 
 object MockedServiceManager {
   val DefaultClusterId = new ClusterId("00000000000000000000000000000000")
+  val InProgressClusterId = new ClusterId("11111111111111111111111111111111")
   val PersistentHdfsUrl = new URI("hdfs://10.0.0.6:8084")
 }

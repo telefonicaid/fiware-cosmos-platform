@@ -43,7 +43,7 @@ object CosmosBuild extends Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
-    dependsOn(ial)
+    dependsOn(ial, common_test % "compile->compile;test->test")
   )
 
   lazy val cosmosApi = (play.Project("cosmos-api", "1.0-SNAPSHOT", path = file("cosmos-api"),

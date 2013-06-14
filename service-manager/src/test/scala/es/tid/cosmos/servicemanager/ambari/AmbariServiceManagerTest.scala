@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import java.net.URI
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -25,6 +26,7 @@ import org.mockito.Mockito.verify
 import org.scalatest.OneInstancePerTest
 import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
@@ -33,7 +35,8 @@ import es.tid.cosmos.servicemanager.ambari.services.{CosmosUserService, Hdfs, Am
 import es.tid.cosmos.servicemanager.ambari.configuration.Configuration
 import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterNotFound
 
-class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest with MockitoSugar {
+class AmbariServiceManagerTest
+  extends AmbariTestBase with OneInstancePerTest with MockitoSugar with FutureMatchers {
 
   val provisioner = initializeProvisioner
   val infrastructureProvider = mock[InfrastructureProvider]
@@ -56,6 +59,9 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
+    val clusterDescription = instance.describeCluster(clusterId).get
+    clusterDescription.size must be (1)
+    clusterDescription.nameNode_> must eventually (be (new URI("hdfs://hostname1:50070")))
     terminateAndVerify(clusterId, instance)
     verifyClusterAndServices(machines, hosts.head, hosts, clusterId)
   }
@@ -68,6 +74,9 @@ class AmbariServiceManagerTest extends AmbariTestBase with OneInstancePerTest wi
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
+    val clusterDescription = instance.describeCluster(clusterId).get
+    clusterDescription.size must be (3)
+    clusterDescription.nameNode_> must eventually (be (new URI("hdfs://hostname1:50070")))
     terminateAndVerify(clusterId, instance)
     verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
   }

@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import java.net.URI
 import scala.annotation.tailrec
 import scala.concurrent.Future
 import scala.concurrent.Future._
@@ -23,13 +24,12 @@ import org.mockito.BDDMockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.matchers.{MatchResult, BeMatcher}
 
-import es.tid.cosmos.servicemanager.ambari.rest._
+import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial.{InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.rest.{
-  ClusterProvisioner, AmbariTestBase, Service, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest._
 
-class RefreshingTest extends AmbariTestBase with MockitoSugar {
+class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatchers {
   "A refreshable" must "refresh no clusters when provisioner offers none" in new NoRefresh {
     val clusterIds = Seq()
     given(provisioner.listClusterNames).willReturn(successful(Seq()))
@@ -133,6 +133,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
     given(cluster.serviceNames).willReturn(Seq(serviceName))
     given(cluster.getService(serviceName)).willReturn(successful(service))
     given(host.getComponentNames).willReturn(Seq("NAMENODE"))
+    given(host.name).willReturn(hostName)
     given(infrastructureProvider.assignedMachines(Seq(hostName))).willReturn(cluster_machines_>)
 
     def checkDescriptionInfo(description: MutableClusterDescription) {
@@ -143,6 +144,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar {
           have ('machines_> (cluster_machines_>))
         )
       description.deployment_>.onComplete(_ => descriptionHandle = description)
+      description.nameNode_> must eventually (be (new URI(s"hdfs://$hostName:50070")))
     }
 
     /**

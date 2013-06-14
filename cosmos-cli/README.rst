@@ -12,13 +12,15 @@ it will bundle an egg into the 'site-packages' directory, and a script to the
 same directory where the 'python' executable is found.  You must have `python`
 and `setuptools` installed in your system.
 
-Install using::
+Install using `buildout`::
 
-    $ python setup.py install
+    $ python ./bootstrap.py
+    $ bin/bootstrap
+    $ sudo bin/buildout setup . install
 
 If you would like to uninstall later, use::
 
-    $ python setup.py install --record installs.txt
+    $ sudo bin/buildout setup . install --record installs.txt
     $ cat installs.txt | xargs rm -rf
 
 Install Cosmos CLI EGG
@@ -26,7 +28,7 @@ Install Cosmos CLI EGG
 
 To generate a redistributable archive by means of `setuptools`::
 
-    $ python setup.py bdist_egg
+    $ bin/buildout setup . bdist_egg
 
 This will create a file named `dist/cosmos-<cosmos version>-<python version>.egg`
 tha can be downloaded and installed on any system with `python` and

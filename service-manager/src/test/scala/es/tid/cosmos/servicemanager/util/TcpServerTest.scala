@@ -26,7 +26,9 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
   val timeout: FiniteDuration = 3 second
 
   class RandomServer {
-    val server = TcpServer(host = "localhost", port = 1000 + Random.nextInt(4000))
+    /** Random port for concurrent test execution */
+    val port = 1000 + Random.nextInt(4000)
+    val server = TcpServer("localhost", port)
 
     def withServerMock[T](f: LocalServer => T): T = {
       val serverMock = new LocalServer(server.port)

@@ -33,7 +33,11 @@ object ConfiguratorTestHelpers {
 
   def mergedGlobalConfiguration(number: Int, instance: AmbariServiceManager, masterName: String) =
     GlobalConfiguration(
-      instance.contributions(masterName).global.get.properties ++ propertiesUpTo("Global", number))
+      instance.contributions(Map(
+        ConfigurationKeys.MasterNode -> masterName,
+        ConfigurationKeys.MaxMapTasks -> "20",
+        ConfigurationKeys.MaxReduceTasks -> "10"
+      )).global.get.properties ++ propertiesUpTo("Global", number))
 
   def expectedConfigurationOf(number: Int) = properties("Service", number)
 }

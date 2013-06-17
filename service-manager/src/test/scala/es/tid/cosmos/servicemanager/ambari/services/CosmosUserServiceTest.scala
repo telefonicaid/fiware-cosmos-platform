@@ -15,6 +15,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.{ClusterUser, ComponentDescription}
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class CosmosUserServiceTest extends FlatSpec with MustMatchers {
   "A Cosmos user service" must "have a master and a slave components" in {
@@ -25,7 +26,7 @@ class CosmosUserServiceTest extends FlatSpec with MustMatchers {
       contain(ComponentDescription("USER_MASTER_MANAGER", isMaster = true)) and
       contain(ComponentDescription("USER_SLAVE_MANAGER", isMaster = false))
     )
-    val contributions = description.contributions("aNameNodeName")
+    val contributions = description.contributions(Map(ConfigurationKeys.MasterNode -> "aNameNodeName"))
     contributions.global must be('empty)
     contributions.core must be('empty)
     contributions.services must have length(1)

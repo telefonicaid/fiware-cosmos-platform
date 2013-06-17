@@ -14,6 +14,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 import es.tid.cosmos.servicemanager.ComponentDescription
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class OozieTest extends FlatSpec with MustMatchers  {
   "An Oozie service" must "have an oozie server and a client" in {
@@ -23,7 +24,11 @@ class OozieTest extends FlatSpec with MustMatchers  {
       have length (2) and
       contain(ComponentDescription("OOZIE_SERVER", isMaster = true)) and
       contain(ComponentDescription("OOZIE_CLIENT", isMaster = true)))
-    val contributions = description.contributions("aMasterNodeName")
+    val contributions = description.contributions(Map(
+      ConfigurationKeys.MasterNode -> "aMasterNodeName",
+      ConfigurationKeys.MaxMapTasks -> "10",
+      ConfigurationKeys.MaxReduceTasks -> "5"
+    ))
     contributions.global must be('defined)
     contributions.core must be('defined)
     contributions.services must have length (1)

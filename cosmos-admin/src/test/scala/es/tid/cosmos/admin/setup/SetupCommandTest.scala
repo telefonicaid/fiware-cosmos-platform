@@ -12,6 +12,7 @@
 package es.tid.cosmos.admin.setup
 
 import java.net.URI
+import scala.Some
 import scala.concurrent.Future
 
 import org.mockito.BDDMockito.given
@@ -21,7 +22,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.servicemanager.{Running, ClusterDescription, ClusterId, ServiceManager}
+import es.tid.cosmos.servicemanager._
 
 class SetupCommandTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -47,6 +48,8 @@ class SetupCommandTest extends FlatSpec with MustMatchers with MockitoSugar {
       val size = 3
       val state = Running
       val nameNode_> = Future.successful(new URI("hdfs://host:1234"))
+      val master_> = Future.successful(HostDetails("host", "ipAddress"))
+      val slaves_>  = Future.successful(Seq(HostDetails("host", "ipAddress")))
     }))
     new SetupCommand(sm).run() must be (true)
     verify(sm).describeCluster(hdfsId)

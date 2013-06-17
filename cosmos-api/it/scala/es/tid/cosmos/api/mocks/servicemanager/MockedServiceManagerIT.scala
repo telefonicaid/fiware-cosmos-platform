@@ -9,12 +9,11 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.servicemanager
+package es.tid.cosmos.api.mocks.servicemanager
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.servicemanager._
 
 class MockedServiceManagerIT extends FlatSpec with MustMatchers {
@@ -24,8 +23,8 @@ class MockedServiceManagerIT extends FlatSpec with MustMatchers {
     val instance = new MockedServiceManager(transitionDelay)
   }
 
-  "A mocked service manager" must "be pre-populated with a cluster" in new Instance {
-    instance.clusterIds must have size 1
+  "A mocked service manager" must "be pre-populated with two clusters" in new Instance {
+    instance.clusterIds must have size 2
   }
 
   it must "create a new cluster in provisioning state and then transition to running state" in new Instance {

@@ -11,11 +11,17 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
-import com.wordnik.swagger.annotations.{ApiProperty, ApiClass}
+
+import scala.Some
+import scala.concurrent.Future
+import scala.util.Success
+
+import com.wordnik.swagger.annotations.ApiProperty
+import play.api.libs.json._
 import play.api.mvc.RequestHeader
-import play.api.libs.json.{Json, JsValue, Writes}
 
 import es.tid.cosmos.servicemanager.ClusterDescription
+import es.tid.cosmos.servicemanager.HostDetails
 
 /**
  * A cluster from the perspective of API clients.
@@ -27,7 +33,9 @@ case class ClusterDetails(
     size: Int,
     @ApiProperty(allowableValues = "provisioning,running,terminating,terminated,failed")
     state: String,
-    stateDescription: String)
+    stateDescription: String,
+    master: Option[HostDetails],
+    slaves: Option[Seq[HostDetails]])
 
 object ClusterDetails {
   /**
@@ -44,11 +52,33 @@ object ClusterDetails {
       name = desc.name,
       size = desc.size,
       state = desc.state.name,
-      stateDescription = desc.state.descLine
+      stateDescription = desc.state.descLine,
+      master = optional(desc.master_>),
+      slaves = optional(desc.slaves_>)
     )
 
+  private def optional[T](value_> : Future[T]): Option[T] = value_>.value match {
+    case Some(Success(v)) => Some(v)
+    case _ => None
+  }
+
+  implicit object HostDetailsWrites extends Writes[HostDetails] {
+    def writes(info: HostDetails): JsValue = Json.obj(
+        "hostname" -> info.hostname,
+        "ip_address" -> info.ipAddress
+      )
+  }
+
   implicit object ClusterDetailsWrites extends Writes[ClusterDetails] {
-    def writes(d: ClusterDetails): JsValue = Json.obj(
+    def writes(d: ClusterDetails): JsValue = (d.master, d.slaves) match {
+      case (Some(masterDetails), Some(slavesDetails)) => basicInfo(d) ++ Json.obj(
+        "master" -> masterDetails,
+        "slaves" -> slavesDetails
+      )
+      case _ => basicInfo(d)
+    }
+
+    private def basicInfo(d: ClusterDetails) = Json.obj(
       "href" -> d.href,
       "id" -> d.id,
       "name" -> d.name,

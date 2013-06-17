@@ -44,4 +44,24 @@ trait ClusterDescription {
    * For instance: hdfs://localhost:54310
    */
   def nameNode_> : Future[URI]
+
+  /**
+   * The cluster's master node information.
+   * @return the master node information
+   */
+  def master_> : Future[HostDetails]
+
+  /**
+   * The cluster's slave nodes information.
+   * @return the slave nodes information
+   */
+  def slaves_> : Future[Seq[HostDetails]]
 }
+
+/**
+ * Representation of the basic information of a host.
+ *
+ * @param hostname the host's name
+ * @param ipAddress the host's IP address
+ */
+case class HostDetails(hostname: String, ipAddress: String)

@@ -23,22 +23,60 @@ import play.api.test.FakeRequest
 import es.tid.cosmos.api.controllers.ResultMatchers.failWith
 import es.tid.cosmos.servicemanager.{Terminating, Terminated, ClusterId}
 import es.tid.cosmos.api.mocks.WithSampleUsers
-import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.api.mocks.servicemanager.{MockedServiceManagerComponent, MockedServiceManager}
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 class ClusterIT extends FlatSpec with MustMatchers {
-  val resourcePath = s"/cosmos/cluster/${MockedServiceManager.DefaultClusterId.toString}"
+  val resourcePath = s"/cosmos/cluster/${MockedServiceManager.DefaultClusterId}"
+  val provisioningResourcePath = s"/cosmos/cluster/${MockedServiceManager.InProgressClusterId}"
   val unknownClusterId = ClusterId()
   val unknownResourcePath = s"/cosmos/cluster/$unknownClusterId"
+  val completeDescription = Json.obj(
+      "href" -> s"http://$resourcePath",
+      "id" -> MockedServiceManager.DefaultClusterId.toString,
+      "name" -> "cluster0",
+      "size" -> 100,
+      "state" -> "running",
+      "state_description" -> "Cluster is ready",
+      "master" -> Json.obj(
+        "hostname" -> "fakeHostname",
+        "ip_address" -> "fakeAddress"
+      ),
+      "slaves" -> Json.arr(Json.obj(
+        "hostname" -> "fakeHostname",
+        "ip_address" -> "fakeAddress"
+      ))
+    )
+  val partialDescription = Json.obj(
+    "href" -> s"http://$provisioningResourcePath",
+    "id" -> MockedServiceManager.InProgressClusterId.toString,
+    "name" -> "clusterInProgress",
+    "size" -> 100,
+    "state" -> "provisioning",
+    "state_description" -> "Cluster is acquiring and configuring resources"
+  )
 
-  "Cluster resource" must "list cluster details on GET request" in new WithSampleUsers {
+  "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
+    new WithSampleUsers {
+      CosmosProfileDao.assignCluster(
+        MockedServiceManager.DefaultClusterId, user1.id)(DB.getConnection())
+      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay)
+      val resource = route(FakeRequest(GET, resourcePath).authorizedBy(user1)).get
+      status(resource) must equal (OK)
+      contentType(resource) must be (Some("application/json"))
+      val description = Json.parse(contentAsString(resource))
+      description must equal(completeDescription)
+    }
+
+  it must "list partial cluster details on GET request" +
+    " when cluster is still provisioning" in new WithSampleUsers {
     CosmosProfileDao.assignCluster(
-      MockedServiceManager.DefaultClusterId, user1.id)(DB.getConnection())
-    val resource = route(FakeRequest(GET, resourcePath).authorizedBy(user1)).get
+      MockedServiceManager.InProgressClusterId, user1.id)(DB.getConnection())
+    val resource = route(FakeRequest(GET, provisioningResourcePath).authorizedBy(user1)).get
     status(resource) must equal (OK)
     contentType(resource) must be (Some("application/json"))
     val description = Json.parse(contentAsString(resource))
-    (description \ "id").as[String] must equal (MockedServiceManager.DefaultClusterId.toString)
+    description must equal(partialDescription)
   }
 
   it must "reject unauthorized detail listing" in new WithSampleUsers {

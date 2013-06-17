@@ -48,6 +48,7 @@ class WebHdfsClientTest(unittest.TestCase):
 
             self.client.put.assert_any_call(
                 self.namenode_base + '/remote/path',
+                allow_redirects=False,
                 params={'user.name': 'user1', 'op': 'CREATE'}
             )
             last_put = self.client.put.call_args_list[1]

@@ -46,12 +46,13 @@ class WebHdfsClient(object):
     def opParams(self, operation, **kwargs):
         return dict(kwargs.items() + [
             ('op', operation),
-            ('user.name', self.username)
+            ('user.name', self.username),
         ])
 
     def put_file(self, local_file, remote_path):
         namenode_url = self.to_http(remote_path)
-        redirect = self.client.put(namenode_url, params=self.opParams('CREATE'))
+        redirect = self.client.put(namenode_url, allow_redirects=False,
+                                   params=self.opParams('CREATE'))
         if redirect.status_code == 201:
             raise ExitWithError(
                 -1, "WebHDFS uploads are not supported on 1-machine " +
@@ -61,8 +62,7 @@ class WebHdfsClient(object):
                                 redirect)
 
         datanode_url = redirect.headers['Location']
-        with open(local_file, 'rb') as f:
-            upload = self.client.put(datanode_url, data=f)
+        upload = self.client.put(datanode_url, data=local_file)
         if upload.status_code != 201:
             raise ResponseError('Cannot upload file to %s' % datanode_url,
                                 upload)
@@ -144,7 +144,7 @@ def put_file(args, config):
         else:
             target_path = args.remote_path
     client.put_file(args.local_file, target_path)
-    print "%s successfully uploaded to %s" % (args.local_file, target_path)
+    print "%s successfully uploaded to %s" % (args.local_file.name, target_path)
     return 0
 
 

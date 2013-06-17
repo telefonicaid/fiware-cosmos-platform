@@ -32,11 +32,11 @@ CONFIG_DESCRIPTIONS = {
 }
 
 
-def get_config_path():
+def default_config_path():
     """Get a correct configuration path, regardless if we are on a POSIX system
     or a Windows system.
 
-    >>> "cosmosrc" in get_config_path()
+    >>> "cosmosrc" in default_config_path()
     True
     """
     if os.name == "nt" and os.getenv("USERPROFILE"):
@@ -46,9 +46,9 @@ def get_config_path():
         return p.expanduser("~/.cosmosrc")
 
 
-def load_config():
+def load_config(args):
     """Tries to load the configuration file or throws ExitWithError."""
-    filename = get_config_path()
+    filename = args.config_file if args.config_file else default_config_path()
     try:
         config = ConfigManager(files=[filename])
     except Exception as ex:
@@ -58,7 +58,8 @@ def load_config():
     if not config.keys():
         raise ExitWithError(
             -1, ("Cosmos command is unconfigured. Use '%s configure' to " +
-                 "create a valid configuration") % sys.argv[0])
+                 "create a valid configuration or use --config-file with a " +
+                 "valid configuration file") % sys.argv[0])
     config.credentials = (config.api_key, config.api_secret)
     return config
 
@@ -70,7 +71,7 @@ def with_config(command):
 
     def decorated_command(*args, **kwargs):
         extended_args = list(args)
-        extended_args.append(load_config())
+        extended_args.append(load_config(args[0]))
         return command(*extended_args, **kwargs)
 
     return decorated_command
@@ -98,7 +99,7 @@ def command(args):
     config = ConfigManager(DEFAULT_CONFIG)
     for setting in CONFIG_KEYS:
         ask_for_setting(config, setting)
-    filename = get_config_path()
+    filename = default_config_path()
     if p.exists(filename) and not ask_binary_question(
         "%s already exists. Overwrite?" % filename):
         return 0

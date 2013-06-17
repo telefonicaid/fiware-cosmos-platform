@@ -24,8 +24,10 @@ class ConfigTest(unittest.TestCase):
         with TempDirectory() as temp_dir:
             missing_config = MagicMock(
                 return_value=temp_dir.getpath("nonexisting"))
-            with patch('cosmos.config.get_config_path', missing_config):
-                self.assertRaises(ExitWithError, config.load_config)
+            args = MagicMock()
+            args.config_file = None
+            with patch('cosmos.config.default_config_path', missing_config):
+                self.assertRaises(ExitWithError, config.load_config, args)
 
     def test_with_config(self):
         with patch('cosmos.config.load_config',

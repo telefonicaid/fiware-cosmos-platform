@@ -29,7 +29,7 @@ UUID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 
 def add_configure_command(subcommands):
     parser = subcommands.add_parser(
-        "configure", help="create " + c.get_config_path())
+        "configure", help="create " + c.default_config_path())
     parser.set_defaults(func=c.command)
 
 
@@ -137,6 +137,8 @@ def add_terminate_command(subcommands):
 def build_argument_parser():
     """Register all subcommands in a unified argument parser."""
     parser = argparse.ArgumentParser(prog='cosmos')
+    parser.add_argument("--config-file", "-c",
+                        help="Override configuration file")
     subparsers = parser.add_subparsers(help='sub-command help',
                                        title='subcommands',
                                        description='valid subcommands')

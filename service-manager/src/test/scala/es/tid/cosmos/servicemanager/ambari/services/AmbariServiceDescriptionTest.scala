@@ -23,7 +23,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationBundle
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, ConfigurationBundle}
 
 class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -48,6 +48,7 @@ class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with Mocki
     val component1 = ComponentDescription("component1", isMaster = true)
     val component2 = ComponentDescription("component2", isMaster = false)
     val components: Seq[ComponentDescription] = Seq(component1, component2)
-    override def contributions(masterName: String) = ConfigurationBundle(None, None, List())
+    override def contributions(properties: Map[ConfigurationKeys.Value, String]) =
+      ConfigurationBundle(None, None, List())
   }
 }

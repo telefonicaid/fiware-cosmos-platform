@@ -90,37 +90,43 @@ case class ConfigurationBuilder(serviceName: String, config: Config) {
   private val configType = valueOf("configType") _
 
   /**
-   * Build the final configuration injecting the given cluster master-node name
-   * to any configuration value containing the placeholder `${masternode}`.
+   * Build the final configuration injecting values to configurations that contain certain
+   * placeholders.
    *
-   * @param masterNodeName the name of the cluster's master-node
+   * @param properties the values that will be injected into the placeholders
    * @return the configuration with master-node name injected
    */
-  def build(masterNodeName: String): ConfigurationBundle =
+  def build(properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle =
     ConfigurationBundle(
-      optional[GlobalConfiguration]("global", masterNodeName),
-      optional[CoreConfiguration]("core", masterNodeName),
-      service(masterNodeName)
+      optional[GlobalConfiguration]("global", properties),
+      optional[CoreConfiguration]("core", properties),
+      service(properties)
     )
 
-  private def optional[T <: Configuration](name: String, masterNodeName: String)
-                                          (implicit factory: Factory[T]): Option[T] =
-    properties(name, masterNodeName).map(props => factory(props))
+  private def optional[T <: Configuration](
+      name: String,
+      properties: Map[ConfigurationKeys.Value, String])
+      (implicit factory: Factory[T]): Option[T] =
+    resolveProperties(name, properties).map(props => factory(props))
 
-  private def service(masterNodeName: String) = properties(serviceName, masterNodeName)
-    .map(props => ServiceConfiguration(configType(serviceName), props))
-    .toList
+  private def service(properties: Map[ConfigurationKeys.Value, String]) =
+    resolveProperties(serviceName, properties)
+      .map(props => ServiceConfiguration(configType(serviceName), props))
+      .toList
 
-  private def properties(configName: String, masterNodeName: String) =
-    getScalaMap(config, s"$configName.properties").map(_.mapValues(inject(masterNodeName)))
+  private def resolveProperties(
+      configName: String,
+      properties: Map[ConfigurationKeys.Value, String]) =
+    getScalaMap(config, s"$configName.properties").map(_.mapValues(inject(properties)))
 
   private def getScalaMap(config: Config, key: String) =
     if (config.hasPath(key))
       Some(mapAsScalaMap(config.getObject(key).unwrapped()).toMap)
     else None
 
-  private def inject(value: String)(target: Any) = target match {
-    case x: String => x.replaceAll("\\$\\{masternode\\}", value)
+  private def inject(properties: Map[ConfigurationKeys.Value, String])(target: Any) = target match {
+    case x: String => properties.foldLeft(x)((str, entry) =>
+      str.replaceAll("\\$\\{" + entry._1.toString +"\\}", entry._2))
     case other => other
   }
 }

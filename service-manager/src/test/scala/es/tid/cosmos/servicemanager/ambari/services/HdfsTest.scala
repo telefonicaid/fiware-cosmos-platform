@@ -15,6 +15,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class HdfsTest extends FlatSpec with MustMatchers {
   "An Hdfs service" must "have a namenode, datanode and hdfs client" in {
@@ -25,7 +26,11 @@ class HdfsTest extends FlatSpec with MustMatchers {
       contain(ComponentDescription("NAMENODE", isMaster = true)) and
       contain(ComponentDescription("DATANODE", isMaster = false)) and
       contain(ComponentDescription("HDFS_CLIENT", isMaster = true)))
-    val contributions = description.contributions("aNameNodeName")
+    val contributions = description.contributions(Map(
+      ConfigurationKeys.MasterNode -> "aMasterNodeName",
+      ConfigurationKeys.MaxMapTasks -> "10",
+      ConfigurationKeys.MaxReduceTasks -> "5"
+    ))
     contributions.global must be('defined)
     contributions.core must be('defined)
     contributions.services must have length(1)

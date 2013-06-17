@@ -30,10 +30,10 @@ import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
+import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterNotFound
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, Configuration}
 import es.tid.cosmos.servicemanager.ambari.rest._
 import es.tid.cosmos.servicemanager.ambari.services.{CosmosUserService, Hdfs, AmbariServiceDescription}
-import es.tid.cosmos.servicemanager.ambari.configuration.Configuration
-import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterNotFound
 
 class AmbariServiceManagerTest
   extends AmbariTestBase with OneInstancePerTest with MockitoSugar with FutureMatchers {
@@ -163,8 +163,7 @@ class AmbariServiceManagerTest
     val clusterId = instance.createCluster("clusterName", 3, services)
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
-    Await.ready(
-      instance.addUsers(clusterId, ClusterUser("user2", "publicKey2")), Duration.Inf)
+    get(instance.addUsers(clusterId, ClusterUser("user2", "publicKey2")))
     Await.result(instance.terminateCluster(clusterId), 5 seconds)
     verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
     verify(cluster).addService(CosmosUserService.name)
@@ -186,8 +185,8 @@ class AmbariServiceManagerTest
     val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions)
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
-    evaluating { Await.result(
-      instance.addUsers(clusterId, ClusterUser("username", "publicKey")), Duration.Inf)
+    evaluating {
+      get(instance.addUsers(clusterId, ClusterUser("username", "publicKey")))
     } must produce [ServiceMasterNotFound]
   }
 
@@ -241,6 +240,7 @@ class AmbariServiceManagerTest
     hosts.foreach(host => given(host.getComponentNames).willReturn(List()))
     given(cluster.addHost(machines.head.hostname)).willReturn(successful(hosts.head))
     given(cluster.addHosts(machines.tail.map(_.hostname))).willReturn(successful(hosts.tail))
+    given(cluster.getHost(any())).willReturn(successful(mock[Host]))
   }
 
   private def setServiceExpectations() {
@@ -283,7 +283,10 @@ class AmbariServiceManagerTest
     verify(cluster).addHosts(machines.tail.map(_.hostname))
     serviceDescriptions.foreach(sd => {
       verify(sd).createService(cluster, master, slaves)
-      verify(sd).contributions(master.name)
+      verify(sd).contributions(Map(
+        ConfigurationKeys.MasterNode -> master.name,
+        ConfigurationKeys.MaxMapTasks -> (8 * slaves.length).toString,
+        ConfigurationKeys.MaxReduceTasks -> (4 * 1.75 * slaves.length).round.toString))
     })
     services.foreach(service => {
       verify(service).install()
@@ -298,7 +301,7 @@ class AmbariServiceManagerTest
         MachineProfile.G1_COMPUTE, MachineStatus.Running,
         s"hostname$prefix$number", s"ipAddress$number"))
 
-  private def hostsOf(numberOfHosts: Int): Seq[Host] = (1 to numberOfHosts).map(_ => mock[Host])
+  private def hostsOf(numberOfHosts: Int): Seq[Host] = Seq.fill(numberOfHosts)(mock[Host])
 
   private def machinesAndHostsOf(numberOfInstances: Int, prefix: String = "") =
     (machinesOf(numberOfInstances, prefix), hostsOf(numberOfInstances))

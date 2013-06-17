@@ -25,6 +25,8 @@ import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
  * Class for consolidating configuration from multiple contributors and applying it to a cluster.
  */
 object Configurator {
+  private val MappersPerSlave = 8
+  private val ReducersPerSlave = (4 * 1.75).round
   private val empty = ConfigurationBundle(None, None, List())
 
   /**
@@ -34,20 +36,29 @@ object Configurator {
    *
    * @param cluster the cluster to apply the configuration to
    * @param master the master of the cluster whose information might be used in the configuration
+   * @param slaves the slaves hosts of the cluster whose information might be used in the
+   *               configuration
    * @param contributors the configuration contributors offering pieces of cluster configuration
    * @return the futures of the cluster configuration application
    */
   def applyConfiguration(
-    cluster: Cluster, master: Host,
+    cluster: Cluster, master: Host, slaves: Seq[Host],
     contributors: Seq[ConfigurationContributor]): Future[Seq[Unit]] = {
     val tag = timestampedTag()
-    Future.sequence(consolidateConfiguration(contributors, master).map(
-      cluster.applyConfiguration(_, tag)))
+    val configurations = consolidateConfiguration(contributors, master, slaves)
+    Future.traverse(configurations)(cluster.applyConfiguration(_, tag))
   }
 
   private def consolidateConfiguration(
-    contributors: Seq[ConfigurationContributor], master: Host): List[Configuration] =
-    contributors.map(_.contributions(master.name)).foldLeft(empty)(consolidate).configurations
+      contributors: Seq[ConfigurationContributor],
+      master: Host,
+      slaves: Seq[Host]): List[Configuration] = {
+    val properties = Map(
+      ConfigurationKeys.MasterNode -> master.name,
+      ConfigurationKeys.MaxMapTasks -> (MappersPerSlave * slaves.length).toString,
+      ConfigurationKeys.MaxReduceTasks -> (ReducersPerSlave * slaves.length).round.toString)
+    contributors.map(_.contributions(properties)).foldLeft(empty)(consolidate).configurations
+  }
 
   private def consolidate(
     alreadyMerged: ConfigurationBundle, toMerge: ConfigurationBundle): ConfigurationBundle = {

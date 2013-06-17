@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.hdfs
+package es.tid.cosmos.api.controllers.storage
 
 import java.net.URI
 

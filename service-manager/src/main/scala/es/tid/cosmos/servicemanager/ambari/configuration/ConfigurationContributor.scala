@@ -20,10 +20,9 @@ trait ConfigurationContributor {
   /**
    * Get the configuration contributions.
    *
-   * @param masterName the name of the cluster's master node that can be used as
-   *                   a configuration parameter
+   * @param properties the values used to replace placeholders in the configuration
    * @return the partial contribution to the cluster's Global and Core configuration and
    *         the complete configuration of a Service.
    */
-  def contributions(masterName: String): ConfigurationBundle
+  def contributions(properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle
 }

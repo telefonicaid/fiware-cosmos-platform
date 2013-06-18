@@ -12,7 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser, ComponentDescription}
-import es.tid.cosmos.servicemanager.ambari.configuration.{ServiceConfiguration, ConfigurationBundle}
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, ServiceConfiguration, ConfigurationBundle}
 import es.tid.cosmos.servicemanager.util.SshKeyGenerator
 
 /**
@@ -24,8 +24,9 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescriptio
 
   override val components: Seq[ComponentDescription] = CosmosUserService.components
 
-  override def contributions(masterName: String): ConfigurationBundle =
-    ConfigurationBundle(usersConfiguration(masterName))
+  override def contributions(
+      properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle =
+    ConfigurationBundle(usersConfiguration(properties(ConfigurationKeys.MasterNode)))
 
   private def usersConfiguration(masterName: String) = {
     val properties = (("number_of_users" -> users.size) +: (for {

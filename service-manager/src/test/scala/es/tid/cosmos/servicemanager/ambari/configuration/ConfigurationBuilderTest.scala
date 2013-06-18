@@ -17,14 +17,17 @@ import org.scalatest.matchers.MustMatchers
 
 class ConfigurationBuilderTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   val masterName = "myMasterNode"
+  val maxMapTasks = "10"
+  val maxReduceTasks = "5"
   val expectedGlobal = GlobalConfiguration(Map(
-    "global.example.string" -> s"global-$masterName",
+    "global.example.string" -> s"global-$masterName$maxMapTasks$maxReduceTasks",
     "global.example.boolean" -> true,
     "global.example.number" -> 29
   ))
-  val expectedCore = CoreConfiguration(Map("core.example" -> s"core-$masterName"))
+  val expectedCore = CoreConfiguration(Map(
+    "core.example" -> s"core-$masterName$maxMapTasks$maxReduceTasks"))
   val expectedService = ServiceConfiguration("test-service-site",
-    Map("service.example" -> s"service-$masterName")
+    Map("service.example" -> s"service-$masterName$maxMapTasks$maxReduceTasks")
   )
   val full = ConfigFactory.load("global-core-service")
   val noGlobal = ConfigFactory.load("core-service")
@@ -32,7 +35,11 @@ class ConfigurationBuilderTest extends FlatSpec with MustMatchers with OneInstan
   val justService = ConfigFactory.load("service")
   val noService = ConfigFactory.load("no-service")
 
-  def withConfig(config: Config) = ConfigurationBuilder("a-test-service", config).build(masterName)
+  def withConfig(config: Config) = ConfigurationBuilder("a-test-service", config).build(Map(
+    ConfigurationKeys.MasterNode -> masterName,
+    ConfigurationKeys.MaxMapTasks -> maxMapTasks,
+    ConfigurationKeys.MaxReduceTasks -> maxReduceTasks
+  ))
 
   "A builder" must "load a configuration with global, core and service" in {
     val bundle = withConfig(full)

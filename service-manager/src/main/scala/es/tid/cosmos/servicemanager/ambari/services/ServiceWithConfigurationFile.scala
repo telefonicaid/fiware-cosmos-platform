@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationLoader
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, ConfigurationLoader}
 
 /**
  * Trait for service descriptions that have a configuration file.
@@ -19,5 +19,6 @@ import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationLoader
 trait ServiceWithConfigurationFile extends AmbariServiceDescription with ConfigurationLoader {
   protected lazy val config = load(name)
 
-  override def contributions(masterNode: String) = config.build(masterNode)
+  override def contributions(properties: Map[ConfigurationKeys.Value, String]) =
+    config.build(properties)
 }

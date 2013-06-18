@@ -101,7 +101,11 @@ class AmbariServiceManager(
         .map(_.hostname))
       slaveHosts = if (nonMasterHosts.length < slaves.length) masterHost +: nonMasterHosts
         else nonMasterHosts
-      configuredCluster <- applyConfiguration(cluster, masterHost, this::serviceDescriptions.toList)
+      configuredCluster <- applyConfiguration(
+        cluster,
+        masterHost,
+        slaveHosts,
+        this::serviceDescriptions.toList)
       services <- Future.traverse(serviceDescriptions)(
         srv => srv.createService(configuredCluster, masterHost, slaveHosts))
       deployedServices <- installInOrder(services)
@@ -121,7 +125,9 @@ class AmbariServiceManager(
   private def initCluster(id: ClusterId, machines: Seq[MachineState]) : Future[Cluster] = {
     val distinctHostnames = machines.map(_.hostname).distinct
     for {
-      _ <- provisioner.bootstrapMachines(distinctHostnames, infrastructureProvider.rootPrivateSshKey)
+      _ <- provisioner.bootstrapMachines(
+        distinctHostnames,
+        infrastructureProvider.rootPrivateSshKey)
       _ <- ensureHostsRegistered(distinctHostnames)
       cluster <- provisioner.createCluster(id.toString, stackVersion)
     } yield cluster
@@ -169,11 +175,15 @@ class AmbariServiceManager(
       clusterDescription.get.state == Running,
       s"Cluster[$clusterId] not Running")
     for {
-      changedService <- changeServiceConfiguration(clusterId, new CosmosUserService(users))
+      changedService <- changeServiceConfiguration(
+        clusterId,
+        clusterDescription.get,
+        new CosmosUserService(users))
     } yield ()
   }
 
-  override def contributions(masterName: String) = load("global-basic").build(masterName)
+  override def contributions(properties: Map[ConfigurationKeys.Value, String]) =
+    load("global-basic").build(properties)
 
   private def installInOrder(services: Seq[Service]): Future[List[Service]] = {
     def doInstall(
@@ -196,18 +206,22 @@ class AmbariServiceManager(
   private def applyConfiguration(
       cluster: Cluster,
       master: Host,
+      slaves: Seq[Host],
       contributors: List[ConfigurationContributor]): Future[Cluster] =
-    Configurator.applyConfiguration(cluster, master, contributors).map(_ => cluster)
+    Configurator.applyConfiguration(cluster, master, slaves, contributors).map(_ => cluster)
 
   private def changeServiceConfiguration(
       id: ClusterId,
+      clusterDescription: ClusterDescription,
       serviceDescription: AmbariServiceDescription): Future[Service] = {
     for {
       cluster <- provisioner.getCluster(id.toString)
       service <- cluster.getService(serviceDescription.name)
       master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription)
       stoppedService <- service.stop()
-      _ <- Configurator.applyConfiguration(cluster, master, List(serviceDescription))
+      slaveDetails <- clusterDescription.slaves_>
+      slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
+      _ <- Configurator.applyConfiguration(cluster, master, slaves, List(serviceDescription))
       startedService <- stoppedService.start()
     } yield startedService
   }

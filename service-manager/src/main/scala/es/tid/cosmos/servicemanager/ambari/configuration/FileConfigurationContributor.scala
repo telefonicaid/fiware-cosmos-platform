@@ -13,7 +13,6 @@ package es.tid.cosmos.servicemanager.ambari.configuration
 
 import scala.Some
 import scala.collection.JavaConversions._
-import scala.collection.JavaConverters._
 
 import com.typesafe.config._
 
@@ -24,33 +23,76 @@ import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits.
  * Trait for mixing-in configuration contributions from a file.
  * The loader will load the configuration found in the classpath `[configName].conf` file
  * as specified by `configName`.
-*/
+ *
+ * The Loader makes use of TypeSafe's Config class, so any syntax supported by that class is
+ * supported by the FileConfigurationContributor.
+ *
+ * @see [[https://github.com/typesafehub/config About TypeSafe's config]]
+ * @see [[https://github.com/typesafehub/config/blob/master/HOCON.md About HOCON format]]
+ */
 trait FileConfigurationContributor extends ConfigurationContributor {
   protected val configName: String
 
   private class ClusterConfigIncluder(
       properties: Map[ConfigurationKeys.Value, String],
-      fallback: ConfigIncluder = null)
+      fallback: Option[ConfigIncluder] = None)
     extends ConfigIncluder {
 
     def withFallback(fallback: ConfigIncluder): ConfigIncluder =
-      new ClusterConfigIncluder(properties, fallback)
+      new ClusterConfigIncluder(properties, Option(fallback))
 
     def include(context: ConfigIncludeContext, what: String): ConfigObject = what match {
       case "cluster-properties" => ConfigValueFactory.fromMap(
-        properties.map(tuple => (tuple._1.toString, tuple._2)).asJava)
-      case _ if fallback != null => fallback.include(context, what)
-      case _ => ConfigValueFactory.fromMap(Map[String,String]().asJava)
+        properties.map(tuple => (tuple._1.toString, tuple._2)))
+      case _ => fallback
+        .map(_.include(context, what))
+        .getOrElse(ConfigValueFactory.fromMap(Map[String,String]()))
     }
   }
 
   protected def resolveConfig(properties: Map[ConfigurationKeys.Value, String]) =
     ConfigFactory.load(
-      classOf[FileConfigurationContributor].getClassLoader,
+      this.getClass.getClassLoader,
       configName,
       ConfigParseOptions.defaults().setIncluder(new ClusterConfigIncluder(properties)),
       ConfigResolveOptions.defaults())
 
+  /**
+   * Builder of service description configurations.
+   * For the service `configName` it loads its configuration from a file and it looks for 3 types of
+   * configuration: Global, Core and Service. They are all optional.
+   *
+   * In order for the configuration file to be able to use dynamic properties, the configuration
+   * file must include a `include "cluster-properties` statement.
+   *
+   * configuration example:
+   * {{{
+   *
+   * include "cluster-properties"
+   *
+   *"global" {
+   *  "tag"="aTag",
+   *  "properties" {
+   *    "global.example.string"="global-"${MasterNode}
+   *   }
+   *}
+   *"core" {
+   *  "tag"="aTag",
+   *  "properties" {
+   *    "core.example"="core-"${MasterNode}
+   *   }
+   *}
+   *"a-service" {
+   *  "configType"="test-service-site"
+   *  "tag"="aTag",
+   *  "properties" {
+   *    "service.example"="service-"${MasterNode}
+   *   }
+   *}
+   * }}}
+   *
+   * @see [[ConfigurationKeys]]
+   */
   override def contributions(
       properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle = {
     val config = resolveConfig(properties)

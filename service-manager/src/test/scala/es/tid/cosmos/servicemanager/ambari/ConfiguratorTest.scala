@@ -21,7 +21,7 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.servicemanager.ambari.Configurator.ConfigurationConflict
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers.contributionsWithNumber
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest.Cluster
 
 class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatchers
     with MockitoSugar {

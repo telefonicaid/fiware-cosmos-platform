@@ -27,9 +27,10 @@ object Hdfs extends ServiceWithConfigurationFile {
 
   lazy val nameNodeHttpPort: Int = {
     try {
-      val port = resolveConfig(Map(
-          ConfigurationKeys.MasterNode -> "",
-          ConfigurationKeys.HdfsReplicationFactor -> "3"))
+      val emptyProperties = Map(
+        ConfigurationKeys.MasterNode -> "",
+        ConfigurationKeys.HdfsReplicationFactor -> "")
+      val port = resolveConfig(emptyProperties)
         .getObject("hdfs.properties")
         .unwrapped()
         .get("dfs.http.address")

@@ -17,5 +17,5 @@ object ConfigurationKeys extends Enumeration {
       MasterNode,
       MaxMapTasks,
       MaxReduceTasks,
-      ReducersPerSlave= Value
+      ReducersPerSlave = Value
 }

@@ -26,17 +26,17 @@ import es.tid.cosmos.servicemanager.DeploymentException
 private[ambari] abstract class AmbariRequest(url: Request) extends RequestProcessor with RequestHandler {
   protected object Status extends Enumeration {
     type Status = Value
-    val FINISHED, WAITING, ERROR = Value
+    val Finished, Waiting, Error = Value
 
     /**
      * Combines the states of two operations and returns the state of the operation
      * that aggregates both.
      */
     def combine(left: Status.Value, right: Status.Value) = (left, right) match {
-      case (Status.FINISHED, other) => other
-      case (Status.ERROR, _) => Status.ERROR
-      case (_, Status.ERROR) => Status.ERROR
-      case (Status.WAITING, _) => Status.WAITING
+      case (Status.Finished, other) => other
+      case (Status.Error, _) => Status.Error
+      case (_, Status.Error) => Status.Error
+      case (Status.Waiting, _) => Status.Waiting
     }
   }
 
@@ -52,12 +52,12 @@ private[ambari] abstract class AmbariRequest(url: Request) extends RequestProces
     performRequest(getRequest(url))
       .map(getStatusFromJson)
       .flatMap({
-        case Status.WAITING => future { blocking {
+        case Status.Waiting => future { blocking {
           Thread.sleep(1000)
           Await.result(ensureFinished, Duration.Inf)
         }}
-        case Status.FINISHED => Future.successful()
-        case Status.ERROR => Future.failed(DeploymentException(url.getUrl))
+        case Status.Finished => Future.successful()
+        case Status.Error => Future.failed(DeploymentException(url.getUrl))
       })
   }
 }

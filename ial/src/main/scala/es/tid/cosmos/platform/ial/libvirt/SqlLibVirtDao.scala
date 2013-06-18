@@ -30,7 +30,7 @@ protected class PersistentLibVirtServerProperties(
   /**
    * Fake constructor required by Squeryl to map the class and the table name.
    */
-  def this() = this("", "", MachineProfile.G1_COMPUTE, "", "", "", true)
+  def this() = this("", "", MachineProfile.G1Compute, "", "", "", true)
 
   def toTransient = new TransientLibVirtServerProperties(
     name, description, profile, connectionChain, domainHostname, domainIpAddress)

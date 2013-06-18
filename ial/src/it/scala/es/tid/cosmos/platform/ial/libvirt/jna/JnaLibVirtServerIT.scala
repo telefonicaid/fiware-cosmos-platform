@@ -26,7 +26,7 @@ class JnaLibVirtServerIT extends FlatSpec with MustMatchers with BeforeAndAfter 
   var server = new JnaLibVirtServer(new TransientLibVirtServerProperties(
     name = "Test",
     description = "Test libvirt Server",
-    MachineProfile.G1_COMPUTE,
+    MachineProfile.G1Compute,
     connectionChain = "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
     domainHostname = "andromeda52",
     domainIpAddress = "192.168.63.62"))

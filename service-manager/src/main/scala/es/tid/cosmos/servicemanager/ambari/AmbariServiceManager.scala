@@ -75,7 +75,7 @@ class AmbariServiceManager(
       serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
     val id = new ClusterId
     val machines_> =
-      infrastructureProvider.createMachines(name, MachineProfile.G1_COMPUTE, clusterSize, waitForSsh)
+      infrastructureProvider.createMachines(name, MachineProfile.G1Compute, clusterSize, waitForSsh)
     val deployment_> = for {
       machines <- machines_>
       (master, slaves) = masterAndSlaves(machines)
@@ -228,11 +228,11 @@ class AmbariServiceManager(
 
   override def deployPersistentHdfsCluster(): Future[Unit] = {
     val masterMachine_> = infrastructureProvider.createMachines(
-      persistentHdfsId.id, MachineProfile.HDFS_MASTER, 1, waitForSsh)
+      persistentHdfsId.id, MachineProfile.HdfsMaster, 1, waitForSsh)
     for {
-      machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HDFS_SLAVE)
+      machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
       slaveMachines <- infrastructureProvider.createMachines(
-        persistentHdfsId.id, MachineProfile.HDFS_SLAVE, machineCount, waitForSsh)
+        persistentHdfsId.id, MachineProfile.HdfsSlave, machineCount, waitForSsh)
       Seq(masterMachine) <- masterMachine_>
       _ <- createUnregisteredCluster(
         id = persistentHdfsId,

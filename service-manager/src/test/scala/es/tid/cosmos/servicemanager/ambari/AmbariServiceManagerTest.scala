@@ -88,10 +88,10 @@ class AmbariServiceManagerTest
     val hdfsService = mock[Service]
     val userService = mock[Service]
     def setExpectations() {
-      given(infrastructureProvider.availableMachineCount(MachineProfile.HDFS_SLAVE))
+      given(infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave))
         .willReturn(successful(slaveCount))
-      setMachineExpectations(machines, hosts, MachineProfile.HDFS_SLAVE)
-      setMachineExpectations(masterMachine, masterHost, MachineProfile.HDFS_MASTER)
+      setMachineExpectations(machines, hosts, MachineProfile.HdfsSlave)
+      setMachineExpectations(masterMachine, masterHost, MachineProfile.HdfsMaster)
       given(cluster.addHost(masterMachine.head.hostname)).willReturn(successful(masterHost.head))
       given(cluster.addHosts(machines.map(_.hostname))).willReturn(successful(hosts))
       given(provisioner.registeredHostnames).willReturn(
@@ -114,17 +114,17 @@ class AmbariServiceManagerTest
 
     def verifyCalls() {
       verify(infrastructureProvider)
-        .availableMachineCount(MachineProfile.HDFS_SLAVE)
+        .availableMachineCount(MachineProfile.HdfsSlave)
       verify(infrastructureProvider)
         .createMachines(
             the(instance.persistentHdfsId.id),
-            the(MachineProfile.HDFS_SLAVE),
+            the(MachineProfile.HdfsSlave),
             the(slaveCount),
             any())
       verify(infrastructureProvider)
         .createMachines(
             the(instance.persistentHdfsId.id),
-            the(MachineProfile.HDFS_MASTER),
+            the(MachineProfile.HdfsMaster),
             the(1),
             any())
       val distinctHostnames = (masterMachine ++ machines).map(_.hostname).distinct
@@ -210,7 +210,7 @@ class AmbariServiceManagerTest
   private def setMachineExpectations(
       machines: Seq[MachineState],
       hosts: Seq[Host],
-      profile: MachineProfile.Value = MachineProfile.G1_COMPUTE,
+      profile: MachineProfile.Value = MachineProfile.G1Compute,
       services: Seq[ServiceDescription] = Seq()) {
     given(infrastructureProvider.releaseMachines(any()))
       .willReturn(successful())
@@ -267,7 +267,7 @@ class AmbariServiceManagerTest
     slaves: Seq[Host],
     clusterId: ClusterId) {
     verify(infrastructureProvider).createMachines(
-      the("clusterName"), the(MachineProfile.G1_COMPUTE), the(machines.size), any())
+      the("clusterName"), the(MachineProfile.G1Compute), the(machines.size), any())
     verify(infrastructureProvider).releaseMachines(machines)
     verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
     val distinctHostnames = machines.map(_.hostname).distinct
@@ -298,7 +298,7 @@ class AmbariServiceManagerTest
     (1 to numberOfMachines).map(number =>
       MachineState(
         new Id(s"ID$number"), s"aMachineName$number",
-        MachineProfile.G1_COMPUTE, MachineStatus.Running,
+        MachineProfile.G1Compute, MachineStatus.Running,
         s"hostname$prefix$number", s"ipAddress$number"))
 
   private def hostsOf(numberOfHosts: Int): Seq[Host] = Seq.fill(numberOfHosts)(mock[Host])

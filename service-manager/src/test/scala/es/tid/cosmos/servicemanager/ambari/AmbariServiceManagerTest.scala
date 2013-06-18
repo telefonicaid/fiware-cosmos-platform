@@ -67,15 +67,16 @@ class AmbariServiceManagerTest
   }
 
   it must "be able to create and terminate a multi-machine cluster" in {
-    val (machines, hosts) = machinesAndHostsOf(3)
+    val ClusterSize = 5
+    val (machines, hosts) = machinesAndHostsOf(ClusterSize)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions)
+    val clusterId = instance.createCluster("clusterName", ClusterSize, serviceDescriptions)
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
     val clusterDescription = instance.describeCluster(clusterId).get
-    clusterDescription.size must be (3)
+    clusterDescription.size must be (ClusterSize)
     clusterDescription.nameNode_> must eventually (be (new URI("hdfs://hostname1:50070")))
     terminateAndVerify(clusterId, instance)
     verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
@@ -284,6 +285,7 @@ class AmbariServiceManagerTest
     serviceDescriptions.foreach(sd => {
       verify(sd).createService(cluster, master, slaves)
       verify(sd).contributions(Map(
+        ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
         ConfigurationKeys.MasterNode -> master.name,
         ConfigurationKeys.MaxMapTasks -> (8 * slaves.length).toString,
         ConfigurationKeys.MaxReduceTasks -> (4 * 1.75 * slaves.length).round.toString))

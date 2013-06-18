@@ -54,6 +54,7 @@ object Configurator {
       master: Host,
       slaves: Seq[Host]): List[Configuration] = {
     val properties = Map(
+      ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
       ConfigurationKeys.MasterNode -> master.name,
       ConfigurationKeys.MaxMapTasks -> (MappersPerSlave * slaves.length).toString,
       ConfigurationKeys.MaxReduceTasks -> (ReducersPerSlave * slaves.length).round.toString)

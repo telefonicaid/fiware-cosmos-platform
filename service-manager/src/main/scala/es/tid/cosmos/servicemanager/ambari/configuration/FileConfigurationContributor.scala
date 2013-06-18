@@ -44,12 +44,12 @@ trait FileConfigurationContributor extends ConfigurationContributor {
     }
   }
 
-  protected def resolveConfig(properties: Map[ConfigurationKeys.Value, String]) = ConfigFactory.load(
-    classOf[FileConfigurationContributor].getClassLoader,
-    configName,
-    ConfigParseOptions.defaults()
-      .setIncluder(new ClusterConfigIncluder(properties)),
-    ConfigResolveOptions.defaults())
+  protected def resolveConfig(properties: Map[ConfigurationKeys.Value, String]) =
+    ConfigFactory.load(
+      classOf[FileConfigurationContributor].getClassLoader,
+      configName,
+      ConfigParseOptions.defaults().setIncluder(new ClusterConfigIncluder(properties)),
+      ConfigResolveOptions.defaults())
 
   override def contributions(
       properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle = {
@@ -57,8 +57,7 @@ trait FileConfigurationContributor extends ConfigurationContributor {
     ConfigurationBundle(
       optional[GlobalConfiguration]("global", config),
       optional[CoreConfiguration]("core", config),
-      service(config)
-    )
+      service(config))
   }
 
   private def optional[T <: Configuration : Factory](name: String, config: Config): Option[T] =

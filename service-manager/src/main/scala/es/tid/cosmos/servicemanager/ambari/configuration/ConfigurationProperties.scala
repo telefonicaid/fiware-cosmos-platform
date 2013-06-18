@@ -12,7 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari.configuration
 
 object ConfigurationKeys extends Enumeration {
-  val MasterNode, MaxMapTasks, MaxReduceTasks = Value
+  val HdfsReplicationFactor, MasterNode, MaxMapTasks, MaxReduceTasks = Value
 }
 
 class ConfigurationProperties(map: Map[ConfigurationKeys.Value, String]) {

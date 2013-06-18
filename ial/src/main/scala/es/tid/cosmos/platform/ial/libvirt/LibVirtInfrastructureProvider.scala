@@ -110,7 +110,7 @@ class LibVirtInfrastructureProvider(
     new MachineState(
       Id(domain.uuid),
       domain.name,
-      MachineProfile.G1_COMPUTE, // FIXME
+      MachineProfile.G1Compute, // FIXME
       domainStatus(domain),
       domain.hostname,
       domain.ipAddress)

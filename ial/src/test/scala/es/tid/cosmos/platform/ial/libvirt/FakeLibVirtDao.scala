@@ -19,7 +19,7 @@ class FakeLibVirtDao extends LibVirtDao {
     new TransientLibVirtServerProperties(
       name = s"andromeda0$i",
       description = s"Andromeda 0$i",
-      profile = MachineProfile.G1_COMPUTE,
+      profile = MachineProfile.G1Compute,
       connectionChain = connChain(s"192.168.63.$i"),
       domainHostname = s"andromeda${50 + i}",
       domainIpAddress = s"192.168.63.${50 + i}"

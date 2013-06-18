@@ -25,16 +25,16 @@ private[ambari] class ServiceRequest(url: Request) extends AmbariRequest(url) {
   }
 
   private def statusFromString(str: String) = str match {
-    case "COMPLETED" => Status.FINISHED
-    case "FAILED" | "TIMEDOUT" | "ABORTED" => Status.ERROR
-    case "PENDING" | "QUEUED" | "IN_PROGRESS" => Status.WAITING
+    case "COMPLETED" => Status.Finished
+    case "FAILED" | "TIMEDOUT" | "ABORTED" => Status.Error
+    case "PENDING" | "QUEUED" | "IN_PROGRESS" => Status.Waiting
     case _ => throw new ServiceError(s"Unexpected status string from Ambari: $str")
   }
 
   override protected def getStatusFromJson(statusJson: JValue) = (statusJson \ "tasks").children
     .map(extractStatusString)
     .map(statusFromString)
-    .foldLeft(Status.FINISHED)(Status.combine)
+    .foldLeft(Status.Finished)(Status.combine)
 
   protected def getRequest(url: Request): RequestBuilder =
     new RequestBuilder(url) <<? Map("fields" -> "tasks/*")

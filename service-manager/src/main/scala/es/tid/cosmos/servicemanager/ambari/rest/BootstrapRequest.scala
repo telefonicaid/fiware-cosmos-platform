@@ -18,9 +18,9 @@ import es.tid.cosmos.servicemanager.ServiceError
 
 private[ambari] class BootstrapRequest(url: Request) extends AmbariRequest(url) {
   private def statusFromString(str: String) = str match {
-    case "RUNNING" => Status.WAITING
-    case "SUCCESS" => Status.FINISHED
-    case "ERROR" => Status.ERROR
+    case "RUNNING" => Status.Waiting
+    case "SUCCESS" => Status.Finished
+    case "ERROR" => Status.Error
     case _ => throw ServiceError(s"Unexpected request status in bootstrap request: $str")
   }
 

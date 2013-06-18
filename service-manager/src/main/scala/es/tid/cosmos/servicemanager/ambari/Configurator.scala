@@ -17,16 +17,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Factory
-import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits.{
-coreFactory, globalFactory}
-import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
+import es.tid.cosmos.servicemanager.ambari.rest.Cluster
 
 /**
  * Class for consolidating configuration from multiple contributors and applying it to a cluster.
  */
 object Configurator {
-  private val MappersPerSlave = 8
-  private val ReducersPerSlave = (4 * 1.75).round
   private val empty = ConfigurationBundle(None, None, List())
 
   /**
@@ -35,31 +32,23 @@ object Configurator {
    * to a single contribution set and then applying it to the cluster.
    *
    * @param cluster the cluster to apply the configuration to
-   * @param master the master of the cluster whose information might be used in the configuration
-   * @param slaves the slaves hosts of the cluster whose information might be used in the
-   *               configuration
+   * @param properties the values used to resolve dynamic configuration properties
    * @param contributors the configuration contributors offering pieces of cluster configuration
    * @return the futures of the cluster configuration application
    */
   def applyConfiguration(
-    cluster: Cluster, master: Host, slaves: Seq[Host],
+    cluster: Cluster,
+    properties: Map[ConfigurationKeys.Value, String],
     contributors: Seq[ConfigurationContributor]): Future[Seq[Unit]] = {
     val tag = timestampedTag()
-    val configurations = consolidateConfiguration(contributors, master, slaves)
+    val configurations = consolidateConfiguration(contributors, properties)
     Future.traverse(configurations)(cluster.applyConfiguration(_, tag))
   }
 
   private def consolidateConfiguration(
       contributors: Seq[ConfigurationContributor],
-      master: Host,
-      slaves: Seq[Host]): List[Configuration] = {
-    val properties = Map(
-      ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
-      ConfigurationKeys.MasterNode -> master.name,
-      ConfigurationKeys.MaxMapTasks -> (MappersPerSlave * slaves.length).toString,
-      ConfigurationKeys.MaxReduceTasks -> (ReducersPerSlave * slaves.length).round.toString)
+      properties: Map[ConfigurationKeys.Value, String]): List[Configuration] =
     contributors.map(_.contributions(properties)).foldLeft(empty)(consolidate).configurations
-  }
 
   private def consolidate(
     alreadyMerged: ConfigurationBundle, toMerge: ConfigurationBundle): ConfigurationBundle = {

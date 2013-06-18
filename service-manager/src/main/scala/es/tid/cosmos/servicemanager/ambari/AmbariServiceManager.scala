@@ -36,12 +36,16 @@ import es.tid.cosmos.servicemanager.util.TcpServer.SshService
  * @param persistentHdfsId the id of the persistent hdfs cluster
  * @param refreshGracePeriod the grace period in milliseconds
  *                           to allow for a discovered cluster to stabilize
+ * @param mappersPerSlave the number of map slots per tasktracker
+ * @param reducersPerSlave the number of reducer slots per tasktracker
  */
 class AmbariServiceManager(
     override protected val provisioner: ClusterProvisioner,
     override protected val infrastructureProvider: InfrastructureProvider,
     override protected val refreshGracePeriod: FiniteDuration,
-    override val persistentHdfsId: ClusterId)
+    override val persistentHdfsId: ClusterId,
+    mappersPerSlave: Int,
+    reducersPerSlave: Int)
   extends ServiceManager with FileConfigurationContributor
   with Refreshing with Logging {
 
@@ -206,8 +210,16 @@ class AmbariServiceManager(
       cluster: Cluster,
       master: Host,
       slaves: Seq[Host],
-      contributors: List[ConfigurationContributor]): Future[Cluster] =
-    Configurator.applyConfiguration(cluster, master, slaves, contributors).map(_ => cluster)
+      contributors: List[ConfigurationContributor]): Future[Cluster] = {
+    val properties = Map(
+      ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
+      ConfigurationKeys.MasterNode -> master.name,
+      ConfigurationKeys.MappersPerSlave -> mappersPerSlave.toString,
+      ConfigurationKeys.MaxMapTasks -> (mappersPerSlave * slaves.length).toString,
+      ConfigurationKeys.MaxReduceTasks -> (1.75 * reducersPerSlave * slaves.length).round.toString,
+      ConfigurationKeys.ReducersPerSlave -> reducersPerSlave.toString)
+    Configurator.applyConfiguration(cluster, properties, contributors).map(_ => cluster)
+  }
 
   private def changeServiceConfiguration(
       id: ClusterId,
@@ -220,7 +232,7 @@ class AmbariServiceManager(
       stoppedService <- service.stop()
       slaveDetails <- clusterDescription.slaves_>
       slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
-      _ <- Configurator.applyConfiguration(cluster, master, slaves, List(serviceDescription))
+      _ <- applyConfiguration(cluster, master, slaves, List(serviceDescription))
       startedService <- stoppedService.start()
     } yield startedService
   }

@@ -38,6 +38,8 @@ import es.tid.cosmos.servicemanager.ambari.services.{CosmosUserService, Hdfs, Am
 class AmbariServiceManagerTest
   extends AmbariTestBase with OneInstancePerTest with MockitoSugar with FutureMatchers {
 
+  val MappersPerSlave = 8
+  val ReducersPerSlave = 4
   val provisioner = initializeProvisioner
   val infrastructureProvider = mock[InfrastructureProvider]
   val cluster = mock[Cluster]
@@ -45,7 +47,7 @@ class AmbariServiceManagerTest
   val services = List(mock[Service], mock[Service])
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
   val instance = new AmbariServiceManager(provisioner, infrastructureProvider,
-    refreshGracePeriod = 1.seconds, ClusterId("HDFS"))
+    refreshGracePeriod = 1.seconds, ClusterId("HDFS"), MappersPerSlave, ReducersPerSlave)
 
   "A ServiceManager" must "have no Clusters by default" in {
     instance.clusterIds must be('empty)
@@ -129,7 +131,9 @@ class AmbariServiceManagerTest
             the(1),
             any())
       val distinctHostnames = (masterMachine ++ machines).map(_.hostname).distinct
-      verify(provisioner).bootstrapMachines(distinctHostnames, infrastructureProvider.rootPrivateSshKey)
+      verify(provisioner).bootstrapMachines(
+        distinctHostnames,
+        infrastructureProvider.rootPrivateSshKey)
       verify(provisioner).createCluster(instance.persistentHdfsId.id, "Cosmos-0.1.0")
       verify(cluster).addHost(masterMachine.head.hostname)
       verify(cluster).addHosts(machines.map(_.hostname))
@@ -156,7 +160,8 @@ class AmbariServiceManagerTest
 
   it must "add users on a cluster with Cosmos-user support" in {
     val (machines, hosts) = machinesAndHostsOf(3)
-    val services = serviceDescriptions :+ new CosmosUserService(Seq(ClusterUser("user1", "publicKey1")))
+    val services = serviceDescriptions :+ new CosmosUserService(
+      Seq(ClusterUser("user1", "publicKey1")))
     val componentNames = CosmosUserService.components.map(_.name)
     setMachineExpectations(machines, hosts, services = services)
     setServiceExpectations()
@@ -272,9 +277,13 @@ class AmbariServiceManagerTest
     verify(infrastructureProvider).releaseMachines(machines)
     verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
     val distinctHostnames = machines.map(_.hostname).distinct
-    verify(provisioner).bootstrapMachines(distinctHostnames, infrastructureProvider.rootPrivateSshKey)
+    verify(provisioner).bootstrapMachines(
+      distinctHostnames,
+      infrastructureProvider.rootPrivateSshKey)
     verify(provisioner).removeCluster(clusterId.toString)
-    verify(provisioner).teardownMachines(distinctHostnames, infrastructureProvider.rootPrivateSshKey)
+    verify(provisioner).teardownMachines(
+      distinctHostnames,
+      infrastructureProvider.rootPrivateSshKey)
     verify(cluster).applyConfiguration(
       the(mergedGlobalConfiguration(2, instance, master.name)), tagPattern)
     verify(cluster).applyConfiguration(the(mergedCoreConfiguration(2)), tagPattern)
@@ -286,9 +295,11 @@ class AmbariServiceManagerTest
       verify(sd).createService(cluster, master, slaves)
       verify(sd).contributions(Map(
         ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
+        ConfigurationKeys.MappersPerSlave -> MappersPerSlave.toString,
         ConfigurationKeys.MasterNode -> master.name,
-        ConfigurationKeys.MaxMapTasks -> (8 * slaves.length).toString,
-        ConfigurationKeys.MaxReduceTasks -> (4 * 1.75 * slaves.length).round.toString))
+        ConfigurationKeys.MaxMapTasks -> (MappersPerSlave * slaves.length).toString,
+        ConfigurationKeys.MaxReduceTasks -> (ReducersPerSlave * 1.75 * slaves.length).round.toString,
+        ConfigurationKeys.ReducersPerSlave -> ReducersPerSlave.toString))
     })
     services.foreach(service => {
       verify(service).install()

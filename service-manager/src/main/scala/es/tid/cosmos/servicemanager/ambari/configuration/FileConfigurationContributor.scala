@@ -19,7 +19,6 @@ import com.typesafe.config._
 
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
-import es.tid.cosmos.servicemanager.ambari.configuration.Implicits._
 
 /**
  * Trait for mixing-in configuration contributions from a file.
@@ -38,7 +37,8 @@ trait FileConfigurationContributor extends ConfigurationContributor {
       new ClusterConfigIncluder(properties, fallback)
 
     def include(context: ConfigIncludeContext, what: String): ConfigObject = what match {
-      case "cluster-properties" => ConfigValueFactory.fromMap(properties.toStringMap)
+      case "cluster-properties" => ConfigValueFactory.fromMap(
+        properties.map(tuple => (tuple._1.toString, tuple._2)).asJava)
       case _ if fallback != null => fallback.include(context, what)
       case _ => ConfigValueFactory.fromMap(Map[String,String]().asJava)
     }

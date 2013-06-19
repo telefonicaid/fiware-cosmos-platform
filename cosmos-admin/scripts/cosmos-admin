@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# Telefónica Digital - Product Development and Innovation
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+
+# Path to the JVM
+JAVA_HOME=/usr/java/default
+export JAVA_HOME
+
+BASEDIR=`dirname $0`
+
+CP="/opt/pdi-cosmos/cosmos-api/lib/*"
+
+for i in `find $BASEDIR | grep "\.jar"`
+do
+    CP="$i:$CP"
+done
+java -classpath $CP -Dconfig.file=/opt/pdi-cosmos/etc/cosmos-api.conf es.tid.cosmos.admin.Main $1

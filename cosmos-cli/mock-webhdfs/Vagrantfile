@@ -1,0 +1,36 @@
+#
+# Telefónica Digital - Product Development and Innovation
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos64-guestadditions"
+  config.vm.box_url = "http://cosmos10.hi.inet:8080/vagrant-boxes/CentOS-6.4-i386-v20130427.box"
+
+  config.vm.provision :puppet do |puppet|
+    puppet.manifests_path = "manifests"
+    puppet.manifest_file  = "base-hadoop.pp"
+    puppet.module_path = "modules"
+  end
+
+  config.vm.define :master do |master_config|
+    master_config.vm.network :private_network, ip: "192.168.10.10"
+    master_config.vm.hostname = "master"
+  end
+
+  config.vm.define :slave1 do |slave1_config|
+    slave1_config.vm.network :private_network, ip: "192.168.10.21"
+    slave1_config.vm.hostname = "slave1"
+  end
+
+  config.vm.define :slave2 do |slave2_config|
+    slave2_config.vm.network :private_network, ip: "192.168.10.22"
+    slave2_config.vm.hostname = "slave2"
+  end
+end

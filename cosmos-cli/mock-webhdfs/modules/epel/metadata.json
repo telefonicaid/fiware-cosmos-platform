@@ -1,0 +1,27 @@
+{
+  "license": "Apache License, Version 2.0",
+  "source": "http://github.com/stahnma/puppet-module-epel",
+  "project_page": "http://github.com/stahnma/puppet-module-epel",
+  "version": "0.0.3",
+  "checksums": {
+    "files/RPM-GPG-KEY-EPEL-5": "0466c259781def56dafe0a2cdc9de0c5",
+    "files/RPM-GPG-KEY-EPEL-6": "d865e6b948a74cb03bc3401c0b01b785",
+    "manifests/params.pp": "20eaae5216620b7763f77d3eac1ebf78",
+    "tests/init.pp": "7c69b7adf2ba141cb62cfc9e0704d59e",
+    "manifests/rpm_gpg_key.pp": "45545e6419bb09f92fec415ea400456b",
+    "manifests/init.pp": "9ebe9907fb3fc8b67416cbf005679cfb",
+    "README.md": "c7862b2fe7d361b9ee8ef1dff6024cca",
+    "Modulefile": "0fab72e3075e796aea4e9736c71b6a48",
+    "lib/facter/os_maj_version.rb": "0f19c87eca831a094fe83b1a79937b76"
+  },
+  "description": "Setup the EPEL package repo on Centos/RHEL et all",
+  "summary": "Setup the EPEL package repo",
+  "author": "stahnma",
+  "name": "stahnma-epel",
+  "types": [
+
+  ],
+  "dependencies": [
+
+  ]
+}

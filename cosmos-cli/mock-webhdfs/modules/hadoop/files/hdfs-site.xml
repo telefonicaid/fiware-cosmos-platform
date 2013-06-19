@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+  Telefónica Digital - Product Development and Innovation
+
+  THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+  EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+  Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+  All rights reserved.
+  -->
+<configuration>
+    <property>
+	<name>dfs.replication</name>
+	<value>1</value>
+	<description>The actual number of replications can be specified when the file is created.</description>
+    </property>
+
+    <property>
+	<name>dfs.name.dir</name>
+	<value>/hadoop/namenode</value>
+    </property>
+
+    <property>
+	<name>dfs.data.dir</name>
+	<value>/hadoop/data</value>
+    </property>
+
+    <property>
+	<name>dfs.webhdfs.enabled</name>
+	<value>true</value>
+    </property>
+</configuration>

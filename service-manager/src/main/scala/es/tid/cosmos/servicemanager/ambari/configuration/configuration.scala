@@ -22,7 +22,7 @@ trait Configuration extends ConfigurationHeader {
  * Types for configuration factories.
  */
 object FactoryTypes {
-  type Factory[T <:Configuration] = Map[String, Any] => T
+  type Factory[T <: Configuration] = Map[String, Any] => T
   object Implicits {
     implicit val globalFactory: Factory[GlobalConfiguration] = GlobalConfiguration
     implicit val coreFactory: Factory[CoreConfiguration] = CoreConfiguration

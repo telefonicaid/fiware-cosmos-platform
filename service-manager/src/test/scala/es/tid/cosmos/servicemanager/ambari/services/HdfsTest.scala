@@ -27,6 +27,7 @@ class HdfsTest extends FlatSpec with MustMatchers {
       contain(ComponentDescription("DATANODE", isMaster = false)) and
       contain(ComponentDescription("HDFS_CLIENT", isMaster = true)))
     val contributions = description.contributions(Map(
+      ConfigurationKeys.HdfsReplicationFactor -> "3",
       ConfigurationKeys.MasterNode -> "aMasterNodeName",
       ConfigurationKeys.MaxMapTasks -> "10",
       ConfigurationKeys.MaxReduceTasks -> "5"

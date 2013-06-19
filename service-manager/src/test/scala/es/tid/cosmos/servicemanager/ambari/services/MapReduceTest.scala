@@ -27,9 +27,11 @@ class MapReduceTest extends FlatSpec with MustMatchers {
       contain (ComponentDescription("TASKTRACKER", isMaster = false)) and
       contain (ComponentDescription("MAPREDUCE_CLIENT", isMaster = true)))
     val contributions = description.contributions(Map(
+      ConfigurationKeys.MappersPerSlave -> "3",
       ConfigurationKeys.MasterNode -> "aMasterNodeName",
       ConfigurationKeys.MaxMapTasks -> "10",
-      ConfigurationKeys.MaxReduceTasks -> "5"
+      ConfigurationKeys.MaxReduceTasks -> "5",
+      ConfigurationKeys.ReducersPerSlave -> "1"
     ))
     contributions.global must be ('defined)
     contributions.core must be ('empty)

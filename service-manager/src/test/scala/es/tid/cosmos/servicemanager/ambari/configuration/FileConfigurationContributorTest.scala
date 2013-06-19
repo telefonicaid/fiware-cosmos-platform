@@ -15,7 +15,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-class ConfigurationBuilderTest extends FlatSpec with MustMatchers with OneInstancePerTest {
+class FileConfigurationContributorTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   val masterName = "myMasterNode"
   val maxMapTasks = "10"
   val maxReduceTasks = "5"
@@ -29,17 +29,29 @@ class ConfigurationBuilderTest extends FlatSpec with MustMatchers with OneInstan
   val expectedService = ServiceConfiguration("test-service-site",
     Map("service.example" -> s"service-$masterName$maxMapTasks$maxReduceTasks")
   )
-  val full = ConfigFactory.load("global-core-service")
-  val noGlobal = ConfigFactory.load("core-service")
-  val noCore = ConfigFactory.load("global-service")
-  val justService = ConfigFactory.load("service")
-  val noService = ConfigFactory.load("no-service")
-
-  def withConfig(config: Config) = ConfigurationBuilder("a-test-service", config).build(Map(
+  val full = new FileConfigurationContributor {
+    override protected val configName: String = "global-core-service"
+  }
+  val noGlobal = new FileConfigurationContributor {
+    override protected val configName: String = "core-service"
+  }
+  val noCore = new FileConfigurationContributor {
+    override protected val configName: String = "global-service"
+  }
+  val justService = new FileConfigurationContributor {
+    override protected val configName: String = "service"
+  }
+  val noService = new FileConfigurationContributor {
+    override protected val configName: String = "no-service"
+  }
+  val properties = Map(
     ConfigurationKeys.MasterNode -> masterName,
     ConfigurationKeys.MaxMapTasks -> maxMapTasks,
     ConfigurationKeys.MaxReduceTasks -> maxReduceTasks
-  ))
+  )
+
+  def withConfig(contributor: FileConfigurationContributor) =
+    contributor.contributions(properties)
 
   "A builder" must "load a configuration with global, core and service" in {
     val bundle = withConfig(full)

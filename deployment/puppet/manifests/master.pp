@@ -1,3 +1,4 @@
+include pdi_base
 include ambari::ambari_server
 include mysql
 

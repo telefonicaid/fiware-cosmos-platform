@@ -1,5 +1,3 @@
-include ambari::ambari_agent
-
 service {'iptables':
 	ensure	=> stopped,
 }

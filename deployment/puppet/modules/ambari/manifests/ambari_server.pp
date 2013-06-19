@@ -1,8 +1,8 @@
 class ambari::ambari_server {
-  include ambari::ambari_repo
+  include ambari::ambari_repos
 
   package { 'ambari-server':
     ensure => installed,
-    require => File['/etc/yum.repos.d/ambari.repo'],
+    require => Yumrepo['ambari-1.x'],
   }
 }

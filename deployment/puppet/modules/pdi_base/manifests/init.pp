@@ -9,13 +9,14 @@
 # All rights reserved.
 #
 
-class pdi_base inherits pdi_base::params {
+class pdi_base {
+  include pdi_base::params
 
   # PDI Yum Repositories
 
   yumrepo { 'CentOS-Base':
     name     => 'CentOS-Base-6.4',
-    baseurl  => "http://repos.hi.inet/redhat/centos6.4-$basearch/RPMS.all/",
+    baseurl  => "http://repos.hi.inet/redhat/centos6.4-${pdi_base::params::basearch}/RPMS.all/",
     descr    => "PDI CentOS 6.4 Base Repository",
     enabled  => 1,
     gpgcheck => 0,
@@ -23,7 +24,7 @@ class pdi_base inherits pdi_base::params {
 
   yumrepo { 'CentOS-Updates':
     name     => 'CentOS-Updates',
-    baseurl  => "http://repos.hi.inet/redhat/centos6-${basearch}/RPMS.all/",
+    baseurl  => "http://repos.hi.inet/redhat/centos6-${pdi_base::params::basearch}/RPMS.all/",
     descr    => "PDI CentOS Updates Repository",
     enabled  => 1,
     gpgcheck => 0,
@@ -31,7 +32,7 @@ class pdi_base inherits pdi_base::params {
 
   yumrepo { 'epel-pdi':
     name     => 'EPEL-Repo-PDI',
-    baseurl  => "http://repos.hi.inet/centos/epel6-${basearch}/RPMS.all/",
+    baseurl  => "http://repos.hi.inet/centos/epel6-${pdi_base::params::basearch}/RPMS.all/",
     descr    => "PDI EPEL Repository",
     enabled  => 1,
     gpgcheck => 0,

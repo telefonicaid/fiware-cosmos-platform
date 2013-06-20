@@ -20,7 +20,7 @@ import play.api.db.DB
 import play.api.libs.json._
 import play.api.mvc.{Result, RequestHeader, Action}
 
-import es.tid.cosmos.api.controllers.common.{AuthController, ErrorMessage, Message}
+import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, AuthController, ErrorMessage, Message}
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
@@ -95,5 +95,5 @@ class ClusterResource(serviceManager: ServiceManager) extends AuthController {
 
 object ClusterResource {
   def clusterUrl(id: ClusterId)(implicit request: RequestHeader): String =
-    routes.ClusterResource.listDetails(id.toString).absoluteURL(secure = false)
+    AbsoluteUrl(routes.ClusterResource.listDetails(id.toString))
 }

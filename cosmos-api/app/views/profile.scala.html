@@ -2,6 +2,7 @@
   cosmosProfile: es.tid.cosmos.api.controllers.pages.CosmosProfile)(implicit request: RequestHeader)
 @import play.api.Play.current
 @import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
+@import es.tid.cosmos.api.controllers.common.AbsoluteUrl
 @import es.tid.cosmos.api.controllers.pages
 @import es.tid.cosmos.api.controllers.pages.NamedKey
 <!--
@@ -55,9 +56,8 @@
 
         <ul>
             <li><p>
-                Use <a href="@cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)">
-                @cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)</a> as the API
-                base URL
+                Use <a href="@AbsoluteUrl(cosmosRoutes.CosmosResource.version())">
+                @AbsoluteUrl(cosmosRoutes.CosmosResource.version())</a> as the API base URL
             </p></li>
             <li>
                 <p>
@@ -106,7 +106,7 @@
     <pre class="code">
     $ cosmos show dfbf0ab91099442f9014c3d4e2605b63
     {
-        "href": "@cosmosRoutes.CosmosResource.version().absoluteURL(secure = false)/cluster/dfbf0ab91099442f9014c3d4e2605b63",
+        "href": "@AbsoluteUrl(cosmosRoutes.CosmosResource.version())/cluster/dfbf0ab91099442f9014c3d4e2605b63",
         "id": "dfbf0ab91099442f9014c3d4e2605b63",
         "name": "Number cruncher",
         "size": 4,

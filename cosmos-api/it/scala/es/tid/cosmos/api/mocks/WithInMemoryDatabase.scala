@@ -19,7 +19,7 @@ class WithInMemoryDatabase(additionalConfiguration: Map[String, String] = Map.em
     FakeApplication(
       withGlobal = Some(TestGlobal),
       additionalConfiguration =
-        Map("application.secret" -> "appsecret") ++
+        Map("application.secret" -> "appsecret", "config.resource" -> "test.conf") ++
         inMemoryDatabase(name="default", options=Map("MODE" -> "MYSQL")) ++
         additionalConfiguration
     )) {

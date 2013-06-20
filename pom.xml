@@ -164,7 +164,7 @@
             <dependency>
                 <groupId>es.tid.cosmos</groupId>
                 <artifactId>cosmos-common</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
+                <version>1.0.0-20130528.161621-21</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
@@ -208,7 +208,7 @@
         <dependency>
             <groupId>es.tid.cosmos.tests</groupId>
             <artifactId>test-common</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0-20130528.161556-21</version>
             <scope>test</scope>
         </dependency>
         <dependency>

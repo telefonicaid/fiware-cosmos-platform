@@ -1,156 +1,124 @@
 # Class: mysql::params
 #
-#   The mysql configuration settings.
+# This class defines default parameters used by the main module class mysql
+# Operating Systems differences in names and paths are addressed here
 #
-# Parameters:
+# == Variables
 #
-# Actions:
+# Refer to mysql class for the variables defined here.
 #
-# Requires:
+# == Usage
 #
-# Sample Usage:
+# This class is not intended to be used directly.
+# It may be imported or inherited by other classes
 #
 class mysql::params {
 
-  $bind_address        = '127.0.0.1'
-  $port                = 3306
-  $etc_root_password   = false
-  $ssl                 = false
-  $restart             = true
+  ### Module specific parameters
+  $root_password = ''
+  $password_salt = ''
 
-  case $::operatingsystem {
-    'Ubuntu': {
-      $service_provider = upstart
-    }
-    default: {
-      $service_provider = undef
-    }
+  ### Application related parameters
+
+  $package = $::operatingsystem ? {
+    default => 'mysql-server',
   }
 
-  case $::osfamily {
-    'RedHat': {
-      $basedir               = '/usr'
-      $datadir               = '/var/lib/mysql'
-      $service_name          = 'mysqld'
-      $client_package_name   = 'mysql'
-      $server_package_name   = 'mysql-server'
-      $socket                = '/var/lib/mysql/mysql.sock'
-      $pidfile               = '/var/run/mysqld/mysqld.pid'
-      $config_file           = '/etc/my.cnf'
-      $log_error             = '/var/log/mysqld.log'
-      $ruby_package_name     = 'ruby-mysql'
-      $ruby_package_provider = 'gem'
-      $python_package_name   = 'MySQL-python'
-      $php_package_name      = 'php-mysql'
-      $java_package_name     = 'mysql-connector-java'
-      $root_group            = 'root'
-      $ssl_ca                = '/etc/mysql/cacert.pem'
-      $ssl_cert              = '/etc/mysql/server-cert.pem'
-      $ssl_key               = '/etc/mysql/server-key.pem'
-    }
-
-    'Suse': {
-      $basedir               = '/usr'
-      $datadir               = '/var/lib/mysql'
-      $service_name          = 'mysql'
-      $client_package_name   = $::operatingsystem ? {
-        /OpenSuSE/           => 'mysql-community-server-client',
-        /(SLES|SLED)/        => 'mysql-client',
-        }
-      $server_package_name   = $::operatingsystem ? {
-        /OpenSuSE/           => 'mysql-community-server',
-        /(SLES|SLED)/        => 'mysql',
-        }
-      $socket                = $::operatingsystem ? {
-        /OpenSuSE/           => '/var/run/mysql/mysql.sock',
-        /(SLES|SLED)/        => '/var/lib/mysql/mysql.sock',
-        }
-      $pidfile               = '/var/run/mysql/mysqld.pid'
-      $config_file           = '/etc/my.cnf'
-      $log_error             = $::operatingsystem ? {
-        /OpenSuSE/           => '/var/log/mysql/mysqld.log',
-        /(SLES|SLED)/        => '/var/log/mysqld.log',
-        }
-      $ruby_package_name     = $::operatingsystem ? {
-        /OpenSuSE/           => 'rubygem-mysql',
-        /(SLES|SLED)/        => 'ruby-mysql',
-        }
-      $python_package_name   = 'python-mysql'
-      $java_package_name     = 'mysql-connector-java'
-      $root_group            = 'root'
-      $ssl_ca                = '/etc/mysql/cacert.pem'
-      $ssl_cert              = '/etc/mysql/server-cert.pem'
-      $ssl_key               = '/etc/mysql/server-key.pem'
-    }
-
-    'Debian': {
-      $basedir              = '/usr'
-      $datadir              = '/var/lib/mysql'
-      $service_name         = 'mysql'
-      $client_package_name  = 'mysql-client'
-      $server_package_name  = 'mysql-server'
-      $socket               = '/var/run/mysqld/mysqld.sock'
-      $pidfile              = '/var/run/mysqld/mysqld.pid'
-      $config_file          = '/etc/mysql/my.cnf'
-      $log_error            = '/var/log/mysql/error.log'
-      $ruby_package_name    = 'libmysql-ruby'
-      $python_package_name  = 'python-mysqldb'
-      $php_package_name     = 'php5-mysql'
-      $java_package_name    = 'libmysql-java'
-      $root_group           = 'root'
-      $ssl_ca               = '/etc/mysql/cacert.pem'
-      $ssl_cert             = '/etc/mysql/server-cert.pem'
-      $ssl_key              = '/etc/mysql/server-key.pem'
-    }
-
-    'FreeBSD': {
-      $basedir               = '/usr/local'
-      $datadir               = '/var/db/mysql'
-      $service_name          = 'mysql-server'
-      $client_package_name   = 'databases/mysql55-client'
-      $server_package_name   = 'databases/mysql55-server'
-      $socket                = '/tmp/mysql.sock'
-      $pidfile               = '/var/db/mysql/mysql.pid'
-      $config_file           = '/var/db/mysql/my.cnf'
-      $log_error             = "/var/db/mysql/${::hostname}.err"
-      $ruby_package_name     = 'ruby-mysql'
-      $ruby_package_provider = 'gem'
-      $python_package_name   = 'databases/py-MySQLdb'
-      $php_package_name      = 'php5-mysql'
-      $java_package_name     = 'databases/mysql-connector-java'
-      $root_group            = 'wheel'
-      $ssl_ca                = undef
-      $ssl_cert              = undef
-      $ssl_key               = undef
-    }
-
-    default: {
-      case $::operatingsystem {
-        'Amazon': {
-          $basedir               = '/usr'
-          $datadir               = '/var/lib/mysql'
-          $service_name          = 'mysqld'
-          $client_package_name   = 'mysql'
-          $server_package_name   = 'mysql-server'
-          $socket                = '/var/lib/mysql/mysql.sock'
-          $config_file           = '/etc/my.cnf'
-          $log_error             = '/var/log/mysqld.log'
-          $ruby_package_name     = 'ruby-mysql'
-          $ruby_package_provider = 'gem'
-          $python_package_name   = 'MySQL-python'
-          $php_package_name      = 'php-mysql'
-          $java_package_name     = 'mysql-connector-java'
-          $root_group            = 'root'
-          $ssl_ca                = '/etc/mysql/cacert.pem'
-          $ssl_cert              = '/etc/mysql/server-cert.pem'
-          $ssl_key               = '/etc/mysql/server-key.pem'
-        }
-
-        default: {
-          fail("Unsupported osfamily: ${::osfamily} operatingsystem: ${::operatingsystem}, module ${module_name} only support osfamily RedHat, Debian, and FreeBSD, or operatingsystem Amazon")
-        }
-      }
-    }
+  $package_client = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => 'mysql-client',
+    default                   => 'mysql',
   }
+
+  $service = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => 'mysql',
+    default                   => 'mysqld',
+  }
+
+  $service_status = $::operatingsystem ? {
+    default => true,
+  }
+
+  $process = $::operatingsystem ? {
+    default => 'mysqld',
+  }
+
+  $process_args = $::operatingsystem ? {
+    default => '',
+  }
+
+  $process_user = $::operatingsystem ? {
+    default => 'mysql',
+  }
+
+  $config_dir = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/mysql',
+    default                   => '/etc/mysql',
+  }
+
+  $config_file = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/mysql/my.cnf',
+    default                   => '/etc/my.cnf',
+  }
+
+  $config_file_mode = $::operatingsystem ? {
+    default => '0644',
+  }
+
+  $config_file_owner = $::operatingsystem ? {
+    default => 'root',
+  }
+
+  $config_file_group = $::operatingsystem ? {
+    default => 'root',
+  }
+
+  $config_file_init = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/etc/default/mysql',
+    default                   => '/etc/sysconfig/mysqld',
+  }
+
+  $pid_file = $::operatingsystem ? {
+    default => '/var/run/mysqld/mysqld.pid',
+  }
+
+  $data_dir = $::operatingsystem ? {
+    default => '/var/lib/mysql',
+  }
+
+  $log_dir = $::operatingsystem ? {
+    default => '/var/log/',
+  }
+
+  $log_file = $::operatingsystem ? {
+    default => '/var/log/mysqld.log',
+  }
+
+  $port = '3306'
+  $protocol = 'tcp'
+
+  # General Settings
+  $my_class = ''
+  $source = ''
+  $source_dir = ''
+  $source_dir_purge = false
+  $template = ''
+  $options = ''
+  $service_autorestart = true
+  $absent = false
+  $disable = false
+  $disableboot = false
+
+  ### General module variables that can have a site or per module default
+  $monitor = false
+  $monitor_tool = ''
+  $monitor_target = '127.0.0.1'
+  $firewall = false
+  $firewall_tool = ''
+  $firewall_src = '0.0.0.0/0'
+  $firewall_dst = $::ipaddress
+  $puppi = false
+  $puppi_helper = 'standard'
+  $debug = false
+  $audit_only = false
 
 }

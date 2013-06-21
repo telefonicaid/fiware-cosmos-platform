@@ -23,7 +23,7 @@ import play.api.mvc.{RequestHeader, Action, Controller}
 
 import _root_.controllers.{routes => rootRoutes}
 import es.tid.cosmos.api.controllers._
-import es.tid.cosmos.api.controllers.common.ErrorMessage
+import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.oauth2.{UserProfile, OAuthClient, OAuthError, OAuthException}
@@ -49,8 +49,7 @@ class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Co
   }
 
   def swaggerUI = Action { implicit request =>
-    val docBaseUrl = rootRoutes.ApiHelpController.getResources().absoluteURL(secure = false)
-    Ok(views.html.swaggerUI(docBaseUrl))
+    Ok(views.html.swaggerUI(AbsoluteUrl(rootRoutes.ApiHelpController.getResources())))
   }
 
   def authorize(maybeCode: Option[String], maybeError: Option[String]) = Action { implicit request =>
@@ -122,5 +121,5 @@ class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Co
   }
 
   private def authenticateUrl(implicit request: RequestHeader) =
-    oauthClient.authenticateUrl(routes.Pages.authorize(None, None).absoluteURL(secure = false))
+    oauthClient.authenticateUrl(AbsoluteUrl(routes.Pages.authorize(None, None)))
 }

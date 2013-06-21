@@ -47,6 +47,7 @@
                         <exclude>**/develop-eggs/**</exclude>
                         <exclude>**/dist/**</exclude>
                         <exclude>**/eggs/**</exclude>
+                        <exclude>**/parts/**</exclude>
                         <exclude>**/resources/**/*</exclude>
                         <exclude>**/target/**</exclude>
                     </excludes>

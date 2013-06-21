@@ -12,7 +12,7 @@
 from setuptools import setup
 
 setup(name='cosmos',
-      version='0.1',
+      version='0.10.0',
       author='Cosmos Team',
       author_email='cosmos@tid.es',
       packages=['cosmos'],

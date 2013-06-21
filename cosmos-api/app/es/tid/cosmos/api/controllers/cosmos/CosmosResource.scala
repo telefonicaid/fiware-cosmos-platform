@@ -19,7 +19,7 @@ import play.api.mvc.{Action, Controller}
 /**
  * Root API resource
  */
-@Api(value = "/cosmos", listingPath = "/doc/cosmos", description = "API description")
+@Api(value = "/cosmos/v1", listingPath = "/doc/cosmos/v1", description = "API description")
 class CosmosResource extends Controller {
   @ApiOperation(value = "Get API version", httpMethod = "GET",
     notes = "Root API resource with version information",

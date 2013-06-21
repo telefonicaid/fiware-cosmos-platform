@@ -21,7 +21,7 @@ import es.tid.cosmos.api.mocks.WithInMemoryDatabase
 
 class CosmosIT extends FlatSpec with MustMatchers {
   "The Cosmos resource" must "return the version as JSON" in new WithInMemoryDatabase {
-    val resource = route(FakeRequest(GET, "/cosmos")).get
+    val resource = route(FakeRequest(GET, "/cosmos/v1")).get
     status(resource) must equal (OK)
     contentType(resource) must be (Some("application/json"))
     contentAsString(resource) must include (CosmosResource.apiVersion)

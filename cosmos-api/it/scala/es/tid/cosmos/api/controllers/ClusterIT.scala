@@ -27,10 +27,10 @@ import es.tid.cosmos.api.mocks.servicemanager.{MockedServiceManagerComponent, Mo
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 class ClusterIT extends FlatSpec with MustMatchers {
-  val resourcePath = s"/cosmos/cluster/${MockedServiceManager.DefaultClusterId}"
-  val provisioningResourcePath = s"/cosmos/cluster/${MockedServiceManager.InProgressClusterId}"
+  val resourcePath = s"/cosmos/v1/cluster/${MockedServiceManager.DefaultClusterId}"
+  val provisioningResourcePath = s"/cosmos/v1/cluster/${MockedServiceManager.InProgressClusterId}"
   val unknownClusterId = ClusterId()
-  val unknownResourcePath = s"/cosmos/cluster/$unknownClusterId"
+  val unknownResourcePath = s"/cosmos/v1/cluster/$unknownClusterId"
   val completeDescription = Json.obj(
       "href" -> s"http://$resourcePath",
       "id" -> MockedServiceManager.DefaultClusterId.toString,
@@ -100,7 +100,7 @@ class ClusterIT extends FlatSpec with MustMatchers {
       DB.withConnection { implicit c =>
         CosmosProfileDao.assignCluster(clusterId, user1.id)
       }
-      val resource = route(FakeRequest(GET, s"/cosmos/cluster/$clusterId").authorizedBy(user1)).get
+      val resource = route(FakeRequest(GET, s"/cosmos/v1/cluster/$clusterId").authorizedBy(user1)).get
       resource must failWith (classOf[IllegalStateException])
     }
 

@@ -13,15 +13,8 @@ package es.tid.cosmos.api.mocks
 
 import play.api.test.{FakeApplication, WithApplication}
 import play.api.test.Helpers._
+import play.core.DevSettings
 
 class WithInMemoryDatabase(additionalConfiguration: Map[String, String] = Map.empty)
-  extends WithApplication(
-    FakeApplication(
-      withGlobal = Some(TestGlobal),
-      additionalConfiguration =
-        Map("application.secret" -> "appsecret", "config.resource" -> "test.conf") ++
-        inMemoryDatabase(name="default", options=Map("MODE" -> "MYSQL")) ++
-        additionalConfiguration
-    )) {
-  def services = TestGlobal.application.services
-}
+  extends WithTestApplication(
+    inMemoryDatabase(name="default", options=Map("MODE" -> "MYSQL")) ++ additionalConfiguration)

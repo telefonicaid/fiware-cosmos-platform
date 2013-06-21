@@ -25,8 +25,10 @@ import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.ClusterId
 
 class ClustersIT extends FlatSpec with MustMatchers {
+
   val validCreationParams: JsValue = Json.toJson(CreateClusterParams("cluster_new", 120))
   val inValidCreationParams: JsValue = Json.obj("invalid" -> "json")
+  val resourcePath = "/cosmos/v1/cluster"
 
   "The clusters resource" must "list user clusters" in new WithSampleUsers {
     DB.withConnection { implicit c =>
@@ -34,7 +36,7 @@ class ClustersIT extends FlatSpec with MustMatchers {
       val otherCluster = ClusterId()
       CosmosProfileDao.assignCluster(ownCluster, user1.id)
       CosmosProfileDao.assignCluster(otherCluster, user2.id)
-      val resource = route(FakeRequest(GET, "/cosmos/cluster").authorizedBy(user1)).get
+      val resource = route(FakeRequest(GET, resourcePath).authorizedBy(user1)).get
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)
@@ -43,12 +45,12 @@ class ClustersIT extends FlatSpec with MustMatchers {
   }
 
   it must "reject unauthenticated cluster listing" in new WithSampleUsers {
-    val resource = route(FakeRequest(GET, "/cosmos/cluster")).get
+    val resource = route(FakeRequest(GET, resourcePath)).get
     status(resource) must equal (UNAUTHORIZED)
   }
 
   it must "start a new cluster" in new WithSampleUsers {
-    val resource = route(FakeRequest(POST, "/cosmos/cluster")
+    val resource = route(FakeRequest(POST, resourcePath)
       .withJsonBody(validCreationParams)
       .authorizedBy(user1)).get
     status(resource) must equal (CREATED)
@@ -62,13 +64,13 @@ class ClustersIT extends FlatSpec with MustMatchers {
   }
 
   it must "reject unauthenticated cluster creation" in new WithSampleUsers {
-    val resource = route(FakeRequest(POST, "/cosmos/cluster")
+    val resource = route(FakeRequest(POST, resourcePath)
       .withJsonBody(validCreationParams)).get
     status(resource) must equal (UNAUTHORIZED)
   }
 
   it must "reject cluster creation with invalid payload" in new WithSampleUsers {
-    val resource = route(FakeRequest(POST, "/cosmos/cluster")
+    val resource = route(FakeRequest(POST, resourcePath)
       .withJsonBody(inValidCreationParams)
       .authorizedBy(user1)).get
     status(resource) must equal (BAD_REQUEST)

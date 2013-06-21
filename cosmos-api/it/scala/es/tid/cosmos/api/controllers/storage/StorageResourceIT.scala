@@ -24,14 +24,16 @@ import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 
 class StorageResourceIT extends FlatSpec with MustMatchers with OneInstancePerTest {
 
+  val request = FakeRequest(GET, "/cosmos/v1/storage")
+
   "The storage resource" must "be unavailable when no service is active" in new WithSampleUsers {
-    val result = route(FakeRequest(GET, "/cosmos/storage").authorizedBy(user1)).get
+    val result = route(request.authorizedBy(user1)).get
     status(result) must be (SERVICE_UNAVAILABLE)
   }
 
   it must "provide the WebHDFS connection details" in new WithSampleUsers {
     services.serviceManager().deployPersistentHdfsCluster()
-    val result = route(FakeRequest(GET, "/cosmos/storage").authorizedBy(user1)).get
+    val result = route(request.authorizedBy(user1)).get
     status(result) must be (OK)
     val jsonBody = Json.parse(contentAsString(result))
     Json.fromJson[WebHdfsConnection](jsonBody).get must be (WebHdfsConnection(
@@ -41,7 +43,7 @@ class StorageResourceIT extends FlatSpec with MustMatchers with OneInstancePerTe
   }
 
   it must "reject unauthenticated requests" in new WithInMemoryDatabase {
-    val result = route(FakeRequest(GET, "/cosmos/storage")).get
+    val result = route(request).get
     status(result) must be (UNAUTHORIZED)
   }
 }

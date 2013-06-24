@@ -58,7 +58,10 @@ class WebHdfsClient(object):
             raise ExitWithError(
                 -1, "WebHDFS uploads are not supported on 1-machine " +
                 "clusters: an empty file has been created. See #862.")
-        if redirect.status_code != 307:
+        if self.__is_replication_exception(redirect):
+            raise ExitWithError(-1, 'Cannot replicate file %s blocks' %
+                                remote_path)
+        elif redirect.status_code != 307:
             raise ResponseError('Not redirected by the WebHDFS frontend',
                                 redirect)
 
@@ -96,6 +99,10 @@ class WebHdfsClient(object):
     def get_file(self, remote_path, out_file):
         r = self.client.get(self.to_http(remote_path), stream=True,
                             params=self.opParams('OPEN'))
+        if r.status_code == 404:
+            raise ExitWithError(404, 'File %s does not exist' % remote_path)
+        elif r.status_code != 200:
+            raise ResponseError('Cannot download file %s' % remote_path, r)
         buf = r.raw.read(BUFFER_SIZE)
         written = 0
         while (len(buf) > 0):
@@ -120,6 +127,16 @@ class WebHdfsClient(object):
         return urljoin('http://' + urlparse(self.webhdfs_uri).netloc,
                        '/webhdfs/v1/user/%s/%s' % (self.username, rel_path))
 
+    def __is_replication_exception(self, response):
+        if response.status_code != 500:
+            return False
+        try:
+            exception = response.json()
+        except ValueError:
+            return False
+        return (exception.get('RemoteException', {}).get('exception') ==
+                'ArrayIndexOutOfBoundsException')
+
 
 def webhdfs_client_from_config(config):
     r = requests.get(Routes(config.api_url).storage, auth=config.credentials)
@@ -141,7 +158,7 @@ def put_file(args, config):
         remote_type = client.path_type(args.remote_path)
         if remote_type == 'DIRECTORY':
             target_path = os.path.join(args.remote_path,
-                                       os.path.split(args.local_file)[-1])
+                                       os.path.split(args.local_file.name)[-1])
             log.info("Path %s is an existing directory, uploading to %s" %
                      (args.remote_path, target_path))
         elif remote_type == 'FILE':

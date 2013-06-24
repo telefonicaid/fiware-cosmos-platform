@@ -96,6 +96,10 @@ class WebHdfsClient(object):
     def get_file(self, remote_path, out_file):
         r = self.client.get(self.to_http(remote_path), stream=True,
                             params=self.opParams('OPEN'))
+        if r.status_code == 404:
+            raise ExitWithError(404, 'File %s does not exist' % remote_path)
+        elif r.status_code != 200:
+            raise ResponseError('Cannot download file %s' % remote_path, r)
         buf = r.raw.read(BUFFER_SIZE)
         written = 0
         while (len(buf) > 0):

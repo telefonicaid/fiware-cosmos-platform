@@ -235,7 +235,6 @@
 
     <modules>
         <module>injection</module>
-        <module>samples</module>
         <module>tests</module>
     </modules>
 </project>

@@ -1,0 +1,5 @@
+Store in this directory the files to be replaced in original OpenVZ templates for your
+deployment. These files will be used as input for generate-template.sh script by matching the
+input template filename by a subdirectory in replacements/ (e.g.,
+replacements/centos-6-x86_64.tar.gz will be the replacement files for input template
+centos-6-x86_64.tar.gz).

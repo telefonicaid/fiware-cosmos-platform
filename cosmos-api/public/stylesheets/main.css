@@ -1,0 +1,170 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+@font-face {
+    font-family: telefonica;
+    src: url('../fonts/TelefonicaText-Regular.ttf');
+}
+
+@font-face {
+    font-family: telefonica-script;
+    src: url('../fonts/TelefonicaScript.otf');
+}
+
+html, body {
+    font-family: telefonica,sans-serif;
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../images/cosmos-big.png');
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-position: right top;
+}
+
+body, #headernav {
+    border-radius: 16px;
+}
+
+body {
+    position: relative;
+    background-color: rgba(255,255,255,0.9);
+    max-width: 40em;
+    margin: 4em auto;
+    padding: 2em 4em;
+    border: 1px solid black;
+}
+
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+hr {
+    clear: both;
+    width: 80%;
+    border: 0;
+    background-color: black;
+    height: 1px;
+    margin: 2em auto;
+}
+
+.version {
+    float: right;
+    font-size: 50%;
+}
+
+.page-title {
+    font-size: 150%;
+}
+
+#headernav {
+    position: absolute;
+    top: -1em;
+    right: 0;
+    left: 0;
+    height: 2em;
+    background-color: #111;
+    text-align: right;
+}
+
+#headernav ul {
+    padding: 0 1em;
+}
+
+#headernav li {
+    position: relative;
+    top: 0.8ex;
+    color: #888;
+    display: inline;
+    padding: 0.8ex 0.8em;
+}
+
+#headernav a, #headernav a:hover, #headernav a:visited {
+    color: white;
+}
+
+#tu-id {
+    float: left;
+    background-color: #e25e2b;
+    border-radius: 5px;
+    padding: 5px;
+    width: 64px;
+    margin-right: 2em;
+    box-shadow: 3px 3px 2px #888;
+}
+
+#tu-id:hover {
+    background-color: #FF7E14;
+}
+
+/*
+ * User profile
+ */
+
+.key {
+    display: block;
+    background-color: white;
+    padding: 0.5ex 1ex;
+    border: 1px solid black;
+    border-radius: 1ex;
+    margin-top: 1ex;
+}
+
+.key .name {
+    font-weight: bold;
+}
+.key .signature {
+    background-color: black;
+    color: white;
+    padding: 0.5ex 1ex 1ex 1ex;
+    font-size: 70%;
+    font-family: "Courier New", Courier, monospace;
+    word-break: break-all;
+    margin-top: 1ex;
+}
+
+#credentials {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+}
+#credentials tr:hover {
+    background-color: #ddd;
+}
+#credentials th, td {
+    border: 1px solid black;
+}
+#credentials th {
+    text-align: left;
+}
+#credentials td {
+    font-family: "Courier New", Courier, monospace;
+}
+
+/*
+ * Messages
+ */
+.message {
+    position: relative;
+    left: 0;
+    right: 0;
+    border: 1px solid black;
+    text-align: center;
+    font-weight: bold;
+    background-color: #AAA;
+}

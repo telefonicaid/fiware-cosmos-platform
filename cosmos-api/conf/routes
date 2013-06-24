@@ -1,0 +1,31 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Pages
+GET     /                               @es.tid.cosmos.api.controllers.pages.Pages.index
+GET     /auth                           @es.tid.cosmos.api.controllers.pages.Pages.authorize(code: Option[String], error: Option[String])
+GET     /logout                         @es.tid.cosmos.api.controllers.pages.Pages.logout()
+POST    /register                       @es.tid.cosmos.api.controllers.pages.Pages.registerUser
+
+# API
+GET     /cosmos                         @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version()
+GET     /doc/cosmos                     controllers.ApiHelpController.getResource(path = "/doc/cosmos")
+
+GET     /cosmos/storage                 @es.tid.cosmos.api.controllers.storage.StorageResource.details()
+GET     /doc/cosmos/storage             controllers.ApiHelpController.getResource(path = "/doc/cosmos/storage")
+
+GET     /cosmos/cluster                 @es.tid.cosmos.api.controllers.clusters.ClustersResource.list()
+POST    /cosmos/cluster                 @es.tid.cosmos.api.controllers.clusters.ClustersResource.createCluster()
+GET     /doc/cosmos/clusters            controllers.ApiHelpController.getResource(path = "/doc/cosmos/clusters")
+
+GET     /cosmos/cluster/:id             @es.tid.cosmos.api.controllers.cluster.ClusterResource.listDetails(id)
+POST    /cosmos/cluster/:id/terminate   @es.tid.cosmos.api.controllers.cluster.ClusterResource.terminate(id)
+GET     /doc/cosmos/cluster             controllers.ApiHelpController.getResource(path = "/doc/cosmos/cluster")
+
+# API docs
+GET     /doc.html                       @es.tid.cosmos.api.controllers.pages.Pages.swaggerUI
+GET     /doc                            controllers.ApiHelpController.getResources()
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file                   controllers.Assets.at(path="/public", file)

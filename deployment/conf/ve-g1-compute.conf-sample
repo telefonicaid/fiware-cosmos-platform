@@ -1,0 +1,22 @@
+###
+# This is the sample OpenVZ config file used to fill default properties when used along libvirt.
+# It defines the basic properties to be used in G1_COMPUTE profile servers.
+#
+# Put this file in /etc/vz/conf directory and edit /etc/vz/vz.conf to set CONFIGFILE="g1-compute"
+#
+
+# RAM
+PHYSPAGES="0:32G"
+
+# Swap
+SWAPPAGES="0:16G"
+
+# Disk quota parameters (in form of softlimit:hardlimit)
+DISKSPACE="32G:32G"
+DISKINODES="200000:220000"
+QUOTATIME="0"
+
+# CPU fair scheduler parameter
+CPUUNITS="1000"
+
+NETIF="ifname=eth0,bridge=vzbr0,host_ifname=veth101.0,host_mac=FE:FF:FF:FF:FF:FF"

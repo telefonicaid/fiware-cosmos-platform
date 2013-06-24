@@ -1,0 +1,97 @@
+<!--
+  Telefónica Digital - Product Development and Innovation
+ 
+  THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+  EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ 
+  Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+  All rights reserved.
+-->
+<html>
+    <head>
+        <script src="../js/require.js"></script>
+        <script src="jasmine.js"></script>
+        <script src="jasmine-html.js"></script>
+        <script type="text/javascript">
+            requirejs.config({
+                baseUrl: '../js',
+                paths: {
+                    jquery: 'http://code.jquery.com/jquery-1.10.1.min'
+                },
+                shim: {
+                    jqueryFileTree: ['jquery']
+                }
+            });
+            requirejs(['jquery', 'jqueryFileTree'], function($) {
+                $(document).ready(function() {
+                    var jasmineEnv = jasmine.getEnv();
+                    jasmineEnv.updateInterval = 250;
+                    var htmlReporter = new jasmine.HtmlReporter();
+                    jasmineEnv.addReporter(htmlReporter);
+                    
+                    describe("A file tree", function() {
+                        var fileTree;
+
+                        beforeEach(function() {
+                            fileTree = $('<div>');
+                            fileTree.fileTree({
+                                handler: {
+                                    listDir: function(path) {
+                                        var result = $.Deferred();
+                                        result.resolve([
+                                            {'pathSuffix': 'noext', 'type': 'FILE'},
+                                            {'pathSuffix': 'ext.png', 'type': 'FILE'},
+                                            {'pathSuffix': 'no.dd', 'type': 'DIRECTORY'}
+                                        ]);
+                                        return result;
+                                    },
+                                    getFile: function(path) {
+                                        return;
+                                    }
+                                },
+                                expandSpeed: -1,
+                                collapseSpeed: -1
+                            });
+                        });
+
+                        it("must list all the provided items", function() {
+                            var items = $('li', fileTree).map(function(index, element) {
+                                return $(element).text().trim();
+                            }).toArray();
+                            expect(items.length).toBe(3);
+                            expect(items).toContain('noext');
+                            expect(items).toContain('ext.png');
+                            expect(items).toContain('no.dd');
+                        });
+
+                        it("must expand and contract directories when clicked", function() {
+                            var dirElement = $('a:contains("no.dd")', fileTree);
+                            dirElement.click();
+                            var items = $('li', fileTree);
+                            expect(items.length).toBe(6);
+                            dirElement.click();
+                            setTimeout(function() {
+                                var items = $('li:visible', fileTree);
+                                expect(items.length).toBe(3);
+                            }, 100);
+                        });
+
+                        it("must correctly detect filetypes and directories", function() {
+                            expect($('li:contains("no.dd").directory.collapsed', fileTree).length).toBe(1);
+                            expect($('li:contains("ext.png").file.ext_png', fileTree).length).toBe(1);
+                            expect($('li:contains("noext").file', fileTree).length).toBe(1);
+                        });
+                    });
+
+                    jasmineEnv.execute();
+                });
+            });
+        </script>
+        <link href="../css/jqueryFileTree.css" rel="stylesheet" type="text/css" media="screen" />
+        <link href="jasmine.css" rel="stylesheet" type="text/css" media="screen" />
+    </head>
+    <body>
+        <div id="filetree" />
+    </body>
+</html>

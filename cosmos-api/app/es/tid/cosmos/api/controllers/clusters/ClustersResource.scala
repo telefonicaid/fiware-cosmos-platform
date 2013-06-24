@@ -27,7 +27,7 @@ import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
 /**
  * Resource that represents the whole set of clusters.
  */
-@Api(value = "/cosmos/clusters", listingPath = "/doc/cosmos/clusters",
+@Api(value = "/cosmos/v1/clusters", listingPath = "/doc/cosmos/v1/clusters",
   description = "Represents all the clusters in the platform")
 class ClustersResource(serviceManager: ServiceManager) extends JsonController with AuthController {
   /**

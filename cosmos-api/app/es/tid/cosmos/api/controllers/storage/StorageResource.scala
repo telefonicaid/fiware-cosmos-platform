@@ -25,7 +25,7 @@ import es.tid.cosmos.servicemanager.ServiceManager
 /**
  * Resource that represents the persistent HDFS shared by all clusters.
  */
-@Api(value = "/cosmos/storage", listingPath = "/doc/cosmos/storage",
+@Api(value = "/cosmos/v1/storage", listingPath = "/doc/cosmos/v1/storage",
   description = "Represents the persistent storage shared by all clusters")
 class StorageResource(serviceManager: ServiceManager) extends AuthController {
 

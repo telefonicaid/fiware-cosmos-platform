@@ -11,6 +11,8 @@
 #
 """Routes mapping"""
 
+VERSION_TAG = "v1"
+
 class Routes(object):
     """Resource URLs factory"""
 
@@ -24,20 +26,20 @@ class Routes(object):
         """Construct the clusters resource URL.
 
         >>> Routes('http://foo/base').clusters()
-        'http://foo/base/cluster'
+        'http://foo/base/v1/cluster'
         """
-        return self.base_url + "cluster"
+        return "%s%s/cluster" % (self.base_url, VERSION_TAG)
 
     def cluster(self, cluster_id, action=None):
         """Construct a cluster resource URL.
 
         >>> Routes('http://foo/base').cluster('37')
-        'http://foo/base/cluster/37'
+        'http://foo/base/v1/cluster/37'
 
         If you need to perform a concrete action use the optional argument action:
 
         >>> Routes('http://foo/base').cluster('37', action="terminate")
-        'http://foo/base/cluster/37/terminate'
+        'http://foo/base/v1/cluster/37/terminate'
         """
         parts = [self.clusters(), cluster_id]
         if action:

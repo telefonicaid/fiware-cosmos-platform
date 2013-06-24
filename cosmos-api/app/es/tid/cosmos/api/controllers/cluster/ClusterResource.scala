@@ -28,7 +28,7 @@ import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManag
 /**
  * Resource that represents a single cluster.
  */
-@Api(value = "/cosmos/cluster", listingPath = "/doc/cosmos/cluster",
+@Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
   description = "Represents an existing or decommissioned cluster")
 class ClusterResource(serviceManager: ServiceManager) extends AuthController {
   @ApiOperation(value = "Get cluster machines", httpMethod = "GET",

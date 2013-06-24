@@ -13,6 +13,7 @@
 
 import argparse
 import json
+import logging as log
 import re
 import sys
 
@@ -137,8 +138,10 @@ def add_terminate_command(subcommands):
 def build_argument_parser():
     """Register all subcommands in a unified argument parser."""
     parser = argparse.ArgumentParser(prog='cosmos')
-    parser.add_argument("--config-file", "-c",
-                        help="Override configuration file")
+    parser.add_argument('--config-file', '-c',
+                        help='Override configuration file')
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help='Verbose output')
     subparsers = parser.add_subparsers(help='sub-command help',
                                        title='subcommands',
                                        description='valid subcommands')
@@ -151,10 +154,19 @@ def build_argument_parser():
     return parser
 
 
+def set_verbose(is_verbose):
+    """Configures logging for more or less verbose output."""
+    level = log.DEBUG if is_verbose else log.WARNING
+    log.basicConfig(format="%(levelname)s: %(message)s", level=level)
+    if is_verbose:
+        log.info("Verbose output")
+
+
 def run():
     """Register all subcommands, parse the command line and run the function
     set as default for the parsed command"""
     args = build_argument_parser().parse_args()
+    set_verbose(args.verbose)
     try:
         sys.exit(args.func(args))
     except KeyboardInterrupt:

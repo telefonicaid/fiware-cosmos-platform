@@ -11,6 +11,7 @@
 #
 """Configuration handling"""
 
+import logging as log
 import os
 import os.path as p
 import sys
@@ -49,6 +50,7 @@ def default_config_path():
 def load_config(args):
     """Tries to load the configuration file or throws ExitWithError."""
     filename = args.config_file if args.config_file else default_config_path()
+    log.info("Loading config from %s", filename)
     try:
         config = ConfigManager(files=[filename])
     except Exception as ex:

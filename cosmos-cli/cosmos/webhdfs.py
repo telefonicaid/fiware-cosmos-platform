@@ -10,6 +10,7 @@
 # All rights reserved.
 #
 import argparse
+import logging as log
 import os.path
 import time
 from urlparse import urlparse, urljoin
@@ -125,6 +126,8 @@ def webhdfs_client_from_config(config):
     if r.status_code != 200:
         raise ResponseError("Cannot get WebHDFS details", r)
     details = r.json()
+    log.info("Webhdfs at %s for user %s" % (details["location"],
+                                            details["user"]))
     return WebHdfsClient(details["location"], details["user"])
 
 
@@ -139,6 +142,8 @@ def put_file(args, config):
         if remote_type == 'DIRECTORY':
             target_path = os.path.join(args.remote_path,
                                        os.path.split(args.local_file)[-1])
+            log.info("Path %s is an existing directory, uploading to %s" %
+                     (args.remote_path, target_path))
         elif remote_type == 'FILE':
             raise ExitWithError(-1, "Path %s already exists" % args.remote_path)
         else:

@@ -158,7 +158,7 @@ def put_file(args, config):
         remote_type = client.path_type(args.remote_path)
         if remote_type == 'DIRECTORY':
             target_path = os.path.join(args.remote_path,
-                                       os.path.split(args.local_file)[-1])
+                                       os.path.split(args.local_file.name)[-1])
             log.info("Path %s is an existing directory, uploading to %s" %
                      (args.remote_path, target_path))
         elif remote_type == 'FILE':

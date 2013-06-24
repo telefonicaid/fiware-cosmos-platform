@@ -25,7 +25,11 @@ class ResponseError(ExitWithError):
 
     def __init__(self, cause, response):
         try:
-            message = response.json()["error"]
+            exception = response.json()
+            if exception.has_key('error'):
+                message = exception['error']
+            else:
+                message = exception['RemoteException']['message']
         except (ValueError, KeyError):
             message = response.text
         if response.status_code == 401:

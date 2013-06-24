@@ -18,7 +18,7 @@ from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
 import cosmos.webhdfs as webhdfs
-from cosmos.util import ResponseError
+from cosmos.util import ExitWithError, ResponseError
 
 
 class WebHdfsClientTest(unittest.TestCase):
@@ -54,6 +54,18 @@ class WebHdfsClientTest(unittest.TestCase):
             last_put = self.client.put.call_args_list[1]
             self.assertEqual(datanode_url, last_put[0][0])
 
+    def test_file_upload_with_replication_error(self):
+        with TempDirectory() as local_dir:
+            self.client.put = mock_response(status_code=500, json={
+                'RemoteException': {
+                    'exception': 'ArrayIndexOutOfBoundsException'
+                }
+            })
+            local_file = local_dir.write('file.txt', 'contents')
+            self.assertRaisesRegexp(ExitWithError, 'Not redirected',
+                                    self.instance.put_file, local_file,
+                                    '/remote/path')
+
     def test_list_path(self):
         self.client.get.return_value = mock_response(json={
             "FileStatuses": {
@@ -79,6 +91,14 @@ class WebHdfsClientTest(unittest.TestCase):
         size = self.instance.get_file('/remote/file.txt', out_file)
         self.assertEquals(5, size)
         self.assertEquals("hello", out_file.getvalue())
+        out_file.close()
+
+    def test_get_nonexisting_file(self):
+        self.client.get.return_value = mock_response(status_code=404)
+        out_file = StringIO("")
+        self.assertRaisesRegexp(
+            ExitWithError, 'File /file.txt does not exist',
+            self.instance.get_file, '/file.txt', out_file)
         out_file.close()
 
     def test_delete_path(self):

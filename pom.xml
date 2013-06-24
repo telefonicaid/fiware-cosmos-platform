@@ -234,7 +234,7 @@
     </dependencies>
 
     <modules>
-        <module>injection</module>
+        <module>sftp</module>
         <module>tests</module>
     </modules>
 </project>

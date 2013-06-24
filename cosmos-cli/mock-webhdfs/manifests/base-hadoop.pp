@@ -25,7 +25,16 @@ group { "puppet":
   ensure => "present",
 }
 
-package { "vim-minimal":
+file { "/etc/puppet":
+  ensure => "directory"
+}
+
+file { "/etc/puppet/puppet.conf":
+  source  => "puppet:///modules/vagrant/puppet.conf",
+  require => File["/etc/puppet"]
+}
+
+package { "vim-enhanced":
   ensure => "present",
 }
 

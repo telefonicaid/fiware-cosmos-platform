@@ -22,14 +22,15 @@ class storage_mock {
     require => Package["lighttpd"]
   }
 
-  file { "/var/www/cosmos":
+  file {["/var/www", "/var/www/lighttpd", "/var/www/lighttpd/cosmos",
+         "/var/www/lighttpd/cosmos/v1"]:
     ensure  => "directory",
     require => Package["lighttpd"]
   }
 
-  file { "/var/www/cosmos/storage":
+  file { "/var/www/lighttpd/cosmos/v1/storage":
     source  => "puppet:///modules/storage_mock/storage",
-    require => File["/var/www/cosmos"]
+    require => File["/var/www/lighttpd/cosmos/v1"]
   }
 }
 

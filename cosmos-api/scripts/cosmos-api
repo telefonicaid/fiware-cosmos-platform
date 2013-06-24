@@ -1,0 +1,110 @@
+#!/bin/bash
+#
+# Telefónica Digital - Product Development and Innovation
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+# chkconfig: 345 20 80
+# description: Cosmos-API start/shutdown script
+# processname: play
+#
+# Instalation:
+# copy file to /etc/init.d
+# chmod +x /etc/init.d/cosmos-api
+# chkconfig --add /etc/init.d/cosmos-api
+# chkconfig cosmos-api on
+#
+# Usage: (as root)
+# service cosmos-api start
+# service cosmos-api stop
+# service cosmos-api status
+
+# Path to the JVM
+JAVA_HOME=/usr/java/default
+export JAVA_HOME
+
+# User running the Play process
+USER=root
+
+# Application settings
+APP_PATH=/opt/pdi-cosmos/cosmos-api/
+APP_CONFIG_FILE=/opt/pdi-cosmos/etc/cosmos-api.conf
+LOG_CONFIG_FILE=/opt/pdi-cosmos/etc/logback.conf
+PORT=80
+PID_FILE=/opt/pdi-cosmos/var/run/cosmos-api.pid
+
+APP_ARGS="-Dconfig.file=${APP_CONFIG_FILE} -Dhttp.port=${PORT} \
+          -Dpidfile.path=${PID_FILE} -Dlogger.file=${LOG_CONFIG_FILE}"
+
+# source function library
+. /etc/init.d/functions
+RETVAL=0
+
+check_status() {
+        if [ -f ${PID_FILE} ]; then
+                checkpid `cat ${PID_FILE}`
+                RUNNING=$((1 - $?))
+        else
+                RUNNING=0
+        fi
+}
+
+start() {
+        echo -n "Starting Cosmos-API: "
+        check_status
+        if [ $RUNNING -eq 1 ]; then
+                echo -n "already running"
+                echo_failure
+        else
+                COMMAND="${APP_PATH}/start ${APP_ARGS}"
+                su -s /bin/sh $USER -c "${COMMAND} > /dev/null" &
+                echo_success
+        fi
+        echo
+}
+
+stop() {
+        echo -n "Shutting Cosmos-API service: "
+        check_status
+        if [ $RUNNING -eq 0 ]; then
+                echo -n "not running"
+                echo_failure
+        else
+                killproc -p ${PID_FILE}
+        fi
+        echo
+}
+
+status() {
+        check_status
+        if [ $RUNNING -eq 0 ]; then
+                echo "Not running"
+        else
+                echo "Running with PID: `cat ${PID_FILE}`"
+        fi
+}
+
+case "$1" in
+        start)
+        start
+        ;;
+        stop)
+        stop
+        ;;
+        restart|reload)
+        stop
+        sleep 2
+        start
+        ;;
+        status)
+        status
+        ;;
+        *)
+        echo "Usage: $0 {start|stop|restart|status}"
+esac
+exit 0

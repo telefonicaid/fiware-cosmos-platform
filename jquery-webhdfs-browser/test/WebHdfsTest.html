@@ -1,0 +1,127 @@
+<!--
+  Telefónica Digital - Product Development and Innovation
+ 
+  THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+  EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ 
+  Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+  All rights reserved.
+-->
+<html>
+    <head>
+        <script src="../js/require.js"></script>
+        <script src="jasmine.js"></script>
+        <script src="jasmine-html.js"></script>
+        <script type="text/javascript">
+            requirejs.config({
+                baseUrl: '../js',
+                paths: {
+                    jquery: 'http://code.jquery.com/jquery-1.10.1.min',
+                    'jquery.mockjax': '../test/jquery.mockjax'
+                },
+                shim: {
+                    'jquery.mockjax': ['jquery']
+                }
+            });
+            requirejs(['jquery', 'jquery.mockjax', 'WebHdfs'], function($, mockjax, WebHdfs) {
+                var jasmineEnv = jasmine.getEnv();
+                jasmineEnv.updateInterval = 250;
+                var htmlReporter = new jasmine.HtmlReporter();
+                jasmineEnv.addReporter(htmlReporter);
+                
+                describe("A WebHdfs client", function() {
+                    beforeEach($.mockjaxClear);
+
+                    var waitForPromise = function(promise) {
+                        waitsFor(function() {
+                            return promise.state() !== 'pending';
+                        })
+                    }
+
+                    it("must list directories", function() {
+                        var files = [{
+                            "accessTime"      : 1320171722771,
+                            "blockSize"       : 33554432,
+                            "group"           : "supergroup",
+                            "length"          : 24930,
+                            "modificationTime": 1320171722771,
+                            "owner"           : "webuser",
+                            "pathSuffix"      : "a.patch",
+                            "permission"      : "644",
+                            "replication"     : 1,
+                            "type"            : "FILE"
+                        },
+                        {
+                            "accessTime"      : 0,
+                            "blockSize"       : 0,
+                            "group"           : "supergroup",
+                            "length"          : 0,
+                            "modificationTime": 1320895981256,
+                            "owner"           : "szetszwo",
+                            "pathSuffix"      : "bar",
+                            "permission"      : "711",
+                            "replication"     : 0,
+                            "type"            : "DIRECTORY"
+                        }]
+                        $.mockjax({
+                            url: '*',
+                            responseTime: 150,
+                            responseText: {
+                                "FileStatuses":
+                                {
+                                    "FileStatus": files
+                                }
+                            }
+                        });
+                        var client = new WebHdfs('http://localhost/webhdfs/v1/', 'user');
+                        var done = client.listDir('path').then(function(data) {
+                            expect(data).toEqual(files);
+                        });
+                        waitForPromise(done);
+                    });
+
+                    it("must provide the user's directories", function() {
+                        var path = '/user/szetszwo';
+                        $.mockjax({
+                            url: '*',
+                            responseTime: 150,
+                            responseText: { Path: path }
+                        });
+                        var client = new WebHdfs('http://localhost/webhdfs/v1/', 'user');
+                        var done = client.getHomeDir().then(function(data) {
+                            expect(data).toBe(path);
+                        });
+                        waitForPromise(done);
+                    });
+
+                    it("must be able to get files", function() {
+                        var path = '/user/szetszwo';
+                        var contents = 'File contents';
+                        $.mockjax({
+                            url: '*/webhdfs/v1/user/szetszwo*',
+                            responseTime: 150,
+                            status: 307,
+                            headers: { Location: 'http://datanode/getfile'}
+                        });
+                        $.mockjax({
+                            url: '*/getfile*',
+                            responseTime: 150,
+                            responseText: contents
+                        });
+                        var client = new WebHdfs('http://localhost/webhdfs/v1/', 'user');
+                        var done = client.getFile(path).then(function(data) {
+                            expect(data).toBe(contents);
+                        });
+                        waitForPromise(done);
+                    });
+                });
+
+                jasmineEnv.execute();
+            });
+        </script>
+        <link href="jasmine.css" rel="stylesheet" type="text/css" media="screen" />
+    </head>
+    <body>
+    </body>
+</html>

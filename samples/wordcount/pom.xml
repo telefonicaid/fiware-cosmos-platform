@@ -6,7 +6,7 @@
     <groupId>es.tid.cosmos</groupId>
     <artifactId>wordcount</artifactId>
     <name>wordcount</name>
-    <version>0.10.0-SNAPSHOT</version>
+    <version>0.10.0</version>
     <packaging>jar</packaging>
 
     <description>Cosmos Team</description>

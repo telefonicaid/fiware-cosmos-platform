@@ -1,6 +1,6 @@
 name := "cosmos-platform"
 
-version := "0.10-SNAPSHOT"
+version := "0.10.0"
 
 organization in ThisBuild := "es.tid.cosmos"
 

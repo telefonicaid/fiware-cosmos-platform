@@ -58,7 +58,10 @@ class WebHdfsClient(object):
             raise ExitWithError(
                 -1, "WebHDFS uploads are not supported on 1-machine " +
                 "clusters: an empty file has been created. See #862.")
-        if redirect.status_code != 307:
+        if self.__is_replication_exception(redirect):
+            raise ExitWithError(-1, 'Cannot replicate file %s blocks' %
+                                remote_path)
+        elif redirect.status_code != 307:
             raise ResponseError('Not redirected by the WebHDFS frontend',
                                 redirect)
 
@@ -123,6 +126,16 @@ class WebHdfsClient(object):
             rel_path = path
         return urljoin('http://' + urlparse(self.webhdfs_uri).netloc,
                        '/webhdfs/v1/user/%s/%s' % (self.username, rel_path))
+
+    def __is_replication_exception(self, response):
+        if response.status_code != 500:
+            return False
+        try:
+            exception = response.json()
+        except ValueError:
+            return False
+        return (exception.get('RemoteException', {}).get('exception') ==
+                'ArrayIndexOutOfBoundsException')
 
 
 def webhdfs_client_from_config(config):

@@ -40,9 +40,11 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
       val userClusters = DB.withConnection { implicit c =>
         Set(CosmosProfileDao.clustersOf(profile.id): _*)
       }
-      val clusters = serviceManager.clusterIds.filter(userClusters).toList.sorted
-      val body = ClusterList(clusters.map(id => ClusterReference(id)))
-      Ok(Json.toJson(body))
+      val clusters = (for {
+        clusterId <- userClusters.toList
+        cluster <- serviceManager.describeCluster(clusterId).toList
+      } yield ClusterReference(cluster)).sortBy(_.name)
+      Ok(Json.toJson(ClusterList(clusters)))
     }
   }
 
@@ -67,7 +69,7 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
           DB.withTransaction { implicit c =>
             CosmosProfileDao.assignCluster(clusterId, profile.id)
           }
-          val reference: ClusterReference = ClusterReference(clusterId)(request)
+          val reference = ClusterReference(serviceManager.describeCluster(clusterId).get)(request)
           Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
         }
       }

@@ -40,6 +40,7 @@ class ClustersIT extends FlatSpec with MustMatchers {
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)
+      contentAsString(resource) must include ("cluster0")
       contentAsString(resource) must not include (otherCluster.toString)
     }
   }

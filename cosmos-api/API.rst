@@ -48,10 +48,26 @@ Represents all the user clusters. Listing is of the form::
 
     {
       "clusters": [
-        { "id": <string>, "href": <url> },
-        { "id": <string>, "href": <url> }
+        {
+          "id": <string>,
+          "href": <url>,
+          "name": <string>,
+          "state": <string>,
+          "stateDescription": <string>
+        },
+        {
+          "id": <string>,
+          "href": <url>,
+          "name": <string>,
+          "state": <string>,
+          "stateDescription": <string>
+        }
       ]
     }
+
+State is one of the following options: ``provisioning``, ``running``,
+``terminating``, ``terminated`` or ``failed``.  This state information is
+complemented on the ``stateDescription`` field.
 
 POST ``/cosmos/v1/cluster``
 ---------------------------
@@ -82,19 +98,22 @@ Consult details of the cluster with id ``<id>``. Body as follows::
 
     {
       "id": <string>,
-      "stateDescription": <string>,
       "name": <string>,
       "state": <string>,
+      "stateDescription": <string>,
       "href": <string>,
       "size": <int>
     }
+
+State related fields have the same meaning as in ``/cosmos/v1/cluster`` GET
+response.
 
 POST ``/cosmos/v1/cluster/<id>/terminate``
 ------------------------------------------
 
 *Since v1*
 
-Terminates the cluster with id ``<id>``. Returns immediatly so check the
+Terminates the cluster with id ``<id>``. Returns immediately so check the
 ``state`` field by means of a GET to check termination status.
 
 

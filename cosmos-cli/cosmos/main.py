@@ -21,10 +21,12 @@ import requests
 
 import cosmos.config as c
 import cosmos.webhdfs as webhdfs
+from cosmos.tables import format_table
 from cosmos.routes import Routes
 from cosmos.util import ExitWithError, ResponseError
 
 
+ELLIPSIS = '...'
 UUID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 
 
@@ -34,7 +36,26 @@ def add_configure_command(subcommands):
     parser.set_defaults(func=c.command)
 
 
+def ellipsize(text, max_width):
+    """Truncate long texts with ellipsis.
+    >>> ellipsize("Very long text", 10)
+    'Very lo...'
+    >>> ellipsize("Short", 10)
+    'Short'
+    >>> ellipsize("Too small width", 2)
+    '...'
+    """
+    if len(text) <= max_width:
+        return text
+    if len(ELLIPSIS) >= max_width:
+        return ELLIPSIS
+    return text[: max_width - len(ELLIPSIS)] + ELLIPSIS
+
+
 def add_list_command(subcommands):
+
+    NAME_MAX_WIDTH = 20
+    MAX_WIDTH = 78
 
     @c.with_config
     def list_clusters(args, config):
@@ -48,8 +69,10 @@ def add_list_command(subcommands):
             print "No available clusters"
         else:
             print "Available clusters:"
-            for cluster in clusters:
-                print " * %s" % cluster["id"]
+            table = [[ellipsize(c["name"], NAME_MAX_WIDTH), c["id"],
+                      c["state"], c["stateDescription"]] for c in clusters]
+            for line in format_table(table, 'rlll', separator="  "):
+                print ellipsize(line, MAX_WIDTH)
         return 0
 
     parser = subcommands.add_parser("list", help="list clusters")

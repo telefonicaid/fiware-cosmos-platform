@@ -25,7 +25,7 @@ import es.tid.cosmos.platform.ial.libvirt.{LibVirtServerProperties, DomainProper
 /**
  * A JNA based libvirt server
  */
-case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends LibVirtServer {
+case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirtServer {
 
   val domainId: Int = 101
   val domainName: String = domainId.toString

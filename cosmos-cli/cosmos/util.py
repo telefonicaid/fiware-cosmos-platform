@@ -10,6 +10,7 @@
 # All rights reserved.
 #
 
+
 class ExitWithError(Exception):
     """To be thrown on a fatal condition. With exit_code you can control the
     command exit code."""

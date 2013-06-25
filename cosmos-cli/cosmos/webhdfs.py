@@ -51,25 +51,27 @@ class WebHdfsClient(object):
         ])
 
     def put_file(self, local_file, remote_path):
-        namenode_url = self.to_http(remote_path)
-        redirect = self.client.put(namenode_url, allow_redirects=False,
+        datanode_url = self.__request_upload_location(remote_path)
+        response = self.client.put(datanode_url, data=local_file)
+        if response.status_code != 201:
+            raise ResponseError('Cannot upload file to %s' % datanode_url,
+                                response)
+
+    def __request_upload_location(self, remote_path):
+        response = self.client.put(self.to_http(remote_path),
+                                   allow_redirects=False,
                                    params=self.opParams('CREATE'))
-        if redirect.status_code == 201:
+        if response.status_code == 201:
             raise ExitWithError(
                 -1, "WebHDFS uploads are not supported on 1-machine " +
                 "clusters: an empty file has been created. See #862.")
-        if self.__is_replication_exception(redirect):
-            raise ExitWithError(-1, 'Cannot replicate file %s blocks' %
+        if self.__is_replication_exception(response):
+            raise ExitWithError(500, 'Cannot replicate file %s blocks' %
                                 remote_path)
-        elif redirect.status_code != 307:
+        if response.status_code != 307:
             raise ResponseError('Not redirected by the WebHDFS frontend',
-                                redirect)
-
-        datanode_url = redirect.headers['Location']
-        upload = self.client.put(datanode_url, data=local_file)
-        if upload.status_code != 201:
-            raise ResponseError('Cannot upload file to %s' % datanode_url,
-                                upload)
+                                response)
+        return response.headers['Location']
 
     def list_path(self, path):
         """Lists a directory or check a file status. Returns a list of status
@@ -101,7 +103,7 @@ class WebHdfsClient(object):
                             params=self.opParams('OPEN'))
         if r.status_code == 404:
             raise ExitWithError(404, 'File %s does not exist' % remote_path)
-        elif r.status_code != 200:
+        if r.status_code != 200:
             raise ResponseError('Cannot download file %s' % remote_path, r)
         buf = r.raw.read(BUFFER_SIZE)
         written = 0

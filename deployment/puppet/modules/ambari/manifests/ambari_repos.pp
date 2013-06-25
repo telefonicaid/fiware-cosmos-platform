@@ -1,13 +1,23 @@
+#
+# Telefónica Digital - Product Development and Innovation
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+
 class ambari::ambari_repos {
   include ambari::params
 
   # Cosmos and PDI Ambari repositories
   yumrepo { 'ambari-1.x':
-    baseurl  => $ambari_repo_url, #parameterize
+    baseurl  => $ambari::params::ambari_repo_url,
     descr    => "[Cosmos] Ambari Repository 1.x",
     enabled  => 1,
     gpgcheck => 0,
-#    priority => 10,
   }
 
   yumrepo { 'HDP-UTILS-1.1.0.15':

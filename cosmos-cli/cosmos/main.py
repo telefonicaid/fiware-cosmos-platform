@@ -18,6 +18,7 @@ import re
 import sys
 
 import requests
+from requests.exceptions import ConnectionError, Timeout, RequestException
 
 import cosmos.config as c
 import cosmos.webhdfs as webhdfs
@@ -167,14 +168,23 @@ def run():
     set as default for the parsed command"""
     args = build_argument_parser().parse_args()
     set_verbose(args.verbose)
+    exit_code = -1
     try:
-        sys.exit(args.func(args))
+        args.func(args)
+        exit_code = 0
     except KeyboardInterrupt:
         print "Command cancelled by the user"
-        sys.exit(-1)
     except ExitWithError, ex:
         print ex.explanation
-        sys.exit(ex.exit_code)
+        exit_code = ex.exit_code
+    except ConnectionError, ex:
+        print "Cannot connect with server:\n%s" % ex.message
+    except Timeout, ex:
+        print "Request timed out:\n%s" % ex.message
+    except RequestException, ex:
+        print "Network request failed:\n%s" % ex.message
+    sys.exit(exit_code)
+
 
 if __name__ == "__main__":
     run()

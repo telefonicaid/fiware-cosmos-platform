@@ -43,8 +43,8 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
       val clusters = (for {
         clusterId <- userClusters.toList
         cluster <- serviceManager.describeCluster(clusterId).toList
-      } yield ClusterReference(cluster)).sortBy(_.name)
-      Ok(Json.toJson(ClusterList(clusters)))
+      } yield cluster).sorted(ClustersDisplayOrder)
+      Ok(Json.toJson(ClusterList(clusters.map(ClusterReference(_)))))
     }
   }
 

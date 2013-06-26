@@ -22,15 +22,24 @@ import yaml
 from cosmos.util import ExitWithError
 
 
-CONFIG_KEYS = ["api_url", "api_key", "api_secret"]
-DEFAULT_CONFIG = {
-    "api_url": "http://localhost:9000/cosmos"
-}
-CONFIG_DESCRIPTIONS = {
-    "api_url": "Base API URL",
-    "api_key": "API key",
-    "api_secret": "API secret"
-}
+CONFIG_SETTINGS = [dict(
+    key='api_url',
+    description='Base API URL',
+    default='http://localhost:9000/cosmos'
+), dict(
+    key='api_key',
+    description='API key',
+), dict(
+    key='api_secret',
+    description='API secret',
+), dict(
+    key='ssh_command',
+    description='SSH command',
+    default='ssh'
+)]
+DEFAULT_CONFIG = dict([(setting['key'], setting['default'])
+                       for setting in CONFIG_SETTINGS
+                       if setting.has_key('default')])
 
 
 def default_config_path():
@@ -81,12 +90,11 @@ def with_config(command):
 
 def ask_for_setting(config, setting):
     """Interactively ask for a setting using current value as a default."""
-    default = config.get(setting, "")
-    answer = raw_input(
-        "%s [%s]: " % (CONFIG_DESCRIPTIONS[setting], default)).strip()
+    default = config.get(setting['key'], "")
+    answer = raw_input("%s [%s]: " % (setting['description'], default)).strip()
     if not answer:
         answer = default
-    config[setting] = answer
+    config[setting['key']] = answer
 
 
 def ask_binary_question(question, default_answer=False):
@@ -99,7 +107,7 @@ def ask_binary_question(question, default_answer=False):
 def command(args):
     """Create a configuration file by asking for the settings"""
     config = ConfigManager(DEFAULT_CONFIG)
-    for setting in CONFIG_KEYS:
+    for setting in CONFIG_SETTINGS:
         ask_for_setting(config, setting)
     filename = default_config_path()
     if p.exists(filename) and not ask_binary_question(

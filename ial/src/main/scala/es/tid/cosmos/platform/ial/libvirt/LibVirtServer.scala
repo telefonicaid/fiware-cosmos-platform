@@ -14,6 +14,14 @@ package es.tid.cosmos.platform.ial.libvirt
 import scala.concurrent.Future
 
 trait LibVirtServer {
+
+  /**
+   * Obtain the server properties.
+   *
+   * @return the server properties
+   */
+  def properties(): LibVirtServerProperties
+
   /**
    * Create a new libvirt domain.
    *

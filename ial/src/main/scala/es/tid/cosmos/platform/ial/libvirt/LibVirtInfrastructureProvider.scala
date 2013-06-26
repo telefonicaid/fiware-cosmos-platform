@@ -59,12 +59,16 @@ class LibVirtInfrastructureProvider(
   override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = {
     for {
       servers <- servers(srv => hostNames.contains(srv.domainHostname))
-      domains <- domainsFromServers(servers)
-    } yield domains.map(domainToMachineState)
+      machines <- machinesFromServers(servers)
+    } yield machines
   }
 
-  private def domainsFromServers(servers: Seq[LibVirtServer]): Future[Seq[DomainProperties]] =
-    Future.traverse(servers)(srv => srv.domain())
+  private def machinesFromServers(servers: Seq[LibVirtServer]): Future[Seq[MachineState]] =
+    Future.traverse(servers)( srv =>
+      for {
+        domain <- srv.domain()
+      } yield domainToMachineState(srv, domain)
+    )
 
   private def serversForMachines(machines: Seq[MachineState]): Future[Seq[LibVirtServer]] = future {
     for {
@@ -78,7 +82,7 @@ class LibVirtInfrastructureProvider(
       servers: Seq[LibVirtServer]): Future[Seq[MachineState]] = Future.sequence(servers.map(srv =>
     for {
       domain <- srv.createDomain()
-      state = domainToMachineState(domain)
+      state = domainToMachineState(srv, domain)
       _      <- bootstrapAction(state)
     } yield state
   ))
@@ -106,11 +110,11 @@ class LibVirtInfrastructureProvider(
   private def availableServers(profile: MachineProfile.Value): Future[Seq[LibVirtServer]] =
     availableServers(srv => srv.profile == profile)
 
-  private def domainToMachineState(domain : DomainProperties): MachineState =
+  private def domainToMachineState(server: LibVirtServer, domain : DomainProperties): MachineState =
     new MachineState(
       Id(domain.uuid),
       domain.name,
-      MachineProfile.G1Compute, // FIXME
+      server.properties().profile,
       domainStatus(domain),
       domain.hostname,
       domain.ipAddress)

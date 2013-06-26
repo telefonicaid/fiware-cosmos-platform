@@ -55,7 +55,7 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
   it must "not create machines when unavailable for requested profile" in {
     evaluating {
       infraProvider.createMachines(
-        "test_", MachineProfile.HdfsMaster, 1, action) must runUnder (timeout)
+        "test_", MachineProfile.HdfsMaster, 2, action) must runUnder (timeout)
     } must produce [ResourceExhaustedException]
     action.bootstrappedMachines must be ('empty)
   }

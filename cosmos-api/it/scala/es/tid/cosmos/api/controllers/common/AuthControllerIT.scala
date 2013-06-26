@@ -39,11 +39,21 @@ class AuthControllerIT extends FlatSpec with MustMatchers {
 
   "Auth controller" must "not authorize when authorization header is missing" in
     new WithInMemoryDatabase {
-      status(action(request)) must be (UNAUTHORIZED)
+      val response = action(request)
+      status(response) must be (UNAUTHORIZED)
+      contentAsString(response) must include ("Missing authorization header")
     }
 
+  it must "not authorize when authorization header is malformed" in new WithInMemoryDatabase {
+    val response = action(authorizedRequest("Basic malformed"))
+    status(response) must be (UNAUTHORIZED)
+    contentAsString(response) must include ("Malformed authorization header")
+  }
+
   it must "return bad request when credentials are invalid" in new WithInMemoryDatabase {
-      status(action(authorizedRequest(ApiCredentials.random()))) must be (UNAUTHORIZED)
+    val response = action(authorizedRequest(ApiCredentials.random()))
+    status(response) must be (UNAUTHORIZED)
+    contentAsString(response) must include ("Invalid API credentials")
   }
 
   it must "succeed when credentials are valid" in new WithInMemoryDatabase {
@@ -57,11 +67,13 @@ class AuthControllerIT extends FlatSpec with MustMatchers {
   }
 
   private def authorizedRequest(credentials: ApiCredentials): Request[AnyContent] =
-    FakeRequest(
-      method = GET,
-      uri = "/some/path",
-      headers = FakeHeaders(Seq(
-        "Authorization" -> Seq(BasicAuth(credentials.apiKey, credentials.apiSecret)))),
-      body = AnyContentAsEmpty
-    )
+    authorizedRequest(BasicAuth(credentials.apiKey, credentials.apiSecret))
+
+  private def authorizedRequest(authorizationHeader: String): Request[AnyContent] = FakeRequest(
+    method = GET,
+    uri = "/some/path",
+    headers = FakeHeaders(Seq(
+      "Authorization" -> Seq(authorizationHeader))),
+    body = AnyContentAsEmpty
+  )
 }

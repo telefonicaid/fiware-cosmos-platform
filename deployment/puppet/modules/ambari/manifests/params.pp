@@ -10,7 +10,9 @@
 #
 
 class ambari::params (
-  $ambari_repo_url  = 'http://192.168.63.11:8081/',
+  $ambari_repo_url      = 'http://cosmos10/develenv/repos/rpms/cosmos-deps/ambari/',#'http://192.168.63.11:8081/',
+  $agent_package_ver	  = 'installed',
+  $server_package_ver   = 'installed',
 ) {
 
 }

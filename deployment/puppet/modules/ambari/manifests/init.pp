@@ -20,16 +20,20 @@ class ambari {
     command     => 'ambari-server setup --silent',
     path        => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput   => true,
-    refreshonly => true,
     timeout     => 600,
-  }                # Relation between this and service start
-
-  service { 'ambari-server':
-    ensure    => "running",
-    hasstatus => true,
-    require  => Package['ambari-server'],
+    unless      => 'sudo -u postgres psql -l | grep ambari | wc -l | grep 2' #ensure tables exist
   }
 
-  Package['ambari-server'] ~> Exec['ambari-server-setup'] ~> Service['ambari-server']
-  Yumrepo['ambari-1.x'] -> Package['ambari-server'] -> Service['ambari-server']
+  service { 'postgresql':
+    ensure => 'running',
+    hasstatus => true,
+  }
+
+  service { 'ambari-server':
+    ensure    => 'running',
+    hasstatus => true,
+  }
+
+#  Package['ambari-server'] ~> Exec['ambari-server-setup'] ~> Service['ambari-server']
+  Yumrepo['ambari-1.x'] -> Package['ambari-server'] -> Service['postgresql'] -> Exec['ambari-server-setup'] -> Service['ambari-server']
 }

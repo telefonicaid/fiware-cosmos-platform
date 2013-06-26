@@ -6,7 +6,7 @@
 # ambari-agent
 
 class cosmos::params (
-  $name                   = 'cosmos',
+  $thee                   = 'cosmos',
   $cosmos_env             = 'undef',
   $cosmos_version         = '1.0',
   $cosmos_basedir         = '/opt/pdi-cosmos',

@@ -39,6 +39,21 @@ Represents general API information as JSON::
       "version": "X.Y.Z"
     }
 
+GET ``/cosmos/v1/profile``
+------------------
+
+*Since v1*
+
+Represents general user profile information as JSON::
+
+    {
+      "handle": <string>,
+      "keys": [
+        { "name": <string>, "signature": <string> },
+        { "name": <string>, "signature": <string> }
+      }
+    }
+
 GET ``/cosmos/v1/cluster``
 --------------------------
 

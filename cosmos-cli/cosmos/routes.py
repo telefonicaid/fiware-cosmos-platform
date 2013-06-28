@@ -17,10 +17,19 @@ class Routes(object):
     """Resource URLs factory"""
 
     def __init__(self, base_url):
+        """Initializes a Routes object and pre-computes fixed resources.
+        >>> instance = Routes('http://foo/base')
+        >>> instance.storage
+        'http://foo/base/v1/storage'
+        >>> instance.profile
+        'http://foo/base/v1/profile'
+        """
         self.base_url = base_url
         if not self.base_url.endswith("/"):
             self.base_url = self.base_url + "/"
-        self.storage = self.base_url + "storage"
+        self.base_url += VERSION_TAG
+        self.storage = self.base_url + "/storage"
+        self.profile = self.base_url + "/profile"
 
     def clusters(self):
         """Construct the clusters resource URL.
@@ -28,7 +37,7 @@ class Routes(object):
         >>> Routes('http://foo/base').clusters()
         'http://foo/base/v1/cluster'
         """
-        return "%s%s/cluster" % (self.base_url, VERSION_TAG)
+        return "%s/cluster" % (self.base_url)
 
     def cluster(self, cluster_id, action=None):
         """Construct a cluster resource URL.

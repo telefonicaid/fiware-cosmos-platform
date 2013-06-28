@@ -17,6 +17,7 @@ import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.clusters.ClustersResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.Pages
+import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.oauth2.OAuthClientComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
@@ -31,6 +32,7 @@ abstract class Application {
     controllerMap(
       new Pages(self.oAuthClient(), sm),
       new CosmosResource(),
+      new ProfileResource(),
       new ClustersResource(sm),
       new ClusterResource(sm),
       new StorageResource(sm)

@@ -61,12 +61,12 @@ def load_config(args):
     filename = args.config_file if args.config_file else default_config_path()
     log.info("Loading config from %s", filename)
     try:
-        config = ConfigManager(files=[filename])
+        config = ConfigManager(DEFAULT_CONFIG, files=[filename])
     except Exception as ex:
         print "Error reading configuration from %s: %s" % (
             filename, ex.message)
         config = ConfigManager(DEFAULT_CONFIG)
-    if not config.keys():
+    if not 'api_key' in config.keys() or not 'api_secret' in config.keys():
         raise ExitWithError(
             -1, ("Cosmos command is unconfigured. Use '%s configure' to " +
                  "create a valid configuration or use --config-file with a " +

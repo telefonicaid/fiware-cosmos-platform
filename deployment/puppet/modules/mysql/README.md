@@ -1,148 +1,129 @@
-# Puppet module: mysql
+# Mysql module for Puppet
 
-This is a Puppet mysql module from the second generation of Example42 Puppet Modules.
+This module manages mysql on Linux (RedHat/Debian) distros. A native mysql provider implements database resource type to handle database, database user, and database permission.
 
-Made by Alessandro Franceschi / Lab42
+Pluginsync needs to be enabled for this module to function properly.
+Read more about pluginsync in our [docs](http://docs.puppetlabs.com/guides/plugins_in_modules.html#enabling-pluginsync)
 
-Official site: http://www.example42.com
+## Description
 
-Official git repository: http://github.com/example42/puppet-mysql
+This module uses the fact osfamily which is supported by Facter 1.6.1+. If you do not have facter 1.6.1 in your environment, the following manifests will provide the same functionality in site.pp (before declaring any node):
 
-Released under the terms of Apache 2 License.
-
-This module requires functions provided by the Example42 Puppi module.
-
-For detailed info about the logic and usage patterns of Example42 modules read README.usage on Example42 main modules set.
-
-## USAGE - Module specific
-
-* Set a specific (cleartext) mysql root password
-
-        class { "mysql":
-          root_password => 'mys4cr3',
+    if ! $::osfamily {
+      case $::operatingsystem {
+        'RedHat', 'Fedora', 'CentOS', 'Scientific', 'SLC', 'Ascendos', 'CloudLinux', 'PSBM', 'OracleLinux', 'OVS', 'OEL': {
+          $osfamily = 'RedHat'
         }
-
-* Set a random password ( saved in /root/.my.cnf )
-
-        class { "mysql":
-          root_password => 'auto',          
+        'ubuntu', 'debian': {
+          $osfamily = 'Debian'
         }
-
-* Create a new grant and database
-
-        mysql::grant { 'db1':
-          mysql_privileges => 'ALL',
-          mysql_password => 'pwd',
-          mysql_db => 'db1',
-          mysql_user => 'db1',
-          mysql_host => 'host',
+        'SLES', 'SLED', 'OpenSuSE', 'SuSE': {
+          $osfamily = 'Suse'
         }
-
-
-## USAGE - Basic management
-
-* Install mysql with default settings
-
-        class { "mysql": }
-
-* Disable mysql service.
-
-        class { "mysql":
-          disable => true
+        'Solaris', 'Nexenta': {
+          $osfamily = 'Solaris'
         }
-
-* Disable mysql service at boot time, but don't stop if is running.
-
-        class { "mysql":
-          disableboot => true
+        default: {
+          $osfamily = $::operatingsystem
         }
+      }
+    }
 
-* Remove mysql package
+This module depends on creates_resources function which is introduced in Puppet 2.7. Users on puppet 2.6 can use the following module which provides this functionality:
 
-        class { "mysql":
-          absent => true
-        }
+[http://github.com/puppetlabs/puppetlabs-create_resources](http://github.com/puppetlabs/puppetlabs-create_resources)
 
-* Enable auditing without without making changes on existing mysql configuration files
+This module is based on work by David Schmitt. The following contributor have contributed patches to this module (beyond Puppet Labs):
 
-        class { "mysql":
-          audit_only => true
-        }
+* Christian G. Warden
+* Daniel Black
+* Justin Ellison
+* Lowe Schmidt
+* Matthias Pigulla
+* William Van Hevelingen
+* Michael Arnold
 
+## Usage
 
-## USAGE - Overrides and Customizations
-* Use custom sources for main config file 
+### mysql
+Installs the mysql-client package.
 
-        class { "mysql":
-          source => [ "puppet:///modules/lab42/mysql/mysql.conf-${hostname}" , "puppet:///modules/lab42/mysql/mysql.conf" ], 
-        }
+    class { 'mysql': }
 
+### mysql::java
+Installs mysql bindings for java.
 
-* Use custom source directory for the whole configuration dir
+    class { 'mysql::java': }
 
-        class { "mysql":
-          source_dir       => "puppet:///modules/lab42/mysql/conf/",
-          source_dir_purge => false, # Set to true to purge any existing file not present in $source_dir
-        }
+### mysql::python
+Installs mysql bindings for python.
 
-* Use custom template for main config file 
+    class { 'mysql::python': }
 
-        class { "mysql":
-          template => "example42/mysql/mysql.conf.erb",      
-        }
+### mysql::ruby
+Installs mysql bindings for ruby.
 
-* Define custom options that can be used in a custom template without the
-  need to add parameters to the mysql class
+    class { 'mysql::ruby': }
 
-        class { "mysql":
-          template => "example42/mysql/mysql.conf.erb",    
-          options  => {
-            'LogLevel' => 'INFO',
-            'UsePAM'   => 'yes',
-          },
-        }
+### mysql::server
+Installs mysql-server packages, configures my.cnf and starts mysqld service:
 
-* Automaticallly include a custom subclass
+    class { 'mysql::server':
+      config_hash => { 'root_password' => 'foo' }
+    }
 
-        class { "mysql:"
-          my_class => 'mysql::example42',
-        }
+Database login information stored in `/root/.my.cnf`.
 
+### mysql::db
+Creates a database with a user and assign some privileges.
 
-## USAGE - Example42 extensions management 
-* Activate puppi (recommended, but disabled by default)
-  Note that this option requires the usage of Example42 puppi module
+    mysql::db { 'mydb':
+      user     => 'myuser',
+      password => 'mypass',
+      host     => 'localhost',
+      grant    => ['all'],
+    }
 
-        class { "mysql": 
-          puppi    => true,
-        }
+### mysql::backup
+Installs a mysql backup script, cronjob, and priviledged backup user.
 
-* Activate puppi and use a custom puppi_helper template (to be provided separately with
-  a puppi::helper define ) to customize the output of puppi commands 
+    class { 'mysql::backup':
+      backupuser     => 'myuser',
+      backuppassword => 'mypassword',
+      backupdir      => '/tmp/backups',
+    }
 
-        class { "mysql":
-          puppi        => true,
-          puppi_helper => "myhelper", 
-        }
+### Providers for database types:
+MySQL provider supports puppet resources command:
 
-* Activate automatic monitoring (recommended, but disabled by default)
-  This option requires the usage of Example42 monitor and relevant monitor tools modules
+    $ puppet resource database
+    database { 'information_schema':
+      ensure  => 'present',
+      charset => 'utf8',
+    }
+    database { 'mysql':
+      ensure  => 'present',
+      charset => 'latin1',
+    }
 
-        class { "mysql":
-          monitor      => true,
-          monitor_tool => [ "nagios" , "monit" , "munin" ],
-        }
+The custom resources can be used in any other manifests:
 
-* Activate automatic firewalling 
-  This option requires the usage of Example42 firewall and relevant firewall tools modules
+    database { 'mydb':
+      charset => 'latin1',
+    }
 
-        class { "mysql":       
-          firewall      => true,
-          firewall_tool => "iptables",
-          firewall_src  => "10.42.0.0/24",
-          firewall_dst  => "$ipaddress_eth0",
-        }
+    database_user { 'bob@localhost':
+      password_hash => mysql_password('foo')
+    }
 
+    database_grant { 'user@localhost/database':
+      privileges => ['all'] ,
+      # Or specify individual privileges with columns from the mysql.db table:
+      # privileges => ['Select_priv', 'Insert_priv', 'Update_priv', 'Delete_priv']
+    }
 
+A resource default can be specified to handle dependency:
 
-[![Build Status](https://travis-ci.org/example42/puppet-mysql.png?branch=master)](https://travis-ci.org/example42/puppet-mysql)
+    Database {
+      require => Class['mysql::server'],
+    }

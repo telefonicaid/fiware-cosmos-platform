@@ -13,7 +13,7 @@ class ambari::ambari_repos {
   include ambari::params
 
   # Cosmos and PDI Ambari repositories
-  yumrepo { 'ambari-1.x':
+  yumrepo { 'ambari':
     baseurl  => $ambari::params::ambari_repo_url,
     descr    => "[Cosmos] Ambari Repository 1.x",
     enabled  => 1,

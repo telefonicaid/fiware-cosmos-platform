@@ -15,18 +15,32 @@ import play.api.libs.json.{Json, JsValue, Writes}
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
-import es.tid.cosmos.servicemanager.ClusterId
+import es.tid.cosmos.servicemanager.ClusterDescription
 
-case class ClusterReference(id: String, href: String)
+case class ClusterReference(
+    id: String,
+    href: String,
+    name: String,
+    state: String,
+    stateDescription: String)
 
 object ClusterReference {
-  def apply(clusterId: ClusterId)(implicit request: RequestHeader): ClusterReference =
-    ClusterReference(clusterId.toString, ClusterResource.clusterUrl(clusterId))
+
+  def apply(cluster: ClusterDescription)(implicit request: RequestHeader): ClusterReference =
+    ClusterReference(
+      id = cluster.id.toString,
+      href = ClusterResource.clusterUrl(cluster.id),
+      name = cluster.name,
+      state = cluster.state.name,
+      stateDescription = cluster.state.descLine)
 
   implicit object ClusterReferenceWrites extends Writes[ClusterReference] {
     def writes(ref: ClusterReference): JsValue = Json.obj(
       "id" -> ref.id,
-      "href" -> ref.href
+      "href" -> ref.href,
+      "name" -> ref.name,
+      "state" -> ref.state,
+      "stateDescription" -> ref.stateDescription
     )
   }
 }

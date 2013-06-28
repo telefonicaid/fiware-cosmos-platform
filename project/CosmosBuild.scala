@@ -10,8 +10,15 @@
  */
 
 import sbt._
+import com.github.shivawu.sbt.maven.MavenBuild
 
 object CosmosBuild extends Build {
+
+  object POM extends MavenBuild {
+    val version = pom.ver
+  }
+
+  override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)
 
   lazy val root = (Project(id = "cosmos-platform", base = file("."))
     settings(ScctPlugin.mergeReportSettings: _*)
@@ -46,7 +53,7 @@ object CosmosBuild extends Build {
     dependsOn(ial, common_test % "compile->compile;test->test")
   )
 
-  lazy val cosmosApi = (play.Project("cosmos-api", "1.0-SNAPSHOT", path = file("cosmos-api"),
+  lazy val cosmosApi = (play.Project("cosmos-api", POM.version, path = file("cosmos-api"),
                         dependencies = Seq(PlayKeys.anorm, PlayKeys.jdbc))
     settings(ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)

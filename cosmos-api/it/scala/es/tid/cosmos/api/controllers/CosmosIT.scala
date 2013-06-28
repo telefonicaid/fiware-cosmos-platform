@@ -16,7 +16,6 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.mocks.WithInMemoryDatabase
 
 class CosmosIT extends FlatSpec with MustMatchers {
@@ -24,6 +23,6 @@ class CosmosIT extends FlatSpec with MustMatchers {
     val resource = route(FakeRequest(GET, "/cosmos/v1")).get
     status(resource) must equal (OK)
     contentType(resource) must be (Some("application/json"))
-    contentAsString(resource) must include (CosmosResource.apiVersion)
+    contentAsString(resource) must be ("{}")
   }
 }

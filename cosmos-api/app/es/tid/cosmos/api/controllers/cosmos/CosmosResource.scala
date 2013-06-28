@@ -12,8 +12,9 @@
 package es.tid.cosmos.api.controllers.cosmos
 
 import com.wordnik.swagger.annotations.{ApiOperation, Api}
-import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
+
+import es.tid.cosmos.api.controllers.pages.{routes => pageRoutes}
 
 /**
  * Root API resource
@@ -23,6 +24,6 @@ class CosmosResource extends Controller {
   @ApiOperation(value = "The API root", httpMethod = "GET",
     notes = "Root API resource")
   def version = Action {
-    Ok(Json.parse("{}"))
+    MovedPermanently(pageRoutes.Pages.swaggerUI().url)
   }
 }

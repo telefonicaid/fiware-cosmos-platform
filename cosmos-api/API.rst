@@ -33,10 +33,10 @@ GET ``/cosmos/v1``
 
 *Since v1*
 
-Represents general API information as JSON::
+Represents endpoint for the REST API:
 
     {
-      "version": "X.Y.Z"
+      "message": "Endpoint for Cosmos API"
     }
 
 GET ``/cosmos/v1/cluster``

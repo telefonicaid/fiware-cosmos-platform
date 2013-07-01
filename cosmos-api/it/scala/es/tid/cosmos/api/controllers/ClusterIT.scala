@@ -26,7 +26,7 @@ import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.{MockedServiceManagerComponent, MockedServiceManager}
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
-class ClusterIT extends FlatSpec with MustMatchers {
+class ClusterIT extends FlatSpec with MustMatchers with AuthBehaviors {
   val resourcePath = s"/cosmos/v1/cluster/${MockedServiceManager.DefaultClusterId}"
   val provisioningResourcePath = s"/cosmos/v1/cluster/${MockedServiceManager.InProgressClusterId}"
   val unknownClusterId = ClusterId()
@@ -56,6 +56,12 @@ class ClusterIT extends FlatSpec with MustMatchers {
     "state_description" -> "Cluster is acquiring and configuring resources"
   )
 
+  "Cluster detail listing" must behave like
+    rejectingUnauthenticatedRequests(FakeRequest(GET, resourcePath))
+
+  "Cluster termination" must behave like
+    rejectingUnauthenticatedRequests(FakeRequest(POST, s"$unknownResourcePath/terminate"))
+
   "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
     new WithSampleUsers {
       CosmosProfileDao.assignCluster(
@@ -77,11 +83,6 @@ class ClusterIT extends FlatSpec with MustMatchers {
     contentType(resource) must be (Some("application/json"))
     val description = Json.parse(contentAsString(resource))
     description must equal(partialDescription)
-  }
-
-  it must "reject unauthorized detail listing" in new WithSampleUsers {
-    val resource = route(FakeRequest(GET, resourcePath)).get
-    status(resource) must equal (UNAUTHORIZED)
   }
 
   it must "return 404 on unknown cluster" in new WithSampleUsers {
@@ -119,11 +120,6 @@ class ClusterIT extends FlatSpec with MustMatchers {
     val resource = route(FakeRequest(POST, s"$unknownResourcePath/terminate")
       .authorizedBy(user1)).get
     status(resource) must equal (NOT_FOUND)
-  }
-
-  it must "reject non-authenticated cluster termination" in new WithSampleUsers {
-    val resource = route(FakeRequest(POST, s"$unknownResourcePath/terminate")).get
-    status(resource) must equal (UNAUTHORIZED)
   }
 
   it must "reject cluster termination of non owned clusters" in new WithSampleUsers {

@@ -14,7 +14,6 @@
 import argparse
 import json
 import logging as log
-import re
 import sys
 
 import requests
@@ -22,13 +21,14 @@ from requests.exceptions import ConnectionError, Timeout, RequestException
 
 import cosmos.config as c
 import cosmos.webhdfs as webhdfs
-from cosmos.tables import format_table
+from cosmos.command_util import add_cluster_id_argument
 from cosmos.routes import Routes
+from cosmos.ssh import add_ssh_command
+from cosmos.tables import format_table
 from cosmos.util import ExitWithError, ResponseError
 
 
 ELLIPSIS = '...'
-UUID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
 
 
 def add_configure_command(subcommands):
@@ -80,12 +80,6 @@ def add_list_command(subcommands):
     parser.set_defaults(func=list_clusters)
 
 
-def cluster_id(argument):
-    if not UUID_PATTERN.match(argument):
-        raise argparse.ArgumentTypeError("Not a valid cluster id")
-    return argument
-
-
 def add_show_command(subcommands):
 
     @c.with_config
@@ -100,7 +94,7 @@ def add_show_command(subcommands):
         return 0
 
     parser = subcommands.add_parser("show", help="show cluster details")
-    parser.add_argument("cluster_id", type=cluster_id, help="cluster id")
+    add_cluster_id_argument(parser)
     parser.set_defaults(func=cluster_details)
 
 
@@ -155,7 +149,7 @@ def add_terminate_command(subcommands):
         print "Terminating cluster %s" % args.cluster_id
 
     parser = subcommands.add_parser("terminate", help="terminate cluster")
-    parser.add_argument("cluster_id", type=cluster_id, help="cluster id")
+    add_cluster_id_argument(parser)
     parser.set_defaults(func=terminate_cluster)
 
 
@@ -174,6 +168,7 @@ def build_argument_parser():
     add_show_command(subparsers)
     add_create_command(subparsers)
     add_terminate_command(subparsers)
+    add_ssh_command(subparsers)
     webhdfs.add_commands(subparsers)
     return parser
 

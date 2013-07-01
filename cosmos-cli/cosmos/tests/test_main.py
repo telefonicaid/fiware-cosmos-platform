@@ -30,6 +30,7 @@ class MainTest(unittest.TestCase):
         self.assertValidArguments("show 12345678901234567890123456789012")
         self.assertValidArguments("terminate 12345678901234567890123456789012")
         self.assertValidArguments("create --name foo --size 3")
+        self.assertValidArguments("ssh 12345678901234567890123456789012")
         self.assertValidArguments("ls /tmp")
         self.assertValidArguments("rm /tmp")
         self.assertValidArguments("get /tmp/file.csv ../Downloads/")

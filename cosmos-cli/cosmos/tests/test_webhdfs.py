@@ -18,6 +18,7 @@ from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
 import cosmos.webhdfs as webhdfs
+from cosmos.tests.util import mock_response
 from cosmos.util import ExitWithError, ResponseError
 
 
@@ -156,13 +157,4 @@ class WebHdfsClientTest(unittest.TestCase):
             config.credentials = ("user", "pass")
             self.assertRaises(ResponseError, webhdfs.webhdfs_client_from_config,
                               config)
-
-def mock_response(status_code=200, json=None, raw=None):
-    response = MagicMock()
-    response.status_code = status_code
-    if json is not None:
-        response.json.return_value = json
-    if raw is not None:
-        response.raw = raw
-    return response
 

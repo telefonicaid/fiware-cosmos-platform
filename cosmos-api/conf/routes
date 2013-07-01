@@ -12,6 +12,9 @@ POST    /register                        @es.tid.cosmos.api.controllers.pages.Pa
 GET     /cosmos/v1                       @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version()
 GET     /doc/cosmos/v1                   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1")
 
+GET     /cosmos/v1/profile               @es.tid.cosmos.api.controllers.profile.ProfileResource.show()
+GET     /doc/cosmos/v1/profile           controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/profile")
+
 GET     /cosmos/v1/storage               @es.tid.cosmos.api.controllers.storage.StorageResource.details()
 GET     /doc/cosmos/v1/storage           controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/storage")
 

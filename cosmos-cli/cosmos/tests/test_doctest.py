@@ -12,8 +12,10 @@
 import unittest
 import doctest
 
+
 def test_suite():
     return unittest.TestSuite([
+        doctest.DocTestSuite("cosmos.command_util"),
         doctest.DocTestSuite("cosmos.config"),
         doctest.DocTestSuite("cosmos.main"),
         doctest.DocTestSuite("cosmos.routes"),

@@ -24,11 +24,17 @@ import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.ClusterId
 
-class ClustersIT extends FlatSpec with MustMatchers {
+class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
 
   val validCreationParams: JsValue = Json.toJson(CreateClusterParams("cluster_new", 120))
   val inValidCreationParams: JsValue = Json.obj("invalid" -> "json")
   val resourcePath = "/cosmos/v1/cluster"
+
+  "Cluster listing" must behave like
+    rejectingUnauthenticatedRequests(FakeRequest(GET, resourcePath))
+
+  "Cluster creation" must behave like rejectingUnauthenticatedRequests(
+    FakeRequest(POST, resourcePath).withJsonBody(validCreationParams))
 
   "The clusters resource" must "list user clusters" in new WithSampleUsers {
     DB.withConnection { implicit c =>
@@ -45,11 +51,6 @@ class ClustersIT extends FlatSpec with MustMatchers {
     }
   }
 
-  it must "reject unauthenticated cluster listing" in new WithSampleUsers {
-    val resource = route(FakeRequest(GET, resourcePath)).get
-    status(resource) must equal (UNAUTHORIZED)
-  }
-
   it must "start a new cluster" in new WithSampleUsers {
     val resource = route(FakeRequest(POST, resourcePath)
       .withJsonBody(validCreationParams)
@@ -62,12 +63,6 @@ class ClustersIT extends FlatSpec with MustMatchers {
     DB.withConnection { implicit c =>
       CosmosProfileDao.clustersOf(user1.id) must have length (1)
     }
-  }
-
-  it must "reject unauthenticated cluster creation" in new WithSampleUsers {
-    val resource = route(FakeRequest(POST, resourcePath)
-      .withJsonBody(validCreationParams)).get
-    status(resource) must equal (UNAUTHORIZED)
   }
 
   it must "reject cluster creation with invalid payload" in new WithSampleUsers {

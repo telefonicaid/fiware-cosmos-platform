@@ -55,7 +55,10 @@ class WithSampleUsers extends WithInMemoryDatabase {
   implicit def authRequestBuilder[T](r: FakeRequest[T]) = new AuthRequest(r)
 
   class AuthRequest[T](r: FakeRequest[T]) {
-    def authorizedBy(user: CosmosProfile) = r.withHeaders(
-      "Authorization" -> BasicAuth(user.apiCredentials.apiKey, user.apiCredentials.apiSecret))
+
+    def authorizedBy(user: CosmosProfile): FakeRequest[T] = authorizedBy(user.apiCredentials)
+
+    def authorizedBy(credentials: ApiCredentials) = r.withHeaders(
+      "Authorization" -> BasicAuth(credentials.apiKey, credentials.apiSecret))
   }
 }

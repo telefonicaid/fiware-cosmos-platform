@@ -1,4 +1,4 @@
-class cosmos::cluster_hosts($environment) {
+class cosmos::cluster_hosts {
   file { '/etc/hosts' :
     ensure => 'present',
     content => template("${module_name}/${environment}_hosts.erb"),

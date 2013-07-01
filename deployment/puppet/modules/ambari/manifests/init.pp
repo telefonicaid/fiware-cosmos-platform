@@ -35,5 +35,5 @@ class ambari {
   }
 
 #  Package['ambari-server'] ~> Exec['ambari-server-setup'] ~> Service['ambari-server']
-  Yumrepo['ambari'] -> Package['ambari-server'] -> Service['postgresql'] -> Exec['ambari-server-setup'] -> Service['ambari-server']
+  Yumrepo['ambari'] -> Package['ambari-server'] -> Exec['ambari-server-setup'] -> Service['postgresql'] -> Service['ambari-server']
 }

@@ -9,18 +9,8 @@
 # All rights reserved.
 #
 
-class cosmos::master {
-  include pdi_base, ssh_keys, cosmos::cluster_hosts, ambari, mysql
-
-  service {'iptables':
-    ensure	=> stopped,
-  }
-
-  # Java JDK
-  package {'jdk':
-    name   => 'java-1.7.0-openjdk',
-    ensure => installed,
-  }
+class cosmos::master inherits cosmos::base {
+  include ssh_keys, ambari, mysql
 
   # class { 'mysql': }
 

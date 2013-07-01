@@ -8,24 +8,16 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
-class cosmos::slave {
-  include pdi_base, ssh_keys, cosmos::params, cosmos::cluster_hosts
-
-  service {'iptables':
-    ensure	=> stopped,
-  }
-
-  package {'java-1.7.0-openjdk':
-    ensure => installed,
-  }
+class cosmos::slave inherits cosmos::base {
+  include ssh_keys
 
   class { 'openvz' :
-    vz_utils_repo   => "${cosmos::params::cosmos_repo_url}/OpenVZ/openvz-utils",
-    vz_kernel_repo  => "${cosmos::params::cosmos_repo_url}/OpenVZ/openvz-kernel-rhel6",
+    vz_utils_repo   => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-utils",
+    vz_kernel_repo  => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-kernel-rhel6",
   }
 
   class { 'libvirt' :
-    libvirt_repo_url => "${cosmos::params::cosmos_repo_url}/libvirt",
+    libvirt_repo_url => "${cosmos_repo_url}/cosmos-deps/libvirt",
     svc_enable       => "true",
     svc_ensure       => "running",
   }

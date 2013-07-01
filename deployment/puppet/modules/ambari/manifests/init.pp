@@ -11,6 +11,7 @@
 
 class ambari {
   include ambari::ambari_repos
+  include ambari::ssh_keys
 
   package { 'ambari-server':
     ensure  => installed,

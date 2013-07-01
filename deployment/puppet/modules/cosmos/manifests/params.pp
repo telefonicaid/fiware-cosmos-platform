@@ -15,7 +15,7 @@ class cosmos::params (
   $cosmos_init_dir        = "${cosmos_basedir}/etc/init.d",
   $cosmos_log_dir         = "${cosmos_basedir}/var/log",
   $cosmos_repo            = 'yes',
-  $cosmos_repo_url        = "http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/ambari/",
+  $cosmos_repo_url        = "http://cosmos10.hi.inet/develenv/rpms/cosmos-deps",
   $cosmos_repo_file       = "/etc/yum.repos.d/$name.repo",
   $cosmos_master          = "http://192.168.63.11",
   $cosmos_db_host         = 'localhost',

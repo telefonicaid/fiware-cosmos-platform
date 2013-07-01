@@ -20,9 +20,9 @@
 #
 # This is enabled by default, uncomment this to disable it
 #listen_tls = 0
-<% if listen_tls != '1' -%>
-listen_tls = <%= listen_tls %>
-<% end -%>
+#<% if listen_tls != '1' -%>
+listen_tls = <%= scope.lookupvar('libvirt::listen_tls') %>
+#<% end -%>
 
 # Listen for unencrypted TCP connections on the public TCP/IP port.
 # NB, must pass the --listen flag to the libvirtd process for this to
@@ -34,9 +34,9 @@ listen_tls = <%= listen_tls %>
 #
 # This is disabled by default, uncomment this to enable it.
 #listen_tcp = 1
-<% if listen_tcp != '1' -%>
-listen_tls = <%= listen_tcp %>
-<% end -%>
+#<% if listen_tcp != '1' -%>
+listen_tcp = <%= scope.lookupvar('libvirt::listen_tcp') %>
+#<% end -%>
 
 
 # Override the port for accepting secure TLS connections
@@ -47,7 +47,7 @@ listen_tls = <%= listen_tcp %>
 # Override the port for accepting insecure TCP connections
 # This can be a port number, or service name
 #
-#tcp_port = "16509"
+tcp_port = "16509"
 
 
 # Override the default configuration which binds to all network
@@ -63,9 +63,9 @@ listen_tls = <%= listen_tcp %>
 #
 # This is enabled by default, uncomment this to disable it
 #mdns_adv = 0
-<% if mdns_adv != '1' -%>
-mdns_adv = <%= mdns_adv %>
-<% end -%>
+#<% if mdns_adv != '1' -%>
+mdns_adv = <%= scope.lookupvar('libvirt::mdns_adv') %>
+#<% end -%>
 
 # Override the default mDNS advertizement name. This must be
 # unique on the immediate broadcast network.
@@ -87,9 +87,9 @@ mdns_adv = <%= mdns_adv %>
 #
 # This is restricted to 'root' by default.
 #unix_sock_group = "libvirt"
-<% if unix_sock_group != 'root' -%>
-unix_sock_group = "<%= unix_sock_group %>"
-<% end -%>
+#<% if unix_sock_group != 'root' -%>
+unix_sock_group = "<%= scope.lookupvar('libvirt::unix_sock_group') %>"
+#<% end -%>
 
 # Set the UNIX socket permissions for the R/O socket. This is used
 # for monitoring VM status only
@@ -97,9 +97,9 @@ unix_sock_group = "<%= unix_sock_group %>"
 # Default allows any user. If setting group ownership may want to
 # restrict this to:
 #unix_sock_ro_perms = "0777"
-<% if unix_sock_ro_perms != '0777' -%>
-unix_sock_ro_perms = "<%= unix_sock_ro_perms %>"
-<% end -%>
+#<% if unix_sock_ro_perms != '0777' -%>
+unix_sock_ro_perms = "<%= scope.lookupvar('libvirt::unix_sock_ro_perms') %>"
+#<% end -%>
 
 # Set the UNIX socket permissions for the R/W socket. This is used
 # for full management of VMs
@@ -110,15 +110,15 @@ unix_sock_ro_perms = "<%= unix_sock_ro_perms %>"
 # If not using PolicyKit and setting group ownership for access
 # control then you may want to relax this to:
 #unix_sock_rw_perms = "0770"
-<% if unix_sock_rw_perms != '0700' -%>
-unix_sock_rw_perms = "<%= unix_sock_rw_perms %>"
-<% end -%>
+#<% if unix_sock_rw_perms != '0700' -%>
+unix_sock_rw_perms = "<%= scope.lookupvar('libvirt::unix_sock_rw_perms') %>"
+#<% end -%>
 
 # Set the name of the directory in which sockets will be found/created.
 #unix_sock_dir = "/var/run/libvirt"
-<% if unix_sock_dir != '/var/run/libvirt' -%>
-unix_sock_dir = "<%= unix_sock_dir %>"
-<% end -%>
+#<% if unix_sock_dir != '/var/run/libvirt' -%>
+unix_sock_dir = "<%= scope.lookupvar('libvirt::unix_sock_dir') %>"
+#<% end -%>
 
 #################################################################
 #
@@ -163,7 +163,7 @@ unix_sock_dir = "<%= unix_sock_dir %>"
 # Don't do this outside of a dev/test scenario. For real world
 # use, always enable SASL and use the GSSAPI or DIGEST-MD5
 # mechanism in /etc/sasl2/libvirt.conf
-#auth_tcp = "sasl"
+auth_tcp = "none"
 
 # Change the authentication scheme for TLS sockets.
 #

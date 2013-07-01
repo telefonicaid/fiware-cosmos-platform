@@ -1,28 +1,22 @@
 class openvz::params {
-
-  case $::virtual {
-    /^openvzhn/: {
-      $servicename = 'vz'
-      $basedir = '/etc/vz/'
-      $confdir = '/etc/vz/conf/'
-      $vedir = '/var/lib/vz/' #XXX: Update here with your custom value
-    }
-    default: {
-      $servicename = 'libvirtd'
-    }
-  }
-
+      $virt_type        = 'openvz'
+      $servicename      = 'vz' # vz or kvm service
+      $basedir          = '/etc/vz' 
+      $confdir          = '/etc/vz/conf'
+      $vedir            = '/var/lib/vz' #XXX: Update here with your custom value
+    
   case $::operatingsystem {
     'RedHat', 'CentOS', 'Fedora': {
      # FIXME: not tested
-       $packages = $virtual ? {
+       $packages = $virt_type ? {
          kvm => [ 'qemu-kvm', 'libvirt', 'libvirt-daemon-kvm', 'python-virtinst', 'ruby-libvirt', 'libvirt-java' ],
-         openvz =>  [ 'vzkernel', 'vzkernel-headers', 'vzctl', 'vzquota' ],
+         openvz =>  [ 'vzkernel', 'vzctl', 'vzquota', 'vzstats', 'vzctl-core', 'kernel-firmware'], #'vzkernel-headers' Excluded for testing
        }
-  }
+    }
 
-  default: {
-    fail ("This module is not supported on $operatingsystem")
+    default: {
+      fail ("This module is not supported on $operatingsystem")
     }
   }
+
 }

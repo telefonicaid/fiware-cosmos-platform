@@ -20,10 +20,11 @@
 #  include libvirt
 #
 class libvirt (
-    $defaultnetwork     = false,
-    $virtinst           = true,
-    $qemu               = false,
-    $openvz		= true,
+    $libvirt_repo_url,
+    $defaultnetwork     = undef,
+    $virtinst           = "true",
+    $qemu               = undef,
+    $openvz		        = "true",
     # libvirtd.conf options
     $mdns_adv           = '0',
     $unix_sock_group    = 'root',
@@ -31,13 +32,20 @@ class libvirt (
     $unix_sock_rw_perms = '0700',
     $unix_sock_dir      = '/var/run/libvirt',
     $listen_tls         = '1',
-    $libvirt_url        = "http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/libvirt/"
+    $listen_tcp         = '1',
+    # Service related
+    $svc_enable         = "true",
+    $svc_ensure         = "running",
 ) {
 
-    file { '/etc/yum.repos.d/cosmos-libvirt.repo':
+    file { 'cosmos-libvirt.repo' :
+        ensure  => present,
+        owner   => 'root',
+        mode    => '0644',
+        path    => "/etc/yum.repos.d/cosmos-libvirt.repo",
         content => template('libvirt/libvirt-repo.erb'),
-        notify  => Service['libvirtd'],
-        require => Package['libvirt'],
+        #notify  => Service['libvirtd'],
+        #require => Package['libvirt'],
     }
 
     #yumrepo { "cosmos-libvirt":
@@ -53,21 +61,22 @@ class libvirt (
       ensure => installed,
     }
 
+    file { 'libvirt.conf' :
+        path    => "/etc/libvirt/libvirtd.conf",
+        content => template('libvirt/libvirtd.conf.erb'),
+        notify  => Service['libvirtd'],
+        #require => Package['libvirt'],
+    }
+    
     service { 'libvirtd':
-      enable    => true,
-      ensure    => running,
+      enable    => "${svc_enable}",
+      ensure    => "${svc_ensure}",
       hasstatus => true,
       require   => Package['libvirt'],
     }
 
-    file { '/etc/libvirt/libvirtd.conf':
-        content => template('libvirt/libvirtd.conf.erb'),
-        notify  => Service['libvirtd'],
-        require => Package['libvirt'],
-    }
-
     # Not needed until we support changes to it
-    #file { '/etc/libvirt/qemu.conf':
+    # file { '/etc/libvirt/qemu.conf':
     #    content => template('libvirt/qemu.conf.erb'),
     #    notify  => Service['libvirtd'],
     #    require => Package['libvirt'],
@@ -89,10 +98,16 @@ class libvirt (
 
     # The most useful libvirt-related packages
     if $virtinst {
-        package { 'python-virtinst': ensure => installed }
+        package { 'python-virtinst' : 
+          ensure => installed,
+        }
     }
     if $qemu {
-        package { 'qemu-kvm': ensure => installed }
+        package { 'qemu-kvm' :
+          ensure => installed,
+        }
     }
 
+File['cosmos-libvirt.repo'] -> Package["libvirt.${::architecture}"] -> File['libvirt.conf'] -> Service['libvirtd']
 }
+

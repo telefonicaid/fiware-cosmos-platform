@@ -10,7 +10,7 @@ class openvz::params {
      # FIXME: not tested
        $packages = $virt_type ? {
          kvm => [ 'qemu-kvm', 'libvirt', 'libvirt-daemon-kvm', 'python-virtinst', 'ruby-libvirt', 'libvirt-java' ],
-         openvz =>  [ 'vzkernel', 'vzctl', 'vzquota', 'vzstats', 'vzctl-core', 'kernel-firmware'], #'vzkernel-headers' Excluded for testing
+         openvz =>  [ 'vzkernel', 'vzctl', 'vzquota', 'vzstats', 'vzctl-core', 'vzkernel-firmware'], #'vzkernel-headers' Excluded for testing
        }
     }
 

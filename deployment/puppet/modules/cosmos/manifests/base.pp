@@ -9,16 +9,22 @@
 # All rights reserved.
 #
 
-class cosmos::base {
+class cosmos::base inherits cosmos::params {
   include pdi_base
   include cosmos::cluster_hosts
-  include cosmos::params
 
-  service {'iptables':
+  yumrepo { 'cosmos-repo' :
+    name     => 'cosmos-repo',
+    baseurl  => "${cosmos_repo_url}/cosmos",
+    gpgcheck => '0',
+    enabled  => '1',
+  }
+
+  service { 'iptables':
     ensure	=> stopped
   }
 
-  package {'java-1.7.0-openjdk':
+  package { 'java-1.7.0-openjdk':
     ensure => installed
   }
 
@@ -30,8 +36,8 @@ class cosmos::base {
 
   file { '/etc/puppet/puppet.conf':
     source  => 'puppet:///modules/cosmos/puppet.conf',
-    owner  => 'root',
-    group  => 'root',
+    owner   => 'root',
+    group   => 'root',
     require => File['/etc/puppet']
   }
 }

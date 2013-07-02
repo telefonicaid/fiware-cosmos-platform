@@ -1,33 +1,35 @@
-# Class:  cosmos::params
 #
+# Telefónica Digital - Product Development and Innovation
 #
-# This is the common paramaters class for Cosmos components: 
-# ambari-server
-# ambari-agent
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+
 
 class cosmos::params (
   $thee                   = 'cosmos',
-  $cosmos_env             = 'undef',
-  $cosmos_version         = '1.0',
   $cosmos_basedir         = '/opt/pdi-cosmos',
-  $cosmos_storage         = "${cosmos_basedir}/var/storage",
-  $cosmos_conf_dir        = "${cosmos_basedir}/etc",
-  $cosmos_init_dir        = "${cosmos_basedir}/etc/init.d",
-  $cosmos_log_dir         = "${cosmos_basedir}/var/log",
-  $cosmos_repo            = 'yes',
   $cosmos_repo_url        = "http://cosmos10.hi.inet/develenv/rpms",
   $cosmos_repo_file       = "/etc/yum.repos.d/$name.repo",
   $cosmos_master          = "http://192.168.63.11",
   $cosmos_db_host         = 'localhost',
+  $cosmos_db_port         = '3306',
   $cosmos_db_name         = 'cosmos',
   $cosmos_db_user         = 'cosmos',
   $cosmos_db_pass         = 'SomeV3ryNicePassw0rd',
-  $cosmos_secret          = 'undef',
-  $ambari_agent_ver       = 'undef',
-  $ambari_server_ver      = 'undef',
-
+  $tuid_auth_url          = 'https://tda-qa-07.hi.inet/',
+  $tuid_api_url           = 'https://foo-test.apigee.net',
+  $tuid_client_id         = 'QOGIbbuzXqYfGrgTYWZciOJ3FhpiYsfk',
+  $tuid_client_secret     = '7FW6EViSbWUkv5QB',
+  $cosmos_ial_key         = 'undef',
+  $ambari_user            = 'admin',
+  $ambari_password        = 'admin',
+  $ambari_refresh_period  = '30'
 ) {
-
 }
   
   

@@ -1,22 +1,22 @@
 <configuration>
-          <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-                <encoder>
-                        <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-                </encoder>
-          </appender>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+        <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+    </appender>
 
-          <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-                  <file><%= cosmos_log_dir %>/cosmos-api.log</file>
-                  <encoder>
-                          <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
-                  </encoder>
-          </appender>
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file><%= scope.lookupvar('cosmos::params::cosmos_basedir') %>/var/log/cosmos-api.log</file>
+        <encoder>
+            <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+        </encoder>
+    </appender>
 
-          <logger name="es.tid.cosmos" level="DEBUG">
-		<appender-ref ref="STDOUT" />
-	  </logger>
+    <logger name="es.tid.cosmos" level="DEBUG">
+        <appender-ref ref="STDOUT" />
+    </logger>
 
-          <root level="INFO">
-                <appender-ref ref="FILE" />
-          </root>
- </configuration>
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>

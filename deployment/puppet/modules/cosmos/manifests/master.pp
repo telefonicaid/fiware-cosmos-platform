@@ -10,7 +10,7 @@
 #
 
 class cosmos::master inherits cosmos::base {
-  include ssh_keys, ambari, mysql
+  include ssh_keys, ambari, mysql, cosmos::api
 
   # class { 'mysql': }
 
@@ -28,13 +28,6 @@ class cosmos::master inherits cosmos::base {
       #  'port' => '3306'
       #}
     },
-  }
-
-  mysql::db { 'cosmos':
-    user     => 'cosmos',
-    password => 'cosmos',
-    host     => '%',
-    grant    => ['all'],
   }
 
   # database_user{ 'cosmos@%':
@@ -56,5 +49,4 @@ class cosmos::master inherits cosmos::base {
   #  ip => '192.168.10.22',
   #  host_aliases => 'cosmos.slave2',
   #}
-
 }

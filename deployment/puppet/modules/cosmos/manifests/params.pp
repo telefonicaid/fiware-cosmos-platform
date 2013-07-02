@@ -9,7 +9,6 @@
 # All rights reserved.
 #
 
-
 class cosmos::params (
   $thee                   = 'cosmos',
   $cosmos_basedir         = '/opt/pdi-cosmos',

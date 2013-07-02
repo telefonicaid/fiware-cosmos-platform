@@ -1,10 +1,14 @@
-# = Class: cosmos
 #
-#   This is the init class for Cosmos common module
+# Telefónica Digital - Product Development and Innovation
 #
-# == Parameters:
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
 #
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+
 class cosmos inherits cosmos::params {
-  
 }
 

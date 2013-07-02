@@ -12,6 +12,7 @@
 class cosmos::params (
   $thee                   = 'cosmos',
   $cosmos_basedir         = '/opt/pdi-cosmos',
+  $cosmos_confdir         = '/opt/pdi-cosmos/etc',
   $cosmos_repo_url        = "http://cosmos10.hi.inet/develenv/rpms",
   $cosmos_repo_file       = "/etc/yum.repos.d/$name.repo",
   $cosmos_master          = "http://192.168.63.11",

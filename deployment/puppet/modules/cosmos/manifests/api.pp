@@ -32,19 +32,25 @@ class cosmos::api inherits cosmos::params {
     require => YumRepo['cosmos-repo']
   }
 
+  file { "${cosmos_confdir}":
+    ensure => 'directory',
+    mode   => '0440',
+  }
+
   file { 'cosmos-api.conf':
-    path    => "${cosmos_basedir}/etc/cosmos-api.conf",
+    path    => "${cosmos_confdir}/cosmos-api.conf",
     ensure  => 'present',
     mode    => '0644',
     content => template("cosmos/cosmos-api.conf.erb"),
-    require => Package['cosmos']
+    require => [Package['cosmos'], File[$cosmos_confdir]]
   }
 
   file { 'logback.conf' :
-    path    => "${cosmos_basedir}/etc/logback.conf",
+    path    => "${cosmos_confdir}/logback.conf",
     ensure  => 'present',
     mode    => '0644',
-    content => template('cosmos/logback.conf.erb')
+    content => template('cosmos/logback.conf.erb'),
+    require => File[$cosmos_confdir],
   }
 
   service { 'cosmos-api':

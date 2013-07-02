@@ -9,10 +9,10 @@
 # All rights reserved.
 #
 
-class ambari {
-  require ambari::params
-  include ambari::ambari_repos, ambari::install, ambari::config, ambari::service
-
-  Class['ambari::ambari_repos'] -> Class['ambari::install'] -> Class['ambari::config'] -> Class['ambari::service']
-  Class['ambari::config'] ~> Class['ambari::service']
+class ambari::service {
+  service { ['postgresql', 'ambari-server']:
+    ensure     => 'running',
+    hasstatus  => true,
+    hasrestart => true,
+  }
 }

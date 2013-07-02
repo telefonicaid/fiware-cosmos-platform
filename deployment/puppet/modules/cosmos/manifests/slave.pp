@@ -9,10 +9,7 @@
 # All rights reserved.
 #
 class cosmos::slave {
-  include pdi_base
-  include ambari::ssh_keys
-  include cosmos::params
-  include cosmos::cluster_hosts
+  include pdi_base, ssh_keys, cosmos::params, cosmos::cluster_hosts
 
   service {'iptables':
     ensure	=> stopped,

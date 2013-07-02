@@ -8,11 +8,12 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
-
-class ambari {
-  require ambari::params
-  include ambari::ambari_repos, ambari::install, ambari::config, ambari::service
-
-  Class['ambari::ambari_repos'] -> Class['ambari::install'] -> Class['ambari::config'] -> Class['ambari::service']
-  Class['ambari::config'] ~> Class['ambari::service']
+class ambari::config {
+  exec { 'ambari-server-setup':
+    command     => 'ambari-server setup --silent',
+    path        => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
+    logoutput   => true,
+    timeout     => 600,
+    unless      => 'sudo -u postgres psql -l | grep ambari | wc -l | grep 2' #ensure tables exist
+  }
 }

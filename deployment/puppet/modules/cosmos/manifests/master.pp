@@ -10,10 +10,7 @@
 #
 
 class cosmos::master {
-  include pdi_base
-  include cosmos::cluster_hosts
-  include ambari
-  include mysql
+  include pdi_base, ssh_keys, cosmos::cluster_hosts, ambari, mysql
 
   service {'iptables':
     ensure	=> stopped,

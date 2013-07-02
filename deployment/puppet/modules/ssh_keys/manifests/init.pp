@@ -9,14 +9,14 @@
 # All rights reserved.
 #
 
-class ambari::ssh_keys {
+class ssh_keys {
   file { "/root/.ssh":
     ensure => "directory",
     mode   => 700,
   }
 
   file { "/root/.ssh/id_rsa":
-    source  => "puppet:///modules/ambari/id_rsa",
+    source  => "puppet:///modules/${module_name}/id_rsa",
     mode    => 600,
     owner   => root,
     group   => root,
@@ -24,7 +24,7 @@ class ambari::ssh_keys {
   }
 
   file { "/root/.ssh/id_rsa.pub":
-    source => "puppet:///modules/ambari/id_rsa.pub",
+    source => "puppet:///modules/${module_name}/id_rsa.pub",
     mode => 644,
     owner => root,
     group => root,

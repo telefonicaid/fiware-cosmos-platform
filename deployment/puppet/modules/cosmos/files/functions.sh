@@ -63,6 +63,7 @@ function error_and_exit {
 function defined_or_exit {
     if [ -z "$2" ]; then
         echo "Error: missing config property $1"
+        exit 1
     fi
 }
 

@@ -9,6 +9,7 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 
+set -e
 source "`dirname $0`/functions.sh"
 
 ##
@@ -31,11 +32,9 @@ function process_file {
         defined_or_exit "network_device" "${network_device}"
         defined_or_exit "ip_address" "${ip_address}"
         defined_or_exit "netmask" "${netmask}"
-        defined_or_exit "gateway" "${gateway}"
-        defined_or_exit "nameservers" "${nameservers}"
 
         WORK_DIR=`mktemp -d -t cosmos-conftempl_XXXX`
-        TARGET_FILE="`dirname ${input_file}`/${output_template}"
+        TARGET_FILE="${output_template}"
         TARGET_DIR="`dirname ${TARGET_FILE}`"
         SYSCONFIG_DIR="${WORK_DIR}/etc/sysconfig"
         NETSCRIPTS_DIR="${SYSCONFIG_DIR}/network-scripts"
@@ -57,8 +56,12 @@ function process_file {
         echo "BOOTPROTO=none" >> ${NETDEV_FILE}
         echo "ONBOOT=yes" >> ${NETDEV_FILE}
         echo "IPADDR=${ip_address}" >> ${NETDEV_FILE}
-        echo "NETMASK=${netmask}" >> ${NETDEV_FILE}
-        echo "GATEWAY=${gateway}" >> ${NETDEV_FILE}
+        if [ -nz "$netmask" ]; then
+            echo "NETMASK=${netmask}" >> ${NETDEV_FILE}
+        fi
+        if [ -nz "gateway" ]; then
+            echo "GATEWAY=${gateway}" >> ${NETDEV_FILE}
+        fi
         echo "USERCTL=no" >> ${NETDEV_FILE}
 
         # Pack again
@@ -66,7 +69,6 @@ function process_file {
         tar -C "${WORK_DIR}" -czf "${TARGET_FILE}" .
 
         rm -rf ${WORK_DIR}
-        exit 0
     )
 }
 
@@ -77,7 +79,7 @@ function main {
     echo "(Please be patient, each process takes a while)"
     for input_file in $*; do
         echo "Processing ${input_file}... "
-        (process_file ${input_file} && echo "File ${input_file} processed successfully")&
+        process_file ${input_file} && echo "File ${input_file} processed successfully" || exit 1
     done
     wait
 }

@@ -13,6 +13,18 @@ node 'cosmos-master' inherits default {
   include cosmos::master
 }
 
-node 'cosmos-slave1', 'cosmos-slave2' inherits default {
+node 'cosmos-slave1' inherits default {
+  $ip = "192.168.11.21"
+  $ct_ip = "192.168.11.71"
+  $ct_hostname = "vagrant-compute01"
+  $netmask = "255.255.255.0"
+  include cosmos::slave
+}
+
+node 'cosmos-slave2' inherits default {
+  $ip = "192.168.11.22"
+  $ct_ip = "192.168.11.72"
+  $ct_hostname = "vagrant-compute02"
+  $netmask = "255.255.255.0"
   include cosmos::slave
 }

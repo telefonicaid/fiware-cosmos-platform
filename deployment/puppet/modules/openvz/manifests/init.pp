@@ -18,7 +18,7 @@ class openvz  (
   }
 
   file { 'vz.conf' :
-    path      => "$openvz::params::confdir/vz.conf",
+    path      => "$openvz::params::basedir/vz.conf",
     ensure    => present,
     source    => "puppet:///modules/openvz/vz.conf",
     notify    => Service[$openvz::params::servicename],

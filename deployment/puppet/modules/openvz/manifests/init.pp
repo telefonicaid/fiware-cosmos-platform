@@ -6,7 +6,8 @@ class openvz  (
     #$vz_repo_key,
     
 ) inherits openvz::params {
-  
+  include openvz::sysctl
+
   package { $openvz::params::packages : 
     ensure    => installed,
   }
@@ -18,9 +19,9 @@ class openvz  (
 
   file { 'vz.conf' :
     path      => "$openvz::params::confdir/vz.conf",
-	ensure    => present,
-	source    => "puppet:///modules/openvz/vz.conf",
-	notify    => Service[$openvz::params::servicename],
+    ensure    => present,
+    source    => "puppet:///modules/openvz/vz.conf",
+    notify    => Service[$openvz::params::servicename],
   }
   
   file { 'cosmos-openvz-repo' : 
@@ -38,7 +39,7 @@ class openvz  (
     #group     => 'root',
     #mode      => '0644',
   #}
-  
-  File['cosmos-openvz-repo'] -> Package[$openvz::params::packages] -> File['vz.conf'] -> Service[$openvz::params::servicename]
+
+  File['cosmos-openvz-repo'] -> Package[$openvz::params::packages] -> File['vz.conf'] -> Class['openvz::sysctl'] -> Service[$openvz::params::servicename]
 
 }

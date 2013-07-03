@@ -32,6 +32,19 @@ class cosmos::api inherits cosmos::params {
     require => YumRepo['cosmos-repo']
   }
 
+  file { "/opt/repos/eggs":
+    ensure => 'directory',
+    owner => 'root',
+    group => 'root',
+    require => File['/opt/repos']
+  }
+
+  exec { 'download cosmos-cli':
+    command => "wget -O /opt/repos/eggs/${cosmos_cli_egg} ${cosmos_egg_repo}/${cosmos_cli_egg}",
+    path => $path,
+    creates => "/opt/repos/eggs/${cosmos_cli_egg}"
+  }
+
   file { "${cosmos_confdir}":
     ensure => 'directory',
     mode   => '0440',

@@ -26,6 +26,7 @@ class cosmos::params (
   $tuid_client_id         = 'QOGIbbuzXqYfGrgTYWZciOJ3FhpiYsfk',
   $tuid_client_secret     = '7FW6EViSbWUkv5QB',
   $cosmos_ial_key         = 'undef',
+  $cosmos_cli_egg         = 'http://cosmos10.hi.inet/develenv/repos/eggs/cosmos/cosmos-0.1.dev20130703_100026-py2.7.egg',
   $ambari_user            = 'admin',
   $ambari_password        = 'admin',
   $ambari_refresh_period  = '30'

@@ -15,7 +15,7 @@ and `setuptools` installed in your system.
 Install using `buildout`::
 
     $ python ./bootstrap.py
-    $ bin/bootstrap
+    $ bin/buildout
     $ sudo bin/buildout setup . install
 
 If you would like to uninstall later, use::
@@ -39,6 +39,11 @@ tha can be downloaded and installed on any system with `python` and
 Or directly from the network::
 
     $ easy_install http://location/path/cosmos-<version>.egg
+
+You can also create a SNAPSHOT version as follows::
+
+    $ bin/buildout setup . egg_info --tag-build=.dev`date +%G%m%d-%H%M%S` \
+                           bdist_egg rotate --match=.egg --keep=10
 
 Configure Cosmos
 ================

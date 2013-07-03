@@ -10,7 +10,7 @@
 #
 
 class cosmos::master inherits cosmos::base {
-  include stdlib, ssh_keys, ambari, mysql, cosmos::api
+  include stdlib, ssh_keys, ambari, mysql, cosmos::setup, cosmos::api
 
   file { '/opt/repos':
     ensure => 'directory'

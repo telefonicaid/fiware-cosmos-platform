@@ -71,6 +71,7 @@ class cosmos::api inherits cosmos::params {
     enable => true,
     require => [
       Package['cosmos'],
+      Exec['cosmos-setup'],
       File['cosmos-api.conf'],
       File['logback.conf'],
       Class['mysql::server']

@@ -20,10 +20,6 @@ class cosmos::base inherits cosmos::params {
     enabled  => '1',
   }
 
-  service { 'iptables':
-    ensure	=> stopped
-  }
-
   package { 'java-1.7.0-openjdk':
     ensure => installed
   }

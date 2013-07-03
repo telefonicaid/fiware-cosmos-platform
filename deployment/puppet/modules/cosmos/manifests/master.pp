@@ -10,7 +10,7 @@
 #
 
 class cosmos::master inherits cosmos::base {
-  include stdlib, ssh_keys, ambari, mysql, cosmos::setup, cosmos::api
+  include stdlib, ssh_keys, ambari, mysql, cosmos::api, cosmos::firewall_app
 
   file { '/opt/repos':
     ensure => 'directory'
@@ -55,23 +55,10 @@ class cosmos::master inherits cosmos::base {
     },
   }
 
-  # database_user{ 'cosmos@%':
-  #   ensure        => present,
-  #   password_hash => mysql_password('cosmos'),
-  #   require       => Class['mysql::server'],
-  # }
+  $libvirt_packages = ['libvirt-client', 'libvirt-java']
+  package { $libvirt_packages :
+    ensure => 'present'
+  }
+#  Package[$libvirt_packages] -> Class['cosmos::api']
 
-  # database_grant { 'cosmos@%/cosmosdb':
-  #   privileges => ['all'] ,
-  # }
-
-  #host { 'slave1':
-  #  ip => '192.168.10.21',
-  #  host_aliases => 'cosmos.slave1',
-  #}
-  #
-  #host { 'slave2':
-  #  ip => '192.168.10.22',
-  #  host_aliases => 'cosmos.slave2',
-  #}
 }

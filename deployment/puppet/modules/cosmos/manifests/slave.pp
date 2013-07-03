@@ -11,6 +11,10 @@
 class cosmos::slave inherits cosmos::base {
   include ssh_keys
 
+  service { 'iptables':
+    ensure	=> stopped
+  }
+
   class { 'openvz' :
     vz_utils_repo   => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-utils",
     vz_kernel_repo  => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-kernel-rhel6",

@@ -10,7 +10,32 @@
 #
 
 class cosmos::master inherits cosmos::base {
-  include ssh_keys, ambari, mysql, cosmos::api
+  include stdlib, ssh_keys, ambari, mysql, cosmos::api
+
+  file { '/opt/repos':
+    ensure => 'directory'
+  }
+
+  # Apache HTTPD on port 8000 for auxiliary uses
+
+  class {'apache':  }
+
+  apache::vhost { 'localhost':
+    priority => '20',
+    port     => '8000',
+    docroot  => '/opt/repos'
+  }
+
+  file_line { "don't listen on 80 port":
+    ensure => 'absent',
+    line => 'Listen 80',
+    path => '/etc/httpd/conf/httpd.conf',
+  } -> file_line { 'listen on 8000 port':
+    ensure => 'present',
+    line => 'Listen 8000',
+    path => '/etc/httpd/conf/httpd.conf',
+    notify => Service['httpd']
+  }
 
   # class { 'mysql': }
 

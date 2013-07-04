@@ -40,6 +40,5 @@ class cosmos::setup inherits cosmos::params {
       Package['cosmos'],
       Exec['ial_db']
     ],
-    notify => Service['cosmos-api']
   }
 }

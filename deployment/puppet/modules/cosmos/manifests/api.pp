@@ -11,6 +11,7 @@
 
 class cosmos::api inherits cosmos::params {
   include mysql
+  include cosmos::setup
 
   mysql::db { "${cosmos_db_name}":
     user     => "${cosmos_db_user}",
@@ -39,10 +40,9 @@ class cosmos::api inherits cosmos::params {
     require => File['/opt/repos']
   }
 
-  exec { 'download cosmos-cli':
-    command => "wget -O /opt/repos/eggs/${cosmos_cli_egg} ${cosmos_egg_repo}/${cosmos_cli_egg}",
-    path => $path,
-    creates => "/opt/repos/eggs/${cosmos_cli_egg}"
+  wget::fetch { 'download cosmos-cli':
+    source      => "${cosmos_egg_repo}/${cosmos_cli_egg}",
+    destination => "/opt/repos/eggs/${cosmos_cli_egg}",
   }
 
   file { "${cosmos_confdir}":
@@ -71,10 +71,12 @@ class cosmos::api inherits cosmos::params {
     enable => true,
     require => [
       Package['cosmos'],
+      Class['mysql::server']
+    ],
+    subscribe => [
       Exec['cosmos-setup'],
       File['cosmos-api.conf'],
       File['logback.conf'],
-      Class['mysql::server']
-    ]
+    ],
   }
 }

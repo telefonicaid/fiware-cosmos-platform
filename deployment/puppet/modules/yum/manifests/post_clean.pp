@@ -9,6 +9,9 @@
 # All rights reserved.
 #
 
-class pdi_base::params {
-  $basearch='x86_64'
+class yum::post_clean {
+  exec { 'yum_clean_all':
+    command     => '/usr/bin/yum clean all',
+    refreshonly => true,
+  }
 }

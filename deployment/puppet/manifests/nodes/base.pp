@@ -10,6 +10,6 @@
 #
 
 node default {
-  include pdi_base
+  include yum
 }
 notice("The environment: ${environment}")

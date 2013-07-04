@@ -9,56 +9,23 @@
 # All rights reserved.
 #
 
-class cosmos::master inherits cosmos::base {
-  include stdlib, ssh_keys, ambari, mysql, cosmos::api, cosmos::firewall_app
+class cosmos::master {
 
-  file { '/opt/repos':
-    ensure => 'directory'
-  }
+  include stdlib, ssh_keys
 
-  # Apache HTTPD on port 8000 for auxiliary uses
-
-  class {'apache':  }
-
-  apache::vhost { 'localhost':
-    priority => '20',
-    port     => '8000',
-    docroot  => '/opt/repos'
-  }
-
-  file_line { "don't listen on 80 port":
-    ensure => 'absent',
-    line => 'Listen 80',
-    path => '/etc/httpd/conf/httpd.conf',
-  } -> file_line { 'listen on 8000 port':
-    ensure => 'present',
-    line => 'Listen 8000',
-    path => '/etc/httpd/conf/httpd.conf',
-    notify => Service['httpd']
-  }
-
-  # class { 'mysql': }
-
-  class { 'mysql::server':
-    config_hash => { 'root_password' => 'cosmos' }
-  }
-
-  mysql::server::config { 'basic_config':
-    settings => {
-      'mysqld' => {
-        'bind-address' => '0.0.0.0',
-        #'read-only'    => true,
-      }#,
-      #'client' => {
-      #  'port' => '3306'
-      #}
-    },
-  }
-
-  $libvirt_packages = ['libvirt-client', 'libvirt-java']
-  package { $libvirt_packages :
-    ensure => 'present'
-  }
-#  Package[$libvirt_packages] -> Class['cosmos::api']
-
+  anchor { 'cosmos::master::begin': }
+  ->
+  class {'cosmos::base': }
+  ->
+  class {'cosmos::firewall_app': }
+  ->
+  class {'ambari': }
+  ->
+  class { 'mysql': }
+  ->
+  class { 'cosmos::master_setup': }
+  ->
+  class { 'cosmos::api': }
+  ->
+  anchor { 'cosmos::master::end': }
 }

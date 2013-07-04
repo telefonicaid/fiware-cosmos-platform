@@ -10,8 +10,11 @@
 #
 
 class cosmos::base inherits cosmos::params {
-  include pdi_base
-  include cosmos::cluster_hosts
+  anchor { 'cosmos::base::begin': }
+  ->
+  class { 'cosmos::cluster_hosts': }
+  ->
+  anchor { 'cosmos::base::end': }
 
   yumrepo { 'cosmos-repo' :
     name     => 'cosmos-repo',
@@ -21,7 +24,7 @@ class cosmos::base inherits cosmos::params {
   }
 
   package { 'java-1.7.0-openjdk':
-    ensure => installed
+    ensure => installed,
   }
 
   file { '/etc/puppet':

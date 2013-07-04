@@ -10,7 +10,12 @@
 #
 
 class cosmos::api inherits cosmos::params {
-  include mysql
+
+  anchor { 'cosmos::api::begin': }
+  ->
+  class { 'cosmos::setup': }
+  ->
+  anchor { 'cosmos::api::end': }
 
   mysql::db { "${cosmos_db_name}":
     user     => "${cosmos_db_user}",
@@ -36,9 +41,9 @@ class cosmos::api inherits cosmos::params {
     ensure => 'directory',
     owner => 'root',
     group => 'root',
-    require => File['/opt/repos']
+    require => File[$cosmos_cli_repo_path],
   }
-
+  ->
   exec { 'download cosmos-cli':
     command => "wget -O /opt/repos/eggs/${cosmos_cli_egg} ${cosmos_egg_repo}/${cosmos_cli_egg}",
     path => $path,

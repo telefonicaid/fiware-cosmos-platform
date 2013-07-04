@@ -10,7 +10,8 @@
 #
 
 class cosmos::openvz_images {
-  wget::fetch { 'download base image' :
+  include cosmos::openvz_image_replacements
+  wget::fetch { 'Download base image' :
     source => "http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz",
     destination => "/tmp/centos-6-x86_64.tar.gz",
   }
@@ -30,20 +31,15 @@ class cosmos::openvz_images {
     source => "puppet:///modules/${module_name}/configure-template.sh",
   }
 
-  # Empty directory. FIXME!
-  file { [ '/tmp/replacements', '/tmp/replacements/centos-6-x86_64.tar.gz' ] :
-    ensure => 'directory',
-  }
-
-  file { '/tmp/replacements/centos-6-x86_64.tar.gz/dummy' :
-    ensure => 'present',
-    require => File['/tmp/replacements/centos-6-x86_64.tar.gz'],
-  }
-
-  exec { '/tmp/generate-template.sh /tmp/centos-6-x86_64.tar.gz /tmp/centos-6-cosmos-x86_64.tar.gz' :
-    creates => '/tmp/centos-6-cosmos-x86_64.tar.gz',
+  exec { 'Generate template' :
+    command => '/tmp/generate-template.sh /tmp/centos-6-x86_64.tar.gz /tmp/centos-6-cosmos-x86_64.tar.gz',
+    refreshonly => true,
     user => 'root',
-    require => [ Wget::Fetch['download base image'], File['/tmp/generate-template.sh'], File['/tmp/replacements/centos-6-x86_64.tar.gz/dummy'] ],
+    subscribe => [
+      Wget::Fetch['Download base image'],
+      File['/tmp/generate-template.sh'],
+      Class['cosmos::openvz_image_replacements']
+    ],
   }
 
   file { '/tmp/template-configuration.properties' :
@@ -54,9 +50,15 @@ class cosmos::openvz_images {
     owner   => '0',
   }
 
-  exec { '/tmp/configure-template.sh /tmp/template-configuration.properties' :
-    creates => '/vz/template/cache/centos-6-cosmos-x86_64.tar.gz',
+  exec { 'Configure template' :
+    command => '/tmp/configure-template.sh /tmp/template-configuration.properties',
+    refreshonly => true,
     user => 'root',
-    require => [ File['/tmp/template-configuration.properties'], Exec['/tmp/generate-template.sh /tmp/centos-6-x86_64.tar.gz /tmp/centos-6-cosmos-x86_64.tar.gz'] ],
+    subscribe => [
+      File['/tmp/functions.sh'],
+      File['/tmp/configure-template.sh'],
+      File['/tmp/template-configuration.properties'],
+      Exec['Generate template']
+    ],
   }
 }

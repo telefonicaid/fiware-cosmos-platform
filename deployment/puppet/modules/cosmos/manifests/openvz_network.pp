@@ -10,7 +10,7 @@
 #
 
 class cosmos::openvz_network {
-	service { 'network' :
+  service { 'network' :
     ensure => "running",
     enable => "true",
   }

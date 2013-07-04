@@ -37,17 +37,16 @@ class cosmos::api inherits cosmos::params {
     require => YumRepo['cosmos-repo']
   }
 
-  file { "/opt/repos/eggs":
+  file { "${$cosmos_cli_repo_path}/eggs":
     ensure => 'directory',
     owner => 'root',
     group => 'root',
     require => File[$cosmos_cli_repo_path],
   }
   ->
-  exec { 'download cosmos-cli':
-    command => "wget -O /opt/repos/eggs/${cosmos_cli_egg} ${cosmos_egg_repo}/${cosmos_cli_egg}",
-    path => $path,
-    creates => "/opt/repos/eggs/${cosmos_cli_egg}"
+  wget::fetch { 'download cosmos-cli':
+    source      => "${cosmos_egg_repo}/${cosmos_cli_egg}",
+    destination => "${$cosmos_cli_repo_path}/eggs/${cosmos_cli_egg}",
   }
 
   file { "${cosmos_confdir}":
@@ -76,10 +75,12 @@ class cosmos::api inherits cosmos::params {
     enable => true,
     require => [
       Package['cosmos'],
+      Class['mysql::server']
+    ],
+    subscribe => [
       Exec['cosmos-setup'],
       File['cosmos-api.conf'],
       File['logback.conf'],
-      Class['mysql::server']
-    ]
+    ],
   }
 }

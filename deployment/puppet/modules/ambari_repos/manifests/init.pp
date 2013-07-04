@@ -9,7 +9,7 @@
 # All rights reserved.
 #
 
-class ambari::ambari_repos {
+class ambari_repos {
   # Cosmos and PDI Ambari repositories
   yumrepo { 'ambari':
     baseurl  => $ambari::params::ambari_repo_url,

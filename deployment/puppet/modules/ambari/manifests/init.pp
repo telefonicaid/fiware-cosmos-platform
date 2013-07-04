@@ -11,11 +11,9 @@
 
 class ambari {
   require ambari::params
-#  include ambari::ambari_repos, ambari::install, ambari::config, ambari::service
-
   anchor { 'ambari::begin': }
   ->
-  class {'ambari::ambari_repos' :}
+  class {'ambari_repos' :}
   ->
   class {'ambari::install' :}
   ->

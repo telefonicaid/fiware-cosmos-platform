@@ -10,7 +10,7 @@
 #
 
 class cosmos::openvz_image_replacements {
-  include ssh_keys, ambari_repos, pdi_base
+  include ssh_keys, ambari_repos
 
   file { [
       '/tmp/replacements',
@@ -37,6 +37,6 @@ class cosmos::openvz_image_replacements {
     purge => true,
     force => true,
     require => File['/tmp/replacements/centos-6-x86_64.tar.gz/etc'],
-    subscribe => [ Class['ambari_repos'], Class['pdi_base'] ],
+    subscribe => Class['ambari_repos'],
   }
 }

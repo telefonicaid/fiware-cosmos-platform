@@ -11,23 +11,31 @@
 
 class cosmos::setup inherits cosmos::params {
 
-  $ial_schema = '/tmp/ial_schema.sql'
-  $ial_machines = '/tmp/ial_machines.sql'
+  $ial_schema   = "${cosmos_basedir}/ial/ial_schema.sql"
+  $ial_machines = "${cosmos_basedir}/ial/ial_machines.sql"
+
+  file { 'ial':
+    path => "${cosmos_basedir}/ial",
+    ensure => 'directory',
+  }
 
   file { "${ial_schema}":
-    ensure => present,
-    source => 'puppet:///modules/cosmos/ial_schema.sql'
+    ensure  => present,
+    source  => 'puppet:///modules/cosmos/ial_schema.sql',
+    require => File['ial'],
   }
 
   file { "${ial_machines}":
-    ensure => present,
-    source => "puppet:///modules/cosmos/environments/${environment}/ial_machines.sql"
+    ensure  => present,
+    source  => "puppet:///modules/cosmos/environments/${environment}/ial_machines.sql",
+    require => File['ial'],
   }
 
   exec { 'ial_db':
-    command => "cat ${ial_schema} ${ial_machines} | mysql -ucosmos -p${cosmos_db_pass} cosmos -B",
-    path => $path,
-    require => [
+    command     => "cat ${ial_schema} ${ial_machines} | mysql -ucosmos -p${cosmos_db_pass} cosmos -B",
+    path        => $path,
+    refreshonly => true,
+    subscribe   => [
       File["${ial_schema}"],
       File["${ial_machines}"],
       Database["${cosmos_db_name}"]

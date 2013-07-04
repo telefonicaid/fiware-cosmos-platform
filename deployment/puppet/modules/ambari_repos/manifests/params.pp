@@ -9,8 +9,8 @@
 # All rights reserved.
 #
 
-class ambari::params (
-  $install_ensure  = 'latest',
-  $jdk_url         = 'http://cosmos10/develenv/repos/bins/jdk-6u31-linux-x64.bin'
+class ambari_repos::params (
+  $ambari_repo_url = 'http://cosmos10/develenv/repos/rpms/cosmos-deps/ambari/'
 ) {
+
 }

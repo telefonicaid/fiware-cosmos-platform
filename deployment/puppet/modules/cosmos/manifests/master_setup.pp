@@ -21,10 +21,7 @@ class cosmos::master_setup inherits cosmos::params {
 
   # Apache HTTPD on port 8000 for auxiliary uses
 
-  class {'apache':
-    require => Anchor['cosmos::master_setup::begin'],
-    before  => Anchor['cosmos::master_setup::end'],
-  }
+  include apache
 
   apache::vhost { 'localhost':
     priority => '20',
@@ -48,8 +45,6 @@ class cosmos::master_setup inherits cosmos::params {
 
   class { 'mysql::server':
     config_hash => { 'root_password' => 'cosmos' },
-    require => Anchor['cosmos::master_setup::begin'],
-    before  => Anchor['cosmos::master_setup::end'],
   }
 
   mysql::server::config { 'basic_config':
@@ -68,4 +63,10 @@ class cosmos::master_setup inherits cosmos::params {
   package { $libvirt_packages :
     ensure => 'present'
   }
+
+  Anchor['cosmos::master_setup::begin']
+  ->
+  Class['apache', 'mysql::server']
+  ->
+  Anchor['cosmos::master_setup::end']
 }

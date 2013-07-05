@@ -17,14 +17,20 @@ class cosmos::slave inherits cosmos::base {
     ensure	=> stopped
   }
 
-  class { 'openvz' :
+  anchor {'cosmos::slave::begin': }
+  ->
+  class { 'openvz':
     vz_utils_repo   => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-utils",
     vz_kernel_repo  => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-kernel-rhel6",
   }
-
-  class { 'libvirt' :
+  ->
+  class { 'libvirt':
     libvirt_repo_url => "${cosmos_repo_url}/cosmos-deps/libvirt",
     svc_enable       => "true",
     svc_ensure       => "running",
   }
+  ->
+  Class['ssh_keys', 'cosmos::openvz_network', 'cosmos::openvz_images']
+  ->
+  anchor {'cosmos::slave::end': }
 }

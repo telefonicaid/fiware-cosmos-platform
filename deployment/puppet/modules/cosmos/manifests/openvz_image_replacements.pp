@@ -12,6 +12,12 @@
 class cosmos::openvz_image_replacements {
   include ssh_keys, ambari_repos
 
+  anchor { 'openvz_image_replacements::begin': }
+  ->
+  Class['ssh_keys', 'ambari_repos']
+  ->
+  anchor { 'openvz_image_replacements::end': }
+
   file { [
       '/tmp/replacements',
       '/tmp/replacements/centos-6-x86_64.tar.gz',

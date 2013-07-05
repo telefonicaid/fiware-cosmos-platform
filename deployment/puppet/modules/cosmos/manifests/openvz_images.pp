@@ -10,7 +10,12 @@
 #
 
 class cosmos::openvz_images {
-  include cosmos::openvz_image_replacements
+  anchor {'cosmos::openvz_images::begin': }
+  ->
+  class { 'cosmos::openvz_image_replacements': }
+  ->
+  anchor {'cosmos::openvz_images::end': }
+
   wget::fetch { 'Download base image' :
     source => "http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz",
     destination => "/tmp/centos-6-x86_64.tar.gz",

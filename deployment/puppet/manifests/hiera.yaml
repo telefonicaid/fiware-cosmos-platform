@@ -1,0 +1,10 @@
+---
+:hierarchy:
+    - %{hostname}
+    - common
+
+:backends:
+    - json
+
+:json:
+    :datadir: 'hieradata/%{::environment}'

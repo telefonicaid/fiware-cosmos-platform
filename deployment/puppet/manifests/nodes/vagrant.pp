@@ -19,38 +19,7 @@ node 'cosmos-master' inherits default {
   Class['cosmos::firewall::firewall_pre'] -> Firewall{} -> Class['cosmos::firewall::firewall_post']
 }
 
-node 'cosmos-store1' inherits default {
-  class { 'cosmos::slave':
-    ip          => "192.168.11.21",
-    ct_ip       => "192.168.11.71",
-    ct_hostname => "vagrant-store01",
-  }
-  Class['yum'] ~> Class['cosmos::slave']
-}
-
-node 'cosmos-store2' inherits default {
-  class { 'cosmos::slave':
-    ip          => "192.168.11.22",
-    ct_ip       => "192.168.11.72",
-    ct_hostname => "vagrant-store02",
-  }
-  Class['yum'] ~> Class['cosmos::slave']
-}
-
-node 'cosmos-compute1' inherits default {
-  class { 'cosmos::slave':
-    ip          => "192.168.11.23",
-    ct_ip       => "192.168.11.73",
-    ct_hostname => "vagrant-compute01",
-  }
-  Class['yum'] ~> Class['cosmos::slave']
-}
-
-node 'cosmos-compute2' inherits default {
-  class { 'cosmos::slave':
-    ip          => "192.168.11.24",
-    ct_ip       => "192.168.11.74",
-    ct_hostname => "vagrant-compute02",
-  }
+node 'cosmos-store1', 'cosmos-store2', 'cosmos-compute1', 'cosmos-compute2' inherits default {
+  include cosmos::slave
   Class['yum'] ~> Class['cosmos::slave']
 }

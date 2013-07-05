@@ -24,12 +24,12 @@ class yum {
   anchor { 'yum::begin': }
   ->
   class { 'yum::remove_repos': }
+  ~>
+  class { 'yum::post_clean': }
   ->
   class { $os_repo: }
   ->
   class { 'yum::thirdparty::puppetlabs': }
-  ~>
-  class { 'yum::post_clean': }
   ->
   anchor { 'yum::end': }
 }

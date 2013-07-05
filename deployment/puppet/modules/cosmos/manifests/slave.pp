@@ -12,7 +12,7 @@ class cosmos::slave (
   $ip,
   $ct_ip,
   $ct_hostname,
-  $netmask = "255.255.255.0"
+  $netmask
 ) inherits cosmos::base {
   include ssh_keys
   include cosmos::openvz::network

@@ -10,11 +10,7 @@
 #
 
 class cosmos::openvz::images {
-  anchor {'cosmos::openvz::images::begin': }
-  ->
-  class { 'cosmos::openvz::image_replacements': }
-  ->
-  anchor {'cosmos::openvz::images::end': }
+  include cosmos::openvz::image_replacements
 
   wget::fetch { 'Download base image' :
     source => "http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz",
@@ -40,11 +36,6 @@ class cosmos::openvz::images {
     command => '/tmp/generate-template.sh /tmp/centos-6-x86_64.tar.gz /tmp/centos-6-cosmos-x86_64.tar.gz',
     refreshonly => true,
     user => 'root',
-    subscribe => [
-      Wget::Fetch['Download base image'],
-      File['/tmp/generate-template.sh'],
-      Class['cosmos::openvz::image_replacements']
-    ],
   }
 
   file { '/tmp/template-configuration.properties' :
@@ -58,12 +49,18 @@ class cosmos::openvz::images {
   exec { 'Configure template' :
     command => '/tmp/configure-template.sh /tmp/template-configuration.properties',
     refreshonly => true,
-    user => 'root',
-    subscribe => [
-      File['/tmp/functions.sh'],
-      File['/tmp/configure-template.sh'],
-      File['/tmp/template-configuration.properties'],
-      Exec['Generate template']
-    ],
+    user => 'root'
   }
+
+  Wget::Fetch['Download base image'] ~> Exec['Generate template']
+  File['/tmp/generate-template.sh'] ~> Exec['Generate template']
+  Class['cosmos::openvz::image_replacements'] ~> Exec['Generate template']
+    ~> Exec['Configure template']
+
+  File['/tmp/functions.sh', '/tmp/configure-template.sh', '/tmp/template-configuration.properties']
+    ~> Exec['Configure template']
+
+  anchor {'cosmos::openvz::images::begin': }
+    -> Class['cosmos::openvz::image_replacements']
+    -> anchor {'cosmos::openvz::images::end': }
 }

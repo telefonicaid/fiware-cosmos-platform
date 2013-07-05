@@ -21,7 +21,6 @@ class cosmos::openvz::network {
     group   => '0',
     mode    => '644',
     owner   => '0',
-    notify  => Service['network'],
   }
 
   file { '/etc/vz/conf/ve-g1-compute.conf-sample' :
@@ -42,19 +41,19 @@ class cosmos::openvz::network {
     ensure => 'absent',
     path => '/etc/sysconfig/network-scripts/ifcfg-eth1',
     entry => 'IPADDR',
-    notify  => Service['network'],
   }
 
   editfile::config { 'remove_netmask' :
     ensure => 'absent',
     path => '/etc/sysconfig/network-scripts/ifcfg-eth1',
     entry => 'NETMASK',
-    notify  => Service['network'],
   }
 
   file { '/etc/vz/vznet.conf' :
     ensure => 'present',
     content => 'EXTERNAL_SCRIPT="/usr/sbin/vznetaddbr"',
-    notify  => Service['network'],
   }
+
+  File['/etc/sysconfig/network-scripts/ifcfg-vzbr0', '/etc/vz/vznet.conf'] ~> Service['network']
+  Editfile::Config['remove_ip_config', 'remove_netmask', 'add_bridge'] ~> Service['network']
 }

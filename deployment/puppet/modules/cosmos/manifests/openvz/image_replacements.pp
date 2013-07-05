@@ -12,12 +12,6 @@
 class cosmos::openvz::image_replacements {
   include ssh_keys, ambari_repos
 
-  anchor { 'cosmos::openvz::image_replacements::begin': }
-  ->
-  Class['ssh_keys', 'ambari_repos']
-  ->
-  anchor { 'cosmos::openvz::image_replacements::end': }
-
   file { [
       '/tmp/replacements',
       '/tmp/replacements/centos-6-x86_64.tar.gz',
@@ -32,8 +26,6 @@ class cosmos::openvz::image_replacements {
     recurse => true,
     purge => true,
     force => true,
-    require => File['/tmp/replacements/centos-6-x86_64.tar.gz/root'],
-    subscribe => Class['ssh_keys'],
   }
 
   file { '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d' :
@@ -42,7 +34,16 @@ class cosmos::openvz::image_replacements {
     recurse => true,
     purge => true,
     force => true,
-    require => File['/tmp/replacements/centos-6-x86_64.tar.gz/etc'],
-    subscribe => Class['ambari_repos'],
   }
+
+  File['/tmp/replacements/centos-6-x86_64.tar.gz/root'] -> File['/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh']
+  File['/tmp/replacements/centos-6-x86_64.tar.gz/etc'] -> File[ '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d']
+  Class['ssh_keys'] ~> File['/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh']
+  Class['ambari_repos'] ~> File[ '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d']
+
+  anchor { 'cosmos::openvz::image_replacements::begin': }
+  ->
+  Class['ssh_keys', 'ambari_repos']
+  ->
+  anchor { 'cosmos::openvz::image_replacements::end': }
 }

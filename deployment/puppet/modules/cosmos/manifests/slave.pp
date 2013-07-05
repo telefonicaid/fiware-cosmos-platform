@@ -22,20 +22,20 @@ class cosmos::slave (
     ensure	=> stopped
   }
 
-  anchor {'cosmos::slave::begin': }
-  ->
   class { 'openvz':
     vz_utils_repo   => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-utils",
     vz_kernel_repo  => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-kernel-rhel6",
   }
-  ->
+
   class { 'libvirt':
     libvirt_repo_url => "${cosmos_repo_url}/cosmos-deps/libvirt",
     svc_enable       => "true",
     svc_ensure       => "running",
   }
+
+  anchor {'cosmos::slave::begin': }
   ->
-  Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
+  Class['openvz', 'libvirt', 'ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
   ->
   anchor {'cosmos::slave::end': }
 }

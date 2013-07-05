@@ -253,4 +253,9 @@ class AmbariServiceManager(
         slaves = slaveMachines)
     } yield ()
   }
+
+  override def describePersistentHdfsCluster(): Option[ClusterDescription] =
+    describeCluster(persistentHdfsId)
+
+  override def terminatePersistentHdfsCluster(): Future[Unit] = terminateCluster(persistentHdfsId)
 }

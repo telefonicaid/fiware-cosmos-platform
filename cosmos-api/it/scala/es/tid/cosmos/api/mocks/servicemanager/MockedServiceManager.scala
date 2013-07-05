@@ -141,6 +141,10 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     successful()
   }
 
+  def describePersistentHdfsCluster(): Option[ClusterDescription] = Some(persistentHdfsCluster)
+
+  def terminatePersistentHdfsCluster(): Future[Unit] = successful()
+
   def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit] = successful()
 
   def refresh() = successful()

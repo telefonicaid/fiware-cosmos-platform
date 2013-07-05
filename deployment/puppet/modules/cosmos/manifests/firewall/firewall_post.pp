@@ -9,4 +9,4 @@
 # All rights reserved.
 #
 
-class cosmos::firewall_post {}
+class cosmos::firewall::firewall_post {}

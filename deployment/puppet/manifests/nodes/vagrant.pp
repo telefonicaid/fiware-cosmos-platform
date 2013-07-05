@@ -10,8 +10,13 @@
 #
 
 node 'cosmos-master' inherits default {
-  include cosmos::master
+  include cosmos::master, firewall, cosmos::firewall::firewall_pre, cosmos::firewall::firewall_post
   Class['yum'] ~> Class['cosmos::master']
+
+  resources { "firewall":
+    purge => true
+  }
+  Class['cosmos::firewall::firewall_pre'] -> Firewall{} -> Class['cosmos::firewall::firewall_post']
 }
 
 node 'cosmos-store1' inherits default {

@@ -10,7 +10,13 @@
 #
 
 node 'andromeda01' inherits default {
-  include cosmos::master
+  include cosmos::master, firewall, cosmos::firewall::firewall_pre, cosmos::firewall::firewall_post
+  Class['yum'] ~> Class['cosmos::master']
+
+  resources { "firewall":
+    purge => true
+  }
+  Class['cosmos::firewall::firewall_post'] -> Firewall{} -> Class['cosmos::firewall::firewall_pre']
 }
 
 node /^andromeda(02|03|04|05|06|07|08|99)$/ inherits default {

@@ -9,27 +9,19 @@
 # All rights reserved.
 #
 
-class cosmos::firewall_app {
-  resources { "firewall":
-    purge => true
-  }
-  Firewall {
-    before  => Class['cosmos::firewall_post'],
-    require => Class['cosmos::firewall_pre'],
-  }
-
-  class { ['cosmos::firewall_pre', 'cosmos::firewall_post']: }
-  class { 'firewall': }
-
+class cosmos::firewall::firewall_app {
   firewall { '100 allow 8080 access only from localhost':
     dport   => 8080,
     proto  => tcp,
     action => accept,
     source => '127.0.0.1',
-  }->
+  }
+
   firewall { '101 deny 8080 access from outside':
     dport   => 8080,
     proto  => tcp,
     action => drop,
   }
+
+  Firewall['100 allow 8080 access only from localhost'] -> Firewall['101 deny 8080 access from outside']
 }

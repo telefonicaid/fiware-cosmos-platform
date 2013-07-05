@@ -15,33 +15,37 @@ node 'cosmos-master' inherits default {
 }
 
 node 'cosmos-store1' inherits default {
-  $ip = "192.168.11.21"
-  $ct_ip = "192.168.11.71"
-  $ct_hostname = "vagrant-store01"
-  $netmask = "255.255.255.0"
-  include cosmos::slave
+  class { 'cosmos::slave':
+    ip          => "192.168.11.21",
+    ct_ip       => "192.168.11.71",
+    ct_hostname => "vagrant-store01",
+  }
+  Class['yum'] ~> Class['cosmos::slave']
 }
 
 node 'cosmos-store2' inherits default {
-  $ip = "192.168.11.22"
-  $ct_ip = "192.168.11.72"
-  $ct_hostname = "vagrant-store02"
-  $netmask = "255.255.255.0"
-  include cosmos::slave
+  class { 'cosmos::slave':
+    ip          => "192.168.11.22",
+    ct_ip       => "192.168.11.72",
+    ct_hostname => "vagrant-store02",
+  }
+  Class['yum'] ~> Class['cosmos::slave']
 }
 
-node 'cosmos-slave1' inherits default {
-  $ip = "192.168.11.23"
-  $ct_ip = "192.168.11.73"
-  $ct_hostname = "vagrant-compute01"
-  $netmask = "255.255.255.0"
-  include cosmos::slave
+node 'cosmos-compute1' inherits default {
+  class { 'cosmos::slave':
+    ip          => "192.168.11.23",
+    ct_ip       => "192.168.11.73",
+    ct_hostname => "vagrant-compute01",
+  }
+  Class['yum'] ~> Class['cosmos::slave']
 }
 
-node 'cosmos-slave2' inherits default {
-  $ip = "192.168.11.24"
-  $ct_ip = "192.168.11.74"
-  $ct_hostname = "vagrant-compute02"
-  $netmask = "255.255.255.0"
-  include cosmos::slave
+node 'cosmos-compute2' inherits default {
+  class { 'cosmos::slave':
+    ip          => "192.168.11.24",
+    ct_ip       => "192.168.11.74",
+    ct_hostname => "vagrant-compute02",
+  }
+  Class['yum'] ~> Class['cosmos::slave']
 }

@@ -44,7 +44,9 @@ class cosmos::setup inherits cosmos::params {
 
   exec { 'cosmos-setup':
     command => '/opt/pdi-cosmos/cosmos-admin/cosmos-admin setup',
-    require => [
+    refreshonly => true,
+    require => Class['ssh_keys'],
+    subscribe => [
       Package['cosmos'],
       Exec['ial_db']
     ],

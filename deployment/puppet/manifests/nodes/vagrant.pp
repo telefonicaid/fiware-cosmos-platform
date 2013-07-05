@@ -11,7 +11,7 @@
 
 node 'cosmos-master' inherits default {
   include cosmos::master
-  Class['yum'] -> Class['cosmos::master']
+  Class['yum'] ~> Class['cosmos::master']
 }
 
 node 'cosmos-store1' inherits default {

@@ -8,7 +8,12 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
-class cosmos::slave inherits cosmos::base {
+class cosmos::slave (
+  $ip,
+  $ct_ip,
+  $ct_hostname,
+  $netmask = "255.255.255.0"
+) inherits cosmos::base {
   include ssh_keys
   include cosmos::openvz_network
   include cosmos::openvz_images

@@ -15,8 +15,8 @@ class cosmos::slave (
   $netmask = "255.255.255.0"
 ) inherits cosmos::base {
   include ssh_keys
-  include cosmos::openvz_network
-  include cosmos::openvz_images
+  include cosmos::openvz::network
+  include cosmos::openvz::images
 
   service { 'iptables':
     ensure	=> stopped
@@ -35,7 +35,7 @@ class cosmos::slave (
     svc_ensure       => "running",
   }
   ->
-  Class['ssh_keys', 'cosmos::openvz_network', 'cosmos::openvz_images']
+  Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
   ->
   anchor {'cosmos::slave::end': }
 }

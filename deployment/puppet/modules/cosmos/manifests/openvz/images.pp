@@ -9,12 +9,12 @@
 # All rights reserved.
 #
 
-class cosmos::openvz_images {
-  anchor {'cosmos::openvz_images::begin': }
+class cosmos::openvz::images {
+  anchor {'cosmos::openvz::images::begin': }
   ->
-  class { 'cosmos::openvz_image_replacements': }
+  class { 'cosmos::openvz::image_replacements': }
   ->
-  anchor {'cosmos::openvz_images::end': }
+  anchor {'cosmos::openvz::images::end': }
 
   wget::fetch { 'Download base image' :
     source => "http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz",
@@ -43,7 +43,7 @@ class cosmos::openvz_images {
     subscribe => [
       Wget::Fetch['Download base image'],
       File['/tmp/generate-template.sh'],
-      Class['cosmos::openvz_image_replacements']
+      Class['cosmos::openvz::image_replacements']
     ],
   }
 

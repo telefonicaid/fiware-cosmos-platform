@@ -9,7 +9,7 @@
 # All rights reserved.
 #
 
-class cosmos::openvz_network {
+class cosmos::openvz::network {
   service { 'network' :
     ensure => "running",
     enable => "true",

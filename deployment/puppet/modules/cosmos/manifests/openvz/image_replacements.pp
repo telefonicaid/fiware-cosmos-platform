@@ -9,14 +9,14 @@
 # All rights reserved.
 #
 
-class cosmos::openvz_image_replacements {
+class cosmos::openvz::image_replacements {
   include ssh_keys, ambari_repos
 
-  anchor { 'openvz_image_replacements::begin': }
+  anchor { 'cosmos::openvz::image_replacements::begin': }
   ->
   Class['ssh_keys', 'ambari_repos']
   ->
-  anchor { 'openvz_image_replacements::end': }
+  anchor { 'cosmos::openvz::image_replacements::end': }
 
   file { [
       '/tmp/replacements',

@@ -28,7 +28,7 @@ class yum {
   class { $os_repo: }
   ->
   class { 'yum::thirdparty::puppetlabs': }
-  ->
+  ~>
   class { 'yum::post_clean': }
   ->
   anchor { 'yum::end': }

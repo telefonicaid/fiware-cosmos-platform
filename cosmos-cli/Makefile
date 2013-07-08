@@ -10,18 +10,13 @@
 # All rights reserved.
 #
 
-[buildout]
-parts = instance test
-develop = .
-eggs = cosmos [test]
-index = http://jenkins:jenkins@cosmos10.hi.inet:8000/simple/
-allow-hosts = *cosmos10*
+PYTHON?=python
 
-[instance]
-recipe = zc.recipe.egg
-eggs = cosmos
+all:
+	$(PYTHON) ./bootstrap.py && bin/buildout -c dev.cfg
 
-[test]
-recipe = zc.recipe.testrunner
-eggs = cosmos [test]
+clean:
+	rm -rf parts eggs bin develop-eggs coverage build dist lib include \
+	       cosmos.egg-info .Python .installed.cfg
 
+.PHONY: all clean

@@ -107,7 +107,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
   trait BaseRefreshable extends Refreshing {
     val infrastructureProvider = mock[InfrastructureProvider]
     val provisioner = mock[ClusterProvisioner]
-    val refreshGracePeriod = 50.milliseconds
+    val refreshGracePeriod = 3000.milliseconds
   }
 
   trait NoRefresh extends BaseRefreshable {

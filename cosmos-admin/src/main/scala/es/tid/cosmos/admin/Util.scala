@@ -26,7 +26,7 @@ private[admin] object Util {
         println("ERROR: Cosmos admin task failed")
         println(throwable.getMessage)
         println()
-        println(throwable.getStackTrace)
+        println(throwable.getStackTrace.deep.mkString("\n"))
       }})
     Await.ready(task_>, 15 minutes).value.get.isSuccess
   }

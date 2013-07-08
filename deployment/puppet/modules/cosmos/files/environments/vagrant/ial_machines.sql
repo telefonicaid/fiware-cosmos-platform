@@ -29,7 +29,7 @@ INSERT INTO `SERVERS` VALUES
         3,
         32768,
         20,
-        '192.168.11.21'
+        '192.168.11.71'
     ),
     (
         'store2',
@@ -44,7 +44,7 @@ INSERT INTO `SERVERS` VALUES
         2,
         32768,
         20,
-        '192.168.11.22'
+        '192.168.11.72'
     ),
     (
         'compute1',
@@ -59,7 +59,7 @@ INSERT INTO `SERVERS` VALUES
         1,
         32768,
         20,
-        '192.168.11.23'
+        '192.168.11.73'
     ),
     (
         'compute2',
@@ -74,7 +74,7 @@ INSERT INTO `SERVERS` VALUES
         1,
         32768,
         20,
-        '192.168.11.24'
+        '192.168.11.74'
     );
 
 /*!40000 ALTER TABLE `SERVERS` ENABLE KEYS */;

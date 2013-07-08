@@ -9,7 +9,7 @@
 # All rights reserved.
 #
 
-node 'cosmos-master' inherits default {
+node 'master' inherits default {
   include cosmos::master, firewall, cosmos::firewall::firewall_pre, cosmos::firewall::firewall_post
   Class['yum'] ~> Class['cosmos::master']
 
@@ -19,7 +19,7 @@ node 'cosmos-master' inherits default {
   Class['cosmos::firewall::firewall_pre'] -> Firewall{} -> Class['cosmos::firewall::firewall_post']
 }
 
-node 'cosmos-store1', 'cosmos-store2', 'cosmos-compute1', 'cosmos-compute2' inherits default {
+node 'store1', 'store2', 'compute1', 'compute2' inherits default {
   include cosmos::slave
   Class['yum'] ~> Class['cosmos::slave']
 }

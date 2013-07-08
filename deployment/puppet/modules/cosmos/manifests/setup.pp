@@ -42,13 +42,36 @@ class cosmos::setup inherits cosmos::params {
     ]
   }
 
+  file { "${cosmos_confdir}":
+    ensure => 'directory',
+    mode   => '0440',
+  }
+
+  file { 'cosmos-api.conf':
+    path    => "${cosmos_confdir}/cosmos-api.conf",
+    ensure  => 'present',
+    mode    => '0644',
+    content => template("cosmos/cosmos-api.conf.erb"),
+    require => [Package['cosmos'], File[$cosmos_confdir]]
+  }
+
+  file { 'logback.conf' :
+    path    => "${cosmos_confdir}/logback.conf",
+    ensure  => 'present',
+    mode    => '0644',
+    content => template('cosmos/logback.conf.erb'),
+    require => File[$cosmos_confdir],
+  }
+
   exec { 'cosmos-setup':
     command => '/opt/pdi-cosmos/cosmos-admin/cosmos-admin setup',
     refreshonly => true,
     require => Class['ssh_keys'],
+    user => root,
     subscribe => [
       Package['cosmos'],
-      Exec['ial_db']
+      Exec['ial_db'],
+      File['cosmos-api.conf'],
     ],
   }
 }

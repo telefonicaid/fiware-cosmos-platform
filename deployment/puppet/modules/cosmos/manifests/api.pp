@@ -11,9 +11,11 @@
 
 class cosmos::api inherits cosmos::params {
 
+  include cosmos::setup
+
   anchor { 'cosmos::api::begin': }
   ->
-  class { 'cosmos::setup': }
+  Class['cosmos::setup']
   ->
   anchor { 'cosmos::api::end': }
 
@@ -47,27 +49,6 @@ class cosmos::api inherits cosmos::params {
   wget::fetch { 'download cosmos-cli':
     source      => "${cosmos_egg_repo}/${cosmos_cli_egg}",
     destination => "${$cosmos_cli_repo_path}/eggs/${cosmos_cli_egg}",
-  }
-
-  file { "${cosmos_confdir}":
-    ensure => 'directory',
-    mode   => '0440',
-  }
-
-  file { 'cosmos-api.conf':
-    path    => "${cosmos_confdir}/cosmos-api.conf",
-    ensure  => 'present',
-    mode    => '0644',
-    content => template("cosmos/cosmos-api.conf.erb"),
-    require => [Package['cosmos'], File[$cosmos_confdir]]
-  }
-
-  file { 'logback.conf' :
-    path    => "${cosmos_confdir}/logback.conf",
-    ensure  => 'present',
-    mode    => '0644',
-    content => template('cosmos/logback.conf.erb'),
-    require => File[$cosmos_confdir],
   }
 
   service { 'cosmos-api':

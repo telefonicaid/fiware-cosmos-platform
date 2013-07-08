@@ -29,7 +29,7 @@ class SetupCommand(serviceManager: ServiceManager) {
         println("ERROR: Persistent HDFS deployment failure")
         println(throwable.getMessage)
         println()
-        println(throwable.getStackTrace)
+        println(throwable.getStackTrace.deep.mkString("\n"))
       }})
     Await.ready(hdfsDeploy_>, 15 minutes).value.get.isSuccess
   }

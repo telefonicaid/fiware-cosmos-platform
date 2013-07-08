@@ -13,10 +13,8 @@ class cosmos::slave (
   $ct_ip,
   $ct_hostname,
   $netmask
-) inherits cosmos::base {
-  include ssh_keys
-  include cosmos::openvz::network
-  include cosmos::openvz::images
+) inherits cosmos::params {
+  include ssh_keys, cosmos::base, cosmos::openvz::network, cosmos::openvz::images
 
   service { 'iptables':
     ensure	=> stopped
@@ -35,7 +33,9 @@ class cosmos::slave (
 
   anchor {'cosmos::slave::begin': }
   ->
-  Class['openvz', 'libvirt', 'ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
+  Class['openvz', 'libvirt', 'cosmos::base']
+  ->
+  Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
   ->
   anchor {'cosmos::slave::end': }
 }

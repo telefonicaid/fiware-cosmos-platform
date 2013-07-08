@@ -4,7 +4,7 @@
     - common
 
 :backends:
-    - json
+    - yaml
 
-:json:
+:yaml:
     :datadir: 'hieradata/%{::environment}'

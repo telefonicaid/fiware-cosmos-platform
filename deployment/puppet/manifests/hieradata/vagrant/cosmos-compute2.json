@@ -1,5 +1,0 @@
-{
-    "cosmos::slave::ip": "192.168.11.24",
-    "cosmos::slave::ct_ip": "192.168.11.74",
-    "cosmos::slave::ct_hostname": "vagrant-compute02"
-}

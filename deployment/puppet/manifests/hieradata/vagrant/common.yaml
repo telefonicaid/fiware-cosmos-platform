@@ -1,0 +1,7 @@
+cosmos::slave::netmask: "255.255.255.0"
+cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
+slave_hosts:
+    - "cosmos-compute1"
+    - "cosmos-compute2"
+    - "cosmos-store1"
+    - "cosmos-store2"

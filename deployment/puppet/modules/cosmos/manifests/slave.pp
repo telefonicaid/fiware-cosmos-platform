@@ -12,9 +12,15 @@ class cosmos::slave (
   $ip,
   $ct_ip,
   $ct_hostname,
-  $netmask
+  $netmask,
+  $host_key_pub,
+  $host_key_pub_file
 ) inherits cosmos::params {
   include ssh_keys, cosmos::base, cosmos::openvz::network, cosmos::openvz::images
+
+  if member(hiera('slave_hosts'), $hostname) == false {
+    err("Host ${hostname} is not listed in slave_hosts array in common.yaml.")
+  }
 
   service { 'iptables':
     ensure	=> stopped
@@ -29,6 +35,22 @@ class cosmos::slave (
     libvirt_repo_url => "${cosmos_repo_url}/cosmos-deps/libvirt",
     svc_enable       => "true",
     svc_ensure       => "running",
+  }
+
+  file { '/etc/ssh/ssh_host_rsa_key':
+    ensure => "present",
+    source => $host_key_pub_file,
+    mode => 600,
+    owner => root,
+    group => root,
+  }
+
+  file { '/etc/ssh/ssh_host_rsa_key.pub':
+    ensure => "present",
+    content => $host_key_pub,
+    mode => 644,
+    owner => root,
+    group => root,
   }
 
   anchor {'cosmos::slave::begin': }

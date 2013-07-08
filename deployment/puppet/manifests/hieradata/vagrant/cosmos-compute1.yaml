@@ -1,0 +1,4 @@
+cosmos::slave::ip: "192.168.11.23"
+cosmos::slave::ct_ip: "192.168.11.73"
+cosmos::slave::ct_hostname: "vagrant-compute01"
+cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJosUS666vRfCWFksro3aj7IrLznaSDtGzMR1+8ktaPdPxILAp+KItjfHbBKo47FG47NG/f9MGfHJGNyzsHkCR9zCUzAUWGhlVlWdKNeJFxNFb45xZPEdBNTnZ5VEsW5+4UeZNaYR/4V4DKf0rVOXvIaF4coqmVQvA8pnmrvdeD3AHmvDjvVSivSoGja+Nu8Qucg2AozCa4z3LC2oizYdI0E9znpp1VbPiw0z1xVzQEHTV/ylauTbI99Lc84Igfq6O8Rqju6VcyD/CluT4b421kh/kTEE5CC0rpcVZ08zNl2HihuSD+UspPhMGipWpqf+H6jt7wadKlyPRegeMVywl"

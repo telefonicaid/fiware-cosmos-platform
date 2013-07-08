@@ -1,0 +1,2 @@
+<% for @host in scope.function_hiera(["slave_hosts"]) %><%=@host%>,<%=scope.function_hiera(["cosmos::slave::ip", nil, @host])%> <%=scope.function_hiera(["cosmos::slave::host_key_pub", nil, @host])%>
+<% end %>

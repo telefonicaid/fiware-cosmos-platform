@@ -30,4 +30,12 @@ class cosmos::master {
   Class ['cosmos::firewall::firewall_app']
   ->
   Anchor ['cosmos::master::end']
+
+  file { '/root/.ssh/known_hosts':
+    ensure => 'present',
+    content => template("${module_name}/known_hosts.erb"),
+    group   => '0',
+    mode    => '644',
+    owner   => '0',
+  }
 }

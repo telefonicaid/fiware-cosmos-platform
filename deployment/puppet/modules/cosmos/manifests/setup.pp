@@ -58,6 +58,7 @@ class cosmos::setup inherits cosmos::params {
     command     => "${cosmos_basedir}/cosmos-admin/cosmos-admin setup",
     refreshonly => true,
     user        => root,
+    timeout     => 900,
   }
 
   File['ial'] -> File["${ial_schema}", "${ial_machines}"] ~> Exec['ial_db']

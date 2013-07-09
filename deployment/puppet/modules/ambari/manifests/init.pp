@@ -10,7 +10,8 @@
 #
 
 class ambari {
-  include ambari::params, ambari_repos, ambari::install, ambari::config, ambari::service
+  include ambari::params, ambari_repos, ambari::install, ambari::config,
+    ambari::service
 
   anchor { 'ambari::begin': }
     -> Class['ambari::params']

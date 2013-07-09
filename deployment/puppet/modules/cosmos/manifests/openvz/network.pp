@@ -16,44 +16,46 @@ class cosmos::openvz::network {
   }
 
   file { '/etc/sysconfig/network-scripts/ifcfg-vzbr0' :
-    ensure => 'present',
+    ensure  => 'present',
     content => template("${module_name}/ifcfg-vzbr0.erb"),
     group   => '0',
-    mode    => '644',
+    mode    => '0644',
     owner   => '0',
   }
 
   file { '/etc/vz/conf/ve-g1-compute.conf-sample' :
-    ensure => 'present',
-    source => "puppet:///modules/${module_name}/ve-g1-compute.conf-sample",
+    ensure  => 'present',
+    source  => "puppet:///modules/${module_name}/ve-g1-compute.conf-sample",
     group   => '0',
-    mode    => '644',
+    mode    => '0644',
     owner   => '0',
   }
 
   editfile::config { 'add_bridge' :
-    path => '/etc/sysconfig/network-scripts/ifcfg-eth1',
-    entry => 'BRIDGE',
+    path   => '/etc/sysconfig/network-scripts/ifcfg-eth1',
+    entry  => 'BRIDGE',
     ensure => 'vzbr0',
   }
 
   editfile::config { 'remove_ip_config' :
     ensure => 'absent',
-    path => '/etc/sysconfig/network-scripts/ifcfg-eth1',
-    entry => 'IPADDR',
+    path   => '/etc/sysconfig/network-scripts/ifcfg-eth1',
+    entry  => 'IPADDR',
   }
 
   editfile::config { 'remove_netmask' :
     ensure => 'absent',
-    path => '/etc/sysconfig/network-scripts/ifcfg-eth1',
-    entry => 'NETMASK',
+    path   => '/etc/sysconfig/network-scripts/ifcfg-eth1',
+    entry  => 'NETMASK',
   }
 
   file { '/etc/vz/vznet.conf' :
-    ensure => 'present',
+    ensure  => 'present',
     content => 'EXTERNAL_SCRIPT="/usr/sbin/vznetaddbr"',
   }
 
-  File['/etc/sysconfig/network-scripts/ifcfg-vzbr0', '/etc/vz/vznet.conf'] ~> Service['network']
-  Editfile::Config['remove_ip_config', 'remove_netmask', 'add_bridge'] ~> Service['network']
+  File['/etc/sysconfig/network-scripts/ifcfg-vzbr0', '/etc/vz/vznet.conf']
+    ~> Service['network']
+  Editfile::Config['remove_ip_config', 'remove_netmask', 'add_bridge']
+    ~> Service['network']
 }

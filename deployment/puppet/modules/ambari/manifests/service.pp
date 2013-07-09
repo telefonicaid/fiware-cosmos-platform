@@ -12,7 +12,7 @@
 class ambari::service {
   service { ['postgresql', 'ambari-server']:
     ensure     => 'running',
-    enable => true,
+    enable     => true,
     hasstatus  => true,
     hasrestart => true,
   }

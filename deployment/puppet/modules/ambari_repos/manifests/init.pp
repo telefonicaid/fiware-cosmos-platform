@@ -31,7 +31,7 @@ class ambari_repos {
 
   yumrepo { 'Updates-ambari-1.x':
     baseurl  => 'http://servilinux.hi.inet/ambari/Updates-ambari-1.x/',
-    descr     => '[PDI] ambari-1.x - Updates',
+    descr    => '[PDI] ambari-1.x - Updates',
     enabled  => 0,
     gpgcheck => 1,
     gpgkey   => 'http://servilinux.hi.inet/ambari/RPM-GPG-KEY-Jenkins',
@@ -40,7 +40,7 @@ class ambari_repos {
 
   yumrepo { 'Updates-ambari-1.2.2.4':
     baseurl  => 'http://servilinux.hi.inet/ambari/Updates-ambari-1.2.2.4/',
-    descr     => '[PDI] ambari-1.2.2.4 - Updates',
+    descr    => '[PDI] ambari-1.2.2.4 - Updates',
     enabled  => 0,
     gpgcheck => 1,
     gpgkey   => 'http://servilinux.hi.inet/ambari/RPM-GPG-KEY-Jenkins',

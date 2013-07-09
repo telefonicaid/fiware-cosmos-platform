@@ -13,7 +13,7 @@ class cosmos::openvz::images($gateway) {
   include cosmos::openvz::image_replacements
 
   wget::fetch { 'Download base image' :
-    source => "http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz",
+    source      => "http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz",
     destination => "/tmp/centos-6-x86_64.tar.gz",
   }
 
@@ -33,23 +33,23 @@ class cosmos::openvz::images($gateway) {
   }
 
   exec { 'Generate template' :
-    command => '/tmp/generate-template.sh /tmp/centos-6-x86_64.tar.gz /tmp/centos-6-cosmos-x86_64.tar.gz',
+    command     => '/tmp/generate-template.sh /tmp/centos-6-x86_64.tar.gz /tmp/centos-6-cosmos-x86_64.tar.gz',
     refreshonly => true,
-    user => 'root',
+    user        => 'root',
   }
 
   file { '/tmp/template-configuration.properties' :
-    ensure => 'present',
+    ensure  => 'present',
     content => template("${module_name}/template-configuration.properties.erb"),
     group   => '0',
-    mode    => '644',
+    mode    => '0644',
     owner   => '0',
   }
 
   exec { 'Configure template' :
-    command => '/tmp/configure-template.sh /tmp/template-configuration.properties',
+    command     => '/tmp/configure-template.sh /tmp/template-configuration.properties',
     refreshonly => true,
-    user => 'root'
+    user        => 'root'
   }
 
   if $environment == 'vagrant' {
@@ -63,7 +63,10 @@ class cosmos::openvz::images($gateway) {
   Class['cosmos::openvz::image_replacements'] ~> Exec['Generate template']
     ~> Exec['Configure template']
 
-  File['/tmp/functions.sh', '/tmp/configure-template.sh', '/tmp/template-configuration.properties']
+  File[
+    '/tmp/functions.sh',
+    '/tmp/configure-template.sh',
+    '/tmp/template-configuration.properties']
     ~> Exec['Configure template']
 
   anchor {'cosmos::openvz::images::begin': }

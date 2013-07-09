@@ -11,10 +11,10 @@
 
 class cosmos::cluster_hosts {
   file { '/etc/hosts' :
-    ensure => 'present',
+    ensure  => 'present',
     content => template("${module_name}/environments/${environment}/hosts.erb"),
     group   => '0',
-    mode    => '644',
+    mode    => '0644',
     owner   => '0',
   }
 }

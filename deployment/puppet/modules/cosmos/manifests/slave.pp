@@ -44,17 +44,17 @@ class cosmos::slave (
   file { '/etc/ssh/ssh_host_rsa_key':
     ensure => "present",
     source => $host_key_pub_file,
-    mode => 600,
-    owner => root,
-    group => root,
+    mode   => '0600',
+    owner  => root,
+    group  => root,
   }
 
   file { '/etc/ssh/ssh_host_rsa_key.pub':
-    ensure => "present",
+    ensure  => "present",
     content => $host_key_pub,
-    mode => 644,
-    owner => root,
-    group => root,
+    mode    => '0644',
+    owner   => root,
+    group   => root,
   }
 
   anchor {'cosmos::slave::begin': }

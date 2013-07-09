@@ -15,18 +15,18 @@ class cosmos::setup inherits cosmos::params {
   $ial_machines = "${cosmos_basedir}/ial/ial_machines.sql"
 
   file { 'ial':
-    path => "${cosmos_basedir}/ial",
+    path   => "${cosmos_basedir}/ial",
     ensure => 'directory',
   }
 
   file { "${ial_schema}":
-    ensure  => present,
-    source  => 'puppet:///modules/cosmos/ial_schema.sql',
+    ensure => present,
+    source => 'puppet:///modules/cosmos/ial_schema.sql',
   }
 
   file { "${ial_machines}":
-    ensure  => present,
-    source  => "puppet:///modules/cosmos/environments/${environment}/ial_machines.sql",
+    ensure => present,
+    source => "puppet:///modules/cosmos/environments/${environment}/ial_machines.sql",
   }
 
   exec { 'ial_db':
@@ -55,9 +55,9 @@ class cosmos::setup inherits cosmos::params {
   }
 
   exec { 'cosmos-setup':
-    command => '/opt/pdi-cosmos/cosmos-admin/cosmos-admin setup',
+    command     => "${cosmos_basedir}/cosmos-admin/cosmos-admin setup",
     refreshonly => true,
-    user => root,
+    user        => root,
   }
 
   File['ial'] -> File["${ial_schema}", "${ial_machines}"] ~> Exec['ial_db']

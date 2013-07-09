@@ -29,13 +29,13 @@ class cosmos::api inherits cosmos::params {
   }
 
   package { 'cosmos':
-    ensure  => latest,
+    ensure => latest,
   }
 
   file { "${$cosmos_cli_repo_path}/eggs":
     ensure => 'directory',
-    owner => 'root',
-    group => 'root',
+    owner  => 'root',
+    group  => 'root',
   }
 
   wget::fetch { 'download cosmos-cli':
@@ -44,8 +44,8 @@ class cosmos::api inherits cosmos::params {
   }
 
   service { 'cosmos-api':
-    ensure => 'running',
-    enable => true,
+    ensure     => 'running',
+    enable     => true,
     hasstatus  => true,
     hasrestart => true,
   }

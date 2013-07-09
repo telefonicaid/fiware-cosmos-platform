@@ -27,14 +27,14 @@ class cosmos::master_setup inherits cosmos::params {
 
   file_line { "don't listen on 80 port":
     ensure => 'absent',
-    line => 'Listen 80',
-    path => '/etc/httpd/conf/httpd.conf',
+    line   => 'Listen 80',
+    path   => '/etc/httpd/conf/httpd.conf',
   }
 
   file_line { 'listen on 8000 port':
     ensure => 'present',
-    line => 'Listen 8000',
-    path => '/etc/httpd/conf/httpd.conf',
+    line   => 'Listen 8000',
+    path   => '/etc/httpd/conf/httpd.conf',
   }
 
   class { 'mysql::server':
@@ -49,14 +49,15 @@ class cosmos::master_setup inherits cosmos::params {
     },
   }
 
-  $libvirt_packages = ['libvirt-client', 'libvirt-java']
-  package { $libvirt_packages :
+  package { ['libvirt-client', 'libvirt-java'] :
     ensure => 'present'
   }
 
   File[$cosmos_cli_repo_path] -> Apache::Vhost['localhost']
 
-  File_line["don't listen on 80 port"] -> File_line['listen on 8000 port'] ~> Service['httpd']
+  File_line["don't listen on 80 port"]
+    -> File_line['listen on 8000 port']
+    ~> Service['httpd']
 
   anchor{'cosmos::master_setup::begin': }
     -> Class['apache', 'mysql::server']

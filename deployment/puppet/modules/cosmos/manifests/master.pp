@@ -12,7 +12,8 @@
 class cosmos::master {
 
   include stdlib, ssh_keys, mysql, ambari,
-    cosmos::base, cosmos::firewall::firewall_app, cosmos::master_setup, cosmos::api
+    cosmos::base, cosmos::firewall::firewall_app, cosmos::master_setup,
+    cosmos::api
 
   anchor { 'cosmos::master::begin': }
     -> Class['stdlib', 'ssh_keys']
@@ -27,7 +28,7 @@ class cosmos::master {
     ensure => 'present',
     content => template("${module_name}/known_hosts.erb"),
     group   => '0',
-    mode    => '644',
+    mode    => '0644',
     owner   => '0',
   }
 }

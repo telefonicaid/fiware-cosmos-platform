@@ -21,19 +21,19 @@ class cosmos::openvz::image_replacements {
   }
 
   file { '/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh' :
-    ensure => 'directory',
-    source => '/root/.ssh',
+    ensure  => 'directory',
+    source  => '/root/.ssh',
     recurse => true,
-    purge => true,
-    force => true,
+    purge   => true,
+    force   => true,
   }
 
   file { '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d' :
-    ensure => 'directory',
-    source => '/etc/yum.repos.d',
-    recurse => true,
-    purge => true,
-    force => true,
+    ensure   => 'directory',
+    source   => '/etc/yum.repos.d',
+    recurse  => true,
+    purge    => true,
+    force    => true,
   }
 
   file { '/tmp/replacements/centos-6-x86_64.tar.gz/etc/resolv.conf' :
@@ -46,14 +46,20 @@ class cosmos::openvz::image_replacements {
     source => '/etc/hosts',
   }
 
-  File['/tmp/replacements/centos-6-x86_64.tar.gz/root'] -> File['/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh']
-  File['/tmp/replacements/centos-6-x86_64.tar.gz/etc'] -> File['/tmp/replacements/centos-6-x86_64.tar.gz/etc/resolv.conf', '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d', '/tmp/replacements/centos-6-x86_64.tar.gz/etc/hosts']
-  Class['ssh_keys'] ~> File['/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh']
-  Class['ambari_repos'] ~> File[ '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d']
+  File['/tmp/replacements/centos-6-x86_64.tar.gz/root']
+    -> File['/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh']
+  File['/tmp/replacements/centos-6-x86_64.tar.gz/etc']
+    -> File[
+      '/tmp/replacements/centos-6-x86_64.tar.gz/etc/resolv.conf',
+      '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d',
+      '/tmp/replacements/centos-6-x86_64.tar.gz/etc/hosts']
+
+  Class['ssh_keys']
+    ~> File['/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh']
+  Class['ambari_repos']
+    ~> File[ '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d']
 
   anchor { 'cosmos::openvz::image_replacements::begin': }
-  ->
-  Class['ssh_keys', 'ambari_repos']
-  ->
-  anchor { 'cosmos::openvz::image_replacements::end': }
+    -> Class['ssh_keys', 'ambari_repos']
+    -> anchor { 'cosmos::openvz::image_replacements::end': }
 }

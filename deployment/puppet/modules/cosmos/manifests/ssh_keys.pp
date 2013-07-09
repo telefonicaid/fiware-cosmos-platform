@@ -12,21 +12,21 @@
 class cosmos::ssh_keys inherits cosmos::params {
   file { '/root/.ssh':
     ensure => 'directory',
-    mode   => 700,
+    mode   => '0700',
   }
 
   file { '/root/.ssh/id_rsa':
     content => $cosmos_private_key,
-    mode    => 600,
+    mode    => '0600',
     owner   => root,
     group   => root,
   }
 
   file { '/root/.ssh/id_rsa.pub':
     content => $cosmos_public_key,
-    mode => 644,
-    owner => root,
-    group => root,
+    mode    => '0644',
+    owner   => root,
+    group   => root,
   }
 
   ssh_authorized_key { 'ssh_key':

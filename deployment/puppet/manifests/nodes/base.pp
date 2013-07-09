@@ -12,4 +12,3 @@
 node default {
   include yum
 }
-notice("The environment: ${environment}")

@@ -11,12 +11,12 @@
 
 class ambari {
   include ambari::params, ambari_repos, ambari::install, ambari::config, ambari::service
-  anchor { 'ambari::begin': }
-  anchor { 'ambari::end': }
 
-  Anchor['ambari::begin']
-  ->
-  Class['ambari::params'] -> Class['ambari_repos'] -> Class['ambari::install'] ~> Class['ambari::config'] ~> Class['ambari::service']
-  ->
-  Anchor['ambari::end']
+  anchor { 'ambari::begin': }
+    -> Class['ambari::params']
+    -> Class['ambari_repos']
+    -> Class['ambari::install']
+    ~> Class['ambari::config']
+    ~> Class['ambari::service']
+    -> anchor { 'ambari::end': }
 }

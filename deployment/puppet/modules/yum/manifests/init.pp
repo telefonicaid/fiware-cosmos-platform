@@ -10,7 +10,9 @@
 
 class yum {
 
-# Quan canvii el nom a common::yum fer un grep de yum::thirdparty::epel i de yum::rhel::optional a initiatives, per si algu els esta fent servir (i a modules, perque develenv ho fa servir)
+# When the name changes to common:yum, make a grep of yum::thirdparty::epel
+# and yum::rhel::optional in initiatives' code, in case anyone if using it
+# (and in modules, because develenv uses it)
   case $::operatingsystem {
     'RedHat': {
       $os_repo = 'yum::rhel::base'

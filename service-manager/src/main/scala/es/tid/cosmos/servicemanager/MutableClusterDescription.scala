@@ -36,6 +36,7 @@ class MutableClusterDescription(
     val deployment_> : Future[Any],
     val machines_> : Future[Seq[MachineState]],
     val nameNode_> : Future[URI]) {
+  private val creation_> = Future.sequence(List(deployment_>, machines_>))
   private val master_> = mapMaster(machines_>, toHostInfo)
   private val slaves_> = mapSlaves(machines_>, toHostInfo)
 
@@ -66,7 +67,7 @@ class MutableClusterDescription(
   def terminate(termination_> : Future[Any]) {
     state = Terminating
     for (
-      _ <- deployment_>;
+      _ <- creation_>;
       _ <- termination_>) {
       state = Terminated
     }
@@ -74,9 +75,6 @@ class MutableClusterDescription(
     termination_>.onFailure({case err => { state = Failed(err) }})
   }
 
-  deployment_>.onSuccess({case _ => state = Running})
-  deployment_>.onFailure({case err => { state = Failed(err) }})
-
-  master_>.onFailure({case err => { state = Failed(err) }})
-  slaves_>.onFailure({case err => { state = Failed(err) }})
+  creation_>.onSuccess({case _ => state = Running})
+  creation_>.onFailure({case err => { state = Failed(err) }})
 }

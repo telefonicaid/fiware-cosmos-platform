@@ -46,6 +46,8 @@ class cosmos::api inherits cosmos::params {
   service { 'cosmos-api':
     ensure => 'running',
     enable => true,
+    hasstatus  => true,
+    hasrestart => true,
   }
 
   YumRepo['cosmos-repo'] -> Package['cosmos'] -> Service['cosmos-api']

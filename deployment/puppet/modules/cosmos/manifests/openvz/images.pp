@@ -9,7 +9,7 @@
 # All rights reserved.
 #
 
-class cosmos::openvz::images {
+class cosmos::openvz::images($gateway) {
   include cosmos::openvz::image_replacements
 
   wget::fetch { 'Download base image' :
@@ -50,6 +50,12 @@ class cosmos::openvz::images {
     command => '/tmp/configure-template.sh /tmp/template-configuration.properties',
     refreshonly => true,
     user => 'root'
+  }
+
+  if $environment == 'vagrant' {
+    exec { '/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE':
+      user => 'root'
+    }
   }
 
   Wget::Fetch['Download base image'] ~> Exec['Generate template']

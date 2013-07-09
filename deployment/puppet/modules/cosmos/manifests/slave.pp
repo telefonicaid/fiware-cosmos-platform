@@ -16,7 +16,11 @@ class cosmos::slave (
   $host_key_pub,
   $host_key_pub_file
 ) inherits cosmos::params {
-  include ssh_keys, cosmos::base, cosmos::openvz::network, cosmos::openvz::images
+  include ssh_keys, cosmos::base, cosmos::openvz::network
+
+  class {'cosmos::openvz::images':
+    gateway => $ip,
+  }
 
   if member(hiera('slave_hosts'), $hostname) == false {
     err("Host ${hostname} is not listed in slave_hosts array in common.yaml.")

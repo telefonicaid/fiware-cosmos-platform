@@ -32,6 +32,7 @@ function process_file {
         defined_or_exit "network_device" "${network_device}"
         defined_or_exit "ip_address" "${ip_address}"
         defined_or_exit "netmask" "${netmask}"
+        defined_or_exit "gateway" "${gateway}"
 
         WORK_DIR=`mktemp -d -t cosmos-conftempl_XXXX`
         TARGET_FILE="${output_template}"
@@ -59,9 +60,7 @@ function process_file {
         if [ -nz "$netmask" ]; then
             echo "NETMASK=${netmask}" >> ${NETDEV_FILE}
         fi
-        if [ -nz "gateway" ]; then
-            echo "GATEWAY=${gateway}" >> ${NETDEV_FILE}
-        fi
+        echo "GATEWAY=${gateway}" >> ${NETDEV_FILE}
         echo "USERCTL=no" >> ${NETDEV_FILE}
 
         # Pack again

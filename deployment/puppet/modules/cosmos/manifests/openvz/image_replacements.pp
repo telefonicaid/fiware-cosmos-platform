@@ -36,8 +36,18 @@ class cosmos::openvz::image_replacements {
     force => true,
   }
 
+  file { '/tmp/replacements/centos-6-x86_64.tar.gz/etc/resolv.conf' :
+    ensure => 'present',
+    source => '/etc/resolv.conf',
+  }
+
+  file { '/tmp/replacements/centos-6-x86_64.tar.gz/etc/hosts' :
+    ensure => 'present',
+    source => '/etc/hosts',
+  }
+
   File['/tmp/replacements/centos-6-x86_64.tar.gz/root'] -> File['/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh']
-  File['/tmp/replacements/centos-6-x86_64.tar.gz/etc'] -> File[ '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d']
+  File['/tmp/replacements/centos-6-x86_64.tar.gz/etc'] -> File['/tmp/replacements/centos-6-x86_64.tar.gz/etc/resolv.conf', '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d', '/tmp/replacements/centos-6-x86_64.tar.gz/etc/hosts']
   Class['ssh_keys'] ~> File['/tmp/replacements/centos-6-x86_64.tar.gz/root/.ssh']
   Class['ambari_repos'] ~> File[ '/tmp/replacements/centos-6-x86_64.tar.gz/etc/yum.repos.d']
 

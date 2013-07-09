@@ -28,12 +28,13 @@ class WithTestApplication(additionalConfiguration: Map[String, String] = Map.emp
 
   override def around[T: AsResult](block: => T): Result = {
     super.around {
-      val oldValue = System.getProperty(ConfigFileProperty)
+      val oldValue = Option(System.getProperty(ConfigFileProperty))
       try {
         System.setProperty(ConfigFileProperty, "cosmos-api/it/resources/test.conf")
         block
       } finally {
-        System.setProperty(ConfigFileProperty, oldValue)
+        oldValue.map(System.setProperty(ConfigFileProperty, _))
+          .getOrElse(System.clearProperty(ConfigFileProperty))
       }
     }
   }

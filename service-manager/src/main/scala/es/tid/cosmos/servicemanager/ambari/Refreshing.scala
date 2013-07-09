@@ -12,9 +12,10 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import java.net.URI
+import java.util.concurrent.TimeUnit
 import scala.concurrent.{blocking, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 
 import com.typesafe.scalalogging.slf4j.Logging
 import dispatch.StatusCode
@@ -35,6 +36,8 @@ trait Refreshing extends Refreshable with Logging {
   protected def refreshGracePeriod: FiniteDuration
   protected def clusterIds: Seq[ClusterId]
   protected def registerCluster(description: MutableClusterDescription)
+
+  private val refreshTime = 1000 milliseconds
 
   /**
    * Refresh the clusters state by querying the provisioner for unregistered clusters
@@ -61,15 +64,15 @@ trait Refreshing extends Refreshable with Logging {
   }
 
   private def resolveState(
-    cluster: Cluster, useGracePeriod : Boolean = true): Future[ClusterState] = {
+    cluster: Cluster, elapsedRefreshTime: FiniteDuration = 0 milliseconds): Future[ClusterState] = {
     val state_> = state(cluster)
     state_>.flatMap {
       case Running | Terminated => state_>
-      case Provisioning => if (useGracePeriod) { blocking {
+      case Provisioning => if (elapsedRefreshTime < refreshGracePeriod) { blocking {
         logger.warn(s"Found unregistered cluster [${cluster.name}}] in Provisioning state. " +
-          s"Waiting $refreshGracePeriod to see if it changes.")
-        Thread.sleep(refreshGracePeriod.toMillis)
-        resolveState(cluster, useGracePeriod = false)
+          s"Waiting $refreshTime to see if it changes.")
+        Thread.sleep(refreshTime.toMillis)
+        resolveState(cluster, elapsedRefreshTime + refreshTime)
       }} else throw new IllegalStateException(
         s"Timed out waiting for cluster [${cluster.name}] to finish provisioning")
       case other@_ => throw new IllegalStateException(

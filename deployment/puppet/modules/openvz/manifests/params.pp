@@ -3,11 +3,10 @@ class openvz::params {
       $servicename      = 'vz' # vz or kvm service
       $basedir          = '/etc/vz' 
       $confdir          = '/etc/vz/conf'
-      $vedir            = '/var/lib/vz' #XXX: Update here with your custom value
+      $vedir            = '/var/lib/vz'
     
   case $::operatingsystem {
     'RedHat', 'CentOS', 'Fedora': {
-     # FIXME: not tested
        $packages = $virt_type ? {
          kvm => [ 'qemu-kvm', 'libvirt', 'libvirt-daemon-kvm', 'python-virtinst', 'ruby-libvirt', 'libvirt-java' ],
          openvz =>  [ 'vzkernel', 'vzctl', 'vzquota', 'vzstats', 'vzctl-core', 'vzkernel-firmware', 'vzkernel-headers']

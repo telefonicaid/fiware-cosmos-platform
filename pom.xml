@@ -50,6 +50,8 @@
                         <exclude>**/parts/**</exclude>
                         <exclude>**/resources/**/*</exclude>
                         <exclude>**/target/**</exclude>
+                        <exclude>**/*_third_party/**</exclude>
+                        <exclude>deployment/puppet/modules/openvz/**</exclude>
                     </excludes>
                 </configuration>
             </plugin>

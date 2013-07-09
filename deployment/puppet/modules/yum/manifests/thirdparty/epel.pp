@@ -6,5 +6,4 @@ class yum::thirdparty::epel($repo_server = 'servilinux.hi.inet') inherits yum::v
     gpgcheck => '0',
     baseurl  => "http://${repo_server}/epel/$operatingsystemmajrelease/\$basearch/",
   }
-
 }

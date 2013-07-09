@@ -62,7 +62,3 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
 ) {
   $cosmos_public_key     = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
 }
-  
-  
-
-  

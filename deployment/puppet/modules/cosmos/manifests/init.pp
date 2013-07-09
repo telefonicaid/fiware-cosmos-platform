@@ -11,4 +11,3 @@
 
 class cosmos inherits cosmos::params {
 }
-

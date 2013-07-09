@@ -8,6 +8,7 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
+
 class ambari::config {
   file_line { 'remove original jdk bin ':
     ensure => 'absent',

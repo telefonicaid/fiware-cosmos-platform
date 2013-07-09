@@ -90,4 +90,3 @@ function exec_cmd {
         exit -1
     fi
 }
-

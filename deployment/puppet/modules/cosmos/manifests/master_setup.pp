@@ -9,11 +9,7 @@
 # All rights reserved.
 #
 
-# FIXME rename
 class cosmos::master_setup inherits cosmos::params {
-
-  anchor {'cosmos::master_setup::begin': }
-  anchor {'cosmos::master_setup::end': }
 
   file { $cosmos_cli_repo_path:
     ensure => 'directory'
@@ -27,21 +23,19 @@ class cosmos::master_setup inherits cosmos::params {
     priority => '20',
     port     => '8000',
     docroot  => $cosmos_cli_repo_path,
-    require  => File[$cosmos_cli_repo_path]
   }
 
   file_line { "don't listen on 80 port":
     ensure => 'absent',
     line => 'Listen 80',
     path => '/etc/httpd/conf/httpd.conf',
-  } -> file_line { 'listen on 8000 port':
+  }
+
+  file_line { 'listen on 8000 port':
     ensure => 'present',
     line => 'Listen 8000',
     path => '/etc/httpd/conf/httpd.conf',
-    notify => Service['httpd']
   }
-
-  # class { 'mysql': }
 
   class { 'mysql::server':
     config_hash => { 'root_password' => 'cosmos' },
@@ -51,11 +45,7 @@ class cosmos::master_setup inherits cosmos::params {
     settings => {
       'mysqld' => {
         'bind-address' => '0.0.0.0',
-        #'read-only'    => true,
-      }#,
-      #'client' => {
-      #  'port' => '3306'
-      #}
+      }
     },
   }
 
@@ -64,9 +54,11 @@ class cosmos::master_setup inherits cosmos::params {
     ensure => 'present'
   }
 
-  Anchor['cosmos::master_setup::begin']
-  ->
-  Class['apache', 'mysql::server']
-  ->
-  Anchor['cosmos::master_setup::end']
+  File[$cosmos_cli_repo_path] -> Apache::Vhost['localhost']
+
+  File_line["don't listen on 80 port"] -> File_line['listen on 8000 port'] ~> Service['httpd']
+
+  anchor{'cosmos::master_setup::begin': }
+    -> Class['apache', 'mysql::server']
+    -> anchor{'cosmos::master_setup::end': }
 }

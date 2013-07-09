@@ -10,11 +10,7 @@
 #
 
 class cosmos::base inherits cosmos::params {
-  anchor { 'cosmos::base::begin': }
-  ->
-  class { 'cosmos::cluster_hosts': }
-  ->
-  anchor { 'cosmos::base::end': }
+  include cosmos::cluster_hosts
 
   yumrepo { 'cosmos-repo' :
     name     => 'cosmos-repo',
@@ -37,6 +33,10 @@ class cosmos::base inherits cosmos::params {
     source  => 'puppet:///modules/cosmos/puppet.conf',
     owner   => 'root',
     group   => 'root',
-    require => File['/etc/puppet']
   }
+  File['/etc/puppet'] -> File['/etc/puppet/puppet.conf']
+
+  anchor { 'cosmos::base::begin': }
+    -> Class['cosmos::cluster_hosts']
+    -> anchor { 'cosmos::base::end': }
 }

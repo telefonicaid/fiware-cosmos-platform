@@ -22,24 +22,17 @@ class cosmos::setup inherits cosmos::params {
   file { "${ial_schema}":
     ensure  => present,
     source  => 'puppet:///modules/cosmos/ial_schema.sql',
-    require => File['ial'],
   }
 
   file { "${ial_machines}":
     ensure  => present,
     source  => "puppet:///modules/cosmos/environments/${environment}/ial_machines.sql",
-    require => File['ial'],
   }
 
   exec { 'ial_db':
     command     => "cat ${ial_schema} ${ial_machines} | mysql -ucosmos -p${cosmos_db_pass} cosmos -B",
     path        => $path,
     refreshonly => true,
-    subscribe   => [
-      File["${ial_schema}"],
-      File["${ial_machines}"],
-      Database["${cosmos_db_name}"]
-    ]
   }
 
   file { "${cosmos_confdir}":
@@ -52,7 +45,6 @@ class cosmos::setup inherits cosmos::params {
     ensure  => 'present',
     mode    => '0644',
     content => template("cosmos/cosmos-api.conf.erb"),
-    require => [Package['cosmos'], File[$cosmos_confdir]]
   }
 
   file { 'logback.conf' :
@@ -60,18 +52,22 @@ class cosmos::setup inherits cosmos::params {
     ensure  => 'present',
     mode    => '0644',
     content => template('cosmos/logback.conf.erb'),
-    require => File[$cosmos_confdir],
   }
 
   exec { 'cosmos-setup':
     command => '/opt/pdi-cosmos/cosmos-admin/cosmos-admin setup',
     refreshonly => true,
-    require => Class['ssh_keys'],
     user => root,
-    subscribe => [
-      Package['cosmos'],
-      Exec['ial_db'],
-      File['cosmos-api.conf'],
-    ],
   }
+
+  File['ial'] -> File["${ial_schema}", "${ial_machines}"] ~> Exec['ial_db']
+  Database["${cosmos_db_name}"]                           ~> Exec['ial_db']
+
+  File[$cosmos_confdir] -> File['cosmos-api.conf', 'logback.conf']
+  Package['cosmos']     -> File['cosmos-api.conf']
+
+  Class['ssh_keys']       -> Exec['cosmos-setup']
+  Package['cosmos']       ~> Exec['cosmos-setup']
+  Exec['ial_db']          ~> Exec['cosmos-setup']
+  File['cosmos-api.conf'] ~> Exec['cosmos-setup']
 }

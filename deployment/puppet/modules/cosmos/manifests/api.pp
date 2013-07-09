@@ -13,12 +13,6 @@ class cosmos::api inherits cosmos::params {
 
   include cosmos::setup
 
-  anchor { 'cosmos::api::begin': }
-  ->
-  Class['cosmos::setup']
-  ->
-  anchor { 'cosmos::api::end': }
-
   mysql::db { "${cosmos_db_name}":
     user     => "${cosmos_db_user}",
     password => "${cosmos_db_pass}",
@@ -36,16 +30,14 @@ class cosmos::api inherits cosmos::params {
 
   package { 'cosmos':
     ensure  => latest,
-    require => YumRepo['cosmos-repo']
   }
 
   file { "${$cosmos_cli_repo_path}/eggs":
     ensure => 'directory',
     owner => 'root',
     group => 'root',
-    require => File[$cosmos_cli_repo_path],
   }
-  ->
+
   wget::fetch { 'download cosmos-cli':
     source      => "${cosmos_egg_repo}/${cosmos_cli_egg}",
     destination => "${$cosmos_cli_repo_path}/eggs/${cosmos_cli_egg}",
@@ -54,14 +46,18 @@ class cosmos::api inherits cosmos::params {
   service { 'cosmos-api':
     ensure => 'running',
     enable => true,
-    require => [
-      Package['cosmos'],
-      Class['mysql::server']
-    ],
-    subscribe => [
-      Exec['cosmos-setup'],
-      File['cosmos-api.conf'],
-      File['logback.conf'],
-    ],
   }
+
+  YumRepo['cosmos-repo'] -> Package['cosmos'] -> Service['cosmos-api']
+  Class['mysql::server']                      -> Service['cosmos-api']
+  Exec['cosmos-setup']                        ~> Service['cosmos-api']
+  File['cosmos-api.conf', 'logback.conf']     ~> Service['cosmos-api']
+
+  File[$cosmos_cli_repo_path]
+    -> File["${$cosmos_cli_repo_path}/eggs"]
+    -> Wget::Fetch['download cosmos-cli']
+
+  anchor { 'cosmos::api::begin': }
+    -> Class['cosmos::setup']
+    -> anchor { 'cosmos::api::end': }
 }

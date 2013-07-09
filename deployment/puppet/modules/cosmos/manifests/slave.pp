@@ -54,10 +54,7 @@ class cosmos::slave (
   }
 
   anchor {'cosmos::slave::begin': }
-  ->
-  Class['openvz', 'libvirt', 'cosmos::base']
-  ->
-  Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
-  ->
-  anchor {'cosmos::slave::end': }
+    -> Class['openvz', 'libvirt', 'cosmos::base']
+    -> Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
+    -> anchor {'cosmos::slave::end': }
 }

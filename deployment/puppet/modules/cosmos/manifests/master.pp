@@ -15,21 +15,13 @@ class cosmos::master {
     cosmos::base, cosmos::firewall::firewall_app, cosmos::master_setup, cosmos::api
 
   anchor { 'cosmos::master::begin': }
-  anchor { 'cosmos::master::end': }
-
-  Anchor ['cosmos::master::begin']
-  ->
-  Class['stdlib', 'ssh_keys']
-  ->
-  Class ['cosmos::base']
-  ->
-  Class ['ambari', 'mysql']
-  ->
-  Class ['cosmos::master_setup'] -> Class ['cosmos::api']
-  ->
-  Class ['cosmos::firewall::firewall_app']
-  ->
-  Anchor ['cosmos::master::end']
+    -> Class['stdlib', 'ssh_keys']
+    -> Class['cosmos::base']
+    -> Class['ambari', 'mysql']
+    -> Class['cosmos::master_setup']
+    -> Class['cosmos::api']
+    -> Class['cosmos::firewall::firewall_app']
+    -> anchor { 'cosmos::master::end': }
 
   file { '/root/.ssh/known_hosts':
     ensure => 'present',

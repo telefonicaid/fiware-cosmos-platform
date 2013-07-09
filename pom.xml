@@ -44,6 +44,7 @@
                         <exclude>**/.idea/**</exclude>
                         <exclude>**/.installed.cfg</exclude>
                         <exclude>**/build/**</exclude>
+                        <exclude>**/code-analysis.sh</exclude>
                         <exclude>**/develop-eggs/**</exclude>
                         <exclude>**/dist/**</exclude>
                         <exclude>**/eggs/**</exclude>

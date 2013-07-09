@@ -10,10 +10,13 @@
 # All rights reserved.
 #
 
-[buildout]
-extends =
-    buildout.cfg
-    jenkins/jenkins.cfg
-    jenkins/jenkins-code-analysis.cfg
-jenkins-test-eggs = cosmos [test]
-jenkins-test-directories = cosmos/tests/
+PYTHON?=python
+
+all:
+	$(PYTHON) ./bootstrap.py && bin/buildout -c dev.cfg
+
+clean:
+	rm -rf parts eggs bin develop-eggs coverage build dist lib include \
+	       cosmos.egg-info .Python .installed.cfg
+
+.PHONY: all clean

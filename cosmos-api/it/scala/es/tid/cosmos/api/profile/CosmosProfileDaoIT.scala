@@ -38,6 +38,20 @@ class CosmosProfileDaoIT extends FlatSpec with MustMatchers {
     }
   }
 
+  it must "get machine quota from user ID when user is registered" in new WithSampleUsers {
+    DB.withTransaction { implicit c =>
+      CosmosProfileDao.getMachineQuota(user1.id) must equal (UnlimitedQuota)
+      CosmosProfileDao.getMachineQuota(user2.id) must equal (FiniteQuota(15))
+      CosmosProfileDao.getMachineQuota(user3.id) must equal (EmptyQuota)
+    }
+  }
+
+  it must "get empty machine quota for unknown users" in new WithSampleUsers {
+    DB.withTransaction { implicit c =>
+      CosmosProfileDao.getMachineQuota(954) must equal (EmptyQuota)
+    }
+  }
+
   it must "lookup a profile from api credentials" in new WithInMemoryDatabase {
     DB.withTransaction { implicit c =>
       CosmosProfileDao.registerUserInDatabase("db-0004", Registration("user4", "pk00004"))

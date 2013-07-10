@@ -42,14 +42,25 @@ object CosmosProfileDao {
       .on("user_id" -> userId)
       .as(scalar[Long].singleOpt)
 
+  def getMachineQuota(cosmosId: Long)(implicit c: Connection): Quota =
+    SQL("SELECT machine_quota FROM user WHERE cosmos_id = {cosmos_id}")
+      .on("cosmos_id" -> cosmosId)
+      .apply()
+      .collectFirst {
+        case Row(machineQuota: Option[Int]) => Quota(machineQuota)
+      }
+      .getOrElse(EmptyQuota)
+
   def lookupByUserId(userId: String)(implicit c: Connection): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.handle, u.api_key, u.api_secret, p.name, p.signature
+    lookup(SQL("""SELECT u.cosmos_id, u.handle, u.machine_quota, u.api_key, u.api_secret, p.name,
+                 | p.signature
                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                  | WHERE u.user_id = {user_id}""".stripMargin)
       .on("user_id" -> userId))
 
   def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Connection): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.handle, u.api_key, u.api_secret, p.name, p.signature
+    lookup(SQL("""SELECT u.cosmos_id, u.handle, u.machine_quota, u.api_key, u.api_secret, p.name,
+                 | p.signature
                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                  | WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
       .on("key" -> creds.apiKey, "secret" -> creds.apiSecret))
@@ -75,9 +86,11 @@ object CosmosProfileDao {
   private def lookup(query: SimpleSql[Row])(implicit c: Connection): Option[CosmosProfile] = {
     val rows = query().toList
     rows.headOption.map {
-      case Row(id: Int, handle: String, apiKey: String, apiSecret: String, _, _) => {
+      case Row(id: Int, handle: String, machineQuota: Option[Int], apiKey: String,
+          apiSecret: String, _, _) => {
         val namedKeys = rows.map(row => NamedKey(row[String]("name"), row[String]("signature")))
-        CosmosProfile(id, handle, ApiCredentials(apiKey, apiSecret), namedKeys: _*)
+        CosmosProfile(
+          id, handle, Quota(machineQuota), ApiCredentials(apiKey, apiSecret), namedKeys: _*)
       }
     }
   }

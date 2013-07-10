@@ -65,6 +65,13 @@ class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
     }
   }
 
+  it must "detect quota exceeded" in new WithSampleUsers {
+    val resource = route(FakeRequest(POST, resourcePath)
+      .withJsonBody(validCreationParams)
+      .authorizedBy(user3)).get
+    status(resource) must equal (FORBIDDEN)
+  }
+
   it must "reject cluster creation with invalid payload" in new WithSampleUsers {
     val resource = route(FakeRequest(POST, resourcePath)
       .withJsonBody(inValidCreationParams)

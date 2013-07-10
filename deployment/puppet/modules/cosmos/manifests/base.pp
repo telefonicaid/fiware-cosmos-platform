@@ -12,8 +12,8 @@
 class cosmos::base inherits cosmos::params {
   include cosmos::cluster_hosts
 
-  yumrepo { 'cosmos-repo' :
-    name     => 'cosmos-repo',
+  yumrepo { 'cosmos' :
+    descr    => 'Cosmos Platform Repository',
     baseurl  => "${cosmos_repo_url}/cosmos",
     gpgcheck => '0',
     enabled  => '1',

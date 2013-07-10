@@ -34,12 +34,13 @@ class yum {
     }
   }
 
-  include yum::remove_repos, yum::post_clean, $os_repo, yum::thirdparty::puppetlabs
+  include yum::remove_repos, yum::post_clean, $os_repo,
+    yum::thirdparty::puppetlabs, yum::thirdparty::epel
 
   anchor { 'yum::begin': }
     -> Class['yum::remove_repos']
     ~> Class['yum::post_clean']
     -> Class[$os_repo]
-    -> Class['yum::thirdparty::puppetlabs']
+    -> Class['yum::thirdparty::puppetlabs', 'yum::thirdparty::epel']
     -> anchor { 'yum::end': }
 }

@@ -10,7 +10,7 @@
 #
 
 class cosmos::openvz::image_replacements inherits cosmos::params {
-  include ssh_keys, ambari_repos
+  include ssh_keys
 
   file { [
       $openvz_rplcements_dir,
@@ -56,6 +56,6 @@ class cosmos::openvz::image_replacements inherits cosmos::params {
   Class['ambari_repos'] ~> File[ "${openvz_targz_path}/etc/yum.repos.d"]
 
   anchor { 'cosmos::openvz::image_replacements::begin': }
-    -> Class['ssh_keys', 'ambari_repos']
+    -> Class['ssh_keys']
     -> anchor { 'cosmos::openvz::image_replacements::end': }
 }

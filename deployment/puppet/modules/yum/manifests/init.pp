@@ -20,6 +20,10 @@
 # yum::thirdparty::epel
 
 class yum {
+  anchor { 'yum::begin': }
+  anchor { 'yum::end': }
+
+  include yum::remove_repos, yum::post_clean, yum::thirdparty::puppetlabs, yum::thirdparty::epel
 
 # When the name changes to common:yum, make a grep of yum::thirdparty::epel
 # and yum::rhel::optional in initiatives' code, in case anyone if using it
@@ -30,17 +34,20 @@ class yum {
     }
     'CentOS': {
       $os_repo = 'yum::centos::base'
-      #include yum::centos::updates  #It's giving a lot of problems
+      include yum::centos::updates  #It's giving a lot of problems
+      Class['yum::post_clean']
+        ~> Class['yum::centos::updates']
+        -> Anchor['yum::end']
+
     }
   }
 
-  include yum::remove_repos, yum::post_clean, $os_repo,
-    yum::thirdparty::puppetlabs, yum::thirdparty::epel
+  include $os_repo
 
-  anchor { 'yum::begin': }
+  Anchor['yum::begin']
     -> Class['yum::remove_repos']
     ~> Class['yum::post_clean']
     -> Class[$os_repo]
     -> Class['yum::thirdparty::puppetlabs', 'yum::thirdparty::epel']
-    -> anchor { 'yum::end': }
+    -> Anchor['yum::end']
 }

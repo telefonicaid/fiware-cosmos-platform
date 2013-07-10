@@ -35,4 +35,8 @@ class openvz  (
     -> File['vz.conf']
     -> Class['openvz::sysctl']
     -> Service[$openvz::params::servicename]
+
+  anchor {'openvz::begin':}
+    -> Class['openvz::sysctl']
+    -> anchor {'openvz::end':}
 }

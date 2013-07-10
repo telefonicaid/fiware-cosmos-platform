@@ -20,16 +20,10 @@ class yum::remove_repos {
   file {'/etc/yum.repos.d/CentOS-Base.repo':      ensure => absent, }
   file {'/etc/yum.repos.d/CentOS-Debuginfo.repo': ensure => absent, }
   file {'/etc/yum.repos.d/CentOS-Media.repo':     ensure => absent, }
-  file {'/etc/yum.repos.d/CentOS-Vault.repo':     ensure => absent, }
   file {'/etc/yum.repos.d/CentOS-Plus.repo':      ensure => absent, }
   file {'/etc/yum.repos.d/CentOS-Contrib.repo':   ensure => absent, }
   file {'/etc/yum.repos.d/CentOS-Extras.repo':    ensure => absent, }
-  file {'/etc/yum.repos.d/Centos-Debuginfo.repo': ensure => absent, }
-  file {'/etc/yum.repos.d/Centos-Media.repo':     ensure => absent, }
   file {'/etc/yum.repos.d/Centos-Vault.repo':     ensure => absent, }
-  file {'/etc/yum.repos.d/Centos-Plus.repo':      ensure => absent, }
-  file {'/etc/yum.repos.d/Centos-Contrib.repo':   ensure => absent, }
-  file {'/etc/yum.repos.d/Centos-Extras.repo':    ensure => absent, }
   file {'/etc/yum.repos.d/Centos-Updates.repo':   ensure => absent, }
   file {'/etc/yum.repos.d/rhel.repo':          	  ensure => absent, }
   file {'/etc/yum.repos.d/redhat.repo':        	  ensure => absent, }

@@ -13,10 +13,11 @@ class cosmos::slave (
   $ct_ip,
   $ct_hostname,
   $netmask,
+  $gateway="",
   $host_key_pub,
   $host_key_pub_file
 ) inherits cosmos::params {
-  include ssh_keys, cosmos::base, cosmos::openvz::network
+  include ssh_keys, cosmos::base, ambari_repos, cosmos::openvz::network
 
   class {'cosmos::openvz::images':
     gateway => $ip,
@@ -59,7 +60,7 @@ class cosmos::slave (
   }
 
   anchor {'cosmos::slave::begin': }
-    -> Class['openvz', 'libvirt', 'cosmos::base']
+    -> Class['ambari_repos', 'openvz', 'libvirt', 'cosmos::base']
     -> Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
     -> anchor {'cosmos::slave::end': }
 }

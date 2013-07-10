@@ -9,7 +9,7 @@
 # All rights reserved.
 #
 
-class cosmos::openvz::network {
+class cosmos::openvz::network($host_iface) {
   service { 'network' :
     ensure => "running",
     enable => "true",
@@ -33,19 +33,19 @@ class cosmos::openvz::network {
 
   editfile::config { 'add_bridge' :
     ensure => 'vzbr0',
-    path   => '/etc/sysconfig/network-scripts/ifcfg-eth1',
+    path   => "/etc/sysconfig/network-scripts/ifcfg-${host_iface}",
     entry  => 'BRIDGE',
   }
 
   editfile::config { 'remove_ip_config' :
     ensure => 'absent',
-    path   => '/etc/sysconfig/network-scripts/ifcfg-eth1',
+    path   => "/etc/sysconfig/network-scripts/ifcfg-${host_iface}",
     entry  => 'IPADDR',
   }
 
   editfile::config { 'remove_netmask' :
     ensure => 'absent',
-    path   => '/etc/sysconfig/network-scripts/ifcfg-eth1',
+    path   => "/etc/sysconfig/network-scripts/ifcfg-${host_iface}",
     entry  => 'NETMASK',
   }
 

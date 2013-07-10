@@ -22,14 +22,14 @@ INSERT INTO `SERVERS` VALUES
         'vzbr0',
         'Andromeda 02',
         1,
-        'andromeda52.hi.inet',
+        'andromeda-compute02.hi.inet',
         'centos-6-cosmos-x86_64',
-        'openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock',
+        'openvz+ssh://root@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock',
         1,
         1,
         32768,
         20,
-        '192.168.63.62'
+        '192.168.63.76'
     ),
     (
         'andromeda03',
@@ -37,14 +37,14 @@ INSERT INTO `SERVERS` VALUES
         'vzbr0',
         'Andromeda 03',
         1,
-        'andromeda53.hi.inet',
+        'andromeda-compute03.hi.inet',
         'centos-6-cosmos-x86_64',
-        'openvz+ssh://cosmos@192.168.63.13/system?socket=/var/run/libvirt/libvirt-sock',
+        'openvz+ssh://root@192.168.63.13/system?socket=/var/run/libvirt/libvirt-sock',
         2,
         1,
         32768,
         20,
-        '192.168.63.63'
+        '192.168.63.77'
     ),
     (
         'andromeda04',
@@ -52,14 +52,14 @@ INSERT INTO `SERVERS` VALUES
         'vzbr0',
         'Andromeda 04',
         1,
-        'andromeda54.hi.inet',
+        'andromeda-compute04.hi.inet',
         'centos-6-cosmos-x86_64',
-        'openvz+ssh://cosmos@192.168.63.14/system?socket=/var/run/libvirt/libvirt-sock',
+        'openvz+ssh://root@192.168.63.14/system?socket=/var/run/libvirt/libvirt-sock',
         3,
         1,
         32768,
         20,
-        '192.168.63.64'
+        '192.168.63.78'
     ),
     (
         'andromeda05',
@@ -67,14 +67,14 @@ INSERT INTO `SERVERS` VALUES
         'vzbr0',
         'Andromeda 05',
         1,
-        'andromeda55.hi.inet',
+        'andromeda-compute05.hi.inet',
         'centos-6-cosmos-x86_64',
-        'openvz+ssh://cosmos@192.168.63.15/system?socket=/var/run/libvirt/libvirt-sock',
+        'openvz+ssh://root@192.168.63.15/system?socket=/var/run/libvirt/libvirt-sock',
         4,
         1,
         32768,
         20,
-        '192.168.63.65'
+        '192.168.63.79'
     ),
     (
         'andromeda06',
@@ -82,14 +82,59 @@ INSERT INTO `SERVERS` VALUES
         'vzbr0',
         'Andromeda 06',
         1,
-        'andromeda56.hi.inet',
+        'andromeda-compute06.hi.inet',
         'centos-6-cosmos-x86_64',
-        'openvz+ssh://cosmos@192.168.63.16/system?socket=/var/run/libvirt/libvirt-sock',
+        'openvz+ssh://root@192.168.63.16/system?socket=/var/run/libvirt/libvirt-sock',
         5,
         1,
         32768,
         20,
-        '192.168.63.66'
+        '192.168.63.80'
+    ),
+    (
+        'andromeda07',
+        4,
+        'vzbr0',
+        'Andromeda 07',
+        1,
+        'andromeda-compute07.hi.inet',
+        'centos-6-cosmos-x86_64',
+        'openvz+ssh://root@192.168.63.17/system?socket=/var/run/libvirt/libvirt-sock',
+        6,
+        1,
+        32768,
+        20,
+        '192.168.63.81'
+    ),
+    (
+        'andromeda08',
+        4,
+        'vzbr0',
+        'Andromeda 08',
+        1,
+        'andromeda-infinity.hi.inet',
+        'centos-6-cosmos-x86_64',
+        'openvz+ssh://root@192.168.63.18/system?socket=/var/run/libvirt/libvirt-sock',
+        7,
+        3,
+        32768,
+        20,
+        '192.168.63.82'
+    ),
+    (
+        'andromeda09',
+        4,
+        'vzbr0',
+        'Andromeda 09',
+        1,
+        'andromeda-data99.hi.inet',
+        'centos-6-cosmos-x86_64',
+        'openvz+ssh://root@192.168.63.33/system?socket=/var/run/libvirt/libvirt-sock',
+        8,
+        2,
+        32768,
+        20,
+        '192.168.63.97'
     );
 
 /*!40000 ALTER TABLE `SERVERS` ENABLE KEYS */;

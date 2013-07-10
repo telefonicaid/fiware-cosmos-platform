@@ -5,3 +5,6 @@ BOOTPROTO=none
 DELAY=0
 IPADDR=<%= @ip %>
 NETMASK=<%= @netmask %>
+<% unless @gateway.empty? %>
+GATEWAY=<%= @gateway %>
+<% end %>

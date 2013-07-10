@@ -1,0 +1,13 @@
+cosmos::slave::netmask: "255.255.255.128"
+cosmos::slave::gateway: "192.168.63.1"
+cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
+cosmos::openvz::network::host_iface: "bond0.1"
+slave_hosts:
+    - "andromeda02"
+    - "andromeda03"
+    - "andromeda04"
+    - "andromeda05"
+    - "andromeda06"
+    - "andromeda07"
+    - "andromeda08"
+    - "andromeda99"

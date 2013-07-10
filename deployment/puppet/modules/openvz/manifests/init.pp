@@ -16,7 +16,7 @@ class openvz  (
   file { 'vz.conf' :
     path      => "$openvz::params::basedir/vz.conf",
     ensure    => present,
-    source    => "puppet:///modules/openvz/vz.conf",
+    source    => "puppet:///modules/${module_name}/vz.conf",
     notify    => Service[$openvz::params::servicename],
   }
   

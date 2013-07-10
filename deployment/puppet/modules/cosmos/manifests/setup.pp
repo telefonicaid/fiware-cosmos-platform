@@ -19,14 +19,14 @@ class cosmos::setup inherits cosmos::params {
     ensure => 'directory',
   }
 
-  file { "${ial_schema}":
+  file { $ial_schema:
     ensure => present,
-    source => 'puppet:///modules/cosmos/ial_schema.sql',
+    source => "puppet:///modules/${module_name}/ial_schema.sql",
   }
 
-  file { "${ial_machines}":
+  file { $ial_machines:
     ensure => present,
-    source => "puppet:///modules/cosmos/environments/${environment}/ial_machines.sql",
+    source => "puppet:///modules/${module_name}/environments/${environment}/ial_machines.sql",
   }
 
   exec { 'ial_db':
@@ -35,7 +35,7 @@ class cosmos::setup inherits cosmos::params {
     refreshonly => true,
   }
 
-  file { "${cosmos_confdir}":
+  file { $cosmos_confdir:
     ensure => 'directory',
     mode   => '0440',
   }
@@ -61,8 +61,8 @@ class cosmos::setup inherits cosmos::params {
     timeout     => 900,
   }
 
-  File['ial'] -> File["${ial_schema}", "${ial_machines}"] ~> Exec['ial_db']
-  Database["${cosmos_db_name}"]                           ~> Exec['ial_db']
+  File['ial'] -> File[$ial_schema, $ial_machines] ~> Exec['ial_db']
+  Database[$cosmos_db_name]                       ~> Exec['ial_db']
 
   File[$cosmos_confdir] -> File['cosmos-api.conf', 'logback.conf']
   Package['cosmos']     -> File['cosmos-api.conf']

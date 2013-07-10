@@ -10,12 +10,11 @@
 #
 
 class cosmos::params (
-  $thee                   = 'cosmos',
   $cosmos_basedir         = '/opt/pdi-cosmos',
   $cosmos_confdir         = '/opt/pdi-cosmos/etc',
   $cosmos_cli_repo_path   = '/opt/repos',
   $cosmos_repo_url        = "http://cosmos10.hi.inet/develenv/rpms",
-  $cosmos_repo_file       = "/etc/yum.repos.d/$name.repo",
+  $cosmos_repo_file       = "/etc/yum.repos.d/cosmos.repo",
   $cosmos_master          = "http://192.168.63.11",
   $cosmos_db_host         = 'localhost',
   $cosmos_db_port         = '3306',
@@ -31,6 +30,8 @@ class cosmos::params (
   $ambari_user            = 'admin',
   $ambari_password        = 'admin',
   $ambari_refresh_period  = '30',
+  $openvz_rplcements_dir  = '/tmp/replacements',
+  $openvz_targz_path      = "${openvz_rplcements_dir}/centos-6-x86_64.tar.gz"
   $cosmos_private_key     = "-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAyom69Kn+cvyJKP1HzqvZ6a/DzpGH8Og2An1+Lrc3KdLWnvWR
 DacLv7oA3N3WVOgTAKPk9HYjsYPFEO+115KP6PX8ygPFlLZJr6LK1FBHH0v9+F0R

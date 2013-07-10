@@ -13,9 +13,9 @@ class cosmos::api inherits cosmos::params {
 
   include cosmos::setup
 
-  mysql::db { "${cosmos_db_name}":
-    user     => "${cosmos_db_user}",
-    password => "${cosmos_db_pass}",
+  mysql::db { $cosmos_db_name:
+    user     => $cosmos_db_user,
+    password => $cosmos_db_pass,
     host     => '%',
     grant    => ['all']
   }

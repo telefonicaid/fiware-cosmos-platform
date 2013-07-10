@@ -29,12 +29,14 @@ class cosmos::base inherits cosmos::params {
     group  => 'root'
   }
 
-  file { '/etc/puppet/puppet.conf':
-    source  => 'puppet:///modules/cosmos/puppet.conf',
-    owner   => 'root',
-    group   => 'root',
+  if $environment == 'vagrant' {
+    file { '/etc/puppet/puppet.conf':
+      source  => "puppet:///modules/${module_name}/puppet.conf",
+      owner   => 'root',
+      group   => 'root',
+    }
+    File['/etc/puppet'] -> File['/etc/puppet/puppet.conf']
   }
-  File['/etc/puppet'] -> File['/etc/puppet/puppet.conf']
 
   anchor { 'cosmos::base::begin': }
     -> Class['cosmos::cluster_hosts']

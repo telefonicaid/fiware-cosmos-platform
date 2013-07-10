@@ -32,9 +32,9 @@ class cosmos::openvz::network {
   }
 
   editfile::config { 'add_bridge' :
+    ensure => 'vzbr0',
     path   => '/etc/sysconfig/network-scripts/ifcfg-eth1',
     entry  => 'BRIDGE',
-    ensure => 'vzbr0',
   }
 
   editfile::config { 'remove_ip_config' :

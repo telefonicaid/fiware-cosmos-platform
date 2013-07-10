@@ -40,10 +40,24 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
       List(commandRunner.persistent_storage, commandRunner.persistent_storage.terminate))
   }
 
-  it must "support the cluster terminate" in new WithServiceManager {
+  it must "support the cluster terminate subcommand" in new WithServiceManager {
     val commandRunner =
       new CommandRunner(Seq("cluster", "terminate", "--clusterid", "cluster1"), serviceManager)
     commandRunner.subcommands must equal (
       List(commandRunner.cluster, commandRunner.cluster.terminate))
+  }
+
+  it must "support the profile set-machine-quota subcommand" in new WithServiceManager {
+    val commandRunner = new CommandRunner(
+      Seq("profile", "set-machine-quota", "--cosmosid", "3", "--limit", "15"), serviceManager)
+    commandRunner.subcommands must equal (
+      List(commandRunner.profile, commandRunner.profile.set_machine_quota))
+  }
+
+  it must "support the profile unset-machine-quota subcommand" in new WithServiceManager {
+    val commandRunner =
+      new CommandRunner(Seq("profile", "unset-machine-quota", "--cosmosid", "3"), serviceManager)
+    commandRunner.subcommands must equal (
+      List(commandRunner.profile, commandRunner.profile.unset_machine_quota))
   }
 }

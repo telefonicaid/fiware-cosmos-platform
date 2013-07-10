@@ -19,7 +19,7 @@ import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.mocks.{WithInMemoryDatabase, WithSampleUsers}
+import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 
 class StorageResourceIT extends FlatSpec with MustMatchers with OneInstancePerTest {
@@ -42,7 +42,7 @@ class StorageResourceIT extends FlatSpec with MustMatchers with OneInstancePerTe
     ))
   }
 
-  it must "reject unauthenticated requests" in new WithInMemoryDatabase {
+  it must "reject unauthenticated requests" in new WithSampleUsers {
     val result = route(request).get
     status(result) must be (UNAUTHORIZED)
   }

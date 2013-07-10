@@ -65,6 +65,6 @@ object CosmosBuild extends Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
-    dependsOn(serviceManager, common)
+    dependsOn(cosmosApi, serviceManager, common)
   )
 }

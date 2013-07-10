@@ -16,15 +16,20 @@ import scala.Some
 import org.specs2.execute.{Result, AsResult}
 import play.api.test.{WithApplication, FakeApplication}
 
-class WithTestApplication(additionalConfiguration: Map[String, String] = Map.empty)
-  extends WithApplication(new FakeApplication(
-    withGlobal = Some(TestGlobal),
+import es.tid.cosmos.api.AbstractGlobal
+
+class WithTestApplication(
+    additionalConfiguration: Map[String, String] = Map.empty,
+    global: AbstractGlobal = new TestGlobal
+  ) extends WithApplication(new FakeApplication(
+    withGlobal = Some(global),
     additionalConfiguration = additionalConfiguration
   )) {
 
   import WithTestApplication.ConfigFileProperty
 
-  def services = TestGlobal.application.services
+  def services = global.application.services
+  lazy val dao = global.application.dao
 
   override def around[T: AsResult](block: => T): Result = {
     super.around {

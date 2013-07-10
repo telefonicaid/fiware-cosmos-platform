@@ -15,7 +15,6 @@ import scala.Some
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import play.api.db.DB
 import play.api.libs.json.Json
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
@@ -24,9 +23,9 @@ import es.tid.cosmos.api.controllers.ResultMatchers.failWith
 import es.tid.cosmos.servicemanager.{Terminating, Terminated, ClusterId}
 import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.{MockedServiceManagerComponent, MockedServiceManager}
-import es.tid.cosmos.api.profile.CosmosProfileDao
 
 class ClusterIT extends FlatSpec with MustMatchers with AuthBehaviors {
+
   val resourcePath = s"/cosmos/v1/cluster/${MockedServiceManager.DefaultClusterId}"
   val provisioningResourcePath = s"/cosmos/v1/cluster/${MockedServiceManager.InProgressClusterId}"
   val unknownClusterId = ClusterId()
@@ -64,25 +63,27 @@ class ClusterIT extends FlatSpec with MustMatchers with AuthBehaviors {
 
   "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
     new WithSampleUsers {
-      CosmosProfileDao.assignCluster(
-        MockedServiceManager.DefaultClusterId, user1.id)(DB.getConnection())
-      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay)
-      val resource = route(FakeRequest(GET, resourcePath).authorizedBy(user1)).get
-      status(resource) must equal (OK)
-      contentType(resource) must be (Some("application/json"))
-      val description = Json.parse(contentAsString(resource))
-      description must equal(completeDescription)
+      dao.withConnection { implicit c =>
+        dao.assignCluster(MockedServiceManager.DefaultClusterId, user1.id)
+        Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay)
+        val resource = route(FakeRequest(GET, resourcePath).authorizedBy(user1)).get
+        status(resource) must equal (OK)
+        contentType(resource) must be (Some("application/json"))
+        val description = Json.parse(contentAsString(resource))
+        description must equal(completeDescription)
+      }
     }
 
   it must "list partial cluster details on GET request" +
     " when cluster is still provisioning" in new WithSampleUsers {
-    CosmosProfileDao.assignCluster(
-      MockedServiceManager.InProgressClusterId, user1.id)(DB.getConnection())
-    val resource = route(FakeRequest(GET, provisioningResourcePath).authorizedBy(user1)).get
-    status(resource) must equal (OK)
-    contentType(resource) must be (Some("application/json"))
-    val description = Json.parse(contentAsString(resource))
-    description must equal(partialDescription)
+    dao.withConnection { implicit c =>
+      dao.assignCluster(MockedServiceManager.InProgressClusterId, user1.id)
+      val resource = route(FakeRequest(GET, provisioningResourcePath).authorizedBy(user1)).get
+      status(resource) must equal (OK)
+      contentType(resource) must be (Some("application/json"))
+      val description = Json.parse(contentAsString(resource))
+      description must equal(partialDescription)
+    }
   }
 
   it must "return 404 on unknown cluster" in new WithSampleUsers {
@@ -98,17 +99,17 @@ class ClusterIT extends FlatSpec with MustMatchers with AuthBehaviors {
   it must "throw if the service manager has no associated information" in
     new WithSampleUsers {
       val clusterId = ClusterId()
-      DB.withConnection { implicit c =>
-        CosmosProfileDao.assignCluster(clusterId, user1.id)
+      dao.withConnection { implicit c =>
+        dao.assignCluster(clusterId, user1.id)
       }
       val resource = route(FakeRequest(GET, s"/cosmos/v1/cluster/$clusterId").authorizedBy(user1)).get
       resource must failWith (classOf[IllegalStateException])
     }
 
   it must "terminate cluster" in new WithSampleUsers {
-    DB.withConnection { implicit c =>
+    dao.withConnection { implicit c =>
       val clusterId = MockedServiceManager.DefaultClusterId
-      CosmosProfileDao.assignCluster(clusterId, user1.id)
+      dao.assignCluster(clusterId, user1.id)
       val resource = route(FakeRequest(POST, s"$resourcePath/terminate").authorizedBy(user1)).get
       status(resource) must equal (OK)
       val cluster = services.serviceManager().describeCluster(clusterId).get
@@ -128,9 +129,9 @@ class ClusterIT extends FlatSpec with MustMatchers with AuthBehaviors {
   }
 
   it must "be idempotent respect to cluster termination" in new WithSampleUsers {
-    DB.withConnection { implicit c =>
+    dao.withConnection { implicit c =>
       val clusterId = MockedServiceManager.DefaultClusterId
-      CosmosProfileDao.assignCluster(clusterId, user1.id)
+      dao.assignCluster(clusterId, user1.id)
       val terminateRequest= FakeRequest(POST, s"$resourcePath/terminate").authorizedBy(user1)
       for (_ <- 1 to 2) {
         status(route(terminateRequest).get) must equal (OK)

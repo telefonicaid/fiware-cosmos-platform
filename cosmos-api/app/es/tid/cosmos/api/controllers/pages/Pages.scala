@@ -13,11 +13,9 @@ package es.tid.cosmos.api.controllers.pages
 
 import dispatch.{Future => _, _}, Defaults._
 import play.Logger
-import play.api.Play.current
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
-import play.api.db.DB
 import play.api.libs.json.Json
 import play.api.mvc.{RequestHeader, Action, Controller}
 
@@ -34,7 +32,12 @@ import es.tid.cosmos.servicemanager.ServiceManager
 /**
  * Controller for the web pages of the service.
  */
-class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Controller {
+class Pages(
+    oauthClient: OAuthClient,
+    serviceManager: ServiceManager,
+    dao: CosmosProfileDao
+  ) extends Controller {
+
   private val registrationForm = Form(mapping(
     "handle" -> text.verifying(minLength(3), pattern("^[a-zA-Z][a-zA-Z0-9]*$".r,
       error="Not a valid unix handle, please use a-z letters and numbers " +
@@ -59,7 +62,7 @@ class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Co
         (for {
           token <- oauthClient.requestAccessToken(code)
           userProfile <- oauthClient.requestUserProfile(token)
-          maybeCosmosId = DB.withConnection { implicit c => CosmosProfileDao.getCosmosId(userProfile.id) }
+          maybeCosmosId = dao.withConnection { implicit c => dao.getCosmosId(userProfile.id) }
         } yield {
           Logger.info(s"Authorized with token $token")
           Redirect(routes.Pages.index()).withSession(session
@@ -78,9 +81,9 @@ class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Co
     session.userProfile.map(userProfile =>
       registrationForm.bindFromRequest().fold(
         formWithErrors => registrationPage(userProfile, formWithErrors),
-        registration => { DB.withConnection { implicit c =>
-          val newCosmosId = CosmosProfileDao.registerUserInDatabase(userProfile.id, registration)
-          val profile = CosmosProfileDao.lookupByUserId(userProfile.id).getOrElse(
+        registration => { dao.withConnection { implicit c =>
+          val newCosmosId = dao.registerUserInDatabase(userProfile.id, registration)
+          val profile = dao.lookupByUserId(userProfile.id).getOrElse(
             throw new IllegalStateException(
               "Could not read registration information from database"))
           serviceManager.addUsers(serviceManager.persistentHdfsId, profile.toClusterUser)
@@ -106,9 +109,9 @@ class Pages(oauthClient: OAuthClient, serviceManager: ServiceManager) extends Co
   }
 
   private def userProfile(implicit request: RequestHeader) = {
-    DB.withConnection { implicit c =>
+    dao.withConnection { implicit c =>
       val userProfile = session.userProfile.get
-      Ok(views.html.profile(userProfile, CosmosProfileDao.lookupByUserId(userProfile.id).get))
+      Ok(views.html.profile(userProfile, dao.lookupByUserId(userProfile.id).get))
     }
   }
 

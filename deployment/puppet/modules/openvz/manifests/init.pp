@@ -1,6 +1,7 @@
 class openvz  (
     $vz_utils_repo,   
     $vz_kernel_repo,
+    $vz_repo_name,
 ) inherits openvz::params {
   include openvz::sysctl
 
@@ -20,13 +21,13 @@ class openvz  (
     notify    => Service[$openvz::params::servicename],
   }
   
-  file { 'cosmos-openvz-repo' : 
+  file { "${vz_repo_name}-repo" :
     ensure    => present,
     owner     => 'root',
     group     => 'root',
     mode      => '0644',
-    path      => "/etc/yum.repos.d/cosmos-openvz.repo",
-    content   => template('openvz/cosmos-openvz.repo.erb'),
+    path      => "/etc/yum.repos.d/${vz_repo_name}.repo",
+    content   => template("${module_name}/openvz.repo.erb"),
   }
 
   File['cosmos-openvz-repo']

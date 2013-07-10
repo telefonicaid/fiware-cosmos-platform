@@ -31,8 +31,9 @@ class cosmos::slave (
   }
 
   class { 'openvz':
-    vz_utils_repo   => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-utils",
-    vz_kernel_repo  => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-kernel-rhel6",
+    vz_utils_repo  => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-utils",
+    vz_kernel_repo => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-kernel-rhel6",
+    vz_repo_name   => "cosmos-openvz",
   }
 
   class { 'libvirt':

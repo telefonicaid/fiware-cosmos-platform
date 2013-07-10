@@ -9,4 +9,5 @@
 # All rights reserved.
 #
 
+import 'profiles/*.pp'
 import 'nodes/*.pp'

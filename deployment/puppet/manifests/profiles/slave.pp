@@ -9,10 +9,7 @@
 # All rights reserved.
 #
 
-node 'master' {
-  include profiles::master
-}
-
-node 'store1', 'store2', 'compute1', 'compute2' {
-  include profiles::slave
+class profiles::slave {
+  include yum, cosmos::slave
+  Class['yum'] ~> Class['cosmos::slave']
 }

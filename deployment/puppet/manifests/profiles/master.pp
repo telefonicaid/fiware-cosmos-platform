@@ -9,6 +9,12 @@
 # All rights reserved.
 #
 
-node default {
-  include yum
+class profiles::master {
+  include yum, cosmos::master, firewall, cosmos::firewall::firewall_pre
+  Class['yum'] ~> Class['cosmos::master']
+
+  resources { "firewall":
+    purge => true
+  }
+  Class['cosmos::firewall::firewall_pre'] -> Firewall{}
 }

@@ -19,7 +19,7 @@ import sys
 from pymlconf import ConfigManager
 import yaml
 
-from cosmos.util import ExitWithError
+from cosmos.cli.util import ExitWithError
 
 
 CONFIG_SETTINGS = [dict(

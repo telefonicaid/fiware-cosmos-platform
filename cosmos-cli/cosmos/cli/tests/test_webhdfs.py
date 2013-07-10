@@ -17,9 +17,9 @@ import requests
 from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
-import cosmos.webhdfs as webhdfs
-from cosmos.tests.util import mock_response
-from cosmos.util import ExitWithError, ResponseError
+import cosmos.cli.webhdfs as webhdfs
+from cosmos.cli.tests.util import mock_response
+from cosmos.cli.util import ExitWithError, ResponseError
 
 
 class WebHdfsClientTest(unittest.TestCase):

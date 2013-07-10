@@ -15,8 +15,8 @@ import requests
 from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
-import cosmos.config as config
-from cosmos.util import ExitWithError
+import cosmos.cli.config as config
+from cosmos.cli.util import ExitWithError
 
 class ConfigTest(unittest.TestCase):
 
@@ -26,11 +26,11 @@ class ConfigTest(unittest.TestCase):
                 return_value=temp_dir.getpath("nonexisting"))
             args = MagicMock()
             args.config_file = None
-            with patch('cosmos.config.default_config_path', missing_config):
+            with patch('cosmos.cli.config.default_config_path', missing_config):
                 self.assertRaises(ExitWithError, config.load_config, args)
 
     def test_with_config(self):
-        with patch('cosmos.config.load_config',
+        with patch('cosmos.cli.config.load_config',
                    MagicMock(return_value="config")):
             command = MagicMock(return_value="retval")
             decorated = config.with_config(command)

@@ -17,10 +17,10 @@ from urlparse import urlparse, urljoin
 
 import requests
 
-import cosmos.config as c
-from cosmos.util import ExitWithError, ResponseError
-from cosmos.tables import format_table
-from cosmos.routes import Routes
+import cosmos.cli.config as c
+from cosmos.cli.util import ExitWithError, ResponseError
+from cosmos.cli.tables import format_table
+from cosmos.cli.routes import Routes
 
 
 READ_PERM = 4

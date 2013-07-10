@@ -19,13 +19,13 @@ import sys
 import requests
 from requests.exceptions import ConnectionError, Timeout, RequestException
 
-import cosmos.config as c
-import cosmos.webhdfs as webhdfs
-from cosmos.command_util import add_cluster_id_argument
-from cosmos.routes import Routes
-from cosmos.ssh import add_ssh_command
-from cosmos.tables import format_table
-from cosmos.util import ExitWithError, ResponseError
+import cosmos.cli.config as c
+import cosmos.cli.webhdfs as webhdfs
+from cosmos.cli.command_util import add_cluster_id_argument
+from cosmos.cli.routes import Routes
+from cosmos.cli.ssh import add_ssh_command
+from cosmos.cli.tables import format_table
+from cosmos.cli.util import ExitWithError, ResponseError
 
 
 ELLIPSIS = '...'

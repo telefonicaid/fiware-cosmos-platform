@@ -14,9 +14,9 @@ import unittest
 
 from mock import MagicMock, patch
 
-from cosmos.ssh import ssh_cluster
-from cosmos.tests.util import mock_response
-from cosmos.util import ExitWithError, ResponseError
+from cosmos.cli.ssh import ssh_cluster
+from cosmos.cli.tests.util import mock_response
+from cosmos.cli.util import ExitWithError, ResponseError
 
 
 PROVISIONING = {

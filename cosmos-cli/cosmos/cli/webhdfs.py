@@ -22,6 +22,7 @@ from cosmos.cli.util import ExitWithError, ResponseError
 from cosmos.cli.tables import format_table
 from cosmos.cli.routes import Routes
 
+SUPPORTED_VERSIONS = [1]
 
 READ_PERM = 4
 WRITE_PERM = 2
@@ -141,10 +142,16 @@ class WebHdfsClient(object):
 
 
 def webhdfs_client_from_config(config):
-    r = requests.get(Routes(config.api_url).storage, auth=config.credentials)
-    if r.status_code != 200:
-        raise ResponseError("Cannot get WebHDFS details", r)
-    details = r.json()
+    routes = Routes(config.api_url)
+    if not routes.api_version in SUPPORTED_VERSIONS:
+        versions = ", ".join([str(version) for version in SUPPORTED_VERSIONS])
+        raise ExitWithError(
+            -1, "API version %s is unsupported. Supported versions: %s" %
+            (routes.api_version, versions))
+    response = requests.get(routes.storage, auth=config.credentials)
+    if response.status_code != 200:
+        raise ResponseError("Cannot get WebHDFS details", response)
+    details = response.json()
     log.info("Webhdfs at %s for user %s" % (details["location"],
                                             details["user"]))
     return WebHdfsClient(details["location"], details["user"])

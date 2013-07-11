@@ -17,9 +17,9 @@ import requests
 from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
-import cosmos.webhdfs as webhdfs
-from cosmos.tests.util import mock_response
-from cosmos.util import ExitWithError, ResponseError
+import cosmos.cli.webhdfs as webhdfs
+from cosmos.cli.tests.util import mock_response
+from cosmos.cli.util import ExitWithError, ResponseError
 
 
 class WebHdfsClientTest(unittest.TestCase):
@@ -30,6 +30,9 @@ class WebHdfsClientTest(unittest.TestCase):
             'webhdfs://namenode:1234/', 'user1', client=self.client)
         self.namenode_base = 'http://namenode:1234/webhdfs/v1/user/user1'
         self.datanode_base = 'http://datanode:5678/webhdfs/v1/user/user1'
+        self.config = MagicMock()
+        self.config.credentials = ("user", "pass")
+        self.config.api_url = 'http://host:port/endpoint/v1'
 
     def test_file_upload(self):
         with TempDirectory() as local_dir:
@@ -144,17 +147,19 @@ class WebHdfsClientTest(unittest.TestCase):
             'user': 'username'
         })
         with patch('requests.get', MagicMock(return_value=response)):
-            config = MagicMock()
-            config.credentials = ("user", "pass")
-            result = webhdfs.webhdfs_client_from_config(config)
+            result = webhdfs.webhdfs_client_from_config(self.config)
             self.assertEquals(result.webhdfs_uri, 'webhdfs://host:8080/')
             self.assertEquals(result.username, 'username')
+
+    def test_get_webhdfs_client_raises_for_incompatible_api_version(self):
+        self.config.api_url = 'http://host:port/endpoint/v25'
+        self.assertRaisesRegexp(ExitWithError, 'API version 25 is unsupported',
+                                webhdfs.webhdfs_client_from_config,
+                                self.config)
 
     def test_get_webhdfs_client_from_config_when_unavailable(self):
         response = mock_response(status_code=503)
         with patch('requests.get', MagicMock(return_value=response)):
-            config = MagicMock()
-            config.credentials = ("user", "pass")
             self.assertRaises(ResponseError, webhdfs.webhdfs_client_from_config,
-                              config)
+                              self.config)
 

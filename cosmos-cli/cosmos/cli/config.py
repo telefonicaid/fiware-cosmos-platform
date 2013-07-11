@@ -19,13 +19,13 @@ import sys
 from pymlconf import ConfigManager
 import yaml
 
-from cosmos.util import ExitWithError
+from cosmos.cli.util import ExitWithError
 
 
 CONFIG_SETTINGS = [dict(
     key='api_url',
     description='Base API URL',
-    default='http://localhost:9000/cosmos'
+    default='http://localhost:9000/cosmos/v1'
 ), dict(
     key='api_key',
     description='API key',

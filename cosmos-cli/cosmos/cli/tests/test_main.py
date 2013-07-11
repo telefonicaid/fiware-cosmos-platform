@@ -13,7 +13,7 @@ import unittest
 
 from testfixtures import TempDirectory
 
-import cosmos.main as main
+import cosmos.cli.main as main
 
 class MainTest(unittest.TestCase):
 
@@ -21,7 +21,7 @@ class MainTest(unittest.TestCase):
         self.parser = main.build_argument_parser()
 
     def test_exit_on_wrong_arguments(self):
-        self.assertRaises(SystemExit, self.parser.parse_args, 
+        self.assertRaises(SystemExit, self.parser.parse_args,
                           "wrong arguments".split())
 
     def test_parse_correct_arguments(self):

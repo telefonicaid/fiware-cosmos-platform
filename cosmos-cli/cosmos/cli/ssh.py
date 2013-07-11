@@ -17,10 +17,10 @@ import requests
 import subprocess
 import time
 
-import cosmos.config as c
-from cosmos.command_util import add_cluster_id_argument
-from cosmos.routes import Routes
-from cosmos.util import ExitWithError, ResponseError
+import cosmos.cli.config as c
+from cosmos.cli.command_util import add_cluster_id_argument
+from cosmos.cli.routes import Routes
+from cosmos.cli.util import ExitWithError, ResponseError
 
 
 RETRY_WAIT = 10

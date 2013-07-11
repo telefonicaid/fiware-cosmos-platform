@@ -15,11 +15,11 @@ import doctest
 
 def test_suite():
     return unittest.TestSuite([
-        doctest.DocTestSuite("cosmos.command_util"),
-        doctest.DocTestSuite("cosmos.config"),
-        doctest.DocTestSuite("cosmos.main"),
-        doctest.DocTestSuite("cosmos.routes"),
-        doctest.DocTestSuite("cosmos.tables"),
-        doctest.DocTestSuite("cosmos.webhdfs"),
+        doctest.DocTestSuite("cosmos.cli.command_util"),
+        doctest.DocTestSuite("cosmos.cli.config"),
+        doctest.DocTestSuite("cosmos.cli.main"),
+        doctest.DocTestSuite("cosmos.cli.routes"),
+        doctest.DocTestSuite("cosmos.cli.tables"),
+        doctest.DocTestSuite("cosmos.cli.webhdfs"),
     ])
 

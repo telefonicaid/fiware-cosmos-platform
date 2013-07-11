@@ -15,6 +15,7 @@ import doctest
 
 def test_suite():
     return unittest.TestSuite([
+        doctest.DocTestSuite("cosmos.common.exceptions"),
         doctest.DocTestSuite("cosmos.common.routes"),
     ])
 

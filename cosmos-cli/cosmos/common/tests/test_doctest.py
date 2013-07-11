@@ -15,10 +15,6 @@ import doctest
 
 def test_suite():
     return unittest.TestSuite([
-        doctest.DocTestSuite("cosmos.cli.command_util"),
-        doctest.DocTestSuite("cosmos.cli.config"),
-        doctest.DocTestSuite("cosmos.cli.main"),
-        doctest.DocTestSuite("cosmos.cli.tables"),
-        doctest.DocTestSuite("cosmos.cli.webhdfs"),
+        doctest.DocTestSuite("cosmos.common.routes"),
     ])
 

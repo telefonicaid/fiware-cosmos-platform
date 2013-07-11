@@ -20,7 +20,7 @@ import requests
 import cosmos.cli.config as c
 from cosmos.cli.util import ExitWithError, ResponseError
 from cosmos.cli.tables import format_table
-from cosmos.cli.routes import Routes
+from cosmos.common.routes import Routes
 
 SUPPORTED_VERSIONS = [1]
 

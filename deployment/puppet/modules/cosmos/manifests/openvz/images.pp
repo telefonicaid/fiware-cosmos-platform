@@ -52,6 +52,8 @@ class cosmos::openvz::images($gateway) {
     user        => 'root'
   }
 
+  # Due to having different adapters in Vagrant for internet access and host access
+  # we need to route internet traffic through eth0 explicitly
   if $environment == 'vagrant' {
     exec { '/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE':
       user => 'root'

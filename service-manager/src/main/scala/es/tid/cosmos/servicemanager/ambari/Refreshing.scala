@@ -12,7 +12,6 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import java.net.URI
-import java.util.concurrent.TimeUnit
 import scala.concurrent.{blocking, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -21,8 +20,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 import dispatch.StatusCode
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.machines._
-import es.tid.cosmos.servicemanager.ambari.rest.{ClusterProvisioner, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest.{Service, ClusterProvisioner, Cluster}
 import es.tid.cosmos.platform.ial.InfrastructureProvider
 import es.tid.cosmos.servicemanager.ambari.services.Hdfs
 
@@ -31,13 +29,16 @@ import es.tid.cosmos.servicemanager.ambari.services.Hdfs
  * Ambari that are unregistered.
  */
 trait Refreshing extends Refreshable with Logging {
+  import Refreshing.RefreshTime
+
   protected def infrastructureProvider: InfrastructureProvider
   protected def provisioner: ClusterProvisioner
   protected def refreshGracePeriod: FiniteDuration
   protected def clusterIds: Seq[ClusterId]
   protected def registerCluster(description: MutableClusterDescription)
 
-  private val refreshTime = 1000 milliseconds
+  /** Services that should be up to consider the cluster ready */
+  val serviceDescriptions: Seq[ServiceDescription]
 
   /**
    * Refresh the clusters state by querying the provisioner for unregistered clusters
@@ -54,12 +55,26 @@ trait Refreshing extends Refreshable with Logging {
       _ <- Future.traverse(unregisteredClusters)(register)
     } yield ()
 
-  private def stateFrom(serviceStates: Seq[String]) =
-    if (serviceStates.forall(_ == "STARTED")) Running else Provisioning
+  private def stateFrom(service: Service): ClusterState = {
+    val StartedAmbariState = "STARTED"
+    val InstalledAmbariState = "INSTALLED"
+
+    val expectedState = serviceDescriptions
+      .find(_.name == service.name)
+      .collect({
+        case desc if desc.components.forall(_.isClient) => InstalledAmbariState
+      }).getOrElse(StartedAmbariState)
+
+    if (expectedState == service.state) Running
+    else Provisioning
+  }
+
+  private def stateFrom(services: Seq[Service]): ClusterState =
+    if (services.map(stateFrom).forall(Running ==)) Running else Provisioning
 
   private def state(cluster: Cluster): Future[ClusterState] = {
     val state_> = for (services <- Future.traverse(cluster.serviceNames)(cluster.getService))
-      yield stateFrom(services.map(_.state))
+      yield stateFrom(services)
     state_>.recover { case RequestException(_, _, StatusCode(404)) => Terminated }
   }
 
@@ -70,9 +85,9 @@ trait Refreshing extends Refreshable with Logging {
       case Running | Terminated => state_>
       case Provisioning => if (elapsedRefreshTime < refreshGracePeriod) { blocking {
         logger.warn(s"Found unregistered cluster [${cluster.name}}] in Provisioning state. " +
-          s"Waiting $refreshTime to see if it changes.")
-        Thread.sleep(refreshTime.toMillis)
-        resolveState(cluster, elapsedRefreshTime + refreshTime)
+          s"Waiting $RefreshTime to see if it changes.")
+        Thread.sleep(RefreshTime.toMillis)
+        resolveState(cluster, elapsedRefreshTime + RefreshTime)
       }} else throw new IllegalStateException(
         s"Timed out waiting for cluster [${cluster.name}] to finish provisioning")
       case other@_ => throw new IllegalStateException(
@@ -95,4 +110,8 @@ trait Refreshing extends Refreshable with Logging {
     registerCluster(description)
     clusterState_>
   }
+}
+
+object Refreshing {
+  private val RefreshTime = 1000 milliseconds
 }

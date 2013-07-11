@@ -21,5 +21,5 @@ object Oozie extends ServiceWithConfigurationFile {
 
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription("OOZIE_SERVER", isMaster = true),
-    ComponentDescription("OOZIE_CLIENT", isMaster = true))
+    ComponentDescription("OOZIE_CLIENT", isMaster = true, isClient = true))
 }

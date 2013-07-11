@@ -42,22 +42,13 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
     get(refresh())
   }
 
-  it must "refresh cluster state to Running if all services are Started" in new ExpectRefresh {
-    val clusterIds = Seq()
-    def clusterName = "unregistered"
-    given(service.state).willReturn("STARTED")
-    def registerCluster(description: MutableClusterDescription) {
-      checkDescriptionInfo(description)
-    }
-    get(refresh())
-    finalState() must equal(Running)
-  }
-
-  it must "register only any unregistered clusters the provisioner yields upon a refresh" in
+  it must "refresh cluster state to Running if all services are in their Running state" in
     new ExpectRefresh {
-      val clusterIds = Seq(ClusterId("registered"))
+      val clusterIds = Seq()
       def clusterName = "unregistered"
-      given(service.state).willReturn("STARTED")
+      given(service1.state).willReturn("INSTALLED")
+      given(service2.state).willReturn("STARTED")
+      given(service3.state).willReturn("STARTED")
       def registerCluster(description: MutableClusterDescription) {
         checkDescriptionInfo(description)
       }
@@ -65,11 +56,41 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       finalState() must equal(Running)
     }
 
-  it must "fail refreshing a cluster that does not stabilize within grace period" in
+  it must "register only any unregistered clusters the provisioner yields upon a refresh" in
     new ExpectRefresh {
+      val clusterIds = Seq(ClusterId("registered"))
+      def clusterName = "unregistered"
+      given(service1.state).willReturn("INSTALLED")
+      given(service2.state).willReturn("STARTED")
+      given(service3.state).willReturn("STARTED")
+      def registerCluster(description: MutableClusterDescription) {
+        checkDescriptionInfo(description)
+      }
+      get(refresh())
+      finalState() must equal(Running)
+    }
+
+  it must "must fail refreshing a cluster when an unknown service does " +
+    "not stabilize within grace period" in new ExpectRefresh {
       val clusterIds = Seq()
       def clusterName = "unregistered"
-      given(service.state).willReturn("INSTALLED")
+      given(service1.state).willReturn("INSTALLED")
+      given(service2.state).willReturn("STARTED")
+      given(service3.state).willReturn("INSTALLED")
+      def registerCluster(description: MutableClusterDescription) {
+        checkDescriptionInfo(description)
+      }
+      evaluating (get(refresh())) must produce [IllegalStateException]
+      finalState() must be (failedWithIllegalState)
+    }
+
+  it must "must fail refreshing a cluster when a known service " +
+    "does not stabilize within grace period" in new ExpectRefresh {
+      val clusterIds = Seq()
+      def clusterName = "unregistered"
+      given(service1.state).willReturn("INSTALLED")
+      given(service2.state).willReturn("INSTALLED")
+      given(service3.state).willReturn("STARTED")
       def registerCluster(description: MutableClusterDescription) {
         checkDescriptionInfo(description)
       }
@@ -80,7 +101,9 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
   it must "refresh a cluster that stabilizes within grace period" in new ExpectRefresh {
     val clusterIds = Seq()
     def clusterName = "unregistered"
-    given(service.state).willReturn("INSTALLED").willReturn("STARTED")
+    given(service1.state).willReturn("INSTALLED")
+    given(service2.state).willReturn("INSTALLED").willReturn("STARTED")
+    given(service3.state).willReturn("INSTALLED").willReturn("INSTALLED").willReturn("STARTED")
     def registerCluster(description: MutableClusterDescription) {
       checkDescriptionInfo(description)
       description.view.state must equal(Provisioning)
@@ -93,10 +116,9 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
     new ExpectRefresh {
       val clusterIds = Seq()
       def clusterName = "unregistered"
-      given(service.state).willReturn("INSTALLED")
       val notFound: Future[Service] =
         failed(RequestException(mock[Request], "errorMessage", StatusCode(404)))
-      given(cluster.getService(serviceName)).willReturn(notFound)
+      given(cluster.getService(unknownService)).willReturn(notFound)
       def registerCluster(description: MutableClusterDescription) {
         checkDescriptionInfo(description)
       }
@@ -108,6 +130,19 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
     val infrastructureProvider = mock[InfrastructureProvider]
     val provisioner = mock[ClusterProvisioner]
     val refreshGracePeriod = 3000.milliseconds
+    val clientOnlyDescription = new ServiceDescription {
+      val components: Seq[ComponentDescription] = Seq(
+        ComponentDescription("", isMaster = true, isClient = true),
+        ComponentDescription("", isMaster = false, isClient = true))
+      val name: String = "ClientService"
+    }
+    val normalDescription = new ServiceDescription {
+      val components: Seq[ComponentDescription] = Seq(
+        ComponentDescription("", isMaster = true, isClient = true),
+        ComponentDescription("", isMaster = true, isClient = false))
+      val name: String = "NormalService"
+    }
+    val serviceDescriptions = Seq(clientOnlyDescription, normalDescription)
   }
 
   trait NoRefresh extends BaseRefreshable {
@@ -119,10 +154,13 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
   trait ExpectRefresh extends BaseRefreshable {
     def clusterName: String
     private var descriptionHandle: MutableClusterDescription = null
-    val serviceName = "myService"
+    val unknownService = "myUnknownService"
     val hostName = "myhost"
     val cluster = mock[Cluster]
-    val service = mock[Service]
+    val service1 = mock[Service]
+    val service2 = mock[Service]
+    val service3 = mock[Service]
+    val services = Seq(service1, service2, service3)
     val host = mock[Host]
     val cluster_machines_> = successful(Seq(mock[MachineState]))
     given(provisioner.listClusterNames).willReturn(successful(Seq(clusterName)))
@@ -130,8 +168,12 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
     given(cluster.name).willReturn(clusterName)
     given(cluster.hostNames).willReturn(Seq(hostName))
     given(cluster.getHosts).willReturn(successful(Seq(host)))
-    given(cluster.serviceNames).willReturn(Seq(serviceName))
-    given(cluster.getService(serviceName)).willReturn(successful(service))
+    given(service1.name).willReturn(serviceDescriptions.head.name)
+    given(service2.name).willReturn(serviceDescriptions.last.name)
+    given(service3.name).willReturn(unknownService)
+    val serviceNames = services.map(_.name)
+    given(cluster.serviceNames).willReturn(serviceNames)
+    services.foreach(srv => given(cluster.getService(srv.name)).willReturn(successful(srv)))
     given(host.getComponentNames).willReturn(Seq("NAMENODE"))
     given(host.name).willReturn(hostName)
     given(infrastructureProvider.assignedMachines(Seq(hostName))).willReturn(cluster_machines_>)

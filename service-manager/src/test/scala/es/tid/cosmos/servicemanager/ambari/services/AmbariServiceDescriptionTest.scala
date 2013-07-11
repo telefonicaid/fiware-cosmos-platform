@@ -46,7 +46,7 @@ class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with Mocki
   object Fake extends AmbariServiceDescription {
     val name = "FakeServiceName"
     val component1 = ComponentDescription("component1", isMaster = true)
-    val component2 = ComponentDescription("component2", isMaster = false)
+    val component2 = ComponentDescription("component2", isMaster = false, isClient = true)
     val components: Seq[ComponentDescription] = Seq(component1, component2)
     override def contributions(properties: Map[ConfigurationKeys.Value, String]) =
       ConfigurationBundle(None, None, List())

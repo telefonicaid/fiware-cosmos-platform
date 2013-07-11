@@ -66,6 +66,9 @@ class AmbariServiceManager(
   override def services(user: ClusterUser): Seq[ServiceDescriptionType] =
     Seq(Hdfs, MapReduce, Oozie, new CosmosUserService(Seq(user)))
 
+  override val serviceDescriptions: Seq[ServiceDescription] =
+    Seq(Hdfs, MapReduce, Oozie, CosmosUserService)
+
   /**
    * Wait until all pending operations are finished
    */

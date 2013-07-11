@@ -50,7 +50,7 @@ object CosmosUserService extends ServiceDescription {
   override val name: String = "COSMOS_USER"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("USER_MASTER_MANAGER", isMaster = true),
-    ComponentDescription("USER_SLAVE_MANAGER", isMaster = false)
+    ComponentDescription("USER_MASTER_MANAGER", isMaster = true, isClient = true),
+    ComponentDescription("USER_SLAVE_MANAGER", isMaster = false, isClient = true)
   )
 }

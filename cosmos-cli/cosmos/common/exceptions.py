@@ -10,6 +10,7 @@
 # All rights reserved.
 #
 
+
 class CosmosException(Exception):
     """Root class for the Cosmos exception hierarchy.
 
@@ -49,3 +50,38 @@ class UnsupportedApiVersionException(CosmosException):
         super(UnsupportedApiVersionException, self).__init__(
             'Unsupported API version %s. Supported versions: %s' %
             (tried_version, ', '.join(map(str, supported_versions))))
+
+
+class ResponseError(CosmosException):
+    """Represents failed HTTP responses as a Cosmos exception."""
+
+    def __init__(self, message, response):
+        self.message = message
+        self.response = response
+        super(ResponseError, self).__init__(self.__format_exception())
+
+    def __format_exception(self):
+        return "%s: %s\n%s" % (self.__error_heading(),
+                               self.message,
+                               self.__extract_error_from_body())
+
+    def __error_heading(self):
+        if self.response.status_code == 401:
+            return "Unauthorized request"
+        else:
+            return "HTTP error (%d)" % self.response.status_code
+
+    def __extract_error_from_body(self):
+        """Extract error information from body.
+
+        Tries to interpret content as simple JSON errors or as WebHDFS errors
+        with fallback to the plain text value.
+        """
+        try:
+            exception = self.response.json()
+            if exception.has_key('error'):
+                return exception['error']
+            else:
+                return exception['RemoteException']['message']
+        except (ValueError, KeyError):
+            return self.response.text

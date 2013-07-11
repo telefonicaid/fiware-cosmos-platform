@@ -19,7 +19,8 @@ import time
 
 import cosmos.cli.config as c
 from cosmos.cli.command_util import add_cluster_id_argument
-from cosmos.cli.util import ExitWithError, ResponseError
+from cosmos.cli.util import ExitWithError
+from cosmos.common.exceptions import ResponseError
 from cosmos.common.routes import Routes
 
 

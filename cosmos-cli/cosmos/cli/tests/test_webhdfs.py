@@ -18,8 +18,9 @@ from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
 import cosmos.cli.webhdfs as webhdfs
-from cosmos.cli.tests.util import mock_response
-from cosmos.cli.util import ExitWithError, ResponseError
+from cosmos.cli.util import ExitWithError
+from cosmos.common.exceptions import ResponseError
+from cosmos.common.tests.util import mock_response
 
 
 class WebHdfsClientTest(unittest.TestCase):
@@ -66,7 +67,7 @@ class WebHdfsClientTest(unittest.TestCase):
                 }
             })
             local_file = local_dir.write('file.txt', 'contents')
-            self.assertRaisesRegexp(ExitWithError, 'Not redirected',
+            self.assertRaisesRegexp(ResponseError, 'Not redirected',
                                     self.instance.put_file, local_file,
                                     '/remote/path')
 

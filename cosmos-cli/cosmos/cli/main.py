@@ -17,14 +17,15 @@ import logging as log
 import sys
 
 import requests
-from requests.exceptions import ConnectionError, Timeout, RequestException
+from requests.exceptions import ConnectionError, Timeout
 
 import cosmos.cli.config as c
 import cosmos.cli.webhdfs as webhdfs
 from cosmos.cli.command_util import add_cluster_id_argument
 from cosmos.cli.ssh import add_ssh_command
 from cosmos.cli.tables import format_table
-from cosmos.cli.util import ExitWithError, ResponseError
+from cosmos.cli.util import ExitWithError
+from cosmos.common.exceptions import ResponseError
 from cosmos.common.routes import Routes
 
 
@@ -180,7 +181,6 @@ def set_verbose(is_verbose):
     if is_verbose:
         log.info("Verbose output")
 
-
 def run():
     """Register all subcommands, parse the command line and run the function
     set as default for the parsed command"""
@@ -199,8 +199,8 @@ def run():
         print "Cannot connect with server:\n%s" % ex.message
     except Timeout, ex:
         print "Request timed out:\n%s" % ex.message
-    except RequestException, ex:
-        print "Network request failed:\n%s" % ex.message
+    except CosmosException, ex:
+        print str(ex)
     sys.exit(exit_code)
 
 

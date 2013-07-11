@@ -18,8 +18,9 @@ from urlparse import urlparse, urljoin
 import requests
 
 import cosmos.cli.config as c
-from cosmos.cli.util import ExitWithError, ResponseError
 from cosmos.cli.tables import format_table
+from cosmos.cli.util import ExitWithError
+from cosmos.common.exceptions import ResponseError
 from cosmos.common.routes import Routes
 
 SUPPORTED_VERSIONS = [1]

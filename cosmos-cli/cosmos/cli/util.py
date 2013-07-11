@@ -19,25 +19,3 @@ class ExitWithError(Exception):
         super(ExitWithError, self).__init__(explanation)
         self.exit_code = exit_code
         self.explanation = explanation
-
-
-class ResponseError(ExitWithError):
-    """Translates failed Responses into an exit code and a explanation."""
-
-    def __init__(self, cause, response):
-        try:
-            exception = response.json()
-            if exception.has_key('error'):
-                message = exception['error']
-            else:
-                message = exception['RemoteException']['message']
-        except (ValueError, KeyError):
-            message = response.text
-        if response.status_code == 401:
-            error = "Unauthorized request"
-        else:
-            error = "Error (%d)" % response.status_code
-        super(ResponseError, self).__init__(
-            response.status_code,
-            ("%s\n%s: %s\n" % (cause, error, message))
-        )

@@ -30,6 +30,9 @@ class WebHdfsClientTest(unittest.TestCase):
             'webhdfs://namenode:1234/', 'user1', client=self.client)
         self.namenode_base = 'http://namenode:1234/webhdfs/v1/user/user1'
         self.datanode_base = 'http://datanode:5678/webhdfs/v1/user/user1'
+        self.config = MagicMock()
+        self.config.credentials = ("user", "pass")
+        self.config.api_url = 'http://host:port/endpoint/v1'
 
     def test_file_upload(self):
         with TempDirectory() as local_dir:
@@ -144,17 +147,13 @@ class WebHdfsClientTest(unittest.TestCase):
             'user': 'username'
         })
         with patch('requests.get', MagicMock(return_value=response)):
-            config = MagicMock()
-            config.credentials = ("user", "pass")
-            result = webhdfs.webhdfs_client_from_config(config)
+            result = webhdfs.webhdfs_client_from_config(self.config)
             self.assertEquals(result.webhdfs_uri, 'webhdfs://host:8080/')
             self.assertEquals(result.username, 'username')
 
     def test_get_webhdfs_client_from_config_when_unavailable(self):
         response = mock_response(status_code=503)
         with patch('requests.get', MagicMock(return_value=response)):
-            config = MagicMock()
-            config.credentials = ("user", "pass")
             self.assertRaises(ResponseError, webhdfs.webhdfs_client_from_config,
-                              config)
+                              self.config)
 

@@ -38,6 +38,7 @@ class SshCommandTest(unittest.TestCase):
     def setUp(self):
         self.config = MagicMock()
         self.config.ssh_command = 'ssh'
+        self.config.api_url = 'http://host:port/some/api/v1'
 
     def test_refuse_ssh_clusters_in_post_running_states(self):
         for state in ['terminating', 'terminated', 'failed']:

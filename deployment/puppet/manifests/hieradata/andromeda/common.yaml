@@ -1,3 +1,14 @@
+#
+# Telefónica Digital - Product Development and Innovation
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+
 cosmos::slave::netmask: "255.255.255.128"
 cosmos::slave::gateway: "192.168.63.1"
 cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"

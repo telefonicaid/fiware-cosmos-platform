@@ -29,33 +29,32 @@ class CommandRunner(args: Seq[String], serviceManager: ServiceManager) extends S
   }
 
   private[admin] def run() {
-    parseCommands(subcommands)
+    processCommands(subcommands)
   }
 
-  private def parseCommands(subcommands: List[ScallopConf]) = {
-    subcommands.head match {
-      case `setup` => setupAll(serviceManager)
-      case `persistent_storage` =>
-        parsePersistentStorageCommand(subcommands.tail)
-      case `cluster` => parseClusterCommand(subcommands.tail)
+  private def processCommands(subcommands: List[ScallopConf]) {
+    subcommands.headOption match {
+      case Some(`setup`) => setupAll(serviceManager)
+      case Some(`persistent_storage`) => processPersistentStorageCommand(subcommands.tail)
+      case Some(`cluster`) => processClusterCommand(subcommands.tail)
       case _ => printHelp()
     }
   }
 
-  private def parsePersistentStorageCommand(subcommands: List[ScallopConf]) = {
-    subcommands.head match {
-      case persistent_storage.setup => PersistentStorage.setup(serviceManager)
-      case persistent_storage.terminate => PersistentStorage.terminate(serviceManager)
-      case _ => printHelp()
-    }
+  private def processPersistentStorageCommand(subcommands: List[ScallopConf]) {
+    if (subcommands.size == 1) subcommands.headOption match {
+      case Some(persistent_storage.setup) => PersistentStorage.setup(serviceManager)
+      case Some(persistent_storage.terminate) => PersistentStorage.terminate(serviceManager)
+      case _ => persistent_storage.printHelp()
+    } else persistent_storage.printHelp()
   }
 
-  private def parseClusterCommand(subcommands: List[ScallopConf]) = {
-    subcommands match {
-      case cluster.terminate =>
+  private def processClusterCommand(subcommands: List[ScallopConf]) {
+    if (subcommands.size == 2) subcommands.headOption match {
+      case Some(cluster.terminate) =>
         Cluster.terminate(serviceManager, ClusterId(cluster.terminate.clusterid()))
-      case _ => printHelp()
-    }
+      case _ => cluster.printHelp()
+    } else cluster.printHelp()
   }
 
   /**
@@ -63,7 +62,5 @@ class CommandRunner(args: Seq[String], serviceManager: ServiceManager) extends S
    * @param serviceManager The service manager to use.
    * @return Whether the operation succeeded.
    */
-  private def setupAll(serviceManager: ServiceManager) = {
-    PersistentStorage.setup(serviceManager)
-  }
+  private def setupAll(serviceManager: ServiceManager) = PersistentStorage.setup(serviceManager)
 }

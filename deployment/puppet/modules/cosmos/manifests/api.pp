@@ -20,11 +20,11 @@ class cosmos::api inherits cosmos::params {
     grant    => ['all']
   }
 
-  database_user { "${cosmos_db_user}@localhost":
+  database_user { "${cosmos_db_user}@${cosmos_db_host}":
     password_hash => mysql_password("${cosmos_db_pass}")
   }
 
-  database_grant { "${cosmos_db_user}@localhost/${cosmos_db_name}":
+  database_grant { "${cosmos_db_user}@${cosmos_db_host}/${cosmos_db_name}":
     privileges => ['all']
   }
 

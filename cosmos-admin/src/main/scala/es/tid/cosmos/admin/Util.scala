@@ -17,17 +17,16 @@ import scala.concurrent.ExecutionContext.Implicits._
 
 private[admin] object Util {
 
-  def waitUntilReady(task_> : Future[Unit]) = {
-    task_>.onSuccess({
-      case _ => println("Cosmos admin task succeded!")
-    })
-    task_>.onFailure({
-      case throwable => {
+  def waitUntilReady(task_> : Future[Unit]): Boolean = {
+    val handled_> = task_>.transform(
+      _ => println("Cosmos admin task succeded!"),
+      throwable => {
         println("ERROR: Cosmos admin task failed")
         println(throwable.getMessage)
         println()
         println(throwable.getStackTrace.deep.mkString("\n"))
-      }})
-    Await.ready(task_>, 15 minutes).value.get.isSuccess
+        throwable
+      })
+    Await.ready(handled_>, 15 minutes).value.get.isSuccess
   }
 }

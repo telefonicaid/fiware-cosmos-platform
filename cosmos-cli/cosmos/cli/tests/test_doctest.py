@@ -19,6 +19,7 @@ def test_suite():
         doctest.DocTestSuite("cosmos.cli.config"),
         doctest.DocTestSuite("cosmos.cli.main"),
         doctest.DocTestSuite("cosmos.cli.tables"),
+        doctest.DocTestSuite("cosmos.cli.storage"),
         doctest.DocTestSuite("cosmos.cli.webhdfs"),
     ])
 

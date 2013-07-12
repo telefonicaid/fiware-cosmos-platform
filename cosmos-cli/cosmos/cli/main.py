@@ -23,6 +23,7 @@ import cosmos.cli.config as c
 import cosmos.cli.webhdfs as webhdfs
 from cosmos.cli.command_util import add_cluster_id_argument
 from cosmos.cli.ssh import add_ssh_command
+from cosmos.cli.storage import add_storage_commands
 from cosmos.cli.tables import format_table
 from cosmos.cli.util import ExitWithError
 from cosmos.common.exceptions import ResponseError
@@ -170,7 +171,7 @@ def build_argument_parser():
     add_create_command(subparsers)
     add_terminate_command(subparsers)
     add_ssh_command(subparsers)
-    webhdfs.add_commands(subparsers)
+    add_storage_commands(subparsers)
     return parser
 
 

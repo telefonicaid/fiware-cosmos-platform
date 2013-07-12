@@ -142,25 +142,25 @@ class WebHdfsClientTest(unittest.TestCase):
         self.assertEquals(self.instance.path_type('/file'), 'DIRECTORY')
         self.assertEquals(self.instance.path_type('/file'), 'FILE')
 
-    def test_get_webhdfs_client_from_config(self):
+    def test_get_client_from_config(self):
         response = mock_response(json={
             'location': 'webhdfs://host:8080/',
             'user': 'username'
         })
         with patch('requests.get', MagicMock(return_value=response)):
-            result = webhdfs.webhdfs_client_from_config(self.config)
+            result = webhdfs.client_from_config(self.config)
             self.assertEquals(result.webhdfs_uri, 'webhdfs://host:8080/')
             self.assertEquals(result.username, 'username')
 
-    def test_get_webhdfs_client_raises_for_incompatible_api_version(self):
+    def test_get_client_raises_for_incompatible_api_version(self):
         self.config.api_url = 'http://host:port/endpoint/v25'
         self.assertRaisesRegexp(ExitWithError, 'API version 25 is unsupported',
-                                webhdfs.webhdfs_client_from_config,
+                                webhdfs.client_from_config,
                                 self.config)
 
-    def test_get_webhdfs_client_from_config_when_unavailable(self):
+    def test_get_client_from_config_when_unavailable(self):
         response = mock_response(status_code=503)
         with patch('requests.get', MagicMock(return_value=response)):
-            self.assertRaises(ResponseError, webhdfs.webhdfs_client_from_config,
+            self.assertRaises(ResponseError, webhdfs.client_from_config,
                               self.config)
 

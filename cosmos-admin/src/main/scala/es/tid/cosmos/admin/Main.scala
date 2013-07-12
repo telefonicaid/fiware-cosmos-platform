@@ -20,6 +20,6 @@ object ServiceManagerProvider extends ProductionServiceManagerComponent
 object Main {
 
   def main(args: Array[String]) {
-    new CommandRunner(args, ServiceManagerProvider.serviceManager).run()
+    new CommandRunner(new AdminArguments(args), ServiceManagerProvider.serviceManager).run()
   }
 }

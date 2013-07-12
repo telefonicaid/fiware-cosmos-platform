@@ -16,13 +16,15 @@ import play.api.libs.json.Json
 import play.api.mvc.Action
 
 import es.tid.cosmos.api.controllers.common.{AuthController, JsonController}
+import es.tid.cosmos.api.profile.CosmosProfileDao
 
 /**
  * Resource that represents a user profile.
  */
 @Api(value = "/cosmos/v1/profile", listingPath = "/doc/cosmos/v1/profile",
   description = "Represents the user profile")
-class ProfileResource extends JsonController with AuthController {
+class ProfileResource(override val dao: CosmosProfileDao)
+  extends JsonController with AuthController {
 
   /**
    * List user clusters.

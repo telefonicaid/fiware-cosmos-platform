@@ -16,8 +16,6 @@ import java.net.URI
 import org.apache.commons.lang3.StringEscapeUtils
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import play.api.Play.current
-import play.api.db.DB
 import play.api.mvc.Session
 import play.api.test._
 import play.api.test.Helpers._
@@ -30,6 +28,7 @@ import es.tid.cosmos.api.mocks.{WithMockedIdentityService, User}
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 class PagesIT extends FlatSpec with MustMatchers {
+
   "A non registered user" must "be authenticated and get to the registration page" in
     new WithMockedIdentityService {
       val authUrl = mustLinkTheAuthorizationProvider()
@@ -86,7 +85,7 @@ class PagesIT extends FlatSpec with MustMatchers {
 
   "A registered user" must "be authenticated and redirected to its profile" in
     new WithMockedIdentityService {
-      registerUsers(identityService.users)
+      registerUsers(dao, identityService.users)
       val authUrl = mustLinkTheAuthorizationProvider()
       val redirectUrl = identityService.requestAuthorizationCode(
         authUrl, identityService.users.head.id)
@@ -132,7 +131,7 @@ class PagesIT extends FlatSpec with MustMatchers {
     }
 
   it must "show the user profile when authorized and registered" in new WithMockedIdentityService {
-    registerUsers(identityService.users)
+    registerUsers(dao, identityService.users)
     val user = identityService.users.head
     val session = new Session()
       .setUserProfile(UserProfile(user.id))
@@ -151,11 +150,11 @@ class PagesIT extends FlatSpec with MustMatchers {
     authUrl.get
   }
 
-  private def registerUsers(users: Iterable[User]) {
-    DB.withConnection { implicit c =>
+  private def registerUsers(dao: CosmosProfileDao, users: Iterable[User]) {
+    dao.withConnection { implicit c =>
       for (User(tuId, _, _, email) <- users) {
         val handle = email.map(_.split('@')(0)).getOrElse("root")
-        CosmosProfileDao.registerUserInDatabase(tuId, Registration(handle, "pk1234"))
+        dao.registerUserInDatabase(tuId, Registration(handle, "pk1234"))
       }
     }
   }

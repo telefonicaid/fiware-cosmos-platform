@@ -11,11 +11,6 @@
 
 package es.tid.cosmos.api.profile
 
-import org.scalatest.FlatSpec
-import org.scalatest.matchers.MustMatchers
-
-class CosmosProfileDaoIT extends FlatSpec with MustMatchers with CosmosProfileDaoBehavior {
-
-  "The Play DB profile resource" must behave like profileDao(new PlayDbCosmosProfileDao)
-  "The mocked profile resource" must behave like profileDao(new MockCosmosProfileDao)
+trait CosmosProfileDaoComponent {
+  def cosmosProfileDao: CosmosProfileDao
 }

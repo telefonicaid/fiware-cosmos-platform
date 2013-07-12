@@ -15,8 +15,6 @@ import scala.util.{Failure, Success, Try}
 
 import com.wordnik.swagger.annotations._
 import play.Logger
-import play.api.Play.current
-import play.api.db.DB
 import play.api.libs.json._
 import play.api.mvc._
 
@@ -30,7 +28,8 @@ import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
  */
 @Api(value = "/cosmos/v1/clusters", listingPath = "/doc/cosmos/v1/clusters",
   description = "Represents all the clusters in the platform")
-class ClustersResource(serviceManager: ServiceManager) extends JsonController with AuthController {
+class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosProfileDao)
+  extends JsonController with AuthController {
   /**
    * List user clusters.
    */
@@ -62,8 +61,8 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
           case Failure(ex) => throw ex
           case Success(clusterId: ClusterId) => {
             Logger.info(s"Provisioning new cluster $clusterId")
-            DB.withTransaction { implicit c =>
-              CosmosProfileDao.assignCluster(clusterId, profile.id)
+            dao.withTransaction { implicit c =>
+              dao.assignCluster(clusterId, profile.id)
             }
             val reference = ClusterReference(serviceManager.describeCluster(clusterId).get)(request)
             Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
@@ -74,8 +73,8 @@ class ClustersResource(serviceManager: ServiceManager) extends JsonController wi
   }
 
   private def listClusters(profile: CosmosProfile) = {
-    val userClusters = DB.withConnection { implicit c =>
-      Set(CosmosProfileDao.clustersOf(profile.id): _*)
+    val userClusters = dao.withConnection { implicit c =>
+      Set(dao.clustersOf(profile.id): _*)
     }
     (for {
       clusterId <- userClusters.toList

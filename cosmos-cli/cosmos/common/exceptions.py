@@ -85,3 +85,18 @@ class ResponseError(CosmosException):
                 return exception['RemoteException']['message']
         except (ValueError, KeyError):
             return self.response.text
+
+
+class OperationError(CosmosException):
+    """Represents a unexpected condition happent when performing an API
+    operation.
+
+    It just keep the message.
+    >>> ex = OperationError('Out of foo while doing bar')
+    >>> ex.message
+    'Out of foo while doing bar'
+    """
+
+    def __init__(self, message):
+        self.message = message
+        super(OperationError, self).__init__(message)

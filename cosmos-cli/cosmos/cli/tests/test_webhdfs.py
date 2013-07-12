@@ -18,8 +18,8 @@ from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
 import cosmos.cli.webhdfs as webhdfs
-from cosmos.cli.util import ExitWithError
-from cosmos.common.exceptions import ResponseError
+from cosmos.common.exceptions import (OperationError, ResponseError,
+                                      UnsupportedApiVersionException)
 from cosmos.common.tests.util import mock_response
 
 
@@ -102,7 +102,7 @@ class WebHdfsClientTest(unittest.TestCase):
         self.client.get.return_value = mock_response(status_code=404)
         out_file = StringIO("")
         self.assertRaisesRegexp(
-            ExitWithError, 'File /file.txt does not exist',
+            ResponseError, 'File /file.txt does not exist',
             self.instance.get_file, '/file.txt', out_file)
         out_file.close()
 
@@ -154,9 +154,9 @@ class WebHdfsClientTest(unittest.TestCase):
 
     def test_get_client_raises_for_incompatible_api_version(self):
         self.config.api_url = 'http://host:port/endpoint/v25'
-        self.assertRaisesRegexp(ExitWithError, 'API version 25 is unsupported',
-                                webhdfs.client_from_config,
-                                self.config)
+        self.assertRaisesRegexp(UnsupportedApiVersionException,
+                                'Unsupported API version 25',
+                                webhdfs.client_from_config, self.config)
 
     def test_get_client_from_config_when_unavailable(self):
         response = mock_response(status_code=503)

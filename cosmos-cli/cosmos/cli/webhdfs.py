@@ -14,8 +14,8 @@ from urlparse import urlparse, urljoin
 
 import requests
 
-from cosmos.cli.util import ExitWithError
-from cosmos.common.exceptions import ResponseError
+from cosmos.common.exceptions import (OperationError, ResponseError,
+                                      UnsupportedApiVersionException)
 from cosmos.common.routes import Routes
 
 
@@ -48,12 +48,12 @@ class WebHdfsClient(object):
                                    allow_redirects=False,
                                    params=self.opParams('CREATE'))
         if response.status_code == 201:
-            raise ExitWithError(
-                -1, "WebHDFS uploads are not supported on 1-machine " +
-                "clusters: an empty file has been created. See #862.")
+            raise OperationError('WebHDFS uploads are not supported on '
+                                 '1-machine clusters: an empty file has been '
+                                 'created. See #862.')
         if self.__is_replication_exception(response):
-            raise ExitWithError(500, 'Cannot replicate file %s blocks' %
-                                remote_path)
+            raise OperationError('Cannot replicate file %s blocks' %
+                                 remote_path)
         if response.status_code != 307:
             raise ResponseError('Not redirected by the WebHDFS frontend',
                                 response)
@@ -63,7 +63,7 @@ class WebHdfsClient(object):
         """Lists a directory or check a file status. Returns a list of status
         objects as defined in
         http://hadoop.apache.org/docs/r1.0.4/webhdfs.html#FileStatus
-        or None if the path does not exits.
+        or None if the path does not exists.
         """
         r = self.client.get(self.to_http(path),
                             params=self.opParams('LISTSTATUS'))
@@ -85,18 +85,20 @@ class WebHdfsClient(object):
         return 'DIRECTORY'
 
     def get_file(self, remote_path, out_file):
-        r = self.client.get(self.to_http(remote_path), stream=True,
-                            params=self.opParams('OPEN'))
-        if r.status_code == 404:
-            raise ExitWithError(404, 'File %s does not exist' % remote_path)
-        if r.status_code != 200:
-            raise ResponseError('Cannot download file %s' % remote_path, r)
-        buf = r.raw.read(BUFFER_SIZE)
+        response = self.client.get(self.to_http(remote_path), stream=True,
+                                   params=self.opParams('OPEN'))
+        if response.status_code == 404:
+            raise ResponseError('File %s does not exist' % remote_path,
+                                response)
+        if response.status_code != 200:
+            raise ResponseError('Cannot download file %s' % remote_path,
+                                response)
+        buf = response.raw.read(BUFFER_SIZE)
         written = 0
         while (len(buf) > 0):
             written += len(buf)
             out_file.write(buf)
-            buf = r.raw.read(BUFFER_SIZE)
+            buf = response.raw.read(BUFFER_SIZE)
         return written
 
     def delete_path(self, path, recursive=False):
@@ -129,10 +131,8 @@ class WebHdfsClient(object):
 def client_from_config(config):
     routes = Routes(config.api_url)
     if not routes.api_version in SUPPORTED_VERSIONS:
-        versions = ", ".join([str(version) for version in SUPPORTED_VERSIONS])
-        raise ExitWithError(
-            -1, "API version %s is unsupported. Supported versions: %s" %
-            (routes.api_version, versions))
+        raise UnsupportedApiVersionException(routes.api_version,
+                                             SUPPORTED_VERSIONS)
     response = requests.get(routes.storage, auth=config.credentials)
     if response.status_code != 200:
         raise ResponseError("Cannot get WebHDFS details", response)

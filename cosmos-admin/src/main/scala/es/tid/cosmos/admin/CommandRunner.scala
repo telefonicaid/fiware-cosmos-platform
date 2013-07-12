@@ -15,46 +15,35 @@ import org.rogach.scallop.{Subcommand, ScallopConf}
 
 import es.tid.cosmos.servicemanager.{ClusterId, ServiceManager}
 
-class CommandRunner(args: Seq[String], serviceManager: ServiceManager) extends ScallopConf(args) {
-
-  val setup = new Subcommand("setup")
-  val persistent_storage = new Subcommand("persistent-storage") {
-    val setup = new Subcommand("setup")
-    val terminate = new Subcommand("terminate")
-  }
-  val cluster = new Subcommand("cluster") {
-    val terminate = new Subcommand("terminate") {
-      val clusterid = opt[String]("clusterid", required = true)
-    }
-  }
+class CommandRunner(args: AdminArguments, serviceManager: ServiceManager) {
 
   private[admin] def run() {
-    processCommands(subcommands)
+    processCommands(args.subcommands)
   }
 
   private def processCommands(subcommands: List[ScallopConf]) {
     subcommands.headOption match {
-      case Some(`setup`) => setupAll(serviceManager)
-      case Some(`persistent_storage`) => processPersistentStorageCommand(subcommands.tail)
-      case Some(`cluster`) => processClusterCommand(subcommands.tail)
-      case _ => printHelp()
+      case Some(args.setup) => setupAll(serviceManager)
+      case Some(args.persistentStorage) => processPersistentStorageCommand(subcommands.tail)
+      case Some(args.cluster) => processClusterCommand(subcommands.tail)
+      case _ => args.printHelp()
     }
   }
 
   private def processPersistentStorageCommand(subcommands: List[ScallopConf]) {
     if (subcommands.size == 1) subcommands.headOption match {
-      case Some(persistent_storage.setup) => PersistentStorage.setup(serviceManager)
-      case Some(persistent_storage.terminate) => PersistentStorage.terminate(serviceManager)
-      case _ => persistent_storage.printHelp()
-    } else persistent_storage.printHelp()
+      case Some(args.persistentStorage.setup) => PersistentStorage.setup(serviceManager)
+      case Some(args.persistentStorage.terminate) => PersistentStorage.terminate(serviceManager)
+      case _ => args.persistentStorage.printHelp()
+    } else args.persistentStorage.printHelp()
   }
 
   private def processClusterCommand(subcommands: List[ScallopConf]) {
     if (subcommands.size == 2) subcommands.headOption match {
-      case Some(cluster.terminate) =>
-        Cluster.terminate(serviceManager, ClusterId(cluster.terminate.clusterid()))
-      case _ => cluster.printHelp()
-    } else cluster.printHelp()
+      case Some(args.cluster.terminate) =>
+        Cluster.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId()))
+      case _ => args.cluster.printHelp()
+    } else args.cluster.printHelp()
   }
 
   /**

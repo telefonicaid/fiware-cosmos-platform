@@ -15,7 +15,7 @@ import os.path
 import time
 
 import cosmos.cli.config as c
-import cosmos.storage.webhdfs as webhdfs
+from cosmos.storage.connection import connect
 from cosmos.cli.tables import format_table
 from cosmos.cli.util import ExitWithError
 
@@ -32,14 +32,18 @@ UNITS = [
 ]
 
 
+def client_from_config(config):
+    return connect(config.api_key, config.api_secret, config.api_url)
+
+
 @c.with_config
 def put_file(args, config):
     """Upload a file to HDFS"""
-    client = webhdfs.client_from_config(config)
+    client = client_from_config(config)
     if args.remote_path.endswith('/'):
         target_path = args.remote_path
     else:
-        remote_type = client.path_type(args.remote_path)
+        remote_type = client._StorageConnection__client.path_type(args.remote_path)
         if remote_type == 'DIRECTORY':
             target_path = os.path.join(args.remote_path,
                                        os.path.split(args.local_file.name)[-1])
@@ -49,7 +53,7 @@ def put_file(args, config):
             raise ExitWithError(-1, "Path %s already exists" % args.remote_path)
         else:
             target_path = args.remote_path
-    client.put_file(args.local_file, target_path)
+    client._StorageConnection__client.put_file(args.local_file, target_path)
     print "%s successfully uploaded to %s" % (args.local_file.name, target_path)
     return 0
 
@@ -156,8 +160,8 @@ def format_statuses(statuses):
 @c.with_config
 def ls_command(args, config):
     """List directory files"""
-    client = webhdfs.client_from_config(config)
-    statuses = client.list_path(args.path)
+    client = client_from_config(config)
+    statuses = client._StorageConnection__client.list_path(args.path)
     if statuses is None:
         raise ExitWithError(404, "Directory %s not found" % args.path)
     for line in format_statuses(statuses):
@@ -183,9 +187,9 @@ def get_command(args, config):
         target_path = args.local_path
     if os.path.isfile(target_path):
         raise ExitWithError(-1, "Local file already exists")
-    client = webhdfs.client_from_config(config)
+    client = client_from_config(config)
     with open(target_path, "wb") as out_file:
-        size = client.get_file(args.remote_path, out_file)
+        size = client._StorageConnection__client.get_file(args.remote_path, out_file)
     print "%s bytes downloaded to %s" % (format_size(size), target_path)
 
 
@@ -200,8 +204,8 @@ def add_get_command(subparsers):
 @c.with_config
 def rm_command(args, config):
     """Delete a path or path tree"""
-    client = webhdfs.client_from_config(config)
-    deleted = client.delete_path(args.path, args.recursive)
+    client = client_from_config(config)
+    deleted = client._StorageConnection__client.delete_path(args.path, args.recursive)
     print "%s was %s deleted" % (args.path,
                                  "successfully" if deleted else "not")
 

@@ -25,7 +25,9 @@ from cosmos.cli.ssh import add_ssh_command
 from cosmos.cli.storage import add_storage_commands
 from cosmos.cli.tables import format_table
 from cosmos.cli.util import ExitWithError
-from cosmos.common.exceptions import ResponseError
+from cosmos.common.exceptions import (CosmosException, OperationError,
+                                      ResponseError,
+                                      UnsupportedApiVersionException)
 from cosmos.common.routes import Routes
 
 

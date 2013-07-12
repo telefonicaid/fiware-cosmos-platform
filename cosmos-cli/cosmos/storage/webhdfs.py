@@ -126,18 +126,3 @@ class WebHdfsClient(object):
             return False
         return (exception.get('RemoteException', {}).get('exception') ==
                 'ArrayIndexOutOfBoundsException')
-
-
-def client_from_config(config):
-    routes = Routes(config.api_url)
-    if not routes.api_version in SUPPORTED_VERSIONS:
-        raise UnsupportedApiVersionException(routes.api_version,
-                                             SUPPORTED_VERSIONS)
-    response = requests.get(routes.storage, auth=config.credentials)
-    if response.status_code != 200:
-        raise ResponseError("Cannot get WebHDFS details", response)
-    details = response.json()
-    log.info("Webhdfs at %s for user %s" % (details["location"],
-                                            details["user"]))
-    return WebHdfsClient(details["location"], details["user"])
-

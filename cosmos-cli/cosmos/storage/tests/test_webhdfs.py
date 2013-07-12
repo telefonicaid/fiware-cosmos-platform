@@ -17,7 +17,7 @@ import requests
 from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
-import cosmos.cli.webhdfs as webhdfs
+import cosmos.storage.webhdfs as webhdfs
 from cosmos.common.exceptions import (OperationError, ResponseError,
                                       UnsupportedApiVersionException)
 from cosmos.common.tests.util import mock_response

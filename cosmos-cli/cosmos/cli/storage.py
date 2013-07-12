@@ -15,7 +15,7 @@ import os.path
 import time
 
 import cosmos.cli.config as c
-import cosmos.cli.webhdfs as webhdfs
+import cosmos.storage.webhdfs as webhdfs
 from cosmos.cli.tables import format_table
 from cosmos.cli.util import ExitWithError
 

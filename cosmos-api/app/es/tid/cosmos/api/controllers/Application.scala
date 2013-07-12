@@ -27,14 +27,14 @@ import es.tid.cosmos.servicemanager.ServiceManagerComponent
  * Web application template to be mixed-in with its dependencies.
  */
 abstract class Application {
-  self: ServiceManagerComponent with OAuthClientComponent with CosmosProfileDaoComponent =>
+  this: ServiceManagerComponent with OAuthClientComponent with CosmosProfileDaoComponent =>
 
-  lazy val dao = self.cosmosProfileDao
+  lazy val dao = this.cosmosProfileDao
 
   lazy val controllers: Map[Class[Controller], Controller] = {
-    val sm = self.serviceManager()
+    val sm = this.serviceManager()
     controllerMap(
-      new Pages(self.oAuthClient(), sm, dao),
+      new Pages(this.oAuthClient(), sm, dao),
       new CosmosResource(),
       new ProfileResource(dao),
       new ClustersResource(sm, dao),
@@ -43,7 +43,7 @@ abstract class Application {
     )
   }
 
-  def services: ServiceManagerComponent with OAuthClientComponent = self
+  def services: ServiceManagerComponent with OAuthClientComponent = this
 
   private def controllerMap(controllers: Controller*) = Map(
     (for (controller <- controllers)

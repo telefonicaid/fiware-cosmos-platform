@@ -33,9 +33,6 @@ trait InfrastructureProvider {
    * infrastructure resources to satisfy the request, an error is returned with
    * ResourceExhaustedException wrapped.
    *
-   * @param namePrefix the prefix to prepend to the name of the newly created machines. E.g.,
-   *                   when 3 machines are requested with name prefix "foobar", their names would
-   *                   be "foobar0", "foobar1" and "foobar2".
    * @param profile the machine profile for the machines to be created.
    * @param numberOfMachines the amount of machines to be created.
    * @param bootstrapAction action to be performed on every host just after it starts running and
@@ -43,7 +40,6 @@ trait InfrastructureProvider {
    * @return a future which after success provides the sequence of newly created machines
    */
   def createMachines(
-      namePrefix: String,
       profile: MachineProfile.Value,
       numberOfMachines: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]]

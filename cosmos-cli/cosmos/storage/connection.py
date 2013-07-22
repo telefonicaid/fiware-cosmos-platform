@@ -9,10 +9,11 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
+import os
+
 import requests
 
-
-from cosmos.common.exceptions import (ResponseError,
+from cosmos.common.exceptions import (OperationError, ResponseError,
                                       UnsupportedApiVersionException)
 from cosmos.common.routes import Routes
 from cosmos.storage.webhdfs import WebHdfsClient
@@ -47,4 +48,31 @@ class StorageConnection(object):
     def __init__(self, webhdfs_client):
         self.__client = webhdfs_client
 
+    def upload_file(self, local_file, remote_path):
+        """Upload an open file to the persistent storage.
 
+        local_file must be an open file or stream supporting a name attribute.
+
+        If remote_path exists as a directory or ends in a trailing slash, the
+        file will be uploaded as a child file of the remote directory. Otherwise
+        it will be uploaded and renamed at the same time.  The remote path of
+        the upload is returned in any case.
+        """
+        remote_type = self.__client.path_type(remote_path)
+        if remote_type == 'FILE':
+            raise OperationError("Path %s already exists" % remote_path)
+        if remote_path.endswith('/') or remote_type == 'DIRECTORY':
+            target_path = os.path.join(remote_path,
+                                       os.path.split(local_file.name)[-1])
+        else:
+            target_path = remote_path
+        self.__client.put_file(local_file, target_path)
+        return target_path
+
+    def upload_filename(self, local_filename, remote_path):
+        """Upload a local file given by path.
+
+        See upload_file to learn about the detailed behavior when remote_path
+        ends with trailing slashes or exists on the remote end.
+        """
+        return self.upload_file(open(local_filename, 'rb'), remote_path)

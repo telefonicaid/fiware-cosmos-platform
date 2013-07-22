@@ -13,11 +13,12 @@ import unittest
 
 import requests
 from mock import MagicMock, patch
+from testfixtures import TempDirectory
 
-from cosmos.common.exceptions import (ResponseError,
+from cosmos.common.exceptions import (OperationError, ResponseError,
                                       UnsupportedApiVersionException)
 from cosmos.common.tests.util import mock_response
-from cosmos.storage.connection import connect
+from cosmos.storage.connection import connect, StorageConnection
 
 
 API_KEY='AL2jHQ25a1I3Bb4ZCUzs'
@@ -49,3 +50,56 @@ class ConnectionTest(unittest.TestCase):
         with patch('requests.get', MagicMock(return_value=response)):
             self.assertRaises(ResponseError, connect, API_KEY, API_SECRET,
                               API_URL)
+
+
+class StorageConnectionTest(unittest.TestCase):
+
+    def setUp(self):
+        self.client = MagicMock()
+        self.instance = StorageConnection(self.client)
+
+    def test_upload_filename(self):
+        with TempDirectory() as local_dir:
+            local_file = local_dir.write('file.txt', 'contents')
+            target_path = self.instance.upload_filename(
+                local_file, '/re/mote.txt')
+            self.assertEquals(target_path, '/re/mote.txt')
+            self.assertEquals(self.client.put_file.call_count, 1)
+            args = self.client.put_file.call_args[0]
+            self.assertEquals(args[0].readlines(), ['contents'])
+            args[0].close()
+            self.assertEquals(args[1], '/re/mote.txt')
+
+    def test_upload_file(self):
+        self.assertUploadFileToRemotePath('/re/mote.txt')
+
+    def test_upload_file_to_target_with_trailing_dash(self):
+        self.assertUploadFileToRemotePath('/re/mote/',
+                                          renaming_to='/re/mote/file.txt')
+
+    def test_upload_file_to_directory_target(self):
+        self.assertUploadFileToRemotePath('/re/mote',
+                                          renaming_to='/re/mote/file.txt',
+                                          target_type='DIRECTORY')
+
+    def test_upload_file_to_existing_path(self):
+        self.assertUploadFileToRemotePath('/re/mote/file.txt',
+                                          target_type='FILE',
+                                          raising=OperationError)
+
+    def assertUploadFileToRemotePath(self, remote_path, renaming_to=None,
+                                     target_type=None, raising=None):
+        expected_target = remote_path if renaming_to is None else renaming_to
+        self.client.path_type = MagicMock(return_value=target_type)
+        with TempDirectory() as local_dir:
+            with open(local_dir.write('file.txt', 'contents'), 'rb') as fd:
+                if raising is None:
+                    target_path = self.instance.upload_file(fd, remote_path)
+                    self.assertEquals(target_path, expected_target)
+                    self.client.put_file.assert_called_once_with(
+                        fd, expected_target)
+                else:
+                    self.assertRaises(raising, self.instance.upload_file,
+                                      fd, remote_path)
+        self.client.path_type.assert_called_once_with(remote_path)
+

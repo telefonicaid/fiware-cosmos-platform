@@ -40,20 +40,7 @@ def client_from_config(config):
 def put_file(args, config):
     """Upload a file to HDFS"""
     client = client_from_config(config)
-    if args.remote_path.endswith('/'):
-        target_path = args.remote_path
-    else:
-        remote_type = client._StorageConnection__client.path_type(args.remote_path)
-        if remote_type == 'DIRECTORY':
-            target_path = os.path.join(args.remote_path,
-                                       os.path.split(args.local_file.name)[-1])
-            log.info("Path %s is an existing directory, uploading to %s" %
-                     (args.remote_path, target_path))
-        elif remote_type == 'FILE':
-            raise ExitWithError(-1, "Path %s already exists" % args.remote_path)
-        else:
-            target_path = args.remote_path
-    client._StorageConnection__client.put_file(args.local_file, target_path)
+    target_path = client.upload_file(args.local_file, args.remote_path)
     print "%s successfully uploaded to %s" % (args.local_file.name, target_path)
     return 0
 

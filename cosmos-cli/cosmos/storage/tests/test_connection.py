@@ -86,6 +86,27 @@ class StorageConnectionTest(unittest.TestCase):
         self.assertUploadFileToRemotePath('/re/mote/file.txt',
                                           target_type='FILE',
                                           raising=OperationError)
+    def test_download_to_file(self):
+        file = MagicMock()
+        self.instance.download_to_file('/remote/file.txt', file)
+        self.client.get_file.assert_called_once_with('/remote/file.txt', file)
+
+    def test_download_to_filename(self):
+        with TempDirectory() as local_dir:
+            local_file = local_dir.getpath('file.txt')
+            self.assertDownloadToFilename(local_file)
+
+    def test_download_to_existing_directory(self):
+        with TempDirectory() as local_dir:
+            local_file = local_dir.makedir('dir')
+            self.assertDownloadToFilename(local_file,
+                                          renaming_to=local_file + '/file.txt')
+
+    def test_download_to_filename_with_trailing_slash(self):
+        with TempDirectory() as local_dir:
+            local_file = local_dir.getpath('dir') + '/'
+            self.assertRaises(IOError, self.instance.download_to_filename,
+                              '/remote/file.txt', local_file)
 
     def assertUploadFileToRemotePath(self, remote_path, renaming_to=None,
                                      target_type=None, raising=None):
@@ -102,4 +123,12 @@ class StorageConnectionTest(unittest.TestCase):
                     self.assertRaises(raising, self.instance.upload_file,
                                       fd, remote_path)
         self.client.path_type.assert_called_once_with(remote_path)
+
+    def assertDownloadToFilename(self, local_file, renaming_to=None):
+        target_file = local_file if renaming_to is None else renaming_to
+        self.instance.download_to_filename('/remote/file.txt', local_file)
+        self.assertEquals(self.client.get_file.call_count, 1)
+        args = self.client.get_file.call_args[0]
+        self.assertEquals('/remote/file.txt', args[0])
+        self.assertEquals(target_file, args[1].name)
 

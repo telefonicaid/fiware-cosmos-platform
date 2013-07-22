@@ -86,3 +86,29 @@ class StorageConnection(object):
         the returned listing.
         """
         return self.__client.list_path(path)
+
+    def download_to_file(self, remote_path, out_file):
+        """Download a file from the persistent storage to `out_file`, an open
+        output file. The number of downloaded bytes is returned.
+        """
+        return self.__client.get_file(remote_path, out_file)
+
+    def download_to_filename(self, remote_path, local_path):
+        """Download a file from the persistent storage to the local filesystem.
+
+        If the local path ends with trailing slash or is a directory the file is
+        downloaded as a file within `local_path`. Otherwise, `local_path` is
+        used as destination filename.
+
+        A tuple of the destination path and the downloaded bytes is returned.
+        """
+        if local_path.endswith('/') or os.path.isdir(local_path):
+            remote_filename = os.path.split(remote_path)[-1]
+            target_path = os.path.join(local_path, remote_filename)
+        else:
+            target_path = local_path
+        if os.path.isfile(target_path):
+            raise OperationException("Local file already exists")
+        with open(target_path, "wb") as out_file:
+            size = self.download_to_file(remote_path, out_file)
+        return (target_path, size)

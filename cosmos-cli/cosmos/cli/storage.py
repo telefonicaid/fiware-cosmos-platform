@@ -167,16 +167,9 @@ def add_ls_command(subparsers):
 @c.with_config
 def get_command(args, config):
     """Download a file from HDFS"""
-    if args.local_path.endswith('/') or os.path.isdir(args.local_path):
-        remote_filename = os.path.split(args.remote_path)[-1]
-        target_path = os.path.join(args.local_path, remote_filename)
-    else:
-        target_path = args.local_path
-    if os.path.isfile(target_path):
-        raise ExitWithError(-1, "Local file already exists")
     client = client_from_config(config)
-    with open(target_path, "wb") as out_file:
-        size = client._StorageConnection__client.get_file(args.remote_path, out_file)
+    (target_path, size) = client.download_to_filename(args.remote_path,
+                                                      args.local_path)
     print "%s bytes downloaded to %s" % (format_size(size), target_path)
 
 

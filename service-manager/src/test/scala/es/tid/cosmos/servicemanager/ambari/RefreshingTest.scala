@@ -65,7 +65,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       finalState() must equal(Running)
     }
 
-  it must "must fail refreshing a cluster that does not stabilize within grace period" in
+  it must "fail refreshing a cluster that does not stabilize within grace period" in
     new ExpectRefresh {
       val clusterIds = Seq()
       def clusterName = "unregistered"
@@ -77,7 +77,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       finalState() must be (failedWithIllegalState)
     }
 
-  it must "must refresh a cluster that stabilizes within grace period" in new ExpectRefresh {
+  it must "refresh a cluster that stabilizes within grace period" in new ExpectRefresh {
     val clusterIds = Seq()
     def clusterName = "unregistered"
     given(service.state).willReturn("INSTALLED").willReturn("STARTED")
@@ -89,7 +89,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
     finalState() must equal(Running)
   }
 
-  it must "must refresh a cluster in Terminated state if accessing its info returns 404 not found" in
+  it must "refresh a cluster in Terminated state if accessing its info returns 404 not found" in
     new ExpectRefresh {
       val clusterIds = Seq()
       def clusterName = "unregistered"
@@ -179,5 +179,4 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
           s"Unexpected state: Expected Failed(IllegalStateException(...) but got $oops", "")
     }
   }
-
 }

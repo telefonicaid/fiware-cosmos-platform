@@ -19,6 +19,7 @@ from cosmos.common.exceptions import (OperationError, ResponseError,
                                       UnsupportedApiVersionException)
 from cosmos.common.tests.util import mock_response
 from cosmos.storage.connection import connect, StorageConnection
+from cosmos.storage.webhdfs import DirectoryListing
 
 
 API_KEY='AL2jHQ25a1I3Bb4ZCUzs'
@@ -108,6 +109,25 @@ class StorageConnectionTest(unittest.TestCase):
             self.assertRaises(IOError, self.instance.download_to_filename,
                               '/remote/file.txt', local_file)
 
+    def test_download_to_filename_already_existing(self):
+        with TempDirectory() as local_dir:
+            local_file = local_dir.write('file.txt', 'contents')
+            self.assertRaises(OperationError,
+                              self.instance.download_to_filename,
+                              '/remote/file.txt', local_file)
+
+    def test_list_path(self):
+        self.assertDelegation(self.instance.list_path,
+                              self.client.list_path,
+                              args=['/remote/dir'],
+                              retval=DirectoryListing(exists=False))
+
+    def test_delete_path(self):
+        self.assertDelegation(self.instance.delete_path,
+                              self.client.delete_path,
+                              args=['/remote/file.txt'],
+                              retval=True)
+
     def assertUploadFileToRemotePath(self, remote_path, renaming_to=None,
                                      target_type=None, raising=None):
         expected_target = remote_path if renaming_to is None else renaming_to
@@ -131,4 +151,9 @@ class StorageConnectionTest(unittest.TestCase):
         args = self.client.get_file.call_args[0]
         self.assertEquals('/remote/file.txt', args[0])
         self.assertEquals(target_file, args[1].name)
+
+    def assertDelegation(self, method, delegated_method, args=[], retval=None):
+        delegated_method.return_value = retval
+        self.assertEquals(method(*args), retval)
+        delegated_method.assert_called_once_with(*args)
 

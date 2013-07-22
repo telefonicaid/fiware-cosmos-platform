@@ -185,7 +185,7 @@ def add_get_command(subparsers):
 def rm_command(args, config):
     """Delete a path or path tree"""
     client = client_from_config(config)
-    deleted = client._StorageConnection__client.delete_path(args.path, args.recursive)
+    deleted = client.delete_path(args.path, args.recursive)
     print "%s was %s deleted" % (args.path,
                                  "successfully" if deleted else "not")
 

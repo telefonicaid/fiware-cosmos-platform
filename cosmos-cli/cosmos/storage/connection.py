@@ -108,7 +108,14 @@ class StorageConnection(object):
         else:
             target_path = local_path
         if os.path.isfile(target_path):
-            raise OperationException("Local file already exists")
+            raise OperationError("Local file already exists")
         with open(target_path, "wb") as out_file:
             size = self.download_to_file(remote_path, out_file)
         return (target_path, size)
+
+    def delete_path(self, path):
+        """Delete a file of the persistent storage.
+        Returns whether the path was deleted as boolean value.
+        """
+        return self.__client.delete_path(path)
+

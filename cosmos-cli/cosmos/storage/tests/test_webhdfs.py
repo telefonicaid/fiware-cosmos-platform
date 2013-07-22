@@ -18,9 +18,66 @@ from mock import MagicMock, patch
 from testfixtures import TempDirectory
 
 import cosmos.storage.webhdfs as webhdfs
+from cosmos.storage.webhdfs import DirectoryListing
 from cosmos.common.exceptions import (OperationError, ResponseError,
                                       UnsupportedApiVersionException)
 from cosmos.common.tests.util import mock_response
+
+
+class DirectoryListingTest(unittest.TestCase):
+
+    def setUp(self):
+        self.unexistingDirListing = DirectoryListing(exists=False)
+        self.emptyDirListing = DirectoryListing()
+        file1 = {
+          "accessTime": 1320171722771,
+          "blockSize": 33554432,
+          "group": "supergroup",
+          "length": 24930,
+          "modificationTime": 1320171722771,
+          "owner": "webuser",
+          "pathSuffix": "a.patch",
+          "permission": "644",
+          "replication": 1,
+          "type": "FILE"
+        }
+        file2 = {
+          "accessTime": 0,
+          "blockSize": 0,
+          "group": "supergroup",
+          "length": 0,
+          "modificationTime": 1320895981256,
+          "owner": "szetszwo",
+          "pathSuffix": "bar",
+          "permission": "711",
+          "replication": 0,
+          "type": "DIRECTORY"
+        }
+        self.oneFileListing = DirectoryListing(statuses=[file1])
+        self.twoFilesListing = DirectoryListing(statuses=[file1, file2])
+
+    def test_listing_keep_track_of_directory_existence(self):
+        self.assertFalse(self.unexistingDirListing.exists)
+        self.assertTrue(self.emptyDirListing.exists)
+        self.assertTrue(self.twoFilesListing.exists)
+
+    def test_listing_is_iterable(self):
+        self.assertIterableLength(self.unexistingDirListing, 0)
+        self.assertIterableLength(self.emptyDirListing, 0)
+        self.assertIterableLength(self.twoFilesListing, 2)
+
+    def test_listing_has_readable_str(self):
+        self.assertEquals(str(self.unexistingDirListing),
+                          'Listing(unexisting path)')
+        self.assertEquals(str(self.emptyDirListing),
+                          'Listing(0 files)')
+        self.assertEquals(str(self.oneFileListing),
+                          'Listing(1 file)')
+        self.assertEquals(str(self.twoFilesListing),
+                          'Listing(2 files)')
+
+    def assertIterableLength(self, iterable, expectedLenght):
+        self.assertEquals(sum(1 for _ in iterable), expectedLenght)
 
 
 class WebHdfsClientTest(unittest.TestCase):
@@ -72,15 +129,17 @@ class WebHdfsClientTest(unittest.TestCase):
                                     '/remote/path')
 
     def test_list_path(self):
+        statuses = [
+            {"pathSuffix": "a.txt"},
+            {"pathSuffix": "b.txt"}
+        ]
         self.client.get.return_value = mock_response(json={
             "FileStatuses": {
-                "FileStatus": [
-                    {"pathSuffix": "a.txt"},
-                    {"pathSuffix": "b.txt"}
-                ]
+                "FileStatus": statuses
             }
         })
-        statuses = self.instance.list_path('/some/path')
+        self.assertEquals(self.instance.list_path('/some/path').statuses,
+                          statuses)
         self.client.get.assert_called_with(
             self.namenode_base + '/some/path',
             params={'user.name': 'user1', 'op': 'LISTSTATUS'})
@@ -88,7 +147,7 @@ class WebHdfsClientTest(unittest.TestCase):
     def test_list_nonexistent_path(self):
         self.client.get.return_value = mock_response(status_code=404)
         listing = self.instance.list_path('/some/path')
-        self.assertEquals(listing, None)
+        self.assertFalse(listing.exists)
 
     def test_get_file(self):
         self.client.get.return_value = mock_response(raw=StringIO("hello"))

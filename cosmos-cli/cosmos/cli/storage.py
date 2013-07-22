@@ -148,12 +148,12 @@ def format_statuses(statuses):
 def ls_command(args, config):
     """List directory files"""
     client = client_from_config(config)
-    statuses = client._StorageConnection__client.list_path(args.path)
-    if statuses is None:
+    listing = client.list_path(args.path)
+    if not listing.exists:
         raise ExitWithError(404, "Directory %s not found" % args.path)
-    for line in format_statuses(statuses):
+    for line in format_statuses(listing.statuses):
         print line.rstrip()
-    if not statuses:
+    if not listing.statuses:
         print "No directory entries"
 
 

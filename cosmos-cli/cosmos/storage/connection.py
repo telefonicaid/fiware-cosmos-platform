@@ -76,3 +76,13 @@ class StorageConnection(object):
         ends with trailing slashes or exists on the remote end.
         """
         return self.upload_file(open(local_filename, 'rb'), remote_path)
+
+    def list_path(self, path):
+        """Lists a directory or check a file status. Returns a directory
+        listing that you can iterate for the status objects (as defined in
+        http://hadoop.apache.org/docs/r1.0.4/webhdfs.html#FileStatus).
+
+        Directory existence can be check with the `exists` attribute of
+        the returned listing.
+        """
+        return self.__client.list_path(path)

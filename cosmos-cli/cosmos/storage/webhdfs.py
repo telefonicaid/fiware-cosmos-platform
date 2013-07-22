@@ -23,6 +23,23 @@ SUPPORTED_VERSIONS = [1]
 BUFFER_SIZE = 4096
 
 
+class DirectoryListing(object):
+    """Returned when an existing or non-existing directory is listed"""
+
+    def __init__(self, statuses=[], exists=True):
+        self.statuses = statuses
+        self.exists = exists
+
+    def __iter__(self):
+        return self.statuses.__iter__()
+
+    def __str__(self):
+        if not self.exists:
+            return 'Listing(unexisting path)'
+        size = len(self.statuses)
+        return 'Listing(%d file%s)' % (size, '' if size == 1 else 's')
+
+
 class WebHdfsClient(object):
 
     def __init__(self, webhdfs_uri, username, client=requests):
@@ -60,17 +77,15 @@ class WebHdfsClient(object):
         return response.headers['Location']
 
     def list_path(self, path):
-        """Lists a directory or check a file status. Returns a list of status
-        objects as defined in
-        http://hadoop.apache.org/docs/r1.0.4/webhdfs.html#FileStatus
-        or None if the path does not exists.
-        """
+        """Lists a directory or check a file status. Returns an instance
+        of DirectoryListing."""
         r = self.client.get(self.to_http(path),
                             params=self.opParams('LISTSTATUS'))
         if r.status_code == 200:
-            return r.json()["FileStatuses"]["FileStatus"]
+            return DirectoryListing(
+                statuses=r.json()["FileStatuses"]["FileStatus"])
         elif r.status_code == 404:
-            return None
+            return DirectoryListing(exists=False)
         else:
             raise ResponseError('Cannot list directory %s' % path, r)
 

@@ -13,7 +13,7 @@ import unittest
 
 from mock import MagicMock, patch
 
-from cosmos.cli.storage import add_storage_commands
+from cosmos.cli.storage import add_storage_commands, StorageCommand
 
 
 class StorageCommandsTest(unittest.TestCase):

@@ -14,7 +14,7 @@ import logging as log
 import os.path
 import time
 
-import cosmos.cli.config as c
+from cosmos.cli.config import load_config
 from cosmos.storage.connection import connect
 from cosmos.cli.tables import format_table
 from cosmos.cli.util import ExitWithError
@@ -32,15 +32,26 @@ UNITS = [
 ]
 
 
-def client_from_config(config):
-    return connect(config.api_key, config.api_secret, config.api_url)
+class StorageCommand(object):
+    """Template class for storage commands. It takes care of configuration
+    loading and connection initialization.
+    """
+
+    def __init__(self, command):
+        """Decorates a function that takes the CLI args, the config and a
+        storage connection and returns an exit code."""
+        self.__command = command
+
+    def __call__(self, args):
+        """Callable interface of this command"""
+        config = load_config(args)
+        conn = connect(config.api_key, config.api_secret, config.api_url)
+        return self.__command(args, config, conn)
 
 
-@c.with_config
-def put_file(args, config):
+def put_file(args, config, conn):
     """Upload a file to HDFS"""
-    client = client_from_config(config)
-    target_path = client.upload_file(args.local_file, args.remote_path)
+    target_path = conn.upload_file(args.local_file, args.remote_path)
     print "%s successfully uploaded to %s" % (args.local_file.name, target_path)
     return 0
 
@@ -50,7 +61,7 @@ def add_put_command(subparsers):
     put_parser.add_argument('local_file', type=argparse.FileType('r'),
                             help='local file to upload')
     put_parser.add_argument('remote_path', help='target remote path')
-    put_parser.set_defaults(func=put_file)
+    put_parser.set_defaults(func=StorageCommand(put_file))
 
 
 def format_group(group_perm):
@@ -144,11 +155,9 @@ def format_statuses(statuses):
     )
 
 
-@c.with_config
-def ls_command(args, config):
+def ls_command(args, config, conn):
     """List directory files"""
-    client = client_from_config(config)
-    listing = client.list_path(args.path)
+    listing = conn.list_path(args.path)
     if not listing.exists:
         raise ExitWithError(404, "Directory %s not found" % args.path)
     for line in format_statuses(listing.statuses):
@@ -161,15 +170,13 @@ def add_ls_command(subparsers):
     ls_parser = subparsers.add_parser(
         'ls', help='list directory in the persistent storage')
     ls_parser.add_argument('path', help='remote path to list')
-    ls_parser.set_defaults(func=ls_command)
+    ls_parser.set_defaults(func=StorageCommand(ls_command))
 
 
-@c.with_config
-def get_command(args, config):
+def get_command(args, config, conn):
     """Download a file from HDFS"""
-    client = client_from_config(config)
-    (target_path, size) = client.download_to_filename(args.remote_path,
-                                                      args.local_path)
+    (target_path, size) = conn.download_to_filename(args.remote_path,
+                                                    args.local_path)
     print "%s bytes downloaded to %s" % (format_size(size), target_path)
 
 
@@ -178,14 +185,12 @@ def add_get_command(subparsers):
         'get', help='list directory in the persistent storage')
     get_parser.add_argument('remote_path', help='remote path to download')
     get_parser.add_argument('local_path', help='local_path')
-    get_parser.set_defaults(func=get_command)
+    get_parser.set_defaults(func=StorageCommand(get_command))
 
 
-@c.with_config
-def rm_command(args, config):
+def rm_command(args, config, conn):
     """Delete a path or path tree"""
-    client = client_from_config(config)
-    deleted = client.delete_path(args.path, args.recursive)
+    deleted = conn.delete_path(args.path, args.recursive)
     print "%s was %s deleted" % (args.path,
                                  "successfully" if deleted else "not")
 
@@ -196,7 +201,7 @@ def add_rm_command(subparsers):
     get_parser.add_argument('--recursive', '-r', action='store_true',
                             help='recursive delete')
     get_parser.add_argument('path', help='remote path to delete')
-    get_parser.set_defaults(func=rm_command)
+    get_parser.set_defaults(func=StorageCommand(rm_command))
 
 
 def add_storage_commands(subparsers):

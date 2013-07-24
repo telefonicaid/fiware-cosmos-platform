@@ -30,16 +30,19 @@ import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.rest._
 
 class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatchers {
+
+  val TestTimeout = 5 seconds
+
   "A refreshable" must "refresh no clusters when provisioner offers none" in new NoRefresh {
     val clusterIds = Seq()
     given(provisioner.listClusterNames).willReturn(successful(Seq()))
-    get(refresh())
+    refresh() must runUnder(TestTimeout)
   }
 
   it must "not refresh when provisioner yields no new clusters" in new NoRefresh {
     val clusterIds = Seq(ClusterId("registeredCluster"))
     given(provisioner.listClusterNames).willReturn(successful(Seq("registeredCluster")))
-    get(refresh())
+    refresh() must runUnder(TestTimeout)
   }
 
   it must "refresh cluster state to Running if all services are in their Running state" in
@@ -52,7 +55,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       def registerCluster(description: MutableClusterDescription) {
         checkDescriptionInfo(description)
       }
-      get(refresh())
+      refresh() must runUnder(TestTimeout)
       finalState() must equal(Running)
     }
 
@@ -66,7 +69,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       def registerCluster(description: MutableClusterDescription) {
         checkDescriptionInfo(description)
       }
-      get(refresh())
+      refresh() must runUnder(TestTimeout)
       finalState() must equal(Running)
     }
 
@@ -80,7 +83,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       def registerCluster(description: MutableClusterDescription) {
         checkDescriptionInfo(description)
       }
-      evaluating (get(refresh())) must produce [IllegalStateException]
+      refresh() must (runUnder (TestTimeout) and eventuallyFailWith [IllegalStateException])
       finalState() must be (failedWithIllegalState)
     }
 
@@ -94,7 +97,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       def registerCluster(description: MutableClusterDescription) {
         checkDescriptionInfo(description)
       }
-      evaluating (get(refresh())) must produce [IllegalStateException]
+      refresh() must (runUnder (TestTimeout) and eventuallyFailWith [IllegalStateException])
       finalState() must be (failedWithIllegalState)
     }
 
@@ -108,7 +111,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       checkDescriptionInfo(description)
       description.view.state must equal(Provisioning)
     }
-    get(refresh())
+    refresh() must runUnder(TestTimeout)
     finalState() must equal(Running)
   }
 
@@ -122,14 +125,14 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       def registerCluster(description: MutableClusterDescription) {
         checkDescriptionInfo(description)
       }
-      get(refresh())
+      refresh() must runUnder(TestTimeout)
       finalState(attempts = 1 to 5) must equal (Terminated)
     }
 
   trait BaseRefreshable extends Refreshing {
-    val infrastructureProvider = mock[InfrastructureProvider]
-    val provisioner = mock[ClusterProvisioner]
-    val refreshGracePeriod = 3000.milliseconds
+    override val infrastructureProvider = mock[InfrastructureProvider]
+    override val provisioner = mock[ClusterProvisioner]
+    override val refreshGracePeriod = 3000.milliseconds
     val clientOnlyDescription = new ServiceDescription {
       val components: Seq[ComponentDescription] = Seq(
         ComponentDescription("", isMaster = true, isClient = true),
@@ -142,7 +145,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
         ComponentDescription("", isMaster = true, isClient = false))
       val name: String = "NormalService"
     }
-    val serviceDescriptions = Seq(clientOnlyDescription, normalDescription)
+    override val serviceDescriptions = Seq(clientOnlyDescription, normalDescription)
   }
 
   trait NoRefresh extends BaseRefreshable {

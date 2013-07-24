@@ -97,6 +97,7 @@ case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirt
       uuid = UUID.nameUUIDFromBytes(domain.getUUID.map(_.toByte)),
       name = domain.getName,
       isActive = domain.isActive > 0,
+      profile = properties.profile,
       hostname = properties.domainHostname,
       ipAddress = properties.domainIpAddress)
 }

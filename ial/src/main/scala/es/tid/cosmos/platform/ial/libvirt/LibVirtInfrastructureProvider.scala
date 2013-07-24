@@ -118,7 +118,7 @@ class LibVirtInfrastructureProvider(
     new MachineState(
       Id(domain.uuid),
       domain.name,
-      server.properties().profile,
+      domain.profile,
       domainStatus(domain),
       domain.hostname,
       domain.ipAddress)

@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.platform.ial.libvirt
 
+import es.tid.cosmos.platform.ial.MachineProfile
+
 import java.util.UUID
 
 /**
@@ -20,6 +22,7 @@ case class DomainProperties(
     uuid: UUID,
     name: String,
     isActive: Boolean,
+    profile: MachineProfile.Value,
     hostname: String,
     ipAddress: String)
 

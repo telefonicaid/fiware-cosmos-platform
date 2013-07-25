@@ -22,5 +22,5 @@ object MapReduce extends ServiceWithConfigurationFile {
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription("JOBTRACKER", isMaster = true),
     ComponentDescription("TASKTRACKER", isMaster = false),
-    ComponentDescription("MAPREDUCE_CLIENT", isMaster = true))
+    ComponentDescription("MAPREDUCE_CLIENT", isMaster = true, isClient = true))
 }

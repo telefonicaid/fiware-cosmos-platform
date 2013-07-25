@@ -89,4 +89,6 @@ object ConfigurationBundle {
 
   def apply(services: ServiceConfiguration*): ConfigurationBundle =
     ConfigurationBundle(None, None, services.toList)
+
+  val NoConfiguration = ConfigurationBundle(None, None, Nil)
 }

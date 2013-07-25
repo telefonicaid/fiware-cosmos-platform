@@ -14,7 +14,6 @@ package es.tid.cosmos.servicemanager
 import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{promise, Future}
-import scala.math.max
 
 import es.tid.cosmos.servicemanager.ambari.machines._
 import es.tid.cosmos.platform.ial.MachineState

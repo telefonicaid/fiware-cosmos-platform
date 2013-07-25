@@ -66,7 +66,7 @@ class AmbariServiceManager(
   override def services(user: ClusterUser): Seq[ServiceDescriptionType] =
     Seq(Hdfs, MapReduce, Oozie, new CosmosUserService(Seq(user)))
 
-  override val serviceDescriptions: Seq[ServiceDescription] =
+  override val serviceDescriptions: Seq[AmbariServiceDescription] =
     Seq(Hdfs, MapReduce, Oozie, CosmosUserService)
 
   /**

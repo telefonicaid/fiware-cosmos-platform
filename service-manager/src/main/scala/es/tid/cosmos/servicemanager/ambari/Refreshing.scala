@@ -20,9 +20,10 @@ import com.typesafe.scalalogging.slf4j.Logging
 import dispatch.StatusCode
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.rest.{Service, ClusterProvisioner, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest._
 import es.tid.cosmos.platform.ial.InfrastructureProvider
-import es.tid.cosmos.servicemanager.ambari.services.Hdfs
+import es.tid.cosmos.servicemanager.ambari.services.{AmbariServiceDescription, StartedService, Hdfs}
+import es.tid.cosmos.servicemanager.RequestException
 
 /**
  * Trait for refreshing cluster state by picking up clusters from
@@ -34,11 +35,12 @@ trait Refreshing extends Refreshable with Logging {
   protected def infrastructureProvider: InfrastructureProvider
   protected def provisioner: ClusterProvisioner
   protected def refreshGracePeriod: FiniteDuration
+  /** Sequence of known cluster ids */
   protected def clusterIds: Seq[ClusterId]
   protected def registerCluster(description: MutableClusterDescription)
 
   /** Services that should be up to consider the cluster ready */
-  val serviceDescriptions: Seq[ServiceDescription]
+  val serviceDescriptions: Seq[AmbariServiceDescription]
 
   /**
    * Refresh the clusters state by querying the provisioner for unregistered clusters
@@ -55,27 +57,25 @@ trait Refreshing extends Refreshable with Logging {
       _ <- Future.traverse(unregisteredClusters)(register)
     } yield ()
 
-  private def stateFrom(service: Service): ClusterState = {
-    val StartedAmbariState = "STARTED"
-    val InstalledAmbariState = "INSTALLED"
-
-    val expectedState = serviceDescriptions
+  private def isServiceRunning(service: Service): Boolean = {
+    val serviceDescription = serviceDescriptions
       .find(_.name == service.name)
-      .collect({
-        case desc if desc.components.forall(_.isClient) => InstalledAmbariState
-      }).getOrElse(StartedAmbariState)
-
-    if (expectedState == service.state) Running
-    else Provisioning
+    val runningStateForService = serviceDescription
+      .map(_.runningState)
+      .getOrElse(StartedService)
+    runningStateForService.toString == service.state
   }
 
-  private def stateFrom(services: Seq[Service]): ClusterState =
-    if (services.map(stateFrom).forall(Running ==)) Running else Provisioning
+  private def stateFrom(services: Seq[Service]) =
+    if (services.forall(isServiceRunning)) Running else Provisioning
 
   private def state(cluster: Cluster): Future[ClusterState] = {
-    val state_> = for (services <- Future.traverse(cluster.serviceNames)(cluster.getService))
-      yield stateFrom(services)
-    state_>.recover { case RequestException(_, _, StatusCode(404)) => Terminated }
+    val state_> = for {
+      services <- Future.traverse(cluster.serviceNames)(cluster.getService)
+    } yield stateFrom(services)
+    state_>.recover {
+      case RequestException(_, _, StatusCode(404)) => Terminated
+    }
   }
 
   private def resolveState(

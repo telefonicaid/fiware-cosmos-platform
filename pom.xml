@@ -51,7 +51,13 @@
                         <exclude>**/parts/**</exclude>
                         <exclude>**/resources/**/*</exclude>
                         <exclude>**/target/**</exclude>
+                        <exclude>**/*_third_party/**</exclude>
+                        <exclude>deployment/puppet/modules/openvz/**</exclude>
                     </excludes>
+                    <mapping>
+                        <pp>SCRIPT_STYLE</pp>
+                        <yaml>SCRIPT_STYLE</yaml>
+                    </mapping>
                 </configuration>
             </plugin>
             <plugin>

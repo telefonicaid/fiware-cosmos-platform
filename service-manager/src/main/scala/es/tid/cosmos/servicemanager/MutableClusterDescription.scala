@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager
 
 import java.net.URI
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{promise, Future}
 
 import es.tid.cosmos.servicemanager.ambari.machines._
 import es.tid.cosmos.platform.ial.MachineState
@@ -57,7 +57,15 @@ class MutableClusterDescription(
     }
   }
 
-  @volatile var state: ClusterState = Provisioning
+  @volatile private var _state: ClusterState = Provisioning
+  @volatile private var nextState_> = promise[ClusterState]
+
+  def state = _state
+  def state_=(newState: ClusterState) = synchronized {
+    _state = newState
+    nextState_>.success(newState)
+    nextState_> = promise[ClusterState]
+  }
 
   /**
    * Signals that the cluster is entering termination
@@ -74,6 +82,39 @@ class MutableClusterDescription(
 
     termination_>.onFailure({case err => { state = Failed(err) }})
   }
+
+  /**
+   * Future next state of the cluster
+   */
+  def nextState: Future[ClusterState] = nextState_>.future
+
+  /**
+   * Future to be fulfilled whenever the cluster reaches a given target state.
+   *
+   * @param targetState     A predicate indicating whether expected state is reached
+   * @param maxTransitions  Maximum transitions allowed. Zero means unlimited.
+   * @return                Future to wait for targetState
+   */
+  def whenInState(targetState: ClusterState => Boolean, maxTransitions: Int): Future[Unit] =
+    synchronized {
+      if (targetState(state)) Future.successful(())
+      else nextState.flatMap(state => (maxTransitions, targetState(state)) match {
+        case (_, true) => Future.successful(())
+        case (1, _) => throw new IllegalStateException(s"Max transitions to reach target state")
+        case (0, _) => whenInState(targetState, 0)
+        case _ => whenInState(targetState, maxTransitions - 1)
+      })
+    }
+
+  /**
+   * Future to be fulfilled whenever the cluster reaches a given target state.
+   *
+   * @param targetState     The state expected to be reached
+   * @param maxTransitions  Maximum transitions allowed. Zero means unlimited.
+   * @return                Future to wait for targetState
+   */
+  def whenInState(targetState: ClusterState, maxTransitions: Int = 0): Future[Unit] =
+    whenInState(state => state == targetState, maxTransitions)
 
   creation_>.onSuccess({case _ => state = Running})
   creation_>.onFailure({case err => { state = Failed(err) }})

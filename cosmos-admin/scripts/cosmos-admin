@@ -21,4 +21,4 @@ for i in `find $BASEDIR | grep "\.jar"`
 do
     CP="$i:$CP"
 done
-java -classpath $CP -Dconfig.file=/opt/pdi-cosmos/etc/cosmos-api.conf es.tid.cosmos.admin.Main $1
+java -classpath $CP -Dconfig.file=/opt/pdi-cosmos/etc/cosmos-api.conf es.tid.cosmos.admin.Main "$@"

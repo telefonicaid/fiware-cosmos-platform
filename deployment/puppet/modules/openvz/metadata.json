@@ -1,0 +1,28 @@
+{
+  "dependencies": [
+
+  ],
+  "name": "carlasouza-virt",
+  "author": "Carla Souza",
+  "license": "GPLv3",
+  "version": "1.0.0",
+  "checksums": {
+    "lib/facter/virt_libvirt.rb": "05f020f10c4ec589a92fab9cb7137053", 
+    "lib/puppet/feature/libvirt.rb": "3c6bbc5d7e9d7aeac9778bd2f5661b1e", 
+    "lib/puppet/type/virt.rb": "f607ec09a86f5ffee63c640b955824d2", 
+    "lib/puppet/provider/virt/openvz.rb": "fa974059dcb562086968fe16a8be79fe", 
+    "lib/puppet/provider/virt/libvirt.rb": "3ca2691d30600ca8ef043ad13a101584", 
+    "manifests/params.pp": "da1889612e54556a72ee0c440fcd632a", 
+    "manifests/ve.pp": "8fbc9f81c8f353d6ea8eda0f261c521a", 
+    "manifests/init.pp": "7682456972b8f6aef53a6353364da1cc", 
+    "templates/qemu_xml.erb": "9bcc43c142e2b6be6814ec59ed5b0956", 
+    "metadata.json": "62effc97758237bf1695661fcc600ef9", 
+    "README.markdown": "6b1cb0be428382eabe8692d2a3871f78", 
+    "files/vz.conf": "9c5260b042975d18c944e8d7e0a0b095", 
+    "examples/virt-example.pp": "e7520ac93dd42093195796b6b87bbca8"
+  },
+  "types": [
+
+  ],
+  "source": ""
+}

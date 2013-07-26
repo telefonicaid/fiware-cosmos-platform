@@ -11,4 +11,4 @@
 
 package es.tid.cosmos.servicemanager
 
-case class ComponentDescription(name: String, isMaster: Boolean)
+case class ComponentDescription(name: String, isMaster: Boolean, isClient: Boolean = false)

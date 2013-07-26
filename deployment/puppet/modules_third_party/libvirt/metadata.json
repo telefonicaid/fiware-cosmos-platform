@@ -1,0 +1,29 @@
+{
+  "license": "Apache 2.0",
+  "source": "git://github.com/thias/puppet-modules/modules/libvirt",
+  "dependencies": [
+
+  ],
+  "project_page": "http://glee.thias.es/puppet",
+  "checksums": {
+    "README": "598a03b6c620fdc420e5763def0ba901",
+    "manifests/init.pp": "eedbca8234e5361a04d5a68b2737868e",
+    "templates/libvirtd.conf.orig": "4df72874d749ab9e6e6e030feaf83f00",
+    "LICENSE": "6eb74cb06de37b55366fe13fe01a8476",
+    "ChangeLog": "92a53306b37c05d2795c567743cfc95e",
+    "tests/init.pp": "54c7677bd28d1a6290a92f9d02459d15",
+    "templates/libvirtd.conf.erb": "6bcd57db9c13926e8f9d3d0915ae15f7",
+    "templates/lxc.conf.orig": "83460b0682e1f90f06e028d6606ad6c5",
+    "templates/qemu.conf.orig": "0d8fb392b0b4840ede79e2f74366fe6b",
+    "templates/libvirt.conf.orig": "de4153ce1fd66c647bd634d65d3713ac",
+    "Modulefile": "7b9f18102ed472fcfaed3d91243689a0"
+  },
+  "types": [
+
+  ],
+  "description": "Install, configure and enable libvirt.",
+  "summary": "Libvirt virtualization API and capabilities",
+  "name": "thias-libvirt",
+  "author": "Matthias Saou",
+  "version": "0.0.1"
+}

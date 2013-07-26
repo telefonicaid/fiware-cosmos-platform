@@ -23,7 +23,7 @@ class OozieTest extends FlatSpec with MustMatchers  {
     description.components must (
       have length (2) and
       contain(ComponentDescription("OOZIE_SERVER", isMaster = true)) and
-      contain(ComponentDescription("OOZIE_CLIENT", isMaster = true)))
+      contain(ComponentDescription("OOZIE_CLIENT", isMaster = true, isClient = true)))
     val contributions = description.contributions(Map(
       ConfigurationKeys.MasterNode -> "aMasterNodeName",
       ConfigurationKeys.MaxMapTasks -> "10",

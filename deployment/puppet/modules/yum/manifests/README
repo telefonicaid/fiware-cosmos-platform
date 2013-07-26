@@ -1,0 +1,2 @@
+Attention: since old versions of facter (<1.7.1) don't come with the fact "operatingsystemmajrelease", we create a hack in yum::variables and don't use the global variable $::operatingsystemmajrelease but the local one $operatingsystemmajrelease
+Xavi

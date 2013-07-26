@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser, ComponentDescription}
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, ServiceConfiguration, ConfigurationBundle}
+import es.tid.cosmos.servicemanager.{ClusterUser, ComponentDescription}
+import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.util.SshKeyGenerator
 
 /**
@@ -46,11 +46,11 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescriptio
   }
 }
 
-object CosmosUserService extends ServiceDescription {
+object CosmosUserService extends AmbariServiceDescription with NoConfigurationContribution {
   override val name: String = "COSMOS_USER"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("USER_MASTER_MANAGER", isMaster = true),
-    ComponentDescription("USER_SLAVE_MANAGER", isMaster = false)
+    ComponentDescription("USER_MASTER_MANAGER", isMaster = true, isClient = true),
+    ComponentDescription("USER_SLAVE_MANAGER", isMaster = false, isClient = true)
   )
 }

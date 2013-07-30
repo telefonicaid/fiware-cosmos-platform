@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import java.net.URI
+import scala.concurrent.promise
 import scala.concurrent.Future._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -154,8 +155,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
     given(host.name).willReturn(hostName)
     given(infrastructureProvider.assignedMachines(Seq(hostName))).willReturn(cluster_machines_>)
 
-    @volatile
-    private var registeredCluster: Option[MutableClusterDescription] = None
+    private val registeredCluster = promise[MutableClusterDescription]()
 
     def registerCluster(description: MutableClusterDescription) {
       description must (
@@ -164,19 +164,18 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
           have ('size (1)) and
           have ('machines_> (cluster_machines_>))
         )
-      description.deployment_>.onComplete(_ => registeredCluster = Some(description))
+      registeredCluster.success(description)
       description.nameNode_> must eventually (be (new URI(s"hdfs://$hostName:50070")))
     }
 
     def stateIsReached(state: ClusterState) =
-      registeredCluster.get.whenInState(state) must runUnder(TestTimeout)
+      registeredCluster.future.flatMap(_.whenInState(state)) must runUnder(TestTimeout)
 
     def failedStateIsReachedWithIllegalState = {
-      val description = registeredCluster.get
-      val failedStateReached_> = description.whenInState(
-        failedWithIllegalState andThen (_.matches),
-        maxTransitions = 0
-      )
+      val failedStateReached_> = for {
+        description <- registeredCluster.future
+        _ <- description.whenInState(failedWithIllegalState andThen (_.matches), maxTransitions = 0)
+      } yield ()
       failedStateReached_> must runUnder(TestTimeout)
     }
   }

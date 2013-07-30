@@ -18,7 +18,7 @@ private[admin] object PersistentStorage {
   def setup(serviceManager: ServiceManager) = {
     if (hasPersistentStorage(serviceManager)) {
       println("Persistent Storage found. Not changing anything...")
-      false
+      true
     } else {
       println("Persistent Storage not found. Deploying...")
       Util.waitUntilReady(serviceManager.deployPersistentHdfsCluster())

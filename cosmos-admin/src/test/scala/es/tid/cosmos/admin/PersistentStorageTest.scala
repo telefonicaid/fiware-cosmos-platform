@@ -58,7 +58,7 @@ class PersistentStorageTest extends FlatSpec with MustMatchers with MockitoSugar
   }
 
   it must "not deploy the persistent storage if it has been found" in new WithExistingStorage {
-    PersistentStorage.setup(sm) must be (false)
+    PersistentStorage.setup(sm) must be (true)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).deployPersistentHdfsCluster()
   }

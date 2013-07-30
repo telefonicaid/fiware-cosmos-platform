@@ -9,6 +9,7 @@
 # All rights reserved.
 #
 
+cosmos::params::cosmos_api_mode: 'dev'
 cosmos::slave::netmask: "255.255.255.0"
 cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
 cosmos::openvz::network::host_iface: "eth1"

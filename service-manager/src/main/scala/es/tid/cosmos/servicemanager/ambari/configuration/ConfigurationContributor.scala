@@ -26,3 +26,11 @@ trait ConfigurationContributor {
    */
   def contributions(properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle
 }
+
+
+trait NoConfigurationContribution {
+  this: ConfigurationContributor =>
+
+  def contributions(properties: Map[ConfigurationKeys.Value, String]) =
+    ConfigurationBundle.NoConfiguration
+}

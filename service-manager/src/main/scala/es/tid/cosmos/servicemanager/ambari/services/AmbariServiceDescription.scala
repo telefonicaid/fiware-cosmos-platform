@@ -43,4 +43,10 @@ trait AmbariServiceDescription extends ConfigurationContributor with ServiceDesc
         slaves.map(slave => slave.addComponents(components.filter(!_.isMaster).map(_.name): _*)))
     } yield service
   }
+
+  /**
+   * The state of a service to be considered as running.
+   */
+  def runningState: ServiceState =
+    if (components.forall(_.isClient)) InstalledService else StartedService
 }

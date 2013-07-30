@@ -23,8 +23,8 @@ class CosmosUserServiceTest extends FlatSpec with MustMatchers {
     description.name must equal("COSMOS_USER")
     description.components must (
       have length (2) and
-      contain(ComponentDescription("USER_MASTER_MANAGER", isMaster = true)) and
-      contain(ComponentDescription("USER_SLAVE_MANAGER", isMaster = false))
+      contain(ComponentDescription("USER_MASTER_MANAGER", isMaster = true, isClient = true)) and
+      contain(ComponentDescription("USER_SLAVE_MANAGER", isMaster = false, isClient = true))
     )
     val contributions = description.contributions(Map(ConfigurationKeys.MasterNode -> "aNameNodeName"))
     contributions.global must be('empty)

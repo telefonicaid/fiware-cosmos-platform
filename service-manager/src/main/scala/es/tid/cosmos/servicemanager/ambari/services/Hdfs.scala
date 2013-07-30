@@ -22,7 +22,7 @@ object Hdfs extends ServiceWithConfigurationFile {
   override val components: Seq[ComponentDescription] = Seq(
     ComponentDescription("NAMENODE", isMaster = true),
     ComponentDescription("DATANODE", isMaster = false),
-    ComponentDescription("HDFS_CLIENT", isMaster = true))
+    ComponentDescription("HDFS_CLIENT", isMaster = true, isClient = true))
 
   lazy val nameNodeHttpPort: Int = {
     try {

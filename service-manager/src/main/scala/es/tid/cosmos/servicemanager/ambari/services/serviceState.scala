@@ -9,6 +9,17 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.ambari.services
 
-case class ComponentDescription(name: String, isMaster: Boolean, isClient: Boolean = false)
+/**
+ * Representation of the state of Ambari services.
+ */
+sealed trait ServiceState
+
+case object StartedService extends ServiceState {
+  override def toString = "STARTED"
+}
+
+case object InstalledService extends ServiceState {
+  override def toString = "INSTALLED"
+}

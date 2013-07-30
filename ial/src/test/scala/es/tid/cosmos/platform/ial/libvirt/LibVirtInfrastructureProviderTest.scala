@@ -45,29 +45,24 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
   }
 
   it must "not create machines when unavailable" in {
-    evaluating {
-      infraProvider.createMachines(
-        "test_", MachineProfile.G1_COMPUTE, 30, action) must runUnder (timeout)
-    } must produce [ResourceExhaustedException]
-    action.bootstrappedMachines must be ('empty)
+    mustNotCreateMachines(
+      infraProvider.createMachines("test_", MachineProfile.G1_COMPUTE, 30, action))
   }
 
   it must "not create machines when unavailable for requested profile" in {
-    evaluating {
-      infraProvider.createMachines(
-        "test_", MachineProfile.HDFS_MASTER, 1, action) must runUnder (timeout)
-    } must produce [ResourceExhaustedException]
-    action.bootstrappedMachines must be ('empty)
+    mustNotCreateMachines(
+      infraProvider.createMachines("test_", MachineProfile.HDFS_MASTER, 1, action))
   }
 
+
   it must "not create machines after several requests and resources exhausted" in {
-    evaluating {
-      for (i <- 0 to 3) {
-        val machines_> = infraProvider.createMachines(
-          s"test${i}_", MachineProfile.G1_COMPUTE, 3, action)
-        machines_> must runUnder (timeout)
-      }
-    } must produce [ResourceExhaustedException]
+    for (i <- 0 to 2) {
+      val machines_> = infraProvider.createMachines(s"test${i}_", MachineProfile.G1_COMPUTE, 3, action)
+      machines_> must runUnder (timeout)
+    }
+    val machines_> = infraProvider.createMachines(s"final", MachineProfile.G1_COMPUTE, 3, action)
+    machines_> must runUnder (timeout)
+    machines_> must eventuallyFailWith [ResourceExhaustedException]
   }
 
   it must "release machines" in {
@@ -112,6 +107,12 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
 
     machines_> must runUnder(timeout)
     machines_> must eventually(have size 2)
+  }
+
+  def mustNotCreateMachines(machines_> : Future[Seq[MachineState]]) {
+    machines_> must runUnder (timeout)
+    machines_> must eventuallyFailWith [ResourceExhaustedException]
+    action.bootstrappedMachines must be ('empty)
   }
 
   object matchAll {

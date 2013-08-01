@@ -39,8 +39,8 @@ class cosmos::api inherits cosmos::params {
   }
 
   wget::fetch { 'download cosmos-cli':
-    source      => "${cosmos_egg_repo}/${cosmos_cli_egg}",
-    destination => "${$cosmos_cli_repo_path}/eggs/${cosmos_cli_egg}",
+    source      => "${cosmos_cli_repo}/${cosmos_cli_filename}",
+    destination => "${$cosmos_cli_repo_path}/eggs/${cosmos_cli_filename}",
   }
 
   service { 'cosmos-api':

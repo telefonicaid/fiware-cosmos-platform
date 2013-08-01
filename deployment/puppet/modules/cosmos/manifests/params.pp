@@ -25,8 +25,8 @@ class cosmos::params (
   $tuid_api_url           = 'https://foo-test.apigee.net',
   $tuid_client_id         = 'QOGIbbuzXqYfGrgTYWZciOJ3FhpiYsfk',
   $tuid_client_secret     = '7FW6EViSbWUkv5QB',
-  $cosmos_egg_repo        = 'http://admin:admin@cosmos10.hi.inet:8000/repository/2462',
-  $cosmos_cli_egg         = 'cosmos-0.1.dev20130709-061210.egg',
+  $cosmos_cli_repo        = 'http://admin:admin@cosmos10.hi.inet:8000/simple/cosmos',
+  $cosmos_cli_ensure      = '0.1.dev20130709-061210',
   $ambari_user            = 'admin',
   $ambari_password        = 'admin',
   $ambari_refresh_period  = '30',
@@ -62,4 +62,10 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $cosmos_raw_public_key = 'AAAAB3NzaC1yc2EAAAADAQABAAABAQDKibr0qf5y/Iko/UfOq9npr8POkYfw6DYCfX4utzcp0tae9ZENpwu/ugDc3dZU6BMAo+T0diOxg8UQ77XXko/o9fzKA8WUtkmvosrUUEcfS/34XRHD0GiAdMSLt7BiAtlc4lJ8x/3S1lfWLlTe9f3+jY4mZKlLZnExvVWNFrtd0uxQdAj3JciisowYbUZpSId2GWdVuUdH+Y1y2y1JkTgtAnXt1lrCiH8WNOJZVkIhOXJM31OviAXGImSDk2JcycYTio81X/3xKua9yHJQ2AFZt5rh6u25s7VGxp85J5yijV9CV4oQDK51sxC8MIVFZ48YZVf2Ya4Bsfbk/AGtX+97',
 ) {
   $cosmos_public_key     = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
+  $cosmos_cli_filename   = resolve_cli_filename($cosmos_cli_repo, $cosmos_cli_ensure)
+
+  notify {"Selected ${cosmos_cli_ensure} version of cosmos-cli is
+          '${cosmos_cli_filename}'":
+      withpath => true,
+  }
 }

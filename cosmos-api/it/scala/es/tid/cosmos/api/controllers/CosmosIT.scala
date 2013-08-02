@@ -20,7 +20,7 @@ import es.tid.cosmos.api.mocks.WithInMemoryDatabase
 
 class CosmosIT extends FlatSpec with MustMatchers {
   "The Cosmos resource" must "redirect to the doc page" in new WithInMemoryDatabase {
-    val resource = route(FakeRequest(GET, "/cosmos/v1")).get
+    val resource = route(FakeRequest(GET, "/cosmos")).get
     status(resource) must equal (MOVED_PERMANENTLY)
     header("Location", resource).get must include ("/doc.html")
   }

@@ -9,8 +9,8 @@ GET     /logout                          @es.tid.cosmos.api.controllers.pages.Pa
 POST    /register                        @es.tid.cosmos.api.controllers.pages.Pages.registerUser
 
 # API
-GET     /cosmos/v1                       @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version()
-GET     /doc/cosmos/v1                   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1")
+GET     /cosmos                          @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version()
+GET     /doc/cosmos                      controllers.ApiHelpController.getResource(path = "/doc/cosmos")
 
 GET     /cosmos/v1/profile               @es.tid.cosmos.api.controllers.profile.ProfileResource.show()
 GET     /doc/cosmos/v1/profile           controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/profile")

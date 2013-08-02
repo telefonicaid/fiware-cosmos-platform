@@ -12,8 +12,8 @@ class cosmos::slave (
   $ip,
   $ct_ip,
   $ct_hostname,
-  $netmask,
-  $gateway="",
+  $netmask = $cosmos::params::cosmos_netmask,
+  $gateway = "",
   $host_key_pub,
   $host_key_pub_file
 ) inherits cosmos::params {

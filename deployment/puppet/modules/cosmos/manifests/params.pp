@@ -60,6 +60,9 @@ RQV4pQKBgQDriIKvRlgyD79BNIoOFExgqrsy4fNzgPcQwACOcVF56QfWttFyskHN
 vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
 -----END RSA PRIVATE KEY-----",
   $cosmos_raw_public_key = 'AAAAB3NzaC1yc2EAAAADAQABAAABAQDKibr0qf5y/Iko/UfOq9npr8POkYfw6DYCfX4utzcp0tae9ZENpwu/ugDc3dZU6BMAo+T0diOxg8UQ77XXko/o9fzKA8WUtkmvosrUUEcfS/34XRHD0GiAdMSLt7BiAtlc4lJ8x/3S1lfWLlTe9f3+jY4mZKlLZnExvVWNFrtd0uxQdAj3JciisowYbUZpSId2GWdVuUdH+Y1y2y1JkTgtAnXt1lrCiH8WNOJZVkIhOXJM31OviAXGImSDk2JcycYTio81X/3xKua9yHJQ2AFZt5rh6u25s7VGxp85J5yijV9CV4oQDK51sxC8MIVFZ48YZVf2Ya4Bsfbk/AGtX+97',
+  # Filled by hiera data
+  $cosmos_subnet = "",
+  $cosmos_netmask = ""
 ) {
   $cosmos_public_key     = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename   = resolve_cli_filename($cosmos_cli_repo, $cosmos_cli_ensure)

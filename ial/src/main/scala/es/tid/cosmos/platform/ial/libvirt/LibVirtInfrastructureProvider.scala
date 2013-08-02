@@ -15,6 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, future}
 
 import es.tid.cosmos.platform.ial._
+import es.tid.cosmos.platform.common.futures.FutureUtil
 
 /**
  * An infrastructure provider implemented on top of libvirt
@@ -79,13 +80,17 @@ class LibVirtInfrastructureProvider(
 
   private def createMachines(
       bootstrapAction: MachineState => Future[Unit],
-      servers: Seq[LibVirtServer]): Future[Seq[MachineState]] = Future.sequence(servers.map(srv =>
+      servers: Seq[LibVirtServer]): Future[Seq[MachineState]] =
+    FutureUtil.serializeTasks(for {
+      server <- servers
+    } yield () => createMachine(server, bootstrapAction))
+
+  private def createMachine(srv: LibVirtServer, bootstrapAction: MachineState => Future[Unit]) =
     for {
       domain <- srv.createDomain()
       state = domainToMachineState(srv, domain)
       _      <- bootstrapAction(state)
     } yield state
-  ))
 
   private def servers(
       pred: LibVirtServerProperties => Boolean): Future[Seq[LibVirtServer]] = future {

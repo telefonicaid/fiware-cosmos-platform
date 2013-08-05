@@ -43,10 +43,29 @@ class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with Mocki
     verify(slave).addComponents(Fake.component2.name)
   }
 
+  it must "be considered running for state 'INSTALL' when its components are of client type" in {
+    val description = new SimpleServiceDescription("component1" -> true, "component2" -> true)
+    description.runningState must be (InstalledService)
+  }
+
+  it must "be considered running for state 'STARTED' in any other case" in {
+    val description = new SimpleServiceDescription("component1" -> false, "component2" -> true)
+    description.runningState must be (StartedService)
+  }
+
+  class SimpleServiceDescription(services: (String, Boolean)*) extends AmbariServiceDescription {
+    def contributions(properties: Map[ConfigurationKeys.Value, String]) =
+      ConfigurationBundle(None, None, List())
+    val name = "FakeServiceName"
+    val components = for {
+      (serviceName, isClient) <- services.toSeq
+    } yield ComponentDescription(serviceName, isMaster = true, isClient = isClient)
+  }
+
   object Fake extends AmbariServiceDescription {
     val name = "FakeServiceName"
     val component1 = ComponentDescription("component1", isMaster = true)
-    val component2 = ComponentDescription("component2", isMaster = false)
+    val component2 = ComponentDescription("component2", isMaster = false, isClient = true)
     val components: Seq[ComponentDescription] = Seq(component1, component2)
     override def contributions(properties: Map[ConfigurationKeys.Value, String]) =
       ConfigurationBundle(None, None, List())

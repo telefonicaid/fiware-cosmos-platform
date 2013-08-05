@@ -41,8 +41,8 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
 
   before {
     sm = new AmbariServiceManager(
-      new AmbariServer("10.95.162.103", 8080, "admin", "admin"),
-      infrastructureProvider, refreshGracePeriod = 1.seconds, ClusterId("hdfs"),
+      new AmbariServer("10.95.162.103", 8080, "admin", "admin"), infrastructureProvider,
+      initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds, ClusterId("hdfs"),
       mappersPerSlave = 2, reducersPerSlave = 1)
   }
 

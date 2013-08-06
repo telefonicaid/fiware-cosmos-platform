@@ -11,21 +11,24 @@
 
 package es.tid.cosmos.platform.common.futures
 
-import scala.concurrent.{Await, future, Future}
+import java.util.concurrent.atomic.AtomicInteger
+import scala.concurrent.{future, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-import java.util.concurrent.atomic.AtomicInteger
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-class FutureUtilTest extends FlatSpec with MustMatchers {
+import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+
+class FutureUtilTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   val TestTimeout = 5 seconds
 
   "A task serialization" must "return a future empty seq when no task is passed" in {
     val result_> = FutureUtil.serializeTasks(Seq())
-    Await.result(result_>, TestTimeout) must equal (Seq())
+    result_> must runUnder(TestTimeout)
+    result_> must eventually(be('empty))
   }
 
   it must "execute tasks in order" in {
@@ -36,7 +39,8 @@ class FutureUtilTest extends FlatSpec with MustMatchers {
       makeTask(3, 100 millis, lastExecuted),
       makeTask(4, 300 millis, lastExecuted)
     ))
-    Await.result(result_>, TestTimeout) must equal (Seq(1, 2, 3, 4))
+    result_> must runUnder(TestTimeout)
+    result_> must eventually(equal (Seq(1, 2, 3, 4)))
     lastExecuted.get must be (4)
   }
 

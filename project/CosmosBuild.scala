@@ -31,12 +31,12 @@ object CosmosBuild extends Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
+    dependsOn(common_test % "compile->compile;test->test")
   )
 
   lazy val common_test = (Project(id = "common-test", base = file("common-test"))
     settings(Defaults.itSettings : _*)
     configs(IntegrationTest)
-    dependsOn(common)
   )
 
   lazy val ial = (Project(id = "ial", base = file("ial"))

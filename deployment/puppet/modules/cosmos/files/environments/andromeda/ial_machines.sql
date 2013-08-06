@@ -132,11 +132,10 @@ INSERT INTO `SERVERS` VALUES
         'openvz+ssh://root@192.168.63.33/system?socket=/var/run/libvirt/libvirt-sock',
         8,
         2,
-        32768,
+        8192,
         20,
         '192.168.63.97'
     );
 
 /*!40000 ALTER TABLE `SERVERS` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

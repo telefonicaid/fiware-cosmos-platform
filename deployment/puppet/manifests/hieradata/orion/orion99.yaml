@@ -1,0 +1,15 @@
+#
+# Telefónica Digital - Product Development and Innovation
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+
+cosmos::slave::ip: "192.168.63.34"
+cosmos::slave::ct_ip: "192.168.63.98"
+cosmos::slave::ct_hostname: "orion-data99"
+cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEApjQ7Tc/UNJkWf59q9YQtCvTxmu2xfTagRsXq6yuboTVcOtYVIviFFj6KffKudRckxNdm5luS3lkGj52ZPueJxVEkqPpbQon4+KD2Xy0rMsYW9qeZUX6cO0CRY3a4Kg4YmqS/SK5jJrxWPtL9l92w+Yq1L2DU5sDFIrMfPMnVS8BWuHUjQKsIQRvUTnx8/EYFuUhvL+XKYrKJeUbulpeLEkS+ocQsg1wPovTAeQBccM1o/0TbUK+qKC7pZenTVFDCjGvH2FqT7IkbOqnlh73rAhEltH/5ISyA410rYxAyylmpJHCvpEHg8+8eTzV/jiD5Pvz0pXF9m/MRcQQjd7HsmQ=="

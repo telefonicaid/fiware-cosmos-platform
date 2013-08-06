@@ -19,6 +19,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.platform.ial.MachineState
 
 class MutableClusterDescriptionTest extends FlatSpec with MustMatchers with FutureMatchers {
 
@@ -26,48 +27,54 @@ class MutableClusterDescriptionTest extends FlatSpec with MustMatchers with Futu
 
   trait SampleMutableClusterDescription {
     private val deploymentPromise = promise[Unit]
+    private val machinesPromise = promise[Seq[MachineState]]
 
     val description = new MutableClusterDescription(
       id = ClusterId(),
       name = "Sample cluster",
       size = 100,
       deployment_> = deploymentPromise.future,
-      machines_> = Future.successful(Seq()),
+      machines_> = machinesPromise.future,
       nameNode_> = Future.successful(new URI("http://host:8000"))
-    )
+    ) {
+      def finishDeployment() {
+        deploymentPromise.success(())
+      }
+      def finishMachineProvisioning() {
+        machinesPromise.success(Seq())
+      }
 
-    def finishDeployment() = deploymentPromise.success(())
+      val runningTrigger_> : Future[Unit] = creation_>
+    }
   }
 
-  "A mutable cluster description" must "provide a future of its next state" in
+  "A mutable cluster description" must "track cluster state history" in
     new SampleMutableClusterDescription {
       description.state must equal (Provisioning)
-      val state_> = description.nextState
-      finishDeployment()
-      state_>  must runUnder(TestTimeout)
-      state_>  must eventually(equal(Running))
+      description.stateHistory must equal (Seq(Provisioning))
+
+      description.finishMachineProvisioning()
+      description.state must equal (Provisioning)
+      description.stateHistory must equal (Seq(Provisioning))
+
+      description.finishDeployment()
+      description.runningTrigger_> must runUnder (TestTimeout)
+      description.stateHistory must be (Seq(Provisioning, Running))
+      description.state must be (Running)
     }
 
-  "Its future for a target state" must "succeed when in that state" in
+  it must "track cluster state history even if deployment finishes before machine provisioning" in
     new SampleMutableClusterDescription {
       description.state must equal (Provisioning)
-      description.whenInState(Provisioning) must runUnder(TestTimeout)
-    }
+      description.stateHistory must equal (Seq(Provisioning))
 
-  it must "succeed when target state is reached" in
-    new SampleMutableClusterDescription {
+      description.finishDeployment()
       description.state must equal (Provisioning)
-      val whenTerminated_> = description.whenInState(Running)
-      finishDeployment()
-      whenTerminated_> must runUnder(TestTimeout)
-    }
+      description.stateHistory must equal (Seq(Provisioning))
 
-  it must "fail when state transitions exceed a maximum before reaching target state" in
-    new SampleMutableClusterDescription {
-      description.state = Running
-      val whenTerminated_> = description.whenInState(Terminated, 1)
-      description.state = Terminating
-      description.state = Terminated
-      whenTerminated_> must eventuallyFailWith [IllegalStateException]
+      description.finishMachineProvisioning()
+      description.runningTrigger_> must runUnder (TestTimeout)
+      description.stateHistory must be (Seq(Provisioning, Running))
+      description.state must be (Running)
     }
 }

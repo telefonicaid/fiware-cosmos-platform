@@ -170,20 +170,30 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       description.nameNode_> must eventually (be (new URI(s"hdfs://$HostName:50070")))
     }
 
-    def stateIsReached(state: ClusterState) =
-      registeredCluster.future.flatMap(_.whenInState(state)) must runUnder(TestTimeout)
+    def waitForCondition(
+        description: MutableClusterDescription,
+        condition: ClusterState => Boolean,
+        remainingTime: FiniteDuration = TestTimeout): Boolean = {
+      val sleepTime = 1 second
 
-    def failedStateIsReachedWithIllegalState() = {
-      def failedWithIllegalState(state: ClusterState): Boolean = state match {
-        case Failed(e: IllegalStateException) => true
-        case _ => false
+      if (remainingTime <= (0 seconds)) false
+      else if (description.stateHistory.exists(condition)) true
+      else {
+        Thread.sleep(sleepTime.toMillis)
+        waitForCondition(description, condition, remainingTime - sleepTime)
       }
-      val failedStateReached_> = for {
-        description <- registeredCluster.future
-        _ <- description.whenInState(failedWithIllegalState _, maxTransitions = 0)
-      } yield ()
-      failedStateReached_> must runUnder(TestTimeout)
+  }
+
+    def stateIsReached(targetState: ClusterState) = conditionIsReached(_ == targetState)
+
+    def conditionIsReached(condition: ClusterState => Boolean) {
+      registeredCluster.future.map(waitForCondition(_, condition)) must eventually(equal (true))
     }
+
+    def failedStateIsReachedWithIllegalState() = conditionIsReached({
+      case Failed(e: IllegalStateException) => true
+      case _ => false
+    })
 
     def whenGetServiceReturns404() {
       val notFound = failed(RequestException(mock[Request], "errorMessage", StatusCode(404)))

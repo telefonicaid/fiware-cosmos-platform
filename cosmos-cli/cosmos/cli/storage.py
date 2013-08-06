@@ -25,10 +25,11 @@ WRITE_PERM = 2
 EXEC_PERM = 1
 
 UNITS = [
-    ('K', 1024),
-    ('M', 1048576),
-    ('G', 1073741824),
     ('T', 1099511627776),
+    ('G', 1073741824),
+    ('M', 1048576),
+    ('K', 1024),
+    ('B', 1),
 ]
 
 
@@ -101,11 +102,11 @@ def format_size(num_bytes):
     >>> map(format_size, [0, 500, 1024, 502*1024*1024, 249088416*1024])
     ['0B', '500B', '1K', '502M', '237G']
     """
-    (suffix, divisor) = ('B', 1)
-    for (unit, unit_size) in UNITS:
-        if num_bytes >= unit_size:
-            (suffix, divisor) = (unit, unit_size)
-    return "%d%s" % (num_bytes / divisor, suffix)
+    if num_bytes == 0:
+        return '0B'
+    (unit, unit_size) = next((unit, unit_size) for (unit, unit_size) in UNITS
+                             if unit_size <= num_bytes)
+    return "%d%s" % (num_bytes / unit_size, unit)
 
 
 def format_timestamp(timestamp):

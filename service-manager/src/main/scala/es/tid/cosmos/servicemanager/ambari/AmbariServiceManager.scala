@@ -42,6 +42,7 @@ import es.tid.cosmos.servicemanager.util.TcpServer.SshService
 class AmbariServiceManager(
     override protected val provisioner: ClusterProvisioner,
     override protected val infrastructureProvider: InfrastructureProvider,
+    initializationPeriod: FiniteDuration,
     override protected val refreshGracePeriod: FiniteDuration,
     override val persistentHdfsId: ClusterId,
     mappersPerSlave: Int,
@@ -55,8 +56,11 @@ class AmbariServiceManager(
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
 
-  // perform a sync with Ambari upon initialization
-  refresh()
+  override val serviceDescriptions: Seq[AmbariServiceDescription] =
+    Seq(Hdfs, MapReduce, Oozie, CosmosUserService)
+
+  logger.info("Initialization sync with Ambari")
+  Await.result(refresh(), initializationPeriod)
 
   override def clusterIds: Seq[ClusterId] = clusters.keys.toSeq
 
@@ -65,9 +69,6 @@ class AmbariServiceManager(
 
   override def services(user: ClusterUser): Seq[ServiceDescriptionType] =
     Seq(Hdfs, MapReduce, Oozie, new CosmosUserService(Seq(user)))
-
-  override val serviceDescriptions: Seq[AmbariServiceDescription] =
-    Seq(Hdfs, MapReduce, Oozie, CosmosUserService)
 
   /**
    * Wait until all pending operations are finished

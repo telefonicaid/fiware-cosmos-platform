@@ -46,8 +46,10 @@ class AmbariServiceManagerTest
   val serviceDescriptions = List(mock[AmbariServiceDescription], mock[AmbariServiceDescription])
   val services = List(mock[Service], mock[Service])
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
-  val instance = new AmbariServiceManager(provisioner, infrastructureProvider,
-    refreshGracePeriod = 1.seconds, ClusterId("HDFS"), MappersPerSlave, ReducersPerSlave)
+  val instance = new AmbariServiceManager(
+    provisioner, infrastructureProvider,
+    initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds,
+    ClusterId("HDFS"), MappersPerSlave, ReducersPerSlave)
 
   "A ServiceManager" must "have no Clusters by default" in {
     instance.clusterIds must be('empty)

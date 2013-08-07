@@ -15,9 +15,9 @@ import os.path
 import time
 
 from cosmos.cli.config import load_config
-from cosmos.storage.connection import connect
 from cosmos.cli.tables import format_table
 from cosmos.cli.util import ExitWithError
+from cosmos.storage.connection import connect
 
 
 READ_PERM = 4

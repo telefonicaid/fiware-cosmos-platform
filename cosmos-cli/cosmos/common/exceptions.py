@@ -91,7 +91,7 @@ class OperationError(CosmosException):
     """Represents a unexpected condition happent when performing an API
     operation.
 
-    It just keep the message.
+    It just keeps the message.
     >>> ex = OperationError('Out of foo while doing bar')
     >>> ex.message
     'Out of foo while doing bar'

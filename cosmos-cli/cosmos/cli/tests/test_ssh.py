@@ -15,8 +15,9 @@ import unittest
 from mock import MagicMock, patch
 
 from cosmos.cli.ssh import ssh_cluster
-from cosmos.cli.tests.util import mock_response
-from cosmos.cli.util import ExitWithError, ResponseError
+from cosmos.cli.util import ExitWithError
+from cosmos.common.exceptions import ResponseError
+from cosmos.common.tests.util import mock_response
 
 
 PROVISIONING = {
@@ -59,7 +60,7 @@ class SshCommandTest(unittest.TestCase):
         response = mock_response(status_code=500)
         with patch('requests.get', MagicMock(return_value=response)):
             self.assertRaisesRegexp(
-                ExitWithError, 'Cannot get cluster details',
+                ResponseError, 'Cannot get cluster details',
                 ssh_cluster, 'cluster1', self.config)
 
     def test_ssh_clusters_in_running_state(self):

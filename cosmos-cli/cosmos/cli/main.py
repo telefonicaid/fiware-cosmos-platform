@@ -17,15 +17,18 @@ import logging as log
 import sys
 
 import requests
-from requests.exceptions import ConnectionError, Timeout, RequestException
+from requests.exceptions import ConnectionError, Timeout
 
 import cosmos.cli.config as c
-import cosmos.cli.webhdfs as webhdfs
 from cosmos.cli.command_util import add_cluster_id_argument
-from cosmos.cli.routes import Routes
 from cosmos.cli.ssh import add_ssh_command
+from cosmos.cli.storage import add_storage_commands
 from cosmos.cli.tables import format_table
-from cosmos.cli.util import ExitWithError, ResponseError
+from cosmos.cli.util import ExitWithError
+from cosmos.common.exceptions import (CosmosException, OperationError,
+                                      ResponseError,
+                                      UnsupportedApiVersionException)
+from cosmos.common.routes import Routes
 
 
 ELLIPSIS = '...'
@@ -169,7 +172,7 @@ def build_argument_parser():
     add_create_command(subparsers)
     add_terminate_command(subparsers)
     add_ssh_command(subparsers)
-    webhdfs.add_commands(subparsers)
+    add_storage_commands(subparsers)
     return parser
 
 
@@ -179,7 +182,6 @@ def set_verbose(is_verbose):
     log.basicConfig(format="%(levelname)s: %(message)s", level=level)
     if is_verbose:
         log.info("Verbose output")
-
 
 def run():
     """Register all subcommands, parse the command line and run the function
@@ -199,8 +201,8 @@ def run():
         print "Cannot connect with server:\n%s" % ex.message
     except Timeout, ex:
         print "Request timed out:\n%s" % ex.message
-    except RequestException, ex:
-        print "Network request failed:\n%s" % ex.message
+    except CosmosException, ex:
+        print str(ex)
     sys.exit(exit_code)
 
 

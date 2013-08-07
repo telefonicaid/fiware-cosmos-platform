@@ -9,7 +9,9 @@
 # All rights reserved.
 #
 
-cosmos::slave::netmask: "255.255.255.128"
+cosmos::params::cosmos_subnet: '192.168.63.0'
+cosmos::params::cosmos_netmask: '255.255.255.128'
+cosmos::params::cosmos_cli_ensure: 'latest'
 cosmos::slave::gateway: "192.168.63.1"
 cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
 cosmos::openvz::network::host_iface: "bond0.1"

@@ -12,8 +12,8 @@ class cosmos::slave (
   $ip,
   $ct_ip,
   $ct_hostname,
-  $netmask,
-  $gateway="",
+  $netmask = $cosmos::params::cosmos_netmask,
+  $gateway = "",
   $host_key_pub,
   $host_key_pub_file
 ) inherits cosmos::params {
@@ -31,7 +31,7 @@ class cosmos::slave (
     ensure	=> stopped
   }
 
-  class { 'openvz':
+  class { 'cosmos::openvz::service':
     vz_utils_repo  => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-utils",
     vz_kernel_repo => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-kernel-rhel6",
     vz_repo_name   => "cosmos-openvz",
@@ -60,7 +60,7 @@ class cosmos::slave (
   }
 
   anchor {'cosmos::slave::begin': }
-    -> Class['ambari_repos', 'openvz', 'libvirt', 'cosmos::base']
+    -> Class['ambari_repos', 'cosmos::openvz::service', 'libvirt', 'cosmos::base']
     -> Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
     -> anchor {'cosmos::slave::end': }
 }

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common.db
+package es.tid.cosmos.platform.ial.libvirt
 
 import scala.util.{Random, Success, Failure}
 

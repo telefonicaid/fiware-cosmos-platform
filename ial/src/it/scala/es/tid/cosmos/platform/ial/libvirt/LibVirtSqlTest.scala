@@ -13,9 +13,9 @@ package es.tid.cosmos.platform.ial.libvirt
 
 import org.scalatest.Suite
 
-import es.tid.cosmos.platform.common.db.MySqlTest
 import es.tid.cosmos.platform.common.scalatest.matchers.ContainSomeMatcher
 import es.tid.cosmos.platform.ial.MachineProfile
+import es.tid.cosmos.platform.ial.libvirt.MySqlTest
 
 /**
  * A convenient trait for testing LVIP agains MySQL database.

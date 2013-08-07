@@ -15,6 +15,10 @@ application.secret="<%= (0...50).map{ ('a'..'z').to_a[rand(26)] }.join %>"
 # ~~~~~
 application.langs="en"
 
+# Application mode
+# ~~~~~
+application.mode=<%= @cosmos_api_mode %>
+
 # Global object class
 # ~~~~~
 # Define the Global object class for this application.
@@ -46,7 +50,7 @@ tuid.client.secret="<%= @tuid_client_secret %>"
 
 # Links
 # ~~~~
-cli.url="<%= @cosmos_master %>:8000/eggs/<%= @cosmos_cli_egg %>"
+cli.url="<%= @cosmos_master %>:8000/eggs/<%= @cosmos_cli_filename %>"
 
 # Swagger API documentation
 # ~~~~~

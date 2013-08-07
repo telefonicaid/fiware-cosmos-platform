@@ -32,13 +32,13 @@ class cosmos::slave (
   }
 
   class { 'cosmos::openvz::service':
-    vz_utils_repo  => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-utils",
-    vz_kernel_repo => "${cosmos_repo_url}/cosmos-deps/OpenVZ/openvz-kernel-rhel6",
+    vz_utils_repo  => "${cosmos_repo_deps_url}/OpenVZ/openvz-utils",
+    vz_kernel_repo => "${cosmos_repo_deps_url}/OpenVZ/openvz-kernel-rhel6",
     vz_repo_name   => "cosmos-openvz",
   }
 
   class { 'libvirt':
-    libvirt_repo_url => "${cosmos_repo_url}/cosmos-deps/libvirt",
+    libvirt_repo_url => "${cosmos_repo_deps_url}/libvirt",
     svc_enable       => "true",
     svc_ensure       => "running",
   }

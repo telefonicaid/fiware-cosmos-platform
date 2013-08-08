@@ -27,7 +27,6 @@ class LibVirtInfrastructureProvider(
   extends InfrastructureProvider {
 
   override def createMachines(
-      namePrefix: String,
       profile: MachineProfile.Value,
       numberOfMachines: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {

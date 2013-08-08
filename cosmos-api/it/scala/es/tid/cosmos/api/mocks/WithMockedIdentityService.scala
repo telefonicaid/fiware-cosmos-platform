@@ -14,7 +14,7 @@ package es.tid.cosmos.api.mocks
 import org.specs2.execute.{Result, AsResult}
 
 class WithMockedIdentityService(val identityService: IdentityService = new IdentityService())
-  extends WithInMemoryDatabase(Map(
+  extends WithSampleUsers(Map(
     "tuid.auth.url" -> identityService.baseUrl,
     "tuid.api.url" -> identityService.baseUrl,
     "tuid.client.id" -> identityService.clientId,

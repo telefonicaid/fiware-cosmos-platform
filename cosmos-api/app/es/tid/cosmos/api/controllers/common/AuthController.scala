@@ -13,8 +13,6 @@ package es.tid.cosmos.api.controllers.common
 
 import scala.util.{Failure, Success, Try}
 
-import play.api.Play.current
-import play.api.db.DB
 import play.api.libs.json.Json
 import play.api.mvc._
 
@@ -27,6 +25,7 @@ import es.tid.cosmos.api.profile.CosmosProfileDao
  * Controller able to check authentication and authorization
  */
 trait AuthController extends Controller {
+  val dao: CosmosProfileDao
 
   /**
    * Decorate a block with authentication header checks.
@@ -61,8 +60,8 @@ trait AuthController extends Controller {
    * Either get the profile that owns the API credentials or an error message.
    */
   private def authorizeProfile(credentials: ApiCredentials): Try[CosmosProfile] =
-    DB.withConnection { implicit c =>
-      CosmosProfileDao.lookupByApiCredentials(credentials)
+    dao.withConnection { implicit c =>
+      dao.lookupByApiCredentials(credentials)
         .map(Success(_))
         .getOrElse(Failure(InvalidAuthCredentials))
     }

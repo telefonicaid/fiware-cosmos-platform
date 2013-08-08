@@ -13,6 +13,7 @@ package es.tid.cosmos.admin
 
 import org.rogach.scallop.{Subcommand, ScallopConf}
 
+import es.tid.cosmos.api.profile.PlayDbCosmosProfileDao
 import es.tid.cosmos.servicemanager.{ClusterId, ServiceManager}
 
 class CommandRunner(args: AdminArguments, serviceManager: ServiceManager) {
@@ -29,6 +30,7 @@ class CommandRunner(args: AdminArguments, serviceManager: ServiceManager) {
       case Some(args.setup) => tryCommand(setupAll(serviceManager))
       case Some(args.persistentStorage) => processPersistentStorageCommand(subcommands.tail)
       case Some(args.cluster) => processClusterCommand(subcommands.tail)
+      case Some(args.profile) => processProfileCommand(subcommands.tail)
       case _ => help(args)
     }
 
@@ -45,6 +47,21 @@ class CommandRunner(args: AdminArguments, serviceManager: ServiceManager) {
         tryCommand(Cluster.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId())))
       case _ => help(args.cluster)
     } else help(args.cluster)
+
+  private def processProfileCommand(subcommands: List[ScallopConf]) = {
+    val playDbProfile = new Profile(new PlayDbCosmosProfileDao)
+    subcommands.headOption match {
+      case Some(args.profile.setMachineQuota) =>
+        if (subcommands.size == 3) tryCommand(playDbProfile.setMachineQuota(
+          args.profile.setMachineQuota.cosmosid(), args.profile.setMachineQuota.limit()))
+        else help(args.profile)
+      case Some(args.profile.unsetMachineQuota) =>
+        if (subcommands.size == 2) tryCommand(playDbProfile.unsetMachineQuota(
+          args.profile.setMachineQuota.cosmosid()))
+        else help(args.profile)
+      case _ => help(args.profile)
+    }
+  }
 
   /**
    * Performs a setup of all platform components.

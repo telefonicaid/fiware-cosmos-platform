@@ -9,12 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.mocks
+package es.tid.cosmos.api.profile
 
-import play.api.test.{FakeApplication, WithApplication}
 import play.api.test.Helpers._
-import play.core.DevSettings
+import es.tid.cosmos.api.mocks.{TestWithDbGlobal, WithTestApplication}
 
-class WithInMemoryDatabase(additionalConfiguration: Map[String, String] = Map.empty)
+private[profile] class WithInMemoryDatabase(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(
-    inMemoryDatabase(name="default", options=Map("MODE" -> "MYSQL")) ++ additionalConfiguration)
+    additionalConfiguration = (inMemoryDatabase(
+      name="default", options=Map("MODE" -> "MYSQL")) ++ additionalConfiguration),
+    global = new TestWithDbGlobal)

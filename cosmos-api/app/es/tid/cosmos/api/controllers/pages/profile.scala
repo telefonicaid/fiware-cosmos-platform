@@ -28,7 +28,7 @@ case class CosmosProfile(
     handle: String,
     quota: Quota,
     apiCredentials: ApiCredentials,
-    keys: NamedKey*)
+    keys: Seq[NamedKey])
 
 /**
  * A public key annotated with a user-defined name.

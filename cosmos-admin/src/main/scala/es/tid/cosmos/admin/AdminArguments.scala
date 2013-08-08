@@ -24,4 +24,13 @@ class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
       val clusterId = opt[String]("clusterid", required = true)
     }
   }
+  val profile = new Subcommand("profile") {
+    val setMachineQuota = new Subcommand("set-machine-quota") {
+      val cosmosid = opt[Int]("cosmosid", required = true)
+      val limit = opt[Int]("limit", required = true)
+    }
+    val unsetMachineQuota = new Subcommand("unset-machine-quota") {
+      val cosmosid = opt[Int]("cosmosid", required = true)
+    }
+  }
 }

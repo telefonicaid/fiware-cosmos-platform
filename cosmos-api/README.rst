@@ -37,7 +37,8 @@ To create a distributable zip ``cosmos-api/dist/cosmos-api-<version>.zip``::
     $ dist
 
 Unzip the archive in ``/opt/pdi-cosmos`` and make the contained ``start`` script
-executable.  Then you need to copy and edit ``application.conf`` to ``/opt/pdi-cosmos/etc/cosmos-api.conf`` as follows:
+executable.  Then you need to copy and edit ``application.conf.sample`` to
+``/opt/pdi-cosmos/etc/cosmos-api.conf`` as follows:
 
 - General settings::
 

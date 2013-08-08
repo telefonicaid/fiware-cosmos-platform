@@ -13,7 +13,7 @@ package es.tid.cosmos.api.mocks
 
 import scala.Some
 
-import org.specs2.execute.{Result, AsResult}
+import play.core.DevSettings
 import play.api.test.{WithApplication, FakeApplication}
 
 import es.tid.cosmos.api.AbstractGlobal
@@ -21,31 +21,20 @@ import es.tid.cosmos.api.AbstractGlobal
 class WithTestApplication(
     additionalConfiguration: Map[String, String] = Map.empty,
     global: AbstractGlobal = new TestGlobal
-  ) extends WithApplication(new FakeApplication(
-    withGlobal = Some(global),
-    additionalConfiguration = additionalConfiguration
-  )) {
+  ) extends WithApplication(WithTestApplication.buildApp(additionalConfiguration, global)) {
 
-  import WithTestApplication.ConfigFileProperty
-
-  def services = global.application.services
   lazy val dao = global.application.dao
 
-  override def around[T: AsResult](block: => T): Result = {
-    super.around {
-      val oldValue = Option(System.getProperty(ConfigFileProperty))
-      try {
-        System.setProperty(ConfigFileProperty, "cosmos-api/it/resources/test.conf")
-        block
-      } finally {
-        oldValue.map(System.setProperty(ConfigFileProperty, _))
-          .getOrElse(System.clearProperty(ConfigFileProperty))
-      }
+  def services = global.application.services
+}
+
+object WithTestApplication {
+
+  private def buildApp(additionalConfiguration: Map[String, String], global: AbstractGlobal) =
+    new FakeApplication(
+      additionalConfiguration = additionalConfiguration,
+      withGlobal = Some(global)
+    ) with DevSettings {
+      lazy val devSettings = Map("config.file" -> "cosmos-api/it/resources/test.conf")
     }
-  }
 }
-
-private object WithTestApplication {
-  val ConfigFileProperty: String = "config.file"
-}
-

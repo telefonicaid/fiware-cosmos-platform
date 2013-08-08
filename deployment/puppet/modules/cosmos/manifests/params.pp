@@ -29,6 +29,7 @@ class cosmos::params (
   $cosmos_cli_ensure      = '0.1.dev20130709-061210',
   $ambari_user            = 'admin',
   $ambari_password        = 'admin',
+  $ambari_init_period     = '5',
   $ambari_refresh_period  = '30',
   $openvz_rplcements_dir  = '/tmp/replacements',
   $openvz_targz_path      = '/tmp/replacements/centos-6-x86_64.tar.gz',

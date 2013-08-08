@@ -13,6 +13,7 @@ cosmos::params::cosmos_subnet: '192.168.11.0'
 cosmos::params::cosmos_netmask: '255.255.255.0'
 cosmos::params::cosmos_api_mode: 'dev'
 cosmos::params::cosmos_cli_ensure: 'latest'
+cosmos::params::repo_type: 'snapshots'
 cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
 cosmos::openvz::network::host_iface: "eth1"
 slave_hosts:

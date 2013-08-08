@@ -13,7 +13,7 @@ class cosmos::params (
   $cosmos_basedir         = '/opt/pdi-cosmos',
   $cosmos_confdir         = '/opt/pdi-cosmos/etc',
   $cosmos_cli_repo_path   = '/opt/repos',
-  $cosmos_repo_url        = 'http://cosmos10.hi.inet/develenv/rpms',
+  $cosmos_repo_baseurl    = 'http://cosmos10.hi.inet/develenv/rpms',
   $cosmos_master          = "http://${fqdn}",
   $cosmos_api_mode        = 'prod',
   $cosmos_db_host         = 'localhost',
@@ -62,12 +62,15 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $cosmos_raw_public_key = 'AAAAB3NzaC1yc2EAAAADAQABAAABAQDKibr0qf5y/Iko/UfOq9npr8POkYfw6DYCfX4utzcp0tae9ZENpwu/ugDc3dZU6BMAo+T0diOxg8UQ77XXko/o9fzKA8WUtkmvosrUUEcfS/34XRHD0GiAdMSLt7BiAtlc4lJ8x/3S1lfWLlTe9f3+jY4mZKlLZnExvVWNFrtd0uxQdAj3JciisowYbUZpSId2GWdVuUdH+Y1y2y1JkTgtAnXt1lrCiH8WNOJZVkIhOXJM31OviAXGImSDk2JcycYTio81X/3xKua9yHJQ2AFZt5rh6u25s7VGxp85J5yijV9CV4oQDK51sxC8MIVFZ48YZVf2Ya4Bsfbk/AGtX+97',
   # Filled by hiera data
   $cosmos_subnet = "",
-  $cosmos_netmask = ""
+  $cosmos_netmask = "",
+  $repo_type= ""
 ) {
-  $cosmos_public_key     = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
-  $cosmos_cli_repo       = "${cosmos_pyshop_repo}/repository/2462"
-  $cosmos_cli_repo_list  = "${cosmos_pyshop_repo}/simple/cosmos"
-  $cosmos_cli_filename   = resolve_cli_filename($cosmos_cli_repo_list, $cosmos_cli_ensure)
+  $cosmos_repo_platform_url = "${cosmos_repo_baseurl}/cosmos/${repo_type}"
+  $cosmos_repo_deps_url     = "${cosmos_repo_baseurl}/cosmos-deps"
+  $cosmos_public_key        = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
+  $cosmos_cli_repo          = "${cosmos_pyshop_repo}/repository/2462"
+  $cosmos_cli_repo_list     = "${cosmos_pyshop_repo}/simple/cosmos"
+  $cosmos_cli_filename      = resolve_cli_filename($cosmos_cli_repo_list, $cosmos_cli_ensure)
 
   notify {"Selected ${cosmos_cli_ensure} version of cosmos-cli is
           '${cosmos_cli_filename}'":

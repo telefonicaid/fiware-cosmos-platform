@@ -9,18 +9,21 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.mocks
+package es.tid.cosmos.api.mocks.oauth2
 
 import scala.util.Random
 
 import com.ning.http.util.Base64
-import play.api.libs.json.{JsObject, Json}
+import play.api.Play
+import play.api.Play.current
+import play.api.libs.json.Json
 import unfiltered.jetty.Http
 import unfiltered.filter.Planify
 import unfiltered.request._
 import unfiltered.response._
 import unfiltered.response.ResponseString
-import java.net.{URLDecoder, URI}
+
+import es.tid.cosmos.api.oauth2.UserProfile
 
 case class User(
     id: String,
@@ -38,17 +41,18 @@ case class Authorization(token: String, userId: String, scopes: Seq[String])
 /**
  * Mock Oauth2 provider with methods to use it as a test fixture.
  */
-class IdentityService(
-    val clientId: String = "client123",
-    val clientSecret: String = "secret123",
-    val users: List[User] = List(User(
+class TuIdService(
+    val users: List[UserProfile] = List(UserProfile(
       id = "db001",
-      firstName= "John",
-      surname = "Smith",
-      email = "jsmith@tid.es"
+      name= Some("John Smith"),
+      email = Some("jsmith@tid.es")
     )),
     val validScopes: Set[String] = Set("userdata.user.read.basic", "userdata.user.read.emails")
   ) {
+
+  val clientId: String = Play.configuration.getString("oauth.client.id").get
+  val clientSecret: String = Play.configuration.getString("oauth.client.secret").get
+
   @volatile
   private var tokens: Map[String, (String, Seq[String])] = Map()
   @volatile
@@ -58,7 +62,7 @@ class IdentityService(
 
   private object Code extends Params.Extract("code", Params.first)
 
-  private val server = Http.anylocal.filter(Planify({
+  private val server = Http.local(TuIdService.Port).filter(Planify({
     case req @ POST(Path("/oauth2/token") & Params(GrantType(gt) & Code(code))) => {
       require(gt == "authorization_code")
       val authBytes: Array[Byte] = req.headers("Authorization").collectFirst {
@@ -80,12 +84,14 @@ class IdentityService(
             user <- users.find(_.id == userId))
         yield {
           val basicFields =
-            if (scopes.contains("userdata.user.read.basic")) Json.obj(
-              "userId" -> user.id,
-              "firstName" -> user.firstName,
-              "surname" -> user.surname
-            )
-            else Json.obj()
+            if (scopes.contains("userdata.user.read.basic")) {
+              val nameParts = user.name.get.split(" ")
+              Json.obj(
+                "userId" -> user.id,
+                "firstName" -> nameParts(0),
+                "surname" -> nameParts(1)
+              )
+            } else Json.obj()
           val emailField =
             if (scopes.contains("userdata.user.read.emails")) Json.obj("address" -> user.email)
             else Json.obj()
@@ -102,13 +108,9 @@ class IdentityService(
    *
    * @param url          Authorization request url
    * @param userId       User that is going to accept the request
-   * @param isAuthorized Whether the user is granting access rights
-   * @return             URL the identity provider would have redirected
+   * @return             An authorization code
    */
-  def requestAuthorizationCode(
-      url: String,
-      userId: String,
-      isAuthorized: Boolean = true): String = {
+  def requestAuthorizationCode(url: String, userId: String): String = {
     val pairs = url.substring(url.indexOf('?') + 1).split('&')
       .map(parameter => parameter.split('=') match {
         case Array(key, value) => (key, value)
@@ -123,13 +125,9 @@ class IdentityService(
       case ("redirect_uri", uri) => uri
     })
     require(redirectUri.isDefined, "No redirection was specified")
-    if (isAuthorized) {
-      val token = randomToken("auth")
-      authorizations = authorizations :+ Authorization(token, userId, scopes.get)
-      s"${redirectUri.get}?code=$token"
-    } else {
-      s"${redirectUri.get}?error=unauthorized_client"
-    }
+    val token = randomToken("auth")
+    authorizations = authorizations :+ Authorization(token, userId, scopes.get)
+    token
   }
 
   def start() {
@@ -147,4 +145,8 @@ class IdentityService(
     }
 
   private def randomToken(prefix: String) = s"$prefix-${Random.nextLong().abs}"
+}
+
+object TuIdService {
+  val Port = 8763
 }

@@ -16,12 +16,12 @@ import org.scalatest.matchers.MustMatchers
 
 class UserProfileTest extends FlatSpec with MustMatchers {
   trait FullProfile {
-    val profile = UserProfile("id", Some("John"), Some("Smith"), Some("jsmith@tid.es"))
+    val profile = UserProfile("id", Some("John Smith"), Some("jsmith@tid.es"))
   }
 
   trait PartialProfiles {
-    val missingSurname = UserProfile("id", Some("John"), None, Some("jsmith@tid.es"))
-    val missingEmail = UserProfile("id", Some("John"), Some("Smith"), None)
+    val missingName = UserProfile("id", None, Some("jsmith@tid.es"))
+    val missingEmail = UserProfile("id", Some("John Smith"), None)
   }
 
   trait EmptyProfile {
@@ -33,7 +33,7 @@ class UserProfileTest extends FlatSpec with MustMatchers {
   }
 
   "A partial user profile" must "provide a contact with existing fields" in new PartialProfiles {
-    missingSurname.contact must be ("John (jsmith@tid.es)")
+    missingName.contact must be ("(jsmith@tid.es)")
     missingEmail.contact must be ("John Smith")
   }
 

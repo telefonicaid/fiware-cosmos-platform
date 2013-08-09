@@ -9,25 +9,23 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.mocks
+package es.tid.cosmos.api.mocks.oauth2
 
 import org.specs2.execute.{Result, AsResult}
 
-class WithMockedIdentityService(val identityService: IdentityService = new IdentityService())
-  extends WithSampleUsers(Map(
-    "tuid.auth.url" -> identityService.baseUrl,
-    "tuid.api.url" -> identityService.baseUrl,
-    "tuid.client.id" -> identityService.clientId,
-    "tuid.client.secret" -> identityService.clientSecret
-  )) {
+import es.tid.cosmos.api.mocks.WithSampleUsers
+
+class WithMockedTuIdService extends WithSampleUsers {
+
+  lazy val tuId: TuIdService = new TuIdService()
 
   override def around[T: AsResult](t: => T): Result = {
     super.around {
-      identityService.start()
+      tuId.start()
       try {
         t
       } finally {
-        identityService.stop()
+        tuId.stop()
       }
     }
   }

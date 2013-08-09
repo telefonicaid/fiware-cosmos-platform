@@ -21,10 +21,11 @@ import es.tid.cosmos.api.oauth2.OAuthError._
  * @param error        Error type
  * @param description  Optional human readable description from the provider
  */
-case class OAuthException(error: OAuthError, description: Option[String] = None)
+case class OAuthException(error: OAuthError, description: String)
   extends Exception(s"OAuth 2.0 error: $error")
 
 object OAuthException {
+
   /**
    * Creates the exception from a url-encoded text as in RFC 6749 section 5.2
    *
@@ -35,7 +36,7 @@ object OAuthException {
     val form = FormUrlEncodedParser.parse(urlEncodedError, "UTF-8")
     for (value <- firstValue("error", form);
          error <- OAuthError.valueOf(value))
-      yield OAuthException(error, firstValue("error_description", form))
+      yield OAuthException(error, firstValue("error_description", form).getOrElse("unknown error"))
   }
 
   private def firstValue(field: String, form: Map[String, Seq[String]]): Option[String] =

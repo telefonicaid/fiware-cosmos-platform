@@ -174,7 +174,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       val sleepTime = 1 second
 
       if (remainingTime <= (0 seconds)) false
-      else if (condition(description.stateHistory.last)) true
+      else if (condition(description.state)) true
       else {
         Thread.sleep(sleepTime.toMillis)
         waitForCondition(description, condition, remainingTime - sleepTime)

@@ -57,20 +57,13 @@ class MutableClusterDescription(
   }
 
   @volatile private[this] var _state: ClusterState = Provisioning
-  @volatile private[this] var _stateHistory: Seq[ClusterState] = Seq(Provisioning)
-
-  def stateHistory: Seq[ClusterState] = _stateHistory
 
   def state = _state
-  private def state_=(newState: ClusterState) = synchronized {
-    _state = newState
-    _stateHistory = _stateHistory :+ newState
-  }
 
   protected val creation_> = Future.sequence(List(deployment_>, machines_>)).transform(
-    _ => { state = Running },
+    _ => { _state = Running },
     err => {
-      state = Failed(err)
+      _state = Failed(err)
       err
     })
 
@@ -80,13 +73,13 @@ class MutableClusterDescription(
    * @param termination_> The termination future
    */
   def terminate(termination_> : Future[Any]) {
-    state = Terminating
+    _state = Terminating
     for (
       _ <- creation_>;
       _ <- termination_>) {
-      state = Terminated
+      _state = Terminated
     }
 
-    termination_>.onFailure({case err => { state = Failed(err) }})
+    termination_>.onFailure({case err => { _state = Failed(err) }})
   }
 }

@@ -14,7 +14,7 @@ class cosmos::base inherits cosmos::params {
 
   yumrepo { 'cosmos' :
     descr    => 'Cosmos Platform Repository',
-    baseurl  => $cosmos_repo_platform_url,
+    baseurl  => $cosmos::params::cosmos_repo_platform_url,
     gpgcheck => '0',
     enabled  => '1',
   }

@@ -13,18 +13,18 @@ class cosmos::api inherits cosmos::params {
 
   include cosmos::setup
 
-  mysql::db { $cosmos_db_name:
-    user     => $cosmos_db_user,
-    password => $cosmos_db_pass,
+  mysql::db { $cosmos::params::cosmos_db_name:
+    user     => $cosmos::params::cosmos_db_user,
+    password => $cosmos::params::cosmos_db_pass,
     host     => '%',
     grant    => ['all']
   }
 
-  database_user { "${cosmos_db_user}@${cosmos_db_host}":
-    password_hash => mysql_password("${cosmos_db_pass}")
+  database_user { "${cosmos::params::cosmos_db_user}@${cosmos::params::cosmos_db_host}":
+    password_hash => mysql_password($cosmos::params::cosmos_db_pass)
   }
 
-  database_grant { "${cosmos_db_user}@${cosmos_db_host}/${cosmos_db_name}":
+  database_grant { "${cosmos::params::cosmos_db_user}@${cosmos::params::cosmos_db_host}/${cosmos::params::cosmos_db_name}":
     privileges => ['all']
   }
 
@@ -32,15 +32,15 @@ class cosmos::api inherits cosmos::params {
     ensure => latest,
   }
 
-  file { "${$cosmos_cli_repo_path}/eggs":
+  file { "${cosmos::params::cosmos_cli_repo_path}/eggs":
     ensure => 'directory',
     owner  => 'root',
     group  => 'root',
   }
 
   wget::fetch { 'download cosmos-cli':
-    source      => "${cosmos_cli_repo}/${cosmos_cli_filename}",
-    destination => "${$cosmos_cli_repo_path}/eggs/${cosmos_cli_filename}",
+    source      => "${cosmos::params::cosmos_cli_repo}/${cosmos::params::cosmos_cli_filename}",
+    destination => "${cosmos::params::cosmos_cli_repo_path}/eggs/${cosmos::params::cosmos_cli_filename}",
   }
 
   service { 'cosmos-api':
@@ -55,8 +55,8 @@ class cosmos::api inherits cosmos::params {
   Exec['cosmos-setup']                        ~> Service['cosmos-api']
   File['cosmos-api.conf', 'logback.conf']     ~> Service['cosmos-api']
 
-  File[$cosmos_cli_repo_path]
-    -> File["${$cosmos_cli_repo_path}/eggs"]
+  File[$cosmos::params::cosmos_cli_repo_path]
+    -> File["${cosmos::params::cosmos_cli_repo_path}/eggs"]
     -> Wget::Fetch['download cosmos-cli']
 
   anchor { 'cosmos::api::begin': }

@@ -11,7 +11,7 @@
 
 class cosmos::master_setup inherits cosmos::params {
 
-  file { $cosmos_cli_repo_path:
+  file { $cosmos::params::cosmos_cli_repo_path:
     ensure => 'directory'
   }
 
@@ -22,10 +22,10 @@ class cosmos::master_setup inherits cosmos::params {
   apache::vhost { 'localhost':
     priority => '20',
     port     => '8000',
-    docroot  => $cosmos_cli_repo_path,
+    docroot  => $cosmos::params::cosmos_cli_repo_path,
   }
 
-  file_line { "don't listen on 80 port":
+  file_line { 'do not listen on 80 port':
     ensure => 'absent',
     line   => 'Listen 80',
     path   => '/etc/httpd/conf/httpd.conf',
@@ -53,9 +53,9 @@ class cosmos::master_setup inherits cosmos::params {
     ensure => 'present'
   }
 
-  File[$cosmos_cli_repo_path] -> Apache::Vhost['localhost']
+  File[$cosmos::params::cosmos_cli_repo_path] -> Apache::Vhost['localhost']
 
-  File_line["don't listen on 80 port"]
+  File_line['do not listen on 80 port']
     -> File_line['listen on 8000 port']
     ~> Service['httpd']
 

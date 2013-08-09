@@ -11,8 +11,8 @@
 
 class cosmos::openvz::network($host_iface) {
   service { 'network' :
-    ensure => "running",
-    enable => "true",
+    ensure => 'running',
+    enable => true,
   }
 
   file { '/etc/sysconfig/network-scripts/ifcfg-vzbr0' :

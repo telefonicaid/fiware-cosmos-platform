@@ -12,7 +12,7 @@
 class ambari_repos::params {
 
   $ambari_repo_base = 'http://cosmos10/develenv/repos/rpms/cosmos-deps/ambari'
-  
+
   case $environment {
     'vagrant', 'andromeda' : { $ambari_repo_url = "${ambari_repo_base}/develop" }
     'orion' : { $ambari_repo_url = "${ambari_repo_base}/master" }

@@ -10,22 +10,22 @@
 #
 
 class cosmos::openvz::service  (
-    $vz_utils_repo,   
+    $vz_utils_repo,
     $vz_kernel_repo,
     $vz_repo_name,
 ) {
   include cosmos::openvz::sysctl
 
-  $vz_packages = [ 
-      'vzkernel', 
-      'vzctl', 
-      'vzquota', 
-      'vzstats', 
-      'vzctl-core', 
-      'vzkernel-firmware', 
+  $vz_packages = [
+      'vzkernel',
+      'vzctl',
+      'vzquota',
+      'vzstats',
+      'vzctl-core',
+      'vzkernel-firmware',
       'vzkernel-headers']
 
-  package { $vz_packages : 
+  package { $vz_packages :
     ensure    => installed,
   }
 
@@ -35,12 +35,12 @@ class cosmos::openvz::service  (
   }
 
   file { 'vz.conf' :
-    path      => "/etc/vz/vz.conf",
     ensure    => present,
+    path      => '/etc/vz/vz.conf',
     source    => "puppet:///modules/${module_name}/vz.conf",
     notify    => Service['vz'],
   }
-  
+
   file { "${vz_repo_name}-repo" :
     ensure    => present,
     owner     => 'root',

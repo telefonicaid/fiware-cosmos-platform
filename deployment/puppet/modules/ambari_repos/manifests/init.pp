@@ -13,8 +13,8 @@ class ambari_repos inherits ambari_repos::params {
 
   # Cosmos and PDI Ambari repositories
   yumrepo { 'ambari':
-    baseurl  => $ambari_repo_url,
-    descr    => "[Cosmos] Ambari Repository 1.x",
+    baseurl  => $ambari_repos::params::ambari_repo_url,
+    descr    => '[Cosmos] Ambari Repository 1.x',
     enabled  => 1,
     gpgcheck => 0,
   }

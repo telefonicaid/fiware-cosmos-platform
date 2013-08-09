@@ -13,8 +13,8 @@ class cosmos::openvz::images($gateway) {
   include cosmos::openvz::image_replacements
 
   wget::fetch { 'Download base image' :
-    source      => "http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz",
-    destination => "/tmp/centos-6-x86_64.tar.gz",
+    source      => 'http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz',
+    destination => '/tmp/centos-6-x86_64.tar.gz',
   }
 
   file { '/tmp/generate-template.sh' :

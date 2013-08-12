@@ -26,7 +26,7 @@ class cosmos::setup inherits cosmos::params {
 
   file { $ial_machines:
     ensure => present,
-    source => "puppet:///modules/${module_name}/environments/${environment}/ial_machines.sql",
+    content => template("cosmos/ial_machines.sql.erb"),
   }
 
   exec { 'ial_db':

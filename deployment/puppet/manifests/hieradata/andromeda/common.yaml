@@ -15,6 +15,7 @@ cosmos::params::cosmos_cli_ensure: 'latest'
 cosmos::params::repo_type: 'snapshots'
 cosmos::slave::gateway: "192.168.63.1"
 cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
+cosmos::slave::domain: ".hi.inet"
 cosmos::openvz::network::host_iface: "bond0.1"
 slave_hosts:
     - "andromeda02"

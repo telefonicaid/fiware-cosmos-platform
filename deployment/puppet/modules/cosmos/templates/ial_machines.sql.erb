@@ -1,0 +1,37 @@
+--
+-- Telefónica Digital - Product Development and Innovation
+--
+-- THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+-- EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+-- WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+--
+-- Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+-- All rights reserved.
+--
+
+--
+-- Data for table `SERVERS`
+--
+
+LOCK TABLES `SERVERS` WRITE;
+/*!40000 ALTER TABLE `SERVERS` DISABLE KEYS */;
+INSERT INTO `SERVERS` VALUES
+<% scope.function_hiera(["slave_hosts"]).each_with_index do |@host, @index| %>
+    (
+        '<%=@host%>',
+        4,
+        'vzbr0',
+        '<%=scope.function_hiera(["cosmos::slave::name", nil, @host])%>',
+        1,
+        '<%=scope.function_hiera(["cosmos::slave::ct_hostname", nil, @host])%><%=scope.function_hiera(["cosmos::slave::domain", nil, @host])%>',
+        'centos-6-cosmos-x86_64',
+        'openvz+ssh://root@<%=scope.function_hiera(["cosmos::slave::ip", nil, @host])%>/system?socket=/var/run/libvirt/libvirt-sock',
+        <%=@index+1%>,
+        <%=scope.function_hiera(["cosmos::slave::hardware_profile", nil, @host])%>,
+        <%=scope.function_hiera(["cosmos::slave::ram", nil, @host])%>,
+        20,
+        '<%=scope.function_hiera(["cosmos::slave::ct_ip", nil, @host])%>'
+    )<% if scope.function_hiera(["slave_hosts"]).length == @index + 1 %>;<% else %>,<% end %>
+<% end %>
+/*!40000 ALTER TABLE `SERVERS` ENABLE KEYS */;
+UNLOCK TABLES;

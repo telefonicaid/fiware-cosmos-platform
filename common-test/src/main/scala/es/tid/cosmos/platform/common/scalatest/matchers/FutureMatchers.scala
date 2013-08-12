@@ -14,7 +14,7 @@ package es.tid.cosmos.platform.common.scalatest.matchers
 import java.util.concurrent.TimeoutException
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
-import scala.util.Failure
+import scala.util.{Try, Failure}
 
 import org.scalatest.matchers.{Matcher, MatchResult}
 import scala.reflect.Manifest
@@ -42,14 +42,16 @@ trait FutureMatchers {
     new Matcher[Future[Any]] {
       private val clazz = manifest.runtimeClass.asInstanceOf[Class[E]]
 
-      def apply(left: Future[Any]) =
-       MatchResult(
-          matches= Await.ready(left, Duration.Inf).value match {
-            case Some(Failure(ex)) => ex.getClass.equals(clazz)
-            case _ => false
-          },
-          failureMessage = s"future didn't failed with exception of ${clazz}",
-          negatedFailureMessage = s"future failed with exception of ${clazz}"
-        )
+      def apply(left: Future[Any]) = {
+         val value = Await.ready(left, Duration.Inf).value
+         MatchResult(
+           matches = value match {
+             case Some(Failure(ex)) => ex.getClass.equals(clazz)
+             case _ => false
+           },
+           failureMessage = s"future didn't failed with exception of ${clazz}, final value: $value",
+           negatedFailureMessage = s"future failed with exception of ${clazz}"
+         )
+       }
     }
 }

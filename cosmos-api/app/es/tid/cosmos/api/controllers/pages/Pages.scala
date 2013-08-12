@@ -57,7 +57,8 @@ class Pages(
 
   def authorize(maybeCode: Option[String], maybeError: Option[String]) = Action { implicit request =>
     (maybeCode, maybeError.flatMap(OAuthError.valueOf)) match {
-      case (_, Some(error)) => unauthorizedPage(OAuthException(error))
+      case (_, Some(error)) => unauthorizedPage(OAuthException(error,
+        "OAuth provider redirected with an error code instead of an authorization code"))
       case (Some(code), _) => Async {
         (for {
           token <- oauthClient.requestAccessToken(code)
@@ -70,6 +71,7 @@ class Pages(
             .setUserProfile(userProfile)
             .setCosmosId(maybeCosmosId))
         }) recover {
+          case ex @ OAuthException(_, _) => unauthorizedPage(ex)
           case Wrapped(Wrapped(ex: OAuthException)) => unauthorizedPage(ex)
         }
       }
@@ -116,8 +118,7 @@ class Pages(
   }
 
   private def unauthorizedPage(ex: OAuthException)(implicit request: RequestHeader) = {
-    val formattedDescription = ex.description.map(d => s", description: $d").getOrElse("")
-    Logger.error("OAuth request failed" + formattedDescription, ex)
+    Logger.error(s"OAuth request failed: ${ex.description}", ex)
     val message = if (ex.error == UnauthorizedClient) "Access denied" else "Authorization failed"
     val body = views.html.landingPage(oauthClient.signUpUrl, authenticateUrl, Some(message))
     Unauthorized(body).withNewSession

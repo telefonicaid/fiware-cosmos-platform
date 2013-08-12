@@ -13,6 +13,9 @@ package es.tid.cosmos.api.oauth2
 
 import scala.concurrent.Future
 
+import dispatch.url
+import play.api.Play.current
+
 /**
  * Provider of OAuth 2.0 clients
  */
@@ -22,11 +25,10 @@ trait OAuthClientComponent {
 
 case class UserProfile(
     id: String,
-    firstName: Option[String] = None,
-    surname: Option[String] = None,
+    name: Option[String] = None,
     email: Option[String] = None) {
   def contact: String = {
-    val parts = Seq(firstName, surname, email.map { value => s"($value)" }).flatten
+    val parts = Seq(name, email.map { value => s"($value)" }).flatten
     if (parts.isEmpty) "--" else parts.mkString(" ")
   }
 }
@@ -63,4 +65,23 @@ trait OAuthClient {
    * @return       Future user profile or an OAuthException in case of error
    */
   def requestUserProfile(token: String): Future[UserProfile]
+
+  /**
+   * OAuth client ID
+   */
+  def clientId = stringConfig("oauth.client.id")
+
+  /**
+   * OAuth client secret
+   */
+  def clientSecret = stringConfig("oauth.client.secret")
+
+  protected def stringConfig(key: String) = try {
+    current.configuration.getString(key).get
+  } catch {
+    case ex: NoSuchElementException =>
+      throw new IllegalArgumentException(s"Missing required configuration key $key", ex)
+  }
+
+  protected def urlFromConfig(key: String) = url(stringConfig(key))
 }

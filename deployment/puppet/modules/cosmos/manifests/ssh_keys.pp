@@ -16,14 +16,14 @@ class cosmos::ssh_keys inherits cosmos::params {
   }
 
   file { '/root/.ssh/id_rsa':
-    content => $cosmos_private_key,
+    content => $cosmos::params::cosmos_private_key,
     mode    => '0600',
     owner   => root,
     group   => root,
   }
 
   file { '/root/.ssh/id_rsa.pub':
-    content => $cosmos_public_key,
+    content => $cosmos::params::cosmos_public_key,
     mode    => '0644',
     owner   => root,
     group   => root,
@@ -31,7 +31,7 @@ class cosmos::ssh_keys inherits cosmos::params {
 
   ssh_authorized_key { 'ssh_key':
     ensure => 'present',
-    key    => $cosmos_raw_public_key,
+    key    => $cosmos::params::cosmos_raw_public_key,
     type   => 'ssh-rsa',
     user   => 'root'
   }

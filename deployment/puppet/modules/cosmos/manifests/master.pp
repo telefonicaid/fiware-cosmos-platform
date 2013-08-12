@@ -25,7 +25,7 @@ class cosmos::master {
     -> anchor { 'cosmos::master::end': }
 
   file { '/root/.ssh/known_hosts':
-    ensure => 'present',
+    ensure  => 'present',
     content => template("${module_name}/known_hosts.erb"),
     group   => '0',
     mode    => '0644',

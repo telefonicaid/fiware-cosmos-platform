@@ -48,33 +48,27 @@ class MutableClusterDescriptionTest extends FlatSpec with MustMatchers with Futu
     }
   }
 
-  "A mutable cluster description" must "track cluster state history" in
+  "A mutable cluster description" must "track cluster state" in
     new SampleMutableClusterDescription {
       description.state must equal (Provisioning)
-      description.stateHistory must equal (Seq(Provisioning))
 
       description.finishMachineProvisioning()
       description.state must equal (Provisioning)
-      description.stateHistory must equal (Seq(Provisioning))
 
       description.finishDeployment()
       description.runningTrigger_> must runUnder (TestTimeout)
-      description.stateHistory must be (Seq(Provisioning, Running))
       description.state must be (Running)
     }
 
-  it must "track cluster state history even if deployment finishes before machine provisioning" in
+  it must "track cluster state even if deployment finishes before machine provisioning" in
     new SampleMutableClusterDescription {
       description.state must equal (Provisioning)
-      description.stateHistory must equal (Seq(Provisioning))
 
       description.finishDeployment()
       description.state must equal (Provisioning)
-      description.stateHistory must equal (Seq(Provisioning))
 
       description.finishMachineProvisioning()
       description.runningTrigger_> must runUnder (TestTimeout)
-      description.stateHistory must be (Seq(Provisioning, Running))
       description.state must be (Running)
     }
 }

@@ -21,7 +21,6 @@ import com.ning.http.client.Request
 import dispatch.StatusCode
 import org.mockito.BDDMockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.matchers.{MatchResult, BeMatcher}
 
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial.{InfrastructureProvider, MachineState}
@@ -65,23 +64,21 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       stateIsReached(Running)
     }
 
-  it must "fail refreshing a cluster when a unknown service does not stabilize within " +
+  it must "refresh a cluster to Failed state when a unknown service does not stabilize within " +
     "grace period" in new ExpectRefresh("unregistered") {
       given(clientOnlyService.state).willReturn("INSTALLED")
       given(normalService.state).willReturn("STARTED")
       given(unknownService.state).willReturn("INSTALLED")
-      refresh() must runUnder (TestTimeout)
-      refresh() must eventuallyFailWith [IllegalStateException]
+      refresh() must (runUnder (TestTimeout) and eventually (equal (())))
       failedStateIsReachedWithIllegalState()
     }
 
-  it must "fail refreshing a cluster when a known service " +
+  it must "refresh a cluster to Failed state when a known service " +
     "does not stabilize within grace period" in new ExpectRefresh("unregistered") {
       given(clientOnlyService.state).willReturn("INSTALLED")
       given(normalService.state).willReturn("INSTALLED")
       given(unknownService.state).willReturn("STARTED")
-      refresh() must runUnder (TestTimeout)
-      refresh() must eventuallyFailWith [IllegalStateException]
+      refresh() must (runUnder (TestTimeout) and eventually (equal (())))
       failedStateIsReachedWithIllegalState()
     }
 
@@ -177,7 +174,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
       val sleepTime = 1 second
 
       if (remainingTime <= (0 seconds)) false
-      else if (description.stateHistory.exists(condition)) true
+      else if (condition(description.state)) true
       else {
         Thread.sleep(sleepTime.toMillis)
         waitForCondition(description, condition, remainingTime - sleepTime)

@@ -23,10 +23,10 @@ class WrappedTest extends FlatSpec with MustMatchers {
 
   it must "extract nothing from exceptions without cause" in {
     val simpleEx = new RuntimeException("simply failed")
-    Wrapped.unapply(simpleEx) must not be ('defined)
+    Wrapped.unapply(simpleEx) must not be 'defined
   }
 
   it must "extract nothing from null" in {
-    Wrapped.unapply(null) must not be ('defined)
+    Wrapped.unapply(null) must not be 'defined
   }
 }

@@ -15,10 +15,12 @@ cosmos::params::cosmos_api_mode: 'dev'
 cosmos::params::cosmos_cli_ensure: 'latest'
 cosmos::params::repo_type: 'snapshots'
 cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
-cosmos::slave::domain: ".vagrant"
-cosmos::openvz::network::host_iface: "eth1"
+cosmos::params::domain: '.vagrant'
+cosmos::params::master_ip: '192.168.11.10'
+cosmos::params::master_hostname: 'master'
+cosmos::openvz::network::host_iface: 'eth1'
 slave_hosts:
-    - "compute1"
-    - "compute2"
-    - "store1"
-    - "store2"
+    - 'compute1'
+    - 'compute2'
+    - 'store1'
+    - 'store2'

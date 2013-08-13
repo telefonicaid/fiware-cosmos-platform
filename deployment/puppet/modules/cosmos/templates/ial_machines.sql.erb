@@ -23,7 +23,7 @@ INSERT INTO `SERVERS` VALUES
         'vzbr0',
         '<%=scope.function_hiera(["cosmos::slave::name", nil, @host])%>',
         1,
-        '<%=scope.function_hiera(["cosmos::slave::ct_hostname", nil, @host])%><%=scope.function_hiera(["cosmos::slave::domain", nil, @host])%>',
+        '<%=scope.function_hiera(["cosmos::slave::ct_hostname", nil, @host])%><%=@domain%>',
         'centos-6-cosmos-x86_64',
         'openvz+ssh://root@<%=scope.function_hiera(["cosmos::slave::ip", nil, @host])%>/system?socket=/var/run/libvirt/libvirt-sock',
         <%=@index+1%>,

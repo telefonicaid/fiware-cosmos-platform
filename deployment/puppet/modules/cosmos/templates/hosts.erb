@@ -1,0 +1,9 @@
+127.0.0.1   <%= @hostname %> localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.
+
+<%=@master_ip%>  <%=@master_hostname%><%=@domain%> <%=@master_hostname%>
+
+<% for @host in scope.function_hiera(["slave_hosts"]) %>
+<%=scope.function_hiera(["cosmos::slave::ip", nil, @host])%>  <%=@host%><%=@domain%> <%=@host%>
+<%=scope.function_hiera(["cosmos::slave::ct_ip", nil, @host])%>  <%=scope.function_hiera(["cosmos::slave::ct_hostname", nil, @host])%><%=@domain%> <%=scope.function_hiera(["cosmos::slave::ct_hostname", nil, @host])%>
+<% end %>

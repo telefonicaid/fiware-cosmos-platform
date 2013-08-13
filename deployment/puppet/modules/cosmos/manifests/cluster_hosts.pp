@@ -12,7 +12,7 @@
 class cosmos::cluster_hosts {
   file { '/etc/hosts' :
     ensure  => 'present',
-    content => template("${module_name}/environments/${environment}/hosts.erb"),
+    content => template("${module_name}/hosts.erb"),
     group   => '0',
     mode    => '0644',
     owner   => '0',

@@ -98,9 +98,9 @@ hr {
     color: white;
 }
 
-#tu-id {
+#oauth-logo {
     float: left;
-    background-color: #e25e2b;
+    background-color: #777;
     border-radius: 5px;
     padding: 5px;
     width: 64px;
@@ -108,8 +108,22 @@ hr {
     box-shadow: 3px 3px 2px #888;
 }
 
-#tu-id:hover {
+#oauth-logo:hover {
+    background-color: #222;
+}
+
+#oauth-logo.tuid-oauth {
+    background-color: #e25e2b;
+}
+#oauth-logo.tuid-oauth:hover {
     background-color: #FF7E14;
+}
+
+#oauth-logo.github-oauth {
+    background-color: #4183c4;
+}
+#oauth-logo.github-oauth:hover {
+    background-color: #222;
 }
 
 /*

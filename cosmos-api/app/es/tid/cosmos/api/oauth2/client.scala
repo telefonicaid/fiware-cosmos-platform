@@ -13,8 +13,8 @@ package es.tid.cosmos.api.oauth2
 
 import scala.concurrent.Future
 
+import com.typesafe.config.{ConfigException, Config}
 import dispatch.url
-import play.api.Play.current
 
 /**
  * Provider of OAuth 2.0 clients
@@ -36,7 +36,8 @@ case class UserProfile(
 /**
  * OAuth client for authentication and user profile access.
  */
-trait OAuthClient {
+abstract class OAuthClient(config: Config) {
+
   /**
    * Link to the sign up page of the OAuth provider
    */
@@ -77,9 +78,9 @@ trait OAuthClient {
   def clientSecret = stringConfig("oauth.client.secret")
 
   protected def stringConfig(key: String) = try {
-    current.configuration.getString(key).get
+    config.getString(key)
   } catch {
-    case ex: NoSuchElementException =>
+    case ex: ConfigException.Missing =>
       throw new IllegalArgumentException(s"Missing required configuration key $key", ex)
   }
 

@@ -13,9 +13,12 @@ package es.tid.cosmos.api.mocks.oauth2
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.api.oauth2._
+import com.typesafe.config.Config
 
-class MockOAuthClient extends OAuthClient {
+import es.tid.cosmos.api.oauth2._
+import es.tid.cosmos.platform.common.ConfigComponent
+
+class MockOAuthClient(config: Config) extends OAuthClient(config) {
   import MockOAuthClient._
 
   /**
@@ -61,5 +64,6 @@ object MockOAuthClient {
 }
 
 trait MockOAuthClientComponent extends OAuthClientComponent {
-  def oAuthClient(): OAuthClient = new MockOAuthClient()
+  this: ConfigComponent =>
+  def oAuthClient(): OAuthClient = new MockOAuthClient(config)
 }

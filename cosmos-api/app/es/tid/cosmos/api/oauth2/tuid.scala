@@ -14,12 +14,15 @@ package es.tid.cosmos.api.oauth2
 import scala.concurrent.Future
 
 import com.ning.http.client.RequestBuilder
+import com.typesafe.config.Config
 import dispatch.{Future => _, _}, Defaults._
 import play.api.libs.json.Json
 
 import es.tid.cosmos.api.oauth2.OAuthTupleBuilder._
+import es.tid.cosmos.platform.common.ConfigComponent
 
-object TuIdOAuthClient extends OAuthClient {
+class TuIdOAuthClient(config: Config) extends OAuthClient(config) {
+
   override def signUpUrl: String = s"${authorizationUrl.url}/signup/validate/"
 
   override def authenticateUrl(redirectUri: String): String =
@@ -74,5 +77,7 @@ object TuIdOAuthClient extends OAuthClient {
 }
 
 trait TuIdOAuthClientComponent extends OAuthClientComponent {
-  lazy val oAuthClient: OAuthClient = TuIdOAuthClient
+  this: ConfigComponent =>
+
+  lazy val oAuthClient: OAuthClient = new TuIdOAuthClient(this.config)
 }

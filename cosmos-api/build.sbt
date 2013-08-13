@@ -6,6 +6,7 @@ classpathTypes ~= (_ + "orbit")
 libraryDependencies ++= Seq(
   "net.databinder.dispatch" %% "dispatch-core" % "0.10.0",
   "mysql" % "mysql-connector-java" % "5.1.10",
+  "org.scala-stm" %% "scala-stm" % "0.7" % "it",
   "net.databinder" %% "unfiltered-filter" % "0.6.8" % "test, it",
   "net.databinder" %% "unfiltered-jetty" % "0.6.8" % "test, it",
   "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "test, it" artifacts (

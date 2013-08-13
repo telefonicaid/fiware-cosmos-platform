@@ -9,69 +9,99 @@
 # All rights reserved.
 #
 
-class cosmos::openvz::images($gateway) {
-  include cosmos::openvz::image_replacements
+class cosmos::openvz::images(
+  $ip_address = $cosmos::slave::ct_ip,
+  $netmask    = $cosmos::slave::netmask,
+  $gateway    = $cosmos::slave::ct_gateway, 
+  $image_url  = 'http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz',
+) {
+  include ssh_keys, ambari_repos
+
+  $source_image_file    = '/tmp/centos-6-x86_64.tar.gz'
+  $dest_image_file      = '/vz/template/cache/centos-6-cosmos-x86_64.tar.gz'
+  $replacements_dir     = '/tmp/centos-6-cosmos-x86_64'
 
   wget::fetch { 'Download base image' :
-    source      => 'http://cosmos10/develenv/repos/ovz-templates/centos-6-x86_64.tar.gz',
-    destination => '/tmp/centos-6-x86_64.tar.gz',
+    source      => $image_url,
+    destination => $source_image_file,
   }
 
-  file { '/tmp/generate-template.sh' :
+  file { $replacements_dir :
+    ensure => 'directory',
+  }
+
+  exec { 'unpack_image' :
+    command => "tar -C ${replacements_dir} -zxf ${source_image_file}",
+    user    => 'root',
+    path    => '/bin'
+  }
+
+  file { "${replacements_dir}/root/.ssh" :
+    ensure  => 'directory',
+    source  => '/root/.ssh',
+    recurse => true,
+    purge   => true,
+    force   => true,
+  }
+
+  file { "${replacements_dir}/etc/yum.repos.d" :
+    ensure   => 'directory',
+    source   => '/etc/yum.repos.d',
+    recurse  => true,
+    purge    => true,
+    force    => true,
+  }
+
+  file { "${replacements_dir}/etc/resolv.conf" :
     ensure => 'present',
-    source => "puppet:///modules/${module_name}/generate-template.sh",
+    source => '/etc/resolv.conf',
   }
 
-  file { '/tmp/functions.sh' :
+  file { "${replacements_dir}/etc/hosts" :
     ensure => 'present',
-    source => "puppet:///modules/${module_name}/functions.sh",
+    source => '/etc/hosts',
   }
 
-  file { '/tmp/configure-template.sh' :
-    ensure => 'present',
-    source => "puppet:///modules/${module_name}/configure-template.sh",
-  }
-
-  exec { 'Generate template' :
-    command     => '/tmp/generate-template.sh /tmp/centos-6-x86_64.tar.gz /tmp/centos-6-cosmos-x86_64.tar.gz',
-    refreshonly => true,
-    user        => 'root',
-  }
-
-  file { '/tmp/template-configuration.properties' :
+  file { "${replacements_dir}/etc/sysconfig/network" :
     ensure  => 'present',
-    content => template("${module_name}/template-configuration.properties.erb"),
-    group   => '0',
-    mode    => '0644',
-    owner   => '0',
+    content => template("${module_name}/network.erb"),
   }
 
-  exec { 'Configure template' :
-    command     => '/tmp/configure-template.sh /tmp/template-configuration.properties',
-    refreshonly => true,
-    user        => 'root'
+  file { "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0" :
+    ensure  => 'present',
+    content => template("${module_name}/ifcfg-eth0.erb"),
+  }
+
+  exec { 'pack_image' :
+    command => "tar -C ${replacements_dir} -czf ${dest_image_file} .",
+    user    => 'root',
+    path    => '/bin'
   }
 
   # Due to having different adapters in Vagrant for internet access and host access
   # we need to route internet traffic through eth0 explicitly
   if $environment == 'vagrant' {
     exec { '/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE':
-      user => 'root'
+      user => 'root',
     }
   }
 
-  Wget::Fetch['Download base image'] ~> Exec['Generate template']
-  File['/tmp/generate-template.sh'] ~> Exec['Generate template']
-  Class['cosmos::openvz::image_replacements'] ~> Exec['Generate template']
-    ~> Exec['Configure template']
+  Class['ssh_keys'] ~> File["${replacements_dir}/root/.ssh"]
+  Class['ambari_repos'] ~> File["${replacements_dir}/etc/yum.repos.d"]
 
-  File[
-    '/tmp/functions.sh',
-    '/tmp/configure-template.sh',
-    '/tmp/template-configuration.properties']
-    ~> Exec['Configure template']
+  Wget::Fetch['Download base image'] 
+    ~> File[$replacements_dir]
+    ~> Exec['unpack_image']
+    ~> File["${replacements_dir}/root/.ssh", 
+            "${replacements_dir}/etc/yum.repos.d", 
+            "${replacements_dir}/etc/resolv.conf", 
+            "${replacements_dir}/etc/hosts",
+            "${replacements_dir}/etc/sysconfig/network",
+            "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0"]
+    ~> Exec['pack_image']
 
+  # Class 'ambari_repos' is not included here to avoid creating a cyclic dependency
   anchor {'cosmos::openvz::images::begin': }
-    -> Class['cosmos::openvz::image_replacements']
+    -> Class['ssh_keys']
     -> anchor {'cosmos::openvz::images::end': }
 }

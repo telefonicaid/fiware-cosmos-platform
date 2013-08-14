@@ -1,4 +1,5 @@
 @(newAccountUrl: String, authenticateUrl: String, message: Option[String] = None)
+@import play.api.Play.current
 <!--
  Telefónica Digital - Product Development and Innovation
 
@@ -21,12 +22,21 @@
 
         <h2>Manage your Big Data assets.</h2>
 
-        <img id="tu-id" src="@routes.Assets.at("images/tu.png")" alt="TU logo"/>
-        <ul>
-            <li>Log in with your <a id="login" href="@authenticateUrl">TU|Id</a> identity</li>
-            <li>Or get a <a href="@newAccountUrl/signup/validate/" class="tu-id" target="_blank">new
-                account</a> first</li>
-        </ul>
+        @defining(current.configuration.getString("oauth.provider").get) { provider =>
+            <img id="oauth-logo" alt="@provider logo" class="@provider-oauth"
+                 src="@routes.Assets.at(s"images/oauth/${provider}.png")"/>
+            <ul>
+                <li>
+                    Log in with your <a id="login" href="@authenticateUrl">
+                    @current.configuration.getString("oauth.providerName").get
+                    </a> identity
+                </li>
+                <li>
+                    Or get a <a href="@newAccountUrl" class="oauth-provider"
+                    target="_blank">new account</a> first
+                </li>
+            </ul>
+        }
 
         <hr/>
 

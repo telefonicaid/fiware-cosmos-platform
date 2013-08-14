@@ -15,7 +15,8 @@ import es.tid.cosmos.api.AbstractGlobal
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
 import es.tid.cosmos.api.oauth2.TuIdOAuthClientComponent
-import es.tid.cosmos.api.profile.{PlayDbCosmosProfileDaoComponent, MockCosmosProfileDaoComponent}
+import es.tid.cosmos.api.profile.PlayDbCosmosProfileDaoComponent
+import es.tid.cosmos.platform.common.ApplicationConfigComponent
 
 /**
  * Custom global Play! settings to configure mocked services but use a real database.
@@ -23,4 +24,5 @@ import es.tid.cosmos.api.profile.{PlayDbCosmosProfileDaoComponent, MockCosmosPro
 class TestWithDbGlobal extends AbstractGlobal(new Application
   with TuIdOAuthClientComponent
   with PlayDbCosmosProfileDaoComponent
-  with MockedServiceManagerComponent)
+  with MockedServiceManagerComponent
+  with ApplicationConfigComponent)

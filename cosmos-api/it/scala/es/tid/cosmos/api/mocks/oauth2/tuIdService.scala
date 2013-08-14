@@ -14,8 +14,6 @@ package es.tid.cosmos.api.mocks.oauth2
 import scala.util.Random
 
 import com.ning.http.util.Base64
-import play.api.Play
-import play.api.Play.current
 import play.api.libs.json.Json
 import unfiltered.jetty.Http
 import unfiltered.filter.Planify
@@ -23,6 +21,7 @@ import unfiltered.request._
 import unfiltered.response._
 import unfiltered.response.ResponseString
 
+import es.tid.cosmos.api.mocks.oauth2.UrlUtils.parseQueryParams
 import es.tid.cosmos.api.oauth2.UserProfile
 
 case class User(
@@ -42,6 +41,9 @@ case class Authorization(token: String, userId: String, scopes: Seq[String])
  * Mock Oauth2 provider with methods to use it as a test fixture.
  */
 class TuIdService(
+    port: Int,
+    clientId: String,
+    clientSecret: String,
     val users: List[UserProfile] = List(UserProfile(
       id = "db001",
       name= Some("John Smith"),
@@ -49,9 +51,6 @@ class TuIdService(
     )),
     val validScopes: Set[String] = Set("userdata.user.read.basic", "userdata.user.read.emails")
   ) {
-
-  val clientId: String = Play.configuration.getString("oauth.client.id").get
-  val clientSecret: String = Play.configuration.getString("oauth.client.secret").get
 
   @volatile
   private var tokens: Map[String, (String, Seq[String])] = Map()
@@ -62,7 +61,7 @@ class TuIdService(
 
   private object Code extends Params.Extract("code", Params.first)
 
-  private val server = Http.local(TuIdService.Port).filter(Planify({
+  private val server = Http.local(port).filter(Planify({
     case req @ POST(Path("/oauth2/token") & Params(GrantType(gt) & Code(code))) => {
       require(gt == "authorization_code")
       val authBytes: Array[Byte] = req.headers("Authorization").collectFirst {
@@ -111,17 +110,14 @@ class TuIdService(
    * @return             An authorization code
    */
   def requestAuthorizationCode(url: String, userId: String): String = {
-    val pairs = url.substring(url.indexOf('?') + 1).split('&')
-      .map(parameter => parameter.split('=') match {
-        case Array(key, value) => (key, value)
-      })
-    val scopes = pairs.collectFirst({
+    val params = parseQueryParams(url)
+    val scopes = params.collectFirst({
       case ("scope", value) => value.split(' ')
     })
     require(scopes.isDefined, "No scopes were requested")
-    require(pairs.contains(("client_id", clientId)), "No valid client id was provided")
-    require(pairs.contains(("response_type", "code")), "Incorrect type of response")
-    val redirectUri = pairs.collectFirst({
+    require(params.contains(("client_id", clientId)), "No valid client id was provided")
+    require(params.contains(("response_type", "code")), "Incorrect type of response")
+    val redirectUri = params.collectFirst({
       case ("redirect_uri", uri) => uri
     })
     require(redirectUri.isDefined, "No redirection was specified")
@@ -145,8 +141,4 @@ class TuIdService(
     }
 
   private def randomToken(prefix: String) = s"$prefix-${Random.nextLong().abs}"
-}
-
-object TuIdService {
-  val Port = 8763
 }

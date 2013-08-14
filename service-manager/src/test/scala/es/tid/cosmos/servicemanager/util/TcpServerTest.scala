@@ -44,9 +44,11 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
     withServerMock { mock =>
       val f = server.waitForServer()
       f must not be ('completed)
+      Thread.sleep(1500)
+      f must not be ('completed)
       mock.acceptClient()
       f must runUnder(timeout)
-      f must be ('completed)
+      f must eventually (be ())
     }
   }
 
@@ -59,6 +61,14 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
     ex.getMessage must include ("not found")
   }
 
+  it must "handle unavailable servers" in {
+    val server = TcpServer("idontexist", 38)
+    val f = server.waitForServer(1500 milliseconds)
+    f must not be ('completed)
+    val ex = evaluating {
+      Await.result(f, 4 seconds)
+    } must produce[TcpServerNotFound]
+  }
 
   class LocalServer(port: Int) {
     private var socket: Option[ServerSocket] = None

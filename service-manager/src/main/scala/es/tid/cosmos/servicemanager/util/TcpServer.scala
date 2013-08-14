@@ -11,11 +11,12 @@
 
 package es.tid.cosmos.servicemanager.util
 
-import java.net.{SocketTimeoutException, ConnectException, InetSocketAddress, Socket}
+import java.net.{SocketTimeoutException, InetSocketAddress, Socket}
 import scala.annotation.tailrec
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.util.control.NonFatal
 
 case class TcpServer(host: String, port: Int) {
 
@@ -49,11 +50,11 @@ case class TcpServer(host: String, port: Int) {
       s.connect(new InetSocketAddress(host, port), timeout.toMillis.toInt)
       true
     } catch {
-      case ex: ConnectException => {
+      case ex: SocketTimeoutException => false
+      case NonFatal(_) => {
         Thread.sleep(timeout.toMillis)
         false
       }
-      case ex: SocketTimeoutException => false
     } finally {
       s.close()
     }

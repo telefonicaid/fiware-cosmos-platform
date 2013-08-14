@@ -18,4 +18,4 @@
     - yaml
 
 :yaml:
-    :datadir: 'hieradata/%{::environment}'
+    :datadir: '%{settings::manifestdir}/hieradata/%{::environment}'

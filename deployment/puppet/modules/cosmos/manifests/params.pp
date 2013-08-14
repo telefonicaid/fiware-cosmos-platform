@@ -13,7 +13,7 @@ class cosmos::params (
   $cosmos_basedir         = '/opt/pdi-cosmos',
   $cosmos_confdir         = '/opt/pdi-cosmos/etc',
   $cosmos_cli_repo_path   = '/opt/repos',
-  $cosmos_repo_baseurl    = 'http://cosmos10.hi.inet/develenv/rpms',
+  $cosmos_repo_deps_url   = 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps',
   $cosmos_master          = "http://${::fqdn}",
   $cosmos_api_mode        = 'prod',
   $cosmos_db_host         = 'localhost',
@@ -64,13 +64,11 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   # Filled by hiera data
   $cosmos_subnet,
   $cosmos_netmask,
-  $repo_type,
+  $cosmos_repo_platform_url,
   $master_ip,
   $master_hostname,
   $domain
 ) {
-  $cosmos_repo_platform_url = "${cosmos_repo_baseurl}/cosmos/${repo_type}"
-  $cosmos_repo_deps_url     = "${cosmos_repo_baseurl}/cosmos-deps"
   $cosmos_public_key        = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_repo          = "${cosmos_pyshop_repo}/repository/2462"
   $cosmos_cli_repo_list     = "${cosmos_pyshop_repo}/simple/cosmos"

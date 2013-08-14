@@ -65,6 +65,7 @@ start() {
                 echo -n "already running"
                 echo_failure
         else
+                rm -f ${PID_FILE}
                 COMMAND="${APP_PATH}/start ${APP_ARGS}"
                 su -s /bin/sh $USER -c "${COMMAND} > /dev/null" &
                 echo_success

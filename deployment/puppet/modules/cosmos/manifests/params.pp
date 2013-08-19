@@ -14,7 +14,6 @@ class cosmos::params (
   $cosmos_confdir         = '/opt/pdi-cosmos/etc',
   $cosmos_cli_repo_path   = '/opt/repos',
   $cosmos_repo_deps_url   = 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps',
-  $cosmos_master          = "http://${::fqdn}",
   $cosmos_api_mode        = 'prod',
   $cosmos_db_host         = 'localhost',
   $cosmos_db_port         = '3306',

@@ -3,7 +3,7 @@
 
 # Public API address
 # ~~~~~
-application.baseurl="<%= @cosmos_master %>"
+application.baseurl="http://<%=@master_hostname%><%=@domain%>"
 
 # Secret key
 # ~~~~~
@@ -50,7 +50,7 @@ tuid.client.secret="<%= @tuid_client_secret %>"
 
 # Links
 # ~~~~
-cli.url="<%= @cosmos_master %>:8000/eggs/<%= @cosmos_cli_filename %>"
+cli.url="http://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
 
 # Swagger API documentation
 # ~~~~~

@@ -38,7 +38,7 @@ db.default.pass=
 
 # TU|Id configuration
 # ~~~~
-oauth.client.id=es.tid.cosmos.api.oauth2.TuIdOAuthClientComponent
+oauth.client.id=
 oauth.client.secret=
 oauth.provider=
 oauth.providerName=

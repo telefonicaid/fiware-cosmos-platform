@@ -38,6 +38,22 @@ The application will start at http://localhost:9000. To change the listen path
 just edit the ``application.baseurl`` setting on the ``application.conf``
 file.
 
+---------------------------
+About releasing & deploying
+---------------------------
+
+Deployment of Cosmos is done using Puppet. Each deployment environment (Andromeda,
+Orion, etc.) has its own Hiera data which dictates where should the RPMs to install
+come from. This means that the lifecycle of puppet code is coupled to that of the
+Cosmos and Ambari RPMs in the RPM repositories.
+
+When deploying to a production environment, please make sure the "release" RPM
+repository in Nexus is serving the version of the platform which corresponds to the
+Puppet scripts being used for deployment. You can do this by opening Nexus and
+browsing to Administration -> Capabilities -> "Yum: Generate Metadata / Release".
+There you can check the version being served by the repository and change it in case
+that is necessary.
+
 ========
 Glossary
 ========

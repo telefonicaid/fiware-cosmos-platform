@@ -9,23 +9,19 @@
  * All rights reserved.
  */
 
-$(document).ready(function() {
+;$(document).ready(function() {
     "use strict";
 
     var showLink = $("#show-credentials");
     var hideLink = $("#hide-credentials");
     var credentials = $("#credentials");
+    var toggleVisibility = function() {
+        showLink.toggle();
+        hideLink.toggle();
+        credentials.toggle(400);
+        return false;
+    };
 
-    showLink.click(function showCredentials() {
-        showLink.hide();
-        hideLink.show();
-        credentials.fadeIn();
-        return false;
-    });
-    hideLink.click(function hideCredentials() {
-        showLink.show();
-        hideLink.hide();
-        credentials.fadeOut();
-        return false;
-    });
-})
+    showLink.click(toggleVisibility);
+    hideLink.click(toggleVisibility);
+});

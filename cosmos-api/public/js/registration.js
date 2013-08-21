@@ -12,16 +12,8 @@
 ;$(document).ready(function() {
     "use strict";
 
-    var showLink = $("#show-credentials");
-    var hideLink = $("#hide-credentials");
-    var credentials = $("#credentials");
-    var toggleVisibility = function() {
-        showLink.toggle();
-        hideLink.toggle();
-        credentials.slideToggle();
-        return false;
-    };
-
-    showLink.click(toggleVisibility);
-    hideLink.click(toggleVisibility);
+    var helpDiv = $("#pk-help");
+    $("#pk-help-toggler").click(function() {
+        helpDiv.slideToggle();
+    });
 });

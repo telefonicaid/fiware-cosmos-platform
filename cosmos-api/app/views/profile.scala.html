@@ -16,6 +16,8 @@
  All rights reserved.
  -->
 @main("Cosmos user profile for @profile.fullName") {
+    <script type="text/javascript" src="@routes.Assets.at("js/profile.js")"></script>
+} {
     <ul id="headernav">
         <li><a href="@pages.routes.Pages.logout()">Logout</a></li>
     </ul>
@@ -66,18 +68,20 @@
                     <a id="hide-credentials" href="#" style="display: none">hide credentials</a>
                 </p>
 
-                <table id="credentials" style="display: none">
-                    <tbody>
-                        <tr>
-                            <th>API key</th>
-                            <td>@cosmosProfile.apiCredentials.apiKey</td>
-                        </tr>
-                        <tr>
-                            <th>API secret</th>
-                            <td>@cosmosProfile.apiCredentials.apiSecret</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div id="credentials" style="display: none">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>API key</th>
+                                <td>@cosmosProfile.apiCredentials.apiKey</td>
+                            </tr>
+                            <tr>
+                                <th>API secret</th>
+                                <td>@cosmosProfile.apiCredentials.apiSecret</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </li>
         </ul>
 

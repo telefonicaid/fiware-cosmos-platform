@@ -12,17 +12,15 @@
  Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  All rights reserved.
  -->
-@main("Cosmos API - User registration") {
+@main("Cosmos API - User registration"){
+    <script type="text/javascript" src="@routes.Assets.at("js/registration.js")"></script>
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/registration.css")">
+}{
     <div class="section">
         <h1 class="page-title">User registration for @profile.contact</h1>
 
         <p>Your @current.configuration.getString("oauth.providerName").get account is not yet associated with cosmos.
             To get started with us, please add the following details.</p>
-
-        <p>You can generate the required public key with PuTTY
-           (<a href="http://the.earth.li/~sgtatham/putty/0.62/htmldoc/Chapter8.html#pubkey">official docs</a>)
-           OpenSSH (<a href="http://www.openssl.org/docs/HOWTO/keys.txt">official HOWTO</a>)
-           or any other SSH client.</p>
 
         @helper.form(action = pages.routes.Pages.registerUser) {
             @helper.inputText(
@@ -40,9 +38,42 @@
                 '_error -> form.error("publicKey")
             )
 
+            <div>
+                <a href="#" id="pk-help-toggler">How can I generate a public key?</a>
+                <div class="help" id="pk-help" style="display:none"><h2>Windows users</h2>
+                    <p><em>Note: If you have a Cygwin or MinGW environment, you can follow the Linux/Mac instructions.
+                    </em></p>
+                    <p>The most popular SSH client for Windows is
+                    <a href="http://www.chiark.greenend.org.uk/~sgtatham/putty/">PuTTY</a> and the utility to create new
+                    SSH keys is PuTTYgen.</p>
+                    <ol>
+                        <li>Open the PuTTYgen utility.</li>
+                        <li>Click on the <b>Generate</b> button.</li>
+                        <li>Once the key has been generated, click the <b>Save private key</b> button. You will need
+                            this file to connect to your Cosmos clusters.</li>
+                        <li>Your public key can be found in the text field labeled <b>Public key for pasting into
+                            OpenSSH authorized_keys file</b>. Copy the contents of this text field and paste it in the
+                            <b>Public Key</b> text area of this webpage.</li>
+                    </ol>
+                    <p>You can find the full documentation for PuTTY
+                    <a href="http://the.earth.li/~sgtatham/putty/0.62/htmldoc/index.html">here</a>. It contains a
+                    chapter covering the use of keys in SSH:
+                    <a href="http://the.earth.li/~sgtatham/putty/0.62/htmldoc/Chapter8.html#pubkey">Chapter 8</a>.</p>
+
+                    <h2>Linux/Mac users</h2>
+                    <p>Open up a terminal and type: <pre>cat ~/.ssh/id_*.pub</pre>
+
+                    If the command is successful, you can copy & paste the resulting string, since you already have a
+                    pair of SSH keys. If not, run: <pre>ssh-keygen</pre>
+
+                    This command will generate two files: an id_rsa file and an id_rsa.pub file. The .pub file contains
+                    your public key, which needs to be pasted in the text area above.</p>
+                </div>
+            </div>
+
             <div class="actions">
                 <input type="submit" class="btn primary" value="Register"/>
-                <a href="@pages.routes.Pages.logout()" class="btn cancel">Cancel</a>
+                <a href="@pages.routes.Pages.logout()" class="btn cancel"><input type="button" value="Cancel" /></a>
             </div>
         }
     </div>

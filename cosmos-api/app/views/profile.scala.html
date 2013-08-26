@@ -119,6 +119,12 @@
     }
     </pre>
 
+    <p>Accessing and using the cluster:</p>
+    <pre class="code">
+    $ cosmos ssh dfbf0ab91099442f9014c3d4e2605b63
+    [user@@compute00 ~]$ hadoop jar /usr/lib/hadoop/hadoop-examples.jar wordcount &lt;input_path&gt; &lt;output_path&gt;
+    </pre>
+
     <p>Cluster termination:</p>
     <pre class="code">
     $ cosmos terminate dfbf0ab91099442f9014c3d4e2605b63

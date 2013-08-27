@@ -16,7 +16,9 @@ class cosmos::slave (
   $netmask = $cosmos::params::cosmos_netmask,
   $gateway = '',
   $host_key_pub,
-  $host_key_priv_file
+  $host_key_priv_file,
+  $ct_key_pub,
+  $ct_key_priv_file,
 ) inherits cosmos::params {
   include ssh_keys, cosmos::base, ambari_repos, cosmos::openvz::network, 
       cosmos::openvz::images

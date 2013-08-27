@@ -14,6 +14,7 @@ cosmos::params::cosmos_netmask: '255.255.255.0'
 cosmos::params::cosmos_api_mode: 'dev'
 cosmos::params::cosmos_repo_platform_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/development'
 cosmos::slave::host_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
+cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_ct_key"
 cosmos::params::domain: '.vagrant'
 cosmos::params::master_ip: '192.168.11.10'
 cosmos::params::master_hostname: 'master'

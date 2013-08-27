@@ -44,6 +44,16 @@ class cosmos::openvz::images(
     force   => true,
   }
 
+  file { "${replacements_dir}/etc/ssh/ssh_host_rsa_key" :
+    ensure  => 'present',
+    source  => $cosmos::slave::ct_key_priv_file,
+  }
+
+  file { "${replacements_dir}/etc/ssh/ssh_host_rsa_key.pub" :
+    ensure  => 'present',
+    content  => $cosmos::slave::ct_key_pub,
+  }
+
   file { "${replacements_dir}/etc/yum.repos.d" :
     ensure   => 'directory',
     source   => '/etc/yum.repos.d',
@@ -97,7 +107,9 @@ class cosmos::openvz::images(
             "${replacements_dir}/etc/resolv.conf", 
             "${replacements_dir}/etc/hosts",
             "${replacements_dir}/etc/sysconfig/network",
-            "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0"]
+            "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0",
+            "${replacements_dir}/etc/ssh/ssh_host_rsa_key.pub",
+            "${replacements_dir}/etc/ssh/ssh_host_rsa_key"]
     ~> Exec['pack_image']
 
   # Class 'ambari_repos' is not included here to avoid creating a cyclic dependency

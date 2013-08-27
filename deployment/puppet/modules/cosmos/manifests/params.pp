@@ -24,8 +24,6 @@ class cosmos::params (
   $tuid_api_url           = 'https://foo-test.apigee.net',
   $tuid_client_id         = 'QOGIbbuzXqYfGrgTYWZciOJ3FhpiYsfk',
   $tuid_client_secret     = '7FW6EViSbWUkv5QB',
-  $cosmos_pyshop_repo     = 'http://admin:admin@cosmos10.hi.inet:8000',
-  $cosmos_cli_ensure      = '0.1.dev20130709-061210',
   $ambari_user            = 'admin',
   $ambari_password        = 'admin',
   $ambari_init_period     = '5',
@@ -69,12 +67,5 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $domain
 ) {
   $cosmos_public_key        = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
-  $cosmos_cli_repo          = "${cosmos_pyshop_repo}/repository/2462"
-  $cosmos_cli_repo_list     = "${cosmos_pyshop_repo}/simple/cosmos"
-  $cosmos_cli_filename      = resolve_cli_filename($cosmos_cli_repo_list, $cosmos_cli_ensure)
-
-  notify {"Selected ${cosmos_cli_ensure} version of cosmos-cli is
-          '${cosmos_cli_filename}'":
-      withpath => true,
-  }
+  $cosmos_cli_filename      = 'cosmos-py2.7.egg'
 }

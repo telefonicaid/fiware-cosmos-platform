@@ -36,13 +36,8 @@ class cosmos::api inherits cosmos::params {
     ensure => 'directory',
     owner  => 'root',
     group  => 'root',
+    mode => 755
   }
-
-  wget::fetch { 'download cosmos-cli':
-    source      => "${cosmos::params::cosmos_cli_repo}/${cosmos::params::cosmos_cli_filename}",
-    destination => "${cosmos::params::cosmos_cli_repo_path}/eggs/${cosmos::params::cosmos_cli_filename}",
-  }
-
   service { 'cosmos-api':
     ensure     => 'running',
     enable     => true,
@@ -54,10 +49,6 @@ class cosmos::api inherits cosmos::params {
   Class['mysql::server']                      -> Service['cosmos-api']
   Exec['cosmos-setup']                        ~> Service['cosmos-api']
   File['cosmos-api.conf', 'logback.conf']     ~> Service['cosmos-api']
-
-  File[$cosmos::params::cosmos_cli_repo_path]
-    -> File["${cosmos::params::cosmos_cli_repo_path}/eggs"]
-    -> Wget::Fetch['download cosmos-cli']
 
   anchor { 'cosmos::api::begin': }
     -> Class['cosmos::setup']

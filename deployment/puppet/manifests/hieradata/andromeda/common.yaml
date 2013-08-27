@@ -11,7 +11,6 @@
 
 cosmos::params::cosmos_subnet: '192.168.63.0'
 cosmos::params::cosmos_netmask: '255.255.255.128'
-cosmos::params::cosmos_cli_ensure: 'latest'
 cosmos::params::cosmos_repo_platform_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/staging'
 cosmos::slave::gateway: "192.168.63.1"
 cosmos::slave::ct_gateway: "192.168.63.1"

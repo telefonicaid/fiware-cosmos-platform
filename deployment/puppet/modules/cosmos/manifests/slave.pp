@@ -16,7 +16,7 @@ class cosmos::slave (
   $netmask = $cosmos::params::cosmos_netmask,
   $gateway = '',
   $host_key_pub,
-  $host_key_pub_file
+  $host_key_priv_file
 ) inherits cosmos::params {
   include ssh_keys, cosmos::base, ambari_repos, cosmos::openvz::network, 
       cosmos::openvz::images
@@ -43,7 +43,7 @@ class cosmos::slave (
 
   file { '/etc/ssh/ssh_host_rsa_key':
     ensure => 'present',
-    source => $host_key_pub_file,
+    source => $host_key_priv_file,
     mode   => '0600',
     owner  => root,
     group  => root,

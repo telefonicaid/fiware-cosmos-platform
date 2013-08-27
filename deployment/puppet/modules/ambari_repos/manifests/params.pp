@@ -9,13 +9,6 @@
 # All rights reserved.
 #
 
-class ambari_repos::params {
-
-  $ambari_repo_base = 'http://cosmos10/develenv/repos/rpms/cosmos-deps/ambari'
-
-  case $environment {
-    'vagrant', 'andromeda' : { $ambari_repo_url = "${ambari_repo_base}/develop" }
-    'orion' : { $ambari_repo_url = "${ambari_repo_base}/master" }
-    default : { $ambari_repo_url = "${ambari_repo_base}/master" }
-  }
-}
+class ambari_repos::params(
+	$ambari_repo_url = $cosmos::params::cosmos_repo_platform_url
+	) {}

@@ -15,7 +15,7 @@ cosmos::params::cosmos_cli_ensure: 'latest'
 cosmos::params::cosmos_repo_platform_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/releases/production'
 cosmos::slave::gateway: "192.168.63.1"
 cosmos::slave::ct_gateway: "192.168.63.1"
-cosmos::slave::host_key_pub_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
+cosmos::slave::host_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
 cosmos::params::domain: '.hi.inet'
 cosmos::params::master_ip: '192.168.63.19'
 cosmos::params::master_hostname: 'orion01'

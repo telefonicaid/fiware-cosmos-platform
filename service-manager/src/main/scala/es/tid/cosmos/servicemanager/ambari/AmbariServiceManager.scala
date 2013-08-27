@@ -57,7 +57,7 @@ class AmbariServiceManager(
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
 
   override val serviceDescriptions: Seq[AmbariServiceDescription] =
-    Seq(Hdfs, MapReduce, Oozie, CosmosUserService)
+    Seq(Hdfs, Hive, MapReduce, Oozie, CosmosUserService)
 
   logger.info("Initialization sync with Ambari")
   Await.result(refresh(), initializationPeriod)
@@ -68,7 +68,7 @@ class AmbariServiceManager(
     clusters.get(id).map(_.view)
 
   override def services(user: ClusterUser): Seq[ServiceDescriptionType] =
-    Seq(Hdfs, MapReduce, Oozie, new CosmosUserService(Seq(user)))
+    Seq(Hdfs, Hive, MapReduce, Oozie, new CosmosUserService(Seq(user)))
 
   /**
    * Wait until all pending operations are finished

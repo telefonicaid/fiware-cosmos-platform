@@ -11,8 +11,10 @@
 
 package es.tid.cosmos.platform.ial.libvirt
 
-import scala.concurrent.Future
 import java.util.UUID
+import scala.concurrent.Future
+
+import es.tid.cosmos.platform.ial.MachineProfile
 
 /**
  * @author apv
@@ -31,6 +33,7 @@ class FakeLibVirtServer(val properties: LibVirtServerProperties) extends LibVirt
         uuid = uuid,
         name = s"fake_${uuid.toString}",
         isActive = true,
+        profile = MachineProfile.G1Compute,
         hostname = properties.domainHostname,
         ipAddress = properties.domainIpAddress
       ))

@@ -24,6 +24,7 @@ from cosmos.cli.command_util import add_cluster_id_argument
 from cosmos.cli.ssh import add_ssh_command
 from cosmos.cli.storage import add_storage_commands
 from cosmos.cli.tables import format_table
+from cosmos.cli.terminal import get_terminal_size
 from cosmos.cli.util import ExitWithError
 from cosmos.common.exceptions import (CosmosException, OperationError,
                                       ResponseError,
@@ -59,7 +60,10 @@ def ellipsize(text, max_width):
 def add_list_command(subcommands):
 
     NAME_MAX_WIDTH = 20
-    MAX_WIDTH = 78
+    try:
+        console_width = get_terminal_size()[0]
+    except:
+        console_width = 80
 
     @c.with_config
     def list_clusters(args, config):
@@ -76,7 +80,7 @@ def add_list_command(subcommands):
             table = [[ellipsize(c["name"], NAME_MAX_WIDTH), c["id"],
                       c["state"], c["stateDescription"]] for c in clusters]
             for line in format_table(table, 'rlll', separator="  "):
-                print ellipsize(line, MAX_WIDTH)
+                print ellipsize(line, console_width)
         return 0
 
     parser = subcommands.add_parser("list", help="list clusters")

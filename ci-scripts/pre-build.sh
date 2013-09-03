@@ -10,5 +10,6 @@
 # All rights reserved.
 #
 
+SCRIPTS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "==== Executing PRE Build Scripts ===="
-./executor.sh pre-build
+$SCRIPTS_DIR/executor.sh $SCRIPTS_DIR/pre-build

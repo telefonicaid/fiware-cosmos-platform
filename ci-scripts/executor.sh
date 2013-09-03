@@ -10,6 +10,8 @@
 # All rights reserved.
 #
 
+: ${WORKSPACE:?'Need to set $WORKSPACE variable to the Jenkins job workspace dir'}
+
 if [ $# -ne 1 ]; then
     echo "Please indicate the scripts folder e.g. pre-build"
     exit 1
@@ -24,6 +26,6 @@ echo "==== Executing scripts in '$1' directory ===="
 for file in $1/*
 do
     echo "* Executing $file ..."
-    ./$file
+    $file
 done
 echo '==== Finished processing ===='

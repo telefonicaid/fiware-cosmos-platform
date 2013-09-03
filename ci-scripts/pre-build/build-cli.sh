@@ -10,7 +10,7 @@
 # All rights reserved.
 #
 
-cd cosmos-cli
+cd $WORKSPACE/cosmos-cli
 python2.7 ./bootstrap.py
 if [ -f jenkins.cfg ]; then
   bin/buildout -c jenkins.cfg

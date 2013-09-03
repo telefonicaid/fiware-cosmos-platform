@@ -10,5 +10,6 @@
 # All rights reserved.
 #
 
+SCRIPTS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "==== Executing POST Build Scripts ===="
-./executor.sh post-build
+$SCRIPTS_DIR/executor.sh $SCRIPTS_DIR/post-build

@@ -11,6 +11,7 @@
 
 class cosmos::base inherits cosmos::params {
   include cosmos::cluster_hosts
+  include '::ntp'
 
   yumrepo { 'cosmos' :
     descr    => 'Cosmos Platform Repository',

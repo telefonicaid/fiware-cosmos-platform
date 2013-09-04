@@ -12,10 +12,10 @@
 class cosmos::openvz::images(
   $ip_address = $cosmos::slave::ct_ip,
   $netmask    = $cosmos::slave::netmask,
-  $gateway    = $cosmos::slave::ct_gateway, 
+  $gateway    = $cosmos::slave::ct_gateway,
   $image_url  = 'http://cosmos10/develenv/repos/ovz-templates/centos-6-cosmos.HDP.1.3-x86_64.tar.gz',
 ) {
-  include ssh_keys, ambari_repos
+  include ssh_keys, ambari::repos
 
   $source_image_file    = '/tmp/centos-6-x86_64.tar.gz'
   $dest_image_file      = '/vz/template/cache/centos-6-cosmos-x86_64.tar.gz'
@@ -97,14 +97,14 @@ class cosmos::openvz::images(
   }
 
   Class['ssh_keys'] ~> File["${replacements_dir}/root/.ssh"]
-  Class['ambari_repos'] ~> File["${replacements_dir}/etc/yum.repos.d"]
+  Class['ambari::repos'] ~> File["${replacements_dir}/etc/yum.repos.d"]
 
-  Wget::Fetch['Download base image'] 
+  Wget::Fetch['Download base image']
     ~> File[$replacements_dir]
     ~> Exec['unpack_image']
-    ~> File["${replacements_dir}/root/.ssh", 
-            "${replacements_dir}/etc/yum.repos.d", 
-            "${replacements_dir}/etc/resolv.conf", 
+    ~> File["${replacements_dir}/root/.ssh",
+            "${replacements_dir}/etc/yum.repos.d",
+            "${replacements_dir}/etc/resolv.conf",
             "${replacements_dir}/etc/hosts",
             "${replacements_dir}/etc/sysconfig/network",
             "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0",
@@ -112,7 +112,7 @@ class cosmos::openvz::images(
             "${replacements_dir}/etc/ssh/ssh_host_rsa_key"]
     ~> Exec['pack_image']
 
-  # Class 'ambari_repos' is not included here to avoid creating a cyclic dependency
+  # Class 'ambari::repos' is not included here to avoid creating a cyclic dependency
   anchor {'cosmos::openvz::images::begin': }
     -> Class['ssh_keys']
     -> anchor {'cosmos::openvz::images::end': }

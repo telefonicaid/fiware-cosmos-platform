@@ -9,15 +9,15 @@
 # All rights reserved.
 #
 
-class ambari {
-  include ambari::params, ambari_repos, ambari::install, ambari::config,
-    ambari::service
+class ambari::server {
+  include ambari::params, ambari::repos, ambari::server::install,
+    ambari::server::config, ambari::server::service
 
-  anchor { 'ambari::begin': }
+  anchor { 'ambari::server::begin': }
     -> Class['ambari::params']
-    -> Class['ambari_repos']
-    -> Class['ambari::install']
-    ~> Class['ambari::config']
-    ~> Class['ambari::service']
-    -> anchor { 'ambari::end': }
+    -> Class['ambari::repos']
+    -> Class['ambari::server::install']
+    ~> Class['ambari::server::config']
+    ~> Class['ambari::server::service']
+    -> anchor { 'ambari::server::end': }
 }

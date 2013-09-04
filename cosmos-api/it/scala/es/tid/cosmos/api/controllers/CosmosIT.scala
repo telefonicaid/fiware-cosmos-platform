@@ -20,7 +20,7 @@ import es.tid.cosmos.api.mocks.WithSampleUsers
 
 class CosmosIT extends FlatSpec with MustMatchers {
   "The Cosmos resource" must "redirect to the doc page" in new WithSampleUsers {
-    val resource = route(FakeRequest(GET, "/cosmos")).get
+    val resource = route(FakeRequest(GET, "/cosmos/v1")).get
     status(resource) must equal (MOVED_PERMANENTLY)
     header("Location", resource).get must include ("/doc.html")
   }

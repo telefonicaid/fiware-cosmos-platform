@@ -19,7 +19,7 @@ import es.tid.cosmos.api.controllers.pages.{routes => pageRoutes}
 /**
  * Root API resource
  */
-@Api(value = "/cosmos", listingPath = "/doc/cosmos", description = "API root")
+@Api(value = "/cosmos/v1", listingPath = "/doc/cosmos/v1", description = "API root")
 class CosmosResource extends Controller {
   @ApiOperation(value = "The API root", httpMethod = "GET",
     notes = "Root API resource")

@@ -9,6 +9,8 @@
 # All rights reserved.
 #
 
-class ambari_repos::params(
-	$ambari_repo_url = $cosmos::params::cosmos_repo_platform_url
-	) {}
+class ambari::server::install {
+  package { 'ambari-server':
+    ensure  => $ambari::params::install_ensure,
+  }
+}

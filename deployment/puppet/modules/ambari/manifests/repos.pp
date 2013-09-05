@@ -9,11 +9,11 @@
 # All rights reserved.
 #
 
-class ambari_repos inherits ambari_repos::params {
+class ambari::repos inherits ambari::params {
 
   # Cosmos and PDI Ambari repositories
   yumrepo { 'ambari':
-    baseurl  => $ambari_repos::params::ambari_repo_url,
+    baseurl  => $ambari::params::repo_url,
     descr    => '[Cosmos] Ambari Repository 1.x',
     enabled  => 1,
     gpgcheck => 0,

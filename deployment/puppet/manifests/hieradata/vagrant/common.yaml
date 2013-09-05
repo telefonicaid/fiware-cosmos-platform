@@ -9,6 +9,7 @@
 # All rights reserved.
 #
 
+ambari::params::repo_url: %{cosmos::params::cosmos_repo_platform_url}
 cosmos::params::cosmos_subnet: '192.168.11.0'
 cosmos::params::cosmos_netmask: '255.255.255.0'
 cosmos::params::cosmos_api_mode: 'dev'

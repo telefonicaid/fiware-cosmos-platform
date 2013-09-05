@@ -20,7 +20,7 @@ class cosmos::slave (
   $ct_key_pub,
   $ct_key_priv_file,
 ) inherits cosmos::params {
-  include ssh_keys, cosmos::base, ambari_repos, cosmos::openvz::network, 
+  include ssh_keys, cosmos::base, ambari::repos, cosmos::openvz::network,
       cosmos::openvz::images
 
   if member(hiera('slave_hosts'), $::hostname) == false {
@@ -60,7 +60,7 @@ class cosmos::slave (
   }
 
   anchor {'cosmos::slave::begin': }
-    -> Class['ambari_repos', 'cosmos::openvz::service', 'libvirt', 'cosmos::base']
+    -> Class['ambari::repos', 'cosmos::openvz::service', 'libvirt', 'cosmos::base']
     -> Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']
     -> anchor {'cosmos::slave::end': }
 }

@@ -9,7 +9,7 @@
 # All rights reserved.
 #
 
-class ambari::service {
+class ambari::server::service {
   service { ['postgresql', 'ambari-server']:
     ensure     => 'running',
     enable     => true,

@@ -9,8 +9,8 @@
 # All rights reserved.
 #
 
-class ambari::config {
-  file_line { 'remove original jdk bin ':
+class ambari::server::config {
+  file_line { 'remove original jdk bin':
     ensure => 'absent',
     line   => 'jdk.url=http://public-repo-1.hortonworks.com/ARTIFACTS/jdk-6u31-linux-x64.bin',
     path   => '/etc/ambari-server/conf/ambari.properties',
@@ -31,7 +31,7 @@ class ambari::config {
     unless    => 'sudo -u postgres psql -l | grep ambari | wc -l | grep 2'
   }
 
-  File_line['remove original jdk bin ']
+  File_line['remove original jdk bin']
     -> File_line['add jdk bin from CI']
     -> Exec['ambari-server-setup']
 }

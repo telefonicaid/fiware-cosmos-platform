@@ -87,7 +87,18 @@ def add_list_command(subcommands):
     parser.set_defaults(func=list_clusters)
 
 
+def filtered(json, filter_keys):
+    """ Returns a dict of key-value pairs filtering out the specified keys.
+
+    >>> filtered({'c': 'C', 'xox': '!!', 'a': 'A'}, ['xox'])
+    {'a': 'A', 'c': 'C'}
+    """
+    return {k: v for k, v in json.iteritems() if k not in filter_keys}
+
+
 def add_show_command(subcommands):
+
+    EXCLUDED_CLUSTER_INFO = ['href']
 
     @c.with_config
     def cluster_details(args, config):
@@ -97,7 +108,8 @@ def add_show_command(subcommands):
             raise ResponseError(
                 "Cannot get details for %s" % args.cluster_id, r)
 
-        print json.dumps(r.json(), sort_keys=True, indent=4)
+        print json.dumps(
+            filtered(r.json(), EXCLUDED_CLUSTER_INFO), sort_keys=True, indent=4)
         return 0
 
     parser = subcommands.add_parser("show", help="show cluster details")

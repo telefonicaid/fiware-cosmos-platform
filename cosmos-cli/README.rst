@@ -29,6 +29,8 @@ Note that the previous commands won't work if you have a python installation
 with setuptools version under 0.7. Take a look at setuptools documentation_ in
 that case.
 
+You will also need to have `distribute` installed (e.g. by executing `easy_install distribute`)
+
 .. _documentation: https://pypi.python.org/pypi/setuptools/0.8#installing-and-using-setuptools
 
 Install Cosmos CLI EGG

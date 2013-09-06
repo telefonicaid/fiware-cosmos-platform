@@ -47,7 +47,7 @@ class cosmos::api inherits cosmos::params {
 
   YumRepo['cosmos'] -> Package['cosmos'] -> Service['cosmos-api']
   Class['mysql::server']                      -> Service['cosmos-api']
-  Exec['cosmos-setup']                        ~> Service['cosmos-api']
+  Class['cosmos::setup']                      ~> Service['cosmos-api']
   File['cosmos-api.conf', 'logback.conf']     ~> Service['cosmos-api']
 
   anchor { 'cosmos::api::begin': }

@@ -33,6 +33,7 @@ class libvirt (
     $unix_sock_dir      = '/var/run/libvirt',
     $listen_tls         = '1',
     $listen_tcp         = '1',
+    $package_ensure     = 'installed',
     # Service related
     $svc_enable         = "true",
     $svc_ensure         = "running",
@@ -56,9 +57,9 @@ class libvirt (
     #  name => "cosmos-libvirt",
     #}
 
-    package { "libvirt.${::architecture}":
-      alias => 'libvirt',
-      ensure => installed,
+    package { "libvirt":
+      alias  => 'libvirt',
+      ensure => $package_ensure,
     }
 
     file { 'libvirt.conf' :
@@ -108,6 +109,6 @@ class libvirt (
         }
     }
 
-File['cosmos-libvirt.repo'] -> Package["libvirt.${::architecture}"] -> File['libvirt.conf'] -> Service['libvirtd']
+File['cosmos-libvirt.repo'] -> Package["libvirt"] -> File['libvirt.conf'] -> Service['libvirtd']
 }
 

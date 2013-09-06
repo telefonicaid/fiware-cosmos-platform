@@ -28,6 +28,7 @@ class cosmos::params (
   $ambari_password         = 'admin',
   $ambari_init_period      = '5',
   $ambari_refresh_period   = '30',
+  $libvirt_version         = '1.0.5-1.el6',
   $openvz_rplcements_dir   = '/tmp/replacements',
   $openvz_targz_path       = '/tmp/replacements/centos-6-x86_64.tar.gz',
   $openvz_vzkernel_version = '2.6.32-042stab078.26',

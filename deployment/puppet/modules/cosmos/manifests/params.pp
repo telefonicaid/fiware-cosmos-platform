@@ -10,27 +10,31 @@
 #
 
 class cosmos::params (
-  $cosmos_basedir         = '/opt/pdi-cosmos',
-  $cosmos_confdir         = '/opt/pdi-cosmos/etc',
-  $cosmos_cli_repo_path   = '/opt/repos',
-  $cosmos_repo_deps_url   = 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps',
-  $cosmos_api_mode        = 'prod',
-  $cosmos_db_host         = 'localhost',
-  $cosmos_db_port         = '3306',
-  $cosmos_db_name         = 'cosmos',
-  $cosmos_db_user         = 'cosmos',
-  $cosmos_db_pass         = 'SomeV3ryNicePassw0rd',
-  $tuid_auth_url          = 'https://tda-qa-07.hi.inet/',
-  $tuid_api_url           = 'https://foo-test.apigee.net',
-  $tuid_client_id         = 'QOGIbbuzXqYfGrgTYWZciOJ3FhpiYsfk',
-  $tuid_client_secret     = '7FW6EViSbWUkv5QB',
-  $ambari_user            = 'admin',
-  $ambari_password        = 'admin',
-  $ambari_init_period     = '5',
-  $ambari_refresh_period  = '30',
-  $openvz_rplcements_dir  = '/tmp/replacements',
-  $openvz_targz_path      = '/tmp/replacements/centos-6-x86_64.tar.gz',
-  $cosmos_private_key     = "-----BEGIN RSA PRIVATE KEY-----
+  $cosmos_basedir          = '/opt/pdi-cosmos',
+  $cosmos_confdir          = '/opt/pdi-cosmos/etc',
+  $cosmos_cli_repo_path    = '/opt/repos',
+  $cosmos_repo_deps_url    = 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps',
+  $cosmos_api_mode         = 'prod',
+  $cosmos_db_host          = 'localhost',
+  $cosmos_db_port          = '3306',
+  $cosmos_db_name          = 'cosmos',
+  $cosmos_db_user          = 'cosmos',
+  $cosmos_db_pass          = 'SomeV3ryNicePassw0rd',
+  $tuid_auth_url           = 'https://tda-qa-07.hi.inet/',
+  $tuid_api_url            = 'https://foo-test.apigee.net',
+  $tuid_client_id          = 'QOGIbbuzXqYfGrgTYWZciOJ3FhpiYsfk',
+  $tuid_client_secret      = '7FW6EViSbWUkv5QB',
+  $ambari_user             = 'admin',
+  $ambari_password         = 'admin',
+  $ambari_init_period      = '5',
+  $ambari_refresh_period   = '30',
+  $openvz_rplcements_dir   = '/tmp/replacements',
+  $openvz_targz_path       = '/tmp/replacements/centos-6-x86_64.tar.gz',
+  $openvz_vzkernel_version = '2.6.32-042stab078.26',
+  $openvz_vzctl_version    = '4.3.1-1',
+  $openvz_vzquota_version  = '3.1-1',
+  $openvz_vzstats_version  = '0.4-1',
+  $cosmos_private_key      = "-----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEAyom69Kn+cvyJKP1HzqvZ6a/DzpGH8Og2An1+Lrc3KdLWnvWR
 DacLv7oA3N3WVOgTAKPk9HYjsYPFEO+115KP6PX8ygPFlLZJr6LK1FBHH0v9+F0R
 w9BogHTEi7ewYgLZXOJSfMf90tZX1i5U3vX9/o2OJmSpS2ZxMb1VjRa7XdLsUHQI
@@ -57,7 +61,7 @@ RQV4pQKBgQDriIKvRlgyD79BNIoOFExgqrsy4fNzgPcQwACOcVF56QfWttFyskHN
 /eke0Ivuhf7JT0JQYcMNT1HmQWeaMD/aWDAsNXjcwPmfWOMuHvkjnRLBUy25WwT9
 vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
 -----END RSA PRIVATE KEY-----",
-  $cosmos_raw_public_key = 'AAAAB3NzaC1yc2EAAAADAQABAAABAQDKibr0qf5y/Iko/UfOq9npr8POkYfw6DYCfX4utzcp0tae9ZENpwu/ugDc3dZU6BMAo+T0diOxg8UQ77XXko/o9fzKA8WUtkmvosrUUEcfS/34XRHD0GiAdMSLt7BiAtlc4lJ8x/3S1lfWLlTe9f3+jY4mZKlLZnExvVWNFrtd0uxQdAj3JciisowYbUZpSId2GWdVuUdH+Y1y2y1JkTgtAnXt1lrCiH8WNOJZVkIhOXJM31OviAXGImSDk2JcycYTio81X/3xKua9yHJQ2AFZt5rh6u25s7VGxp85J5yijV9CV4oQDK51sxC8MIVFZ48YZVf2Ya4Bsfbk/AGtX+97',
+  $cosmos_raw_public_key   = 'AAAAB3NzaC1yc2EAAAADAQABAAABAQDKibr0qf5y/Iko/UfOq9npr8POkYfw6DYCfX4utzcp0tae9ZENpwu/ugDc3dZU6BMAo+T0diOxg8UQ77XXko/o9fzKA8WUtkmvosrUUEcfS/34XRHD0GiAdMSLt7BiAtlc4lJ8x/3S1lfWLlTe9f3+jY4mZKlLZnExvVWNFrtd0uxQdAj3JciisowYbUZpSId2GWdVuUdH+Y1y2y1JkTgtAnXt1lrCiH8WNOJZVkIhOXJM31OviAXGImSDk2JcycYTio81X/3xKua9yHJQ2AFZt5rh6u25s7VGxp85J5yijV9CV4oQDK51sxC8MIVFZ48YZVf2Ya4Bsfbk/AGtX+97',
   # Filled by hiera data
   $cosmos_subnet,
   $cosmos_netmask,
@@ -66,6 +70,6 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $master_hostname,
   $domain
 ) {
-  $cosmos_public_key        = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
-  $cosmos_cli_filename      = 'cosmos-py2.7.egg'
+  $cosmos_public_key       = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
+  $cosmos_cli_filename     = 'cosmos-py2.7.egg'
 }

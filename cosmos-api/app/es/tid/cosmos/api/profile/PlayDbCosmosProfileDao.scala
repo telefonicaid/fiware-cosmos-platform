@@ -32,15 +32,18 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = DB.withTransaction[A](block)
   def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
 
-  override def registerUserInDatabase(userId: String, reg: Registration)(implicit c: Conn): Long = {
+  override def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): Long = {
     val credentials = ApiCredentials.random()
-    val cosmosId = SQL("""INSERT INTO user(user_id, handle, api_key, api_secret)
-                        | VALUES ({user_id}, {handle}, {api_key}, {api_secret})""".stripMargin).on(
-      "user_id" -> userId,
-      "handle" -> reg.handle,
-      "api_key" -> credentials.apiKey,
-      "api_secret" -> credentials.apiSecret
-    ).executeInsert(scalar[Long].single)
+    val cosmosId = SQL(
+      """INSERT INTO user(auth_realm, auth_id, handle, api_key, api_secret)
+        | VALUES ({auth_realm}, {auth_id}, {handle}, {api_key}, {api_secret})""".stripMargin)
+      .on(
+        "auth_realm" -> userId.realm,
+        "auth_id" -> userId.id,
+        "handle" -> reg.handle,
+        "api_key" -> credentials.apiKey,
+        "api_secret" -> credentials.apiSecret
+      ).executeInsert(scalar[Long].single)
     SQL("""INSERT INTO public_key(cosmos_id, name, signature)
            VALUES ({cosmos_id}, 'default', {signature})""")
       .on("cosmos_id" -> cosmosId, "signature" -> reg.publicKey)
@@ -48,9 +51,9 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     cosmosId
   }
 
-  override def getCosmosId(userId: String)(implicit c: Conn): Option[Long] =
-    SQL("SELECT cosmos_id FROM user WHERE user_id = {user_id}")
-      .on("user_id" -> userId)
+  override def getCosmosId(userId: UserId)(implicit c: Conn): Option[Long] =
+    SQL("SELECT cosmos_id FROM user WHERE auth_realm = {realm} AND auth_id = {id}")
+      .on("realm" -> userId.realm, "id" -> userId.id)
       .as(scalar[Long].singleOpt)
 
   override def getMachineQuota(cosmosId: Long)(implicit c: Conn): Quota =
@@ -73,12 +76,12 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .executeUpdate() > 0
   }
 
-  override def lookupByUserId(userId: String)(implicit c: Conn): Option[CosmosProfile] =
+  override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     lookup(SQL("""SELECT u.cosmos_id, u.handle, u.machine_quota, u.api_key, u.api_secret, p.name,
                  | p.signature
                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
-                 | WHERE u.user_id = {user_id}""".stripMargin)
-      .on("user_id" -> userId))
+                 | WHERE u.auth_realm = {realm} AND u.auth_id = {id}""".stripMargin)
+      .on("realm" -> userId.realm, "id" -> userId.id))
 
   override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =
     lookup(SQL("""SELECT u.cosmos_id, u.handle, u.machine_quota, u.api_key, u.api_secret, p.name,

@@ -19,6 +19,7 @@ import dispatch.{Future => _, _}, Defaults._
 import play.api.libs.json.Json
 
 import es.tid.cosmos.api.oauth2.OAuthTupleBuilder._
+import es.tid.cosmos.api.profile.UserId
 import es.tid.cosmos.platform.common.ConfigComponent
 
 class TuIdOAuthClient(config: Config) extends OAuthClient(config) {
@@ -52,7 +53,7 @@ class TuIdOAuthClient(config: Config) extends OAuthClient(config) {
     val json = Json.parse(str)
     (json \ "userId").asOpt[String].map(id =>
       UserProfile(
-        id=id,
+        id=UserId(realm, id),
         name=makeFullName(
           (json \ "firstName").asOpt[String],
           (json \ "surname").asOpt[String]

@@ -21,6 +21,7 @@ import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.mocks.oauth2.MockedGitHubApi
+import es.tid.cosmos.api.profile.UserId
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
 class GitHubOAuthClientTest extends FlatSpec
@@ -99,7 +100,7 @@ class GitHubOAuthClientTest extends FlatSpec
     } yield profile
     profile_> must runUnder(testTimeout)
     profile_> must eventually(equal(UserProfile(
-      id = "53",
+      id = UserId("53"),
       name = Some("John Smith"),
       email = Some("jsmith@tid.es")
     )))

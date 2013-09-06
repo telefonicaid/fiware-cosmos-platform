@@ -16,7 +16,7 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.api.controllers.pages.Registration
-import es.tid.cosmos.api.profile.MockCosmosProfileDao
+import es.tid.cosmos.api.profile.{UserId, MockCosmosProfileDao}
 
 class ProfileTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -26,14 +26,14 @@ class ProfileTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   "A profile" must "unset quota" in new WithMockCosmosProfileDao {
     dao.withConnection { implicit c =>
-      dao.registerUserInDatabase("db-0003", Registration("jsmith", "pk00001"))
+      dao.registerUserInDatabase(UserId("db-0003"), Registration("jsmith", "pk00001"))
       new Profile(dao).unsetMachineQuota(0) must be (true)
     }
   }
 
   it must "set a valid quota" in new WithMockCosmosProfileDao {
     dao.withConnection { implicit c =>
-      dao.registerUserInDatabase("db-0003", Registration("jsmith", "pk00001"))
+      dao.registerUserInDatabase(UserId("db-0003"), Registration("jsmith", "pk00001"))
       new Profile(dao).setMachineQuota(0, 15) must be (true)
     }
   }

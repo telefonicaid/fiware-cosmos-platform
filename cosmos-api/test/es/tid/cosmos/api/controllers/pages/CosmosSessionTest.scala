@@ -17,9 +17,10 @@ import play.api.mvc.Session
 
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.UserProfile
+import es.tid.cosmos.api.profile.UserId
 
 class CosmosSessionTest extends FlatSpec with MustMatchers {
-  val profile = UserProfile(id="db-1234", name = Some("John Smith"))
+  val profile = UserProfile(id=UserId("db-1234"), name = Some("John Smith"))
 
   trait WithSession {
     def session: CosmosSession = new Session

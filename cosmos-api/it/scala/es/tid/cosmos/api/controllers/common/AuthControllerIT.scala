@@ -21,7 +21,7 @@ import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.authorization.ApiCredentials
 import es.tid.cosmos.api.controllers.pages.Registration
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
-import es.tid.cosmos.api.profile.{CosmosProfileDao, MockCosmosProfileDaoComponent}
+import es.tid.cosmos.api.profile.{UserId, CosmosProfileDao}
 
 class AuthControllerIT extends FlatSpec with MustMatchers {
 
@@ -59,8 +59,9 @@ class AuthControllerIT extends FlatSpec with MustMatchers {
 
   it must "succeed when credentials are valid" in new WithSampleUsers {
     dao.withConnection { implicit c =>
-      dao.registerUserInDatabase("db000", Registration("login", "pk"))
-      val profile: CosmosProfile = dao.lookupByUserId("db000").get
+      val userId = UserId("db000")
+      dao.registerUserInDatabase(userId, Registration("login", "pk"))
+      val profile: CosmosProfile = dao.lookupByUserId(userId).get
       val result: Result = action(dao, authorizedRequest(profile.apiCredentials))
       status(result) must be (OK)
       contentAsString(result) must include ("handle=login")

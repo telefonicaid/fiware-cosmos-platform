@@ -57,7 +57,7 @@ class GitHubOAuthClient(config: Config) extends OAuthClient(config) {
 
   private def parseProfile(str: String): UserProfile =
     GitHubProfile.fromJson(str) match {
-      case Success(p) => p.asUserProfile
+      case Success(p) => p.asUserProfile(realm)
       case Failure(ex) => {
         Logger.error(s"Cannot parse GitHub profile: $str", ex)
         throw new IllegalArgumentException("Cannot parse GitHub profile", ex)

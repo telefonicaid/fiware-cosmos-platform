@@ -29,8 +29,9 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
     taggedTest(it must "register new users", withDao { dao =>
       dao.withTransaction { implicit c =>
-        dao.registerUserInDatabase("db-0003", Registration("jsmith", "pk00001"))
-        val profile = dao.lookupByUserId("db-0003").get
+        val id = UserId("db-0003")
+        dao.registerUserInDatabase(id, Registration("jsmith", "pk00001"))
+        val profile = dao.lookupByUserId(id).get
         profile.handle must be ("jsmith")
         profile.keys.length must be (1)
       }
@@ -38,9 +39,10 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
     taggedTest(it must "get Cosmos ID from user ID when user is registered", withDao { dao =>
       dao.withTransaction { implicit c =>
-        dao.registerUserInDatabase("db-registered", Registration("jsmith", "pk00001"))
-        dao.getCosmosId("db-registered") must be ('defined)
-        dao.getCosmosId("db-unknown") must not be ('defined)
+        val registeredUser = UserId("db-registered")
+        dao.registerUserInDatabase(registeredUser, Registration("jsmith", "pk00001"))
+        dao.getCosmosId(registeredUser) must be ('defined)
+        dao.getCosmosId(UserId("db-unknown")) must not be ('defined)
       }
     })
 
@@ -53,8 +55,9 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
     taggedTest(it must "lookup a profile from api credentials", withDao { dao =>
       dao.withTransaction { implicit c =>
-        dao.registerUserInDatabase("db-0004", Registration("user4", "pk00004"))
-        val profileByUserId = dao.lookupByUserId("db-0004").get
+        val id = UserId("db-0004")
+        dao.registerUserInDatabase(id, Registration("user4", "pk00004"))
+        val profileByUserId = dao.lookupByUserId(id).get
         val profileByApiCredentials =
           dao.lookupByApiCredentials(profileByUserId.apiCredentials).get
         profileByUserId must be (profileByApiCredentials)
@@ -64,8 +67,8 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "assign cluster ownership and remember it", withDao { dao =>
       dao.withTransaction { implicit c =>
         val clusterId = ClusterId()
-        val id1 = dao.registerUserInDatabase("user1", Registration("user1", "pk0001"))
-        val id2 = dao.registerUserInDatabase("user2", Registration("user2", "pk0002"))
+        val id1 = dao.registerUserInDatabase(UserId("user1"), Registration("user1", "pk0001"))
+        val id2 = dao.registerUserInDatabase(UserId("user2"), Registration("user2", "pk0002"))
         dao.assignCluster(clusterId, id2)
         dao.clustersOf(id1).toList must not contain (clusterId)
         dao.clustersOf(id2).toList must contain (clusterId)

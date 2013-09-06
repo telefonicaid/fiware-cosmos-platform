@@ -14,9 +14,10 @@ package es.tid.cosmos.api.mocks
 import org.specs2.execute.{Result, AsResult}
 import play.api.test.FakeRequest
 
+import es.tid.cosmos.api.authorization.ApiCredentials
 import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.controllers.pages.{Registration, CosmosProfile}
-import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.profile.UserId
 
 class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(additionalConfiguration) {
@@ -24,9 +25,12 @@ class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   override def around[T: AsResult](t: => T): Result = {
     super.around {
       dao.withConnection { implicit c =>
-        dao.registerUserInDatabase("tu1", Registration("user1", "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA9L"))
-        dao.registerUserInDatabase("tu2", Registration("user2", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di"))
-        dao.registerUserInDatabase("tu3", Registration("user3", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di"))
+        dao.registerUserInDatabase(
+          UserId("tu1"), Registration("user1", "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA9L"))
+        dao.registerUserInDatabase(
+          UserId("tu2"), Registration("user2", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di"))
+        dao.registerUserInDatabase(
+          UserId("tu3"), Registration("user3", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di"))
       }
       t
     }
@@ -35,10 +39,8 @@ class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   def user1 = user("tu1")
   def user2 = user("tu2")
   def user3 = user("tu3")
-  private def user(userId: String) = {
-    dao.withConnection { implicit c =>
-      dao.lookupByUserId(userId).get
-    }
+  private def user(userId: String) = dao.withConnection { implicit c =>
+    dao.lookupByUserId(UserId(userId)).get
   }
 
   implicit def authRequestBuilder[T](r: FakeRequest[T]) = new AuthRequest(r)

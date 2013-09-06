@@ -125,9 +125,9 @@ class PagesIT extends FlatSpec with MustMatchers {
 
   private def registerUser(dao: CosmosProfileDao, user: UserProfile) {
     dao.withConnection { implicit c =>
-      val UserProfile(tuId, _, email) = user
+      val UserProfile(authId, _, email) = user
       val handle = email.map(_.split('@')(0)).getOrElse("root")
-      dao.registerUserInDatabase(tuId, Registration(handle, "pk1234"))
+      dao.registerUserInDatabase(authId, Registration(handle, "pk1234"))
     }
   }
 

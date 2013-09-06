@@ -23,6 +23,7 @@ import unfiltered.response.ResponseString
 
 import es.tid.cosmos.api.mocks.oauth2.UrlUtils.parseQueryParams
 import es.tid.cosmos.api.oauth2.UserProfile
+import es.tid.cosmos.api.profile.UserId
 
 case class User(
     id: String,
@@ -45,7 +46,7 @@ class TuIdService(
     clientId: String,
     clientSecret: String,
     val users: List[UserProfile] = List(UserProfile(
-      id = "db001",
+      id = UserId("db001"),
       name= Some("John Smith"),
       email = Some("jsmith@tid.es")
     )),
@@ -80,13 +81,13 @@ class TuIdService(
     case req @ GET(Path("/profile/me")) => {
       (for (accessToken <- bearerToken(req);
             (userId, scopes) <- tokens.get(accessToken);
-            user <- users.find(_.id == userId))
+            user <- users.find(_.id.id == userId))
         yield {
           val basicFields =
             if (scopes.contains("userdata.user.read.basic")) {
               val nameParts = user.name.get.split(" ")
               Json.obj(
-                "userId" -> user.id,
+                "userId" -> user.id.id,
                 "firstName" -> nameParts(0),
                 "surname" -> nameParts(1)
               )
@@ -109,7 +110,7 @@ class TuIdService(
    * @param userId       User that is going to accept the request
    * @return             An authorization code
    */
-  def requestAuthorizationCode(url: String, userId: String): String = {
+  def requestAuthorizationCode(url: String, userId: UserId): String = {
     val params = parseQueryParams(url)
     val scopes = params.collectFirst({
       case ("scope", value) => value.split(' ')
@@ -122,7 +123,7 @@ class TuIdService(
     })
     require(redirectUri.isDefined, "No redirection was specified")
     val token = randomToken("auth")
-    authorizations = authorizations :+ Authorization(token, userId, scopes.get)
+    authorizations = authorizations :+ Authorization(token, userId.id, scopes.get)
     token
   }
 

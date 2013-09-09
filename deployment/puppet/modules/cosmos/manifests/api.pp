@@ -36,7 +36,7 @@ class cosmos::api inherits cosmos::params {
     ensure => 'directory',
     owner  => 'root',
     group  => 'root',
-    mode => 755
+    mode   => '0755'
   }
   service { 'cosmos-api':
     ensure     => 'running',

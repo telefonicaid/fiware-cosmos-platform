@@ -50,7 +50,7 @@ class cosmos::openvz::images(
   }
 
   file { "${replacements_dir}/etc/ssh/ssh_host_rsa_key.pub" :
-    ensure  => 'present',
+    ensure   => 'present',
     content  => $cosmos::slave::ct_key_pub,
   }
 

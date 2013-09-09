@@ -25,8 +25,8 @@ class cosmos::setup inherits cosmos::params {
   }
 
   file { $ial_machines:
-    ensure => present,
-    content => template("cosmos/ial_machines.sql.erb"),
+    ensure  => present,
+    content => template('cosmos/ial_machines.sql.erb'),
   }
 
   exec { 'ial_db':

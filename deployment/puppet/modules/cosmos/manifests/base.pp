@@ -40,6 +40,6 @@ class cosmos::base inherits cosmos::params {
   }
 
   anchor { 'cosmos::base::begin': }
-    -> Class['cosmos::cluster_hosts']
+    -> Class['cosmos::cluster_hosts', '::ntp']
     -> anchor { 'cosmos::base::end': }
 }

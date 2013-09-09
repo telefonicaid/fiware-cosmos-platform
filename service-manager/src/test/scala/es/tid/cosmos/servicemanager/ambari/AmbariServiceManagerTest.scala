@@ -174,7 +174,7 @@ class AmbariServiceManagerTest
     verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
     verify(cluster).addService(CosmosUserService.name)
     object ConfigurationMatcher extends ArgumentMatcher[Configuration] {
-      def matches(argument: Any): Boolean = argument match {
+      override def matches(argument: Any): Boolean = argument match {
         case conf: Configuration => {
           val propertyValues = conf.properties.values.toSeq
           propertyValues.contains("user2") && propertyValues.contains("publicKey2")

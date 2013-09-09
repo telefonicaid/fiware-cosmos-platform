@@ -90,5 +90,5 @@ abstract class OAuthClient(config: Config) {
   protected def urlFromConfig(key: String) = url(stringConfig(key))
 
   // FIXME: configure a different realm for each provider
-  protected val realm: String = "default"
+  protected val realm: String = UserId.DefaultRealm
 }

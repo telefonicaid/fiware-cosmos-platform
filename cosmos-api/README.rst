@@ -94,3 +94,19 @@ and::
 
 After that, the classical ``/etc/init.d/cosmos-api start|stop|status`` command
 will be available.
+
+-------
+Testing
+-------
+
+Some of the test require a local MySQL instance. It is assumed a `test/test`
+account to manipulate a `cosmostest` database by default but is is easily
+configurable in the properties file at `it/resources/test.properties`.
+
+To run only those tests from the SBT console::
+
+    it:test-only * -- -n HasExternalDependencies
+
+And to exclude those externally dependant tests::
+
+    it:test-only * -- -l HasExternalDependencies

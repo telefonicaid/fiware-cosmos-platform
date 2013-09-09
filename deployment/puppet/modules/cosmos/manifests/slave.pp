@@ -39,6 +39,7 @@ class cosmos::slave (
 
   class { 'libvirt':
     libvirt_repo_url => "${cosmos::params::cosmos_repo_deps_url}/libvirt",
+    package_ensure   => $cosmos::params::libvirt_version,
     svc_enable       => true,
     svc_ensure       => 'running',
   }

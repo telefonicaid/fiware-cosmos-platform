@@ -13,20 +13,35 @@ class cosmos::openvz::service  (
     $vz_utils_repo,
     $vz_kernel_repo,
     $vz_repo_name,
+    $vz_kernel_ensure = $cosmos::params::openvz_vzkernel_version,
+    $vz_ctl_ensure    = $cosmos::params::openvz_vzctl_version,
+    $vz_quota_ensure  = $cosmos::params::openvz_vzquota_version,
+    $vz_stats_ensure  = $cosmos::params::openvz_vzstats_version
 ) {
-  include cosmos::openvz::sysctl
+  include cosmos::openvz::sysctl, stdlib
 
-  $vz_packages = [
-      'vzkernel',
-      'vzctl',
-      'vzquota',
-      'vzstats',
-      'vzctl-core',
-      'vzkernel-firmware',
-      'vzkernel-headers']
+  $vz_kernel_packages = ['vzkernel', 'vzkernel-firmware', 'vzkernel-headers']
+  $vz_ctl_packages    = ['vzctl', 'vzctl-core']
+  $vz_all_packages = flatten([
+    $vz_kernel_packages,
+    $vz_ctl_packages,
+    ['vzquota', 'vzstats']
+  ])
 
-  package { $vz_packages :
-    ensure    => installed,
+  package { $vz_kernel_packages :
+    ensure    => $vz_kernel_ensure,
+  }
+
+  package { $vz_ctl_packages :
+    ensure    => $vz_ctl_ensure,
+  }
+
+  package { 'vzquota' :
+    ensure    => $vz_quota_ensure,
+  }
+
+  package { 'vzstats' :
+    ensure    => $vz_stats_ensure,
   }
 
   service { 'vz' :
@@ -51,7 +66,7 @@ class cosmos::openvz::service  (
   }
 
   File['cosmos-openvz-repo']
-    -> Package[$vz_packages]
+    -> Package[$vz_all_packages]
     -> File['vz.conf']
     -> Class['openvz::sysctl']
     -> Service['vz']

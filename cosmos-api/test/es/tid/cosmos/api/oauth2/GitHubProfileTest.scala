@@ -11,11 +11,13 @@
 
 package es.tid.cosmos.api.oauth2
 
-import scala.util.{Failure, Success}
+import scala.util.Success
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
+
+import es.tid.cosmos.api.profile.UserId
 
 class GitHubProfileTest extends FlatSpec with MustMatchers {
 
@@ -29,8 +31,8 @@ class GitHubProfileTest extends FlatSpec with MustMatchers {
   )
 
   "A GitHub profile" must "be converted to a generic user profile" in {
-    jSmithProfile.asUserProfile must equal (UserProfile(
-      "53", Some("John Smith"), Some("jsmith@tid.es")))
+    jSmithProfile.asUserProfile("realm") must equal (UserProfile(
+      UserId("realm", "53"), Some("John Smith"), Some("jsmith@tid.es")))
   }
 
   it must "be parsed from a valid JSON" in {

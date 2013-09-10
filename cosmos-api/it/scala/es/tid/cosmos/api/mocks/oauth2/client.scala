@@ -16,6 +16,7 @@ import scala.concurrent.Future
 import com.typesafe.config.Config
 
 import es.tid.cosmos.api.oauth2._
+import es.tid.cosmos.api.profile.UserId
 import es.tid.cosmos.platform.common.ConfigComponent
 
 class MockOAuthClient(config: Config) extends OAuthClient(config) {
@@ -60,7 +61,7 @@ object MockOAuthClient {
   val BaseUrl = "http://mock-oauth"
   val GrantedCode = "fake-code"
   val GrantedToken = "fake-token-123"
-  val User = UserProfile("101", Some("John Smith"), Some("jsmith@tid.es"))
+  val User = UserProfile(UserId("101"), Some("John Smith"), Some("jsmith@tid.es"))
 }
 
 trait MockOAuthClientComponent extends OAuthClientComponent {

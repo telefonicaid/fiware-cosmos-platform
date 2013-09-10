@@ -16,6 +16,8 @@ import scala.concurrent.Future
 import com.typesafe.config.{ConfigException, Config}
 import dispatch.url
 
+import es.tid.cosmos.api.profile.UserId
+
 /**
  * Provider of OAuth 2.0 clients
  */
@@ -24,9 +26,10 @@ trait OAuthClientComponent {
 }
 
 case class UserProfile(
-    id: String,
+    id: UserId,
     name: Option[String] = None,
     email: Option[String] = None) {
+
   def contact: String = {
     val parts = Seq(name, email.map { value => s"($value)" }).flatten
     if (parts.isEmpty) "--" else parts.mkString(" ")
@@ -85,4 +88,7 @@ abstract class OAuthClient(config: Config) {
   }
 
   protected def urlFromConfig(key: String) = url(stringConfig(key))
+
+  // FIXME: configure a different realm for each provider
+  protected val realm: String = UserId.DefaultRealm
 }

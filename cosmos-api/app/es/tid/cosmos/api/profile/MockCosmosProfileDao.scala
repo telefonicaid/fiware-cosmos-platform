@@ -27,13 +27,13 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   object DummyConnection
   type Conn = DummyConnection.type
 
-  private var users = Map[String, CosmosProfile]()
+  private var users = Map[UserId, CosmosProfile]()
   private var clusters = Map[ClusterId, Long]()
 
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
-  override def registerUserInDatabase(userId: String, reg: Registration)(implicit c: Conn): Long = {
+  override def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): Long = {
     val credentials = ApiCredentials.random()
     val cosmosId: Long = users.size
     users = users.updated(userId, CosmosProfile(
@@ -46,7 +46,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     cosmosId
   }
 
-  override def getCosmosId(userId: String)(implicit c: Conn): Option[Long] =
+  override def getCosmosId(userId: UserId)(implicit c: Conn): Option[Long] =
     users.get(userId).map(_.id)
 
   override def getMachineQuota(cosmosId: Long)(implicit c: Conn): Quota =
@@ -61,7 +61,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
         true
     }}.getOrElse(false)
 
-  override def lookupByUserId(userId: String)(implicit c: Conn): Option[CosmosProfile] =
+  override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     users.get(userId)
 
   override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =

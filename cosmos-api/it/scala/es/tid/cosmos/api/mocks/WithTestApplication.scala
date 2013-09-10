@@ -35,6 +35,6 @@ object WithTestApplication {
       additionalConfiguration = additionalConfiguration,
       withGlobal = Some(global)
     ) with DevSettings {
-      lazy val devSettings = Map("config.file" -> "cosmos-api/it/resources/test.conf")
+      lazy val devSettings = Map("config.file" -> "cosmos-api/it/resources/application.conf")
     }
 }

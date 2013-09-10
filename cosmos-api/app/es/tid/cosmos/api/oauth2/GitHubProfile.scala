@@ -14,9 +14,11 @@ package es.tid.cosmos.api.oauth2
 import scala.util.Try
 
 import play.api.libs.json.Json
+import es.tid.cosmos.api.profile.UserId
 
 case class GitHubProfile(id: Int, login: String, name: String, email: String) {
-  def asUserProfile: UserProfile = UserProfile(id.toString, Some(name), Some(email))
+  def asUserProfile(realm: String): UserProfile =
+    UserProfile(UserId(realm, id.toString), Some(name), Some(email))
 }
 
 object GitHubProfile {

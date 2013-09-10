@@ -14,18 +14,23 @@ package es.tid.cosmos.api.oauth2
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.api.profile.UserId
+
 class UserProfileTest extends FlatSpec with MustMatchers {
+
+  val id = UserId("realm", "id")
+
   trait FullProfile {
-    val profile = UserProfile("id", Some("John Smith"), Some("jsmith@tid.es"))
+    val profile = UserProfile(id, Some("John Smith"), Some("jsmith@tid.es"))
   }
 
   trait PartialProfiles {
-    val missingName = UserProfile("id", None, Some("jsmith@tid.es"))
-    val missingEmail = UserProfile("id", Some("John Smith"), None)
+    val missingName = UserProfile(id, None, Some("jsmith@tid.es"))
+    val missingEmail = UserProfile(id, Some("John Smith"), None)
   }
 
   trait EmptyProfile {
-    val profile = UserProfile("id")
+    val profile = UserProfile(id)
   }
 
   "A full user profile" must "provide a contact with all fields" in new FullProfile {

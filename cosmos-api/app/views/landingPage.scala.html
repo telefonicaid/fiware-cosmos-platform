@@ -1,4 +1,4 @@
-@(newAccountUrl: String, authenticateUrl: String, message: Option[String] = None)
+@(authAlternatives: Seq[views.AuthAlternative], message: Option[String] = None)
 @import play.api.Play.current
 <!--
  Telefónica Digital - Product Development and Innovation
@@ -22,21 +22,26 @@
 
         <h2>Manage your Big Data assets.</h2>
 
-        @defining(current.configuration.getString("oauth.provider").get) { provider =>
-            <img id="oauth-logo" alt="@provider logo" class="@provider-oauth"
-                 src="@routes.Assets.at(s"images/oauth/${provider}.png")"/>
-            <ul>
+        <p>Log in with any of the following authentication providers:</p>
+
+        <div id="auth-selector">
+        @for(alt <- authAlternatives) {
+            <ul id="@alt.id" class="auth-alternative">
                 <li>
-                    Log in with your <a id="login" href="@authenticateUrl">
-                    @current.configuration.getString("oauth.providerName").get
-                    </a> identity
+                <a class="login" href="@alt.authUrl">
+                    Log in with @alt.name
+                    <img id="@alt.id-auth" class="oauth-logo" alt="@alt.id logo"
+                         src="@routes.Assets.at(s"images/oauth/${alt.id}.png")"/>
+                </a>
                 </li>
+                @if(alt.newAccountUrl.isDefined) {
                 <li>
-                    Or get a <a href="@newAccountUrl" class="oauth-provider"
-                    target="_blank">new account</a> first
+                    Or get a <a href="@alt.newAccountUrl.get" target="_blank">new account</a>
                 </li>
+                }
             </ul>
         }
+        </div>
 
         <hr/>
 

@@ -132,7 +132,7 @@ class PagesIT extends FlatSpec with MustMatchers {
   }
 
   private def authenticationUrl(page: String) =
-    """<a id="login" href="(.*?)">""".r.findFirstMatchIn(page)
+    """<a class="login" href="(.*?)">""".r.findFirstMatchIn(page)
       .map(m => StringEscapeUtils.unescapeHtml4(m.group(1)))
 
   private def registrationUrl(page: String) =

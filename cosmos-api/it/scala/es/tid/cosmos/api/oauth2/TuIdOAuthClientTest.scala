@@ -28,7 +28,7 @@ class TuIdOAuthClientTest extends FlatSpec with MustMatchers with FutureMatchers
   def newClient() = new TuIdOAuthClient(play.api.Play.current.configuration.underlying)
 
   "A TU|id client" must "link to signup url" in new WithMockedTuIdService {
-    newClient().signUpUrl must be (s"${tuId.baseUrl}signup/validate/")
+    newClient().signUpUrl.get must be (s"${tuId.baseUrl}signup/validate/")
   }
 
   it must "link to an authentication url" in new WithMockedTuIdService {

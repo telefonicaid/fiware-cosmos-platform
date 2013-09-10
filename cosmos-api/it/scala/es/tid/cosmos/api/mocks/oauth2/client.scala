@@ -25,7 +25,7 @@ class MockOAuthClient(config: Config) extends OAuthClient(config) {
   /**
    * Link to the sign up page of the OAuth provider
    */
-  def signUpUrl: String = s"$BaseUrl/signup/"
+  override def signUpUrl: Option[String] = Some(s"$BaseUrl/signup/")
 
   /**
    * Creates a link to the OAuth provider that asks for the require authorization scopes.
@@ -33,7 +33,7 @@ class MockOAuthClient(config: Config) extends OAuthClient(config) {
    * @param redirectUri  URI that the OAuth provider uses to return the control
    * @return             The URL
    */
-  def authenticateUrl(redirectUri: String): String =
+  override def authenticateUrl(redirectUri: String): String =
     s"$BaseUrl/oauth?client_id=fake&redirect_to=$redirectUri"
 
   /**
@@ -42,7 +42,7 @@ class MockOAuthClient(config: Config) extends OAuthClient(config) {
    * @param code  Authorization code
    * @return      Future access token or an OAuthException in case of error
    */
-  def requestAccessToken(code: String): Future[String] =
+  override def requestAccessToken(code: String): Future[String] =
     if (code == GrantedCode) Future.successful(GrantedToken)
     else Future.failed(OAuthException(OAuthError.InvalidGrant, "testing invalid grant"))
 
@@ -52,7 +52,7 @@ class MockOAuthClient(config: Config) extends OAuthClient(config) {
    * @param token  Access token
    * @return       Future user profile or an OAuthException in case of error
    */
-  def requestUserProfile(token: String): Future[UserProfile] =
+  override def requestUserProfile(token: String): Future[UserProfile] =
     if (token == GrantedToken) Future.successful(User)
     else Future.failed(OAuthException(OAuthError.InvalidRequest, "testing invalid requests"))
 }

@@ -44,7 +44,7 @@ abstract class OAuthClient(config: Config) {
   /**
    * Link to the sign up page of the OAuth provider
    */
-  def signUpUrl: String
+  def signUpUrl: Option[String]
 
   /**
    * Creates a link to the OAuth provider that asks for the require authorization scopes.
@@ -70,6 +70,14 @@ abstract class OAuthClient(config: Config) {
    */
   def requestUserProfile(token: String): Future[UserProfile]
 
+  // FIXME: configure a different realm for each provider
+  val realm: String = UserId.DefaultRealm
+
+  /**
+   * Human readable name of the provider
+   */
+  def providerName = stringConfig("oauth.providerName")
+
   /**
    * OAuth client ID
    */
@@ -88,7 +96,4 @@ abstract class OAuthClient(config: Config) {
   }
 
   protected def urlFromConfig(key: String) = url(stringConfig(key))
-
-  // FIXME: configure a different realm for each provider
-  protected val realm: String = UserId.DefaultRealm
 }

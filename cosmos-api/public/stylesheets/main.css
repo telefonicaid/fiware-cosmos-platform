@@ -98,31 +98,49 @@ hr {
     color: white;
 }
 
-#oauth-logo {
+#auth-selector {
+    position: relative;
+    overflow: auto;
+}
+
+.auth-alternative {
+    width: 9em;
+    background-color: #ddd;
     float: left;
+    margin: 0 0 0 1em;
+    padding: 1ex;
+    text-align: center;
+    border-radius: 1ex;
+}
+.auth-alternative li {
+    list-style: none;
+}
+
+.oauth-logo {
+    display: block;
     background-color: #777;
     border-radius: 5px;
     padding: 5px;
+    margin: 1ex auto;
     width: 64px;
-    margin-right: 2em;
     box-shadow: 3px 3px 2px #888;
 }
 
-#oauth-logo:hover {
+.oauth-logo:hover {
     background-color: #222;
 }
 
-#oauth-logo.tuid-oauth {
+#tuid-oauth.oauth-logo {
     background-color: #e25e2b;
 }
-#oauth-logo.tuid-oauth:hover {
+#tuid-oauth.oauth-logo:hover {
     background-color: #FF7E14;
 }
 
-#oauth-logo.github-oauth {
+#github-oauth.oauth-logo {
     background-color: #4183c4;
 }
-#oauth-logo.github-oauth:hover {
+#github-oauth.oauth-logo:hover {
     background-color: #222;
 }
 

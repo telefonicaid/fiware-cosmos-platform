@@ -24,7 +24,7 @@ import es.tid.cosmos.platform.common.ConfigComponent
 
 class GitHubOAuthClient(config: Config) extends OAuthClient(config) {
 
-  override def signUpUrl: String = stringConfig("github.signup.url")
+  override def signUpUrl: Option[String] = Some(stringConfig("github.signup.url"))
 
   override def authenticateUrl(redirectUri: String): String =
     (authorizationUrl / "authorize" <<? Map(

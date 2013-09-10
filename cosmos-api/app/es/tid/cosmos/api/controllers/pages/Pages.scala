@@ -28,6 +28,7 @@ import es.tid.cosmos.api.oauth2.{UserProfile, OAuthClient, OAuthError, OAuthExce
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
+import views.AuthAlternative
 
 /**
  * Controller for the web pages of the service.
@@ -100,9 +101,8 @@ class Pages(
     Redirect(routes.Pages.index()).withNewSession
   }
 
-  private def landingPage(implicit request: RequestHeader) = {
-    Ok(views.html.landingPage(oauthClient.signUpUrl, authenticateUrl))
-  }
+  private def landingPage(implicit request: RequestHeader) =
+    Ok(views.html.landingPage(authAlternatives))
 
   private def registrationPage(profile: UserProfile, form: Form[Registration]) = {
     val contents = views.html.registration(profile, form)
@@ -120,10 +120,18 @@ class Pages(
   private def unauthorizedPage(ex: OAuthException)(implicit request: RequestHeader) = {
     Logger.error(s"OAuth request failed: ${ex.description}", ex)
     val message = if (ex.error == UnauthorizedClient) "Access denied" else "Authorization failed"
-    val body = views.html.landingPage(oauthClient.signUpUrl, authenticateUrl, Some(message))
+    val body = views.html.landingPage(authAlternatives, Some(message))
     Unauthorized(body).withNewSession
   }
 
-  private def authenticateUrl(implicit request: RequestHeader) =
-    oauthClient.authenticateUrl(AbsoluteUrl(routes.Pages.authorize(None, None)))
+  private def authAlternatives(implicit request: RequestHeader): Seq[AuthAlternative] = {
+    val redirectUrl = AbsoluteUrl(routes.Pages.authorize(code = None, error = None))
+    val defaultAuthAlternative = AuthAlternative(
+      id = oauthClient.realm,
+      name = oauthClient.providerName,
+      authUrl = oauthClient.authenticateUrl(redirectUrl),
+      newAccountUrl = oauthClient.signUpUrl
+    )
+    Seq(defaultAuthAlternative)
+  }
 }

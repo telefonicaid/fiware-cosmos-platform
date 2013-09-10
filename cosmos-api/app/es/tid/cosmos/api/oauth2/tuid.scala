@@ -24,7 +24,7 @@ import es.tid.cosmos.platform.common.ConfigComponent
 
 class TuIdOAuthClient(config: Config) extends OAuthClient(config) {
 
-  override def signUpUrl: String = s"${authorizationUrl.url}/signup/validate/"
+  override def signUpUrl: Option[String] = Some(s"${authorizationUrl.url}/signup/validate/")
 
   override def authenticateUrl(redirectUri: String): String =
     (authorizationUrl / "authorize" <<? Map(

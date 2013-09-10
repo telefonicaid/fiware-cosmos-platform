@@ -68,7 +68,7 @@ class GitHubOAuthClientTest extends FlatSpec
     ConfigFactory.parseMap(JavaConversions.mapAsJavaMap(keys))
 
   "A GitHub OAuth client" must "link to signup url" in {
-    client.signUpUrl must be (config("github.signup.url"))
+    client.signUpUrl.get must be (config("github.signup.url"))
   }
 
   it must "link to an authentication url" in {

@@ -24,7 +24,7 @@ import es.tid.cosmos.api.mocks.oauth2.MockedGitHubApi
 import es.tid.cosmos.api.profile.UserId
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
-class GitHubOAuthClientTest extends FlatSpec
+class GitHubOAuthProviderTest extends FlatSpec
   with MustMatchers
   with BeforeAndAfter
   with BeforeAndAfterAll
@@ -46,14 +46,14 @@ class GitHubOAuthClientTest extends FlatSpec
     existingUser = gitHubUser
   )
   var config = gitHubMock.configurationKeys
-  var client: GitHubOAuthClient = null
+  var client: GitHubOAuthProvider = null
 
   override def beforeAll() {
     gitHubMock.start()
   }
 
   before {
-    client = new GitHubOAuthClient(toConfig(config))
+    client = new GitHubOAuthProvider("github", toConfig(config))
   }
 
   after {
@@ -68,17 +68,17 @@ class GitHubOAuthClientTest extends FlatSpec
     ConfigFactory.parseMap(JavaConversions.mapAsJavaMap(keys))
 
   "A GitHub OAuth client" must "link to signup url" in {
-    client.signUpUrl.get must be (config("github.signup.url"))
+    client.newAccountUrl.get must be (config("signup.url"))
   }
 
   it must "link to an authentication url" in {
-    client.authenticateUrl("http://callback") must be (
-      s"${config("github.auth.url")}authorize?" +
-      "client_id=client-id-1&scope=user&redirect_uri=http://callback")
+    client.authenticationUrl("http://callback") must be (
+      s"${config("auth.url")}authorize?client_id=client-id-1&scope=user&redirect_uri=" +
+      "http://callback")
   }
 
   it must "successfully request an access token with a valid code" in {
-    val authUrl = client.authenticateUrl("http://callback")
+    val authUrl = client.authenticationUrl("http://callback")
     val code = gitHubMock.requestAuthorizationCode(authUrl, gitHubUser.id)
     val token_> = client.requestAccessToken(code)
     token_> must runUnder(testTimeout)
@@ -92,7 +92,7 @@ class GitHubOAuthClientTest extends FlatSpec
   }
 
   it must "request the user profile" in {
-    val authUrl = client.authenticateUrl("http://callback")
+    val authUrl = client.authenticationUrl("http://callback")
     val code = gitHubMock.requestAuthorizationCode(authUrl, gitHubUser.id)
     val profile_> = for {
       token <- client.requestAccessToken(code)
@@ -100,7 +100,7 @@ class GitHubOAuthClientTest extends FlatSpec
     } yield profile
     profile_> must runUnder(testTimeout)
     profile_> must eventually(equal(UserProfile(
-      id = UserId("53"),
+      id = UserId("github", "53"),
       name = Some("John Smith"),
       email = Some("jsmith@tid.es")
     )))

@@ -22,7 +22,7 @@ import es.tid.cosmos.api.controllers.ResultMatchers.redirectTo
 import es.tid.cosmos.api.controllers.pages.{CosmosSession, Registration}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
-import es.tid.cosmos.api.mocks.oauth2.MockOAuthClient
+import es.tid.cosmos.api.mocks.oauth2.MockOAuthConstants
 import es.tid.cosmos.api.oauth2.UserProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
@@ -30,16 +30,16 @@ class PagesIT extends FlatSpec with MustMatchers {
 
   "A non registered user" must "be redirected to registration when having a valid OAuth code" in
     new WithTestApplication {
-      val redirection = route(FakeRequest(GET, s"/auth?code=${MockOAuthClient.GrantedCode}")).get
+      val redirection = oauthRedirectionWithCode(MockOAuthConstants.GrantedCode)
       redirection must redirectTo ("/")
       val cosmosSession: CosmosSession = session(redirection)
       cosmosSession must be ('authenticated)
-      cosmosSession must not be ('registered)
+      cosmosSession must not be 'registered
     }
 
   it must "be registered upon adding the necessary registration information" in
     new WithTestApplication {
-      val nonRegistered = Session().setUserProfile(MockOAuthClient.User)
+      val nonRegistered = Session().setUserProfile(MockOAuthConstants.User101)
       val registrationPage = route(withSession(FakeRequest(GET, "/"), nonRegistered)).get
       val url = registrationUrl(contentAsString(registrationPage))
       val regRedirection = route(withSession(FakeRequest(POST, url), nonRegistered)
@@ -55,20 +55,20 @@ class PagesIT extends FlatSpec with MustMatchers {
 
   it must "not be authenticated after cancelling the registration process" in
     new WithTestApplication {
-      val nonRegistered = Session().setUserProfile(MockOAuthClient.User)
+      val nonRegistered = Session().setUserProfile(MockOAuthConstants.User101)
       val registrationPage = route(withSession(FakeRequest(GET, "/"), nonRegistered)).get
       val url = cancelRegistrationUrl(contentAsString(registrationPage))
       val redirection =  route(withSession(FakeRequest(GET, url), nonRegistered)).get
       redirection must redirectTo ("/")
       val registeredCosmosSession: CosmosSession = session(redirection)
-      registeredCosmosSession must not be ('authenticated)
-      registeredCosmosSession must not be ('registered)
+      registeredCosmosSession must not be 'authenticated
+      registeredCosmosSession must not be 'registered
     }
 
   "A registered user" must "be authenticated and redirected to its profile" in
     new WithTestApplication {
-      registerUser(dao, MockOAuthClient.User)
-      val redirection = route(FakeRequest(GET, s"/auth?code=${MockOAuthClient.GrantedCode}")).get
+      registerUser(dao, MockOAuthConstants.User101)
+      val redirection = oauthRedirectionWithCode(MockOAuthConstants.GrantedCode)
       redirection must redirectTo ("/")
       val cosmosSession: CosmosSession = session(redirection)
       cosmosSession must be ('authenticated)
@@ -76,17 +76,17 @@ class PagesIT extends FlatSpec with MustMatchers {
     }
 
   "A user rejecting authorization" must "see error information" in new WithTestApplication {
-    val result = route(FakeRequest(GET, s"/auth?error=unauthorized_client")).get
+    val result = oauthRedirectionWithError("unauthorized_client")
     status(result) must be (UNAUTHORIZED)
     contentAsString(result) must include ("Access denied")
   }
 
   "A user with an invalid token" must "see error information and lose her session" in
     new WithTestApplication {
-      val result = route(FakeRequest(GET, "/auth?code=invalid")).get
+      val result = oauthRedirectionWithCode("invalid")
       val cosmosSession: CosmosSession = session(result)
-      cosmosSession must not be ('authenticated)
-      cosmosSession must not be ('registered)
+      cosmosSession must not be 'authenticated
+      cosmosSession must not be 'registered
       status(result) must be (UNAUTHORIZED)
       contentAsString(result) must include ("Authorization failed")
     }
@@ -102,7 +102,7 @@ class PagesIT extends FlatSpec with MustMatchers {
   it must "show the registration page when authorized but not registered" in
     new WithTestApplication {
       val session = new Session()
-        .setUserProfile(MockOAuthClient.User)
+        .setUserProfile(MockOAuthConstants.User101)
         .setToken("token")
       val registrationPage = route(withSession(FakeRequest(GET, "/"), session)).get
       status(registrationPage) must equal (OK)
@@ -110,15 +110,22 @@ class PagesIT extends FlatSpec with MustMatchers {
     }
 
   it must "show the user profile when authorized and registered" in new WithTestApplication {
-    registerUser(dao, MockOAuthClient.User)
+    registerUser(dao, MockOAuthConstants.User101)
     val session = new Session()
-      .setUserProfile(MockOAuthClient.User)
+      .setUserProfile(MockOAuthConstants.User101)
       .setToken("token")
       .setCosmosId(1)
     val registrationPage = route(withSession(FakeRequest(GET, "/"), session)).get
     status(registrationPage) must equal (OK)
     contentAsString(registrationPage) must include ("Cosmos user profile")
   }
+
+  private def oauthRedirectionWithCode(grantedCode: String) = oauthRedirection(s"code=$grantedCode")
+
+  private def oauthRedirectionWithError(error: String) = oauthRedirection(s"error=$error")
+
+  private def oauthRedirection(queryString: String) =
+    route(FakeRequest(GET, s"/auth/${MockOAuthConstants.ProviderId}?$queryString")).get
 
   private def withSession[A](request: FakeRequest[A], session: Session) =
     request.withSession(session.data.toSeq: _*)

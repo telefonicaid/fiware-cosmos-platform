@@ -21,7 +21,7 @@ import unfiltered.request._
 import unfiltered.response._
 
 import es.tid.cosmos.api.mocks.oauth2.UrlUtils.parseQueryParams
-import es.tid.cosmos.api.oauth2.GitHubProfile
+import es.tid.cosmos.api.oauth2.{GitHubOAuthProvider, GitHubProfile}
 
 class MockedGitHubApi(
     port: Int,
@@ -64,11 +64,13 @@ class MockedGitHubApi(
   def configurationKeys: Map[String, String] = {
     val baseUrl = s"http://127.0.0.1:$port"
     Map(
-      "oauth.client.id" -> clientId,
-      "oauth.client.secret" -> clientSecret,
-      "github.auth.url" -> s"$baseUrl/login/oauth/",
-      "github.api.url" -> s"$baseUrl/api/v3/",
-      "github.signup.url" -> s"$baseUrl/auth/ldap/"
+      "name" -> "GitHub",
+      "class" -> classOf[GitHubOAuthProvider].getName,
+      "client.id" -> clientId,
+      "client.secret" -> clientSecret,
+      "auth.url" -> s"$baseUrl/login/oauth/",
+      "api.url" -> s"$baseUrl/api/v3/",
+      "signup.url" -> s"$baseUrl/auth/ldap/"
     )
   }
 

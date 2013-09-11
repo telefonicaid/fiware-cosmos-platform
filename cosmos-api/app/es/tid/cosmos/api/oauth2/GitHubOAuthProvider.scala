@@ -20,13 +20,10 @@ import play.api.Logger
 import play.api.libs.json.Json
 
 import es.tid.cosmos.api.oauth2.OAuthTupleBuilder._
-import es.tid.cosmos.platform.common.ConfigComponent
 
-class GitHubOAuthClient(config: Config) extends OAuthClient(config) {
+class GitHubOAuthProvider(id: String, config: Config) extends AbstractOAuthProvider(id, config) {
 
-  override def signUpUrl: Option[String] = Some(stringConfig("github.signup.url"))
-
-  override def authenticateUrl(redirectUri: String): String =
+  override def authenticationUrl(redirectUri: String): String =
     (authorizationUrl / "authorize" <<? Map(
       "client_id" -> clientId,
       "scope" -> "user",
@@ -55,21 +52,11 @@ class GitHubOAuthClient(config: Config) extends OAuthClient(config) {
     Http(request OAuthOK as.String).map(parseProfile)
   }
 
-  private def parseProfile(str: String): UserProfile =
-    GitHubProfile.fromJson(str) match {
-      case Success(p) => p.asUserProfile(realm)
-      case Failure(ex) => {
-        Logger.error(s"Cannot parse GitHub profile: $str", ex)
-        throw new IllegalArgumentException("Cannot parse GitHub profile", ex)
-      }
+  private def parseProfile(str: String): UserProfile = GitHubProfile.fromJson(str) match {
+    case Success(p) => p.asUserProfile(id)
+    case Failure(ex) => {
+      Logger.error(s"Cannot parse GitHub profile: $str", ex)
+      throw new IllegalArgumentException("Cannot parse GitHub profile", ex)
     }
-
-  private def authorizationUrl = urlFromConfig("github.auth.url")
-
-  private def apiUrl = urlFromConfig("github.api.url")
-}
-
-trait GitHubOAuthClientComponent extends OAuthClientComponent {
-  this: ConfigComponent =>
-  lazy val oAuthClient: OAuthClient = new GitHubOAuthClient(this.config)
+  }
 }

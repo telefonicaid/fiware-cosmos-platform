@@ -49,6 +49,9 @@ executable.  Then you need to copy and edit ``application.conf.sample`` to
     db.default.user="<database user name>"
     db.default.pass="<cosmos user password>"
 
+- At least one of the auth providers should be enabled (``enabled`` attribute)
+or the application will fail to initialize
+
 - To have a link to cosmos CLI: ``cli.url="http://host/cosmos.egg"``
 
 - To get more debugging information in the browser: ``application.mode=dev``

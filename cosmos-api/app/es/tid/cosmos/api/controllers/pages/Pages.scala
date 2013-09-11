@@ -24,7 +24,7 @@ import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
-import es.tid.cosmos.api.oauth2.{UserProfile, OAuthClient, OAuthError, OAuthException}
+import es.tid.cosmos.api.oauth2.{UserProfile, OAuthProvider, MultiOAuthProvider, OAuthError, OAuthException}
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -34,7 +34,7 @@ import views.AuthAlternative
  * Controller for the web pages of the service.
  */
 class Pages(
-    oauthClient: OAuthClient,
+    oauthClients: MultiOAuthProvider,
     serviceManager: ServiceManager,
     dao: CosmosProfileDao
   ) extends Controller {
@@ -56,15 +56,16 @@ class Pages(
     Ok(views.html.swaggerUI(AbsoluteUrl(rootRoutes.ApiHelpController.getResources())))
   }
 
-  def authorize(maybeCode: Option[String], maybeError: Option[String]) = Action { implicit request =>
-    (maybeCode, maybeError.flatMap(OAuthError.valueOf)) match {
-      case (_, Some(error)) => unauthorizedPage(OAuthException(error,
-        "OAuth provider redirected with an error code instead of an authorization code"))
-      case (Some(code), _) => Async {
+  def authorize(providerId: String, maybeCode: Option[String], maybeError: Option[String]) =
+    Action { implicit request =>
+
+      def authorizeCode(oauthClient: OAuthProvider, code: String) = Async {
         (for {
           token <- oauthClient.requestAccessToken(code)
           userProfile <- oauthClient.requestUserProfile(token)
-          maybeCosmosId = dao.withConnection { implicit c => dao.getCosmosId(userProfile.id) }
+          maybeCosmosId = dao.withConnection {
+            implicit c => dao.getCosmosId(userProfile.id)
+          }
         } yield {
           Logger.info(s"Authorized with token $token")
           Redirect(routes.Pages.index()).withSession(session
@@ -72,13 +73,27 @@ class Pages(
             .setUserProfile(userProfile)
             .setCosmosId(maybeCosmosId))
         }) recover {
-          case ex @ OAuthException(_, _) => unauthorizedPage(ex)
+          case ex@OAuthException(_, _) => unauthorizedPage(ex)
           case Wrapped(Wrapped(ex: OAuthException)) => unauthorizedPage(ex)
         }
       }
-      case _ => BadRequest(Json.toJson(ErrorMessage("Missing code")))
+
+      def reportAuthError(error: OAuthError.OAuthError) = unauthorizedPage(OAuthException(error,
+        "OAuth provider redirected with an error code instead of an authorization code"))
+
+      def reportMissingAuthCode = BadRequest(Json.toJson(ErrorMessage("Missing code")))
+
+      def reportUnknownProvider = NotFound(Json.toJson(
+        ErrorMessage(s"Unknown authorization provider $providerId")))
+
+      oauthClients.providers.get(providerId).map(oauthClient =>
+        (maybeCode, maybeError.flatMap(OAuthError.parse)) match {
+          case (_, Some(error)) => reportAuthError(error)
+          case (Some(code), _) => authorizeCode(oauthClient, code)
+          case _ => reportMissingAuthCode
+        }
+      ).getOrElse(reportUnknownProvider)
     }
-  }
 
   def registerUser = Action { implicit request =>
     session.userProfile.map(userProfile =>
@@ -124,14 +139,13 @@ class Pages(
     Unauthorized(body).withNewSession
   }
 
-  private def authAlternatives(implicit request: RequestHeader): Seq[AuthAlternative] = {
-    val redirectUrl = AbsoluteUrl(routes.Pages.authorize(code = None, error = None))
-    val defaultAuthAlternative = AuthAlternative(
-      id = oauthClient.realm,
-      name = oauthClient.providerName,
-      authUrl = oauthClient.authenticateUrl(redirectUrl),
-      newAccountUrl = oauthClient.signUpUrl
-    )
-    Seq(defaultAuthAlternative)
-  }
+  private def authAlternatives(implicit request: RequestHeader): Seq[AuthAlternative] = (for {
+    (id, oauthClient) <- oauthClients.providers
+    redirectUrl = AbsoluteUrl(routes.Pages.authorize(providerId = id, code = None, error = None))
+  } yield AuthAlternative(
+    id = oauthClient.id,
+    name = oauthClient.name,
+    authUrl = oauthClient.authenticationUrl(redirectUrl),
+    newAccountUrl = oauthClient.newAccountUrl
+  )).toSeq
 }

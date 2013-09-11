@@ -21,18 +21,21 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.api.mocks.oauth2.WithMockedTuIdService
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
-class TuIdOAuthClientTest extends FlatSpec with MustMatchers with FutureMatchers {
+class TuIdOAuthProviderTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   val TestTimeout = 3 seconds
 
-  def newClient() = new TuIdOAuthClient(play.api.Play.current.configuration.underlying)
+  def newClient() = {
+    val providerConfig = play.api.Play.current.configuration.underlying.getConfig("auth.tuid")
+    new TuIdOAuthProvider("tuid", providerConfig)
+  }
 
   "A TU|id client" must "link to signup url" in new WithMockedTuIdService {
-    newClient().signUpUrl.get must be (s"${tuId.baseUrl}signup/validate/")
+    newClient().newAccountUrl.get must be ("http://host/onboarding")
   }
 
   it must "link to an authentication url" in new WithMockedTuIdService {
-    newClient().authenticateUrl("http://callback") must be (
+    newClient().authenticationUrl("http://callback") must be (
       s"${tuId.baseUrl}authorize?client_id=fake client id&" +
       "scope=userdata.user.read.basic userdata.user.read.emails&" +
       "response_type=code&redirect_uri=http://callback")
@@ -40,7 +43,7 @@ class TuIdOAuthClientTest extends FlatSpec with MustMatchers with FutureMatchers
 
   it must "successfully request an access token with a valid code" in new WithMockedTuIdService {
     val client = newClient()
-    val authUrl = client.authenticateUrl("http://callback")
+    val authUrl = client.authenticationUrl("http://callback")
     val code = tuId.requestAuthorizationCode(authUrl, tuId.users(0).id)
     val token_> = client.requestAccessToken(code)
     token_> must runUnder(TestTimeout)
@@ -57,7 +60,7 @@ class TuIdOAuthClientTest extends FlatSpec with MustMatchers with FutureMatchers
   it must "request the user profile" in new WithMockedTuIdService {
     val client = newClient()
     val user = tuId.users(0)
-    val authUrl = client.authenticateUrl("http://callback")
+    val authUrl = client.authenticationUrl("http://callback")
     val code = tuId.requestAuthorizationCode(authUrl, user.id)
     val profile_> = for {
       token <- client.requestAccessToken(code)

@@ -4,7 +4,7 @@
 
 # Pages
 GET     /                                @es.tid.cosmos.api.controllers.pages.Pages.index
-GET     /auth                            @es.tid.cosmos.api.controllers.pages.Pages.authorize(code: Option[String], error: Option[String])
+GET     /auth/:providerId                @es.tid.cosmos.api.controllers.pages.Pages.authorize(providerId: String, code: Option[String], error: Option[String])
 GET     /logout                          @es.tid.cosmos.api.controllers.pages.Pages.logout()
 POST    /register                        @es.tid.cosmos.api.controllers.pages.Pages.registerUser
 

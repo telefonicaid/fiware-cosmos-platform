@@ -34,9 +34,10 @@ object OAuthException {
    */
   def fromForm(urlEncodedError: String): Option[OAuthException] = {
     val form = FormUrlEncodedParser.parse(urlEncodedError, "UTF-8")
-    for (value <- firstValue("error", form);
-         error <- OAuthError.valueOf(value))
-      yield OAuthException(error, firstValue("error_description", form).getOrElse("unknown error"))
+    for {
+      value <- firstValue("error", form)
+      error <- OAuthError.parse(value)
+    } yield OAuthException(error, firstValue("error_description", form).getOrElse("unknown error"))
   }
 
   private def firstValue(field: String, form: Map[String, Seq[String]]): Option[String] =

@@ -46,7 +46,7 @@ class TuIdService(
     clientId: String,
     clientSecret: String,
     val users: List[UserProfile] = List(UserProfile(
-      id = UserId("db001"),
+      id = UserId("tuid", "db001"),
       name= Some("John Smith"),
       email = Some("jsmith@tid.es")
     )),

@@ -22,10 +22,10 @@ class WithMockedTuIdService(
     clientId: String = "fake client id",
     clientSecret: String = "fake client secret"
   ) extends WithSampleUsers(additionalConfiguration = Map(
-    "oauth.client.id" -> clientId,
-    "oauth.client.secret" -> clientSecret,
-    "tuid.auth.url" -> s"http://127.0.0.1:$port",
-    "tuid.api.url" -> s"http://127.0.0.1:$port"
+    "auth.tuid.client.id" -> clientId,
+    "auth.tuid.client.secret" -> clientSecret,
+    "auth.tuid.auth.url" -> s"http://127.0.0.1:$port",
+    "auth.tuid.api.url" -> s"http://127.0.0.1:$port"
   )) {
 
   lazy val tuId: TuIdService = new TuIdService(port, clientId, clientSecret)

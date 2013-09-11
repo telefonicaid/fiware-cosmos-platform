@@ -20,13 +20,10 @@ import play.api.libs.json.Json
 
 import es.tid.cosmos.api.oauth2.OAuthTupleBuilder._
 import es.tid.cosmos.api.profile.UserId
-import es.tid.cosmos.platform.common.ConfigComponent
 
-class TuIdOAuthClient(config: Config) extends OAuthClient(config) {
+class TuIdOAuthProvider(id: String, config: Config) extends AbstractOAuthProvider(id, config) {
 
-  override def signUpUrl: Option[String] = Some(s"${authorizationUrl.url}/signup/validate/")
-
-  override def authenticateUrl(redirectUri: String): String =
+  override def authenticationUrl(redirectUri: String): String =
     (authorizationUrl / "authorize" <<? Map(
       "client_id" -> clientId,
       "scope" -> "userdata.user.read.basic userdata.user.read.emails",
@@ -41,7 +38,7 @@ class TuIdOAuthClient(config: Config) extends OAuthClient(config) {
       "code" -> code
     )
     Http((tokenUrl as_!(clientId, clientSecret)) <<? queryParams << "" OAuthOK as.String)
-      .map(response => ((Json.parse(response) \ "access_token").as[String]))
+      .map(response => (Json.parse(response) \ "access_token").as[String])
   }
 
   override def requestUserProfile(token: String): Future[UserProfile] = {
@@ -51,9 +48,9 @@ class TuIdOAuthClient(config: Config) extends OAuthClient(config) {
 
   private def parseTuProfile(str: String): UserProfile = {
     val json = Json.parse(str)
-    (json \ "userId").asOpt[String].map(id =>
+    (json \ "userId").asOpt[String].map(userId =>
       UserProfile(
-        id=UserId(realm, id),
+        id=UserId(id, userId),
         name=makeFullName(
           (json \ "firstName").asOpt[String],
           (json \ "surname").asOpt[String]
@@ -71,14 +68,4 @@ class TuIdOAuthClient(config: Config) extends OAuthClient(config) {
     if (presentParts.isEmpty) None
     else Some(presentParts.mkString(" "))
   }
-
-  private def authorizationUrl = urlFromConfig("tuid.auth.url")
-
-  private def apiUrl = urlFromConfig("tuid.api.url")
-}
-
-trait TuIdOAuthClientComponent extends OAuthClientComponent {
-  this: ConfigComponent =>
-
-  lazy val oAuthClient: OAuthClient = new TuIdOAuthClient(this.config)
 }

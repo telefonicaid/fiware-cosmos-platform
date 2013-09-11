@@ -23,6 +23,6 @@ object OAuthError extends Enumeration {
   val UnsupportedGrantType = Value("unsupported_grant_type")
   val InvalidScope = Value("invalid_scope")
 
-  def valueOf(str: String): Option[OAuthError] =
+  def parse(str: String): Option[OAuthError] =
     OAuthError.values.find(value => value.toString == str)
 }

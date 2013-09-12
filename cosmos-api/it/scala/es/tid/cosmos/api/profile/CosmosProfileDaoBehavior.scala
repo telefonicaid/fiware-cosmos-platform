@@ -37,6 +37,14 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       }
     })
 
+    taggedTest(it must "detect unused handles", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        dao.registerUserInDatabase(UserId("oauth53"), Registration("used_handle", "secure_pk"))
+        dao.isDuplicatedHandle("used_handle") must be (true)
+        dao.isDuplicatedHandle("unused_handle") must be (false)
+      }
+    })
+
     taggedTest(it must "get Cosmos ID from user ID when user is registered", withDao { dao =>
       dao.withTransaction { implicit c =>
         val registeredUser = UserId("db-registered")

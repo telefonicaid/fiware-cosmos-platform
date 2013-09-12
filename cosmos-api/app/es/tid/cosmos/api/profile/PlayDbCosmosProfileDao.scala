@@ -76,6 +76,13 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .executeUpdate() > 0
   }
 
+  override def handleExists(handle: String)(implicit c: Conn): Boolean = {
+    val usersWithThatHandle = SQL("SELECT count(*) from user WHERE handle = {handle}")
+      .on("handle" -> handle)
+      .as(scalar[Long].single)
+    usersWithThatHandle > 0
+  }
+
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     lookup(SQL("""SELECT u.cosmos_id, u.handle, u.machine_quota, u.api_key, u.api_secret, p.name,
                  | p.signature

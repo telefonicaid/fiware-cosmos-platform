@@ -74,7 +74,7 @@ trait CosmosProfileDao {
    * @param c      The connection to use.
    * @return       Whether the handle is taken.
    */
-  def isDuplicatedHandle(handle: String)(implicit c: Conn): Boolean
+  def handleExists(handle: String)(implicit c: Conn): Boolean
 
   /**
    * Obtains the profile for a given user.

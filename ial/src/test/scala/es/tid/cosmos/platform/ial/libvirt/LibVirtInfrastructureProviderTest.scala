@@ -24,7 +24,7 @@ import es.tid.cosmos.platform.ial.{Id, ResourceExhaustedException, MachineState,
 
 class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with FutureMatchers with BeforeAndAfter {
 
-  val timeout: FiniteDuration = 1 second
+  val timeout: FiniteDuration = 5 seconds
   var infraProvider: LibVirtInfrastructureProvider = null
   var action: TestBootstrapAction = null
 

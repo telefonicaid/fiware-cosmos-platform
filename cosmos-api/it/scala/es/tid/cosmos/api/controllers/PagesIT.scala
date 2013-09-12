@@ -24,7 +24,7 @@ import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.mocks.oauth2.MockOAuthConstants
 import es.tid.cosmos.api.oauth2.UserProfile
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.{UserId, CosmosProfileDao}
 
 class PagesIT extends FlatSpec with MustMatchers {
 
@@ -51,6 +51,23 @@ class PagesIT extends FlatSpec with MustMatchers {
       val registeredCosmosSession: CosmosSession = session(regRedirection)
       registeredCosmosSession must be ('authenticated)
       registeredCosmosSession must be ('registered)
+    }
+
+  it must "fail its registration when selected handle is already taken" in
+    new WithTestApplication {
+      dao.withTransaction { implicit c =>
+        dao.registerUserInDatabase(UserId("existingUser"), Registration("existingHandle", "PK"))
+      }
+      val nonRegistered = Session().setUserProfile(MockOAuthConstants.User101)
+      val registrationPage = route(withSession(FakeRequest(GET, "/"), nonRegistered)).get
+      val url = registrationUrl(contentAsString(registrationPage))
+      val response = route(withSession(FakeRequest(POST, url), nonRegistered)
+        .withFormUrlEncodedBody(
+          "handle" -> "existingHandle",
+          "publicKey" -> "SSH_PUBLIC_KEY"
+        )).get
+      status(response) must be (BAD_REQUEST)
+      contentAsString(response) must include ("already taken")
     }
 
   it must "not be authenticated after cancelling the registration process" in

@@ -68,6 +68,15 @@ trait CosmosProfileDao {
   def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean
 
   /**
+   * Determines whether a handle is already taken.
+   *
+   * @param handle Handle to check availability for.
+   * @param c      The connection to use.
+   * @return       Whether the handle is taken.
+   */
+  def isDuplicatedHandle(handle: String)(implicit c: Conn): Boolean
+
+  /**
    * Obtains the profile for a given user.
    *
    * @param userId  The user id of who to retrieve the profile.

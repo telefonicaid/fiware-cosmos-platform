@@ -97,19 +97,32 @@ class Pages(
 
   def registerUser = Action { implicit request =>
     session.userProfile.map(userProfile =>
-      registrationForm.bindFromRequest().fold(
-        formWithErrors => registrationPage(userProfile, formWithErrors),
-        registration => { dao.withConnection { implicit c =>
-          val newCosmosId = dao.registerUserInDatabase(userProfile.id, registration)
-          val profile = dao.lookupByUserId(userProfile.id).getOrElse(
-            throw new IllegalStateException(
+      dao.withTransaction { implicit c =>
+
+        def promoteToCosmosUser(reg: Registration) = {
+          val newCosmosId = dao.registerUserInDatabase(userProfile.id, reg)
+          val cosmosProfile = dao.lookupByUserId(userProfile.id)
+            .getOrElse(throw new IllegalStateException(
               "Could not read registration information from database"))
-          serviceManager.addUsers(serviceManager.persistentHdfsId, profile.toClusterUser)
-          Redirect(routes.Pages.index()).withSession(session.setCosmosId(newCosmosId))
-        }})
-    ).getOrElse(
-      Forbidden(Json.toJson(ErrorMessage("Not authenticated")))
-    )
+          serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
+          newCosmosId
+        }
+
+        val validatedForm = {
+          val form = registrationForm.bindFromRequest()
+          form.data.get("handle") match {
+            case Some(handle) if dao.isDuplicatedHandle(handle) =>
+              form.withError("handle", s"'$handle' is already taken")
+            case _ => form
+          }
+        }
+
+        validatedForm.fold(
+          formWithErrors => registrationPage(userProfile, formWithErrors),
+          registration => Redirect(routes.Pages.index())
+            .withSession(session.setCosmosId(promoteToCosmosUser(registration)))
+        )
+      }).getOrElse(Forbidden(Json.toJson(ErrorMessage("Not authenticated"))))
   }
 
   def logout() = Action { request =>

@@ -48,8 +48,20 @@ class Pages(
 
   def index = Action { implicit request =>
     if (!session.isAuthenticated) landingPage
-    else if (!session.isRegistered) registrationPage(session.userProfile.get, registrationForm)
-    else userProfile
+    else {
+      val maybeCosmosId = dao.withTransaction { implicit c =>
+        for {
+          UserProfile(id, _, _) <- session.userProfile
+          cosmosProfile <- dao.lookupByUserId(id)
+        } yield cosmosProfile.id
+      }
+      (session.isRegistered, maybeCosmosId) match {
+        case (false, None) => registrationPage(session.userProfile.get, registrationForm)
+        case (false, Some(_)) => redirectToIndex.withSession(session.setCosmosId(maybeCosmosId))
+        case (true, Some(_)) if maybeCosmosId == session.cosmosId => userProfile
+        case _ => redirectToIndex.withNewSession
+      }
+    }
   }
 
   def swaggerUI = Action { implicit request =>
@@ -121,15 +133,17 @@ class Pages(
           formWithErrors => registrationPage(userProfile, formWithErrors),
           registration => {
             val cosmosProfile = createCosmosProfile(registration)
-            Redirect(routes.Pages.index()).withSession(session.setCosmosId(cosmosProfile.id))
+            redirectToIndex.withSession(session.setCosmosId(cosmosProfile.id))
           }
         )
       }).getOrElse(Forbidden(Json.toJson(ErrorMessage("Not authenticated"))))
   }
 
   def logout() = Action { request =>
-    Redirect(routes.Pages.index()).withNewSession
+    redirectToIndex.withNewSession
   }
+
+  private def redirectToIndex = Redirect(routes.Pages.index())
 
   private def landingPage(implicit request: RequestHeader) =
     Ok(views.html.landingPage(authAlternatives))

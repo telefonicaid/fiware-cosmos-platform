@@ -35,6 +35,6 @@ object ProductionGlobal extends AbstractGlobal(new Application
   override def onError(request: RequestHeader, ex: Throwable): Result = {
     val message = ErrorMessage("Uncaught exception", ex)
     Logger.error(message.error, ex)
-    InternalServerError(Json.toJson(message))
+    InternalServerError(views.html.error(message))
   }
 }

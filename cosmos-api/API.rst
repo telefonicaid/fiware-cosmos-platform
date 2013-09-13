@@ -102,6 +102,9 @@ header. Additionally, the body will be as follows::
     {
       "id": <string>,
       "href": <url>
+      "name": <string>,
+      "state": <string>,
+      "stateDescription": <string>
     }
 
 GET  ``/cosmos/v1/cluster/<id>``

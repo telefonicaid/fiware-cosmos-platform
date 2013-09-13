@@ -34,7 +34,7 @@ class ErrorMessageIT extends FlatSpec with MustMatchers {
     val json = Json.toJson(messageWithException)
     (json \ "error").as[String] must be ("Something failed: Missing foo")
     (json \ "exception").as[String] must be ("java.lang.RuntimeException")
-    (json \ "stack_trace").asOpt[String] must be ('defined)
+    (json \ "stackTrace").asOpt[String] must be ('defined)
   }
 
   class FakeProdApplication extends FakeApplication {

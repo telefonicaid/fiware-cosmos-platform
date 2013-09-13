@@ -16,12 +16,12 @@ import play.api.libs.json.{Json, JsValue, Writes}
 /**
  * List of clusters as seen by the client.
  */
-case class ClusterList(clusterReferences: Seq[ClusterReference])
+case class ClusterList(clusters: Seq[ClusterReference])
 
 object ClusterList {
   implicit object ClusterListWrites extends Writes[ClusterList] {
     def writes(list: ClusterList): JsValue = Json.obj(
-      "clusters" -> list.clusterReferences.map(ref => Json.toJson(ref))
+      "clusters" -> list.clusters.map(ref => Json.toJson(ref))
     )
   }
 }

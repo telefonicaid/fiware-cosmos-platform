@@ -61,7 +61,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
         true
     }}.getOrElse(false)
 
-  override def isDuplicatedHandle(handle: String)(implicit c: Conn): Boolean =
+  override def handleExists(handle: String)(implicit c: Conn): Boolean =
     users.values.exists(_.handle == handle)
 
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =

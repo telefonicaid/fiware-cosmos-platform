@@ -76,7 +76,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .executeUpdate() > 0
   }
 
-  override def isDuplicatedHandle(handle: String)(implicit c: Conn): Boolean = {
+  override def handleExists(handle: String)(implicit c: Conn): Boolean = {
     val usersWithThatHandle = SQL("SELECT count(*) from user WHERE handle = {handle}")
       .on("handle" -> handle)
       .as(scalar[Long].single)

@@ -65,7 +65,7 @@ object ClusterDetails {
   implicit object HostDetailsWrites extends Writes[HostDetails] {
     def writes(info: HostDetails): JsValue = Json.obj(
         "hostname" -> info.hostname,
-        "ip_address" -> info.ipAddress
+        "ipAddress" -> info.ipAddress
       )
   }
 
@@ -84,7 +84,7 @@ object ClusterDetails {
       "name" -> d.name,
       "size" -> d.size,
       "state" -> d.state,
-      "state_description" -> d.stateDescription
+      "stateDescription" -> d.stateDescription
     )
   }
 }

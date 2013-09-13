@@ -31,7 +31,7 @@ def ssh_cluster(cluster_id, config):
     """Try to connect to a cluster with SSH"""
     cluster = wait_for_cluster_master(cluster_id, config)
     try:
-        address = cluster['master']['ip_address']
+        address = cluster['master']['ipAddress']
     except KeyError:
         raise ExitWithError(-1, 'Unknown master node for %s' % cluster_id)
     command_line = [config.ssh_command, address,

@@ -16,7 +16,7 @@ from mock import MagicMock
 from cosmos.compute.cluster import Cluster, Machine
 
 def machine_json(id):
-    return { 'hostname': 'machine' + id, 'ip_address': '192.168.100.' + id }
+    return { 'hostname': 'machine' + id, 'ipAddress': '192.168.100.' + id }
 
 class ClusterTest(unittest.TestCase):
 
@@ -39,7 +39,7 @@ class ClusterTest(unittest.TestCase):
             'name': 'cluster1',
             'href': self.api_url + '/cluster/1',
             'state': 'provisioning',
-            'state_description': 'the cluster is provisioning',
+            'stateDescription': 'the cluster is provisioning',
         }
 
         machines_are_ready = initial.copy()
@@ -51,7 +51,7 @@ class ClusterTest(unittest.TestCase):
         cluster_is_ready = machines_are_ready.copy()
         cluster_is_ready.update({
             'state': 'running',
-            'state_description': 'the cluster is running',
+            'stateDescription': 'the cluster is running',
         })
 
         self.proto.get_cluster_details = MagicMock(side_effect=[

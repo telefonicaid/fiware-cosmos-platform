@@ -33,7 +33,7 @@ object ErrorMessage {
         case Some(ex) if (!Play.isProd) => Json.obj(
           "error" -> s"${message.error}: ${ex.getMessage}",
           "exception" -> getExceptionName(ex),
-          "stack_trace" -> getStackTraceLines(ex)
+          "stackTrace" -> getStackTraceLines(ex)
         )
         case _ => Json.obj("error" -> message.error)
       }

@@ -36,14 +36,14 @@ class ClusterIT extends FlatSpec with MustMatchers with AuthBehaviors {
       "name" -> "cluster0",
       "size" -> 100,
       "state" -> "running",
-      "state_description" -> "Cluster is ready",
+      "stateDescription" -> "Cluster is ready",
       "master" -> Json.obj(
         "hostname" -> "fakeHostname",
-        "ip_address" -> "fakeAddress"
+        "ipAddress" -> "fakeAddress"
       ),
       "slaves" -> Json.arr(Json.obj(
         "hostname" -> "fakeHostname",
-        "ip_address" -> "fakeAddress"
+        "ipAddress" -> "fakeAddress"
       ))
     )
   val partialDescription = Json.obj(
@@ -52,7 +52,7 @@ class ClusterIT extends FlatSpec with MustMatchers with AuthBehaviors {
     "name" -> "clusterInProgress",
     "size" -> 100,
     "state" -> "provisioning",
-    "state_description" -> "Cluster is acquiring and configuring resources"
+    "stateDescription" -> "Cluster is acquiring and configuring resources"
   )
 
   "Cluster detail listing" must behave like

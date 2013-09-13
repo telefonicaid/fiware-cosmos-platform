@@ -19,7 +19,7 @@ class Machine(object):
 
     def __init__(self, json):
         self.hostname = json["hostname"]
-        self.ip_address = json["ip_address"]
+        self.ip_address = json["ipAddress"]
 
 
 class Cluster(object):
@@ -62,7 +62,7 @@ class Cluster(object):
     def __load_details(self):
         json = self.__proto.get_cluster_details(self.id)
         self.__state = json["state"]
-        self.__state_desc = json["state_description"]
+        self.__state_desc = json["stateDescription"]
         self.__master = Machine(json["master"]) if "master" in json else None
         self.__slaves = [ Machine(slave) for slave in json["slaves"] ] \
             if "slaves" in json else []

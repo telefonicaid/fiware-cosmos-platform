@@ -18,14 +18,14 @@ import es.tid.cosmos.api.controllers.pages.NamedKey
 /**
  * Profile as seen by an API client
  */
-case class UserProfile(handle: String, registeredKeys: List[NamedKey])
+case class UserProfile(handle: String, keys: List[NamedKey])
 
 object UserProfile {
 
   implicit object UserProfileWrites extends Writes[UserProfile] {
     def writes(p: UserProfile) = Json.obj(
       "handle" -> p.handle,
-      "keys" -> p.registeredKeys.sortBy(_.name)
+      "keys" -> p.keys.sortBy(_.name)
     )
   }
 

@@ -1,0 +1,26 @@
+@(errorMessage: es.tid.cosmos.api.controllers.common.ErrorMessage)
+<!--
+ Telefónica Digital - Product Development and Innovation
+
+ THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+ Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ All rights reserved.
+ -->
+@main("Cosmos")() {
+    <div class="section">
+        <h1>Oooops!!!</h1>
+
+        <h2>Internal server error occurred!</h2>
+
+        <pre class="error code">
+@play.api.libs.json.Json.prettyPrint(play.api.libs.json.Json.toJson(errorMessage))
+        </pre>
+
+        <p>You may report the error at
+            <a href="mailto:cosmos-platform@@tid.es">cosmos@@tid.es</a>. Please include the
+        error details above in your error report. </p>
+    </div>
+}

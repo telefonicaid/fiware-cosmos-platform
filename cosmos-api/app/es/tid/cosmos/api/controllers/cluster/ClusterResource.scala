@@ -83,7 +83,7 @@ class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosPr
 
   private def isOwnCluster(cosmosId: Long, cluster: ClusterId): Boolean =
     dao.withConnection { implicit c =>
-      dao.clustersOf(cosmosId).contains(cluster)
+      dao.clustersOf(cosmosId).exists(_.clusterId == cluster)
     }
 
   private def unauthorizedAccessTo(cluster: ClusterId) =

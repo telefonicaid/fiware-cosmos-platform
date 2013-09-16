@@ -11,37 +11,39 @@
 
 package es.tid.cosmos.api.controllers.clusters
 
-import play.api.libs.json.{Json, JsValue, Writes}
+import org.apache.commons.lang.time.DateFormatUtils
+import play.api.libs.json.{Writes, Json, JsValue}
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
+import es.tid.cosmos.api.profile.ClusterAssignation
 import es.tid.cosmos.servicemanager.ClusterDescription
 
 case class ClusterReference(
-    id: String,
-    href: String,
-    name: String,
-    state: String,
-    stateDescription: String)
+    description: ClusterDescription,
+    assignation: ClusterAssignation) {
+  require(description.id == assignation.clusterId)
 
-object ClusterReference {
-
-  def apply(cluster: ClusterDescription)(implicit request: RequestHeader): ClusterReference =
-    ClusterReference(
-      id = cluster.id.toString,
-      href = ClusterResource.clusterUrl(cluster.id),
-      name = cluster.name,
-      state = cluster.state.name,
-      stateDescription = cluster.state.descLine)
-
-  implicit object ClusterReferenceWrites extends Writes[ClusterReference] {
-    def writes(ref: ClusterReference): JsValue = Json.obj(
-      "id" -> ref.id,
-      "href" -> ref.href,
-      "name" -> ref.name,
-      "state" -> ref.state,
-      "stateDescription" -> ref.stateDescription
-    )
-  }
+  def withAbsoluteUri(request: RequestHeader): AbsoluteUriClusterReference =
+    AbsoluteUriClusterReference(ClusterResource.clusterUrl(description.id)(request), this)
 }
 
+case class AbsoluteUriClusterReference(href: String, clusterReference: ClusterReference)
+
+object AbsoluteUriClusterReference {
+  val timestampFormat = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT
+
+  implicit object JsonWrites extends Writes[AbsoluteUriClusterReference] {
+    def writes(obj: AbsoluteUriClusterReference): JsValue =
+      obj match {
+        case AbsoluteUriClusterReference(href, ClusterReference(desc, assig)) => Json.obj(
+          "id" -> desc.id.toString,
+          "href" -> href,
+          "name" -> desc.name,
+          "state" -> desc.state.name,
+          "stateDescription" -> desc.state.descLine,
+          "creationDate" -> timestampFormat.format(assig.creationDate)
+        )
+      }
+    }
+}

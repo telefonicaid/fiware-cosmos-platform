@@ -78,8 +78,8 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
         val id1 = dao.registerUserInDatabase(UserId("user1"), Registration("user1", "pk0001"))
         val id2 = dao.registerUserInDatabase(UserId("user2"), Registration("user2", "pk0002"))
         dao.assignCluster(clusterId, id2)
-        dao.clustersOf(id1).toList must not contain (clusterId)
-        dao.clustersOf(id2).toList must contain (clusterId)
+        dao.clustersOf(id1).map(_.clusterId).toList must not contain clusterId
+        dao.clustersOf(id2).map(_.clusterId).toList must contain (clusterId)
       }
     })
   }

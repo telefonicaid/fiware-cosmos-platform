@@ -25,7 +25,9 @@ object UserProfile {
   implicit object UserProfileWrites extends Writes[UserProfile] {
     def writes(p: UserProfile) = Json.obj(
       "handle" -> p.handle,
-      "keys" -> p.keys.sortBy(_.name)
+      "keys" -> (for {
+        namedKey <- p.keys.sortBy(_.name)
+      } yield Json.toJson(namedKey)(NamedKeyWrites))
     )
   }
 

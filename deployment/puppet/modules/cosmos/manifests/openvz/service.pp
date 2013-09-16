@@ -13,23 +13,18 @@ class cosmos::openvz::service  (
     $vz_utils_repo,
     $vz_kernel_repo,
     $vz_repo_name,
-    $vz_kernel_ensure = $cosmos::params::openvz_vzkernel_version,
-    $vz_ctl_ensure    = $cosmos::params::openvz_vzctl_version,
-    $vz_quota_ensure  = $cosmos::params::openvz_vzquota_version,
-    $vz_stats_ensure  = $cosmos::params::openvz_vzstats_version
+    $vz_kernel_version = $cosmos::params::openvz_vzkernel_version,
+    $vz_ctl_ensure     = $cosmos::params::openvz_vzctl_version,
+    $vz_quota_ensure   = $cosmos::params::openvz_vzquota_version,
+    $vz_stats_ensure   = $cosmos::params::openvz_vzstats_version
 ) {
   include cosmos::openvz::sysctl, stdlib
 
-  $vz_kernel_packages = ['vzkernel', 'vzkernel-firmware', 'vzkernel-headers']
   $vz_ctl_packages    = ['vzctl', 'vzctl-core']
-  $vz_all_packages = flatten([
-    $vz_kernel_packages,
-    $vz_ctl_packages,
-    ['vzquota', 'vzstats']
-  ])
 
-  package { $vz_kernel_packages :
-    ensure    => $vz_kernel_ensure,
+  exec { 'check kernel release' :
+    command => "/bin/bash -c \"[[ \"`uname -r`\" == \"${vz_kernel_version}\" ]]\"",
+    returns => 0
   }
 
   package { $vz_ctl_packages :
@@ -65,8 +60,9 @@ class cosmos::openvz::service  (
     content   => template("${module_name}/openvz.repo.erb"),
   }
 
-  File['cosmos-openvz-repo']
-    -> Package[$vz_all_packages]
+  File["${vz_repo_name}-repo"]
+    -> Exec ['check kernel release']
+    -> Package[$vz_ctl_packages]
     -> File['vz.conf']
     -> Class['openvz::sysctl']
     -> Service['vz']

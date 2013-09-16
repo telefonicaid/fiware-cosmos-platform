@@ -82,7 +82,19 @@ class PagesIT extends FlatSpec with MustMatchers {
       registeredCosmosSession must not be 'registered
     }
 
-  "A registered user" must "be authenticated and redirected to its profile" in
+  it must "get its session surviving from a DB reset cancelled" in new WithTestApplication {
+    val requestSession = new Session()
+      .setUserProfile(MockOAuthConstants.User101)
+      .setToken("token")
+      .setCosmosId(1)
+    val response = route(withSession(FakeRequest(GET, "/"), requestSession)).get
+    response must redirectTo ("/")
+    val responseSession: CosmosSession = session(response)
+    responseSession must not be 'authenticated
+    responseSession must not be 'registered
+  }
+
+  "A registered user" must "be authenticated after OAuth redirection" in
     new WithTestApplication {
       registerUser(dao, MockOAuthConstants.User101)
       val redirection = oauthRedirectionWithCode(MockOAuthConstants.GrantedCode)
@@ -91,6 +103,16 @@ class PagesIT extends FlatSpec with MustMatchers {
       cosmosSession must be ('authenticated)
       cosmosSession must be ('registered)
     }
+
+  it must "be authenticated and redirected to its profile" in new WithTestApplication {
+    registerUser(dao, MockOAuthConstants.User101)
+    val authenticatedUserSession= Session().setUserProfile(MockOAuthConstants.User101)
+    val response = route(withSession(FakeRequest(GET, "/"), authenticatedUserSession)).get
+    response must redirectTo ("/")
+    val cosmosSession: CosmosSession = session(response)
+    cosmosSession must be ('authenticated)
+    cosmosSession must be ('registered)
+  }
 
   "A user rejecting authorization" must "see error information" in new WithTestApplication {
     val result = oauthRedirectionWithError("unauthorized_client")
@@ -127,11 +149,11 @@ class PagesIT extends FlatSpec with MustMatchers {
     }
 
   it must "show the user profile when authorized and registered" in new WithTestApplication {
-    registerUser(dao, MockOAuthConstants.User101)
+    val cosmosId = registerUser(dao, MockOAuthConstants.User101)
     val session = new Session()
       .setUserProfile(MockOAuthConstants.User101)
       .setToken("token")
-      .setCosmosId(1)
+      .setCosmosId(cosmosId)
     val registrationPage = route(withSession(FakeRequest(GET, "/"), session)).get
     status(registrationPage) must equal (OK)
     contentAsString(registrationPage) must include ("Cosmos user profile")
@@ -147,13 +169,12 @@ class PagesIT extends FlatSpec with MustMatchers {
   private def withSession[A](request: FakeRequest[A], session: Session) =
     request.withSession(session.data.toSeq: _*)
 
-  private def registerUser(dao: CosmosProfileDao, user: UserProfile) {
+  private def registerUser(dao: CosmosProfileDao, user: UserProfile): Long =
     dao.withConnection { implicit c =>
       val UserProfile(authId, _, email) = user
       val handle = email.map(_.split('@')(0)).getOrElse("root")
       dao.registerUserInDatabase(authId, Registration(handle, "pk1234"))
     }
-  }
 
   private def authenticationUrl(page: String) =
     """<a class="login" href="(.*?)">""".r.findFirstMatchIn(page)

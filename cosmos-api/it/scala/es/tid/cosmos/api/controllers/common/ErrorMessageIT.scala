@@ -14,7 +14,7 @@ package es.tid.cosmos.api.controllers.common
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.Mode
-import play.api.libs.json.Json
+import play.api.libs.json.{JsArray, Json}
 import play.api.test.{FakeApplication, WithApplication}
 
 import es.tid.cosmos.api.controllers.common.ErrorMessage.ErrorMessageWrites
@@ -34,7 +34,7 @@ class ErrorMessageIT extends FlatSpec with MustMatchers {
     val json = Json.toJson(messageWithException)
     (json \ "error").as[String] must be ("Something failed: Missing foo")
     (json \ "exception").as[String] must be ("java.lang.RuntimeException")
-    (json \ "stack_trace").asOpt[String] must be ('defined)
+    (json \ "stack_trace").getClass must be (classOf[JsArray])
   }
 
   class FakeProdApplication extends FakeApplication {

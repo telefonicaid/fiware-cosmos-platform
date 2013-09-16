@@ -26,7 +26,7 @@ PROVISIONING = {
 RUNNING = {
     'state': 'running',
     'master': {
-        'ip_address': '192.168.20.18'
+        'ipAddress': '192.168.20.18'
     }
 }
 PROFILE = {

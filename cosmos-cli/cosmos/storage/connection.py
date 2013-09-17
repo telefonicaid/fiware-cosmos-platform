@@ -58,7 +58,7 @@ class StorageConnection(object):
         it will be uploaded and renamed at the same time.  The remote path of
         the upload is returned in any case.
         """
-        remote_type = self.__client.path_type(remote_path)
+        remote_type = self.__client.list_path(remote_path).path_type()
         if remote_type == 'FILE':
             raise OperationError("Path %s already exists" % remote_path)
         if remote_path.endswith('/') or remote_type == 'DIRECTORY':

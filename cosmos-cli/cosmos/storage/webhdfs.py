@@ -39,6 +39,15 @@ class DirectoryListing(object):
         size = len(self.statuses)
         return 'Listing(%d file%s)' % (size, '' if size == 1 else 's')
 
+    def path_type(self):
+        """Checks the type of the listed path returning either 'DIRECTORY',
+        'FILE' or 'NONE'."""
+        if not self.exists or self.statuses is None:
+            return 'NONE'
+        if len(self.statuses) == 1 and self.statuses[0]["pathSuffix"] == '':
+            return self.statuses[0]["type"]
+        return 'DIRECTORY'
+
 
 class WebHdfsClient(object):
 
@@ -88,16 +97,6 @@ class WebHdfsClient(object):
             return DirectoryListing(exists=False)
         else:
             raise ResponseError('Cannot list directory %s' % path, r)
-
-    def path_type(self, path):
-        """Checks the type of a path returning either 'DIRECTORY', 'FILE' or
-        'NONE'."""
-        status = self.list_path(path)
-        if status is None:
-            return 'NONE'
-        if len(status) == 1 and status[0]["pathSuffix"] == '':
-            return status[0]["type"]
-        return 'DIRECTORY'
 
     def get_file(self, remote_path, out_file):
         response = self.client.get(self.to_http(remote_path), stream=True,

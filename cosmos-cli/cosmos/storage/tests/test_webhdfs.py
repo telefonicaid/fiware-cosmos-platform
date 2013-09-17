@@ -76,6 +76,13 @@ class DirectoryListingTest(unittest.TestCase):
         self.assertEquals(str(self.twoFilesListing),
                           'Listing(2 files)')
 
+    def test_path_type(self):
+        self.assertEquals(self.unexistingDirListing.path_type(), 'NONE')
+        self.assertEquals(DirectoryListing(statuses=None).path_type(), 'NONE')
+        self.assertEquals(DirectoryListing(
+            statuses=[{ "type": "FILE", "pathSuffix": ""}]).path_type(), 'FILE')
+        self.assertEquals(self.twoFilesListing.path_type(), 'DIRECTORY')
+
     def assertIterableLength(self, iterable, expectedLenght):
         self.assertEquals(sum(1 for _ in iterable), expectedLenght)
 
@@ -189,14 +196,3 @@ class WebHdfsClientTest(unittest.TestCase):
             self.namenode_base + '/remote/file.txt',
             params={'user.name': 'user1', 'op': 'DELETE', 'recursive': 'true'})
 
-    def test_path_type(self):
-        self.instance.list_path = MagicMock(side_effect=[
-            None,
-            [{ "type": "DIRECTORY",
-               "pathSuffix": "subdir" }],
-            [{ "type": "FILE",
-               "pathSuffix": ""}]
-        ])
-        self.assertEquals(self.instance.path_type('/file'), 'NONE')
-        self.assertEquals(self.instance.path_type('/file'), 'DIRECTORY')
-        self.assertEquals(self.instance.path_type('/file'), 'FILE')

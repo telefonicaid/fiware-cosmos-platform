@@ -131,7 +131,9 @@ class StorageConnectionTest(unittest.TestCase):
     def assertUploadFileToRemotePath(self, remote_path, renaming_to=None,
                                      target_type=None, raising=None):
         expected_target = remote_path if renaming_to is None else renaming_to
-        self.client.path_type = MagicMock(return_value=target_type)
+        listing_of_target_type = MagicMock()
+        listing_of_target_type.path_type = MagicMock(return_value=target_type)
+        self.client.list_path = MagicMock(return_value=listing_of_target_type)
         with TempDirectory() as local_dir:
             with open(local_dir.write('file.txt', 'contents'), 'rb') as fd:
                 if raising is None:
@@ -142,7 +144,8 @@ class StorageConnectionTest(unittest.TestCase):
                 else:
                     self.assertRaises(raising, self.instance.upload_file,
                                       fd, remote_path)
-        self.client.path_type.assert_called_once_with(remote_path)
+        self.client.list_path.assert_called_once_with(remote_path)
+        listing_of_target_type.assert_called_once()
 
     def assertDownloadToFilename(self, local_file, renaming_to=None):
         target_file = local_file if renaming_to is None else renaming_to

@@ -61,7 +61,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .on("cosmos_id" -> cosmosId)
       .apply()
       .collectFirst {
-        case Row(machineQuota: Option[Int]) => Quota(machineQuota)
+        case Row(machineQuota: Option[_]) => Quota(machineQuota.asInstanceOf[Option[Int]])
       }
       .getOrElse(EmptyQuota)
 
@@ -118,11 +118,12 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   private def lookup(query: SimpleSql[Row])(implicit c: Conn): Option[CosmosProfile] = {
     val rows = query().toList
     rows.headOption.map {
-      case Row(id: Int, handle: String, machineQuota: Option[Int], apiKey: String,
+      case Row(id: Int, handle: String, machineQuota: Option[_], apiKey: String,
           apiSecret: String, _, _) => {
         val namedKeys = rows.map(row => NamedKey(row[String]("name"), row[String]("signature")))
         CosmosProfile(
-          id, handle, Quota(machineQuota), ApiCredentials(apiKey, apiSecret), namedKeys.toSeq)
+          id, handle, Quota(machineQuota.asInstanceOf[Option[Int]]),
+          ApiCredentials(apiKey, apiSecret), namedKeys.toSeq)
       }
     }
   }

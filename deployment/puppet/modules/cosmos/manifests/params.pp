@@ -31,7 +31,7 @@ class cosmos::params (
   $libvirt_version         = '1.0.5-1.el6',
   $openvz_rplcements_dir   = '/tmp/replacements',
   $openvz_targz_path       = '/tmp/replacements/centos-6-x86_64.tar.gz',
-  $openvz_vzkernel_version = '2.6.32-042stab078.26',
+  $openvz_vzkernel_version = '2.6.32-042stab079.6',
   $openvz_vzctl_version    = '4.3.1-1',
   $openvz_vzquota_version  = '3.1-1',
   $openvz_vzstats_version  = '0.4-1',

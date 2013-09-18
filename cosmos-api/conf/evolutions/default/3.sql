@@ -20,6 +20,7 @@ ALTER TABLE `user` ADD UNIQUE `handle_UNIQUE` (`handle` ASC);
 
 # --- !Downs
 DROP INDEX `auth_UNIQUE` ON `user`;
+DROP INDEX `handle_UNIQUE` ON `user`;
 ALTER TABLE `user` DROP COLUMN `auth_realm`;
 ALTER TABLE `user` CHANGE `auth_id` `user_id` VARCHAR(45) NULL;
 CREATE INDEX `tu_id_UNIQUE` on `user` (`user_id` ASC);

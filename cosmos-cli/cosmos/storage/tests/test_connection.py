@@ -125,7 +125,7 @@ class StorageConnectionTest(unittest.TestCase):
     def test_delete_path(self):
         self.assertDelegation(self.instance.delete_path,
                               self.client.delete_path,
-                              args=['/remote/file.txt'],
+                              args=['/remote/file.txt', False],
                               retval=True)
 
     def assertUploadFileToRemotePath(self, remote_path, renaming_to=None,

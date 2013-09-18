@@ -113,9 +113,9 @@ class StorageConnection(object):
             size = self.download_to_file(remote_path, out_file)
         return (target_path, size)
 
-    def delete_path(self, path):
+    def delete_path(self, path, recursive):
         """Delete a file of the persistent storage.
         Returns whether the path was deleted as boolean value.
         """
-        return self.__client.delete_path(path)
+        return self.__client.delete_path(path, recursive)
 

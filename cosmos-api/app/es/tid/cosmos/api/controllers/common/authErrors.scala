@@ -12,7 +12,7 @@
 package es.tid.cosmos.api.controllers.common
 
 abstract class AuthError(message: String) extends Throwable(message)
-case class MalformedAuthHeader(header: String) extends AuthError(
-  s"Malformed authorization header: expected base64 encoded API key and secret but got $header")
+case object MalformedAuthHeader extends AuthError(
+  s"Invalid API credentials: malformed authorization header")
 case object MissingAuthHeader extends AuthError("Missing authorization header")
 case object InvalidAuthCredentials extends AuthError("Invalid API credentials")

@@ -13,6 +13,7 @@ package es.tid.cosmos.api.controllers.common
 
 import scala.util.{Failure, Success, Try}
 
+import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc._
 
@@ -52,8 +53,14 @@ trait AuthController extends Controller {
       case Some(BasicAuth(apiKey, apiSecret))
         if apiKey.length == ApiKeyLength && apiSecret.length == ApiSecretLength =>
         Success(ApiCredentials(apiKey, apiSecret))
-      case Some(malformedHeader: String) => Failure(MalformedAuthHeader(malformedHeader))
-      case _ => Failure(MissingAuthHeader)
+      case Some(malformedHeader: String) => {
+        Logger.warn(s"Rejected request with malformed authentication header: $malformedHeader")
+        Failure(MalformedAuthHeader)
+      }
+      case _ => {
+        Logger.warn("Rejected request with missing authentication header")
+        Failure(MissingAuthHeader)
+      }
     }
 
   /**

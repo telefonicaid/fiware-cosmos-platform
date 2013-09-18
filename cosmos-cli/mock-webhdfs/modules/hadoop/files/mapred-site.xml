@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<!--
+  Telefónica Digital - Product Development and Innovation
+
+  THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+  EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+  Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+  All rights reserved.
+  -->
+<configuration>
+    <property>
+	<name>mapred.job.tracker</name>
+	<value>192.168.10.10:50300</value>
+	<description>The host and port that the MapReduce job tracker runs at.</description>
+    </property>
+    <property>
+	<name>mapred.job.tracker.http.address</name>
+	<value>192.168.10.10:50030</value>
+	<description>The host and port that the MapReduce job tracker runs at.</description>
+    </property>
+</configuration>

@@ -1,0 +1,32 @@
+#
+# Telefónica Digital - Product Development and Innovation
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+
+ambari::params::repo_url: %{cosmos::params::cosmos_repo_platform_url}
+cosmos::params::cosmos_subnet: '192.168.63.0'
+cosmos::params::cosmos_netmask: '255.255.255.128'
+cosmos::params::cosmos_repo_platform_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/staging'
+cosmos::slave::gateway: "192.168.63.1"
+cosmos::slave::ct_gateway: "192.168.63.1"
+cosmos::slave::host_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
+cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_ct_key"
+cosmos::params::domain: '.hi.inet'
+cosmos::params::master_ip: '192.168.63.11'
+cosmos::params::master_hostname: 'andromeda01'
+cosmos::openvz::network::host_iface: 'bond0.1'
+slave_hosts:
+    - 'andromeda02'
+    - 'andromeda03'
+    - 'andromeda04'
+    - 'andromeda05'
+    - 'andromeda06'
+    - 'andromeda07'
+    - 'andromeda08'
+    - 'andromeda99'

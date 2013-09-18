@@ -1,0 +1,4 @@
+{
+    "location": "webhdfs://192.168.10.10:50070",
+    "user": "user1"
+}

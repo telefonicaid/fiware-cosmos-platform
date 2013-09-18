@@ -21,25 +21,23 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.servicemanager.ambari.Configurator.ConfigurationConflict
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers.contributionsWithNumber
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest.Cluster
 
 class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatchers
     with MockitoSugar {
 
   val cluster = mock[Cluster]
-  val master = mock[Host]
-  val slaves = Seq(mock[Host], mock[Host])
+  val properties = Map[ConfigurationKeys.Value, String]()
 
   "A Configurator" must "not apply configuration when there is none available" in {
-    Configurator.applyConfiguration(cluster, master, slaves, contributors = List())
-    verify(master).name
-    verifyNoMoreInteractions(cluster, master)
+    Configurator.applyConfiguration(cluster, properties, contributors = List())
+    verifyNoMoreInteractions(cluster)
   }
 
   it must "configure using only one contributor" in {
     val contributor = mock[ConfigurationContributor]
     given(contributor.contributions(any())).willReturn(contributionsWithNumber(1))
-    Configurator.applyConfiguration(cluster, master, slaves, List(contributor))
+    Configurator.applyConfiguration(cluster, properties, List(contributor))
     verify(cluster).applyConfiguration(isEq(contributionsWithNumber(1).global.get), tagPattern)
     verify(cluster).applyConfiguration(isEq(contributionsWithNumber(1).core.get), tagPattern)
     verify(cluster).applyConfiguration(isEq(contributionsWithNumber(1).services(0)), tagPattern)
@@ -50,7 +48,7 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
     val contributor2 = mock[ConfigurationContributor]
     given(contributor1.contributions(any())).willReturn(contributionsWithNumber(1))
     given(contributor2.contributions(any())).willReturn(contributionsWithNumber(2))
-    Configurator.applyConfiguration(cluster, master, slaves, List(contributor1, contributor2))
+    Configurator.applyConfiguration(cluster, properties, List(contributor1, contributor2))
     verify(cluster).applyConfiguration(
       isEq(GlobalConfiguration(
         Map("someGlobalContent1" -> "somevalue1", "someGlobalContent2" -> "somevalue2"))),
@@ -74,7 +72,7 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
     given(contributor2.contributions(any())).willReturn(
       ConfigurationBundle(configuration2.global, configuration2.core, configuration1.services))
     evaluating {
-      Configurator.applyConfiguration(cluster, master, slaves, List(contributor1, contributor2))
+      Configurator.applyConfiguration(cluster, properties, List(contributor1, contributor2))
     } must produce [ConfigurationConflict]
   }
 
@@ -87,7 +85,7 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
       given(contributor2.contributions(any())).willReturn(
         ConfigurationBundle(configuration1.global, configuration2.core, configuration2.services))
       evaluating {
-        Configurator.applyConfiguration(cluster, master, slaves, List(contributor1, contributor2))
+        Configurator.applyConfiguration(cluster, properties, List(contributor1, contributor2))
       } must produce [ConfigurationConflict]
     }
 

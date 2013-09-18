@@ -17,27 +17,33 @@ import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.clusters.ClustersResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.Pages
+import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
-import es.tid.cosmos.api.oauth2.OAuthClientComponent
+import es.tid.cosmos.api.oauth2.MultiOAuthProviderComponent
+import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
 /**
  * Web application template to be mixed-in with its dependencies.
  */
 abstract class Application {
-  self: ServiceManagerComponent with OAuthClientComponent =>
+  this: ServiceManagerComponent with MultiOAuthProviderComponent with CosmosProfileDaoComponent =>
+
+  lazy val dao = this.cosmosProfileDao
+
   lazy val controllers: Map[Class[Controller], Controller] = {
-    val sm = self.serviceManager()
+    val sm = this.serviceManager()
     controllerMap(
-      new Pages(self.oAuthClient(), sm),
+      new Pages(this.multiOAuthProvider, sm, dao),
       new CosmosResource(),
-      new ClustersResource(sm),
-      new ClusterResource(sm),
-      new StorageResource(sm)
+      new ProfileResource(dao),
+      new ClustersResource(sm, dao),
+      new ClusterResource(sm, dao),
+      new StorageResource(sm, dao)
     )
   }
 
-  def services: ServiceManagerComponent with OAuthClientComponent = self
+  def services: ServiceManagerComponent with MultiOAuthProviderComponent = this
 
   private def controllerMap(controllers: Controller*) = Map(
     (for (controller <- controllers)

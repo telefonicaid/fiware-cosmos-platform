@@ -22,21 +22,6 @@ The Big Data Platform is a product that allows you to:
 - provide fast, scalable consumption APIs
 - support for productized analytical models and base ML techniques
 
-=========================
-Current status: Prototype
-=========================
-
-This is a work-in-progress prototype for achieving the platform's `Objective 0 <https://pdihub.hi.inet/Cosmos/cosmos-platform/wiki/Objective-0>`_.
-To that end the prototype consists of 3 layers:
-
-1. The Cosmos Public API - The platform's public REST API for managing platform clusters
-2. The Service Manager - The layer responsible for provisioning Hadoop clusters and services
-3. The Infrastructure Abstraction Layer (IAL) - The layer responsible for managing cluster machines
-
-These are the layer interdependencies:
-
-cosmos-api -> service-manager -> IAL
-
 ---------------------------
 Execute in development mode
 ---------------------------
@@ -52,6 +37,22 @@ To execute a development server go to the project root directory and enter
 The application will start at http://localhost:9000. To change the listen path
 just edit the ``application.baseurl`` setting on the ``application.conf``
 file.
+
+---------------------------
+About releasing & deploying
+---------------------------
+
+Deployment of Cosmos is done using Puppet. Each deployment environment (Andromeda,
+Orion, etc.) has its own Hiera data which dictates where should the RPMs to install
+come from. This means that the lifecycle of puppet code is coupled to that of the
+Cosmos and Ambari RPMs in the RPM repositories.
+
+When deploying to a production environment, please make sure the "release" RPM
+repository in Nexus is serving the version of the platform which corresponds to the
+Puppet scripts being used for deployment. You can do this by opening Nexus and
+browsing to Administration -> Capabilities -> "Yum: Generate Metadata / Release".
+There you can check the version being served by the repository and change it in case
+that is necessary.
 
 ========
 Glossary

@@ -1,0 +1,52 @@
+{
+  "name": "duritong-sysctl",
+  "version": "0.0.1",
+  "source": "UNKNOWN",
+  "author": "duritong",
+  "license": "GPLv2",
+  "summary": "UNKNOWN",
+  "description": "This modules allows you to configure sysctl.",
+  "project_page": "https://github.com/duritong/puppet-sysctl",
+  "dependencies": [
+
+  ],
+  "types": [
+    {
+      "name": "sysctl",
+      "doc": "Manages kernel parameters in /etc/sysctl.conf.  By default this will\n                only edit the configuration file, and not change any of the runtime\n                values.  If you wish changes to be activated right away, you can do\n                so with an exec like so:\n\n                        exec { load-sysctl:\n                            command => \"/sbin/sysctl -p /etc/sysctl.conf\",\n                            refreshonly => true\n                        }\n\n                Set any changes you want to happen right away to notify this command,\n                or you can set it as the default:\n\n                        Sysctl {\n                            notify => Exec[load-sysctl]\n                        }",
+      "properties": [
+        {
+          "name": "ensure",
+          "doc": "The basic property that the resource should be in.  Valid values are `present`, `absent`."
+        },
+        {
+          "name": "val",
+          "doc": "Value the parameter should be set to"
+        },
+        {
+          "name": "target",
+          "doc": "Name of the file to store parameters in"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "name",
+          "doc": "Name of the parameter"
+        }
+      ],
+      "providers": [
+        {
+          "name": "parsed",
+          "doc": ""
+        }
+      ]
+    }
+  ],
+  "checksums": {
+    "Modulefile": "5e4d27cd0d37aa40dd200c9e92fbb42c",
+    "README": "2ca7df81cd909d893992ccc9f57521a4",
+    "lib/puppet/provider/sysctl/parsed.rb": "f1ad6c1cd610b6fe33fcd245759c09d1",
+    "lib/puppet/type/sysctl.rb": "65fe3deaf4e245b7a5f031dac3d73f4d",
+    "manifests/value.pp": "e6fb79f47caa05c9a88911b0eba7c4d9"
+  }
+}

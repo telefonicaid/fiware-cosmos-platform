@@ -122,18 +122,6 @@ public class SftpIT {
         }
     }
 
-    public void testRealPathForNonExistingPath() throws Exception {
-        final Session session = CosmosSftp.createSession(this.env);
-        final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
-        final String fileName = "I_Dont_Exist";
-        try {
-            sftpChannel.realpath(fileName);
-        } finally {
-            sftpChannel.exit();
-            session.disconnect();
-        }
-    }
-
     public void testFileUploadWithEscaping2() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);

@@ -1,0 +1,52 @@
+{
+  "name": "puppetlabs-ntp",
+  "version": "2.0.0-rc1",
+  "summary": "NTP Module",
+  "author": "Puppet Labs",
+  "description": "NTP Module for Debian, Ubuntu, CentOS, RHEL, OEL, Fedora, FreeBSD, ArchLinux and Gentoo.",
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": "\u003e\u003d 0.1.6"
+    }
+  ],
+  "types": [],
+  "checksums": {
+    ".bundle/config": "7f1c988748783d2a8d455376eed1470c",
+    ".fixtures.yml": "909729694bab62c1e36001512b68a8fd",
+    ".nodeset.yml": "8d1b7762d4125ce53379966a1daf355c",
+    ".travis.yml": "193ec2b14cc9644c88f4249422580da2",
+    "CHANGELOG": "ed945f7dfabded851560a545094a5b4a",
+    "CONTRIBUTING.md": "2ef1d6f4417dde9af6c7f46f5c8a864b",
+    "Gemfile": "779e8b104b94622ac8c7d1d7bcf32c5a",
+    "Gemfile.lock": "fd6c644aba7217292831a0dd56a4c809",
+    "LICENSE": "2a944942e1496af1886903d274dedb13",
+    "Modulefile": "06ab84f7d934f62c62024216531de281",
+    "README.markdown": "74a9a19e7866998e5a594845b15b0e57",
+    "Rakefile": "0428ea3759a4692c91604396c406a9c1",
+    "manifests/config.pp": "86d1d647ab1dfd7d5d077da540c74b98",
+    "manifests/init.pp": "8883844f75084d31b4e5a9a50c900d87",
+    "manifests/install.pp": "e47ee942137f8e397c97c819f2f9ec2f",
+    "manifests/params.pp": "c4737385f25d53f0f0a3ad4b60d025ce",
+    "manifests/service.pp": "24b1821b1a9af60e7298428d9444cba7",
+    "spec/classes/ntp_spec.rb": "ec9345d2bb9976c012b117b8c7f8f052",
+    "spec/fixtures/modules/my_ntp/templates/ntp.conf.erb": "566e373728e9b13eda516115ff0a9fb0",
+    "spec/spec.opts": "a600ded995d948e393fbe2320ba8e51c",
+    "spec/spec_helper.rb": "0db89c9a486df193c0e40095422e19dc",
+    "spec/spec_helper_system.rb": "4c85f6e43892c45ce75ade44a32f45f8",
+    "spec/system/basic_spec.rb": "f0fa6706b1011be24759dc06ccbd91e2",
+    "spec/system/class_spec.rb": "83dcabc0e04432b52939ae8a5df992ca",
+    "spec/system/ntp_config_spec.rb": "d60bc7ba907c080d891245d6f13da307",
+    "spec/system/ntp_install_spec.rb": "9b3796bb71472daa3a52aa01b0592656",
+    "spec/system/ntp_service_spec.rb": "fbeec08f5489ce8ef82f2225f7107b9e",
+    "spec/system/preferred_servers_spec.rb": "379fe9b56c10903178f03d4d87002a14",
+    "spec/system/restrict_spec.rb": "eb9d8deb680830f78e0041bb3c7d2326",
+    "spec/unit/puppet/provider/README.markdown": "e52668944ee6af2fb5d5b9e798342645",
+    "spec/unit/puppet/type/README.markdown": "de26a7643813abd6c2e7e28071b1ef94",
+    "templates/ntp.conf.erb": "262e0a58bcd88d0cb65369081db30b32",
+    "tests/init.pp": "d398e7687ec1d893ef23d1b7d2afc094"
+  },
+  "source": "git://github.com/puppetlabs/puppetlabs-ntp",
+  "project_page": "http://github.com/puppetlabs/puppetlabs-ntp",
+  "license": "Apache Version 2.0"
+}

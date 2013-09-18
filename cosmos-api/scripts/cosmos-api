@@ -44,23 +44,28 @@ APP_ARGS="-Dconfig.file=${APP_CONFIG_FILE} -Dhttp.port=${PORT} \
 # source function library
 . /etc/init.d/functions
 RETVAL=0
+SERVICE_UP=0
+SERVICE_DOWN=3
 
 check_status() {
+        RUNNING=$SERVICE_DOWN
         if [ -f ${PID_FILE} ]; then
                 checkpid `cat ${PID_FILE}`
-                RUNNING=$((1 - $?))
-        else
-                RUNNING=0
+                CHECK=$?
+                if [ $CHECK -eq 0 ]; then
+                        RUNNING=$SERVICE_UP
+                fi
         fi
 }
 
 start() {
         echo -n "Starting Cosmos-API: "
         check_status
-        if [ $RUNNING -eq 1 ]; then
+        if [ $RUNNING -eq $SERVICE_UP ]; then
                 echo -n "already running"
                 echo_failure
         else
+                rm -f ${PID_FILE}
                 COMMAND="${APP_PATH}/start ${APP_ARGS}"
                 su -s /bin/sh $USER -c "${COMMAND} > /dev/null" &
                 echo_success
@@ -71,7 +76,7 @@ start() {
 stop() {
         echo -n "Shutting Cosmos-API service: "
         check_status
-        if [ $RUNNING -eq 0 ]; then
+        if [ $RUNNING -eq $SERVICE_DOWN ]; then
                 echo -n "not running"
                 echo_failure
         else
@@ -82,11 +87,12 @@ stop() {
 
 status() {
         check_status
-        if [ $RUNNING -eq 0 ]; then
+        if [ $RUNNING -eq $SERVICE_DOWN ]; then
                 echo "Not running"
         else
                 echo "Running with PID: `cat ${PID_FILE}`"
         fi
+        RETVAL=$RUNNING
 }
 
 case "$1" in
@@ -107,4 +113,4 @@ case "$1" in
         *)
         echo "Usage: $0 {start|stop|restart|status}"
 esac
-exit 0
+exit $RETVAL

@@ -36,13 +36,18 @@ import es.tid.cosmos.servicemanager.util.TcpServer.SshService
  * @param persistentHdfsId the id of the persistent hdfs cluster
  * @param refreshGracePeriod the grace period in milliseconds
  *                           to allow for a discovered cluster to stabilize
+ * @param mappersPerSlave the number of map slots per tasktracker
+ * @param reducersPerSlave the number of reducer slots per tasktracker
  */
 class AmbariServiceManager(
     override protected val provisioner: ClusterProvisioner,
     override protected val infrastructureProvider: InfrastructureProvider,
+    initializationPeriod: FiniteDuration,
     override protected val refreshGracePeriod: FiniteDuration,
-    override val persistentHdfsId: ClusterId)
-  extends ServiceManager with ConfigurationContributor with ConfigurationLoader
+    override val persistentHdfsId: ClusterId,
+    mappersPerSlave: Int,
+    reducersPerSlave: Int)
+  extends ServiceManager with FileConfigurationContributor
   with Refreshing with Logging {
 
   override type ServiceDescriptionType = AmbariServiceDescription
@@ -51,8 +56,11 @@ class AmbariServiceManager(
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
 
-  // perform a sync with Ambari upon initialization
-  refresh()
+  override val serviceDescriptions: Seq[AmbariServiceDescription] =
+    Seq(Hdfs, Hive, MapReduce, Oozie, CosmosUserService)
+
+  logger.info("Initialization sync with Ambari")
+  Await.result(refresh(), initializationPeriod)
 
   override def clusterIds: Seq[ClusterId] = clusters.keys.toSeq
 
@@ -60,10 +68,7 @@ class AmbariServiceManager(
     clusters.get(id).map(_.view)
 
   override def services(user: ClusterUser): Seq[ServiceDescriptionType] =
-    Seq(Hdfs, MapReduce, Oozie, new CosmosUserService(Seq(user)))
-
-  override val serviceDescriptions: Seq[AmbariServiceDescription] =
-    Seq(Hdfs, MapReduce, Oozie, CosmosUserService)
+    Seq(Hdfs, Hive, MapReduce, Oozie, new CosmosUserService(Seq(user)))
 
   /**
    * Wait until all pending operations are finished
@@ -78,7 +83,7 @@ class AmbariServiceManager(
       serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
     val id = new ClusterId
     val machines_> =
-      infrastructureProvider.createMachines(name, MachineProfile.G1_COMPUTE, clusterSize, waitForSsh)
+      infrastructureProvider.createMachines(MachineProfile.G1Compute, clusterSize, waitForSsh)
     val deployment_> = for {
       machines <- machines_>
       (master, slaves) = masterAndSlaves(machines)
@@ -185,8 +190,7 @@ class AmbariServiceManager(
     } yield ()
   }
 
-  override def contributions(properties: Map[ConfigurationKeys.Value, String]) =
-    load("global-basic").build(properties)
+  override val configName = "global-basic"
 
   private def installInOrder(services: Seq[Service]): Future[List[Service]] = {
     def doInstall(
@@ -210,8 +214,16 @@ class AmbariServiceManager(
       cluster: Cluster,
       master: Host,
       slaves: Seq[Host],
-      contributors: List[ConfigurationContributor]): Future[Cluster] =
-    Configurator.applyConfiguration(cluster, master, slaves, contributors).map(_ => cluster)
+      contributors: List[ConfigurationContributor]): Future[Cluster] = {
+    val properties = Map(
+      ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
+      ConfigurationKeys.MasterNode -> master.name,
+      ConfigurationKeys.MappersPerSlave -> mappersPerSlave.toString,
+      ConfigurationKeys.MaxMapTasks -> (mappersPerSlave * slaves.length).toString,
+      ConfigurationKeys.MaxReduceTasks -> (1.75 * reducersPerSlave * slaves.length).round.toString,
+      ConfigurationKeys.ReducersPerSlave -> reducersPerSlave.toString)
+    Configurator.applyConfiguration(cluster, properties, contributors).map(_ => cluster)
+  }
 
   private def changeServiceConfiguration(
       id: ClusterId,
@@ -224,18 +236,18 @@ class AmbariServiceManager(
       stoppedService <- service.stop()
       slaveDetails <- clusterDescription.slaves_>
       slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
-      _ <- Configurator.applyConfiguration(cluster, master, slaves, List(serviceDescription))
+      _ <- applyConfiguration(cluster, master, slaves, List(serviceDescription))
       startedService <- stoppedService.start()
     } yield startedService
   }
 
   override def deployPersistentHdfsCluster(): Future[Unit] = {
-    val masterMachine_> = infrastructureProvider.createMachines(
-      persistentHdfsId.id, MachineProfile.HDFS_MASTER, 1, waitForSsh)
+    val masterMachine_> =
+      infrastructureProvider.createMachines(MachineProfile.HdfsMaster, 1, waitForSsh)
     for {
-      machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HDFS_SLAVE)
-      slaveMachines <- infrastructureProvider.createMachines(
-        persistentHdfsId.id, MachineProfile.HDFS_SLAVE, machineCount, waitForSsh)
+      machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
+      slaveMachines <-
+        infrastructureProvider.createMachines(MachineProfile.HdfsSlave, machineCount, waitForSsh)
       Seq(masterMachine) <- masterMachine_>
       _ <- createUnregisteredCluster(
         id = persistentHdfsId,
@@ -245,4 +257,9 @@ class AmbariServiceManager(
         slaves = slaveMachines)
     } yield ()
   }
+
+  override def describePersistentHdfsCluster(): Option[ClusterDescription] =
+    describeCluster(persistentHdfsId)
+
+  override def terminatePersistentHdfsCluster(): Future[Unit] = terminateCluster(persistentHdfsId)
 }

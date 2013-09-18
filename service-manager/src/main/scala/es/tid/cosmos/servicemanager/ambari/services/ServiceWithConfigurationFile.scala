@@ -11,14 +11,13 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, ConfigurationLoader}
+import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
 
 /**
  * Trait for service descriptions that have a configuration file.
  */
-trait ServiceWithConfigurationFile extends AmbariServiceDescription with ConfigurationLoader {
-  protected lazy val config = load(name)
+trait ServiceWithConfigurationFile
+  extends AmbariServiceDescription with FileConfigurationContributor {
 
-  override def contributions(properties: Map[ConfigurationKeys.Value, String]) =
-    config.build(properties)
+  override protected lazy val configName = name.toLowerCase
 }

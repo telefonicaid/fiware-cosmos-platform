@@ -18,6 +18,7 @@ import scala.concurrent.duration._
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.ambari.services.{CosmosUserService, Hdfs}
@@ -41,15 +42,16 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
 
   before {
     sm = new AmbariServiceManager(
-      new AmbariServer("10.95.162.103", 8080, "admin", "admin"),
-      infrastructureProvider, refreshGracePeriod = 1.seconds, ClusterId("hdfs"))
+      new AmbariServer("10.95.162.103", 8080, "admin", "admin"), infrastructureProvider,
+      initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds, ClusterId("hdfs"),
+      mappersPerSlave = 2, reducersPerSlave = 1)
   }
 
   after {
     sm.close()
   }
 
-  "Ambari server" must "create and terminate cluster" in {
+  "Ambari server" must "create and terminate cluster" taggedAs HasExternalDependencies in {
     val user1 = ClusterUser("luckydude1", "publicKey1")
     val user2 = ClusterUser("luckydude2", "publicKey2")
     val user3 = ClusterUser("luckydude3", "publicKey2")
@@ -78,7 +80,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     sm.describeCluster(id).get.state must be (Terminated)
   }
 
-  it must "create persistent hdfs cluster" in {
+  it must "create persistent hdfs cluster" taggedAs HasExternalDependencies in {
     Await.result(sm.deployPersistentHdfsCluster(), 10 minutes)
   }
 }

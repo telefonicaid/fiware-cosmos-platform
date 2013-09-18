@@ -11,13 +11,9 @@
 
 package es.tid.cosmos.api.controllers
 
-import java.net.URI
-
 import org.apache.commons.lang3.StringEscapeUtils
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import play.api.Play.current
-import play.api.db.DB
 import play.api.mvc.Session
 import play.api.test._
 import play.api.test.Helpers._
@@ -25,143 +21,163 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.ResultMatchers.redirectTo
 import es.tid.cosmos.api.controllers.pages.{CosmosSession, Registration}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
+import es.tid.cosmos.api.mocks.WithTestApplication
+import es.tid.cosmos.api.mocks.oauth2.MockOAuthConstants
 import es.tid.cosmos.api.oauth2.UserProfile
-import es.tid.cosmos.api.mocks.{WithMockedIdentityService, User}
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.{UserId, CosmosProfileDao}
 
 class PagesIT extends FlatSpec with MustMatchers {
-  "A non registered user" must "be authenticated and get to the registration page" in
-    new WithMockedIdentityService {
-      val authUrl = mustLinkTheAuthorizationProvider()
-      val redirectUrl = identityService.requestAuthorizationCode(
-        authUrl, identityService.users.head.id)
-      val redirection = route(FakeRequest(GET, relativePath(redirectUrl))).get
+
+  "A non registered user" must "be redirected to registration when having a valid OAuth code" in
+    new WithTestApplication {
+      val redirection = oauthRedirectionWithCode(MockOAuthConstants.GrantedCode)
       redirection must redirectTo ("/")
       val cosmosSession: CosmosSession = session(redirection)
       cosmosSession must be ('authenticated)
-      cosmosSession must not be ('registered)
+      cosmosSession must not be 'registered
     }
 
   it must "be registered upon adding the necessary registration information" in
-    new WithMockedIdentityService {
-      val authUrl = mustLinkTheAuthorizationProvider()
-      val redirectUrl = identityService.requestAuthorizationCode(
-        authUrl, identityService.users.head.id)
-      val redirection = route(FakeRequest(GET, relativePath(redirectUrl))).get
-      redirection must redirectTo ("/")
-      val resultSession = session(redirection)
-      val cosmosSession: CosmosSession = resultSession
-      cosmosSession must be ('authenticated)
-      cosmosSession must not be ('registered)
-      val registrationPage = route(FakeRequest(GET, "/").withSession(resultSession.data.toSeq: _*)).get
-      val regRedirection = route(FakeRequest(POST, registrationUrl(contentAsString(registrationPage)))
-        .withFormUrlEncodedBody("handle" -> "user1", "publicKey" -> "SSH_PUBLIC_KEY")
-        .withSession(resultSession.data.toSeq: _*)).get
+    new WithTestApplication {
+      val nonRegistered = Session().setUserProfile(MockOAuthConstants.User101)
+      val registrationPage = route(withSession(FakeRequest(GET, "/"), nonRegistered)).get
+      val url = registrationUrl(contentAsString(registrationPage))
+      val regRedirection = route(withSession(FakeRequest(POST, url), nonRegistered)
+        .withFormUrlEncodedBody(
+          "handle" -> "user1",
+          "publicKey" -> "SSH_PUBLIC_KEY"
+        )).get
       regRedirection must redirectTo ("/")
       val registeredCosmosSession: CosmosSession = session(regRedirection)
       registeredCosmosSession must be ('authenticated)
       registeredCosmosSession must be ('registered)
     }
 
-  it must "not be authenticated after cancelling the registration process" in
-    new WithMockedIdentityService {
-      val authUrl = mustLinkTheAuthorizationProvider()
-      val redirectUrl = identityService.requestAuthorizationCode(
-        authUrl, identityService.users.head.id)
-      val redirection = route(FakeRequest(GET, relativePath(redirectUrl))).get
-      redirection must redirectTo ("/")
-      val resultSession = session(redirection)
-      val cosmosSession: CosmosSession = resultSession
-      cosmosSession must be ('authenticated)
-      cosmosSession must not be ('registered)
-      val registrationPage = route(FakeRequest(GET, "/").withSession(resultSession.data.toSeq: _*)).get
-      val cancelRegistrationRedirection = route(
-        FakeRequest(GET, cancelRegistrationUrl(contentAsString(registrationPage)))
-        .withSession(resultSession.data.toSeq: _*)).get
-      cancelRegistrationRedirection must redirectTo ("/")
-      val registeredCosmosSession: CosmosSession = session(cancelRegistrationRedirection)
-      registeredCosmosSession must not be ('authenticated)
-      registeredCosmosSession must not be ('registered)
+  it must "fail its registration when selected handle is already taken" in
+    new WithTestApplication {
+      dao.withTransaction { implicit c =>
+        dao.registerUserInDatabase(UserId("existingUser"), Registration("existingHandle", "PK"))
+      }
+      val nonRegistered = Session().setUserProfile(MockOAuthConstants.User101)
+      val registrationPage = route(withSession(FakeRequest(GET, "/"), nonRegistered)).get
+      val url = registrationUrl(contentAsString(registrationPage))
+      val response = route(withSession(FakeRequest(POST, url), nonRegistered)
+        .withFormUrlEncodedBody(
+          "handle" -> "existingHandle",
+          "publicKey" -> "SSH_PUBLIC_KEY"
+        )).get
+      status(response) must be (BAD_REQUEST)
+      contentAsString(response) must include ("already taken")
     }
 
-  "A registered user" must "be authenticated and redirected to its profile" in
-    new WithMockedIdentityService {
-      registerUsers(identityService.users)
-      val authUrl = mustLinkTheAuthorizationProvider()
-      val redirectUrl = identityService.requestAuthorizationCode(
-        authUrl, identityService.users.head.id)
-      val redirection = route(FakeRequest(GET, relativePath(redirectUrl))).get
+  it must "not be authenticated after cancelling the registration process" in
+    new WithTestApplication {
+      val nonRegistered = Session().setUserProfile(MockOAuthConstants.User101)
+      val registrationPage = route(withSession(FakeRequest(GET, "/"), nonRegistered)).get
+      val url = cancelRegistrationUrl(contentAsString(registrationPage))
+      val redirection =  route(withSession(FakeRequest(GET, url), nonRegistered)).get
+      redirection must redirectTo ("/")
+      val registeredCosmosSession: CosmosSession = session(redirection)
+      registeredCosmosSession must not be 'authenticated
+      registeredCosmosSession must not be 'registered
+    }
+
+  it must "get its session surviving from a DB reset cancelled" in new WithTestApplication {
+    val requestSession = new Session()
+      .setUserProfile(MockOAuthConstants.User101)
+      .setToken("token")
+      .setCosmosId(1)
+    val response = route(withSession(FakeRequest(GET, "/"), requestSession)).get
+    response must redirectTo ("/")
+    val responseSession: CosmosSession = session(response)
+    responseSession must not be 'authenticated
+    responseSession must not be 'registered
+  }
+
+  "A registered user" must "be authenticated after OAuth redirection" in
+    new WithTestApplication {
+      registerUser(dao, MockOAuthConstants.User101)
+      val redirection = oauthRedirectionWithCode(MockOAuthConstants.GrantedCode)
       redirection must redirectTo ("/")
       val cosmosSession: CosmosSession = session(redirection)
       cosmosSession must be ('authenticated)
       cosmosSession must be ('registered)
     }
 
-  "A user rejecting authorization" must "see error information" in new WithMockedIdentityService {
-    val authUrl = mustLinkTheAuthorizationProvider()
-    val redirectUrl = identityService.requestAuthorizationCode(
-      authUrl, identityService.users.head.id, isAuthorized = false)
-    val result = route(FakeRequest(GET, relativePath(redirectUrl))).get
+  it must "be authenticated and redirected to its profile" in new WithTestApplication {
+    registerUser(dao, MockOAuthConstants.User101)
+    val authenticatedUserSession= Session().setUserProfile(MockOAuthConstants.User101)
+    val response = route(withSession(FakeRequest(GET, "/"), authenticatedUserSession)).get
+    response must redirectTo ("/")
+    val cosmosSession: CosmosSession = session(response)
+    cosmosSession must be ('authenticated)
+    cosmosSession must be ('registered)
+  }
+
+  "A user rejecting authorization" must "see error information" in new WithTestApplication {
+    val result = oauthRedirectionWithError("unauthorized_client")
     status(result) must be (UNAUTHORIZED)
     contentAsString(result) must include ("Access denied")
   }
 
   "A user with an invalid token" must "see error information and lose her session" in
-    new WithMockedIdentityService {
-      val result = route(FakeRequest(GET, "/auth?code=invalid")).get
+    new WithTestApplication {
+      val result = oauthRedirectionWithCode("invalid")
       val cosmosSession: CosmosSession = session(result)
-      cosmosSession must not be ('authenticated)
-      cosmosSession must not be ('registered)
+      cosmosSession must not be 'authenticated
+      cosmosSession must not be 'registered
       status(result) must be (UNAUTHORIZED)
       contentAsString(result) must include ("Authorization failed")
     }
 
   "The / route" must "link to the authorization provider when unauthorized" in
-    new WithMockedIdentityService {
-      mustLinkTheAuthorizationProvider()
+    new WithTestApplication {
+      val home = route(FakeRequest(GET, "/")).get
+      status(home) must equal (OK)
+      val authUrl = authenticationUrl(contentAsString(home))
+      authUrl must be ('defined)
     }
 
   it must "show the registration page when authorized but not registered" in
-    new WithMockedIdentityService {
+    new WithTestApplication {
       val session = new Session()
-        .setUserProfile(UserProfile(identityService.users.head.id))
+        .setUserProfile(MockOAuthConstants.User101)
         .setToken("token")
-      val registrationPage = route(FakeRequest(GET, "/").withSession(session.data.toSeq: _*)).get
+      val registrationPage = route(withSession(FakeRequest(GET, "/"), session)).get
       status(registrationPage) must equal (OK)
       contentAsString(registrationPage) must include ("User registration")
     }
 
-  it must "show the user profile when authorized and registered" in new WithMockedIdentityService {
-    registerUsers(identityService.users)
-    val user = identityService.users.head
+  it must "show the user profile when authorized and registered" in new WithTestApplication {
+    val cosmosId = registerUser(dao, MockOAuthConstants.User101)
     val session = new Session()
-      .setUserProfile(UserProfile(user.id))
+      .setUserProfile(MockOAuthConstants.User101)
       .setToken("token")
-      .setCosmosId(1)
-    val registrationPage = route(FakeRequest(GET, "/").withSession(session.data.toSeq: _*)).get
+      .setCosmosId(cosmosId)
+    val registrationPage = route(withSession(FakeRequest(GET, "/"), session)).get
     status(registrationPage) must equal (OK)
     contentAsString(registrationPage) must include ("Cosmos user profile")
   }
 
-  private def mustLinkTheAuthorizationProvider(): String = {
-    val home = route(FakeRequest(GET, "/")).get
-    status(home) must equal (OK)
-    val authUrl = authenticationUrl(contentAsString(home))
-    authUrl must be ('defined)
-    authUrl.get
-  }
+  private def oauthRedirectionWithCode(grantedCode: String) = oauthRedirection(s"code=$grantedCode")
 
-  private def registerUsers(users: Iterable[User]) {
-    DB.withConnection { implicit c =>
-      for (User(tuId, _, _, email) <- users) {
-        val handle = email.map(_.split('@')(0)).getOrElse("root")
-        CosmosProfileDao.registerUserInDatabase(tuId, Registration(handle, "pk1234"))
-      }
+  private def oauthRedirectionWithError(error: String) = oauthRedirection(s"error=$error")
+
+  private def oauthRedirection(queryString: String) =
+    route(FakeRequest(GET, s"/auth/${MockOAuthConstants.ProviderId}?$queryString")).get
+
+  private def withSession[A](request: FakeRequest[A], session: Session) =
+    request.withSession(session.data.toSeq: _*)
+
+  private def registerUser(dao: CosmosProfileDao, user: UserProfile): Long =
+    dao.withConnection { implicit c =>
+      val UserProfile(authId, _, email) = user
+      val handle = email.map(_.split('@')(0)).getOrElse("root")
+      dao.registerUserInDatabase(authId, Registration(handle, "pk1234"))
     }
-  }
 
   private def authenticationUrl(page: String) =
-    """<a id="login" href="(.*?)">""".r.findFirstMatchIn(page)
+    """<a class="login" href="(.*?)">""".r.findFirstMatchIn(page)
       .map(m => StringEscapeUtils.unescapeHtml4(m.group(1)))
 
   private def registrationUrl(page: String) =
@@ -171,9 +187,4 @@ class PagesIT extends FlatSpec with MustMatchers {
   private def cancelRegistrationUrl(page: String) =
     """<a href="(.*?)" class="btn cancel">""".r.findFirstMatchIn(page)
       .map(m => StringEscapeUtils.unescapeHtml4(m.group(1))).get
-
-  private def relativePath(url: String) = {
-    val uri = URI.create(url)
-    s"${uri.getPath}?${uri.getQuery}"
-  }
 }

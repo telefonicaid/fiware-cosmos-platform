@@ -15,16 +15,24 @@ import es.tid.cosmos.platform.ial.MachineProfile
 
 class FakeLibVirtDao extends LibVirtDao {
 
-  val libVirtServers = for (i <- 1 to 5) yield {
-    new TransientLibVirtServerProperties(
-      name = s"andromeda0$i",
-      description = s"Andromeda 0$i",
-      profile = MachineProfile.G1_COMPUTE,
-      connectionChain = connChain(s"192.168.63.$i"),
-      domainHostname = s"andromeda${50 + i}",
-      domainIpAddress = s"192.168.63.${50 + i}"
-    )
-  }
+  private val computeServers =
+    for (i <- 1 to 5) yield propertiesForNumber(i, MachineProfile.G1Compute)
+
+  private val hdfsMasterServer = propertiesForNumber(6, MachineProfile.HdfsMaster)
+
+  private val hdfsSlaveServers =
+    for (i <- 7 to 9) yield propertiesForNumber(i, MachineProfile.HdfsSlave)
+
+  val libVirtServers = (computeServers :+ hdfsMasterServer) ++ hdfsSlaveServers
+
+  private def propertiesForNumber(
+      i: Int, profile: MachineProfile.Value) = new TransientLibVirtServerProperties(
+    name = s"andromeda0$i",
+    description = s"Andromeda 0$i",
+    profile = profile,
+    connectionChain = connChain(s"192.168.63.$i"),
+    domainHostname = s"andromeda${50 + i}",
+    domainIpAddress = s"192.168.63.${50 + i}")
 
   private def connChain(hostname: String) =
     s"openvz+ssh://cosmos@$hostname/system?socket=/var/run/libvirt/libvirt-sock"

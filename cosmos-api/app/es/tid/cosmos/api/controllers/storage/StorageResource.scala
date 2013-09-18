@@ -20,14 +20,16 @@ import play.api.libs.json.Json
 import play.api.mvc.Action
 
 import es.tid.cosmos.api.controllers.common.{ErrorMessage, AuthController}
+import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /**
  * Resource that represents the persistent HDFS shared by all clusters.
  */
-@Api(value = "/cosmos/storage", listingPath = "/doc/cosmos/storage",
+@Api(value = "/cosmos/v1/storage", listingPath = "/doc/cosmos/v1/storage",
   description = "Represents the persistent storage shared by all clusters")
-class StorageResource(serviceManager: ServiceManager) extends AuthController {
+class StorageResource(serviceManager: ServiceManager, override val dao: CosmosProfileDao)
+  extends AuthController {
 
   private val UnavailableHdfsResponse =
     ServiceUnavailable(Json.toJson(ErrorMessage("persistent storage service not available")))

@@ -29,8 +29,11 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
         config.getString("ambari.server.username"),
         config.getString("ambari.server.password")),
       infrastructureProvider,
+      config.getInt("ambari.servicemanager.initialization.graceperiod.minutes").minutes,
       config.getInt("ambari.servicemanager.refresh.graceperiod.seconds").seconds,
-      ClusterId(config.getString("hdfs.cluster.id"))
+      ClusterId(config.getString("hdfs.cluster.id")),
+      config.getInt("ambari.servicemanager.mappersPerSlave"),
+      config.getInt("ambari.servicemanager.reducersPerSlave")
     )
   }
 }

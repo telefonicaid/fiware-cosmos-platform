@@ -1,0 +1,19 @@
+#
+# Telefónica Digital - Product Development and Innovation
+#
+# THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+# EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+# All rights reserved.
+#
+
+cosmos::slave::ip: "192.168.63.24"
+cosmos::slave::ct_ip: "192.168.63.88"
+cosmos::slave::ct_hostname: "orion-compute06"
+cosmos::slave::hardware_profile: 1
+cosmos::slave::name: "Orion 06"
+cosmos::slave::ram: 32768
+cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAzKHmT6RXmd5ZzirREslBV5iIibC3LzJeLAVUFUa7R+ieA8WOysZOXwPe0MDu3hOGVxs3AKuOE3hVrt6MV2oNuXctnCFqYQDZqgAwgB+Unkfvyor36OWxYis4NKbsaCzgPj8r/6yS3h/UkD9gMqovBq51fLWBQCBJbtzFeFszeH260CXFZAqnym6nqRifT7ZYh8X4xIXrlWSjHe0odGlljWNZX9mMNZ610uskEdSJMgMKFLfjOFTbWlieduJ8tu/EN/rIJEt68p9YQwoody15sUuWzDvKbTVDTCY6C75eUxdlnuUGrAuQv8tNac039HLze53UWjlk9D+HrLEGKeLJmQ=="
+cosmos::slave::ct_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCbFsTegYfRK5gyircFQn5kEG/8eufLHjcRs8yth+hT+8DlwM2kJik2iQ1E0XUBCVoLTgSG1/saMV0seZ6jKho6mdnwvX8STcuTuFXqbKVHaSIBsmAtvsi5P3aNSej7ZiT0cRwii5mvkkygbd1JPrgdntuJi2v3JaZL/zmIzt5/3tOwfW57g9sztWK8JqS1XGNoxZBe4Yoh2vrbqE+p6uY3x9L7Yu/eu0XPlDz3PKZYI03qIV6TR8xoXfLa2C6vdvv7drWJ20T1OQJMOzI1XPvgOBD2DITRvGb/yPXAL++mAfgiOm6o6GHUtQAt/de1zRw+iAdpWIyCPOFV3uecWEZd"

@@ -15,12 +15,10 @@ import javax.ws.rs.PathParam
 import scala.util.{Failure, Success, Try}
 
 import com.wordnik.swagger.annotations._
-import play.api.Play.current
-import play.api.db.DB
 import play.api.libs.json._
 import play.api.mvc.{Result, RequestHeader, Action}
 
-import es.tid.cosmos.api.controllers.common.{AuthController, ErrorMessage, Message}
+import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, AuthController, ErrorMessage, Message}
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
@@ -28,9 +26,11 @@ import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManag
 /**
  * Resource that represents a single cluster.
  */
-@Api(value = "/cosmos/cluster", listingPath = "/doc/cosmos/cluster",
+@Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
   description = "Represents an existing or decommissioned cluster")
-class ClusterResource(serviceManager: ServiceManager) extends AuthController {
+class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosProfileDao)
+  extends AuthController {
+
   @ApiOperation(value = "Get cluster machines", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterDetails")
   @ApiErrors(Array(
@@ -82,8 +82,8 @@ class ClusterResource(serviceManager: ServiceManager) extends AuthController {
   }
 
   private def isOwnCluster(cosmosId: Long, cluster: ClusterId): Boolean =
-    DB.withConnection { implicit c =>
-      CosmosProfileDao.clustersOf(cosmosId).contains(cluster)
+    dao.withConnection { implicit c =>
+      dao.clustersOf(cosmosId).contains(cluster)
     }
 
   private def unauthorizedAccessTo(cluster: ClusterId) =
@@ -95,5 +95,5 @@ class ClusterResource(serviceManager: ServiceManager) extends AuthController {
 
 object ClusterResource {
   def clusterUrl(id: ClusterId)(implicit request: RequestHeader): String =
-    routes.ClusterResource.listDetails(id.toString).absoluteURL(secure = false)
+    AbsoluteUrl(routes.ClusterResource.listDetails(id.toString))
 }

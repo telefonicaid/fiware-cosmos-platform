@@ -11,74 +11,102 @@
 
 package es.tid.cosmos.api.profile
 
-import java.sql.Connection
-
-import anorm._
-import anorm.SqlParser._
-
 import es.tid.cosmos.api.authorization.ApiCredentials
-import es.tid.cosmos.api.controllers.pages.{NamedKey, CosmosProfile, Registration}
+import es.tid.cosmos.api.controllers.pages._
 import es.tid.cosmos.servicemanager.ClusterId
 
-object CosmosProfileDao {
-  def registerUserInDatabase(userId: String, reg: Registration)(implicit c: Connection): Long = {
-    val credentials = ApiCredentials.random()
-    val cosmosId = SQL("""INSERT INTO user(user_id, handle, api_key, api_secret)
-                        | VALUES ({user_id}, {handle}, {api_key}, {api_secret})""".stripMargin).on(
-      "user_id" -> userId,
-      "handle" -> reg.handle,
-      "api_key" -> credentials.apiKey,
-      "api_secret" -> credentials.apiSecret
-    ).executeInsert(scalar[Long].single)
-    SQL("""INSERT INTO public_key(cosmos_id, name, signature)
-           VALUES ({cosmos_id}, 'default', {signature})""")
-      .on("cosmos_id" -> cosmosId, "signature" -> reg.publicKey)
-      .executeInsert()
-    cosmosId
-  }
-
-  def getCosmosId(userId: String)(implicit c: Connection): Option[Long] =
-    SQL("SELECT cosmos_id FROM user WHERE user_id = {user_id}")
-      .on("user_id" -> userId)
-      .as(scalar[Long].singleOpt)
-
-  def lookupByUserId(userId: String)(implicit c: Connection): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.handle, u.api_key, u.api_secret, p.name, p.signature
-                 | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
-                 | WHERE u.user_id = {user_id}""".stripMargin)
-      .on("user_id" -> userId))
-
-  def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Connection): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.handle, u.api_key, u.api_secret, p.name, p.signature
-                 | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
-                 | WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
-      .on("key" -> creds.apiKey, "secret" -> creds.apiSecret))
-
-  def assignCluster(clusterId: ClusterId, ownerId: Long)(implicit c: Connection) {
-    SQL("INSERT INTO cluster(cluster_id, owner) VALUES ({cluster_id}, {owner})")
-      .on("cluster_id" -> clusterId.toString, "owner" -> ownerId)
-      .execute()
-  }
-
-  def clustersOf(cosmosId: Long)(implicit c: Connection): Seq[ClusterId] =
-    SQL("SELECT cluster_id FROM cluster WHERE owner = {owner}")
-      .on("owner" -> cosmosId)
-      .as(str("cluster_id").map(ClusterId.apply) *)
+/**
+ * This trait creates an abstraction on how to use the underlying data, such as SQL databases,
+ * in-memory lists, mocks, etc.
+ */
+trait CosmosProfileDao {
 
   /**
-   * Lookup Cosmos profile by a custom query.
-   *
-   * @param query Query with the following output columns: cosmos id, handle, apiKey, apiSecret,
-   *              name and signature
-   * @return      A cosmos profile or nothing
+   * Specifies the type of connection to use to the data.
    */
-  private def lookup(query: SimpleSql[Row])(implicit c: Connection): Option[CosmosProfile] = {
-    val rows = query().toList
-    rows.headOption.map {
-      case Row(id: Int, handle: String, apiKey: String, apiSecret: String, _, _) => {
-        val namedKeys = rows.map(row => NamedKey(row[String]("name"), row[String]("signature")))
-        CosmosProfile(id, handle, ApiCredentials(apiKey, apiSecret), namedKeys: _*)
-      }
-    }
-  }
+  type Conn
+
+  def withConnection[A](block: Conn => A): A
+  def withTransaction[A](block: Conn => A): A
+
+  /**
+   * Registers a new user in the database.
+   *
+   * @param userId  The id specified by the user.
+   * @param reg     The registration options.
+   * @param c       The connection to use.
+   * @return        The unique Cosmos ID generated for the new user.
+   */
+  def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): Long
+
+  /**
+   * Retrieves the unique Cosmos ID for a given user.
+   *
+   * @param userId  The id specified by the user.
+   * @param c       The connection to use.
+   * @return        The unique Cosmos ID for a given user.
+   */
+  def getCosmosId(userId: UserId)(implicit c: Conn): Option[Long]
+
+  /**
+   * Retrieves the machine quota for a given user.
+   *
+   * @param cosmosId  The unique Cosmos ID of the given user.
+   * @param c         The connection to use.
+   * @return          The quota that the user has.
+   */
+  def getMachineQuota(cosmosId: Long)(implicit c: Conn): Quota
+
+  /**
+   * Sets the machine quota for a given user.
+   *
+   * @param cosmosId  The unique Cosmos ID of the given user.
+   * @param quota     The quota to set.
+   * @param c         The connection to use.
+   * @return          Whether the operation succeeded or not.
+   */
+  def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean
+
+  /**
+   * Determines whether a handle is already taken.
+   *
+   * @param handle Handle to check availability for.
+   * @param c      The connection to use.
+   * @return       Whether the handle is taken.
+   */
+  def handleExists(handle: String)(implicit c: Conn): Boolean
+
+  /**
+   * Obtains the profile for a given user.
+   *
+   * @param userId  The user id of who to retrieve the profile.
+   * @param c       The connection to use.
+   * @return        The profile of the given user.
+   */
+  def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile]
+
+  /**
+   * Obtains the profile for a given set of credentials.
+   *
+   * @param creds  The credentials used to retrieve the profile.
+   * @param c      The connection to use.
+   * @return       The profile of the given user.
+   */
+  def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile]
+
+  /**
+   * Assigns a cluster to a given user.
+   * @param clusterId  The cluster ID to assign.
+   * @param ownerId    The unique Cosmos ID of the new owner.
+   * @param c          The connection to use.
+   */
+  def assignCluster(clusterId: ClusterId, ownerId: Long)(implicit c: Conn): Unit
+
+  /**
+   * Retrieves the set of cluster ids for a given user.
+   * @param cosmosId  The unique Cosmos ID of the given user.
+   * @param c         The connection to use.
+   * @return          The set of cluster ids for a given user.
+   */
+  def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterId]
 }

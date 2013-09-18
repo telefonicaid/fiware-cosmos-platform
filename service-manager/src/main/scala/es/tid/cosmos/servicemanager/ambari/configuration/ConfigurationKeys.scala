@@ -12,5 +12,10 @@
 package es.tid.cosmos.servicemanager.ambari.configuration
 
 object ConfigurationKeys extends Enumeration {
-  val MasterNode, MaxMapTasks, MaxReduceTasks = Value
+  val HdfsReplicationFactor,
+      MappersPerSlave,
+      MasterNode,
+      MaxMapTasks,
+      MaxReduceTasks,
+      ReducersPerSlave = Value
 }

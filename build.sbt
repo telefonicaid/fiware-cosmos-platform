@@ -1,7 +1,5 @@
 name := "cosmos-platform"
 
-version := "0.10.1"
-
 organization in ThisBuild := "es.tid.cosmos"
 
 scalaVersion in ThisBuild := "2.10.1"

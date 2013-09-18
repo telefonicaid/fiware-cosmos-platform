@@ -13,19 +13,19 @@ package es.tid.cosmos.platform.ial.libvirt.jna
 
 import java.util.{NoSuchElementException, UUID}
 
-import scala.concurrent.{blocking, Future, future}
+import scala.concurrent.{ExecutionContext, blocking, Future, future}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.{Try, Random}
 
 import org.libvirt.{LibvirtException, Domain, Connect}
 import org.libvirt.Error.ErrorNumber
 
 import es.tid.cosmos.platform.ial.libvirt.{LibVirtServerProperties, DomainProperties, LibVirtServer}
+import java.util.concurrent.Executors
 
 /**
  * A JNA based libvirt server
  */
-case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends LibVirtServer {
+case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirtServer {
 
   val domainId: Int = 101
   val domainName: String = domainId.toString
@@ -53,9 +53,9 @@ case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends Lib
     </domain>
   }
 
-  def createDomain(): Future[DomainProperties] = destroyDomain().map(_ =>
-    mapDomain(blocking { conn.domainCreateXML(openVzDomainXmlDoc.toString(), 0) })
-  )
+  def createDomain(): Future[DomainProperties] = destroyDomain().map(_ => mapDomain(blocking {
+    conn.domainCreateXML(openVzDomainXmlDoc.toString(), 0)
+  }))(JnaLibVirtServer.singleThreadExecutor)
 
   def domain(): Future[DomainProperties] = future { blocking {
     try {
@@ -97,6 +97,13 @@ case class JnaLibVirtServer(val properties: LibVirtServerProperties) extends Lib
       uuid = UUID.nameUUIDFromBytes(domain.getUUID.map(_.toByte)),
       name = domain.getName,
       isActive = domain.isActive > 0,
+      profile = properties.profile,
       hostname = properties.domainHostname,
       ipAddress = properties.domainIpAddress)
+}
+
+object JnaLibVirtServer {
+
+  private val singleThreadExecutor = ExecutionContext.fromExecutorService(
+    Executors.newFixedThreadPool(1))
 }

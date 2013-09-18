@@ -1,4 +1,5 @@
-@(newAccountUrl: String, authenticateUrl: String, message: Option[String] = None)
+@(authAlternatives: Seq[views.AuthAlternative], message: Option[String] = None)
+@import play.api.Play.current
 <!--
  Telefónica Digital - Product Development and Innovation
 
@@ -9,7 +10,7 @@
  Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  All rights reserved.
  -->
-@main("Cosmos API") {
+@main("Cosmos")() {
     <div class="section">
         @if(message.isDefined) {
             <div class="message">
@@ -21,12 +22,26 @@
 
         <h2>Manage your Big Data assets.</h2>
 
-        <img id="tu-id" src="@routes.Assets.at("images/tu.png")" alt="TU logo"/>
-        <ul>
-            <li>Log in with your <a id="login" href="@authenticateUrl">TU|Id</a> identity</li>
-            <li>Or get a <a href="@newAccountUrl/signup/validate/" class="tu-id" target="_blank">new
-                account</a> first</li>
-        </ul>
+        <p>Log in with any of the following authentication providers:</p>
+
+        <div id="auth-selector">
+        @for(alt <- authAlternatives) {
+            <ul id="@alt.id" class="auth-alternative">
+                <li>
+                <a class="login" href="@alt.authUrl">
+                    Log in with @alt.name
+                    <img id="@alt.id-auth" class="oauth-logo" alt="@alt.id logo"
+                         src="@routes.Assets.at(s"images/oauth/${alt.id}.png")"/>
+                </a>
+                </li>
+                @if(alt.newAccountUrl.isDefined) {
+                <li>
+                    Or get a <a href="@alt.newAccountUrl.get" target="_blank">new account</a>
+                </li>
+                }
+            </ul>
+        }
+        </div>
 
         <hr/>
 

@@ -71,6 +71,16 @@ trait ServiceManager extends Refreshable {
   def deployPersistentHdfsCluster(): Future[Unit]
 
   /**
+   * Obtain information of the persistent HDFS cluster's state.
+   */
+  def describePersistentHdfsCluster(): Option[ClusterDescription]
+
+  /**
+   * Terminates the persistent HDFS cluster.
+   */
+  def terminatePersistentHdfsCluster(): Future[Unit]
+
+  /**
    * Add users to the CosmosUser service for the given cluster.
    *
    * @param clusterId the cluster id where the users will be added

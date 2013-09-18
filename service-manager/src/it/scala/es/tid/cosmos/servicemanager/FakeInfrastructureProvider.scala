@@ -19,7 +19,6 @@ import es.tid.cosmos.platform.ial.MachineState
 class FakeInfrastructureProvider extends InfrastructureProvider {
 
   override def createMachines(
-      namePrefix: String,
       profile: MachineProfile.Value,
       count: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = Future.successful(

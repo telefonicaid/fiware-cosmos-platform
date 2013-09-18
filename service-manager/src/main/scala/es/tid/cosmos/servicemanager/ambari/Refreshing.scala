@@ -79,31 +79,40 @@ trait Refreshing extends Refreshable with Logging {
   }
 
   private def resolveState(
-    cluster: Cluster, useGracePeriod : Boolean = true): Future[ClusterState] = {
+    cluster: Cluster, elapsedRefreshTime: FiniteDuration = 0 milliseconds): Future[ClusterState] = {
     val state_> = state(cluster)
     state_>.flatMap {
       case Running | Terminated => state_>
-      case Provisioning => if (useGracePeriod) { blocking {
+      case Provisioning => if (elapsedRefreshTime < refreshGracePeriod) { blocking {
         logger.warn(s"Found unregistered cluster [${cluster.name}}] in Provisioning state. " +
           s"Waiting $RefreshTime to see if it changes.")
         Thread.sleep(RefreshTime.toMillis)
-        resolveState(cluster, useGracePeriod = false)
-      }} else throw new IllegalStateException(
-        s"Timed out waiting for cluster [${cluster.name}] to finish provisioning")
-      case other@_ => throw new IllegalStateException(
-        s"Oops! Was not expecting the cluster [${cluster.name}}] in state [$other]")
+        resolveState(cluster, elapsedRefreshTime + RefreshTime)
+      }} else failedState(
+        cluster, s"Timed out waiting for cluster [${cluster.name}] to finish provisioning")
+      case other@_ => failedState(
+        cluster, s"Oops! Was not expecting the cluster [${cluster.name}}] in state [$other]")
     }
+  }
+
+  private def failedState(cluster: Cluster, message: String) = {
+    logger.warn(s"Setting cluster [${cluster.name}] to Failed because of: $message")
+    Future.successful(Failed(new IllegalStateException(message)))
   }
 
   private def register(cluster: Cluster): Future[Any] = {
     val clusterState_> = resolveState(cluster)
+    val deployment_> = clusterState_>.map {
+      case Failed(cause) => throw cause
+      case _ => ()
+    }
     val machines_> = infrastructureProvider.assignedMachines(cluster.hostNames)
     val nameNode_> = for {
       host <- ServiceMasterExtractor.getServiceMaster(cluster, Hdfs)
     } yield new URI(s"hdfs://${host.name}:${Hdfs.nameNodeHttpPort}")
     val description = new MutableClusterDescription(
       ClusterId(cluster.name), cluster.name, cluster.hostNames.size,
-      clusterState_>, machines_>, nameNode_>)
+      deployment_>, machines_>, nameNode_>)
     clusterState_>.onSuccess({
       case Terminated => description.terminate(clusterState_>)
     })

@@ -18,7 +18,8 @@ import play.api.mvc.Results.InternalServerError
 
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.controllers.common.ErrorMessage
-import es.tid.cosmos.api.oauth2.TuIdOAuthClientComponent
+import es.tid.cosmos.api.oauth2.DefaultMultiOAuthProviderComponent
+import es.tid.cosmos.api.profile.PlayDbCosmosProfileDaoComponent
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.ProductionServiceManagerComponent
 
@@ -26,7 +27,8 @@ import es.tid.cosmos.servicemanager.ProductionServiceManagerComponent
  * Global application settings tied to real services.
  */
 object ProductionGlobal extends AbstractGlobal(new Application
-  with TuIdOAuthClientComponent
+  with DefaultMultiOAuthProviderComponent
+  with PlayDbCosmosProfileDaoComponent
   with ProductionServiceManagerComponent
   with ApplicationConfigComponent) {
 

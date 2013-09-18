@@ -20,7 +20,7 @@ trait ConfigurationContributor {
   /**
    * Get the configuration contributions.
    *
-   * @param properties the values used to replace placeholders in the configuration
+   * @param properties a map that contains the keys and values of cluster-dependent properties
    * @return the partial contribution to the cluster's Global and Core configuration and
    *         the complete configuration of a Service.
    */

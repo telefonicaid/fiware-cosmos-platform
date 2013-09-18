@@ -1,0 +1,20 @@
+[openvz-utils]
+name=OpenVZ utilities
+baseurl=<%= scope.lookupvar('cosmos::openvz::service::vz_utils_repo') %>
+enabled=1
+gpgcheck=0
+priority=1
+
+# In addition to openvz-utils repo, you have to enable one the the
+# kernel repositories below. In the stock config, openvz-kernel-rhel6
+# is enabled; you might want to change this.
+
+
+# Stable branches
+
+[openvz-kernel-rhel6]
+name=OpenVZ RHEL6-based kernel
+baseurl=<%= scope.lookupvar('cosmos::openvz::service::vz_kernel_repo') %>
+enabled=1
+gpgcheck=0
+priority=1

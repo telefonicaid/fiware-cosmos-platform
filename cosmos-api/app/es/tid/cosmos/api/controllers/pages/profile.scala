@@ -12,21 +12,23 @@
 package es.tid.cosmos.api.controllers.pages
 
 import es.tid.cosmos.api.authorization.ApiCredentials
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.api.profile.Quota
 
 /**
  * Represents the Cosmos-specific user profile.
  *
  * @param id             Internal user id
  * @param handle         User login
+ * @param quota          Quota for resources
  * @param apiCredentials Credentials for the REST API
  * @param keys           Public keys
  */
 case class CosmosProfile(
     id: Long,
     handle: String,
+    quota: Quota,
     apiCredentials: ApiCredentials,
-    keys: NamedKey*)
+    keys: Seq[NamedKey])
 
 /**
  * A public key annotated with a user-defined name.

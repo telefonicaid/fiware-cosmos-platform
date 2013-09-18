@@ -20,42 +20,47 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.platform.ial.libvirt.TransientLibVirtServerProperties
 import es.tid.cosmos.platform.ial.MachineProfile
+import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 
 class JnaLibVirtServerIT extends FlatSpec with MustMatchers with BeforeAndAfter {
 
-  var server = new JnaLibVirtServer(new TransientLibVirtServerProperties(
-    name = "Test",
-    description = "Test libvirt Server",
-    MachineProfile.G1_COMPUTE,
-    connectionChain = "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
-    domainHostname = "andromeda52",
-    domainIpAddress = "192.168.63.62"))
+  var server: JnaLibVirtServer = null
 
-  before { Await.ready(server.destroyDomain(), Duration.Inf) }
+  before {
+    server = new JnaLibVirtServer(new TransientLibVirtServerProperties(
+        name = "Test",
+        description = "Test libvirt Server",
+        MachineProfile.G1Compute,
+        connectionChain =
+          "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
+        domainHostname = "andromeda52",
+        domainIpAddress = "192.168.63.62"))
+    Await.ready(server.destroyDomain(), Duration.Inf)
+  }
 
-  "The JNA libvirt server" must "create a new domain" in {
+  "The JNA libvirt server" must "create a new domain" taggedAs HasExternalDependencies in {
     val dom_> = server.createDomain()
     val dom = Await.result(dom_>, Duration.Inf)
     dom.name must be (server.domainName)
     dom must be ('active)
   }
 
-  it must "indicate the domain is created after creation" in {
+  it must "indicate the domain is created after creation" taggedAs HasExternalDependencies in {
     val dom_> = server.createDomain()
     Await.ready(dom_>, Duration.Inf)
     Await.result(server.isCreated(), Duration.Inf) must be (true)
   }
 
-  it must "indicate the domain is not created before creation" in {
+  it must "indicate the domain is not created before creation" taggedAs HasExternalDependencies in {
     Await.result(server.isCreated(), Duration.Inf) must be (false)
   }
 
-  it must "destroy existing domain" in {
+  it must "destroy existing domain" taggedAs HasExternalDependencies in {
     val dest_> = server.destroyDomain()
     Await.result(dest_>, Duration.Inf)
   }
 
-  it must "create the domain even if it already exists" in {
+  it must "create the domain even if it already exists" taggedAs HasExternalDependencies in {
     val dom_> = server.createDomain().flatMap(_ => server.createDomain())
     val dom = Await.result(dom_>, Duration.Inf)
     dom.name must be (server.domainName)

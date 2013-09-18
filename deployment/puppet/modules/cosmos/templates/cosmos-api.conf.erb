@@ -1,0 +1,102 @@
+# This is the main configuration file for the application.
+# ~~~~~
+
+# Public API address
+# ~~~~~
+<% if @environment == "vagrant" -%>
+application.baseurl="http://<%=@master_ip%>"
+<% else -%>
+application.baseurl="http://<%=@master_hostname%><%=@domain%>"
+<% end -%>
+
+# Secret key
+# ~~~~~
+# The secret key is used to secure cryptographic functions.
+# If you deploy your application to several instances be sure to use the same key!
+application.secret="<%= (0...50).map{ ('a'..'z').to_a[rand(26)] }.join %>"
+
+# The application languages
+# ~~~~~
+application.langs="en"
+
+# Application mode
+# ~~~~~
+application.mode=<%= @cosmos_api_mode %>
+
+# Global object class
+# ~~~~~
+# Define the Global object class for this application.
+# Default to Global in the root package.
+application.global=es.tid.cosmos.api.ProductionGlobal
+
+# Database configuration
+# ~~~~~
+db.default.host="<%= @cosmos_db_host %>"
+db.default.port=<%= @cosmos_db_port %>
+db.default.name=<%= @cosmos_db_name %>
+db.default.driver=com.mysql.jdbc.Driver
+db.default.url="jdbc:mysql://"${db.default.host}":"${db.default.port}"/"${db.default.name}
+db.default.user=<%= @cosmos_db_user %>
+db.default.pass="<%= @cosmos_db_pass %>"
+
+# Evolutions
+# ~~~~~
+# You can disable evolutions if needed
+evolutionplugin=enabled
+applyEvolutions.default=true
+applyDownEvolutions.default=true
+
+# Auth providers configuration
+# ~~~~
+auth.tuid {
+    enabled=true
+    name="TU|Id"
+    class="es.tid.cosmos.api.oauth2.TuIdOAuthProvider"
+    client.id="<%= @tuid_client_id %>"
+    client.secret="<%= @tuid_client_secret %>"
+    auth.url="<%= @tuid_auth_url %>"
+    api.url="<%= @tuid_api_url %>"
+    signup.url="<%= @tuid_auth_url %>/signup/validate/"
+}
+
+# Links
+# ~~~~
+cli.url="http://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
+
+# Swagger API documentation
+# ~~~~~
+swagger.api.basepath=${application.baseurl}
+
+# IAL configuration
+# ~~~~~
+ial.root.ssh.private_key="""<%= @cosmos_private_key %>"""
+ial.db.host=${db.default.host}
+ial.db.port=${db.default.port}
+ial.db.username=${db.default.user}
+ial.db.password=${db.default.pass}
+ial.db.name=${db.default.name}
+
+# Service manager
+# ~~~~~
+ambari.server.url=localhost
+ambari.server.port=8080
+ambari.server.username=<%= @ambari_user %>
+ambari.server.password=<%= @ambari_password %>
+ambari.servicemanager.initialization.graceperiod.minutes=<%= @ambari_init_period %>
+ambari.servicemanager.refresh.graceperiod.seconds=<%= @ambari_refresh_period %>
+ambari.servicemanager.mappersPerSlave=8
+ambari.servicemanager.reducersPerSlave=4
+hdfs.cluster.id=persistentHdfs
+
+# Logger
+# ~~~~~
+# You can also configure logback (http://logback.qos.ch/), by providing a logger.xml file in the conf directory .
+
+# Root logger:
+logger.root=ERROR
+
+# Logger used by the framework:
+logger.play=INFO
+
+# Logger provided to your application:
+logger.application=DEBUG

@@ -20,7 +20,7 @@ import org.squeryl.internals.DatabaseAdapter
 import org.squeryl.adapters.MySQLAdapter
 
 /**
- * A trait of an SQL databse.
+ * A trait of an SQL database.
  */
 trait SqlDatabase extends SessionFactory {
 

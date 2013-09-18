@@ -48,7 +48,7 @@ class AuthControllerIT extends FlatSpec with MustMatchers {
   it must "not authorize when authorization header is malformed" in new WithSampleUsers {
     val response = action(dao, authorizedRequest("Basic malformed"))
     status(response) must be (UNAUTHORIZED)
-    contentAsString(response) must include ("Malformed authorization header")
+    contentAsString(response) must include ("malformed authorization header")
   }
 
   it must "return bad request when credentials are invalid" in new WithSampleUsers {

@@ -39,13 +39,6 @@ class Pages(
     dao: CosmosProfileDao
   ) extends Controller {
 
-  private val registrationForm = Form(mapping(
-    "handle" -> text.verifying(minLength(3), pattern("^[a-zA-Z][a-zA-Z0-9]*$".r,
-      error="Not a valid unix handle, please use a-z letters and numbers " +
-        "in a non-starting position")),
-    "publicKey" -> text.verifying(nonEmpty)
-  )(Registration.apply)(Registration.unapply))
-
   def index = Action { implicit request =>
     if (!session.isAuthenticated) landingPage
     else {
@@ -56,7 +49,7 @@ class Pages(
         } yield cosmosProfile.id
       }
       (session.isRegistered, maybeCosmosId) match {
-        case (false, None) => registrationPage(session.userProfile.get, registrationForm)
+        case (false, None) => registrationPage(session.userProfile.get, RegistrationForm())
         case (false, Some(_)) => redirectToIndex.withSession(session.setCosmosId(maybeCosmosId))
         case (true, Some(_)) if maybeCosmosId == session.cosmosId => userProfile
         case _ => redirectToIndex.withNewSession
@@ -121,7 +114,7 @@ class Pages(
         }
 
         val validatedForm = {
-          val form = registrationForm.bindFromRequest()
+          val form = RegistrationForm().bindFromRequest()
           form.data.get("handle") match {
             case Some(handle) if dao.handleExists(handle) =>
               form.withError("handle", s"'$handle' is already taken")

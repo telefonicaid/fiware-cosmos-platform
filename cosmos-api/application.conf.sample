@@ -59,9 +59,10 @@ auth.pdihub {
     signup.url=
 }
 
-# Links
-# ~~~~
+# Links (without trailing slashes)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cli.url="http://localhost/cosmos.egg"
+infinity.url="hdfs://"
 
 # Swagger API documentation
 # ~~~~~

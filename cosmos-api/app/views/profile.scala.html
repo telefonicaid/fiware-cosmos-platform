@@ -139,6 +139,11 @@
         <li>Remove files <tt>cosmos rm [-r] &lt;path&gt;</tt></li>
     </ul>
 
+    <p>Note that the persistent storage is visible from your clusters as a <strong>non-local HDFS
+       system</strong>. When you upload a dataset to <tt>/data/file.txt</tt> with <tt>cosmos put</tt>
+       the information will be available at
+       <tt>@{current.configuration.getString("infinity.url").getOrElse("hdfs://infinity-hostname:port")}/user/@cosmosProfile.handle/data/file.txt</tt></p>
+
     <h2>Use the REST API</h2>
 
     <p>You can also integrate directly with the REST API to automate tasks.</p>

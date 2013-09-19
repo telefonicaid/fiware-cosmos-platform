@@ -20,6 +20,7 @@ cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{enviro
 cosmos::params::domain: '.hi.inet'
 cosmos::params::master_ip: '192.168.63.11'
 cosmos::params::master_hostname: 'andromeda01'
+cosmos::params::infinity_url: 'hdfs://andromeda-infinity.hi.inet'
 cosmos::openvz::network::host_iface: 'bond0.1'
 slave_hosts:
     - 'andromeda02'

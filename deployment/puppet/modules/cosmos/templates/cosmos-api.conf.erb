@@ -59,9 +59,10 @@ auth.tuid {
     signup.url="<%= @tuid_auth_url %>/signup/validate/"
 }
 
-# Links
-# ~~~~
+# Links (without trailing slashes)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cli.url="http://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
+infinity.url="<%= @infinity_url %>"
 
 # Swagger API documentation
 # ~~~~~

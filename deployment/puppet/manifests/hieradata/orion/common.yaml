@@ -20,6 +20,7 @@ cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{enviro
 cosmos::params::domain: '.hi.inet'
 cosmos::params::master_ip: '192.168.63.19'
 cosmos::params::master_hostname: 'orion01'
+cosmos::params::infinity_url: 'hdfs://orion-infinity.hi.inet'
 cosmos::openvz::network::host_iface: 'bond0.1'
 slave_hosts:
     - 'orion02'

@@ -12,6 +12,7 @@
 class cosmos::params (
   $cosmos_basedir          = '/opt/pdi-cosmos',
   $cosmos_confdir          = '/opt/pdi-cosmos/etc',
+  $cosmos_ssl_dir          = '/opt/pdi-cosmos/etc/ssl',
   $cosmos_cli_repo_path    = '/opt/repos',
   $cosmos_repo_deps_url    = 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps',
   $cosmos_api_mode         = 'prod',
@@ -67,6 +68,8 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $cosmos_subnet,
   $cosmos_netmask,
   $cosmos_repo_platform_url,
+  $cosmos_ssl_cert_source,
+  $cosmos_ssl_key_source,
   $master_ip,
   $master_hostname,
   $domain,
@@ -74,4 +77,8 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
 ) {
   $cosmos_public_key       = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename     = 'cosmos-py2.7.egg'
+  $ssl_cert_file   = "${cosmos_ssl_dir}/cosmos_cer.pem"
+  $ssl_key_file    = "${cosmos_ssl_dir}/cosmos_key.pem"
+  $ssl_ca_filename = 'issuecatid_ca.pem'
+  $ssl_ca_file     = "${cosmos_ssl_dir}/${ssl_ca_filename}"
 }

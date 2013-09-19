@@ -48,7 +48,8 @@ Vagrant.configure("2") do |config|
     config.vm.box_url = "http://cosmos10.hi.inet:8080/vagrant-boxes/CentOS-6.4-x86_64-v20130916.box"
     config.vm.network :private_network, ip: "192.168.11.10"
     config.vm.hostname = "master.vagrant"
-    config.vm.network :forwarded_port, host: 9000, guest: 80
+    config.vm.network :forwarded_port, host: 9080, guest: 80
+    config.vm.network :forwarded_port, host: 9443, guest: 443
     config.vm.network :forwarded_port, host: 8080, guest: 8080
     config.vm.network :forwarded_port, host: 8000, guest: 8000
   end

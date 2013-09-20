@@ -12,7 +12,7 @@
 -- * Add creation timestamp to clusters
 
 # --- !Ups
-ALTER TABLE `cluster` ADD `creation_date` TIMESTAMP NOT NULL;
+ALTER TABLE `cluster` ADD `creation_date` TIMESTAMP NOT NULL DEFAULT now();
 
 # --- !Downs
 ALTER TABLE `cluster` DROP COLUMN `creation_date`;

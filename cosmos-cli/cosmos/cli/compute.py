@@ -38,7 +38,7 @@ def print_clusters(clusters):
 
     print "Available clusters:"
     table = [[util.ellipsize(c["name"], NAME_MAX_WIDTH), c["id"],
-              c["state"], c["stateDescription"]] for c in clusters]
+              c["state"], c["creationDate"]] for c in clusters]
     for line in format_table(table, 'rlll', separator="  "):
         print util.ellipsize(line, console_width)
 

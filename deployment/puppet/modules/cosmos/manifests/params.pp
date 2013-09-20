@@ -70,7 +70,7 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $master_ip,
   $master_hostname,
   $domain,
-  $infiniy_url
+  $infinity_url
 ) {
   $cosmos_public_key       = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename     = 'cosmos-py2.7.egg'

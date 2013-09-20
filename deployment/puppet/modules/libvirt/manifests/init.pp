@@ -111,6 +111,7 @@ class libvirt (
         package { 'python-virtinst' :
           ensure => installed,
         }
+        File['cosmos-libvirt.repo'] -> Package['python-virtinst']
     }
     if $qemu {
         package { 'qemu-kvm' :

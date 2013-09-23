@@ -3,11 +3,7 @@
 
 # Public API address
 # ~~~~~
-<% if @environment == "vagrant" -%>
-application.baseurl="https://<%=@master_ip%>"
-<% else -%>
 application.baseurl="https://<%=@master_hostname%><%=@domain%>"
-<% end -%>
 
 # Secret key
 # ~~~~~

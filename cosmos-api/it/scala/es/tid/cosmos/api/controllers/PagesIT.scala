@@ -45,12 +45,30 @@ class PagesIT extends FlatSpec with MustMatchers {
       val regRedirection = route(withSession(FakeRequest(POST, url), nonRegistered)
         .withFormUrlEncodedBody(
           "handle" -> "user1",
-          "publicKey" -> "SSH_PUBLIC_KEY"
+          "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com"
         )).get
       regRedirection must redirectTo ("/")
       val registeredCosmosSession: CosmosSession = session(regRedirection)
       registeredCosmosSession must be ('authenticated)
       registeredCosmosSession must be ('registered)
+    }
+
+  it must "fail its registration when the submitted form is invalid" in
+    new WithTestApplication {
+      dao.withTransaction { implicit c =>
+        dao.registerUserInDatabase(UserId("existingUser"), Registration("existingHandle", "PK"))
+      }
+      val nonRegistered = Session().setUserProfile(MockOAuthConstants.User101)
+      val registrationPage = route(withSession(FakeRequest(GET, "/"), nonRegistered)).get
+      val url = registrationUrl(contentAsString(registrationPage))
+      val response = route(withSession(FakeRequest(POST, url), nonRegistered)
+        .withFormUrlEncodedBody(
+          "handle" -> "1nvalid handle",
+          "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example@invalid.com"
+        )).get
+      status(response) must be (BAD_REQUEST)
+      contentAsString(response) must include ("Not a valid unix handle")
+      contentAsString(response) must include ("invalid email")
     }
 
   it must "fail its registration when selected handle is already taken" in
@@ -64,7 +82,7 @@ class PagesIT extends FlatSpec with MustMatchers {
       val response = route(withSession(FakeRequest(POST, url), nonRegistered)
         .withFormUrlEncodedBody(
           "handle" -> "existingHandle",
-          "publicKey" -> "SSH_PUBLIC_KEY"
+          "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com"
         )).get
       status(response) must be (BAD_REQUEST)
       contentAsString(response) must include ("already taken")

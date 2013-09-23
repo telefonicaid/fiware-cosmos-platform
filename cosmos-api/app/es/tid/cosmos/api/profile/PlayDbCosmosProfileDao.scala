@@ -98,7 +98,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
                  | WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
       .on("key" -> creds.apiKey, "secret" -> creds.apiSecret))
 
-  override def assignCluster(assignment: ClusterAssignation)(implicit c: Conn) {
+  override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
     SQL("""INSERT INTO cluster(cluster_id, owner, creation_date)
           | VALUES ({cluster_id}, {owner}, {creation_date})""".stripMargin).on(
       "cluster_id" -> assignment.clusterId.toString,
@@ -107,12 +107,12 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     ).execute()
   }
 
-  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignation] =
+  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignment] =
     SQL("SELECT cluster_id, creation_date FROM cluster WHERE owner = {owner}")
       .on("owner" -> cosmosId)
       .apply() collect {
         case Row(clusterId: String, creationDate: Date) =>
-          ClusterAssignation(ClusterId(clusterId), cosmosId, creationDate)
+          ClusterAssignment(ClusterId(clusterId), cosmosId, creationDate)
       }
 
   /**

@@ -27,7 +27,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   type Conn = DummyConnection.type
 
   private var users = Map[UserId, CosmosProfile]()
-  private var clusters = List[ClusterAssignation]()
+  private var clusters = List[ClusterAssignment]()
 
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
@@ -72,13 +72,13 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       case (_, profile@CosmosProfile(_, _, _, `creds`, _)) => profile
     }
 
-  override def assignCluster(assignment: ClusterAssignation)(implicit c: Conn) {
+  override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
     synchronized {
       require(!clusters.exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
       clusters = clusters :+ assignment
     }
   }
 
-  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignation] =
+  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignment] =
     clusters.filter(_.ownerId == cosmosId)
 }

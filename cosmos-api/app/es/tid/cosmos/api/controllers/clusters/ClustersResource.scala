@@ -22,7 +22,7 @@ import play.api.mvc._
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common.{Message, AuthController, JsonController}
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
-import es.tid.cosmos.api.profile.{ClusterAssignation, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{ClusterAssignment, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
 
 /**
@@ -63,10 +63,10 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
           case Failure(ex) => throw ex
           case Success(clusterId: ClusterId) => {
             Logger.info(s"Provisioning new cluster $clusterId")
-            val assignation = ClusterAssignation(clusterId, profile.id, new Date())
-            dao.withTransaction { implicit c => dao.assignCluster(assignation) }
+            val assignment = ClusterAssignment(clusterId, profile.id, new Date())
+            dao.withTransaction { implicit c => dao.assignCluster(assignment) }
             val clusterDescription = serviceManager.describeCluster(clusterId).get
-            val reference = ClusterReference(clusterDescription, assignation).withAbsoluteUri(request)
+            val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
             Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
           }
         }
@@ -79,9 +79,9 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
       Set(dao.clustersOf(profile.id): _*)
     }
     (for {
-      assignation <- assignedClusters.toList
-      description <- serviceManager.describeCluster(assignation.clusterId).toList
-    } yield ClusterReference(description, assignation)).sorted(ClustersDisplayOrder)
+      assignment <- assignedClusters.toList
+      description <- serviceManager.describeCluster(assignment.clusterId).toList
+    } yield ClusterReference(description, assignment)).sorted(ClustersDisplayOrder)
   }
 
   private def usedMachines(profile: CosmosProfile) = listClusters(profile).map(_.description.size).sum

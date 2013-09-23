@@ -16,13 +16,13 @@ import play.api.libs.json.{Writes, Json, JsValue}
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
-import es.tid.cosmos.api.profile.ClusterAssignation
+import es.tid.cosmos.api.profile.ClusterAssignment
 import es.tid.cosmos.servicemanager.ClusterDescription
 
 case class ClusterReference(
     description: ClusterDescription,
-    assignation: ClusterAssignation) {
-  require(description.id == assignation.clusterId)
+    assignment: ClusterAssignment) {
+  require(description.id == assignment.clusterId)
 
   def withAbsoluteUri(request: RequestHeader): AbsoluteUriClusterReference =
     AbsoluteUriClusterReference(ClusterResource.clusterUrl(description.id)(request), this)

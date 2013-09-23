@@ -18,7 +18,7 @@ import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.api.profile.ClusterAssignation
+import es.tid.cosmos.api.profile.ClusterAssignment
 
 class ClusterReferenceTest extends FlatSpec with MustMatchers {
 
@@ -32,17 +32,17 @@ class ClusterReferenceTest extends FlatSpec with MustMatchers {
     override def slaves_> = throw new NotImplementedError()
   }
 
-  "A cluster reference" must ("be composed of cluster description and assignation" +
+  "A cluster reference" must ("be composed of cluster description and assignment" +
     " for the same cluster id") in {
-    val assignation = ClusterAssignation(ClusterId("otherId"), 1L, new Date())
+    val assignment = ClusterAssignment(ClusterId("otherId"), 1L, new Date())
     evaluating {
-      ClusterReference(TestDescription, assignation)
+      ClusterReference(TestDescription, assignment)
     } must produce [IllegalArgumentException]
   }
 
   "A cluster reference with an absolute URL" must "be convertible to JSON" in {
-    val assignation = ClusterAssignation(TestDescription.id, 1L, new Date(0))
-    val reference = ClusterReference(TestDescription, assignation)
+    val assignment = ClusterAssignment(TestDescription.id, 1L, new Date(0))
+    val reference = ClusterReference(TestDescription, assignment)
     val url = "http://host/resource"
     Json.toJson(AbsoluteUriClusterReference(url, reference)) must equal (Json.obj(
       "id" -> "clusterId",

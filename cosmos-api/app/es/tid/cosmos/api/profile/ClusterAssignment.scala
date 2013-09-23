@@ -22,4 +22,4 @@ import es.tid.cosmos.servicemanager.ClusterId
  * @param ownerId        Cluster creator
  * @param creationDate Creation timestamp
  */
-case class ClusterAssignation(clusterId: ClusterId, ownerId: Long, creationDate: Date)
+case class ClusterAssignment(clusterId: ClusterId, ownerId: Long, creationDate: Date)

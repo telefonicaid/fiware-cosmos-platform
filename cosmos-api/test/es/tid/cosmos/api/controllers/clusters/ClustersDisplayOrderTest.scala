@@ -18,7 +18,7 @@ import scala.util.Random
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.profile.ClusterAssignation
+import es.tid.cosmos.api.profile.ClusterAssignment
 import es.tid.cosmos.servicemanager._
 
 class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
@@ -43,7 +43,7 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
     val description = SimpleDescription(name, state)
     val randomOwner = Random.nextLong()
     val randomDate = new Date(Random.nextLong())
-    ClusterReference(description, ClusterAssignation(description.id, randomOwner, randomDate))
+    ClusterReference(description, ClusterAssignment(description.id, randomOwner, randomDate))
   }
 
   object FailedState extends Failed(new IllegalStateException())

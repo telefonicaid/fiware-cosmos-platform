@@ -103,7 +103,7 @@ trait CosmosProfileDao {
    * @param c            The connection to use.
    */
   def assignCluster(clusterId: ClusterId, ownerId: Long)(implicit c: Conn) {
-    assignCluster(ClusterAssignation(clusterId, ownerId, new Date()))
+    assignCluster(ClusterAssignment(clusterId, ownerId, new Date()))
   }
 
   /**
@@ -114,7 +114,7 @@ trait CosmosProfileDao {
    * @param c            The connection to use.
    */
   def assignCluster(clusterId: ClusterId, ownerId: Long, creationDate: Date)(implicit c: Conn) {
-    assignCluster(ClusterAssignation(clusterId, ownerId, creationDate))
+    assignCluster(ClusterAssignment(clusterId, ownerId, creationDate))
   }
 
   /**
@@ -122,7 +122,7 @@ trait CosmosProfileDao {
    * @param assignment  Assignment to make persistent.
    * @param c            The connection to use.
    */
-  def assignCluster(assignment: ClusterAssignation)(implicit c: Conn): Unit
+  def assignCluster(assignment: ClusterAssignment)(implicit c: Conn): Unit
 
   /**
    * Retrieves the set of cluster ids for a given user.
@@ -130,5 +130,5 @@ trait CosmosProfileDao {
    * @param c         The connection to use.
    * @return          The set of assigned clusters for a given user.
    */
-  def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignation]
+  def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignment]
 }

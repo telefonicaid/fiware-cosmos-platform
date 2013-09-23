@@ -16,7 +16,7 @@ import play.api.libs.json.{Json, JsValue, Writes}
 /**
  * List of clusters as seen by the client.
  */
-case class ClusterList(clusters: Seq[ClusterReference])
+case class ClusterList(clusters: Seq[AbsoluteUriClusterReference])
 
 object ClusterList {
   implicit object ClusterListWrites extends Writes[ClusterList] {

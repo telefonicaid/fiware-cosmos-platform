@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.profile
 
 import java.sql.Connection
+import java.util.Date
 
 import anorm._
 import anorm.SqlParser._
@@ -97,16 +98,22 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
                  | WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
       .on("key" -> creds.apiKey, "secret" -> creds.apiSecret))
 
-  override def assignCluster(clusterId: ClusterId, ownerId: Long)(implicit c: Conn) {
-    SQL("INSERT INTO cluster(cluster_id, owner) VALUES ({cluster_id}, {owner})")
-      .on("cluster_id" -> clusterId.toString, "owner" -> ownerId)
-      .execute()
+  override def assignCluster(assignment: ClusterAssignation)(implicit c: Conn) {
+    SQL("""INSERT INTO cluster(cluster_id, owner, creation_date)
+          | VALUES ({cluster_id}, {owner}, {creation_date})""".stripMargin).on(
+      "cluster_id" -> assignment.clusterId.toString,
+      "owner" -> assignment.ownerId,
+      "creation_date" -> assignment.creationDate
+    ).execute()
   }
 
-  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterId] =
-    SQL("SELECT cluster_id FROM cluster WHERE owner = {owner}")
+  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignation] =
+    SQL("SELECT cluster_id, creation_date FROM cluster WHERE owner = {owner}")
       .on("owner" -> cosmosId)
-      .as(str("cluster_id").map(ClusterId.apply) *)
+      .apply() collect {
+        case Row(clusterId: String, creationDate: Date) =>
+          ClusterAssignation(ClusterId(clusterId), cosmosId, creationDate)
+      }
 
   /**
    * Lookup Cosmos profile by a custom query.

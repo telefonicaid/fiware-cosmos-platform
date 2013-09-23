@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.api.controllers.clusters
 
+import java.util.Date
 import scala.util.{Failure, Success, Try}
 
 import com.wordnik.swagger.annotations._
@@ -18,9 +19,10 @@ import play.Logger
 import play.api.libs.json._
 import play.api.mvc._
 
+import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common.{Message, AuthController, JsonController}
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.{ClusterAssignation, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
 
 /**
@@ -37,7 +39,7 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
     responseClass = "es.tid.cosmos.api.controllers.clusters.ClusterList")
   def list = Action { implicit request =>
     Authenticated(request) { profile =>
-      Ok(Json.toJson(ClusterList(listClusters(profile).map(ClusterReference(_)))))
+      Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
     }
   }
 
@@ -61,10 +63,10 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
           case Failure(ex) => throw ex
           case Success(clusterId: ClusterId) => {
             Logger.info(s"Provisioning new cluster $clusterId")
-            dao.withTransaction { implicit c =>
-              dao.assignCluster(clusterId, profile.id)
-            }
-            val reference = ClusterReference(serviceManager.describeCluster(clusterId).get)(request)
+            val assignation = ClusterAssignation(clusterId, profile.id, new Date())
+            dao.withTransaction { implicit c => dao.assignCluster(assignation) }
+            val clusterDescription = serviceManager.describeCluster(clusterId).get
+            val reference = ClusterReference(clusterDescription, assignation).withAbsoluteUri(request)
             Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
           }
         }
@@ -73,14 +75,14 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
   }
 
   private def listClusters(profile: CosmosProfile) = {
-    val userClusters = dao.withConnection { implicit c =>
+    val assignedClusters = dao.withConnection { implicit c =>
       Set(dao.clustersOf(profile.id): _*)
     }
     (for {
-      clusterId <- userClusters.toList
-      cluster <- serviceManager.describeCluster(clusterId).toList
-    } yield cluster).sorted(ClustersDisplayOrder)
+      assignation <- assignedClusters.toList
+      description <- serviceManager.describeCluster(assignation.clusterId).toList
+    } yield ClusterReference(description, assignation)).sorted(ClustersDisplayOrder)
   }
 
-  private def usedMachines(profile: CosmosProfile) = listClusters(profile).map(_.size).sum
+  private def usedMachines(profile: CosmosProfile) = listClusters(profile).map(_.description.size).sum
 }

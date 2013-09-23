@@ -13,7 +13,6 @@ package es.tid.cosmos.api.profile
 
 import es.tid.cosmos.api.authorization.ApiCredentials
 import es.tid.cosmos.api.controllers.pages.{NamedKey, CosmosProfile, Registration}
-import es.tid.cosmos.servicemanager.ClusterId
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   def cosmosProfileDao: CosmosProfileDao = new MockCosmosProfileDao
@@ -28,7 +27,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   type Conn = DummyConnection.type
 
   private var users = Map[UserId, CosmosProfile]()
-  private var clusters = Map[ClusterId, Long]()
+  private var clusters = List[ClusterAssignation]()
 
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
@@ -54,12 +53,13 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       case (_, CosmosProfile(`cosmosId`, _, quota, _, _)) => quota
     }.getOrElse(EmptyQuota)
 
-  override def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean =
+  override def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean = synchronized {
     users.collectFirst {
       case (userId, profile @ CosmosProfile(`cosmosId`, _, _, _, _)) => {
         users = users.updated(userId, profile.copy(quota = quota))
         true
     }}.getOrElse(false)
+  }
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean =
     users.values.exists(_.handle == handle)
@@ -72,12 +72,13 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       case (_, profile@CosmosProfile(_, _, _, `creds`, _)) => profile
     }
 
-  override def assignCluster(clusterId: ClusterId, ownerId: Long)(implicit c: Conn) {
-    clusters = clusters.updated(clusterId, ownerId)
+  override def assignCluster(assignment: ClusterAssignation)(implicit c: Conn) {
+    synchronized {
+      require(!clusters.exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
+      clusters = clusters :+ assignment
+    }
   }
 
-  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterId] =
-    clusters.collect {
-      case (clusterId, `cosmosId`) => clusterId
-    }.toSeq
+  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignation] =
+    clusters.filter(_.ownerId == cosmosId)
 }

@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.profile
 
+import java.util.Date
+
 import es.tid.cosmos.api.authorization.ApiCredentials
 import es.tid.cosmos.api.controllers.pages._
 import es.tid.cosmos.servicemanager.ClusterId
@@ -95,18 +97,38 @@ trait CosmosProfileDao {
   def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile]
 
   /**
-   * Assigns a cluster to a given user.
-   * @param clusterId  The cluster ID to assign.
-   * @param ownerId    The unique Cosmos ID of the new owner.
-   * @param c          The connection to use.
+   * Assigns a cluster to a given user at the present moment.
+   * @param clusterId    The cluster ID to assign.
+   * @param ownerId      The unique Cosmos ID of the new owner.
+   * @param c            The connection to use.
    */
-  def assignCluster(clusterId: ClusterId, ownerId: Long)(implicit c: Conn): Unit
+  def assignCluster(clusterId: ClusterId, ownerId: Long)(implicit c: Conn) {
+    assignCluster(ClusterAssignation(clusterId, ownerId, new Date()))
+  }
+
+  /**
+   * Assigns a cluster to a given user.
+   * @param clusterId    The cluster ID to assign.
+   * @param ownerId      The unique Cosmos ID of the new owner.
+   * @param creationDate The instant the cluster creation started.
+   * @param c            The connection to use.
+   */
+  def assignCluster(clusterId: ClusterId, ownerId: Long, creationDate: Date)(implicit c: Conn) {
+    assignCluster(ClusterAssignation(clusterId, ownerId, creationDate))
+  }
+
+  /**
+   * Assigns a cluster to a given user.
+   * @param assignment  Assignment to make persistent.
+   * @param c            The connection to use.
+   */
+  def assignCluster(assignment: ClusterAssignation)(implicit c: Conn): Unit
 
   /**
    * Retrieves the set of cluster ids for a given user.
    * @param cosmosId  The unique Cosmos ID of the given user.
    * @param c         The connection to use.
-   * @return          The set of cluster ids for a given user.
+   * @return          The set of assigned clusters for a given user.
    */
-  def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterId]
+  def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignation]
 }

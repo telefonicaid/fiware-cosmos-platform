@@ -16,12 +16,12 @@ import es.tid.cosmos.servicemanager._
 /**
  * Sort ClusterReferences by state and then by name
  */
-object ClustersDisplayOrder extends Ordering[ClusterDescription] {
+object ClustersDisplayOrder extends Ordering[ClusterReference] {
   
-  def compare(left: ClusterDescription, right: ClusterDescription): Int = {
-    val stateComparison = compareStates(left.state, right.state)
+  def compare(left: ClusterReference, right: ClusterReference): Int = {
+    val stateComparison = compareStates(left.description.state, right.description.state)
     if (stateComparison != 0) stateComparison
-    else left.name.compare(right.name)
+    else left.description.name.compare(right.description.name)
   }
 
   private val stateOrder = Map[ClusterState, Int](

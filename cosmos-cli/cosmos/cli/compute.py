@@ -59,6 +59,7 @@ def add_list_clusters_command(subparsers):
 
 
 def show_cluster(args, proto):
+    EXCLUDED_CLUSTER_INFO = ['href']
     body = proto.get_cluster_details(args.cluster_id)
 
     print json.dumps(

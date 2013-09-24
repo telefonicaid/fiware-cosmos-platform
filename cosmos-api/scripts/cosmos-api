@@ -35,7 +35,7 @@ USER=root
 APP_PATH=/opt/pdi-cosmos/cosmos-api/
 APP_CONFIG_FILE=/opt/pdi-cosmos/etc/cosmos-api.conf
 LOG_CONFIG_FILE=/opt/pdi-cosmos/etc/logback.conf
-PORT=80
+PORT=9000
 PID_FILE=/opt/pdi-cosmos/var/run/cosmos-api.pid
 
 APP_ARGS="-Dconfig.file=${APP_CONFIG_FILE} -Dhttp.port=${PORT} \

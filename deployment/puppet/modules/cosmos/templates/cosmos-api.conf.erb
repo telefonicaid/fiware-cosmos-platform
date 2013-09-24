@@ -3,17 +3,15 @@
 
 # Public API address
 # ~~~~~
-<% if @environment == "vagrant" -%>
-application.baseurl="http://<%=@master_ip%>"
-<% else -%>
-application.baseurl="http://<%=@master_hostname%><%=@domain%>"
-<% end -%>
+application.baseurl="https://<%=@master_hostname%><%=@domain%>"
 
 # Secret key
 # ~~~~~
 # The secret key is used to secure cryptographic functions.
 # If you deploy your application to several instances be sure to use the same key!
 application.secret="<%= (0...50).map{ ('a'..'z').to_a[rand(26)] }.join %>"
+
+application.ssl.enabled=true
 
 # The application languages
 # ~~~~~
@@ -61,12 +59,14 @@ auth.tuid {
 
 # Links (without trailing slashes)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-cli.url="http://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
+cli.url="https://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
 infinity.url="<%= @infinity_url %>"
 
 # Swagger API documentation
 # ~~~~~
 swagger.api.basepath=${application.baseurl}
+# Version that shows at the bottom of the Swagger Doc page
+api.version=1
 
 # IAL configuration
 # ~~~~~

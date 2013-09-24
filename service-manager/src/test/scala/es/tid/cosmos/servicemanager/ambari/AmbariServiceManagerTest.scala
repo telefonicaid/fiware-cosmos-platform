@@ -33,7 +33,7 @@ import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterNotFound
 import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, Configuration}
 import es.tid.cosmos.servicemanager.ambari.rest._
-import es.tid.cosmos.servicemanager.ambari.services.{CosmosUserService, Hdfs, AmbariServiceDescription}
+import es.tid.cosmos.servicemanager.ambari.services._
 
 class AmbariServiceManagerTest
   extends AmbariTestBase with OneInstancePerTest with MockitoSugar with FutureMatchers {
@@ -59,7 +59,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(1)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 1, serviceDescriptions)
+    val clusterId = instance.createCluster("clusterName", 1, serviceDescriptions, Seq())
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
@@ -75,7 +75,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(ClusterSize)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", ClusterSize, serviceDescriptions)
+    val clusterId = instance.createCluster("clusterName", ClusterSize, serviceDescriptions, Seq())
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
@@ -160,13 +160,15 @@ class AmbariServiceManagerTest
 
   it must "add users on a cluster with Cosmos-user support" in {
     val (machines, hosts) = machinesAndHostsOf(3)
-    val services = serviceDescriptions :+ new CosmosUserService(
-      Seq(ClusterUser("user1", "publicKey1")))
     val componentNames = CosmosUserService.components.map(_.name)
-    setMachineExpectations(machines, hosts, services = services)
+    setMachineExpectations(machines, hosts, services = serviceDescriptions)
     setServiceExpectations()
     given(hosts.head.getComponentNames).willReturn(componentNames)
-    val clusterId = instance.createCluster("clusterName", 3, services)
+    val clusterId = instance.createCluster(
+      "clusterName",
+      clusterSize = 3,
+      serviceDescriptions,
+      Seq(ClusterUser("user1", "publicKey1")))
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
     get(instance.addUsers(clusterId, ClusterUser("user2", "publicKey2")))
@@ -188,7 +190,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions)
+    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq())
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
     evaluating {
@@ -200,7 +202,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions)
+    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq())
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
     evaluating (get(instance.addUsers(clusterId, ClusterUser("username", "publicKey")))) must
@@ -284,9 +286,10 @@ class AmbariServiceManagerTest
     verify(provisioner).teardownMachines(
       distinctHostnames,
       infrastructureProvider.rootPrivateSshKey)
+    val configTestHelper = new ConfiguratorTestHelpers(master.name, slaves.length)
     verify(cluster).applyConfiguration(
-      the(mergedGlobalConfiguration(2, instance, master.name)), tagPattern)
-    verify(cluster).applyConfiguration(the(mergedCoreConfiguration(2)), tagPattern)
+      the(configTestHelper.mergedGlobalConfiguration(2, instance)), tagPattern)
+    verify(cluster).applyConfiguration(the(configTestHelper.mergedCoreConfiguration(2)), tagPattern)
     verify(cluster).applyConfiguration(the(contributionsWithNumber(1).services(0)), tagPattern)
     verify(cluster).applyConfiguration(the(contributionsWithNumber(2).services(0)), tagPattern)
     verify(cluster).addHost(machines.head.hostname)

@@ -29,10 +29,8 @@ trait ServiceManager extends Refreshable {
 
   /**
    * A sequence of all services this service manager supports
-   *
-   * @param user the primary cluster user of these services
    */
-  def services(user: ClusterUser): Seq[ServiceDescriptionType]
+  val services: Seq[ServiceDescriptionType]
 
   /**
    * Create a cluster of a given size with a specified set of services.
@@ -43,7 +41,9 @@ trait ServiceManager extends Refreshable {
    * @return the ID of the newly created cluster
    */
   def createCluster(
-    name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId
+    name: String, clusterSize: Int,
+    serviceDescriptions: Seq[ServiceDescriptionType],
+    users: Seq[ClusterUser]): ClusterId
 
   /**
    * Obtain information of an existing cluster's state.

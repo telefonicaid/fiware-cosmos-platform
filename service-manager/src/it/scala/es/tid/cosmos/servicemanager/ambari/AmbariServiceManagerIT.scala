@@ -56,9 +56,8 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     val user2 = ClusterUser("luckydude2", "publicKey2")
     val user3 = ClusterUser("luckydude3", "publicKey2")
 
-    val phdfsServices = Seq(Hdfs, new CosmosUserService(Seq(user1, user2)))
     val id = sm.createCluster(
-      name = "persistentHdfsId", 1, phdfsServices)
+      name = "persistentHdfsId", 1, serviceDescriptions = Seq(), Seq(user1, user2))
     println("Cluster creating...")
     val description = sm.describeCluster(id).get
     description.state must be (Provisioning)

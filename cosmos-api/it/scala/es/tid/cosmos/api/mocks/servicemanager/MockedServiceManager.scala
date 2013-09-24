@@ -20,6 +20,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
 
 import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.services.{Hdfs, MapReduce}
 
 /**
  * In-memory, simulated service manager.
@@ -76,7 +77,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   override type ServiceDescriptionType = ServiceDescription
 
-  override def services(user: ClusterUser): Seq[ServiceDescriptionType] = Seq()
+  override val services: Seq[ServiceDescriptionType] = Seq(Hdfs, MapReduce)
 
   private val clusters: mutable.Map[ClusterId, FakeCluster] =
     new mutable.HashMap[ClusterId, FakeCluster]
@@ -95,8 +96,11 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
-  def createCluster(
-    name: String, clusterSize: Int, serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
+  override def createCluster(
+      name: String,
+      clusterSize: Int,
+      serviceDescriptions: Seq[ServiceDescriptionType],
+      users: Seq[ClusterUser]): ClusterId = {
     val cluster = new TransitioningCluster(name, clusterSize)
     clusters.put(cluster.id, cluster)
     cluster.id

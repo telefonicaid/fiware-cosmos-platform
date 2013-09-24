@@ -56,9 +56,6 @@ class AmbariServiceManager(
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
 
-  override val serviceDescriptions: Seq[AmbariServiceDescription] =
-    Seq(Hdfs, Hive, MapReduce, Oozie, CosmosUserService)
-
   logger.info("Initialization sync with Ambari")
   Await.result(refresh(), initializationPeriod)
 
@@ -67,8 +64,11 @@ class AmbariServiceManager(
   override def describeCluster(id: ClusterId): Option[ClusterDescription] =
     clusters.get(id).map(_.view)
 
-  override def services(user: ClusterUser): Seq[ServiceDescriptionType] =
-    Seq(Hdfs, Hive, MapReduce, Oozie, new CosmosUserService(Seq(user)))
+  override val services: Seq[ServiceDescriptionType] = Seq(Hive, Oozie)
+
+  override protected val allServices: Seq[AmbariServiceDescription] = services ++ Seq(MapReduce, Hdfs, CosmosUserService)
+
+  private def userServices(users: Seq[ClusterUser]): Seq[ServiceDescriptionType] = Seq(new CosmosUserService(users))
 
   /**
    * Wait until all pending operations are finished
@@ -80,14 +80,16 @@ class AmbariServiceManager(
   override def createCluster(
       name: String,
       clusterSize: Int,
-      serviceDescriptions: Seq[ServiceDescriptionType]): ClusterId = {
+      serviceDescriptions: Seq[ServiceDescriptionType],
+      users: Seq[ClusterUser]): ClusterId = {
     val id = new ClusterId
     val machines_> =
       infrastructureProvider.createMachines(MachineProfile.G1Compute, clusterSize, waitForSsh)
     val deployment_> = for {
       machines <- machines_>
       (master, slaves) = masterAndSlaves(machines)
-      deployment <- createUnregisteredCluster(id, name, serviceDescriptions, master, slaves)
+      deployment <- createUnregisteredCluster(id, name, Seq(Hdfs, MapReduce) ++ serviceDescriptions ++
+        userServices(users), master, slaves)
     } yield deployment
     val nameNode_> = mapMaster(machines_>, toNameNodeUri)
     registerCluster(new MutableClusterDescription(

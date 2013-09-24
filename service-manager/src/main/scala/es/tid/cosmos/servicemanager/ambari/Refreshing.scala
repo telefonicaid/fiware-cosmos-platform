@@ -39,8 +39,10 @@ trait Refreshing extends Refreshable with Logging {
   protected def clusterIds: Seq[ClusterId]
   protected def registerCluster(description: MutableClusterDescription)
 
-  /** Services that should be up to consider the cluster ready */
-  val serviceDescriptions: Seq[AmbariServiceDescription]
+  /**
+   * A sequence of all services this service manager supports
+   */
+  protected val allServices: Seq[AmbariServiceDescription]
 
   /**
    * Refresh the clusters state by querying the provisioner for unregistered clusters
@@ -58,7 +60,7 @@ trait Refreshing extends Refreshable with Logging {
     } yield ()
 
   private def isServiceRunning(service: Service): Boolean = {
-    val serviceDescription = serviceDescriptions
+    val serviceDescription = allServices
       .find(_.name == service.name)
     val runningStateForService = serviceDescription
       .map(_.runningState)

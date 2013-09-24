@@ -13,6 +13,7 @@
 
 # --- !Ups
 ALTER TABLE `cluster` ADD `creation_date` TIMESTAMP NOT NULL DEFAULT now();
+UPDATE `cluster` SET `creation_date` = now();
 
 # --- !Downs
 ALTER TABLE `cluster` DROP COLUMN `creation_date`;

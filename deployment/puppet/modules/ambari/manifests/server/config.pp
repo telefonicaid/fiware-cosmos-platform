@@ -22,16 +22,25 @@ class ambari::server::config {
     path   => '/etc/ambari-server/conf/ambari.properties',
   }
 
+  $tables_exist = '/bin/bash -c "[[ `sudo -u postgres psql -l | grep ambari | wc -l` -ge 2 ]]"'
+
   exec { 'ambari-server-setup':
     command   => 'ambari-server setup --silent',
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
     timeout   => 600,
-    # ensure tables exist
-    unless    => 'sudo -u postgres psql -l | grep ambari | wc -l | grep 2'
+    unless    => $tables_exist
+  }
+
+  exec { 'ambari-server-upgrade':
+    command   => 'ambari-server upgrade --silent',
+    path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
+    logoutput => true,
+    timeout   => 600,
+    onlyif    => $tables_exist
   }
 
   File_line['remove original jdk bin']
     -> File_line['add jdk bin from CI']
-    -> Exec['ambari-server-setup']
+    -> Exec['ambari-server-setup', 'ambari-server-upgrade']
 }

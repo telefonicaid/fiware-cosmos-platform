@@ -20,12 +20,12 @@ import es.tid.cosmos.api.AbstractGlobal
 
 class WithTestApplication(
     additionalConfiguration: Map[String, String] = Map.empty,
-    global: AbstractGlobal = new TestGlobal
-  ) extends WithApplication(WithTestApplication.buildApp(additionalConfiguration, global)) {
+    val playGlobal: AbstractGlobal = new TestGlobal
+  ) extends WithApplication(WithTestApplication.buildApp(additionalConfiguration, playGlobal)) {
 
-  lazy val dao = global.application.dao
+  lazy val dao = playGlobal.application.dao
 
-  def services = global.application.services
+  def services = playGlobal.application.services
 }
 
 object WithTestApplication {

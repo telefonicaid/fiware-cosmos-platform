@@ -25,7 +25,7 @@ import play.api.db.evolutions.EvolutionsPlugin
 private[profile] class WithTestDatabase(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(
     additionalConfiguration = additionalConfiguration ++ WithTestDatabase.loadDatabaseProperties(),
-    global = new TestWithDbGlobal) {
+    playGlobal = new TestWithDbGlobal) {
 
   def appWithTestDb: FakeApplication = implicitApp
 

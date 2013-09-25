@@ -11,7 +11,7 @@
 #
 import unittest
 
-from mock import MagicMock, patch
+from mock import MagicMock
 
 from cosmos.cli.compute import add_compute_commands
 
@@ -24,6 +24,7 @@ class ComputeCommandsTest(unittest.TestCase):
         added_commands = [call[1][0] for call in parser.add_parser.mock_calls
                           if call[0] == '']
         self.assertIn('list', added_commands)
+        self.assertIn('list-services', added_commands)
         self.assertIn('show', added_commands)
         self.assertIn('create', added_commands)
         self.assertIn('terminate', added_commands)

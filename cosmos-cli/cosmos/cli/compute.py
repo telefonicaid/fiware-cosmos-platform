@@ -53,6 +53,27 @@ def list_clusters(args, proto):
     return 0
 
 
+def add_list_services_command(subparsers):
+    parser = subparsers.add_parser("list-services",
+        help="list optional services that can be installed in clusters")
+    parser.set_defaults(func=ComputeCommand(list_services))
+
+
+def list_services(args, proto):
+    services = proto.list_services()
+    if not services:
+        print "No optional services"
+    else:
+        print_services(services)
+    return 0
+
+
+def print_services(services):
+    print "Optional services:"
+    for service in services:
+        print "\t%s" % service
+
+
 def add_list_clusters_command(subparsers):
     parser = subparsers.add_parser("list", help="list clusters")
     parser.set_defaults(func=ComputeCommand(list_clusters))
@@ -74,7 +95,15 @@ def add_show_cluster_command(subparsers):
 
 
 def create_cluster(args, proto):
-    body = proto.create_cluster(args.name, args.size)
+    services = proto.list_services()
+    arg_services_set = set(args.services) if args.services else set()
+    unknown_services = arg_services_set - set(services)
+    if unknown_services:
+        print "Some of the requested services are not recognized:"
+        for service in unknown_services:
+            print "\t" + service
+        return 1
+    body = proto.create_cluster(args.name, args.size, list(arg_services_set))
     print "Provisioning new cluster %s" % body["id"]
     return 0
 
@@ -84,6 +113,8 @@ def add_create_cluster_command(subparsers):
     parser.add_argument("--name", required=True, help="cluster name")
     parser.add_argument("--size", required=True, type=util.at_least_2,
                         help="number of machines (at least 2")
+    parser.add_argument("--services", required=False, nargs="*",
+                        help='optional services to install in the cluster')
     parser.set_defaults(func=ComputeCommand(create_cluster))
 
 
@@ -100,6 +131,7 @@ def add_terminate_cluster_command(subparsers):
 
 def add_compute_commands(subparsers):
     add_list_clusters_command(subparsers)
+    add_list_services_command(subparsers)
     add_show_cluster_command(subparsers)
     add_create_cluster_command(subparsers)
     add_terminate_cluster_command(subparsers)

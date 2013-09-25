@@ -17,18 +17,20 @@ import play.api.libs.json._
 /**
  * Parameters for cluster creation.
  */
-case class CreateClusterParams(name: String, size: Int)
+case class CreateClusterParams(name: String, size: Int, optionalServices: Seq[String])
 
 object CreateClusterParams {
   implicit val createClusterParamsReads: Reads[CreateClusterParams] = (
     (__ \ "name").read[String] ~
-    (__ \ "size").read[Int]
+    (__ \ "size").read[Int] ~
+    (__ \ "optionalServices").readNullable[Seq[String]].map(_.getOrElse(Seq()))
   )(CreateClusterParams.apply _)
 
   implicit object CreateClusterParamsWrites extends Writes[CreateClusterParams] {
     def writes(params: CreateClusterParams) = Json.obj(
       "name" -> params.name,
-      "size" -> params.size
+      "size" -> params.size,
+      "optionalServices" -> params.optionalServices
     )
   }
 }

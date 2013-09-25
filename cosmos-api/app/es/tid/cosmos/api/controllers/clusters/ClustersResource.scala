@@ -57,9 +57,11 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
   ))
   def createCluster = JsonBodyAction[CreateClusterParams] { (request, body) =>
     Authenticated(request) { profile =>
-      if (profile.quota.withinQuota(body.size + usedMachines(profile)))
+      if (profile.quota.withinQuota(body.size + usedMachines(profile))) {
+        val services = serviceManager.services.filter(
+          service => body.optionalServices.contains(service.name))
         Try(serviceManager.createCluster(
-          body.name, body.size, serviceManager.services, Seq(profile.toClusterUser))) match {
+          body.name, body.size, services, Seq(profile.toClusterUser))) match {
           case Failure(ex) => throw ex
           case Success(clusterId: ClusterId) => {
             Logger.info(s"Provisioning new cluster $clusterId")
@@ -70,7 +72,7 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
             Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
           }
         }
-      else Forbidden(Json.toJson(Message("Quota exceeded")))
+      } else Forbidden(Json.toJson(Message("Quota exceeded")))
     }
   }
 

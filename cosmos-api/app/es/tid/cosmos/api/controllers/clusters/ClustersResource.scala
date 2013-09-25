@@ -59,7 +59,7 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
     Authenticated(request) { profile =>
       if (profile.quota.withinQuota(body.size + usedMachines(profile)))
         Try(serviceManager.createCluster(
-          body.name, body.size, serviceManager.services(profile.toClusterUser))) match {
+          body.name, body.size, serviceManager.services, Seq(profile.toClusterUser))) match {
           case Failure(ex) => throw ex
           case Success(clusterId: ClusterId) => {
             Logger.info(s"Provisioning new cluster $clusterId")

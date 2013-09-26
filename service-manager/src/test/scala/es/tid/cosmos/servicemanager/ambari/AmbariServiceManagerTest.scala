@@ -50,6 +50,7 @@ class AmbariServiceManagerTest
     provisioner, infrastructureProvider,
     initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds,
     ClusterId("HDFS"), MappersPerSlave, ReducersPerSlave)
+  val testTimeout = 1 second
 
   "A ServiceManager" must "have no Clusters by default" in {
     instance.clusterIds must be('empty)
@@ -137,7 +138,7 @@ class AmbariServiceManagerTest
       verify(provisioner).createCluster(instance.persistentHdfsId.id, "Cosmos-0.1.0")
       verify(cluster).addHost(masterMachine.head.hostname)
       verify(cluster).addHosts(machines.map(_.hostname))
-      (hdfsService :: userService :: Nil).foreach(service => {
+      Seq(hdfsService, userService).foreach(service => {
         verify(service).install()
         verify(service).start()
       })
@@ -336,7 +337,7 @@ class AmbariServiceManagerTest
   }
 
   private def terminateAndVerify(id: ClusterId, sm: ServiceManager) {
-    sm.terminateCluster(id)
+    sm.terminateCluster(id) must runUnder(testTimeout)
     val Some(terminatingDescription) = sm.describeCluster(id)
     terminatingDescription.state must (be (Terminated) or be (Terminating))
     waitForClusterCompletion(id, sm)

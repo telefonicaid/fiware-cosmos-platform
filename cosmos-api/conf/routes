@@ -8,6 +8,8 @@ GET     /auth/:providerId                @es.tid.cosmos.api.controllers.pages.Pa
 GET     /logout                          @es.tid.cosmos.api.controllers.pages.Pages.logout()
 POST    /register                        @es.tid.cosmos.api.controllers.pages.Pages.registerUser
 
+GET     /cosmosrc                        @es.tid.cosmos.api.controllers.CliConfigResource.generate
+
 # API
 GET     /cosmos/v1                       @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version()
 GET     /doc/cosmos/v1                   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1")

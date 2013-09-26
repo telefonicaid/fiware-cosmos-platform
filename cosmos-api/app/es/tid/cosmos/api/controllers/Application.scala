@@ -41,7 +41,8 @@ abstract class Application {
       new ClustersResource(sm, dao),
       new ClusterResource(sm, dao),
       new StorageResource(sm, dao),
-      new ServicesResource(sm)
+      new ServicesResource(sm),
+      new CliConfigResource(dao)
     )
   }
 

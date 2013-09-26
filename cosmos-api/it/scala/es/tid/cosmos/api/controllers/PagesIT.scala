@@ -23,8 +23,7 @@ import es.tid.cosmos.api.controllers.pages.{CosmosSession, Registration}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.mocks.oauth2.MockOAuthConstants
-import es.tid.cosmos.api.oauth2.UserProfile
-import es.tid.cosmos.api.profile.{UserId, CosmosProfileDao}
+import es.tid.cosmos.api.profile.UserId
 
 class PagesIT extends FlatSpec with MustMatchers {
 
@@ -183,16 +182,6 @@ class PagesIT extends FlatSpec with MustMatchers {
 
   private def oauthRedirection(queryString: String) =
     route(FakeRequest(GET, s"/auth/${MockOAuthConstants.ProviderId}?$queryString")).get
-
-  private def withSession[A](request: FakeRequest[A], session: Session) =
-    request.withSession(session.data.toSeq: _*)
-
-  private def registerUser(dao: CosmosProfileDao, user: UserProfile): Long =
-    dao.withConnection { implicit c =>
-      val UserProfile(authId, _, email) = user
-      val handle = email.map(_.split('@')(0)).getOrElse("root")
-      dao.registerUserInDatabase(authId, Registration(handle, "pk1234"))
-    }
 
   private def authenticationUrl(page: String) =
     """<a class="login" href="(.*?)">""".r.findFirstMatchIn(page)

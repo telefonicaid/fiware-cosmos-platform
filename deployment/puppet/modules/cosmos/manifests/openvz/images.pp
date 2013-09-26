@@ -13,13 +13,16 @@ class cosmos::openvz::images(
   $ip_address = $cosmos::slave::ct_ip,
   $netmask    = $cosmos::slave::netmask,
   $gateway    = $cosmos::slave::ct_gateway,
-  $image_url  = 'http://cosmos10/develenv/repos/ovz-templates/centos-6-cosmos.HDP.1.3-x86_64.tar.gz',
+  $base_image_url  = 'http://cosmos10/develenv/repos/ovz-templates',
+  $image_name = 'centos-6-cosmos.HDP.1.3.0-20130926-x86_64.tar.gz'
 ) {
   include ssh_keys, ambari::repos
 
-  $source_image_file    = '/tmp/centos-6-x86_64.tar.gz'
-  $dest_image_file      = '/vz/template/cache/centos-6-cosmos-x86_64.tar.gz'
-  $replacements_dir     = '/tmp/centos-6-cosmos-x86_64'
+  $image_url             = "${base_image_url}/${image_name}"
+  $source_image_file_dir = '/tmp'
+  $source_image_file     = "${source_image_file_dir}/${image_name}"
+  $dest_image_file       = '/vz/template/cache/centos-6-cosmos-x86_64.tar.gz'
+  $replacements_dir      = '/tmp/centos-6-cosmos-x86_64'
 
   wget::fetch { 'Download base image' :
     source      => $image_url,
@@ -86,14 +89,6 @@ class cosmos::openvz::images(
     command => "tar -C ${replacements_dir} -czf ${dest_image_file} .",
     user    => 'root',
     path    => '/bin'
-  }
-
-  # Due to having different adapters in Vagrant for internet access and host access
-  # we need to route internet traffic through eth0 explicitly
-  if $environment == 'vagrant' {
-    exec { '/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE':
-      user => 'root',
-    }
   }
 
   Class['ssh_keys'] ~> File["${replacements_dir}/root/.ssh"]

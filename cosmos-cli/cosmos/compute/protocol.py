@@ -42,10 +42,11 @@ class Protocol(object):
                 "Cannot get details for %s" % cluster_id, r)
         return r.json()
 
-    def create_cluster(self, cluster_name, cluster_size):
+    def create_cluster(self, cluster_name, cluster_size, services):
         """Send a request to create a new cluster and return the response
         in JSON format"""
-        body = json.dumps({ "name" : cluster_name, "size" : cluster_size })
+        body = json.dumps({ "name" : cluster_name, "size" : cluster_size,
+            "optionalServices" : services })
         r = self.__client.post(self.__routes.clusters(),
                                body,
                                auth=self.__credentials)
@@ -60,4 +61,12 @@ class Protocol(object):
             auth=self.__credentials)
         if r.status_code != 200:
             raise ResponseError("Cannot terminate cluster %s" % cluster_id, r)
+        return r.json()
+
+    def list_services(self):
+        """Get the list of optional services that can de installed in a
+        cluster"""
+        r = self.__client.get(self.__routes.services)
+        if r.status_code != 200:
+            return []
         return r.json()

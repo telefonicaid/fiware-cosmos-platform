@@ -84,9 +84,10 @@ class ProtocolTest(unittest.TestCase):
             'name': 'cluster1',
             'state': 'ready'
         })
-        rep = self.proto.create_cluster('cluster1', 2)
+        rep = self.proto.create_cluster('cluster1', 2, ['FOO'])
 
-        expected_body = json.dumps({ 'name' : 'cluster1', 'size' : 2 })
+        expected_body = json.dumps({ 'name' : 'cluster1', 'size' : 2,
+            'optionalServices': ['FOO'] })
         self.client.post.assert_called_once_with(self.api_url + '/cluster',
                                                  expected_body,
                                                  auth=self.auth)
@@ -99,7 +100,7 @@ class ProtocolTest(unittest.TestCase):
             'error': 'request failed due to server error'
         })
         with self.assertRaises(ResponseError):
-            self.proto.create_cluster('cluster1', 2)
+            self.proto.create_cluster('cluster1', 2, ['FOO', 'BAR'])
 
     def test_terminate_cluster(self):
         self.client.post.return_value = mock_response(status_code=200, json={
@@ -118,3 +119,19 @@ class ProtocolTest(unittest.TestCase):
         })
         with self.assertRaises(ResponseError):
             self.proto.terminate_cluster('1')
+
+    def test_list_services(self):
+        result = ['PIG', 'OOZIE']
+        self.client.get.return_value = mock_response(status_code=200,
+            json=result)
+        rep = self.proto.list_services()
+
+        self.client.get.assert_called_once_with(self.api_url + '/services')
+        self.assertEquals(rep, result)
+
+    def test_list_services_fail(self):
+        self.client.get.return_value = mock_response(status_code=404)
+        rep = self.proto.list_services()
+
+        self.client.get.assert_called_once_with(self.api_url + '/services')
+        self.assertEquals(rep, [])

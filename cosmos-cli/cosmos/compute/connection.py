@@ -35,7 +35,12 @@ class ComputeConnection(object):
         clusters = json["clusters"]
         return [Cluster(self.__proto, c) for c in clusters]
 
-    def create_cluster(self, cluster_name, cluster_size):
+    def create_cluster(self, cluster_name, cluster_size, services):
         """Create a new cluster"""
-        json = self.__proto.create_cluster(cluster_name, cluster_size)
+        json = self.__proto.create_cluster(cluster_name, cluster_size, services)
         return Cluster(self.__proto, json)
+
+    def list_services(self):
+        """Get the list of optional services that can de installed in a
+        cluster"""
+        return self.__proto.list_services()

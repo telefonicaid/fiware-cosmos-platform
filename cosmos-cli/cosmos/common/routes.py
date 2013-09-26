@@ -40,6 +40,7 @@ class Routes(object):
         self.__set_base_url(base_url)
         self.storage = self.base_url + "/storage"
         self.profile = self.base_url + "/profile"
+        self.services = self.base_url + "/services"
 
     def clusters(self):
         """Construct the clusters resource URL.

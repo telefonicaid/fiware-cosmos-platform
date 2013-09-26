@@ -48,8 +48,13 @@ class ComputeConnectionTest(unittest.TestCase):
         self.assertEquals(clusters[1].href, self.api_url + '/cluster/2')
 
     def test_list_clusters(self):
-        cluster = self.conn.create_cluster('cluster3', 2)
+        cluster = self.conn.create_cluster('cluster3', 2, [])
         self.assertEquals(cluster.id, '3')
         self.assertEquals(cluster.name, 'cluster3')
         self.assertEquals(cluster.href, self.api_url + '/cluster/3')
+
+    def test_list_services(self):
+        result = ['HIVE', 'SQOOP']
+        self.proto.list_services.return_value = result
+        self.assertEquals(self.conn.list_services(), result)
 

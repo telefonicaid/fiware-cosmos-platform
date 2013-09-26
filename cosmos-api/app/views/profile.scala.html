@@ -1,6 +1,7 @@
 @(tuProfile: es.tid.cosmos.api.oauth2.UserProfile,
   cosmosProfile: es.tid.cosmos.api.controllers.pages.CosmosProfile)(implicit request: RequestHeader)
 @import play.api.Play.current
+@import es.tid.cosmos.api.controllers.{routes => controllerRoutes}
 @import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
 @import es.tid.cosmos.api.controllers.common.AbsoluteUrl
 @import es.tid.cosmos.api.controllers.pages
@@ -84,6 +85,10 @@
                 </div>
             </li>
         </ul>
+
+        Alternatively, you can download your <a href="@AbsoluteUrl(controllerRoutes.CliConfigResource.generate())"
+        >configuration file</a> and place it at <tt>~/.cosmosrc</tt> in a Linux/OS X box or at
+        <tt>%USERPROFILE%\Application Data\cosmosrc.yaml</tt> on Windows boxes.
 
     </ol>
 

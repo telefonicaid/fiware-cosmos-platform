@@ -56,9 +56,6 @@ class AmbariServiceManager(
 
   @volatile var clusters = Map[ClusterId, MutableClusterDescription]()
 
-  logger.info("Initialization sync with Ambari")
-  Await.result(refresh(), initializationPeriod)
-
   override def clusterIds: Seq[ClusterId] = clusters.keys.toSeq
 
   override def describeCluster(id: ClusterId): Option[ClusterDescription] =
@@ -67,6 +64,9 @@ class AmbariServiceManager(
   override val services: Seq[ServiceDescriptionType] = Seq(Hive, Oozie)
 
   override protected val allServices: Seq[AmbariServiceDescription] = services ++ Seq(MapReduce, Hdfs, CosmosUserService)
+
+  logger.info("Initialization sync with Ambari")
+  Await.result(refresh(), initializationPeriod)
 
   private def userServices(users: Seq[ClusterUser]): Seq[ServiceDescriptionType] = Seq(new CosmosUserService(users))
 

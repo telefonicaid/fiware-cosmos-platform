@@ -72,14 +72,12 @@ class MutableClusterDescription(
    *
    * @param termination_> The termination future
    */
-  def terminate(termination_> : Future[Any]) {
+  def signalTermination(termination_> : Future[Any]) {
     _state = Terminating
-    for (
-      _ <- creation_>;
-      _ <- termination_>) {
-      _state = Terminated
-    }
-
-    termination_>.onFailure({case err => { _state = Failed(err) }})
+    creation_>.onComplete(_ => {
+      _state = Terminating
+      termination_>.onSuccess({ case _ => { _state = Terminated }})
+      termination_>.onFailure({ case err => { _state = Failed(err) }})
+    })
   }
 }

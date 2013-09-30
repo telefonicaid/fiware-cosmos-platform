@@ -23,6 +23,8 @@ cosmos::params::domain: '.hi.inet'
 cosmos::params::master_ip: '192.168.63.11'
 cosmos::params::master_hostname: 'andromeda01'
 cosmos::params::infinity_url: 'hdfs://andromeda-infinity.hi.inet'
+cosmos::params::pdihub_client_id: '20f0381a6698c19953d5'
+cosmos::params::pdihub_client_secret: 'b11b73f83e7dcf940fec3356d3d0604e3169ab98'
 cosmos::openvz::network::host_iface: 'bond0.1'
 slave_hosts:
     - 'andromeda02'

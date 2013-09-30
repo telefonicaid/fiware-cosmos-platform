@@ -25,6 +25,7 @@ class cosmos::params (
   $tuid_api_url            = 'https://foo-test.apigee.net',
   $tuid_client_id          = 'QOGIbbuzXqYfGrgTYWZciOJ3FhpiYsfk',
   $tuid_client_secret      = '7FW6EViSbWUkv5QB',
+  $pdihub_base_url         = 'https://pdihub.hi.inet',
   $ambari_user             = 'admin',
   $ambari_password         = 'admin',
   $ambari_init_period      = '5',
@@ -74,6 +75,8 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $master_hostname,
   $domain,
   $infinity_url
+  $pdihub_client_id,
+  $pdihub_client_secret
 ) {
   $cosmos_public_key       = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename     = 'cosmos-py2.7.egg'

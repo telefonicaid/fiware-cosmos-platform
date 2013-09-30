@@ -152,28 +152,32 @@ class AmbariServiceManager(
       } else
         Future.successful())
 
-  private def stopService(cluster: Cluster)(name: String): Future[Service] =
-    for {
-      service <- cluster.getService(name)
-      stoppedService <- service.stop()
-    } yield stoppedService
+  private def stopStartedServices(id: ClusterId) = for {
+    cluster <- provisioner.getCluster(id.toString)
+    services <- Future.traverse(cluster.serviceNames)(cluster.getService(_))
+    startedServices = services.filter(_.state == "STARTED")
+    stoppedServices <- Future.traverse(startedServices)(_.stop())
+  } yield stoppedServices
+
+  private def removeClusterFromAmbari(id: ClusterId) = for {
+    _ <- stopStartedServices(id)
+    _ <- provisioner.removeCluster(id.toString)
+    machines <- clusters(id).machines_>
+    distinctHostnames = machines.map(_.hostname).distinct
+    _ <- provisioner.teardownMachines(distinctHostnames, infrastructureProvider.rootPrivateSshKey)
+  } yield ()
 
   override def terminateCluster(id: ClusterId): Future[Unit] = {
     require(clusters.contains(id), s"Cluster $id does not exist")
-    val stoppedServices_> = for {
-      cluster <- provisioner.getCluster(id.toString)
-      stoppedServices <- Future.traverse(cluster.serviceNames)(stopService(cluster))
-    } yield stoppedServices
-
+    val clusterState = describeCluster(id).get.state
+    require(!Seq(Provisioning, Terminating, Terminated).contains(clusterState),
+      s"Cluster $id is in state $clusterState, which is not a valid state for termination")
     val termination_> = for {
-      _ <- stoppedServices_>
-      _ <- provisioner.removeCluster(id.toString)
+      _ <- removeClusterFromAmbari(id)
       machines <- clusters(id).machines_>
-      distinctHostnames = machines.map(_.hostname).distinct
-      _ <- provisioner.teardownMachines(distinctHostnames, infrastructureProvider.rootPrivateSshKey)
       _ <- infrastructureProvider.releaseMachines(machines)
     } yield ()
-    clusters(id).terminate(termination_>)
+    clusters(id).signalTermination(termination_>)
     termination_>
   }
 

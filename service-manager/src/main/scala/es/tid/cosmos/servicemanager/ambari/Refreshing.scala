@@ -115,11 +115,14 @@ trait Refreshing extends Refreshable with Logging {
     val description = new MutableClusterDescription(
       ClusterId(cluster.name), cluster.name, cluster.hostNames.size,
       deployment_>, machines_>, nameNode_>)
-    clusterState_>.onSuccess({
-      case Terminated => description.terminate(clusterState_>)
-    })
     registerCluster(description)
-    clusterState_>
+    clusterState_>.collect({
+      case Terminated => {
+        description.signalTermination(clusterState_>)
+        Terminated
+      }
+      case other => other
+    })
   }
 }
 

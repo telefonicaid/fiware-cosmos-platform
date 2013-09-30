@@ -62,7 +62,7 @@ class AmbariServiceManager(
     clusters.get(id).map(_.view)
 
   /** Exposed services as optional choices */
-  override val services: Seq[ServiceDescriptionType] = Seq(Hive, Oozie, Pig)
+  override val services: Seq[ServiceDescriptionType] = Seq(Hive, Oozie, Pig, Sqoop)
 
   override protected val allServices: Seq[AmbariServiceDescription] = services ++ Seq(MapReduce, Hdfs, CosmosUserService)
 

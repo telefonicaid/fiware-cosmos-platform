@@ -43,4 +43,11 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
         .willReturn(Some(mock[ClusterDescription]))
       runner.run() must be (0)
     }
+
+  it must "work with multi-subcommand arguments" in
+    new WithArguments("persistent-storage", "setup") {
+      given(serviceManager.describePersistentHdfsCluster())
+        .willReturn(Some(mock[ClusterDescription]))
+      runner.run() must be (0)
+    }
 }

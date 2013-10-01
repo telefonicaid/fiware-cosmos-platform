@@ -16,7 +16,7 @@ import org.rogach.scallop.{Subcommand, ScallopConf}
 import es.tid.cosmos.api.profile.PlayDbCosmosProfileDao
 import es.tid.cosmos.servicemanager.{ClusterId, ServiceManager}
 
-class CommandRunner(args: AdminArguments, serviceManager: ServiceManager) {
+class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
 
   /**
    * Executes an administration command.
@@ -35,30 +35,25 @@ class CommandRunner(args: AdminArguments, serviceManager: ServiceManager) {
     }
 
   private def processPersistentStorageCommand(subcommands: List[ScallopConf]) =
-    if (subcommands.size == 1) subcommands.headOption match {
+    subcommands.headOption match {
       case Some(args.persistentStorage.setup) => tryCommand(PersistentStorage.setup(serviceManager))
       case Some(args.persistentStorage.terminate) => tryCommand(PersistentStorage.terminate(serviceManager))
       case _ => help(args.persistentStorage)
-    } else help(args.persistentStorage)
+    }
 
-  private def processClusterCommand(subcommands: List[ScallopConf]) =
-    if (subcommands.size == 2) subcommands.headOption match {
+  private def processClusterCommand(subcommands: List[ScallopConf]) = subcommands.headOption match {
       case Some(args.cluster.terminate) =>
         tryCommand(Cluster.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId())))
       case _ => help(args.cluster)
-    } else help(args.cluster)
+  }
 
   private def processProfileCommand(subcommands: List[ScallopConf]) = {
     val playDbProfile = new Profile(new PlayDbCosmosProfileDao)
     subcommands.headOption match {
-      case Some(args.profile.setMachineQuota) =>
-        if (subcommands.size == 3) tryCommand(playDbProfile.setMachineQuota(
+      case Some(args.profile.setMachineQuota) => tryCommand(playDbProfile.setMachineQuota(
           args.profile.setMachineQuota.cosmosid(), args.profile.setMachineQuota.limit()))
-        else help(args.profile)
-      case Some(args.profile.unsetMachineQuota) =>
-        if (subcommands.size == 2) tryCommand(playDbProfile.unsetMachineQuota(
+      case Some(args.profile.unsetMachineQuota) => tryCommand(playDbProfile.unsetMachineQuota(
           args.profile.setMachineQuota.cosmosid()))
-        else help(args.profile)
       case _ => help(args.profile)
     }
   }

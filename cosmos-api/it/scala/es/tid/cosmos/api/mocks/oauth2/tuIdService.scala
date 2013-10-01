@@ -22,7 +22,7 @@ import unfiltered.response._
 import unfiltered.response.ResponseString
 
 import es.tid.cosmos.api.mocks.oauth2.UrlUtils.parseQueryParams
-import es.tid.cosmos.api.oauth2.UserProfile
+import es.tid.cosmos.api.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 
 case class User(
@@ -45,7 +45,7 @@ class TuIdService(
     port: Int,
     clientId: String,
     clientSecret: String,
-    val users: List[UserProfile] = List(UserProfile(
+    val users: List[OAuthUserProfile] = List(OAuthUserProfile(
       id = UserId("tuid", "db001"),
       name= Some("John Smith"),
       email = Some("jsmith@tid.es")

@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.profile
 
-import java.sql.Connection
+import java.sql.{SQLException, Connection}
 import java.util.Date
 
 import anorm._
@@ -33,8 +33,9 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = DB.withTransaction[A](block)
   def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
 
-  override def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): Long = {
-    val credentials = ApiCredentials.random()
+  override def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
+    val apiCredentials = ApiCredentials.random()
+    val defaultKey = NamedKey("default", reg.publicKey)
     val cosmosId = SQL(
       """INSERT INTO user(auth_realm, auth_id, handle, api_key, api_secret)
         | VALUES ({auth_realm}, {auth_id}, {handle}, {api_key}, {api_secret})""".stripMargin)
@@ -42,14 +43,17 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
         "auth_realm" -> userId.realm,
         "auth_id" -> userId.id,
         "handle" -> reg.handle,
-        "api_key" -> credentials.apiKey,
-        "api_secret" -> credentials.apiSecret
+        "api_key" -> apiCredentials.apiKey,
+        "api_secret" -> apiCredentials.apiSecret
       ).executeInsert(scalar[Long].single)
-    SQL("""INSERT INTO public_key(cosmos_id, name, signature)
-           VALUES ({cosmos_id}, 'default', {signature})""")
-      .on("cosmos_id" -> cosmosId, "signature" -> reg.publicKey)
-      .executeInsert()
-    cosmosId
+    addPublicKey(cosmosId, defaultKey)
+    CosmosProfile(
+      id = cosmosId,
+      handle = reg.handle,
+      quota = Quota(None),
+      apiCredentials = apiCredentials,
+      keys = Seq(defaultKey)
+    )
   }
 
   override def getCosmosId(userId: UserId)(implicit c: Conn): Option[Long] =
@@ -134,4 +138,37 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       }
     }
   }
+
+  override def setHandle(id: Long, handle: String)(implicit c: Conn) {
+    val updatedRows = try {
+      SQL("UPDATE user SET handle = {handle} WHERE cosmos_id = {id}")
+        .on(
+          "handle" -> handle,
+          "id" -> id
+        ).executeUpdate()
+    } catch {
+      case ex: SQLException => throw new IllegalArgumentException("Cannot change handle", ex)
+    }
+    require(updatedRows > 0, s"No handle was updated for user with id=$id")
+  }
+
+  override def setPublicKeys(id: Long, publicKeys: Seq[NamedKey])(implicit c: Conn) {
+    try {
+      SQL("DELETE FROM public_key WHERE cosmos_id = {id}").on("id" -> id).executeUpdate()
+      publicKeys.foreach(key => addPublicKey(id, key))
+    } catch {
+      case ex: SQLException => throw new IllegalArgumentException(
+        s"Cannot change public keys. Does user with id=$id exists?", ex)
+    }
+  }
+
+  private def addPublicKey(cosmosId: Long, publicKey: NamedKey)(implicit c: Conn) =
+    SQL("""INSERT INTO public_key(cosmos_id, name, signature)
+         | VALUES ({cosmos_id}, {name}, {signature})""".stripMargin)
+    .on(
+      "cosmos_id" -> cosmosId,
+      "name" -> publicKey.name,
+      "signature" -> publicKey.signature
+    )
+    .executeInsert()
 }

@@ -41,15 +41,15 @@ class TuIdOAuthProvider(id: String, config: Config) extends AbstractOAuthProvide
       .map(response => (Json.parse(response) \ "access_token").as[String])
   }
 
-  override def requestUserProfile(token: String): Future[UserProfile] = {
+  override def requestUserProfile(token: String): Future[OAuthUserProfile] = {
     val headers: Map[String, String] = Map("Authorization" -> s"Bearer $token")
     Http(apiUrl / "profile" / "me" <:< headers OAuthOK as.String).map(parseTuProfile)
   }
 
-  private def parseTuProfile(str: String): UserProfile = {
+  private def parseTuProfile(str: String): OAuthUserProfile = {
     val json = Json.parse(str)
     (json \ "userId").asOpt[String].map(userId =>
-      UserProfile(
+      OAuthUserProfile(
         id=UserId(id, userId),
         name=makeFullName(
           (json \ "firstName").asOpt[String],

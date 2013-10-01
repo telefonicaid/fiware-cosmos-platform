@@ -52,5 +52,5 @@ trait OAuthProvider {
    * @param token  Access token
    * @return       Future user profile or an OAuthException in case of error
    */
-  def requestUserProfile(token: String): Future[UserProfile]
+  def requestUserProfile(token: String): Future[OAuthUserProfile]
 }

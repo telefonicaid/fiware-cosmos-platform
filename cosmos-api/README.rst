@@ -58,7 +58,8 @@ or the application will fail to initialize
 
 - To create cosmos-api tables on service start: ``evolutionplugin=enabled``
 
-- IAL settings: configure the keys starting with ``ial.`` as IAL component documentation specifies.
+- IAL settings: configure the keys starting with ``ial.`` as IAL component
+  documentation specifies.
 
 - Service manager settings: configure the keys starting with ``ambari.`` and
 ``hdfs.`` as Service Manager component documentation specifies.
@@ -88,8 +89,8 @@ following::
    </configuration>
 
 The Cosmos API comes with an init.d script which can be found at
-``scripts/cosmos-api`` and can be installed by copying the file to ``/etc/init.d``
-and::
+``scripts/cosmos-api`` and can be installed by copying the file to
+``/etc/init.d`` and::
 
     chmod +x /etc/init.d/cosmos-api
     chkconfig --add /etc/init.d/cosmos-api

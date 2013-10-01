@@ -13,7 +13,7 @@ package es.tid.cosmos.api.controllers.pages
 
 import play.api.mvc.Session
 
-import es.tid.cosmos.api.oauth2.UserProfile
+import es.tid.cosmos.api.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 
 /**
@@ -25,22 +25,18 @@ import es.tid.cosmos.api.profile.UserId
  */
 class CosmosSession(val s: Session) {
   def isAuthenticated: Boolean = userProfile.isDefined
-  def isRegistered: Boolean = s.get("cosmosId").isDefined
-  def cosmosId: Option[Long] = s.get("cosmosId").map(_.toLong)
-  def setCosmosId(userId: Long): Session = s + ("cosmosId" -> userId.toString)
-  def setCosmosId(maybeUserId: Option[Long]): Session =
-    maybeUserId.map(userId => setCosmosId(userId)).getOrElse(s)
   def token: Option[String] = s.get("token")
   def setToken(token: String): Session = s + ("token", token)
-  def userProfile: Option[UserProfile] = for {
+  def userId: Option[UserId] = for {
     realm <- s.get("authRealm")
     id <- s.get("authId")
-  } yield UserProfile(
-    id=UserId(realm, id),
+  } yield UserId(realm, id)
+  def userProfile: Option[OAuthUserProfile] = userId.map(id => OAuthUserProfile(
+    id=id,
     name=s.get("name"),
     email=s.get("email")
-  )
-  def setUserProfile(profile: UserProfile): Session =
+  ))
+  def setUserProfile(profile: OAuthUserProfile): Session =
     Seq("name" -> profile.name, "email" -> profile.email)
       .foldLeft(s + ("authRealm", profile.id.realm) + ("authId", profile.id.id))(
         (s, tuple) => tuple match {

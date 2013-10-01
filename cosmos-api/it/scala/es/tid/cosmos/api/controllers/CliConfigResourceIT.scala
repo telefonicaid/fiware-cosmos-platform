@@ -13,33 +13,24 @@ package es.tid.cosmos.api.controllers
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import play.api.mvc.Session
-import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.mocks.WithTestApplication
-import es.tid.cosmos.api.mocks.oauth2.MockOAuthConstants
+import es.tid.cosmos.api.controllers.ResultMatchers.redirectTo
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 
 class CliConfigResourceIT extends FlatSpec with MustMatchers {
 
-  "A CLI config resource" must "produce a 404 status when not authenticated and registered" in
-    new WithTestApplication {
-      status(route(FakeRequest(GET, "/cosmosrc")).get) must be (NOT_FOUND)
+  "A CLI config resource" must "redirect when not authenticated and registered" in
+    new WithSampleSessions {
+      unauthUser.doRequest("/cosmosrc") must redirectTo ("/")
+      unregUser.doRequest("/cosmosrc") must redirectTo ("/register")
     }
 
-  it must "return a cosmosrc when authenticated" in new WithTestApplication {
-    val cosmosId = registerUser(dao, MockOAuthConstants.User101)
-    val profile = dao.withConnection { implicit c =>
-      dao.lookupByUserId(MockOAuthConstants.User101.id).get
-    }
-    val session = new Session()
-          .setUserProfile(MockOAuthConstants.User101)
-          .setToken("token")
-          .setCosmosId(cosmosId)
-    val result = route(withSession(FakeRequest(GET, "/cosmosrc"), session)).get
-    status(result) must be (OK)
-    contentAsString(result) must (include (s"api_key: ${profile.apiCredentials.apiKey}") and
-      include (s"api_secret: ${profile.apiCredentials.apiSecret}"))
+  it must "return a cosmosrc when authenticated" in new WithSampleSessions {
+    val response = regUser.doRequest("/cosmosrc")
+    status(response) must be (OK)
+    contentAsString(response) must (
+      include (s"api_key: ${regUser.cosmosProfile.apiCredentials.apiKey}") and
+      include (s"api_secret: ${regUser.cosmosProfile.apiCredentials.apiSecret}"))
   }
 }

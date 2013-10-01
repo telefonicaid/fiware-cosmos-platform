@@ -18,7 +18,7 @@ import com.wordnik.swagger.annotations._
 import play.api.libs.json._
 import play.api.mvc.{Result, RequestHeader, Action}
 
-import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, AuthController, ErrorMessage, Message}
+import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
@@ -29,7 +29,7 @@ import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManag
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
   description = "Represents an existing or decommissioned cluster")
 class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosProfileDao)
-  extends AuthController {
+  extends ApiAuthController {
 
   @ApiOperation(value = "Get cluster machines", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterDetails")
@@ -41,7 +41,7 @@ class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosPr
         defaultValue = "00000000-0000-0000-0000-000000000000")
       @PathParam("id")
       id: String) = Action { implicit request =>
-    Authenticated(request) { profile =>
+    withApiAuth(request) { profile =>
       OwnedCluster(profile, ClusterId(id)) { cluster =>
         Ok(Json.toJson(ClusterDetails(cluster)))
       }
@@ -58,7 +58,7 @@ class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosPr
          defaultValue = "00000000-0000-0000-0000-000000000000")
        @PathParam("id")
        id: String) = Action { request =>
-    Authenticated(request) { profile =>
+    withApiAuth(request) { profile =>
       OwnedCluster(profile, ClusterId(id)) { cluster =>
         Try(serviceManager.terminateCluster(cluster.id)) match {
           case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))

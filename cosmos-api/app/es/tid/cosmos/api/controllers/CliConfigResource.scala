@@ -11,23 +11,18 @@
 
 package es.tid.cosmos.api.controllers
 
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.Action
 
-import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.controllers.common.AbsoluteUrl
 import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
+import es.tid.cosmos.api.controllers.pages.PagesAuthController
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 /** Downloadable configuration file for cosmos-cli */
-class CliConfigResource(dao: CosmosProfileDao) extends Controller {
+class CliConfigResource(val dao: CosmosProfileDao) extends PagesAuthController {
 
   def generate = Action { implicit request =>
-    (for {
-      userProfile <- session.userProfile if session.isRegistered
-      cosmosProfile <- dao.withConnection { implicit c =>
-        dao.lookupByUserId(userProfile.id)
-      }
-    } yield {
+    whenRegistered(request) { (userProfile, cosmosProfile) =>
       val config = CliConfig(
         apiCredentials = cosmosProfile.apiCredentials,
         apiUrl = AbsoluteUrl(cosmosRoutes.CosmosResource.version())
@@ -36,6 +31,6 @@ class CliConfigResource(dao: CosmosProfileDao) extends Controller {
         "Content-Type" -> "text/yaml",
         "Content-Disposition" -> "attachment; filename=cosmosrc.yaml"
       )
-    }).getOrElse(NotFound)
+    }
   }
 }

@@ -11,8 +11,14 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import play.api.libs.json._
+import play.api.libs.functional.syntax._
+
 import es.tid.cosmos.api.authorization.ApiCredentials
 import es.tid.cosmos.api.profile.Quota
+import play.api.data.validation.{Valid, ValidationError}
+import es.tid.cosmos.api.controllers.AuthorizedKeyConstraint
+
 
 /**
  * Represents the Cosmos-specific user profile.
@@ -37,6 +43,24 @@ case class CosmosProfile(
  * @param signature  Public key signature
  */
 case class NamedKey(name: String, signature: String)
+
+object NamedKey {
+
+  implicit val namedKeyReads: Reads[NamedKey] = (
+    (__ \ "name").read[String].filter(ValidationError("empty name"))(_.length > 0) ~
+    (__ \ "signature").read[String].filter(ValidationError("not an ssh key"))(validSignature)
+  )(NamedKey.apply _)
+
+  implicit object NamedKeyWrites extends Writes[NamedKey] {
+    def writes(k: NamedKey): JsValue = Json.obj(
+      "name" -> k.name,
+      "signature" -> k.signature
+    )
+  }
+
+  private def validSignature(signature: String): Boolean =
+    AuthorizedKeyConstraint.authorizedKey(signature) == Valid
+}
 
 /**
  * Represents a new user registration.

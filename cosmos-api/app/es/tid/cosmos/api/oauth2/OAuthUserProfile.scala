@@ -13,7 +13,7 @@ package es.tid.cosmos.api.oauth2
 
 import es.tid.cosmos.api.profile.UserId
 
-case class UserProfile(
+case class OAuthUserProfile(
     id: UserId,
     name: Option[String] = None,
     email: Option[String] = None) {

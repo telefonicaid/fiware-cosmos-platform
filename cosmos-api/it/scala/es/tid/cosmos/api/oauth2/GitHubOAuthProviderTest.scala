@@ -99,7 +99,7 @@ class GitHubOAuthProviderTest extends FlatSpec
       profile <- client.requestUserProfile(token)
     } yield profile
     profile_> must runUnder(testTimeout)
-    profile_> must eventually(equal(UserProfile(
+    profile_> must eventually(equal(OAuthUserProfile(
       id = UserId("github", "53"),
       name = Some("John Smith"),
       email = Some("jsmith@tid.es")

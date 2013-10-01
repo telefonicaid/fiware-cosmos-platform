@@ -45,14 +45,14 @@ class GitHubOAuthProvider(id: String, config: Config) extends AbstractOAuthProvi
     )
   }
 
-  override def requestUserProfile(token: String): Future[UserProfile] = {
+  override def requestUserProfile(token: String): Future[OAuthUserProfile] = {
     val request = apiUrl / "user" <<? Map(
       "access_token" -> token
     )
     Http(request OAuthOK as.String).map(parseProfile)
   }
 
-  private def parseProfile(str: String): UserProfile = GitHubProfile.fromJson(str) match {
+  private def parseProfile(str: String): OAuthUserProfile = GitHubProfile.fromJson(str) match {
     case Success(p) => p.asUserProfile(id)
     case Failure(ex) => {
       Logger.error(s"Cannot parse GitHub profile: $str", ex)

@@ -19,7 +19,7 @@ import com.wordnik.swagger.annotations.{ApiOperation, Api}
 import play.api.libs.json.Json
 import play.api.mvc.Action
 
-import es.tid.cosmos.api.controllers.common.{ErrorMessage, AuthController}
+import es.tid.cosmos.api.controllers.common.{ErrorMessage, ApiAuthController}
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.ServiceManager
 
@@ -29,7 +29,7 @@ import es.tid.cosmos.servicemanager.ServiceManager
 @Api(value = "/cosmos/v1/storage", listingPath = "/doc/cosmos/v1/storage",
   description = "Represents the persistent storage shared by all clusters")
 class StorageResource(serviceManager: ServiceManager, override val dao: CosmosProfileDao)
-  extends AuthController {
+  extends ApiAuthController {
 
   private val UnavailableHdfsResponse =
     ServiceUnavailable(Json.toJson(ErrorMessage("persistent storage service not available")))
@@ -40,7 +40,7 @@ class StorageResource(serviceManager: ServiceManager, override val dao: CosmosPr
   @ApiOperation(value = "Persistent storage connection details", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.storage.WebHdfsConnection")
   def details() = Action { implicit request =>
-    Authenticated(request) { profile =>
+    withApiAuth(request) { profile =>
       (for {
         description <- serviceManager.describeCluster(serviceManager.persistentHdfsId)
         if description.nameNode_>.isCompleted

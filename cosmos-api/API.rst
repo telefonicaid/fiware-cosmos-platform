@@ -23,6 +23,8 @@ Authentication
 
 Requests should use a basic Authorization header as in RFC 2617 in which
 username corresponds with the API key and the password with the API secret.
+Alternatively, a session cookie of a valid user is also accepted as valid
+authentication to ease API exploration and direct use from JavaScript.
 
 ---------
 Resources
@@ -40,7 +42,7 @@ Represents endpoint for the REST API:
     }
 
 GET ``/cosmos/v1/profile``
-------------------
+--------------------------
 
 *Since v1*
 
@@ -52,6 +54,30 @@ Represents general user profile information as JSON::
         { "name": <string>, "signature": <string> },
         { "name": <string>, "signature": <string> }
       }
+    }
+
+PUT ``/cosmos/v1/profile``
+--------------------------
+
+*Since v1*
+
+Allow for updating user public keys by sending a JSON body::
+
+    {
+      "handle": <string>,
+      "keys": [
+        { "name": <string>, "signature": <string> }
+      }
+    }
+
+Despite only the key can be changed the handle should be included in the
+payload. Note that exactly one public key is required.
+
+In case of success the same body is returned with a 200 OK status. Otherwise,
+a 400 status with an error code::
+
+    {
+        "message": "<error message>"
     }
 
 GET ``/cosmos/v1/cluster``

@@ -17,7 +17,7 @@ class cosmos::master_db inherits cosmos::params {
   mysql::server::config { 'basic_config':
     settings => {
       'mysqld' => {
-        'bind-address' => '0.0.0.0',
+        'bind-address' => '127.0.0.1',
       }
     },
   }

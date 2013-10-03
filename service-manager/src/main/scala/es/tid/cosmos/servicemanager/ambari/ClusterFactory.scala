@@ -163,9 +163,6 @@ class ClusterFactory(
         Future.successful())
 
   private def terminateCluster(cluster: MutableClusterDescription): Future[Unit] = {
-    val clusterState = cluster.state
-    require(!Seq(Provisioning, Terminating, Terminated).contains(clusterState),
-      s"Cluster $cluster.id is in state $clusterState, which is not a valid state for termination")
     val termination_> = for {
       _ <- removeClusterFromAmbari(cluster)
       machines <- cluster.machines_>

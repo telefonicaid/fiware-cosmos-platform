@@ -210,6 +210,17 @@ class AmbariServiceManagerTest
       produce [IllegalArgumentException]
   }
 
+  it must "fail terminating a cluster that is not in a valid termination state" in {
+    val (machines, hosts) = machinesAndHostsOf(3)
+    setMachineExpectations(machines, hosts)
+    setServiceExpectations()
+    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq())
+    waitForClusterCompletion(clusterId, instance)
+    terminateAndVerify(clusterId, instance)
+    evaluating (instance.terminateCluster(clusterId)) must
+      produce [IllegalArgumentException]
+  }
+
   private def initializeProvisioner = {
     val provisionerMock = mock[ClusterProvisioner]
     given(provisionerMock.listClusterNames).willReturn(successful(Seq()))

@@ -18,9 +18,9 @@ import play.api.mvc.Session
 import play.api.test.{FakeRequest, WithApplication, FakeApplication}
 
 import es.tid.cosmos.api.AbstractGlobal
-import es.tid.cosmos.api.controllers.pages.Registration
+import es.tid.cosmos.api.controllers.pages.{CosmosProfile, Registration}
+import es.tid.cosmos.api.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao
-import es.tid.cosmos.api.oauth2.UserProfile
 
 class WithTestApplication(
     additionalConfiguration: Map[String, String] = Map.empty,
@@ -31,9 +31,9 @@ class WithTestApplication(
 
   def services = playGlobal.application.services
 
-  def registerUser(dao: CosmosProfileDao, user: UserProfile): Long =
+  def registerUser(dao: CosmosProfileDao, user: OAuthUserProfile): CosmosProfile =
     dao.withConnection { implicit c =>
-      val UserProfile(authId, _, email) = user
+      val OAuthUserProfile(authId, _, email) = user
       val handle = email.map(_.split('@')(0)).getOrElse("root")
       dao.registerUserInDatabase(authId, Registration(handle, "pk1234"))
     }

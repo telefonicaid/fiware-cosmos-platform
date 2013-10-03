@@ -37,9 +37,9 @@ trait CosmosProfileDao {
    * @param userId  The id specified by the user.
    * @param reg     The registration options.
    * @param c       The connection to use.
-   * @return        The unique Cosmos ID generated for the new user.
+   * @return        A newly created Cosmos profile.
    */
-  def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): Long
+  def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile
 
   /**
    * Retrieves the unique Cosmos ID for a given user.
@@ -77,6 +77,14 @@ trait CosmosProfileDao {
    * @return       Whether the handle is taken.
    */
   def handleExists(handle: String)(implicit c: Conn): Boolean
+
+  /**
+   * Set the handle of a user. Fails if the new handle is in use.
+   *
+   * @param id      The id of the user.
+   * @param handle  The new handle.
+   */
+  def setHandle(id: Long, handle: String)(implicit c: Conn): Unit
 
   /**
    * Obtains the profile for a given user.
@@ -131,4 +139,12 @@ trait CosmosProfileDao {
    * @return          The set of assigned clusters for a given user.
    */
   def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignment]
+
+  /**
+   * Replace existing user public keys by the passed ones.
+   *
+   * @param id          The id of the user.
+   * @param publicKeys  New public keys.
+   */
+  def setPublicKeys(id: Long, publicKeys: Seq[NamedKey])(implicit c: Conn): Unit
 }

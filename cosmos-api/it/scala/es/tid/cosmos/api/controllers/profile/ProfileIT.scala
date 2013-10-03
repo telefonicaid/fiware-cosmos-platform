@@ -18,6 +18,8 @@ import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.AuthBehaviors
 import es.tid.cosmos.api.mocks.WithSampleUsers
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
+import play.api.libs.json.Json
 
 class ProfileIT extends FlatSpec with MustMatchers with AuthBehaviors {
 
@@ -30,5 +32,48 @@ class ProfileIT extends FlatSpec with MustMatchers with AuthBehaviors {
     val response = route(FakeRequest(GET, profileResource).authorizedBy(user1)).get
     status(response) must be (OK)
     contentAsString(response) must include ("user1")
+  }
+
+  "Updates to the profile" must behave like
+    rejectingUnauthenticatedRequests(FakeRequest(PUT, profileResource).withJsonBody(Json.obj(
+      "handle" -> "handle",
+      "keys" -> Json.arr(Json.obj(
+        "name" -> "default",
+        "signature" -> "ssh-rsa DKDJDJDK jsmith@example.com"
+      ))
+    )))
+
+  it must "accept public key changes" in new WithSampleSessions {
+    val newProfile = Json.obj(
+      "handle" -> regUser.handle,
+      "keys" -> Json.arr(Json.obj(
+        "name" -> "default",
+        "signature" -> "ssh-rsa DKDJDJDK jsmith@example.com"
+      ))
+    )
+    status(regUser.submitJson(profileResource, newProfile, method = PUT)) must be (OK)
+  }
+
+  it must "reject profile updates with other than one public key" in new WithSampleSessions {
+    val newProfile = Json.obj(
+      "handle" -> regUser.handle,
+      "keys" -> Json.arr()
+    )
+    val response = regUser.submitJson(profileResource, newProfile, method = PUT)
+    status(response) must be (BAD_REQUEST)
+    contentAsString(response) must include ("Only one public key is supported")
+  }
+
+  it must "reject profile updates with a different handle" in new WithSampleSessions {
+    val newProfile = Json.obj(
+      "handle" -> "newHandle",
+      "keys" -> Json.arr(Json.obj(
+        "name" -> "default",
+        "signature" -> "ssh-rsa DKDJDJDK jsmith@example.com"
+      ))
+    )
+    val response = regUser.submitJson(profileResource, newProfile, method = PUT)
+    status(response) must be (BAD_REQUEST)
+    contentAsString(response) must include ("Handle modification is not supported")
   }
 }

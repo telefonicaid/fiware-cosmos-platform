@@ -1,4 +1,4 @@
-@(profile: es.tid.cosmos.api.oauth2.UserProfile,
+@(profile: es.tid.cosmos.api.oauth2.OAuthUserProfile,
     form: Form[es.tid.cosmos.api.controllers.pages.Registration])
 @import es.tid.cosmos.api.controllers.pages
 @import play.api.Play.current
@@ -19,7 +19,7 @@
     <div class="section">
         <h1 class="page-title">User registration for @profile.contact</h1>
 
-        <p>Your account is not yet associated with cosmos.
+        <p>Your account is not yet associated with Cosmos.
             To get started with us, please add the following details.</p>
 
         @helper.form(action = pages.routes.Pages.registerUser) {

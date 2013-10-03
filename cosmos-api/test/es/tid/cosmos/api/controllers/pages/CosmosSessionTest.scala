@@ -16,51 +16,34 @@ import org.scalatest.matchers.MustMatchers
 import play.api.mvc.Session
 
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.oauth2.UserProfile
+import es.tid.cosmos.api.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 
 class CosmosSessionTest extends FlatSpec with MustMatchers {
-  val profile = UserProfile(id=UserId("db-1234"), name = Some("John Smith"))
+  val profile = OAuthUserProfile(id=UserId("db-1234"), name = Some("John Smith"))
 
-  trait WithSession {
+  trait WithEmptySession {
     def session: CosmosSession = new Session
   }
 
-  trait WithUserId extends WithSession {
-    override def session = super.session.setUserProfile(profile)
+  trait WithUserSession {
+    def session: CosmosSession = Session().setUserProfile(profile)
   }
 
-  trait WithCosmosId extends WithSession {
-    override def session = super.session.setCosmosId(42)
-  }
-
-  "An empty cosmos session" must "be not authenticated nor registered" in new WithSession {
+  "An empty cosmos session" must "be not authenticated" in new WithEmptySession {
     session must not be 'authenticated
-    session must not be 'registered
   }
 
-  it must "store and retrieve the Cosmos id" in new WithSession {
-    session.setCosmosId(42L).cosmosId must be (Some(42L))
-    session.setCosmosId(Some(42L)).cosmosId must be (Some(42L))
-  }
-
-  it must "store and retrieve the OAuth token" in new WithSession {
+  it must "store and retrieve the OAuth token" in new WithEmptySession {
     session.setToken("token").token must be (Some("token"))
   }
 
-  it must "store and retrieve the user profile" in new WithSession {
+  it must "store and retrieve the user profile" in new WithEmptySession {
     session.setUserProfile(profile).userProfile must be (Some(profile))
   }
 
-  "A cosmos session with a user id but no cosmos id" must "be authenticated but not registered" in
-    new WithUserId {
+  "A cosmos session with a user id but no cosmos id" must "be authenticated" in
+    new WithUserSession {
       session must be ('authenticated)
-      session must not be ('registered)
-    }
-
-  "A cosmos session with user and cosmos id" must "be authenticated and registered" in
-    new WithUserId with WithCosmosId {
-      session must be ('authenticated)
-      session must be ('registered)
     }
 }

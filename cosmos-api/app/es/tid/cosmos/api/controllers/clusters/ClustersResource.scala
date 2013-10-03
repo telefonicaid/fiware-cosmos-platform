@@ -20,7 +20,7 @@ import play.api.libs.json._
 import play.api.mvc._
 
 import es.tid.cosmos.api.controllers._
-import es.tid.cosmos.api.controllers.common.{Message, AuthController, JsonController}
+import es.tid.cosmos.api.controllers.common.{Message, ApiAuthController, JsonController}
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
 import es.tid.cosmos.api.profile.{ClusterAssignment, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
@@ -31,14 +31,14 @@ import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
 @Api(value = "/cosmos/v1/clusters", listingPath = "/doc/cosmos/v1/clusters",
   description = "Represents all the clusters in the platform")
 class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosProfileDao)
-  extends JsonController with AuthController {
+  extends JsonController with ApiAuthController {
   /**
    * List user clusters.
    */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.clusters.ClusterList")
   def list = Action { implicit request =>
-    Authenticated(request) { profile =>
+    withApiAuth(request) { profile =>
       Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
     }
   }
@@ -56,7 +56,7 @@ class ClustersResource(serviceManager: ServiceManager, override val dao: CosmosP
       dataType = "es.tid.cosmos.api.controllers.clusters.CreateClusterParams")
   ))
   def createCluster = JsonBodyAction[CreateClusterParams] { (request, body) =>
-    Authenticated(request) { profile =>
+    withApiAuth(request) { profile =>
       if (profile.quota.withinQuota(body.size + usedMachines(profile))) {
         val services = serviceManager.services.filter(
           service => body.optionalServices.contains(service.name))

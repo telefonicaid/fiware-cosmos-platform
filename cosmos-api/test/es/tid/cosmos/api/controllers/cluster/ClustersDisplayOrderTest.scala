@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.clusters
+package es.tid.cosmos.api.controllers.cluster
 
 import scala.concurrent.Future
 import java.util.Date

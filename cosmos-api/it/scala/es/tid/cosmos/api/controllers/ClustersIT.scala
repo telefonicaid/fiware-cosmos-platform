@@ -17,7 +17,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.controllers.clusters.CreateClusterParams
+import es.tid.cosmos.api.controllers.cluster.CreateClusterParams
 import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.servicemanager.ClusterId

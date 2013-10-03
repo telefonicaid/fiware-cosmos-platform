@@ -11,28 +11,10 @@
 
 class cosmos::setup inherits cosmos::params {
 
-  $ial_schema   = "${cosmos::params::cosmos_basedir}/ial/ial_schema.sql"
-  $ial_machines = "${cosmos::params::cosmos_basedir}/ial/ial_machines.sql"
+  include cosmos::master_db
 
-  file { 'ial':
-    ensure => 'directory',
-    path   => "${cosmos::params::cosmos_basedir}/ial",
-  }
-
-  file { $ial_schema:
-    ensure => present,
-    source => "puppet:///modules/${module_name}/ial_schema.sql",
-  }
-
-  file { $ial_machines:
-    ensure  => present,
-    content => template('cosmos/ial_machines.sql.erb'),
-  }
-
-  exec { 'ial_db':
-    command     => "cat ${ial_schema} ${ial_machines} | mysql -ucosmos -p${cosmos::params::cosmos_db_pass} cosmos -B",
-    path        => $::path,
-    refreshonly => true,
+  package { ['libvirt-client', 'libvirt-java'] :
+    ensure => 'present'
   }
 
   file { $cosmos::params::cosmos_confdir:
@@ -91,9 +73,7 @@ class cosmos::setup inherits cosmos::params {
     timeout     => 900,
   }
 
-  File['ial'] -> File[$ial_schema, $ial_machines] ~> Exec['ial_db']
-  Database[$cosmos::params::cosmos_db_name]       ~> Exec['ial_db']
-
+  File[$cosmos::params::cosmos_confdir] -> Class['cosmos::master_db']
   File[$cosmos::params::cosmos_confdir]
     -> File[
         'cosmos-api.conf',
@@ -106,7 +86,7 @@ class cosmos::setup inherits cosmos::params {
         $cosmos::params::ssl_ca_file
       ]
   Package['cosmos'] -> File['cosmos-api.conf']
-  Class['ssh_keys'] -> Exec['cosmos-setup']
+  Class['ssh_keys', 'cosmos::master_db'] -> Exec['cosmos-setup']
 
   Package['cosmos'] ~> Exec['cosmos-setup']
   Exec['ial_db']    ~> Exec['cosmos-setup']
@@ -116,4 +96,8 @@ class cosmos::setup inherits cosmos::params {
     $cosmos::params::ssl_key_file,
     $cosmos::params::ssl_ca_file
   ] ~> Exec['cosmos-setup']
+
+  anchor{'cosmos::setup::begin': }
+    -> Class['cosmos::master_db']
+    -> anchor{'cosmos::setup::end': }
 }

@@ -9,11 +9,7 @@
 # All rights reserved.
 #
 
-class cosmos::master_setup inherits cosmos::params {
-
-  file { $cosmos::params::cosmos_cli_repo_path:
-    ensure => 'directory'
-  }
+class cosmos::apache::setup inherits cosmos::params {
 
   # Apache HTTPD acting as front-end server, SSL proxy and CLI repo
   class { 'apache':
@@ -65,27 +61,11 @@ class cosmos::master_setup inherits cosmos::params {
     redirect_status => 'permanent',
   }
 
-  class { 'mysql::server':
-    config_hash => { 'root_password' => 'cosmos' },
-  }
-
-  mysql::server::config { 'basic_config':
-    settings => {
-      'mysqld' => {
-        'bind-address' => '0.0.0.0',
-      }
-    },
-  }
-
-  package { ['libvirt-client', 'libvirt-java'] :
-    ensure => 'present'
-  }
-
   File[$cosmos::params::cosmos_cli_repo_path]
     -> Apache::Vhost['cli.repo', 'ssl.master', 'ssl.master.redirect']
     ~> Service['httpd']
 
-  anchor{'cosmos::master_setup::begin': }
-    -> Class['apache', 'mysql::server']
-    -> anchor{'cosmos::master_setup::end': }
+  anchor{'cosmos::apache::setup::begin': }
+    -> Class['apache']
+    -> anchor{'cosmos::apache::setup::end': }
 }

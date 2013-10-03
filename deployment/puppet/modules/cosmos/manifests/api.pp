@@ -13,23 +13,12 @@ class cosmos::api inherits cosmos::params {
 
   include cosmos::setup
 
-  mysql::db { $cosmos::params::cosmos_db_name:
-    user     => $cosmos::params::cosmos_db_user,
-    password => $cosmos::params::cosmos_db_pass,
-    host     => '%',
-    grant    => ['all']
-  }
-
-  database_user { "${cosmos::params::cosmos_db_user}@${cosmos::params::cosmos_db_host}":
-    password_hash => mysql_password($cosmos::params::cosmos_db_pass)
-  }
-
-  database_grant { "${cosmos::params::cosmos_db_user}@${cosmos::params::cosmos_db_host}/${cosmos::params::cosmos_db_name}":
-    privileges => ['all']
-  }
-
   package { 'cosmos':
     ensure => latest,
+  }
+
+  file { $cosmos::params::cosmos_cli_repo_path:
+    ensure => 'directory'
   }
 
   file { "${cosmos::params::cosmos_cli_repo_path}/eggs":
@@ -38,6 +27,7 @@ class cosmos::api inherits cosmos::params {
     group  => 'root',
     mode   => '0755'
   }
+
   service { 'cosmos-api':
     ensure     => 'running',
     enable     => true,
@@ -46,7 +36,6 @@ class cosmos::api inherits cosmos::params {
   }
 
   YumRepo['cosmos'] -> Package['cosmos'] -> Service['cosmos-api']
-  Class['mysql::server']                      -> Service['cosmos-api']
   Class['cosmos::setup']                      ~> Service['cosmos-api']
   File['cosmos-api.conf', 'logback.conf']     ~> Service['cosmos-api']
 

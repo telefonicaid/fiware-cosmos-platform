@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.clusters
+package es.tid.cosmos.api.controllers.cluster
 
 import play.api.libs.functional.syntax._
 import play.api.libs.json._

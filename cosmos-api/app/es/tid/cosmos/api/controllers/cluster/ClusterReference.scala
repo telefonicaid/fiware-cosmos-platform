@@ -9,13 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.clusters
+package es.tid.cosmos.api.controllers.cluster
 
 import org.apache.commons.lang.time.DateFormatUtils
-import play.api.libs.json.{Writes, Json, JsValue}
+import play.api.libs.json.{Json, JsValue, Writes}
 import play.api.mvc.RequestHeader
 
-import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.profile.ClusterAssignment
 import es.tid.cosmos.servicemanager.ClusterDescription
 

@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
@@ -131,7 +130,12 @@ class AmbariServiceManager(
         Future.successful())
 
   override def terminateCluster(id: ClusterId): Future[Unit] = {
-    require(clusters.contains(id), s"Cluster $id does not exist")
+    val maybeCluster = clusters.get(id)
+    require(maybeCluster.isDefined, s"Cluster $id does not exist")
+    val cluster = maybeCluster.get
+    val clusterState = cluster.state
+    require(!Seq(Provisioning, Terminating, Terminated).contains(clusterState),
+      s"Cluster $id is in state $clusterState, which is not a valid state for termination")
     for {
       _ <- (clusterFactory ? TerminateClusterMsg(clusters(id))).mapTo[ClusterTerminatedMsg]
     } yield ()

@@ -109,7 +109,9 @@ class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosPr
   @ApiOperation(value = "Terminate cluster", httpMethod = "POST", notes = "No body is required",
     responseClass = "es.tid.cosmos.api.controllers.common.Message")
   @ApiErrors(Array(
-    new ApiError(code = 500, reason = "When cluster does not exists or cannot be terminated")
+    new ApiError(code = 500, reason = "Internal server error"),
+    new ApiError(code = 404, reason = "Cluster cannot be found"),
+    new ApiError(code = 409, reason = "Cluster cannot be terminated")
   ))
   def terminate(
        @ApiParam(value = "Cluster identifier", required = true,
@@ -120,6 +122,8 @@ class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosPr
       OwnedCluster(profile, ClusterId(id)) { cluster =>
         Try(serviceManager.terminateCluster(cluster.id)) match {
           case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))
+          case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
+            ErrorMessage(ex.getMessage, ex)))
           case Failure(ex) => throw ex
         }
       }

@@ -48,11 +48,11 @@ class cosmos::apache::setup inherits cosmos::params {
     sslproxyengine  => true,
     proxy_pass      => [{ 'path' => '/', 'url' => 'http://localhost:9000/' }],
     custom_fragment => 'ProxyPreserveHost On',
-    request_headers => ['set X-Forwarded-Proto "https"']
+    request_headers => ['set X-Forwarded-Proto "https"'],
   }
 
-  apache::vhost { 'ssl.master.redirect':
-    priority        => '03',
+  apache::vhost { 'redirect.to.fqdn':
+    priority        => '10',
     servername      => $ssl_fqdn,
     port            => '80',
     docroot         => $dummy_docroot,
@@ -61,8 +61,23 @@ class cosmos::apache::setup inherits cosmos::params {
     redirect_status => 'permanent',
   }
 
+  apache::vhost { 'ssl.redirect.to.fqdn':
+    priority        => '11',
+    servername      => $cosmos::params::master_hostname,
+    port            => '443',
+    docroot         => $dummy_docroot,
+    ssl             => true,
+    ssl_cert        => $cosmos::params::ssl_cert_file,
+    ssl_key         => $cosmos::params::ssl_key_file,
+    ssl_ca          => $cosmos::params::ssl_ca_file,
+    ssl_certs_dir   => $cosmos::params::cosmos_ssl_dir,
+    redirect_source => '/',
+    redirect_dest   => "https://${ssl_fqdn}/",
+    redirect_status => 'permanent',
+  }
+
   File[$cosmos::params::cosmos_cli_repo_path]
-    -> Apache::Vhost['cli.repo', 'ssl.master', 'ssl.master.redirect']
+    -> Apache::Vhost['cli.repo', 'ssl.master', 'redirect.to.fqdn', 'ssl.redirect.to.fqdn']
     ~> Service['httpd']
 
   anchor{'cosmos::apache::setup::begin': }

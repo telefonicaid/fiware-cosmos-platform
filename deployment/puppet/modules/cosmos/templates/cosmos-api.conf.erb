@@ -46,16 +46,6 @@ applyDownEvolutions.default=true
 
 # Auth providers configuration
 # ~~~~
-auth.tuid {
-    enabled=true
-    name="TU|Id"
-    class="es.tid.cosmos.api.oauth2.TuIdOAuthProvider"
-    client.id="<%= @tuid_client_id %>"
-    client.secret="<%= @tuid_client_secret %>"
-    auth.url="<%= @tuid_auth_url %>"
-    api.url="<%= @tuid_api_url %>"
-    signup.url="<%= @tuid_auth_url %>/signup/validate/"
-}
 auth.pdihub {
     enabled=true
     name="PDIHub"

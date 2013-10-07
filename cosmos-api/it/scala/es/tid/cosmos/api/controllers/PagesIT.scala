@@ -24,7 +24,7 @@ import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.mocks.oauth2.MockOAuthConstants
 
-class PagesIT extends FlatSpec with MustMatchers {
+class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
 
   "The index page" must "show the landing page with auth links for unauthorized users" in
     new WithSampleSessions {
@@ -102,10 +102,17 @@ class PagesIT extends FlatSpec with MustMatchers {
     contentAsString(profilePage) must include (s"Profile for ${regUser.userProfile.contact}")
   }
 
-  it must "redirect non-registered users" in new WithSampleSessions {
-    unauthUser.doRequest("/profile") must redirectTo ("/")
-    unregUser.doRequest("/profile") must redirectTo ("/register")
-  }
+  it must behave like pageForRegistreredUsers("/profile")
+
+  "The getting started page" must "show a personalized getting started tutorial" in
+    new WithSampleSessions {
+      val response = regUser.doRequest("/getting-started")
+      contentAsString(response) must (
+        include (regUser.cosmosProfile.apiCredentials.apiKey) and
+        include (regUser.cosmosProfile.apiCredentials.apiSecret))
+    }
+
+  it must behave like pageForRegistreredUsers("/getting-started")
 
   "A registered user" must "be authenticated after OAuth redirection" in
     new WithTestApplication {

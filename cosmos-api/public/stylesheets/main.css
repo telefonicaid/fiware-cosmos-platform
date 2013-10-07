@@ -49,6 +49,7 @@ body {
 
 a {
     text-decoration: none;
+    color: blue;
 }
 a:hover {
     text-decoration: underline;
@@ -96,6 +97,15 @@ hr {
 
 #headernav a, #headernav a:hover, #headernav a:visited {
     color: white;
+}
+
+#headernav li.current {
+    background-color: white;
+    border-top-left-radius: 1ex;
+    border-top-right-radius: 1ex;
+}
+#headernav li.current a {
+    color: black;
 }
 
 #auth-selector {

@@ -24,12 +24,28 @@
     <h1 class="page-title">Profile for @oauthProfile.contact</h1>
 
     <ul>
-        <li>User handle: <strong>@cosmosProfile.handle</strong></li>
+        <li>User handle: <strong id="handle">@cosmosProfile.handle</strong></li>
         <li>Public keys
             @for(NamedKey(name, signature) <- cosmosProfile.keys) {
-                <div class="key">
+                <div class="key noedit" data-name="@name">
+                    <a class="edit-key" href="#">edit</a>
                     <div class="name">@name</div>
                     <div class="signature">@signature</div>
+                    <form id="form-key-@name">
+                        <p><strong>Warning!</strong> This key change will be in effect only for
+                        newly created clusters. Existing ones won't be updated.</p>
+
+                        <dl>
+                            <dt><label>New key:</label></dt>
+                            <dd>
+                                <textarea></textarea>
+                                <div class="edit-key-error" style="display: none"></div>
+                            </dd>
+                        </dl>
+
+                        <input type="submit" class="submit" value="Update"></input>
+                        <a class="cancel-edit" href="#">Cancel</a>
+                    </form>
                 </div>
             }
         </li>

@@ -227,3 +227,40 @@ hr {
     color: rgba(0, 0, 0, 0.5);
     white-space: pre-wrap;
 }
+
+/*
+ * Edit keys
+ */
+.key.noedit form {
+    display: none;
+}
+.key.edit form {
+    display: auto;
+}
+.key.edit .edit-key {
+    display: auto;
+}
+.key.edit .edit-key {
+    display: none;
+}
+.key.edit .signature {
+    display: none;
+}
+
+.edit-key {
+    float: right;
+    font-size: 90%;
+}
+.key dd {
+    margin: 0;
+}
+.key textarea {
+    width: 50em;
+    height: 4em;
+}
+.key dl {
+    margin: 0;
+}
+.key .edit-key-error {
+    color: #900;
+}

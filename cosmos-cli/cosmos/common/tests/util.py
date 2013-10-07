@@ -11,6 +11,8 @@
 #
 """Reused test utilities like mocks"""
 
+import StringIO
+import sys
 
 import mock
 
@@ -30,3 +32,19 @@ def mock_response(status_code=200, json=None, raw=None, text=None):
         response.text = text
     return response
 
+
+class collect_outputs(object):
+    """Environment for collecting standard and error outputs."""
+
+    def __init__(self):
+        self.stdout = StringIO.StringIO()
+        self.stderr = StringIO.StringIO()
+
+    def __enter__(self):
+        sys.stdout = self.stdout
+        sys.stderr = self.stderr
+        return self
+
+    def __exit__(self, type, value, traceback):
+        sys.stdout = sys.__stdout__
+        sys.stderr = sys.__stderr__

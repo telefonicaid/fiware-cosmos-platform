@@ -17,7 +17,7 @@ from mock import MagicMock, patch
 from cosmos.cli.ssh import ssh_cluster
 from cosmos.cli.util import ExitWithError
 from cosmos.common.exceptions import ResponseError
-from cosmos.common.tests.util import mock_response
+from cosmos.common.tests.util import collect_outputs, mock_response
 
 
 PROVISIONING = {
@@ -88,8 +88,9 @@ class SshCommandTest(unittest.TestCase):
         response = mock_response(json=MagicMock(side_effect=[
             PROVISIONING, PROVISIONING, PROVISIONING, RUNNING, PROFILE]))
         call_mock = MagicMock(return_value=0)
-        with patch('requests.get', MagicMock(return_value=response)), \
-             patch('subprocess.call', call_mock), patch('time.sleep'):
+        with collect_outputs(), \
+                patch('requests.get', MagicMock(return_value=response)), \
+                patch('subprocess.call', call_mock), patch('time.sleep'):
             self.assertEquals(0, ssh_cluster('cluster1', self.config))
         self.assertEmptyIterator(response.json.side_effect)
 

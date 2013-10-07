@@ -14,6 +14,8 @@ import unittest
 from testfixtures import TempDirectory
 
 import cosmos.cli.main as main
+from cosmos.common.tests.util import collect_outputs
+
 
 class MainTest(unittest.TestCase):
 
@@ -21,8 +23,10 @@ class MainTest(unittest.TestCase):
         self.parser = main.build_argument_parser()
 
     def test_exit_on_wrong_arguments(self):
-        self.assertRaises(SystemExit, self.parser.parse_args,
-                          "wrong arguments".split())
+        with collect_outputs() as outputs:
+            self.assertRaises(SystemExit, self.parser.parse_args,
+                              "wrong arguments".split())
+            self.assertIn("error: invalid choice", outputs.stderr.getvalue())
 
     def test_parse_correct_arguments(self):
         self.assertValidArguments("configure")
@@ -40,4 +44,3 @@ class MainTest(unittest.TestCase):
 
     def assertValidArguments(self, arguments):
         self.assertIsNotNone(self.parser.parse_args(arguments.split()))
-

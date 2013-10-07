@@ -17,6 +17,10 @@ from cosmos.cli.tables import format_table
 from cosmos.compute.protocol import Protocol
 
 
+NAME_MAX_WIDTH = 20
+EXCLUDED_CLUSTER_INFO = ['href']
+
+
 class ComputeCommand(object):
     """Template class for compute commands. It takes care of configuration
     loading and protocol initialization.
@@ -33,7 +37,6 @@ class ComputeCommand(object):
 
 
 def print_clusters(clusters):
-    NAME_MAX_WIDTH = 20
     console_width = util.get_console_width()
 
     print "Available clusters:"
@@ -80,11 +83,10 @@ def add_list_clusters_command(subparsers):
 
 
 def show_cluster(args, proto):
-    EXCLUDED_CLUSTER_INFO = ['href']
     body = proto.get_cluster_details(args.cluster_id)
-
     print json.dumps(
         util.filtered(body, EXCLUDED_CLUSTER_INFO), sort_keys=True, indent=4)
+    util.set_last_cluster_id(args.cluster_id)
     return 0
 
 
@@ -105,6 +107,7 @@ def create_cluster(args, proto):
         return 1
     body = proto.create_cluster(args.name, args.size, list(arg_services_set))
     print "Provisioning new cluster %s" % body["id"]
+    util.set_last_cluster_id(body["id"])
     return 0
 
 
@@ -119,7 +122,8 @@ def add_create_cluster_command(subparsers):
 
 
 def terminate_cluster(args, proto):
-    body = proto.terminate_cluster(args.cluster_id)
+    proto.terminate_cluster(args.cluster_id)
+    util.set_last_cluster_id(args.cluster_id)
     print "Terminating cluster %s" % args.cluster_id
 
 

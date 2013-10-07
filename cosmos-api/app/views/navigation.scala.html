@@ -1,0 +1,26 @@
+@(current: String)
+@import es.tid.cosmos.api.controllers.pages
+@*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ *@
+<ul id="headernav">
+    @for((id, name, link) <- Seq(
+        ("profile", "Profile", pages.routes.Pages.showProfile()),
+        ("getting-started", "Getting started", pages.routes.Pages.customGettingStarted()))) {
+
+        @if(current == id) {
+            <li class="current">
+        } else {
+            <li>
+        }
+        <a href="@link">@name</a></li>
+    }
+    <li><a href="@pages.routes.Pages.logout()">Logout</a></li>
+</ul>

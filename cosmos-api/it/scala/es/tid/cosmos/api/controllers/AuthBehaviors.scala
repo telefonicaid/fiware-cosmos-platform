@@ -17,8 +17,10 @@ import play.api.http.Writeable
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
+import es.tid.cosmos.api.controllers.ResultMatchers._
+import es.tid.cosmos.api.mocks.WithSampleUsers
 
 trait AuthBehaviors { this: FlatSpec with MustMatchers =>
 
@@ -37,6 +39,16 @@ trait AuthBehaviors { this: FlatSpec with MustMatchers =>
     it must "reject request with invalid credentials"in new WithSampleUsers {
       val invalidCredentials = ApiCredentials.random()
       status(route(request.authorizedBy(invalidCredentials)).get) must equal (UNAUTHORIZED)
+    }
+  }
+
+  def pageForRegistreredUsers(path: String) {
+    it must "redirect unauthenticated users to the index" in new WithSampleSessions {
+      unauthUser.doRequest(path) must redirectTo ("/")
+    }
+
+    it must "redirect unregistered users to the registration page" in new WithSampleSessions {
+      unregUser.doRequest(path) must redirectTo ("/register")
     }
   }
 }

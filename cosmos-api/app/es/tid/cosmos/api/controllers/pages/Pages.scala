@@ -19,9 +19,8 @@ import play.api.mvc.{RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
 import es.tid.cosmos.api.controllers._
-import es.tid.cosmos.api.controllers.common.{Message, AbsoluteUrl, ErrorMessage, JsonController}
+import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage, JsonController}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.controllers.profile.UserProfile
 import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.oauth2._
 import es.tid.cosmos.api.profile.CosmosProfileDao
@@ -139,6 +138,12 @@ class Pages(
       dao.withTransaction { implicit c =>
         Ok(views.html.profile(userProfile, dao.lookupByUserId(userProfile.id).get))
       }
+    }
+  }
+
+  def customGettingStarted = Action { implicit request =>
+    whenRegistered(request) { (_, cosmosProfile) =>
+      Ok(views.html.gettingStarted(cosmosProfile))
     }
   }
 

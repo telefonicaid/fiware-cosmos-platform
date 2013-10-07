@@ -94,14 +94,16 @@ Represents all the user clusters. Listing is of the form::
           "href": <url>,
           "name": <string>,
           "state": <string>,
-          "stateDescription": <string>
+          "stateDescription": <string>,
+          "creationDate": <ISO_datetime>
         },
         {
           "id": <string>,
           "href": <url>,
           "name": <string>,
           "state": <string>,
-          "stateDescription": <string>
+          "stateDescription": <string>,
+          "creationDate": <ISO_datetime>
         }
       ]
     }

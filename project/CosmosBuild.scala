@@ -18,6 +18,11 @@ object CosmosBuild extends Build {
     val version = pom.ver
   }
 
+  object Dependencies {
+    lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
+    lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
+  }
+
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)
 
   lazy val root = (Project(id = "cosmos-platform", base = file("."))

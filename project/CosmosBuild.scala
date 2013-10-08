@@ -67,4 +67,11 @@ object CosmosBuild extends Build {
     settings(Defaults.itSettings : _*)
     dependsOn(cosmosApi, serviceManager, common)
   )
+
+  lazy val platformTests = (Project(id = "platform-tests", base = file("tests/platform-tests"))
+    settings(ScctPlugin.instrumentSettings: _*)
+    configs(IntegrationTest)
+    settings(Defaults.itSettings : _*)
+    dependsOn(common_test % "compile->compile;test->test")
+  )
 }

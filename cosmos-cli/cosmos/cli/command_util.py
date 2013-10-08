@@ -17,53 +17,44 @@ import os
 import re
 
 from cosmos.cli.terminal import get_terminal_size
+import cosmos.cli.home_dir as home_dir
 
 
 UUID_PATTERN = re.compile(r"^[0-9a-f]{32}$")
+ELLIPSIS = '...'
 DEFAULT_CONSOLE_WIDTH = 80
-
-
-def last_cluster_filename():
-    """Get the filename in which last cluster id is saved, regardless of the
-    operative system.
-
-    >>> "cosmoslast" in last_cluster_filename()
-    True
-    """
-    if os.name == "nt" and os.getenv("USERPROFILE"):
-        return os.path.join(os.getenv("USERPROFILE").decode("mbcs"),
-                            "Application Data", "cosmoslast.txt")
-    else:
-        return os.path.expanduser("~/.cosmoslast")
 
 
 def get_last_cluster_id():
     """Retrieves the last cluster id or raises an argparse exception."""
+    current_home = home_dir.get()
+    filename = current_home.abs_path(current_home.get_last_cluster_filename())
     try:
-        filename = last_cluster_filename()
-        with open(filename) as f:
-            last_cluster = f.read().strip()
-        if not UUID_PATTERN.match(last_cluster):
-            raise argparse.ArgumentTypeError((
-                "Invalid last cluster saved at %s: '%s'.\n"
-                "Please edit or remove the file."
-            ) % (filename, last_cluster))
-        else:
-            print "Executing command on last cluster (%s)" % last_cluster
-            return last_cluster
+        last_cluster = current_home.read_last_cluster()
     except IOError:
+        raise argparse.ArgumentTypeError("Cannot read 'last' cluster from " +
+                                         filename)
+    if last_cluster is None:
         raise argparse.ArgumentTypeError("No 'last' cluster")
+    if not UUID_PATTERN.match(last_cluster):
+        raise argparse.ArgumentTypeError((
+            "Invalid last cluster saved at %s: '%s'.\n"
+            "Please edit or remove the file."
+        ) % (filename, last_cluster))
+    else:
+        print "Executing command on last cluster (%s)" % last_cluster
+        return last_cluster
 
 
 def set_last_cluster_id(last_cluster):
     """Resets the last cluster id file. A warning message is printed when the
     file cannot be written."""
-    filename = last_cluster_filename()
+    current_home = home_dir.get()
     try:
-        with open(filename, mode="w") as f:
-            f.write(last_cluster)
+        current_home.write_last_cluster(last_cluster)
     except IOError:
-        print "Warning: cannot save last cluster id at " + filename
+        print ("Warning: cannot save last cluster id at %s" %
+               current_home.get_last_cluster_filename())
 
 
 def valid_cluster_id(argument):
@@ -100,8 +91,6 @@ def ellipsize(text, max_width):
     >>> ellipsize("Too small width", 2)
     '...'
     """
-    ELLIPSIS = '...'
-
     if len(text) <= max_width:
         return text
     if len(ELLIPSIS) >= max_width:

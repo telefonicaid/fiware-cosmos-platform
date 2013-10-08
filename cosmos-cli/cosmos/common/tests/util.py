@@ -48,3 +48,19 @@ class collect_outputs(object):
     def __exit__(self, type, value, traceback):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
+
+
+class mocked_standard_descriptors(collect_outputs):
+    """Environment for mocking all standard file descriptors"""
+
+    def __init__(self, canned_input):
+        super(mocked_standard_descriptors, self).__init__()
+        self.stdin = StringIO.StringIO(canned_input)
+
+    def __enter__(self):
+        sys.stdin = self.stdin
+        return super(mocked_standard_descriptors, self).__enter__()
+
+    def __exit__(self, *args):
+        sys.stdin = sys.__stdin__
+        return super(mocked_standard_descriptors, self).__exit__(*args)

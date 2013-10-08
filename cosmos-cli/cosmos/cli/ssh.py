@@ -19,7 +19,6 @@ import time
 
 import cosmos.cli.command_util as util
 import cosmos.cli.config as c
-from cosmos.cli.command_util import add_cluster_id_argument
 from cosmos.cli.util import ExitWithError
 from cosmos.common.exceptions import ResponseError
 from cosmos.common.routes import Routes
@@ -95,6 +94,6 @@ def add_ssh_command(subcommands):
 
     parser = subcommands.add_parser(
         "ssh", help="Start a SSH connection with the cluster")
-    add_cluster_id_argument(parser)
+    util.add_cluster_id_argument(parser)
     parser.set_defaults(func=command)
 

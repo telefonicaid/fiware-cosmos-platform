@@ -17,8 +17,8 @@ import requests
 import subprocess
 import time
 
+import cosmos.cli.command_util as util
 import cosmos.cli.config as c
-from cosmos.cli.command_util import add_cluster_id_argument
 from cosmos.cli.util import ExitWithError
 from cosmos.common.exceptions import ResponseError
 from cosmos.common.routes import Routes
@@ -29,6 +29,7 @@ RETRY_WAIT = 10
 
 def ssh_cluster(cluster_id, config):
     """Try to connect to a cluster with SSH"""
+    util.set_last_cluster_id(cluster_id)
     cluster = wait_for_cluster_master(cluster_id, config)
     try:
         address = cluster['master']['ipAddress']
@@ -93,6 +94,6 @@ def add_ssh_command(subcommands):
 
     parser = subcommands.add_parser(
         "ssh", help="Start a SSH connection with the cluster")
-    add_cluster_id_argument(parser)
+    util.add_cluster_id_argument(parser)
     parser.set_defaults(func=command)
 

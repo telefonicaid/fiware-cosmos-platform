@@ -17,8 +17,8 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc._
 
-import es.tid.cosmos.api.authorization.ApiCredentials
-import es.tid.cosmos.api.authorization.ApiCredentials.{ApiKeyLength, ApiSecretLength}
+import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.auth.ApiCredentials.{ApiKeyLength, ApiSecretLength}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.controllers.pages.CosmosProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao

@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.profile
 
-import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.pages.{NamedKey, CosmosProfile, Registration}
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {

@@ -9,15 +9,17 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.oauth2
+package es.tid.cosmos.api.auth.oauth2
 
 import com.typesafe.config.{ConfigException, Config}
 import dispatch.url
 
+import es.tid.cosmos.api.auth.{OAuthProvider, DisabledAdmin}
+
 /**
  * OAuth client for authentication and user profile access.
  */
-abstract class AbstractOAuthProvider(
+private[oauth2] abstract class AbstractOAuthProvider(
     override val id: String,
     config: Config
   ) extends OAuthProvider {
@@ -29,6 +31,8 @@ abstract class AbstractOAuthProvider(
   } catch {
     case _: ConfigException.Missing => None
   }
+
+  override def adminApi = DisabledAdmin
 
   /**
    * OAuth client ID

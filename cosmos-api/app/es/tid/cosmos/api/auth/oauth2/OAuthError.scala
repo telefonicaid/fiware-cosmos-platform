@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.oauth2
+package es.tid.cosmos.api.auth.oauth2
 
 /**
  * OAuth 2 errors as listed in RFC 6749 section 5.2.

@@ -20,8 +20,8 @@ import unfiltered.jetty.Http
 import unfiltered.request._
 import unfiltered.response._
 
+import es.tid.cosmos.api.auth.oauth2.{GitHubOAuthProvider, GitHubProfile}
 import es.tid.cosmos.api.mocks.oauth2.UrlUtils.parseQueryParams
-import es.tid.cosmos.api.oauth2.{GitHubOAuthProvider, GitHubProfile}
 
 class MockedGitHubApi(
     port: Int,

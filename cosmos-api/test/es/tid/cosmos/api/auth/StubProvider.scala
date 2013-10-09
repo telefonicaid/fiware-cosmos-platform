@@ -9,14 +9,11 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.oauth2
+package es.tid.cosmos.api.auth
 
 import com.typesafe.config.Config
 
-case class StubProvider(name: String, config: Config) extends OAuthProvider {
+case class StubProvider(name: String, config: Config) extends AuthProvider {
   override val id = name
-  override def authenticationUrl(redirectUrl: String) = null
-  override val newAccountUrl = None
-  override def requestAccessToken(code: String) = null
-  override def requestUserProfile(token: String) = null
+  override val adminApi = DisabledAdmin
 }

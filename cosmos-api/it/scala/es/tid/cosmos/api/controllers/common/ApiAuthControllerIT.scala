@@ -17,10 +17,10 @@ import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.mocks.WithSampleUsers
-import es.tid.cosmos.api.authorization.ApiCredentials
-import es.tid.cosmos.api.controllers.pages.{WithSampleSessions, Registration, CosmosProfile}
+import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.controllers.pages.{WithSampleSessions, Registration}
 import es.tid.cosmos.api.profile.{UserId, CosmosProfileDao}
+import es.tid.cosmos.api.mocks.WithSampleUsers
 
 class ApiAuthControllerIT extends FlatSpec with MustMatchers {
 

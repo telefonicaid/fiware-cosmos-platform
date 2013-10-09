@@ -13,7 +13,6 @@ package es.tid.cosmos.api.mocks
 
 import es.tid.cosmos.api.AbstractGlobal
 import es.tid.cosmos.api.controllers.Application
-import es.tid.cosmos.api.mocks.oauth2.MockMultiOAuthProviderComponent
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
 import es.tid.cosmos.api.profile.MockCosmosProfileDaoComponent
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
@@ -22,7 +21,7 @@ import es.tid.cosmos.platform.common.ApplicationConfigComponent
  * Custom global Play! settings to configure mocked services.
  */
 class TestGlobal extends AbstractGlobal(new Application
-  with MockMultiOAuthProviderComponent
+  with MockMultiAuthProviderComponent
   with MockCosmosProfileDaoComponent
   with MockedServiceManagerComponent
   with ApplicationConfigComponent)

@@ -13,13 +13,13 @@ package es.tid.cosmos.api.controllers
 
 import play.api.mvc.Controller
 
+import es.tid.cosmos.api.auth.MultiAuthProviderComponent
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.Pages
 import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
-import es.tid.cosmos.api.oauth2.MultiOAuthProviderComponent
 import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
@@ -27,14 +27,14 @@ import es.tid.cosmos.servicemanager.ServiceManagerComponent
  * Web application template to be mixed-in with its dependencies.
  */
 abstract class Application {
-  this: ServiceManagerComponent with MultiOAuthProviderComponent with CosmosProfileDaoComponent =>
+  this: ServiceManagerComponent with MultiAuthProviderComponent with CosmosProfileDaoComponent =>
 
   lazy val dao = this.cosmosProfileDao
 
   lazy val controllers: Map[Class[Controller], Controller] = {
     val sm = this.serviceManager()
     controllerMap(
-      new Pages(this.multiOAuthProvider, sm, dao),
+      new Pages(this.multiAuthProvider, sm, dao),
       new CosmosResource(),
       new ProfileResource(dao),
       new ClusterResource(sm, dao),
@@ -44,7 +44,7 @@ abstract class Application {
     )
   }
 
-  def services: ServiceManagerComponent with MultiOAuthProviderComponent = this
+  def services: ServiceManagerComponent with MultiAuthProviderComponent = this
 
   private def controllerMap(controllers: Controller*) = Map(
     (for (controller <- controllers)

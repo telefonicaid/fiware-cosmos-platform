@@ -9,11 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.mocks.oauth2
+package es.tid.cosmos.api.mocks
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.api.oauth2._
+import es.tid.cosmos.api.auth._
+import es.tid.cosmos.api.auth.oauth2.{OAuthError, OAuthException, OAuthUserProfile}
 import es.tid.cosmos.api.profile.UserId
 
 object MockOAuthConstants {
@@ -22,6 +23,7 @@ object MockOAuthConstants {
   val GrantedToken = "fake-token-123"
   val User101 = OAuthUserProfile(UserId("101"), Some("John Smith"), Some("jsmith@tid.es"))
   val ProviderId = "id_service"
+  val AdminPassword = "sample password"
 }
 
 object MockOAuthProvider extends OAuthProvider {
@@ -43,12 +45,14 @@ object MockOAuthProvider extends OAuthProvider {
   override def requestUserProfile(token: String): Future[OAuthUserProfile] =
     if (token == GrantedToken) Future.successful(User101)
     else Future.failed(OAuthException(OAuthError.InvalidRequest, "testing invalid requests"))
+
+  override def adminApi = EnabledAdmin(password = AdminPassword)
 }
 
-object MockMultiOAuthProvider extends MultiOAuthProvider {
+object MockMultiAuthProvider extends MultiAuthProvider {
   override val providers = Map(MockOAuthConstants.ProviderId -> MockOAuthProvider)
 }
 
-trait MockMultiOAuthProviderComponent extends MultiOAuthProviderComponent {
-  override val multiOAuthProvider: MultiOAuthProvider = MockMultiOAuthProvider
+trait MockMultiAuthProviderComponent extends MultiAuthProviderComponent {
+  override val multiAuthProvider: MultiAuthProvider = MockMultiAuthProvider
 }

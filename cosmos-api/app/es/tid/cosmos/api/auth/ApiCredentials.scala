@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.authorization
+package es.tid.cosmos.api.auth
 
 import java.security.SecureRandom
 

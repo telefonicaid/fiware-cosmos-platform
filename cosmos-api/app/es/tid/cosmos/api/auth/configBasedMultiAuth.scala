@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.oauth2
+package es.tid.cosmos.api.auth
 
 import scala.collection.JavaConversions._
 import scala.util.control.NonFatal
@@ -18,7 +18,8 @@ import com.typesafe.config.{ConfigException, Config}
 
 import es.tid.cosmos.platform.common.ConfigComponent
 
-private[oauth2] class ConfigBasedMultiOAuthProvider(config: Config) extends MultiOAuthProvider {
+private[auth] class ConfigBasedMultiAuthProvider(config: Config)
+  extends MultiAuthProvider {
 
   private val authConfig = try {
     config.getConfig("auth")
@@ -27,7 +28,7 @@ private[oauth2] class ConfigBasedMultiOAuthProvider(config: Config) extends Mult
       throw new IllegalArgumentException("No authentication provider was defined", ex)
   }
 
-  override val providers: Map[String, OAuthProvider] = (for {
+  override val providers: Map[String, AuthProvider] = (for {
     name <- findEnabledProviders
     provider = instantiateProvider(name, providerConfig(name))
   } yield (name, provider)).toMap
@@ -46,9 +47,9 @@ private[oauth2] class ConfigBasedMultiOAuthProvider(config: Config) extends Mult
     case _: ConfigException.Missing => false
   }
 
-  private def instantiateProvider(name: String, providerConf: Config): OAuthProvider = try {
+  private def instantiateProvider(name: String, providerConf: Config): AuthProvider = try {
     val clazz = Class.forName(providerConf.getString("class"))
-      .asInstanceOf[Class[_ <: OAuthProvider]]
+      .asInstanceOf[Class[_ <: AuthProvider]]
     val constructor = clazz.getConstructor(classOf[String], classOf[Config])
     constructor.newInstance(name, providerConf)
   } catch {
@@ -60,9 +61,9 @@ private[oauth2] class ConfigBasedMultiOAuthProvider(config: Config) extends Mult
   private def providerConfig(name: String) = authConfig.getConfig(name)
 }
 
-trait DefaultMultiOAuthProviderComponent extends MultiOAuthProviderComponent {
+trait ConfigBasedMultiAuthProviderComponent extends MultiAuthProviderComponent {
   this: ConfigComponent =>
 
-  override lazy val multiOAuthProvider: MultiOAuthProvider =
-    new ConfigBasedMultiOAuthProvider(config)
+  override lazy val multiAuthProvider: MultiAuthProvider =
+    new ConfigBasedMultiAuthProvider(config)
 }

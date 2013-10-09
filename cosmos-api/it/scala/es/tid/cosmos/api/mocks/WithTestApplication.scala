@@ -18,8 +18,8 @@ import play.api.mvc.Session
 import play.api.test.{FakeRequest, WithApplication, FakeApplication}
 
 import es.tid.cosmos.api.AbstractGlobal
+import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.{CosmosProfile, Registration}
-import es.tid.cosmos.api.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 class WithTestApplication(

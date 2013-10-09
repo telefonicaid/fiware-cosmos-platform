@@ -11,14 +11,13 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import play.api.data.validation.{Valid, ValidationError}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-import es.tid.cosmos.api.authorization.ApiCredentials
-import es.tid.cosmos.api.profile.Quota
-import play.api.data.validation.{Valid, ValidationError}
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.AuthorizedKeyConstraint
-
+import es.tid.cosmos.api.profile.Quota
 
 /**
  * Represents the Cosmos-specific user profile.

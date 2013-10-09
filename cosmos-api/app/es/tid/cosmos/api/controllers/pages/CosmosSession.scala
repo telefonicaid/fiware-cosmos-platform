@@ -13,7 +13,7 @@ package es.tid.cosmos.api.controllers.pages
 
 import play.api.mvc.Session
 
-import es.tid.cosmos.api.oauth2.OAuthUserProfile
+import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 
 /**

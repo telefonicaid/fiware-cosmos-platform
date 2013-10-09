@@ -48,6 +48,11 @@ auth.pdihub {
     api.url=
     signup.url=
 }
+auth.horizon {
+    enabled=false
+    class="es.tid.cosmos.api.auth.horizon.HorizonAuthProvider"
+    password=
+}
 
 # Links (without trailing slashes)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

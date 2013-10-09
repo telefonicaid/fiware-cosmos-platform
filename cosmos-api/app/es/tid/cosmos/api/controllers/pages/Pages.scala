@@ -18,11 +18,12 @@ import play.api.libs.json.Json
 import play.api.mvc.{RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
+import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
+import es.tid.cosmos.api.auth.oauth2.OAuthError.UnauthorizedClient
+import es.tid.cosmos.api.auth.oauth2._
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage, JsonController}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
-import es.tid.cosmos.api.oauth2._
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -32,7 +33,7 @@ import views.AuthAlternative
  * Controller for the web pages of the service.
  */
 class Pages(
-    oauthClients: MultiOAuthProvider,
+    multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
     val dao: CosmosProfileDao
   ) extends JsonController with PagesAuthController {
@@ -74,7 +75,7 @@ class Pages(
       def reportUnknownProvider = NotFound(Json.toJson(
         ErrorMessage(s"Unknown authorization provider $providerId")))
 
-      oauthClients.providers.get(providerId).map(oauthClient =>
+      multiAuthProvider.oauthProviders.get(providerId).map(oauthClient =>
         (maybeCode, maybeError.flatMap(OAuthError.parse)) match {
           case (_, Some(error)) => reportAuthError(error)
           case (Some(code), _) => authorizeCode(oauthClient, code)
@@ -155,7 +156,7 @@ class Pages(
   }
 
   private def authAlternatives(implicit request: RequestHeader): Seq[AuthAlternative] = (for {
-    (id, oauthClient) <- oauthClients.providers
+    (id, oauthClient) <- multiAuthProvider.oauthProviders
     redirectUrl = AbsoluteUrl(routes.Pages.authorize(providerId = id, code = None, error = None))
   } yield AuthAlternative(
     id = oauthClient.id,

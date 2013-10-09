@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.oauth2
+package es.tid.cosmos.api.auth.oauth2
 
 import com.ning.http.client.{Response, RequestBuilder}
 import dispatch.{StatusCode, as}

@@ -19,7 +19,7 @@ import anorm.SqlParser._
 import play.api.db.DB
 import play.api.Play.current
 
-import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.pages.{NamedKey, CosmosProfile, Registration}
 import es.tid.cosmos.servicemanager.ClusterId
 

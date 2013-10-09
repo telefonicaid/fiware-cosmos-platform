@@ -17,7 +17,7 @@ import play.api.http.Writeable
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.controllers.ResultMatchers._
 import es.tid.cosmos.api.mocks.WithSampleUsers

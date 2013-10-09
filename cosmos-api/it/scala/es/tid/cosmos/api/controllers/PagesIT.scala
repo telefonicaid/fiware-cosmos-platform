@@ -21,8 +21,7 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.ResultMatchers.redirectTo
 import es.tid.cosmos.api.controllers.pages.{WithSampleSessions, CosmosSession}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.mocks.WithTestApplication
-import es.tid.cosmos.api.mocks.oauth2.MockOAuthConstants
+import es.tid.cosmos.api.mocks.{MockOAuthConstants, WithTestApplication}
 
 class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
 

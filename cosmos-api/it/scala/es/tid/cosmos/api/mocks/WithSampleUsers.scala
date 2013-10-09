@@ -14,7 +14,7 @@ package es.tid.cosmos.api.mocks
 import org.specs2.execute.{Result, AsResult}
 import play.api.test.FakeRequest
 
-import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.controllers.pages.{Registration, CosmosProfile}
 import es.tid.cosmos.api.profile.UserId

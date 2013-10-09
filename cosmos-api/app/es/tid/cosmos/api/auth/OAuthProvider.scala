@@ -9,16 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.oauth2
+package es.tid.cosmos.api.auth
 
 import scala.concurrent.Future
 
-trait OAuthProvider {
+import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 
-  /**
-   * OAuth provider identifier aka authentication realm
-   */
-  def id: String
+trait OAuthProvider extends AuthProvider {
 
   /**
    * Human-readable name of the provider

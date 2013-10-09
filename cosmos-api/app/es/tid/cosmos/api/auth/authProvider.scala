@@ -9,15 +9,21 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers
+package es.tid.cosmos.api.auth
 
-import es.tid.cosmos.api.auth.ApiCredentials
+sealed trait AdminApiConfig
+case object DisabledAdmin extends AdminApiConfig
+case class EnabledAdmin(password: String) extends AdminApiConfig
 
-case class CliConfig(apiCredentials: ApiCredentials, apiUrl: String, sshClient: String = "ssh") {
-  override def toString =
-    s"""api_key: ${apiCredentials.apiKey}
-      |api_secret: ${apiCredentials.apiSecret}
-      |api_url: $apiUrl
-      |ssh_command: $sshClient
-    """.stripMargin
+trait AuthProvider {
+
+  /**
+   * OAuth provider identifier aka authentication realm
+   */
+  def id: String
+
+  /**
+   * Administration API configuration
+   */
+  def adminApi: AdminApiConfig
 }

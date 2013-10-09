@@ -15,8 +15,8 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.mvc.Session
 
+import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 
 class CosmosSessionTest extends FlatSpec with MustMatchers {

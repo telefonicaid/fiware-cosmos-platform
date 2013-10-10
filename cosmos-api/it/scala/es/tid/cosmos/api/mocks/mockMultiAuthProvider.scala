@@ -26,7 +26,7 @@ object MockAuthConstants {
   val AdminPassword = "sample password"
 }
 
-object MockAuthProvider extends OAuthProvider {
+object MockAuthProvider extends OAuthProvider with AdminEnabledAuthProvider {
   import MockAuthConstants._
 
   override val id = ProviderId
@@ -46,7 +46,7 @@ object MockAuthProvider extends OAuthProvider {
     if (token == GrantedToken) Future.successful(User101)
     else Future.failed(OAuthException(OAuthError.InvalidRequest, "testing invalid requests"))
 
-  override def adminApi = EnabledAdmin(password = AdminPassword)
+  override val adminPassword = AdminPassword
 }
 
 object MockMultiAuthProvider extends MultiAuthProvider {

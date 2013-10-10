@@ -11,19 +11,10 @@
 
 package es.tid.cosmos.api.auth
 
-sealed trait AdminApiConfig
-case object DisabledAdmin extends AdminApiConfig
-case class EnabledAdmin(password: String) extends AdminApiConfig
-
 trait AuthProvider {
 
   /**
    * OAuth provider identifier aka authentication realm
    */
   def id: String
-
-  /**
-   * Administration API configuration
-   */
-  def adminApi: AdminApiConfig
 }

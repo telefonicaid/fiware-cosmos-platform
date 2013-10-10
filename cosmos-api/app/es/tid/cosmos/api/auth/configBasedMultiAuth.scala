@@ -64,6 +64,6 @@ private[auth] class ConfigBasedMultiAuthProvider(config: Config)
 trait ConfigBasedMultiAuthProviderComponent extends MultiAuthProviderComponent {
   this: ConfigComponent =>
 
-  override lazy val multiAuthProvider: MultiAuthProvider =
+  override val multiAuthProvider: MultiAuthProvider =
     new ConfigBasedMultiAuthProvider(config)
 }

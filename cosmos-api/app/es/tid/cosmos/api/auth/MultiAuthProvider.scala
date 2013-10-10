@@ -17,7 +17,7 @@ trait MultiAuthProvider {
 
   def oauthProviders: Map[String, OAuthProvider] = providers.collect {
     case (id, provider: OAuthProvider) => (id, provider)
-  }.toMap
+  }
 }
 
 

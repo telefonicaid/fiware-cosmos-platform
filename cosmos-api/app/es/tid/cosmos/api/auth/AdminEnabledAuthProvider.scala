@@ -11,8 +11,11 @@
 
 package es.tid.cosmos.api.auth
 
-import com.typesafe.config.Config
+trait AdminEnabledAuthProvider {
+  this: AuthProvider =>
 
-case class StubProvider(name: String, config: Config) extends AuthProvider {
-  override val id = name
+  /**
+   * Password for the admin resources
+   */
+  def adminPassword: String
 }

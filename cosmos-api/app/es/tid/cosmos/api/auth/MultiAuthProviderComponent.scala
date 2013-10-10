@@ -12,5 +12,5 @@
 package es.tid.cosmos.api.auth
 
 trait MultiAuthProviderComponent {
-   def multiAuthProvider: MultiAuthProvider
- }
+  val multiAuthProvider: MultiAuthProvider
+}

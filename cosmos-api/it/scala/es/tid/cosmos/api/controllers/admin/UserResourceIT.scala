@@ -20,9 +20,8 @@ import play.api.test.Helpers._
 
 import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.profile.{Registration, UserId}
 import es.tid.cosmos.api.controllers.pages.NamedKey
-
+import es.tid.cosmos.api.profile.{Registration, UserId}
 
 class UserResourceIT extends FlatSpec with MustMatchers {
 
@@ -94,7 +93,7 @@ class UserResourceIT extends FlatSpec with MustMatchers {
       dao.registerUserInDatabase(UserId("otherUser"), Registration(requestedHandle, "pk"))
     }
     val response = post(validPayload)
-    status(response) must be (BAD_REQUEST)
+    status(response) must be (CONFLICT)
     contentAsString(response) must include (s"Handle '$requestedHandle' is already taken")
   }
 
@@ -103,7 +102,7 @@ class UserResourceIT extends FlatSpec with MustMatchers {
       dao.registerUserInDatabase(newUserId, Registration("other_handle", "other_pk"))
     }
     val response = post(validPayload)
-    status(response) must be (BAD_REQUEST)
+    status(response) must be (CONFLICT)
     contentAsString(response) must include (s"Already existing credentials: $newUserId")
   }
 

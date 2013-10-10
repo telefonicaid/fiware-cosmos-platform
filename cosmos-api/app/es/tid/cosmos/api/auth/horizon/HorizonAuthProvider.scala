@@ -13,17 +13,16 @@ package es.tid.cosmos.api.auth.horizon
 
 import com.typesafe.config.{ConfigException, Config}
 
-import es.tid.cosmos.api.auth.{EnabledAdmin, AuthProvider}
+import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, AuthProvider}
 
-class HorizonAuthProvider(override val id: String, config: Config) extends AuthProvider {
+class HorizonAuthProvider(override val id: String, config: Config)
+  extends AuthProvider with AdminEnabledAuthProvider {
 
-  private val password = try {
+  override val adminPassword = try {
     config.getString("password")
   } catch {
     case ex: ConfigException.Missing =>
       throw new IllegalArgumentException(
         s"Missing password configuration for the $id auth provider")
   }
-
-  override def adminApi = EnabledAdmin(password)
 }

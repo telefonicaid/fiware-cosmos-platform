@@ -18,10 +18,9 @@ import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Headers, Result, Action}
 
-import es.tid.cosmos.api.auth.{AuthProvider, EnabledAdmin, MultiAuthProvider}
+import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.controllers.pages.CosmosProfile
 import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.ServiceManager
 
@@ -47,8 +46,8 @@ class UserResource(
     new ApiError(code = 401, reason = "Missing auth header"),
     new ApiError(code = 403, reason = "Forbidden"),
     new ApiError(code = 400, reason = "Invalid JSON payload"),
-    new ApiError(code = 400, reason = "Already existing handle"),
-    new ApiError(code = 400, reason = "Already existing credentials"),
+    new ApiError(code = 409, reason = "Already existing handle"),
+    new ApiError(code = 409, reason = "Already existing credentials"),
     new ApiError(code = 500, reason = "Account creation failed")
   ))
   @ApiParamsImplicit(Array(
@@ -63,7 +62,7 @@ class UserResource(
             userId <- uniqueUserId(params).right
             handle <- selectHandle(params.handle).right
           } yield createUserAccount(userId, handle, params.sshPublicKey)) match {
-            case Left(message) => BadRequest(Json.toJson(message))
+            case Left(message) => Conflict(Json.toJson(message))
             case Right(cosmosProfile) => Created(Json.toJson(RegisterUserResponse(
               handle = cosmosProfile.handle,
               apiKey = cosmosProfile.apiCredentials.apiKey,
@@ -98,12 +97,10 @@ class UserResource(
     }
 
   private def canRegisterUsers(providerName: String, password: String) = (for {
-    provider <- multiUserProvider.providers.get(providerName)
-    actualPassword <- provider.adminApi match {
-      case EnabledAdmin(p) => Some(p)
-      case _ => None
+    provider <- multiUserProvider.providers.collectFirst {
+      case (`providerName`, adminProvider : AdminEnabledAuthProvider) => adminProvider
     }
-  } yield password == actualPassword).getOrElse(false)
+  } yield password == provider.adminPassword).getOrElse(false)
 
   private def createUserAccount(userId: UserId, handle: String, publicKey: String)(implicit c: Conn) = {
     val p = dao.registerUserInDatabase(userId, Registration(handle, publicKey))

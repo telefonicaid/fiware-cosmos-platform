@@ -223,7 +223,7 @@ Otherwise, one of the following errors will be returned:
  * Unauthorized 401
  * Forbidden 403
  * Bad request 400, invalid JSON payload.
- * Bad request 400, already existing handle.
- * Bad request 400, already existing credentials.
+ * Conflict 409, already existing handle.
+ * Conflict 409, already existing credentials.
  * Internal server error 500, account registration failed.
 

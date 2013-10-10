@@ -59,7 +59,7 @@ trait WithSampleSessions extends WithTestApplication {
       name = Some("User 1"),
       email = Some("user1@mail.com")
     )
-    val handle = "user1"
+    val handle = "reguser"
     val cosmosProfile = dao.withTransaction { implicit c =>
       dao.registerUserInDatabase(userProfile.id, Registration(handle, "pk_user1"))
     }

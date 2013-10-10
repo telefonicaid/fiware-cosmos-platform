@@ -15,8 +15,6 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.auth.EnabledAdmin
-
 class HorizonAuthProviderTest extends FlatSpec with MustMatchers {
 
   def providerForConfig(config: String) =
@@ -25,12 +23,12 @@ class HorizonAuthProviderTest extends FlatSpec with MustMatchers {
   "An horizon auth provider" must "enable the admin api" in {
     val provider = providerForConfig("password=\"secret\"")
     provider.id must be ("horizon")
-    provider.adminApi must be (EnabledAdmin("secret"))
+    provider.adminPassword must be ("secret")
   }
 
   it must "throw exception when the password is not configured" in {
     val ex = evaluating {
-      providerForConfig("").adminApi
+      providerForConfig("")
     } must produce [IllegalArgumentException]
     ex.getMessage must include ("Missing password configuration")
   }

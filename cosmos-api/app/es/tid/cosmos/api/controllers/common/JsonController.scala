@@ -26,6 +26,9 @@ trait JsonController extends Controller {
         valid = payload => f(request, payload))
     }
 
+  def whenValid[Payload: Reads](json: JsValue)(f: Payload => Result): Result =
+    Json.fromJson[Payload](json).fold(invalid = formatErrors, valid = f)
+
   private def formatErrors(errorsByPath: Seq[(JsPath, Seq[ValidationError])]) = {
     val formattedErrors = errorsByPath.map {
       case (path, errors) => (path.toString(), errors.map(_.message))

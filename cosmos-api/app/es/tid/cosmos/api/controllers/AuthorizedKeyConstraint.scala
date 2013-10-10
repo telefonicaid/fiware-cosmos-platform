@@ -33,6 +33,9 @@ object AuthorizedKeyConstraint {
     }
   }
 
+  def validate(signature: String): Boolean =
+    AuthorizedKeyConstraint.authorizedKey(signature) == Valid
+
   private def havingOneLine(input: String)(f: String => ValidationResult) = {
     val lines = input.lines.length
     if (lines != 1)

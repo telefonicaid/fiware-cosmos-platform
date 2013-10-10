@@ -21,7 +21,7 @@ import play.api.libs.json.JsValue
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
-import es.tid.cosmos.api.profile.UserId
+import es.tid.cosmos.api.profile.{Registration, UserId}
 
 trait WithSampleSessions extends WithTestApplication {
 

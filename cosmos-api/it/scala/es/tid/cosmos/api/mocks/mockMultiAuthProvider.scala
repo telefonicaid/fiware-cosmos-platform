@@ -17,7 +17,7 @@ import es.tid.cosmos.api.auth._
 import es.tid.cosmos.api.auth.oauth2.{OAuthError, OAuthException, OAuthUserProfile}
 import es.tid.cosmos.api.profile.UserId
 
-object MockOAuthConstants {
+object MockAuthConstants {
   val BaseUrl = "http://mock-oauth"
   val GrantedCode = "fake-code"
   val GrantedToken = "fake-token-123"
@@ -26,10 +26,10 @@ object MockOAuthConstants {
   val AdminPassword = "sample password"
 }
 
-object MockOAuthProvider extends OAuthProvider {
-  import MockOAuthConstants._
+object MockAuthProvider extends OAuthProvider {
+  import MockAuthConstants._
 
-  override def id = ProviderId
+  override val id = ProviderId
 
   override val name = ProviderId.replace("_", " ")
 
@@ -50,7 +50,7 @@ object MockOAuthProvider extends OAuthProvider {
 }
 
 object MockMultiAuthProvider extends MultiAuthProvider {
-  override val providers = Map(MockOAuthConstants.ProviderId -> MockOAuthProvider)
+  override val providers = Map(MockAuthConstants.ProviderId -> MockAuthProvider)
 }
 
 trait MockMultiAuthProviderComponent extends MultiAuthProviderComponent {

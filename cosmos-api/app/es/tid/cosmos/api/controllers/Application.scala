@@ -13,7 +13,8 @@ package es.tid.cosmos.api.controllers
 
 import play.api.mvc.Controller
 
-import es.tid.cosmos.api.auth.MultiAuthProviderComponent
+import es.tid.cosmos.api.auth.{MultiAuthProvider, MultiAuthProviderComponent}
+import es.tid.cosmos.api.controllers.admin.UserResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.Pages
@@ -33,14 +34,16 @@ abstract class Application {
 
   lazy val controllers: Map[Class[Controller], Controller] = {
     val sm = this.serviceManager()
+    val multiAuthProvider = this.multiAuthProvider
     controllerMap(
-      new Pages(this.multiAuthProvider, sm, dao),
+      new Pages(multiAuthProvider, sm, dao),
       new CosmosResource(),
       new ProfileResource(dao),
       new ClusterResource(sm, dao),
       new StorageResource(sm, dao),
       new ServicesResource(sm),
-      new CliConfigResource(dao)
+      new CliConfigResource(dao),
+      new UserResource(multiAuthProvider, sm, dao)
     )
   }
 

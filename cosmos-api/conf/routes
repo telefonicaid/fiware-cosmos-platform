@@ -32,6 +32,10 @@ GET     /doc/cosmos/v1/cluster           controllers.ApiHelpController.getResour
 GET     /cosmos/v1/services              @es.tid.cosmos.api.controllers.services.ServicesResource.list()
 GET     /doc/cosmos/v1/services          controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/services")
 
+# Admin API
+POST    /admin/v1/user                   @es.tid.cosmos.api.controllers.admin.UserResource.register
+GET     /doc/admin/v1/user               controllers.ApiHelpController.getResource(path = "/doc/admin/v1/user")
+
 # API docs
 GET     /doc.html                        @es.tid.cosmos.api.controllers.pages.Pages.swaggerUI
 GET     /doc                             controllers.ApiHelpController.getResources

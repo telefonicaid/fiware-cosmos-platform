@@ -16,8 +16,8 @@ import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.controllers.pages.{Registration, CosmosProfile}
-import es.tid.cosmos.api.profile.UserId
+import es.tid.cosmos.api.controllers.pages.CosmosProfile
+import es.tid.cosmos.api.profile.{Registration, UserId}
 
 class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(additionalConfiguration) {

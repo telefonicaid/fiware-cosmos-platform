@@ -21,7 +21,7 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.ResultMatchers.redirectTo
 import es.tid.cosmos.api.controllers.pages.{WithSampleSessions, CosmosSession}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.mocks.{MockOAuthConstants, WithTestApplication}
+import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 
 class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
 
@@ -115,8 +115,8 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
 
   "A registered user" must "be authenticated after OAuth redirection" in
     new WithTestApplication {
-      registerUser(dao, MockOAuthConstants.User101)
-      val redirection = oauthRedirectionWithCode(MockOAuthConstants.GrantedCode)
+      registerUser(dao, MockAuthConstants.User101)
+      val redirection = oauthRedirectionWithCode(MockAuthConstants.GrantedCode)
       redirection must redirectTo ("/profile")
       val cosmosSession: CosmosSession = session(redirection)
       cosmosSession must be ('authenticated)
@@ -142,7 +142,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
   private def oauthRedirectionWithError(error: String) = oauthRedirection(s"error=$error")
 
   private def oauthRedirection(queryString: String) =
-    route(FakeRequest(GET, s"/auth/${MockOAuthConstants.ProviderId}?$queryString")).get
+    route(FakeRequest(GET, s"/auth/${MockAuthConstants.ProviderId}?$queryString")).get
 
   private def authenticationUrl(page: String) =
     """<a class="login" href="(.*?)">""".r.findFirstMatchIn(page)

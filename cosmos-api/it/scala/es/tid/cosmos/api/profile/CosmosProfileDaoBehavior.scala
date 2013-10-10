@@ -14,7 +14,7 @@ package es.tid.cosmos.api.profile
 import org.scalatest.{FlatSpec, Tag}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.controllers.pages.{NamedKey, Registration}
+import es.tid.cosmos.api.controllers.pages.NamedKey
 import es.tid.cosmos.servicemanager.ClusterId
 
 trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>

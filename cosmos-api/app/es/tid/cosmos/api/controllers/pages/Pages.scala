@@ -24,7 +24,7 @@ import es.tid.cosmos.api.auth.oauth2._
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage, JsonController}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration}
 import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
 import views.AuthAlternative

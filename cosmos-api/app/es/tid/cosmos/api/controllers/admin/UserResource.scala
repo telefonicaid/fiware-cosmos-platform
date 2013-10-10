@@ -13,6 +13,7 @@ package es.tid.cosmos.api.controllers.admin
 
 import scala.annotation.tailrec
 import scala.util.Random
+import scalaz.{Success, Failure}
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
@@ -59,33 +60,32 @@ class UserResource(
       withAdminCredsFor(params.authRealm, request.headers) {
         dao.withTransaction { implicit c =>
           (for {
-            userId <- uniqueUserId(params).right
-            handle <- selectHandle(params.handle).right
-          } yield createUserAccount(userId, handle, params.sshPublicKey)) match {
-            case Left(message) => Conflict(Json.toJson(message))
-            case Right(cosmosProfile) => Created(Json.toJson(RegisterUserResponse(
+            userId <- uniqueUserId(params)
+            handle <- selectHandle(params.handle)
+          } yield createUserAccount(userId, handle, params.sshPublicKey)).fold(
+            fail = message => Conflict(Json.toJson(message)),
+            succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
               handle = cosmosProfile.handle,
               apiKey = cosmosProfile.apiCredentials.apiKey,
               apiSecret = cosmosProfile.apiCredentials.apiSecret
             )))
-          }
+          )
         }
       }
     }
   }
 
-  private def selectHandle(reqHandle: Option[String])(implicit c: Conn): Either[Message, String] =
+  private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =
     reqHandle match {
-      case None => Right(generateHandle())
-      case Some(handle) =>
-        if (dao.handleExists(handle)) Left(Message(s"Handle '$handle' is already taken"))
-        else Right(handle)
+      case None => Success(generateHandle())
+      case Some(handle) if !dao.handleExists(handle) => Success(handle)
+      case Some(handle) => Failure(Message(s"Handle '$handle' is already taken"))
     }
 
-  private def uniqueUserId(params: RegisterUserParams)(implicit c: Conn): Either[Message, UserId] = {
+  private def uniqueUserId(params: RegisterUserParams)(implicit c: Conn) = {
     val userId = UserId(params.authRealm, params.authId)
-    if (dao.lookupByUserId(userId).isDefined) Left(Message(s"Already existing credentials: $userId"))
-    else Right(userId)
+    if (dao.lookupByUserId(userId).isDefined) Failure(Message(s"Already existing credentials: $userId"))
+    else Success(userId)
   }
 
   private def withAdminCredsFor(targetRealm: String, headers: Headers)(action: => Result) =

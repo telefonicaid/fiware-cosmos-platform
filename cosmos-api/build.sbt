@@ -4,6 +4,7 @@ sourceDirectory in IntegrationTest <<= baseDirectory / "it"
 classpathTypes ~= (_ + "orbit")
 
 libraryDependencies ++= Seq(
+  "org.scalaz" %% "scalaz-core" % "7.0.4",
   "com.wordnik" %% "swagger-play2" % "1.2.5",
   "net.databinder.dispatch" %% "dispatch-core" % "0.10.0",
   "mysql" % "mysql-connector-java" % "5.1.10",

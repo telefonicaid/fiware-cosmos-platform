@@ -49,7 +49,7 @@ class AmbariServiceManagerTest
   val instance = new AmbariServiceManager(
     provisioner, infrastructureProvider,
     initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds,
-    ClusterId("HDFS"), MappersPerSlave, ReducersPerSlave)
+    ClusterId("HDFS"), HadoopConfig(MappersPerSlave, ReducersPerSlave))
   val testTimeout = 1 second
 
   "A ServiceManager" must "have no Clusters by default" in {

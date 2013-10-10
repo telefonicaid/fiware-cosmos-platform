@@ -32,8 +32,9 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       config.getInt("ambari.servicemanager.initialization.graceperiod.minutes").minutes,
       config.getInt("ambari.servicemanager.refresh.graceperiod.seconds").seconds,
       ClusterId(config.getString("hdfs.cluster.id")),
-      config.getInt("ambari.servicemanager.mappersPerSlave"),
-      config.getInt("ambari.servicemanager.reducersPerSlave")
+      HadoopConfig(
+        config.getInt("ambari.servicemanager.mappersPerSlave"),
+        config.getInt("ambari.servicemanager.reducersPerSlave"))
     )
   }
 }

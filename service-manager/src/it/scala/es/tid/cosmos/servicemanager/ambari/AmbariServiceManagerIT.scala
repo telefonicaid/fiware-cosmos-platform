@@ -20,8 +20,8 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
-import es.tid.cosmos.servicemanager.ambari.services.{CosmosUserService, Hdfs}
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
   with FakeInfrastructureProviderComponent {

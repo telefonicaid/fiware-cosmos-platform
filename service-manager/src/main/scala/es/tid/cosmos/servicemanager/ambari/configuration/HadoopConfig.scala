@@ -9,6 +9,6 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari
+package es.tid.cosmos.servicemanager.ambari.configuration
 
 case class HadoopConfig(mappersPerSlave: Int, reducersPerSlave: Int)

@@ -26,25 +26,25 @@ class LibVirtInfrastructureProvider(
     val rootPrivateSshKey: String)
   extends InfrastructureProvider {
 
-  private val createMachinesSequenciator = new SequentialOperations()
+  private val createMachinesSequencer = new SequentialOperations
   override def createMachines(
       profile: MachineProfile.Value,
       numberOfMachines: Int,
-      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] =
-    createMachinesSequenciator enqueue {
-      def takeServers(servers: Seq[LibVirtServer]) = {
-        val available = servers.length
-        if (available < numberOfMachines)
-          throw ResourceExhaustedException(profile.toString, numberOfMachines, available)
-        else
-          servers.take(numberOfMachines)
-      }
-
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
+    def takeServers(servers: Seq[LibVirtServer]) = {
+      val available = servers.length
+      if (available < numberOfMachines)
+        throw ResourceExhaustedException(profile.toString, numberOfMachines, available)
+      else
+        servers.take(numberOfMachines)
+    }
+    createMachinesSequencer enqueue {
       for {
         servers <- availableServers(profile)
         machines <- createMachines(bootstrapAction, takeServers(servers))
       } yield machines
     }
+  }
 
   override def releaseMachines(machines: Seq[MachineState]): Future[Unit] =
     for {

@@ -55,8 +55,10 @@ object Configurator {
       ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
       ConfigurationKeys.MasterNode -> master.name,
       ConfigurationKeys.MappersPerSlave -> hadoopConfiguration.mappersPerSlave.toString,
-      ConfigurationKeys.MaxMapTasks -> (hadoopConfiguration.mappersPerSlave * slaves.length).toString,
-      ConfigurationKeys.MaxReduceTasks -> (1.75 * hadoopConfiguration.reducersPerSlave * slaves.length).round.toString,
+      ConfigurationKeys.MaxMapTasks ->
+        (hadoopConfiguration.mappersPerSlave * slaves.length).toString,
+      ConfigurationKeys.MaxReduceTasks ->
+        (1.75 * hadoopConfiguration.reducersPerSlave * slaves.length).round.toString,
       ConfigurationKeys.ReducersPerSlave -> hadoopConfiguration.reducersPerSlave.toString)
     Configurator.applyConfiguration(cluster, properties, contributors).map(_ => cluster)
   }

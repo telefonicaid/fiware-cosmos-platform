@@ -11,14 +11,13 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import play.api.data.validation.{Valid, ValidationError}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-import es.tid.cosmos.api.authorization.ApiCredentials
-import es.tid.cosmos.api.profile.Quota
-import play.api.data.validation.{Valid, ValidationError}
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.AuthorizedKeyConstraint
-
+import es.tid.cosmos.api.profile.Quota
 
 /**
  * Represents the Cosmos-specific user profile.
@@ -48,7 +47,8 @@ object NamedKey {
 
   implicit val namedKeyReads: Reads[NamedKey] = (
     (__ \ "name").read[String].filter(ValidationError("empty name"))(_.length > 0) ~
-    (__ \ "signature").read[String].filter(ValidationError("not an ssh key"))(validSignature)
+    (__ \ "signature").read[String]
+      .filter(ValidationError("not an ssh key"))(AuthorizedKeyConstraint.validate)
   )(NamedKey.apply _)
 
   implicit object NamedKeyWrites extends Writes[NamedKey] {
@@ -57,15 +57,5 @@ object NamedKey {
       "signature" -> k.signature
     )
   }
-
-  private def validSignature(signature: String): Boolean =
-    AuthorizedKeyConstraint.authorizedKey(signature) == Valid
 }
 
-/**
- * Represents a new user registration.
- *
- * @param handle    Handle name to be used as login on clusters
- * @param publicKey Initial public key
- */
-case class Registration(handle: String, publicKey: String)

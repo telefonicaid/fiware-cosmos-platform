@@ -16,10 +16,11 @@ import play.api.data.Form
 import play.api.data.validation.Constraints._
 
 import es.tid.cosmos.api.controllers.AuthorizedKeyConstraint
+import es.tid.cosmos.api.profile.Registration
 
 object RegistrationForm {
 
-  private val identifierRegex = "^[a-zA-Z][a-zA-Z0-9]*$".r
+  val identifierRegex = "^[a-zA-Z][a-zA-Z0-9]*$".r
 
   def apply(): Form[Registration] = Form(mapping(
     "handle" -> text.verifying(minLength(3), pattern(identifierRegex,

@@ -15,8 +15,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.api.controllers.pages.Registration
-import es.tid.cosmos.api.profile.{UserId, MockCosmosProfileDao}
+import es.tid.cosmos.api.profile.{Registration, UserId, MockCosmosProfileDao}
 
 class ProfileTest extends FlatSpec with MustMatchers with MockitoSugar {
 

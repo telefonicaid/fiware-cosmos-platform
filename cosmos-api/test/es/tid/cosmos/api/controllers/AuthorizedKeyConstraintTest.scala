@@ -52,4 +52,8 @@ class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
     validate("ssh-rsa ADKDJDIEJDJ adamos@tid@e.es") must be(
       Invalid("invalid email 'adamos@tid@e.es'"))
   }
+
+  it must "be available as a simple function" in {
+    AuthorizedKeyConstraint.validate("ssh-rsa ADKDJDIEJDJ jsmith@example.com") must be (true)
+  }
 }

@@ -56,6 +56,11 @@ auth.pdihub {
     api.url="<%= @pdihub_base_url %>/api/v3/"
     signup.url="<%= @pdihub_base_url %>/auth/ldap/"
 }
+auth.horizon {
+    enabled=true
+    class="es.tid.cosmos.api.auth.horizon.HorizonAuthProvider"
+    password="<%= @horizon_password %>"
+}
 
 # Links (without trailing slashes)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

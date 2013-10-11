@@ -13,7 +13,7 @@ package es.tid.cosmos.api.profile
 
 import java.util.Date
 
-import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.pages._
 import es.tid.cosmos.servicemanager.ClusterId
 

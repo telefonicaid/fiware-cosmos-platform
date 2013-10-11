@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers
+package es.tid.cosmos.api.profile
 
 import play.api.data.Forms
 import play.api.data.validation.{ValidationResult, Invalid, Valid, Constraint}
@@ -23,7 +23,7 @@ object AuthorizedKeyConstraint {
   val validKeyTypes = Set("ssh-rsa", "ssh-dsa")
   val emailConstraint = Forms.email.constraints.head
 
-  val authorizedKey: Constraint[String] = Constraint("constraint.authorizedKey") { input =>
+  val constraint: Constraint[String] = Constraint("constraint.authorizedKey") { input =>
     havingOneLine(input) { line =>
       havingThreeFields(line) { (keyType, _, email) =>
         if (!validKeyType(keyType)) Invalid(s"unexpected key type: '$keyType'")
@@ -33,8 +33,7 @@ object AuthorizedKeyConstraint {
     }
   }
 
-  def validate(signature: String): Boolean =
-    AuthorizedKeyConstraint.authorizedKey(signature) == Valid
+  def apply(signature: String): Boolean = constraint(signature) == Valid
 
   private def havingOneLine(input: String)(f: String => ValidationResult) = {
     val lines = input.lines.length

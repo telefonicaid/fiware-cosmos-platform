@@ -15,7 +15,7 @@ import play.api.mvc.{RequestHeader, Result, Controller}
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao}
 
 trait PagesAuthController extends Controller {
   val dao: CosmosProfileDao

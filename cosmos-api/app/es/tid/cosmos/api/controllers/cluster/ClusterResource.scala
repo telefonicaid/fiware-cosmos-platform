@@ -20,9 +20,9 @@ import play.Logger
 import play.api.libs.json._
 import play.api.mvc.{Result, RequestHeader, Action}
 
+import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.controllers.pages.CosmosProfile
-import es.tid.cosmos.api.profile.{ClusterAssignment, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{CosmosProfile, ClusterAssignment, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
 
 /**

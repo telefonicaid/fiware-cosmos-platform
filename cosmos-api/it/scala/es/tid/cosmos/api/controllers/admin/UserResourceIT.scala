@@ -20,8 +20,7 @@ import play.api.test.Helpers._
 
 import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.controllers.pages.NamedKey
-import es.tid.cosmos.api.profile.{Registration, UserId}
+import es.tid.cosmos.api.profile.{NamedKey, Registration, UserId}
 
 class UserResourceIT extends FlatSpec with MustMatchers {
 
@@ -90,7 +89,7 @@ class UserResourceIT extends FlatSpec with MustMatchers {
 
   it must "reject requests when handle is already taken" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUserInDatabase(UserId("otherUser"), Registration(requestedHandle, "pk"))
+      dao.registerUserInDatabase(UserId("otherUser"), Registration(requestedHandle, publicKey))
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)
@@ -99,7 +98,7 @@ class UserResourceIT extends FlatSpec with MustMatchers {
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUserInDatabase(newUserId, Registration("other_handle", "other_pk"))
+      dao.registerUserInDatabase(newUserId, Registration("otherHandle", publicKey))
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)

@@ -1,11 +1,11 @@
 @(oauthProfile: es.tid.cosmos.api.auth.oauth2.OAuthUserProfile,
-  cosmosProfile: es.tid.cosmos.api.controllers.pages.CosmosProfile)(implicit request: RequestHeader)
+  cosmosProfile: es.tid.cosmos.api.profile.CosmosProfile)(implicit request: RequestHeader)
 @import play.api.Play.current
 @import es.tid.cosmos.api.controllers.{routes => controllerRoutes}
 @import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
 @import es.tid.cosmos.api.controllers.common.AbsoluteUrl
 @import es.tid.cosmos.api.controllers.pages
-@import es.tid.cosmos.api.controllers.pages.NamedKey
+@import es.tid.cosmos.api.profile.NamedKey
 <!--
  Telefónica Digital - Product Development and Innovation
 

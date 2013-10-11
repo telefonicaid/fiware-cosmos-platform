@@ -110,7 +110,7 @@ class UserResource(
 
   @tailrec
   private def generateHandle()(implicit c: Conn): String = {
-    val handle = s"id-${Random.nextLong().abs.toString}"
+    val handle = s"id${Random.nextLong().abs.toString}"
     if (dao.handleExists(handle)) generateHandle()
     else handle
   }

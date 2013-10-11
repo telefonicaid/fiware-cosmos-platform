@@ -15,7 +15,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
-import es.tid.cosmos.api.controllers.pages.NamedKey
+import es.tid.cosmos.api.profile.NamedKey
 
 class UserProfileTest extends FlatSpec with MustMatchers {
 

@@ -16,8 +16,7 @@ import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.controllers.pages.CosmosProfile
-import es.tid.cosmos.api.profile.{Registration, UserId}
+import es.tid.cosmos.api.profile.{CosmosProfile, Registration, UserId}
 
 class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(additionalConfiguration) {
@@ -26,11 +25,11 @@ class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
     super.around {
       dao.withConnection { implicit c =>
         dao.registerUserInDatabase(
-          UserId("tu1"), Registration("user1", "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA9L"))
+          UserId("tu1"), Registration("user1", "ssh-rsa A3NzaC1yc2EAAAABIwAAAQEA9L user1@host"))
         dao.registerUserInDatabase(
-          UserId("tu2"), Registration("user2", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di"))
+          UserId("tu2"), Registration("user2", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di user2@host"))
         dao.registerUserInDatabase(
-          UserId("tu3"), Registration("user3", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di"))
+          UserId("tu3"), Registration("user3", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di user3@host"))
       }
       t
     }

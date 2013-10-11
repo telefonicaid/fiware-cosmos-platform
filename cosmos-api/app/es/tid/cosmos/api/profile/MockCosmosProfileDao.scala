@@ -12,7 +12,6 @@
 package es.tid.cosmos.api.profile
 
 import es.tid.cosmos.api.auth.ApiCredentials
-import es.tid.cosmos.api.controllers.pages.{NamedKey, CosmosProfile}
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   def cosmosProfileDao: CosmosProfileDao = new MockCosmosProfileDao

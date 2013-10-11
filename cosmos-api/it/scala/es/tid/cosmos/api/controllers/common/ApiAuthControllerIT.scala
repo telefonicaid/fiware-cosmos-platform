@@ -59,7 +59,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
   it must "succeed when credentials are valid" in new WithSampleUsers {
     val profile = dao.withConnection { implicit c =>
       val userId = UserId("db000")
-      dao.registerUserInDatabase(userId, Registration("login", "pk"))
+      dao.registerUserInDatabase(userId, Registration("login", "ssh-rsa AAAA login@host"))
       dao.lookupByUserId(userId).get
     }
     val response = action(dao, authorizedRequest(profile.apiCredentials))
@@ -78,7 +78,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     new WithSampleUsers with WithSampleSessions {
       val apiCredsProfile = dao.withConnection { implicit c =>
         val userId = UserId("db000")
-        dao.registerUserInDatabase(userId, Registration("login", "pk"))
+        dao.registerUserInDatabase(userId, Registration("login", "ssh-rsa AAAA login@host"))
         dao.lookupByUserId(userId).get
       }
       val response = action(dao, authorizedRequest(apiCredsProfile.apiCredentials)

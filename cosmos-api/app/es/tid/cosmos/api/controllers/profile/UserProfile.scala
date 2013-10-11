@@ -14,7 +14,7 @@ package es.tid.cosmos.api.controllers.profile
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-import es.tid.cosmos.api.controllers.pages.NamedKey
+import es.tid.cosmos.api.profile.NamedKey
 
 /**
  * Profile as seen by an API client

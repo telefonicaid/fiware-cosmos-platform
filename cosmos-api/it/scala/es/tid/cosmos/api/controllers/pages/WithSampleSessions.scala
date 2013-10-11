@@ -61,7 +61,8 @@ trait WithSampleSessions extends WithTestApplication {
     )
     val handle = "reguser"
     val cosmosProfile = dao.withTransaction { implicit c =>
-      dao.registerUserInDatabase(userProfile.id, Registration(handle, "pk_user1"))
+      dao.registerUserInDatabase(userProfile.id,
+        Registration(handle, "ssh-rsa AAAAA reguser@mail.com"))
     }
     val session = Session().setUserProfile(userProfile).setToken("token")
   }

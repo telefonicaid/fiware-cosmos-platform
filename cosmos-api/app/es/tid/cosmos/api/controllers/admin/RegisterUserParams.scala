@@ -15,8 +15,7 @@ import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-import es.tid.cosmos.api.controllers.AuthorizedKeyConstraint
-import es.tid.cosmos.api.controllers.pages.RegistrationForm
+import es.tid.cosmos.api.profile.{HandleConstraint, AuthorizedKeyConstraint}
 
 /**
  * Parameters for automated user registration.
@@ -36,11 +35,9 @@ object RegisterUserParams {
     (__ \ "handle").readNullable[String]
       .filter(ValidationError("not a unix handle"))(validateHandle) ~
     (__ \ "sshPublicKey").read[String]
-      .filter(ValidationError("not a valid public key"))(AuthorizedKeyConstraint.validate)
+      .filter(ValidationError("not a valid public key"))(AuthorizedKeyConstraint.apply)
   )(RegisterUserParams.apply _)
 
-  private def validateHandle(maybeHandle: Option[String]) = maybeHandle match {
-    case Some(handle) => handle.matches(RegistrationForm.identifierRegex.toString)
-    case None => true
-  }
+  private def validateHandle(maybeHandle: Option[String]) =
+    maybeHandle.map(HandleConstraint.apply).getOrElse(true)
 }

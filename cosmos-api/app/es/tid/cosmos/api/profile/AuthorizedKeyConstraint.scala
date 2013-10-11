@@ -11,44 +11,55 @@
 
 package es.tid.cosmos.api.profile
 
+import scalaz._
+
 import play.api.data.Forms
-import play.api.data.validation.{ValidationResult, Invalid, Valid, Constraint}
+import play.api.data.validation.{Invalid, Valid, Constraint}
 
 /**
  * Checks that input is a valid authorized keys line for SSH.
  */
 object AuthorizedKeyConstraint {
 
+  import Scalaz._
+
   val fieldsNumber = 3
   val validKeyTypes = Set("ssh-rsa", "ssh-dsa")
   val emailConstraint = Forms.email.constraints.head
 
   val constraint: Constraint[String] = Constraint("constraint.authorizedKey") { input =>
-    havingOneLine(input) { line =>
-      havingThreeFields(line) { (keyType, _, email) =>
-        if (!validKeyType(keyType)) Invalid(s"unexpected key type: '$keyType'")
-        else if (!validEmail(email)) Invalid(s"invalid email '$email'")
-        else Valid
-      }
-    }
+    validateAuthorizedKey(input).fold(
+      fail = errorMessage => Invalid(errorMessage),
+      succ = _ => Valid
+    )
   }
 
   def apply(signature: String): Boolean = constraint(signature) == Valid
 
-  private def havingOneLine(input: String)(f: String => ValidationResult) = {
-    val lines = input.lines.length
-    if (lines != 1)
-      Invalid(s"only one line was expected but $lines were found")
-    else f(input)
+  private def validateAuthorizedKey(input: String) = for {
+    line <- uniqueLine(input)
+    (keyType, _, email) <- authorizedKeyFields(line)
+    _ <- validateKeyType(keyType)
+    _ <- validateEmail(email)
+  } yield line
+
+  private def uniqueLine(input: String) = input.lines.length match {
+    case 1 => input.success
+    case lines => s"only one line was expected but $lines were found".failure
   }
 
-  private def havingThreeFields(line: String)(f: (String, String, String) => ValidationResult) =
+  private def authorizedKeyFields(line: String) =
     line.trim.split("\\s+").toList match {
-      case List(keyType, key, email) => f(keyType, key, email)
-      case fields => Invalid(s"$fieldsNumber fields were expected but ${fields.size} were found")
+      case List(keyType, key, email) => (keyType, key, email).success
+      case fields => s"$fieldsNumber fields were expected but ${fields.size} were found".failure
     }
 
-  private def validKeyType(keyType: String) = validKeyTypes.contains(keyType)
+  private def validateKeyType(keyType: String) =
+    if (validKeyTypes.contains(keyType)) keyType.success
+    else s"unexpected key type: '$keyType'".failure
 
-  private def validEmail(email: String) = emailConstraint(email) == Valid
+  private def validateEmail(email: String) = emailConstraint(email) match {
+    case Valid => email.success
+    case Invalid(_) => s"invalid email '$email'".failure
+  }
 }

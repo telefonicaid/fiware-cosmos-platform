@@ -20,8 +20,7 @@ import play.api.mvc._
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.auth.ApiCredentials.{ApiKeyLength, ApiSecretLength}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.controllers.pages.CosmosProfile
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao}
 
 /**
  * Controller able to check authentication and authorization

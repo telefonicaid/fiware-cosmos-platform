@@ -13,7 +13,7 @@ package es.tid.cosmos.api.controllers
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 
@@ -25,8 +25,8 @@ import es.tid.cosmos.servicemanager.ambari.services.Hdfs
 
 class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
 
-  val validCreationParams: JsValue = Json.toJson(CreateClusterParams("cluster_new", 120, Seq(Hdfs.name)))
-  val inValidCreationParams: JsValue = Json.obj("invalid" -> "json")
+  val validCreationParams = Json.toJson(CreateClusterParams("cluster_new", 120, Seq(Hdfs.name)))
+  val inValidCreationParams = Json.obj("invalid" -> "json")
   val resourcePath = "/cosmos/v1/cluster"
 
   "Cluster listing" must behave like
@@ -46,7 +46,7 @@ class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)
       contentAsString(resource) must include ("cluster0")
-      contentAsString(resource) must not include (otherCluster.toString)
+      contentAsString(resource) must not include otherCluster.toString
     }
   }
 
@@ -60,7 +60,7 @@ class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
     location must be ('defined)
     contentAsString(resource) must include (location.get)
     dao.withConnection { implicit c =>
-      dao.clustersOf(user1.id) must have length (1)
+      dao.clustersOf(user1.id) must have length 1
     }
   }
 
@@ -74,7 +74,7 @@ class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
     location must be ('defined)
     contentAsString(resource) must include (location.get)
     dao.withConnection { implicit c =>
-      dao.clustersOf(user1.id) must have length (1)
+      dao.clustersOf(user1.id) must have length 1
     }
   }
 

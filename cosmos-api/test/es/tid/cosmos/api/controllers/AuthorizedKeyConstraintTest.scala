@@ -14,10 +14,11 @@ package es.tid.cosmos.api.controllers
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.data.validation.{Invalid, Valid}
+import es.tid.cosmos.api.profile.AuthorizedKeyConstraint
 
 class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
 
-  val validate = AuthorizedKeyConstraint.authorizedKey
+  val validate = AuthorizedKeyConstraint.constraint
 
   "The authorized key constraint" must "accept rsa keys" in {
     validate("ssh-rsa ADKDJDIEJDJ jsmith@example.com") must be (Valid)
@@ -54,6 +55,6 @@ class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
   }
 
   it must "be available as a simple function" in {
-    AuthorizedKeyConstraint.validate("ssh-rsa ADKDJDIEJDJ jsmith@example.com") must be (true)
+    AuthorizedKeyConstraint("ssh-rsa ADKDJDIEJDJ jsmith@example.com") must be (true)
   }
 }

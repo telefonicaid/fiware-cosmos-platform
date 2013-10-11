@@ -11,9 +11,9 @@
 
 package es.tid.cosmos.api
 
-import es.tid.cosmos.api.controllers.pages.CosmosProfile
-import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.api.controllers.profile.UserProfile
+import es.tid.cosmos.api.profile.CosmosProfile
+import es.tid.cosmos.servicemanager.ClusterUser
 
 package object controllers {
 

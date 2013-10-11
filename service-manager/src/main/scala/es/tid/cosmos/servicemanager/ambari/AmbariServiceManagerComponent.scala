@@ -15,8 +15,9 @@ import scala.concurrent.duration._
 
 import es.tid.cosmos.platform.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
-import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
+import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   this: InfrastructureProviderComponent with ConfigComponent =>
@@ -32,8 +33,9 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       config.getInt("ambari.servicemanager.initialization.graceperiod.minutes").minutes,
       config.getInt("ambari.servicemanager.refresh.graceperiod.seconds").seconds,
       ClusterId(config.getString("hdfs.cluster.id")),
-      config.getInt("ambari.servicemanager.mappersPerSlave"),
-      config.getInt("ambari.servicemanager.reducersPerSlave")
+      HadoopConfig(
+        config.getInt("ambari.servicemanager.mappersPerSlave"),
+        config.getInt("ambari.servicemanager.reducersPerSlave"))
     )
   }
 }

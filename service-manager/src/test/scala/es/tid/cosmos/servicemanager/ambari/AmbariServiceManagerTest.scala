@@ -31,7 +31,7 @@ import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterNotFound
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, Configuration}
+import es.tid.cosmos.servicemanager.ambari.configuration.{HadoopConfig, ConfigurationKeys, Configuration}
 import es.tid.cosmos.servicemanager.ambari.rest._
 import es.tid.cosmos.servicemanager.ambari.services._
 
@@ -49,7 +49,7 @@ class AmbariServiceManagerTest
   val instance = new AmbariServiceManager(
     provisioner, infrastructureProvider,
     initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds,
-    ClusterId("HDFS"), MappersPerSlave, ReducersPerSlave)
+    ClusterId("HDFS"), HadoopConfig(MappersPerSlave, ReducersPerSlave))
   val testTimeout = 1 second
 
   "A ServiceManager" must "have no Clusters by default" in {

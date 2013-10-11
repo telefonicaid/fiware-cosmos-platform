@@ -20,8 +20,8 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
-import es.tid.cosmos.servicemanager.ambari.services.{CosmosUserService, Hdfs}
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
   with FakeInfrastructureProviderComponent {
@@ -44,7 +44,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     sm = new AmbariServiceManager(
       new AmbariServer("10.95.161.137", 8080, "admin", "admin"), infrastructureProvider,
       initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds, ClusterId("hdfs"),
-      mappersPerSlave = 2, reducersPerSlave = 1)
+      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1))
   }
 
   after {

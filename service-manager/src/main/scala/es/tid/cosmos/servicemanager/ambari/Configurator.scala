@@ -49,16 +49,17 @@ object Configurator {
       cluster: Cluster,
       master: Host,
       slaves: Seq[Host],
-      mappersPerSlave: Int,
-      reducersPerSlave: Int,
+      hadoopConfiguration: HadoopConfig,
       contributors: Seq[ConfigurationContributor]): Future[Cluster] = {
     val properties = Map(
       ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
       ConfigurationKeys.MasterNode -> master.name,
-      ConfigurationKeys.MappersPerSlave -> mappersPerSlave.toString,
-      ConfigurationKeys.MaxMapTasks -> (mappersPerSlave * slaves.length).toString,
-      ConfigurationKeys.MaxReduceTasks -> (1.75 * reducersPerSlave * slaves.length).round.toString,
-      ConfigurationKeys.ReducersPerSlave -> reducersPerSlave.toString)
+      ConfigurationKeys.MappersPerSlave -> hadoopConfiguration.mappersPerSlave.toString,
+      ConfigurationKeys.MaxMapTasks ->
+        (hadoopConfiguration.mappersPerSlave * slaves.length).toString,
+      ConfigurationKeys.MaxReduceTasks ->
+        (1.75 * hadoopConfiguration.reducersPerSlave * slaves.length).round.toString,
+      ConfigurationKeys.ReducersPerSlave -> hadoopConfiguration.reducersPerSlave.toString)
     Configurator.applyConfiguration(cluster, properties, contributors).map(_ => cluster)
   }
 

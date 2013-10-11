@@ -20,6 +20,7 @@ import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST.{JField, JString}
 import net.liftweb.json.render
 
+import es.tid.cosmos.platform.common.SequentialOperations
 import es.tid.cosmos.servicemanager.{ServiceError, RequestException}
 
 /**
@@ -50,6 +51,7 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
   override def removeCluster(name: String): Future[Unit] =
     performRequest(baseUrl.DELETE / "clusters" / name).map(_ => ())
 
+  private val bootstrapSequencer = new SequentialOperations
   private def performBootstrapAction(
       hostnames: Seq[String],
       sshKey: String,
@@ -69,10 +71,12 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
         s"Bootstrap request returned an error: ${response \\ "log"}")
       case _ => throw ServiceError(s"Unexpected Ambari response for bootstrap request: $response")
     }
-    for {
-      response <- performRequest(configuredBuilder)
-      _ <- createRequestHandler(baseUrl / "bootstrap" / extractId(response)).ensureFinished
-    } yield ()
+    bootstrapSequencer enqueue {
+      for {
+        response <- performRequest(configuredBuilder)
+        _ <- createRequestHandler(baseUrl / "bootstrap" / extractId(response)).ensureFinished
+      } yield ()
+    }
   }
 
   override def bootstrapMachines(hostnames: Seq[String], sshKey: String): Future[Unit] =

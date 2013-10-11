@@ -23,9 +23,9 @@ class SequentialOperationsTest extends FlatSpec with MustMatchers {
   var i = BigInt(1)
 
   "A sequential operation" must "run sequentially" in {
-    val sequentialOperations = new SequentialOperations();
-    val NumberOfOperations = 1000
-    val results_> = Future.sequence((1 to NumberOfOperations).map(a => {
+    val sequentialOperations = new SequentialOperations
+    val numberOfOperations = 1000
+    val results_> = Future.sequence((1 to numberOfOperations).map(a => {
       sequentialOperations enqueue {
         for {
           _ <- future { i = i + 1 }
@@ -35,6 +35,6 @@ class SequentialOperationsTest extends FlatSpec with MustMatchers {
     }))
     val results = Await.result(results_>, 10 seconds)
     def expectedResultStream: Stream[BigInt] = BigInt(4) #:: expectedResultStream.map(a => 2 * (1 + a))
-    results must be === expectedResultStream.take(NumberOfOperations)
+    results must be === expectedResultStream.take(numberOfOperations)
   }
 }

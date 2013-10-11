@@ -31,7 +31,7 @@ import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterNotFound
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, Configuration}
+import es.tid.cosmos.servicemanager.ambari.configuration.{HadoopConfig, ConfigurationKeys, Configuration}
 import es.tid.cosmos.servicemanager.ambari.rest._
 import es.tid.cosmos.servicemanager.ambari.services._
 

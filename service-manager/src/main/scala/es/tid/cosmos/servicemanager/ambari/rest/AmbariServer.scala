@@ -51,11 +51,11 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
   override def removeCluster(name: String): Future[Unit] =
     performRequest(baseUrl.DELETE / "clusters" / name).map(_ => ())
 
-  private val bootstrapSequenciator = new SequentialOperations
+  private val bootstrapSequencer = new SequentialOperations
   private def performBootstrapAction(
       hostnames: Seq[String],
       sshKey: String,
-      builderWithMethod: RequestBuilder): Future[Unit] = bootstrapSequenciator enqueue {
+      builderWithMethod: RequestBuilder): Future[Unit] = {
     val configuredBuilder = (builderWithMethod / "bootstrap")
       .setBody(compact(render(
         ("hosts" -> hostnames) ~
@@ -71,10 +71,12 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
         s"Bootstrap request returned an error: ${response \\ "log"}")
       case _ => throw ServiceError(s"Unexpected Ambari response for bootstrap request: $response")
     }
-    for {
-      response <- performRequest(configuredBuilder)
-      _ <- createRequestHandler(baseUrl / "bootstrap" / extractId(response)).ensureFinished
-    } yield ()
+    bootstrapSequencer enqueue {
+      for {
+        response <- performRequest(configuredBuilder)
+        _ <- createRequestHandler(baseUrl / "bootstrap" / extractId(response)).ensureFinished
+      } yield ()
+    }
   }
 
   override def bootstrapMachines(hostnames: Seq[String], sshKey: String): Future[Unit] =

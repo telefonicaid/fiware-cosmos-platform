@@ -14,7 +14,7 @@ class cosmos::openvz::images(
   $netmask    = $cosmos::slave::netmask,
   $gateway    = $cosmos::slave::ct_gateway,
   $base_image_url  = 'http://cosmos10/develenv/repos/ovz-templates',
-  $image_name = 'centos-6-cosmos.HDP.1.3.0-20130926-x86_64.tar.gz'
+  $image_name = 'centos-6-cosmos.HDP.1.3.0-20131015-x86_64.tar.gz'
 ) {
   include ssh_keys, ambari::repos
 

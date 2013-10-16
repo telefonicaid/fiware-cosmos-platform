@@ -4,6 +4,7 @@ sourceDirectory in IntegrationTest <<= baseDirectory / "it"
 classpathTypes ~= (_ + "orbit")
 
 libraryDependencies ++= Seq(
+  "com.wordnik" %% "swagger-play2" % "1.2.5",
   "net.databinder.dispatch" %% "dispatch-core" % "0.10.0",
   "mysql" % "mysql-connector-java" % "5.1.10",
   "org.scala-stm" %% "scala-stm" % "0.7" % "it",

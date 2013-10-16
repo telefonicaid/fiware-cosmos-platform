@@ -11,28 +11,10 @@
 
 class cosmos::setup inherits cosmos::params {
 
-  $ial_schema   = "${cosmos::params::cosmos_basedir}/ial/ial_schema.sql"
-  $ial_machines = "${cosmos::params::cosmos_basedir}/ial/ial_machines.sql"
+  include cosmos::master_db
 
-  file { 'ial':
-    ensure => 'directory',
-    path   => "${cosmos::params::cosmos_basedir}/ial",
-  }
-
-  file { $ial_schema:
-    ensure => present,
-    source => "puppet:///modules/${module_name}/ial_schema.sql",
-  }
-
-  file { $ial_machines:
-    ensure  => present,
-    content => template('cosmos/ial_machines.sql.erb'),
-  }
-
-  exec { 'ial_db':
-    command     => "cat ${ial_schema} ${ial_machines} | mysql -ucosmos -p${cosmos::params::cosmos_db_pass} cosmos -B",
-    path        => $::path,
-    refreshonly => true,
+  package { ['libvirt-client', 'libvirt-java'] :
+    ensure => 'present'
   }
 
   file { $cosmos::params::cosmos_confdir:
@@ -54,6 +36,36 @@ class cosmos::setup inherits cosmos::params {
     content => template('cosmos/logback.conf.erb'),
   }
 
+
+  file { $cosmos::params::cosmos_ssl_dir:
+    ensure => 'directory',
+    mode   => '0440',
+  }
+
+  file { $cosmos::params::ssl_cert_file:
+    ensure => 'present',
+    source => $cosmos::params::cosmos_ssl_cert_source,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+  }
+
+  file { $cosmos::params::ssl_key_file:
+    ensure => 'present',
+    source => $cosmos::params::cosmos_ssl_key_source,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+  }
+
+  file { $cosmos::params::ssl_ca_file:
+    ensure => 'present',
+    source => "puppet:///modules/${module_name}/${cosmos::params::ssl_ca_filename}",
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+  }
+
   exec { 'cosmos-setup':
     command     => "${cosmos::params::cosmos_basedir}/cosmos-admin/cosmos-admin setup",
     refreshonly => true,
@@ -61,14 +73,31 @@ class cosmos::setup inherits cosmos::params {
     timeout     => 900,
   }
 
-  File['ial'] -> File[$ial_schema, $ial_machines] ~> Exec['ial_db']
-  Database[$cosmos::params::cosmos_db_name]       ~> Exec['ial_db']
+  File[$cosmos::params::cosmos_confdir] -> Class['cosmos::master_db']
+  File[$cosmos::params::cosmos_confdir]
+    -> File[
+        'cosmos-api.conf',
+        'logback.conf',
+        $cosmos::params::cosmos_ssl_dir
+      ]
+    -> File[
+        $cosmos::params::ssl_cert_file,
+        $cosmos::params::ssl_key_file,
+        $cosmos::params::ssl_ca_file
+      ]
+  Package['cosmos'] -> File['cosmos-api.conf']
+  Class['ssh_keys', 'cosmos::master_db'] -> Exec['cosmos-setup']
 
-  File[$cosmos::params::cosmos_confdir] -> File['cosmos-api.conf', 'logback.conf']
-  Package['cosmos']                     -> File['cosmos-api.conf']
+  Package['cosmos'] ~> Exec['cosmos-setup']
+  Exec['ial_db']    ~> Exec['cosmos-setup']
+  File[
+    'cosmos-api.conf',
+    $cosmos::params::ssl_cert_file,
+    $cosmos::params::ssl_key_file,
+    $cosmos::params::ssl_ca_file
+  ] ~> Exec['cosmos-setup']
 
-  Class['ssh_keys']       -> Exec['cosmos-setup']
-  Package['cosmos']       ~> Exec['cosmos-setup']
-  Exec['ial_db']          ~> Exec['cosmos-setup']
-  File['cosmos-api.conf'] ~> Exec['cosmos-setup']
+  anchor{'cosmos::setup::begin': }
+    -> Class['cosmos::master_db']
+    -> anchor{'cosmos::setup::end': }
 }

@@ -12,15 +12,15 @@
 class cosmos::master {
 
   include stdlib, ssh_keys, mysql, ambari::server,
-    cosmos::base, cosmos::firewall::firewall_app, cosmos::master_setup,
+    cosmos::base, cosmos::firewall::firewall_app, cosmos::apache::setup,
     cosmos::api
 
   anchor { 'cosmos::master::begin': }
-    -> Class['stdlib', 'ssh_keys']
+    -> Class['stdlib', 'ssh_keys', 'mysql']
     -> Class['cosmos::base']
-    -> Class['ambari::server', 'mysql']
-    -> Class['cosmos::master_setup']
+    -> Class['ambari::server']
     -> Class['cosmos::api']
+    -> Class['cosmos::apache::setup']
     -> Class['cosmos::firewall::firewall_app']
     -> anchor { 'cosmos::master::end': }
 

@@ -22,7 +22,8 @@ case class RequestException(request: Request, message: String, cause: Throwable 
 
 case class DeploymentException(href: String, cause: Throwable = null)
   extends ServiceException(
-    s"The cluster did not finish installing correctly. See $href for more information",
+    "The cluster did not finish installing correctly. Please contact cosmos@tid.es and tell them" +
+      s" that deployment failed at $href",
     cause)
 
 case class ServiceError(message: String, cause: Throwable = null) extends Error(message, cause)

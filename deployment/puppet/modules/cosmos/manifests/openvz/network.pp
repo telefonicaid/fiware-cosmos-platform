@@ -54,6 +54,14 @@ class cosmos::openvz::network($host_iface) {
     content => 'EXTERNAL_SCRIPT="/usr/sbin/vznetaddbr"',
   }
 
+  # Due to having different adapters in Vagrant for internet access and host access
+  # we need to route internet traffic through eth0 explicitly
+  if $environment == 'vagrant' {
+    exec { '/sbin/iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE':
+      user => 'root',
+    }
+  }
+
   File['/etc/sysconfig/network-scripts/ifcfg-vzbr0', '/etc/vz/vznet.conf']
     ~> Service['network']
   Editfile::Config['remove_ip_config', 'remove_netmask', 'add_bridge']

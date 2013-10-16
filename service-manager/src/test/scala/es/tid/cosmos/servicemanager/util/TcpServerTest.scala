@@ -11,10 +11,9 @@
 
 package es.tid.cosmos.servicemanager.util
 
-import java.net.{Socket, ServerSocket}
+import java.net.{InetSocketAddress, Socket, ServerSocket}
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import scala.util.Random
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -26,8 +25,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
   val timeout: FiniteDuration = 3 second
 
   class RandomServer {
-    /** Random port for concurrent test execution */
-    val port = 1000 + Random.nextInt(4000)
+    val port = availablePort()
     val server = TcpServer("localhost", port)
 
     def withServerMock[T](f: LocalServer => T): T = {
@@ -37,6 +35,13 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
       } finally {
         serverMock.close()
       }
+    }
+
+    private def availablePort(): Int = {
+      val socket = new ServerSocket(0)
+      val port = socket.getLocalPort
+      socket.close()
+      port
     }
   }
 
@@ -75,8 +80,12 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
     private var clientSocket: Option[Socket] = None
 
     def acceptClient() {
-      socket = Some(new ServerSocket(port))
-      socket.foreach(_.setSoTimeout(timeout.toMillis.toInt))
+      socket = Some(new ServerSocket())
+      socket.foreach(srv => {
+        srv.setSoTimeout(timeout.toMillis.toInt)
+        srv.setReuseAddress(true)
+        srv.bind(new InetSocketAddress(port))
+      })
       clientSocket = socket.map(_.accept())
     }
 

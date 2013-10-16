@@ -11,13 +11,8 @@
 
 package es.tid.cosmos.api
 
-import play.api.Logger
-import play.api.libs.json.Json
-import play.api.mvc.{RequestHeader, Result}
-import play.api.mvc.Results.InternalServerError
 
 import es.tid.cosmos.api.controllers.Application
-import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.oauth2.DefaultMultiOAuthProviderComponent
 import es.tid.cosmos.api.profile.PlayDbCosmosProfileDaoComponent
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
@@ -31,10 +26,4 @@ object ProductionGlobal extends AbstractGlobal(new Application
   with PlayDbCosmosProfileDaoComponent
   with ProductionServiceManagerComponent
   with ApplicationConfigComponent) {
-
-  override def onError(request: RequestHeader, ex: Throwable): Result = {
-    val message = ErrorMessage("Uncaught exception", ex)
-    Logger.error(message.error, ex)
-    InternalServerError(Json.toJson(message))
-  }
 }

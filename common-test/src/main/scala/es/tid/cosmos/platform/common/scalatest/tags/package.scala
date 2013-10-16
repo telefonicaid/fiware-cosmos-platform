@@ -23,4 +23,9 @@ package object tags {
    * e.g. Database instances, system libraries etc.
    */
   object HasExternalDependencies extends Tag("HasExternalDependencies")
+
+  /**
+   * Tag for end to end tests which are meant to be run against a functional instance of Cosmos
+   */
+  object EndToEndTest extends Tag("EndToEndTest")
 }

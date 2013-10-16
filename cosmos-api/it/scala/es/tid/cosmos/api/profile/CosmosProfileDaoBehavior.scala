@@ -14,7 +14,7 @@ package es.tid.cosmos.api.profile
 import org.scalatest.{FlatSpec, Tag}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.controllers.pages.Registration
+import es.tid.cosmos.api.controllers.pages.{NamedKey, Registration}
 import es.tid.cosmos.servicemanager.ClusterId
 
 trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
@@ -23,6 +23,8 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
   def profileDao(withDao: DaoTest => Unit, maybeTag: Option[Tag] = None) {
 
+    val unknownCosmosId = 1000
+
     def taggedTest(subject: ItVerbString, testFun: => Unit) =
       maybeTag.map(tag => subject taggedAs tag in testFun)
         .getOrElse(subject in testFun)
@@ -30,10 +32,55 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "register new users", withDao { dao =>
       dao.withTransaction { implicit c =>
         val id = UserId("db-0003")
-        dao.registerUserInDatabase(id, Registration("jsmith", "pk00001"))
-        val profile = dao.lookupByUserId(id).get
+        val profile = dao.registerUserInDatabase(id, Registration("jsmith", "pk00001"))
         profile.handle must be ("jsmith")
         profile.keys.length must be (1)
+      }
+    })
+
+    taggedTest(it must "change the handle of users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId = UserId("db-0003")
+        val cosmosId = dao.registerUserInDatabase(userId, Registration("jsmith", "pk00001")).id
+        dao.setHandle(cosmosId, "js")
+        dao.lookupByUserId(userId).get.handle must equal ("js")
+      }
+    })
+
+    taggedTest(it must "not change the handle of unknown users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        evaluating {
+          dao.setHandle(unknownCosmosId, "js")
+        } must produce [IllegalArgumentException]
+      }
+    })
+
+    taggedTest(it must "not change the handle to a repeated one", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        dao.registerUserInDatabase(UserId("db001"), Registration("existing", "pk00001"))
+        val cosmosId =
+          dao.registerUserInDatabase(UserId("db002"), Registration("current", "pk00002")).id
+        evaluating {
+          dao.setHandle(cosmosId, "existing")
+        } must produce [IllegalArgumentException]
+      }
+    })
+
+    taggedTest(it must "change the keys of users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId = UserId("db-0003")
+        val cosmosId = dao.registerUserInDatabase(userId, Registration("jsmith", "pk00001")).id
+        val newKeys = Seq(NamedKey("default", "pk2"), NamedKey("extra", "pk3"))
+        dao.setPublicKeys(cosmosId, newKeys)
+        dao.lookupByUserId(userId).get.keys must equal (newKeys)
+      }
+    })
+
+    taggedTest(it must "not change the keys of unknown users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        evaluating {
+          dao.setPublicKeys(unknownCosmosId, Seq(NamedKey("default", "pk")))
+        } must produce [IllegalArgumentException]
       }
     })
 
@@ -75,11 +122,11 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "assign cluster ownership and remember it", withDao { dao =>
       dao.withTransaction { implicit c =>
         val clusterId = ClusterId()
-        val id1 = dao.registerUserInDatabase(UserId("user1"), Registration("user1", "pk0001"))
-        val id2 = dao.registerUserInDatabase(UserId("user2"), Registration("user2", "pk0002"))
+        val id1 = dao.registerUserInDatabase(UserId("user1"), Registration("user1", "pk0001")).id
+        val id2 = dao.registerUserInDatabase(UserId("user2"), Registration("user2", "pk0002")).id
         dao.assignCluster(clusterId, id2)
-        dao.clustersOf(id1).toList must not contain (clusterId)
-        dao.clustersOf(id2).toList must contain (clusterId)
+        dao.clustersOf(id1).map(_.clusterId).toList must not contain clusterId
+        dao.clustersOf(id2).map(_.clusterId).toList must contain (clusterId)
       }
     })
   }

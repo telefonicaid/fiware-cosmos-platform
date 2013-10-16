@@ -20,20 +20,36 @@ class cosmos::firewall::firewall_app(
     source => '127.0.0.1',
   }
 
-  firewall { '100 allow 8080 access from cluster nodes subnet':
+  firewall { '101 allow 8080 access from cluster nodes subnet':
     dport  => 8080,
     proto  => tcp,
     action => accept,
     source => "${subnet}/${netmask}",
   }
 
-  firewall { '101 deny 8080 access from outside':
+  firewall { '102 deny 8080 access from outside':
     dport  => 8080,
     proto  => tcp,
     action => drop,
   }
 
   Firewall['100 allow 8080 access from localhost']
-    -> Firewall['100 allow 8080 access from cluster nodes subnet']
-    -> Firewall['101 deny 8080 access from outside']
+    -> Firewall['101 allow 8080 access from cluster nodes subnet']
+    -> Firewall['102 deny 8080 access from outside']
+
+  firewall { '103 allow 9000 access from localhost':
+    dport  => 9000,
+    proto  => tcp,
+    action => accept,
+    source => '127.0.0.1',
+  }
+
+  firewall { '104 deny 9000 access from outside':
+    dport  => 9000,
+    proto  => tcp,
+    action => drop,
+  }
+
+  Firewall['103 allow 9000 access from localhost']
+    -> Firewall['104 deny 9000 access from outside']
 }

@@ -3,17 +3,15 @@
 
 # Public API address
 # ~~~~~
-<% if @environment == "vagrant" -%>
-application.baseurl="http://<%=@master_ip%>"
-<% else -%>
-application.baseurl="http://<%=@master_hostname%><%=@domain%>"
-<% end -%>
+application.baseurl="https://<%=@master_hostname%><%=@domain%>"
 
 # Secret key
 # ~~~~~
 # The secret key is used to secure cryptographic functions.
 # If you deploy your application to several instances be sure to use the same key!
 application.secret="<%= (0...50).map{ ('a'..'z').to_a[rand(26)] }.join %>"
+
+application.ssl.enabled=true
 
 # The application languages
 # ~~~~~
@@ -48,24 +46,27 @@ applyDownEvolutions.default=true
 
 # Auth providers configuration
 # ~~~~
-auth.tuid {
+auth.pdihub {
     enabled=true
-    name="TU|Id"
-    class="es.tid.cosmos.api.oauth2.TuIdOAuthProvider"
-    client.id="<%= @tuid_client_id %>"
-    client.secret="<%= @tuid_client_secret %>"
-    auth.url="<%= @tuid_auth_url %>"
-    api.url="<%= @tuid_api_url %>"
-    signup.url="<%= @tuid_auth_url %>/signup/validate/"
+    name="PDIHub"
+    class="es.tid.cosmos.api.oauth2.GitHubOAuthProvider"
+    client.id="<%= @pdihub_client_id %>"
+    client.secret="<%= @pdihub_client_secret %>"
+    auth.url="<%= @pdihub_base_url %>/login/oauth/"
+    api.url="<%= @pdihub_base_url %>/api/v3/"
+    signup.url="<%= @pdihub_base_url %>/auth/ldap/"
 }
 
-# Links
-# ~~~~
-cli.url="http://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
+# Links (without trailing slashes)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cli.url="https://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
+infinity.url="<%= @infinity_url %>"
 
 # Swagger API documentation
 # ~~~~~
 swagger.api.basepath=${application.baseurl}
+# Version that shows at the bottom of the Swagger Doc page
+api.version=1
 
 # IAL configuration
 # ~~~~~

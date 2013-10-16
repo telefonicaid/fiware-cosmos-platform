@@ -14,10 +14,10 @@ package es.tid.cosmos.api.controllers
 import play.api.mvc.Controller
 
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
-import es.tid.cosmos.api.controllers.clusters.ClustersResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.Pages
 import es.tid.cosmos.api.controllers.profile.ProfileResource
+import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.oauth2.MultiOAuthProviderComponent
 import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
@@ -37,9 +37,10 @@ abstract class Application {
       new Pages(this.multiOAuthProvider, sm, dao),
       new CosmosResource(),
       new ProfileResource(dao),
-      new ClustersResource(sm, dao),
       new ClusterResource(sm, dao),
-      new StorageResource(sm, dao)
+      new StorageResource(sm, dao),
+      new ServicesResource(sm),
+      new CliConfigResource(dao)
     )
   }
 

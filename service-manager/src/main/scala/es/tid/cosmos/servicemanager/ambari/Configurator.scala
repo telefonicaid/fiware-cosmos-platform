@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Factory
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
-import es.tid.cosmos.servicemanager.ambari.rest.Cluster
+import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
 
 /**
  * Class for consolidating configuration from multiple contributors and applying it to a cluster.
@@ -43,6 +43,24 @@ object Configurator {
     val tag = timestampedTag()
     val configurations = consolidateConfiguration(contributors, properties)
     Future.traverse(configurations)(cluster.applyConfiguration(_, tag))
+  }
+
+  def applyConfiguration(
+      cluster: Cluster,
+      master: Host,
+      slaves: Seq[Host],
+      hadoopConfiguration: HadoopConfig,
+      contributors: Seq[ConfigurationContributor]): Future[Cluster] = {
+    val properties = Map(
+      ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
+      ConfigurationKeys.MasterNode -> master.name,
+      ConfigurationKeys.MappersPerSlave -> hadoopConfiguration.mappersPerSlave.toString,
+      ConfigurationKeys.MaxMapTasks ->
+        (hadoopConfiguration.mappersPerSlave * slaves.length).toString,
+      ConfigurationKeys.MaxReduceTasks ->
+        (1.75 * hadoopConfiguration.reducersPerSlave * slaves.length).round.toString,
+      ConfigurationKeys.ReducersPerSlave -> hadoopConfiguration.reducersPerSlave.toString)
+    Configurator.applyConfiguration(cluster, properties, contributors).map(_ => cluster)
   }
 
   private def consolidateConfiguration(

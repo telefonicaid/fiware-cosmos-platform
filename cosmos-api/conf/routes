@@ -5,30 +5,36 @@
 # Pages
 GET     /                                @es.tid.cosmos.api.controllers.pages.Pages.index
 GET     /auth/:providerId                @es.tid.cosmos.api.controllers.pages.Pages.authorize(providerId: String, code: Option[String], error: Option[String])
-GET     /logout                          @es.tid.cosmos.api.controllers.pages.Pages.logout()
+GET     /logout                          @es.tid.cosmos.api.controllers.pages.Pages.logout
+GET     /register                        @es.tid.cosmos.api.controllers.pages.Pages.registerForm
 POST    /register                        @es.tid.cosmos.api.controllers.pages.Pages.registerUser
+GET     /profile                         @es.tid.cosmos.api.controllers.pages.Pages.showProfile
+GET     /getting-started                 @es.tid.cosmos.api.controllers.pages.Pages.customGettingStarted
+GET     /cosmosrc                        @es.tid.cosmos.api.controllers.CliConfigResource.generate
 
 # API
-GET     /cosmos/v1                       @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version()
+GET     /cosmos/v1                       @es.tid.cosmos.api.controllers.cosmos.CosmosResource.version
 GET     /doc/cosmos/v1                   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1")
 
-GET     /cosmos/v1/profile               @es.tid.cosmos.api.controllers.profile.ProfileResource.show()
+GET     /cosmos/v1/profile               @es.tid.cosmos.api.controllers.profile.ProfileResource.show
+PUT     /cosmos/v1/profile               @es.tid.cosmos.api.controllers.profile.ProfileResource.update
 GET     /doc/cosmos/v1/profile           controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/profile")
 
-GET     /cosmos/v1/storage               @es.tid.cosmos.api.controllers.storage.StorageResource.details()
+GET     /cosmos/v1/storage               @es.tid.cosmos.api.controllers.storage.StorageResource.details
 GET     /doc/cosmos/v1/storage           controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/storage")
 
-GET     /cosmos/v1/cluster               @es.tid.cosmos.api.controllers.clusters.ClustersResource.list()
-POST    /cosmos/v1/cluster               @es.tid.cosmos.api.controllers.clusters.ClustersResource.createCluster()
-GET     /doc/cosmos/v1/clusters          controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/clusters")
-
+GET     /cosmos/v1/cluster               @es.tid.cosmos.api.controllers.cluster.ClusterResource.list()
+POST    /cosmos/v1/cluster               @es.tid.cosmos.api.controllers.cluster.ClusterResource.createCluster()
 GET     /cosmos/v1/cluster/:id           @es.tid.cosmos.api.controllers.cluster.ClusterResource.listDetails(id)
 POST    /cosmos/v1/cluster/:id/terminate @es.tid.cosmos.api.controllers.cluster.ClusterResource.terminate(id)
 GET     /doc/cosmos/v1/cluster           controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/cluster")
 
+GET     /cosmos/v1/services              @es.tid.cosmos.api.controllers.services.ServicesResource.list()
+GET     /doc/cosmos/v1/services          controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/services")
+
 # API docs
 GET     /doc.html                        @es.tid.cosmos.api.controllers.pages.Pages.swaggerUI
-GET     /doc                             controllers.ApiHelpController.getResources()
+GET     /doc                             controllers.ApiHelpController.getResources
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                    controllers.Assets.at(path="/public", file)

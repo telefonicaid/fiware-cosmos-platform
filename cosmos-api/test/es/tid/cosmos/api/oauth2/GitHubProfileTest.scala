@@ -31,7 +31,7 @@ class GitHubProfileTest extends FlatSpec with MustMatchers {
   )
 
   "A GitHub profile" must "be converted to a generic user profile" in {
-    jSmithProfile.asUserProfile("realm") must equal (UserProfile(
+    jSmithProfile.asUserProfile("realm") must equal (OAuthUserProfile(
       UserId("realm", "53"), Some("John Smith"), Some("jsmith@tid.es")))
   }
 

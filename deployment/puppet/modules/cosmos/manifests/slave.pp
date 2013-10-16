@@ -60,6 +60,14 @@ class cosmos::slave (
     group   => root,
   }
 
+  exec { 'Update CT Ambari Agent':
+    command => 'vzctl exec 101 "ambari-agent stop && yum clean all && yum update -y ambari-agent && ambari-agent start"',
+    path    => ['/usr/sbin/', '/bin/'],
+    onlyif  => 'vzctl status 101 | grep running',
+  }
+
+  Class['cosmos::openvz::service', 'cosmos::openvz::network'] -> Exec['Update CT Ambari Agent']
+
   anchor {'cosmos::slave::begin': }
     -> Class['ambari::repos', 'cosmos::openvz::service', 'libvirt', 'cosmos::base']
     -> Class['ssh_keys', 'cosmos::openvz::network', 'cosmos::openvz::images']

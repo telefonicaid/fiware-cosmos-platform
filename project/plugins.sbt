@@ -9,6 +9,6 @@ resolvers += "scct-github-repository" at "http://mtkopone.github.com/scct/maven-
 
 addSbtPlugin("reaktor" % "sbt-scct" % "0.2-SNAPSHOT")
 
-addSbtPlugin("play" % "sbt-plugin" % "2.1.0")
+addSbtPlugin("play" % "sbt-plugin" % "2.1.4")
 
 addSbtPlugin("com.github.shivawu" % "sbt-maven-plugin" % "0.1.2")

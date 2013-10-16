@@ -20,7 +20,7 @@ object MockOAuthConstants {
   val BaseUrl = "http://mock-oauth"
   val GrantedCode = "fake-code"
   val GrantedToken = "fake-token-123"
-  val User101 = UserProfile(UserId("101"), Some("John Smith"), Some("jsmith@tid.es"))
+  val User101 = OAuthUserProfile(UserId("101"), Some("John Smith"), Some("jsmith@tid.es"))
   val ProviderId = "id_service"
 }
 
@@ -40,7 +40,7 @@ object MockOAuthProvider extends OAuthProvider {
     if (code == GrantedCode) Future.successful(GrantedToken)
     else Future.failed(OAuthException(OAuthError.InvalidGrant, "testing invalid grant"))
 
-  override def requestUserProfile(token: String): Future[UserProfile] =
+  override def requestUserProfile(token: String): Future[OAuthUserProfile] =
     if (token == GrantedToken) Future.successful(User101)
     else Future.failed(OAuthException(OAuthError.InvalidRequest, "testing invalid requests"))
 }

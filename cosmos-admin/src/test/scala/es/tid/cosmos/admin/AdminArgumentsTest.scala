@@ -13,9 +13,6 @@ package es.tid.cosmos.admin
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import org.scalatest.mock.MockitoSugar
-
-import es.tid.cosmos.servicemanager.ServiceManager
 
 class AdminArgumentsTest extends FlatSpec with MustMatchers {
 

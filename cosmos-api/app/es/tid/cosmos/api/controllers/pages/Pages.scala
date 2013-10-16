@@ -14,17 +14,15 @@ package es.tid.cosmos.api.controllers.pages
 import dispatch.{Future => _, _}, Defaults._
 import play.Logger
 import play.api.data.Form
-import play.api.data.Forms._
-import play.api.data.validation.Constraints._
 import play.api.libs.json.Json
-import play.api.mvc.{RequestHeader, Action, Controller}
+import play.api.mvc.{RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
 import es.tid.cosmos.api.controllers._
-import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage}
+import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage, JsonController}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
-import es.tid.cosmos.api.oauth2.{UserProfile, OAuthProvider, MultiOAuthProvider, OAuthError, OAuthException}
+import es.tid.cosmos.api.oauth2._
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -36,32 +34,15 @@ import views.AuthAlternative
 class Pages(
     oauthClients: MultiOAuthProvider,
     serviceManager: ServiceManager,
-    dao: CosmosProfileDao
-  ) extends Controller {
-
-  private val registrationForm = Form(mapping(
-    "handle" -> text.verifying(minLength(3), pattern("^[a-zA-Z][a-zA-Z0-9]*$".r,
-      error="Not a valid unix handle, please use a-z letters and numbers " +
-        "in a non-starting position")),
-    "publicKey" -> text.verifying(nonEmpty)
-  )(Registration.apply)(Registration.unapply))
+    val dao: CosmosProfileDao
+  ) extends JsonController with PagesAuthController {
 
   def index = Action { implicit request =>
-    if (!session.isAuthenticated) landingPage
-    else {
-      val maybeCosmosId = dao.withTransaction { implicit c =>
-        for {
-          UserProfile(id, _, _) <- session.userProfile
-          cosmosProfile <- dao.lookupByUserId(id)
-        } yield cosmosProfile.id
-      }
-      (session.isRegistered, maybeCosmosId) match {
-        case (false, None) => registrationPage(session.userProfile.get, registrationForm)
-        case (false, Some(_)) => redirectToIndex.withSession(session.setCosmosId(maybeCosmosId))
-        case (true, Some(_)) if maybeCosmosId == session.cosmosId => userProfile
-        case _ => redirectToIndex.withNewSession
-      }
-    }
+    withAuthentication(request)(
+      whenRegistered = (_, _) => Redirect(routes.Pages.showProfile()),
+      whenNotRegistered = _ => Redirect(routes.Pages.registerForm()),
+      whenNotAuthenticated = landingPage
+    )
   }
 
   def swaggerUI = Action { implicit request =>
@@ -75,15 +56,10 @@ class Pages(
         (for {
           token <- oauthClient.requestAccessToken(code)
           userProfile <- oauthClient.requestUserProfile(token)
-          maybeCosmosId = dao.withConnection {
-            implicit c => dao.getCosmosId(userProfile.id)
-          }
         } yield {
-          Logger.info(s"Authorized with token $token")
-          Redirect(routes.Pages.index()).withSession(session
-            .setToken(token)
-            .setUserProfile(userProfile)
-            .setCosmosId(maybeCosmosId))
+          Logger.info(s"${userProfile.id} authorized with token $token")
+          Redirect(routes.Pages.showProfile())
+            .withSession(session.setToken(token).setUserProfile(userProfile))
         }) recover {
           case ex@OAuthException(_, _) => unauthorizedPage(ex)
           case Wrapped(Wrapped(ex: OAuthException)) => unauthorizedPage(ex)
@@ -107,21 +83,22 @@ class Pages(
       ).getOrElse(reportUnknownProvider)
     }
 
-  def registerUser = Action { implicit request =>
-    session.userProfile.map(userProfile =>
-      dao.withTransaction { implicit c =>
+  def registerForm = Action { implicit request =>
+    withAuthentication(request)(
+      whenRegistered = (_, _) => redirectToIndex,
+      whenNotRegistered = userProfile => registrationPage(userProfile, RegistrationForm()),
+      whenNotAuthenticated = redirectToIndex
+    )
+  }
 
-        def createCosmosProfile(reg: Registration) = {
-          dao.registerUserInDatabase(userProfile.id, reg)
-          val cosmosProfile = dao.lookupByUserId(userProfile.id)
-            .getOrElse(throw new IllegalStateException(
-              "Could not read registration information from database"))
-          serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
-          cosmosProfile
-        }
+  def registerUser = Action { implicit request =>
+    withAuthentication(request)(
+      whenRegistered = (_, _) => redirectToIndex,
+      whenNotAuthenticated = redirectToIndex,
+      whenNotRegistered = userProfile => dao.withTransaction { implicit c =>
 
         val validatedForm = {
-          val form = registrationForm.bindFromRequest()
+          val form = RegistrationForm().bindFromRequest()
           form.data.get("handle") match {
             case Some(handle) if dao.handleExists(handle) =>
               form.withError("handle", s"'$handle' is already taken")
@@ -132,11 +109,19 @@ class Pages(
         validatedForm.fold(
           formWithErrors => registrationPage(userProfile, formWithErrors),
           registration => {
-            val cosmosProfile = createCosmosProfile(registration)
-            redirectToIndex.withSession(session.setCosmosId(cosmosProfile.id))
+            val cosmosProfile = dao.registerUserInDatabase(userProfile.id, registration)
+            serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
+            redirectToIndex
           }
         )
-      }).getOrElse(Forbidden(Json.toJson(ErrorMessage("Not authenticated"))))
+      }
+    )
+  }
+
+  private def registrationPage(profile: OAuthUserProfile, form: Form[Registration]) = {
+    val contents = views.html.registration(profile, form)
+    if (form.hasErrors) BadRequest(contents)
+    else Ok(contents)
   }
 
   def logout() = Action { request =>
@@ -148,16 +133,17 @@ class Pages(
   private def landingPage(implicit request: RequestHeader) =
     Ok(views.html.landingPage(authAlternatives))
 
-  private def registrationPage(profile: UserProfile, form: Form[Registration]) = {
-    val contents = views.html.registration(profile, form)
-    if (form.hasErrors) BadRequest(contents)
-    else Ok(contents)
+  def showProfile = Action { implicit request =>
+    whenRegistered(request) { (userProfile, _) =>
+      dao.withTransaction { implicit c =>
+        Ok(views.html.profile(userProfile, dao.lookupByUserId(userProfile.id).get))
+      }
+    }
   }
 
-  private def userProfile(implicit request: RequestHeader) = {
-    dao.withConnection { implicit c =>
-      val userProfile = session.userProfile.get
-      Ok(views.html.profile(userProfile, dao.lookupByUserId(userProfile.id).get))
+  def customGettingStarted = Action { implicit request =>
+    whenRegistered(request) { (_, cosmosProfile) =>
+      Ok(views.html.gettingStarted(cosmosProfile))
     }
   }
 

@@ -38,16 +38,6 @@ db.default.pass=
 
 # Auth providers configuration
 # ~~~~
-auth.tuid {
-    enabled=false
-    name="TU|Id"
-    class="es.tid.cosmos.api.oauth2.TuIdOAuthProvider"
-    client.id=
-    client.secret=
-    auth.url=
-    api.url=
-    signup.url=
-}
 auth.pdihub {
     enabled=false
     name="PDIHub"
@@ -59,9 +49,10 @@ auth.pdihub {
     signup.url=
 }
 
-# Links
-# ~~~~
+# Links (without trailing slashes)
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cli.url="http://localhost/cosmos.egg"
+infinity.url="hdfs://"
 
 # Swagger API documentation
 # ~~~~~

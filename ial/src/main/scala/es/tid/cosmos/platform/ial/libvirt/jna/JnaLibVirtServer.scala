@@ -13,14 +13,14 @@ package es.tid.cosmos.platform.ial.libvirt.jna
 
 import java.util.{NoSuchElementException, UUID}
 
-import scala.concurrent.{ExecutionContext, blocking, Future, future}
+import scala.concurrent.{blocking, Future, future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.libvirt.{LibvirtException, Domain, Connect}
 import org.libvirt.Error.ErrorNumber
 
+import es.tid.cosmos.platform.common.SequentialOperations
 import es.tid.cosmos.platform.ial.libvirt.{LibVirtServerProperties, DomainProperties, LibVirtServer}
-import java.util.concurrent.Executors
 
 /**
  * A JNA based libvirt server
@@ -53,9 +53,12 @@ case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirt
     </domain>
   }
 
-  def createDomain(): Future[DomainProperties] = destroyDomain().map(_ => mapDomain(blocking {
-    conn.domainCreateXML(openVzDomainXmlDoc.toString(), 0)
-  }))(JnaLibVirtServer.singleThreadExecutor)
+  private val domainCreatorSequencer = new SequentialOperations
+  def createDomain(): Future[DomainProperties] = domainCreatorSequencer enqueue {
+    destroyDomain().map(_ => mapDomain(blocking {
+      conn.domainCreateXML(openVzDomainXmlDoc.toString(), 0)
+    }))
+  }
 
   def domain(): Future[DomainProperties] = future { blocking {
     try {
@@ -102,8 +105,3 @@ case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirt
       ipAddress = properties.domainIpAddress)
 }
 
-object JnaLibVirtServer {
-
-  private val singleThreadExecutor = ExecutionContext.fromExecutorService(
-    Executors.newFixedThreadPool(1))
-}

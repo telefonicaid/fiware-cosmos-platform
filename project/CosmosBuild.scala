@@ -18,13 +18,18 @@ object CosmosBuild extends Build {
     val version = pom.ver
   }
 
+  object Dependencies {
+    lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
+    lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
+  }
+
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)
 
   lazy val root = (Project(id = "cosmos-platform", base = file("."))
     settings(ScctPlugin.mergeReportSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
-    aggregate(cosmosApi, serviceManager, ial, cosmosAdmin, common)
+    aggregate(cosmosApi, serviceManager, ial, cosmosAdmin, common, platformTests)
   )
 
   lazy val common = (Project(id = "common", base = file("common"))
@@ -66,5 +71,12 @@ object CosmosBuild extends Build {
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(cosmosApi, serviceManager, common)
+  )
+
+  lazy val platformTests = (Project(id = "platform-tests", base = file("tests/platform-tests"))
+    settings(ScctPlugin.instrumentSettings: _*)
+    configs(IntegrationTest)
+    settings(Defaults.itSettings : _*)
+    dependsOn(common_test % "compile->compile;test->test")
   )
 }

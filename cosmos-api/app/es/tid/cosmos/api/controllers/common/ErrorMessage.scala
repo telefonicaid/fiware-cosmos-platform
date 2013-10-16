@@ -28,15 +28,22 @@ object ErrorMessage {
     ErrorMessage(error, Some(exception))
 
   implicit object ErrorMessageWrites extends Writes[ErrorMessage] {
-    def writes(message: ErrorMessage): JsValue = {
+    def writes(message: ErrorMessage): JsValue =
       message.exception match {
         case Some(ex) if (!Play.isProd) => Json.obj(
           "error" -> s"${message.error}: ${ex.getMessage}",
-          "exception" -> ex.getClass.getCanonicalName,
-          "stackTrace" -> ex.getStackTraceString
+          "exception" -> getExceptionName(ex),
+          "stackTrace" -> getStackTraceLines(ex)
         )
         case _ => Json.obj("error" -> message.error)
       }
+
+    private def getStackTraceLines(ex: Throwable) = JsArray(
+      ex.getStackTrace.map(line => JsString(line.toString)))
+
+    private def getExceptionName(ex: Throwable) = {
+      val canonicalName = ex.getClass.getCanonicalName
+      if (canonicalName != null) canonicalName else ex.getClass.getName
     }
   }
 }

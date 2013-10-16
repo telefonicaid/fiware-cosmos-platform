@@ -118,7 +118,7 @@ class RefreshingTest extends AmbariTestBase with MockitoSugar with FutureMatcher
     val normalService = mockService(normalDescription.name)
     val unknownServiceName = "myUnknownService"
     val unknownService = mockService(unknownServiceName)
-    override val serviceDescriptions = Seq(clientOnlyDescription, normalDescription)
+    override val allServices = Seq(clientOnlyDescription, normalDescription)
 
     protected def registerClusterInProvisioner(clusterName: String, cluster: Cluster) {
       given(provisioner.listClusterNames).willReturn(successful(Seq(clusterName)))

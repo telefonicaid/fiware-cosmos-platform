@@ -14,6 +14,7 @@ package es.tid.cosmos.platform.ial.libvirt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, future}
 
+import es.tid.cosmos.platform.common.SequentialOperations
 import es.tid.cosmos.platform.ial._
 
 /**
@@ -25,11 +26,11 @@ class LibVirtInfrastructureProvider(
     val rootPrivateSshKey: String)
   extends InfrastructureProvider {
 
+  private val createMachinesSequencer = new SequentialOperations
   override def createMachines(
       profile: MachineProfile.Value,
       numberOfMachines: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
-
     def takeServers(servers: Seq[LibVirtServer]) = {
       val available = servers.length
       if (available < numberOfMachines)
@@ -37,11 +38,12 @@ class LibVirtInfrastructureProvider(
       else
         servers.take(numberOfMachines)
     }
-
-    for {
-      servers <- availableServers(profile)
-      machines <- createMachines(bootstrapAction, takeServers(servers))
-    } yield machines
+    createMachinesSequencer enqueue {
+      for {
+        servers <- availableServers(profile)
+        machines <- createMachines(bootstrapAction, takeServers(servers))
+      } yield machines
+    }
   }
 
   override def releaseMachines(machines: Seq[MachineState]): Future[Unit] =

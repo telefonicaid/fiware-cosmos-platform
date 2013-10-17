@@ -49,7 +49,7 @@ applyDownEvolutions.default=true
 auth.pdihub {
     enabled=true
     name="PDIHub"
-    class="es.tid.cosmos.api.oauth2.GitHubOAuthProvider"
+    class="es.tid.cosmos.api.auth.oauth2.GitHubOAuthProvider"
     client.id="<%= @pdihub_client_id %>"
     client.secret="<%= @pdihub_client_secret %>"
     auth.url="<%= @pdihub_base_url %>/login/oauth/"

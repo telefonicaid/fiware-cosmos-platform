@@ -2,10 +2,11 @@ name := "cosmos-platform"
 
 organization in ThisBuild := "es.tid.cosmos"
 
-scalaVersion in ThisBuild := "2.10.1"
+scalaVersion in ThisBuild := "2.10.2"
 
 resolvers in ThisBuild ++= Seq(
     DefaultMavenRepository,
+    "Cosmos Nexus Repository" at "http://cosmos10/nexus/content/groups/public/",
     "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
     Resolver.url("Play", url("http://download.playframework.org/ivy-releases/"))(Resolver.ivyStylePatterns)
 )

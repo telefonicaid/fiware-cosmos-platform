@@ -3,12 +3,12 @@ logLevel := Level.Warn
 
 resolvers += "Nexus" at "http://cosmos10.hi.inet/nexus/content/groups/public/"
 
-resolvers += Classpaths.typesafeResolver
+//resolvers += Classpaths.typesafeResolver
 
-resolvers += "scct-github-repository" at "http://mtkopone.github.com/scct/maven-repo"
+//resolvers += "scct-github-repository" at "http://mtkopone.github.com/scct/maven-repo"
 
-addSbtPlugin("reaktor" % "sbt-scct" % "0.2-SNAPSHOT")
+addSbtPlugin("com.github.scct" % "sbt-scct" % "0.2")
 
-addSbtPlugin("play" % "sbt-plugin" % "2.1.4")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.0")
 
-addSbtPlugin("com.github.shivawu" % "sbt-maven-plugin" % "0.1.2")
+addSbtPlugin("com.github.shivawu" % "sbt-maven-plugin" % "0.1.3-SNAPSHOT")

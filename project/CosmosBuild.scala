@@ -10,6 +10,7 @@
  */
 
 import sbt._
+import play.{Keys => PlayKeys}
 import com.github.shivawu.sbt.maven.MavenBuild
 
 object CosmosBuild extends Build {
@@ -26,14 +27,14 @@ object CosmosBuild extends Build {
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)
 
   lazy val root = (Project(id = "cosmos-platform", base = file("."))
-    settings(ScctPlugin.mergeReportSettings: _*)
+    settings(sbt.scct.ScctPlugin.mergeReportSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     aggregate(cosmosApi, serviceManager, ial, cosmosAdmin, common, platformTests)
   )
 
   lazy val common = (Project(id = "common", base = file("common"))
-    settings(ScctPlugin.instrumentSettings: _*)
+    settings(sbt.scct.ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(common_test % "compile->compile;test->test")
@@ -45,14 +46,14 @@ object CosmosBuild extends Build {
   )
 
   lazy val ial = (Project(id = "ial", base = file("ial"))
-    settings(ScctPlugin.instrumentSettings: _*)
+    settings(sbt.scct.ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(common, common_test % "compile->compile;test->test")
   )
 
   lazy val serviceManager = (Project(id = "service-manager", base = file("service-manager"))
-    settings(ScctPlugin.instrumentSettings: _*)
+    settings(sbt.scct.ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(ial, common_test % "compile->compile;test->test")
@@ -60,21 +61,21 @@ object CosmosBuild extends Build {
 
   lazy val cosmosApi = (play.Project("cosmos-api", POM.version, path = file("cosmos-api"),
                         dependencies = Seq(PlayKeys.anorm, PlayKeys.jdbc))
-    settings(ScctPlugin.instrumentSettings: _*)
+    settings(sbt.scct.ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(serviceManager)
   )
 
   lazy val cosmosAdmin = (Project(id = "cosmos-admin", base = file("cosmos-admin"))
-    settings(ScctPlugin.instrumentSettings: _*)
+    settings(sbt.scct.ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(cosmosApi, serviceManager, common)
   )
 
   lazy val platformTests = (Project(id = "platform-tests", base = file("tests/platform-tests"))
-    settings(ScctPlugin.instrumentSettings: _*)
+    settings(sbt.scct.ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(common_test % "compile->compile;test->test")

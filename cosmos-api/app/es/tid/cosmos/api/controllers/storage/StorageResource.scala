@@ -14,6 +14,7 @@ package es.tid.cosmos.api.controllers.storage
 import java.net.URI
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import com.wordnik.swagger.annotations.{ApiOperation, Api}
 import play.api.libs.json.Json

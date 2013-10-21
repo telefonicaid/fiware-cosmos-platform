@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import scala.language.implicitConversions
+
 import play.api.mvc.Session
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile

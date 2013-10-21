@@ -14,6 +14,7 @@ package es.tid.cosmos.admin
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits._
+import scala.language.postfixOps
 
 private[admin] object Util {
 

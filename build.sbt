@@ -4,6 +4,8 @@ organization in ThisBuild := "es.tid.cosmos"
 
 scalaVersion in ThisBuild := "2.10.1"
 
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
+
 resolvers in ThisBuild ++= Seq(
     DefaultMavenRepository,
     "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",

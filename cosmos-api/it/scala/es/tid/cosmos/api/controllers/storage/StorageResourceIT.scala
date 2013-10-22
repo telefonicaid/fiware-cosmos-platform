@@ -19,10 +19,12 @@ import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 
+import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 
-class StorageResourceIT extends FlatSpec with MustMatchers with OneInstancePerTest {
+class StorageResourceIT
+  extends FlatSpec with MustMatchers with OneInstancePerTest with MaintenanceModeBehaviors {
 
   val request = FakeRequest(GET, "/cosmos/v1/storage")
 
@@ -46,4 +48,6 @@ class StorageResourceIT extends FlatSpec with MustMatchers with OneInstancePerTe
     val result = route(request).get
     status(result) must be (UNAUTHORIZED)
   }
+
+  it must behave like resourceDisabledWhenUnderMaintenance(request)
 }

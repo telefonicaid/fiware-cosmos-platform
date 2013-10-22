@@ -21,14 +21,16 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
+import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.profile.{NamedKey, Registration, UserId}
 
-class UserResourceIT extends FlatSpec with MustMatchers {
+class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
 
+  val newUserId = UserId(id = "new_id", realm = MockAuthConstants.ProviderId)
   val publicKey = "ssh-rsa XXXXXX myhandle@host"
   val requestedHandle = "myhandle"
-  val newUserId = UserId(id = "new_id", realm = MockAuthConstants.ProviderId)
+  val resource = "/admin/v1/user"
   val validPayload = Json.obj(
     "authId" -> newUserId.id,
     "authRealm" -> newUserId.realm,
@@ -36,16 +38,19 @@ class UserResourceIT extends FlatSpec with MustMatchers {
     "sshPublicKey" -> publicKey
   )
   val validAuth = BasicAuth(MockAuthConstants.ProviderId, MockAuthConstants.AdminPassword)
-  
+
   def post(payload: JsObject, auth: Option[String] = Some(validAuth)): Future[SimpleResult] =
     post(payload.toString, auth)
 
   def post(payload: String, auth: Option[String]): Future[SimpleResult] = {
-    val request = FakeRequest(POST, "/admin/v1/user").withBody(payload)
+    val request = FakeRequest(POST, resource).withBody(payload)
     route(auth.map(a => request.withHeaders("Authorization" -> a)).getOrElse(request)).get
   }
 
-  "The user resource" must "register a new user when posted" in new WithTestApplication {
+  "The user resource" must behave like resourceDisabledWhenUnderMaintenance(
+    FakeRequest(POST, resource).withJsonBody(Json.obj()))
+
+  it must "register a new user when posted" in new WithTestApplication {
     val response = post(validPayload)
     status(response) must be (CREATED)
     val responseData = Json.parse(contentAsString(response))

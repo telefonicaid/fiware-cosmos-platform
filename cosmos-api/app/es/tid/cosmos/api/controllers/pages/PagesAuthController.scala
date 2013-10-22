@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.controllers.pages
 
-import play.api.mvc.{RequestHeader, Result, Controller}
+import play.api.mvc.{RequestHeader, SimpleResult, Controller}
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
@@ -32,9 +32,9 @@ trait PagesAuthController extends Controller {
    * @return                      Output of one or the actions or a redirection to the index
    */
   def withAuthentication(request: RequestHeader)(
-      whenRegistered: (OAuthUserProfile, CosmosProfile) => Result,
-      whenNotRegistered: OAuthUserProfile => Result,
-      whenNotAuthenticated: => Result): Result =
+      whenRegistered: (OAuthUserProfile, CosmosProfile) => SimpleResult,
+      whenNotRegistered: OAuthUserProfile => SimpleResult,
+      whenNotAuthenticated: => SimpleResult): SimpleResult =
     request.session.userProfile.map(userProfile =>
       dao.withTransaction { implicit c =>
         dao.lookupByUserId(userProfile.id)
@@ -51,7 +51,8 @@ trait PagesAuthController extends Controller {
    * @param f  Action to execute when the user is registered
    * @return                Result of whenRegistered or an appropriate redirection
    */
-  def whenRegistered(request: RequestHeader)(f: (OAuthUserProfile, CosmosProfile) => Result): Result =
+  def whenRegistered(
+      request: RequestHeader)(f: (OAuthUserProfile, CosmosProfile) => SimpleResult): SimpleResult =
     withAuthentication(request)(
       whenRegistered = f,
       whenNotRegistered = _ => Redirect(routes.Pages.registerForm()),

@@ -24,7 +24,8 @@ import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.auth.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.auth.oauth2._
 import es.tid.cosmos.api.controllers._
-import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage, JsonController}
+import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
+import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration}
 import es.tid.cosmos.platform.common.Wrapped
@@ -37,15 +38,18 @@ import views.AuthAlternative
 class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
-    val dao: CosmosProfileDao
-  ) extends JsonController with PagesAuthController {
+    val dao: CosmosProfileDao,
+    override val maintenanceStatus: MaintenanceStatus
+  ) extends JsonController with PagesAuthController with MaintenanceAwareController {
 
   def index = Action { implicit request =>
-    withAuthentication(request)(
-      whenRegistered = (_, _) => Redirect(routes.Pages.showProfile()),
-      whenNotRegistered = _ => Redirect(routes.Pages.registerForm()),
-      whenNotAuthenticated = landingPage
-    )
+    unlessPageUnderMaintenance {
+      withAuthentication(request)(
+        whenRegistered = (_, _) => Redirect(routes.Pages.showProfile()),
+        whenNotRegistered = _ => Redirect(routes.Pages.registerForm()),
+        whenNotAuthenticated = landingPage
+      )
+    }
   }
 
   def swaggerUI = Action { implicit request =>
@@ -76,48 +80,54 @@ class Pages(
       def reportUnknownProvider = NotFound(Json.toJson(
         ErrorMessage(s"Unknown authorization provider $providerId")))
 
-      multiAuthProvider.oauthProviders.get(providerId).map(oauthClient =>
-        (maybeCode, maybeError.flatMap(OAuthError.parse)) match {
-          case (_, Some(error)) => Future.successful(reportAuthError(error))
-          case (Some(code), _) => authorizeCode(oauthClient, code)
-          case _ => Future.successful(reportMissingAuthCode)
-        }
-      ).getOrElse(Future.successful(reportUnknownProvider))
+      unlessPageUnderMaintenance {
+        multiAuthProvider.oauthProviders.get(providerId).map(oauthClient =>
+          (maybeCode, maybeError.flatMap(OAuthError.parse)) match {
+            case (_, Some(error)) => Future.successful(reportAuthError(error))
+            case (Some(code), _) => authorizeCode(oauthClient, code)
+            case _ => Future.successful(reportMissingAuthCode)
+          }
+        ).getOrElse(Future.successful(reportUnknownProvider))
+      }
     }
 
   def registerForm = Action { implicit request =>
-    withAuthentication(request)(
-      whenRegistered = (_, _) => redirectToIndex,
-      whenNotRegistered = userProfile => registrationPage(userProfile, RegistrationForm()),
-      whenNotAuthenticated = redirectToIndex
-    )
+    unlessPageUnderMaintenance {
+      withAuthentication(request)(
+        whenRegistered = (_, _) => redirectToIndex,
+        whenNotRegistered = userProfile => registrationPage(userProfile, RegistrationForm()),
+        whenNotAuthenticated = redirectToIndex
+      )
+    }
   }
 
   def registerUser = Action { implicit request =>
-    withAuthentication(request)(
-      whenRegistered = (_, _) => redirectToIndex,
-      whenNotAuthenticated = redirectToIndex,
-      whenNotRegistered = userProfile => dao.withTransaction { implicit c =>
+    unlessResourceUnderMaintenance {
+      withAuthentication(request)(
+        whenRegistered = (_, _) => redirectToIndex,
+        whenNotAuthenticated = redirectToIndex,
+        whenNotRegistered = userProfile => dao.withTransaction { implicit c =>
 
-        val validatedForm = {
-          val form = RegistrationForm().bindFromRequest()
-          form.data.get("handle") match {
-            case Some(handle) if dao.handleExists(handle) =>
-              form.withError("handle", s"'$handle' is already taken")
-            case _ => form
+          val validatedForm = {
+            val form = RegistrationForm().bindFromRequest()
+            form.data.get("handle") match {
+              case Some(handle) if dao.handleExists(handle) =>
+                form.withError("handle", s"'$handle' is already taken")
+              case _ => form
+            }
           }
+
+          validatedForm.fold(
+            formWithErrors => registrationPage(userProfile, formWithErrors),
+            registration => {
+              val cosmosProfile = dao.registerUserInDatabase(userProfile.id, registration)
+              serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
+              redirectToIndex
+            }
+          )
         }
-
-        validatedForm.fold(
-          formWithErrors => registrationPage(userProfile, formWithErrors),
-          registration => {
-            val cosmosProfile = dao.registerUserInDatabase(userProfile.id, registration)
-            serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
-            redirectToIndex
-          }
-        )
-      }
-    )
+      )
+    }
   }
 
   private def registrationPage(profile: OAuthUserProfile, form: Form[Registration]) = {
@@ -136,16 +146,20 @@ class Pages(
     Ok(views.html.landingPage(authAlternatives))
 
   def showProfile = Action { implicit request =>
-    whenRegistered(request) { (userProfile, _) =>
-      dao.withTransaction { implicit c =>
-        Ok(views.html.profile(userProfile, dao.lookupByUserId(userProfile.id).get))
+    unlessPageUnderMaintenance {
+      whenRegistered(request) { (userProfile, _) =>
+        dao.withTransaction { implicit c =>
+          Ok(views.html.profile(userProfile, dao.lookupByUserId(userProfile.id).get))
+        }
       }
     }
   }
 
   def customGettingStarted = Action { implicit request =>
-    whenRegistered(request) { (_, cosmosProfile) =>
-      Ok(views.html.gettingStarted(cosmosProfile))
+    unlessPageUnderMaintenance {
+      whenRegistered(request) { (_, cosmosProfile) =>
+        Ok(views.html.gettingStarted(cosmosProfile))
+      }
     }
   }
 

@@ -24,7 +24,7 @@ import es.tid.cosmos.api.controllers.pages.{WithSampleSessions, CosmosSession}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 
-class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
+class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
 
   "The index page" must "show the landing page with auth links for unauthorized users" in
     new WithSampleSessions {
@@ -33,6 +33,8 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
       contentAsString(landingPage) must include ("id=\"auth-selector\"")
       authenticationUrl(contentAsString(landingPage)) must be ('defined)
     }
+
+  it must behave like pageDisabledWhenUnderMaintenance(FakeRequest(GET, "/"))
 
   it must "redirect to the registration form for the unregistered users" in new WithSampleSessions {
     unregUser.doRequest("/") must redirectTo ("/register")
@@ -46,6 +48,9 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
     new WithSampleSessions {
       unauthUser.doRequest("/register") must redirectTo ("/")
     }
+
+  it must behave like pageDisabledWhenUnderMaintenance(FakeRequest(GET, "/register"))
+  it must behave like resourceDisabledWhenUnderMaintenance(FakeRequest(POST, "/register"))
 
   it must "show the registration page to the unregistered users" in new WithSampleSessions {
     val registrationPage = unregUser.doRequest("/register")
@@ -103,6 +108,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
   }
 
   it must behave like pageForRegistreredUsers("/profile")
+  it must behave like pageDisabledWhenUnderMaintenance(FakeRequest(GET, "/profile"))
 
   "The getting started page" must "show a personalized getting started tutorial" in
     new WithSampleSessions {
@@ -113,6 +119,10 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
     }
 
   it must behave like pageForRegistreredUsers("/getting-started")
+  it must behave like pageDisabledWhenUnderMaintenance(FakeRequest(GET, "/getting-started"))
+
+  "The OAuth authorization resource" must behave like
+    pageDisabledWhenUnderMaintenance(FakeRequest(GET, "/auth/provider"))
 
   "A registered user" must "be authenticated after OAuth redirection" in
     new WithTestApplication {

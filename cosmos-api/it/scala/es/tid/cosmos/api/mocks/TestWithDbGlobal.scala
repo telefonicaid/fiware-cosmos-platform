@@ -13,6 +13,7 @@ package es.tid.cosmos.api.mocks
 
 import es.tid.cosmos.api.AbstractGlobal
 import es.tid.cosmos.api.controllers.Application
+import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
 import es.tid.cosmos.api.profile.PlayDbCosmosProfileDaoComponent
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
@@ -24,4 +25,5 @@ class TestWithDbGlobal extends AbstractGlobal(new Application
   with MockMultiAuthProviderComponent
   with PlayDbCosmosProfileDaoComponent
   with MockedServiceManagerComponent
-  with ApplicationConfigComponent)
+  with ApplicationConfigComponent
+  with InMemoryMaintenanceStatusComponent)

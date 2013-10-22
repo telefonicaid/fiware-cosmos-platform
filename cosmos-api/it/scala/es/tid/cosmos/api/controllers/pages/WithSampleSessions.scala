@@ -12,8 +12,9 @@
 package es.tid.cosmos.api.controllers.pages
 
 import scala.Some
+import scala.concurrent.Future
 
-import play.api.mvc.{Result, Session}
+import play.api.mvc.{SimpleResult, Session}
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
 import play.api.libs.json.JsValue
@@ -31,13 +32,13 @@ trait WithSampleSessions extends WithTestApplication {
     def request(path: String, method: String = GET) =
       FakeRequest(method, path).withSession(session.data.toSeq: _*)
 
-    def doRequest(path: String, method: String = GET): Result =
+    def doRequest(path: String, method: String = GET): Future[SimpleResult] =
       route(request(path, method)).get
 
-    def submitForm(path: String, fields: (String, String)*): Result =
+    def submitForm(path: String, fields: (String, String)*): Future[SimpleResult] =
       route(request(path, POST).withFormUrlEncodedBody(fields: _*)).get
 
-    def submitJson(path: String, body: JsValue, method: String = POST): Result =
+    def submitJson(path: String, body: JsValue, method: String = POST): Future[SimpleResult] =
       route(request(path, method).withJsonBody(body)).get
   }
 

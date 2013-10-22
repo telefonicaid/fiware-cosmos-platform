@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.controllers.common
 
+import scala.concurrent.Future
+
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.mvc._
@@ -32,7 +34,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     }
   }
 
-  def action(dao: CosmosProfileDao, request: Request[AnyContent]): Result =
+  def action(dao: CosmosProfileDao, request: Request[AnyContent]): Future[SimpleResult] =
     new TestController(dao).index().apply(request)
 
   val request: Request[AnyContent] = FakeRequest(GET, "/some/path")

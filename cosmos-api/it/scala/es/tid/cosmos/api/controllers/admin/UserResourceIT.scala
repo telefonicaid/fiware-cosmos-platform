@@ -11,10 +11,12 @@
 
 package es.tid.cosmos.api.controllers.admin
 
+import scala.concurrent.Future
+
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{HavePropertyMatchResult, HavePropertyMatcher, MustMatchers}
 import play.api.libs.json.{Reads, JsValue, JsObject, Json}
-import play.api.mvc.Result
+import play.api.mvc.SimpleResult
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
@@ -35,10 +37,10 @@ class UserResourceIT extends FlatSpec with MustMatchers {
   )
   val validAuth = BasicAuth(MockAuthConstants.ProviderId, MockAuthConstants.AdminPassword)
   
-  def post(payload: JsObject, auth: Option[String] = Some(validAuth)): Result =
+  def post(payload: JsObject, auth: Option[String] = Some(validAuth)): Future[SimpleResult] =
     post(payload.toString, auth)
 
-  def post(payload: String, auth: Option[String]): Result = {
+  def post(payload: String, auth: Option[String]): Future[SimpleResult] = {
     val request = FakeRequest(POST, "/admin/v1/user").withBody(payload)
     route(auth.map(a => request.withHeaders("Authorization" -> a)).getOrElse(request)).get
   }

@@ -1,13 +1,13 @@
 // Comment to get more information during initialization
 logLevel := Level.Warn
 
-resolvers += "Nexus" at "http://cosmos10.hi.inet/nexus/content/groups/public/"
+resolvers ++= Seq(
+  "Cosmos Nexus Repository" at "http://cosmos10.hi.inet/nexus/content/groups/public/",
+  "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
+)
 
-//resolvers += Classpaths.typesafeResolver
-
-//resolvers += "scct-github-repository" at "http://mtkopone.github.com/scct/maven-repo"
-
-addSbtPlugin("com.github.scct" % "sbt-scct" % "0.2")
+// SNAPSHOT version has fix of including test resources
+addSbtPlugin("com.github.scct" % "sbt-scct" % "0.3-SNAPSHOT")
 
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.0")
 

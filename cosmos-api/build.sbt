@@ -5,7 +5,7 @@ classpathTypes ~= (_ + "orbit")
 
 libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.0.4",
-  "com.wordnik" %% "swagger-play2" % "1.2.5" exclude("org.scala-stm", "scala-stm_2.10.0"),
+  "com.wordnik" %% "swagger-play2" % "1.2.6-SNAPSHOT",
   "net.databinder.dispatch" %% "dispatch-core" % "0.10.0",
   "mysql" % "mysql-connector-java" % "5.1.10",
   "org.scala-stm" %% "scala-stm" % "0.7" % "it",

@@ -11,10 +11,11 @@
 
 package es.tid.cosmos.api.controllers
 
+import scala.language.reflectiveCalls
+
 import org.apache.commons.lang3.StringEscapeUtils
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 

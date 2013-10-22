@@ -14,6 +14,7 @@ package es.tid.cosmos.servicemanager
 import java.net.URI
 import scala.concurrent.{Future, promise}
 import scala.concurrent.duration._
+import scala.language.{postfixOps, reflectiveCalls}
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

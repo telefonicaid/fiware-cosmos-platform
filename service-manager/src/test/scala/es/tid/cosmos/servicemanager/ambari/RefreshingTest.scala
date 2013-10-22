@@ -16,6 +16,7 @@ import scala.concurrent.promise
 import scala.concurrent.Future._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.postfixOps
 
 import com.ning.http.client.Request
 import dispatch.StatusCode

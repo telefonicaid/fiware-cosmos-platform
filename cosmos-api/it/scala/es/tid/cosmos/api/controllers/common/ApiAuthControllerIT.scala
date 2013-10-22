@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.controllers.common
 
 import scala.concurrent.Future
+import scala.language.reflectiveCalls
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

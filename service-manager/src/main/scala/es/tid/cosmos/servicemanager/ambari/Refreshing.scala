@@ -15,6 +15,7 @@ import java.net.URI
 import scala.concurrent.{blocking, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import com.typesafe.scalalogging.slf4j.Logging
 import dispatch.StatusCode

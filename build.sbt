@@ -4,6 +4,8 @@ organization in ThisBuild := "es.tid.cosmos"
 
 scalaVersion in ThisBuild := "2.10.2"
 
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
+
 resolvers in ThisBuild ++= Seq(
     DefaultMavenRepository,
     "Cosmos Nexus Repository" at "http://cosmos10/nexus/content/groups/public/",

@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api
 
+import scala.language.implicitConversions
+
 import es.tid.cosmos.api.controllers.profile.UserProfile
 import es.tid.cosmos.api.profile.CosmosProfile
 import es.tid.cosmos.servicemanager.ClusterUser

@@ -16,6 +16,7 @@ import scala.annotation.tailrec
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.language.postfixOps
 import scala.util.control.NonFatal
 
 case class TcpServer(host: String, port: Int) {

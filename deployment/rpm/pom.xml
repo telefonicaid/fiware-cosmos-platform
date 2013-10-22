@@ -28,7 +28,7 @@
                         <configuration>
                             <tasks>
                                 <echo message="Unzipping Cosmos API dist ZIP" />
-                                <unzip src="../../cosmos-api/dist/cosmos-api-${project.version}.zip" dest="target/" />
+                                <unzip src="../../cosmos-api/target/universal/cosmos-api-${project.version}.zip" dest="target/" />
                             </tasks>
                         </configuration>
                         <goals>
@@ -120,22 +120,25 @@
                             <sources>
                                 <source>
                                     <location>target/cosmos-api-${project.version}</location>
+                                    <excludes>
+                                        <exclude>target/cosmos-api-${project.version}/bin</exclude>
+                                    </excludes>
                                 </source>
                             </sources>
                         </mapping>
                         <mapping>
-                            <directory>/opt/pdi-cosmos/cosmos-api</directory>
+                            <directory>/opt/pdi-cosmos/cosmos-api/bin</directory>
                             <filemode>750</filemode>
                             <username>root</username>
                             <groupname>root</groupname>
                             <sources>
                                 <source>
-                                    <location>target/cosmos-api-${project.version}/start</location>
+                                    <location>target/cosmos-api-${project.version}/bin/cosmos-api</location>
                                 </source>
                             </sources>
                         </mapping>
                         <mapping>
-                            <directory>/etc/init.d/</directory>
+                            <directory>/etc/init.d</directory>
                             <directoryIncluded>false</directoryIncluded>
                             <filemode>750</filemode>
                             <username>root</username>

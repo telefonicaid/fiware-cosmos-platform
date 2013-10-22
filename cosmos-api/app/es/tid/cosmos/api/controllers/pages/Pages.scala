@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import scala.concurrent.Future
+
 import dispatch.{Future => _, _}, Defaults._
 import play.Logger
 import play.api.data.Form
@@ -51,9 +53,9 @@ class Pages(
   }
 
   def authorize(providerId: String, maybeCode: Option[String], maybeError: Option[String]) =
-    Action { implicit request =>
+    Action.async { implicit request =>
 
-      def authorizeCode(oauthClient: OAuthProvider, code: String) = Async {
+      def authorizeCode(oauthClient: OAuthProvider, code: String) =
         (for {
           token <- oauthClient.requestAccessToken(code)
           userProfile <- oauthClient.requestUserProfile(token)
@@ -65,7 +67,6 @@ class Pages(
           case ex@OAuthException(_, _) => unauthorizedPage(ex)
           case Wrapped(Wrapped(ex: OAuthException)) => unauthorizedPage(ex)
         }
-      }
 
       def reportAuthError(error: OAuthError.OAuthError) = unauthorizedPage(OAuthException(error,
         "OAuth provider redirected with an error code instead of an authorization code"))
@@ -77,11 +78,11 @@ class Pages(
 
       multiAuthProvider.oauthProviders.get(providerId).map(oauthClient =>
         (maybeCode, maybeError.flatMap(OAuthError.parse)) match {
-          case (_, Some(error)) => reportAuthError(error)
+          case (_, Some(error)) => Future.successful(reportAuthError(error))
           case (Some(code), _) => authorizeCode(oauthClient, code)
-          case _ => reportMissingAuthCode
+          case _ => Future.successful(reportMissingAuthCode)
         }
-      ).getOrElse(reportUnknownProvider)
+      ).getOrElse(Future.successful(reportUnknownProvider))
     }
 
   def registerForm = Action { implicit request =>

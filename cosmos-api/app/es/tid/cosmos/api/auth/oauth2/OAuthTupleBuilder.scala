@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.auth.oauth2
 
+import scala.language.implicitConversions
+
 import com.ning.http.client.{AsyncCompletionHandler, Response, Request, RequestBuilder}
 import dispatch.StatusCode
 

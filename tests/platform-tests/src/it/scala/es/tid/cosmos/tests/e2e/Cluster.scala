@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.tests.e2e
 
+import scala.language.postfixOps
 import scala.sys.process._
 
 import net.liftweb.json.parse

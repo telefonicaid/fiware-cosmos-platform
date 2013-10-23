@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException
 import scala.collection.JavaConversions
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec}

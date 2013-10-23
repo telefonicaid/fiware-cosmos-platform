@@ -18,6 +18,7 @@ import scala.concurrent.Future
 import scala.concurrent.Future.successful
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import org.mockito.ArgumentMatcher
 import org.mockito.BDDMockito.given

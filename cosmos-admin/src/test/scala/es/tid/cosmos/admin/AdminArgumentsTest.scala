@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.admin
 
+import scala.language.reflectiveCalls
+
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 

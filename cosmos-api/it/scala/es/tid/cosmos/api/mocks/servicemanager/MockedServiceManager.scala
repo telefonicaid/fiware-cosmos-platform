@@ -17,6 +17,7 @@ import scala.concurrent._
 import scala.concurrent.duration._
 import scala.concurrent.Future.successful
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
 import es.tid.cosmos.servicemanager._

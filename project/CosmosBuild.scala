@@ -10,6 +10,7 @@
  */
 
 import sbt._
+import play.{Keys => PlayKeys}
 import com.github.shivawu.sbt.maven.MavenBuild
 
 object CosmosBuild extends Build {

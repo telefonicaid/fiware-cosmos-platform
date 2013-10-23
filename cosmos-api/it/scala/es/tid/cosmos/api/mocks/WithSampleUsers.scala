@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.mocks
 
+import scala.language.implicitConversions
+
 import org.specs2.execute.{Result, AsResult}
 import play.api.test.FakeRequest
 

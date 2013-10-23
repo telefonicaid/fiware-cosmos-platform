@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.controllers.profile
 
+import scala.language.reflectiveCalls
+
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.test._

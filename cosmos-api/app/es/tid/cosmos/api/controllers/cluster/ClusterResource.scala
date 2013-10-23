@@ -24,7 +24,8 @@ import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{CosmosProfile, ClusterAssignment, CosmosProfileDao}
-import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
+import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 
 /**
  * Resource that represents a single cluster.

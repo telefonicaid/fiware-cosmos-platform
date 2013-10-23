@@ -33,27 +33,51 @@ import es.tid.cosmos.servicemanager.{ServiceError, RequestException}
  * @param password  the password used for authentication
  */
 private[ambari] class AmbariServer(serverUrl: String, port: Int, username: String, password: String)
-  extends ClusterProvisioner with RequestProcessor with BootstrapRequestHandlerFactory {
+  extends RequestProcessor with BootstrapRequestHandlerFactory {
   implicit private val formats = DefaultFormats
 
   private[this] def baseUrl = host(serverUrl, port).as_!(username, password) / "api" / "v1"
 
-  override def listClusterNames: Future[Seq[String]] =
+  /**
+   * Get a list of the names of the existing, managed clusters.
+   *
+   * @return the future of the list of names
+   */
+  def listClusterNames: Future[Seq[String]] =
     performRequest(baseUrl / "clusters").map(json => as.FlatValues(json, "items", "cluster_name"))
 
-  override def getCluster(id: String): Future[Cluster] =
+  /**
+   * Get the cluster specified by the given name.
+   *
+   * @param id the id of the cluster
+   * @return the future of the cluster iff found
+   */
+  def getCluster(id: String): Future[Cluster] =
     performRequest(baseUrl / "clusters" / id).map(new Cluster(_, baseUrl.build))
 
-  override def createCluster(name: String, version: String): Future[Cluster] =
+  /**
+   * Create a cluster.
+   *
+   * @param name the cluster's name
+   * @param version the version of the Ambari Service stack, e.g. `"HDP-1.2.0"`
+   * @return the future of the created cluster
+   */
+  def createCluster(name: String, version: String): Future[Cluster] =
     performRequest(baseUrl / "clusters" / name << s"""{"Clusters": {"version": "$version"}}""")
       .flatMap(_ => getCluster(name))
 
-  override def removeCluster(name: String): Future[Unit] =
+  /**
+   * Remove the specified cluster.
+   *
+   * @param name the cluster's name
+   * @return the future of the cluster removal
+   */
+  def removeCluster(name: String): Future[Unit] =
     performRequest(baseUrl.DELETE / "clusters" / name).map(_ => ())
 
   private val bootstrapSequencer = new SequentialOperations
   private def performBootstrapAction(
-      hostnames: Seq[String],
+      hostnames: Set[String],
       sshKey: String,
       builderWithMethod: RequestBuilder): Future[Unit] = {
     val configuredBuilder = (builderWithMethod / "bootstrap")
@@ -79,12 +103,21 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
     }
   }
 
-  override def bootstrapMachines(hostnames: Seq[String], sshKey: String): Future[Unit] =
+  /**
+   * Installs and launches Ambari agent
+   */
+  def bootstrapMachines(hostnames: Set[String], sshKey: String): Future[Unit] =
     performBootstrapAction(hostnames, sshKey, baseUrl.POST)
 
-  override def teardownMachines(hostnames: Seq[String], sshKey: String): Future[Unit] =
+  /**
+   * Stops and unregisters Ambari agent from Ambari server
+   */
+  def teardownMachines(hostnames: Set[String], sshKey: String): Future[Unit] =
     performBootstrapAction(hostnames, sshKey, baseUrl.DELETE)
 
-  override def registeredHostnames: Future[Seq[String]] =
-    performRequest(baseUrl / "hosts").map(json => as.FlatValues(json, "items", "host_name"))
+  /**
+   * Returns the list of hostnames that are registered in Ambari server
+   */
+  def registeredHostnames: Future[Set[String]] =
+    performRequest(baseUrl / "hosts").map(json => as.FlatValues(json, "items", "host_name").toSet)
 }

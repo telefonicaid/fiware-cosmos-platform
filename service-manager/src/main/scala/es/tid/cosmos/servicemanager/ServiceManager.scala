@@ -12,12 +12,13 @@
 package es.tid.cosmos.servicemanager
 
 import scala.concurrent.Future
+import es.tid.cosmos.servicemanager.clusters.{ImmutableClusterDescription, ClusterId}
 
 /**
  * Cluster manager that allows cluster creation, termination as well as
  * querying about the state of a managed cluster.
  */
-trait ServiceManager extends Refreshable {
+trait ServiceManager {
 
   type ServiceDescriptionType <: ServiceDescription
 
@@ -51,7 +52,7 @@ trait ServiceManager extends Refreshable {
    * @param id the ID of the cluster
    * @return the description of the cluster and it state iff found
    */
-  def describeCluster(id: ClusterId): Option[ClusterDescription]
+  def describeCluster(id: ClusterId): Option[ImmutableClusterDescription]
 
   /**
    * Terminate an existing cluster.
@@ -73,7 +74,7 @@ trait ServiceManager extends Refreshable {
   /**
    * Obtain information of the persistent HDFS cluster's state.
    */
-  def describePersistentHdfsCluster(): Option[ClusterDescription]
+  def describePersistentHdfsCluster(): Option[ImmutableClusterDescription]
 
   /**
    * Terminates the persistent HDFS cluster.

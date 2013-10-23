@@ -58,12 +58,12 @@ object MySqlConnDetails {
 
   def fromConfig(c: Config) =
     MySqlConnDetails(
-      host = c.getString("ial.db.host"),
-      port = c.withFallback(ConfigValueFactory.fromAnyRef(DefaultPort, "ial.db.port"))
-        .getInt("ial.db.port"),
-      username = c.getString("ial.db.username"),
-      password = c.getString("ial.db.password"),
-      dbName = c.getString("ial.db.name")
+      host = c.getString("db.default.host"),
+      port = c.withFallback(ConfigValueFactory.fromAnyRef(DefaultPort, "db.default.port"))
+        .getInt("db.default.port"),
+      username = c.getString("db.default.user"),
+      password = c.getString("db.default.pass"),
+      dbName = c.getString("db.default.name")
     )
 }
 

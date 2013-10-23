@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.clusters
 
 sealed trait ClusterState {
   val name: String
@@ -36,7 +36,13 @@ case object Terminated extends ClusterState {
   val descLine: String = "The cluster no longer exists"
 }
 
-case class Failed(reason: Throwable) extends ClusterState {
+case class Failed(reason: String) extends ClusterState {
+
+  val name: String = Failed.name
+  val descLine: String = s"A cluster operation has failed: $reason"
+}
+
+object Failed {
+  def apply(reason: Throwable): Failed = Failed(reason.getMessage)
   val name: String = "failed"
-  val descLine: String = s"A cluster operation has failed: ${reason.getMessage}"
 }

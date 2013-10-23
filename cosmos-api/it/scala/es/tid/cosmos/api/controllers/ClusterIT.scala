@@ -20,9 +20,9 @@ import play.api.test.Helpers._
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.controllers.ResultMatchers.failWith
-import es.tid.cosmos.servicemanager.{Terminating, Terminated, ClusterId}
 import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.{MockedServiceManagerComponent, MockedServiceManager}
+import es.tid.cosmos.servicemanager.clusters.{Terminated, Terminating, ClusterId}
 
 class ClusterIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
@@ -35,23 +35,23 @@ class ClusterIT
       "href" -> s"http://$resourcePath",
       "id" -> MockedServiceManager.DefaultClusterId.toString,
       "name" -> "cluster0",
-      "size" -> 100,
+      "size" -> 10,
       "state" -> "running",
       "stateDescription" -> "Cluster is ready",
       "master" -> Json.obj(
         "hostname" -> "fakeHostname",
         "ipAddress" -> "fakeAddress"
       ),
-      "slaves" -> Json.arr(Json.obj(
-        "hostname" -> "fakeHostname",
-        "ipAddress" -> "fakeAddress"
+      "slaves" -> (1 to 9).map(i => Json.obj(
+        "hostname" -> s"fakeHostname$i",
+        "ipAddress" -> s"fakeAddress$i"
       ))
     )
   val partialDescription = Json.obj(
     "href" -> s"http://$provisioningResourcePath",
     "id" -> MockedServiceManager.InProgressClusterId.toString,
     "name" -> "clusterInProgress",
-    "size" -> 100,
+    "size" -> 10,
     "state" -> "provisioning",
     "stateDescription" -> "Cluster is acquiring and configuring resources"
   )

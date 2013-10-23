@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
-import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.clusters._
 
 /**
  * Sort ClusterReferences by state and then by name

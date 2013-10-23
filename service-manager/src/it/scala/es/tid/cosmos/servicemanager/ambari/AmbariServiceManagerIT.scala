@@ -15,6 +15,7 @@ import scala.annotation.tailrec
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scala.util.Try
 
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
@@ -23,6 +24,8 @@ import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
+import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
   with FakeInfrastructureProviderComponent {
@@ -42,14 +45,24 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
   var sm: AmbariServiceManager = null
 
   before {
+    val db = new MySqlDatabase(MySqlConnDetails("localhost", 3306, "root", "", "smtest"))
+    val dao = new SqlClusterDao(db)
+    before  {
+      dao.newTransaction {
+        Try {
+          dao.drop
+        }
+        dao.create
+      }
+    }
+    val ambariServer = new AmbariServer("10.95.161.137", 8080, "admin", "admin")
     sm = new AmbariServiceManager(
-      new AmbariServer("10.95.161.137", 8080, "admin", "admin"), infrastructureProvider,
-      initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds, ClusterId("hdfs"),
-      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1))
-  }
-
-  after {
-    sm.close()
+      ambariServer, infrastructureProvider,
+      ClusterId("hdfs"), HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1),
+      new AmbariClusterDao(
+        new SqlClusterDao(db),
+        ambariServer,
+        AmbariServiceManager.allServices))
   }
 
   "Ambari server" must "create and terminate cluster" taggedAs HasExternalDependencies in {

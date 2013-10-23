@@ -16,7 +16,8 @@ import scala.language.reflectiveCalls
 import org.rogach.scallop.ScallopConf
 
 import es.tid.cosmos.api.profile.PlayDbCosmosProfileDao
-import es.tid.cosmos.servicemanager.{ClusterId, ServiceManager}
+import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
 

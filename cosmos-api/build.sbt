@@ -5,7 +5,8 @@ classpathTypes ~= (_ + "orbit")
 
 libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.0.4",
-  "com.wordnik" %% "swagger-play2" % "1.2.6-SNAPSHOT",
+  // TODO: Taken from SNAPSHOT to work with Play 2.2.0. Replace with released version once available
+  "com.wordnik" %% "swagger-play2" % "1.2.6-Cosmos",
   "net.databinder.dispatch" %% "dispatch-core" % "0.10.0",
   "mysql" % "mysql-connector-java" % "5.1.10",
   "org.scala-stm" %% "scala-stm" % "0.7" % "it",

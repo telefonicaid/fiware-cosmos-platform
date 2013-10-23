@@ -13,20 +13,20 @@ package es.tid.cosmos.api.controllers.common
 
 import play.api.data.validation.ValidationError
 import play.api.libs.json._
-import play.api.mvc.{Action, Controller, Request, Result}
+import play.api.mvc.{Action, Controller, Request, SimpleResult}
 
 /**
  * JSON consuming controller.
  */
 trait JsonController extends Controller {
-  def JsonBodyAction[Payload: Reads](f: (Request[JsValue], Payload) => Result): Action[JsValue] =
+  def JsonBodyAction[Payload: Reads](f: (Request[JsValue], Payload) => SimpleResult): Action[JsValue] =
     Action(parse.tolerantJson) { request =>
       Json.fromJson[Payload](request.body).fold(
         invalid = formatErrors,
         valid = payload => f(request, payload))
     }
 
-  def whenValid[Payload: Reads](json: JsValue)(f: Payload => Result): Result =
+  def whenValid[Payload: Reads](json: JsValue)(f: Payload => SimpleResult): SimpleResult =
     Json.fromJson[Payload](json).fold(invalid = formatErrors, valid = f)
 
   private def formatErrors(errorsByPath: Seq[(JsPath, Seq[ValidationError])]) = {

@@ -17,7 +17,7 @@ import scalaz.{Success, Failure}
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
-import play.api.mvc.{Headers, Result, Action}
+import play.api.mvc.{Action, Headers, SimpleResult}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers._
@@ -33,8 +33,9 @@ import es.tid.cosmos.servicemanager.ServiceManager
 class UserResource(
     multiUserProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
-    dao: CosmosProfileDao
-  ) extends JsonController {
+    dao: CosmosProfileDao,
+    override val maintenanceStatus: MaintenanceStatus
+  ) extends JsonController with MaintenanceAwareController {
 
   private type Conn = dao.Conn
 
@@ -49,27 +50,30 @@ class UserResource(
     new ApiError(code = 400, reason = "Invalid JSON payload"),
     new ApiError(code = 409, reason = "Already existing handle"),
     new ApiError(code = 409, reason = "Already existing credentials"),
-    new ApiError(code = 500, reason = "Account creation failed")
+    new ApiError(code = 500, reason = "Account creation failed"),
+    new ApiError(code = 503, reason = "Service is under maintenance")
   ))
   @ApiParamsImplicit(Array(
     new ApiParamImplicit(paramType = "body",
       dataType = "es.tid.cosmos.api.controllers.admin.RegisterUserParams")
   ))
   def register = Action(parse.tolerantJson) { request =>
-    whenValid[RegisterUserParams](request.body) { params =>
-      withAdminCredsFor(params.authRealm, request.headers) {
-        dao.withTransaction { implicit c =>
-          (for {
-            userId <- uniqueUserId(params)
-            handle <- selectHandle(params.handle)
-          } yield createUserAccount(userId, handle, params.sshPublicKey)).fold(
-            fail = message => Conflict(Json.toJson(message)),
-            succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
-              handle = cosmosProfile.handle,
-              apiKey = cosmosProfile.apiCredentials.apiKey,
-              apiSecret = cosmosProfile.apiCredentials.apiSecret
-            )))
-          )
+    unlessResourceUnderMaintenance {
+      whenValid[RegisterUserParams](request.body) { params =>
+        withAdminCredsFor(params.authRealm, request.headers) {
+          dao.withTransaction { implicit c =>
+            (for {
+              userId <- uniqueUserId(params)
+              handle <- selectHandle(params.handle)
+            } yield createUserAccount(userId, handle, params.sshPublicKey)).fold(
+              fail = message => Conflict(Json.toJson(message)),
+              succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
+                handle = cosmosProfile.handle,
+                apiKey = cosmosProfile.apiCredentials.apiKey,
+                apiSecret = cosmosProfile.apiCredentials.apiSecret
+              )))
+            )
+          }
         }
       }
     }
@@ -88,7 +92,7 @@ class UserResource(
     else Success(userId)
   }
 
-  private def withAdminCredsFor(targetRealm: String, headers: Headers)(action: => Result) =
+  private def withAdminCredsFor(targetRealm: String, headers: Headers)(action: => SimpleResult) =
     headers.get("Authorization") match {
       case Some(BasicAuth(`targetRealm`, password))
         if canRegisterUsers(targetRealm, password) => action

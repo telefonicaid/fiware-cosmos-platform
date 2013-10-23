@@ -23,17 +23,22 @@ import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.servicemanager.ClusterId
 import es.tid.cosmos.servicemanager.ambari.services.Hdfs
 
-class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
+class ClustersIT
+  extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
 
   val validCreationParams = Json.toJson(CreateClusterParams("cluster_new", 120, Seq(Hdfs.name)))
   val inValidCreationParams = Json.obj("invalid" -> "json")
   val resourcePath = "/cosmos/v1/cluster"
+  val listClusters = FakeRequest(GET, resourcePath)
+  val createCluster = FakeRequest(POST, resourcePath).withJsonBody(validCreationParams)
 
-  "Cluster listing" must behave like
-    rejectingUnauthenticatedRequests(FakeRequest(GET, resourcePath))
+  "Cluster listing" must behave like rejectingUnauthenticatedRequests(listClusters)
 
-  "Cluster creation" must behave like rejectingUnauthenticatedRequests(
-    FakeRequest(POST, resourcePath).withJsonBody(validCreationParams))
+  it must behave like resourceDisabledWhenUnderMaintenance(listClusters)
+
+  "Cluster creation" must behave like rejectingUnauthenticatedRequests(createCluster)
+
+  it must behave like resourceDisabledWhenUnderMaintenance(createCluster)
 
   "The clusters resource" must "list user clusters" in new WithSampleUsers {
     dao.withConnection { implicit c =>
@@ -41,7 +46,7 @@ class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
       val otherCluster = ClusterId()
       dao.assignCluster(ownCluster, user1.id)
       dao.assignCluster(otherCluster, user2.id)
-      val resource = route(FakeRequest(GET, resourcePath).authorizedBy(user1)).get
+      val resource = route(listClusters.authorizedBy(user1)).get
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)
@@ -65,9 +70,7 @@ class ClustersIT extends FlatSpec with MustMatchers with AuthBehaviors {
   }
 
   it must "start a new cluster if some services are specified" in new WithSampleUsers {
-    val resource = route(FakeRequest(POST, resourcePath)
-      .withJsonBody(validCreationParams)
-      .authorizedBy(user1)).get
+    val resource = route(createCluster.authorizedBy(user1)).get
     status(resource) must equal (CREATED)
     contentType(resource) must be (Some("application/json"))
     val location = header("Location", resource)

@@ -40,7 +40,7 @@ trait ApiAuthController extends Controller {
    * @param userAction Block able to create a response given a CosmosProfile
    * @return           Either userAction result or an authorization error response
    */
-  def withApiAuth(request: Request[Any])(userAction: CosmosProfile => Result): Result = {
+  def withApiAuth(request: Request[Any])(userAction: CosmosProfile => SimpleResult): SimpleResult = {
     val authenticateFromApiCredentials = for {
       credentials <- getApiCredentials(request)
       profile <- authorizeProfile(credentials)

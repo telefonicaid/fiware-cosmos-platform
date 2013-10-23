@@ -16,11 +16,12 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import com.wordnik.swagger.annotations.{ApiOperation, Api}
+import com.wordnik.swagger.annotations.{ApiError, ApiErrors, ApiOperation, Api}
 import play.api.libs.json.Json
 import play.api.mvc.Action
 
-import es.tid.cosmos.api.controllers.common.{ErrorMessage, ApiAuthController}
+import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
+import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.servicemanager.ServiceManager
 
@@ -29,8 +30,11 @@ import es.tid.cosmos.servicemanager.ServiceManager
  */
 @Api(value = "/cosmos/v1/storage", listingPath = "/doc/cosmos/v1/storage",
   description = "Represents the persistent storage shared by all clusters")
-class StorageResource(serviceManager: ServiceManager, override val dao: CosmosProfileDao)
-  extends ApiAuthController {
+class StorageResource(
+    serviceManager: ServiceManager,
+    override val dao: CosmosProfileDao,
+    override val maintenanceStatus: MaintenanceStatus)
+  extends ApiAuthController with MaintenanceAwareController {
 
   private val UnavailableHdfsResponse =
     ServiceUnavailable(Json.toJson(ErrorMessage("persistent storage service not available")))
@@ -40,14 +44,19 @@ class StorageResource(serviceManager: ServiceManager, override val dao: CosmosPr
    */
   @ApiOperation(value = "Persistent storage connection details", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.storage.WebHdfsConnection")
+  @ApiErrors(Array(
+    new ApiError(code = 503, reason = "When service is under maintenance")
+  ))
   def details() = Action { implicit request =>
-    withApiAuth(request) { profile =>
-      (for {
-        description <- serviceManager.describeCluster(serviceManager.persistentHdfsId)
-        if description.nameNode_>.isCompleted
-        webHdfsUri = toWebHdfsUri(Await.result(description.nameNode_>, 100 milliseconds))
-      } yield Ok(Json.toJson(WebHdfsConnection(location = webHdfsUri, user = profile.handle))))
-      .getOrElse(UnavailableHdfsResponse)
+    unlessResourceUnderMaintenance {
+      withApiAuth(request) { profile =>
+        (for {
+          description <- serviceManager.describeCluster(serviceManager.persistentHdfsId)
+          if description.nameNode_>.isCompleted
+          webHdfsUri = toWebHdfsUri(Await.result(description.nameNode_>, 100 milliseconds))
+        } yield Ok(Json.toJson(WebHdfsConnection(location = webHdfsUri, user = profile.handle))))
+        .getOrElse(UnavailableHdfsResponse)
+      }
     }
   }
 

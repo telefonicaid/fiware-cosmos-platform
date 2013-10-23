@@ -26,6 +26,12 @@ username corresponds with the API key and the password with the API secret.
 Alternatively, a session cookie of a valid user is also accepted as valid
 authentication to ease API exploration and direct use from JavaScript.
 
+----------------
+Maintenance mode
+----------------
+
+When the platform is under maintenance, resources will fail with status 503.
+
 -------------------------
 Resources of the user API
 -------------------------

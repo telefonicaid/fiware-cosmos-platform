@@ -18,9 +18,10 @@ import scala.util.{Failure, Success, Try}
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json._
-import play.api.mvc.{Result, RequestHeader, Action}
+import play.api.mvc.{SimpleResult, RequestHeader, Action}
 
 import es.tid.cosmos.api.controllers._
+import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{CosmosProfile, ClusterAssignment, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
@@ -30,17 +31,25 @@ import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManag
  */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
   description = "Represents an existing or decommissioned cluster")
-class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosProfileDao)
-  extends ApiAuthController with JsonController {
+class ClusterResource(
+    serviceManager: ServiceManager,
+    override val dao: CosmosProfileDao,
+    override val maintenanceStatus: MaintenanceStatus)
+  extends ApiAuthController with JsonController with MaintenanceAwareController {
 
   /**
    * List user clusters.
    */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.clusters.ClusterList")
+  @ApiErrors(Array(
+    new ApiError(code = 503, reason = "Service is under maintenance")
+  ))
   def list = Action { implicit request =>
-    withApiAuth(request) { profile =>
-      Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
+    unlessResourceUnderMaintenance {
+      withApiAuth(request) { profile =>
+        Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
+      }
     }
   }
 
@@ -50,30 +59,33 @@ class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosPr
   @ApiOperation(value = "Create a new cluster", httpMethod = "POST")
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "Invalid JSON payload"),
-    new ApiError(code = 403, reason = "Quota exceeded")
+    new ApiError(code = 403, reason = "Quota exceeded"),
+    new ApiError(code = 503, reason = "Service is under maintenance")
   ))
   @ApiParamsImplicit(Array(
     new ApiParamImplicit(paramType = "body",
       dataType = "es.tid.cosmos.api.controllers.clusters.CreateClusterParams")
   ))
   def createCluster = JsonBodyAction[CreateClusterParams] { (request, body) =>
-    withApiAuth(request) { profile =>
-      if (profile.quota.withinQuota(body.size + usedMachines(profile))) {
-        val services = serviceManager.services.filter(
-          service => body.optionalServices.contains(service.name))
-        Try(serviceManager.createCluster(
-          body.name, body.size, services, Seq(profile.toClusterUser))) match {
-          case Failure(ex) => throw ex
-          case Success(clusterId: ClusterId) => {
-            Logger.info(s"Provisioning new cluster $clusterId")
-            val assignment = ClusterAssignment(clusterId, profile.id, new Date())
-            dao.withTransaction { implicit c => dao.assignCluster(assignment) }
-            val clusterDescription = serviceManager.describeCluster(clusterId).get
-            val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
-            Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
+    unlessResourceUnderMaintenance {
+      withApiAuth(request) { profile =>
+        if (profile.quota.withinQuota(body.size + usedMachines(profile))) {
+          val services = serviceManager.services.filter(
+            service => body.optionalServices.contains(service.name))
+          Try(serviceManager.createCluster(
+            body.name, body.size, services, Seq(profile.toClusterUser))) match {
+            case Failure(ex) => throw ex
+            case Success(clusterId: ClusterId) => {
+              Logger.info(s"Provisioning new cluster $clusterId")
+              val assignment = ClusterAssignment(clusterId, profile.id, new Date())
+              dao.withTransaction { implicit c => dao.assignCluster(assignment) }
+              val clusterDescription = serviceManager.describeCluster(clusterId).get
+              val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
+              Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
+            }
           }
-        }
-      } else Forbidden(Json.toJson(Message("Quota exceeded")))
+        } else Forbidden(Json.toJson(Message("Quota exceeded")))
+      }
     }
   }
 
@@ -92,17 +104,20 @@ class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosPr
   @ApiOperation(value = "Get cluster machines", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterDetails")
   @ApiErrors(Array(
-    new ApiError(code = 404, reason = "When cluster ID is unknown")
+    new ApiError(code = 404, reason = "When cluster ID is unknown"),
+    new ApiError(code = 503, reason = "Service is under maintenance")
   ))
   def listDetails(
       @ApiParam(value = "Cluster identifier", required = true,
         defaultValue = "00000000-0000-0000-0000-000000000000")
       @PathParam("id")
       id: String) = Action { implicit request =>
-    withApiAuth(request) { profile =>
-      OwnedCluster(profile, ClusterId(id)) { cluster =>
-        Ok(Json.toJson(ClusterDetails(cluster)))
-      }
+    unlessResourceUnderMaintenance {
+      withApiAuth(request) { profile =>
+       OwnedCluster(profile, ClusterId(id)) { cluster =>
+         Ok(Json.toJson(ClusterDetails(cluster)))
+       }
+     }
     }
   }
 
@@ -111,27 +126,30 @@ class ClusterResource(serviceManager: ServiceManager, override val dao: CosmosPr
   @ApiErrors(Array(
     new ApiError(code = 500, reason = "Internal server error"),
     new ApiError(code = 404, reason = "Cluster cannot be found"),
-    new ApiError(code = 409, reason = "Cluster cannot be terminated")
+    new ApiError(code = 409, reason = "Cluster cannot be terminated"),
+    new ApiError(code = 503, reason = "Service is under maintenance")
   ))
   def terminate(
        @ApiParam(value = "Cluster identifier", required = true,
          defaultValue = "00000000-0000-0000-0000-000000000000")
        @PathParam("id")
        id: String) = Action { request =>
-    withApiAuth(request) { profile =>
-      OwnedCluster(profile, ClusterId(id)) { cluster =>
-        Try(serviceManager.terminateCluster(cluster.id)) match {
-          case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))
-          case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
-            ErrorMessage(ex.getMessage, ex)))
-          case Failure(ex) => throw ex
+    unlessResourceUnderMaintenance {
+      withApiAuth(request) { profile =>
+        OwnedCluster(profile, ClusterId(id)) { cluster =>
+          Try(serviceManager.terminateCluster(cluster.id)) match {
+            case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))
+            case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
+              ErrorMessage(ex.getMessage, ex)))
+            case Failure(ex) => throw ex
+          }
         }
       }
     }
   }
 
   private def OwnedCluster(
-      profile: CosmosProfile, clusterId: ClusterId)(f: ClusterDescription => Result) = {
+      profile: CosmosProfile, clusterId: ClusterId)(f: ClusterDescription => SimpleResult) = {
     val owned = isOwnCluster(profile.id, clusterId)
     val maybeDescription = serviceManager.describeCluster(clusterId)
     (owned, maybeDescription) match {

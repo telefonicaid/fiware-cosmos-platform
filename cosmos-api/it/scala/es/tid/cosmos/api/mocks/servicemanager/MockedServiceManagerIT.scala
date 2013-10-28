@@ -27,12 +27,18 @@ class MockedServiceManagerIT extends FlatSpec with MustMatchers {
     instance.clusterIds must have size 2
   }
 
-  it must "create a new cluster in provisioning state and then transition to running state" in new Instance {
-    val id = instance.createCluster("small cluster", 10, serviceDescriptions = Seq(), users = Seq())
-    instance.describeCluster(id).get must have ('state (Provisioning))
-    Thread.sleep(5 * transitionDelay)
-    instance.describeCluster(id).get must have ('state (Running))
-  }
+  it must "create a new cluster in provisioning state and then transition to running state" in
+    new Instance {
+      val id = instance.createCluster(
+        name = "small cluster",
+        clusterSize = 10,
+        serviceDescriptions = Seq.empty,
+        users = Seq.empty
+      )
+      instance.describeCluster(id).get must (have('state (Provisioning)) or have('state (Running)))
+      Thread.sleep(5 * transitionDelay)
+      instance.describeCluster(id).get must have ('state (Running))
+    }
 
   it must "start terminating a cluster and then transition to terminated state" in new Instance {
     val id: ClusterId = MockedServiceManager.DefaultClusterId

@@ -1,5 +1,9 @@
 sourceDirectory in IntegrationTest <<= baseDirectory / "it"
 
+unmanagedClasspath in IntegrationTest <+= (classDirectory in Test) map { t => Attributed.blank(t) }
+
+compile in IntegrationTest <<= compile in IntegrationTest dependsOn (compile in Test)
+
 // orbit workaround https://jira.codehaus.org/browse/JETTY-1493
 classpathTypes ~= (_ + "orbit")
 

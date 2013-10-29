@@ -23,16 +23,15 @@ trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
  */
 class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
 
-  object DummyConnection
-  type Conn = DummyConnection.type
+  type Conn = MockCosmosProfileDao.DummyConnection.type
 
   @volatile private var users: Map[UserId, CosmosProfile] = Map.empty
   @volatile private var capabilities: Map[UserId, UserCapabilities] = Map.empty
   @volatile private var clusters: List[ClusterAssignment] = List.empty
   @volatile private var groupsWithUsers: Map[Group, Set[UserId]] = Map(NoGroup -> Set.empty)
 
-  def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
-  def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
+  def withConnection[A](block: (Conn) => A): A = block(MockCosmosProfileDao.DummyConnection)
+  def withTransaction[A](block: (Conn) => A): A = block(MockCosmosProfileDao.DummyConnection)
 
   override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
     val credentials = ApiCredentials.random()
@@ -188,4 +187,8 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
   }
 
   private def userIdOf(id: ProfileId): Option[UserId] = users.find(_._2.id == id).map(_._1)
+}
+
+object MockCosmosProfileDao {
+  object DummyConnection
 }

@@ -32,7 +32,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
 
   type Conn = Connection
 
-  def withConnection[A](block: (Conn) => A): A = DB.withTransaction[A](block)
+  def withConnection[A](block: (Conn) => A): A = DB.withConnection[A](block)
   def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
 
   override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {

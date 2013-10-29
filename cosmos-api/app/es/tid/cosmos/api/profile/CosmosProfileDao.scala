@@ -39,7 +39,7 @@ trait CosmosProfileDao {
   def withConnection[A](block: Conn => A): A
   def withTransaction[A](block: Conn => A): A
 
-  /** Registers a new user in the database.
+  /** Registers a new user.
     *
     * The user group, quota, and capabilities are set to default values.
     *

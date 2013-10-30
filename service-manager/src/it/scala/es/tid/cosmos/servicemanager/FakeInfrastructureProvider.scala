@@ -41,4 +41,6 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
 
   override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] =
     Future.successful(Seq())
+
+  override def machinePoolCount: Int = 5
 }

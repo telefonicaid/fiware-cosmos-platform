@@ -13,17 +13,21 @@ package es.tid.cosmos.api.controllers.admin
 
 import scala.annotation.tailrec
 import scala.util.Random
-import scalaz.{Success, Failure}
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Headers, SimpleResult}
+import play.api.mvc.{Action, Headers}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
+import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.api.profile.Registration
+import scalaz.Failure
+import scala.Some
+import play.api.mvc.SimpleResult
+import scalaz.Success
 
 /**
  * Resource for user account administration
@@ -107,7 +111,7 @@ class UserResource(
   } yield password == provider.adminPassword).getOrElse(false)
 
   private def createUserAccount(userId: UserId, handle: String, publicKey: String)(implicit c: Conn) = {
-    val p = dao.registerUserInDatabase(userId, Registration(handle, publicKey))
+    val p = dao.registerUserInDatabase(userId, Registration(handle, publicKey), NoGroup, UnlimitedQuota)
     serviceManager.addUsers(serviceManager.persistentHdfsId, p.toClusterUser)
     p
   }

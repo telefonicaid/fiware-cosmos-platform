@@ -33,7 +33,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "register new users", withDao { dao =>
       dao.withTransaction { implicit c =>
         val id = UserId("db-0003")
-        val profile = dao.registerUserInDatabase(id, registration("jsmith"))
+        val profile = dao.registerUserInDatabase(id, registration("jsmith"), NoGroup, UnlimitedQuota)
         profile.handle must be ("jsmith")
         profile.keys.length must be (1)
       }
@@ -42,7 +42,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "change the handle of users", withDao { dao =>
       dao.withTransaction { implicit c =>
         val userId = UserId("db-0003")
-        val cosmosId = dao.registerUserInDatabase(userId, registration("jsmith")).id
+        val cosmosId = dao.registerUserInDatabase(userId, registration("jsmith"), NoGroup, UnlimitedQuota).id
         dao.setHandle(cosmosId, "jsm")
         dao.lookupByUserId(userId).get.handle must equal ("jsm")
       }
@@ -58,9 +58,9 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
     taggedTest(it must "not change the handle to a repeated one", withDao { dao =>
       dao.withTransaction { implicit c =>
-        dao.registerUserInDatabase(UserId("db001"), registration("existing"))
+        dao.registerUserInDatabase(UserId("db001"), registration("existing"), NoGroup, UnlimitedQuota)
         val cosmosId =
-          dao.registerUserInDatabase(UserId("db002"), registration("current")).id
+          dao.registerUserInDatabase(UserId("db002"), registration("current"), NoGroup, UnlimitedQuota).id
         evaluating {
           dao.setHandle(cosmosId, "existing")
         } must produce [IllegalArgumentException]
@@ -70,7 +70,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "change the keys of users", withDao { dao =>
       dao.withTransaction { implicit c =>
         val userId = UserId("db-0003")
-        val cosmosId = dao.registerUserInDatabase(userId, registration("jsmith")).id
+        val cosmosId = dao.registerUserInDatabase(userId, registration("jsmith"), NoGroup, UnlimitedQuota).id
         val newKeys = Seq(
           NamedKey("default", "ssh-rsa AAAAA jsmith@host"),
           NamedKey("extra", "ssh-rsa BBBBB jsmith@host"))
@@ -89,7 +89,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
     taggedTest(it must "detect unused handles", withDao { dao =>
       dao.withTransaction { implicit c =>
-        dao.registerUserInDatabase(UserId("oauth53"), registration("usedHandle"))
+        dao.registerUserInDatabase(UserId("oauth53"), registration("usedHandle"), NoGroup, UnlimitedQuota)
         dao.handleExists("usedHandle") must be (true)
         dao.handleExists("unusedHandle") must be (false)
       }
@@ -99,7 +99,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         val registeredUser = UserId("db-registered")
         dao.registerUserInDatabase(registeredUser,
-          Registration("jsmith", "ssh-rsa AAAAA jsmith@host"))
+          Registration("jsmith", "ssh-rsa AAAAA jsmith@host"), NoGroup, UnlimitedQuota)
         dao.getCosmosId(registeredUser) must be ('defined)
         dao.getCosmosId(UserId("db-unknown")) must not be 'defined
       }
@@ -115,7 +115,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "lookup a profile from api credentials", withDao { dao =>
       dao.withTransaction { implicit c =>
         val id = UserId("db-0004")
-        dao.registerUserInDatabase(id, Registration("user4", "ssh-rsa AAAAA user4@host"))
+        dao.registerUserInDatabase(id, Registration("user4", "ssh-rsa AAAAA user4@host"), NoGroup, UnlimitedQuota)
         val profileByUserId = dao.lookupByUserId(id).get
         val profileByApiCredentials =
           dao.lookupByApiCredentials(profileByUserId.apiCredentials).get
@@ -127,12 +127,47 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         val clusterId = ClusterId()
         val id1 = dao.registerUserInDatabase(
-          UserId("user1"), Registration("user1", "ssh-rsa AAAAA user1@host")).id
+          UserId("user1"), Registration("user1", "ssh-rsa AAAAA user1@host"), NoGroup, UnlimitedQuota).id
         val id2 = dao.registerUserInDatabase(
-          UserId("user2"), Registration("user2", "ssh-rsa AAAAA user2@host")).id
+          UserId("user2"), Registration("user2", "ssh-rsa AAAAA user2@host"), NoGroup, UnlimitedQuota).id
         dao.assignCluster(clusterId, id2)
         dao.clustersOf(id1).map(_.clusterId).toList must not contain clusterId
         dao.clustersOf(id2).map(_.clusterId).toList must contain (clusterId)
+      }
+    })
+
+    taggedTest(it must "get empty, NoGroup by default", withDao{ dao =>
+      dao.withConnection{ implicit c =>
+        dao.getGroups must equal (Set(NoGroup))
+      }
+    })
+
+    taggedTest(it must "get all registered groups + NoGroup", withDao{ dao =>
+      val (a, b, c) = (
+        GuaranteedGroup("A", EmptyQuota),
+        GuaranteedGroup("B", Quota(2)),
+        GuaranteedGroup("C", Quota(3))
+      )
+      dao.withTransaction{ implicit conn =>
+        Seq(a, b, c).foreach(dao.registerGroup)
+        dao.getGroups must be (Set(a, b, c, NoGroup))
+      }
+    })
+
+    taggedTest(it must "lookup users by group", withDao{ dao =>
+      dao.withTransaction{ implicit c =>
+        val group = GuaranteedGroup("A", Quota(3))
+        dao.registerGroup(group)
+        val id1 = dao.registerUserInDatabase(
+          UserId("user1"), registration("user1"), NoGroup, UnlimitedQuota).id
+        val id2 = dao.registerUserInDatabase(
+          UserId("user2"), registration("user2"), group, UnlimitedQuota).id
+        val noGroupProfiles = dao.lookupByGroup(NoGroup)
+        val groupProfiles = dao.lookupByGroup(group)
+        noGroupProfiles must have size 1
+        noGroupProfiles.head.id must equal(id1)
+        groupProfiles must have size 1
+        groupProfiles.head.id must equal(id2)
       }
     })
   }

@@ -39,7 +39,7 @@ trait CosmosProfileDao {
    * @param c       The connection to use.
    * @return        A newly created Cosmos profile.
    */
-  def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile
+  def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)(implicit c: Conn): CosmosProfile
 
   /**
    * Retrieves the unique Cosmos ID for a given user.
@@ -103,6 +103,28 @@ trait CosmosProfileDao {
    * @return       The profile of the given user.
    */
   def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile]
+
+  /**
+   * Obtains the profiles that belong to a given group.
+   *
+   * @param group the group
+   * @return      the profiles that belong to that group
+   */
+  def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile]
+
+  /**
+   * Register a user group in the database.
+   *
+   * @param group the group to be persisted
+   */
+  def registerGroup(group: Group)(implicit c: Conn): Unit
+
+  /**
+   * Get the user groups.
+   *
+   * @return the user groups including the NoGroup for profiles that do not belong to any group
+   */
+  def getGroups(implicit c: Conn): Set[Group]
 
   /**
    * Assigns a cluster to a given user at the present moment.

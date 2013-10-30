@@ -27,7 +27,7 @@ import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration}
+import es.tid.cosmos.api.profile.{UnlimitedQuota, NoGroup, CosmosProfileDao, Registration}
 import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
 import views.AuthAlternative
@@ -120,7 +120,7 @@ class Pages(
           validatedForm.fold(
             formWithErrors => registrationPage(userProfile, formWithErrors),
             registration => {
-              val cosmosProfile = dao.registerUserInDatabase(userProfile.id, registration)
+              val cosmosProfile = dao.registerUserInDatabase(userProfile.id, registration, NoGroup, UnlimitedQuota)
               serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
               redirectToIndex
             }

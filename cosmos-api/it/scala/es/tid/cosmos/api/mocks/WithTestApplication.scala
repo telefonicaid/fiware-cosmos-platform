@@ -18,8 +18,10 @@ import play.api.mvc.Session
 import play.api.test.{FakeRequest, WithApplication, FakeApplication}
 
 import es.tid.cosmos.api.AbstractGlobal
+import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.Registration
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
-import es.tid.cosmos.api.profile.{CosmosProfile, Registration, CosmosProfileDao}
+import es.tid.cosmos.api.profile.CosmosProfile
 
 class WithTestApplication(
     additionalConfiguration: Map[String, String] = Map.empty,
@@ -35,7 +37,7 @@ class WithTestApplication(
       val OAuthUserProfile(authId, _, email) = user
       val handle = email.map(_.split('@')(0)).getOrElse("root")
       val reg = Registration(handle, s"ssh-rsa ABCDE ${user.email.getOrElse("user@host")}")
-      dao.registerUserInDatabase(authId, reg)
+      dao.registerUserInDatabase(authId, reg, NoGroup, UnlimitedQuota)
     }
 
   def withSession[A](request: FakeRequest[A], session: Session) =

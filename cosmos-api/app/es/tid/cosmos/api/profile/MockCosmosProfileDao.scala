@@ -25,23 +25,29 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   object DummyConnection
   type Conn = DummyConnection.type
 
-  private var users = Map[UserId, CosmosProfile]()
-  private var clusters = List[ClusterAssignment]()
+  @volatile private var users = Map[UserId, CosmosProfile]()
+  @volatile private var clusters = List[ClusterAssignment]()
+  @volatile private var groupsWithUsers = Map[Group, Set[UserId]](NoGroup -> Set())
 
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
-  override def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
+  override def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)(implicit c: Conn): CosmosProfile = { //FIXME
     val credentials = ApiCredentials.random()
-    require(!users.values.exists(_.handle == reg.handle), "Duplicated handle")
+    require(!users.values.exists(_.handle == reg.handle), s"Duplicated handle: ${reg.handle}")
+    require(groupsWithUsers.contains(group), s"Group not registered: $group")
     val cosmosProfile = CosmosProfile(
       id = users.size,
       handle = reg.handle,
-      quota = UnlimitedQuota,
+      group,
+      quota,
       apiCredentials = credentials,
       keys = List(NamedKey("default", reg.publicKey))
     )
-    users = users.updated(userId, cosmosProfile)
+    users.synchronized{ users = users.updated(userId, cosmosProfile) }
+    groupsWithUsers.synchronized{
+      groupsWithUsers = groupsWithUsers.updated(group, groupsWithUsers(group) + userId)
+    }
     cosmosProfile
   }
 
@@ -50,13 +56,13 @@ class MockCosmosProfileDao extends CosmosProfileDao {
 
   override def getMachineQuota(cosmosId: Long)(implicit c: Conn): Quota =
     users.collectFirst {
-      case (_, CosmosProfile(`cosmosId`, _, quota, _, _)) => quota
+      case (_, CosmosProfile(`cosmosId`, _, _, quota, _, _)) => quota
     }.getOrElse(EmptyQuota)
 
   override def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean = synchronized {
     users.collectFirst {
-      case (userId, profile @ CosmosProfile(`cosmosId`, _, _, _, _)) => {
-        users = users.updated(userId, profile.copy(quota = quota))
+      case (userId, profile @ CosmosProfile(`cosmosId`, _,  _, _, _, _)) => {
+        users.synchronized{ users = users.updated(userId, profile.copy(quota = quota)) }
         true
     }}.getOrElse(false)
   }
@@ -69,13 +75,13 @@ class MockCosmosProfileDao extends CosmosProfileDao {
 
   override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =
     users.collectFirst {
-      case (_, profile@CosmosProfile(_, _, _, `creds`, _)) => profile
+      case (_, profile@CosmosProfile(_, _, _, _, `creds`, _)) => profile
     }
 
   override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
     synchronized {
       require(!clusters.exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
-      clusters = clusters :+ assignment
+      clusters.synchronized{ clusters = clusters :+ assignment }
     }
   }
 
@@ -98,12 +104,21 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     }
   }
 
+  override def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile] =
+    groupsWithUsers(group).map(users).toSet
+
+  override def getGroups(implicit c: Conn): Set[Group] = groupsWithUsers.keys.toSet
+
+  override def registerGroup(group: Group)(implicit c: Conn) {
+    groupsWithUsers.synchronized { groupsWithUsers += (group -> Set()) }
+  }
+
   private def updateProfile(id: Long)(f: CosmosProfile => CosmosProfile) {
     val maybeId = users.collectFirst {
       case (userId, profile) if profile.id == id => userId
     }
     maybeId.map(userId =>
-      users = users.updated(userId, f(users(userId)))
+      users.synchronized{ users = users.updated(userId, f(users(userId))) }
     ).getOrElse(throw new IllegalArgumentException(s"No user with id=$id"))
   }
 }

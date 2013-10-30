@@ -284,6 +284,8 @@ class AmbariServiceManager(
     describeCluster(persistentHdfsId)
 
   override def terminatePersistentHdfsCluster(): Future[Unit] = terminateCluster(persistentHdfsId)
+
+  override def machinePoolCount: Int = infrastructureProvider.machinePoolCount
 }
 
 object AmbariServiceManager {

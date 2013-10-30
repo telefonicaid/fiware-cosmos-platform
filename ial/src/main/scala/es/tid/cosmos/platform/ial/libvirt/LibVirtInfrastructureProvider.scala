@@ -57,6 +57,8 @@ class LibVirtInfrastructureProvider(
       servers <- availableServers(profile)
     } yield servers.size
 
+  override def machinePoolCount: Int = dao.libVirtServers.size
+
   override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = {
     for {
       servers <- servers(srv => hostNames.contains(srv.domainHostname))

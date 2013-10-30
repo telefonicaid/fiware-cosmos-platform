@@ -66,6 +66,13 @@ trait InfrastructureProvider {
   val rootPrivateSshKey: String
 
   def availableMachineCount(profile: MachineProfile.Value): Future[Int]
+
+  /**
+   * Get the total number of machines managed by this provider.
+   *
+   * @return the total number of managed machines regardless of their state and usage.
+   */
+  def machinePoolCount: Int
 }
 
 /**

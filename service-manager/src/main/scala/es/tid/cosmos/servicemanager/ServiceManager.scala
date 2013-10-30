@@ -87,4 +87,6 @@ trait ServiceManager extends Refreshable {
    * @param users the users to be added to the CosmosUser service
    */
   def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit]
+
+  def machinePoolCount: Int //FIXME: This is a forward to IAL. Should be removed
 }

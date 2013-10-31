@@ -22,7 +22,7 @@ import play.api.libs.json.JsValue
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
-import es.tid.cosmos.api.profile.{Registration, UserId}
+import es.tid.cosmos.api.profile.{UserState, Registration, UserId}
 
 trait WithSampleSessions extends WithTestApplication {
 
@@ -64,6 +64,21 @@ trait WithSampleSessions extends WithTestApplication {
     val cosmosProfile = dao.withTransaction { implicit c =>
       dao.registerUserInDatabase(userProfile.id,
         Registration(handle, "ssh-rsa AAAAA reguser@mail.com"))
+    }
+    val session = Session().setUserProfile(userProfile).setToken("token")
+  }
+  val disabledUser = new UserSession {
+    val userProfile = OAuthUserProfile(
+      id = UserId("disabled1"),
+      name = Some("Disabled 1"),
+      email = Some("disabled1@mail.com")
+    )
+    val handle = "disabled"
+    val cosmosProfile = dao.withTransaction { implicit c =>
+      val profile = dao.registerUserInDatabase(userProfile.id,
+        Registration(handle, "ssh-rsa AAAAA disabled1@mail.com"))
+      dao.setUserState(profile.id, UserState.Disabled)
+      profile
     }
     val session = Session().setUserProfile(userProfile).setToken("token")
   }

@@ -14,6 +14,7 @@ package es.tid.cosmos.api.profile
 import org.scalatest.{FlatSpec, Tag}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.servicemanager.ClusterId
 
 trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
@@ -52,6 +53,23 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         evaluating {
           dao.setHandle(unknownCosmosId, "jsm")
+        } must produce [IllegalArgumentException]
+      }
+    })
+
+    taggedTest(it must "change the state of users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId = UserId("db-0003")
+        val cosmosId = dao.registerUserInDatabase(userId, registration("jsmith")).id
+        dao.setUserState(cosmosId, Deleting)
+        dao.lookupByUserId(userId).get.state must equal (Deleting)
+      }
+    })
+
+    taggedTest(it must "not change the state of unknown users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        evaluating {
+          dao.setUserState(unknownCosmosId, Disabled)
         } must produce [IllegalArgumentException]
       }
     })

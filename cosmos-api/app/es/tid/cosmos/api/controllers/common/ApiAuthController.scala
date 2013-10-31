@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.controllers.common
 
-import scala.util.{Failure, Success, Try}
+import scalaz._
 
 import play.api.Logger
 import play.api.libs.json.Json
@@ -20,12 +20,17 @@ import play.api.mvc._
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.auth.ApiCredentials.{ApiKeyLength, ApiSecretLength}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{UserState, CosmosProfile, CosmosProfileDao}
 
 /**
- * Controller able to check authentication and authorization
+ * Controller able to check authentication and authorization.
+ *
+ * Must be mixed-in onto Controllers with a field of type CosmosProfileDao
  */
 trait ApiAuthController extends Controller {
+
+  import Scalaz._
+
   val dao: CosmosProfileDao
 
   /**
@@ -34,61 +39,117 @@ trait ApiAuthController extends Controller {
    * Chain of checks:
    *  * Look for valid API key/secret pair
    *  * Look for a valid cookie
-   *  * Issue an auth error response
+   *  * Owned by an enabled user
+   *
+   * Issue an auth error response if the chain fails.
    *
    * @param request    Request to extract credentials from
    * @param userAction Block able to create a response given a CosmosProfile
    * @return           Either userAction result or an authorization error response
    */
-  def withApiAuth(request: Request[Any])(userAction: CosmosProfile => SimpleResult): SimpleResult = {
-    val authenticateFromApiCredentials = for {
-      credentials <- getApiCredentials(request)
-      profile <- authorizeProfile(credentials)
-    } yield profile
+  def withApiAuth(request: Request[Any])(userAction: CosmosProfile => SimpleResult): SimpleResult =
+    selectAuthentication(
+      preferredAuth = authenticateFromApiCredentials(request),
+      fallbackAuth = authenticateFromSession(request)
+    ).fold(
+      fail = authError => {
+        Logger.warn(s"Rejected API request: ${authError.message}")
+        unauthorizedResponse(authError)
+      },
+      succ = userAction
+    )
 
-    (authenticateFromApiCredentials, authenticateFromSession(request)) match {
-      case (Success(profile), _) => userAction(profile)
-      case (_, Some(profile)) => userAction(profile)
-      case (Failure(ex: AuthError), _) => {
-        Logger.warn("Rejected API request", ex)
-        unauthorizedResponse(ex)
-      }
-      case (Failure(ex), _) => throw ex
-    }
+  /**
+   * Select one out of two authentications preferring the first one.
+   * When the first authentication succeed, the second one is not evaluated at all.
+   *
+   * @param preferredAuth  Preferred authentication
+   * @param fallbackAuth   Fallback authentication that might not be evaluated
+   * @return               Selected authentication
+   */
+  private def selectAuthentication(
+      preferredAuth: Validation[AuthError, CosmosProfile],
+      fallbackAuth: => Validation[AuthError, CosmosProfile]) =
+    if (preferredAuth.isSuccess) preferredAuth
+    else if (fallbackAuth.isSuccess) fallbackAuth
+    else preferredAuth
+
+  /**
+   * Try to extract a cosmos profile from the request authentication headers.
+   *
+   * @param request  Request to authenticate
+   * @return         Either a cosmos profile or a validation error
+   */
+  private def authenticateFromApiCredentials(
+      request: Request[Any]): Validation[AuthError, CosmosProfile] = {
+    for {
+      credentials <- getApiCredentials(request)
+      profile <- getProfileFromCredentials(credentials)
+      _ <- enabledProfile(profile)
+    } yield profile
   }
 
   /**
    * Either extract API credentials from request headers or get an error message.
    */
-  private def getApiCredentials(request: Request[Any]): Try[ApiCredentials] =
+  private def getApiCredentials(request: Request[Any]): Validation[AuthError, ApiCredentials] =
     request.headers.get("Authorization") match {
-      case Some(BasicAuth(apiKey, apiSecret))
-        if apiKey.length == ApiKeyLength && apiSecret.length == ApiSecretLength =>
-        Success(ApiCredentials(apiKey, apiSecret))
-      case Some(malformedHeader: String) => Failure(MalformedAuthHeader)
-      case _ => Failure(MissingAuthHeader)
+      case Some(BasicAuth(apiKey, apiSecret)) if isKeyPair(apiKey, apiSecret) =>
+        ApiCredentials(apiKey, apiSecret).success
+      case Some(malformedHeader: String) => MalformedAuthHeader.failure
+      case _ => MissingAuthentication.failure
     }
+
+  private def isKeyPair(apiKey: String, apiSecret: String) =
+    apiKey.length == ApiKeyLength && apiSecret.length == ApiSecretLength
 
   /**
    * Either get the profile that owns the API credentials or an error message.
+   *
+   * @param credentials  Credentials to be checked against the DAO
+   * @return             Either a cosmos profile or a validation error
    */
-  private def authorizeProfile(credentials: ApiCredentials): Try[CosmosProfile] =
+  private def getProfileFromCredentials(
+      credentials: ApiCredentials): Validation[AuthError, CosmosProfile] =
     dao.withConnection { implicit c =>
       dao.lookupByApiCredentials(credentials)
-        .map(Success(_))
-        .getOrElse(Failure(InvalidAuthCredentials))
+        .map(_.success)
+        .getOrElse(InvalidAuthCredentials.failure)
     }
 
   /**
    * Get the profile form the request session when possible.
    */
-  def authenticateFromSession(request: RequestHeader): Option[CosmosProfile] = for {
-    userId <- request.session.userId
-    profile <- dao.withTransaction { implicit c =>
-      dao.lookupByUserId(userId)
-    }
-  } yield profile
+  private def authenticateFromSession(request: RequestHeader): Validation[AuthError, CosmosProfile] =
+    for {
+      profile <- getProfileFromSession(request)
+      _ <- enabledProfile(profile)
+    } yield profile
+
+  /**
+   * Try to extract a cosmos profile from a session cookie.
+   *
+   * @param request Request whose session is inspected
+   * @return        Either a cosmos profile or a validation error
+   */
+  private def getProfileFromSession(request: RequestHeader): Validation[AuthError, CosmosProfile] =
+    (for {
+      userId <- request.session.userId
+      profile <- dao.withTransaction { implicit c =>
+        dao.lookupByUserId(userId)
+      }
+    } yield profile.success).getOrElse(MissingAuthentication.failure)
+
+  /**
+   * Check for enabled profiles.
+   *
+   * @param profile  Profile that must be enabled
+   * @return         Either an enabled profile or a validation error
+   */
+  private def enabledProfile(profile: CosmosProfile): Validation[AuthError, CosmosProfile] =
+    if (profile.state == UserState.Enabled) profile.success
+    else InvalidAuthCredentials.failure
 
   private def unauthorizedResponse(error: AuthError) =
-    Unauthorized(Json.toJson(ErrorMessage(error.getMessage)))
+    Unauthorized(Json.toJson(ErrorMessage(error.message)))
 }

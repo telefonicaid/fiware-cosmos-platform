@@ -15,19 +15,20 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.profile.UserState._
 
 class CosmosProfileTest extends FlatSpec with MustMatchers {
 
   "A cosmos profile" must "have a valid unix handle" in {
     val ex = evaluating {
-      CosmosProfile(0, "id-invalid", EmptyQuota, ApiCredentials.random(), keys = Seq())
+      CosmosProfile(0, Enabled, "id-invalid", EmptyQuota, ApiCredentials.random(), keys = Seq())
     } must produce [IllegalArgumentException]
     ex.getMessage must include ("Invalid handle")
   }
 
   it must "have keys with unique names" in {
     val ex = evaluating {
-      CosmosProfile(0, "handle", EmptyQuota, ApiCredentials.random(), keys = Seq(
+      CosmosProfile(0, Enabled, "handle", EmptyQuota, ApiCredentials.random(), keys = Seq(
         NamedKey("duplicated", "ssh-rsa AAAA handle@localhost"),
         NamedKey("duplicated", "ssh-rsa BBBB handle@localhost"),
         NamedKey("normal", "ssh-rsa CCCC handle@localhost")
@@ -38,7 +39,7 @@ class CosmosProfileTest extends FlatSpec with MustMatchers {
 
   it must "have valid SSH keys" in {
     val ex = evaluating {
-      CosmosProfile(0, "handle", EmptyQuota, ApiCredentials.random(), keys = Seq(
+      CosmosProfile(0, Enabled, "handle", EmptyQuota, ApiCredentials.random(), keys = Seq(
         NamedKey("normal", "invalid")
       ))
     } must produce [IllegalArgumentException]

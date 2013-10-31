@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.profile
 
 import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.profile.UserState._
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   def cosmosProfileDao: CosmosProfileDao = new MockCosmosProfileDao
@@ -36,6 +37,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     require(!users.values.exists(_.handle == reg.handle), "Duplicated handle")
     val cosmosProfile = CosmosProfile(
       id = users.size,
+      state = Enabled,
       handle = reg.handle,
       quota = UnlimitedQuota,
       apiCredentials = credentials,
@@ -50,12 +52,12 @@ class MockCosmosProfileDao extends CosmosProfileDao {
 
   override def getMachineQuota(cosmosId: Long)(implicit c: Conn): Quota =
     users.collectFirst {
-      case (_, CosmosProfile(`cosmosId`, _, quota, _, _)) => quota
+      case (_, CosmosProfile(`cosmosId`, _, _, quota, _, _)) => quota
     }.getOrElse(EmptyQuota)
 
   override def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean = synchronized {
     users.collectFirst {
-      case (userId, profile @ CosmosProfile(`cosmosId`, _, _, _, _)) => {
+      case (userId, profile) if profile.id == cosmosId => {
         users = users.updated(userId, profile.copy(quota = quota))
         true
     }}.getOrElse(false)
@@ -69,7 +71,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
 
   override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =
     users.collectFirst {
-      case (_, profile@CosmosProfile(_, _, _, `creds`, _)) => profile
+      case (_, profile) if profile.apiCredentials == creds => profile
     }
 
   override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
@@ -89,6 +91,12 @@ class MockCosmosProfileDao extends CosmosProfileDao {
         "duplicated handle"
       )
       profile.copy(handle = handle)
+    }
+  }
+
+  override def setUserState(id: Long, userState: UserState)(implicit c: Conn) {
+    updateProfile(id) { profile =>
+      profile.copy(state = userState)
     }
   }
 

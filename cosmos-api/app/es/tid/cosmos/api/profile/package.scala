@@ -16,6 +16,7 @@ import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
 import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.profile.UserState._
 
 package object profile {
 
@@ -23,6 +24,7 @@ package object profile {
    * Represents the Cosmos-specific user profile.
    *
    * @param id             Internal user id
+   * @param state          User state
    * @param handle         User login
    * @param quota          Quota for resources
    * @param apiCredentials Credentials for the REST API
@@ -30,6 +32,7 @@ package object profile {
    */
   case class CosmosProfile(
       id: Long,
+      state: UserState,
       handle: String,
       quota: Quota,
       apiCredentials: ApiCredentials,

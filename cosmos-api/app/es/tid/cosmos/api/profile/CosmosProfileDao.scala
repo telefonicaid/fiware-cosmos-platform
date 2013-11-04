@@ -14,7 +14,7 @@ package es.tid.cosmos.api.profile
 import java.util.Date
 
 import es.tid.cosmos.api.auth.ApiCredentials
-import es.tid.cosmos.api.controllers.pages._
+import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.servicemanager.ClusterId
 
 /**
@@ -82,9 +82,19 @@ trait CosmosProfileDao {
    * Set the handle of a user. Fails if the new handle is in use.
    *
    * @param id      The id of the user.
+   * @param c       The connection to use.
    * @param handle  The new handle.
    */
   def setHandle(id: Long, handle: String)(implicit c: Conn): Unit
+
+  /**
+   * Set the state of a given user.
+   *
+   * @param id         Id of the user.
+   * @param userState  The new state.
+   * @param c          The connection to use.
+   */
+  def setUserState(id: Long, userState: UserState)(implicit c: Conn): Unit
 
   /**
    * Obtains the profile for a given user.

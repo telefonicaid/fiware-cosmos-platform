@@ -23,7 +23,7 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.WithSampleUsers
-import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{UserState, Registration, UserId, CosmosProfileDao}
 
 class ApiAuthControllerIT extends FlatSpec with MustMatchers {
 
@@ -53,6 +53,18 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     contentAsString(response) must include ("malformed authorization header")
   }
 
+  it must "not authorize when credentials belong to a non-enabled user" in new WithSampleUsers {
+    val profile = dao.withConnection { implicit c =>
+      val userId = UserId("db000")
+      val profile = dao.registerUserInDatabase(
+        userId, Registration("login", "ssh-rsa AAAA login@host"))
+      dao.setUserState(profile.id, UserState.Disabled)
+      profile
+    }
+    val response = action(dao, authorizedRequest(profile.apiCredentials))
+    status(response) must be (UNAUTHORIZED)
+  }
+
   it must "return bad request when credentials are invalid" in new WithSampleUsers {
     val response = action(dao, authorizedRequest(ApiCredentials.random()))
     status(response) must be (UNAUTHORIZED)
@@ -62,8 +74,9 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
   it must "succeed when credentials are valid" in new WithSampleUsers {
     val profile = dao.withConnection { implicit c =>
       val userId = UserId("db000")
-      dao.registerUserInDatabase(userId, Registration("login", "ssh-rsa AAAA login@host"))
-      dao.lookupByUserId(userId).get
+      val profile = dao.registerUserInDatabase(
+        userId, Registration("login", "ssh-rsa AAAA login@host"))
+      profile
     }
     val response = action(dao, authorizedRequest(profile.apiCredentials))
     status(response) must be (OK)
@@ -75,6 +88,12 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
       .withSession(regUser.session.data.toSeq: _*))
     status(response) must be (OK)
     contentAsString(response) must include (s"handle=${regUser.handle}")
+  }
+
+  it must "not authorize when the user having a session is not enabled" in new WithSampleSessions {
+    val response = action(dao, FakeRequest(GET, "/some/path")
+      .withSession(disabledUser.session.data.toSeq: _*))
+    status(response) must be (UNAUTHORIZED)
   }
 
   it must "have preference for authorization header over user session" in

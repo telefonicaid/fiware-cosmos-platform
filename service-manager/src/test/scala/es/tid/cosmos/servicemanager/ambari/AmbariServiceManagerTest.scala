@@ -241,7 +241,6 @@ class AmbariServiceManagerTest
       .willReturn(successful())
     given(infrastructureProvider.rootPrivateSshKey).willReturn("sshKey")
     given(provisioner.bootstrapMachines(any(), any())).willReturn(successful())
-    given(provisioner.teardownMachines(any(), any())).willReturn(successful())
     given(infrastructureProvider.createMachines(the(profile), any(), any()))
       .willReturn(Future.traverse(machines)(machine => successful(machine)))
     given(infrastructureProvider.assignedMachines(any()))
@@ -302,9 +301,6 @@ class AmbariServiceManagerTest
       distinctHostnames,
       infrastructureProvider.rootPrivateSshKey)
     verify(provisioner).removeCluster(clusterId.toString)
-    verify(provisioner).teardownMachines(
-      distinctHostnames,
-      infrastructureProvider.rootPrivateSshKey)
     val configTestHelper = new ConfiguratorTestHelpers(master.name, slaves.length)
     verify(cluster).applyConfiguration(
       the(configTestHelper.mergedGlobalConfiguration(2, instance)), tagPattern)

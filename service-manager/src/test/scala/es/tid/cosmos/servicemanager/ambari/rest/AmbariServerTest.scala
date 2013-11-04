@@ -140,38 +140,6 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
       "dummy-ssh-key")
   )
 
-  it must "be able to teardown a set of hostnames" in {
-    addMock(
-      ambariServer.responses.teardown(any()),
-      ("requestId" -> 1) ~
-      ("status" -> "OK")
-    )
-    get(ambariServer.teardownMachines(
-      Set("foo.com"),
-      "dummy-ssh-key"))
-    verify(ambariServer.responses).teardown(any())
-  }
-
-  it must "propagate errors when teardown" in errorPropagation(
-    ambariServer.responses.teardown(any()),
-    ambariServer.teardownMachines(
-      Set("foo.com"),
-      "dummy-ssh-key")
-  )
-
-  it must "raise an error on failed teardown" in {
-    addMock(
-      ambariServer.responses.teardown(any()),
-      ("status" -> "ERROR")
-    )
-    evaluating {
-      get(ambariServer.teardownMachines(
-        Set("foo.com"),
-        "dummy-ssh-key"))
-    } must produce [RequestException]
-    verify(ambariServer.responses).teardown(any())
-  }
-
   it must "provide the list of registered hostnames (multiple hosts)" in {
     addMock(
       ambariServer.responses.serverHosts,

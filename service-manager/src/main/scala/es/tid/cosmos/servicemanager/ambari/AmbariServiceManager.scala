@@ -245,8 +245,6 @@ class AmbariServiceManager(
   private def removeClusterFromAmbari(cluster: ClusterDescription) = for {
     _ <- stopStartedServices(cluster.id)
     _ <- ambariServer.removeCluster(cluster.id.toString)
-    distinctHostnames = cluster.machines.map(_.hostname).toSet
-    _ <- ambariServer.teardownMachines(distinctHostnames, infrastructureProvider.rootPrivateSshKey)
   } yield ()
 
   private def stopStartedServices(id: ClusterId) = for {

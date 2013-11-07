@@ -53,8 +53,7 @@ case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirt
     </domain>
   }
 
-  private val domainCreatorSequencer = new SequentialOperations
-  def createDomain(): Future[DomainProperties] = domainCreatorSequencer enqueue {
+  def createDomain(): Future[DomainProperties] = JnaLibVirtServer.domainCreatorSequencer enqueue {
     destroyDomain().map(_ => mapDomain(blocking {
       conn.domainCreateXML(openVzDomainXmlDoc.toString(), 0)
     }))
@@ -103,5 +102,12 @@ case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirt
       profile = properties.profile,
       hostname = properties.domainHostname,
       ipAddress = properties.domainIpAddress)
+}
+
+object JnaLibVirtServer {
+  /*
+   * This variable needs to be in a shared object to ensure that no repeated MAC addresses are assigned.
+   */
+  private val domainCreatorSequencer = new SequentialOperations
 }
 

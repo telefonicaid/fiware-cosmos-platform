@@ -39,10 +39,12 @@ trait ServiceManager {
    * @param name the cluster's name
    * @param clusterSize the number of nodes the cluster should comprise of
    * @param serviceDescriptions the description of services to be installed to the cluster
+   * @param users the list of users the cluster should have
    * @return the ID of the newly created cluster
    */
   def createCluster(
-    name: String, clusterSize: Int,
+    name: String,
+    clusterSize: Int,
     serviceDescriptions: Seq[ServiceDescriptionType],
     users: Seq[ClusterUser]): ClusterId
 
@@ -87,5 +89,5 @@ trait ServiceManager {
    * @param clusterId the cluster id where the users will be added
    * @param users the users to be added to the CosmosUser service
    */
-  def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit]
+  def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit]
 }

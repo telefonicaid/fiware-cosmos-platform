@@ -79,7 +79,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     val endState = waitForClusterCompletion(id, sm)
     println("Cluster completed.")
     endState must be === (Running)
-    val updatedService = sm.addUsers(id, user1, user3)
+    val updatedService = sm.setUsers(id, Seq(user1, user3))
     println("Starting wait for user setting...")
     Await.ready(updatedService, Duration.Inf)
     println("User setting done.")

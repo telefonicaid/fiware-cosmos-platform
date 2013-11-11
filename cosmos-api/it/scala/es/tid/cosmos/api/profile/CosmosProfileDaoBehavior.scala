@@ -37,11 +37,18 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
     taggedTest(it must "register new users", withDao { dao =>
       dao.withTransaction { implicit c =>
-        val id = UserId("db-0003")
-        val profile = dao.registerUserInDatabase(id, registration("jsmith"))
+        val profile = dao.registerUserInDatabase(UserId("db-0003"), registration("jsmith"))
         profile.handle must be ("jsmith")
         profile.keys.length must be (1)
         profile.email must be ("jsmith@example.com")
+      }
+    })
+
+    taggedTest(it must "list all users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        dao.registerUserInDatabase(UserId("db-0001"), registration("user1"))
+        dao.registerUserInDatabase(UserId("db-0002"), registration("user2"))
+        dao.getAllUsers().map(_.handle) must be (Seq("user1", "user2"))
       }
     })
 

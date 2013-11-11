@@ -105,7 +105,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
       put(clusterInProgress.id, clusterInProgress)
     }
 
-  def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
+  override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
   override def createCluster(
       name: String,
@@ -117,11 +117,11 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     cluster.id
   }
 
-  def describeCluster(clusterId: ClusterId): Option[ImmutableClusterDescription] =
+  override def describeCluster(clusterId: ClusterId): Option[ImmutableClusterDescription] =
     if (clusterId == persistentHdfsId && persistentHdfsCluster.enabled) Some(persistentHdfsCluster)
     else clusters.get(clusterId).map(_.view)
 
-  def terminateCluster(id: ClusterId): Future[Unit] = {
+  override def terminateCluster(id: ClusterId): Future[Unit] = {
     if (!clusters.contains(id))
       throw new ServiceException("Unknown cluster")
     val cluster = clusters.get(id).get
@@ -148,22 +148,19 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     @volatile var enabled: Boolean = false
   }
 
-  def persistentHdfsId: ClusterId = persistentHdfsCluster.id
+  override def persistentHdfsId: ClusterId = persistentHdfsCluster.id
 
-  def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = successful()
+  override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = successful()
 
-  def deployPersistentHdfsCluster(): Future[Unit] = {
+  override def deployPersistentHdfsCluster(): Future[Unit] = {
     persistentHdfsCluster.enabled = true
     successful()
   }
 
-  def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] = Some(persistentHdfsCluster)
+  override def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
+    Some(persistentHdfsCluster)
 
-  def terminatePersistentHdfsCluster(): Future[Unit] = successful()
-
-  def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit] = successful()
-
-  def refresh() = successful()
+  override def terminatePersistentHdfsCluster(): Future[Unit] = successful()
 }
 
 object MockedServiceManager {

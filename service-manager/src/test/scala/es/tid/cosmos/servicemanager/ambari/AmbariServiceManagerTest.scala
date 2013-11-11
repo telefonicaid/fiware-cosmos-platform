@@ -160,7 +160,7 @@ class AmbariServiceManagerTest
   it must "fail adding users on an un-managed cluster" in {
     val unmanagedClusterId = ClusterId()
     evaluating {
-      instance.addUsers(unmanagedClusterId, ClusterUser("username", "publicKey"))
+      instance.setUsers(unmanagedClusterId, Seq(ClusterUser("username", "publicKey")))
     } must produce [IllegalArgumentException]
   }
 
@@ -177,7 +177,7 @@ class AmbariServiceManagerTest
       Seq(ClusterUser("user1", "publicKey1")))
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
-    get(instance.addUsers(clusterId, ClusterUser("user2", "publicKey2")))
+    get(instance.setUsers(clusterId, Seq(ClusterUser("user2", "publicKey2"))))
     Await.result(instance.terminateCluster(clusterId), 5 seconds)
     verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
     verify(cluster).addService(CosmosUserService.name)
@@ -200,7 +200,7 @@ class AmbariServiceManagerTest
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
     evaluating {
-      get(instance.addUsers(clusterId, ClusterUser("username", "publicKey")))
+      get(instance.setUsers(clusterId, Seq(ClusterUser("username", "publicKey"))))
     } must produce [ServiceMasterNotFound]
   }
 
@@ -211,7 +211,7 @@ class AmbariServiceManagerTest
     val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq())
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
-    evaluating (get(instance.addUsers(clusterId, ClusterUser("username", "publicKey")))) must
+    evaluating (get(instance.setUsers(clusterId, Seq(ClusterUser("username", "publicKey"))))) must
       produce [IllegalArgumentException]
   }
 

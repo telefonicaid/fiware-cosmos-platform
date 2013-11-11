@@ -14,17 +14,6 @@ package es.tid.cosmos.platform.ial
 import scala.concurrent.Future
 
 /**
- * Resource exhausted exception class. This exception is thrown when there are not enough
- * infrastructure resources available to satisfy a request to the infrastructure provider.
- *
- * @param resource the type of resource which was exhausted
- * @param requested the amount of requested resources
- * @param available the amount of available resources
- */
-case class ResourceExhaustedException(resource: String, requested: Int, available: Int)
-  extends Exception(s"requested $requested resources of type $resource, only $available available")
-
-/**
  * An abstraction for an infrastructure provider
  */
 trait InfrastructureProvider {
@@ -66,16 +55,4 @@ trait InfrastructureProvider {
   val rootPrivateSshKey: String
 
   def availableMachineCount(profile: MachineProfile.Value): Future[Int]
-}
-
-/**
- * This trait is aimed to implement a cake pattern to declare an artifact that requires an
- * infrastructure provider as one of its components.
- */
-trait InfrastructureProviderComponent {
-
-  /**
-   * Obtain the infrastructure provider instance for this component.
-   */
-  def infrastructureProvider: InfrastructureProvider
 }

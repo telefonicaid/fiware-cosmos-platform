@@ -26,12 +26,15 @@ class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   override def around[T: AsResult](t: => T): Result = {
     super.around {
       dao.withConnection { implicit c =>
-        dao.registerUserInDatabase(
-          UserId("tu1"), Registration("user1", "ssh-rsa A3NzaC1yc2EAAAABIwAAAQEA9L user1@host"))
-        dao.registerUserInDatabase(
-          UserId("tu2"), Registration("user2", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di user2@host"))
-        dao.registerUserInDatabase(
-          UserId("tu3"), Registration("user3", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di user3@host"))
+        for (idx <- 1 to 3) {
+          val email = s"user$idx@host"
+          val registration = Registration(
+            handle = s"user$idx",
+            publicKey = s"ssh-rsa A3NzaC1yc2EAAAABIwAAAQEA9$idx $email",
+            email = email
+          )
+          dao.registerUserInDatabase(UserId(s"tu$idx"), registration)
+        }
       }
       t
     }

@@ -37,12 +37,13 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     val apiCredentials = ApiCredentials.random()
     val defaultKey = NamedKey("default", reg.publicKey)
     val cosmosId = SQL(
-      """INSERT INTO user(auth_realm, auth_id, handle, api_key, api_secret)
-        | VALUES ({auth_realm}, {auth_id}, {handle}, {api_key}, {api_secret})""".stripMargin)
+      """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret)
+        | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret})""".stripMargin)
       .on(
         "auth_realm" -> userId.realm,
         "auth_id" -> userId.id,
         "handle" -> reg.handle,
+        "email" -> reg.email,
         "api_key" -> apiCredentials.apiKey,
         "api_secret" -> apiCredentials.apiSecret
       ).executeInsert(scalar[Long].single)
@@ -51,6 +52,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       id = cosmosId,
       state = Enabled,
       handle = reg.handle,
+      email = reg.email,
       quota = Quota(None),
       apiCredentials = apiCredentials,
       keys = Seq(defaultKey)
@@ -90,15 +92,15 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   }
 
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.state, u.handle, u.machine_quota, u.api_key, u.api_secret, p.name,
-                 | p.signature
+    lookup(SQL("""SELECT u.cosmos_id, u.state, u.handle, u.email, u.machine_quota, u.api_key,
+                 | u.api_secret, p.name, p.signature
                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                  | WHERE u.auth_realm = {realm} AND u.auth_id = {id}""".stripMargin)
       .on("realm" -> userId.realm, "id" -> userId.id))
 
   override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.state, u.handle, u.machine_quota, u.api_key, u.api_secret, p.name,
-                 | p.signature
+    lookup(SQL("""SELECT u.cosmos_id, u.state, u.handle, u.email, u.machine_quota, u.api_key,
+                 | u.api_secret, p.name, p.signature
                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                  | WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
       .on("key" -> creds.apiKey, "secret" -> creds.apiSecret))
@@ -130,11 +132,17 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   private def lookup(query: SimpleSql[Row])(implicit c: Conn): Option[CosmosProfile] = {
     val rows = query().toList
     rows.headOption.map {
-      case Row(id: Int, UserState(state), handle: String, machineQuota: Option[_], apiKey: String,
-          apiSecret: String, _, _) => {
+      case Row(
+          id: Int, UserState(state),
+          handle: String,
+          email: String,
+          machineQuota: Option[_],
+          apiKey: String,
+          apiSecret: String, _, _
+        ) => {
         val namedKeys = rows.map(row => NamedKey(row[String]("name"), row[String]("signature")))
         CosmosProfile(
-          id, state, handle, Quota(machineQuota.asInstanceOf[Option[Int]]),
+          id, state, handle, email, Quota(machineQuota.asInstanceOf[Option[Int]]),
           ApiCredentials(apiKey, apiSecret), namedKeys.toSeq)
       }
     }

@@ -95,7 +95,7 @@ class Pages(
     unlessPageUnderMaintenance {
       withAuthentication(request)(
         whenRegistered = (_, _) => redirectToIndex,
-        whenNotRegistered = userProfile => registrationPage(userProfile, RegistrationForm()),
+        whenNotRegistered = userProfile => registrationPage(userProfile, RegistrationForm.initializeFrom(userProfile)),
         whenNotAuthenticated = redirectToIndex
       )
     }

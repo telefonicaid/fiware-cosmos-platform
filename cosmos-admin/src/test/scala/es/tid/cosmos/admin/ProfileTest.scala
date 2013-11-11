@@ -21,18 +21,20 @@ class ProfileTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   trait WithMockCosmosProfileDao {
     val dao = mock[MockCosmosProfileDao]
+    val registration = Registration("jsmith", "pk00001", "jsmith@example.com")
+    dao.withConnection { implicit c =>
+      dao.registerUserInDatabase(UserId("db-0003"), registration)
+    }
   }
 
   "A profile" must "unset quota" in new WithMockCosmosProfileDao {
     dao.withConnection { implicit c =>
-      dao.registerUserInDatabase(UserId("db-0003"), Registration("jsmith", "pk00001"))
       new Profile(dao).unsetMachineQuota(0) must be (true)
     }
   }
 
   it must "set a valid quota" in new WithMockCosmosProfileDao {
     dao.withConnection { implicit c =>
-      dao.registerUserInDatabase(UserId("db-0003"), Registration("jsmith", "pk00001"))
       new Profile(dao).setMachineQuota(0, 15) must be (true)
     }
   }

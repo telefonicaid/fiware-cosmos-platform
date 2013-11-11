@@ -19,16 +19,26 @@ import es.tid.cosmos.api.profile.UserState._
 
 class CosmosProfileTest extends FlatSpec with MustMatchers {
 
+  val validProfile = CosmosProfile(
+    id = 0,
+    state = Enabled,
+    handle = "handle",
+    email = "user@example.com",
+    quota = EmptyQuota,
+    apiCredentials = ApiCredentials.random(),
+    keys = Seq(NamedKey("normal", "ssh-rsa CCCC handle@localhost"))
+  )
+
   "A cosmos profile" must "have a valid unix handle" in {
     val ex = evaluating {
-      CosmosProfile(0, Enabled, "id-invalid", EmptyQuota, ApiCredentials.random(), keys = Seq())
+      validProfile.copy(handle = "id-invalid")
     } must produce [IllegalArgumentException]
     ex.getMessage must include ("Invalid handle")
   }
 
   it must "have keys with unique names" in {
     val ex = evaluating {
-      CosmosProfile(0, Enabled, "handle", EmptyQuota, ApiCredentials.random(), keys = Seq(
+      validProfile.copy(keys = Seq(
         NamedKey("duplicated", "ssh-rsa AAAA handle@localhost"),
         NamedKey("duplicated", "ssh-rsa BBBB handle@localhost"),
         NamedKey("normal", "ssh-rsa CCCC handle@localhost")
@@ -39,9 +49,7 @@ class CosmosProfileTest extends FlatSpec with MustMatchers {
 
   it must "have valid SSH keys" in {
     val ex = evaluating {
-      CosmosProfile(0, Enabled, "handle", EmptyQuota, ApiCredentials.random(), keys = Seq(
-        NamedKey("normal", "invalid")
-      ))
+      validProfile.copy(keys = Seq(NamedKey("normal", "invalid")))
     } must produce [IllegalArgumentException]
     ex.getMessage must include ("Not a valid signature: invalid")
   }

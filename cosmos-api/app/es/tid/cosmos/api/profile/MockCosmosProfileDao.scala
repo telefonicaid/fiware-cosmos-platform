@@ -39,6 +39,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       id = users.size,
       state = Enabled,
       handle = reg.handle,
+      email = reg.email,
       quota = UnlimitedQuota,
       apiCredentials = credentials,
       keys = List(NamedKey("default", reg.publicKey))
@@ -52,7 +53,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
 
   override def getMachineQuota(cosmosId: Long)(implicit c: Conn): Quota =
     users.collectFirst {
-      case (_, CosmosProfile(`cosmosId`, _, _, quota, _, _)) => quota
+      case (_, profile) if profile.id == cosmosId => profile.quota
     }.getOrElse(EmptyQuota)
 
   override def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean = synchronized {

@@ -55,28 +55,30 @@ trait WithSampleSessions extends WithTestApplication {
     val session = Session().setUserProfile(userProfile).setToken("token")
   }
   val regUser = new UserSession {
+    val email = "user1@mail.com"
     val userProfile = OAuthUserProfile(
       id = UserId("user1"),
       name = Some("User 1"),
-      email = Some("user1@mail.com")
+      email = Some(email)
     )
     val handle = "reguser"
     val cosmosProfile = dao.withTransaction { implicit c =>
       dao.registerUserInDatabase(userProfile.id,
-        Registration(handle, "ssh-rsa AAAAA reguser@mail.com"))
+        Registration(handle, s"ssh-rsa AAAAA $email", email))
     }
     val session = Session().setUserProfile(userProfile).setToken("token")
   }
   val disabledUser = new UserSession {
+    val email = "disabled1@mail.com"
     val userProfile = OAuthUserProfile(
       id = UserId("disabled1"),
       name = Some("Disabled 1"),
-      email = Some("disabled1@mail.com")
+      email = Some(email)
     )
     val handle = "disabled"
     val cosmosProfile = dao.withTransaction { implicit c =>
       val profile = dao.registerUserInDatabase(userProfile.id,
-        Registration(handle, "ssh-rsa AAAAA disabled1@mail.com"))
+        Registration(handle, s"ssh-rsa AAAAA $email", email))
       dao.setUserState(profile.id, UserState.Disabled)
       profile
     }

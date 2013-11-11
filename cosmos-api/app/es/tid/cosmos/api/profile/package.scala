@@ -26,6 +26,7 @@ package object profile {
    * @param id             Internal user id
    * @param state          User state
    * @param handle         User login
+   * @param email          User email
    * @param quota          Quota for resources
    * @param apiCredentials Credentials for the REST API
    * @param keys           Public keys
@@ -34,6 +35,7 @@ package object profile {
       id: Long,
       state: UserState,
       handle: String,
+      email: String,
       quota: Quota,
       apiCredentials: ApiCredentials,
       keys: Seq[NamedKey]) {

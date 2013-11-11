@@ -32,10 +32,10 @@ class WithTestApplication(
 
   def registerUser(dao: CosmosProfileDao, user: OAuthUserProfile): CosmosProfile =
     dao.withConnection { implicit c =>
-      val OAuthUserProfile(authId, _, email) = user
-      val handle = email.map(_.split('@')(0)).getOrElse("root")
-      val reg = Registration(handle, s"ssh-rsa ABCDE ${user.email.getOrElse("user@host")}")
-      dao.registerUserInDatabase(authId, reg)
+      val email = user.email.getOrElse("root@host")
+      val handle = email.split('@')(0)
+      val reg = Registration(handle, s"ssh-rsa ABCDE $email", email)
+      dao.registerUserInDatabase(user.id, reg)
     }
 
   def withSession[A](request: FakeRequest[A], session: Session) =

@@ -21,8 +21,8 @@ object MachineProfile extends Enumeration {
 
   type MachineProfile = Value
 
-  /* Uses indices for backwards compability while serializing. */
-  val G1Compute = Value(1, "Compute machine version 1")
-  val HdfsSlave = Value(2, "Persistent HDFS DataNode")
-  val HdfsMaster = Value(3, "Persistent HDFS Namenode")
+  /* Uses indices for backwards compatibility while serializing. */
+  val G1Compute = Value(1, "g1-compute")
+  val HdfsSlave = Value(2, "hdfs-slave")
+  val HdfsMaster = Value(3, "hdfs-master")
 }

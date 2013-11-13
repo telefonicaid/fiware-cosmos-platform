@@ -13,7 +13,6 @@ package es.tid.cosmos.platform.ial.libvirt
 
 import es.tid.cosmos.platform.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
-import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
 import es.tid.cosmos.platform.ial.libvirt.jna.JnaLibVirtServer
 
 /**
@@ -23,8 +22,7 @@ trait LibVirtInfrastructureProviderComponent extends InfrastructureProviderCompo
   this: ConfigComponent =>
 
   override val infrastructureProvider = {
-    val db = new MySqlDatabase(MySqlConnDetails.fromConfig(config))
-    val dao = new SqlLibVirtDao(db)
+    val dao = new ConfigFileLibVirtDao(config.getConfig("ial.libvirt"))
     new LibVirtInfrastructureProvider(dao,
       libvirtServerFactory = props => new JnaLibVirtServer(props),
       rootPrivateSshKey = config.getString("ial.root.ssh.private_key"))

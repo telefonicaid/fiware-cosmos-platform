@@ -29,6 +29,13 @@ class cosmos::setup inherits cosmos::params {
     content => template('cosmos/cosmos-api.conf.erb'),
   }
 
+  file { 'ial.conf':
+    ensure  => 'present',
+    path    => "${cosmos::params::cosmos_confdir}/ial.conf",
+    mode    => '0644',
+    content => template('cosmos/ial.conf.erb'),
+  }
+
   file { 'logback.conf' :
     ensure  => 'present',
     path    => "${cosmos::params::cosmos_confdir}/logback.conf",
@@ -89,7 +96,6 @@ class cosmos::setup inherits cosmos::params {
   Class['ssh_keys', 'cosmos::master_db'] -> Exec['cosmos-setup']
 
   Package['cosmos'] ~> Exec['cosmos-setup']
-  Exec['ial_db']    ~> Exec['cosmos-setup']
   File[
     'cosmos-api.conf',
     $cosmos::params::ssl_cert_file,

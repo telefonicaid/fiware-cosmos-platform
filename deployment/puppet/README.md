@@ -37,3 +37,22 @@ To ease testing, you will find the local ports 80 and 443 mapped to the
     192.168.11.22 store2
     192.168.11.23 compute1
     192.168.11.24 compute2
+
+Deploying local RPMs in Vagrant
+-------------------------------
+
+Vagrant will deploy by default the latest nightly build of Ambari and Cosmos.
+This might be OK for some scenarios, but we might want to deploy a local change
+we have.
+
+If that is the case, the first thing we need to do is to generate the RPMs in a
+Linux machine (please note that rpmbuild in Mac OS X has a bug and does not
+work well with Maven), following the instructions in /deployment/rpm/README.md
+
+Next, you need to run the `createrepo` command to generate the repository
+metadata. In that same directory, you can start a temporary HTTP server on port
+12345 with the following command: `python -m SimpleHTTPServer 12345`
+
+The final step is to change the `cosmos::params::cosmos_repo_platform_url`
+parameter in Hiera so it points to `http://<your-ip-address>:12345`. At this
+point, running `vagrant up` will deploy your RPMs instead of the nightly build.

@@ -65,7 +65,8 @@ class UserResource(
             (for {
               userId <- uniqueUserId(params)
               handle <- selectHandle(params.handle)
-            } yield createUserAccount(userId, handle, params.sshPublicKey)).fold(
+              registration = Registration(handle, params.sshPublicKey, params.email)
+            } yield createUserAccount(userId, registration)).fold(
               fail = message => Conflict(Json.toJson(message)),
               succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
                 handle = cosmosProfile.handle,
@@ -106,8 +107,8 @@ class UserResource(
     }
   } yield password == provider.adminPassword).getOrElse(false)
 
-  private def createUserAccount(userId: UserId, handle: String, publicKey: String)(implicit c: Conn) = {
-    val p = dao.registerUserInDatabase(userId, Registration(handle, publicKey))
+  private def createUserAccount(userId: UserId, registration: Registration)(implicit c: Conn) = {
+    val p = dao.registerUserInDatabase(userId, registration)
     serviceManager.addUsers(serviceManager.persistentHdfsId, p.toClusterUser)
     p
   }

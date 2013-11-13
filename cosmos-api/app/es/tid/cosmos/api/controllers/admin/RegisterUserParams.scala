@@ -11,7 +11,8 @@
 
 package es.tid.cosmos.api.controllers.admin
 
-import play.api.data.validation.ValidationError
+import play.api.data.Forms
+import play.api.data.validation.{Valid, ValidationError}
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
@@ -24,6 +25,7 @@ case class RegisterUserParams(
   authId: String,
   authRealm: String,
   handle: Option[String],
+  email: String,
   sshPublicKey: String)
 
 object RegisterUserParams {
@@ -34,10 +36,14 @@ object RegisterUserParams {
     (__ \ "authRealm").read[String] ~
     (__ \ "handle").readNullable[String]
       .filter(ValidationError("not a unix handle"))(validateHandle) ~
+    (__ \ "email").read[String]
+      .filter(ValidationError("not a valid email"))(validateEmail) ~
     (__ \ "sshPublicKey").read[String]
       .filter(ValidationError("not a valid public key"))(AuthorizedKeyConstraint.apply)
   )(RegisterUserParams.apply _)
 
   private def validateHandle(maybeHandle: Option[String]) =
     maybeHandle.map(HandleConstraint.apply).getOrElse(true)
+
+  private def validateEmail(email: String) = Forms.email.constraints.head.apply(email) == Valid
 }

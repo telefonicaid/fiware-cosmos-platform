@@ -20,6 +20,7 @@ class RegisterUserParamsTest extends FlatSpec with MustMatchers {
   val validJson = Json.obj(
     "authId" -> "id",
     "authRealm" -> "realm",
+    "email" -> "handle@realm",
     "handle" -> "handle",
     "sshPublicKey" -> "ssh-rsa ABCDEFG handle@realm"
   )
@@ -27,6 +28,7 @@ class RegisterUserParamsTest extends FlatSpec with MustMatchers {
     authId = "id",
     authRealm = "realm",
     handle = Some("handle"),
+    email = "handle@realm",
     sshPublicKey = "ssh-rsa ABCDEFG handle@realm"
   )
 
@@ -56,5 +58,11 @@ class RegisterUserParamsTest extends FlatSpec with MustMatchers {
     val result = parse(validJson ++ Json.obj("sshPublicKey" -> "not and ssh key"))
     result must not be JsSuccess
     result.toString must include ("not a valid public key")
+  }
+
+  it must "reject invalid emails" in {
+    val result = parse(validJson ++ Json.obj("email" -> "not an email"))
+    result must not be JsSuccess
+    result.toString must include ("not a valid email")
   }
 }

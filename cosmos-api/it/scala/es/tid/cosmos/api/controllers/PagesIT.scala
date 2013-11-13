@@ -74,6 +74,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   it must "register unregistered users" in new WithSampleSessions {
     val response = unregUser.submitForm("/register",
       "handle" -> "newuser",
+      "email" -> "jsmith@example.com",
       "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
     val contents = contentAsString(response)
     response must redirectTo ("/")
@@ -85,6 +86,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   it must "reject registrations when the submitted form is invalid" in new WithSampleSessions {
     val response = unregUser.submitForm("/register",
       "handle" -> "1nvalid handle",
+      "email" -> "not an email",
       "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example@invalid.com"
     )
     status(response) must be (BAD_REQUEST)

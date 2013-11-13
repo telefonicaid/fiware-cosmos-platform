@@ -21,7 +21,11 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
   type DaoTest = CosmosProfileDao => Unit
 
-  def registration(handle: String) = Registration(handle, s"ssh-rsa pk00001 $handle@host")
+  def registration(handle: String) = Registration(
+    handle = handle,
+    publicKey = s"ssh-rsa pk00001 $handle@host",
+    email = s"$handle@example.com"
+  )
 
   def profileDao(withDao: DaoTest => Unit, maybeTag: Option[Tag] = None) {
 
@@ -37,6 +41,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
         val profile = dao.registerUserInDatabase(id, registration("jsmith"))
         profile.handle must be ("jsmith")
         profile.keys.length must be (1)
+        profile.email must be ("jsmith@example.com")
       }
     })
 
@@ -117,7 +122,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         val registeredUser = UserId("db-registered")
         dao.registerUserInDatabase(registeredUser,
-          Registration("jsmith", "ssh-rsa AAAAA jsmith@host"))
+          Registration("jsmith", "ssh-rsa AAAAA jsmith@host", "jsmith@host"))
         dao.getCosmosId(registeredUser) must be ('defined)
         dao.getCosmosId(UserId("db-unknown")) must not be 'defined
       }
@@ -133,7 +138,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "lookup a profile from api credentials", withDao { dao =>
       dao.withTransaction { implicit c =>
         val id = UserId("db-0004")
-        dao.registerUserInDatabase(id, Registration("user4", "ssh-rsa AAAAA user4@host"))
+        dao.registerUserInDatabase(id, Registration("user4", "ssh-rsa AAAAA user4@host", "user4@host"))
         val profileByUserId = dao.lookupByUserId(id).get
         val profileByApiCredentials =
           dao.lookupByApiCredentials(profileByUserId.apiCredentials).get
@@ -145,9 +150,9 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         val clusterId = ClusterId()
         val id1 = dao.registerUserInDatabase(
-          UserId("user1"), Registration("user1", "ssh-rsa AAAAA user1@host")).id
+          UserId("user1"), Registration("user1", "ssh-rsa AAAAA user1@host", "user1@host")).id
         val id2 = dao.registerUserInDatabase(
-          UserId("user2"), Registration("user2", "ssh-rsa AAAAA user2@host")).id
+          UserId("user2"), Registration("user2", "ssh-rsa AAAAA user2@host", "user2@host")).id
         dao.assignCluster(clusterId, id2)
         dao.clustersOf(id1).map(_.clusterId).toList must not contain clusterId
         dao.clustersOf(id2).map(_.clusterId).toList must contain (clusterId)

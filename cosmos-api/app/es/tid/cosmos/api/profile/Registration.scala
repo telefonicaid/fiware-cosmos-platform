@@ -16,5 +16,6 @@ package es.tid.cosmos.api.profile
  *
  * @param handle    Handle name to be used as login on clusters
  * @param publicKey Initial public key
+ * @param email     User email
  */
-case class Registration(handle: String, publicKey: String)
+case class Registration(handle: String, publicKey: String, email: String)

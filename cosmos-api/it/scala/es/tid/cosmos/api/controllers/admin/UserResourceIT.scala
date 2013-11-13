@@ -28,13 +28,15 @@ import es.tid.cosmos.api.profile.{NamedKey, Registration, UserId}
 class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
 
   val newUserId = UserId(id = "new_id", realm = MockAuthConstants.ProviderId)
-  val publicKey = "ssh-rsa XXXXXX myhandle@host"
+  val email = "myhandle@host"
+  val publicKey = s"ssh-rsa XXXXXX $email"
   val requestedHandle = "myhandle"
   val resource = "/admin/v1/user"
   val validPayload = Json.obj(
     "authId" -> newUserId.id,
     "authRealm" -> newUserId.realm,
     "handle" -> requestedHandle,
+    "email" -> email,
     "sshPublicKey" -> publicKey
   )
   val validAuth = BasicAuth(MockAuthConstants.ProviderId, MockAuthConstants.AdminPassword)
@@ -96,7 +98,8 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when handle is already taken" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUserInDatabase(UserId("otherUser"), Registration(requestedHandle, publicKey))
+      dao.registerUserInDatabase(
+        UserId("otherUser"), Registration(requestedHandle, publicKey, email))
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)
@@ -105,7 +108,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUserInDatabase(newUserId, Registration("otherHandle", publicKey))
+      dao.registerUserInDatabase(newUserId, Registration("otherHandle", publicKey, email))
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)

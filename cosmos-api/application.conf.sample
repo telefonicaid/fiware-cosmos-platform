@@ -69,12 +69,7 @@ swagger.api.basepath=${application.baseurl}
 
 # IAL configuration
 # ~~~~~
-ial.root.ssh.private_key=
-ial.db.host=${db.default.host}
-ial.db.port=${db.default.port}
-ial.db.username=${db.default.user}
-ial.db.password=${db.default.pass}
-ial.db.name=${db.default.name}
+ial = include "ial"
 
 # Service manager
 # ~~~~~

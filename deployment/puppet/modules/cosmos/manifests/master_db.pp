@@ -22,30 +22,6 @@ class cosmos::master_db inherits cosmos::params {
     },
   }
 
-  $ial_schema   = "${cosmos::params::cosmos_basedir}/ial/ial_schema.sql"
-  $ial_machines = "${cosmos::params::cosmos_basedir}/ial/ial_machines.sql"
-
-  file { 'ial':
-    ensure => 'directory',
-    path   => "${cosmos::params::cosmos_basedir}/ial",
-  }
-
-  file { $ial_schema:
-    ensure => present,
-    source => "puppet:///modules/${module_name}/ial_schema.sql",
-  }
-
-  file { $ial_machines:
-    ensure  => present,
-    content => template('cosmos/ial_machines.sql.erb'),
-  }
-
-  exec { 'ial_db':
-    command     => "cat ${ial_schema} ${ial_machines} | mysql -ucosmos -p${cosmos::params::cosmos_db_pass} cosmos -B",
-    path        => $::path,
-    refreshonly => true,
-  }
-
   mysql::db { $cosmos::params::cosmos_db_name:
     user     => $cosmos::params::cosmos_db_user,
     password => $cosmos::params::cosmos_db_pass,
@@ -64,14 +40,10 @@ class cosmos::master_db inherits cosmos::params {
     privileges => ['all']
   }
 
-  File['ial'] -> File[$ial_schema, $ial_machines] ~> Exec['ial_db']
-  Database[$cosmos::params::cosmos_db_name]       ~> Exec['ial_db']
-
   anchor{'cosmos::master_db::begin': }
     -> Class['mysql::server']
     -> Database[$cosmos::params::cosmos_db_name]
     -> Database_user[$db_user]
     -> Database_grant[$db_user_and_db]
-    -> Exec['ial_db']
     -> anchor{'cosmos::master_db::end': }
 }

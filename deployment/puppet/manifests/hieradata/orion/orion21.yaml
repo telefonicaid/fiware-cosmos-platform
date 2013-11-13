@@ -12,7 +12,7 @@
 cosmos::slave::ip: "192.168.63.43"
 cosmos::slave::ct_ip: "192.168.63.107"
 cosmos::slave::ct_hostname: "orion-compute21"
-cosmos::slave::hardware_profile: 1
+cosmos::slave::hardware_profile: g1-compute
 cosmos::slave::name: "Orion 21"
 cosmos::slave::ram: 32768
 cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDg2WdAtbbxDvOT6K9eSW6+gBB+GrUKOTluoPdPLyUD6KeD79yonItaf4ZzmlKbWLPb/kuIVXpHSUzXmIM61Gzy7FAgS1k42uila/S+1UqUe9AqhdzoFmqdLHxr30DY9DHBXF5wrtjtf9OTPBygUrD6rUfdE819OPMZGTBAWLONgck9hPaa7LFyfEfVW93QlhaeaIwZolNYTGQP7rbhS+n1diPgLz4pdZQs+3NWeUq+791WM1V6amF60rG1vM8j10oZII0cd6YnzDsF9NFw7J9udZ68SpYYkrl3jSUCuPv3FHDbw6qtxNL71R1CU4Vb2I4hZzllW5Szks9hHxOG4KGt"

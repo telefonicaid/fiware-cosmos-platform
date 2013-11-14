@@ -9,6 +9,7 @@
 # All rights reserved.
 #
 
+cosmos::slave::rack: "rack01"
 cosmos::slave::ip: "192.168.11.22"
 cosmos::slave::ct_ip: "192.168.11.72"
 cosmos::slave::ct_hostname: "cosmos-store2"

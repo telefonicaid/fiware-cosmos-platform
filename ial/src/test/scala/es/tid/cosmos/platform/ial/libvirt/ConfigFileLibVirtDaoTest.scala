@@ -33,6 +33,7 @@ class ConfigFileLibVirtDaoTest extends FlatSpec with MustMatchers with Inside {
         srv1.domainHostname must be ("andromeda-compute02")
         srv1.domainIpAddress must be ("192.168.63.32")
         srv1.profile must be (MachineProfile.G1Compute)
+        srv1.rack must be ("rack02")
 
         srv2.name must be ("andromeda03")
         srv2.description must be ("Andromeda 03")
@@ -42,6 +43,7 @@ class ConfigFileLibVirtDaoTest extends FlatSpec with MustMatchers with Inside {
         srv2.domainHostname must be ("andromeda-compute03")
         srv2.domainIpAddress must be ("192.168.63.33")
         srv2.profile must be (MachineProfile.G1Compute)
+        srv2.rack must be ("rack01")
     }
   }
 

@@ -38,6 +38,7 @@ object ConfigFileLibVirtDao {
     val name: String = config.getString("name")
     val description: String = getStringWithFallback("description", "name")(config)
     val profile: MachineProfile.Value = MachineProfile.withName(config.getString("profile"))
+    val rack: String = config.getString("rack")
     val connectionChain: String = config.getString("connection")
     val domainHostname: String = config.getString("domain_hostname")
     val domainIpAddress: String = config.getString("domain_ipaddress")

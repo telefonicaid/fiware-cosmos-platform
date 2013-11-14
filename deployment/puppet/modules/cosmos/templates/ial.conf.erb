@@ -10,6 +10,7 @@ ial.libvirt.servers = [
         description = "<%=scope.function_hiera(["cosmos::slave::name", nil, @host])%>",
         enabled = true,
         profile = "<%=scope.function_hiera(["cosmos::slave::hardware_profile", nil, @host])%>",
+        rack = "<%=scope.function_hiera(["cosmos::slave::rack", nil, @host])%>",
         connection = "openvz+ssh://root@<%=scope.function_hiera(["cosmos::slave::ip", nil, @host])%>/system?socket=/var/run/libvirt/libvirt-sock",
         domain_hostname = "<%=scope.function_hiera(["cosmos::slave::ct_hostname", nil, @host])%><%=@domain%>"
         domain_ipaddress = "<%=scope.function_hiera(["cosmos::slave::ct_ip", nil, @host])%>"

@@ -20,6 +20,7 @@ class TransientLibVirtServerProperties(
     val name: String,
     val description: String,
     val profile: MachineProfile.Value,
+    val rack: String,
     val connectionChain: String,
     val domainHostname: String,
     val domainIpAddress: String) extends LibVirtServerProperties

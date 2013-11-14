@@ -9,6 +9,7 @@
 # All rights reserved.
 #
 
+cosmos::slave::rack: "rack01"
 cosmos::slave::ip: "192.168.63.21"
 cosmos::slave::ct_ip: "192.168.63.85"
 cosmos::slave::ct_hostname: "orion-compute03"

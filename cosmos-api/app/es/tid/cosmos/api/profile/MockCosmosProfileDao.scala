@@ -32,7 +32,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
-  override def registerUserInDatabase(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
+  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
     val credentials = ApiCredentials.random()
     require(!users.values.exists(_.handle == reg.handle), "Duplicated handle")
     val cosmosProfile = CosmosProfile(
@@ -50,17 +50,18 @@ class MockCosmosProfileDao extends CosmosProfileDao {
 
   override def getAllUsers()(implicit c: Conn): Seq[CosmosProfile] = users.values.toSeq
 
-  override def getCosmosId(userId: UserId)(implicit c: Conn): Option[Long] =
+  override def getProfileId(userId: UserId)(implicit c: Conn): Option[ProfileId] =
     users.get(userId).map(_.id)
 
-  override def getMachineQuota(cosmosId: Long)(implicit c: Conn): Quota =
+  override def getMachineQuota(id: ProfileId)(implicit c: Conn): Quota =
     users.collectFirst {
-      case (_, profile) if profile.id == cosmosId => profile.quota
+      case (_, profile) if profile.id == id => profile.quota
     }.getOrElse(EmptyQuota)
 
-  override def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean = synchronized {
+  override def setMachineQuota(id: ProfileId, quota: Quota)
+                              (implicit c: Conn): Boolean = synchronized {
     users.collectFirst {
-      case (userId, profile) if profile.id == cosmosId => {
+      case (userId, profile) if profile.id == id => {
         users = users.updated(userId, profile.copy(quota = quota))
         true
     }}.getOrElse(false)
@@ -72,7 +73,8 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     users.get(userId)
 
-  override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =
+  override def lookupByApiCredentials(creds: ApiCredentials)
+                                     (implicit c: Conn): Option[CosmosProfile] =
     users.collectFirst {
       case (_, profile) if profile.apiCredentials == creds => profile
     }
@@ -84,10 +86,10 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     }
   }
 
-  override def clustersOf(cosmosId: Long)(implicit c: Conn): Seq[ClusterAssignment] =
-    clusters.filter(_.ownerId == cosmosId)
+  override def clustersOf(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment] =
+    clusters.filter(_.ownerId == id)
 
-  override def setHandle(id: Long, handle: String)(implicit c: Conn) {
+  override def setHandle(id: ProfileId, handle: String)(implicit c: Conn) {
     updateProfile(id) { profile =>
       require(
         profile.handle == handle || users.values.find(_.handle == handle).isEmpty,
@@ -97,19 +99,25 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     }
   }
 
-  override def setUserState(id: Long, userState: UserState)(implicit c: Conn) {
+  override def setEmail(id: ProfileId, email: String)(implicit c: Conn) {
+    updateProfile(id) { profile =>
+      profile.copy(email = email)
+    }
+  }
+
+  override def setUserState(id: ProfileId, userState: UserState)(implicit c: Conn) {
     updateProfile(id) { profile =>
       profile.copy(state = userState)
     }
   }
 
-  override def setPublicKeys(id: Long, publicKeys: Seq[NamedKey])(implicit c: Conn) {
+  override def setPublicKeys(id: ProfileId, publicKeys: Seq[NamedKey])(implicit c: Conn) {
     updateProfile(id) { profile =>
       profile.copy(keys = publicKeys)
     }
   }
 
-  private def updateProfile(id: Long)(f: CosmosProfile => CosmosProfile) {
+  private def updateProfile(id: ProfileId)(f: CosmosProfile => CosmosProfile) {
     val maybeId = users.collectFirst {
       case (userId, profile) if profile.id == id => userId
     }

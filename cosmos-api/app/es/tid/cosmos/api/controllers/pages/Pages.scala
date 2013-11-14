@@ -23,13 +23,12 @@ import _root_.controllers.{routes => rootRoutes}
 import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.auth.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.auth.oauth2._
-import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration}
 import es.tid.cosmos.platform.common.Wrapped
-import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
+import es.tid.cosmos.servicemanager.ServiceManager
 import views.AuthAlternative
 
 /**

@@ -42,7 +42,7 @@ class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
       Invalid("3 fields were expected but 2 were found"))
   }
 
-  it must "rejest multi-line inputs" in {
+  it must "reject multi-line inputs" in {
     validate("""ssh-rsa ADKDJDIEJDJ jsmith@example.com
                |ssh-rsa ADKDJDIEJDJ jsmith@example.com""".stripMargin) must be(
       Invalid("only one line was expected but 2 were found")
@@ -50,8 +50,7 @@ class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
   }
 
   it must "reject keys with invalid email addresses" in {
-    validate("ssh-rsa ADKDJDIEJDJ adamos@tid@e.es") must be(
-      Invalid("invalid email 'adamos@tid@e.es'"))
+    validate("ssh-rsa ADKDJDIEJDJ adamos@tid@e.es") must be(Invalid("invalid email"))
   }
 
   it must "be available as a simple function" in {

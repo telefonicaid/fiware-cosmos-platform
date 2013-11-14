@@ -33,7 +33,7 @@ class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
             publicKey = s"ssh-rsa A3NzaC1yc2EAAAABIwAAAQEA9$idx $email",
             email = email
           )
-          dao.registerUserInDatabase(UserId(s"tu$idx"), registration)
+          dao.registerUser(UserId(s"tu$idx"), registration)
         }
       }
       t

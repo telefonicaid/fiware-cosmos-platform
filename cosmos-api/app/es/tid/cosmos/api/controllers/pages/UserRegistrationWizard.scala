@@ -29,7 +29,7 @@ class UserRegistrationWizard(dao: CosmosProfileDao, serviceManager: ServiceManag
     * @return              Newly created profile
     */
   def registerUser(userId: UserId, registration: Registration) = dao.withTransaction { implicit c =>
-    val newProfile = dao.registerUserInDatabase(userId, registration)
+    val newProfile = dao.registerUser(userId, registration)
     val clusterUsers = dao.getAllUsers().filter(_.state == UserState.Enabled).map(profile =>
       ClusterUser(
         userName = profile.handle,

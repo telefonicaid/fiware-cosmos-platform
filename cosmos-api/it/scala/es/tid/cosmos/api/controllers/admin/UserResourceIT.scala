@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.controllers.admin
 
-import scala.Some
 import scala.concurrent.Future
 
 import org.scalatest.FlatSpec
@@ -26,17 +25,20 @@ import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Registration
+import scala.Some
 
 class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
 
   val newUserId = UserId(id = "new_id", realm = MockAuthConstants.ProviderId)
-  val publicKey = "ssh-rsa XXXXXX myhandle@host"
+  val email = "myhandle@host"
+  val publicKey = s"ssh-rsa XXXXXX $email"
   val requestedHandle = "myhandle"
   val resource = "/admin/v1/user"
   val validPayload = Json.obj(
     "authId" -> newUserId.id,
     "authRealm" -> newUserId.realm,
     "handle" -> requestedHandle,
+    "email" -> email,
     "sshPublicKey" -> publicKey
   )
   val validAuth = BasicAuth(MockAuthConstants.ProviderId, MockAuthConstants.AdminPassword)
@@ -98,7 +100,9 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when handle is already taken" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUserInDatabase(UserId("otherUser"), Registration(requestedHandle, publicKey), NoGroup, UnlimitedQuota)
+      dao.registerUserInDatabase(
+        UserId("otherUser"), Registration(requestedHandle, publicKey, email),
+        NoGroup, UnlimitedQuota)
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)
@@ -107,7 +111,8 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUserInDatabase(newUserId, Registration("otherHandle", publicKey), NoGroup, UnlimitedQuota)
+      dao.registerUserInDatabase(newUserId, Registration("otherHandle", publicKey, email),
+        NoGroup, UnlimitedQuota)
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)

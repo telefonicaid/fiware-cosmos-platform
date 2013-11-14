@@ -14,13 +14,21 @@ package es.tid.cosmos.api.profile
 import org.scalatest.{FlatSpec, Tag}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.servicemanager.ClusterId
 
 trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
   type DaoTest = CosmosProfileDao => Unit
 
-  def registration(handle: String) = Registration(handle, s"ssh-rsa pk00001 $handle@host")
+  def registration(handle: String) = Registration(
+    handle = handle,
+    publicKey = s"ssh-rsa pk00001 $handle@host",
+    email = s"$handle@example.com"
+  ) //TODO: Use this where possible
+
+  def register(dao: CosmosProfileDao, id: UserId, reg: Registration)(implicit c: dao.Conn) =
+    dao.registerUserInDatabase(id, reg, NoGroup, UnlimitedQuota)(c)
 
   def profileDao(withDao: DaoTest => Unit, maybeTag: Option[Tag] = None) {
 
@@ -33,16 +41,17 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "register new users", withDao { dao =>
       dao.withTransaction { implicit c =>
         val id = UserId("db-0003")
-        val profile = dao.registerUserInDatabase(id, registration("jsmith"), NoGroup, UnlimitedQuota)
+        val profile = register(dao, id, registration("jsmith"))
         profile.handle must be ("jsmith")
         profile.keys.length must be (1)
+        profile.email must be ("jsmith@example.com")
       }
     })
 
     taggedTest(it must "change the handle of users", withDao { dao =>
       dao.withTransaction { implicit c =>
         val userId = UserId("db-0003")
-        val cosmosId = dao.registerUserInDatabase(userId, registration("jsmith"), NoGroup, UnlimitedQuota).id
+        val cosmosId = register(dao, userId, registration("jsmith")).id
         dao.setHandle(cosmosId, "jsm")
         dao.lookupByUserId(userId).get.handle must equal ("jsm")
       }
@@ -56,11 +65,27 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       }
     })
 
+    taggedTest(it must "change the state of users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId = UserId("db-0003")
+        val cosmosId = register(dao, userId, registration("jsmith")).id
+        dao.setUserState(cosmosId, Deleting)
+        dao.lookupByUserId(userId).get.state must equal (Deleting)
+      }
+    })
+
+    taggedTest(it must "not change the state of unknown users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        evaluating {
+          dao.setUserState(unknownCosmosId, Disabled)
+        } must produce [IllegalArgumentException]
+      }
+    })
+
     taggedTest(it must "not change the handle to a repeated one", withDao { dao =>
       dao.withTransaction { implicit c =>
-        dao.registerUserInDatabase(UserId("db001"), registration("existing"), NoGroup, UnlimitedQuota)
-        val cosmosId =
-          dao.registerUserInDatabase(UserId("db002"), registration("current"), NoGroup, UnlimitedQuota).id
+        register(dao, UserId("db001"), registration("existing"))
+        val cosmosId = register(dao, UserId("db002"), registration("current")).id
         evaluating {
           dao.setHandle(cosmosId, "existing")
         } must produce [IllegalArgumentException]
@@ -70,7 +95,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "change the keys of users", withDao { dao =>
       dao.withTransaction { implicit c =>
         val userId = UserId("db-0003")
-        val cosmosId = dao.registerUserInDatabase(userId, registration("jsmith"), NoGroup, UnlimitedQuota).id
+        val cosmosId = register(dao, userId, registration("jsmith")).id
         val newKeys = Seq(
           NamedKey("default", "ssh-rsa AAAAA jsmith@host"),
           NamedKey("extra", "ssh-rsa BBBBB jsmith@host"))
@@ -89,7 +114,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
     taggedTest(it must "detect unused handles", withDao { dao =>
       dao.withTransaction { implicit c =>
-        dao.registerUserInDatabase(UserId("oauth53"), registration("usedHandle"), NoGroup, UnlimitedQuota)
+        register(dao, UserId("oauth53"), registration("usedHandle"))
         dao.handleExists("usedHandle") must be (true)
         dao.handleExists("unusedHandle") must be (false)
       }
@@ -98,8 +123,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "get Cosmos ID from user ID when user is registered", withDao { dao =>
       dao.withTransaction { implicit c =>
         val registeredUser = UserId("db-registered")
-        dao.registerUserInDatabase(registeredUser,
-          Registration("jsmith", "ssh-rsa AAAAA jsmith@host"), NoGroup, UnlimitedQuota)
+        register(dao, registeredUser, registration("jsmith"))
         dao.getCosmosId(registeredUser) must be ('defined)
         dao.getCosmosId(UserId("db-unknown")) must not be 'defined
       }
@@ -115,7 +139,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "lookup a profile from api credentials", withDao { dao =>
       dao.withTransaction { implicit c =>
         val id = UserId("db-0004")
-        dao.registerUserInDatabase(id, Registration("user4", "ssh-rsa AAAAA user4@host"), NoGroup, UnlimitedQuota)
+        register(dao, id, registration("user4"))
         val profileByUserId = dao.lookupByUserId(id).get
         val profileByApiCredentials =
           dao.lookupByApiCredentials(profileByUserId.apiCredentials).get
@@ -126,10 +150,8 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     taggedTest(it must "assign cluster ownership and remember it", withDao { dao =>
       dao.withTransaction { implicit c =>
         val clusterId = ClusterId()
-        val id1 = dao.registerUserInDatabase(
-          UserId("user1"), Registration("user1", "ssh-rsa AAAAA user1@host"), NoGroup, UnlimitedQuota).id
-        val id2 = dao.registerUserInDatabase(
-          UserId("user2"), Registration("user2", "ssh-rsa AAAAA user2@host"), NoGroup, UnlimitedQuota).id
+        val id1 = register(dao, UserId("user1"), registration("user1")).id
+        val id2 = register(dao, UserId("user2"), registration("user2")).id
         dao.assignCluster(clusterId, id2)
         dao.clustersOf(id1).map(_.clusterId).toList must not contain clusterId
         dao.clustersOf(id2).map(_.clusterId).toList must contain (clusterId)

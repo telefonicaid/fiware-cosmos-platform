@@ -201,6 +201,8 @@ created user.  The properties have the following restrictions:
 
  * `authId`: non-empty string that must be unique per authorization realm.
  * `authRealm`: identifier of the authorization realm (also a non-empty string).
+ * `email`: email address to contact the user about maintenance windows or other
+   conditions and announcements.
  * `handle`: user handle to be used as SSH login. It must be a valid unix login
    (letters and numbers with a leading letter) and at least three characters.
    If this field is not present, one will be generated.
@@ -212,6 +214,7 @@ Sample body::
     {
       "authId": "id",
       "authRealm": "realm",
+      "email": "user@host",
       "handle": "handle",
       "sshPublicKey": "ssh-rsa CKDKDJDJD user@host"
     }

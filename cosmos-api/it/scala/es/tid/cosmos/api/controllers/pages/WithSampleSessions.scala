@@ -14,7 +14,8 @@ package es.tid.cosmos.api.controllers.pages
 import scala.Some
 import scala.concurrent.Future
 
-import play.api.mvc.{SimpleResult, Session}
+import play.api.mvc.Session
+import play.api.mvc.SimpleResult
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
 import play.api.libs.json.JsValue
@@ -22,7 +23,7 @@ import play.api.libs.json.JsValue
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
-import es.tid.cosmos.api.profile.{UnlimitedQuota, NoGroup, Registration, UserId}
+import es.tid.cosmos.api.profile._
 
 trait WithSampleSessions extends WithTestApplication {
 
@@ -55,18 +56,32 @@ trait WithSampleSessions extends WithTestApplication {
     val session = Session().setUserProfile(userProfile).setToken("token")
   }
   val regUser = new UserSession {
+    val email = "user1@mail.com"
     val userProfile = OAuthUserProfile(
       id = UserId("user1"),
       name = Some("User 1"),
-      email = Some("user1@mail.com")
+      email = Some(email)
     )
     val handle = "reguser"
     val cosmosProfile = dao.withTransaction { implicit c =>
       dao.registerUserInDatabase(userProfile.id,
-        Registration(handle, "ssh-rsa AAAAA reguser@mail.com"),
-        NoGroup,
-        UnlimitedQuota
-      )
+        Registration(handle, s"ssh-rsa AAAAA $email", email), NoGroup, UnlimitedQuota)
+    }
+    val session = Session().setUserProfile(userProfile).setToken("token")
+  }
+  val disabledUser = new UserSession {
+    val email = "disabled1@mail.com"
+    val userProfile = OAuthUserProfile(
+      id = UserId("disabled1"),
+      name = Some("Disabled 1"),
+      email = Some(email)
+    )
+    val handle = "disabled"
+    val cosmosProfile = dao.withTransaction { implicit c =>
+      val profile = dao.registerUserInDatabase(userProfile.id,
+        Registration(handle, s"ssh-rsa AAAAA $email", email), NoGroup, UnlimitedQuota)
+      dao.setUserState(profile.id, UserState.Disabled)
+      profile
     }
     val session = Session().setUserProfile(userProfile).setToken("token")
   }

@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.profile
 
 import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.profile.UserState._
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   def cosmosProfileDao: CosmosProfileDao = new MockCosmosProfileDao
@@ -32,13 +33,16 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
-  override def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)(implicit c: Conn): CosmosProfile = { //FIXME
+  override def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)
+                                     (implicit c: Conn): CosmosProfile = { //FIXME
     val credentials = ApiCredentials.random()
     require(!users.values.exists(_.handle == reg.handle), s"Duplicated handle: ${reg.handle}")
     require(groupsWithUsers.contains(group), s"Group not registered: $group")
     val cosmosProfile = CosmosProfile(
       id = users.size,
+      state = Enabled,
       handle = reg.handle,
+      email = reg.email,
       group,
       quota,
       apiCredentials = credentials,
@@ -56,13 +60,14 @@ class MockCosmosProfileDao extends CosmosProfileDao {
 
   override def getMachineQuota(cosmosId: Long)(implicit c: Conn): Quota =
     users.collectFirst {
-      case (_, CosmosProfile(`cosmosId`, _, _, quota, _, _)) => quota
+      case (_, profile) if profile.id == cosmosId => profile.quota
     }.getOrElse(EmptyQuota)
 
-  override def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean = synchronized {
+  override def setMachineQuota(cosmosId: Long, quota: Quota)
+                              (implicit c: Conn): Boolean = synchronized {
     users.collectFirst {
-      case (userId, profile @ CosmosProfile(`cosmosId`, _,  _, _, _, _)) => {
-        users.synchronized{ users = users.updated(userId, profile.copy(quota = quota)) }
+      case (userId, profile) if profile.id == cosmosId => {
+        users = users.updated(userId, profile.copy(quota = quota))
         true
     }}.getOrElse(false)
   }
@@ -73,9 +78,10 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     users.get(userId)
 
-  override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =
+  override def lookupByApiCredentials(creds: ApiCredentials)
+                                     (implicit c: Conn): Option[CosmosProfile] =
     users.collectFirst {
-      case (_, profile@CosmosProfile(_, _, _, _, `creds`, _)) => profile
+      case (_, profile) if profile.apiCredentials == creds => profile
     }
 
   override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
@@ -95,6 +101,12 @@ class MockCosmosProfileDao extends CosmosProfileDao {
         "duplicated handle"
       )
       profile.copy(handle = handle)
+    }
+  }
+
+  override def setUserState(id: Long, userState: UserState)(implicit c: Conn) {
+    updateProfile(id) { profile =>
+      profile.copy(state = userState)
     }
   }
 

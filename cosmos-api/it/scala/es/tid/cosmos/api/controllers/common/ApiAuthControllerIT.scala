@@ -39,6 +39,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     new TestController(dao).index().apply(request)
 
   val request: Request[AnyContent] = FakeRequest(GET, "/some/path")
+  val registration = Registration("login", "ssh-rsa AAAA login@host", "login@host")
 
   "The API auth controller" must "not authorize when authorization header is missing" in
     new WithSampleUsers {
@@ -53,6 +54,17 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     contentAsString(response) must include ("malformed authorization header")
   }
 
+  it must "not authorize when credentials belong to a non-enabled user" in new WithSampleUsers {
+    val profile = dao.withConnection { implicit c =>
+      val userId = UserId("db000")
+      val profile = dao.registerUserInDatabase(userId, registration, NoGroup, UnlimitedQuota)
+      dao.setUserState(profile.id, UserState.Disabled)
+      profile
+    }
+    val response = action(dao, authorizedRequest(profile.apiCredentials))
+    status(response) must be (UNAUTHORIZED)
+  }
+
   it must "return bad request when credentials are invalid" in new WithSampleUsers {
     val response = action(dao, authorizedRequest(ApiCredentials.random()))
     status(response) must be (UNAUTHORIZED)
@@ -62,8 +74,8 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
   it must "succeed when credentials are valid" in new WithSampleUsers {
     val profile = dao.withConnection { implicit c =>
       val userId = UserId("db000")
-      dao.registerUserInDatabase(userId, Registration("login", "ssh-rsa AAAA login@host"), NoGroup, UnlimitedQuota)
-      dao.lookupByUserId(userId).get
+      val profile = dao.registerUserInDatabase(userId, registration, NoGroup, UnlimitedQuota)
+      profile
     }
     val response = action(dao, authorizedRequest(profile.apiCredentials))
     status(response) must be (OK)
@@ -77,11 +89,17 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     contentAsString(response) must include (s"handle=${regUser.handle}")
   }
 
+  it must "not authorize when the user having a session is not enabled" in new WithSampleSessions {
+    val response = action(dao, FakeRequest(GET, "/some/path")
+      .withSession(disabledUser.session.data.toSeq: _*))
+    status(response) must be (UNAUTHORIZED)
+  }
+
   it must "have preference for authorization header over user session" in
     new WithSampleUsers with WithSampleSessions {
       val apiCredsProfile = dao.withConnection { implicit c =>
         val userId = UserId("db000")
-        dao.registerUserInDatabase(userId, Registration("login", "ssh-rsa AAAA login@host"), NoGroup, UnlimitedQuota)
+        dao.registerUserInDatabase(userId, registration, NoGroup, UnlimitedQuota)
         dao.lookupByUserId(userId).get
       }
       val response = action(dao, authorizedRequest(apiCredsProfile.apiCredentials)

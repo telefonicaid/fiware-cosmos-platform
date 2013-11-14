@@ -20,6 +20,7 @@ import play.api.db.DB
 import play.api.Play.current
 
 import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.servicemanager.ClusterId
 
 trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
@@ -37,17 +38,19 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       GuaranteedGroup(name, Quota(minimumQuota.asInstanceOf[Option[Int]]))
   }
 
-  override def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)(implicit c: Conn): CosmosProfile = {
+  override def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)
+                                     (implicit c: Conn): CosmosProfile = {
     val apiCredentials = ApiCredentials.random()
     val defaultKey = NamedKey("default", reg.publicKey)
     val cosmosId = SQL(
-      """INSERT INTO user(auth_realm, auth_id, handle, api_key, api_secret, group_name)
-        | VALUES ({auth_realm}, {auth_id}, {handle}, {api_key}, {api_secret}, {group_name})"""
+      """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret, group_name)
+        | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret}, {group_name})"""
         .stripMargin)
       .on(
         "auth_realm" -> userId.realm,
         "auth_id" -> userId.id,
         "handle" -> reg.handle,
+        "email" -> reg.email,
         "api_key" -> apiCredentials.apiKey,
         "api_secret" -> apiCredentials.apiSecret,
         "group_name" -> dbGroupName(group)
@@ -55,7 +58,9 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     addPublicKey(cosmosId, defaultKey)
     CosmosProfile(
       id = cosmosId,
+      state = Enabled,
       handle = reg.handle,
+      email = reg.email,
       group,
       quota,
       apiCredentials = apiCredentials,
@@ -96,16 +101,16 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   }
 
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.handle, u.machine_quota, u.api_key, u.api_secret,
-                 | u.group_name,
+    lookup(SQL("""SELECT u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
+                 | u.api_key, u.api_secret, u.group_name,
                  | p.name, p.signature
                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                  | WHERE u.auth_realm = {realm} AND u.auth_id = {id}""".stripMargin)
       .on("realm" -> userId.realm, "id" -> userId.id))
 
   override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.handle, u.machine_quota, u.api_key, u.api_secret,
-                 | u.group_name,
+    lookup(SQL("""SELECT u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
+                 | u.api_key, u.api_secret, u.group_name,
                  | p.name, p.signature
                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                  | WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
@@ -177,18 +182,28 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     maybeProfiles.flatten.toSeq
   }
 
-  private def toCosmosProfile(rows: List[Row])(implicit c: Conn): Option[CosmosProfile] =
+  private def toCosmosProfile(rows: List[Row])(implicit c: Conn): Option[CosmosProfile] = {
     rows.headOption.map {
-      case Row(id: Int, handle: String, machineQuota: Option[_], apiKey: String,
-      apiSecret: String, groupName: Option[_], _, _ ) => {
+      case Row(
+          id: Int,
+          UserState(state),
+          handle: String,
+          email: String,
+          machineQuota: Option[_],
+          apiKey: String,
+          apiSecret: String,
+          groupName: String,
+          _, _
+      ) => {
         val namedKeys = rows.map(row => NamedKey(row[String]("name"), row[String]("signature")))
         CosmosProfile(
-          id, handle,
+          id, state, handle, email,
           getGroup(groupName.asInstanceOf[Option[String]]),
           Quota(machineQuota.asInstanceOf[Option[Int]]),
           ApiCredentials(apiKey, apiSecret), namedKeys.toSeq)
       }
     }
+  }
 
   override def setHandle(id: Long, handle: String)(implicit c: Conn) {
     val updatedRows = try {
@@ -201,6 +216,17 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       case ex: SQLException => throw new IllegalArgumentException("Cannot change handle", ex)
     }
     require(updatedRows > 0, s"No handle was updated for user with id=$id")
+  }
+
+  override def setUserState(id: Long, state: UserState.UserState)(implicit c: Conn) {
+    val updatedRows = try {
+      SQL("UPDATE user SET state = {state} WHERE cosmos_id = {id}")
+        .on("state" -> state.toString, "id" -> id)
+        .executeUpdate()
+    } catch {
+      case ex: SQLException => throw new IllegalArgumentException("Cannot change state", ex)
+    }
+    require(updatedRows > 0, s"No user state was updated for user with id=$id")
   }
 
   override def setPublicKeys(id: Long, publicKeys: Seq[NamedKey])(implicit c: Conn) {

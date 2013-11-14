@@ -95,7 +95,8 @@ class Pages(
     unlessPageUnderMaintenance {
       withAuthentication(request)(
         whenRegistered = (_, _) => redirectToIndex,
-        whenNotRegistered = userProfile => registrationPage(userProfile, RegistrationForm()),
+        whenNotRegistered = userProfile => registrationPage(
+          userProfile, RegistrationForm.initializeFrom(userProfile)),
         whenNotAuthenticated = redirectToIndex
       )
     }
@@ -120,7 +121,9 @@ class Pages(
           validatedForm.fold(
             formWithErrors => registrationPage(userProfile, formWithErrors),
             registration => {
-              val cosmosProfile = dao.registerUserInDatabase(userProfile.id, registration, NoGroup, UnlimitedQuota)
+              //TODO: Replace default group and quota with values from page
+              val cosmosProfile = dao.registerUserInDatabase(
+                userProfile.id, registration, NoGroup, UnlimitedQuota)
               serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
               redirectToIndex
             }

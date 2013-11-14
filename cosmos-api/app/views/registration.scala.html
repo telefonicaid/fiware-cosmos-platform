@@ -30,6 +30,13 @@
                 '_error -> form.error("handle")
             )
 
+            @helper.inputText(
+                form("email"),
+                '_label -> "Email address",
+                '_help -> "To receive email notifications",
+                '_error -> form.error("email")
+            )
+
             @helper.textarea(
                 form("publicKey"),
                 'rows -> 3, 'cols -> 80,

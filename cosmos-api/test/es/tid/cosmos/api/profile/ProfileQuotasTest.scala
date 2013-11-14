@@ -1,14 +1,15 @@
 package es.tid.cosmos.api.profile
 
 
+import org.mockito.BDDMockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
-import org.mockito.BDDMockito._
 
-import es.tid.cosmos.servicemanager.ClusterDescription
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.cluster.ClusterReference
+import es.tid.cosmos.api.profile.UserState.Enabled
+import es.tid.cosmos.servicemanager.ClusterDescription
 
 class ProfileQuotasTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -103,7 +104,16 @@ class ProfileQuotasTest extends FlatSpec with MustMatchers with MockitoSugar {
 
     val groupProfiles = (for ((group, id) <- c.groupUsage.keys zip (1 to c.groupUsage.size)) yield {
       val quota = if (group == c.userGroup) c.personalMaxQuota else UnlimitedQuota
-      val profile = CosmosProfile(id, s"handle$id", group, quota, ApiCredentials.random(), keys = Nil)
+      val profile = CosmosProfile(
+        id,
+        state = Enabled,
+        handle = s"handle$id",
+        email = "user@example.com",
+        group,
+        quota,
+        ApiCredentials.random(),
+        keys = Nil
+      )
       group -> Set(profile)
     }).toMap
 

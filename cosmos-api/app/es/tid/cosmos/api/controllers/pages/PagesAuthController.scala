@@ -15,7 +15,7 @@ import play.api.mvc.{RequestHeader, SimpleResult, Controller}
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao, UserState}
 
 trait PagesAuthController extends Controller {
   val dao: CosmosProfileDao
@@ -38,9 +38,11 @@ trait PagesAuthController extends Controller {
     request.session.userProfile.map(userProfile =>
       dao.withTransaction { implicit c =>
         dao.lookupByUserId(userProfile.id)
-      }.map(cosmosProfile =>
-        whenRegistered(userProfile, cosmosProfile)
-      ).getOrElse(whenNotRegistered(userProfile))
+      } match {
+        case Some(cosmosProfile) if cosmosProfile.state == UserState.Enabled =>
+          whenRegistered(userProfile, cosmosProfile)
+        case _ => whenNotRegistered(userProfile)
+      }
     ).getOrElse(whenNotAuthenticated)
 
   /**

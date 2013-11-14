@@ -12,7 +12,7 @@
 cosmos::slave::ip: "192.168.63.17"
 cosmos::slave::ct_ip: "192.168.63.81"
 cosmos::slave::ct_hostname: "andromeda-compute07"
-cosmos::slave::hardware_profile: 1
+cosmos::slave::hardware_profile: g1-compute
 cosmos::slave::name: "Andromeda 07"
 cosmos::slave::ram: 32768
 cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDTGcWZpMpX6ZMT7HzAtqPhlalD0n3jVRCuLBwPzMWtRphGIIFc/kmhLzS5YEAWZaI6VouhnGSOH8rRWjbS74wsVZPuO3qYInQHvq5cfoKThf8JByxOyM/yUzynU2OyV/9nPyvQqIbFNKbCE1Cw9LxbUjdbK8m3KJGQHRJbxOzujHIpjB2wFGfG2XiKG1BKIarZdYnHZabDQl2+0VqG9Ixx71C9Nb1TfLx0xcWNwsuwcJVAxwusB/pPh/1u+T6ABuvF5Ys4/zwIxD4o5l2+dgPGh+CNaCIcfd/EVxq8h+KeBPC4s4Zpr8/kIlhQFv1ZUTl6Ys37mSS2U3ThmdRqLFah"

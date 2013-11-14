@@ -14,7 +14,7 @@ package es.tid.cosmos.api.profile
 import java.util.Date
 
 import es.tid.cosmos.api.auth.ApiCredentials
-import es.tid.cosmos.api.controllers.pages._
+import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.servicemanager.ClusterId
 
 /**
@@ -36,10 +36,13 @@ trait CosmosProfileDao {
    *
    * @param userId  The id specified by the user.
    * @param reg     The registration options.
+   * @param group   The group the user belongs to
+   * @param quota   The user's maximum machine quota
    * @param c       The connection to use.
    * @return        A newly created Cosmos profile.
    */
-  def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)(implicit c: Conn): CosmosProfile
+  def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)
+                            (implicit c: Conn): CosmosProfile
 
   /**
    * Retrieves the unique Cosmos ID for a given user.
@@ -82,9 +85,19 @@ trait CosmosProfileDao {
    * Set the handle of a user. Fails if the new handle is in use.
    *
    * @param id      The id of the user.
+   * @param c       The connection to use.
    * @param handle  The new handle.
    */
   def setHandle(id: Long, handle: String)(implicit c: Conn): Unit
+
+  /**
+   * Set the state of a given user.
+   *
+   * @param id         Id of the user.
+   * @param userState  The new state.
+   * @param c          The connection to use.
+   */
+  def setUserState(id: Long, userState: UserState)(implicit c: Conn): Unit
 
   /**
    * Obtains the profile for a given user.

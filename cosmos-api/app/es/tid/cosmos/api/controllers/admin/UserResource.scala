@@ -11,23 +11,20 @@
 
 package es.tid.cosmos.api.controllers.admin
 
+import scala.Some
 import scala.annotation.tailrec
 import scala.util.Random
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Headers}
+import play.api.mvc.{Action, Headers, SimpleResult}
+import scalaz.{Failure, Success}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.ServiceManager
-import es.tid.cosmos.api.profile.Registration
-import scalaz.Failure
-import scala.Some
-import play.api.mvc.SimpleResult
-import scalaz.Success
 
 /**
  * Resource for user account administration
@@ -69,7 +66,8 @@ class UserResource(
             (for {
               userId <- uniqueUserId(params)
               handle <- selectHandle(params.handle)
-            } yield createUserAccount(userId, handle, params.sshPublicKey)).fold(
+              registration = Registration(handle, params.sshPublicKey, params.email)
+            } yield createUserAccount(userId, registration)).fold(
               fail = message => Conflict(Json.toJson(message)),
               succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
                 handle = cosmosProfile.handle,
@@ -110,8 +108,9 @@ class UserResource(
     }
   } yield password == provider.adminPassword).getOrElse(false)
 
-  private def createUserAccount(userId: UserId, handle: String, publicKey: String)(implicit c: Conn) = {
-    val p = dao.registerUserInDatabase(userId, Registration(handle, publicKey), NoGroup, UnlimitedQuota)
+  private def createUserAccount(userId: UserId, registration: Registration)(implicit c: Conn) = {
+    // TODO: Replace default group and quota with values from request
+    val p = dao.registerUserInDatabase(userId, registration, NoGroup, UnlimitedQuota)
     serviceManager.addUsers(serviceManager.persistentHdfsId, p.toClusterUser)
     p
   }

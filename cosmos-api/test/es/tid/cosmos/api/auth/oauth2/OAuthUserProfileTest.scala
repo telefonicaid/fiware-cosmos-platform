@@ -33,16 +33,17 @@ class OAuthUserProfileTest extends FlatSpec with MustMatchers {
     val profile = OAuthUserProfile(id)
   }
 
-  "A full user profile" must "provide a contact with all fields" in new FullProfile {
-    profile.contact must be ("John Smith (jsmith@tid.es)")
+  "A full user profile" must "provide a contact identifying the user" in new FullProfile {
+    profile.contact must be ("John Smith")
   }
 
-  "A partial user profile" must "provide a contact with existing fields" in new PartialProfiles {
-    missingName.contact must be ("(jsmith@tid.es)")
-    missingEmail.contact must be ("John Smith")
-  }
+  "A partial user profile" must "provide a contact with the name when possible" in
+    new PartialProfiles {
+      missingName.contact must be ("(jsmith@tid.es)")
+      missingEmail.contact must be ("John Smith")
+    }
 
-  "An empty user profile" must "show a placeholder as contact" in new EmptyProfile {
-    profile.contact must be ("--")
+  "An empty user profile" must "show a placeholder based on id as contact" in new EmptyProfile {
+    profile.contact must be ("(id@realm)")
   }
 }

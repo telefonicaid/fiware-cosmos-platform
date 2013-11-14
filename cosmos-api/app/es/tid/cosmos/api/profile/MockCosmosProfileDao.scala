@@ -34,7 +34,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
   override def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)
-                                     (implicit c: Conn): CosmosProfile = { //FIXME
+                                     (implicit c: Conn): CosmosProfile = {
     val credentials = ApiCredentials.random()
     require(!users.values.exists(_.handle == reg.handle), s"Duplicated handle: ${reg.handle}")
     require(groupsWithUsers.contains(group), s"Group not registered: $group")
@@ -64,13 +64,14 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     }.getOrElse(EmptyQuota)
 
   override def setMachineQuota(cosmosId: Long, quota: Quota)
-                              (implicit c: Conn): Boolean = synchronized {
-    users.collectFirst {
-      case (userId, profile) if profile.id == cosmosId => {
-        users = users.updated(userId, profile.copy(quota = quota))
-        true
-    }}.getOrElse(false)
-  }
+                              (implicit c: Conn): Boolean =
+    users.synchronized {
+      users.collectFirst {
+        case (userId, profile) if profile.id == cosmosId => {
+          users = users.updated(userId, profile.copy(quota = quota))
+          true
+        }}.getOrElse(false)
+    }
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean =
     users.values.exists(_.handle == handle)
@@ -85,9 +86,9 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     }
 
   override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
-    synchronized {
+    clusters.synchronized{
       require(!clusters.exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
-      clusters.synchronized{ clusters = clusters :+ assignment }
+      clusters = clusters :+ assignment
     }
   }
 
@@ -126,11 +127,13 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   }
 
   private def updateProfile(id: Long)(f: CosmosProfile => CosmosProfile) {
-    val maybeId = users.collectFirst {
-      case (userId, profile) if profile.id == id => userId
+    users.synchronized {
+      val maybeId = users.collectFirst {
+        case (userId, profile) if profile.id == id => userId
+      }
+      maybeId.map(userId =>
+        users = users.updated(userId, f(users(userId)))
+      ).getOrElse(throw new IllegalArgumentException(s"No user with id=$id"))
     }
-    maybeId.map(userId =>
-      users.synchronized{ users = users.updated(userId, f(users(userId))) }
-    ).getOrElse(throw new IllegalArgumentException(s"No user with id=$id"))
   }
 }

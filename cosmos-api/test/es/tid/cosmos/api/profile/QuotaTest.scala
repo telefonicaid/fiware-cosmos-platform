@@ -100,7 +100,7 @@ class QuotaTest extends FlatSpec with MustMatchers {
     EmptyQuota     - UnlimitedQuota must equal(EmptyQuota)
     UnlimitedQuota - EmptyQuota must equal(UnlimitedQuota)
     UnlimitedQuota - FiniteQuota(1) must equal(UnlimitedQuota)
-    UnlimitedQuota - UnlimitedQuota must equal(UnlimitedQuota)
+    evaluating { UnlimitedQuota - UnlimitedQuota } must produce[IllegalArgumentException]
     FiniteQuota(1) - EmptyQuota must equal(FiniteQuota(1))
     FiniteQuota(3) - FiniteQuota(1) must equal(FiniteQuota(2))
     FiniteQuota(1) - FiniteQuota(2) must equal(EmptyQuota)

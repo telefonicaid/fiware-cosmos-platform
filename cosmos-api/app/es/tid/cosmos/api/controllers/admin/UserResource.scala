@@ -14,11 +14,11 @@ package es.tid.cosmos.api.controllers.admin
 import scala.Some
 import scala.annotation.tailrec
 import scala.util.Random
+import scalaz.{Failure, Success}
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Headers, SimpleResult}
-import scalaz.{Failure, Success}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers._

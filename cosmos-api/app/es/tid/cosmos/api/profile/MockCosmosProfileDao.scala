@@ -48,8 +48,8 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       apiCredentials = credentials,
       keys = List(NamedKey("default", reg.publicKey))
     )
-    users.synchronized{ users = users.updated(userId, cosmosProfile) }
-    groupsWithUsers.synchronized{
+    users.synchronized { users = users.updated(userId, cosmosProfile) }
+    groupsWithUsers.synchronized {
       groupsWithUsers = groupsWithUsers.updated(group, groupsWithUsers(group) + userId)
     }
     cosmosProfile
@@ -63,14 +63,13 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       case (_, profile) if profile.id == cosmosId => profile.quota
     }.getOrElse(EmptyQuota)
 
-  override def setMachineQuota(cosmosId: Long, quota: Quota)
-                              (implicit c: Conn): Boolean =
+  override def setMachineQuota(cosmosId: Long, quota: Quota)(implicit c: Conn): Boolean =
     users.synchronized {
-      users.collectFirst {
-        case (userId, profile) if profile.id == cosmosId => {
-          users = users.updated(userId, profile.copy(quota = quota))
-          true
-        }}.getOrElse(false)
+      val userToUpdate = users.find(_._2.id == cosmosId)
+      userToUpdate.foreach {
+        case (userId, profile) => users = users.updated(userId, profile.copy(quota = quota))
+      }
+      userToUpdate.isDefined
     }
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean =
@@ -86,7 +85,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     }
 
   override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
-    clusters.synchronized{
+    clusters.synchronized {
       require(!clusters.exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
       clusters = clusters :+ assignment
     }
@@ -131,9 +130,10 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       val maybeId = users.collectFirst {
         case (userId, profile) if profile.id == id => userId
       }
-      maybeId.map(userId =>
-        users = users.updated(userId, f(users(userId)))
-      ).getOrElse(throw new IllegalArgumentException(s"No user with id=$id"))
+      maybeId match {
+        case Some(userId) => users = users.updated(userId, f(users(userId)))
+        case None => throw new IllegalArgumentException(s"No user with id=$id")
+      }
     }
   }
 }

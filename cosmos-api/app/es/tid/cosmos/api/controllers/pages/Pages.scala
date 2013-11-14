@@ -27,7 +27,7 @@ import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{UnlimitedQuota, NoGroup, CosmosProfileDao, Registration}
+import es.tid.cosmos.api.profile._
 import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
 import views.AuthAlternative
@@ -95,8 +95,8 @@ class Pages(
     unlessPageUnderMaintenance {
       withAuthentication(request)(
         whenRegistered = (_, _) => redirectToIndex,
-        whenNotRegistered = userProfile => registrationPage(
-          userProfile, RegistrationForm.initializeFrom(userProfile)),
+        whenNotRegistered = userProfile =>
+          Ok(views.html.registration(userProfile, RegistrationForm.initializeFrom(userProfile))),
         whenNotAuthenticated = redirectToIndex
       )
     }

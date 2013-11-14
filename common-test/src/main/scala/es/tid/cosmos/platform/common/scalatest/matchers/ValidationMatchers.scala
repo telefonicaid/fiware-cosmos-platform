@@ -11,9 +11,10 @@
 
 package es.tid.cosmos.platform.common.scalatest.matchers
 
+import scalaz._
+
 import org.scalatest.Assertions.convertToEqualizer
 import org.scalatest.matchers.{MatchResult, Matcher}
-import scalaz._
 
 /**
  * Mixin trait for asserting Scalaz validations.

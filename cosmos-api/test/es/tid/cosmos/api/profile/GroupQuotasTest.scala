@@ -18,6 +18,16 @@ import es.tid.cosmos.api.profile.GroupQuotas.maximumQuota
 
 class GroupQuotasTest extends FlatSpec with MustMatchers {
 
+   /* Test diagram legend.
+    *
+    * u   = used by used
+    * r   = reserved by group
+    * ur  = reserved by group and used by a group user
+    * o   = empty, i.e. no group, not used, not reserved
+    * A,B = groups A and B
+    * NG  = NoGroup
+    */
+
   "The maximum quota when only one group" must "be the total number of machines in the pool" in {
     /*
     +----+---+---+---+---+
@@ -33,7 +43,7 @@ class GroupQuotasTest extends FlatSpec with MustMatchers {
     val poolSize = 5
     val maxQuota = maximumQuota(group, usedMachines, poolSize)
     maxQuota.withinQuota(group.minimumQuota) must be (true)
-    maxQuota must be (FiniteQuota(5))
+    maxQuota must be (FiniteQuota(poolSize))
   }
 
   "Groups" must "be invalid if their combined minimum quota exceeds the machine pool size" in {

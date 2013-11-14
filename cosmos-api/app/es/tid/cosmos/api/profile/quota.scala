@@ -81,7 +81,11 @@ case object UnlimitedQuota extends Quota {
 
   override def +(other: Quota): Quota = this
 
-  override def -(other: Quota): Quota = this
+  override def -(other: Quota): Quota = other match {
+    case UnlimitedQuota => throw new IllegalArgumentException(
+      "Cannot determine result of UnlimitedQuota - UnlimitedQuota")
+    case _ => this
+  }
 
   override def toInt: Option[Int] = None
 }

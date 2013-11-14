@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.profile
 
-
 import org.mockito.BDDMockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -40,7 +39,7 @@ class ProfileQuotasTest extends FlatSpec
       usedMachinesByUser = 2,
       machinePool = 10
     )
-    withConfig(context) { (quotas, profile) =>
+    context.ensureThat { (quotas, profile) =>
       quotas.withinQuota(profile, 1) must (beSuccessful and haveValidValue(1))
       quotas.withinQuota(profile, 2) must haveFailures(
         "Profile quota exceeded",
@@ -72,7 +71,7 @@ class ProfileQuotasTest extends FlatSpec
       usedMachinesByUser = 2,
       machinePool = 10
     )
-    withConfig(context) { (quotas, profile) =>
+    context.ensureThat { (quotas, profile) =>
       quotas.withinQuota(profile, 1) must (beSuccessful and haveValidValue(1))
       quotas.withinQuota(profile, 2) must (beSuccessful and haveValidValue(2))
       quotas.withinQuota(profile, 3) must (beSuccessful and haveValidValue(3))
@@ -106,7 +105,7 @@ class ProfileQuotasTest extends FlatSpec
       usedMachinesByUser = 2,
       machinePool = 10
     )
-    withConfig(context){ (quotas, profile) =>
+    context.ensureThat{ (quotas, profile) =>
       quotas.withinQuota(profile, 3) must (beSuccessful and haveValidValue(3))
       quotas.withinQuota(profile, 4) must haveFailures(
         "Quota exceeded for group [A].",
@@ -115,52 +114,57 @@ class ProfileQuotasTest extends FlatSpec
     }
   }
 
-  def withConfig(c: Context)
-              (test: (ProfileQuotas, CosmosProfile) => Unit) {
-    // for each group we need
-    // 1. Create 1 profile or 1 + user for userGroup
-    // 2. For each profile we need to create one cluster with the size of the group's usage
-    // 3. Register the profiles
-    // 4. assign clusters
-
-    val groupProfiles = (for ((group, id) <- c.groupUsage.keys zip (1 to c.groupUsage.size)) yield {
-      val quota = if (group == c.userGroup) c.personalMaxQuota else UnlimitedQuota
-      val profile = CosmosProfile(
-        id,
-        state = Enabled,
-        handle = s"handle$id",
-        email = "user@example.com",
-        group,
-        quota,
-        ApiCredentials.random(),
-        keys = Nil
-      )
-      group -> Set(profile)
-    }).toMap
-
-    val groupClusters = c.groupUsage.map{ case (group, used) => {
-      val description = mock[ClusterDescription]
-      given(description.size).willReturn(used)
-      val reference = mock[ClusterReference]
-      given(reference.description).willReturn(description)
-      groupProfiles(group).head -> List(reference)
-    }}
-
-    val quotas = new ProfileQuotas(
-      machinePoolSize = c.machinePool,
-      groups = c.groupUsage.keys.toSet,
-      lookupByGroup = groupProfiles,
-      listClusters = groupClusters
-    )
-
-    test(quotas, groupProfiles(c.userGroup).head)
-  }
-
   case class Context(
     groupUsage: Map[Group, Int],
     userGroup: Group,
     personalMaxQuota: Quota,
     usedMachinesByUser: Int,
     machinePool: Int
-  )
+  ) {
+
+    /**
+     * Execute a test on the given context as configuration.
+     *
+     * 1. Create 1 profile or 1 + user for userGroup
+     * 2. For each profile we need to create one cluster with the size of the group's usage
+     * 3. Register the profiles
+     * 4. assign clusters
+     *
+     * @param test the test as a function receiving the quotas manager and the profile to check
+     */
+    def ensureThat(test: (ProfileQuotas, CosmosProfile) => Unit) {
+
+      val groupProfiles = (for ((group, id) <- groupUsage.keys zip (1 to groupUsage.size)) yield {
+        val quota = if (group == userGroup) personalMaxQuota else UnlimitedQuota
+        val profile = CosmosProfile(
+          id,
+          state = Enabled,
+          handle = s"handle$id",
+          email = "user@example.com",
+          group,
+          quota,
+          ApiCredentials.random(),
+          keys = Nil
+        )
+        group -> Set(profile)
+      }).toMap
+
+      val groupClusters = groupUsage.map{ case (group, used) => {
+        val description = mock[ClusterDescription]
+        given(description.size).willReturn(used)
+        val reference = mock[ClusterReference]
+        given(reference.description).willReturn(description)
+        groupProfiles(group).head -> List(reference)
+      }}
+
+      val quotas = new ProfileQuotas(
+        machinePoolSize = machinePool,
+        groups = groupUsage.keys.toSet,
+        lookupByGroup = groupProfiles,
+        listClusters = groupClusters
+      )
+
+      test(quotas, groupProfiles(userGroup).head)
+    }
+  }
 }

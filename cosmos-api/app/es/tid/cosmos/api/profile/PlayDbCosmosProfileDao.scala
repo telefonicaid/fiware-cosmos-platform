@@ -178,7 +178,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   private def lookupMany(query: SimpleSql[Row])(implicit c: Conn): Seq[CosmosProfile] = {
     val allRows = query().toList
     val rowsByProfileId = allRows.groupBy(row => row[Int]("cosmos_id"))
-    val maybeProfiles = for (rows <- rowsByProfileId.values) yield toCosmosProfile(rows)
+    val maybeProfiles = rowsByProfileId.values.map(toCosmosProfile)
     maybeProfiles.flatten.toSeq
   }
 

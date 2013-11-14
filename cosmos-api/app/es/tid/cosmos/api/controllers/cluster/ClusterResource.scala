@@ -99,12 +99,13 @@ class ClusterResource(
     }
   }
 
-  private def withinQuota(profile: CosmosProfile, size: Int) = dao.withConnection{ implicit c =>
+  private def withinQuota(profile: CosmosProfile, size: Int) = dao.withConnection { implicit c =>
     new ProfileQuotas(
-      serviceManager.machinePoolCount,
-      dao.getGroups,
-      dao.lookupByGroup,
-      listClusters).withinQuota(profile, size)
+      machinePoolSize = serviceManager.machinePoolCount,
+      groups = dao.getGroups,
+      lookupByGroup = dao.lookupByGroup,
+      listClusters = listClusters
+    ).withinQuota(profile, size)
   }
 
   private def listClusters(profile: CosmosProfile) = {

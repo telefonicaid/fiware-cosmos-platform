@@ -36,10 +36,11 @@ class ProfileQuotas(
   //TODO lookupByGroup -> listClusters could be simplified with a function
   // Group => List[Int] where Int represents the number of machines used by a group
 
+  import scalaz.Scalaz._
+
   /**
    * Check if the given user can request the given number of machines based on their profile and
    * group quotas.
-   *
    *
    * @param profile the user profile
    * @param size    the cluster size as a number of machines being requested for the user
@@ -48,8 +49,6 @@ class ProfileQuotas(
    *                 successful or the error messages in case of validation failures
    */
   def withinQuota(profile: CosmosProfile, size: Int): ValidationNel[String, Int] = {
-    import scalaz.Scalaz._
-
     val availableFromProfile = profile.quota - Quota(usedMachines(profile))
     val availableFromGroup = maxAvailableFromGroup(profile.group)
     val overallAvailable = Quota.min(availableFromProfile, availableFromGroup)
@@ -71,16 +70,15 @@ class ProfileQuotas(
   }
 
   private def validate(quota: Quota, size: Int, errorMessage: String): ValidationNel[String, Int] = {
-    import scalaz.Scalaz._
     if (quota.withinQuota(size)) size.successNel[String] else errorMessage.failureNel[Int]
   }
 
   private def usedMachinesByGroups(groups: Set[Group]): Map[Group, Int] =
     (for {
-        group <- groups.toSeq
-        profile <- lookupByGroup(group)
-     } yield (group, usedMachines(profile))
-    ).groupBy(_._1).mapValues(_.map(_._2)).mapValues(_.sum)
+      group <- groups
+      groupProfiles = lookupByGroup(group)
+      usedMachinesForGroup = groupProfiles.map(usedMachines).sum
+    } yield group -> usedMachinesForGroup).toMap
 
   private def usedMachines(profile: CosmosProfile): Int =
     listClusters(profile).map(_.description.size).sum

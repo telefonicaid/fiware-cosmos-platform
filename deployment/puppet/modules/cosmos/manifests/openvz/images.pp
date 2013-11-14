@@ -34,9 +34,10 @@ class cosmos::openvz::images(
   }
 
   exec { 'unpack_image' :
-    command => "tar -C ${replacements_dir} -zxf ${source_image_file}",
-    user    => 'root',
-    path    => '/bin'
+    command     => "tar -C ${replacements_dir} -zxf ${source_image_file}",
+    user        => 'root',
+    path        => '/bin',
+    refreshonly => true
   }
 
   file { "${replacements_dir}/root/.ssh" :
@@ -86,9 +87,10 @@ class cosmos::openvz::images(
   }
 
   exec { 'pack_image' :
-    command => "tar -C ${replacements_dir} -czf ${dest_image_file} .",
-    user    => 'root',
-    path    => '/bin'
+    command     => "tar -C ${replacements_dir} -czf ${dest_image_file} .",
+    user        => 'root',
+    path        => '/bin',
+    refreshonly => true
   }
 
   Class['ssh_keys'] ~> File["${replacements_dir}/root/.ssh"]

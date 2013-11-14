@@ -52,7 +52,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   it must behave like pageDisabledWhenUnderMaintenance(FakeRequest(GET, "/register"))
   it must behave like resourceDisabledWhenUnderMaintenance(FakeRequest(POST, "/register"))
 
-  it must "show the registration page to the unregistered users" in new WithSampleSessions {
+  it must "show the registration form to the unregistered users" in new WithSampleSessions {
     val registrationPage = unregUser.doRequest("/register")
     status(registrationPage) must equal (OK)
     contentAsString(registrationPage) must include ("User registration")

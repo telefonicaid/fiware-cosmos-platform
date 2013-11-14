@@ -35,6 +35,7 @@ import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterN
 import es.tid.cosmos.servicemanager.ambari.configuration.{HadoopConfig, ConfigurationKeys, Configuration}
 import es.tid.cosmos.servicemanager.ambari.rest._
 import es.tid.cosmos.servicemanager.ambari.services._
+import es.tid.cosmos.servicemanager.clusters._
 
 class AmbariServiceManagerTest
   extends AmbariTestBase with OneInstancePerTest with MockitoSugar with FutureMatchers {
@@ -49,8 +50,11 @@ class AmbariServiceManagerTest
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
   val instance = new AmbariServiceManager(
     provisioner, infrastructureProvider,
-    initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds,
-    ClusterId("HDFS"), HadoopConfig(MappersPerSlave, ReducersPerSlave))
+    ClusterId("HDFS"), HadoopConfig(MappersPerSlave, ReducersPerSlave),
+    new AmbariClusterDao(
+      new InMemoryClusterDao,
+      initializeProvisioner,
+      AmbariServiceManager.allServices))
   val testTimeout = 1 second
 
   "A ServiceManager" must "have no Clusters by default" in {
@@ -67,7 +71,7 @@ class AmbariServiceManagerTest
     state must equal(Running)
     val clusterDescription = instance.describeCluster(clusterId).get
     clusterDescription.size must be (1)
-    clusterDescription.nameNode_> must eventually (be (new URI("hdfs://hostname1:50070")))
+    clusterDescription.nameNode must be (Some(new URI("hdfs://hostname1:50070")))
     terminateAndVerify(clusterId, instance)
     verifyClusterAndServices(machines, hosts.head, hosts, clusterId)
   }
@@ -83,7 +87,7 @@ class AmbariServiceManagerTest
     state must equal(Running)
     val clusterDescription = instance.describeCluster(clusterId).get
     clusterDescription.size must be (ClusterSize)
-    clusterDescription.nameNode_> must eventually (be (new URI("hdfs://hostname1:50070")))
+    clusterDescription.nameNode must be (Some(new URI("hdfs://hostname1:50070")))
     terminateAndVerify(clusterId, instance)
     verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
   }
@@ -102,7 +106,7 @@ class AmbariServiceManagerTest
       given(cluster.addHost(masterMachine.head.hostname)).willReturn(successful(masterHost.head))
       given(cluster.addHosts(machines.map(_.hostname))).willReturn(successful(hosts))
       given(provisioner.registeredHostnames).willReturn(
-        successful((masterMachine ++ machines).map(_.hostname)))
+        successful((masterMachine ++ machines).map(_.hostname).toSet))
       def mockAddComponents(hosts: Seq[Host]) {
         hosts.foreach(host => given(host.addComponents(any())).willReturn(successful()))
       }
@@ -132,7 +136,7 @@ class AmbariServiceManagerTest
             the(MachineProfile.HdfsMaster),
             the(1),
             any())
-      val distinctHostnames = (masterMachine ++ machines).map(_.hostname).distinct
+      val distinctHostnames = (masterMachine ++ machines).map(_.hostname).toSet
       verify(provisioner).bootstrapMachines(
         distinctHostnames,
         infrastructureProvider.rootPrivateSshKey)
@@ -223,7 +227,7 @@ class AmbariServiceManagerTest
   }
 
   private def initializeProvisioner = {
-    val provisionerMock = mock[ClusterProvisioner]
+    val provisionerMock = mock[AmbariServer]
     given(provisionerMock.listClusterNames).willReturn(successful(Seq()))
     provisionerMock
   }
@@ -240,10 +244,12 @@ class AmbariServiceManagerTest
     given(provisioner.teardownMachines(any(), any())).willReturn(successful())
     given(infrastructureProvider.createMachines(the(profile), any(), any()))
       .willReturn(Future.traverse(machines)(machine => successful(machine)))
+    given(infrastructureProvider.assignedMachines(any()))
+      .willReturn(successful(machines))
     given(provisioner.createCluster(any(), any())).willReturn(successful(cluster))
     given(provisioner.removeCluster(any())).willReturn(successful())
     given(provisioner.getCluster(any())).willReturn(successful(cluster))
-    given(provisioner.registeredHostnames).willReturn(successful(machines.map(_.hostname).toSeq))
+    given(provisioner.registeredHostnames).willReturn(successful(machines.map(_.hostname).toSet))
     given(cluster.applyConfiguration(any(), any())).willReturn(successful())
     val serviceNames = services.map(_.name)
     given(cluster.serviceNames).willReturn(serviceNames)
@@ -291,7 +297,7 @@ class AmbariServiceManagerTest
       the(MachineProfile.G1Compute), the(machines.size), any())
     verify(infrastructureProvider).releaseMachines(machines)
     verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
-    val distinctHostnames = machines.map(_.hostname).distinct
+    val distinctHostnames = machines.map(_.hostname).toSet
     verify(provisioner).bootstrapMachines(
       distinctHostnames,
       infrastructureProvider.rootPrivateSshKey)
@@ -343,7 +349,7 @@ class AmbariServiceManagerTest
         Thread.sleep(500)
         waitForClusterCompletion(id, sm)
       }
-      case Failed(reason) => throw reason
+      case Failed(reason) => throw new RuntimeException(reason)
       case _ => description.get.state
     }
   }

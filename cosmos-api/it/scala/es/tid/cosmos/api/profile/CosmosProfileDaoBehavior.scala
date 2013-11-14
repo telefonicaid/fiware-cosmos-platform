@@ -15,7 +15,7 @@ import org.scalatest.{FlatSpec, Tag}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile.UserState._
-import es.tid.cosmos.servicemanager.ClusterId
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 

@@ -12,11 +12,9 @@
 package es.tid.cosmos.api.controllers.storage
 
 import java.net.URI
-import scala.concurrent.Await
-import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import com.wordnik.swagger.annotations.{ApiError, ApiErrors, ApiOperation, Api}
+import com.wordnik.swagger.annotations.{ApiOperation, ApiErrors, ApiError, Api}
 import play.api.libs.json.Json
 import play.api.mvc.Action
 
@@ -52,8 +50,8 @@ class StorageResource(
       withApiAuth(request) { profile =>
         (for {
           description <- serviceManager.describeCluster(serviceManager.persistentHdfsId)
-          if description.nameNode_>.isCompleted
-          webHdfsUri = toWebHdfsUri(Await.result(description.nameNode_>, 100 milliseconds))
+          if description.nameNode.isDefined
+          webHdfsUri = toWebHdfsUri(description.nameNode.get)
         } yield Ok(Json.toJson(WebHdfsConnection(location = webHdfsUri, user = profile.handle))))
         .getOrElse(UnavailableHdfsResponse)
       }

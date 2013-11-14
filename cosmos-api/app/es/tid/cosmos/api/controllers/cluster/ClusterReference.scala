@@ -16,7 +16,7 @@ import play.api.libs.json.{Json, JsValue, Writes}
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.profile.ClusterAssignment
-import es.tid.cosmos.servicemanager.ClusterDescription
+import es.tid.cosmos.servicemanager.clusters.ClusterDescription
 
 case class ClusterReference(
     description: ClusterDescription,

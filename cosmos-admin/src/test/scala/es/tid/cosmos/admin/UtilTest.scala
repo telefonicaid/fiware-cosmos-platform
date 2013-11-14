@@ -23,7 +23,7 @@ class UtilTest extends FlatSpec with MustMatchers with MockitoSugar {
     Util.waitUntilReady(Future { Thread.sleep(2000) }) must be (true)
   }
 
-  "it" must "wait for the future to finish with error" in {
+  it must "wait for the future to finish with error" in {
     Util.waitUntilReady(Future { Thread.sleep(2000); throw new Exception("foo") }) must be (false)
   }
 }

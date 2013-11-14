@@ -115,7 +115,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
       ("status" -> "OK")
     )
     get(ambariServer.bootstrapMachines(
-      Seq("foo.com"),
+      Set("foo.com"),
       "dummy-ssh-key"))
     verify(ambariServer.responses).bootstrap(any())
   }
@@ -127,7 +127,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
     )
     evaluating {
       get(ambariServer.bootstrapMachines(
-        Seq("foo.com"),
+        Set("foo.com"),
         "dummy-ssh-key"))
     } must produce [RequestException]
     verify(ambariServer.responses).bootstrap(any())
@@ -136,7 +136,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
   it must "propagate errors when bootstrapping" in errorPropagation(
     ambariServer.responses.bootstrap(any()),
     ambariServer.bootstrapMachines(
-      Seq("foo.com"),
+      Set("foo.com"),
       "dummy-ssh-key")
   )
 
@@ -147,7 +147,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
       ("status" -> "OK")
     )
     get(ambariServer.teardownMachines(
-      Seq("foo.com"),
+      Set("foo.com"),
       "dummy-ssh-key"))
     verify(ambariServer.responses).teardown(any())
   }
@@ -155,7 +155,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
   it must "propagate errors when teardown" in errorPropagation(
     ambariServer.responses.teardown(any()),
     ambariServer.teardownMachines(
-      Seq("foo.com"),
+      Set("foo.com"),
       "dummy-ssh-key")
   )
 
@@ -166,7 +166,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
     )
     evaluating {
       get(ambariServer.teardownMachines(
-        Seq("foo.com"),
+        Set("foo.com"),
         "dummy-ssh-key"))
     } must produce [RequestException]
     verify(ambariServer.responses).teardown(any())
@@ -178,7 +178,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
       ("href" -> "www.some.server.com/api/v1/hosts") ~
       ("items" -> List("Hosts" -> ("host_name" -> "foo"), "Hosts" -> ("host_name" -> "bar")))
     )
-    get(ambariServer.registeredHostnames) must be (Seq("foo", "bar"))
+    get(ambariServer.registeredHostnames) must be (Set("foo", "bar"))
     verify(ambariServer.responses).serverHosts
   }
 
@@ -188,7 +188,7 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
       ("href" -> "www.some.server.com/api/v1/hosts") ~
       ("items" -> List("Hosts" -> ("host_name" -> "foo")))
     )
-    get(ambariServer.registeredHostnames) must be (Seq("foo"))
+    get(ambariServer.registeredHostnames) must be (Set("foo"))
     verify(ambariServer.responses).serverHosts
   }
 }

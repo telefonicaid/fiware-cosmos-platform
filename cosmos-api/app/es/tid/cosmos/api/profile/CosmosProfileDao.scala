@@ -15,7 +15,7 @@ import java.util.Date
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState.UserState
-import es.tid.cosmos.servicemanager.ClusterId
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 /**
  * This trait creates an abstraction on how to use the underlying data, such as SQL databases,

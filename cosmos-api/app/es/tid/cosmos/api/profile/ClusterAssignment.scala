@@ -13,7 +13,7 @@ package es.tid.cosmos.api.profile
 
 import java.util.Date
 
-import es.tid.cosmos.servicemanager.ClusterId
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 /**
  * Association between a cluster and his owner.

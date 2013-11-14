@@ -22,6 +22,7 @@ object CosmosBuild extends Build {
   object Dependencies {
     lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
+    lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
   }
 
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)

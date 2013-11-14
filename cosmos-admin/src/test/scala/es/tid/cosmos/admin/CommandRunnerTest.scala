@@ -16,7 +16,8 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 import org.mockito.BDDMockito._
 
-import es.tid.cosmos.servicemanager.{ClusterDescription, ServiceManager}
+import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
 
 class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -40,14 +41,14 @@ class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
   it must "exit with zero status when everything goes OK" in
     new WithArguments("setup") {
       given(serviceManager.describePersistentHdfsCluster())
-        .willReturn(Some(mock[ClusterDescription]))
+        .willReturn(Some(mock[ImmutableClusterDescription]))
       runner.run() must be (0)
     }
 
   it must "work with multi-subcommand arguments" in
     new WithArguments("persistent-storage", "setup") {
       given(serviceManager.describePersistentHdfsCluster())
-        .willReturn(Some(mock[ClusterDescription]))
+        .willReturn(Some(mock[ImmutableClusterDescription]))
       runner.run() must be (0)
     }
 }

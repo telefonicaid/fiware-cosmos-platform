@@ -13,10 +13,7 @@ package es.tid.cosmos.api.controllers.cluster
 
 import java.util.Date
 import javax.ws.rs.PathParam
-import scala.Some
-import scala.util.Success
-import scala.util.Try
-import scala.util.Failure
+import scala.util.{Failure, Success, Try}
 
 import com.wordnik.swagger.annotations._
 import play.Logger
@@ -26,10 +23,9 @@ import play.api.mvc.{Request, RequestHeader, Action, SimpleResult}
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile._
-import es.tid.cosmos.servicemanager.{ClusterDescription, ClusterId, ServiceManager}
-import es.tid.cosmos.api.profile.ClusterAssignment
-import es.tid.cosmos.api.profile.CosmosProfile
+import es.tid.cosmos.api.profile.{ProfileQuotas, CosmosProfile, ClusterAssignment, CosmosProfileDao}
+import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ClusterId}
 
 /**
  * Resource that represents a single cluster.

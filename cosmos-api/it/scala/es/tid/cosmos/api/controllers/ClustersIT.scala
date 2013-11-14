@@ -20,8 +20,8 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.cluster.CreateClusterParams
 import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
-import es.tid.cosmos.servicemanager.ClusterId
 import es.tid.cosmos.servicemanager.ambari.services.Hdfs
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 class ClustersIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {

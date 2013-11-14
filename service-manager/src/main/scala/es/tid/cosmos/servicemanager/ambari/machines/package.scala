@@ -17,7 +17,7 @@ import scala.concurrent.Future
 
 import es.tid.cosmos.platform.ial.MachineState
 import es.tid.cosmos.servicemanager.ambari.services.Hdfs
-import es.tid.cosmos.servicemanager.HostDetails
+import es.tid.cosmos.servicemanager.clusters.HostDetails
 
 /**
  * Functions for handling machines.

@@ -10,7 +10,7 @@ import scalaz.ValidationNel
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.cluster.ClusterReference
 import es.tid.cosmos.api.profile.UserState.Enabled
-import es.tid.cosmos.servicemanager.ClusterDescription
+import es.tid.cosmos.servicemanager.clusters.ClusterDescription
 
 class ProfileQuotasTest extends FlatSpec with MustMatchers with MockitoSugar {
 

@@ -20,8 +20,7 @@ import com.wordnik.swagger.annotations.ApiProperty
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 
-import es.tid.cosmos.servicemanager.ClusterDescription
-import es.tid.cosmos.servicemanager.HostDetails
+import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
 
 /**
  * A cluster from the perspective of API clients.
@@ -53,14 +52,9 @@ object ClusterDetails {
       size = desc.size,
       state = desc.state.name,
       stateDescription = desc.state.descLine,
-      master = optional(desc.master_>),
-      slaves = optional(desc.slaves_>)
+      master = desc.master,
+      slaves = Option(desc.slaves)
     )
-
-  private def optional[T](value_> : Future[T]): Option[T] = value_>.value match {
-    case Some(Success(v)) => Some(v)
-    case _ => None
-  }
 
   implicit object HostDetailsWrites extends Writes[HostDetails] {
     def writes(info: HostDetails): JsValue = Json.obj(

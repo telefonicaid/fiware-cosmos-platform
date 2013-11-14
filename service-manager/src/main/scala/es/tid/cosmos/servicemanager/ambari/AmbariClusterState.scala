@@ -9,19 +9,9 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
+package es.tid.cosmos.servicemanager.ambari
 
-import scala.concurrent.Future
-
-/**
- * Trait adding refreshing capabilities.
- */
-trait Refreshable {
-  /**
-   * Perform a refresh.
-   * Note: this operation can have <b>side effects</b>.
-   *
-   * @return the completion future of the operation
-   */
-  def refresh(): Future[Unit]
+object AmbariClusterState extends Enumeration {
+  type AmbariClusterState = Value
+  val Running, Unknown, ClusterNotPresent = Value
 }

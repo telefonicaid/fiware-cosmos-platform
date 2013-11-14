@@ -21,7 +21,7 @@ import play.api.Play.current
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState._
-import es.tid.cosmos.servicemanager.ClusterId
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   lazy val cosmosProfileDao: CosmosProfileDao = new PlayDbCosmosProfileDao

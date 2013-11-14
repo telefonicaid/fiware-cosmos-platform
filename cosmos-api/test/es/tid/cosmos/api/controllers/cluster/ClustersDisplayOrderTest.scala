@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
-import scala.concurrent.Future
 import java.util.Date
 import scala.util.Random
 
@@ -19,20 +18,20 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile.ClusterAssignment
-import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.clusters._
 
 class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
 
   case class SimpleDescription(
       override val name: String,
-      override val state: ClusterState,
-      override val size: Int = 2 + Random.nextInt(40)
+      override val state: ClusterState
     ) extends ClusterDescription {
     override val id = ClusterId()
-    private val failedFuture = Future.failed(new NoSuchElementException())
-    override val nameNode_> = failedFuture
-    override val master_> = failedFuture
-    override val slaves_> = failedFuture
+    override val nameNode = None
+    override val size = Random.nextInt(40)
+    override val master = Some(HostDetails("foo", "bar"))
+    override val slaves = HostDetails("foo2", "bar2") +: (1 to (size - 1)).map(
+      i => HostDetails(s"host$i", s"ip$i"))
   }
 
   /**
@@ -46,7 +45,7 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
     ClusterReference(description, ClusterAssignment(description.id, randomOwner, randomDate))
   }
 
-  object FailedState extends Failed(new IllegalStateException())
+  object FailedState extends Failed(new IllegalStateException().getMessage)
 
   "Clusters display order" must "order first by state" in {
     Seq(

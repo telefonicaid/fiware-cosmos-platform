@@ -30,7 +30,7 @@ CREATE TABLE master (
   PRIMARY KEY (cluster_id),
   CONSTRAINT fk_cluster_master
     FOREIGN KEY (cluster_id)
-    REFERENCES clusters (id)
+    REFERENCES cluster_state (id)
 );
 
 CREATE TABLE slave (
@@ -40,7 +40,7 @@ CREATE TABLE slave (
   PRIMARY KEY (name, cluster_id, ip),
   CONSTRAINT fk_cluster_slave
     FOREIGN KEY (cluster_Id)
-    REFERENCES clusters (id)
+    REFERENCES cluster_state (id)
 );
 
 # --- !Downs

@@ -25,7 +25,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
     handle = handle,
     publicKey = s"ssh-rsa pk00001 $handle@host",
     email = s"$handle@example.com"
-  ) //TODO: Use this where possible
+  )
 
   def register(dao: CosmosProfileDao, id: UserId, reg: Registration)(implicit c: dao.Conn) =
     dao.registerUserInDatabase(id, reg, NoGroup, UnlimitedQuota)(c)

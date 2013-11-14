@@ -147,4 +147,15 @@ object Quota {
     case (FiniteQuota(leftLimit), FiniteQuota(rightLimit)) =>
       if (leftLimit > rightLimit) left else right
   }
+
+  /**
+   * Calculate the minimium of two given quotas.
+   * @param left  the 1st quota
+   * @param right the 2nd quota
+   * @return      the 1st if it is smaller than the 2nd, the 2nd one otherwise.
+   */
+  def min(left: Quota, right: Quota): Quota = {
+    val unique = Set(left, right)
+    if (unique.size == 1) unique.head else unique.filterNot(_ == max(left, right)).head
+  }
 }

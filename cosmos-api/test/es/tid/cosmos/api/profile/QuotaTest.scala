@@ -59,15 +59,27 @@ class QuotaTest extends FlatSpec with MustMatchers {
     Quota.max(EmptyQuota, FiniteQuota(1)) must equal (FiniteQuota(1))
   }
 
+  "The min quota between an empty and another quota" must "be the empty quota" in {
+    Quota.min(EmptyQuota, EmptyQuota) must equal (EmptyQuota)
+    Quota.min(EmptyQuota, UnlimitedQuota) must equal (EmptyQuota)
+    Quota.min(EmptyQuota, FiniteQuota(1)) must equal (EmptyQuota)
+  }
+
   "The max quota between an unlimited and another quota" must "be the unlimited quota" in {
     Quota.max(UnlimitedQuota, UnlimitedQuota) must equal (UnlimitedQuota)
     Quota.max(UnlimitedQuota, EmptyQuota) must equal (UnlimitedQuota)
     Quota.max(UnlimitedQuota, FiniteQuota(1)) must equal (UnlimitedQuota)
   }
 
-  "The max quota between two finite quotas" must "be the one with higher limit" in {
-    Quota.max(FiniteQuota(1), FiniteQuota(2)) must equal(FiniteQuota(2))
-    Quota.max(FiniteQuota(2), FiniteQuota(1)) must equal(FiniteQuota(2))
+  "The min quota between an unlimited and another quota" must "be the other quota" in {
+    Quota.min(UnlimitedQuota, UnlimitedQuota) must equal (UnlimitedQuota)
+    Quota.min(UnlimitedQuota, EmptyQuota) must equal (EmptyQuota)
+    Quota.min(UnlimitedQuota, FiniteQuota(1)) must equal (FiniteQuota(1))
+  }
+
+  "The min quota between two finite quotas" must "be the one with lower limit" in {
+    Quota.min(FiniteQuota(1), FiniteQuota(2)) must equal(FiniteQuota(1))
+    Quota.min(FiniteQuota(2), FiniteQuota(1)) must equal(FiniteQuota(1))
   }
 
   "Adding two quotas" must "have empty and unlimited as upper and lower bounds" in {

@@ -23,6 +23,7 @@ object CosmosBuild extends Build {
     lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
+    lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
   }
 
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)
@@ -66,6 +67,7 @@ object CosmosBuild extends Build {
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
     dependsOn(serviceManager)
+    dependsOn(common_test) % "test->compile"
   )
 
   lazy val cosmosAdmin = (Project(id = "cosmos-admin", base = file("cosmos-admin"))

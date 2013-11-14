@@ -14,18 +14,17 @@ package es.tid.cosmos.api.profile
 
 import org.mockito.BDDMockito._
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
+import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
-import scalaz.ValidationNel
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.cluster.ClusterReference
 import es.tid.cosmos.api.profile.UserState.Enabled
+import es.tid.cosmos.platform.common.scalatest.matchers.ValidationMatchers
 import es.tid.cosmos.servicemanager.clusters.ClusterDescription
 
-class ProfileQuotasTest extends FlatSpec with MustMatchers with MockitoSugar {
-
-  import ValidationMatchers._
+class ProfileQuotasTest extends FlatSpec
+    with MustMatchers with MockitoSugar with ValidationMatchers {
 
   "A user request exceeding their personal quota" must "not be allowed" in {
     val userGroup = GuaranteedGroup("A", FiniteQuota(3))
@@ -42,7 +41,7 @@ class ProfileQuotasTest extends FlatSpec with MustMatchers with MockitoSugar {
       machinePool = 10
     )
     withConfig(context) { (quotas, profile) =>
-      quotas.withinQuota(profile, 1) must beSuccessful
+      quotas.withinQuota(profile, 1) must (beSuccessful and haveValidValue(1))
       quotas.withinQuota(profile, 2) must haveFailures(
         "Profile quota exceeded",
         "You can request up to 1 machine(s) at this point."
@@ -74,9 +73,9 @@ class ProfileQuotasTest extends FlatSpec with MustMatchers with MockitoSugar {
       machinePool = 10
     )
     withConfig(context) { (quotas, profile) =>
-      quotas.withinQuota(profile, 1) must beSuccessful
-      quotas.withinQuota(profile, 2) must beSuccessful
-      quotas.withinQuota(profile, 3) must beSuccessful
+      quotas.withinQuota(profile, 1) must (beSuccessful and haveValidValue(1))
+      quotas.withinQuota(profile, 2) must (beSuccessful and haveValidValue(2))
+      quotas.withinQuota(profile, 3) must (beSuccessful and haveValidValue(3))
       quotas.withinQuota(profile, 4) must haveFailures(
         "Quota exceeded for group [A].",
         "You can request up to 3 machine(s) at this point."
@@ -108,14 +107,13 @@ class ProfileQuotasTest extends FlatSpec with MustMatchers with MockitoSugar {
       machinePool = 10
     )
     withConfig(context){ (quotas, profile) =>
-      quotas.withinQuota(profile, 3) must beSuccessful
+      quotas.withinQuota(profile, 3) must (beSuccessful and haveValidValue(3))
       quotas.withinQuota(profile, 4) must haveFailures(
         "Quota exceeded for group [A].",
         "You can request up to 3 machine(s) at this point."
       )
     }
   }
-
 
   def withConfig(c: Context)
               (test: (ProfileQuotas, CosmosProfile) => Unit) {
@@ -165,21 +163,4 @@ class ProfileQuotasTest extends FlatSpec with MustMatchers with MockitoSugar {
     usedMachinesByUser: Int,
     machinePool: Int
   )
-
-  private object ValidationMatchers {
-    def haveFailures(expected: String*) = Matcher { (left: ValidationNel[String, Int]) =>
-      def failures(validation: ValidationNel[String, Int]): List[String] =
-          validation.swap.map(_.list).getOrElse(Nil)
-
-      MatchResult(
-        left.isFailure && failures(left) == expected,
-        s"Failures did not match. ${expected === failures(left)}",
-        "Failures matched"
-      )
-    }
-
-    val beSuccessful = Matcher { (left: ValidationNel[String, Int]) =>
-      MatchResult(left.isSuccess, s"$left has failures", s"$left is successful")
-    }
-  }
 }

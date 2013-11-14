@@ -61,7 +61,7 @@ class ProfileQuotas(
       overallAvailable, size,
       s"You can request up to ${overallAvailable.toInt.getOrElse(0)} machine(s) at this point.")
 
-    (profileValidation |@| groupValidation |@| overallValidation){_ + _ + _}
+    (profileValidation |@| groupValidation |@| overallValidation){(_, _, last) => last}
   }
 
   private def maxAvailableFromGroup(group: Group): Quota = {

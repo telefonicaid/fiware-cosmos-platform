@@ -29,7 +29,7 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration}
 import es.tid.cosmos.platform.common.Wrapped
-import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 import views.AuthAlternative
 
 /**
@@ -41,6 +41,8 @@ class Pages(
     val dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus
   ) extends JsonController with PagesAuthController with MaintenanceAwareController {
+
+  private val registrationWizard = new UserRegistrationWizard(dao, serviceManager)
 
   def index = Action { implicit request =>
     unlessPageUnderMaintenance {
@@ -107,9 +109,9 @@ class Pages(
       withAuthentication(request)(
         whenRegistered = (_, _) => redirectToIndex,
         whenNotAuthenticated = redirectToIndex,
-        whenNotRegistered = userProfile => dao.withTransaction { implicit c =>
+        whenNotRegistered = userProfile => {
 
-          val validatedForm = {
+          val validatedForm = dao.withTransaction { implicit c =>
             val form = RegistrationForm().bindFromRequest()
             form.data.get("handle") match {
               case Some(handle) if dao.handleExists(handle) =>
@@ -121,8 +123,7 @@ class Pages(
           validatedForm.fold(
             formWithErrors => registrationPage(userProfile, formWithErrors),
             registration => {
-              val cosmosProfile = dao.registerUserInDatabase(userProfile.id, registration)
-              serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
+              registrationWizard.registerUser(userProfile.id, registration)
               redirectToIndex
             }
           )

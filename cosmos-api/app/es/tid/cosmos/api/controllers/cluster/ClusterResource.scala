@@ -101,7 +101,7 @@ class ClusterResource(
 
   private def withinQuota(profile: CosmosProfile, size: Int) = dao.withConnection { implicit c =>
     new ProfileQuotas(
-      machinePoolSize = serviceManager.machinePoolCount,
+      machinePoolSize = serviceManager.clusterNodePoolCount,
       groups = dao.getGroups,
       lookupByGroup = dao.lookupByGroup,
       listClusters = listClusters

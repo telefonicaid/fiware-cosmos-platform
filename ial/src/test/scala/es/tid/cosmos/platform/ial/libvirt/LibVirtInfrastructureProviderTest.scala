@@ -109,8 +109,12 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
     machines_> must eventually(have size 2)
   }
 
-  it must "provide the total number of managed machines regardless of their state or usage" in {
-    infraProvider.machinePoolCount must be (9)
+  it must "provide the total number of managed machines according to profile filter and " +
+    "regardless of their state or usage" in {
+    infraProvider.machinePoolCount(_ => true) must be (9)
+    infraProvider.machinePoolCount(_ == MachineProfile.G1Compute) must be (5)
+    infraProvider.machinePoolCount(_ == MachineProfile.HdfsMaster) must be (1)
+    infraProvider.machinePoolCount(_ == MachineProfile.HdfsSlave) must be (3)
   }
 
   def mustNotCreateMachines(machines_> : Future[Seq[MachineState]]) {

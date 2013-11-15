@@ -57,7 +57,8 @@ class LibVirtInfrastructureProvider(
       servers <- availableServers(profile)
     } yield servers.size
 
-  override def machinePoolCount: Int = dao.libVirtServers.size
+  override def machinePoolCount(profileFilter: MachineProfile.Value => Boolean): Int =
+    dao.libVirtServers.map(_.profile).count(profileFilter)
 
   override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = {
     for {

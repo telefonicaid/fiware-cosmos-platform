@@ -58,8 +58,10 @@ trait InfrastructureProvider {
 
   /**
    * Get the total number of machines managed by this provider.
+   * It receives a filter to allow selecting machines of specific profiles.
    *
-   * @return the total number of managed machines regardless of their state and usage.
+   * @param profileFilter the machine profile filter
+   * @return              the total number of managed machines regardless of their state and usage.
    */
-  def machinePoolCount: Int
+  def machinePoolCount(profileFilter: MachineProfile.Value => Boolean): Int
 }

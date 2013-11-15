@@ -89,5 +89,10 @@ trait ServiceManager {
    */
   def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit]
 
-  def machinePoolCount: Int //FIXME: This is a forward to IAL. Should be removed
+  /**
+   * Get the total number of cluster nodes managed by the service manager.
+   *
+   * @return the total number of nodes regardless of their state and usage
+   */
+  def clusterNodePoolCount: Int
 }

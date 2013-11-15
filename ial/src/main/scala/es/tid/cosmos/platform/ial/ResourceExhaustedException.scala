@@ -19,5 +19,11 @@ package es.tid.cosmos.platform.ial
  * @param requested the amount of requested resources
  * @param available the amount of available resources
  */
-case class ResourceExhaustedException(resource: String, requested: Int, available: Int)
-  extends Exception(s"requested $requested resources of type $resource, only $available available")
+case class ResourceExhaustedException(
+    resource: String,
+    requested: Int,
+    available: Int,
+    cause: Throwable = null) extends Exception(
+  s"requested $requested resources of type $resource, only $available available",
+  cause
+)

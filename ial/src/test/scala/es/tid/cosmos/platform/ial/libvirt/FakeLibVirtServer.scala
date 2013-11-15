@@ -16,28 +16,29 @@ import scala.concurrent.Future
 
 import es.tid.cosmos.platform.ial.MachineProfile
 
-/**
- * @author apv
- */
-class FakeLibVirtServer(val properties: LibVirtServerProperties) extends LibVirtServer {
+class FakeLibVirtServer(
+    val properties: LibVirtServerProperties,
+    domainCreated: Boolean = false) extends LibVirtServer {
 
-  private var dom: Option[DomainProperties] = None
+  private var dom: Option[DomainProperties] = if (domainCreated) Some(domainProps()) else None
+
+  private def domainProps() = {
+    val uuid = UUID.randomUUID()
+    DomainProperties(
+      uuid = uuid,
+      name = s"fake_${uuid.toString}",
+      isActive = true,
+      profile = MachineProfile.G1Compute,
+      hostname = properties.domainHostname,
+      ipAddress = properties.domainIpAddress
+    )
+  }
 
   def createDomain(): Future[DomainProperties] =
     if (dom.isDefined)
       Future.failed(new IllegalStateException("server is already created"))
     else {
-      val uuid = UUID.randomUUID()
-
-      dom = Some(DomainProperties(
-        uuid = uuid,
-        name = s"fake_${uuid.toString}",
-        isActive = true,
-        profile = MachineProfile.G1Compute,
-        hostname = properties.domainHostname,
-        ipAddress = properties.domainIpAddress
-      ))
-
+      dom = Some(domainProps())
       Future.successful(dom.get)
     }
 

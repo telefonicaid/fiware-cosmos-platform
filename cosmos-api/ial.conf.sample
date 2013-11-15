@@ -1,8 +1,8 @@
 # This is the configuration file that lists the available libvirt servers
 # ~~~~~
 
-root.ssh.private_key = ""
-libvirt.servers = [
+ial.root.ssh.private_key = ""
+ial.libvirt.servers = [
     {
         name = "andromeda02",
         description = "Andromeda 02",

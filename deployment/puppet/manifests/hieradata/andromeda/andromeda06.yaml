@@ -9,6 +9,7 @@
 # All rights reserved.
 #
 
+cosmos::slave::rack: "rack02"
 cosmos::slave::ip: "192.168.63.16"
 cosmos::slave::ct_ip: "192.168.63.80"
 cosmos::slave::ct_hostname: "andromeda-compute06"

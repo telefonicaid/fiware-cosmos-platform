@@ -55,6 +55,8 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     cosmosProfile
   }
 
+  override def getAllUsers()(implicit c: Conn): Seq[CosmosProfile] = users.values.toSeq
+
   override def getCosmosId(userId: UserId)(implicit c: Conn): Option[Long] =
     users.get(userId).map(_.id)
 

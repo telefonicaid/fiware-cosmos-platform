@@ -31,18 +31,15 @@ class LibVirtInfrastructureProvider(
       profile: MachineProfile.Value,
       numberOfMachines: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
-    def takeServers(servers: Seq[LibVirtServer]) = {
-      val available = servers.length
-      if (available < numberOfMachines)
-        throw ResourceExhaustedException(profile.toString, numberOfMachines, available)
-      else
-        servers.take(numberOfMachines)
-    }
     createMachinesSequencer enqueue {
-      for {
-        servers <- availableServers(profile)
-        machines <- createMachines(bootstrapAction, takeServers(servers))
-      } yield machines
+      val serversOfProfile = dao.libVirtServers.filter(_.profile == profile).map(libvirtServerFactory)
+      (for {
+        servers <- LibVirtServer.placeServers(serversOfProfile, numberOfMachines)
+        machines <- createMachines(bootstrapAction, servers)
+      } yield machines) recover {
+        case error @ LibVirtServer.PlacementException(_, available) =>
+          throw ResourceExhaustedException(profile.toString, numberOfMachines, available, error)
+      }
     }
   }
 
@@ -77,7 +74,7 @@ class LibVirtInfrastructureProvider(
   private def serversForMachines(machines: Seq[MachineState]): Future[Seq[LibVirtServer]] = future {
     for {
       machine <- machines
-      server <- dao.libVirtServers if (server.domainHostname == machine.hostname)
+      server <- dao.libVirtServers if server.domainHostname == machine.hostname
     } yield libvirtServerFactory(server)
   }
 
@@ -110,7 +107,7 @@ class LibVirtInfrastructureProvider(
       for (created <- srv.isCreated()) yield if (created) None else Some(srv)
 
     val servers = for {
-      serverProps <- dao.libVirtServers if (pred(serverProps))
+      serverProps <- dao.libVirtServers if pred(serverProps)
     } yield libvirtServerFactory(serverProps)
     Future.sequence(servers.map(availableServer)).map(_.flatten)
   }

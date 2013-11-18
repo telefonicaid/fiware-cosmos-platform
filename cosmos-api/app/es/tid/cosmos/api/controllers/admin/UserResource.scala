@@ -11,19 +11,18 @@
 
 package es.tid.cosmos.api.controllers.admin
 
-import scala.Some
 import scala.annotation.tailrec
 import scala.util.Random
-import scalaz.{Failure, Success}
+import scalaz.{Success, Failure}
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Headers, SimpleResult}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
-import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.controllers.pages.UserRegistrationWizard
+import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /**
@@ -39,6 +38,8 @@ class UserResource(
   ) extends JsonController with MaintenanceAwareController {
 
   private type Conn = dao.Conn
+
+  private val registrationWizard = new UserRegistrationWizard(dao, serviceManager)
 
   /**
    * Register a new user account.
@@ -67,7 +68,7 @@ class UserResource(
               userId <- uniqueUserId(params)
               handle <- selectHandle(params.handle)
               registration = Registration(handle, params.sshPublicKey, params.email)
-            } yield createUserAccount(userId, registration)).fold(
+            } yield registrationWizard.registerUser(userId, registration)).fold(
               fail = message => Conflict(Json.toJson(message)),
               succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
                 handle = cosmosProfile.handle,
@@ -107,13 +108,6 @@ class UserResource(
       case (`providerName`, adminProvider : AdminEnabledAuthProvider) => adminProvider
     }
   } yield password == provider.adminPassword).getOrElse(false)
-
-  private def createUserAccount(userId: UserId, registration: Registration)(implicit c: Conn) = {
-    // TODO: Replace default group and quota with values from request
-    val p = dao.registerUserInDatabase(userId, registration, NoGroup, UnlimitedQuota)
-    serviceManager.addUsers(serviceManager.persistentHdfsId, p.toClusterUser)
-    p
-  }
 
   @tailrec
   private def generateHandle()(implicit c: Conn): String = {

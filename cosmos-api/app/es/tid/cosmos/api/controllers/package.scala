@@ -20,7 +20,6 @@ import es.tid.cosmos.servicemanager.ClusterUser
 package object controllers {
 
   class ClusterProfileExtensions(profile: CosmosProfile) {
-    val toClusterUser = ClusterUser(profile.handle, profile.keys.head.signature)
     val toUserProfile = UserProfile(profile.handle, profile.keys.toList)
   }
 

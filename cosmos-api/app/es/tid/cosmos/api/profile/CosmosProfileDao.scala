@@ -45,6 +45,14 @@ trait CosmosProfileDao {
                             (implicit c: Conn): CosmosProfile
 
   /**
+   * Retrieves all the Cosmos profiles.
+   *
+   * @param c  The connection to use.
+   * @return   All the profiles.
+   */
+  def getAllUsers()(implicit c: Conn): Seq[CosmosProfile]
+
+  /**
    * Retrieves the unique Cosmos ID for a given user.
    *
    * @param userId  The id specified by the user.

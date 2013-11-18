@@ -69,7 +69,7 @@ swagger.api.basepath=${application.baseurl}
 
 # IAL configuration
 # ~~~~~
-ial = include "ial"
+include "ial"
 
 # Service manager
 # ~~~~~

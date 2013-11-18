@@ -33,7 +33,7 @@ object GroupQuotas {
   def maximumQuota(
       group: Group, groupsAndUsedMachines: Map[Group, Int], machinePoolSize: Int) : Quota = {
 
-    val groups = groupsAndUsedMachines.keys.toSet
+    val groups = groupsAndUsedMachines.keySet
     val machinePoolQuota = Quota(machinePoolSize)
     requirePoolCanMeetMinimumQuota(groups, machinePoolQuota)
     require(groups.contains(group))

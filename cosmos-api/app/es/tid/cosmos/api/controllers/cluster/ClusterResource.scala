@@ -18,14 +18,13 @@ import scala.util.{Failure, Success, Try}
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json._
-import play.api.mvc.{Request, RequestHeader, Action, SimpleResult}
+import play.api.mvc.{Request, SimpleResult, RequestHeader, Action}
 
-import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{ProfileQuotas, CosmosProfile, ClusterAssignment, CosmosProfileDao}
-import es.tid.cosmos.servicemanager.ServiceManager
-import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ClusterId}
+import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
+import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 
 /**
  * Resource that represents a single cluster.
@@ -86,7 +85,11 @@ class ClusterResource(
     val services = serviceManager.services.filter(
       service => body.optionalServices.contains(service.name))
     Try(serviceManager.createCluster(
-      body.name, body.size, services, Seq(profile.toClusterUser))) match {
+      name = body.name,
+      clusterSize = body.size,
+      serviceDescriptions = services,
+      users = Seq(ClusterUser(profile.handle, profile.keys.head.signature))
+    )) match {
       case Failure(ex) => throw ex
       case Success(clusterId: ClusterId) => {
         Logger.info(s"Provisioning new cluster $clusterId")

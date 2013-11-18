@@ -209,7 +209,7 @@ class AmbariServiceManager(
     termination_>
   }
 
-  override def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit] = {
+  override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = {
     val clusterDescription = describeCluster(clusterId)
     require(
       clusterDescription.isDefined,

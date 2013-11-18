@@ -150,20 +150,17 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   override def persistentHdfsId: ClusterId = persistentHdfsCluster.id
 
-  def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = successful()
+  override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = successful()
 
   override def deployPersistentHdfsCluster(): Future[Unit] = {
     persistentHdfsCluster.enabled = true
     successful()
   }
 
-  override def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] = Some(persistentHdfsCluster)
+  override def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
+    Some(persistentHdfsCluster)
 
   override def terminatePersistentHdfsCluster(): Future[Unit] = successful()
-
-  override def addUsers(clusterId: ClusterId, users: ClusterUser*): Future[Unit] = successful()
-
-  def refresh() = successful()
 
   override def clusterNodePoolCount: Int = 10
 }

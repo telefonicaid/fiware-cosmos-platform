@@ -28,15 +28,12 @@ trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
 }
 
 class PlayDbCosmosProfileDao extends CosmosProfileDao {
+  import PlayDbCosmosProfileDao._
+
   type Conn = Connection
 
   def withConnection[A](block: (Conn) => A): A = DB.withTransaction[A](block)
   def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
-
-  private val toGroup: PartialFunction[Row, Group] = {
-    case Row(name: String, minimumQuota: Option[_]) =>
-      GuaranteedGroup(name, Quota(minimumQuota.asInstanceOf[Option[Int]]))
-  }
 
   override def registerUserInDatabase(userId: UserId, reg: Registration, group: Group, quota: Quota)
                                      (implicit c: Conn): CosmosProfile = {
@@ -67,6 +64,11 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       keys = Seq(defaultKey)
     )
   }
+
+  override def getAllUsers()(implicit c: Conn): Seq[CosmosProfile] =
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+                  |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+                  |ORDER BY cosmos_id""".stripMargin))
 
   override def getCosmosId(userId: UserId)(implicit c: Conn): Option[Long] =
     SQL("SELECT cosmos_id FROM user WHERE auth_realm = {realm} AND auth_id = {id}")
@@ -101,39 +103,33 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   }
 
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
-                 | u.api_key, u.api_secret, u.group_name,
-                 | p.name, p.signature
-                 | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
-                 | WHERE u.auth_realm = {realm} AND u.auth_id = {id}""".stripMargin)
-      .on("realm" -> userId.realm, "id" -> userId.id))
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+                  |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+                  |WHERE u.auth_realm = {realm} AND u.auth_id = {id}""".stripMargin)
+      .on("realm" -> userId.realm, "id" -> userId.id)).headOption
 
   override def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL("""SELECT u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
-                 | u.api_key, u.api_secret, u.group_name,
-                 | p.name, p.signature
-                 | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
-                 | WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
-      .on("key" -> creds.apiKey, "secret" -> creds.apiSecret))
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+                  |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+                  |WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
+      .on("key" -> creds.apiKey, "secret" -> creds.apiSecret)).headOption
 
   override def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile] =
-    lookupMany(SQL(s"""SELECT u.cosmos_id, u.handle, u.machine_quota, u.api_key, u.api_secret,
-                       | u.group_name,
-                       | p.name, p.signature
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
                        | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                        | WHERE u.group_name ${equalsOp(dbGroupName(group))} {groupName}"""
       .stripMargin).on("groupName" -> dbGroupName(group))).toSet
 
 
   override def getGroups(implicit c: Conn): Set[Group] = {
-    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(toGroup)
+    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(TO_GROUP)
     Set[Group](NoGroup) ++ registeredGroups
   }
 
   private def getGroup(maybeName: Option[String])(implicit c: Conn): Group = {
     val maybeGroup = maybeName.flatMap(name =>
       SQL("""SELECT name, min_quota FROM user_group WHERE name = {name}""".stripMargin)
-        .on("name" -> name).apply().collectFirst(toGroup))
+        .on("name" -> name).apply().collectFirst(TO_GROUP))
 
     maybeGroup.getOrElse(NoGroup)
   }
@@ -164,46 +160,36 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       }
 
   /**
-   * Lookup Cosmos profile by a custom query.
-   *
-   * @param query Query with the following output columns: cosmos id, handle, apiKey, apiSecret,
-   *              name and signature
-   * @return      A cosmos profile or nothing
-   */
-  private def lookup(query: SimpleSql[Row])(implicit c: Conn): Option[CosmosProfile] = {
-    val rowsForOneProfile = query().toList
-    toCosmosProfile(rowsForOneProfile)
-  }
-
-  private def lookupMany(query: SimpleSql[Row])(implicit c: Conn): Seq[CosmosProfile] = {
-    val allRows = query().toList
-    val rowsByProfileId = allRows.groupBy(row => row[Int]("cosmos_id"))
-    val maybeProfiles = rowsByProfileId.values.map(toCosmosProfile)
-    maybeProfiles.flatten.toSeq
-  }
-
-  private def toCosmosProfile(rows: List[Row])(implicit c: Conn): Option[CosmosProfile] = {
-    rows.headOption.map {
-      case Row(
-          id: Int,
-          UserState(state),
-          handle: String,
-          email: String,
-          machineQuota: Option[_],
-          apiKey: String,
-          apiSecret: String,
-          groupName: String,
-          _, _
-      ) => {
-        val namedKeys = rows.map(row => NamedKey(row[String]("name"), row[String]("signature")))
-        CosmosProfile(
-          id, state, handle, email,
-          getGroup(groupName.asInstanceOf[Option[String]]),
-          Quota(machineQuota.asInstanceOf[Option[Int]]),
-          ApiCredentials(apiKey, apiSecret), namedKeys.toSeq)
+     * Lookup Cosmos profiles retrieved by a custom query.
+     *
+     * @param query Query with the following output columns: cosmos id, handle, apiKey, apiSecret,
+     *              name and signature
+     * @return      Retrieved profiles
+     */
+    private def lookup(query: SimpleSql[Row])(implicit c: Conn): Seq[CosmosProfile] = {
+      val rows = query().toList
+      rows.map {
+        case Row(
+            id: Int,
+            UserState(state),
+            handle: String,
+            email: String,
+            machineQuota: Option[_],
+            apiKey: String,
+            apiSecret: String,
+            groupName: String,
+            _, _) => {
+          val namedKeys = for {
+            row <- rows if row[Int]("cosmos_id") == id
+          } yield NamedKey(row[String]("name"), row[String]("signature"))
+          CosmosProfile(
+            id, state, handle, email,
+            getGroup(groupName.asInstanceOf[Option[String]]),
+            Quota(machineQuota.asInstanceOf[Option[Int]]),
+            ApiCredentials(apiKey, apiSecret), namedKeys)
+        }
       }
     }
-  }
 
   override def setHandle(id: Long, handle: String)(implicit c: Conn) {
     val updatedRows = try {
@@ -248,25 +234,34 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       "signature" -> publicKey.signature
     )
     .executeInsert()
+}
+
+object PlayDbCosmosProfileDao {
+  private val ALL_USER_FIELDS = """u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
+                                 | u.api_key, u.api_secret, u.group_name""".stripMargin
+
+  private val TO_GROUP: PartialFunction[Row, Group] = {
+    case Row(name: String, minimumQuota: Option[_]) =>
+      GuaranteedGroup(name, Quota(minimumQuota.asInstanceOf[Option[Int]]))
+  }
+
+  /** Utility method for changing the operator in SQL statements when using optional values
+    * that convert None to NULL in SQL.
+    * <br/>
+    * e.g
+    *
+    * {{{select * from user where group_name IS NULL}}}
+    *
+    * @param maybe the optional value. In case of None the operator will be 'IS', '=' otherwise
+    * @return the operator to be used
+    */
+  private def equalsOp(maybe: Option[_]): String = maybe match {
+    case None => "IS"
+    case _ => "="
+  }
 
   private def dbGroupName(group: Group): Option[String] = group match {
     case NoGroup => None
     case _ => Some(group.name)
-  }
-
-  /**
-   * Utility method for changing the operator in SQL statements when using optional values
-   * that convert None to NULL in SQL.
-   * <br/>
-   * e.g
-   *
-   * {{{select * from user where group_name IS NULL}}}
-   *
-   * @param maybe the optional value. In case of None the operator will be 'IS', '=' otherwise
-   * @return the operator to be used
-   */
-  private def equalsOp(maybe: Option[_]): String = maybe match {
-    case None => "IS"
-    case _ => "="
   }
 }

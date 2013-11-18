@@ -30,6 +30,7 @@ class FakeLibVirtDao extends LibVirtDao {
     name = s"andromeda0$i",
     description = s"Andromeda 0$i",
     profile = profile,
+    rack = if (i % 2 == 1) "rack01" else "rack02",
     connectionChain = connChain(s"192.168.63.$i"),
     domainHostname = s"andromeda${50 + i}",
     domainIpAddress = s"192.168.63.${50 + i}")

@@ -135,3 +135,46 @@ class ProtocolTest(unittest.TestCase):
 
         self.client.get.assert_called_once_with(self.api_url + '/services')
         self.assertEquals(rep, [])
+
+    def test_add_user_to_cluster(self):
+        self.client.post.return_value = mock_response(status_code=200, json={
+            'message': 'user added successfully'
+        })
+        rep = self.proto.add_user_to_cluster('1', 'jsmith')
+
+        expected_body = json.dumps({ 'user' : 'jsmith' })
+        self.client.post.assert_called_once_with(
+            self.api_url + '/cluster/1/add_user',
+            expected_body,
+            auth=self.auth)
+
+        self.assertEquals(rep['message'], 'user added successfully')
+
+    def test_add_user_to_cluster_fail(self):
+        self.client.get.return_value = mock_response(status_code=500, json={
+            'error': 'request failed due to server error'
+        })
+        with self.assertRaises(ResponseError):
+            self.proto.add_user_to_cluster('1', 'jsmith')
+
+    def test_remove_user_from_cluster(self):
+        self.client.post.return_value = mock_response(status_code=200, json={
+            'message': 'user removed successfully'
+        })
+        rep = self.proto.remove_user_from_cluster('1', 'jsmith')
+
+        expected_body = json.dumps({ 'user' : 'jsmith' })
+        self.client.post.assert_called_once_with(
+            self.api_url + '/cluster/1/remove_user',
+            expected_body,
+            auth=self.auth)
+
+        self.assertEquals(rep['message'], 'user removed successfully')
+
+    def test_remove_user_from_cluster_fail(self):
+        self.client.get.return_value = mock_response(status_code=500, json={
+            'error': 'request failed due to server error'
+        })
+        with self.assertRaises(ResponseError):
+            self.proto.remove_user_from_cluster('1', 'jsmith')
+

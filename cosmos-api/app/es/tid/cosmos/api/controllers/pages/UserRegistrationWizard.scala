@@ -31,7 +31,7 @@ class UserRegistrationWizard(dao: CosmosProfileDao, serviceManager: ServiceManag
     */
   def registerUser(userId: UserId, registration: Registration) = dao.withTransaction { implicit c =>
     // TODO: Replace default group and quota with values from request
-    val newProfile = dao.registerUserInDatabase(userId, registration, NoGroup, UnlimitedQuota)
+    val newProfile = dao.registerUser(userId, registration, NoGroup, UnlimitedQuota)
     val clusterUsers = dao.getAllUsers().filter(_.state == UserState.Enabled).map(profile =>
       ClusterUser(
         userName = profile.handle,

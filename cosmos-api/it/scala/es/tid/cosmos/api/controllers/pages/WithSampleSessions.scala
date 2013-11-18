@@ -64,7 +64,7 @@ trait WithSampleSessions extends WithTestApplication {
     )
     val handle = "reguser"
     val cosmosProfile = dao.withTransaction { implicit c =>
-      dao.registerUserInDatabase(userProfile.id,
+      dao.registerUser(userProfile.id,
         Registration(handle, s"ssh-rsa AAAAA $email", email), NoGroup, UnlimitedQuota)
     }
     val session = Session().setUserProfile(userProfile).setToken("token")
@@ -78,7 +78,7 @@ trait WithSampleSessions extends WithTestApplication {
     )
     val handle = "disabled"
     val cosmosProfile = dao.withTransaction { implicit c =>
-      val profile = dao.registerUserInDatabase(userProfile.id,
+      val profile = dao.registerUser(userProfile.id,
         Registration(handle, s"ssh-rsa AAAAA $email", email), NoGroup, UnlimitedQuota)
       dao.setUserState(profile.id, UserState.Disabled)
       profile

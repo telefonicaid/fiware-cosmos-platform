@@ -18,8 +18,8 @@ case class OAuthUserProfile(
     name: Option[String] = None,
     email: Option[String] = None) {
 
-  def contact: String = {
-    val parts = Seq(name, email.map { value => s"($value)" }).flatten
-    if (parts.isEmpty) "--" else parts.mkString(" ")
-  }
+  def contact: String =
+    name orElse email.map(parenthesize) getOrElse parenthesize(id.toString)
+
+  private def parenthesize(text: String) = s"($text)"
 }

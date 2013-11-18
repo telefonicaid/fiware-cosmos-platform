@@ -28,7 +28,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
   )
 
   def register(dao: CosmosProfileDao, id: UserId, reg: Registration)(implicit c: dao.Conn) =
-    dao.registerUserInDatabase(id, reg, NoGroup, UnlimitedQuota)(c)
+    dao.registerUser(id, reg, NoGroup, UnlimitedQuota)(c)
 
   def profileDao(withDao: DaoTest => Unit, maybeTag: Option[Tag] = None) {
 
@@ -40,8 +40,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
 
     taggedTest(it must "register new users", withDao { dao =>
       dao.withTransaction { implicit c =>
-        val id = UserId("db-0003")
-        val profile = register(dao, id, registration("jsmith"))
+        val profile = register(dao, UserId("db-0003"), registration("jsmith"))
         profile.handle must be ("jsmith")
         profile.keys.length must be (1)
         profile.email must be ("jsmith@example.com")
@@ -69,6 +68,23 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         evaluating {
           dao.setHandle(unknownCosmosId, "jsm")
+        } must produce [IllegalArgumentException]
+      }
+    })
+
+    taggedTest(it must "change the email of users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId = UserId("db-0003")
+        val cosmosId = register(dao, userId, registration("jsmith")).id
+        dao.setEmail(cosmosId, "new@mail.com")
+        dao.lookupByUserId(userId).get.email must equal ("new@mail.com")
+      }
+    })
+
+    taggedTest(it must "not change the email of unknown users", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        evaluating {
+          dao.setEmail(unknownCosmosId, "new@mail.com")
         } must produce [IllegalArgumentException]
       }
     })
@@ -132,8 +148,8 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         val registeredUser = UserId("db-registered")
         register(dao, registeredUser, registration("jsmith"))
-        dao.getCosmosId(registeredUser) must be ('defined)
-        dao.getCosmosId(UserId("db-unknown")) must not be 'defined
+        dao.getProfileId(registeredUser) must be ('defined)
+        dao.getProfileId(UserId("db-unknown")) must not be 'defined
       }
     })
 
@@ -188,9 +204,9 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction{ implicit c =>
         val group = GuaranteedGroup("A", Quota(3))
         dao.registerGroup(group)
-        val id1 = dao.registerUserInDatabase(
+        val id1 = dao.registerUser(
           UserId("user1"), registration("user1"), NoGroup, UnlimitedQuota).id
-        val id2 = dao.registerUserInDatabase(
+        val id2 = dao.registerUser(
           UserId("user2"), registration("user2"), group, UnlimitedQuota).id
         val noGroupProfiles = dao.lookupByGroup(NoGroup)
         val groupProfiles = dao.lookupByGroup(group)

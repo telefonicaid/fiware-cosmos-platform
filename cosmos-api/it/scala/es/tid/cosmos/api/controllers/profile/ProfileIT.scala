@@ -26,6 +26,14 @@ import play.api.libs.json.Json
 class ProfileIT extends FlatSpec with MustMatchers with AuthBehaviors {
 
   val profileResource = "/cosmos/v1/profile"
+  val templateProfile = Json.obj(
+    "handle" -> "handle",
+    "email" -> "jsmith@example.com",
+    "keys" -> Json.arr(Json.obj(
+      "name" -> "default",
+      "signature" -> "ssh-rsa DKDJDJDK jsmith@example.com"
+    ))
+  )
 
   "The profile resource" must behave like
     rejectingUnauthenticatedRequests(FakeRequest(GET, profileResource))
@@ -36,28 +44,16 @@ class ProfileIT extends FlatSpec with MustMatchers with AuthBehaviors {
     contentAsString(response) must include ("user1")
   }
 
-  "Updates to the profile" must behave like
-    rejectingUnauthenticatedRequests(FakeRequest(PUT, profileResource).withJsonBody(Json.obj(
-      "handle" -> "handle",
-      "keys" -> Json.arr(Json.obj(
-        "name" -> "default",
-        "signature" -> "ssh-rsa DKDJDJDK jsmith@example.com"
-      ))
-    )))
+  "Updates to the profile" must behave like rejectingUnauthenticatedRequests(
+    FakeRequest(PUT, profileResource).withJsonBody(templateProfile))
 
   it must "accept public key changes" in new WithSampleSessions {
-    val newProfile = Json.obj(
-      "handle" -> regUser.handle,
-      "keys" -> Json.arr(Json.obj(
-        "name" -> "default",
-        "signature" -> "ssh-rsa DKDJDJDK jsmith@example.com"
-      ))
-    )
+    val newProfile = templateProfile ++ Json.obj("handle" -> regUser.handle)
     status(regUser.submitJson(profileResource, newProfile, method = PUT)) must be (OK)
   }
 
   it must "reject profile updates with other than one public key" in new WithSampleSessions {
-    val newProfile = Json.obj(
+    val newProfile = templateProfile ++ Json.obj(
       "handle" -> regUser.handle,
       "keys" -> Json.arr()
     )
@@ -67,13 +63,7 @@ class ProfileIT extends FlatSpec with MustMatchers with AuthBehaviors {
   }
 
   it must "reject profile updates with a different handle" in new WithSampleSessions {
-    val newProfile = Json.obj(
-      "handle" -> "newHandle",
-      "keys" -> Json.arr(Json.obj(
-        "name" -> "default",
-        "signature" -> "ssh-rsa DKDJDJDK jsmith@example.com"
-      ))
-    )
+    val newProfile = templateProfile ++ Json.obj("handle" -> "newHandle")
     val response = regUser.submitJson(profileResource, newProfile, method = PUT)
     status(response) must be (BAD_REQUEST)
     contentAsString(response) must include ("Handle modification is not supported")

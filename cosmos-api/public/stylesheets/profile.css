@@ -1,0 +1,119 @@
+/*
+ * User profile
+ */
+
+.key {
+    display: block;
+    background-color: white;
+    padding: 0.5ex 1ex;
+    border: 1px solid black;
+    border-radius: 1ex;
+    margin-top: 1ex;
+}
+
+.key .name {
+    font-weight: bold;
+}
+.key .signature {
+    background-color: black;
+    color: white;
+    padding: 0.5ex 1ex 1ex 1ex;
+    font-size: 70%;
+    font-family: "Courier New", Courier, monospace;
+    word-break: break-all;
+    margin-top: 1ex;
+}
+
+#credentials {
+    width: 100%;
+    border-collapse: collapse;
+}
+#credentials tr:hover {
+    background-color: #ddd;
+}
+#credentials th, td {
+    border: 1px solid black;
+}
+#credentials th {
+    text-align: left;
+}
+#credentials td {
+    font-family: "Courier New", Courier, monospace;
+}
+
+/*
+ * Messages
+ */
+.message {
+    position: relative;
+    left: 0;
+    right: 0;
+    border: 1px solid black;
+    text-align: center;
+    font-weight: bold;
+    background-color: #AAA;
+}
+
+.code {
+    overflow: auto;
+    border: 1px solid black;
+    padding: 1ex 1em;
+}
+
+.error.code {
+    background-color: lightpink;
+    border-color: red;
+    border-radius: 8px;
+    color: rgba(0, 0, 0, 0.5);
+    white-space: pre-wrap;
+}
+
+/*
+ * Profile edition
+ */
+.edit-link {
+    font-size: 90%;
+}
+.edit-error {
+    color: #900;
+}
+
+/*
+ * Edit email
+ */
+#new-email {
+    width: 15em;
+}
+
+/*
+ * Edit keys
+ */
+.key.noedit form {
+    display: none;
+}
+.key.edit form {
+    display: block;
+}
+.key.edit .edit-key {
+    display: block;
+}
+.key.edit .edit-key {
+    display: none;
+}
+.key.edit .signature {
+    display: none;
+}
+
+.edit-key {
+    float: right;
+}
+.key dd {
+    margin: 0;
+}
+.key textarea {
+    width: 50em;
+    height: 4em;
+}
+.key dl {
+    margin: 0;
+}

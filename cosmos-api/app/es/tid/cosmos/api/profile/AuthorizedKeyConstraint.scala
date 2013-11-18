@@ -13,7 +13,6 @@ package es.tid.cosmos.api.profile
 
 import scalaz._
 
-import play.api.data.Forms
 import play.api.data.validation.{Invalid, Valid, Constraint}
 
 /**
@@ -25,8 +24,6 @@ object AuthorizedKeyConstraint {
 
   val fieldsNumber = 3
   val validKeyTypes = Set("ssh-rsa", "ssh-dsa")
-  val emailConstraint = Forms.email.constraints.head
-
   val constraint: Constraint[String] = Constraint("constraint.authorizedKey") { input =>
     validateAuthorizedKey(input).fold(
       fail = errorMessage => Invalid(errorMessage),
@@ -40,7 +37,7 @@ object AuthorizedKeyConstraint {
     line <- uniqueLine(input)
     (keyType, _, email) <- authorizedKeyFields(line)
     _ <- validateKeyType(keyType)
-    _ <- validateEmail(email)
+    _ <- EmailConstraint.validate(email)
   } yield line
 
   private def uniqueLine(input: String) = input.lines.length match {
@@ -57,9 +54,4 @@ object AuthorizedKeyConstraint {
   private def validateKeyType(keyType: String) =
     if (validKeyTypes.contains(keyType)) keyType.success
     else s"unexpected key type: '$keyType'".failure
-
-  private def validateEmail(email: String) = emailConstraint(email) match {
-    case Valid => email.success
-    case Invalid(_) => s"invalid email '$email'".failure
-  }
 }

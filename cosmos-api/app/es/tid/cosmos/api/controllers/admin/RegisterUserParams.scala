@@ -11,12 +11,11 @@
 
 package es.tid.cosmos.api.controllers.admin
 
-import play.api.data.Forms
-import play.api.data.validation.{Valid, ValidationError}
-import play.api.libs.json._
+import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
+import play.api.libs.json._
 
-import es.tid.cosmos.api.profile.{HandleConstraint, AuthorizedKeyConstraint}
+import es.tid.cosmos.api.profile.{EmailConstraint, HandleConstraint, AuthorizedKeyConstraint}
 
 /**
  * Parameters for automated user registration.
@@ -37,13 +36,11 @@ object RegisterUserParams {
     (__ \ "handle").readNullable[String]
       .filter(ValidationError("not a unix handle"))(validateHandle) ~
     (__ \ "email").read[String]
-      .filter(ValidationError("not a valid email"))(validateEmail) ~
+      .filter(ValidationError("not a valid email"))(EmailConstraint.apply) ~
     (__ \ "sshPublicKey").read[String]
       .filter(ValidationError("not a valid public key"))(AuthorizedKeyConstraint.apply)
   )(RegisterUserParams.apply _)
 
   private def validateHandle(maybeHandle: Option[String]) =
     maybeHandle.map(HandleConstraint.apply).getOrElse(true)
-
-  private def validateEmail(email: String) = Forms.email.constraints.head.apply(email) == Valid
 }

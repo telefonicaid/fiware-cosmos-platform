@@ -90,4 +90,11 @@ trait ServiceManager {
    * @param users the users to be added to the CosmosUser service
    */
   def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit]
+
+  /**
+   * Get the total number of cluster nodes managed by the service manager.
+   *
+   * @return the total number of nodes regardless of their state and usage
+   */
+  def clusterNodePoolCount: Int
 }

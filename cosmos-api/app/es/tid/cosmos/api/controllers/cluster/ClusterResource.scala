@@ -18,11 +18,11 @@ import scala.util.{Failure, Success, Try}
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json._
-import play.api.mvc.{SimpleResult, RequestHeader, Action}
+import play.api.mvc.{Request, SimpleResult, RequestHeader, Action}
 
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{CosmosProfile, ClusterAssignment, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{ProfileQuotas, CosmosProfile, ClusterAssignment, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 
@@ -69,28 +69,46 @@ class ClusterResource(
   def createCluster = JsonBodyAction[CreateClusterParams] { (request, body) =>
     unlessResourceUnderMaintenance {
       withApiAuth(request) { profile =>
-        if (profile.quota.withinQuota(body.size + usedMachines(profile))) {
-          val services = serviceManager.services.filter(
-            service => body.optionalServices.contains(service.name))
-          Try(serviceManager.createCluster(
-            name = body.name,
-            clusterSize = body.size,
-            serviceDescriptions = services,
-            users = Seq(ClusterUser(profile.handle, profile.keys.head.signature))
-          )) match {
-            case Failure(ex) => throw ex
-            case Success(clusterId: ClusterId) => {
-              Logger.info(s"Provisioning new cluster $clusterId")
-              val assignment = ClusterAssignment(clusterId, profile.id, new Date())
-              dao.withTransaction { implicit c => dao.assignCluster(assignment) }
-              val clusterDescription = serviceManager.describeCluster(clusterId).get
-              val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
-              Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
-            }
-          }
-        } else Forbidden(Json.toJson(Message("Quota exceeded")))
+        withinQuota(profile, body.size).fold(
+          fail = errors => Forbidden(Json.toJson(Message(errors.list.mkString(" ")))),
+          succ = _ => create(request, body, profile)
+        )
       }
     }
+  }
+
+  private def create(
+      request: Request[JsValue],
+      body: CreateClusterParams,
+      profile: CosmosProfile): SimpleResult = {
+
+    val services = serviceManager.services.filter(
+      service => body.optionalServices.contains(service.name))
+    Try(serviceManager.createCluster(
+      name = body.name,
+      clusterSize = body.size,
+      serviceDescriptions = services,
+      users = Seq(ClusterUser(profile.handle, profile.keys.head.signature))
+    )) match {
+      case Failure(ex) => throw ex
+      case Success(clusterId: ClusterId) => {
+        Logger.info(s"Provisioning new cluster $clusterId")
+        val assignment = ClusterAssignment(clusterId, profile.id, new Date())
+        dao.withTransaction { implicit c => dao.assignCluster(assignment) }
+        val clusterDescription = serviceManager.describeCluster(clusterId).get
+        val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
+        Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
+      }
+    }
+  }
+
+  private def withinQuota(profile: CosmosProfile, size: Int) = dao.withConnection { implicit c =>
+    new ProfileQuotas(
+      machinePoolSize = serviceManager.clusterNodePoolCount,
+      groups = dao.getGroups,
+      lookupByGroup = dao.lookupByGroup,
+      listClusters = listClusters
+    ).withinQuota(profile, size)
   }
 
   private def listClusters(profile: CosmosProfile) = {
@@ -102,8 +120,6 @@ class ClusterResource(
       description <- serviceManager.describeCluster(assignment.clusterId).toList
     } yield ClusterReference(description, assignment)).sorted(ClustersDisplayOrder)
   }
-
-  private def usedMachines(profile: CosmosProfile) = listClusters(profile).map(_.description.size).sum
 
   @ApiOperation(value = "Get cluster machines", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterDetails")

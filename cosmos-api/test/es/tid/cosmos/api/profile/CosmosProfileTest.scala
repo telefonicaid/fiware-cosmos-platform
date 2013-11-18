@@ -24,6 +24,7 @@ class CosmosProfileTest extends FlatSpec with MustMatchers {
     state = Enabled,
     handle = "handle",
     email = "user@example.com",
+    group = NoGroup,
     quota = EmptyQuota,
     apiCredentials = ApiCredentials.random(),
     keys = Seq(NamedKey("normal", "ssh-rsa CCCC handle@localhost"))

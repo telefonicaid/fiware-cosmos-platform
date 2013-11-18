@@ -161,6 +161,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     Some(persistentHdfsCluster)
 
   override def terminatePersistentHdfsCluster(): Future[Unit] = successful()
+
+  override def clusterNodePoolCount: Int = 10
 }
 
 object MockedServiceManager {

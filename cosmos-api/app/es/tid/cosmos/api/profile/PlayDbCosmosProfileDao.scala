@@ -28,24 +28,29 @@ trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
 }
 
 class PlayDbCosmosProfileDao extends CosmosProfileDao {
+  import PlayDbCosmosProfileDao._
+
   type Conn = Connection
 
   def withConnection[A](block: (Conn) => A): A = DB.withTransaction[A](block)
   def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
 
-  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
+  override def registerUser(userId: UserId, reg: Registration, group: Group, quota: Quota)
+                                     (implicit c: Conn): CosmosProfile = {
     val apiCredentials = ApiCredentials.random()
     val defaultKey = NamedKey("default", reg.publicKey)
     val cosmosId = SQL(
-      """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret)
-        | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret})""".stripMargin)
+      """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret, group_name)
+        | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret}, {group_name})"""
+        .stripMargin)
       .on(
         "auth_realm" -> userId.realm,
         "auth_id" -> userId.id,
         "handle" -> reg.handle,
         "email" -> reg.email,
         "api_key" -> apiCredentials.apiKey,
-        "api_secret" -> apiCredentials.apiSecret
+        "api_secret" -> apiCredentials.apiSecret,
+        "group_name" -> dbGroupName(group)
       ).executeInsert(scalar[ProfileId].single)
     addPublicKey(cosmosId, defaultKey)
     CosmosProfile(
@@ -53,14 +58,15 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       state = Enabled,
       handle = reg.handle,
       email = reg.email,
-      quota = Quota(None),
+      group,
+      quota,
       apiCredentials = apiCredentials,
       keys = Seq(defaultKey)
     )
   }
 
   override def getAllUsers()(implicit c: Conn): Seq[CosmosProfile] =
-    lookup(SQL(s"""SELECT $allUserFields, p.name, p.signature
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                   |ORDER BY cosmos_id""".stripMargin))
 
@@ -97,17 +103,45 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   }
 
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL(s"""SELECT $allUserFields, p.name, p.signature
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                   |WHERE u.auth_realm = {realm} AND u.auth_id = {id}""".stripMargin)
       .on("realm" -> userId.realm, "id" -> userId.id)).headOption
 
   override def lookupByApiCredentials(creds: ApiCredentials)
                                      (implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL(s"""SELECT $allUserFields, p.name, p.signature
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                   |WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
       .on("key" -> creds.apiKey, "secret" -> creds.apiSecret)).headOption
+
+  override def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile] =
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+                       | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+                       | WHERE u.group_name ${equalsOp(dbGroupName(group))} {groupName}"""
+      .stripMargin).on("groupName" -> dbGroupName(group))).toSet
+
+
+  override def getGroups(implicit c: Conn): Set[Group] = {
+    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(TO_GROUP)
+    Set[Group](NoGroup) ++ registeredGroups
+  }
+
+  private def getGroup(maybeName: Option[String])(implicit c: Conn): Group = {
+    val maybeGroup = maybeName.flatMap(name =>
+      SQL("""SELECT name, min_quota FROM user_group WHERE name = {name}""".stripMargin)
+        .on("name" -> name).apply().collectFirst(TO_GROUP))
+
+    maybeGroup.getOrElse(NoGroup)
+  }
+
+  override def registerGroup(group: Group)(implicit c: Conn) {
+    SQL("""INSERT INTO user_group(name, min_quota)
+          | VALUES ({name}, {min_quota})""".stripMargin).on(
+      "name" -> group.name,
+      "min_quota" -> group.minimumQuota.toInt
+    ).execute()
+  }
 
   override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
     SQL("""INSERT INTO cluster(cluster_id, owner, creation_date)
@@ -126,33 +160,36 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
           ClusterAssignment(ClusterId(clusterId), id, creationDate)
       }
 
-  /** Lookup Cosmos profiles retrieved by a custom query.
-    *
-    * @param query Query with the following output columns: cosmos id, handle, apiKey, apiSecret,
-    *              name and signature
-    * @return      Retrieved profiles
-    */
-  private def lookup(query: SimpleSql[Row])(implicit c: Conn): Seq[CosmosProfile] = {
-    val rows = query().toList
-    rows.map {
-      case Row(
-          id: Int,
-          UserState(state),
-          handle: String,
-          email: String,
-          machineQuota: Option[_],
-          apiKey: String,
-          apiSecret: String,
-          _, _) => {
-        val namedKeys = for {
-          row <- rows if row[Int]("cosmos_id") == id
-        } yield NamedKey(row[String]("name"), row[String]("signature"))
-        CosmosProfile(
-          id, state, handle, email, Quota(machineQuota.asInstanceOf[Option[Int]]),
-          ApiCredentials(apiKey, apiSecret), namedKeys)
+    /** Lookup Cosmos profiles retrieved by a custom query.
+      *
+      * @param query Query with the following output columns: cosmos id, handle, apiKey, apiSecret,
+      *              name and signature
+      * @return      Retrieved profiles
+      */
+    private def lookup(query: SimpleSql[Row])(implicit c: Conn): Seq[CosmosProfile] = {
+      val rows = query().toList
+      rows.map {
+        case Row(
+            id: Int,
+            UserState(state),
+            handle: String,
+            email: String,
+            machineQuota: Option[_],
+            apiKey: String,
+            apiSecret: String,
+            groupName: String,
+            _, _) => {
+          val namedKeys = for {
+            row <- rows if row[Int]("cosmos_id") == id
+          } yield NamedKey(row[String]("name"), row[String]("signature"))
+          CosmosProfile(
+            id, state, handle, email,
+            getGroup(groupName.asInstanceOf[Option[String]]),
+            Quota(machineQuota.asInstanceOf[Option[Int]]),
+            ApiCredentials(apiKey, apiSecret), namedKeys)
+        }
       }
     }
-  }
 
   override def setHandle(id: ProfileId, handle: String)(implicit c: Conn) {
     try {
@@ -196,7 +233,34 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       "signature" -> publicKey.signature
     )
     .executeInsert()
-  
-  private val allUserFields =
-    "u.cosmos_id, u.state, u.handle, u.email, u.machine_quota, u.api_key, u.api_secret"
+}
+
+object PlayDbCosmosProfileDao {
+  private val ALL_USER_FIELDS = """u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
+                                 | u.api_key, u.api_secret, u.group_name""".stripMargin
+
+  private val TO_GROUP: PartialFunction[Row, Group] = {
+    case Row(name: String, minimumQuota: Option[_]) =>
+      GuaranteedGroup(name, Quota(minimumQuota.asInstanceOf[Option[Int]]))
+  }
+
+  /** Utility method for changing the operator in SQL statements when using optional values
+    * that convert None to NULL in SQL.
+    * <br/>
+    * e.g
+    *
+    * {{{select * from user where group_name IS NULL}}}
+    *
+    * @param maybe the optional value. In case of None the operator will be 'IS', '=' otherwise
+    * @return the operator to be used
+    */
+  private def equalsOp(maybe: Option[_]): String = maybe match {
+    case None => "IS"
+    case _ => "="
+  }
+
+  private def dbGroupName(group: Group): Option[String] = group match {
+    case NoGroup => None
+    case _ => Some(group.name)
+  }
 }

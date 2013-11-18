@@ -14,7 +14,8 @@ package es.tid.cosmos.api.controllers.pages
 import scala.Some
 import scala.concurrent.Future
 
-import play.api.mvc.{SimpleResult, Session}
+import play.api.mvc.Session
+import play.api.mvc.SimpleResult
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
 import play.api.libs.json.JsValue
@@ -22,7 +23,7 @@ import play.api.libs.json.JsValue
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
-import es.tid.cosmos.api.profile.{UserState, Registration, UserId}
+import es.tid.cosmos.api.profile._
 
 trait WithSampleSessions extends WithTestApplication {
 
@@ -63,7 +64,8 @@ trait WithSampleSessions extends WithTestApplication {
     )
     val handle = "reguser"
     val cosmosProfile = dao.withTransaction { implicit c =>
-      dao.registerUser(userProfile.id, Registration(handle, s"ssh-rsa AAAAA $email", email))
+      dao.registerUser(userProfile.id,
+        Registration(handle, s"ssh-rsa AAAAA $email", email), NoGroup, UnlimitedQuota)
     }
     val session = Session().setUserProfile(userProfile).setToken("token")
   }
@@ -77,7 +79,7 @@ trait WithSampleSessions extends WithTestApplication {
     val handle = "disabled"
     val cosmosProfile = dao.withTransaction { implicit c =>
       val profile = dao.registerUser(userProfile.id,
-        Registration(handle, s"ssh-rsa AAAAA $email", email))
+        Registration(handle, s"ssh-rsa AAAAA $email", email), NoGroup, UnlimitedQuota)
       dao.setUserState(profile.id, UserState.Disabled)
       profile
     }

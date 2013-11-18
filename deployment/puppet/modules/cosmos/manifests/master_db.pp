@@ -18,6 +18,7 @@ class cosmos::master_db inherits cosmos::params {
     settings => {
       'mysqld' => {
         'bind-address' => '127.0.0.1',
+        'default-storage-engine' => 'INNODB'
       }
     },
   }

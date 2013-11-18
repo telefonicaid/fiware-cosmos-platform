@@ -15,7 +15,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.api.profile.{Registration, UserId, MockCosmosProfileDao}
+import es.tid.cosmos.api.profile._
 
 class ProfileTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -23,7 +23,7 @@ class ProfileTest extends FlatSpec with MustMatchers with MockitoSugar {
     val dao = mock[MockCosmosProfileDao]
     val registration = Registration("jsmith", "pk00001", "jsmith@example.com")
     dao.withConnection { implicit c =>
-      dao.registerUser(UserId("db-0003"), registration)
+      dao.registerUser(UserId("db-0003"), registration, NoGroup, UnlimitedQuota)
     }
   }
 

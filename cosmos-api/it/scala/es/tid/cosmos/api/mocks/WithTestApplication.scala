@@ -15,11 +15,11 @@ import scala.Some
 
 import play.core.DevSettings
 import play.api.mvc.Session
-import play.api.test.{FakeRequest, WithApplication, FakeApplication}
+import play.api.test.{FakeApplication, FakeRequest, WithApplication}
 
 import es.tid.cosmos.api.AbstractGlobal
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
-import es.tid.cosmos.api.profile.{CosmosProfile, Registration, CosmosProfileDao}
+import es.tid.cosmos.api.profile._
 
 class WithTestApplication(
     additionalConfiguration: Map[String, String] = Map.empty,
@@ -35,7 +35,7 @@ class WithTestApplication(
       val email = user.email.getOrElse("root@host")
       val handle = email.split('@')(0)
       val reg = Registration(handle, s"ssh-rsa ABCDE $email", email)
-      dao.registerUser(user.id, reg)
+      dao.registerUser(user.id, reg, NoGroup, UnlimitedQuota)
     }
 
   def withSession[A](request: FakeRequest[A], session: Session) =

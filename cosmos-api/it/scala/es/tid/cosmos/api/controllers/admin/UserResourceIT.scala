@@ -15,7 +15,7 @@ import scala.concurrent.Future
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{HavePropertyMatchResult, HavePropertyMatcher, MustMatchers}
-import play.api.libs.json.{Reads, JsValue, JsObject, Json}
+import play.api.libs.json.{Reads, JsValue, Json, JsObject}
 import play.api.mvc.SimpleResult
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -23,7 +23,9 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.profile.{NamedKey, Registration, UserId}
+import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.Registration
+import scala.Some
 
 class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
 
@@ -98,7 +100,9 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when handle is already taken" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUser(UserId("otherUser"), Registration(requestedHandle, publicKey, email))
+      dao.registerUser(
+        UserId("otherUser"), Registration(requestedHandle, publicKey, email),
+        NoGroup, UnlimitedQuota)
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)
@@ -107,7 +111,8 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email))
+      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email),
+        NoGroup, UnlimitedQuota)
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)

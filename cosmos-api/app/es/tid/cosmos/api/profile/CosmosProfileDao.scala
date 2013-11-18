@@ -40,10 +40,13 @@ trait CosmosProfileDao {
     *
     * @param userId  The id specified by the user.
     * @param reg     The registration options.
+    * @param group   The group the user belongs to
+    * @param quota   The user's maximum machine quota
     * @param c       The connection to use.
     * @return        A newly created Cosmos profile.
     */
-  def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile
+  def registerUser(userId: UserId, reg: Registration, group: Group, quota: Quota)
+                            (implicit c: Conn): CosmosProfile
 
   /** Retrieves all the Cosmos profiles.
     *
@@ -125,6 +128,25 @@ trait CosmosProfileDao {
     */
   def lookupByApiCredentials(creds: ApiCredentials)(implicit c: Conn): Option[CosmosProfile]
 
+  /** Obtains the profiles that belong to a given group.
+    *
+    * @param group the group
+    * @return      the profiles that belong to that group
+    */
+  def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile]
+
+  /** Register a user group in the database.
+    *
+    * @param group the group to be persisted
+    */
+  def registerGroup(group: Group)(implicit c: Conn): Unit
+
+  /** Get the user groups.
+    *
+    * @return the user groups including the NoGroup for profiles that do not belong to any group
+    */
+  def getGroups(implicit c: Conn): Set[Group]
+
   /** Assigns a cluster to a given user at the present moment.
     * @param clusterId  The cluster ID to assign.
     * @param ownerId    The unique Cosmos ID of the new owner.
@@ -160,11 +182,10 @@ trait CosmosProfileDao {
     */
   def clustersOf(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment]
 
-  /**
-   * Replace existing user public keys by the passed ones.
-   *
-   * @param id          The id of the user.
-   * @param publicKeys  New public keys.
-   */
+  /** Replace existing user public keys by the passed ones.
+    *
+    * @param id          The id of the user.
+    * @param publicKeys  New public keys.
+    */
   def setPublicKeys(id: ProfileId, publicKeys: Seq[NamedKey])(implicit c: Conn): Unit
 }

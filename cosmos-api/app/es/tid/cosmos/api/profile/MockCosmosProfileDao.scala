@@ -26,25 +26,32 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   object DummyConnection
   type Conn = DummyConnection.type
 
-  private var users = Map[UserId, CosmosProfile]()
-  private var clusters = List[ClusterAssignment]()
+  @volatile private var users = Map[UserId, CosmosProfile]()
+  @volatile private var clusters = List[ClusterAssignment]()
+  @volatile private var groupsWithUsers = Map[Group, Set[UserId]](NoGroup -> Set())
 
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
-  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
+  override def registerUser(userId: UserId, reg: Registration, group: Group, quota: Quota)
+                                     (implicit c: Conn): CosmosProfile = {
     val credentials = ApiCredentials.random()
-    require(!users.values.exists(_.handle == reg.handle), "Duplicated handle")
+    require(!users.values.exists(_.handle == reg.handle), s"Duplicated handle: ${reg.handle}")
+    require(groupsWithUsers.contains(group), s"Group not registered: $group")
     val cosmosProfile = CosmosProfile(
       id = users.size,
       state = Enabled,
       handle = reg.handle,
       email = reg.email,
-      quota = UnlimitedQuota,
+      group,
+      quota,
       apiCredentials = credentials,
       keys = List(NamedKey("default", reg.publicKey))
     )
-    users = users.updated(userId, cosmosProfile)
+    users.synchronized { users = users.updated(userId, cosmosProfile) }
+    groupsWithUsers.synchronized {
+      groupsWithUsers = groupsWithUsers.updated(group, groupsWithUsers(group) + userId)
+    }
     cosmosProfile
   }
 
@@ -58,14 +65,14 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       case (_, profile) if profile.id == id => profile.quota
     }.getOrElse(EmptyQuota)
 
-  override def setMachineQuota(id: ProfileId, quota: Quota)
-                              (implicit c: Conn): Boolean = synchronized {
-    users.collectFirst {
-      case (userId, profile) if profile.id == id => {
-        users = users.updated(userId, profile.copy(quota = quota))
-        true
-    }}.getOrElse(false)
-  }
+  override def setMachineQuota(cosmosId: ProfileId, quota: Quota)(implicit c: Conn): Boolean =
+    users.synchronized {
+      val userToUpdate = users.find(_._2.id == cosmosId)
+      userToUpdate.foreach {
+        case (userId, profile) => users = users.updated(userId, profile.copy(quota = quota))
+      }
+      userToUpdate.isDefined
+    }
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean =
     users.values.exists(_.handle == handle)
@@ -80,7 +87,7 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     }
 
   override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
-    synchronized {
+    clusters.synchronized {
       require(!clusters.exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
       clusters = clusters :+ assignment
     }
@@ -117,12 +124,24 @@ class MockCosmosProfileDao extends CosmosProfileDao {
     }
   }
 
+  override def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile] =
+    groupsWithUsers(group).map(users).toSet
+
+  override def getGroups(implicit c: Conn): Set[Group] = groupsWithUsers.keys.toSet
+
+  override def registerGroup(group: Group)(implicit c: Conn) {
+    groupsWithUsers.synchronized { groupsWithUsers += (group -> Set()) }
+  }
+
   private def updateProfile(id: ProfileId)(f: CosmosProfile => CosmosProfile) {
-    val maybeId = users.collectFirst {
-      case (userId, profile) if profile.id == id => userId
+    users.synchronized {
+      val maybeId = users.collectFirst {
+        case (userId, profile) if profile.id == id => userId
+      }
+      maybeId match {
+        case Some(userId) => users = users.updated(userId, f(users(userId)))
+        case None => throw new IllegalArgumentException(s"No user with id=$id")
+      }
     }
-    maybeId.map(userId =>
-      users = users.updated(userId, f(users(userId)))
-    ).getOrElse(throw new IllegalArgumentException(s"No user with id=$id"))
   }
 }

@@ -11,8 +11,9 @@
 
 package es.tid.cosmos.api.controllers.pages
 
-import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao, UserId, Registration}
+import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ServiceManager, ClusterUser}
+import es.tid.cosmos.api.profile.Registration
 
 /** Sequence of actions to register a new user in Cosmos.
   *
@@ -29,7 +30,8 @@ class UserRegistrationWizard(dao: CosmosProfileDao, serviceManager: ServiceManag
     * @return              Newly created profile
     */
   def registerUser(userId: UserId, registration: Registration) = dao.withTransaction { implicit c =>
-    val newProfile = dao.registerUser(userId, registration)
+    // TODO: Replace default group and quota with values from request
+    val newProfile = dao.registerUser(userId, registration, NoGroup, UnlimitedQuota)
     val clusterUsers = dao.getAllUsers().filter(_.state == UserState.Enabled).map(profile =>
       ClusterUser(
         userName = profile.handle,

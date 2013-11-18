@@ -18,7 +18,7 @@ import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.profile.{CosmosProfile, Registration, UserId}
+import es.tid.cosmos.api.profile._
 
 class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(additionalConfiguration) {
@@ -33,7 +33,7 @@ class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
             publicKey = s"ssh-rsa A3NzaC1yc2EAAAABIwAAAQEA9$idx $email",
             email = email
           )
-          dao.registerUser(UserId(s"tu$idx"), registration)
+          dao.registerUser(UserId(s"tu$idx"), registration, NoGroup, UnlimitedQuota)
         }
       }
       t

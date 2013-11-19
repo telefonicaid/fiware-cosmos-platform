@@ -133,10 +133,38 @@ def add_terminate_cluster_command(subparsers):
     parser.set_defaults(func=ComputeCommand(terminate_cluster))
 
 
+def add_user_to_cluster(args, proto):
+    proto.add_user_to_cluster(args.cluster_id, args.user_id)
+    util.set_last_cluster_id(args.cluster_id)
+    print "User %s added to cluster %s" % (args.user_id, args.cluster_id)
+
+
+def add_adduser_command(subparsers):
+    parser = subparsers.add_parser("adduser", help="add an user to a existing cluster")
+    util.add_cluster_id_argument(parser)
+    parser.add_argument("user_id", help="cluster id")
+    parser.set_defaults(func=ComputeCommand(add_user_to_cluster))
+
+
+def remove_user_from_cluster(args, proto):
+    proto.remove_user_from_cluster(args.cluster_id, args.user_id)
+    util.set_last_cluster_id(args.cluster_id)
+    print "User %s removed from cluster %s" % (args.user_id, args.cluster_id)
+
+
+def add_rmuser_command(subparsers):
+    parser = subparsers.add_parser("rmuser", help="remove an user to a existing cluster")
+    util.add_cluster_id_argument(parser)
+    parser.add_argument("user_id", help="cluster id")
+    parser.set_defaults(func=ComputeCommand(remove_user_from_cluster))
+
+
 def add_compute_commands(subparsers):
     add_list_clusters_command(subparsers)
     add_list_services_command(subparsers)
     add_show_cluster_command(subparsers)
     add_create_cluster_command(subparsers)
     add_terminate_cluster_command(subparsers)
+    add_adduser_command(subparsers)
+    add_rmuser_command(subparsers)
 

@@ -28,3 +28,5 @@ class ComputeCommandsTest(unittest.TestCase):
         self.assertIn('show', added_commands)
         self.assertIn('create', added_commands)
         self.assertIn('terminate', added_commands)
+        self.assertIn('adduser', added_commands)
+        self.assertIn('rmuser', added_commands)

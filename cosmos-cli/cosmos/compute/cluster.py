@@ -59,6 +59,14 @@ class Cluster(object):
         """Send a request to terminate the cluster"""
         self.__proto.terminate_cluster(self.id)
 
+    def add_user(self, user_id):
+        """Add a user to the cluster"""
+        self.__proto.add_user_to_cluster(self.id, user_id)
+
+    def remove_user(self, user_id):
+        """Remove a user from the cluster"""
+        self.__proto.remove_user_from_cluster(self.id, user_id)
+
     def __load_details(self):
         json = self.__proto.get_cluster_details(self.id)
         self.__state = json["state"]

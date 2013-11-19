@@ -21,7 +21,6 @@ import play.api.test.FakeRequest
 import play.api.libs.json.JsValue
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
-import es.tid.cosmos.api.controllers.CosmosProfileTestHelpers
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.profile._
@@ -58,7 +57,7 @@ trait WithSampleSessions extends WithTestApplication {
   }
   val regUser = new UserSession {
     val handle = "reguser"
-    val cosmosProfile = CosmosProfileTestHelpers.registerUser(dao, handle)
+    val cosmosProfile = CosmosProfileTestHelpers.registerUser(handle)(dao)
     val email = cosmosProfile.email
     val userProfile = OAuthUserProfile(
       id = CosmosProfileTestHelpers.userIdFor(handle),
@@ -70,7 +69,7 @@ trait WithSampleSessions extends WithTestApplication {
   val disabledUser = new UserSession {
     val handle = "disabled"
     val cosmosProfile = {
-      val profile = CosmosProfileTestHelpers.registerUser(dao, handle)
+      val profile = CosmosProfileTestHelpers.registerUser(handle)(dao)
       dao.withTransaction { implicit c =>
         dao.setUserState(profile.id, UserState.Disabled)
       }

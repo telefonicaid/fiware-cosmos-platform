@@ -189,11 +189,11 @@ class ProfileQuotasTest extends FlatSpec
           state = Enabled,
           handle = s"handle$id",
           email = "user@example.com",
+          ApiCredentials.random(),
+          keys = Nil,
           group,
           quota,
-          capabilities = UntrustedUserCapabilities,
-          ApiCredentials.random(),
-          keys = Nil
+          capabilities = UntrustedUserCapabilities
         )
         group -> Set(profile)
       }).toMap

@@ -23,7 +23,7 @@ import org.scalatest.matchers.{Matcher, MustMatchers}
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
-import es.tid.cosmos.api.controllers.CosmosProfileTestHelpers.{registerUser, userIdFor}
+import CosmosProfileTestHelpers.{registerUser, userIdFor}
 import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
@@ -42,7 +42,7 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
   }
 
   trait WithExistingUser extends WithWizard {
-    val cosmosProfile = registerUser(dao, "jsmith")
+    val cosmosProfile = registerUser("jsmith")(dao)
     val cosmosId = cosmosProfile.id
 
     def unregistrationMust(futureMatcher: Matcher[Future[_]]) {

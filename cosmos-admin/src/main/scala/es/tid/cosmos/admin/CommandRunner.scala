@@ -35,6 +35,7 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
       case Some(args.persistentStorage) => processPersistentStorageCommand(subcommands.tail)
       case Some(args.cluster) => processClusterCommand(subcommands.tail)
       case Some(args.profile) => processProfileCommand(subcommands.tail)
+      case Some(args.group) => processGroupCommand(subcommands.tail)
       case _ => help(args)
     }
 
@@ -56,7 +57,7 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
     subcommands.headOption match {
       case Some(args.profile.setMachineQuota) => tryCommand(playDbProfile.setMachineQuota(
           args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()))
-      case Some(args.profile.unsetMachineQuota) => tryCommand(playDbProfile.unsetMachineQuota(
+      case Some(args.profile.removeMachineQuota) => tryCommand(playDbProfile.removeMachineQuota(
           args.profile.setMachineQuota.handle()))
       case Some(args.profile.enableCapability) => tryCommand(playDbProfile.enableCapability(
         args.profile.enableCapability.handle(),
@@ -66,7 +67,23 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
         args.profile.disableCapability.handle(),
         args.profile.disableCapability.capability()
       ))
+      case Some(args.profile.setGroup) => tryCommand(playDbProfile.setGroup(
+        args.profile.setGroup.handle(), args.profile.setGroup.group.get
+      ))
       case _ => help(args.profile)
+    }
+  }
+
+  private def processGroupCommand(subcommands: List[ScallopConf]) = {
+    val groups = new Groups(new PlayDbCosmosProfileDao)
+    subcommands.headOption match {
+      case Some(args.group.create) => tryCommand(groups.create(
+        args.group.create.name(), args.group.create.minQuota()))
+      case Some(args.group.list) => tryCommandWithOutput(groups.list)
+      case Some(args.group.delete) => tryCommand(groups.delete(args.group.delete.name()))
+      case Some(args.group.setMinQuota) => tryCommand(groups.setMinQuota(
+        args.group.setMinQuota.name(), args.group.setMinQuota.quota()))
+      case _ => help(args.group)
     }
   }
 
@@ -85,6 +102,16 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
   private def tryCommand(block: => Boolean) = try {
     if (block) CommandRunner.SuccessStatus
     else CommandRunner.ExecutionErrorStatus
+  } catch {
+    case ex: Throwable => {
+      ex.printStackTrace()
+      CommandRunner.ExecutionErrorStatus
+    }
+  }
+
+  private def tryCommandWithOutput(block: => String) = try {
+    println(block)
+    CommandRunner.SuccessStatus
   } catch {
     case ex: Throwable => {
       ex.printStackTrace()

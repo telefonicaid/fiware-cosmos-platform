@@ -20,7 +20,7 @@ private[admin] class Profile(dao: CosmosProfileDao) {
 
   def setMachineQuota(handle: String, limit: Int): Boolean = setMachineQuota(handle, Quota(limit))
 
-  def unsetMachineQuota(handle: String): Boolean = setMachineQuota(handle, UnlimitedQuota)
+  def removeMachineQuota(handle: String): Boolean = setMachineQuota(handle, UnlimitedQuota)
 
   private def setMachineQuota(handle: String, quota: Quota): Boolean =
     withProfile(handle) { (c, cosmosProfile) =>
@@ -49,4 +49,9 @@ private[admin] class Profile(dao: CosmosProfileDao) {
       }
     }).isSuccess
   }
+
+  def setGroup(handle: String, groupName: Option[String]): Boolean =
+    withProfile(handle) { (c, cosmosProfile) =>
+      dao.setGroup(cosmosProfile.id, groupName)(c)
+    }
 }

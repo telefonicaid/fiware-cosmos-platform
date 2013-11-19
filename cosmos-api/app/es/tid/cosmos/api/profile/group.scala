@@ -22,7 +22,7 @@ sealed trait Group {
    *
    * @return the quota of machines guaranteed to always be available within the group
    */
-  def minimumQuota: Quota
+  def minimumQuota: LimitedQuota
 }
 
 /**
@@ -38,12 +38,8 @@ sealed trait Group {
  *                                  quota cannot be guaranteed.
  */
 case class GuaranteedGroup(
-    override val name: String, override val minimumQuota: Quota) extends Group {
-  require(
-    minimumQuota != UnlimitedQuota,
-    "Cannot guarantee an unlimited quota. Try using EmptyQuota or FiniteQuota"
-  )
-}
+  override val name: String,
+  override val minimumQuota: LimitedQuota) extends Group
 
 /**
  * Representation of a null group object for users that do not belong to any specific group.

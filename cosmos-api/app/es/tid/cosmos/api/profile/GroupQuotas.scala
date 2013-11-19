@@ -46,7 +46,7 @@ object GroupQuotas {
   }
 
   private def requirePoolCanMeetMinimumQuota(groups: Set[Group], poolQuota: Quota) {
-    val totalGuaranteedQuota = groups.map(_.minimumQuota).reduce(_ + _)
+    val totalGuaranteedQuota = groups.map(_.minimumQuota).reduce[Quota](_ + _)
     require(
       poolQuota.withinQuota(totalGuaranteedQuota),
       "There are not enough machines available to meet the guaranteed minimum group quotas"

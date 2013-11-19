@@ -56,10 +56,15 @@ sealed trait Quota {
   def toInt: Option[Int]
 }
 
+/** Representation of a quota that can be either empty (`EmptyQuota`)
+  * or have a finite limit (`FiniteQuota`).
+  */
+sealed trait LimitedQuota extends Quota
+
 /**
  * Representation of an empty quota, i.e. a quota of zero resources.
  */
-case object EmptyQuota extends Quota {
+case object EmptyQuota extends LimitedQuota {
   override def withinQuota(request: Int): Boolean = false
 
   override def withinQuota(request: Quota): Boolean = false
@@ -95,7 +100,7 @@ case object UnlimitedQuota extends Quota {
  *
  * @param limit the number of resources this quota is limited to
  */
-case class FiniteQuota(limit: Int) extends Quota {
+case class FiniteQuota(limit: Int) extends LimitedQuota {
   require(limit > 0, s"Invalid quota: $limit")
 
   override def withinQuota(request: Int): Boolean = request <= limit
@@ -145,7 +150,7 @@ object Quota {
    * @param limit  The numerical limit of the quota.
    * @return       The type of quota determined by the input limit.
    */
-  def apply(limit: Int) = if (limit == 0) EmptyQuota else FiniteQuota(limit)
+  def apply(limit: Int): LimitedQuota = if (limit == 0) EmptyQuota else FiniteQuota(limit)
 
   /**
    * Calculate the maximum of two given quotas.

@@ -26,7 +26,7 @@ import es.tid.cosmos.servicemanager.clusters.ClusterId
 class ClustersIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
 
-  val validCreationParams = Json.toJson(CreateClusterParams("cluster_new", 10, Seq(Hdfs.name)))
+  val validCreationParams = Json.toJson(CreateClusterParams("cluster_new", 6, Seq(Hdfs.name)))
   val inValidCreationParams = Json.obj("invalid" -> "json")
   val resourcePath = "/cosmos/v1/cluster"
   val listClusters = FakeRequest(GET, resourcePath)
@@ -57,7 +57,7 @@ class ClustersIT
 
   it must "start a new cluster if no services are specified" in new WithSampleUsers {
     val resource = route(FakeRequest(POST, resourcePath)
-      .withJsonBody(Json.obj("name" -> "cluster_new", "size" -> 10))
+      .withJsonBody(Json.obj("name" -> "cluster_new", "size" -> 6))
       .authorizedBy(user1)).get
     status(resource) must equal (CREATED)
     contentType(resource) must be (Some("application/json"))

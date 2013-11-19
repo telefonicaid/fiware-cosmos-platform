@@ -27,7 +27,7 @@ class AdminArgumentsTest extends FlatSpec with MustMatchers {
     }
   }
 
-  it must "support the setup subcommand" in new WithArguments("setup") {
+  "The admin arguments" must "support the setup subcommand" in new WithArguments("setup") {
     args.subcommand must be (Some(args.setup))
   }
 
@@ -60,5 +60,61 @@ class AdminArgumentsTest extends FlatSpec with MustMatchers {
       args.subcommands must equal (List(args.profile, args.profile.disableCapability))
       args.profile.disableCapability.handle() must be ("jsmith")
       args.profile.disableCapability.capability() must be (Capability.IsOperator)
+  }
+
+  it must "support 'profile set-machine-quota'" in
+    new WithArguments("profile", "set-machine-quota", "--handle", "jsmith", "--limit", "10") {
+      args.subcommands must equal(List(args.profile, args.profile.setMachineQuota))
+      args.profile.setMachineQuota.handle() must equal("jsmith")
+      args.profile.setMachineQuota.limit() must equal(10)
+    }
+
+  it must "support 'profile unset-machine-quota'" in
+    new WithArguments("profile", "remove-machine-quota", "--handle", "jsmith") {
+      args.subcommands must equal(List(args.profile, args.profile.removeMachineQuota))
+      args.profile.removeMachineQuota.handle() must equal("jsmith")
+    }
+
+  it must "support 'profile set-group'" in
+    new WithArguments("profile", "set-group", "--handle", "jsmith", "--group", "supergroup") {
+      args.subcommands must equal(List(args.profile, args.profile.setGroup))
+      args.profile.setGroup.handle() must equal("jsmith")
+      args.profile.setGroup.group() must equal("supergroup")
+    }
+
+  it must "support 'profile remove-group'" in
+    new WithArguments("profile", "remove-group", "--handle", "jsmith") {
+      args.subcommands must equal(List(args.profile, args.profile.removeGroup))
+      args.profile.removeGroup.handle() must equal("jsmith")
+    }
+
+  it must "support 'group create' with minimum quota" in
+    new WithArguments("group", "create", "--name", "supergroup", "--min-quota", "3") {
+      args.subcommands must equal(List(args.group, args.group.create))
+      args.group.create.name() must equal("supergroup")
+      args.group.create.minQuota() must equal(3)
+    }
+
+  it must "support 'group create' without minimum quota specified" in
+    new WithArguments("group", "create", "--name", "supergroup") {
+      args.subcommands must equal(List(args.group, args.group.create))
+      args.group.create.name() must equal("supergroup")
+      args.group.create.minQuota() must equal(0)
+    }
+
+  it must "support 'group list'" in new WithArguments("group", "list") {
+    args.subcommands must equal(List(args.group, args.group.list))
+  }
+
+  it must "support 'group delete'" in new WithArguments("group", "delete", "--name", "supergroup") {
+    args.subcommands must equal(List(args.group, args.group.delete))
+    args.group.delete.name() must equal("supergroup")
+  }
+
+  it must "support 'group set-min-quota'" in
+    new WithArguments("group", "set-min-quota", "--name", "supergroup", "--quota", "5") {
+      args.subcommands must equal(List(args.group, args.group.setMinQuota))
+      args.group.setMinQuota.name() must equal("supergroup")
+      args.group.setMinQuota.quota() must equal(5)
     }
 }

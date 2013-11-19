@@ -177,7 +177,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
             machineQuota: Option[_],
             apiKey: String,
             apiSecret: String,
-            groupName: String,
+            groupName: Option[_],
             _, _) => {
           val namedKeys = for {
             row <- rows if row[Int]("cosmos_id") == id

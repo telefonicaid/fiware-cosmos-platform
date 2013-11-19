@@ -35,7 +35,7 @@ class WithTestApplication(
       val email = user.email.getOrElse("root@host")
       val handle = email.split('@')(0)
       val reg = Registration(handle, s"ssh-rsa ABCDE $email", email)
-      dao.registerUser(user.id, reg, NoGroup, UnlimitedQuota)
+      dao.registerUser(user.id, reg)
     }
 
   def withSession[A](request: FakeRequest[A], session: Session) =

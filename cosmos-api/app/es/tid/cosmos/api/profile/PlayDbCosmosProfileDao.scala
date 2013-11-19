@@ -27,7 +27,7 @@ trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   lazy val cosmosProfileDao: CosmosProfileDao = new PlayDbCosmosProfileDao
 }
 
-class PlayDbCosmosProfileDao extends CosmosProfileDao {
+class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
   import PlayDbCosmosProfileDao._
 
   type Conn = Connection
@@ -35,13 +35,14 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = DB.withTransaction[A](block)
   def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
 
-  override def registerUser(userId: UserId, reg: Registration, group: Group, quota: Quota)
-                                     (implicit c: Conn): CosmosProfile = {
+  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
     val apiCredentials = ApiCredentials.random()
     val defaultKey = NamedKey("default", reg.publicKey)
     val cosmosId = SQL(
-      """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret, group_name)
-        | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret}, {group_name})"""
+      """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret, group_name,
+        |                 machine_quota)
+        | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret}, {group_name},
+        |         {machine_quota})"""
         .stripMargin)
       .on(
         "auth_realm" -> userId.realm,
@@ -50,7 +51,8 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
         "email" -> reg.email,
         "api_key" -> apiCredentials.apiKey,
         "api_secret" -> apiCredentials.apiSecret,
-        "group_name" -> dbGroupName(group)
+        "group_name" -> dbGroupName(defaultGroup),
+        "machine_quota" -> defaultQuota.toInt
       ).executeInsert(scalar[ProfileId].single)
     addPublicKey(cosmosId, defaultKey)
     CosmosProfile(
@@ -58,8 +60,8 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       state = Enabled,
       handle = reg.handle,
       email = reg.email,
-      group,
-      quota,
+      group = defaultGroup,
+      quota = defaultQuota,
       apiCredentials = apiCredentials,
       keys = Seq(defaultKey)
     )
@@ -94,6 +96,21 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .on("machine_quota" -> quotaValue)
       .executeUpdate() > 0
   }
+
+  override def getUserGroup(cosmosId: ProfileId)(implicit c: Conn): Group =
+    SQL(s"""SELECT g.name, g.min_quota
+            |FROM user u LEFT OUTER JOIN user_group g ON (u.group_name = g.name)
+            |WHERE u.cosmos_id = {cosmos_id}""".stripMargin)
+      .on("cosmos_id" -> cosmosId)
+      .apply()
+      .collectFirst(TO_GROUP)
+      .getOrElse(NoGroup)
+
+  override def setUserGroup(cosmosId: ProfileId, maybeGroup: Option[String])
+                           (implicit c: Conn): Boolean =
+    SQL("UPDATE user SET group_name = {group_name} WHERE cosmos_id={cosmos_id}")
+      .on("cosmos_id" -> cosmosId, "group_name" -> dbGroupName(getGroup(maybeGroup)))
+      .executeUpdate() > 0
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean = {
     val usersWithThatHandle = SQL("SELECT count(*) from user WHERE handle = {handle}")

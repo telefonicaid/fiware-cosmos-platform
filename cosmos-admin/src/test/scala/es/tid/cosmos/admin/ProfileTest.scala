@@ -23,7 +23,7 @@ class ProfileTest extends FlatSpec with MustMatchers with MockitoSugar {
     val dao = mock[MockCosmosProfileDao]
     val registration = Registration("jsmith", "pk00001", "jsmith@example.com")
     dao.withConnection { implicit c =>
-      dao.registerUser(UserId("db-0003"), registration, NoGroup, UnlimitedQuota)
+      dao.registerUser(UserId("db-0003"), registration)
     }
   }
 

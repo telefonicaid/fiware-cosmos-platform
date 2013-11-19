@@ -21,7 +21,7 @@ trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
 /**
  * Mock to be used in tests for handling the profile DAO. Not thread-safe.
  */
-class MockCosmosProfileDao extends CosmosProfileDao {
+class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
 
   object DummyConnection
   type Conn = DummyConnection.type
@@ -33,24 +33,23 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
-  override def registerUser(userId: UserId, reg: Registration, group: Group, quota: Quota)
-                                     (implicit c: Conn): CosmosProfile = {
+  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
     val credentials = ApiCredentials.random()
     require(!users.values.exists(_.handle == reg.handle), s"Duplicated handle: ${reg.handle}")
-    require(groupsWithUsers.contains(group), s"Group not registered: $group")
+    require(groupsWithUsers.contains(defaultGroup), s"Group not registered: $defaultGroup")
     val cosmosProfile = CosmosProfile(
       id = users.size,
       state = Enabled,
       handle = reg.handle,
       email = reg.email,
-      group,
-      quota,
+      group = defaultGroup,
+      quota = defaultQuota,
       apiCredentials = credentials,
       keys = List(NamedKey("default", reg.publicKey))
     )
     users.synchronized { users = users.updated(userId, cosmosProfile) }
     groupsWithUsers.synchronized {
-      groupsWithUsers = groupsWithUsers.updated(group, groupsWithUsers(group) + userId)
+      groupsWithUsers = groupsWithUsers.updated(defaultGroup, groupsWithUsers(defaultGroup) + userId)
     }
     cosmosProfile
   }
@@ -70,6 +69,30 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       val userToUpdate = users.find(_._2.id == cosmosId)
       userToUpdate.foreach {
         case (userId, profile) => users = users.updated(userId, profile.copy(quota = quota))
+      }
+      userToUpdate.isDefined
+    }
+
+  override def getUserGroup(id: ProfileId)(implicit c: Conn): Group =
+    users.collectFirst {
+      case (_, profile) if profile.id == id => profile.group
+    }.getOrElse(NoGroup)
+
+  override def setUserGroup(id: ProfileId, maybeGroup: Option[String])(implicit c: Conn): Boolean =
+    users.synchronized {
+      val newGroup = maybeGroup match {
+        case Some(name) => getGroups.find(_.name == name).getOrElse(NoGroup)
+        case None => NoGroup
+      }
+      val userToUpdate = users.find(_._2.id == id)
+      userToUpdate.foreach {
+        case (userId, profile) =>
+          val oldGroup = profile.group
+          users = users.updated(userId, profile.copy(group = newGroup))
+          groupsWithUsers.synchronized {
+            groupsWithUsers = groupsWithUsers.updated(newGroup, groupsWithUsers(newGroup) + userId)
+            groupsWithUsers = groupsWithUsers.updated(oldGroup, groupsWithUsers(oldGroup) - userId)
+          }
       }
       userToUpdate.isDefined
     }

@@ -90,9 +90,9 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       case EmptyQuota => "0"
       case FiniteQuota(limit) => limit.toString
     }
-    SQL("UPDATE user SET machine_quota = {machine_quota}")
-      .on("machine_quota" -> quotaValue)
-      .executeUpdate() > 0
+    SQL("UPDATE user SET machine_quota = {machine_quota} WHERE cosmos_id = {cosmos_id}")
+      .on("cosmos_id" -> cosmosId, "machine_quota" -> quotaValue)
+      .executeUpdate() == 1
   }
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean = {

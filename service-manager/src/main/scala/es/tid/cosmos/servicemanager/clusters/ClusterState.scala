@@ -46,3 +46,11 @@ object Failed {
   def apply(reason: Throwable): Failed = Failed(reason.getMessage)
   val name: String = "failed"
 }
+
+object ClusterState {
+  /** The cluster states indicating that the cluster is alive and active.
+    * Any states not in this set indicate that the cluster is not available due to
+    * e.g termination, failure, etc
+    */
+  val ActiveStates = Set[ClusterState](Provisioning, Running, Terminating)
+}

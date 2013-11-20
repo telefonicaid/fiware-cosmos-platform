@@ -171,6 +171,23 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
         dao.getMachineQuota(unknownUserId) must equal (EmptyQuota)
       }
     })
+    
+    taggedTest(it must "set machine quota for a given user", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val user1 = UserId("user1")
+        val user2 = UserId("user2")
+        val id1 = register(dao, user1, registration("jsmith")).id
+        val id2 = register(dao, user2, registration("bclinton")).id
+
+        dao.getMachineQuota(id1) must be (UnlimitedQuota)
+        dao.getMachineQuota(id2) must be (UnlimitedQuota)
+
+        dao.setMachineQuota(id2, FiniteQuota(7))
+
+        dao.getMachineQuota(id1) must be (UnlimitedQuota)
+        dao.getMachineQuota(id2) must be (FiniteQuota(7))
+      }
+    })
 
     taggedTest(it must "lookup a profile from api credentials", withDao { dao =>
       dao.withTransaction { implicit c =>

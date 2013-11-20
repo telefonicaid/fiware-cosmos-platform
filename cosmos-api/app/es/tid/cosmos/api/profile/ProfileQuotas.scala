@@ -14,6 +14,7 @@ package es.tid.cosmos.api.profile
 import scalaz._
 
 import es.tid.cosmos.api.controllers.cluster.ClusterReference
+import es.tid.cosmos.servicemanager.clusters.ClusterState.ActiveStates
 
 /**
  * Class responsible for handling user quotas.
@@ -25,7 +26,8 @@ import es.tid.cosmos.api.controllers.cluster.ClusterReference
  * @param machinePoolSize the total number of machines regardless of their usage
  * @param groups          the user groups
  * @param lookupByGroup   a function to lookup the users of a given group
- * @param listClusters    a function to get the clusters of a given user
+ * @param listClusters    a function to get the all the clusters of a given user independently
+ *                        of their state
  */
 class ProfileQuotas(
   machinePoolSize: => Int,
@@ -49,7 +51,7 @@ class ProfileQuotas(
    *                 successful or the error messages in case of validation failures
    */
   def withinQuota(profile: CosmosProfile, size: Int): ValidationNel[String, Int] = {
-    val availableFromProfile = profile.quota - Quota(usedMachines(profile))
+    val availableFromProfile = profile.quota - Quota(usedMachinesForActiveClusters(profile))
     val availableFromGroup = maxAvailableFromGroup(profile.group)
     val overallAvailable = Quota.min(availableFromProfile, availableFromGroup)
 
@@ -77,9 +79,12 @@ class ProfileQuotas(
     (for {
       group <- groups
       groupProfiles = lookupByGroup(group)
-      usedMachinesForGroup = groupProfiles.map(usedMachines).sum
+      usedMachinesForGroup = groupProfiles.map(usedMachinesForActiveClusters).sum
     } yield group -> usedMachinesForGroup).toMap
 
-  private def usedMachines(profile: CosmosProfile): Int =
-    listClusters(profile).map(_.description.size).sum
+  private def usedMachinesForActiveClusters(profile: CosmosProfile): Int =
+    (for {
+      clusterReference <- listClusters(profile)
+      description = clusterReference.description if ActiveStates.contains(description.state)
+    } yield description.size).sum
 }

@@ -22,8 +22,7 @@ import es.tid.cosmos.servicemanager.clusters.ClusterId
   */
 trait CosmosProfileDao {
 
-  /** Specifies the type of connection to use to the data.
-    */
+  /** Specifies the type of connection to use to the data. */
   type Conn
 
   /** Identifier of the Cosmos profile.
@@ -33,20 +32,22 @@ trait CosmosProfileDao {
     */
   type ProfileId = Long
 
+  val defaultGroup: Group
+  val defaultQuota: Quota
+
   def withConnection[A](block: Conn => A): A
   def withTransaction[A](block: Conn => A): A
 
   /** Registers a new user in the database.
     *
+    * The user group, quota, and capabilities are set to default values.
+    *
     * @param userId  The id specified by the user.
     * @param reg     The registration options.
-    * @param group   The group the user belongs to
-    * @param quota   The user's maximum machine quota
     * @param c       The connection to use.
     * @return        A newly created Cosmos profile.
     */
-  def registerUser(userId: UserId, reg: Registration, group: Group, quota: Quota)
-                            (implicit c: Conn): CosmosProfile
+  def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile
 
   /** Retrieves all the Cosmos profiles.
     *
@@ -79,6 +80,23 @@ trait CosmosProfileDao {
     * @return       Whether the operation succeeded or not.
     */
   def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn): Boolean
+
+  /** Retrieves the group for a given user.
+    *
+    * @param id   The unique Cosmos ID of the given user.
+    * @param c    The connection to use.
+    * @return     The group the user belongs to.
+    */
+  def getUserGroup(id: ProfileId)(implicit c: Conn): Group
+
+  /** Sets the group for a given user.
+    *
+    * @param id     The unique Cosmos ID of the given user.
+    * @param grp    The new group of the user, or none.
+    * @param c      The connection to use.
+    * @return       Whether the operation succeeded or not.
+    */
+  def setUserGroup(id: ProfileId, grp: Option[String])(implicit c: Conn): Boolean
 
   /** Determines whether a handle is already taken.
     *

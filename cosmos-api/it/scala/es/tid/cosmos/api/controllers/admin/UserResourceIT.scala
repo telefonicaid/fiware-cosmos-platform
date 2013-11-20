@@ -101,8 +101,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   it must "reject requests when handle is already taken" in new WithTestApplication {
     dao.withTransaction { implicit c =>
       dao.registerUser(
-        UserId("otherUser"), Registration(requestedHandle, publicKey, email),
-        NoGroup, UnlimitedQuota)
+        UserId("otherUser"), Registration(requestedHandle, publicKey, email))
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)
@@ -111,8 +110,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email),
-        NoGroup, UnlimitedQuota)
+      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email))
     }
     val response = post(validPayload)
     status(response) must be (CONFLICT)

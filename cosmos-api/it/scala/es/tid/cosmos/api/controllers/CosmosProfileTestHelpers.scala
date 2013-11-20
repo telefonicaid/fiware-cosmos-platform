@@ -53,9 +53,6 @@ object CosmosProfileTestHelpers {
     dao.withTransaction { implicit c =>
       dao.registerUser(
         userId = userIdFor(handle),
-        reg = registrationFor(handle),
-        group = NoGroup,
-        quota = UnlimitedQuota
-      )
+        reg = registrationFor(handle))
     }
 }

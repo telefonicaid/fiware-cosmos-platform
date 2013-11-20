@@ -57,7 +57,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
   it must "not authorize when credentials belong to a non-enabled user" in new WithSampleUsers {
     val profile = dao.withConnection { implicit c =>
       val userId = UserId("db000")
-      val profile = dao.registerUser(userId, registration, NoGroup, UnlimitedQuota)
+      val profile = dao.registerUser(userId, registration)
       dao.setUserState(profile.id, UserState.Disabled)
       profile
     }
@@ -74,7 +74,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
   it must "succeed when credentials are valid" in new WithSampleUsers {
     val profile = dao.withConnection { implicit c =>
       val userId = UserId("db000")
-      val profile = dao.registerUser(userId, registration, NoGroup, UnlimitedQuota)
+      val profile = dao.registerUser(userId, registration)
       profile
     }
     val response = action(dao, authorizedRequest(profile.apiCredentials))
@@ -99,7 +99,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     new WithSampleUsers with WithSampleSessions {
       val apiCredsProfile = dao.withConnection { implicit c =>
         val userId = UserId("db000")
-        dao.registerUser(userId, registration, NoGroup, UnlimitedQuota)
+        dao.registerUser(userId, registration)
         dao.lookupByUserId(userId).get
       }
       val response = action(dao, authorizedRequest(apiCredsProfile.apiCredentials)

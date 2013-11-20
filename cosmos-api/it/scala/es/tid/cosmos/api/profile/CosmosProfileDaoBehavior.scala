@@ -28,7 +28,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
   )
 
   def register(dao: CosmosProfileDao, id: UserId, reg: Registration)(implicit c: dao.Conn) =
-    dao.registerUser(id, reg, NoGroup, UnlimitedQuota)(c)
+    dao.registerUser(id, reg)(c)
 
   def profileDao(withDao: DaoTest => Unit, maybeTag: Option[Tag] = None) {
 
@@ -136,6 +136,18 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       }
     })
 
+    taggedTest(it must "change the group of an user", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId = UserId("db-0003")
+        val cosmosId = register(dao, userId, registration("jsmith")).id
+        val group = GuaranteedGroup(name = "elite group", minimumQuota = FiniteQuota(7))
+        dao.registerGroup(group)
+        dao.setUserGroup(cosmosId, Some(group.name))
+
+        dao.getUserGroup(cosmosId) must be (group)
+      }
+    })
+
     taggedTest(it must "detect unused handles", withDao { dao =>
       dao.withTransaction { implicit c =>
         register(dao, UserId("oauth53"), registration("usedHandle"))
@@ -205,9 +217,10 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
         val group = GuaranteedGroup("A", Quota(3))
         dao.registerGroup(group)
         val id1 = dao.registerUser(
-          UserId("user1"), registration("user1"), NoGroup, UnlimitedQuota).id
+          UserId("user1"), registration("user1")).id
         val id2 = dao.registerUser(
-          UserId("user2"), registration("user2"), group, UnlimitedQuota).id
+          UserId("user2"), registration("user2")).id
+        dao.setUserGroup(id2, Some(group.name))
         val noGroupProfiles = dao.lookupByGroup(NoGroup)
         val groupProfiles = dao.lookupByGroup(group)
         noGroupProfiles must have size 1

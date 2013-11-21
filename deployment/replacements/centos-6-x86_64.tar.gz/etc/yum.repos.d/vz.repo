@@ -1,5 +1,0 @@
-[vz-base]
-name=vz-base
-baseurl=http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/ovz/vz-base/
-gpgcheck=0
-enabled=1

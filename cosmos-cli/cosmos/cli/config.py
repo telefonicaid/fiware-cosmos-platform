@@ -23,7 +23,7 @@ import cosmos.cli.home_dir as home_dir
 CONFIG_SETTINGS = [dict(
     key='api_url',
     description='Base API URL',
-    default='http://localhost:9000/cosmos/v1'
+    default='https://cosmos.hi.inet/cosmos/v1'
 ), dict(
     key='api_key',
     description='API key',
@@ -69,7 +69,16 @@ def load_config(args):
                  "create a valid configuration or use --config-file with a " +
                  "valid configuration file") % sys.argv[0])
     config.credentials = (config.api_key, config.api_secret)
+    strip_config(config)
     return config
+
+
+def strip_config(config):
+    """Strips all strings in a config"""
+    for key in dir(config):
+        value = getattr(config, key)
+        if type(value) == str:
+            setattr(config, key, value.strip())
 
 
 def with_config(command):

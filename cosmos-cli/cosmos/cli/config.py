@@ -34,6 +34,10 @@ CONFIG_SETTINGS = [dict(
     key='ssh_command',
     description='SSH command',
     default='ssh'
+), dict(
+    key='ssh_key',
+    description='SSH identity key (empty for the default one)',
+    default=''
 )]
 DEFAULT_CONFIG = dict([(setting['key'], setting['default'])
                        for setting in CONFIG_SETTINGS if 'default' in setting])

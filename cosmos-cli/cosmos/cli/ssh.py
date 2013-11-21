@@ -39,6 +39,8 @@ def ssh_cluster(cluster_id, config):
                     '-l', get_user_handle(config),
                     '-o', 'UserKnownHostsFile=/dev/null',
                     '-o', 'StrictHostKeyChecking=no']
+    if config.ssh_key is not None and config.ssh_key.strip():
+        command_line.extend(['-i', config.ssh_key])
     log.info('SSH command: ' + ' '.join(command_line))
     try:
         return subprocess.call(command_line)

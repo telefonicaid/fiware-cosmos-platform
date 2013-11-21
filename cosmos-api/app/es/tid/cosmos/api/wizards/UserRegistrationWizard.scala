@@ -9,11 +9,11 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.pages
+package es.tid.cosmos.api.wizards
 
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.servicemanager.{ServiceManager, ClusterUser}
 import es.tid.cosmos.api.profile.Registration
+import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Sequence of actions to register a new user in Cosmos.
   *
@@ -23,22 +23,19 @@ import es.tid.cosmos.api.profile.Registration
   */
 class UserRegistrationWizard(dao: CosmosProfileDao, serviceManager: ServiceManager) {
 
+  private val hdfsWizard = new UpdatePersistentHdfsUsersWizard(dao, serviceManager)
+
   /** Registers a new user.
     *
     * @param userId        User id
     * @param registration  Registration parameters
     * @return              Newly created profile
     */
-  def registerUser(userId: UserId, registration: Registration) = dao.withTransaction { implicit c =>
-    val newProfile = dao.registerUser(userId, registration)
-    val clusterUsers = dao.getAllUsers().map(profile =>
-      ClusterUser(
-        userName = profile.handle,
-        publicKey = profile.keys.head.signature,
-        sshEnabled = false,
-        hdfsEnabled = profile.state == UserState.Enabled
-      ))
-    serviceManager.setUsers(serviceManager.persistentHdfsId, clusterUsers)
+  def registerUser(userId: UserId, registration: Registration) = {
+    val newProfile = dao.withTransaction { implicit c =>
+      dao.registerUser(userId, registration)
+    }
+    hdfsWizard.updatePersistentHdfsUsers()
     newProfile
   }
 }

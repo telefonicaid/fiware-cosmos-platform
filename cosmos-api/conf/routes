@@ -34,6 +34,7 @@ GET     /doc/cosmos/v1/services          controllers.ApiHelpController.getResour
 
 # Admin API
 POST    /admin/v1/user                   @es.tid.cosmos.api.controllers.admin.UserResource.register
+DELETE  /admin/v1/user/:realm/:id        @es.tid.cosmos.api.controllers.admin.UserResource.unregister(realm, id)
 GET     /doc/admin/v1/user               controllers.ApiHelpController.getResource(path = "/doc/admin/v1/user")
 
 # API docs

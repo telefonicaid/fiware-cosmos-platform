@@ -12,18 +12,20 @@
 package es.tid.cosmos.api.controllers.admin
 
 import scala.annotation.tailrec
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
 import scalaz.{Success, Failure}
 
 import com.wordnik.swagger.annotations._
+import play.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Headers, SimpleResult}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.controllers.pages.UserRegistrationWizard
 import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}
 
 /**
  * Resource for user account administration
@@ -40,6 +42,7 @@ class UserResource(
   private type Conn = dao.Conn
 
   private val registrationWizard = new UserRegistrationWizard(dao, serviceManager)
+  private val unregistrationWizard = new UserUnregistrationWizard(serviceManager, dao)
 
   /**
    * Register a new user account.
@@ -77,6 +80,44 @@ class UserResource(
               )))
             )
           }
+        }
+      }
+    }
+  }
+
+  /**
+   * Unregister a new user account.
+   */
+  @ApiOperation(value = "Delete an existing user account", httpMethod = "DELETE",
+    responseClass = "String")
+  @ApiErrors(Array(
+    new ApiError(code = 401, reason = "Missing auth header"),
+    new ApiError(code = 403, reason = "Forbidden"),
+    new ApiError(code = 404, reason = "User does not exist"),
+    new ApiError(code = 500, reason = "Account deletion failed"),
+    new ApiError(code = 503, reason = "Service is under maintenance")
+  ))
+  def unregister(realm: String, id: String) = Action { request =>
+    unlessResourceUnderMaintenance {
+      withAdminCredsFor(realm, request.headers) {
+        dao.withTransaction { implicit c =>
+          val userId = UserId(realm, id)
+          dao.getProfileId(userId).map { cosmosId =>
+            unregistrationWizard.unregisterUser(cosmosId).fold(
+              fail = message => InternalServerError(Json.toJson(message)),
+              succ = unregistration_> => {
+                unregistration_>.onSuccess {
+                  case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
+                }
+                unregistration_>.onFailure {
+                  case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
+                }
+                val message = s"User $userId unregistration started"
+                Logger.info(message)
+                Ok(Json.toJson(Message(message)))
+              }
+            )
+          }.getOrElse(NotFound(s"User $userId does not exist"))
         }
       }
     }

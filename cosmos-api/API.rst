@@ -186,28 +186,28 @@ it consists on WebHdfs url and username::
 Resources of the admin API
 --------------------------
 
+These resources follow an authentication scheme different for the client API.
+Instead of using the pair API id / secret, a different set of credentials are
+accepted per authentication realm.  This is configured and enabled on the
+`cosmos-api` configuration file.
+
 POST ``/admin/v1/user``
 ----------------------
 
 *Since v1*
 
-This resource follows an authentication scheme different for the client API.
-Instead of using the pair API id / secret, a different set of credentials are
-accepted per authentication realm.  This is configured and enabled on the
-`cosmos-api` configuration file.
-
 Provides a mean for user registration by posting the properties of the newly
 created user.  The properties have the following restrictions:
 
- * `authId`: non-empty string that must be unique per authorization realm.
- * `authRealm`: identifier of the authorization realm (also a non-empty string).
- * `email`: email address to contact the user about maintenance windows or other
-   conditions and announcements.
- * `handle`: user handle to be used as SSH login. It must be a valid unix login
-   (letters and numbers with a leading letter) and at least three characters.
-   If this field is not present, one will be generated.
- * `sshPublicKey`: must be a public key in the same format SSH stores it
-   (`ssh-rsa|ssh-dsa`, the key and the user email).
+* `authId`: non-empty string that must be unique per authorization realm.
+* `authRealm`: identifier of the authorization realm (also a non-empty string).
+* `email`: email address to contact the user about maintenance windows or other
+  conditions and announcements.
+* `handle`: user handle to be used as SSH login. It must be a valid unix login
+  (letters and numbers with a leading letter) and at least three characters.
+  If this field is not present, one will be generated.
+* `sshPublicKey`: must be a public key in the same format SSH stores it
+  (`ssh-rsa|ssh-dsa`, the key and the user email).
 
 Sample body::
 
@@ -229,10 +229,26 @@ In case of success, a 201 status with the following body scheme is returned::
 
 Otherwise, one of the following errors will be returned:
 
- * Unauthorized 401
- * Forbidden 403
- * Bad request 400, invalid JSON payload.
- * Conflict 409, already existing handle.
- * Conflict 409, already existing credentials.
- * Internal server error 500, account registration failed.
+* Unauthorized 401
+* Forbidden 403
+* Bad request 400, invalid JSON payload.
+* Conflict 409, already existing handle.
+* Conflict 409, already existing credentials.
+* Internal server error 500, account registration failed.
 
+DELETE ``/admin/v1/user/<realm>/<id>``
+--------------------------------------
+
+*Since v1*
+
+Provides a mean for user unregistration by sending a DELETE request.
+Note that the realm on the URL should match with the authentication credentials so
+each authentication provider can delete only its own users.
+
+In case of success, a 200 response is returned.
+Otherwise, one of the following errors will be returned:
+
+* Unauthorized 401
+* Forbidden 403
+* Not found 404, the user does not exist.
+* Internal server error 500, account unregistration failed.

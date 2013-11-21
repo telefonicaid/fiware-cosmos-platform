@@ -15,7 +15,8 @@ import scala.concurrent.Future
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{HavePropertyMatchResult, HavePropertyMatcher, MustMatchers}
-import play.api.libs.json.{Reads, JsValue, Json, JsObject}
+import play.api.http.Writeable
+import play.api.libs.json.{Reads, JsValue, JsObject, Json}
 import play.api.mvc.SimpleResult
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -33,7 +34,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   val email = "myhandle@host"
   val publicKey = s"ssh-rsa XXXXXX $email"
   val requestedHandle = "myhandle"
-  val resource = "/admin/v1/user"
+  val userResource = "/admin/v1/user"
   val validPayload = Json.obj(
     "authId" -> newUserId.id,
     "authRealm" -> newUserId.realm,
@@ -43,19 +44,26 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   )
   val validAuth = BasicAuth(MockAuthConstants.ProviderId, MockAuthConstants.AdminPassword)
 
-  def post(payload: JsObject, auth: Option[String] = Some(validAuth)): Future[SimpleResult] =
-    post(payload.toString, auth)
+  def postRegistration(payload: JsObject, auth: Option[String] = Some(validAuth)): Future[SimpleResult] =
+    postRegistration(payload.toString, auth)
 
-  def post(payload: String, auth: Option[String]): Future[SimpleResult] = {
-    val request = FakeRequest(POST, resource).withBody(payload)
+  def postRegistration(payload: String, auth: Option[String]): Future[SimpleResult] =
+    authenticatedWith(FakeRequest(POST, userResource).withBody(payload), auth)
+
+  def deleteUser(userId: UserId, auth: Option[String] = Some(validAuth)): Future[SimpleResult] =
+    authenticatedWith(FakeRequest(DELETE, s"$userResource/${userId.realm}/${userId.id}"), auth)
+
+  def authenticatedWith[A: Writeable](request: FakeRequest[A], auth: Option[String]) =
     route(auth.map(a => request.withHeaders("Authorization" -> a)).getOrElse(request)).get
-  }
 
-  "The user resource" must behave like resourceDisabledWhenUnderMaintenance(
-    FakeRequest(POST, resource).withJsonBody(Json.obj()))
+  "User registration" must behave like resourceDisabledWhenUnderMaintenance(
+    FakeRequest(POST, userResource).withJsonBody(Json.obj()))
 
-  it must "register a new user when posted" in new WithTestApplication {
-    val response = post(validPayload)
+  "User unregistration" must behave like resourceDisabledWhenUnderMaintenance(
+    FakeRequest(DELETE, s"$userResource/realm/id").withJsonBody(Json.obj()))
+
+  "The user resource" must "register a new user when posted" in new WithTestApplication {
+    val response = postRegistration(validPayload)
     status(response) must be (CREATED)
     val responseData = Json.parse(contentAsString(response))
     responseData must have (field[String]("apiKey"))
@@ -69,7 +77,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   }
 
   it must "register a new user with auto generated id" in new WithTestApplication {
-    val response = post(validPayload - "handle")
+    val response = postRegistration(validPayload - "handle")
     status(response) must be (CREATED)
     Json.parse(contentAsString(response)) must have (field[String]("handle"))
     val createdProfile = dao.withTransaction { implicit c =>
@@ -78,22 +86,22 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   }
 
   it must "reject non authenticated posts" in new WithTestApplication {
-    status(post(validPayload, auth = None)) must be (UNAUTHORIZED)
+    status(postRegistration(validPayload, auth = None)) must be (UNAUTHORIZED)
   }
 
   it must "reject post with invalid credentials" in new WithTestApplication {
     val wrongAuth = BasicAuth("horizon", "wrong password")
-    status(post(validPayload, auth = Some(wrongAuth))) must be (FORBIDDEN)
+    status(postRegistration(validPayload, auth = Some(wrongAuth))) must be (FORBIDDEN)
   }
 
   it must "reject correct credentials for a different realm" in new WithTestApplication {
-    val response = post(validPayload ++ Json.obj("authRealm" -> "other_realm"))
+    val response = postRegistration(validPayload ++ Json.obj("authRealm" -> "other_realm"))
     status(response) must be (FORBIDDEN)
     contentAsString(response) must include ("Cannot register users")
   }
 
   it must "reject requests with malformed JSON" in new WithTestApplication {
-    val response = post("not a json", Some(validAuth))
+    val response = postRegistration("not a json", Some(validAuth))
     status(response) must be (BAD_REQUEST)
     contentAsString(response) must include ("Invalid Json")
   }
@@ -103,7 +111,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       dao.registerUser(
         UserId("otherUser"), Registration(requestedHandle, publicKey, email))
     }
-    val response = post(validPayload)
+    val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)
     contentAsString(response) must include (s"Handle '$requestedHandle' is already taken")
   }
@@ -112,9 +120,33 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
     dao.withTransaction { implicit c =>
       dao.registerUser(newUserId, Registration("otherHandle", publicKey, email))
     }
-    val response = post(validPayload)
+    val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)
     contentAsString(response) must include (s"Already existing credentials: $newUserId")
+  }
+
+  it must "reject not authenticated unregister requests" in new WithTestApplication {
+    status(deleteUser(newUserId, auth = None)) must be (UNAUTHORIZED)
+  }
+
+  it must "reject unregistration of users of other realms" in new WithTestApplication {
+    status(deleteUser(newUserId.copy(realm = "other_realm"), auth = None)) must be (UNAUTHORIZED)
+  }
+
+  it must "produce 404 when the user does not exist" in new WithTestApplication {
+    status(deleteUser(newUserId)) must be (NOT_FOUND)
+  }
+
+  it must "unregister existing users of the same realm" in new WithTestApplication {
+    dao.withTransaction { implicit c =>
+      registerUser(dao, MockAuthConstants.User101.copy(id = newUserId))
+    }
+    val response = deleteUser(newUserId)
+    status(response) must be (OK)
+    contentAsString(response) must include ("User new_id@id_service unregistration started")
+    dao.withTransaction { implicit c =>
+      dao.lookupByUserId(newUserId).get.state
+    } must (be (UserState.Deleting) or be (UserState.Deleted))
   }
 
   def field[T: Reads](fieldName: String) = new HavePropertyMatcher[JsValue, String](){

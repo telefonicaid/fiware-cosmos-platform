@@ -23,6 +23,7 @@ import es.tid.cosmos.api.profile.UserState.UserState
  * @param email          User email
  * @param group          The group the user belongs to
  * @param quota          Quota for resources
+ * @param capabilities   The capabilities of the user
  * @param apiCredentials Credentials for the REST API
  * @param keys           Public keys
  */
@@ -33,6 +34,7 @@ case class CosmosProfile(
     email: String,
     group: Group,
     quota: Quota,
+    capabilities: UserCapabilities,
     apiCredentials: ApiCredentials,
     keys: Seq[NamedKey]) {
 

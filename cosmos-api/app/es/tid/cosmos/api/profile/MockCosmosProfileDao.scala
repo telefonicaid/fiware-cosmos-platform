@@ -26,9 +26,10 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
   object DummyConnection
   type Conn = DummyConnection.type
 
-  @volatile private var users = Map[UserId, CosmosProfile]()
-  @volatile private var clusters = List[ClusterAssignment]()
-  @volatile private var groupsWithUsers = Map[Group, Set[UserId]](NoGroup -> Set())
+  @volatile private var users: Map[UserId, CosmosProfile] = Map.empty
+  @volatile private var capabilities: Map[UserId, UserCapabilities] = Map.empty
+  @volatile private var clusters: List[ClusterAssignment] = List.empty
+  @volatile private var groupsWithUsers: Map[Group, Set[UserId]] = Map(NoGroup -> Set.empty)
 
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
@@ -44,6 +45,7 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
       email = reg.email,
       group = defaultGroup,
       quota = defaultQuota,
+      capabilities = UntrustedUserCapabilities,
       apiCredentials = credentials,
       keys = List(NamedKey("default", reg.publicKey))
     )
@@ -96,6 +98,23 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
       }
       userToUpdate.isDefined
     }
+
+  override def enableUserCapability(id: ProfileId, capability: Capability.Value)
+                                   (implicit c: Conn) =
+    userIdOf(id).foreach(userId =>
+      capabilities = capabilities + (userId -> (getUserCapabilities(id) + capability))
+    )
+
+  override def disableUserCapability(id: ProfileId, capability: Capability.Value)
+                                    (implicit c: Conn) =
+    userIdOf(id).foreach(userId =>
+      capabilities = capabilities + (userId -> (getUserCapabilities(id) - capability))
+    )
+
+  override def getUserCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities = (for {
+    userId <- userIdOf(id)
+    cap <- capabilities.get(userId)
+  } yield cap).getOrElse(UntrustedUserCapabilities)
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean =
     users.values.exists(_.handle == handle)
@@ -167,4 +186,6 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
       }
     }
   }
+
+  private def userIdOf(id: ProfileId): Option[UserId] = users.find(_._2.id == id).map(_._1)
 }

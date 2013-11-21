@@ -34,6 +34,7 @@ trait CosmosProfileDao {
 
   val defaultGroup: Group
   val defaultQuota: Quota
+  val defaultUserCapabilities: UserCapabilities
 
   def withConnection[A](block: Conn => A): A
   def withTransaction[A](block: Conn => A): A
@@ -97,6 +98,27 @@ trait CosmosProfileDao {
     * @return       Whether the operation succeeded or not.
     */
   def setUserGroup(id: ProfileId, grp: Option[String])(implicit c: Conn): Boolean
+
+  /** Enable some capability to the given user.
+    *
+    * If the capability was already enabled, nothing is done.
+    *
+    * @param id           The unique Cosmos ID of the given user.
+    * @param capability   The capability to be enabled.
+    */
+  def enableUserCapability(id: ProfileId, capability: Capability.Value)(implicit c: Conn): Unit
+
+  /** Disable some capability to the given user.
+    *
+    * If the capability was already disabled, nothing is done.
+    *
+    * @param id           The unique Cosmos ID of the given user.
+    * @param capability   The capability to be disabled.
+    */
+  def disableUserCapability(id: ProfileId, capability: Capability.Value)(implicit c: Conn): Unit
+
+  /** Retrieve the capabilities for given user. **/
+  def getUserCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities
 
   /** Determines whether a handle is already taken.
     *

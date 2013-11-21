@@ -47,7 +47,8 @@ object Cluster extends FlatSpec with MustMatchers {
     val ExpectedPrefix = "Provisioning new cluster "
     val flatServices = services.mkString(" ")
     val servicesCommand = if (services.nonEmpty) s"--services $flatServices" else ""
-    val id = (s"cosmos create --name default-services --size $size $servicesCommand" lines_!)
+    val id = s"cosmos create --name default-services --size $size $servicesCommand"
+      .lines_!(ProcessLogger(println(_)))
       .filter(_.startsWith(ExpectedPrefix))
       .head.substring(ExpectedPrefix.length)
     println(s"Cluster created with id $id")

@@ -76,11 +76,9 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
     performRequest(baseUrl.DELETE / "clusters" / name).map(_ => ())
 
   private val bootstrapSequencer = new SequentialOperations
-  private def performBootstrapAction(
-      hostnames: Set[String],
-      sshKey: String,
-      builderWithMethod: RequestBuilder): Future[Unit] = {
-    val configuredBuilder = (builderWithMethod / "bootstrap")
+
+  def bootstrapMachines(hostnames: Set[String], sshKey: String): Future[Unit] = {
+    val configuredBuilder = (baseUrl / "bootstrap").POST
       .setBody(compact(render(
         ("hosts" -> hostnames) ~
         ("sshKey" -> sshKey) ~
@@ -103,21 +101,6 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
     }
   }
 
-  /**
-   * Installs and launches Ambari agent
-   */
-  def bootstrapMachines(hostnames: Set[String], sshKey: String): Future[Unit] =
-    performBootstrapAction(hostnames, sshKey, baseUrl.POST)
-
-  /**
-   * Stops and unregisters Ambari agent from Ambari server
-   */
-  def teardownMachines(hostnames: Set[String], sshKey: String): Future[Unit] =
-    performBootstrapAction(hostnames, sshKey, baseUrl.DELETE)
-
-  /**
-   * Returns the list of hostnames that are registered in Ambari server
-   */
   def registeredHostnames: Future[Set[String]] =
     performRequest(baseUrl / "hosts").map(json => as.FlatValues(json, "items", "host_name").toSet)
 }

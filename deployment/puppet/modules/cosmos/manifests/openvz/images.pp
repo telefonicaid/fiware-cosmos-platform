@@ -29,8 +29,14 @@ class cosmos::openvz::images(
     destination => $source_image_file,
   }
 
-  file { $replacements_dir :
+  file { 'Remove extraction dir' :
+    ensure => absent,
+    path   => $replacements_dir,
+  }
+
+  file { 'Create extraction dir' :
     ensure => 'directory',
+    path   => $replacements_dir,
   }
 
   exec { 'unpack_image' :
@@ -97,7 +103,8 @@ class cosmos::openvz::images(
   Class['ambari::repos'] ~> File["${replacements_dir}/etc/yum.repos.d"]
 
   Wget::Fetch['Download base image']
-    ~> File[$replacements_dir]
+    ~> File['Remove extraction dir']
+    ~> File['Create extraction dir']
     ~> Exec['unpack_image']
     ~> File["${replacements_dir}/root/.ssh",
             "${replacements_dir}/etc/yum.repos.d",

@@ -16,4 +16,16 @@ class ambari::server::service {
     hasstatus  => true,
     hasrestart => true,
   }
+
+  exec { 'Wait for server' :
+  	command => '/bin/bash -c "while ! nc -vz localhost 8080; do sleep 1; done"',
+  	path    => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
+  }
+
+  package { 'nc':
+    ensure  => present,
+  }
+
+  Service['postgresql'] -> Service['ambari-server'] -> Exec['Wait for server']
+  Package['nc'] -> Exec['Wait for server']
 }

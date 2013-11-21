@@ -191,6 +191,7 @@ class ProfileQuotasTest extends FlatSpec
           email = "user@example.com",
           group,
           quota,
+          capabilities = UntrustedUserCapabilities,
           ApiCredentials.random(),
           keys = Nil
         )

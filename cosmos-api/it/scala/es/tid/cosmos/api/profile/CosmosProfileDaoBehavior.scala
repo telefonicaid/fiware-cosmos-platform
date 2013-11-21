@@ -148,6 +148,44 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       }
     })
 
+    taggedTest(it must "set user default capabilities to unstrusted", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId = UserId("db-0003")
+        val userProfile = register(dao, userId, registration("jsmith"))
+
+        userProfile.capabilities must be (UntrustedUserCapabilities)
+      }
+    })
+
+    taggedTest(it must "enable user capabilities", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId1 = UserId("db-0003")
+        val userId2 = UserId("db-0004")
+        val userProfile1 = register(dao, userId1, registration("jsmith"))
+        val userProfile2 = register(dao, userId2, registration("bclinton"))
+
+        dao.enableUserCapability(userProfile2.id, Capability.IsSudoer)
+
+        dao.getUserCapabilities(userProfile1.id).hasCapability(Capability.IsSudoer) must be (false)
+        dao.getUserCapabilities(userProfile2.id).hasCapability(Capability.IsSudoer) must be (true)
+      }
+    })
+
+    taggedTest(it must "disable user capabilities", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val userId1 = UserId("db-0003")
+        val userId2 = UserId("db-0004")
+        val userProfile1 = register(dao, userId1, registration("jsmith"))
+        val userProfile2 = register(dao, userId2, registration("bclinton"))
+        dao.enableUserCapability(userProfile2.id, Capability.IsSudoer)
+
+        dao.disableUserCapability(userProfile2.id, Capability.IsSudoer)
+
+        dao.getUserCapabilities(userProfile1.id).hasCapability(Capability.IsSudoer) must be (false)
+        dao.getUserCapabilities(userProfile2.id).hasCapability(Capability.IsSudoer) must be (false)
+      }
+    })
+
     taggedTest(it must "detect unused handles", withDao { dao =>
       dao.withTransaction { implicit c =>
         register(dao, UserId("oauth53"), registration("usedHandle"))

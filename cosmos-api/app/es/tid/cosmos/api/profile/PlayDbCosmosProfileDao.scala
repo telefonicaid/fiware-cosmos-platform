@@ -62,6 +62,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
       email = reg.email,
       group = defaultGroup,
       quota = defaultQuota,
+      capabilities = UntrustedUserCapabilities,
       apiCredentials = apiCredentials,
       keys = Seq(defaultKey)
     )
@@ -111,6 +112,32 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
     SQL("UPDATE user SET group_name = {group_name} WHERE cosmos_id={cosmos_id}")
       .on("cosmos_id" -> cosmosId, "group_name" -> dbGroupName(getGroup(maybeGroup)))
       .executeUpdate() > 0
+
+  override def enableUserCapability(cosmosId: ProfileId, capability: Capability.Value)
+                                   (implicit c: Conn) = {
+    if (!getUserCapabilities(cosmosId).hasCapability(capability)) {
+      SQL("INSERT INTO user_capability(name, cosmos_id) VALUES ({name}, {cosmos_id})")
+        .on("name" -> capability.toString, "cosmos_id" -> cosmosId)
+        .executeInsert()
+    }
+  }
+
+  override def disableUserCapability(cosmosId: ProfileId, capability: Capability.Value)
+                                    (implicit c: Conn) = {
+    if (getUserCapabilities(cosmosId).hasCapability(capability)) {
+      SQL("DELETE FROM user_capability WHERE name = {name} AND cosmos_id = {cosmos_id}")
+        .on("name" -> capability.toString, "cosmos_id" -> cosmosId)
+        .executeInsert()
+    }
+  }
+
+  override def getUserCapabilities(cosmosId: ProfileId)(implicit c: Conn): UserCapabilities =
+    SQL("SELECT name FROM user_capability WHERE cosmos_id = {cosmos_id}")
+      .on("cosmos_id" -> cosmosId)
+      .apply().collect { case Row(name: String) => name }
+      .foldLeft(
+      UntrustedUserCapabilities: UserCapabilities
+    )((cap, name) => cap + Capability.withName(name))
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean = {
     val usersWithThatHandle = SQL("SELECT count(*) from user WHERE handle = {handle}")
@@ -177,36 +204,37 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
           ClusterAssignment(ClusterId(clusterId), id, creationDate)
       }
 
-    /** Lookup Cosmos profiles retrieved by a custom query.
-      *
-      * @param query Query with the following output columns: cosmos id, handle, apiKey, apiSecret,
-      *              name and signature
-      * @return      Retrieved profiles
-      */
-    private def lookup(query: SimpleSql[Row])(implicit c: Conn): Seq[CosmosProfile] = {
-      val rows = query().toList
-      rows.map {
-        case Row(
-            id: Int,
-            UserState(state),
-            handle: String,
-            email: String,
-            machineQuota: Option[_],
-            apiKey: String,
-            apiSecret: String,
-            groupName: Option[_],
-            _, _) => {
-          val namedKeys = for {
-            row <- rows if row[Int]("cosmos_id") == id
-          } yield NamedKey(row[String]("name"), row[String]("signature"))
-          CosmosProfile(
-            id, state, handle, email,
-            getGroup(groupName.asInstanceOf[Option[String]]),
-            Quota(machineQuota.asInstanceOf[Option[Int]]),
-            ApiCredentials(apiKey, apiSecret), namedKeys)
-        }
+  /** Lookup Cosmos profiles retrieved by a custom query.
+    *
+    * @param query Query with the following output columns: cosmos id, handle, apiKey, apiSecret,
+    *              name and signature
+    * @return      Retrieved profiles
+    */
+  private def lookup(query: SimpleSql[Row])(implicit c: Conn): Seq[CosmosProfile] = {
+    val rows = query().toList
+    rows.map {
+      case Row(
+          id: Int,
+          UserState(state),
+          handle: String,
+          email: String,
+          machineQuota: Option[_],
+          apiKey: String,
+          apiSecret: String,
+          groupName: Option[_],
+          _, _) => {
+        val namedKeys = for {
+          row <- rows if row[Int]("cosmos_id") == id
+        } yield NamedKey(row[String]("name"), row[String]("signature"))
+        CosmosProfile(
+          id, state, handle, email,
+          group = getGroup(groupName.asInstanceOf[Option[String]]),
+          quota = Quota(machineQuota.asInstanceOf[Option[Int]]),
+          capabilities = getUserCapabilities(id),
+          apiCredentials = ApiCredentials(apiKey, apiSecret), namedKeys)
       }
     }
+  }
 
   override def setHandle(id: ProfileId, handle: String)(implicit c: Conn) {
     try {

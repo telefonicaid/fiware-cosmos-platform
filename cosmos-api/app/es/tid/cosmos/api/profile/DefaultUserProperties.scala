@@ -11,9 +11,10 @@
 
 package es.tid.cosmos.api.profile
 
-/** A trait that satisfies the default user properties as group, quota... . */
+/** A trait that satisfies the default user properties as group, quota, capabilities... . */
 trait DefaultUserProperties {
 
   val defaultGroup: Group = NoGroup
   val defaultQuota: Quota = UnlimitedQuota
+  val defaultUserCapabilities: UserCapabilities = UntrustedUserCapabilities
 }

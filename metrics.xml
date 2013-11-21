@@ -13,10 +13,10 @@ All rights reserved.
     <generalComment>Cosmos product metrics definition</generalComment>
 
     <metrics>
-        <suspect_lcom4_density>
+        <suspect_lcom4_density value="x">
             <rationale>Not being measured since Scala Sonar plugin did not work well</rationale>
         </suspect_lcom4_density>
-        <duplicated_lines_density> <!-- Average -->
+        <duplicated_lines_density value="x"> <!-- Average -->
             <rationale>Not being measured</rationale>
         </duplicated_lines_density>
         <ncloc value="12178"> <!-- SUM  -->

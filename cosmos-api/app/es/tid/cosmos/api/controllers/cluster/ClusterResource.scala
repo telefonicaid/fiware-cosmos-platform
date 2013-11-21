@@ -22,7 +22,7 @@ import play.api.mvc.{Request, SimpleResult, RequestHeader, Action}
 
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{ProfileQuotas, CosmosProfile, ClusterAssignment, CosmosProfileDao}
+import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 
@@ -88,7 +88,11 @@ class ClusterResource(
       name = body.name,
       clusterSize = body.size,
       serviceDescriptions = services,
-      users = Seq(ClusterUser(profile.handle, profile.keys.head.signature))
+      users = Seq(ClusterUser(
+        userName = profile.handle,
+        publicKey = profile.keys.head.signature,
+        isSudoer = profile.capabilities.hasCapability(Capability.IsSudoer)
+      ))
     )) match {
       case Failure(ex) => throw ex
       case Success(clusterId: ClusterId) => {

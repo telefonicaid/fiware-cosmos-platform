@@ -42,7 +42,8 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescriptio
         s"${prefix}ssh_master_public_key" -> sshKeys.publicKey,
         s"${prefix}ssh_master_authorized_keys" -> user.publicKey,
         s"${prefix}ssh_slave_authorized_keys" -> sshKeys.authorizedKey,
-        s"${prefix}hdfs_enabled" -> user.hdfsEnabled
+        s"${prefix}hdfs_enabled" -> user.hdfsEnabled,
+        s"${prefix}is_sudoer" -> user.isSudoer
       )
     } yield pair)).toMap
 

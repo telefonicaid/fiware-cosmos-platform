@@ -23,7 +23,8 @@ class CosmosUserServiceTest extends FlatSpec with MustMatchers {
     userName = "userName",
     publicKey = "public_key",
     sshEnabled = true,
-    hdfsEnabled = false
+    hdfsEnabled = false,
+    isSudoer = false
   )))
   val contributions = description.contributions(Map(
     ConfigurationKeys.MasterNode -> "aNameNodeName"
@@ -48,5 +49,7 @@ class CosmosUserServiceTest extends FlatSpec with MustMatchers {
     val properties = contributions.services(0).properties
     properties.get("user1_ssh_enabled") must be (Some(true))
     properties.get("user1_hdfs_enabled") must be (Some(false))
+    properties.get("user1_ssh_master_authorized_keys") must be (Some("public_key"))
+    properties.get("user1_is_sudoer") must be (Some(false))
   }
 }

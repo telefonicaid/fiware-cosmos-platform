@@ -23,4 +23,5 @@ case class ClusterUser(
     userName: String,
     publicKey: String,
     sshEnabled: Boolean = true,
-    hdfsEnabled: Boolean = true)
+    hdfsEnabled: Boolean = true,
+    isSudoer: Boolean = false)

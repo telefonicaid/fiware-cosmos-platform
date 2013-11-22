@@ -55,6 +55,17 @@ You can also create a SNAPSHOT version as follows::
     $ bin/buildout setup . egg_info --tag-build=.dev`date +%G%m%d-%H%M%S` \
                            bdist_egg rotate --match=.egg --keep=10
 
+Testing
+=======
+
+You can run the Python tests with the following command::
+
+    $ bin/test
+
+If you also want to measure the code coverage, you can do so with::
+
+    $ bin/coverage
+
 Configure Cosmos
 ================
 

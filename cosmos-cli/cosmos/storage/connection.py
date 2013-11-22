@@ -11,8 +11,7 @@
 #
 import os
 
-import requests
-
+from cosmos.common.cosmos_requests import CosmosRequests
 from cosmos.common.exceptions import (OperationError, ResponseError,
                                       UnsupportedApiVersionException)
 from cosmos.common.routes import Routes
@@ -33,7 +32,7 @@ def connect(api_key, api_secret, api_url):
     if not routes.api_version in SUPPORTED_VERSIONS:
         raise UnsupportedApiVersionException(routes.api_version,
                                                 SUPPORTED_VERSIONS)
-    response = requests.get(routes.storage, auth=(api_key, api_secret))
+    response = CosmosRequests((api_key, api_secret)).get(routes.storage)
     if response.status_code != 200:
         raise ResponseError("Cannot get WebHDFS details",
                             response)

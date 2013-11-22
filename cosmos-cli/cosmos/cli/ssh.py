@@ -13,13 +13,13 @@
 
 
 import logging as log
-import requests
 import subprocess
 import time
 
 import cosmos.cli.command_util as util
 import cosmos.cli.config as c
 from cosmos.cli.util import ExitWithError
+from cosmos.common.cosmos_requests import CosmosRequests
 from cosmos.common.exceptions import ResponseError
 from cosmos.common.routes import Routes
 
@@ -67,8 +67,8 @@ def wait_for_cluster_master(cluster_id, config):
 
 def get_cluster_details(cluster_id, config):
     """Gets the JSON cluster description or raises an exception"""
-    response = requests.get(Routes(config.api_url).cluster(cluster_id),
-                            auth=config.credentials)
+    response = CosmosRequests(config.credentials).get(
+            Routes(config.api_url).cluster(cluster_id))
     if response.status_code == 404:
         raise ExitWithError(404, "Cluster %s does not exist" % cluster_id)
     if response.status_code != 200:
@@ -79,8 +79,8 @@ def get_cluster_details(cluster_id, config):
 
 def get_user_handle(config):
     """Looks up the user handle or raises exception"""
-    response = requests.get(Routes(config.api_url).profile,
-                            auth=config.credentials)
+    response = CosmosRequests(config.credentials).get(
+            Routes(config.api_url).profile)
     if response.status_code != 200:
         raise ResponseError('Cannot access user profile details', response)
     return response.json()['handle']

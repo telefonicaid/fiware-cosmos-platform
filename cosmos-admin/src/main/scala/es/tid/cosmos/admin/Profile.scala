@@ -11,19 +11,21 @@
 
 package es.tid.cosmos.admin
 
+import scala.util.Try
+
 import es.tid.cosmos.api.profile.{UnlimitedQuota, CosmosProfileDao, Quota}
 
 private[admin] class Profile(dao: CosmosProfileDao) {
 
   def setMachineQuota(cosmosId: Long, limit: Int): Boolean = {
-    dao.withConnection { implicit c =>
+    Try(dao.withConnection { implicit c =>
       dao.setMachineQuota(cosmosId, Quota(Some(limit)))
-    }
+    }).isSuccess
   }
 
   def unsetMachineQuota(cosmosId: Long): Boolean = {
-    dao.withConnection { implicit c =>
+    Try(dao.withConnection { implicit c =>
       dao.setMachineQuota(cosmosId, UnlimitedQuota)
-    }
+    }).isSuccess
   }
 }

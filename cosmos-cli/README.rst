@@ -55,31 +55,6 @@ You can also create a SNAPSHOT version as follows::
     $ bin/buildout setup . egg_info --tag-build=.dev`date +%G%m%d-%H%M%S` \
                            bdist_egg rotate --match=.egg --keep=10
 
-Publishing the Cosmos CLI EGG
-=============================
-
-Once a version of the component is ready to be published you can upload it to
-the local PYPI proxy, colocated in the same box as the continuous integration
-tools, ``cosmos10``, as follows::
-
-    $ bin/buildout setup . egg_info --tag-build=.dev`date +%G%m%d-%H%M%S` \
-                           upload -r http://cosmos10.hi.inet:8000/simple/
-
-In order to publish a non-snapshot version you should omit the ``--tag-build``
-flag and to publish to the public PYPI, the ``-r`` one.
-
-To publish from a host other than ``cosmos10`` the ``~/.pypirc`` configuration
-file should containt the server credentials. Take a look at a sample
-configuration::
-
-     [distutils]
-     index-servers = pyshop
-
-     [pyshop]
-     username: jenkins
-     password: jenkins
-     repository: http://cosmos10.hi.inet:8000/simple/
-
 Configure Cosmos
 ================
 

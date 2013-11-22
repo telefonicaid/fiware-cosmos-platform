@@ -18,6 +18,7 @@ import org.mockito.BDDMockito._
 
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
+import es.tid.cosmos.admin.cli.AdminArguments
 
 class CommandRunnerTest extends FlatSpec with MustMatchers with MockitoSugar {
 

@@ -13,6 +13,7 @@ package es.tid.cosmos.admin
 
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.ProductionServiceManagerComponent
+import es.tid.cosmos.admin.cli.AdminArguments
 
 object ServiceManagerProvider extends ProductionServiceManagerComponent
   with ApplicationConfigComponent

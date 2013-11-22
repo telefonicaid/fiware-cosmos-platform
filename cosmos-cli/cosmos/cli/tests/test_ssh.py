@@ -41,6 +41,7 @@ class SshCommandTest(unittest.TestCase):
         self.config = MagicMock()
         self.config.ssh_command = 'ssh'
         self.config.api_url = 'http://host:port/some/api/v1'
+        self.config.ssh_key = ''
 
     def test_refuse_ssh_clusters_in_post_running_states(self):
         for state in ['terminating', 'terminated', 'failed']:
@@ -78,6 +79,19 @@ class SshCommandTest(unittest.TestCase):
                                       '-o', 'UserKnownHostsFile=/dev/null',
                                       '-o', 'StrictHostKeyChecking=no'])
         self.assertEmptyIterator(response.json.side_effect)
+
+    def test_ssh_cluster_with_custom_key(self):
+        self.config.ssh_key = '~/.ssh/aws_key'
+        response = mock_response(json=MagicMock(side_effect=[RUNNING, PROFILE]))
+        call_mock = MagicMock(return_value=0)
+        with patch('requests.get', MagicMock(return_value=response)), \
+                patch('subprocess.call', call_mock), mock_home():
+            self.assertEquals(0, ssh_cluster('cluster1', self.config))
+        call_mock.assert_called_with(['ssh', '192.168.20.18',
+                                      '-l', 'user1',
+                                      '-o', 'UserKnownHostsFile=/dev/null',
+                                      '-o', 'StrictHostKeyChecking=no',
+                                      '-i', '~/.ssh/aws_key'])
 
     def test_exit_with_error_when_ssh_command_is_not_executable(self):
         response = mock_response(json=MagicMock(side_effect=[RUNNING, PROFILE]))

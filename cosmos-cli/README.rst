@@ -29,7 +29,8 @@ Note that the previous commands won't work if you have a python installation
 with setuptools version under 0.7. Take a look at setuptools documentation_ in
 that case.
 
-You will also need to have `distribute` installed (e.g. by executing `easy_install distribute`)
+You will also need to have `distribute` installed (e.g. by executing
+`easy_install distribute`)
 
 .. _documentation: https://pypi.python.org/pypi/setuptools/0.8#installing-and-using-setuptools
 
@@ -83,8 +84,8 @@ configuration::
 Configure Cosmos
 ================
 
-By default, your cosmos is supposed to be at http://localhost:9000/cosmos but
-you can create a custom config file by::
+By default, your cosmos is supposed to be at https://cosmos.hi.inet/cosmos/v1
+but you can create a custom config file by::
 
     $ cosmos configure
 

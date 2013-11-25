@@ -1,6 +1,4 @@
-@(current: String, tabs: Seq[views.NavTab])
-@import es.tid.cosmos.api.controllers.pages
-@*
+/*
  * Telefónica Digital - Product Development and Innovation
  *
  * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
@@ -9,15 +7,15 @@
  *
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
- *@
-<ul id="headernav">
-    @for(tab <- tabs) {
-        @if(current == tab.id) {
-            <li class="current">
-        } else {
-            <li>
-        }
-        <a href="@tab.link">@tab.name</a></li>
-    }
-    <li><a href="@pages.routes.Pages.logout()">Logout</a></li>
-</ul>
+ */
+
+package es.tid.cosmos.api.controllers.pages
+
+import play.api.mvc.{Action, Controller}
+
+class AdminPage extends Controller {
+
+  def show = Action { implicit request =>
+    Ok("happy hack")
+  }
+}

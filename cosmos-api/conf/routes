@@ -10,6 +10,7 @@ GET     /register                        @es.tid.cosmos.api.controllers.pages.Pa
 POST    /register                        @es.tid.cosmos.api.controllers.pages.Pages.registerUser
 GET     /profile                         @es.tid.cosmos.api.controllers.pages.Pages.showProfile
 GET     /getting-started                 @es.tid.cosmos.api.controllers.pages.Pages.customGettingStarted
+GET     /admin                           @es.tid.cosmos.api.controllers.pages.AdminPage.show
 GET     /cosmosrc                        @es.tid.cosmos.api.controllers.CliConfigResource.generate
 
 # API

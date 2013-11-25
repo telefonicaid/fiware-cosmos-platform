@@ -149,10 +149,12 @@ class Pages(
 
   def showProfile = Action { implicit request =>
     unlessPageUnderMaintenance {
-      whenRegistered(request) { (userProfile, _) =>
-        dao.withTransaction { implicit c =>
-          Ok(views.html.profile(userProfile, dao.lookupByUserId(userProfile.id).get))
-        }
+      whenRegistered(request) { (userProfile, cosmosProfile) =>
+        Ok(views.html.profile(
+          oauthProfile = userProfile,
+          cosmosProfile = cosmosProfile,
+          tabs = Navigation.forCapabilities(cosmosProfile.capabilities)
+        ))
       }
     }
   }
@@ -160,7 +162,8 @@ class Pages(
   def customGettingStarted = Action { implicit request =>
     unlessPageUnderMaintenance {
       whenRegistered(request) { (_, cosmosProfile) =>
-        Ok(views.html.gettingStarted(cosmosProfile))
+        Ok(views.html.gettingStarted(cosmosProfile,
+          Navigation.forCapabilities(cosmosProfile.capabilities)))
       }
     }
   }

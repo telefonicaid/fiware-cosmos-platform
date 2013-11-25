@@ -1,6 +1,4 @@
-@(current: String, tabs: Seq[views.NavTab])
-@import es.tid.cosmos.api.controllers.pages
-@*
+/*
  * Telefónica Digital - Product Development and Innovation
  *
  * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
@@ -9,15 +7,15 @@
  *
  * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  * All rights reserved.
- *@
-<ul id="headernav">
-    @for(tab <- tabs) {
-        @if(current == tab.id) {
-            <li class="current">
-        } else {
-            <li>
-        }
-        <a href="@tab.link">@tab.name</a></li>
-    }
-    <li><a href="@pages.routes.Pages.logout()">Logout</a></li>
-</ul>
+ */
+
+package views
+
+/** Navigation tab to be display on the UI
+  *
+  * @constructor
+  * @param id    Unique identifier of the tab
+  * @param name  User-friendly name of the tab
+  * @param link  Tab address
+  */
+case class NavTab(id: String, name: String, link: String)

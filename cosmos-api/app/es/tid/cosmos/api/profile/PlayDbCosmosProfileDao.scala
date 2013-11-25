@@ -16,11 +16,13 @@ import java.util.Date
 
 import anorm._
 import anorm.SqlParser._
+import play.Logger
 import play.api.db.DB
 import play.api.Play.current
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState._
+import es.tid.cosmos.api.profile.Capability._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
@@ -87,15 +89,17 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
       }
       .getOrElse(EmptyQuota)
 
-  override def setMachineQuota(cosmosId: ProfileId, quota: Quota)(implicit c: Conn): Boolean = {
+  override def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn) {
     val quotaValue = quota match {
       case UnlimitedQuota => "NULL"
       case EmptyQuota => "0"
       case FiniteQuota(limit) => limit.toString
     }
-    SQL("UPDATE user SET machine_quota = {machine_quota} WHERE cosmos_id = {cosmos_id}")
-      .on("cosmos_id" -> cosmosId, "machine_quota" -> quotaValue)
-      .executeUpdate() == 1
+    val updatedRows = 
+      SQL("UPDATE user SET machine_quota = {machine_quota} WHERE cosmos_id = {cosmos_id}")
+        .on("cosmos_id" -> id, "machine_quota" -> quotaValue)
+        .executeUpdate()
+    if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
   }
 
   override def getUserGroup(cosmosId: ProfileId)(implicit c: Conn): Group =
@@ -107,33 +111,32 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
       .collectFirst(TO_GROUP)
       .getOrElse(NoGroup)
 
-  override def setUserGroup(cosmosId: ProfileId, maybeGroup: Option[String])
-                           (implicit c: Conn): Boolean =
-    SQL("UPDATE user SET group_name = {group_name} WHERE cosmos_id={cosmos_id}")
-      .on("cosmos_id" -> cosmosId, "group_name" -> dbGroupName(getGroup(maybeGroup)))
-      .executeUpdate() > 0
+  override def setUserGroup(id: ProfileId, maybeGroup: Option[String])(implicit c: Conn) {
+    val updatedRows = SQL("UPDATE user SET group_name = {group_name} WHERE cosmos_id={cosmos_id}")
+      .on("cosmos_id" -> id, "group_name" -> dbGroupName(getGroup(maybeGroup)))
+      .executeUpdate()
+    if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
+  }
 
-  override def enableUserCapability(cosmosId: ProfileId, capability: Capability.Value)
-                                   (implicit c: Conn) = {
-    if (!getUserCapabilities(cosmosId).hasCapability(capability)) {
+  override def enableUserCapability(id: ProfileId, capability: Capability.Value)(implicit c: Conn) {
+    if (!getUserCapabilities(id).hasCapability(capability)) {
       SQL("INSERT INTO user_capability(name, cosmos_id) VALUES ({name}, {cosmos_id})")
-        .on("name" -> capability.toString, "cosmos_id" -> cosmosId)
+        .on("name" -> capability.toString, "cosmos_id" -> id)
         .executeInsert()
     }
   }
 
-  override def disableUserCapability(cosmosId: ProfileId, capability: Capability.Value)
-                                    (implicit c: Conn) = {
-    if (getUserCapabilities(cosmosId).hasCapability(capability)) {
+  override def disableUserCapability(id: ProfileId, capability: Capability)(implicit c: Conn) {
+    if (getUserCapabilities(id).hasCapability(capability)) {
       SQL("DELETE FROM user_capability WHERE name = {name} AND cosmos_id = {cosmos_id}")
-        .on("name" -> capability.toString, "cosmos_id" -> cosmosId)
+        .on("name" -> capability.toString, "cosmos_id" -> id)
         .executeInsert()
     }
   }
 
-  override def getUserCapabilities(cosmosId: ProfileId)(implicit c: Conn): UserCapabilities =
+  override def getUserCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities =
     SQL("SELECT name FROM user_capability WHERE cosmos_id = {cosmos_id}")
-      .on("cosmos_id" -> cosmosId)
+      .on("cosmos_id" -> id)
       .apply().collect { case Row(name: String) => name }
       .foldLeft(
       UntrustedUserCapabilities: UserCapabilities
@@ -161,10 +164,15 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
 
   override def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile] =
     lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
-                       | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
-                       | WHERE u.group_name ${equalsOp(dbGroupName(group))} {groupName}"""
+                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+                  | WHERE u.group_name ${equalsOp(dbGroupName(group))} {groupName}"""
       .stripMargin).on("groupName" -> dbGroupName(group))).toSet
 
+  override def lookupByHandle(handle: String)(implicit c: Conn): Option[CosmosProfile] =
+    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+                  |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+                  |WHERE u.handle = {handle}""".stripMargin)
+      .on("handle" -> handle)).headOption
 
   override def getGroups(implicit c: Conn): Set[Group] = {
     val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(TO_GROUP)
@@ -240,7 +248,10 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
     try {
       updateProfileField("handle", id, handle)
     } catch {
-      case ex: SQLException => throw new IllegalArgumentException("Cannot change handle", ex)
+      case ex: SQLException => {
+        Logger.error("Cannot update handle", ex)
+        throw CosmosProfileException.duplicatedHandle(handle)
+      }
     }
   }
 
@@ -257,8 +268,10 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
       SQL("DELETE FROM public_key WHERE cosmos_id = {id}").on("id" -> id).executeUpdate()
       publicKeys.foreach(key => addPublicKey(id, key))
     } catch {
-      case ex: SQLException => throw new IllegalArgumentException(
-        s"Cannot change public keys. Does user with id=$id exists?", ex)
+      case ex: SQLException => {
+        Logger.error(s"Cannot change $id keys", ex)
+        throw CosmosProfileException.unknownUser(id)
+      }
     }
   }
 
@@ -266,7 +279,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
     val updatedRows = SQL(s"UPDATE user SET $fieldName = {value} WHERE cosmos_id = {id}")
         .on("value" -> value, "id" -> id)
         .executeUpdate()
-    require(updatedRows > 0, s"No field $fieldName was updated for user with id=$id")
+    if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
   }
 
   private def addPublicKey(id: ProfileId, publicKey: NamedKey)(implicit c: Conn) =

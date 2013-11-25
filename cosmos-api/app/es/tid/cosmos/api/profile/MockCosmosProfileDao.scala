@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.profile
 
 import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.profile.Capability._
 import es.tid.cosmos.api.profile.UserState._
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
@@ -26,7 +27,6 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
   type Conn = MockCosmosProfileDao.DummyConnection.type
 
   @volatile private var users: Map[UserId, CosmosProfile] = Map.empty
-  @volatile private var capabilities: Map[UserId, UserCapabilities] = Map.empty
   @volatile private var clusters: List[ClusterAssignment] = List.empty
   @volatile private var groupsWithUsers: Map[Group, Set[UserId]] = Map(NoGroup -> Set.empty)
 
@@ -65,21 +65,22 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
       case (_, profile) if profile.id == id => profile.quota
     }.getOrElse(EmptyQuota)
 
-  override def setMachineQuota(cosmosId: ProfileId, quota: Quota)(implicit c: Conn): Boolean =
+  override def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn) {
     users.synchronized {
-      val userToUpdate = users.find(_._2.id == cosmosId)
+      val userToUpdate = users.find(_._2.id == id)
       userToUpdate.foreach {
         case (userId, profile) => users = users.updated(userId, profile.copy(quota = quota))
       }
-      userToUpdate.isDefined
+      if (userToUpdate.isEmpty) throw CosmosProfileException.unknownUser(id)
     }
+  }
 
   override def getUserGroup(id: ProfileId)(implicit c: Conn): Group =
     users.collectFirst {
       case (_, profile) if profile.id == id => profile.group
     }.getOrElse(NoGroup)
 
-  override def setUserGroup(id: ProfileId, maybeGroup: Option[String])(implicit c: Conn): Boolean =
+  override def setUserGroup(id: ProfileId, maybeGroup: Option[String])(implicit c: Conn) {
     users.synchronized {
       val newGroup = maybeGroup match {
         case Some(name) => getGroups.find(_.name == name).getOrElse(NoGroup)
@@ -95,25 +96,25 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
             groupsWithUsers = groupsWithUsers.updated(oldGroup, groupsWithUsers(oldGroup) - userId)
           }
       }
-      userToUpdate.isDefined
+      if (userToUpdate.isEmpty) throw CosmosProfileException.unknownUser(id)
     }
+  }
 
-  override def enableUserCapability(id: ProfileId, capability: Capability.Value)
-                                   (implicit c: Conn) =
-    userIdOf(id).foreach(userId =>
-      capabilities = capabilities + (userId -> (getUserCapabilities(id) + capability))
-    )
+  override def enableUserCapability(id: ProfileId, capability: Capability)(implicit c: Conn) {
+    updateProfile(id) { profile =>
+      profile.copy(capabilities = profile.capabilities + capability)
+    }
+  }
 
-  override def disableUserCapability(id: ProfileId, capability: Capability.Value)
-                                    (implicit c: Conn) =
-    userIdOf(id).foreach(userId =>
-      capabilities = capabilities + (userId -> (getUserCapabilities(id) - capability))
-    )
+  override def disableUserCapability(id: ProfileId, capability: Capability)(implicit c: Conn) {
+    updateProfile(id) { profile =>
+      profile.copy(capabilities = profile.capabilities - capability)
+    }
+  }
 
   override def getUserCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities = (for {
-    userId <- userIdOf(id)
-    cap <- capabilities.get(userId)
-  } yield cap).getOrElse(UntrustedUserCapabilities)
+    profile <- users.values.find(_.id == id)
+  } yield profile.capabilities).getOrElse(UntrustedUserCapabilities)
 
   override def handleExists(handle: String)(implicit c: Conn): Boolean =
     users.values.exists(_.handle == handle)
@@ -139,10 +140,8 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
 
   override def setHandle(id: ProfileId, handle: String)(implicit c: Conn) {
     updateProfile(id) { profile =>
-      require(
-        profile.handle == handle || users.values.find(_.handle == handle).isEmpty,
-        "duplicated handle"
-      )
+      if (profile.handle != handle && users.values.exists(_.handle == handle))
+        throw CosmosProfileException.duplicatedHandle(handle)
       profile.copy(handle = handle)
     }
   }
@@ -168,6 +167,9 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
   override def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile] =
     groupsWithUsers(group).map(users).toSet
 
+  override def lookupByHandle(handle: String)(implicit c: Conn): Option[CosmosProfile] =
+    users.values.find(_.handle == handle)
+
   override def getGroups(implicit c: Conn): Set[Group] = groupsWithUsers.keys.toSet
 
   override def registerGroup(group: Group)(implicit c: Conn) {
@@ -181,12 +183,10 @@ class MockCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
       }
       maybeId match {
         case Some(userId) => users = users.updated(userId, f(users(userId)))
-        case None => throw new IllegalArgumentException(s"No user with id=$id")
+        case None => throw CosmosProfileException.unknownUser(id)
       }
     }
   }
-
-  private def userIdOf(id: ProfileId): Option[UserId] = users.find(_._2.id == id).map(_._1)
 }
 
 object MockCosmosProfileDao {

@@ -13,7 +13,12 @@ package es.tid.cosmos.api.profile
 
 object Capability extends Enumeration {
   type Capability = Value
+
+  /** Enable the user to execute {{{sudo}}} on Cosmos clusters. */
   val IsSudoer = Value("is_sudoer")
+
+  /** Enable the user for administrative tasks on the platform.  */
+  val IsOperator = Value("is_operator")
 }
 
 /** Represents a the capabilities of an user.

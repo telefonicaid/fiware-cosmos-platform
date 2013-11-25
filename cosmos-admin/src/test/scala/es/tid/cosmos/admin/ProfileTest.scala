@@ -13,29 +13,46 @@ package es.tid.cosmos.admin
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.api.controllers.CosmosProfileTestHelpers.registerUser
 import es.tid.cosmos.api.profile._
 
-class ProfileTest extends FlatSpec with MustMatchers with MockitoSugar {
+class ProfileTest extends FlatSpec with MustMatchers {
 
   trait WithMockCosmosProfileDao {
-    val dao = mock[MockCosmosProfileDao]
-    val registration = Registration("jsmith", "pk00001", "jsmith@example.com")
-    dao.withConnection { implicit c =>
-      dao.registerUser(UserId("db-0003"), registration)
-    }
+    val dao = new MockCosmosProfileDao()
+    val handle = "jsmith"
+    val cosmosId = registerUser(dao, handle).id
+    val instance = new Profile(dao)
+
+    def userProfile = dao.withTransaction { implicit c =>
+      dao.lookupByHandle(handle)
+    }.get
   }
 
   "A profile" must "unset quota" in new WithMockCosmosProfileDao {
-    dao.withConnection { implicit c =>
-      new Profile(dao).unsetMachineQuota(0) must be (true)
+    dao.withTransaction { implicit c =>
+      dao.setMachineQuota(cosmosId, EmptyQuota)
     }
+    instance.unsetMachineQuota(handle) must be (true)
+    userProfile.quota must be (UnlimitedQuota)
   }
 
   it must "set a valid quota" in new WithMockCosmosProfileDao {
-    dao.withConnection { implicit c =>
-      new Profile(dao).setMachineQuota(0, 15) must be (true)
+    instance.setMachineQuota(handle, 15) must be (true)
+    userProfile.quota must be (Quota(15))
+  }
+
+  it must "enable user capabilities" in new WithMockCosmosProfileDao {
+    instance.enableCapability(handle, Capability.IsSudoer) must be (true)
+    userProfile.capabilities.hasCapability(Capability.IsSudoer) must be (true)
+  }
+
+  it must "disable user capabilities" in new WithMockCosmosProfileDao {
+    dao.withTransaction { implicit c =>
+      dao.enableUserCapability(cosmosId, Capability.IsSudoer)
     }
+    instance.disableCapability(handle, Capability.IsSudoer) must be (true)
+    userProfile.capabilities.hasCapability(Capability.IsSudoer) must be (false)
   }
 }

@@ -18,6 +18,7 @@ import org.rogach.scallop.ScallopConf
 import es.tid.cosmos.api.profile.PlayDbCosmosProfileDao
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.admin.cli.AdminArguments
 
 class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
 
@@ -54,9 +55,17 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
     val playDbProfile = new Profile(new PlayDbCosmosProfileDao)
     subcommands.headOption match {
       case Some(args.profile.setMachineQuota) => tryCommand(playDbProfile.setMachineQuota(
-          args.profile.setMachineQuota.cosmosid(), args.profile.setMachineQuota.limit()))
+          args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()))
       case Some(args.profile.unsetMachineQuota) => tryCommand(playDbProfile.unsetMachineQuota(
-          args.profile.setMachineQuota.cosmosid()))
+          args.profile.setMachineQuota.handle()))
+      case Some(args.profile.enableCapability) => tryCommand(playDbProfile.enableCapability(
+        args.profile.enableCapability.handle(),
+        args.profile.enableCapability.capability()
+      ))
+      case Some(args.profile.disableCapability) => tryCommand(playDbProfile.disableCapability(
+        args.profile.disableCapability.handle(),
+        args.profile.disableCapability.capability()
+      ))
       case _ => help(args.profile)
     }
   }

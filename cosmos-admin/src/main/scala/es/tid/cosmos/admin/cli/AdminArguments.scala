@@ -9,11 +9,16 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.admin
+package es.tid.cosmos.admin.cli
 
-import org.rogach.scallop.{Subcommand, ScallopConf}
+import org.rogach.scallop._
+
+import es.tid.cosmos.api.profile.Capability.Capability
 
 class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
+
+  implicit val capabilityConverter = CapabilityConverter
+
   val setup = new Subcommand("setup")
   val persistentStorage = new Subcommand("persistent-storage") {
     val setup = new Subcommand("setup")
@@ -26,11 +31,19 @@ class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
   }
   val profile = new Subcommand("profile") {
     val setMachineQuota = new Subcommand("set-machine-quota") {
-      val cosmosid = opt[Int]("cosmosid", required = true)
+      val handle = opt[String]("handle", required = true)
       val limit = opt[Int]("limit", required = true)
     }
     val unsetMachineQuota = new Subcommand("unset-machine-quota") {
-      val cosmosid = opt[Int]("cosmosid", required = true)
+      val handle = opt[String]("handle", required = true)
+    }
+    val enableCapability = new Subcommand("enable-capability") {
+      val handle = opt[String]("handle", required = true)
+      val capability = opt[Capability]("capability", required = true)(capabilityConverter)
+    }
+    val disableCapability = new Subcommand("disable-capability") {
+      val handle = opt[String]("handle", required = true)
+      val capability = opt[Capability]("capability", required = true)(capabilityConverter)
     }
   }
 }

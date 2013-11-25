@@ -14,6 +14,7 @@ package es.tid.cosmos.api.profile
 import org.scalatest.{FlatSpec, Tag}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.api.controllers.CosmosProfileTestHelpers.registerUser
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
@@ -68,7 +69,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         evaluating {
           dao.setHandle(unknownCosmosId, "jsm")
-        } must produce [IllegalArgumentException]
+        } must produce [CosmosProfileException]
       }
     })
 
@@ -85,7 +86,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         evaluating {
           dao.setEmail(unknownCosmosId, "new@mail.com")
-        } must produce [IllegalArgumentException]
+        } must produce [CosmosProfileException]
       }
     })
 
@@ -102,7 +103,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         evaluating {
           dao.setUserState(unknownCosmosId, Disabled)
-        } must produce [IllegalArgumentException]
+        } must produce [CosmosProfileException]
       }
     })
 
@@ -112,7 +113,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
         val cosmosId = register(dao, UserId("db002"), registration("current")).id
         evaluating {
           dao.setHandle(cosmosId, "existing")
-        } must produce [IllegalArgumentException]
+        } must produce [CosmosProfileException]
       }
     })
 
@@ -132,7 +133,7 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
       dao.withTransaction { implicit c =>
         evaluating {
           dao.setPublicKeys(unknownCosmosId, Seq(NamedKey("default", "ssh-rsa AAAAA jsmith@host")))
-        } must produce [IllegalArgumentException]
+        } must produce [CosmosProfileException]
       }
     })
 
@@ -235,6 +236,14 @@ trait CosmosProfileDaoBehavior { this: FlatSpec with MustMatchers =>
         val profileByApiCredentials =
           dao.lookupByApiCredentials(profileByUserId.apiCredentials).get
         profileByUserId must be (profileByApiCredentials)
+      }
+    })
+    
+    taggedTest(it must "lookup existing profiles by handle", withDao { dao =>
+      dao.withTransaction { implicit c =>
+        val profile = registerUser(dao, "handle")
+        dao.lookupByHandle("handle") must be (Some(profile))
+        dao.lookupByHandle("unknown") must not be 'defined
       }
     })
 

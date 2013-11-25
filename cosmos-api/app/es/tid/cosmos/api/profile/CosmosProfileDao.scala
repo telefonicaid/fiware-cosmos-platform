@@ -25,13 +25,6 @@ trait CosmosProfileDao {
   /** Specifies the type of connection to use to the data. */
   type Conn
 
-  /** Identifier of the Cosmos profile.
-    * 
-    * Not to confuse with the user id of the authentication provider whose lifecycle is different
-    * from the Cosmos profile.
-    */
-  type ProfileId = Long
-
   val defaultGroup: Group
   val defaultQuota: Quota
   val defaultUserCapabilities: UserCapabilities
@@ -78,15 +71,16 @@ trait CosmosProfileDao {
     * @param id     The unique Cosmos ID of the given user.
     * @param quota  The quota to set.
     * @param c      The connection to use.
-    * @return       Whether the operation succeeded or not.
+    * @throws CosmosProfileException  When no user has such id
     */
-  def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn): Boolean
+  def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn): Unit
 
   /** Retrieves the group for a given user.
     *
     * @param id   The unique Cosmos ID of the given user.
     * @param c    The connection to use.
     * @return     The group the user belongs to.
+    * @throws CosmosProfileException  When no user has such id
     */
   def getUserGroup(id: ProfileId)(implicit c: Conn): Group
 
@@ -95,9 +89,9 @@ trait CosmosProfileDao {
     * @param id     The unique Cosmos ID of the given user.
     * @param grp    The new group of the user, or none.
     * @param c      The connection to use.
-    * @return       Whether the operation succeeded or not.
+    * @throws CosmosProfileException  When no user has such id
     */
-  def setUserGroup(id: ProfileId, grp: Option[String])(implicit c: Conn): Boolean
+  def setUserGroup(id: ProfileId, grp: Option[String])(implicit c: Conn): Unit
 
   /** Enable some capability to the given user.
     *
@@ -105,6 +99,7 @@ trait CosmosProfileDao {
     *
     * @param id           The unique Cosmos ID of the given user.
     * @param capability   The capability to be enabled.
+    * @throws CosmosProfileException  When no user has such id
     */
   def enableUserCapability(id: ProfileId, capability: Capability.Value)(implicit c: Conn): Unit
 
@@ -130,9 +125,11 @@ trait CosmosProfileDao {
 
   /** Set the handle of a user. Fails if the new handle is in use.
     *
-    * @param id      The id of the user.
-    * @param c       The connection to use.
-    * @param handle  The new handle.
+    * @param id      The id of the user
+    * @param c       The connection to use
+    * @param handle  The new handle
+    * @throws CosmosProfileException
+    *                When no user has such id or handle is already in use
     */
   def setHandle(id: ProfileId, handle: String)(implicit c: Conn): Unit
 
@@ -141,6 +138,7 @@ trait CosmosProfileDao {
     * @param id     The id of the user.
     * @param c      The connection to use.
     * @param email  The new email.
+    * @throws CosmosProfileException  When no user has such id
     */
   def setEmail(id: ProfileId, email: String)(implicit c: Conn): Unit
   
@@ -149,6 +147,7 @@ trait CosmosProfileDao {
     * @param id         Id of the user.
     * @param userState  The new state.
     * @param c          The connection to use.
+    * @throws CosmosProfileException  When no user has such id
     */
   def setUserState(id: ProfileId, userState: UserState)(implicit c: Conn): Unit
 
@@ -174,6 +173,14 @@ trait CosmosProfileDao {
     * @return      the profiles that belong to that group
     */
   def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile]
+
+  /** Obtains the profile of a given user.
+    *
+    * @param handle The handle
+    * @param c      The connection to use
+    * @return       The user with that handle or none
+    */
+  def lookupByHandle(handle: String)(implicit c: Conn): Option[CosmosProfile]
 
   /** Register a user group in the database.
     *
@@ -219,6 +226,7 @@ trait CosmosProfileDao {
     * @param id  The unique Cosmos ID of the given user.
     * @param c   The connection to use.
     * @return    The set of assigned clusters for a given user.
+    * @throws CosmosProfileException  When no user has such id
     */
   def clustersOf(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment]
 
@@ -226,6 +234,7 @@ trait CosmosProfileDao {
     *
     * @param id          The id of the user.
     * @param publicKeys  New public keys.
+    * @throws CosmosProfileException  When no user has such id
     */
   def setPublicKeys(id: ProfileId, publicKeys: Seq[NamedKey])(implicit c: Conn): Unit
 }

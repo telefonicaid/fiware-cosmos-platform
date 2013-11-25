@@ -9,11 +9,6 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
-import requests
-
-from cosmos.common.routes import Routes
-
-
 class Machine(object):
     """The metadata of a cluster machine"""
 

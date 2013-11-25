@@ -1,0 +1,22 @@
+@(underMaintenance: Boolean, tabs: Seq[views.NavTab])(implicit request: RequestHeader)
+<!--
+ Telefónica Digital - Product Development and Innovation
+
+ THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+ Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ All rights reserved.
+ -->
+@main("Cosmos administration") {
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/profile.css")">
+} {
+    @navigation("admin", tabs)
+
+    <h1 class="page-title">Cosmos administration</h1>
+
+    <h2>Maintenance mode</h2>
+
+    <p>Maintenance status: <strong>@underMaintenance</strong></p>
+}

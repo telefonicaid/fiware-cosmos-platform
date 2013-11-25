@@ -11,11 +11,33 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import scalaz._
+
 import play.api.mvc.{Action, Controller}
 
-class AdminPage extends Controller {
+import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
+import es.tid.cosmos.api.controllers.common._
+import es.tid.cosmos.api.profile.{CosmosProfile, Capability, CosmosProfileDao}
+import es.tid.cosmos.api.profile.Capability.Capability
+
+class AdminPage(
+    override val dao: CosmosProfileDao,
+    override val maintenanceStatus: MaintenanceStatus
+  ) extends Controller with PagesAuthController with MaintenanceAwareController {
+
+  import Scalaz._
 
   def show = Action { implicit request =>
-    Ok("happy hack")
+    for {
+      _ <- requirePageNotUnderMaintenance()
+      (userProfile, cosmosProfile) <- requireUserProfiles(request)
+      _ <- requireCapability(cosmosProfile, Capability.IsOperator)
+    } yield Ok(views.html.admin(
+      underMaintenance = maintenanceStatus.underMaintenance,
+      tabs = Navigation.operatorNavigation))
   }
+
+  private def requireCapability(profile: CosmosProfile, capability: Capability): ActionVal[Unit] =
+    if (profile.capabilities.hasCapability(capability)) ().success
+    else Unauthorized(views.html.unauthorized()).fail
 }

@@ -41,7 +41,7 @@ abstract class Application {
     val multiAuthProvider = this.multiAuthProvider
     controllerMap(
       new Pages(multiAuthProvider, sm, dao, status),
-      new AdminPage(),
+      new AdminPage(dao, status),
       new CosmosResource(),
       new ProfileResource(dao),
       new ClusterResource(sm, dao, status),

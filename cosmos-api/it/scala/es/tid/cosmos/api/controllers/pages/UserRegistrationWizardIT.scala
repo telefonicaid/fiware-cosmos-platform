@@ -18,9 +18,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.api.controllers.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
@@ -48,7 +48,7 @@ class UserRegistrationWizardIT extends FlatSpec with MustMatchers with MockitoSu
 
   it must "reconfigure persistent HDFS cluster with current and deleted users" in
     new WithUserRegistrationWizard {
-      val deletedUser = registerUser(dao, "deleted")
+      val deletedUser = registerUser("deleted")(dao)
       dao.withTransaction { implicit c =>
         dao.setUserState(deletedUser.id, UserState.Deleted)
       }

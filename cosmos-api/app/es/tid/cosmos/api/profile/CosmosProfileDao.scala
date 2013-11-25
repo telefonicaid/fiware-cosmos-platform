@@ -25,10 +25,6 @@ trait CosmosProfileDao {
   /** Specifies the type of connection to use to the data. */
   type Conn
 
-  val defaultGroup: Group
-  val defaultQuota: Quota
-  val defaultUserCapabilities: UserCapabilities
-
   def withConnection[A](block: Conn => A): A
   def withTransaction[A](block: Conn => A): A
 
@@ -75,24 +71,6 @@ trait CosmosProfileDao {
     */
   def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn): Unit
 
-  /** Retrieves the group for a given user.
-    *
-    * @param id   The unique Cosmos ID of the given user.
-    * @param c    The connection to use.
-    * @return     The group the user belongs to.
-    * @throws CosmosProfileException  When no user has such id
-    */
-  def getUserGroup(id: ProfileId)(implicit c: Conn): Group
-
-  /** Sets the group for a given user.
-    *
-    * @param id     The unique Cosmos ID of the given user.
-    * @param grp    The new group of the user, or none.
-    * @param c      The connection to use.
-    * @throws CosmosProfileException  When no user has such id
-    */
-  def setUserGroup(id: ProfileId, grp: Option[String])(implicit c: Conn): Unit
-
   /** Enable some capability to the given user.
     *
     * If the capability was already enabled, nothing is done.
@@ -111,9 +89,6 @@ trait CosmosProfileDao {
     * @param capability   The capability to be disabled.
     */
   def disableUserCapability(id: ProfileId, capability: Capability.Value)(implicit c: Conn): Unit
-
-  /** Retrieve the capabilities for given user. **/
-  def getUserCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities
 
   /** Determines whether a handle is already taken.
     *
@@ -188,11 +163,35 @@ trait CosmosProfileDao {
     */
   def registerGroup(group: Group)(implicit c: Conn): Unit
 
+  /** Delete a group by its name.
+    *
+    * @param name the group's name
+    * @param c    the connection to use
+    */
+  def deleteGroup(name: String)(implicit c: Conn): Unit
+
   /** Get the user groups.
     *
     * @return the user groups including the NoGroup for profiles that do not belong to any group
     */
   def getGroups(implicit c: Conn): Set[Group]
+
+  /** Set the group the user belongs to.
+    *
+    * @param id        the profile id of the user
+    * @param groupName the optional group name. If `None` then the user will not belong to any group
+    *                  indicated by settting it to [[es.tid.cosmos.api.profile.NoGroup]]
+    * @param c         the connection to use
+    */
+  def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Conn): Unit
+
+  /** Set the minimum quota for the given group.
+    *
+    * @param name     the group's name
+    * @param minQuota the minimum quota
+    * @param c        the connection to use
+    */
+  def setGroupQuota(name: String, minQuota: LimitedQuota)(implicit c: Conn): Unit
 
   /** Assigns a cluster to a given user at the present moment.
     * @param clusterId  The cluster ID to assign.

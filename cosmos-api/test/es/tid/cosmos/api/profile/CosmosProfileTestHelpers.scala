@@ -9,9 +9,8 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers
+package es.tid.cosmos.api.profile
 
-import es.tid.cosmos.api.profile._
 
 /** Utilities for setting up users on integration tests. */
 object CosmosProfileTestHelpers {
@@ -42,17 +41,28 @@ object CosmosProfileTestHelpers {
   /** Registers a new user by generating dummy data based on the handle.
     * See registrationFor and userIdFor methods for more details.
     *
-    * @param dao     Where to create the user in
     * @param handle  Handle to base the dummy info generation on
+    * @param dao     Where to create the user in
     * @return        The newly created profile
     *
-    * @see [[es.tid.cosmos.api.controllers.CosmosProfileTestHelpers$#registrationFor]]
-    * @see [[es.tid.cosmos.api.controllers.CosmosProfileTestHelpers$#userIdFor]]
+    * @see [[es.tid.cosmos.api.profile.CosmosProfileTestHelpers$#registrationFor]]
+    * @see [[es.tid.cosmos.api.profile.CosmosProfileTestHelpers$#userIdFor]]
     */
-  def registerUser(dao: CosmosProfileDao, handle: String): CosmosProfile =
+  def registerUser(handle: String)(implicit dao: CosmosProfileDao): CosmosProfile =
     dao.withTransaction { implicit c =>
       dao.registerUser(
         userId = userIdFor(handle),
         reg = registrationFor(handle))
+    }
+
+  /** Lookup a user profile by their handle.
+    *
+    * @param handle the user's handle
+    * @param dao the dao to use
+    * @return the profile iff found
+    */
+  def lookup(handle: String)(implicit dao: CosmosProfileDao): Option[CosmosProfile] =
+    dao.withTransaction{ implicit c =>
+      dao.lookupByUserId(userIdFor(handle))
     }
 }

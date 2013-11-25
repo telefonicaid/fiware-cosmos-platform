@@ -14,17 +14,16 @@ package es.tid.cosmos.admin
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.controllers.CosmosProfileTestHelpers.registerUser
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 
 class ProfileTest extends FlatSpec with MustMatchers {
 
   trait WithMockCosmosProfileDao {
     val dao = new MockCosmosProfileDao()
     val handle = "jsmith"
-    val cosmosId = registerUser(dao, handle).id
+    val cosmosId = registerUser(handle)(dao).id
     val instance = new Profile(dao)
-
     def userProfile = dao.withTransaction { implicit c =>
       dao.lookupByHandle(handle)
     }.get
@@ -34,7 +33,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
     dao.withTransaction { implicit c =>
       dao.setMachineQuota(cosmosId, EmptyQuota)
     }
-    instance.unsetMachineQuota(handle) must be (true)
+    instance.removeMachineQuota(handle) must be (true)
     userProfile.quota must be (UnlimitedQuota)
   }
 
@@ -54,5 +53,14 @@ class ProfileTest extends FlatSpec with MustMatchers {
     }
     instance.disableCapability(handle, Capability.IsSudoer) must be (true)
     userProfile.capabilities.hasCapability(Capability.IsSudoer) must be (false)
+  }
+
+  it must "set to an existing group" in new WithMockCosmosProfileDao {
+    val group = GuaranteedGroup("mygroup", Quota(3))
+    dao.withTransaction{ implicit c =>
+      dao.registerGroup(group)
+      new Profile(dao).setGroup(handle, Some(group.name)) must be (true)
+      userProfile.group must be (group)
+    }
   }
 }

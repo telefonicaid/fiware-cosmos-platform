@@ -15,7 +15,7 @@
 
 CREATE TABLE user_group (
   name VARCHAR(45) NOT NULL,
-  min_quota INT NULL,
+  min_quota INT NOT NULL,
   PRIMARY KEY (name)
 );
 
@@ -24,7 +24,8 @@ ALTER TABLE user
   ADD INDEX group_name_INDEX (group_name ASC),
   ADD CONSTRAINT fk_user_user_group
     FOREIGN KEY (group_name)
-    REFERENCES user_group (name);
+    REFERENCES user_group (name)
+    ON DELETE SET NULL;
 
 # --- !Downs
 

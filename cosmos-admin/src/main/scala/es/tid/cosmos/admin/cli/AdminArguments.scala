@@ -34,7 +34,7 @@ class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
       val handle = opt[String]("handle", required = true)
       val limit = opt[Int]("limit", required = true)
     }
-    val unsetMachineQuota = new Subcommand("unset-machine-quota") {
+    val removeMachineQuota = new Subcommand("remove-machine-quota") {
       val handle = opt[String]("handle", required = true)
     }
     val enableCapability = new Subcommand("enable-capability") {
@@ -44,6 +44,28 @@ class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
     val disableCapability = new Subcommand("disable-capability") {
       val handle = opt[String]("handle", required = true)
       val capability = opt[Capability]("capability", required = true)(capabilityConverter)
+    }
+    val setGroup = new Subcommand("set-group") {
+      val handle = opt[String]("handle", required = true)
+      val group = opt[String]("group", required = true)
+    }
+    val removeGroup = new Subcommand("remove-group") {
+      val handle = opt[String]("handle", required = true)
+    }
+  }
+
+  val group = new Subcommand("group") {
+    val create = new Subcommand("create") {
+      val name = opt[String]("name", required = true)
+      val minQuota = opt[Int]("min-quota", default = Some(0))
+    }
+    val list = new Subcommand("list")
+    val delete = new Subcommand("delete") {
+      val name = opt[String]("name", required = true)
+    }
+    val setMinQuota = new Subcommand("set-min-quota") {
+      val name =  opt[String]("name", required = true)
+      val quota = opt[Int]("quota", required = true)
     }
   }
 }

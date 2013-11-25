@@ -29,7 +29,7 @@ trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   lazy val cosmosProfileDao: CosmosProfileDao = new PlayDbCosmosProfileDao
 }
 
-class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties {
+class PlayDbCosmosProfileDao extends CosmosProfileDao {
   import PlayDbCosmosProfileDao._
 
   type Conn = Connection
@@ -40,7 +40,18 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
   override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
     val apiCredentials = ApiCredentials.random()
     val defaultKey = NamedKey("default", reg.publicKey)
-    val cosmosId = SQL(
+    val unpersistedProfile = CosmosProfile(
+      id = -1,
+      state = Enabled,
+      handle = reg.handle,
+      email = reg.email,
+      apiCredentials = apiCredentials,
+      keys = Seq(defaultKey)
+    )
+    require(
+      unpersistedProfile.capabilities.capabilities.isEmpty,
+      "No support for user registration with capabilities already added.")
+    val profileId = SQL(
       """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret, group_name,
         |                 machine_quota)
         | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret}, {group_name},
@@ -53,25 +64,16 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
         "email" -> reg.email,
         "api_key" -> apiCredentials.apiKey,
         "api_secret" -> apiCredentials.apiSecret,
-        "group_name" -> dbGroupName(defaultGroup),
-        "machine_quota" -> defaultQuota.toInt
+        "group_name" -> dbGroupName(unpersistedProfile.group),
+        "machine_quota" -> unpersistedProfile.quota.toInt
       ).executeInsert(scalar[ProfileId].single)
-    addPublicKey(cosmosId, defaultKey)
-    CosmosProfile(
-      id = cosmosId,
-      state = Enabled,
-      handle = reg.handle,
-      email = reg.email,
-      group = defaultGroup,
-      quota = defaultQuota,
-      capabilities = UntrustedUserCapabilities,
-      apiCredentials = apiCredentials,
-      keys = Seq(defaultKey)
-    )
+    addPublicKey(profileId, defaultKey)
+    val persistedProfile = unpersistedProfile.copy(id = profileId)
+    persistedProfile
   }
 
   override def getAllUsers()(implicit c: Conn): Seq[CosmosProfile] =
-    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+    lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                   |ORDER BY cosmos_id""".stripMargin))
 
@@ -80,9 +82,9 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
       .on("realm" -> userId.realm, "id" -> userId.id)
       .as(scalar[ProfileId].singleOpt)
 
-  override def getMachineQuota(cosmosId: ProfileId)(implicit c: Conn): Quota =
+  override def getMachineQuota(id: ProfileId)(implicit c: Conn): Quota =
     SQL("SELECT machine_quota FROM user WHERE cosmos_id = {cosmos_id}")
-      .on("cosmos_id" -> cosmosId)
+      .on("cosmos_id" -> id)
       .apply()
       .collectFirst {
         case Row(machineQuota: Option[_]) => Quota(machineQuota.asInstanceOf[Option[Int]])
@@ -102,22 +104,6 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
     if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
   }
 
-  override def getUserGroup(cosmosId: ProfileId)(implicit c: Conn): Group =
-    SQL(s"""SELECT g.name, g.min_quota
-            |FROM user u LEFT OUTER JOIN user_group g ON (u.group_name = g.name)
-            |WHERE u.cosmos_id = {cosmos_id}""".stripMargin)
-      .on("cosmos_id" -> cosmosId)
-      .apply()
-      .collectFirst(TO_GROUP)
-      .getOrElse(NoGroup)
-
-  override def setUserGroup(id: ProfileId, maybeGroup: Option[String])(implicit c: Conn) {
-    val updatedRows = SQL("UPDATE user SET group_name = {group_name} WHERE cosmos_id={cosmos_id}")
-      .on("cosmos_id" -> id, "group_name" -> dbGroupName(getGroup(maybeGroup)))
-      .executeUpdate()
-    if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
-  }
-
   override def enableUserCapability(id: ProfileId, capability: Capability.Value)(implicit c: Conn) {
     if (!getUserCapabilities(id).hasCapability(capability)) {
       SQL("INSERT INTO user_capability(name, cosmos_id) VALUES ({name}, {cosmos_id})")
@@ -134,14 +120,6 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
     }
   }
 
-  override def getUserCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities =
-    SQL("SELECT name FROM user_capability WHERE cosmos_id = {cosmos_id}")
-      .on("cosmos_id" -> id)
-      .apply().collect { case Row(name: String) => name }
-      .foldLeft(
-      UntrustedUserCapabilities: UserCapabilities
-    )((cap, name) => cap + Capability.withName(name))
-
   override def handleExists(handle: String)(implicit c: Conn): Boolean = {
     val usersWithThatHandle = SQL("SELECT count(*) from user WHERE handle = {handle}")
       .on("handle" -> handle)
@@ -150,49 +128,67 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
   }
 
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+    lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                   |WHERE u.auth_realm = {realm} AND u.auth_id = {id}""".stripMargin)
       .on("realm" -> userId.realm, "id" -> userId.id)).headOption
 
   override def lookupByApiCredentials(creds: ApiCredentials)
                                      (implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+    lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                   |WHERE u.api_key = {key} AND u.api_secret = {secret}""".stripMargin)
       .on("key" -> creds.apiKey, "secret" -> creds.apiSecret)).headOption
 
   override def lookupByGroup(group: Group)(implicit c: Conn): Set[CosmosProfile] =
-    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
-                  | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
-                  | WHERE u.group_name ${equalsOp(dbGroupName(group))} {groupName}"""
+    lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
+                       | FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+                       | WHERE u.group_name ${equalsOp(dbGroupName(group))} {groupName}"""
       .stripMargin).on("groupName" -> dbGroupName(group))).toSet
 
   override def lookupByHandle(handle: String)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL(s"""SELECT $ALL_USER_FIELDS, p.name, p.signature
+    lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
                   |WHERE u.handle = {handle}""".stripMargin)
       .on("handle" -> handle)).headOption
 
   override def getGroups(implicit c: Conn): Set[Group] = {
-    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(TO_GROUP)
+    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(ToGroup)
     Set[Group](NoGroup) ++ registeredGroups
   }
 
   private def getGroup(maybeName: Option[String])(implicit c: Conn): Group = {
     val maybeGroup = maybeName.flatMap(name =>
       SQL("""SELECT name, min_quota FROM user_group WHERE name = {name}""".stripMargin)
-        .on("name" -> name).apply().collectFirst(TO_GROUP))
+        .on("name" -> name).apply().collectFirst(ToGroup))
 
     maybeGroup.getOrElse(NoGroup)
   }
 
-  override def registerGroup(group: Group)(implicit c: Conn) {
+  override def registerGroup(group: Group)(implicit c: Conn) = {
     SQL("""INSERT INTO user_group(name, min_quota)
           | VALUES ({name}, {min_quota})""".stripMargin).on(
       "name" -> group.name,
       "min_quota" -> group.minimumQuota.toInt
     ).execute()
+  }
+
+  override def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Conn) {
+    updateProfileField("group_name", id, groupName)
+  }
+
+  override def setGroupQuota(name: String, minQuota: LimitedQuota)(implicit c: Conn) {
+    SQL("UPDATE user_group SET min_quota = {min_quota} where name = {name}")
+      .on("min_quota" -> minQuota.toInt, "name" -> name).executeUpdate()
+  }
+
+  /** ''Note:'' Referencial integrity is assumed to be delegated to the DB so as to set the group's
+    * users to have NoGroup/NULL
+    *
+    * @see CosmosProfileDao
+    */
+  override def deleteGroup(name: String)(implicit c: Conn) {
+    SQL("DELETE from user_group where name = {name}").on("name" -> name).execute()
   }
 
   override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn) {
@@ -239,7 +235,9 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
           group = getGroup(groupName.asInstanceOf[Option[String]]),
           quota = Quota(machineQuota.asInstanceOf[Option[Int]]),
           capabilities = getUserCapabilities(id),
-          apiCredentials = ApiCredentials(apiKey, apiSecret), namedKeys)
+          apiCredentials = ApiCredentials(apiKey, apiSecret),
+          keys = namedKeys
+        )
       }
     }
   }
@@ -291,15 +289,23 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao with DefaultUserProperties
       "signature" -> publicKey.signature
     )
     .executeInsert()
+
+  private def getUserCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities =
+    SQL("SELECT name FROM user_capability WHERE cosmos_id = {cosmos_id}")
+      .on("cosmos_id" -> id)
+      .apply().collect { case Row(name: String) => name }
+      .foldLeft(
+      UntrustedUserCapabilities: UserCapabilities
+    )((cap, name) => cap + Capability.withName(name))
 }
 
 object PlayDbCosmosProfileDao {
-  private val ALL_USER_FIELDS = """u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
+  private val AllUserFields = """u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
                                  | u.api_key, u.api_secret, u.group_name""".stripMargin
 
-  private val TO_GROUP: PartialFunction[Row, Group] = {
-    case Row(name: String, minimumQuota: Option[_]) =>
-      GuaranteedGroup(name, Quota(minimumQuota.asInstanceOf[Option[Int]]))
+  private val ToGroup: PartialFunction[Row, Group] = {
+    case Row(name: String, minimumQuota: Int) =>
+      GuaranteedGroup(name, Quota(minimumQuota))
   }
 
   /** Utility method for changing the operator in SQL statements when using optional values

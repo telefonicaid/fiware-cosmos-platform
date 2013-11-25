@@ -14,7 +14,7 @@ package es.tid.cosmos.api.controllers.admin
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
-import scalaz.{Success, Failure}
+import scalaz._
 
 import com.wordnik.swagger.annotations._
 import play.Logger
@@ -38,6 +38,8 @@ class UserResource(
     dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus
   ) extends JsonController with MaintenanceAwareController {
+
+  import Scalaz._
 
   private type Conn = dao.Conn
 
@@ -63,25 +65,23 @@ class UserResource(
       dataType = "es.tid.cosmos.api.controllers.admin.RegisterUserParams")
   ))
   def register = Action(parse.tolerantJson) { request =>
-    unlessResourceUnderMaintenance {
-      whenValid[RegisterUserParams](request.body) { params =>
-        withAdminCredsFor(params.authRealm, request.headers) {
-          dao.withTransaction { implicit c =>
-            (for {
-              userId <- uniqueUserId(params)
-              handle <- selectHandle(params.handle)
-              registration = Registration(handle, params.sshPublicKey, params.email)
-            } yield registrationWizard.registerUser(userId, registration)).fold(
-              fail = message => Conflict(Json.toJson(message)),
-              succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
-                handle = cosmosProfile.handle,
-                apiKey = cosmosProfile.apiCredentials.apiKey,
-                apiSecret = cosmosProfile.apiCredentials.apiSecret
-              )))
-            )
-          }
-        }
-      }
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      params <- validJsonBody[RegisterUserParams](request)
+      _ <- requireAdminCreds(params.authRealm, request.headers)
+    } yield dao.withTransaction { implicit c =>
+      (for {
+        userId <- uniqueUserId(params)
+        handle <- selectHandle(params.handle)
+        registration = Registration(handle, params.sshPublicKey, params.email)
+      } yield registrationWizard.registerUser(userId, registration)).fold(
+        fail = message => Conflict(Json.toJson(message)),
+        succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
+          handle = cosmosProfile.handle,
+          apiKey = cosmosProfile.apiCredentials.apiKey,
+          apiSecret = cosmosProfile.apiCredentials.apiSecret
+        )))
+      )
     }
   }
 
@@ -98,28 +98,27 @@ class UserResource(
     new ApiError(code = 503, reason = "Service is under maintenance")
   ))
   def unregister(realm: String, id: String) = Action { request =>
-    unlessResourceUnderMaintenance {
-      withAdminCredsFor(realm, request.headers) {
-        dao.withTransaction { implicit c =>
-          val userId = UserId(realm, id)
-          dao.getProfileId(userId).map { cosmosId =>
-            unregistrationWizard.unregisterUser(cosmosId).fold(
-              fail = message => InternalServerError(Json.toJson(message)),
-              succ = unregistration_> => {
-                unregistration_>.onSuccess {
-                  case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
-                }
-                unregistration_>.onFailure {
-                  case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
-                }
-                val message = s"User $userId unregistration started"
-                Logger.info(message)
-                Ok(Json.toJson(Message(message)))
-              }
-            )
-          }.getOrElse(NotFound(s"User $userId does not exist"))
-        }
-      }
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      _ <- requireAdminCreds(realm, request.headers)
+    } yield dao.withTransaction { implicit c =>
+      val userId = UserId(realm, id)
+      dao.getProfileId(userId).map { cosmosId =>
+        unregistrationWizard.unregisterUser(cosmosId).fold(
+          fail = message => InternalServerError(Json.toJson(message)),
+          succ = unregistration_> => {
+            unregistration_>.onSuccess {
+              case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
+            }
+            unregistration_>.onFailure {
+              case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
+            }
+            val message = s"User $userId unregistration started"
+            Logger.info(message)
+            Ok(Json.toJson(Message(message)))
+          }
+        )
+      }.getOrElse(NotFound(s"User $userId does not exist"))
     }
   }
 
@@ -136,15 +135,15 @@ class UserResource(
     else Success(userId)
   }
 
-  private def withAdminCredsFor(targetRealm: String, headers: Headers)(action: => SimpleResult) =
+  private def requireAdminCreds(targetRealm: String, headers: Headers): ActionVal[Unit] =
     headers.get("Authorization") match {
       case Some(BasicAuth(`targetRealm`, password))
-        if canRegisterUsers(targetRealm, password) => action
-      case Some(_) => Forbidden(Json.toJson(Message("Cannot register users")))
-      case None => Unauthorized(Json.toJson(Message("Missing authorization header")))
+        if canAdministrateUsers(targetRealm, password) => ().success
+      case Some(_) => Forbidden(Json.toJson(Message("Cannot register users"))).failure
+      case None => Unauthorized(Json.toJson(Message("Missing authorization header"))).failure
     }
 
-  private def canRegisterUsers(providerName: String, password: String) = (for {
+  private def canAdministrateUsers(providerName: String, password: String) = (for {
     provider <- multiUserProvider.providers.collectFirst {
       case (`providerName`, adminProvider : AdminEnabledAuthProvider) => adminProvider
     }

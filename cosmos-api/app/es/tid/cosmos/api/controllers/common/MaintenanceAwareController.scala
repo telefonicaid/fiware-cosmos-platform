@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.controllers.common
 
-import scala.concurrent.Future
+import scalaz._
 
 import play.api.libs.json.Json
 import play.api.mvc.{Controller, SimpleResult}
@@ -21,19 +21,20 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 trait MaintenanceAwareController extends Controller {
   val maintenanceStatus: MaintenanceStatus
 
+  import Scalaz._
+
   private val unavailableResource = ServiceUnavailable(
     Json.toJson(Message("Service temporarily in maintenance mode")))
   private val unavailablePage = ServiceUnavailable(views.html.maintenance())
 
-  protected def unlessResourceUnderMaintenance(block: => SimpleResult): SimpleResult =
-    if (maintenanceStatus.underMaintenance) unavailableResource else block
+  /** Page validation requiring that the page is not under maintenance */
+  protected def requirePageNotUnderMaintenance(): ActionVal[Unit] =
+    requireNotUnderMaintenance(unavailablePage)
 
-  protected def unlessResourceUnderMaintenance(block: => Future[SimpleResult]): Future[SimpleResult] =
-    if (maintenanceStatus.underMaintenance) Future.successful(unavailableResource) else block
+  /** Page validation requiring that the resource is not under maintenance */
+  protected def requireResourceNotUnderMaintenance(): ActionVal[Unit] =
+    requireNotUnderMaintenance(unavailableResource)
 
-  protected def unlessPageUnderMaintenance(block: => SimpleResult): SimpleResult =
-    if (maintenanceStatus.underMaintenance) unavailablePage else block
-
-  protected def unlessPageUnderMaintenance(block: => Future[SimpleResult]): Future[SimpleResult] =
-    if (maintenanceStatus.underMaintenance) Future.successful(unavailablePage) else block
+  private def requireNotUnderMaintenance(errorPage: SimpleResult): ActionVal[Unit] =
+    if (maintenanceStatus.underMaintenance) errorPage.fail else ().success
 }

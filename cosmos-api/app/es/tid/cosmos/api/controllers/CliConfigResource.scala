@@ -13,7 +13,7 @@ package es.tid.cosmos.api.controllers
 
 import play.api.mvc.Action
 
-import es.tid.cosmos.api.controllers.common.AbsoluteUrl
+import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
 import es.tid.cosmos.api.controllers.pages.PagesAuthController
 import es.tid.cosmos.api.profile.CosmosProfileDao
@@ -22,7 +22,9 @@ import es.tid.cosmos.api.profile.CosmosProfileDao
 class CliConfigResource(val dao: CosmosProfileDao) extends PagesAuthController {
 
   def generate = Action { implicit request =>
-    whenRegistered(request) { (userProfile, cosmosProfile) =>
+    for {
+      (userProfile, cosmosProfile) <- requireUserProfiles(request)
+    } yield {
       val config = CliConfig(
         apiCredentials = cosmosProfile.apiCredentials,
         apiUrl = AbsoluteUrl(cosmosRoutes.CosmosResource.version())

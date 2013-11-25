@@ -29,9 +29,9 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
 
   class TestController(override val dao: CosmosProfileDao) extends ApiAuthController {
     def index() = Action(parse.anyContent) { request =>
-      withApiAuth(request) { profile =>
-        Ok(s"handle=${profile.handle}")
-      }
+      for {
+        profile <- requireAuthenticatedApiRequest(request)
+      } yield Ok(s"handle=${profile.handle}")
     }
   }
 

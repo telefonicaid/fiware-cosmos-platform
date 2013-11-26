@@ -18,9 +18,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
@@ -34,12 +34,14 @@ class UserRegistrationWizardIT extends FlatSpec with MustMatchers with MockitoSu
   trait WithUserRegistrationWizard {
     val dao = new MockCosmosProfileDao()
     val sm = spy(new MockedServiceManager(transitionDelay = 0))
-    val instance = new UserRegistrationWizard(dao, sm)
+    val instance = new UserRegistrationWizard(sm)
   }
 
   "User registration" must "create a new profile with the input data" in
     new WithUserRegistrationWizard {
-      val profile = instance.registerUser(userId, registration)
+      val profile = dao.withTransaction { implicit c =>
+        instance.registerUser(dao, userId, registration)
+      }
       profile.handle must be (handle)
       profile.email must be (registration.email)
       profile.state must be (UserState.Enabled)
@@ -52,8 +54,10 @@ class UserRegistrationWizardIT extends FlatSpec with MustMatchers with MockitoSu
       dao.withTransaction { implicit c =>
         dao.setUserState(deletedUser.id, UserState.Deleted)
       }
-      
-      instance.registerUser(userId, registration)
+
+      dao.withTransaction { implicit c =>
+        instance.registerUser(dao, userId, registration)
+      }
 
       val usersCaptor = ArgumentCaptor.forClass(classOf[Seq[ClusterUser]])
       verify(sm).setUsers(any[ClusterId], usersCaptor.capture())

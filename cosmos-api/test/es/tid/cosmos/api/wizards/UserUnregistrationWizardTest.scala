@@ -38,7 +38,7 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
   trait WithWizard {
     val sm = spy(new MockedServiceManager(transitionDelay = 0))
     val dao = spy(new MockCosmosProfileDao())
-    val wizard = new UserUnregistrationWizard(sm, dao)
+    val wizard = new UserUnregistrationWizard(sm)
   }
 
   trait WithExistingUser extends WithWizard {
@@ -46,7 +46,9 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
     val cosmosId = cosmosProfile.id
 
     def unregistrationMust(futureMatcher: Matcher[Future[_]]) {
-      wizard.unregisterUser(cosmosId).fold(
+      dao.withTransaction { implicit c =>
+        wizard.unregisterUser(dao, cosmosId)
+      }.fold(
         fail = message => fail(s"Unexpected failure with message $message"),
         succ = unreg_> => unreg_> must (runUnder(timeout) and futureMatcher)
       )
@@ -73,8 +75,9 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
     doThrow(failure).when(dao)
       .setUserState(any[Long], any[UserState])(the(MockCosmosProfileDao.DummyConnection))
     val userId = 0
-    wizard.unregisterUser(userId) must be (Failure(Message(
-      s"Cannot change user cosmosId=$userId status")))
+    dao.withTransaction { implicit c =>
+      wizard.unregisterUser(dao, userId)
+    } must be (Failure(Message(s"Cannot change user cosmosId=$userId status")))
   }
   
   it must "mark user as deleted" in new WithExistingUser {

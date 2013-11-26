@@ -45,7 +45,7 @@ class Pages(
 
   import Scalaz._
 
-  private val registrationWizard = new UserRegistrationWizard(dao, serviceManager)
+  private val registrationWizard = new UserRegistrationWizard(serviceManager)
 
   def index = Action { implicit request =>
     for {
@@ -130,7 +130,9 @@ class Pages(
       validatedForm.fold(
         formWithErrors => registrationPage(userProfile, formWithErrors),
         registration => {
-          registrationWizard.registerUser(userProfile.id, registration)
+          dao.withTransaction { implicit c =>
+            registrationWizard.registerUser(dao, userProfile.id, registration)
+          }
           redirectToIndex
         }
       )

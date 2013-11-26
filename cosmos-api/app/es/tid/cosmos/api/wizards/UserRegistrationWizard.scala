@@ -18,24 +18,23 @@ import es.tid.cosmos.servicemanager.ServiceManager
 /** Sequence of actions to register a new user in Cosmos.
   *
   * @constructor
-  * @param dao             For accessing to the store of Cosmos profiles
   * @param serviceManager  For registering the user credentials
   */
-class UserRegistrationWizard(dao: CosmosProfileDao, serviceManager: ServiceManager) {
+class UserRegistrationWizard(serviceManager: ServiceManager) {
 
-  private val hdfsWizard = new UpdatePersistentHdfsUsersWizard(dao, serviceManager)
+  private val hdfsWizard = new UpdatePersistentHdfsUsersWizard(serviceManager)
 
   /** Registers a new user.
     *
+    * @param dao             For accessing to the store of Cosmos profiles
     * @param userId        User id
     * @param registration  Registration parameters
     * @return              Newly created profile
     */
-  def registerUser(userId: UserId, registration: Registration) = {
-    val newProfile = dao.withTransaction { implicit c =>
-      dao.registerUser(userId, registration)
-    }
-    hdfsWizard.updatePersistentHdfsUsers()
+  def registerUser(dao: CosmosProfileDao, userId: UserId, registration: Registration)
+                  (implicit c: dao.type#Conn): CosmosProfile = {
+    val newProfile = dao.registerUser(userId, registration)(c)
+    hdfsWizard.updatePersistentHdfsUsers(dao)
     newProfile
   }
 }

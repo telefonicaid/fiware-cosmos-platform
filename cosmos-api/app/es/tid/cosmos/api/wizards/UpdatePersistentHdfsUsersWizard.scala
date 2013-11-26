@@ -21,23 +21,21 @@ import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 /** Sequence of actions to update the users configured in the persistent HDFS cluster.
   *
   * @constructor
-  * @param dao             To get the user profiles
   * @param serviceManager  To act on the cluster
   */
-class UpdatePersistentHdfsUsersWizard(dao: CosmosProfileDao, serviceManager: ServiceManager) {
+class UpdatePersistentHdfsUsersWizard(serviceManager: ServiceManager) {
 
   case class PersistentHdfsUpdateException(cause: Throwable)
     extends RuntimeException("Cannot update persistent HDFS users", cause)
 
-  def updatePersistentHdfsUsers(): Future[Unit] = {
-    val clusterUsers = dao.withTransaction { implicit c =>
-      dao.getAllUsers().map(profile =>
-        ClusterUser(
-          userName = profile.handle,
-          publicKey = profile.keys.head.signature,
-          sshEnabled = false,
-          hdfsEnabled = profile.state == UserState.Enabled
-        ))
+  def updatePersistentHdfsUsers(dao: CosmosProfileDao)(implicit c: dao.type#Conn): Future[Unit] = {
+    val clusterUsers = dao.getAllUsers().map { profile =>
+      ClusterUser(
+        userName = profile.handle,
+        publicKey = profile.keys.head.signature,
+        sshEnabled = false,
+        hdfsEnabled = profile.state == UserState.Enabled
+      )
     }
     serviceManager.setUsers(serviceManager.persistentHdfsId, clusterUsers).recoverWith {
       case NonFatal(ex) => Future.failed(PersistentHdfsUpdateException(ex))

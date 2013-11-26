@@ -1,5 +1,6 @@
 @(oauthProfile: es.tid.cosmos.api.auth.oauth2.OAuthUserProfile,
-  cosmosProfile: es.tid.cosmos.api.profile.CosmosProfile)(implicit request: RequestHeader)
+  cosmosProfile: es.tid.cosmos.api.profile.CosmosProfile,
+  tabs: Seq[views.NavTab])(implicit request: RequestHeader)
 @import es.tid.cosmos.api.controllers.pages
 @import es.tid.cosmos.api.profile.NamedKey
 <!--
@@ -16,7 +17,7 @@
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/profile.css")">
     <script type="text/javascript" src="@routes.Assets.at("js/profile.js")"></script>
 } {
-    @navigation("profile")
+    @navigation("profile", tabs)
 
     <h1 class="page-title">Profile for @oauthProfile.contact</h1>
 

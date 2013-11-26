@@ -11,14 +11,19 @@
 
 package es.tid.cosmos.api.controllers.pages
 
-import play.api.mvc.{RequestHeader, SimpleResult, Controller}
+import scalaz._
+
+import play.api.mvc._
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
+import es.tid.cosmos.api.controllers.common.ActionValidation
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao, UserState}
+import es.tid.cosmos.api.profile.{UserId, CosmosProfile, CosmosProfileDao, UserState}
 
 trait PagesAuthController extends Controller {
   val dao: CosmosProfileDao
+
+  import Scalaz._
 
   /**
    * Checks cookie and DB information to clear inconsistent cookies and
@@ -45,21 +50,40 @@ trait PagesAuthController extends Controller {
       }
     ).getOrElse(whenNotAuthenticated)
 
-  /**
-   * Similar to withAuthentication with default behaviour: unregistered users
-   * are redirected to the registration form and unauthenticated users to the index.
-   *
-   * @param request         Request to dispatch actions for
-   * @param f  Action to execute when the user is registered
-   * @return                Result of whenRegistered or an appropriate redirection
-   */
-  def whenRegistered(
-      request: RequestHeader)(f: (OAuthUserProfile, CosmosProfile) => SimpleResult): SimpleResult =
-    withAuthentication(request)(
-      whenRegistered = f,
-      whenNotRegistered = _ => Redirect(routes.Pages.registerForm()),
-      whenNotAuthenticated = redirectToIndex
-    )
+  /** Action validation requiring a registered user to be authenticated.
+    * 
+    * @param request  Action request
+    * @return         Either the user profiles or an error redirecting to the login page
+    *                 or the registration page
+    */
+  def requireUserProfiles(
+      request: RequestHeader): ActionValidation[(OAuthUserProfile, CosmosProfile)] =
+    for {
+      userProfile <- requireAuthenticatedUser(request)
+      cosmosProfile <- requireRegisteredUser(userProfile.id)
+    } yield (userProfile, cosmosProfile)
 
-  private lazy val redirectToIndex = Redirect(routes.Pages.index())
+  /** Action validation requiring an authenticated user.
+    * 
+    * @param request     Action request
+    * @return            Either the user profile or a redirection response
+    */
+  def requireAuthenticatedUser(request: RequestHeader): ActionValidation[OAuthUserProfile] =
+    request.session.userProfile.toSuccess(redirectToIndex)
+
+  /** Action validation requiring a registered user.
+    *
+    * @param userId      Id of the user
+    * @param redirectTo  Where to redirect unregistered users, the registration page by default
+    * @return            Either the cosmos profile or a redirection response
+    */
+  def requireRegisteredUser(
+      userId: UserId,
+      redirectTo: Call = routes.Pages.registerForm()): ActionValidation[CosmosProfile] =
+    dao.withTransaction { implicit c =>
+      dao.lookupByUserId(userId)
+    }.toSuccess(Redirect(redirectTo))
+
+  lazy val redirectToIndex = Redirect(routes.Pages.index())
+  lazy val redirectToRegistration = Redirect(routes.Pages.registerForm())
 }

@@ -13,6 +13,7 @@ package es.tid.cosmos.api.controllers.storage
 
 import java.net.URI
 import scala.language.postfixOps
+import scalaz._
 
 import com.wordnik.swagger.annotations.{ApiOperation, ApiErrors, ApiError, Api}
 import play.api.libs.json.Json
@@ -33,6 +34,8 @@ class StorageResource(
     override val dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus)
   extends ApiAuthController with MaintenanceAwareController {
+  
+  import Scalaz._
 
   private val UnavailableHdfsResponse =
     ServiceUnavailable(Json.toJson(ErrorMessage("persistent storage service not available")))
@@ -46,17 +49,17 @@ class StorageResource(
     new ApiError(code = 503, reason = "When service is under maintenance")
   ))
   def details() = Action { implicit request =>
-    unlessResourceUnderMaintenance {
-      withApiAuth(request) { profile =>
-        (for {
-          description <- serviceManager.describeCluster(serviceManager.persistentHdfsId)
-          if description.nameNode.isDefined
-          webHdfsUri = toWebHdfsUri(description.nameNode.get)
-        } yield Ok(Json.toJson(WebHdfsConnection(location = webHdfsUri, user = profile.handle))))
-        .getOrElse(UnavailableHdfsResponse)
-      }
-    }
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      profile <- requireAuthenticatedApiRequest(request)
+      location <- persistentWebHdfsUri().toSuccess(UnavailableHdfsResponse)
+    } yield Ok(Json.toJson(WebHdfsConnection(location, profile.handle)))
   }
+  
+  private def persistentWebHdfsUri(): Option[URI] = for {
+    description <- serviceManager.describeCluster(serviceManager.persistentHdfsId)
+    if description.nameNode.isDefined
+  } yield toWebHdfsUri(description.nameNode.get)
 
   private def toWebHdfsUri(nameNode: URI): URI =
     new URI("webhdfs", null, nameNode.getHost, nameNode.getPort, null, null, null)

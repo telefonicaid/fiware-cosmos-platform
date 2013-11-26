@@ -13,23 +13,22 @@ package es.tid.cosmos.api.controllers.admin
 
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.Random
-import scalaz.{Success, Failure}
+import scalaz._
 
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Headers, SimpleResult}
+import play.api.mvc.{Action, Headers}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
-import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}
+import es.tid.cosmos.servicemanager.ServiceManager
 
-/**
- * Resource for user account administration
- */
+/** Resource for user account administration */
 @Api(value = "/admin/v1/user", listingPath = "/doc/admin/v1/user",
   description = "Allow for user account administration")
 class UserResource(
@@ -39,14 +38,14 @@ class UserResource(
     override val maintenanceStatus: MaintenanceStatus
   ) extends JsonController with MaintenanceAwareController {
 
+  import Scalaz._
+
   private type Conn = dao.Conn
 
-  private val registrationWizard = new UserRegistrationWizard(dao, serviceManager)
-  private val unregistrationWizard = new UserUnregistrationWizard(serviceManager, dao)
+  private val registrationWizard = new UserRegistrationWizard(serviceManager)
+  private val unregistrationWizard = new UserUnregistrationWizard(serviceManager)
 
-  /**
-   * Register a new user account.
-   */
+  /** Register a new user account. */
   @ApiOperation(value = "Create a new user account", httpMethod = "POST",
     responseClass = "es.tid.cosmos.api.controllers.admin.RegisterUserResponse")
   @ApiErrors(Array(
@@ -63,26 +62,22 @@ class UserResource(
       dataType = "es.tid.cosmos.api.controllers.admin.RegisterUserParams")
   ))
   def register = Action(parse.tolerantJson) { request =>
-    unlessResourceUnderMaintenance {
-      whenValid[RegisterUserParams](request.body) { params =>
-        withAdminCredsFor(params.authRealm, request.headers) {
-          dao.withTransaction { implicit c =>
-            (for {
-              userId <- uniqueUserId(params)
-              handle <- selectHandle(params.handle)
-              registration = Registration(handle, params.sshPublicKey, params.email)
-            } yield registrationWizard.registerUser(userId, registration)).fold(
-              fail = message => Conflict(Json.toJson(message)),
-              succ = cosmosProfile => Created(Json.toJson(RegisterUserResponse(
-                handle = cosmosProfile.handle,
-                apiKey = cosmosProfile.apiCredentials.apiKey,
-                apiSecret = cosmosProfile.apiCredentials.apiSecret
-              )))
-            )
-          }
-        }
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      params <- validJsonBody[RegisterUserParams](request)
+      _ <- requireAdminCreds(params.authRealm, request.headers)
+      profile <- dao.withTransaction { implicit c =>
+        for {
+          userId <- uniqueUserId(params)
+          handle <- selectHandle(params.handle)
+          registration = Registration(handle, params.sshPublicKey, params.email)
+        } yield registrationWizard.registerUser(dao, userId, registration)
       }
-    }
+    } yield Created(Json.toJson(RegisterUserResponse(
+      handle = profile.handle,
+      apiKey = profile.apiCredentials.apiKey,
+      apiSecret = profile.apiCredentials.apiSecret
+    )))
   }
 
   /**
@@ -98,27 +93,34 @@ class UserResource(
     new ApiError(code = 503, reason = "Service is under maintenance")
   ))
   def unregister(realm: String, id: String) = Action { request =>
-    unlessResourceUnderMaintenance {
-      withAdminCredsFor(realm, request.headers) {
-        dao.withTransaction { implicit c =>
-          val userId = UserId(realm, id)
-          dao.getProfileId(userId).map { cosmosId =>
-            unregistrationWizard.unregisterUser(cosmosId).fold(
-              fail = message => InternalServerError(Json.toJson(message)),
-              succ = unregistration_> => {
-                unregistration_>.onSuccess {
-                  case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
-                }
-                unregistration_>.onFailure {
-                  case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
-                }
-                val message = s"User $userId unregistration started"
-                Logger.info(message)
-                Ok(Json.toJson(Message(message)))
-              }
-            )
-          }.getOrElse(NotFound(s"User $userId does not exist"))
+    val userId = UserId(realm, id)
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      _ <- requireAdminCreds(realm, request.headers)
+      unregistration_> <- startUnregistration(userId)
+    } yield {
+      val message = s"User $userId unregistration started"
+      Logger.info(message)
+      Ok(Json.toJson(Message(message)))
+    }
+  }
+
+  private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = {
+    dao.withTransaction { implicit c =>
+      for {
+        cosmosId <- dao.getProfileId(userId).toSuccess(
+          NotFound(Json.toJson(Message(s"User $userId does not exist")))
+        )
+        unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosId)
+          .leftMap(message => InternalServerError(Json.toJson(message)))
+      } yield {
+        unregistration_>.onSuccess {
+          case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
         }
+        unregistration_>.onFailure {
+          case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
+        }
+        unregistration_>
       }
     }
   }
@@ -126,29 +128,32 @@ class UserResource(
   private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =
     reqHandle match {
       case None => Success(generateHandle())
-      case Some(handle) if !dao.handleExists(handle) => Success(handle)
-      case Some(handle) => Failure(Message(s"Handle '$handle' is already taken"))
+      case Some(handle) if !dao.handleExists(handle) => handle.success
+      case Some(handle) => failWith(Conflict, s"Handle '$handle' is already taken")
     }
 
-  private def uniqueUserId(params: RegisterUserParams)(implicit c: Conn) = {
+  private def uniqueUserId(params: RegisterUserParams)
+                          (implicit c: Conn): ActionValidation[UserId] = {
     val userId = UserId(params.authRealm, params.authId)
-    if (dao.lookupByUserId(userId).isDefined) Failure(Message(s"Already existing credentials: $userId"))
-    else Success(userId)
+    if (dao.lookupByUserId(userId).isEmpty) userId.success 
+    else failWith(Conflict, s"Already existing credentials: $userId")
   }
 
-  private def withAdminCredsFor(targetRealm: String, headers: Headers)(action: => SimpleResult) =
+  private def requireAdminCreds(targetRealm: String, headers: Headers): ActionValidation[Unit] =
     headers.get("Authorization") match {
       case Some(BasicAuth(`targetRealm`, password))
-        if canRegisterUsers(targetRealm, password) => action
-      case Some(_) => Forbidden(Json.toJson(Message("Cannot register users")))
-      case None => Unauthorized(Json.toJson(Message("Missing authorization header")))
+        if canAdministerUsers(targetRealm, password) => ().success
+      case Some(_) => failWith(Forbidden, "Cannot administer users")
+      case None => failWith(Unauthorized, "Missing authorization header")
     }
 
-  private def canRegisterUsers(providerName: String, password: String) = (for {
+  private def canAdministerUsers(providerName: String, password: String) = (for {
     provider <- multiUserProvider.providers.collectFirst {
       case (`providerName`, adminProvider : AdminEnabledAuthProvider) => adminProvider
     }
   } yield password == provider.adminPassword).getOrElse(false)
+  
+  private def failWith(status: Status, message: String) = status(Json.toJson(Message(message))).fail
 
   @tailrec
   private def generateHandle()(implicit c: Conn): String = {

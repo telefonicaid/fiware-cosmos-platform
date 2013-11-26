@@ -17,7 +17,7 @@ import es.tid.cosmos.api.auth.MultiAuthProviderComponent
 import es.tid.cosmos.api.controllers.admin.{MaintenanceStatusComponent, UserResource}
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
-import es.tid.cosmos.api.controllers.pages.Pages
+import es.tid.cosmos.api.controllers.pages.{AdminPage, Pages}
 import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
@@ -41,6 +41,7 @@ abstract class Application {
     val multiAuthProvider = this.multiAuthProvider
     controllerMap(
       new Pages(multiAuthProvider, sm, dao, status),
+      new AdminPage(dao, status),
       new CosmosResource(),
       new ProfileResource(dao),
       new ClusterResource(sm, dao, status),

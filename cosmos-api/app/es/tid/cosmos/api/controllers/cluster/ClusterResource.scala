@@ -14,6 +14,7 @@ package es.tid.cosmos.api.controllers.cluster
 import java.util.Date
 import javax.ws.rs.PathParam
 import scala.util.{Failure, Success, Try}
+import scalaz._
 
 import com.wordnik.swagger.annotations._
 import play.Logger
@@ -46,11 +47,10 @@ class ClusterResource(
     new ApiError(code = 503, reason = "Service is under maintenance")
   ))
   def list = Action { implicit request =>
-    unlessResourceUnderMaintenance {
-      withApiAuth(request) { profile =>
-        Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
-      }
-    }
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      profile <- requireAuthenticatedApiRequest(request)
+    } yield Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
   }
 
   /**
@@ -66,15 +66,13 @@ class ClusterResource(
     new ApiParamImplicit(paramType = "body",
       dataType = "es.tid.cosmos.api.controllers.clusters.CreateClusterParams")
   ))
-  def createCluster = JsonBodyAction[CreateClusterParams] { (request, body) =>
-    unlessResourceUnderMaintenance {
-      withApiAuth(request) { profile =>
-        withinQuota(profile, body.size).fold(
-          fail = errors => Forbidden(Json.toJson(Message(errors.list.mkString(" ")))),
-          succ = _ => create(request, body, profile)
-        )
-      }
-    }
+  def createCluster = Action(parse.tolerantJson) { request =>
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      profile <- requireAuthenticatedApiRequest(request)
+      body <- validJsonBody[CreateClusterParams](request)
+      _ <- withinQuota(profile, body.size)
+    } yield create(request, body, profile)
   }
 
   private def create(
@@ -106,14 +104,17 @@ class ClusterResource(
     }
   }
 
-  private def withinQuota(profile: CosmosProfile, size: Int) = dao.withConnection { implicit c =>
-    new ProfileQuotas(
-      machinePoolSize = serviceManager.clusterNodePoolCount,
-      groups = dao.getGroups,
-      lookupByGroup = dao.lookupByGroup,
-      listClusters = listClusters
-    ).withinQuota(profile, size)
-  }
+  private def withinQuota(profile: CosmosProfile, size: Int): ActionValidation[Int] =
+    dao.withConnection { implicit c =>
+      new ProfileQuotas(
+        machinePoolSize = serviceManager.clusterNodePoolCount,
+        groups = dao.getGroups,
+        lookupByGroup = dao.lookupByGroup,
+        listClusters = listClusters
+      )
+    }.withinQuota(profile, size).leftMap(errors =>
+      Forbidden(Json.toJson(Message(errors.list.mkString(" "))))
+    )
 
   private def listClusters(profile: CosmosProfile) = {
     val assignedClusters = dao.withConnection { implicit c =>
@@ -136,13 +137,11 @@ class ClusterResource(
         defaultValue = "00000000-0000-0000-0000-000000000000")
       @PathParam("id")
       id: String) = Action { implicit request =>
-    unlessResourceUnderMaintenance {
-      withApiAuth(request) { profile =>
-       OwnedCluster(profile, ClusterId(id)) { cluster =>
-         Ok(Json.toJson(ClusterDetails(cluster)))
-       }
-     }
-    }
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      profile <- requireAuthenticatedApiRequest(request)
+      cluster <- requireOwnedCluster(profile.id, ClusterId(id))
+    } yield Ok(Json.toJson(ClusterDetails(cluster)))
   }
 
   @ApiOperation(value = "Terminate cluster", httpMethod = "POST", notes = "No body is required",
@@ -158,30 +157,29 @@ class ClusterResource(
          defaultValue = "00000000-0000-0000-0000-000000000000")
        @PathParam("id")
        id: String) = Action { request =>
-    unlessResourceUnderMaintenance {
-      withApiAuth(request) { profile =>
-        OwnedCluster(profile, ClusterId(id)) { cluster =>
-          Try(serviceManager.terminateCluster(cluster.id)) match {
-            case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))
-            case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
-              ErrorMessage(ex.getMessage, ex)))
-            case Failure(ex) => throw ex
-          }
-        }
-      }
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      profile <- requireAuthenticatedApiRequest(request)
+      cluster <- requireOwnedCluster(profile.id, ClusterId(id))
+    } yield Try(serviceManager.terminateCluster(cluster.id)) match {
+      case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))
+      case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
+        ErrorMessage(ex.getMessage, ex)))
+      case Failure(ex) => throw ex
     }
   }
 
-  private def OwnedCluster(
-      profile: CosmosProfile, clusterId: ClusterId)(f: ClusterDescription => SimpleResult) = {
-    val owned = isOwnCluster(profile.id, clusterId)
+  private def requireOwnedCluster(
+      profileId: ProfileId, clusterId: ClusterId): ActionValidation[ClusterDescription] = {
+    import Scalaz._
+    val owned = isOwnCluster(profileId, clusterId)
     val maybeDescription = serviceManager.describeCluster(clusterId)
     (owned, maybeDescription) match {
       case (true, None) => throw new IllegalStateException(
         s"Cluster '$clusterId' is on app database but not found in Service Manager")
-      case (false, None) => notFound(clusterId)
-      case (false, Some(_)) => unauthorizedAccessTo(clusterId)
-      case (true, Some(description)) => f(description)
+      case (false, None) => notFound(clusterId).failure
+      case (false, Some(_)) => unauthorizedAccessTo(clusterId).failure
+      case (true, Some(description)) => description.success
     }
   }
 

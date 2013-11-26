@@ -31,42 +31,37 @@ trait ApiAuthController extends Controller {
 
   import Scalaz._
 
-  val dao: CosmosProfileDao
+  protected val dao: CosmosProfileDao
 
-  /**
-   * Decorate a block with authentication header checks.
-   *
-   * Chain of checks:
-   *  * Look for valid API key/secret pair
-   *  * Look for a valid cookie
-   *  * Owned by an enabled user
-   *
-   * Issue an auth error response if the chain fails.
-   *
-   * @param request    Request to extract credentials from
-   * @param userAction Block able to create a response given a CosmosProfile
-   * @return           Either userAction result or an authorization error response
-   */
-  def withApiAuth(request: Request[Any])(userAction: CosmosProfile => SimpleResult): SimpleResult =
+  /** Require an API request to be authenticated either by an API key or
+    * by a session cookie.
+    *
+    * Note: session cookies are supported for cosmos users' convenience as it let them
+    * experiment with the Swagger documentation with real requests.
+    *
+    * @param request   Request to extract credentials from
+    * @return          Either a user profile or an authorization error response
+    */
+  def requireAuthenticatedApiRequest(request: RequestHeader): ActionValidation[CosmosProfile] =
     selectAuthentication(
       preferredAuth = authenticateFromApiCredentials(request),
       fallbackAuth = authenticateFromSession(request)
-    ).fold(
-      fail = authError => {
-        Logger.warn(s"Rejected API request: ${authError.message}")
-        unauthorizedResponse(authError)
-      },
-      succ = userAction
-    )
+    ).leftMap(error => {
+      Logger.warn(s"Rejected API request: ${error.message}")
+      unauthorizedResponse(error)
+    })
 
-  /**
-   * Select one out of two authentications preferring the first one.
-   * When the first authentication succeed, the second one is not evaluated at all.
-   *
-   * @param preferredAuth  Preferred authentication
-   * @param fallbackAuth   Fallback authentication that might not be evaluated
-   * @return               Selected authentication
-   */
+  /** Select one out of two authentications preferring the first one.
+    *
+    * When the first authentication succeed, the second one is not evaluated at all.
+    * If both fail, we only get the error of the preferred one as the fallback one wasn't
+    * evaluated. The reason to do so is that fallback authentication is for Cosmos users'
+    * development purposes.
+    *
+    * @param preferredAuth  Preferred authentication
+    * @param fallbackAuth   Fallback authentication that might not be evaluated
+    * @return               Selected authentication
+    */
   private def selectAuthentication(
       preferredAuth: Validation[AuthError, CosmosProfile],
       fallbackAuth: => Validation[AuthError, CosmosProfile]) =
@@ -81,7 +76,7 @@ trait ApiAuthController extends Controller {
    * @return         Either a cosmos profile or a validation error
    */
   private def authenticateFromApiCredentials(
-      request: Request[Any]): Validation[AuthError, CosmosProfile] = {
+      request: RequestHeader): Validation[AuthError, CosmosProfile] = {
     for {
       credentials <- getApiCredentials(request)
       profile <- getProfileFromCredentials(credentials)
@@ -89,10 +84,8 @@ trait ApiAuthController extends Controller {
     } yield profile
   }
 
-  /**
-   * Either extract API credentials from request headers or get an error message.
-   */
-  private def getApiCredentials(request: Request[Any]): Validation[AuthError, ApiCredentials] =
+  /** Either extract API credentials from request headers or get an error message. */
+  private def getApiCredentials(request: RequestHeader): Validation[AuthError, ApiCredentials] =
     request.headers.get("Authorization") match {
       case Some(BasicAuth(apiKey, apiSecret)) if isKeyPair(apiKey, apiSecret) =>
         ApiCredentials(apiKey, apiSecret).success
@@ -103,12 +96,11 @@ trait ApiAuthController extends Controller {
   private def isKeyPair(apiKey: String, apiSecret: String) =
     apiKey.length == ApiKeyLength && apiSecret.length == ApiSecretLength
 
-  /**
-   * Either get the profile that owns the API credentials or an error message.
-   *
-   * @param credentials  Credentials to be checked against the DAO
-   * @return             Either a cosmos profile or a validation error
-   */
+  /** Either get the profile that owns the API credentials or an error message.
+    *
+    * @param credentials  Credentials to be checked against the DAO
+    * @return             Either a cosmos profile or a validation error
+    */
   private def getProfileFromCredentials(
       credentials: ApiCredentials): Validation[AuthError, CosmosProfile] =
     dao.withConnection { implicit c =>
@@ -117,21 +109,18 @@ trait ApiAuthController extends Controller {
         .getOrElse(InvalidAuthCredentials.failure)
     }
 
-  /**
-   * Get the profile form the request session when possible.
-   */
+  /** Get the profile form the request session when possible. */
   private def authenticateFromSession(request: RequestHeader): Validation[AuthError, CosmosProfile] =
     for {
       profile <- getProfileFromSession(request)
       _ <- enabledProfile(profile)
     } yield profile
 
-  /**
-   * Try to extract a cosmos profile from a session cookie.
-   *
-   * @param request Request whose session is inspected
-   * @return        Either a cosmos profile or a validation error
-   */
+  /** Try to extract a cosmos profile from a session cookie.
+    *
+    * @param request Request whose session is inspected
+    * @return        Either a cosmos profile or a validation error
+    */
   private def getProfileFromSession(request: RequestHeader): Validation[AuthError, CosmosProfile] =
     (for {
       userId <- request.session.userId
@@ -140,12 +129,11 @@ trait ApiAuthController extends Controller {
       }
     } yield profile.success).getOrElse(MissingAuthentication.failure)
 
-  /**
-   * Check for enabled profiles.
-   *
-   * @param profile  Profile that must be enabled
-   * @return         Either an enabled profile or a validation error
-   */
+  /** Check for enabled profiles.
+    *
+    * @param profile  Profile that must be enabled
+    * @return         Either an enabled profile or a validation error
+    */
   private def enabledProfile(profile: CosmosProfile): Validation[AuthError, CosmosProfile] =
     if (profile.state == UserState.Enabled) profile.success
     else InvalidAuthCredentials.failure

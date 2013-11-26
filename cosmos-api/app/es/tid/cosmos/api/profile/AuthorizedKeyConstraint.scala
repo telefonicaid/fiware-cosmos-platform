@@ -35,7 +35,8 @@ object AuthorizedKeyConstraint {
 
   private def validateAuthorizedKey(input: String) = for {
     line <- uniqueLine(input)
-    (keyType, _, email) <- authorizedKeyFields(line)
+    keyFields <- authorizedKeyFields(line)
+    (keyType, _, email) = keyFields
     _ <- validateKeyType(keyType)
     _ <- EmailConstraint.validate(email)
   } yield line

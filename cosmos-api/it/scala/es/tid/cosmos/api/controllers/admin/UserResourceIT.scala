@@ -97,7 +97,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   it must "reject correct credentials for a different realm" in new WithTestApplication {
     val response = postRegistration(validPayload ++ Json.obj("authRealm" -> "other_realm"))
     status(response) must be (FORBIDDEN)
-    contentAsString(response) must include ("Cannot register users")
+    contentAsString(response) must include ("Cannot administer users")
   }
 
   it must "reject requests with malformed JSON" in new WithTestApplication {

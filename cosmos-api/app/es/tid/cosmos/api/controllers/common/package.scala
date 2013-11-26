@@ -24,6 +24,9 @@ package object common {
     * When they fail, action computation is short-circuited with a given
     * error response (of type SimpleResult).
     *
+    * Tip: Star-import this package to get implicit conversions to {{{SimpleResult}}} and
+    * {{{Future[SimpleResult]}}} and avoid manually folding the validation result on every action.
+    *
     * @tparam T  Type of the value being computed. Unit for intermediate actions
     */
   type ActionValidation[T] = Validation[SimpleResult, T]
@@ -45,12 +48,28 @@ package object common {
   implicit def toSimpleResult(validation: ActionValidation[SimpleResult]): SimpleResult =
     validation.fold(fail = identity, succ = identity)
 
-  implicit val ActionValErrorCombination: Monoid[SimpleResult] = new Monoid[SimpleResult] {
+  implicit val ActionValidationErrorCombination: Monoid[SimpleResult] = new Monoid[SimpleResult] {
 
     /** Stop at the first error */
     def append(f1: SimpleResult, f2: => SimpleResult): SimpleResult = f1
 
-    /** Fail if we filter out  */
+    /** Fail if we filter out values on comprehensions.
+      * 
+      * This will fire if you use a pattern matching on a ActionValidation and it
+      * fails. At this point an error message es is needed and it is get through this method.
+      *
+      * For example:
+      *
+      * {{{
+      *   for {
+      *      (key, secret) <- requireApiCredentials(request)
+      *   } yield { ... }
+      * }}}
+      *
+      * If {{{requireApiCredentials}}} returns something that cannot be matched against a pair
+      * there is no way of determine the error response. However, it is safe for tuple matching or
+      * other patterns that won't fail.
+      */
     def zero: SimpleResult = throw new IllegalStateException(
       "Filter was used on a validation without any means to generate an error response")
   }

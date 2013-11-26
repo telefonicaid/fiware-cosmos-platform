@@ -39,13 +39,16 @@ class UserRegistrationWizardIT extends FlatSpec with MustMatchers with MockitoSu
 
   "User registration" must "create a new profile with the input data" in
     new WithUserRegistrationWizard {
-      val profile = dao.withTransaction { implicit c =>
+      val validationResult = dao.withTransaction { implicit c =>
         instance.registerUser(dao, userId, registration)
       }
-      profile.handle must be (handle)
-      profile.email must be (registration.email)
-      profile.state must be (UserState.Enabled)
-      profile.keys must have size 1
+      validationResult must be ('success)
+      validationResult.foreach { p =>
+        p.handle must be (handle)
+        p.email must be (registration.email)
+        p.state must be (UserState.Enabled)
+        p.keys must have size 1
+      }
     }
 
   it must "reconfigure persistent HDFS cluster with current and deleted users" in

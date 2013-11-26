@@ -20,6 +20,7 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{CosmosProfile, Capability, CosmosProfileDao}
 import es.tid.cosmos.api.profile.Capability.Capability
 
+/** Administration page used the Cosmos operators */
 class AdminPage(
     override val dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus
@@ -30,11 +31,12 @@ class AdminPage(
   def show = Action { implicit request =>
     for {
       _ <- requirePageNotUnderMaintenance()
-      (userProfile, cosmosProfile) <- requireUserProfiles(request)
+      profiles <- requireUserProfiles(request)
+      (_, cosmosProfile) = profiles
       _ <- requireCapability(cosmosProfile, Capability.IsOperator)
     } yield Ok(views.html.admin(
       underMaintenance = maintenanceStatus.underMaintenance,
-      tabs = Navigation.operatorNavigation))
+      tabs = Navigation.OperatorNavigation))
   }
 
   private def requireCapability(

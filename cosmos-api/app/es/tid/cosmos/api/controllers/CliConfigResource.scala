@@ -23,7 +23,8 @@ class CliConfigResource(val dao: CosmosProfileDao) extends PagesAuthController {
 
   def generate = Action { implicit request =>
     for {
-      (userProfile, cosmosProfile) <- requireUserProfiles(request)
+      profiles <- requireUserProfiles(request)
+      (_, cosmosProfile) = profiles
     } yield {
       val config = CliConfig(
         apiCredentials = cosmosProfile.apiCredentials,

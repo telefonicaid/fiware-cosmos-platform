@@ -163,7 +163,8 @@ class Pages(
   def showProfile = Action { implicit request =>
     for {
       _ <- requirePageNotUnderMaintenance()
-      (userProfile, cosmosProfile) <- requireUserProfiles(request)
+      profiles <- requireUserProfiles(request)
+      (userProfile, cosmosProfile) = profiles
     } yield Ok(views.html.profile(
       oauthProfile = userProfile,
       cosmosProfile = cosmosProfile,
@@ -174,7 +175,8 @@ class Pages(
   def customGettingStarted = Action { implicit request =>
     for {
       _ <- requirePageNotUnderMaintenance()
-      (_, cosmosProfile) <- requireUserProfiles(request)
+      profiles <- requireUserProfiles(request)
+      (_, cosmosProfile) = profiles
     } yield Ok(views.html.gettingStarted(
       cosmosProfile, Navigation.forCapabilities(cosmosProfile.capabilities)
     ))

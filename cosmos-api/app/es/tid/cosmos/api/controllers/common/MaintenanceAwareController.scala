@@ -14,7 +14,7 @@ package es.tid.cosmos.api.controllers.common
 import scalaz._
 
 import play.api.libs.json.Json
-import play.api.mvc.{Controller, SimpleResult}
+import play.api.mvc.{Results, Controller, SimpleResult}
 
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 
@@ -22,10 +22,7 @@ trait MaintenanceAwareController extends Controller {
   val maintenanceStatus: MaintenanceStatus
 
   import Scalaz._
-
-  private val unavailableResource = ServiceUnavailable(
-    Json.toJson(Message("Service temporarily in maintenance mode")))
-  private val unavailablePage = ServiceUnavailable(views.html.maintenance())
+  import MaintenanceAwareController._
 
   /** Page validation requiring that the page is not under maintenance */
   protected def requirePageNotUnderMaintenance(): ActionValidation[Unit] =
@@ -37,4 +34,10 @@ trait MaintenanceAwareController extends Controller {
 
   private def requireNotUnderMaintenance(errorPage: SimpleResult): ActionValidation[Unit] =
     if (maintenanceStatus.underMaintenance) errorPage.fail else ().success
+}
+
+object MaintenanceAwareController extends Results {
+  private val unavailableResource = ServiceUnavailable(
+    Json.toJson(Message("Service temporarily in maintenance mode")))
+  private lazy val unavailablePage = ServiceUnavailable(views.html.maintenance())
 }

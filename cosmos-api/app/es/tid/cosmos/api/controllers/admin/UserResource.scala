@@ -25,8 +25,8 @@ import play.api.mvc.{Action, Headers}
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
-import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}
+import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Resource for user account administration */
 @Api(value = "/admin/v1/user", listingPath = "/doc/admin/v1/user",
@@ -142,12 +142,12 @@ class UserResource(
   private def requireAdminCreds(targetRealm: String, headers: Headers): ActionValidation[Unit] =
     headers.get("Authorization") match {
       case Some(BasicAuth(`targetRealm`, password))
-        if canAdministrateUsers(targetRealm, password) => ().success
-      case Some(_) => failWith(Forbidden, "Cannot register users")
+        if canAdministerUsers(targetRealm, password) => ().success
+      case Some(_) => failWith(Forbidden, "Cannot administer users")
       case None => failWith(Unauthorized, "Missing authorization header")
     }
 
-  private def canAdministrateUsers(providerName: String, password: String) = (for {
+  private def canAdministerUsers(providerName: String, password: String) = (for {
     provider <- multiUserProvider.providers.collectFirst {
       case (`providerName`, adminProvider : AdminEnabledAuthProvider) => adminProvider
     }

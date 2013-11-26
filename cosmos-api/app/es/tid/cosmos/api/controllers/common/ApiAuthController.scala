@@ -31,13 +31,13 @@ trait ApiAuthController extends Controller {
 
   import Scalaz._
 
-  val dao: CosmosProfileDao
+  protected val dao: CosmosProfileDao
 
   /** Require an API request to be authenticated either by an API key or
     * by a session cookie.
     *
-    * Note: session cookies are supported for cosmos users convenience as it let them to
-    * experiment on the Swagger documentation with real requests.
+    * Note: session cookies are supported for cosmos users' convenience as it let them
+    * experiment with the Swagger documentation with real requests.
     *
     * @param request   Request to extract credentials from
     * @return          Either a user profile or an authorization error response
@@ -52,7 +52,11 @@ trait ApiAuthController extends Controller {
     })
 
   /** Select one out of two authentications preferring the first one.
+    *
     * When the first authentication succeed, the second one is not evaluated at all.
+    * If both fail, we only get the error of the preferred one as the fallback one wasn't
+    * evaluated. The reason to do so is that fallback authentication is for Cosmos users'
+    * development purposes.
     *
     * @param preferredAuth  Preferred authentication
     * @param fallbackAuth   Fallback authentication that might not be evaluated

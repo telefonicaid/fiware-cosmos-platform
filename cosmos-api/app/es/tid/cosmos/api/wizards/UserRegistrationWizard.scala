@@ -26,7 +26,7 @@ class UserRegistrationWizard(serviceManager: ServiceManager) {
 
   /** Registers a new user.
     *
-    * @param dao             For accessing to the store of Cosmos profiles
+    * @param dao           For accessing to the store of Cosmos profiles
     * @param userId        User id
     * @param registration  Registration parameters
     * @return              Newly created profile

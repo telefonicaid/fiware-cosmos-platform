@@ -71,7 +71,8 @@ class UserResource(
           userId <- uniqueUserId(params)
           handle <- selectHandle(params.handle)
           registration = Registration(handle, params.sshPublicKey, params.email)
-        } yield registrationWizard.registerUser(dao, userId, registration)
+          profile <- registrationWizard.registerUser(dao, userId, registration)
+        } yield profile
       }
     } yield Created(Json.toJson(RegisterUserResponse(
       handle = profile.handle,

@@ -15,6 +15,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 
+import play.Logger
+
 import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao}
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 
@@ -38,7 +40,11 @@ class UpdatePersistentHdfsUsersWizard(serviceManager: ServiceManager) {
       )
     }
     serviceManager.setUsers(serviceManager.persistentHdfsId, clusterUsers).recoverWith {
-      case NonFatal(ex) => Future.failed(PersistentHdfsUpdateException(ex))
+      case NonFatal(ex) => {
+        val updateException = PersistentHdfsUpdateException(ex)
+        Logger.error(updateException.getMessage, ex)
+        Future.failed(updateException)
+      }
     }
   }
 }

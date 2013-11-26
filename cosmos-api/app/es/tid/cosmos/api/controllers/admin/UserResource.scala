@@ -135,7 +135,7 @@ class UserResource(
     else Success(userId)
   }
 
-  private def requireAdminCreds(targetRealm: String, headers: Headers): ActionVal[Unit] =
+  private def requireAdminCreds(targetRealm: String, headers: Headers): ActionValidation[Unit] =
     headers.get("Authorization") match {
       case Some(BasicAuth(`targetRealm`, password))
         if canAdministrateUsers(targetRealm, password) => ().success

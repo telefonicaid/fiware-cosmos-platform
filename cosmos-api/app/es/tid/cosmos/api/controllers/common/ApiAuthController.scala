@@ -42,7 +42,7 @@ trait ApiAuthController extends Controller {
     * @param request   Request to extract credentials from
     * @return          Either a user profile or an authorization error response
     */
-  def requireAuthenticatedApiRequest(request: RequestHeader): ActionVal[CosmosProfile] =
+  def requireAuthenticatedApiRequest(request: RequestHeader): ActionValidation[CosmosProfile] =
     selectAuthentication(
       preferredAuth = authenticateFromApiCredentials(request),
       fallbackAuth = authenticateFromSession(request)
@@ -71,7 +71,8 @@ trait ApiAuthController extends Controller {
    * @param request  Request to authenticate
    * @return         Either a cosmos profile or a validation error
    */
-  private def authenticateFromApiCredentials(request: RequestHeader): Validation[AuthError, CosmosProfile] = {
+  private def authenticateFromApiCredentials(
+      request: RequestHeader): Validation[AuthError, CosmosProfile] = {
     for {
       credentials <- getApiCredentials(request)
       profile <- getProfileFromCredentials(credentials)

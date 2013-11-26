@@ -104,7 +104,7 @@ class ClusterResource(
     }
   }
 
-  private def withinQuota(profile: CosmosProfile, size: Int): ActionVal[Int] =
+  private def withinQuota(profile: CosmosProfile, size: Int): ActionValidation[Int] =
     dao.withConnection { implicit c =>
       new ProfileQuotas(
         machinePoolSize = serviceManager.clusterNodePoolCount,
@@ -170,7 +170,7 @@ class ClusterResource(
   }
 
   private def requireOwnedCluster(
-      profileId: ProfileId, clusterId: ClusterId): ActionVal[ClusterDescription] = {
+      profileId: ProfileId, clusterId: ClusterId): ActionValidation[ClusterDescription] = {
     import Scalaz._
     val owned = isOwnCluster(profileId, clusterId)
     val maybeDescription = serviceManager.describeCluster(clusterId)

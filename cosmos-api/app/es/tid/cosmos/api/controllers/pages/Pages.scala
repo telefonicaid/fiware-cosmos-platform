@@ -90,7 +90,7 @@ class Pages(
     }
 
   private def requireNoOAuthError(maybeError: Option[String])
-                                 (implicit request: RequestHeader): ActionVal[Unit] = {
+                                 (implicit request: RequestHeader): ActionValidation[Unit] = {
     val errorResponse = for {
       error <- maybeError
       oauthError <- OAuthError.parse(error)
@@ -99,7 +99,7 @@ class Pages(
     errorResponse.toFailure(())
   }
 
-  private def oauthProviderById(providerId: String): ActionVal[OAuthProvider] =
+  private def oauthProviderById(providerId: String): ActionValidation[OAuthProvider] =
     multiAuthProvider.oauthProviders.get(providerId).toSuccess(
       NotFound(Json.toJson(ErrorMessage(s"Unknown authorization provider $providerId")))
     )
@@ -137,7 +137,7 @@ class Pages(
     }
   }
 
-  private def requireUnregisteredUser(userId: UserId): ActionVal[Unit] = {
+  private def requireUnregisteredUser(userId: UserId): ActionValidation[Unit] = {
     val userExists = dao.withTransaction { implicit c =>
       dao.lookupByUserId(userId).isDefined
     }

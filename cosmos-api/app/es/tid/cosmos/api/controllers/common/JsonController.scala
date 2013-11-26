@@ -20,7 +20,7 @@ import play.api.mvc.{Controller, Request}
 /** JSON consuming controller. */
 trait JsonController extends Controller {
 
-  def validJsonBody[Payload: Reads](request: Request[JsValue]): ActionVal[Payload] = {
+  def validJsonBody[Payload: Reads](request: Request[JsValue]): ActionValidation[Payload] = {
     import Scalaz._
 
     Json.fromJson[Payload](request.body).fold(

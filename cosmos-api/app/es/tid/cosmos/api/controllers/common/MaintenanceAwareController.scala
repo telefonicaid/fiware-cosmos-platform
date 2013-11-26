@@ -28,13 +28,13 @@ trait MaintenanceAwareController extends Controller {
   private val unavailablePage = ServiceUnavailable(views.html.maintenance())
 
   /** Page validation requiring that the page is not under maintenance */
-  protected def requirePageNotUnderMaintenance(): ActionVal[Unit] =
+  protected def requirePageNotUnderMaintenance(): ActionValidation[Unit] =
     requireNotUnderMaintenance(unavailablePage)
 
   /** Page validation requiring that the resource is not under maintenance */
-  protected def requireResourceNotUnderMaintenance(): ActionVal[Unit] =
+  protected def requireResourceNotUnderMaintenance(): ActionValidation[Unit] =
     requireNotUnderMaintenance(unavailableResource)
 
-  private def requireNotUnderMaintenance(errorPage: SimpleResult): ActionVal[Unit] =
+  private def requireNotUnderMaintenance(errorPage: SimpleResult): ActionValidation[Unit] =
     if (maintenanceStatus.underMaintenance) errorPage.fail else ().success
 }

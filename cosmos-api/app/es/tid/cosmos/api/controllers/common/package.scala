@@ -24,29 +24,34 @@ package object common {
     * When they fail, action computation is short-circuited with a given
     * error response (of type SimpleResult).
     *
-    * @tparam T  Type of the value being computed. Unit for intermediate actions.
+    * @tparam T  Type of the value being computed. Unit for intermediate actions
     */
-  type ActionVal[T] = Validation[SimpleResult, T]
+  type ActionValidation[T] = Validation[SimpleResult, T]
 
   /** Implicit conversion of asynchronous ActionVal values to future simple results as play
     * expects it.
     *
-    * @param validation Maybe successfully async computation
+    * @param v Maybe successfully async computation
     * @return           A future of a simple response
     */
-  implicit def toAsyncResult(validation: ActionVal[Future[SimpleResult]]): Future[SimpleResult] =
-    validation.fold(fail = Future.successful, succ = identity)
+  implicit def toAsyncResult(v: ActionValidation[Future[SimpleResult]]): Future[SimpleResult] =
+    v.fold(fail = Future.successful, succ = identity)
 
   /** Implicit conversion from ActionVal to a simple result as play expects it.
     *
     * @param validation  Maybe successfully computed page
     * @return            A simple response
     */
-  implicit def toSimpleResult(validation: ActionVal[SimpleResult]): SimpleResult =
+  implicit def toSimpleResult(validation: ActionValidation[SimpleResult]): SimpleResult =
     validation.fold(fail = identity, succ = identity)
 
   implicit val ActionValErrorCombination: Monoid[SimpleResult] = new Monoid[SimpleResult] {
-    def append(f1: SimpleResult, f2: => SimpleResult): SimpleResult = ???
-    def zero: SimpleResult = ???
+
+    /** Stop at the first error */
+    def append(f1: SimpleResult, f2: => SimpleResult): SimpleResult = f1
+
+    /** Fail if we filter out  */
+    def zero: SimpleResult = throw new IllegalStateException(
+      "Filter was used on a validation without any means to generate an error response")
   }
 }

@@ -37,7 +37,8 @@ class AdminPage(
       tabs = Navigation.operatorNavigation))
   }
 
-  private def requireCapability(profile: CosmosProfile, capability: Capability): ActionVal[Unit] =
+  private def requireCapability(
+      profile: CosmosProfile, capability: Capability): ActionValidation[Unit] =
     if (profile.capabilities.hasCapability(capability)) ().success
     else Unauthorized(views.html.unauthorized()).fail
 }

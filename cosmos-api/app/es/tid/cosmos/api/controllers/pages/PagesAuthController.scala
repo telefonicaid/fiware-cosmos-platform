@@ -16,7 +16,7 @@ import scalaz._
 import play.api.mvc._
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
-import es.tid.cosmos.api.controllers.common.ActionVal
+import es.tid.cosmos.api.controllers.common.ActionValidation
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{UserId, CosmosProfile, CosmosProfileDao, UserState}
 
@@ -56,7 +56,8 @@ trait PagesAuthController extends Controller {
     * @return         Either the user profiles or an error redirecting to the login page
     *                 or the registration page
     */
-  def requireUserProfiles(request: RequestHeader): ActionVal[(OAuthUserProfile, CosmosProfile)] =
+  def requireUserProfiles(
+      request: RequestHeader): ActionValidation[(OAuthUserProfile, CosmosProfile)] =
     for {
       userProfile <- requireAuthenticatedUser(request)
       cosmosProfile <- requireRegisteredUser(userProfile.id)
@@ -67,7 +68,7 @@ trait PagesAuthController extends Controller {
     * @param request     Action request
     * @return            Either the user profile or a redirection response
     */
-  def requireAuthenticatedUser(request: RequestHeader): ActionVal[OAuthUserProfile] =
+  def requireAuthenticatedUser(request: RequestHeader): ActionValidation[OAuthUserProfile] =
     request.session.userProfile.toSuccess(redirectToIndex)
 
   /** Action validation requiring a registered user.
@@ -77,7 +78,8 @@ trait PagesAuthController extends Controller {
     * @return            Either the cosmos profile or a redirection response
     */
   def requireRegisteredUser(
-      userId: UserId, redirectTo: Call = routes.Pages.registerForm()): ActionVal[CosmosProfile] =
+      userId: UserId,
+      redirectTo: Call = routes.Pages.registerForm()): ActionValidation[CosmosProfile] =
     dao.withTransaction { implicit c =>
       dao.lookupByUserId(userId)
     }.toSuccess(Redirect(redirectTo))

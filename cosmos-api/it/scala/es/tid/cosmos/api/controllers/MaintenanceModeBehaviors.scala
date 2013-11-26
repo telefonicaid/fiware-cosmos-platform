@@ -32,6 +32,13 @@ trait MaintenanceModeBehaviors { this: FlatSpec with MustMatchers =>
     rejectingWithMaintenanceMessage(request, name = "page", expectedMimeType = HTML)
   }
 
+  def enabledWhenUnderMaintenance[T](request: FakeRequest[T])(implicit evidence: Writeable[T]) {
+    it must "accept requests when under maintenance status" in new WithTestApplication {
+      services.maintenanceStatus.enterMaintenance()
+      status(route(request).get) must not(equal(SERVICE_UNAVAILABLE))
+    }
+  }
+
   private def rejectingWithMaintenanceMessage[T](
       request: FakeRequest[T],
       name: String,

@@ -14,7 +14,7 @@ package es.tid.cosmos.api.controllers
 import play.api.mvc.Controller
 
 import es.tid.cosmos.api.auth.MultiAuthProviderComponent
-import es.tid.cosmos.api.controllers.admin.{MaintenanceStatusComponent, UserResource}
+import es.tid.cosmos.api.controllers.admin.{MaintenanceResource, MaintenanceStatusComponent, UserResource}
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.{AdminPage, Pages}
@@ -48,7 +48,8 @@ abstract class Application {
       new StorageResource(sm, dao, status),
       new ServicesResource(sm),
       new CliConfigResource(dao),
-      new UserResource(multiAuthProvider, sm, dao, status)
+      new UserResource(multiAuthProvider, sm, dao, status),
+      new MaintenanceResource(dao, status)
     )
   }
 

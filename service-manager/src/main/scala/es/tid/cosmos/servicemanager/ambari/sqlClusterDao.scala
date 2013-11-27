@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import com.imageworks.migration.{InstallAllMigrations, Migrator, MysqlDatabaseAdapter}
 import org.squeryl.{KeyedEntity, Schema}
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.annotations.Column
@@ -21,8 +22,18 @@ import es.tid.cosmos.servicemanager.clusters._
 
 private[servicemanager] trait SqlClusterDaoComponent extends ClusterDaoComponent {
   this: ConfigComponent =>
-  val connDetails = MySqlConnDetails.fromConfig(config)
-  val clusterDao: ClusterDao = new SqlClusterDao(db = new MySqlDatabase(connDetails))
+  private val connDetails = MySqlConnDetails.fromConfig(config)
+  private val migrator = new Migrator(
+    connDetails.asJdbc,
+    connDetails.username,
+    connDetails.password,
+    new MysqlDatabaseAdapter(schemaNameOpt = None))
+  migrator.migrate(
+    InstallAllMigrations,
+    packageName = "es.tid.cosmos.servicemanager.ambari.migrations",
+    searchSubPackages = false)
+  private val db = new MySqlDatabase(connDetails)
+  val clusterDao: ClusterDao = new SqlClusterDao(db)
 }
 
 private[ambari] case class ClusterEntity(

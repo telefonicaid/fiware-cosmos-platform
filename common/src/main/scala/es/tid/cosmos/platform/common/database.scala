@@ -48,7 +48,9 @@ case class MySqlConnDetails(
     port: Int,
     username: String,
     password: String,
-    dbName: String)
+    dbName: String) {
+  val asJdbc = s"jdbc:mysql://$host:$port/$dbName"
+}
 
 object MySqlConnDetails {
   private val DefaultPort: Int = 3306
@@ -75,8 +77,7 @@ class MySqlDatabase(c: MySqlConnDetails) extends SqlDatabase {
   /* Initialize MySQL JDBC driver, which registers the connection chain prefix on DriverManager. */
   Class.forName("com.mysql.jdbc.Driver")
 
-  def connect: Try[Connection] = Try(DriverManager.getConnection(
-    s"jdbc:mysql://${c.host}:${c.port}/${c.dbName}", c.username, c.password))
+  def connect: Try[Connection] = Try(DriverManager.getConnection(c.asJdbc, c.username, c.password))
 
   override val adapter = new MySQLAdapter
 }

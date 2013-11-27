@@ -16,26 +16,25 @@ import scala.concurrent.duration._
 import scala.concurrent.{Future, Await}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.postfixOps
+import scalaz.syntax.validation._
 
-import org.scalatest.{BeforeAndAfter, FlatSpec}
+import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.platform.common.{ExecutableValidation, PassThrough}
 import es.tid.cosmos.platform.common.scalatest.matchers.{FutureMatchers, ForAllMatcher}
-import es.tid.cosmos.platform.ial.{Id, ResourceExhaustedException, MachineState, MachineProfile}
+import es.tid.cosmos.platform.ial._
+import es.tid.cosmos.platform.ial.MachineState
+import es.tid.cosmos.platform.ial.ResourceExhaustedException
 
-class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with FutureMatchers with BeforeAndAfter {
+class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with FutureMatchers
+    with OneInstancePerTest {
 
+  implicit val noCondition = PassThrough
   val timeout: FiniteDuration = 5 seconds
-  var infraProvider: LibVirtInfrastructureProvider = null
-  var action: TestBootstrapAction = null
-
-  before {
-    infraProvider = new LibVirtInfrastructureProvider(
-      new FakeLibVirtDao, new FakeLibVirtServerFactory, "DUMMY-SSH-KEY")
-    action = new TestBootstrapAction
-  }
-
-  after {}
+  val infraProvider: LibVirtInfrastructureProvider = new LibVirtInfrastructureProvider(
+        new FakeLibVirtDao, new FakeLibVirtServerFactory, "DUMMY-SSH-KEY")
+  val action: TestBootstrapAction = new TestBootstrapAction
 
   "Libvirt Infra Provider" must "create machines when available" in {
     val machines_> = infraProvider.createMachines(MachineProfile.G1Compute, 3, action)
@@ -115,6 +114,20 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
     infraProvider.machinePoolCount(_ == MachineProfile.G1Compute) must be (5)
     infraProvider.machinePoolCount(_ == MachineProfile.HdfsMaster) must be (1)
     infraProvider.machinePoolCount(_ == MachineProfile.HdfsSlave) must be (3)
+  }
+
+  it must "accept creating machines but eventually deny it when pre-conditions are not met" in {
+    val willFailCondition: ExecutableValidation = () => "Failed!".failureNel
+    val beforeMachineCount_> = infraProvider.availableMachineCount(MachineProfile.G1Compute)
+    val machines_> = infraProvider.createMachines(
+      MachineProfile.G1Compute, 2, action)(willFailCondition)
+    machines_> must eventuallyFailWith[PreconditionsNotMetException]
+    val afterMachineCount_> = infraProvider.availableMachineCount(MachineProfile.G1Compute)
+    val noMachinesWereAllocated_> = for {
+      before <- beforeMachineCount_>
+      after <- afterMachineCount_>
+    } yield before == after
+    noMachinesWereAllocated_> must eventually(be (true))
   }
 
   def mustNotCreateMachines(machines_> : Future[Seq[MachineState]]) {

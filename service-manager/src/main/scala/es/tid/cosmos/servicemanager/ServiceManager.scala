@@ -12,7 +12,9 @@
 package es.tid.cosmos.servicemanager
 
 import scala.concurrent.Future
-import es.tid.cosmos.servicemanager.clusters.{ImmutableClusterDescription, ClusterId}
+
+import es.tid.cosmos.platform.common.ExecutableValidation
+import es.tid.cosmos.servicemanager.clusters.{ClusterId, ImmutableClusterDescription}
 
 /**
  * Cluster manager that allows cluster creation, termination as well as
@@ -46,7 +48,8 @@ trait ServiceManager {
     name: String,
     clusterSize: Int,
     serviceDescriptions: Seq[ServiceDescriptionType],
-    users: Seq[ClusterUser]): ClusterId
+    users: Seq[ClusterUser],
+    preConditions: ExecutableValidation): ClusterId
 
   /**
    * Obtain information of an existing cluster's state.

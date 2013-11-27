@@ -19,6 +19,7 @@ import scala.concurrent.Future.successful
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
+import scalaz.syntax.validation._
 
 import org.mockito.ArgumentMatcher
 import org.mockito.BDDMockito.given
@@ -27,6 +28,7 @@ import org.mockito.Mockito.verify
 import org.scalatest.OneInstancePerTest
 import org.scalatest.mock.MockitoSugar
 
+import es.tid.cosmos.platform.common.{ExecutableValidation, PassThrough}
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
@@ -65,7 +67,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(1)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 1, serviceDescriptions, Seq())
+    val clusterId = instance.createCluster("clusterName", 1, serviceDescriptions, Seq(), PassThrough)
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
@@ -81,7 +83,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(ClusterSize)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", ClusterSize, serviceDescriptions, Seq())
+    val clusterId = instance.createCluster("clusterName", ClusterSize, serviceDescriptions, Seq(), PassThrough)
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
@@ -130,12 +132,12 @@ class AmbariServiceManagerTest
         .createMachines(
             the(MachineProfile.HdfsSlave),
             the(slaveCount),
-            any())
+            any())(any())
       verify(infrastructureProvider)
         .createMachines(
             the(MachineProfile.HdfsMaster),
             the(1),
-            any())
+            any())(any())
       val distinctHostnames = (masterMachine ++ machines).map(_.hostname).toSet
       verify(provisioner).bootstrapMachines(
         distinctHostnames,
@@ -174,7 +176,8 @@ class AmbariServiceManagerTest
       "clusterName",
       clusterSize = 3,
       serviceDescriptions,
-      Seq(ClusterUser("user1", "publicKey1")))
+      Seq(ClusterUser("user1", "publicKey1")),
+      PassThrough)
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
     get(instance.setUsers(clusterId, Seq(ClusterUser("user2", "publicKey2"))))
@@ -196,7 +199,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq())
+    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq(), PassThrough)
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
     evaluating {
@@ -208,7 +211,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq())
+    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq(), PassThrough)
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
     evaluating (get(instance.setUsers(clusterId, Seq(ClusterUser("username", "publicKey"))))) must
@@ -219,11 +222,22 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq())
+    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq(), PassThrough)
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
     evaluating (instance.terminateCluster(clusterId)) must
       produce [IllegalArgumentException]
+  }
+
+  it must "pass through the preconditions to the infrastructure provider" in {
+    val (machines, hosts) = machinesAndHostsOf(3)
+    setMachineExpectations(machines, hosts)
+    setServiceExpectations()
+    val willFailCondition: ExecutableValidation = () => "Failed!".failureNel
+    val clusterId = instance.createCluster(
+      "clusterName", 3, serviceDescriptions, Seq(), willFailCondition)
+    waitForClusterCompletion(clusterId, instance)
+    verify(infrastructureProvider).createMachines(any(), any(), any())(the(willFailCondition))
   }
 
   private def initializeProvisioner = {
@@ -241,7 +255,7 @@ class AmbariServiceManagerTest
       .willReturn(successful())
     given(infrastructureProvider.rootPrivateSshKey).willReturn("sshKey")
     given(provisioner.bootstrapMachines(any(), any())).willReturn(successful())
-    given(infrastructureProvider.createMachines(the(profile), any(), any()))
+    given(infrastructureProvider.createMachines(the(profile), any(), any())(any()))
       .willReturn(Future.traverse(machines)(machine => successful(machine)))
     given(infrastructureProvider.assignedMachines(any()))
       .willReturn(successful(machines))
@@ -293,7 +307,7 @@ class AmbariServiceManagerTest
     slaves: Seq[Host],
     clusterId: ClusterId) {
     verify(infrastructureProvider).createMachines(
-      the(MachineProfile.G1Compute), the(machines.size), any())
+      the(MachineProfile.G1Compute), the(machines.size), any())(any())
     verify(infrastructureProvider).releaseMachines(machines)
     verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
     val distinctHostnames = machines.map(_.hostname).toSet

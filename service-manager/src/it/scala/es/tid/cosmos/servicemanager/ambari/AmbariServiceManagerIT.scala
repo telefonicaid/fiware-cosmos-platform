@@ -20,15 +20,17 @@ import scala.util.Try
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase, PassThrough}
 import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
   with FakeInfrastructureProviderComponent {
+
+  val preConditions = PassThrough
 
   @tailrec
   final def waitForClusterCompletion(id: ClusterId, sm: ServiceManager): ClusterState = {
@@ -71,7 +73,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     val user3 = ClusterUser("luckydude3", "publicKey2")
 
     val id = sm.createCluster(
-      name = "persistentHdfsId", 1, serviceDescriptions = Seq(), Seq(user1, user2))
+      name = "persistentHdfsId", 1, serviceDescriptions = Seq(), Seq(user1, user2), preConditions)
     println("Cluster creating...")
     val description = sm.describeCluster(id).get
     description.state must be (Provisioning)

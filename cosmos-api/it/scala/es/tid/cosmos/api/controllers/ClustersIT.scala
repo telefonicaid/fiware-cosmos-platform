@@ -34,11 +34,11 @@ class ClustersIT
 
   "Cluster listing" must behave like rejectingUnauthenticatedRequests(listClusters)
 
-  it must behave like resourceDisabledWhenUnderMaintenance(listClusters)
+  it must behave like enabledWhenUnderMaintenance(listClusters)
 
   "Cluster creation" must behave like rejectingUnauthenticatedRequests(createCluster)
 
-  it must behave like resourceDisabledWhenUnderMaintenance(createCluster)
+  it must behave like enabledOnlyForOperatorsWhenUnderMaintenance(createCluster)
 
   "The clusters resource" must "list user clusters" in new WithSampleUsers {
     dao.withConnection { implicit c =>

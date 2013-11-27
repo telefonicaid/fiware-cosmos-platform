@@ -48,9 +48,7 @@ class Pages(
   private val registrationWizard = new UserRegistrationWizard(serviceManager)
 
   def index = Action { implicit request =>
-    for {
-      _ <- requirePageNotUnderMaintenance()
-    } yield withAuthentication(request)(
+    withAuthentication(request)(
       whenRegistered = (_, _) => Redirect(routes.Pages.showProfile()),
       whenNotRegistered = _ => Redirect(routes.Pages.registerForm()),
       whenNotAuthenticated = landingPage
@@ -80,7 +78,6 @@ class Pages(
       def reportMissingAuthCode = BadRequest(Json.toJson(ErrorMessage("Missing code")))
 
       for {
-        _ <- requirePageNotUnderMaintenance()
         oauthClient <- oauthProviderById(providerId)
         _ <- requireNoOAuthError(maybeError)
       } yield (maybeCode, maybeError.flatMap(OAuthError.parse)) match {
@@ -162,7 +159,6 @@ class Pages(
 
   def showProfile = Action { implicit request =>
     for {
-      _ <- requirePageNotUnderMaintenance()
       profiles <- requireUserProfiles(request)
       (userProfile, cosmosProfile) = profiles
     } yield Ok(views.html.profile(
@@ -174,7 +170,6 @@ class Pages(
 
   def customGettingStarted = Action { implicit request =>
     for {
-      _ <- requirePageNotUnderMaintenance()
       profiles <- requireUserProfiles(request)
       (_, cosmosProfile) = profiles
     } yield Ok(views.html.gettingStarted(

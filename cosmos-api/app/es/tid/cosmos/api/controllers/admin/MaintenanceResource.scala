@@ -39,8 +39,7 @@ class MaintenanceResource(override val dao: CosmosProfileDao, maintenanceStatus:
     @ApiErrors(Array(
       new ApiError(code = 400, reason = "Invalid JSON payload"),
       new ApiError(code = 401, reason = "Unauthorized user"),
-      new ApiError(code = 403, reason = "Not an operator"),
-      new ApiError(code = 503, reason = "Service is under maintenance")
+      new ApiError(code = 403, reason = "Not an operator")
     ))
     @ApiParamsImplicit(Array(
       new ApiParamImplicit(paramType = "body", dataType = "scala.Boolean")

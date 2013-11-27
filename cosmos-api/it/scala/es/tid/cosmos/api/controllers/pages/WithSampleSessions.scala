@@ -14,6 +14,7 @@ package es.tid.cosmos.api.controllers.pages
 import scala.Some
 import scala.concurrent.Future
 
+import play.api.http.Writeable
 import play.api.mvc.Session
 import play.api.mvc.SimpleResult
 import play.api.test.Helpers._
@@ -37,6 +38,9 @@ trait WithSampleSessions extends WithTestApplication {
 
     def doRequest(path: String, method: String = GET): Future[SimpleResult] =
       route(request(path, method)).get
+
+    def doRequest[T: Writeable](request: FakeRequest[T]): Future[SimpleResult] =
+      route(request.withSession(session.data.toSeq: _*)).get
 
     def submitForm(path: String, fields: (String, String)*): Future[SimpleResult] =
       route(request(path, POST).withFormUrlEncodedBody(fields: _*)).get

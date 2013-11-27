@@ -17,6 +17,8 @@ import play.api.libs.json.Json
 import play.api.mvc.{Results, Controller, SimpleResult}
 
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
+import es.tid.cosmos.api.profile.{Capability, CosmosProfile}
+import es.tid.cosmos.api.profile.Capability._
 
 trait MaintenanceAwareController extends Controller {
   val maintenanceStatus: MaintenanceStatus
@@ -34,6 +36,19 @@ trait MaintenanceAwareController extends Controller {
 
   private def requireNotUnderMaintenance(errorPage: SimpleResult): ActionValidation[Unit] =
     if (maintenanceStatus.underMaintenance) errorPage.fail else ().success
+
+  /** Validation that succeed if not under maintenance mode or there is an operator profile.
+    * @param profile       Profile to check
+    * @param jsonResponse  Whether the error message should be encoded in JSON or HTML
+    * @return              Success or an error message
+    */
+  protected def requireNotUnderMaintenanceToNonOperators(
+      profile: CosmosProfile,
+      jsonResponse: Boolean = true): ActionValidation[Unit] =
+    if (!maintenanceStatus.underMaintenance ||
+      profile.capabilities.hasCapability(IsOperator)) ().success
+    else if (jsonResponse) unavailableResource.failure
+    else unavailablePage.failure
 }
 
 object MaintenanceAwareController extends Results {

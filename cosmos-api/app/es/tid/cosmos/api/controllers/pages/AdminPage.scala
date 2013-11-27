@@ -30,7 +30,6 @@ class AdminPage(
 
   def show = Action { implicit request =>
     for {
-      _ <- requirePageNotUnderMaintenance()
       profiles <- requireUserProfiles(request)
       (_, cosmosProfile) = profiles
       _ <- requireCapability(cosmosProfile, Capability.IsOperator)

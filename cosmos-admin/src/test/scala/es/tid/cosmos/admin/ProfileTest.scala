@@ -43,7 +43,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
   }
 
   it must "enable user capabilities" in new WithMockCosmosProfileDao {
-    instance.enableCapability(handle, Capability.IsSudoer) must be (true)
+    instance.enableCapability(handle, "is_sudoer") must be (true)
     userProfile.capabilities.hasCapability(Capability.IsSudoer) must be (true)
   }
 
@@ -51,7 +51,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
     dao.withTransaction { implicit c =>
       dao.enableUserCapability(cosmosId, Capability.IsSudoer)
     }
-    instance.disableCapability(handle, Capability.IsSudoer) must be (true)
+    instance.disableCapability(handle, "is_sudoer") must be (true)
     userProfile.capabilities.hasCapability(Capability.IsSudoer) must be (false)
   }
 

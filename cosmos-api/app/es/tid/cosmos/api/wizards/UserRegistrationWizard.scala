@@ -46,21 +46,24 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
     * @param registration  Registration parameters
     * @return              Newly created profile or an error response
     */
-  def registerUser(dao: CosmosProfileDao, userId: UserId, registration: Registration)
-                  (implicit c: dao.type#Conn): ActionValidation[CosmosProfile] = {
-    Try (dao.registerUser(userId, registration)(c)) match {
-      case Failure(ex) => {
-        logRegistrationError(userId, ex)
-        InternalServerError(Json.toJson(ErrorMessage(registrationErrorMessage(userId)))).failure
-      }
-      case Success(profile) => {
-        hdfsWizard.updatePersistentHdfsUsers(dao).onFailure {
-          case NonFatal(ex) => logRegistrationError(userId, ex)
+  def registerUser(
+      dao: CosmosProfileDao,
+      userId: UserId,
+      registration: Registration): ActionValidation[CosmosProfile] =
+    dao.withTransaction { implicit c =>
+      Try (dao.registerUser(userId, registration)) match {
+        case Failure(ex) => {
+          logRegistrationError(userId, ex)
+          InternalServerError(Json.toJson(ErrorMessage(registrationErrorMessage(userId)))).failure
         }
-        profile.success
+        case Success(profile) => {
+          hdfsWizard.updatePersistentHdfsUsers(dao).onFailure {
+            case NonFatal(ex) => logRegistrationError(userId, ex)
+          }
+          profile.success
+        }
       }
     }
-  }
 
   private def logRegistrationError(userId: UserId, ex: Throwable) {
     Logger.error(registrationErrorMessage(userId), ex)

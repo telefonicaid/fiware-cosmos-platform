@@ -85,6 +85,14 @@ private[ambari] class SqlClusterDao(db: SqlDatabase) extends ClusterDao with Sch
   private[ambari] val cluster_state = table[ClusterEntity]("cluster_state")
   private[ambari] val masters = table[MasterEntity]("master")
   private[ambari] val slaves = table[SlaveEntity]("slave")
-  private[ambari] def newTransaction[A](a: =>A) = transaction(db.newSession)(a)
+
+  private[ambari] def newTransaction[A](a: =>A) = {
+    val session = db.newSession
+    try {
+      transaction(session)(a)
+    } finally {
+      session.close
+    }
+  }
 }
 

@@ -9,42 +9,28 @@
 -- All rights reserved.
 --
 
-# Service Manager schema
+-- * Add groups table and association to users
 
 # --- !Ups
 
-CREATE TABLE cluster_state (
-  id VARCHAR(45) NOT NULL,
+CREATE TABLE user_group (
   name VARCHAR(45) NOT NULL,
-  size INT NOT NULL,
-  name_node VARCHAR(45),
-  state VARCHAR(20) NOT NULL,
-  reason TEXT,
-  PRIMARY KEY (id)
+  min_quota INT NOT NULL,
+  PRIMARY KEY (name)
 );
 
-CREATE TABLE master (
-  name VARCHAR(45) NOT NULL,
-  cluster_id VARCHAR(45) NOT NULL,
-  ip VARCHAR(45) NOT NULL,
-  PRIMARY KEY (cluster_id),
-  CONSTRAINT fk_cluster_master
-    FOREIGN KEY (cluster_id)
-    REFERENCES cluster_state (id)
-);
-
-CREATE TABLE slave (
-  name VARCHAR(45) NOT NULL,
-  cluster_id VARCHAR(45) NOT NULL,
-  ip VARCHAR(45) NOT NULL,
-  PRIMARY KEY (name, cluster_id, ip),
-  CONSTRAINT fk_cluster_slave
-    FOREIGN KEY (cluster_Id)
-    REFERENCES cluster_state (id)
-);
+ALTER TABLE user
+  ADD group_name VARCHAR(45) NULL,
+  ADD INDEX group_name_INDEX (group_name ASC),
+  ADD CONSTRAINT fk_user_user_group
+    FOREIGN KEY (group_name)
+    REFERENCES user_group (name)
+    ON DELETE SET NULL;
 
 # --- !Downs
 
-DROP TABLE IF EXISTS slave;
-DROP TABLE IF EXISTS master;
-DROP TABLE IF EXISTS cluster_state;
+ALTER TABLE user DROP FOREIGN KEY fk_user_user_group;
+
+ALTER TABLE user DROP COLUMN group_name;
+
+DROP TABLE IF EXISTS user_group;

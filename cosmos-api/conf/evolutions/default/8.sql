@@ -9,28 +9,18 @@
 -- All rights reserved.
 --
 
--- * Add groups table and association to users
+-- * Add user capabilities table
 
 # --- !Ups
 
-CREATE TABLE user_group (
+CREATE TABLE user_capability (
   name VARCHAR(45) NOT NULL,
-  min_quota INT NOT NULL,
-  PRIMARY KEY (name)
+  cosmos_id INT NOT NULL,
+  PRIMARY KEY (name, cosmos_id),
+  CONSTRAINT fk_user_capacity_user
+    FOREIGN KEY (cosmos_id) REFERENCES user (cosmos_id)
 );
-
-ALTER TABLE user
-  ADD group_name VARCHAR(45) NULL,
-  ADD INDEX group_name_INDEX (group_name ASC),
-  ADD CONSTRAINT fk_user_user_group
-    FOREIGN KEY (group_name)
-    REFERENCES user_group (name)
-    ON DELETE SET NULL;
 
 # --- !Downs
 
-ALTER TABLE user DROP FOREIGN KEY fk_user_user_group;
-
-ALTER TABLE user DROP COLUMN group_name;
-
-DROP TABLE IF EXISTS user_group;
+DROP TABLE IF EXISTS user_capability;

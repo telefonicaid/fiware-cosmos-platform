@@ -10,7 +10,8 @@
  All rights reserved.
  -->
 @main("Cosmos administration") {
-    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/profile.css")">
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")">
+    <script type="text/javascript" src="@routes.Assets.at("js/admin.js")"></script>
 } {
     @navigation("admin", tabs)
 
@@ -26,5 +27,7 @@
             <strong>OFF</strong>
             <input id="enter-maintenance" type="submit" value="Enter maintenance mode"/>
         }
+
+        <span id="maintenance-error" class="error-text"></span>
     </p>
 }

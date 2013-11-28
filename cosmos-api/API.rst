@@ -17,15 +17,6 @@ either:
 - redirected with 301 REDIRECT to the new resource when compatible
 - returned a 410 GONE status
 
---------------
-Authentication
---------------
-
-Requests should use a basic Authorization header as in RFC 2617 in which
-username corresponds with the API key and the password with the API secret.
-Alternatively, a session cookie of a valid user is also accepted as valid
-authentication to ease API exploration and direct use from JavaScript.
-
 ----------------
 Maintenance mode
 ----------------
@@ -35,6 +26,14 @@ When the platform is under maintenance, resources will fail with status 503.
 -------------------------
 Resources of the user API
 -------------------------
+
+Authentication
+--------------
+
+Requests should use a basic Authorization header as in RFC 2617 in which
+username corresponds with the API key and the password with the API secret.
+Alternatively, a session cookie of a valid user is also accepted as valid
+authentication to ease API exploration and direct use from JavaScript.
 
 GET ``/cosmos/v1``
 ------------------
@@ -190,6 +189,13 @@ These resources follow an authentication scheme different for the client API.
 Instead of using the pair API id / secret, a different set of credentials are
 accepted per authentication realm.  This is configured and enabled on the
 `cosmos-api` configuration file.
+
+Authentication
+--------------
+
+Requests should use a basic Authorization header as in RFC 2617 in which
+username corresponds to the ``authRealm`` being used in the call and the password
+is the one provided by the Cosmos team to the realm owners.
 
 POST ``/admin/v1/user``
 ----------------------

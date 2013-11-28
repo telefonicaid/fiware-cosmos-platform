@@ -181,6 +181,27 @@ it consists on WebHdfs url and username::
       "user": <string>
     }
 
+
+GET ``/cosmos/v1/maintenance``
+------------------------------
+
+*Since v1*
+
+Determines if the system is in maintenance status. Returns just a boolean payload.
+
+
+PUT ``/cosmos/v1/maintenance``
+------------------------------
+
+*Since v1*
+
+For operator users, allow to enter or leave the maintenance mode by posting a boolean payload.
+Other users will get a Forbidden status.
+
+In case of success the maintenance status will change and the new mode will be returned
+as a boolean payload with 200 status.
+
+
 --------------------------
 Resources of the admin API
 --------------------------

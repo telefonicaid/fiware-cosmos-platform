@@ -15,11 +15,9 @@ trait MaintenanceStatusComponent {
   val maintenanceStatus: MaintenanceStatus
 }
 
-/**
- * API for querying/controlling the maintenance status of the application.
- */
+/** API for querying/controlling the maintenance status of the application. */
 trait MaintenanceStatus {
-  def underMaintenance: Boolean
+  def isUnderMaintenance: Boolean
   def enterMaintenance(): Unit
   def leaveMaintenance(): Unit
 }

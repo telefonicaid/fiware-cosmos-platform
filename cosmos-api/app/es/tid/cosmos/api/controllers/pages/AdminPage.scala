@@ -30,12 +30,11 @@ class AdminPage(
 
   def show = Action { implicit request =>
     for {
-      _ <- requirePageNotUnderMaintenance()
       profiles <- requireUserProfiles(request)
       (_, cosmosProfile) = profiles
       _ <- requireCapability(cosmosProfile, Capability.IsOperator)
     } yield Ok(views.html.admin(
-      underMaintenance = maintenanceStatus.underMaintenance,
+      underMaintenance = maintenanceStatus.isUnderMaintenance,
       tabs = Navigation.OperatorNavigation))
   }
 

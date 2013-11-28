@@ -43,12 +43,8 @@ class ClusterResource(
    */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.clusters.ClusterList")
-  @ApiErrors(Array(
-    new ApiError(code = 503, reason = "Service is under maintenance")
-  ))
   def list = Action { implicit request =>
     for {
-      _ <- requireResourceNotUnderMaintenance()
       profile <- requireAuthenticatedApiRequest(request)
     } yield Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
   }
@@ -68,8 +64,8 @@ class ClusterResource(
   ))
   def createCluster = Action(parse.tolerantJson) { request =>
     for {
-      _ <- requireResourceNotUnderMaintenance()
       profile <- requireAuthenticatedApiRequest(request)
+      _ <- requireNotUnderMaintenanceToNonOperators(profile)
       body <- validJsonBody[CreateClusterParams](request)
       _ <- withinQuota(profile, body.size)
     } yield create(request, body, profile)
@@ -129,8 +125,7 @@ class ClusterResource(
   @ApiOperation(value = "Get cluster machines", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterDetails")
   @ApiErrors(Array(
-    new ApiError(code = 404, reason = "When cluster ID is unknown"),
-    new ApiError(code = 503, reason = "Service is under maintenance")
+    new ApiError(code = 404, reason = "When cluster ID is unknown")
   ))
   def listDetails(
       @ApiParam(value = "Cluster identifier", required = true,
@@ -138,7 +133,6 @@ class ClusterResource(
       @PathParam("id")
       id: String) = Action { implicit request =>
     for {
-      _ <- requireResourceNotUnderMaintenance()
       profile <- requireAuthenticatedApiRequest(request)
       cluster <- requireOwnedCluster(profile.id, ClusterId(id))
     } yield Ok(Json.toJson(ClusterDetails(cluster)))
@@ -158,8 +152,8 @@ class ClusterResource(
        @PathParam("id")
        id: String) = Action { request =>
     for {
-      _ <- requireResourceNotUnderMaintenance()
       profile <- requireAuthenticatedApiRequest(request)
+      _ <- requireNotUnderMaintenanceToNonOperators(profile)
       cluster <- requireOwnedCluster(profile.id, ClusterId(id))
     } yield Try(serviceManager.terminateCluster(cluster.id)) match {
       case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))

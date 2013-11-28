@@ -61,12 +61,12 @@ class ClusterIT
   "Cluster detail listing" must behave like
     rejectingUnauthenticatedRequests(clusterDetailsListing)
 
-  it must behave like resourceDisabledWhenUnderMaintenance(clusterDetailsListing)
+  it must behave like enabledWhenUnderMaintenance(clusterDetailsListing)
 
   "Cluster termination" must behave like
     rejectingUnauthenticatedRequests(clusterTermination)
 
-  it must behave like resourceDisabledWhenUnderMaintenance(clusterTermination)
+  it must behave like enabledOnlyForOperatorsWhenUnderMaintenance(clusterTermination)
 
   "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
     new WithSampleUsers {

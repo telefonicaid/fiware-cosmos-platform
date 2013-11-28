@@ -25,7 +25,7 @@ class AdminIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
 
   val path = "/admin"
 
-  "The admin page" must behave like pageDisabledWhenUnderMaintenance(FakeRequest(GET, path))
+  "The admin page" must behave like enabledWhenUnderMaintenance(FakeRequest(GET, path))
 
   it must "redirect not registered users" in new WithSampleSessions {
     unregUser.doRequest(path) must redirectTo ("/register")
@@ -41,6 +41,6 @@ class AdminIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   it must "show the maintenance status" in new WithSampleSessions {
     val response = opUser.doRequest(path)
     status(response) must be (OK)
-    contentAsString(response) must include ("Maintenance status")
+    contentAsString(response) must include ("Maintenance mode")
   }
 }

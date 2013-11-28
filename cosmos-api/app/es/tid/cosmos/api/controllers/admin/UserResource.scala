@@ -66,14 +66,14 @@ class UserResource(
       _ <- requireResourceNotUnderMaintenance()
       params <- validJsonBody[RegisterUserParams](request)
       _ <- requireAdminCreds(params.authRealm, request.headers)
-      profile <- dao.withTransaction { implicit c =>
+      dbInfo <- dao.withTransaction { implicit c =>
         for {
           userId <- uniqueUserId(params)
           handle <- selectHandle(params.handle)
-          registration = Registration(handle, params.sshPublicKey, params.email)
-          profile <- registrationWizard.registerUser(dao, userId, registration)
-        } yield profile
+        } yield (userId, Registration(handle, params.sshPublicKey, params.email))
       }
+      (userId, registration) = dbInfo
+      profile <- registrationWizard.registerUser(dao, userId, registration)
     } yield Created(Json.toJson(RegisterUserResponse(
       handle = profile.handle,
       apiKey = profile.apiCredentials.apiKey,
@@ -106,24 +106,20 @@ class UserResource(
     }
   }
 
-  private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = {
-    dao.withTransaction { implicit c =>
-      for {
-        cosmosId <- dao.getProfileId(userId).toSuccess(
-          NotFound(Json.toJson(Message(s"User $userId does not exist")))
-        )
-        unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosId)
-          .leftMap(message => InternalServerError(Json.toJson(message)))
-      } yield {
-        unregistration_>.onSuccess {
-          case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
-        }
-        unregistration_>.onFailure {
-          case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
-        }
-        unregistration_>
-      }
+  private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = for {
+    cosmosId <- dao.withTransaction { implicit c => dao.getProfileId(userId)}.toSuccess(
+      NotFound(Json.toJson(Message(s"User $userId does not exist")))
+    )
+    unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosId)
+      .leftMap(message => InternalServerError(Json.toJson(message)))
+  } yield {
+    unregistration_>.onSuccess {
+      case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
     }
+    unregistration_>.onFailure {
+      case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
+    }
+    unregistration_>
   }
 
   private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =

@@ -47,14 +47,16 @@ class UserUnregistrationWizard(serviceManager: ServiceManager) {
     * @param cosmosId  User to unregister
     * @return          The unregistration operation or a validation error
     */
-  def unregisterUser(dao: CosmosProfileDao, cosmosId: Long)
-                    (implicit c: dao.type#Conn): Validation[Message, Unregistration] = for {
-    _ <- markUserBeingDeleted(dao, cosmosId)
-  } yield startUnregistration(dao, cosmosId)
+  def unregisterUser(dao: CosmosProfileDao, cosmosId: Long): Validation[Message, Unregistration] =
+    for {
+      _ <- markUserBeingDeleted(dao, cosmosId)
+    } yield startUnregistration(dao, cosmosId)
 
-  private def markUserBeingDeleted(dao: CosmosProfileDao, cosmosId: Long)
-                                  (implicit c: dao.type#Conn): Validation[Message, Unit] = try {
-    dao.setUserState(cosmosId, UserState.Deleting).success
+  private def markUserBeingDeleted(
+      dao: CosmosProfileDao, cosmosId: Long): Validation[Message, Unit] = try {
+    dao.withTransaction { implicit c =>
+      dao.setUserState(cosmosId, UserState.Deleting).success
+    }
   } catch {
     case NonFatal(ex) => {
       val errorMessage = s"Cannot change user cosmosId=$cosmosId status"

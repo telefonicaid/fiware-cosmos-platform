@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.platform.ial
 
+import com.typesafe.scalalogging.slf4j.Logging
+
 /** Resource exhausted exception class. This exception is thrown when there are not enough
   * infrastructure resources available to satisfy a request to the infrastructure provider.
   *
@@ -25,7 +27,9 @@ case class ResourceExhaustedException(
     cause: Throwable = null) extends Exception(
   s"requested $requested resources of type $resource, only $available available",
   cause
-)
+) with Logging {
+  logger.warn(super.getMessage)
+}
 
 /** Exception used for when preconditions are not met before attempting to create a number of
   * machines.
@@ -40,4 +44,6 @@ case class PreconditionsNotMetException(
    reasons: Seq[String]) extends Exception(
   s"""Preconditions not met upon attempting to create $numberOfMachines $profile machines.
       | Causes: ${reasons.mkString(", ")}""".stripMargin
-)
+) with Logging {
+  logger.warn(super.getMessage)
+}

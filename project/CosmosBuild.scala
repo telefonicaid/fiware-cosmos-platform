@@ -23,8 +23,9 @@ object CosmosBuild extends Build {
     lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
-    lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
+    lazy val scalaLogging = "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
     lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
+    lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
   }
 
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)

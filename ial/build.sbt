@@ -10,6 +10,8 @@ libraryDependencies ++=  Seq(
   "net.java.dev.jna" % "platform" % "3.4.0",
   "org.libvirt" % "libvirt" % "0.4.9",
   "mysql" % "mysql-connector-java" % "5.1.10",
+  Dependencies.logbackClassic,
+  Dependencies.scalaLogging,
   Dependencies.squeryl,
   Dependencies.typesafeConfig
 )

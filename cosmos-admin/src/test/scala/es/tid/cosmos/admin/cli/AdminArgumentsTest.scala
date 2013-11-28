@@ -20,6 +20,8 @@ import es.tid.cosmos.api.profile.Capability
 
 class AdminArgumentsTest extends FlatSpec with MustMatchers {
 
+  val capability_name = Capability.IsOperator.toString
+
   class WithArguments(rawArgs: String*) {
     val args = new AdminArguments(rawArgs) {
       // Override error handle to avoid terminating the JVM if a test fail
@@ -49,17 +51,17 @@ class AdminArgumentsTest extends FlatSpec with MustMatchers {
     }
 
   it must "support enabling a capability to a profile" in new WithArguments(
-    "profile", "enable-capability", "--handle", "jsmith", "--capability", "is_operator") {
+    "profile", "enable-capability", "--handle", "jsmith", "--capability", capability_name) {
     args.subcommands must equal (List(args.profile, args.profile.enableCapability))
     args.profile.disableCapability.handle() must be ("jsmith")
-    args.profile.enableCapability.capability() must be (Capability.IsOperator)
+    args.profile.enableCapability.capability() must be (capability_name)
   }
 
   it must "support disabling a capability from a profile" in new WithArguments(
-    "profile", "disable-capability", "--handle", "jsmith", "--capability", "is_operator") {
+    "profile", "disable-capability", "--handle", "jsmith", "--capability", capability_name) {
       args.subcommands must equal (List(args.profile, args.profile.disableCapability))
       args.profile.disableCapability.handle() must be ("jsmith")
-      args.profile.disableCapability.capability() must be (Capability.IsOperator)
+      args.profile.disableCapability.capability() must be (capability_name)
   }
 
   it must "support 'profile set-machine-quota'" in

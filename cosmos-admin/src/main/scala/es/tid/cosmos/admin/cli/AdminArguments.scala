@@ -17,8 +17,6 @@ import es.tid.cosmos.api.profile.Capability.Capability
 
 class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
 
-  implicit val capabilityConverter = CapabilityConverter
-
   val setup = new Subcommand("setup")
   val persistentStorage = new Subcommand("persistent-storage") {
     val setup = new Subcommand("setup")
@@ -39,11 +37,11 @@ class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
     }
     val enableCapability = new Subcommand("enable-capability") {
       val handle = opt[String]("handle", required = true)
-      val capability = opt[Capability]("capability", required = true)(capabilityConverter)
+      val capability = opt[String]("capability", required = true)
     }
     val disableCapability = new Subcommand("disable-capability") {
       val handle = opt[String]("handle", required = true)
-      val capability = opt[Capability]("capability", required = true)(capabilityConverter)
+      val capability = opt[String]("capability", required = true)
     }
     val setGroup = new Subcommand("set-group") {
       val handle = opt[String]("handle", required = true)

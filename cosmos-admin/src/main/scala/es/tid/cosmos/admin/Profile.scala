@@ -23,35 +23,50 @@ private[admin] class Profile(dao: CosmosProfileDao) {
   def removeMachineQuota(handle: String): Boolean = setMachineQuota(handle, UnlimitedQuota)
 
   private def setMachineQuota(handle: String, quota: Quota): Boolean =
-    withProfile(handle) { (c, cosmosProfile) =>
-      dao.setMachineQuota(cosmosProfile.id, quota)(c)
-    }
+    dao.withTransaction { implicit c =>
+      for {
+        cosmosProfile <- withProfile(handle)
+        success <- Try(dao.setMachineQuota(cosmosProfile.id, quota)).toOption
+      } yield success
+    }.isDefined
 
-  def enableCapability(handle: String, capability: Capability): Boolean = 
-    withProfile(handle) { (c, cosmosProfile) =>
-      dao.enableUserCapability(cosmosProfile.id, capability)(c)
-    }
+  def enableCapability(handle: String, capability: String): Boolean =
+    modifyCapability(handle, capability, enable = true)
 
-  def disableCapability(handle: String, capability: Capability): Boolean =
-    withProfile(handle) { (c, cosmosProfile) =>
-      dao.disableUserCapability(cosmosProfile.id, capability)(c)
-    }
+  def disableCapability(handle: String, capability: String): Boolean =
+    modifyCapability(handle, capability, enable = false)
 
-  private def withProfile(handle: String)
-                         (action: (this.dao.type#Conn, CosmosProfile) => Unit): Boolean = {
-    Try(dao.withTransaction { implicit c =>
-      dao.lookupByHandle(handle) match {
-        case None => {
-          println(s"No user with handle $handle")
-          false
-        }
-        case Some(cosmosProfile) => action(c, cosmosProfile)
-      }
-    }).isSuccess
-  }
+  private def modifyCapability(handle: String, capability: String, enable: Boolean): Boolean =
+    dao.withTransaction { implicit c =>
+      val action = if (enable) dao.enableUserCapability _ else dao.disableUserCapability _
+      for {
+        cosmosProfile <- withProfile(handle)
+        parsedCapability <- parseCapability(capability)
+        success <- Try(action(cosmosProfile.id, parsedCapability)).toOption
+      } yield success
+    }.isDefined
 
   def setGroup(handle: String, groupName: Option[String]): Boolean =
-    withProfile(handle) { (c, cosmosProfile) =>
-      dao.setGroup(cosmosProfile.id, groupName)(c)
+    dao.withTransaction { implicit c =>
+      for {
+        cosmosProfile <- withProfile(handle)
+        success <- Try(dao.setGroup(cosmosProfile.id, groupName)).toOption
+      } yield success
+    }.isDefined
+
+  private def withProfile(handle: String)
+                         (implicit c: this.dao.type#Conn): Option[CosmosProfile] =
+    whenEmpty(dao.lookupByHandle(handle)) {
+      println(s"No user with handle $handle")
     }
+
+  private def parseCapability(input: String): Option[Capability] =
+    whenEmpty(Capability.values.find(_.toString == input)) {
+      println(s"Unknown capability '$input', one of ${Capability.values.mkString(", ")} was expected")
+    }
+
+  private def whenEmpty[T](value: Option[T])(action: => Unit): Option[T] = {
+    if (value.isEmpty) action
+    value
+  }
 }

@@ -42,6 +42,7 @@ trait ServiceManager {
    * @param clusterSize the number of nodes the cluster should comprise of
    * @param serviceDescriptions the description of services to be installed to the cluster
    * @param users the list of users the cluster should have
+   * @param preConditions the pre-conditions to be validated before attempting to create a cluster
    * @return the ID of the newly created cluster
    */
   def createCluster(

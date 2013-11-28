@@ -73,8 +73,9 @@ class AmbariServiceManager(
       clusterSize,
       masterProfile = MachineProfile.G1Compute,
       slavesProfile = MachineProfile.G1Compute,
-      Seq(Hdfs, MapReduce) ++ serviceDescriptions ++ userServices(users)
-    )(preConditions)
+      Seq(Hdfs, MapReduce) ++ serviceDescriptions ++ userServices(users),
+      preConditions
+    )
     id
   }
 
@@ -84,10 +85,11 @@ class AmbariServiceManager(
       clusterSize: Int,
       masterProfile: MachineProfile.Value,
       slavesProfile: MachineProfile.Value,
-      serviceDescriptions: Seq[ServiceDescriptionType])
-                           (implicit preConditions: ExecutableValidation) = {
+      serviceDescriptions: Seq[ServiceDescriptionType],
+      preConditions: ExecutableValidation) = {
 
-    val (master_>, slaves_>) = createMachines(masterProfile, slavesProfile, clusterSize)
+    val (master_>, slaves_>) = createMachines(
+      masterProfile, slavesProfile, clusterSize, preConditions)
     val dbClusterDescription = clusterDao.registerCluster(id, name, clusterSize)
     dbClusterDescription.state = Provisioning
     for (master <- master_>) {
@@ -114,20 +116,23 @@ class AmbariServiceManager(
   private def createMachines(
       masterProfile: MachineProfile.Value,
       slavesProfile: MachineProfile.Value,
-      numberOfMachines: Int)
-     (implicit preConditions: ExecutableValidation)
+      numberOfMachines: Int,
+      preConditions: ExecutableValidation)
   : (Future[MachineState], Future[Seq[MachineState]]) = {
 
     if (masterProfile == slavesProfile) {
       val x = for {
-        machines <- infrastructureProvider.createMachines(masterProfile, numberOfMachines, waitForSsh)
+        machines <- infrastructureProvider.createMachines(
+          preConditions, masterProfile, numberOfMachines, waitForSsh)
       } yield masterAndSlaves(machines)
       (x.map(_._1), x.map(_._2))
     } else {
-      val master_> = infrastructureProvider.createMachines(masterProfile, 1, waitForSsh).map(_.head)
+      val master_> = infrastructureProvider.createMachines(
+        preConditions, masterProfile, 1, waitForSsh).map(_.head)
       val slaves_> =
         if (numberOfMachines > 1)
-          infrastructureProvider.createMachines(slavesProfile, numberOfMachines - 1, waitForSsh)
+          infrastructureProvider.createMachines(
+            preConditions, slavesProfile, numberOfMachines - 1, waitForSsh)
         else throw new IllegalArgumentException("Machine creation request with 1 server " +
           "indicating different profiles for master and slaves")
       (master_>, slaves_>)
@@ -269,7 +274,8 @@ class AmbariServiceManager(
         clusterSize = machineCount + 1,
         masterProfile = MachineProfile.HdfsMaster,
         slavesProfile = MachineProfile.HdfsSlave,
-        serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq())))(PassThrough)
+        serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq())),
+        preConditions = PassThrough)
     _ <- deployment_>
   } yield ()
 

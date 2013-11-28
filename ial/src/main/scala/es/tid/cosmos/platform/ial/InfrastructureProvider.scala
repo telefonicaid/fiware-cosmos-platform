@@ -28,20 +28,21 @@ trait InfrastructureProvider {
     * in the sequential executor right before the allocation, removing the risk
     * for race-conditions by the check-then-set pattern.
     *
-    * @param profile the machine profile for the machines to be created.
+    * @param preConditions    pre-conditions that will be executed right before allocating machines.
+    *                         The provider will only attempt to create machines only if there are no
+    *                         validation errors
+    * @param profile          the machine profile for the machines to be created.
     * @param numberOfMachines the amount of machines to be created.
-    * @param bootstrapAction action to be performed on every host just after it starts running and
-    *                        to be finished to consider the provision successful
-    * @param preConditions pre-conditions that will be executed right before allocating machines.
-    *                      The provider will only attempt to create machines only if there are no
-    *                      validation errors
-    * @return a future which after success provides the sequence of newly created machines
+    * @param bootstrapAction  action to be performed on every host just after it starts running and
+    *                         to be finished to consider the provision successful
+    * @return                 a future which after success provides the sequence of newly created
+    *                         machines
     */
   def createMachines(
+      preConditions: ExecutableValidation,
       profile: MachineProfile.Value,
       numberOfMachines: Int,
-      bootstrapAction: MachineState => Future[Unit])
-      (implicit preConditions: ExecutableValidation): Future[Seq[MachineState]]
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]]
 
   /** Get the machines already in use for the given host names.
     *

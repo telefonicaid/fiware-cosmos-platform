@@ -24,8 +24,7 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.platform.common.{ExecutableValidation, PassThrough}
 import es.tid.cosmos.platform.common.scalatest.matchers.{FutureMatchers, ForAllMatcher}
 import es.tid.cosmos.platform.ial._
-import es.tid.cosmos.platform.ial.MachineState
-import es.tid.cosmos.platform.ial.ResourceExhaustedException
+import es.tid.cosmos.platform.ial.MachineProfile._
 
 class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with FutureMatchers
     with OneInstancePerTest {
@@ -37,70 +36,70 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
   val action: TestBootstrapAction = new TestBootstrapAction
 
   "Libvirt Infra Provider" must "create machines when available" in {
-    val machines_> = infraProvider.createMachines(MachineProfile.G1Compute, 3, action)
+    val machines_> = infraProvider.createMachines(noCondition, G1Compute, 3, action)
     machines_> must runUnder (timeout)
     machines_> must eventually(have length 3)
-    machines_> must eventually(matchAll.withProfile(MachineProfile.G1Compute))
+    machines_> must eventually(matchAll.withProfile(G1Compute))
     action.bootstrappedMachines must have size (3)
   }
 
   it must "not create machines when unavailable" in {
     mustNotCreateMachines(
-      infraProvider.createMachines(MachineProfile.G1Compute, 30, action))
+      infraProvider.createMachines(noCondition, G1Compute, 30, action))
   }
 
   it must "not create machines when unavailable for requested profile" in {
     mustNotCreateMachines(
-      infraProvider.createMachines(MachineProfile.HdfsMaster, 2, action))
+      infraProvider.createMachines(noCondition, HdfsMaster, 2, action))
   }
 
   it must "not create machines after several requests and resources exhausted" in {
     for (i <- 0 to 2) {
-      val machines_> = infraProvider.createMachines(MachineProfile.G1Compute, 3, action)
+      val machines_> = infraProvider.createMachines(noCondition, G1Compute, 3, action)
       machines_> must runUnder (timeout)
     }
-    val machines_> = infraProvider.createMachines(MachineProfile.G1Compute, 3, action)
+    val machines_> = infraProvider.createMachines(noCondition, G1Compute, 3, action)
     machines_> must runUnder (timeout)
     machines_> must eventuallyFailWith [ResourceExhaustedException]
   }
 
   it must "release machines" in {
     val machines = Await.result(
-      infraProvider.createMachines(MachineProfile.G1Compute, 3, action), timeout)
+      infraProvider.createMachines(noCondition, G1Compute, 3, action), timeout)
     infraProvider.releaseMachines(machines) must runUnder (timeout)
   }
 
   it must "create machines after some are released" in {
     val machines1 = Await.result(
-      infraProvider.createMachines(MachineProfile.G1Compute, 2, action), timeout)
+      infraProvider.createMachines(noCondition, G1Compute, 2, action), timeout)
     val machines2 = Await.result(
-      infraProvider.createMachines(MachineProfile.G1Compute, 2, action), timeout)
+      infraProvider.createMachines(noCondition, G1Compute, 2, action), timeout)
 
     infraProvider.releaseMachines(machines1) must runUnder (timeout)
     infraProvider.releaseMachines(machines2) must runUnder (timeout)
 
-    infraProvider.createMachines(MachineProfile.G1Compute, 2, action) must runUnder (timeout)
-    infraProvider.createMachines(MachineProfile.G1Compute, 2, action) must runUnder (timeout)
+    infraProvider.createMachines(noCondition, G1Compute, 2, action) must runUnder (timeout)
+    infraProvider.createMachines(noCondition, G1Compute, 2, action) must runUnder (timeout)
   }
 
   it must "provide available machine count for full availability" in {
-    val count_> = infraProvider.availableMachineCount(MachineProfile.G1Compute)
+    val count_> = infraProvider.availableMachineCount(G1Compute)
     count_> must runUnder(timeout)
     count_> must eventually(equal (5))
   }
 
   it must "provide available machine count when some are assigned" in {
-    val machines_> = infraProvider.createMachines(MachineProfile.G1Compute, 2, action)
+    val machines_> = infraProvider.createMachines(noCondition, G1Compute, 2, action)
     machines_> must runUnder(timeout)
 
-    val count_> = infraProvider.availableMachineCount(MachineProfile.G1Compute)
+    val count_> = infraProvider.availableMachineCount(G1Compute)
     count_> must runUnder(timeout)
     count_> must eventually(equal (3))
   }
 
   it must "provide the machine state from assigned hostnames" in {
     val machines_> = for {
-      createdMachines <- infraProvider.createMachines(MachineProfile.G1Compute, 2, action)
+      createdMachines <- infraProvider.createMachines(noCondition, G1Compute, 2, action)
       assignedMachines <- infraProvider.assignedMachines(createdMachines.map(m => m.hostname))
     } yield assignedMachines
 
@@ -111,18 +110,17 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
   it must "provide the total number of managed machines according to profile filter and " +
     "regardless of their state or usage" in {
     infraProvider.machinePoolCount(_ => true) must be (9)
-    infraProvider.machinePoolCount(_ == MachineProfile.G1Compute) must be (5)
-    infraProvider.machinePoolCount(_ == MachineProfile.HdfsMaster) must be (1)
-    infraProvider.machinePoolCount(_ == MachineProfile.HdfsSlave) must be (3)
+    infraProvider.machinePoolCount(_ == G1Compute) must be (5)
+    infraProvider.machinePoolCount(_ == HdfsMaster) must be (1)
+    infraProvider.machinePoolCount(_ == HdfsSlave) must be (3)
   }
 
   it must "accept creating machines but eventually deny it when pre-conditions are not met" in {
     val willFailCondition: ExecutableValidation = () => "Failed!".failureNel
-    val beforeMachineCount_> = infraProvider.availableMachineCount(MachineProfile.G1Compute)
-    val machines_> = infraProvider.createMachines(
-      MachineProfile.G1Compute, 2, action)(willFailCondition)
+    val beforeMachineCount_> = infraProvider.availableMachineCount(G1Compute)
+    val machines_> = infraProvider.createMachines(willFailCondition, G1Compute, 2, action)
     machines_> must eventuallyFailWith[PreconditionsNotMetException]
-    val afterMachineCount_> = infraProvider.availableMachineCount(MachineProfile.G1Compute)
+    val afterMachineCount_> = infraProvider.availableMachineCount(G1Compute)
     val noMachinesWereAllocated_> = for {
       before <- beforeMachineCount_>
       after <- afterMachineCount_>
@@ -137,7 +135,7 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
   }
 
   object matchAll {
-    def withProfile(profile: MachineProfile.Value) = new ForAllMatcher[MachineState](
+    def withProfile(profile: Value) = new ForAllMatcher[MachineState](
       s"profile $profile")(srv => srv.profile == profile)
   }
 

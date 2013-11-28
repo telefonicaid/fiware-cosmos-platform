@@ -28,10 +28,10 @@ class LibVirtInfrastructureProvider(
 
   private val createMachinesSequencer = new SequentialOperations
   override def createMachines(
+      preConditions: ExecutableValidation,
       profile: MachineProfile.Value,
       numberOfMachines: Int,
-      bootstrapAction: MachineState => Future[Unit])
-      (implicit preConditions: ExecutableValidation): Future[Seq[MachineState]] = {
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
 
     createMachinesSequencer enqueue {
       preConditions().fold(

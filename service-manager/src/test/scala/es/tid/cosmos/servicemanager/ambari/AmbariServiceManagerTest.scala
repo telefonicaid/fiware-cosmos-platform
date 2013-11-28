@@ -130,14 +130,16 @@ class AmbariServiceManagerTest
         .availableMachineCount(MachineProfile.HdfsSlave)
       verify(infrastructureProvider)
         .createMachines(
+            any(),
             the(MachineProfile.HdfsSlave),
             the(slaveCount),
-            any())(any())
+            any())
       verify(infrastructureProvider)
         .createMachines(
+            any(),
             the(MachineProfile.HdfsMaster),
             the(1),
-            any())(any())
+            any())
       val distinctHostnames = (masterMachine ++ machines).map(_.hostname).toSet
       verify(provisioner).bootstrapMachines(
         distinctHostnames,
@@ -237,7 +239,7 @@ class AmbariServiceManagerTest
     val clusterId = instance.createCluster(
       "clusterName", 3, serviceDescriptions, Seq(), willFailCondition)
     waitForClusterCompletion(clusterId, instance)
-    verify(infrastructureProvider).createMachines(any(), any(), any())(the(willFailCondition))
+    verify(infrastructureProvider).createMachines(the(willFailCondition), any(), any(), any())
   }
 
   private def initializeProvisioner = {
@@ -255,7 +257,7 @@ class AmbariServiceManagerTest
       .willReturn(successful())
     given(infrastructureProvider.rootPrivateSshKey).willReturn("sshKey")
     given(provisioner.bootstrapMachines(any(), any())).willReturn(successful())
-    given(infrastructureProvider.createMachines(the(profile), any(), any())(any()))
+    given(infrastructureProvider.createMachines(any(), the(profile), any(), any()))
       .willReturn(Future.traverse(machines)(machine => successful(machine)))
     given(infrastructureProvider.assignedMachines(any()))
       .willReturn(successful(machines))
@@ -307,7 +309,7 @@ class AmbariServiceManagerTest
     slaves: Seq[Host],
     clusterId: ClusterId) {
     verify(infrastructureProvider).createMachines(
-      the(MachineProfile.G1Compute), the(machines.size), any())(any())
+      any(), the(MachineProfile.G1Compute), the(machines.size), any())
     verify(infrastructureProvider).releaseMachines(machines)
     verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
     val distinctHostnames = machines.map(_.hostname).toSet

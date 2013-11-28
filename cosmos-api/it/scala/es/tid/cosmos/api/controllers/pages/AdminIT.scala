@@ -25,7 +25,9 @@ class AdminIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
 
   val path = "/admin"
 
-  "The admin page" must "redirect not registered users" in new WithSampleSessions {
+  "The admin page" must behave like enabledWhenUnderMaintenance(FakeRequest(GET, path))
+
+  it must "redirect not registered users" in new WithSampleSessions {
     unregUser.doRequest(path) must redirectTo ("/register")
     unauthUser.doRequest(path) must redirectTo ("/")
   }

@@ -33,11 +33,18 @@ class MaintenanceResourceIT
 
   it must behave like rejectingUnauthenticatedRequests(getRequest)
 
-  it must "return the current state" in new WithSampleSessions {
+  it must "return the current state when under maintenance" in new WithSampleSessions {
     services.maintenanceStatus.enterMaintenance()
     val response = regUser.doRequest(path)
     status(response) must be (OK)
     contentAsJson(response) must equal (jsTrue)
+  }
+
+  it must "return the current state when not under maintenance" in new WithSampleSessions {
+    services.maintenanceStatus must not be 'underMaintenance
+    val response = regUser.doRequest(path)
+    status(response) must be (OK)
+    contentAsJson(response) must equal (JsBoolean(false))
   }
 
   "Changing the maintenance status" must behave like enabledWhenUnderMaintenance(putRequest)
@@ -49,9 +56,10 @@ class MaintenanceResourceIT
   }
 
   it must "succeed for operator users" in new WithSampleSessions {
+    services.maintenanceStatus must not be 'underMaintenance
     val response = opUser.submitJson(path, jsTrue, PUT)
     status(response) must be (OK)
     contentAsJson(response) must equal (jsTrue)
-    services.maintenanceStatus.underMaintenance must be (true)
+    services.maintenanceStatus must be ('underMaintenance)
   }
 }

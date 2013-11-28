@@ -35,7 +35,7 @@ trait MaintenanceAwareController extends Controller {
     requireNotUnderMaintenance(unavailableResource)
 
   private def requireNotUnderMaintenance(errorPage: SimpleResult): ActionValidation[Unit] =
-    if (maintenanceStatus.underMaintenance) errorPage.fail else ().success
+    if (maintenanceStatus.isUnderMaintenance) errorPage.fail else ().success
 
   /** Validation that succeed if not under maintenance mode or there is an operator profile.
     * @param profile       Profile to check
@@ -45,7 +45,7 @@ trait MaintenanceAwareController extends Controller {
   protected def requireNotUnderMaintenanceToNonOperators(
       profile: CosmosProfile,
       jsonResponse: Boolean = true): ActionValidation[Unit] =
-    if (!maintenanceStatus.underMaintenance ||
+    if (!maintenanceStatus.isUnderMaintenance ||
       profile.capabilities.hasCapability(IsOperator)) ().success
     else if (jsonResponse) unavailableResource.failure
     else unavailablePage.failure

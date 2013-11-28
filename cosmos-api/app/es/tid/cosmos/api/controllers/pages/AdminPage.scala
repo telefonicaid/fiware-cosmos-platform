@@ -34,7 +34,7 @@ class AdminPage(
       (_, cosmosProfile) = profiles
       _ <- requireCapability(cosmosProfile, Capability.IsOperator)
     } yield Ok(views.html.admin(
-      underMaintenance = maintenanceStatus.underMaintenance,
+      underMaintenance = maintenanceStatus.isUnderMaintenance,
       tabs = Navigation.OperatorNavigation))
   }
 

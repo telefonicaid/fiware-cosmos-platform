@@ -20,19 +20,19 @@ class InMemoryMaintenanceStatusTest extends FlatSpec with MustMatchers {
   val emptyConfig = ConfigFactory.parseString("")
 
   "In memory maintenance status" must "start in normal mode by default" in {
-    new InMemoryMaintenanceStatus(emptyConfig).underMaintenance must be (false)
+    new InMemoryMaintenanceStatus(emptyConfig) must not be 'underMaintenance
   }
 
   it must "be initialized with a configuration setting" in {
     val maintenanceConfig = ConfigFactory.parseString("application.underMaintenance=true")
-    new InMemoryMaintenanceStatus(maintenanceConfig).underMaintenance must be (true)
+    new InMemoryMaintenanceStatus(maintenanceConfig) must be ('underMaintenance)
   }
   
   it must "remember entering and leaving maintenance mode" in {
     val status = new InMemoryMaintenanceStatus(emptyConfig)
     status.enterMaintenance()
-    status.underMaintenance must be (true)
+    status must be ('underMaintenance)
     status.leaveMaintenance()
-    status.underMaintenance must be (false)
+    status must not be 'underMaintenance
   }
 }

@@ -62,5 +62,5 @@ class MaintenanceResource(override val dao: CosmosProfileDao, maintenanceStatus:
     else Forbidden(Json.toJson(Message("Action reserved to operators"))).failure
   }
 
-  private def currentStatusResponse = Ok(Json.toJson(maintenanceStatus.underMaintenance))
+  private def currentStatusResponse = Ok(Json.toJson(maintenanceStatus.isUnderMaintenance))
 }

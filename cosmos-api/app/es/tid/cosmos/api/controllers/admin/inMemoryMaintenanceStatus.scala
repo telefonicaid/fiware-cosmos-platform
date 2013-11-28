@@ -23,17 +23,17 @@ import es.tid.cosmos.platform.common.ConfigComponent
  */
 private[admin] class InMemoryMaintenanceStatus(config: Config) extends MaintenanceStatus {
 
-  private var isUnderMaintenance =
+  private var _isUnderMaintenance =
     Try(config.getBoolean("application.underMaintenance")).getOrElse(false)
 
-  def underMaintenance: Boolean = isUnderMaintenance
+  def isUnderMaintenance: Boolean = _isUnderMaintenance
 
   def enterMaintenance() {
-    isUnderMaintenance = true
+    _isUnderMaintenance = true
   }
 
   def leaveMaintenance() {
-    isUnderMaintenance = false
+    _isUnderMaintenance = false
   }
 }
 

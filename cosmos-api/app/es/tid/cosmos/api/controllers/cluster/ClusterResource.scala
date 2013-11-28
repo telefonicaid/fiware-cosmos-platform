@@ -26,6 +26,7 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
+import es.tid.cosmos.platform.common.ExecutableValidation
 
 /**
  * Resource that represents a single cluster.
@@ -67,7 +68,7 @@ class ClusterResource(
       profile <- requireAuthenticatedApiRequest(request)
       _ <- requireNotUnderMaintenanceToNonOperators(profile)
       body <- validJsonBody[CreateClusterParams](request)
-      _ <- withinQuota(profile, body.size)
+      _ <- requireWithinQuota(profile, body.size)
     } yield create(request, body, profile)
   }
 
@@ -86,7 +87,8 @@ class ClusterResource(
         userName = profile.handle,
         publicKey = profile.keys.head.signature,
         isSudoer = profile.capabilities.hasCapability(Capability.IsSudoer)
-      ))
+      )),
+      preConditions = executableWithinQuota(profile, body.size)
     )) match {
       case Failure(ex) => throw ex
       case Success(clusterId: ClusterId) => {
@@ -100,15 +102,21 @@ class ClusterResource(
     }
   }
 
-  private def withinQuota(profile: CosmosProfile, size: Int): ActionValidation[Int] =
+  private def withinQuota(profile: CosmosProfile, size: Int): ValidationNel[String, Int] =
     dao.withConnection { implicit c =>
       new ProfileQuotas(
         machinePoolSize = serviceManager.clusterNodePoolCount,
         groups = dao.getGroups,
         lookupByGroup = dao.lookupByGroup,
         listClusters = listClusters
-      )
-    }.withinQuota(profile, size).leftMap(errors =>
+      ).withinQuota(profile, size)
+    }
+
+  private def executableWithinQuota(profile: CosmosProfile, size: Int): ExecutableValidation =
+    () => withinQuota(profile, size)
+
+  private def requireWithinQuota(profile: CosmosProfile, size: Int): ActionValidation[Int] =
+    withinQuota(profile, size).leftMap(errors =>
       Forbidden(Json.toJson(Message(errors.list.mkString(" "))))
     )
 

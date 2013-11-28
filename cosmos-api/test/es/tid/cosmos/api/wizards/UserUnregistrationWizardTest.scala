@@ -25,6 +25,7 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
 import CosmosProfileTestHelpers.{registerUser, userIdFor}
 import es.tid.cosmos.api.controllers.common.Message
+import es.tid.cosmos.platform.common.PassThrough
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, Terminated}
@@ -64,7 +65,8 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
       name = "cluster1",
       clusterSize = 1000,
       serviceDescriptions = Seq.empty,
-      users = Seq.empty
+      users = Seq.empty,
+      preConditions = PassThrough
     )
     dao.withTransaction { implicit c =>
       dao.assignCluster(clusterId, cosmosProfile.id)

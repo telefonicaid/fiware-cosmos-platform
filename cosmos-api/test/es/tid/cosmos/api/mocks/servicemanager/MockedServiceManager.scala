@@ -20,6 +20,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
+import es.tid.cosmos.platform.common.ExecutableValidation
+import es.tid.cosmos.platform.ial.PreconditionsNotMetException
+import es.tid.cosmos.platform.ial.MachineProfile.G1Compute
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.services.{Hdfs, MapReduce}
 import es.tid.cosmos.servicemanager.clusters._
@@ -111,7 +114,12 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
       name: String,
       clusterSize: Int,
       serviceDescriptions: Seq[ServiceDescriptionType],
-      users: Seq[ClusterUser]): ClusterId = {
+      users: Seq[ClusterUser],
+      preConditions: ExecutableValidation): ClusterId = {
+    preConditions().fold(
+      fail = errors => throw PreconditionsNotMetException(G1Compute, clusterSize, errors.list),
+      succ = _ => ()
+    )
     val cluster = new TransitioningCluster(name, clusterSize)
     clusters.put(cluster.id, cluster)
     cluster.id

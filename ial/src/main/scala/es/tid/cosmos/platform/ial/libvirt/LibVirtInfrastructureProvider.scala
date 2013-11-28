@@ -14,7 +14,7 @@ package es.tid.cosmos.platform.ial.libvirt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, future}
 
-import es.tid.cosmos.platform.common.SequentialOperations
+import es.tid.cosmos.platform.common.{ExecutableValidation, SequentialOperations}
 import es.tid.cosmos.platform.ial._
 
 /**
@@ -28,18 +28,31 @@ class LibVirtInfrastructureProvider(
 
   private val createMachinesSequencer = new SequentialOperations
   override def createMachines(
+      preConditions: ExecutableValidation,
       profile: MachineProfile.Value,
       numberOfMachines: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
+
     createMachinesSequencer enqueue {
-      val serversOfProfile = dao.libVirtServers.filter(_.profile == profile).map(libvirtServerFactory)
-      (for {
-        servers <- LibVirtServer.placeServers(serversOfProfile, numberOfMachines)
-        machines <- createMachines(bootstrapAction, servers)
-      } yield machines) recover {
-        case error @ LibVirtServer.PlacementException(_, available) =>
-          throw ResourceExhaustedException(profile.toString, numberOfMachines, available, error)
-      }
+      preConditions().fold(
+        fail = errors => throw PreconditionsNotMetException(profile, numberOfMachines, errors.list),
+        succ = _ => proceedToMachineCreation(profile, numberOfMachines, bootstrapAction)
+      )
+    }
+  }
+
+  private def proceedToMachineCreation(
+      profile: MachineProfile.Value,
+      numberOfMachines: Int,
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
+
+    val serversOfProfile = dao.libVirtServers.filter(_.profile == profile).map(libvirtServerFactory)
+    (for {
+      servers <- LibVirtServer.placeServers(serversOfProfile, numberOfMachines)
+      machines <- createMachines(bootstrapAction, servers)
+    } yield machines) recover {
+      case error @ LibVirtServer.PlacementException(_, available) =>
+        throw ResourceExhaustedException(profile.toString, numberOfMachines, available, error)
     }
   }
 

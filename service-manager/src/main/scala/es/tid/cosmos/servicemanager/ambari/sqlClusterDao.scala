@@ -23,6 +23,7 @@ import es.tid.cosmos.servicemanager.clusters._
 private[servicemanager] trait SqlClusterDaoComponent extends ClusterDaoComponent {
   this: ConfigComponent =>
   private val connDetails = MySqlConnDetails.fromConfig(config)
+  private val db = new MySqlDatabase(connDetails)
   private val migrator = new Migrator(
     connDetails.asJdbc,
     connDetails.username,
@@ -32,7 +33,6 @@ private[servicemanager] trait SqlClusterDaoComponent extends ClusterDaoComponent
     InstallAllMigrations,
     packageName = "es.tid.cosmos.servicemanager.ambari.migrations",
     searchSubPackages = false)
-  private val db = new MySqlDatabase(connDetails)
   val clusterDao: ClusterDao = new SqlClusterDao(db)
 }
 

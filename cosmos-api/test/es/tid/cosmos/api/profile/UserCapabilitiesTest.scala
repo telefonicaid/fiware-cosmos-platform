@@ -16,25 +16,25 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile.Capability._
 
-class UserCapabilitiesTest extends FlatSpec with MustMatchers {
+class UserCapabilitiesTest extends FlatSpec with MustMatchers with CapabilityMatchers {
 
   "User capability set" must "accept new capabilities" in {
     val initialCapabilities = UntrustedUserCapabilities
-    initialCapabilities.hasCapability(IsSudoer) must be (false)
+    initialCapabilities must not(containCapability (IsSudoer))
     val extendedCapabilities = initialCapabilities + IsSudoer
-    extendedCapabilities.hasCapability(IsSudoer) must be (true)
+    extendedCapabilities must containCapability (IsSudoer)
   }
 
   it must "be deprived of capabilities" in {
     val initialCapabilities = UserCapabilities(Set(IsOperator))
-    initialCapabilities.hasCapability(IsOperator) must be (true)
-    val extendedCapabilities = initialCapabilities - IsOperator
-    extendedCapabilities.hasCapability(IsOperator) must be (false)
+    initialCapabilities must containCapability (IsOperator)
+    val reducedCapabilities = initialCapabilities - IsOperator
+    reducedCapabilities must not(containCapability(IsOperator))
   }
 
   "Untrusted users" must "have no capabilities" in {
     Capability.values.foreach { capability =>
-      UntrustedUserCapabilities.hasCapability(capability) must be (false)
+      UntrustedUserCapabilities must not(containCapability(capability))
     }
   }
 }

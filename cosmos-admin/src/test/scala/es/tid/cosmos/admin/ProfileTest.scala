@@ -63,4 +63,14 @@ class ProfileTest extends FlatSpec with MustMatchers {
       userProfile.group must be (group)
     }
   }
+
+  it must "remove user from its assigned group" in new WithMockCosmosProfileDao {
+    val group = GuaranteedGroup("mygroup", Quota(3))
+    dao.withTransaction{ implicit c =>
+      dao.registerGroup(group)
+      dao.setGroup(cosmosId, Some("mygroup"))
+      new Profile(dao).removeGroup(handle) must be (true)
+      userProfile.group must be (NoGroup)
+    }
+  }
 }

@@ -92,14 +92,9 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .getOrElse(EmptyQuota)
 
   override def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn) {
-    val quotaValue = quota match {
-      case UnlimitedQuota => "NULL"
-      case EmptyQuota => "0"
-      case FiniteQuota(limit) => limit.toString
-    }
-    val updatedRows = 
+    val updatedRows =
       SQL("UPDATE user SET machine_quota = {machine_quota} WHERE cosmos_id = {cosmos_id}")
-        .on("cosmos_id" -> id, "machine_quota" -> quotaValue)
+        .on("cosmos_id" -> id, "machine_quota" -> quota.toInt)
         .executeUpdate()
     if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
   }

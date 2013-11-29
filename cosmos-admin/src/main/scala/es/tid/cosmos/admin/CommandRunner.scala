@@ -70,8 +70,8 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
       case Some(args.profile.setGroup) => tryCommand(playDbProfile.setGroup(
         args.profile.setGroup.handle(), args.profile.setGroup.group.get
       ))
-      case Some(args.profile.removeGroup) => tryCommand(playDbProfile.setGroup(
-        args.profile.setGroup.handle(), None
+      case Some(args.profile.removeGroup) => tryCommand(playDbProfile.removeGroup(
+        args.profile.setGroup.handle()
       ))
       case _ => help(args.profile)
     }

@@ -61,6 +61,12 @@ private[admin] class Profile(override val dao: CosmosProfileDao) extends GroupCh
       }
     }}
 
+  def list: String = dao.withTransaction { implicit c =>
+    val handles = dao.getAllUsers().map(_.handle).sorted
+    if (handles.isEmpty) "No users found"
+    else s"Users found (handles):\n${handles.mkString(", ")}"
+  }
+
   private def withProfile(handle: String)
                          (implicit c: this.dao.type#Conn): Option[CosmosProfile] =
     whenEmpty(dao.lookupByHandle(handle)) {

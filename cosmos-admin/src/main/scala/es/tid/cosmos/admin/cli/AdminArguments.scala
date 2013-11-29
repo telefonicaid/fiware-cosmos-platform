@@ -50,6 +50,7 @@ class AdminArguments(args: Seq[String]) extends ScallopConf(args) {
     val removeGroup = new Subcommand("remove-group") {
       val handle = opt[String]("handle", required = true)
     }
+    val list = new Subcommand("list")
   }
 
   val group = new Subcommand("group") {

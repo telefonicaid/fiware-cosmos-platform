@@ -62,7 +62,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
     val group = GuaranteedGroup("mygroup", Quota(3))
     dao.withTransaction{ implicit c =>
       dao.registerGroup(group)
-      new Profile(dao).setGroup(handle, Some(group.name)) must be (true)
+      new Profile(dao).setGroup(handle, group.name) must be (true)
       userProfile.group must be (group)
     }
   }
@@ -80,7 +80,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
   it must "list existing profile handles ordered alphabetically" in new WithMockCosmosProfileDao {
     registerUser("imontoya")(dao)
     dao.withTransaction { implicit c =>
-      new Profile(dao).list must include("imontoya, jsmith")
+      new Profile(dao).list must include("imontoya\njsmith")
     }
   }
 

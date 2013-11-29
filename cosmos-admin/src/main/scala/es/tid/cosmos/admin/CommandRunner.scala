@@ -68,7 +68,7 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
         args.profile.disableCapability.capability()
       ))
       case Some(args.profile.setGroup) => tryCommand(playDbProfile.setGroup(
-        args.profile.setGroup.handle(), args.profile.setGroup.group.get
+        args.profile.setGroup.handle(), args.profile.setGroup.group()
       ))
       case Some(args.profile.removeGroup) => tryCommand(playDbProfile.removeGroup(
         args.profile.setGroup.handle()

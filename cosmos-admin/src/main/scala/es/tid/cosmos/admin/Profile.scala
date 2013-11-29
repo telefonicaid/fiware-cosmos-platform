@@ -39,32 +39,14 @@ private[admin] class Profile(override val dao: CosmosProfileDao) extends GroupCh
   def disableCapability(handle: String, capability: String): Boolean =
     modifyCapability(handle, capability, enable = false)
 
-  def setGroup(handle: String, groupName: Option[String]): Boolean =
-    dao.withTransaction { implicit c => tryAction {
-      for {
-        cosmosProfile <- withProfile(handle)
-        name <- groupName
-        group <- withGroup(name)
-      } yield {
-        dao.setGroup(cosmosProfile.id, Some(group.name))
-        println(s"User $handle now belongs to group $groupName")
-      }
-    }}
+  def setGroup(handle: String, groupName: String): Boolean = handleGroup(handle, Some(groupName))
 
-  def removeGroup(handle: String): Boolean =
-    dao.withTransaction { implicit c => tryAction {
-      for {
-        cosmosProfile <- withProfile(handle)
-      } yield {
-        dao.setGroup(cosmosProfile.id, None)
-        println(s"User $handle was removed from group")
-      }
-    }}
+  def removeGroup(handle: String): Boolean = handleGroup(handle, groupName = None)
 
   def list: String = dao.withTransaction { implicit c =>
     val handles = dao.getAllUsers().map(_.handle).sorted
     if (handles.isEmpty) "No users found"
-    else s"Users found (handles):\n${handles.mkString(", ")}"
+    else s"Users found (handles):\n${handles.mkString("\n")}"
   }
 
   private def withProfile(handle: String)
@@ -90,4 +72,27 @@ private[admin] class Profile(override val dao: CosmosProfileDao) extends GroupCh
     whenEmpty(Capability.values.find(_.toString == input)) {
       println(s"Unknown capability '$input', one of ${Capability.values.mkString(", ")} was expected")
     }
+
+  /**
+    * Handle setting or removing a group from a user based on the `groupName` option.
+    *
+    * @param handle the user's handle
+    * @param groupName the optional group name. If a name is provided then the user will be set
+    *                  to that group. If `None` is provided then this will be interpreted as removing
+    *                  the user from any group that they might have belonged to.
+    * @return          true iff the operation was successful
+    */
+  private def handleGroup(handle: String, groupName: Option[String]): Boolean =
+    dao.withTransaction { implicit c => tryAction {
+      val maybeGroupName = groupName.flatMap(withGroup).map(_.name)
+      val groupNameGivenButNotFound = groupName.isDefined && maybeGroupName.isEmpty
+      if (groupNameGivenButNotFound)
+        None
+      else for {
+        cosmosProfile <- withProfile(handle)
+      } yield {
+        dao.setGroup(cosmosProfile.id, maybeGroupName)
+        println(s"User $handle now belongs to group $groupName")
+      }
+    }}
 }

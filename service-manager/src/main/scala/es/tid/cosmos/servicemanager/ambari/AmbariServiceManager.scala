@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -20,8 +21,7 @@ import es.tid.cosmos.platform.common._
 import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.machines._
-import es.tid.cosmos.servicemanager.ambari.rest.{AmbariServer, Cluster, Service}
+import es.tid.cosmos.servicemanager.ambari.rest.{AmbariServer, Service}
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
@@ -35,6 +35,8 @@ import es.tid.cosmos.servicemanager.util.TcpServer._
  * @param ambariServer the cluster provisioner
  * @param infrastructureProvider the host-machines provider
  * @param persistentHdfsId the id of the persistent hdfs cluster
+ * @param exclusiveMasterSizeCutoff the minimum size of a cluster such that
+ *                                  the master node stops acting like a slave
  * @param clusterDao the dao that stores cluster states
  * @param hadoopConfig parameters that fine-tune configuration of Hadoop
  */
@@ -42,10 +44,14 @@ class AmbariServiceManager(
     ambariServer: AmbariServer,
     infrastructureProvider: InfrastructureProvider,
     override val persistentHdfsId: ClusterId,
+    exclusiveMasterSizeCutoff: Int,
     hadoopConfig: HadoopConfig,
     clusterDao: AmbariClusterDao)
-  extends ServiceManager with FileConfigurationContributor with Logging {
+  extends ServiceManager with Logging {
   import AmbariServiceManager._
+
+  private[ambari] val clusterDeployer = new ClusterManager(
+    ambariServer, infrastructureProvider.rootPrivateSshKey)
 
   override type ServiceDescriptionType = AmbariServiceDescription
 
@@ -54,8 +60,7 @@ class AmbariServiceManager(
   override def describeCluster(id: ClusterId): Option[ImmutableClusterDescription] =
     clusterDao.getDescription(id).map(_.view)
 
-  /** Exposed services as optional choices */
-  override val services: Seq[ServiceDescriptionType] = AmbariServiceManager.services
+  override val optionalServices: Seq[ServiceDescriptionType] = OptionalServices
 
   private def userServices(users: Seq[ClusterUser]): Seq[ServiceDescriptionType] =
     Seq(new CosmosUserService(users))
@@ -66,159 +71,63 @@ class AmbariServiceManager(
       serviceDescriptions: Seq[ServiceDescriptionType],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
-    val id = ClusterId()
-    createCluster(
-      id,
-      name,
-      clusterSize,
-      masterProfile = MachineProfile.G1Compute,
-      slavesProfile = MachineProfile.G1Compute,
-      Seq(Hdfs, MapReduce) ++ serviceDescriptions ++ userServices(users),
-      preConditions(id)
-    )
-    id
+    val clusterDescription = clusterDao.registerNewCluster(name, clusterSize)
+    clusterDescription.withFailsafe {
+      for {
+        machines <- infrastructureProvider.createMachines(
+          preConditions(clusterDescription.id), MachineProfile.G1Compute, clusterSize, waitForSsh)
+        (master, slaves) = masterAndSlaves(machines)
+        _ = setMachineInfo(clusterDescription, master, slaves)
+        _ <- createCluster(
+          clusterDescription,
+          BasicHadoopServices ++ serviceDescriptions ++ userServices(users))
+      } yield ()
+    }
+    clusterDescription.id
+  }
+
+  private def masterAndSlaves(machines: Seq[MachineState]) = machines match {
+    case Seq(master, slaves @ _*) if machines.length < exclusiveMasterSizeCutoff =>
+      (master, machines)
+    case Seq(master, slaves @ _*) => (master, slaves)
+    case _ => throw new IllegalArgumentException("Need at least one machine")
   }
 
   private def createCluster(
-      id: ClusterId,
-      name: String,
-      clusterSize: Int,
-      masterProfile: MachineProfile.Value,
-      slavesProfile: MachineProfile.Value,
-      serviceDescriptions: Seq[ServiceDescriptionType],
-      preConditions: ExecutableValidation) = {
-
-    val (master_>, slaves_>) = createMachines(
-      masterProfile, slavesProfile, clusterSize, preConditions)
-    val dbClusterDescription = clusterDao.registerCluster(id, name, clusterSize)
-    dbClusterDescription.state = Provisioning
-    for (master <- master_>) {
-      dbClusterDescription.master = toHostInfo(master)
-    }
-    for (slaves <- slaves_>) {
-      dbClusterDescription.slaves = slaves.map(toHostInfo)
-    }
+      dbClusterDescription: MutableClusterDescription,
+      serviceDescriptions: Seq[ServiceDescriptionType]) = {
+    require(dbClusterDescription.master.isDefined,
+      "This function cannot be called if the master has not been set")
+    require(dbClusterDescription.slaves.nonEmpty,
+      "This function cannot be called if the slaves have not been set")
+    val master = dbClusterDescription.master.get
     val deployment_> = for {
-      master <- master_>
-      slaves <- slaves_>
-      deployment <- deployCluster(id, name, serviceDescriptions, master, slaves, hadoopConfig)
+      _ <- clusterDeployer.deployCluster(
+        dbClusterDescription.view, serviceDescriptions, hadoopConfig)
     } yield {
       dbClusterDescription.nameNode = toNameNodeUri(master)
       dbClusterDescription.state = Running
-      deployment
-    }
-    deployment_>.onFailure {
-      case err => dbClusterDescription.state = Failed(err)
     }
     deployment_>
   }
 
-  private def createMachines(
-      masterProfile: MachineProfile.Value,
-      slavesProfile: MachineProfile.Value,
-      numberOfMachines: Int,
-      preConditions: ExecutableValidation)
-  : (Future[MachineState], Future[Seq[MachineState]]) = {
-
-    if (masterProfile == slavesProfile) {
-      val x = for {
-        machines <- infrastructureProvider.createMachines(
-          preConditions, masterProfile, numberOfMachines, waitForSsh)
-      } yield masterAndSlaves(machines)
-      (x.map(_._1), x.map(_._2))
-    } else {
-      val master_> = infrastructureProvider.createMachines(
-        preConditions, masterProfile, 1, waitForSsh).map(_.head)
-      val slaves_> =
-        if (numberOfMachines > 1)
-          infrastructureProvider.createMachines(
-            preConditions, slavesProfile, numberOfMachines - 1, waitForSsh)
-        else throw new IllegalArgumentException("Machine creation request with 1 server " +
-          "indicating different profiles for master and slaves")
-      (master_>, slaves_>)
-    }
-  }
-
-  private def deployCluster(
-      id: ClusterId,
-      name: String,
-      serviceDescriptions: Seq[AmbariServiceDescription],
-      master : MachineState,
-      slaves: Seq[MachineState],
-      hadoopConfig: HadoopConfig) = for {
-    cluster <- initCluster(id, master +: slaves)
-    masterHost <- cluster.addHost(master.hostname)
-    nonMasterHosts <- cluster.addHosts(slaves
-      .filterNot(_.hostname == master.hostname)
-      .map(_.hostname))
-    slaveHosts = if (nonMasterHosts.length < slaves.length)
-      masterHost +: nonMasterHosts else nonMasterHosts
-    configuredCluster <- Configurator.applyConfiguration(
-      cluster,
-      masterHost,
-      slaveHosts,
-      hadoopConfig,
-      this +: serviceDescriptions)
-    services <- Future.traverse(serviceDescriptions)(
-      srv => srv.createService(configuredCluster, masterHost, slaveHosts))
-    deployedServices <- installInOrder(services)
-  } yield deployedServices
-
-  private def waitForSsh(state: MachineState): Future[Unit] =
-    TcpServer(state.hostname, SshService).waitForServer()
-
-  private def installInOrder(services: Seq[Service]): Future[Seq[Service]] = {
-    def doInstall(
-        installedServices_> : Future[Seq[Service]],
-        service : Service): Future[Seq[Service]] = for {
-      installedServices <- installedServices_>
-      service <- installAndStart(service)
-    } yield service +: installedServices
-    services.foldLeft(Future.successful(Seq[Service]()))(doInstall)
-  }
-
-  private def installAndStart(service : Service): Future[Service] = for {
-    installedService <- service.install()
-    startedService <- installedService.start()
-  } yield startedService
-
-  private def initCluster(id: ClusterId, machines: Seq[MachineState]) : Future[Cluster] = {
-    val distinctHostnames = machines.map(_.hostname).toSet
-    for {
-      _ <- ambariServer.bootstrapMachines(distinctHostnames, infrastructureProvider.rootPrivateSshKey)
-      _ <- ensureHostsRegistered(distinctHostnames)
-      cluster <- ambariServer.createCluster(id.toString, StackVersion)
-    } yield cluster
-  }
-
-  private def ensureHostsRegistered(hostnames: Set[String]): Future[Unit] =
-    ambariServer.registeredHostnames.flatMap(registeredHostnames =>
-      if (hostnames.diff(registeredHostnames).nonEmpty) {
-        Thread.sleep(1000)
-        ensureHostsRegistered(hostnames)
-      } else
-        Future.successful())
-
   override def terminateCluster(id: ClusterId): Future[Unit] = {
     val mutableCluster = clusterDao.getDescription(id).getOrElse(
       throw new IllegalArgumentException(s"Cluster $id does not exist"))
-    val cluster = mutableCluster.view
-    val clusterState = cluster.state
-    require(!Seq(Provisioning, Terminating, Terminated).contains(clusterState),
-      s"Cluster $id is in state $clusterState, which is not a valid state for termination")
-    mutableCluster.state = Terminating
-    val termination_> = for {
-      _ <- removeClusterFromAmbari(cluster)
-      machines <- infrastructureProvider.assignedMachines(cluster.machines.map(_.hostname))
-      _ <- infrastructureProvider.releaseMachines(machines)
-    } yield {
-      mutableCluster.state = Terminated
-      ()
+    mutableCluster.withFailsafe {
+      val cluster = mutableCluster.view
+      val clusterState = cluster.state
+      require(clusterState.canTerminate,
+        s"Cluster $id is in state $clusterState, which is not a valid state for termination")
+      mutableCluster.state = Terminating
+      for {
+        _ <- clusterDeployer.removeClusterFromAmbari(cluster)
+        machines <- infrastructureProvider.assignedMachines(cluster.machines.map(_.hostname))
+        _ <- infrastructureProvider.releaseMachines(machines)
+      } yield {
+        mutableCluster.state = Terminated
+      }
     }
-    termination_>.onFailure {
-      case err => mutableCluster.state = Failed(err)
-    }
-    termination_>
   }
 
   override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = {
@@ -237,8 +146,6 @@ class AmbariServiceManager(
     } yield ()
   }
 
-  override val configName = "global-basic"
-
   private def changeServiceConfiguration(
       id: ClusterId,
       clusterDescription: ClusterDescription,
@@ -254,29 +161,22 @@ class AmbariServiceManager(
     startedService <- stoppedService.start()
   } yield startedService
 
-  private def removeClusterFromAmbari(cluster: ClusterDescription) = for {
-    _ <- stopStartedServices(cluster.id)
-    _ <- ambariServer.removeCluster(cluster.id.toString)
-  } yield ()
-
-  private def stopStartedServices(id: ClusterId) = for {
-    cluster <- ambariServer.getCluster(id.toString)
-    services <- Future.traverse(cluster.serviceNames)(cluster.getService)
-    startedServices = services.filter(_.state == "STARTED")
-    stoppedServices <- Future.traverse(startedServices)(_.stop())
-  } yield stoppedServices
-
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
-    deployment_> = createCluster(
-        id = persistentHdfsId,
-        name = persistentHdfsId.id,
-        clusterSize = machineCount + 1,
-        masterProfile = MachineProfile.HdfsMaster,
-        slavesProfile = MachineProfile.HdfsSlave,
-        serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq())),
-        preConditions = PassThrough)
-    _ <- deployment_>
+    clusterDescription = clusterDao.registerNewCluster(
+      id = persistentHdfsId,
+      name = persistentHdfsId.id,
+      size = machineCount + 1)
+    _ <- clusterDescription.withFailsafe(for {
+        master <- infrastructureProvider.createMachines(
+        PassThrough, MachineProfile.HdfsMaster, numberOfMachines = 1, waitForSsh).map(_.head)
+        slaves <- infrastructureProvider.createMachines(
+        PassThrough, MachineProfile.HdfsSlave, numberOfMachines = machineCount, waitForSsh)
+        _ = setMachineInfo(clusterDescription, master, slaves)
+        _ <- createCluster(
+        clusterDescription,
+        serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq())))
+      } yield ())
   } yield ()
 
   override def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
@@ -289,8 +189,27 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val StackVersion = "Cosmos-0.1.0"
-  /** Exposed services as optional choices */
-  val services: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
-  val allServices = Seq(Hdfs, MapReduce, CosmosUserService) ++ services
+  val BasicHadoopServices = Seq(Hdfs, MapReduce)
+  val OptionalServices: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
+  val AllServices = (CosmosUserService +: BasicHadoopServices) ++ OptionalServices
+
+  private def setMachineInfo(
+      description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {
+    description.master = toHostInfo(master)
+    description.slaves = slaves.map(toHostInfo)
+  }
+
+  /**
+   * Create the namenode URI for the given host.
+   *
+   * @param host the host for whom to create the URI
+   * @return the namenode URI e.g. `hdfs://localhost:50070`
+   */
+  private def toNameNodeUri(host: HostDetails) =
+    new URI(s"hdfs://${host.hostname}:${Hdfs.nameNodeHttpPort}")
+
+  private def toHostInfo(host: MachineState) = HostDetails(host.hostname, host.ipAddress)
+
+  private def waitForSsh(state: MachineState): Future[Unit] =
+    TcpServer(state.hostname, SshServicePort).waitForServer()
 }

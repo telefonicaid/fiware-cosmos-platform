@@ -90,7 +90,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
 
   override type ServiceDescriptionType = ServiceDescription
 
-  override val services: Seq[ServiceDescriptionType] = Seq(Hdfs, MapReduce)
+  override val optionalServices: Seq[ServiceDescriptionType] = Seq(Hdfs, MapReduce)
 
   private val clusters: mutable.Map[ClusterId, FakeCluster] =
     new mutable.HashMap[ClusterId, FakeCluster]

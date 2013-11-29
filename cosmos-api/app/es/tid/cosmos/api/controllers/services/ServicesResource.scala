@@ -29,6 +29,6 @@ class ServicesResource(serviceManager: ServiceManager) extends JsonController {
    */
   @ApiOperation(value = "List services", httpMethod = "GET", responseClass = "Seq[String]")
   def list = Action { implicit request =>
-      Ok(Json.toJson(serviceManager.services.map(_.name)))
+      Ok(Json.toJson(serviceManager.optionalServices.map(_.name)))
   }
 }

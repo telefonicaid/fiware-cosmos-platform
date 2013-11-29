@@ -33,13 +33,14 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       ambariServer,
       infrastructureProvider,
       ClusterId(config.getString("hdfs.cluster.id")),
+      config.getInt("ambari.servicemanager.exclusiveMasterSizeCutoff"),
       HadoopConfig(
         config.getInt("ambari.servicemanager.mappersPerSlave"),
         config.getInt("ambari.servicemanager.reducersPerSlave")),
       new AmbariClusterDao(
         clusterDao,
         ambariServer,
-        AmbariServiceManager.allServices,
+        AmbariServiceManager.AllServices,
         config.getInt("ambari.servicemanager.initialization.graceperiod.minutes") minutes)
     )
 }

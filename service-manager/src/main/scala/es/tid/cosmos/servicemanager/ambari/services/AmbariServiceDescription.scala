@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.{ComponentDescription, ServiceDescription}
+import es.tid.cosmos.servicemanager.ServiceDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributor
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
 

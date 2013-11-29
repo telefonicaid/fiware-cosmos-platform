@@ -13,8 +13,6 @@ package es.tid.cosmos.api.controllers.cluster
 
 
 import scala.Some
-import scala.concurrent.Future
-import scala.util.Success
 
 import com.wordnik.swagger.annotations.ApiProperty
 import play.api.libs.json._

@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.profile
 
-
 /** Utilities for setting up users on integration tests. */
 object CosmosProfileTestHelpers {
 
@@ -50,19 +49,42 @@ object CosmosProfileTestHelpers {
     */
   def registerUser(handle: String)(implicit dao: CosmosProfileDao): CosmosProfile =
     dao.withTransaction { implicit c =>
-      dao.registerUser(
-        userId = userIdFor(handle),
-        reg = registrationFor(handle))
+      registerUser(dao, handle)
     }
+
+  /** Overload of `registerUser` that uses a given transaction/connection.
+    *
+    * Note that `dao` and `c` should be in different argument groups to satisfy type checking.
+    * 
+    * @param dao     Where to create the user in
+    * @param handle  Handle to base the dummy info generation on
+    * @param c       Connection/transaction to do the changes on
+    * @return        The newly created profile
+    */
+  def registerUser(dao: CosmosProfileDao, handle: String)
+                  (implicit c: dao.type#Conn): CosmosProfile =
+    dao.registerUser(userId = userIdFor(handle), reg = registrationFor(handle))
 
   /** Lookup a user profile by their handle.
     *
-    * @param handle the user's handle
-    * @param dao the dao to use
-    * @return the profile iff found
+    * @param handle  The user's handle
+    * @param dao     The dao to use
+    * @return        The profile iff found
     */
   def lookup(handle: String)(implicit dao: CosmosProfileDao): Option[CosmosProfile] =
     dao.withTransaction{ implicit c =>
-      dao.lookupByUserId(userIdFor(handle))
+      lookup(dao, handle)
     }
+
+  /** Overload of `lookup` that uses a given transaction/connection
+    *
+    * @param dao     The dao to use
+    * @param handle  The user's handle
+    * @param c       Connection/transaction to do the changes on
+    * @return        The profile iff found
+    */
+  def lookup(dao: CosmosProfileDao, handle: String)
+            (implicit c: dao.type#Conn): Option[CosmosProfile] = {
+    dao.lookupByUserId(userIdFor(handle))
+  }
 }

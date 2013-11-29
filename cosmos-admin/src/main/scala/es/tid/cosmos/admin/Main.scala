@@ -11,9 +11,12 @@
 
 package es.tid.cosmos.admin
 
+
+import play.api.{Play, SimpleApplication}
+
+import es.tid.cosmos.admin.cli.AdminArguments
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.ProductionServiceManagerComponent
-import es.tid.cosmos.admin.cli.AdminArguments
 
 object ServiceManagerProvider extends ProductionServiceManagerComponent
   with ApplicationConfigComponent
@@ -21,7 +24,11 @@ object ServiceManagerProvider extends ProductionServiceManagerComponent
 object Main {
 
   def main(args: Array[String]) {
+    val app = new SimpleApplication(cfg = ServiceManagerProvider.config)
+    Play.start(app)
     val runner = new CommandRunner(new AdminArguments(args), ServiceManagerProvider.serviceManager)
-    System.exit(runner.run())
+    val status = runner.run()
+    Play.stop()
+    System.exit(status)
   }
 }

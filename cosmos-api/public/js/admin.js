@@ -11,6 +11,20 @@
 
 ;"use strict";
 
+function configureActiveClustersTable() {
+    $('#active-clusters').dataTable({
+        "bProcessing": true,
+        "sAjaxSource": '/cosmos/v1/stats/clusters',
+        "sAjaxDataProp": "clusters",
+        "aoColumns": [
+            { "mData": "id", "sClass": "id-cell" },
+            { "mData": "name" },
+            { "mData": "ownerHandle" },
+            { "mData": "size", "sType": "numeric", "sClass": "numeric-cell" }
+        ]
+    });
+}
+
 /**
  * Configure AJAX buttons for entering/leaving maintenance mode with user confirmation.
  */
@@ -43,5 +57,6 @@ function configureMaintenanceButtons() {
 }
 
 $(document).ready(function() {
+    configureActiveClustersTable();
     configureMaintenanceButtons();
 });

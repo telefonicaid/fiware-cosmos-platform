@@ -233,6 +233,18 @@ trait CosmosProfileDaoBehavior extends CapabilityMatchers { this: FlatSpec with 
       }
     })
 
+    taggedTest(it must "retrieve the owner of a cluster", withDao { implicit dao =>
+      val clusterId = ClusterId()
+      val profileId = dao.withTransaction { implicit c =>
+        val profileId = registerUser(dao, "user1").id
+        dao.assignCluster(clusterId, profileId)
+        profileId
+      }
+      dao.withTransaction { implicit c =>
+        dao.ownerOf(clusterId) must be (Some(profileId))
+      }
+    })
+
     taggedTest(it must "get empty, NoGroup by default", withDao{ dao =>
       dao.withConnection{ implicit c =>
         dao.getGroups must equal (Set(NoGroup))

@@ -15,7 +15,6 @@ import play.api.mvc.Action
 
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
-import es.tid.cosmos.api.controllers.pages.PagesAuthController
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 /** Downloadable configuration file for cosmos-cli */

@@ -13,6 +13,7 @@ package es.tid.cosmos.servicemanager
 
 import scala.concurrent.Future
 
+import es.tid.cosmos.platform.common.PassThrough
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ImmutableClusterDescription}
 
 /**
@@ -49,7 +50,7 @@ trait ServiceManager {
     clusterSize: Int,
     serviceDescriptions: Seq[ServiceDescriptionType],
     users: Seq[ClusterUser],
-    preConditions: ClusterExecutableValidation): ClusterId
+    preConditions: ClusterExecutableValidation = PassThrough): ClusterId
 
   /**
    * Obtain information of an existing cluster's state.

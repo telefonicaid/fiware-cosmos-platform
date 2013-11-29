@@ -41,5 +41,5 @@ class AdminPage(
   private def requireCapability(
       profile: CosmosProfile, capability: Capability): ActionValidation[Unit] =
     if (profile.capabilities.hasCapability(capability)) ().success
-    else Unauthorized(views.html.unauthorized()).fail
+    else Forbidden(views.html.unauthorized()).fail
 }

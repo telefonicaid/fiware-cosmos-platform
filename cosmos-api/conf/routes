@@ -39,6 +39,9 @@ GET     /cosmos/v1/maintenance              @es.tid.cosmos.api.controllers.admin
 PUT     /cosmos/v1/maintenance              @es.tid.cosmos.api.controllers.admin.MaintenanceResource.put()
 GET     /doc/cosmos/v1/maintenance          controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/maintenance")
 
+GET     /cosmos/v1/stats/clusters        @es.tid.cosmos.api.controllers.admin.stats.ClusterStatsResource.list
+GET     /doc/cosmos/v1/status/clusters   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/stats/clusters")
+
 # Admin API
 POST    /admin/v1/user                      @es.tid.cosmos.api.controllers.admin.UserResource.register
 DELETE  /admin/v1/user/:realm/:id           @es.tid.cosmos.api.controllers.admin.UserResource.unregister(realm, id)

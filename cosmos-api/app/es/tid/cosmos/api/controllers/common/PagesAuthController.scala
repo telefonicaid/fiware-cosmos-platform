@@ -9,15 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.pages
+package es.tid.cosmos.api.controllers.common
 
 import scalaz._
 
 import play.api.mvc._
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
-import es.tid.cosmos.api.controllers.common.ActionValidation
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
+import es.tid.cosmos.api.controllers.pages.routes
 import es.tid.cosmos.api.profile.{UserId, CosmosProfile, CosmosProfileDao, UserState}
 
 trait PagesAuthController extends Controller {

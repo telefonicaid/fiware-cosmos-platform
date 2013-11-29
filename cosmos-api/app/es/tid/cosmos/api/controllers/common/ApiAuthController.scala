@@ -20,7 +20,7 @@ import play.api.mvc._
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.auth.ApiCredentials.{ApiKeyLength, ApiSecretLength}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{UserState, CosmosProfile, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{Capability, UserState, CosmosProfile, CosmosProfileDao}
 
 /**
  * Controller able to check authentication and authorization.
@@ -50,6 +50,18 @@ trait ApiAuthController extends Controller {
       Logger.warn(s"Rejected API request: ${error.message}")
       unauthorizedResponse(error)
     })
+
+  /** Require an API request authenticated as in `requireAuthenticatedApiRequest` and also
+    * require that the credentials are from an actual operator.
+    *
+    * @param request   Request to extract credentials from
+    * @return          Either a user profile or an authorization error response
+    */
+  def requireOperatorApiRequest(request: RequestHeader): ActionValidation[CosmosProfile] = for {
+    profile <- requireAuthenticatedApiRequest(request)
+    _ <- if (profile.capabilities.hasCapability(Capability.IsOperator)) ().success
+         else Forbidden(Json.toJson(Message("You need to be an operator"))).failure
+  } yield profile
 
   /** Select one out of two authentications preferring the first one.
     *

@@ -161,6 +161,36 @@ class ProfileQuotasTest extends FlatSpec
     }
   }
 
+  it must "not consider the requested cluster if it has already been registered" in {
+    /*
+    +----+----+----+----+----+----+----+----+----+----+
+    | 1  | 2  | 3  | 4  | 5  | 6  | 7  | 8  | 9  | 10 |
+    +----+----+----+----+----+----+----+----+----+----+
+    | NG | NG | NG | NG | NG | NG | NG | NG | NG | NG |
+    | o  | o  | o  | o  | o  | o  | o  | o  | o  | o  |
+    +----+----+----+----+----+----+----+----+----+----+
+      X    X    X    X    X    X    X    X    X    X
+     */
+    val requestedCluster = clusterReference(10, Provisioning)
+    val context = Context(
+      groupUsage = Map(NoGroup -> 0),
+      userGroup = NoGroup,
+      personalMaxQuota = UnlimitedQuota,
+      usedMachinesByUser = 0,
+      machinePool = 10,
+      extraClusters = Map(NoGroup -> List(requestedCluster))
+    )
+    context.ensureThat { (quotas, profile) =>
+      quotas.withinQuota(profile, 10, requestedClusterId = None) must haveFailures(
+        "Quota exceeded for group [No Group].",
+        "You can request up to 0 machine(s) at this point."
+      )
+      quotas.withinQuota(
+        profile, 10, requestedClusterId = Some(requestedCluster.description.id)) must
+        (beSuccessful and haveValidValue(10))
+    }
+  }
+
   case class Context(
     groupUsage: Map[Group, Int],
     userGroup: Group,

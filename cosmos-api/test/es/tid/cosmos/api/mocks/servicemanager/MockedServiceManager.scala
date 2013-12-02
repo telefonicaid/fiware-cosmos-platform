@@ -20,7 +20,6 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
-import es.tid.cosmos.platform.common.ExecutableValidation
 import es.tid.cosmos.platform.ial.PreconditionsNotMetException
 import es.tid.cosmos.platform.ial.MachineProfile.G1Compute
 import es.tid.cosmos.servicemanager._
@@ -115,12 +114,13 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
       clusterSize: Int,
       serviceDescriptions: Seq[ServiceDescriptionType],
       users: Seq[ClusterUser],
-      preConditions: ExecutableValidation): ClusterId = {
-    preConditions().fold(
+      preConditions: ClusterExecutableValidation): ClusterId = {
+    val clusterId = ClusterId()
+    preConditions(clusterId)().fold(
       fail = errors => throw PreconditionsNotMetException(G1Compute, clusterSize, errors.list),
       succ = _ => ()
     )
-    val cluster = new TransitioningCluster(name, clusterSize)
+    val cluster = new TransitioningCluster(name, clusterSize, clusterId)
     clusters.put(cluster.id, cluster)
     cluster.id
   }

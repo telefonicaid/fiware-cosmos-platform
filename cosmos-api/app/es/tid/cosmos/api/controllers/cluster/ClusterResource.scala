@@ -24,9 +24,8 @@ import play.api.mvc.{Request, SimpleResult, RequestHeader, Action}
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
+import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
-import es.tid.cosmos.platform.common.ExecutableValidation
 
 /**
  * Resource that represents a single cluster.
@@ -102,18 +101,22 @@ class ClusterResource(
     }
   }
 
-  private def withinQuota(profile: CosmosProfile, size: Int): ValidationNel[String, Int] =
+  private def withinQuota(
+      profile: CosmosProfile,
+      size: Int,
+      requestedClusterId: Option[ClusterId] = None): ValidationNel[String, Int] =
+
     dao.withConnection { implicit c =>
       new ProfileQuotas(
         machinePoolSize = serviceManager.clusterNodePoolCount,
         groups = dao.getGroups,
         lookupByGroup = dao.lookupByGroup,
         listClusters = listClusters
-      ).withinQuota(profile, size)
+      ).withinQuota(profile, size, requestedClusterId)
     }
 
-  private def executableWithinQuota(profile: CosmosProfile, size: Int): ExecutableValidation =
-    () => withinQuota(profile, size)
+  private def executableWithinQuota(profile: CosmosProfile, size: Int): ClusterExecutableValidation =
+    (id: ClusterId) => () => withinQuota(profile, size, Some(id))
 
   private def requireWithinQuota(profile: CosmosProfile, size: Int): ActionValidation[Int] =
     withinQuota(profile, size).leftMap(errors =>

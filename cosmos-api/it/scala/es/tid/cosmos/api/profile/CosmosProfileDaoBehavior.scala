@@ -181,18 +181,26 @@ trait CosmosProfileDaoBehavior extends CapabilityMatchers { this: FlatSpec with 
       }
     })
     
-    taggedTest(it must "set machine quota for a given user", withDao { implicit dao =>
+    taggedTest(it must "set machine quota for a given user", withDao { dao =>
       dao.withTransaction { implicit c =>
         val id1 = registerUser(dao, "jsmith").id
         val id2 = registerUser(dao, "bclinton").id
+        val id3 = registerUser(dao, "imontoya").id
+        val id4 = registerUser(dao, "vizzini").id
 
         dao.getMachineQuota(id1) must be (CosmosProfile.DefaultQuota)
         dao.getMachineQuota(id2) must be (CosmosProfile.DefaultQuota)
+        dao.getMachineQuota(id3) must be (CosmosProfile.DefaultQuota)
+        dao.getMachineQuota(id4) must be (CosmosProfile.DefaultQuota)
 
         dao.setMachineQuota(id2, FiniteQuota(7))
+        dao.setMachineQuota(id3, UnlimitedQuota)
+        dao.setMachineQuota(id4, EmptyQuota)
 
         dao.getMachineQuota(id1) must be (CosmosProfile.DefaultQuota)
         dao.getMachineQuota(id2) must be (FiniteQuota(7))
+        dao.getMachineQuota(id3) must be (UnlimitedQuota)
+        dao.getMachineQuota(id4) must be (EmptyQuota)
       }
     })
 
@@ -205,7 +213,7 @@ trait CosmosProfileDaoBehavior extends CapabilityMatchers { this: FlatSpec with 
         profileByUserId must be (profileByApiCredentials)
       }
     })
-    
+
     taggedTest(it must "lookup existing profiles by handle", withDao { implicit dao =>
       dao.withTransaction { implicit c =>
         val profile = registerUser(dao, "handle")

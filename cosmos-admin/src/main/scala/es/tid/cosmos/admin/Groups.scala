@@ -11,11 +11,13 @@
 
 package es.tid.cosmos.admin
 
+
+import es.tid.cosmos.admin.Util._
+import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
-import scala.util.Try
 
 /** Admin commands for managing groups. */
-private[admin] class Groups(dao: CosmosProfileDao) {
+private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChecks {
   import Groups._
 
   /** Create a group.
@@ -24,11 +26,9 @@ private[admin] class Groups(dao: CosmosProfileDao) {
     * @param minQuota the group's minimum, guaranteed quota
     * @return         true iff the group was successfully created
     */
-  def create(name: String, minQuota: Int): Boolean =
-    dao.withConnection { implicit c =>
-      dao.registerGroup(GuaranteedGroup(name, Quota(minQuota)))
-      true
-    }
+  def create(name: String, minQuota: Int): Boolean = dao.withTransaction { implicit c =>
+    tryAction { Some(dao.registerGroup(GuaranteedGroup(name, Quota(minQuota)))) }
+  }
 
   /** List the existing groups.
     *
@@ -46,8 +46,8 @@ private[admin] class Groups(dao: CosmosProfileDao) {
     * @param name the group's name
     * @return     true iff the group was successfully deleted
     */
-  def delete(name: String): Boolean = withGroup(name) { (c, _) =>
-    dao.deleteGroup(name)(c)
+  def delete(name: String): Boolean = dao.withTransaction { implicit c =>
+    tryAction { for (group <- withGroup(name)) yield dao.deleteGroup(group.name) }
   }
 
   /** Set an existing group's minimum, guaranteed quota.
@@ -56,21 +56,8 @@ private[admin] class Groups(dao: CosmosProfileDao) {
     * @param quota the new minimum quota
     * @return      true if the group was successfully updated with the new minimum quota
     */
-  def setMinQuota(name: String, quota: Int): Boolean = withGroup(name) { (c, _) =>
-    dao.setGroupQuota(name, Quota(quota))(c)
-  }
-
-  private def withGroup(name: String)
-                       (action: (this.dao.type#Conn, String) => Unit): Boolean = {
-    Try(dao.withTransaction { implicit c =>
-      dao.getGroups.find(_.name == name) match {
-        case None => {
-          println(s"No group with name $name")
-          false
-        }
-        case Some(group) => action(c, name)
-      }
-    }).isSuccess
+  def setMinQuota(name: String, quota: Int): Boolean = dao.withTransaction { implicit c =>
+    tryAction { for (group <- withGroup(name)) yield dao.setGroupQuota(group.name, Quota(quota)) }
   }
 }
 

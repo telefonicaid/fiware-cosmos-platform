@@ -15,7 +15,7 @@ import scala.language.reflectiveCalls
 
 import org.rogach.scallop.ScallopConf
 
-import es.tid.cosmos.api.profile.PlayDbCosmosProfileDao
+import es.tid.cosmos.api.profile.{NoGroup, PlayDbCosmosProfileDao}
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 import es.tid.cosmos.admin.cli.AdminArguments
@@ -68,8 +68,12 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
         args.profile.disableCapability.capability()
       ))
       case Some(args.profile.setGroup) => tryCommand(playDbProfile.setGroup(
-        args.profile.setGroup.handle(), args.profile.setGroup.group.get
+        args.profile.setGroup.handle(), args.profile.setGroup.group()
       ))
+      case Some(args.profile.removeGroup) => tryCommand(playDbProfile.removeGroup(
+        args.profile.setGroup.handle()
+      ))
+      case Some(args.profile.list) => tryCommandWithOutput(playDbProfile.list)
       case _ => help(args.profile)
     }
   }

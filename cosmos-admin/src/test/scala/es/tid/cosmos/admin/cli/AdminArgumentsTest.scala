@@ -90,6 +90,10 @@ class AdminArgumentsTest extends FlatSpec with MustMatchers {
       args.profile.removeGroup.handle() must equal("jsmith")
     }
 
+  it must "support 'profile list'" in new WithArguments("profile", "list") {
+    args.subcommands must equal(List(args.profile, args.profile.list))
+  }
+
   it must "support 'group create' with minimum quota" in
     new WithArguments("group", "create", "--name", "supergroup", "--min-quota", "3") {
       args.subcommands must equal(List(args.group, args.group.create))

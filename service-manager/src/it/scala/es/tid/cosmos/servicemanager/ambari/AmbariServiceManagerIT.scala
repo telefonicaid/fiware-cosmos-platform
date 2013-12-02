@@ -20,7 +20,7 @@ import scala.util.Try
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase, PassThrough}
+import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
 import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
@@ -30,7 +30,7 @@ import es.tid.cosmos.servicemanager.clusters._
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
   with FakeInfrastructureProviderComponent {
 
-  val preConditions = PassThrough
+  val preConditions = UnfilteredPassThrough
 
   @tailrec
   final def waitForClusterCompletion(id: ClusterId, sm: ServiceManager): ClusterState = {

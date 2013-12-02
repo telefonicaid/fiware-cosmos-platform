@@ -28,7 +28,7 @@ import org.mockito.Mockito.verify
 import org.scalatest.OneInstancePerTest
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.platform.common.{ExecutableValidation, PassThrough}
+import es.tid.cosmos.platform.common.ExecutableValidation
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
@@ -58,6 +58,7 @@ class AmbariServiceManagerTest
       initializeProvisioner,
       AmbariServiceManager.allServices))
   val testTimeout = 1 second
+  val NoPreconditions = UnfilteredPassThrough
 
   "A ServiceManager" must "have no Clusters by default" in {
     instance.clusterIds must be('empty)
@@ -67,7 +68,8 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(1)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 1, serviceDescriptions, Seq(), PassThrough)
+    val clusterId = instance.createCluster(
+      "clusterName", 1, serviceDescriptions, Seq(), NoPreconditions)
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
@@ -83,7 +85,8 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(ClusterSize)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", ClusterSize, serviceDescriptions, Seq(), PassThrough)
+    val clusterId = instance.createCluster(
+      "clusterName", ClusterSize, serviceDescriptions, Seq(), NoPreconditions)
     clusterId must not be null
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
@@ -179,7 +182,7 @@ class AmbariServiceManagerTest
       clusterSize = 3,
       serviceDescriptions,
       Seq(ClusterUser("user1", "publicKey1")),
-      PassThrough)
+      NoPreconditions)
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
     get(instance.setUsers(clusterId, Seq(ClusterUser("user2", "publicKey2"))))
@@ -201,7 +204,8 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq(), PassThrough)
+    val clusterId = instance.createCluster(
+      "clusterName", 3, serviceDescriptions, Seq(), NoPreconditions)
     val state = waitForClusterCompletion(clusterId, instance)
     state must equal(Running)
     evaluating {
@@ -213,7 +217,8 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq(), PassThrough)
+    val clusterId = instance.createCluster(
+      "clusterName", 3, serviceDescriptions, Seq(), NoPreconditions)
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
     evaluating (get(instance.setUsers(clusterId, Seq(ClusterUser("username", "publicKey"))))) must
@@ -224,7 +229,8 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val clusterId = instance.createCluster("clusterName", 3, serviceDescriptions, Seq(), PassThrough)
+    val clusterId = instance.createCluster(
+      "clusterName", 3, serviceDescriptions, Seq(), NoPreconditions)
     waitForClusterCompletion(clusterId, instance)
     terminateAndVerify(clusterId, instance)
     evaluating (instance.terminateCluster(clusterId)) must
@@ -235,11 +241,12 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val willFailCondition: ExecutableValidation = () => "Failed!".failureNel
+    val willFailCondition: ClusterExecutableValidation = (_) => () => "Failed!".failureNel
     val clusterId = instance.createCluster(
       "clusterName", 3, serviceDescriptions, Seq(), willFailCondition)
     waitForClusterCompletion(clusterId, instance)
-    verify(infrastructureProvider).createMachines(the(willFailCondition), any(), any(), any())
+    verify(infrastructureProvider).createMachines(
+      matchesValidation(willFailCondition(clusterId)), any(), any(), any())
   }
 
   private def initializeProvisioner = {
@@ -372,5 +379,15 @@ class AmbariServiceManagerTest
     terminatingDescription.state must (be (Terminated) or be (Terminating))
     waitForClusterCompletion(id, sm)
     sm.describeCluster(id).get.state must be (Terminated)
+  }
+
+  private def matchesValidation(expected: ExecutableValidation) =
+    argThat(new ExecutableValidationMatcher(expected))
+
+  private class ExecutableValidationMatcher(expected: ExecutableValidation)
+      extends ArgumentMatcher[ExecutableValidation] {
+
+    def matches(argument: Any): Boolean =
+      expected() == argument.asInstanceOf[ExecutableValidation]()
   }
 }

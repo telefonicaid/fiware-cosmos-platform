@@ -65,7 +65,7 @@ class AmbariServiceManager(
       clusterSize: Int,
       serviceDescriptions: Seq[ServiceDescriptionType],
       users: Seq[ClusterUser],
-      preConditions: ExecutableValidation): ClusterId = {
+      preConditions: ClusterExecutableValidation): ClusterId = {
     val id = ClusterId()
     createCluster(
       id,
@@ -74,7 +74,7 @@ class AmbariServiceManager(
       masterProfile = MachineProfile.G1Compute,
       slavesProfile = MachineProfile.G1Compute,
       Seq(Hdfs, MapReduce) ++ serviceDescriptions ++ userServices(users),
-      preConditions
+      preConditions(id)
     )
     id
   }

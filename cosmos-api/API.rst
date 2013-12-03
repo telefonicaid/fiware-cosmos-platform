@@ -235,6 +235,34 @@ and a JSON payload of the form::
 Otherwise 401 and 403 status with an error message will be returned.
 
 
+GET ``/cosmos/v1/stats/machines``
+---------------------------------
+
+*Since v1*
+
+For operator users, reports total and available machines.  The results are
+grouped by machine profile.
+
+In case of having the required permissions, the result will have a 200 status
+and a JSON payload of the form::
+
+    {
+      <profile>: {
+        "total": <int>,
+        "available": <int>
+      },
+      <profile>: {
+        "total": <int>,
+        "available": <int>
+      }
+    }
+
+Where ``<profile>`` identifies a machine type such as "g1-compute" for the
+computing nodes of first generation.
+
+Otherwise 401 and 403 status with an error message will be returned.
+
+
 --------------------------
 Resources of the admin API
 --------------------------

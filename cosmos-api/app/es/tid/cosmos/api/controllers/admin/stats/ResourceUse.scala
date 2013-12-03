@@ -11,14 +11,17 @@
 
 package es.tid.cosmos.api.controllers.admin.stats
 
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.{Json, Writes}
 
-case class ClustersStats(clusters: Seq[ClusterStats])
+/** Current use of a resource
+  *
+  * @param total      Total resource units
+  * @param available  Unused units
+  */
+case class ResourceUse(total: Int, available: Int) {
+  require(total >= available)
+}
 
-object ClustersStats {
-  implicit val clusterStatsWrites: Writes[ClustersStats] = new Writes[ClustersStats] {
-    override def writes(stats: ClustersStats): JsValue = Json.obj(
-      "clusters" -> stats.clusters
-    )
-  }
+object ResourceUse {
+  implicit val resourceUseWrites: Writes[ResourceUse] = Json.writes[ResourceUse]
 }

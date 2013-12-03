@@ -25,5 +25,6 @@ class TestWithDbGlobal extends AbstractGlobal(new Application
   with MockMultiAuthProviderComponent
   with PlayDbCosmosProfileDaoComponent
   with MockedServiceManagerComponent
+  with MockInfrastructureProvider.Component
   with ApplicationConfigComponent
   with InMemoryMaintenanceStatusComponent)

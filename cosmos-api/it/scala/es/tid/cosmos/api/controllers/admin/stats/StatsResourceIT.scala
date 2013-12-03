@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.controllers.admin.stats
 
-import org.mockito.Mockito.when
+import org.mockito.BDDMockito.given
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.{JsObject, Json, JsArray}
@@ -20,18 +20,19 @@ import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.{MaintenanceModeBehaviors, AuthBehaviors}
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
+import es.tid.cosmos.platform.ial.MachineProfile._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-class ClusterStatsResourceIT
+class StatsResourceIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors{
 
-  val request = FakeRequest(GET, "/cosmos/v1/stats/clusters")
+  val clusterStatsRequest = FakeRequest(GET, "/cosmos/v1/stats/clusters")
 
-  "Cluster stats" must behave like operatorOnlyResource(request)
+  "Cluster stats" must behave like operatorOnlyResource(clusterStatsRequest)
 
-  it must "have an empty listing when no clusters are running" in new WithSampleSessions {
-    when(services.serviceManager().clusterIds).thenReturn(Seq.empty)
-    val response = opUser.doRequest(request)
+  it must "have an empty listing when when there are no clusters" in new WithSampleSessions {
+    given(services.serviceManager().clusterIds).willReturn(Seq.empty)
+    val response = opUser.doRequest(clusterStatsRequest)
     status(response) must be (OK)
     (contentAsJson(response) \ "clusters" \\ "id") must have size 0
   }
@@ -49,8 +50,7 @@ class ClusterStatsResourceIT
       dao.assignCluster(terminatedClusterId, opUser.cosmosProfile.id)
     }
 
-    val json = contentAsJson(opUser.doRequest(request))
-    println(json.toString)
+    val json = contentAsJson(opUser.doRequest(clusterStatsRequest))
 
     (json \ "clusters").as[JsArray].value.map(_.as[JsObject]) must contain (Json.obj(
       "id" -> activeClusterId.toString,
@@ -58,5 +58,19 @@ class ClusterStatsResourceIT
       "ownerHandle" -> regUser.handle,
       "size" -> 2
     ))
+  }
+
+  val machineStatsRequest = FakeRequest(GET, "/cosmos/v1/stats/machines")
+
+  "Machine stats" must behave like operatorOnlyResource(machineStatsRequest)
+
+  it must "list available and total machines" in new WithSampleSessions {
+    val response = opUser.doRequest(machineStatsRequest)
+    status(response) must be (OK)
+    contentAsJson(response) must be (Json.toJson(MachineStats(
+      G1Compute -> ResourceUse(total = 100, available = 100),
+      HdfsSlave -> ResourceUse(total = 4, available = 4),
+      HdfsMaster -> ResourceUse(total = 1, available = 1)
+    )))
   }
 }

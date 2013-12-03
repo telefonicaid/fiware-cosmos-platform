@@ -39,8 +39,10 @@ GET     /cosmos/v1/maintenance              @es.tid.cosmos.api.controllers.admin
 PUT     /cosmos/v1/maintenance              @es.tid.cosmos.api.controllers.admin.MaintenanceResource.put()
 GET     /doc/cosmos/v1/maintenance          controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/maintenance")
 
-GET     /cosmos/v1/stats/clusters        @es.tid.cosmos.api.controllers.admin.stats.ClusterStatsResource.list
+GET     /cosmos/v1/stats/clusters        @es.tid.cosmos.api.controllers.admin.stats.StatsResource.listActiveClusters
 GET     /doc/cosmos/v1/status/clusters   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/stats/clusters")
+GET     /cosmos/v1/stats/machines        @es.tid.cosmos.api.controllers.admin.stats.StatsResource.listMachinesByProfile
+GET     /doc/cosmos/v1/status/machines   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/stats/machines")
 
 # Admin API
 POST    /admin/v1/user                      @es.tid.cosmos.api.controllers.admin.UserResource.register

@@ -25,5 +25,6 @@ class TestGlobal extends AbstractGlobal(new Application
   with MockMultiAuthProviderComponent
   with MockCosmosProfileDaoComponent
   with MockedServiceManagerComponent
+  with MockInfrastructureProvider.Component
   with ApplicationConfigComponent
   with InMemoryMaintenanceStatusComponent)

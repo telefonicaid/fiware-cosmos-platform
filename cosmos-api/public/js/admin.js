@@ -11,7 +11,7 @@
 
 ;"use strict";
 
-function configureActiveClustersTable() {
+function configureActiveClustersSection() {
     $('#active-clusters').dataTable({
         "bProcessing": true,
         "sAjaxSource": '/cosmos/v1/stats/clusters',
@@ -22,6 +22,14 @@ function configureActiveClustersTable() {
             { "mData": "ownerHandle" },
             { "mData": "size", "sType": "numeric", "sClass": "numeric-cell" }
         ]
+    });
+    $.ajax({
+        url: '/cosmos/v1/stats/machines',
+        type: 'GET',
+        contentType: 'json',
+        success: function(data) {
+            $('#available-machines').text(data['g1-compute'].available)
+        }
     });
 }
 
@@ -57,6 +65,6 @@ function configureMaintenanceButtons() {
 }
 
 $(document).ready(function() {
-    configureActiveClustersTable();
+    configureActiveClustersSection();
     configureMaintenanceButtons();
 });

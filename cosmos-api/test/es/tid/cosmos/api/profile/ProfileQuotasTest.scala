@@ -19,10 +19,11 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.cluster.ClusterReference
 import es.tid.cosmos.api.profile.UserState.Enabled
+import es.tid.cosmos.platform.common.scalatest.data.DataPicker
+import es.tid.cosmos.platform.common.scalatest.matchers.ValidationMatchers
+import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.clusters.ClusterState.ActiveStates
-import es.tid.cosmos.platform.common.scalatest.matchers.ValidationMatchers
-import es.tid.cosmos.platform.common.scalatest.data.DataPicker
 
 class ProfileQuotasTest extends FlatSpec
     with MustMatchers with MockitoSugar with ValidationMatchers with DataPicker {
@@ -118,13 +119,13 @@ class ProfileQuotasTest extends FlatSpec
     }
   }
 
-  "A quota" must "not consider the machines of any clusters in terminal states machines as used" in {
+  "A quota" must "consider the expected size of a cluster in failed state " in {
     /*
     +----+----+---+----+----+----+----+---+---+----+
     | 1  | 2  | 3 | 4  | 5  | 6  | 7  | 8 | 9 | 10 |
     +----+----+---+----+----+----+----+---+---+----+
-    | A  | A  | B | B  | NG | NG | NG | o | o | o  |
-    | tr | ur | r | rt | u  | f  | u  | o | o | o  |
+    | A  | A  | B | B  | NG | NG | NG | o | o | o  |  f0 = failed without any allocated machines
+    | tr | ur | r | rt | u  | f0 | f1 | o | o | o  |  f1 = failed with 1 allocated machine
     +----+----+---+----+----+----+----+---+---+----+
       X                       X         X   X   X
      */
@@ -133,12 +134,17 @@ class ProfileQuotasTest extends FlatSpec
     val groupUsage = Map[Group, Int](
       userGroup -> 1,
       groupB -> 0,
-      NoGroup -> 2
+      NoGroup -> 1
     )
     val terminatedClusters = Map[Group, List[ClusterReference]](
       userGroup -> List(clusterReference(1, Terminated)),
       groupB -> List(clusterReference(1, Terminated)),
-      NoGroup -> List(clusterReference(1, Failed("Cluster blew up")))
+      NoGroup -> List(
+        clusterReference(
+          1, Failed("Cluster with allocated machine blew up"), withMachineInfo = true),
+        clusterReference(
+          1, Failed("Cluster without allocated machines blew up"), withMachineInfo = false)
+      )
     )
     val context = Context(
       groupUsage,
@@ -244,10 +250,27 @@ class ProfileQuotasTest extends FlatSpec
     }
   }
 
-  def clusterReference(size: Int, state: ClusterState): ClusterReference = {
-    val description = mock[ClusterDescription]
-    given(description.size).willReturn(size)
-    given(description.state).willReturn(state)
+  def clusterReference(
+    size: Int,
+    state: ClusterState,
+    withMachineInfo: Boolean = true): ClusterReference = {
+
+    def maybeMaster: Option[HostDetails] = if (withMachineInfo) Some(mock[HostDetails]) else None
+    def maybeSlaves: Seq[HostDetails] =
+      if (withMachineInfo) Seq.empty else (1 to size - 1).map(_ => mock[HostDetails])
+    def maybeUsers: Option[Set[ClusterUser]] = if (withMachineInfo) Some(Set.empty) else None
+
+    val clusterId = ClusterId()
+    val description = ImmutableClusterDescription(
+      id = clusterId,
+      name = clusterId.toString,
+      size = size,
+      nameNode = None,
+      state = state,
+      master = maybeMaster,
+      slaves = maybeSlaves,
+      users = maybeUsers
+    )
     val reference = mock[ClusterReference]
     given(reference.description).willReturn(description)
     reference

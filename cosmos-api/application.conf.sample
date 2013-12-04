@@ -78,6 +78,7 @@ ambari.server.port=8080
 ambari.server.username=
 ambari.server.password=
 ambari.servicemanager.initialization.graceperiod.minutes=5
+ambari.servicemanager.exclusiveMasterSizeCutoff=10
 ambari.servicemanager.mappersPerSlave=8
 ambari.servicemanager.reducersPerSlave=4
 hdfs.cluster.id=persistentHdfs

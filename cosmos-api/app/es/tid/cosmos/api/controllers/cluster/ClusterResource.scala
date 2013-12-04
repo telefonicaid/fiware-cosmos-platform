@@ -76,7 +76,7 @@ class ClusterResource(
       body: CreateClusterParams,
       profile: CosmosProfile): SimpleResult = {
 
-    val services = serviceManager.services.filter(
+    val services = serviceManager.optionalServices.filter(
       service => body.optionalServices.contains(service.name))
     Try(serviceManager.createCluster(
       name = body.name,

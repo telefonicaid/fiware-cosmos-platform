@@ -32,7 +32,7 @@ trait ServiceManager {
   /**
    * A sequence of all services this service manager supports
    */
-  val services: Seq[ServiceDescriptionType]
+  val optionalServices: Seq[ServiceDescriptionType]
 
   /**
    * Create a cluster of a given size with a specified set of services.

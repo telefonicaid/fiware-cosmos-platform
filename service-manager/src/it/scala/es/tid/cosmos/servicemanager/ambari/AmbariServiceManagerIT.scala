@@ -60,11 +60,12 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     val ambariServer = new AmbariServer("10.95.161.137", 8080, "admin", "admin")
     sm = new AmbariServiceManager(
       ambariServer, infrastructureProvider,
-      ClusterId("hdfs"), HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1),
+      ClusterId("hdfs"), exclusiveMasterSizeCutoff = 10,
+      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1),
       new AmbariClusterDao(
         new SqlClusterDao(db),
         ambariServer,
-        AmbariServiceManager.allServices))
+        AmbariServiceManager.AllServices))
   }
 
   "Ambari server" must "create and terminate cluster" taggedAs HasExternalDependencies in {

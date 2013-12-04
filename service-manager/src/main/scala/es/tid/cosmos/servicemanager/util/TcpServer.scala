@@ -64,5 +64,5 @@ case class TcpServer(host: String, port: Int) {
 
 object TcpServer {
   val DefaultTimeout: FiniteDuration = 5 minutes
-  val SshService: Int = 22
+  val SshServicePort: Int = 22
 }

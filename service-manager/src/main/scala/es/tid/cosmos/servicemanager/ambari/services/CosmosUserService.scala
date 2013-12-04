@@ -31,7 +31,7 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescriptio
     ConfigurationBundle(usersConfiguration(properties(ConfigurationKeys.MasterNode)))
 
   private def usersConfiguration(masterName: String) = {
-    val properties = (("number_of_users" -> users.size) +: (for {
+    val properties = (("number_of_users" -> users.size) +: ("master" -> masterName) +: (for {
       (user, index) <- users.zipWithIndex
       sshKeys = SshKeyGenerator.newKeys(user.userName, masterName)
       prefix = s"user${index + 1}_"

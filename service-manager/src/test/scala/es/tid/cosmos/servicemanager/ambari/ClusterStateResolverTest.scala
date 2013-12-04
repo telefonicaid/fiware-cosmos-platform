@@ -45,11 +45,11 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
   }
 
   "The ClusterStateResolver" must "resolve the unknown state on clusters which have failed services" in {
-    given(cluster.serviceNames).willReturn(AmbariServiceManager.allServices.map(_.name))
+    given(cluster.serviceNames).willReturn(AmbariServiceManager.AllServices.map(_.name))
     given(cluster.getService(any())).willReturn(Future.successful(hdfs))
     given(hdfs.state).willReturn("ERROR")
     given(hdfs.name).willReturn("HDFS")
-    val resolveState_> = instance.resolveState(cluster, AmbariServiceManager.allServices)
+    val resolveState_> = instance.resolveState(cluster, AmbariServiceManager.AllServices)
     resolveState_> must eventually (be (AmbariClusterState.Unknown))
   }
 

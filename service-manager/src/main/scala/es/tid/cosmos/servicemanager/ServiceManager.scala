@@ -86,6 +86,13 @@ trait ServiceManager {
    */
   def terminatePersistentHdfsCluster(): Future[Unit]
 
+  /** List the users of a cluster.
+    *
+    * @param clusterId the cluster id which users are listed
+    * @return the sequence of users of the cluster
+    */
+  def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]]
+
   /**
    * Add users to the CosmosUser service for the given cluster.
    *

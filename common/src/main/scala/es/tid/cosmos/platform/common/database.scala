@@ -16,8 +16,8 @@ import scala.util.Try
 
 import com.typesafe.config._
 import org.squeryl.{Session, SessionFactory}
+import org.squeryl.adapters.MySQLInnoDBAdapter
 import org.squeryl.internals.DatabaseAdapter
-import org.squeryl.adapters.MySQLAdapter
 
 /**
  * A trait of an SQL database.
@@ -79,5 +79,5 @@ class MySqlDatabase(c: MySqlConnDetails) extends SqlDatabase {
 
   def connect: Try[Connection] = Try(DriverManager.getConnection(c.asJdbc, c.username, c.password))
 
-  override val adapter = new MySQLAdapter
+  override val adapter = new MySQLInnoDBAdapter
 }

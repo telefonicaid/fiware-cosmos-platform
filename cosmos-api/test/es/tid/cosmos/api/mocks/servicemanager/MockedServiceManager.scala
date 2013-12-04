@@ -107,6 +107,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
       put(clusterInProgress.id, clusterInProgress)
     }
 
+  private val clusterUsers: mutable.Map[ClusterId, Seq[ClusterUser]] = mutable.Map.empty
+
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
   override def createCluster(
@@ -122,6 +124,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     )
     val cluster = new TransitioningCluster(name, clusterSize, clusterId)
     clusters.put(cluster.id, cluster)
+    clusterUsers.put(cluster.id, users)
     cluster.id
   }
 
@@ -169,6 +172,9 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     Some(persistentHdfsCluster)
 
   override def terminatePersistentHdfsCluster(): Future[Unit] = successful()
+
+  override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] =
+    clusterUsers.get(clusterId)
 
   override def clusterNodePoolCount: Int = 10
 }

@@ -52,9 +52,9 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     before  {
       dao.newTransaction {
         Try {
-          dao.drop
+          SqlClusterDao.drop
         }
-        dao.create
+        SqlClusterDao.create
       }
     }
     val ambariServer = new AmbariServer("10.95.161.137", 8080, "admin", "admin")

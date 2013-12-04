@@ -82,6 +82,19 @@ class AmbariServiceManagerTest
     verifyClusterAndServices(machines, hosts.head, hosts, clusterId)
   }
 
+  it must "be able to track the users of a cluster upon creation" in {
+    val (machines, hosts) = machinesAndHostsOf(1)
+    setMachineExpectations(machines, hosts)
+    setServiceExpectations()
+    val users = Seq(ClusterUser(userName = "jsmith", publicKey = "that public key"))
+    val clusterId = instance.createCluster(
+      "clusterName", 1, serviceDescriptions, users, NoPreconditions)
+    waitForClusterCompletion(clusterId, instance)
+    instance.listUsers(clusterId) must be (Some(users))
+    terminateAndVerify(clusterId, instance)
+    verifyClusterAndServices(machines, hosts.head, hosts, clusterId)
+  }
+
   it must "be able to create and terminate a multi-machine cluster" in {
     val ClusterSize = 5
     val (machines, hosts) = machinesAndHostsOf(ClusterSize)
@@ -215,6 +228,9 @@ class AmbariServiceManagerTest
       }
     }
     verify(cluster).applyConfiguration(argThat(ConfigurationMatcher), any())
+    val clusterUsers = instance.listUsers(clusterId)
+    clusterUsers must be ('defined)
+    clusterUsers.get must be (Seq(ClusterUser("user2", "publicKey2")))
   }
 
   it must "fail adding users on cluster without Cosmos-users support" in {

@@ -18,6 +18,7 @@ import scala.concurrent.duration._
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.ClusterUser
 
 /**
   * This class wraps a ClusterDao and makes sure that the data in Ambari and the data in the
@@ -56,6 +57,10 @@ private[ambari] class AmbariClusterDao(
 
   override def registerCluster(id: ClusterId, name: String, size: Int): MutableClusterDescription =
     dao.registerCluster(id, name, size)
+
+  override def getUsers(id: ClusterId): Option[Set[ClusterUser]] = dao.getUsers(id)
+
+  override def setUsers(id: ClusterId, users: Set[ClusterUser]) = dao.setUsers(id, users)
 
   private def verifyClusterIntegrity(id: ClusterId): Future[Unit] = {
     val daoCluster = this.dao.getDescription(id).get

@@ -134,9 +134,9 @@ def add_terminate_cluster_command(subparsers):
 
 
 def add_user_to_cluster(args, proto):
-    proto.add_user_to_cluster(args.cluster_id, args.user_id)
+    result = proto.add_user_to_cluster(args.cluster_id, args.user_id)
     util.set_last_cluster_id(args.cluster_id)
-    print "User %s added to cluster %s" % (args.user_id, args.cluster_id)
+    print result["message"]
 
 
 def add_adduser_command(subparsers):
@@ -147,9 +147,9 @@ def add_adduser_command(subparsers):
 
 
 def remove_user_from_cluster(args, proto):
-    proto.remove_user_from_cluster(args.cluster_id, args.user_id)
+    result = proto.remove_user_from_cluster(args.cluster_id, args.user_id)
     util.set_last_cluster_id(args.cluster_id)
-    print "User %s removed from cluster %s" % (args.user_id, args.cluster_id)
+    print result["message"]
 
 
 def add_rmuser_command(subparsers):

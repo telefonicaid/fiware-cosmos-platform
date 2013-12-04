@@ -14,15 +14,17 @@ package es.tid.cosmos.servicemanager.ambari
 import java.net.URI
 
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.ClusterUser
 
 class InMemoryClusterDao extends ClusterDao {
-  @volatile var clusters: Map[ClusterId, MutableClusterDescription] = Map()
+  @volatile var clusters: Map[ClusterId, MutableClusterDescription] = Map.empty
+  @volatile var users: Map[ClusterId, Set[ClusterUser]] = Map.empty
 
-  def ids: Seq[ClusterId] = clusters.keys.toSeq
+  override def ids: Seq[ClusterId] = clusters.keys.toSeq
 
-  def getDescription(id: ClusterId): Option[MutableClusterDescription] = clusters.get(id)
+  override def getDescription(id: ClusterId): Option[MutableClusterDescription] = clusters.get(id)
 
-  def registerCluster(
+  override def registerCluster(
       clusterId: ClusterId,
       clusterName: String,
       clusterSize: Int): MutableClusterDescription = {
@@ -31,5 +33,15 @@ class InMemoryClusterDao extends ClusterDao {
       clusters = clusters.updated(clusterId, description)
     }
     description
+  }
+
+  override def getUsers(id: ClusterId): Option[Set[ClusterUser]] = users.get(id)
+
+  override def setUsers(id: ClusterId, newUsers: Set[ClusterUser]) = {
+    if (clusters.isDefinedAt(id)) {
+      users = users + (id -> newUsers)
+    } else {
+      throw new IllegalArgumentException(s"no cluster was found for $id")
+    }
   }
 }

@@ -28,6 +28,9 @@ import es.tid.cosmos.servicemanager.clusters._
 private[ambari] class SqlMutableClusterDescription(
     override val id: ClusterId,
     dao: SqlClusterDao) extends MutableClusterDescription  {
+
+  import SqlClusterDao._
+
   override def name: String = getField(_.name)
 
   override def name_=(name: String) {
@@ -58,33 +61,33 @@ private[ambari] class SqlMutableClusterDescription(
   }
 
   override def master: Option[HostDetails] = dao.newTransaction {
-    from(dao.masters)(m => where (m.clusterId === this.id.toString) select(m))
+    from(masters)(m => where (m.clusterId === this.id.toString) select(m))
       .headOption.map(m => HostDetails(m.name, m.ip))
   }
 
   override def master_=(master: HostDetails) {
     dao.newTransaction {
-      dao.masters.insertOrUpdate(new HostEntity(this.id.toString, master.hostname, master.ipAddress)
+      masters.insertOrUpdate(new HostEntity(this.id.toString, master.hostname, master.ipAddress)
         with MasterKey)
     }
   }
 
   override def slaves: Seq[HostDetails] = dao.newTransaction {
-    from(dao.slaves)(s => where (s.clusterId === this.id.toString) select(s))
+    from(SqlClusterDao.slaves)(s => where (s.clusterId === this.id.toString) select(s))
       .map(s => HostDetails(s.name, s.ip)).toSeq
   }
 
   override def slaves_=(slaves: Seq[HostDetails]) {
     dao.newTransaction {
       slaves.foreach { h =>
-        dao.slaves.insertOrUpdate(new HostEntity(this.id.toString, h.hostname, h.ipAddress)
+        SqlClusterDao.slaves.insertOrUpdate(new HostEntity(this.id.toString, h.hostname, h.ipAddress)
           with SlaveKey)
       }
     }
   }
 
   private def getField[A](field: ClusterEntity => A) = dao.newTransaction {
-    from(dao.cluster_state)(c => where (c.id === this.id.toString) select(field(c))).single
+    from(clusterState)(c => where (c.id === this.id.toString) select(field(c))).single
   }
 
   private def setField(setter: ClusterEntity => UpdateAssignment) {
@@ -92,6 +95,6 @@ private[ambari] class SqlMutableClusterDescription(
   }
 
   private def setFields(setter: ClusterEntity => Seq[UpdateAssignment]): Unit = dao.newTransaction {
-    update(dao.cluster_state)(c => where (c.id === this.id.toString) set(setter(c): _*))
+    update(clusterState)(c => where (c.id === this.id.toString) set(setter(c): _*))
   }
 }

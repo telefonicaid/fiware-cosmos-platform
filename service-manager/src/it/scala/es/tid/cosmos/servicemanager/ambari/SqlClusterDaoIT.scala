@@ -20,6 +20,7 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
 import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.ClusterUser
 
 class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
   val db = new MySqlDatabase(MySqlConnDetails("localhost", 3306, "root", "", "smtest"))
@@ -28,9 +29,9 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
   before  {
     dao.newTransaction {
       Try {
-        dao.drop
+        SqlClusterDao.drop
       }
-      dao.create
+      SqlClusterDao.create
     }
   }
 
@@ -38,6 +39,11 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
     val id = ClusterId()
     dao.registerCluster(id, "cosmos", 3)
     val cluster = dao.getDescription(id).get
+  }
+
+  trait ClusterCreatedWithUsers extends ClusterCreated {
+    val user1 = ClusterUser("jsmith", "jsmith-public-key")
+    dao.setUsers(id, Set(user1))
   }
 
   "SqlCluster" must "persist a new cluster" taggedAs HasExternalDependencies in new ClusterCreated {
@@ -100,6 +106,31 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
     val id2 = ClusterId()
     dao.registerCluster(id2, "cosmos", 3)
     dao.ids.toSet must be (Set(id, id2))
+  }
+
+  it must "retrieve empty user seq for new cluster" taggedAs HasExternalDependencies in new ClusterCreated {
+    dao.getUsers(id) must be (Some(Set.empty))
+  }
+
+  it must "retrieve none users for unexisting cluster" taggedAs HasExternalDependencies in new ClusterCreated {
+    dao.getUsers(ClusterId()) must not be ('defined)
+  }
+
+  it must "set users of existing cluster" taggedAs HasExternalDependencies in new ClusterCreated {
+    dao.getUsers(id) must be (Some(Set.empty))
+    dao.setUsers(id, Set(ClusterUser("jsmith", "publickey1")))
+    dao.getUsers(id) must be (Some(Set(ClusterUser("jsmith", "publickey1"))))
+  }
+
+  it must "fail to set users of unexisting cluster" taggedAs HasExternalDependencies in new ClusterCreated {
+    evaluating {
+      dao.setUsers(ClusterId(), Set(ClusterUser("jsmith", "publickey1")))
+    } must produce [IllegalArgumentException]
+  }
+
+  it must "replace the users of an existing cluster" taggedAs HasExternalDependencies in new ClusterCreated {
+    dao.setUsers(id, Set(ClusterUser("pocahontas", "publickey2")))
+    dao.getUsers(id) must be (Some(Set(ClusterUser("pocahontas", "publickey2"))))
   }
 }
 

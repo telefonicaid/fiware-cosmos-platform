@@ -19,13 +19,5 @@ case class ManageUserParams(user: String)
 
 object ManageUserParams {
 
-  implicit val manageUserParamsReads: Reads[ManageUserParams] =
-    (__ \ "user").read[String].map(ManageUserParams.apply)
-
-  implicit object ManageUserParamsWrites extends Writes[ManageUserParams] {
-
-    def writes(params: ManageUserParams): JsValue = Json.obj(
-      "user" -> params.user
-    )
-  }
+  implicit val manageUserParamsFormat = Json.format[ManageUserParams]
 }

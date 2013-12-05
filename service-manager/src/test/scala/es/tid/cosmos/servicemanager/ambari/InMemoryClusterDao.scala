@@ -11,8 +11,6 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import java.net.URI
-
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.ClusterUser
 

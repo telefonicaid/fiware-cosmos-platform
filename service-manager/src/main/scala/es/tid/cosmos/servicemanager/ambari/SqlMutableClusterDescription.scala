@@ -16,9 +16,9 @@ import java.net.URI
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.UpdateAssignment
 
+import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.ambari.HostEntityTypes._
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.ClusterUser
 
 /**
   * This class provides a mutable cluster description which reads directly from the SQL DAO

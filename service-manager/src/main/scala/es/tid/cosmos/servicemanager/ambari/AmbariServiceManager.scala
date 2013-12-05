@@ -41,13 +41,12 @@ import es.tid.cosmos.servicemanager.util.TcpServer._
  * @param hadoopConfig parameters that fine-tune configuration of Hadoop
  */
 class AmbariServiceManager(
-                            ambariServer: AmbariServer,
-                            infrastructureProvider: InfrastructureProvider,
-                            override val persistentHdfsId: ClusterId,
-                            exclusiveMasterSizeCutoff: Int,
-                            hadoopConfig: HadoopConfig,
-                            clusterDao: AmbariClusterDao)
-  extends ServiceManager with Logging {
+    ambariServer: AmbariServer,
+    infrastructureProvider: InfrastructureProvider,
+    override val persistentHdfsId: ClusterId,
+    exclusiveMasterSizeCutoff: Int,
+    hadoopConfig: HadoopConfig,
+    clusterDao: AmbariClusterDao) extends ServiceManager with Logging {
   import AmbariServiceManager._
 
   private[ambari] val clusterDeployer = new ClusterManager(
@@ -66,11 +65,11 @@ class AmbariServiceManager(
     Seq(new CosmosUserService(users))
 
   override def createCluster(
-                              name: String,
-                              clusterSize: Int,
-                              serviceDescriptions: Seq[ServiceDescriptionType],
-                              users: Seq[ClusterUser],
-                              preConditions: ClusterExecutableValidation): ClusterId = {
+      name: String,
+      clusterSize: Int,
+      serviceDescriptions: Seq[ServiceDescriptionType],
+      users: Seq[ClusterUser],
+      preConditions: ClusterExecutableValidation): ClusterId = {
     val clusterDescription = clusterDao.registerNewCluster(name, clusterSize)
     clusterDescription.withFailsafe {
       for {
@@ -95,8 +94,8 @@ class AmbariServiceManager(
   }
 
   private def createCluster(
-                             dbClusterDescription: MutableClusterDescription,
-                             serviceDescriptions: Seq[ServiceDescriptionType]) = {
+      dbClusterDescription: MutableClusterDescription,
+      serviceDescriptions: Seq[ServiceDescriptionType]) = {
     require(dbClusterDescription.master.isDefined,
       "This function cannot be called if the master has not been set")
     require(dbClusterDescription.slaves.nonEmpty,
@@ -149,14 +148,13 @@ class AmbariServiceManager(
         new CosmosUserService(users))
     } yield {
       clusterDao.setUsers(clusterId, users.toSet)
-      ()
     }
   }
 
   private def changeServiceConfiguration(
-                                          id: ClusterId,
-                                          clusterDescription: ClusterDescription,
-                                          serviceDescription: AmbariServiceDescription): Future[Service] = for {
+      id: ClusterId,
+      clusterDescription: ClusterDescription,
+      serviceDescription: AmbariServiceDescription): Future[Service] = for {
     cluster <- ambariServer.getCluster(id.toString)
     service <- cluster.getService(serviceDescription.name)
     master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription)
@@ -201,7 +199,7 @@ private[ambari] object AmbariServiceManager {
   val AllServices = (CosmosUserService +: BasicHadoopServices) ++ OptionalServices
 
   private def setMachineInfo(
-                              description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {
+      description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {
     description.master = toHostInfo(master)
     description.slaves = slaves.map(toHostInfo)
   }

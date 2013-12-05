@@ -128,7 +128,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
     } must produce [IllegalArgumentException]
   }
 
-  it must "replace the users of an existing cluster" taggedAs HasExternalDependencies in new ClusterCreated {
+  it must "replace the users of an existing cluster" taggedAs HasExternalDependencies in new ClusterCreatedWithUsers {
     dao.setUsers(id, Set(ClusterUser("pocahontas", "publickey2")))
     dao.getUsers(id) must be (Some(Set(ClusterUser("pocahontas", "publickey2"))))
   }

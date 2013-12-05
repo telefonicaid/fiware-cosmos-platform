@@ -124,11 +124,11 @@ private[ambari] class SqlClusterDao(db: SqlDatabase) extends ClusterDao {
 
   override def setUsers(clusterId: ClusterId, users: Set[ClusterUser]) = newTransaction {
     from(clusterState)(c => where(c.id === clusterId.id) select(c)).headOption match {
-      case Some(cluster: ClusterEntity) => {
+      case Some(cluster) => {
         cluster.users.deleteAll
         users.foreach(usr => cluster.users.associate(ClusterUserEntity(usr)))
       }
-      case _ => throw new IllegalArgumentException(s"no cluster was found for $clusterId")
+      case None => throw new IllegalArgumentException(s"no cluster was found for $clusterId")
     }
   }
 

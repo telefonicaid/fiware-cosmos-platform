@@ -20,7 +20,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 class CosmosUserServiceTest extends FlatSpec with MustMatchers {
 
   val description = new CosmosUserService(Seq(ClusterUser(
-    userName = "userName",
+    username = "userName",
     publicKey = "public_key",
     sshEnabled = true,
     hdfsEnabled = false,

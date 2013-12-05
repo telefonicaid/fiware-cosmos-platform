@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.clusters
 
 import java.net.URI
+import es.tid.cosmos.servicemanager.ClusterUser
 
 /**
  * A description of a cluster
@@ -60,4 +61,7 @@ trait ClusterDescription {
    * @return the slave nodes information
    */
   def slaves: Seq[HostDetails]
+
+  /** The users of this cluster. */
+  def users: Option[Set[ClusterUser]]
 }

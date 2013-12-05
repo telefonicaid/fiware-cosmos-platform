@@ -13,6 +13,8 @@ package es.tid.cosmos.servicemanager.clusters
 
 import java.net.URI
 
+import es.tid.cosmos.servicemanager.ClusterUser
+
 /**
  * An immutable description of a cluster
  */
@@ -23,4 +25,5 @@ case class ImmutableClusterDescription(
     override val state: ClusterState,
     override val nameNode: Option[URI],
     override val master: Option[HostDetails],
-    override val slaves: Seq[HostDetails]) extends ClusterDescription
+    override val slaves: Seq[HostDetails],
+    override val users: Option[Set[ClusterUser]]) extends ClusterDescription

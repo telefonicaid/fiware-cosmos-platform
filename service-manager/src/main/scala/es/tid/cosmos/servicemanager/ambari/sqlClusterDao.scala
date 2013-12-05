@@ -15,7 +15,7 @@ import com.imageworks.migration.{InstallAllMigrations, Migrator, MysqlDatabaseAd
 import org.squeryl.{ForeignKeyDeclaration, KeyedEntity, Schema}
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.annotations.Column
-import org.squeryl.dsl.{ManyToOne, OneToMany, CompositeKey2, CompositeKey3}
+import org.squeryl.dsl.{ManyToOne, OneToMany, CompositeKey3}
 
 import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase, ConfigComponent, SqlDatabase}
 import es.tid.cosmos.servicemanager.clusters._
@@ -73,7 +73,7 @@ private[ambari] case class ClusterUserEntity(
 private[ambari] object ClusterUserEntity {
 
   def apply(user: ClusterUser): ClusterUserEntity = ClusterUserEntity(
-    user.userName,
+    user.username,
     user.publicKey,
     user.sshEnabled,
     user.hdfsEnabled,
@@ -143,6 +143,7 @@ private[ambari] class SqlClusterDao(db: SqlDatabase) extends ClusterDao {
 }
 
 private[ambari] object SqlClusterDao extends Schema {
+  import scala.language.postfixOps
   import HostEntityTypes._
 
   private[ambari] val clusterState = table[ClusterEntity]("cluster_state")
@@ -158,7 +159,7 @@ private[ambari] object SqlClusterDao extends Schema {
   clusterToUsers.foreignKeyDeclaration.constrainReference(onDelete cascade)
 
   on(clusterUsers)(usr => declare(
-    usr.id is(autoIncremented("cluster_users_id_seq"))
+    usr.id is autoIncremented("cluster_users_id_seq")
   ))
 }
 

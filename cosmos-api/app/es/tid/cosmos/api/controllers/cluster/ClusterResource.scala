@@ -83,7 +83,7 @@ class ClusterResource(
       clusterSize = body.size,
       serviceDescriptions = services,
       users = Seq(ClusterUser(
-        userName = profile.handle,
+        username = profile.handle,
         publicKey = profile.keys.head.signature,
         isSudoer = profile.capabilities.hasCapability(Capability.IsSudoer)
       )),
@@ -146,7 +146,7 @@ class ClusterResource(
     for {
       profile <- requireAuthenticatedApiRequest(request)
       cluster <- requireOwnedCluster(profile, ClusterId(id))
-    } yield Ok(Json.toJson(ClusterDetails(cluster, serviceManager.listUsers(cluster.id))))
+    } yield Ok(Json.toJson(ClusterDetails(cluster)))
   }
 
   @ApiOperation(value = "Add users to an existing cluster", httpMethod = "POST")
@@ -176,8 +176,8 @@ class ClusterResource(
         throw new IllegalArgumentException(
           s"cannot add user to cluster: no such cluster with id $clusterId")
       )
-      val newUsers = currentUsers.filterNot(_.userName.equals(user.handle)) :+ ClusterUser(
-        userName = user.handle,
+      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser(
+        username = user.handle,
         publicKey = user.keys.head.signature,
         isSudoer = user.capabilities.hasCapability(Capability.IsSudoer),
         sshEnabled = true,
@@ -194,7 +194,7 @@ class ClusterResource(
     }
   }
 
-  @ApiOperation(value = "Remove an user from an existing cluster", httpMethod = "POST")
+  @ApiOperation(value = "Remove a user from an existing cluster", httpMethod = "POST")
   @ApiParamsImplicit(Array(
     new ApiParamImplicit(paramType = "body",
       dataType = "es.tid.cosmos.api.controllers.clusters.ManageUserParams")
@@ -222,8 +222,8 @@ class ClusterResource(
         throw new IllegalArgumentException(
           s"cannot remove user from cluster: no such cluster with id $cluster")
       )
-      val newUsers = currentUsers.filterNot(_.userName.equals(user.handle)) :+ ClusterUser(
-        userName = user.handle,
+      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser(
+        username = user.handle,
         publicKey = user.keys.head.signature,
         isSudoer = false,
         sshEnabled = false,
@@ -325,7 +325,7 @@ class ClusterResource(
   private def isUserOf(profile: CosmosProfile, clusterId: ClusterId): Boolean =
     serviceManager.listUsers(clusterId) match {
       case Some(users) => {
-        val user = users.find(_.userName.equals(profile.handle))
+        val user = users.find(_.username.equals(profile.handle))
         user.isDefined && user.get.sshEnabled
       }
       case None => throw new IllegalStateException(
@@ -340,20 +340,20 @@ class ClusterResource(
   private def unauthorizedAccessTo(cluster: ClusterId) =
     Unauthorized(Json.toJson(ErrorMessage(s"Cannot access cluster '$cluster'")))
 
-  private def userIsOwnerOf(handler: String, cluster: ClusterId) =
-    BadRequest(Json.toJson(ErrorMessage(s"User $handler is the owner of cluster '$cluster'")))
+  private def userIsOwnerOf(handle: String, cluster: ClusterId) =
+    BadRequest(Json.toJson(ErrorMessage(s"User $handle is the owner of cluster '$cluster'")))
 
-  private def notUserOf(handler: String, cluster: ClusterId) =
-    BadRequest(Json.toJson(ErrorMessage(s"User $handler is not an user of cluster '$cluster'")))
+  private def notUserOf(handle: String, cluster: ClusterId) =
+    BadRequest(Json.toJson(ErrorMessage(s"User $handle is not a user of cluster '$cluster'")))
 
-  private def alreadyUserOf(handler: String, cluster: ClusterId) =
-    BadRequest(Json.toJson(ErrorMessage(s"User $handler is already an user of cluster '$cluster'")))
+  private def alreadyUserOf(handle: String, cluster: ClusterId) =
+    BadRequest(Json.toJson(ErrorMessage(s"User $handle is already a user of cluster '$cluster'")))
 
   private def notFound(cluster: ClusterId) =
     NotFound(Json.toJson(ErrorMessage(s"No cluster '$cluster' exists")))
 
-  private def profileNotFound(handler: String) =
-    NotFound(Json.toJson(ErrorMessage(s"No user was found with handler '$handler'")))
+  private def profileNotFound(handle: String) =
+    NotFound(Json.toJson(ErrorMessage(s"No user was found with handle '$handle'")))
 }
 
 object ClusterResource {

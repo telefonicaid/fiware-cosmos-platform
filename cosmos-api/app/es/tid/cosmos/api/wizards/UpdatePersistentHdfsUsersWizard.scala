@@ -33,7 +33,7 @@ class UpdatePersistentHdfsUsersWizard(serviceManager: ServiceManager) {
   def updatePersistentHdfsUsers(dao: CosmosProfileDao)(implicit c: dao.type#Conn): Future[Unit] = {
     val clusterUsers = dao.getAllUsers().map { profile =>
       ClusterUser(
-        userName = profile.handle,
+        username = profile.handle,
         publicKey = profile.keys.head.signature,
         sshEnabled = false,
         hdfsEnabled = profile.state == UserState.Enabled

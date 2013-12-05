@@ -86,7 +86,7 @@ class AmbariServiceManagerTest
     val (machines, hosts) = machinesAndHostsOf(1)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
-    val users = Seq(ClusterUser(userName = "jsmith", publicKey = "that public key"))
+    val users = Seq(ClusterUser(username = "jsmith", publicKey = "that public key"))
     val clusterId = instance.createCluster(
       "clusterName", 1, serviceDescriptions, users, NoPreconditions)
     waitForClusterCompletion(clusterId, instance)

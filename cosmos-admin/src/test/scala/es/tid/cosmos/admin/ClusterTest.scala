@@ -43,7 +43,8 @@ class ClusterTest extends FlatSpec with MustMatchers with MockitoSugar {
       size = 3,
       nameNode = Some(new URI("hdfs://host:1234")),
       master = Some(HostDetails("host", "ipAddress")),
-      slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3"))
+      slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
+      users = None
     )))
   }
 

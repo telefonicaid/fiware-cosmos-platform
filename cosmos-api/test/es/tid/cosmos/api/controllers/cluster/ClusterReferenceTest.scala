@@ -31,6 +31,7 @@ class ClusterReferenceTest extends FlatSpec with MustMatchers {
     override def nameNode = throw new NotImplementedError()
     override def master = throw new NotImplementedError()
     override def slaves = throw new NotImplementedError()
+    override def users = throw new NotImplementedError()
   }
 
   "A cluster reference" must ("be composed of cluster description and assignment" +

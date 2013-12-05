@@ -18,6 +18,7 @@ import org.squeryl.dsl.ast.UpdateAssignment
 
 import es.tid.cosmos.servicemanager.ambari.HostEntityTypes._
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.ClusterUser
 
 /**
   * This class provides a mutable cluster description which reads directly from the SQL DAO
@@ -85,6 +86,10 @@ private[ambari] class SqlMutableClusterDescription(
       }
     }
   }
+
+  override def users: Option[Set[ClusterUser]] = dao.getUsers(id)
+
+  override def users_=(users: Set[ClusterUser]) = dao.setUsers(id, users)
 
   private def getField[A](field: ClusterEntity => A) = dao.newTransaction {
     from(clusterState)(c => where (c.id === this.id.toString) select(field(c))).single

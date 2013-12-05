@@ -45,8 +45,7 @@ object ClusterDetails {
    * @param request  Context request
    * @return         A ClusterDetails instance
    */
-  def apply(desc: ClusterDescription, users: Option[Seq[ClusterUser]])
-           (implicit request: RequestHeader): ClusterDetails =
+  def apply(desc: ClusterDescription)(implicit request: RequestHeader): ClusterDetails =
     ClusterDetails(
       href = ClusterResource.clusterUrl(desc.id),
       id = desc.id.toString,
@@ -56,7 +55,7 @@ object ClusterDetails {
       stateDescription = desc.state.descLine,
       master = desc.master,
       slaves = Option(desc.slaves),
-      users
+      users = desc.users.map(_.toSeq)
     )
 
   implicit object HostDetailsWrites extends Writes[HostDetails] {
@@ -70,7 +69,7 @@ object ClusterDetails {
     def writes(user: ClusterUser): JsValue =
       if (user.sshEnabled) {
         Json.obj(
-          "username" -> user.userName,
+          "username" -> user.username,
           "sshPublicKey" -> user.publicKey,
           "isSudoer" -> user.isSudoer
         )

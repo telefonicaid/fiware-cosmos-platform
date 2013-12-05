@@ -19,6 +19,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile.ClusterAssignment
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.ClusterUser
 
 class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
 
@@ -32,6 +33,7 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
     override val master = Some(HostDetails("foo", "bar"))
     override val slaves = HostDetails("foo2", "bar2") +: (1 to (size - 1)).map(
       i => HostDetails(s"host$i", s"ip$i"))
+    override val users = Some(Set(ClusterUser("jsmith", "jsmith-public-key")))
   }
 
   /**

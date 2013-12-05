@@ -65,8 +65,8 @@ class UserRegistrationWizardIT extends FlatSpec with MustMatchers with MockitoSu
       val usersCaptor = ArgumentCaptor.forClass(classOf[Seq[ClusterUser]])
       verify(sm).setUsers(any[ClusterId], usersCaptor.capture())
       val users = usersCaptor.getValue
-      users.map(_.userName).toSet must be (Set("deleted", handle))
-      users.find(_.userName == "deleted").get must (not be 'hdfsEnabled and not be 'sshEnabled)
-      users.find(_.userName == handle).get must (be ('hdfsEnabled) and not be 'sshEnabled)
+      users.map(_.username).toSet must be (Set("deleted", handle))
+      users.find(_.username == "deleted").get must (not be 'hdfsEnabled and not be 'sshEnabled)
+      users.find(_.username == handle).get must (be ('hdfsEnabled) and not be 'sshEnabled)
     }
 }

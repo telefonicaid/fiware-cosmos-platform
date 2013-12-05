@@ -37,7 +37,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     var currentState: ClusterState
     def completeProvision()
     def completeTermination()
-    def view = new ImmutableClusterDescription(id, name, size, state, nameNode, master, slaves)
+    def view = new ImmutableClusterDescription(
+      id, name, size, state, nameNode, master, slaves, users)
   }
 
   private class TransitioningCluster (
@@ -53,6 +54,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     override def master = master_
     var slaves_ : Seq[HostDetails] = Seq()
     override def slaves = slaves_
+    var users_ : Option[Set[ClusterUser]] = None
+    override def users = users_
 
     def completeProvision() {
       if (currentState == Provisioning){
@@ -60,6 +63,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
         nameNode_ = Some(new URI(s"hdfs://10.0.0.${Random.nextInt(256)}:8084"))
         master_ = Some(HostDetails("fakeHostname", "fakeAddress"))
         slaves_ = (1 to (size-1)).map(i => HostDetails(s"fakeHostname$i", s"fakeAddress$i"))
+        users_ = Some(Set(ClusterUser("jsmith", "jsmith-public-key")))
       }
     }
 
@@ -81,6 +85,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     override val nameNode: Option[URI] = None
     override val master: Option[HostDetails] = None
     override val slaves: Seq[HostDetails] = Seq()
+    override val users: Option[Set[ClusterUser]] = None
     override def completeProvision() {}
     override def completeTermination() {}
 
@@ -107,6 +112,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
       put(clusterInProgress.id, clusterInProgress)
     }
 
+  private val clusterUsers: mutable.Map[ClusterId, Seq[ClusterUser]] = mutable.Map.empty
+
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
   override def createCluster(
@@ -122,6 +129,7 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     )
     val cluster = new TransitioningCluster(name, clusterSize, clusterId)
     clusters.put(cluster.id, cluster)
+    clusterUsers.put(cluster.id, users)
     cluster.id
   }
 
@@ -151,7 +159,8 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     state = Running,
     name = "Persistent storage cluster",
     master = Some(HostDetails("stoarge", "storageAddress")),
-    slaves = (1 to 3).map(i => HostDetails(s"storage$i", s"storageAddress$i"))
+    slaves = (1 to 3).map(i => HostDetails(s"storage$i", s"storageAddress$i")),
+    users = None
   ) {
     @volatile var enabled: Boolean = false
   }
@@ -169,6 +178,9 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
     Some(persistentHdfsCluster)
 
   override def terminatePersistentHdfsCluster(): Future[Unit] = successful()
+
+  override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] =
+    clusterUsers.get(clusterId)
 
   override def clusterNodePoolCount: Int = 10
 }

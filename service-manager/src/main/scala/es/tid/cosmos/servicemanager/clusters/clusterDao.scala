@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.servicemanager.clusters
 
+import es.tid.cosmos.servicemanager.ClusterUser
+
 trait ClusterDaoComponent {
   val clusterDao: ClusterDao
 }
@@ -42,4 +44,19 @@ trait ClusterDao {
     *         on this object will affect the state of the DAO.
     */
   def registerCluster(id: ClusterId, name: String, size: Int): MutableClusterDescription
+
+  /** Retrieve the list of users for given cluster.
+    *
+    * @param id The id of the cluster
+    * @return The sequence of users for that cluster or none if cluster doesn't exist
+    */
+  def getUsers(id: ClusterId): Option[Set[ClusterUser]]
+
+  /** Set the users for given cluster.
+    *
+    * @param id The id of the cluster
+    * @param users The new user seq for the cluster
+    * @throws IllegalArgumentException If there is no cluster with given id
+    */
+  def setUsers(id: ClusterId, users: Set[ClusterUser])
 }

@@ -46,8 +46,7 @@ class AmbariServiceManager(
     override val persistentHdfsId: ClusterId,
     exclusiveMasterSizeCutoff: Int,
     hadoopConfig: HadoopConfig,
-    clusterDao: AmbariClusterDao)
-  extends ServiceManager with Logging {
+    clusterDao: AmbariClusterDao) extends ServiceManager with Logging {
   import AmbariServiceManager._
 
   private[ambari] val clusterDeployer = new ClusterManager(
@@ -81,6 +80,7 @@ class AmbariServiceManager(
         _ <- createCluster(
           clusterDescription,
           BasicHadoopServices ++ serviceDescriptions ++ userServices(users))
+        _ = clusterDao.setUsers(clusterDescription.id, users.toSet)
       } yield ()
     }
     clusterDescription.id
@@ -130,6 +130,9 @@ class AmbariServiceManager(
     }
   }
 
+  override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] =
+    clusterDao.getUsers(clusterId).map(_.toSeq)
+
   override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] = {
     val clusterDescription = describeCluster(clusterId)
     require(
@@ -143,7 +146,9 @@ class AmbariServiceManager(
         clusterId,
         clusterDescription.get,
         new CosmosUserService(users))
-    } yield ()
+    } yield {
+      clusterDao.setUsers(clusterId, users.toSet)
+    }
   }
 
   private def changeServiceConfiguration(
@@ -168,15 +173,15 @@ class AmbariServiceManager(
       name = persistentHdfsId.id,
       size = machineCount + 1)
     _ <- clusterDescription.withFailsafe(for {
-        master <- infrastructureProvider.createMachines(
+      master <- infrastructureProvider.createMachines(
         PassThrough, MachineProfile.HdfsMaster, numberOfMachines = 1, waitForSsh).map(_.head)
-        slaves <- infrastructureProvider.createMachines(
+      slaves <- infrastructureProvider.createMachines(
         PassThrough, MachineProfile.HdfsSlave, numberOfMachines = machineCount, waitForSsh)
-        _ = setMachineInfo(clusterDescription, master, slaves)
-        _ <- createCluster(
+      _ = setMachineInfo(clusterDescription, master, slaves)
+      _ <- createCluster(
         clusterDescription,
         serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq())))
-      } yield ())
+    } yield ())
   } yield ()
 
   override def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =

@@ -19,13 +19,20 @@ import scalaz._
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json._
-import play.api.mvc.{Request, SimpleResult, RequestHeader, Action}
+import play.api.mvc._
 
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
+import es.tid.cosmos.api.controllers.cluster.ClusterReference
+import es.tid.cosmos.servicemanager.ClusterUser
+import scala.util.Failure
+import es.tid.cosmos.api.profile.ClusterAssignment
+import scala.Some
+import play.api.mvc.SimpleResult
+import scala.util.Success
 
 /**
  * Resource that represents a single cluster.
@@ -37,6 +44,8 @@ class ClusterResource(
     override val dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus)
   extends ApiAuthController with JsonController with MaintenanceAwareController {
+
+  import ClusterResource._
 
   /**
    * List user clusters.
@@ -83,7 +92,7 @@ class ClusterResource(
       clusterSize = body.size,
       serviceDescriptions = services,
       users = Seq(ClusterUser(
-        userName = profile.handle,
+        username = profile.handle,
         publicKey = profile.keys.head.signature,
         isSudoer = profile.capabilities.hasCapability(Capability.IsSudoer)
       )),
@@ -145,8 +154,87 @@ class ClusterResource(
       id: String) = Action { implicit request =>
     for {
       profile <- requireAuthenticatedApiRequest(request)
-      cluster <- requireOwnedCluster(profile.id, ClusterId(id))
+      cluster <- requireOwnedCluster(profile, ClusterId(id))
     } yield Ok(Json.toJson(ClusterDetails(cluster)))
+  }
+
+  @ApiOperation(value = "Add users to an existing cluster", httpMethod = "POST")
+  @ApiParamsImplicit(Array(
+    new ApiParamImplicit(paramType = "body",
+      dataType = "es.tid.cosmos.api.controllers.clusters.ManageUserParams")
+  ))
+  def addUser(
+      @ApiParam(value = "Cluster identifier", required = true,
+        defaultValue = "00000000-0000-0000-0000-000000000000")
+      @PathParam("id")
+      id: String) = Action(parse.tolerantJson) { request =>
+    val clusterId = ClusterId(id)
+    for {
+      user <- requireUserManagementConditions(request, clusterId)
+      _ <- requireProfileIsNotUserOf(user, clusterId)
+      clusterUsers <- requireClusterUsersAreAvailable(clusterId)
+    } yield addUserToCluster(user, clusterId, clusterUsers)
+  }
+
+  private def addUserToCluster(
+      user: CosmosProfile, clusterId: ClusterId, currentUsers: Seq[ClusterUser]): SimpleResult = {
+    Try {
+      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser(
+        username = user.handle,
+        publicKey = user.keys.head.signature,
+        isSudoer = user.capabilities.hasCapability(Capability.IsSudoer),
+        sshEnabled = true,
+        hdfsEnabled = true
+      )
+      serviceManager.setUsers(clusterId, newUsers)
+    } match {
+      case Success(_) => Ok(Json.toJson(
+        Message(s"Adding user ${user.handle} to cluster $clusterId " +
+          "(this will take a while, please be patient)")))
+      case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
+        ErrorMessage(ex.getMessage, ex)))
+      case Failure(ex) => throw ex
+    }
+  }
+
+  @ApiOperation(value = "Remove a user from an existing cluster", httpMethod = "POST")
+  @ApiParamsImplicit(Array(
+    new ApiParamImplicit(paramType = "body",
+      dataType = "es.tid.cosmos.api.controllers.clusters.ManageUserParams")
+  ))
+  def removeUser(
+      @ApiParam(value = "Cluster identifier", required = true,
+        defaultValue = "00000000-0000-0000-0000-000000000000")
+      @PathParam("id")
+      id: String) = Action(parse.tolerantJson) { request =>
+    val clusterId = ClusterId(id)
+    for {
+      user <- requireUserManagementConditions(request, clusterId)
+      _ <- requireProfileIsUserOf(user, clusterId)
+      _ <- requireNotOwnedCluster(user, clusterId)
+      clusterUsers <- requireClusterUsersAreAvailable(clusterId)
+    } yield removeUserFromCluster(user, clusterId, clusterUsers)
+  }
+
+  private def removeUserFromCluster(
+      user: CosmosProfile, cluster: ClusterId, currentUsers: Seq[ClusterUser]): SimpleResult = {
+    Try {
+      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser(
+        username = user.handle,
+        publicKey = user.keys.head.signature,
+        isSudoer = false,
+        sshEnabled = false,
+        hdfsEnabled = false
+      )
+      serviceManager.setUsers(cluster, newUsers)
+    } match {
+      case Success(_) => Ok(Json.toJson(
+        Message(s"Removing user ${user.handle} from cluster $cluster " +
+          "(this will take a while, please be patient)")))
+      case Failure(ex: IllegalArgumentException) =>
+        Conflict(Json.toJson(ErrorMessage(ex.getMessage, ex)))
+      case Failure(ex) => throw ex
+    }
   }
 
   @ApiOperation(value = "Terminate cluster", httpMethod = "POST", notes = "No body is required",
@@ -165,7 +253,7 @@ class ClusterResource(
     for {
       profile <- requireAuthenticatedApiRequest(request)
       _ <- requireNotUnderMaintenanceToNonOperators(profile)
-      cluster <- requireOwnedCluster(profile.id, ClusterId(id))
+      cluster <- requireOwnedCluster(profile, ClusterId(id))
     } yield Try(serviceManager.terminateCluster(cluster.id)) match {
       case Success(_) => Ok(Json.toJson(Message("Terminating cluster")))
       case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
@@ -175,32 +263,127 @@ class ClusterResource(
   }
 
   private def requireOwnedCluster(
-      profileId: ProfileId, clusterId: ClusterId): ActionValidation[ClusterDescription] = {
+      profile: CosmosProfile, clusterId: ClusterId): ActionValidation[ClusterDescription] = {
     import Scalaz._
-    val owned = isOwnCluster(profileId, clusterId)
-    val maybeDescription = serviceManager.describeCluster(clusterId)
-    (owned, maybeDescription) match {
+    requireThatOwner(profile, clusterId,
+      ifOwner = desc => desc.success,
+      ifNotOwner = _ => unauthorizedAccessTo(clusterId).failure
+    )
+  }
+
+  private def requireNotOwnedCluster(
+      profile: CosmosProfile,
+      clusterId: ClusterId): ActionValidation[ClusterDescription] = {
+    import Scalaz._
+    requireThatOwner(profile, clusterId,
+      ifOwner = _ => userIsOwnerOf(profile.handle, clusterId).failure,
+      ifNotOwner = desc => desc.success
+    )
+  }
+
+  private def requireThatOwner(
+      profile: CosmosProfile,
+      clusterId: ClusterId,
+      ifOwner: ClusterDescription => ActionValidation[ClusterDescription],
+      ifNotOwner: ClusterDescription => ActionValidation[ClusterDescription]):
+      ActionValidation[ClusterDescription] = {
+    import Scalaz._
+    clusterOwnership(profile, clusterId) match {
       case (true, None) => throw new IllegalStateException(
         s"Cluster '$clusterId' is on app database but not found in Service Manager")
       case (false, None) => notFound(clusterId).failure
-      case (false, Some(_)) => unauthorizedAccessTo(clusterId).failure
-      case (true, Some(description)) => description.success
+      case (false, Some(description)) => ifNotOwner(description)
+      case (true, Some(description)) => ifOwner(description)
     }
   }
 
-  private def isOwnCluster(cosmosId: Long, cluster: ClusterId): Boolean =
+  private def clusterOwnership(profile: CosmosProfile, clusterId: ClusterId) = {
+    val owned = isOwnerOfCluster(profile.id, clusterId)
+    val maybeDescription = serviceManager.describeCluster(clusterId)
+    (owned, maybeDescription)
+  }
+
+  private def requireProfileExists(handle: String): ActionValidation[CosmosProfile] = {
+    import Scalaz._
+    dao.withConnection { implicit c =>
+      dao.lookupByHandle(handle) match {
+        case Some(profile: CosmosProfile) => profile.success
+        case None => profileNotFound(handle).failure
+      }
+    }
+  }
+
+  private def requireProfileIsUserOf(
+      profile: CosmosProfile,
+      clusterId: ClusterId): ActionValidation[Unit] = {
+    import Scalaz._
+    for {
+      users <- requireClusterUsersAreAvailable(clusterId)
+    } yield {
+      if (users.exists(_.username.equals(profile.handle))) ().success
+      else notUserOf(profile.handle, clusterId).failure
+    }
+  }
+
+  private def requireProfileIsNotUserOf(
+      profile: CosmosProfile,
+      clusterId: ClusterId): ActionValidation[Unit] = {
+    import Scalaz._
+    for {
+      users <- requireClusterUsersAreAvailable(clusterId)
+    } yield {
+      if (users.exists(_.username.equals(profile.handle)))
+        alreadyUserOf(profile.handle, clusterId).failure
+      else  ().success
+    }
+  }
+
+  private def requireClusterUsersAreAvailable(
+      clusterId: ClusterId): ActionValidation[Seq[ClusterUser]] = {
+    import Scalaz._
+    serviceManager.listUsers(clusterId) match {
+      case Some(users) => users.success
+      case None => usersUnavailable(clusterId).failure
+    }
+  }
+
+  private def requireUserManagementConditions(
+      request: Request[JsValue], clusterId: ClusterId): ActionValidation[CosmosProfile] = for {
+    requester <- requireAuthenticatedApiRequest(request)
+    _ <- requireNotUnderMaintenanceToNonOperators(requester)
+    body <- validJsonBody[ManageUserParams](request)
+    _ <- requireOwnedCluster(requester, clusterId)
+    user <- requireProfileExists(body.user)
+  } yield user
+
+  private def isOwnerOfCluster(cosmosId: Long, cluster: ClusterId): Boolean =
     dao.withConnection { implicit c =>
       dao.clustersOf(cosmosId).exists(_.clusterId == cluster)
     }
+}
+
+object ClusterResource extends Results {
+  def clusterUrl(id: ClusterId)(implicit request: RequestHeader): String =
+    AbsoluteUrl(routes.ClusterResource.listDetails(id.toString))
 
   private def unauthorizedAccessTo(cluster: ClusterId) =
     Unauthorized(Json.toJson(ErrorMessage(s"Cannot access cluster '$cluster'")))
 
+  private def userIsOwnerOf(handle: String, cluster: ClusterId) =
+    BadRequest(Json.toJson(ErrorMessage(s"User $handle is the owner of cluster '$cluster'")))
+
+  private def notUserOf(handle: String, cluster: ClusterId) =
+    BadRequest(Json.toJson(ErrorMessage(s"User $handle is not a user of cluster '$cluster'")))
+
+  private def alreadyUserOf(handle: String, cluster: ClusterId) =
+    BadRequest(Json.toJson(ErrorMessage(s"User $handle is already a user of cluster '$cluster'")))
+
   private def notFound(cluster: ClusterId) =
     NotFound(Json.toJson(ErrorMessage(s"No cluster '$cluster' exists")))
-}
 
-object ClusterResource {
-  def clusterUrl(id: ClusterId)(implicit request: RequestHeader): String =
-    AbsoluteUrl(routes.ClusterResource.listDetails(id.toString))
+  private def profileNotFound(handle: String) =
+    NotFound(Json.toJson(ErrorMessage(s"No user was found with handle '$handle'")))
+
+  private def usersUnavailable(clusterId: ClusterId) =
+    NotFound(Json.toJson(ErrorMessage(s"User service is unavailable for cluster '$clusterId'")))
 }

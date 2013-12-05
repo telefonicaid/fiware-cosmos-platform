@@ -19,6 +19,7 @@ import play.api.libs.json._
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
+import es.tid.cosmos.servicemanager.ClusterUser
 
 /**
  * A cluster from the perspective of API clients.
@@ -32,7 +33,9 @@ case class ClusterDetails(
     state: String,
     stateDescription: String,
     master: Option[HostDetails],
-    slaves: Option[Seq[HostDetails]])
+    slaves: Option[Seq[HostDetails]],
+    users: Option[Seq[ClusterUser]]
+)
 
 object ClusterDetails {
   /**
@@ -51,7 +54,8 @@ object ClusterDetails {
       state = desc.state.name,
       stateDescription = desc.state.descLine,
       master = desc.master,
-      slaves = Option(desc.slaves)
+      slaves = Option(desc.slaves),
+      users = desc.users.map(_.toSeq)
     )
 
   implicit object HostDetailsWrites extends Writes[HostDetails] {
@@ -59,6 +63,17 @@ object ClusterDetails {
         "hostname" -> info.hostname,
         "ipAddress" -> info.ipAddress
       )
+  }
+
+  implicit object ClusterUserWrites extends Writes[ClusterUser] {
+    def writes(user: ClusterUser): JsValue =
+      if (user.sshEnabled) {
+        Json.obj(
+          "username" -> user.username,
+          "sshPublicKey" -> user.publicKey,
+          "isSudoer" -> user.isSudoer
+        )
+    } else { Json.obj() }
   }
 
   implicit object ClusterDetailsWrites extends Writes[ClusterDetails] {
@@ -76,7 +91,8 @@ object ClusterDetails {
       "name" -> d.name,
       "size" -> d.size,
       "state" -> d.state,
-      "stateDescription" -> d.stateDescription
+      "stateDescription" -> d.stateDescription,
+      "users" -> d.users
     )
   }
 }

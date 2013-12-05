@@ -15,6 +15,7 @@ import es.tid.cosmos.servicemanager.clusters._
 import java.net.URI
 import scala.Some
 import es.tid.cosmos.servicemanager.clusters.HostDetails
+import es.tid.cosmos.servicemanager.ClusterUser
 
 class InMemoryClusterDescription(
     override val id: ClusterId,
@@ -54,5 +55,12 @@ class InMemoryClusterDescription(
 
   def slaves_=(slaves: Seq[HostDetails]) {
     slaves_ = slaves
+  }
+
+  var users_ : Option[Set[ClusterUser]] = None
+  override def users: Option[Set[ClusterUser]] = users_
+
+  def users_=(users: Set[ClusterUser]) {
+    users_ = Some(users)
   }
 }

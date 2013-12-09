@@ -29,12 +29,12 @@ class Cluster(id: String) extends MustVerb with MustMatchers with Eventually wit
 
   def isListed: Boolean = ("cosmos list" lines_!).exists(_.contains(id))
 
-  def describe = parse(s"cosmos show $id" !!)
+  def describe = parse(s"cosmos show $id" !! ProcessLogger(println(_)))
 
   def state: Option[String] = (describe \ "state").extractOpt[String]
 
   def ensureState(expectedState: String) {
-    eventually (state must be === (Some(expectedState)))
+    eventually (state must be === Some(expectedState))
   }
 
   def terminate() {

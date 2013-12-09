@@ -14,7 +14,6 @@ package es.tid.cosmos.api.profile
 import scalaz._
 
 import es.tid.cosmos.api.controllers.cluster.ClusterReference
-import es.tid.cosmos.servicemanager.clusters.ClusterState.ActiveStates
 import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ClusterId}
 
 /**
@@ -108,9 +107,8 @@ class ProfileQuotas(
     private def usedMachinesForActiveClusters(profile: CosmosProfile): Int =
       (for {
         clusterReference <- listClusters(profile)
-        description = clusterReference.description
-          if ActiveStates.contains(description.state) && !isRequestedCluster(description)
-      } yield description.size).sum
+        description = clusterReference.description if !isRequestedCluster(description)
+      } yield description.expectedSize).sum
 
     private def isRequestedCluster(description: ClusterDescription): Boolean =
       requestedClusterId match {

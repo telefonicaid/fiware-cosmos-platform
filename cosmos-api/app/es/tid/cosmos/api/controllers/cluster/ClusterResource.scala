@@ -13,7 +13,8 @@ package es.tid.cosmos.api.controllers.cluster
 
 import java.util.Date
 import javax.ws.rs.PathParam
-import scala.util.{Failure, Success, Try}
+import scala.Some
+import scala.util.{Try, Failure, Success}
 import scalaz._
 
 import com.wordnik.swagger.annotations._
@@ -26,13 +27,6 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
-import es.tid.cosmos.api.controllers.cluster.ClusterReference
-import es.tid.cosmos.servicemanager.ClusterUser
-import scala.util.Failure
-import es.tid.cosmos.api.profile.ClusterAssignment
-import scala.Some
-import play.api.mvc.SimpleResult
-import scala.util.Success
 
 /**
  * Resource that represents a single cluster.

@@ -8,6 +8,7 @@ ial.libvirt.servers = [
         description = "Andromeda 02",
         enabled = true,
         profile = "g1-compute",
+        rack = "rack01",
         connection = "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
         domain_hostname = "andromeda-compute02",
         domain_ipaddress = "192.168.63.32"
@@ -15,6 +16,7 @@ ial.libvirt.servers = [
     {
         name = "andromeda03",
         profile = "g1-compute",
+        rack = "rack02",
         connection = "openvz+ssh://cosmos@192.168.63.13/system?socket=/var/run/libvirt/libvirt-sock",
         domain_hostname = "andromeda-compute03",
         domain_ipaddress = "192.168.63.33"
@@ -24,6 +26,7 @@ ial.libvirt.servers = [
         description = "Andromeda 04",
         enabled = false,
         profile = "g1-compute",
+        rack = "rack01",
         connection = "openvz+ssh://cosmos@192.168.63.14/system?socket=/var/run/libvirt/libvirt-sock",
         domain_hostname = "andromeda-compute04",
         domain_ipaddress = "192.168.63.34"

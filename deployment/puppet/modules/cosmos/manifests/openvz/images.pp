@@ -54,6 +54,14 @@ class cosmos::openvz::images(
     force   => true,
   }
 
+  file { "${replacements_dir}/root/.ssh/id_rsa" :
+    ensure  => absent,
+  }
+
+  file { "${replacements_dir}/root/.ssh/id_rsa.pub" :
+    ensure  => absent,
+  }
+
   file { "${replacements_dir}/etc/ssh/ssh_host_rsa_key" :
     ensure  => 'present',
     source  => $cosmos::slave::ct_key_priv_file,
@@ -114,6 +122,7 @@ class cosmos::openvz::images(
             "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0",
             "${replacements_dir}/etc/ssh/ssh_host_rsa_key.pub",
             "${replacements_dir}/etc/ssh/ssh_host_rsa_key"]
+    ~> File["${replacements_dir}/root/.ssh/id_rsa", "${replacements_dir}/root/.ssh/id_rsa.pub"]
     ~> Exec['pack_image']
 
   # Class 'ambari::repos' is not included here to avoid creating a cyclic dependency

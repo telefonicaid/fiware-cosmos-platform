@@ -14,7 +14,7 @@ package es.tid.cosmos.tests.e2e
 import scala.language.postfixOps
 import scala.sys.process._
 
-import net.liftweb.json.parse
+import net.liftweb.json._
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.matchers.MustMatchers
@@ -34,7 +34,12 @@ class Cluster(id: String) extends MustVerb with MustMatchers with Eventually wit
   def state: Option[String] = (describe \ "state").extractOpt[String]
 
   def ensureState(expectedState: String) {
-    eventually (state must be === Some(expectedState))
+    val isStateReached = eventually (state == Some(expectedState))
+    assert(
+      isStateReached,
+      s"ExpectedState [${Some(expectedState)}] not reached. Actual: [$state]." +
+        s"Cluster info:\n${pretty(render(describe))}"
+    )
   }
 
   def terminate() {

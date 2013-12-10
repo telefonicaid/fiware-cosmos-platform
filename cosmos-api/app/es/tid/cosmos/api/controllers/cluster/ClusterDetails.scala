@@ -77,13 +77,7 @@ object ClusterDetails {
   }
 
   implicit object ClusterDetailsWrites extends Writes[ClusterDetails] {
-    def writes(d: ClusterDetails): JsValue = (d.master, d.slaves) match {
-      case (Some(masterDetails), Some(slavesDetails)) => basicInfo(d) ++ Json.obj(
-        "master" -> masterDetails,
-        "slaves" -> slavesDetails
-      )
-      case _ => basicInfo(d)
-    }
+    def writes(d: ClusterDetails): JsValue = basicInfo(d) ++ machinesInfo(d) ++ usersInfo(d)
 
     private def basicInfo(d: ClusterDetails) = Json.obj(
       "href" -> d.href,
@@ -91,8 +85,22 @@ object ClusterDetails {
       "name" -> d.name,
       "size" -> d.size,
       "state" -> d.state,
-      "stateDescription" -> d.stateDescription,
-      "users" -> d.users
+      "stateDescription" -> d.stateDescription
     )
+
+    private def machinesInfo(d: ClusterDetails) = (d.master, d.slaves) match {
+      case (Some(masterDetails), Some(slavesDetails)) => Json.obj(
+        "master" -> masterDetails,
+        "slaves" -> slavesDetails
+      )
+      case _ => Json.obj()
+    }
+
+    private def usersInfo(d: ClusterDetails) = d.users match {
+      case Some(users) => Json.obj(
+        "users" -> users
+      )
+      case _ => Json.obj()
+    }
   }
 }

@@ -21,7 +21,8 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.{MaintenanceModeBehaviors, AuthBehaviors}
 import es.tid.cosmos.api.controllers.ResultMatchers.redirectTo
 
-class AdminIT extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
+class AdminPageIT
+  extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
 
   val path = "/admin"
 
@@ -34,7 +35,7 @@ class AdminIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
 
   it must "be not found by users without operator capability" in new WithSampleSessions {
     val response = regUser.doRequest(path)
-    status(response) must be (UNAUTHORIZED)
+    status(response) must be (FORBIDDEN)
     contentAsString(response) must include ("You are not authorized")
   }
 

@@ -15,6 +15,7 @@ import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.Capability._
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.MockCosmosProfileDao._
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   def cosmosProfileDao: CosmosProfileDao = new MockCosmosProfileDao
@@ -81,6 +82,9 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   override def handleExists(handle: String)(implicit c: Conn): Boolean =
     users.values.exists(_.handle == handle)
 
+  override def lookupByProfileId(id: ProfileId)(implicit c: Conn): Option[CosmosProfile] =
+    users.values.find(_.id == id)
+
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     users.get(userId)
 
@@ -96,6 +100,9 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       clusters = clusters :+ assignment
     }
   }
+
+  override def ownerOf(clusterId: ClusterId)(implicit c: Conn): Option[ProfileId] =
+    clusters.find(_.clusterId == clusterId).map(_.ownerId)
 
   override def clustersOf(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment] =
     clusters.filter(_.ownerId == id)

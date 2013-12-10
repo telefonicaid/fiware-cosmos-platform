@@ -51,4 +51,16 @@ trait AuthBehaviors { this: FlatSpec with MustMatchers =>
       unregUser.doRequest(path) must redirectTo ("/register")
     }
   }
+
+  def operatorOnlyResource[T: Writeable](request: FakeRequest[T]) {
+    it must behave like rejectingUnauthenticatedRequests(request)
+
+    it must "forbid requests from non-operator users" in new WithSampleSessions {
+      status(regUser.doRequest(request)) must equal (FORBIDDEN)
+    }
+
+    it must "accept requests from operator users" in new WithSampleSessions {
+      status(opUser.doRequest(request)) must not (equal (UNAUTHORIZED) or equal (FORBIDDEN))
+    }
+  }
 }

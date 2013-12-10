@@ -122,6 +122,11 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     usersWithThatHandle > 0
   }
 
+  override def lookupByProfileId(id: ProfileId)(implicit c: Conn): Option[CosmosProfile] =
+    lookup(SQL(s"SELECT $AllUserFields, p.name, p.signature FROM user u WHERE u.id = {id}").
+      on("id" -> id)
+    ).headOption
+
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
@@ -194,6 +199,11 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       "creation_date" -> assignment.creationDate
     ).execute()
   }
+
+  override def ownerOf(clusterId: ClusterId)(implicit c: Conn): Option[ProfileId] =
+    SQL("SELECT owner FROM cluster WHERE cluster_id = {cluster_id}")
+      .on("cluster_id" -> clusterId.id)
+      .as(scalar[ProfileId].singleOpt)
 
   override def clustersOf(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment] =
     SQL("SELECT cluster_id, creation_date FROM cluster WHERE owner = {owner}")

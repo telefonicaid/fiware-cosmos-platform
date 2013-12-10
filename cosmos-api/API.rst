@@ -40,7 +40,7 @@ GET ``/cosmos/v1``
 
 *Since v1*
 
-Represents endpoint for the REST API:
+Represents endpoint for the REST API::
 
     {
       "message": "Endpoint for Cosmos API"
@@ -200,6 +200,67 @@ Other users will get a Forbidden status.
 
 In case of success the maintenance status will change and the new mode will be returned
 as a boolean payload with 200 status.
+
+
+GET ``/cosmos/v1/stats/clusters``
+---------------------------------
+
+*Since v1*
+
+For operator users, reports running cluster resource usage.  This is very
+useful to get a glimpse on how platform resources are distributed in a given
+point in time.
+
+In case of having the required permissions, the result will have a 200 status
+and a JSON payload of the form::
+
+    {
+      "clusters": [
+        {
+          "id": <string>,
+          "name": <string>,
+          "ownerHandle": <string>,
+          "size": <int>,
+        }, {
+          "id": <string>,
+          "name": <string>,
+          "ownerHandle": <string>,
+          "size": <int>,
+        }, {
+        ...
+        }
+      ]
+    }
+
+Otherwise 401 and 403 status with an error message will be returned.
+
+
+GET ``/cosmos/v1/stats/machines``
+---------------------------------
+
+*Since v1*
+
+For operator users, reports total and available machines.  The results are
+grouped by machine profile.
+
+In case of having the required permissions, the result will have a 200 status
+and a JSON payload of the form::
+
+    {
+      <profile>: {
+        "total": <int>,
+        "available": <int>
+      },
+      <profile>: {
+        "total": <int>,
+        "available": <int>
+      }
+    }
+
+Where ``<profile>`` identifies a machine type such as "g1-compute" for the
+computing nodes of first generation.
+
+Otherwise 401 and 403 status with an error message will be returned.
 
 
 --------------------------

@@ -14,7 +14,8 @@ package es.tid.cosmos.api.controllers
 import play.api.mvc.Controller
 
 import es.tid.cosmos.api.auth.MultiAuthProviderComponent
-import es.tid.cosmos.api.controllers.admin.{MaintenanceResource, MaintenanceStatusComponent, UserResource}
+import es.tid.cosmos.api.controllers.admin._
+import es.tid.cosmos.api.controllers.admin.stats.StatsResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
 import es.tid.cosmos.api.controllers.pages.{AdminPage, Pages}
@@ -22,6 +23,7 @@ import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
+import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
 /**
@@ -29,6 +31,7 @@ import es.tid.cosmos.servicemanager.ServiceManagerComponent
  */
 abstract class Application {
   this: ServiceManagerComponent
+    with InfrastructureProviderComponent
     with MultiAuthProviderComponent
     with CosmosProfileDaoComponent
     with MaintenanceStatusComponent =>
@@ -38,10 +41,12 @@ abstract class Application {
   lazy val controllers: Map[Class[Controller], Controller] = {
     val status = this.maintenanceStatus
     val sm = this.serviceManager()
+    val ial = this.infrastructureProvider
     val multiAuthProvider = this.multiAuthProvider
     controllerMap(
       new Pages(multiAuthProvider, sm, dao, status),
       new AdminPage(dao, status),
+      new StatsResource(dao, sm, ial),
       new CosmosResource(),
       new ProfileResource(dao),
       new ClusterResource(sm, dao, status),

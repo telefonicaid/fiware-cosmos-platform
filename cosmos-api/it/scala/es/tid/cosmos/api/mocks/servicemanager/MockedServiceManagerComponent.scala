@@ -11,11 +11,13 @@
 
 package es.tid.cosmos.api.mocks.servicemanager
 
+import org.mockito.Mockito.spy
+
 import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
 
 trait MockedServiceManagerComponent extends ServiceManagerComponent {
   val serviceManager: ServiceManager =
-    new MockedServiceManager(transitionDelay = MockedServiceManagerComponent.TransitionDelay)
+    spy(new MockedServiceManager(transitionDelay = MockedServiceManagerComponent.TransitionDelay))
 }
 
 object MockedServiceManagerComponent {

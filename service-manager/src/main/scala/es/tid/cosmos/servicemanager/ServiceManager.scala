@@ -49,7 +49,7 @@ trait ServiceManager {
     clusterSize: Int,
     serviceDescriptions: Seq[ServiceDescriptionType],
     users: Seq[ClusterUser],
-    preConditions: ClusterExecutableValidation): ClusterId
+    preConditions: ClusterExecutableValidation = UnfilteredPassThrough): ClusterId
 
   /**
    * Obtain information of an existing cluster's state.

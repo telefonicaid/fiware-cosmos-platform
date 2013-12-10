@@ -35,7 +35,8 @@ class MaintenanceResource(override val dao: CosmosProfileDao, maintenanceStatus:
     } yield currentStatusResponse
   }
 
-  @ApiOperation(value = "Change maintenance status", httpMethod = "PUT")
+  @ApiOperation(value = "Change maintenance status", httpMethod = "PUT",
+    notes = "The returned body is the new maintenance status as a bare boolean")
     @ApiErrors(Array(
       new ApiError(code = 400, reason = "Invalid JSON payload"),
       new ApiError(code = 401, reason = "Unauthorized user"),

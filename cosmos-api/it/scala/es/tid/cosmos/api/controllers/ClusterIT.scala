@@ -45,6 +45,12 @@ class ClusterIT
       "slaves" -> (1 to 9).map(i => Json.obj(
         "hostname" -> s"fakeHostname$i",
         "ipAddress" -> s"fakeAddress$i"
+      )),
+      "users" -> Seq(
+        Json.obj(
+          "username" -> "jsmith",
+          "sshPublicKey" -> "jsmith-public-key",
+          "isSudoer" -> false
       ))
     )
   val partialDescription = Json.obj(

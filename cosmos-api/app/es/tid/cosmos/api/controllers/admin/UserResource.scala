@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.api.controllers.admin
 
+import javax.ws.rs.PathParam
 import scala.annotation.tailrec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -47,7 +48,24 @@ class UserResource(
 
   /** Register a new user account. */
   @ApiOperation(value = "Create a new user account", httpMethod = "POST",
-    responseClass = "es.tid.cosmos.api.controllers.admin.RegisterUserResponse")
+    responseClass = "es.tid.cosmos.api.controllers.admin.RegisterUserResponse",
+    notes =
+      """
+        Provides a mean for user registration by posting the properties of the newly
+        created user.  The properties have the following restrictions:
+
+        <ul>
+          <li>authId: non-empty string that must be unique per authorization realm.</li>
+          <li>authRealm: identifier of the authorization realm (also a non-empty string).</li>
+          <li>email: email address to contact the user about maintenance windows or other
+          conditions and announcements.</li>
+          <li>handle: user handle to be used as SSH login. It must be a valid unix login
+          (letters and numbers with a leading letter) and at least three characters.</li>
+          If this field is not present, one will be generated.</li>
+          <li>sshPublicKey: must be a public key in the same format SSH stores it
+          (ssh-rsa|ssh-dsa, the key and the user email).</li>
+        </ul>
+      """)
   @ApiErrors(Array(
     new ApiError(code = 401, reason = "Missing auth header"),
     new ApiError(code = 403, reason = "Forbidden"),
@@ -81,11 +99,9 @@ class UserResource(
     )))
   }
 
-  /**
-   * Unregister a new user account.
-   */
+  /** Unregister a new user account. */
   @ApiOperation(value = "Delete an existing user account", httpMethod = "DELETE",
-    responseClass = "String")
+    responseClass = "es.tid.cosmos.api.controllers.common.Message")
   @ApiErrors(Array(
     new ApiError(code = 401, reason = "Missing auth header"),
     new ApiError(code = 403, reason = "Forbidden"),
@@ -93,7 +109,13 @@ class UserResource(
     new ApiError(code = 500, reason = "Account deletion failed"),
     new ApiError(code = 503, reason = "Service is under maintenance")
   ))
-  def unregister(realm: String, id: String) = Action { request =>
+  def unregister(
+      @ApiParam(value = "Authentication realm", required = true, defaultValue = "realm")
+      @PathParam("realm")
+      realm: String,
+      @ApiParam(value = "Authentication identifier", required = true, defaultValue = "id0000")
+      @PathParam("id")
+      id: String) = Action { request =>
     val userId = UserId(realm, id)
     for {
       _ <- requireResourceNotUnderMaintenance()

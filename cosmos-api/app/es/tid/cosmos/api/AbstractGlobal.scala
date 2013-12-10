@@ -23,9 +23,7 @@ import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.controllers.cosmos.routes
 
-/**
- * Custom global Play! settings to override controller instantiation.
- */
+/** Custom global Play! settings to override controller instantiation. */
 abstract class AbstractGlobal(val application: Application) extends GlobalSettings {
   override def getControllerInstance[A](controllerClass: Class[A]): A = {
     application.controllers(controllerClass.asInstanceOf[Class[Controller]]).asInstanceOf[A]
@@ -49,7 +47,7 @@ abstract class AbstractGlobal(val application: Application) extends GlobalSettin
   }
 
   private def defaultResponseType(path: String) = {
-    val apiBase = routes.CosmosResource.version().url
+    val apiBase = routes.CosmosResource.get().url
     if (path.startsWith(apiBase)) JSON else HTML
   }
 }

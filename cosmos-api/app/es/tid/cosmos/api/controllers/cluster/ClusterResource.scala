@@ -28,9 +28,7 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 
-/**
- * Resource that represents a single cluster.
- */
+/** Resource that represents a single cluster. */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
   description = "Represents an existing or decommissioned cluster")
 class ClusterResource(
@@ -41,20 +39,16 @@ class ClusterResource(
 
   import ClusterResource._
 
-  /**
-   * List user clusters.
-   */
+  /** List user clusters. */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
-    responseClass = "es.tid.cosmos.api.controllers.clusters.ClusterList")
+    responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterList")
   def list = Action { implicit request =>
     for {
       profile <- requireAuthenticatedApiRequest(request)
     } yield Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
   }
 
-  /**
-   * Start a new cluster provisioning.
-   */
+  /** Start a new cluster provisioning. */
   @ApiOperation(value = "Create a new cluster", httpMethod = "POST")
   @ApiErrors(Array(
     new ApiError(code = 400, reason = "Invalid JSON payload"),
@@ -63,7 +57,7 @@ class ClusterResource(
   ))
   @ApiParamsImplicit(Array(
     new ApiParamImplicit(paramType = "body",
-      dataType = "es.tid.cosmos.api.controllers.clusters.CreateClusterParams")
+      dataType = "es.tid.cosmos.api.controllers.cluster.CreateClusterParams")
   ))
   def createCluster = Action(parse.tolerantJson) { request =>
     for {
@@ -143,7 +137,7 @@ class ClusterResource(
   ))
   def listDetails(
       @ApiParam(value = "Cluster identifier", required = true,
-        defaultValue = "00000000-0000-0000-0000-000000000000")
+        defaultValue = "00000000000000000000000000000000")
       @PathParam("id")
       id: String) = Action { implicit request =>
     for {
@@ -155,11 +149,11 @@ class ClusterResource(
   @ApiOperation(value = "Add users to an existing cluster", httpMethod = "POST")
   @ApiParamsImplicit(Array(
     new ApiParamImplicit(paramType = "body",
-      dataType = "es.tid.cosmos.api.controllers.clusters.ManageUserParams")
+      dataType = "es.tid.cosmos.api.controllers.cluster.ManageUserParams")
   ))
   def addUser(
       @ApiParam(value = "Cluster identifier", required = true,
-        defaultValue = "00000000-0000-0000-0000-000000000000")
+        defaultValue = "00000000000000000000000000000000")
       @PathParam("id")
       id: String) = Action(parse.tolerantJson) { request =>
     val clusterId = ClusterId(id)
@@ -194,11 +188,11 @@ class ClusterResource(
   @ApiOperation(value = "Remove a user from an existing cluster", httpMethod = "POST")
   @ApiParamsImplicit(Array(
     new ApiParamImplicit(paramType = "body",
-      dataType = "es.tid.cosmos.api.controllers.clusters.ManageUserParams")
+      dataType = "es.tid.cosmos.api.controllers.cluster.ManageUserParams")
   ))
   def removeUser(
       @ApiParam(value = "Cluster identifier", required = true,
-        defaultValue = "00000000-0000-0000-0000-000000000000")
+        defaultValue = "00000000000000000000000000000000")
       @PathParam("id")
       id: String) = Action(parse.tolerantJson) { request =>
     val clusterId = ClusterId(id)
@@ -241,7 +235,7 @@ class ClusterResource(
   ))
   def terminate(
        @ApiParam(value = "Cluster identifier", required = true,
-         defaultValue = "00000000-0000-0000-0000-000000000000")
+         defaultValue = "00000000000000000000000000000000")
        @PathParam("id")
        id: String) = Action { request =>
     for {

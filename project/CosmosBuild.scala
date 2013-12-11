@@ -20,6 +20,7 @@ object CosmosBuild extends Build {
   }
 
   object Dependencies {
+    lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"

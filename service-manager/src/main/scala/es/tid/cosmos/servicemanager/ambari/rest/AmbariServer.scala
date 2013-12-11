@@ -13,11 +13,10 @@ package es.tid.cosmos.servicemanager.ambari.rest
 
 import scala.concurrent.Future
 
-import com.ning.http.client.RequestBuilder
 import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
-import net.liftweb.json.JsonAST.{JField, JString}
+import net.liftweb.json.JsonAST.JString
 import net.liftweb.json.render
 
 import es.tid.cosmos.platform.common.SequentialOperations
@@ -101,6 +100,10 @@ private[ambari] class AmbariServer(serverUrl: String, port: Int, username: Strin
     }
   }
 
-  def registeredHostnames: Future[Set[String]] =
-    performRequest(baseUrl / "hosts").map(json => as.FlatValues(json, "items", "host_name").toSet)
+  def registeredHostnames: Future[Set[String]] = for {
+    json <- performRequest(baseUrl / "hosts" <<? Seq("fields" -> "Hosts/*"))
+  } yield for {
+    item <- (json \\ "items").children.toSet
+    if (item \\ "host_status").extract[String] == "HEALTHY"
+  } yield (item \\ "host_name").extract[String]
 }

@@ -143,18 +143,51 @@ class AmbariServerTest extends AmbariTestBase with BeforeAndAfter with MockitoSu
   it must "provide the list of registered hostnames (multiple hosts)" in {
     addMock(
       ambariServer.responses.serverHosts,
-      ("href" -> "www.some.server.com/api/v1/hosts") ~
-      ("items" -> List("Hosts" -> ("host_name" -> "foo"), "Hosts" -> ("host_name" -> "bar")))
+      ("href" -> "www.some.server.com/api/v1/hosts?fields=Hosts/*") ~
+      ("items" -> List(
+        "Hosts" -> ("host_name" -> "foo") ~
+                   ("host_status" -> "HEALTHY"),
+        "Hosts" -> ("host_name" -> "bar") ~
+                   ("host_status" -> "HEALTHY")))
     )
     get(ambariServer.registeredHostnames) must be (Set("foo", "bar"))
+    verify(ambariServer.responses).serverHosts
+  }
+
+  it must "filter out unhealthy hosts from the list of registered hostnames" in {
+    addMock(
+      ambariServer.responses.serverHosts,
+      ("href" -> "www.some.server.com/api/v1/hosts?fields=Hosts/*") ~
+        ("items" -> List(
+          "Hosts" -> ("host_name" -> "foo") ~
+            ("host_status" -> "UNKNOWN"),
+          "Hosts" -> ("host_name" -> "bar") ~
+            ("host_status" -> "HEALTHY")))
+    )
+    get(ambariServer.registeredHostnames) must be (Set("bar"))
+    verify(ambariServer.responses).serverHosts
+  }
+
+  it must "be able to filter out all unhealthy hosts from the list of registered hostnames" in {
+    addMock(
+      ambariServer.responses.serverHosts,
+      ("href" -> "www.some.server.com/api/v1/hosts?fields=Hosts/*") ~
+        ("items" -> List(
+          "Hosts" -> ("host_name" -> "foo") ~
+            ("host_status" -> "UNKNOWN"),
+          "Hosts" -> ("host_name" -> "bar") ~
+            ("host_status" -> "UNKNOWN")))
+    )
+    get(ambariServer.registeredHostnames) must be (Set())
     verify(ambariServer.responses).serverHosts
   }
 
   it must "provide the list of registered hostnames (single host)" in {
     addMock(
       ambariServer.responses.serverHosts,
-      ("href" -> "www.some.server.com/api/v1/hosts") ~
-      ("items" -> List("Hosts" -> ("host_name" -> "foo")))
+      ("href" -> "www.some.server.com/api/v1/hosts?fields=Hosts/*") ~
+      ("items" -> List("Hosts" -> ("host_name" -> "foo") ~
+        ("host_status" -> "HEALTHY")))
     )
     get(ambariServer.registeredHostnames) must be (Set("foo"))
     verify(ambariServer.responses).serverHosts

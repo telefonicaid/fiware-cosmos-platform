@@ -62,8 +62,8 @@ trait FutureMatchers {
         Await.ready(left, Duration.Inf)
         left.value.get.isSuccess
       },
-      failureMessage = s"future didn't succeeded",
-      negatedFailureMessage = s"future succeeded"
+      failureMessage = s"future didn't succeeded: ${left.value.get}",
+      negatedFailureMessage = "future succeeded"
     )
   }
 

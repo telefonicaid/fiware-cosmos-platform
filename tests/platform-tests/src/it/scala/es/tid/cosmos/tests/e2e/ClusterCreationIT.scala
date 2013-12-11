@@ -31,5 +31,4 @@ class ClusterCreationIT extends FlatSpec with MustMatchers {
     cluster.state.get must (be ("terminating") or be ("terminated"))
     cluster.ensureState("terminated")
   }
-
 }

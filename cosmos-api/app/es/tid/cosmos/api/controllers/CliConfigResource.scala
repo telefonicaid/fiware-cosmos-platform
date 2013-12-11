@@ -27,7 +27,7 @@ class CliConfigResource(val dao: CosmosProfileDao) extends PagesAuthController {
     } yield {
       val config = CliConfig(
         apiCredentials = cosmosProfile.apiCredentials,
-        apiUrl = AbsoluteUrl(cosmosRoutes.CosmosResource.version())
+        apiUrl = AbsoluteUrl(cosmosRoutes.CosmosResource.get())
       )
       Ok(config.toString).withHeaders(
         "Content-Type" -> "text/yaml",

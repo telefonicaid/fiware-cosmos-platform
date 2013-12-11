@@ -11,8 +11,7 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
-import play.api.libs.functional.syntax._
-import play.api.libs.json._
+import play.api.libs.json.Json
 
 /** Parameters for cluster user management actions (add and remove user).  */
 case class ManageUserParams(user: String)

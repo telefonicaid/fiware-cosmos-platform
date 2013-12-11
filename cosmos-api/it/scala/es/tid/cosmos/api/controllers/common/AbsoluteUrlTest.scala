@@ -23,11 +23,11 @@ class AbsoluteUrlTest extends FlatSpec with MustMatchers {
   implicit val request = FakeRequest()
 
   "Absolute URL factory" must "create HTTP URLs by default" in new WithTestApplication {
-    AbsoluteUrl(routes.CosmosResource.version()) must startWith ("http://")
+    AbsoluteUrl(routes.CosmosResource.get()) must startWith ("http://")
   }
 
   it must "create HTTPS URLs when configured for it" in
     new WithTestApplication(Map("application.ssl.enabled" -> "true")) {
-      AbsoluteUrl(routes.CosmosResource.version()) must startWith ("https://")
+      AbsoluteUrl(routes.CosmosResource.get()) must startWith ("https://")
     }
 }

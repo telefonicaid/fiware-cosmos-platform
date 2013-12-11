@@ -17,9 +17,7 @@ import play.api.libs.json._
 
 import es.tid.cosmos.api.profile.{EmailConstraint, HandleConstraint, AuthorizedKeyConstraint}
 
-/**
- * Parameters for automated user registration.
- */
+/** Parameters for automated user registration. */
 case class RegisterUserParams(
   authId: String,
   authRealm: String,

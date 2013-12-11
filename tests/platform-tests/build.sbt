@@ -1,5 +1,8 @@
 name := "platform-tests"
 
 libraryDependencies ++= Seq(
-  Dependencies.liftJson
+  Dependencies.dispatch,
+  Dependencies.liftJson,
+  Dependencies.logbackClassic,
+  Dependencies.typesafeConfig
 )

@@ -44,7 +44,7 @@ trait FakeAmbariRestReplies extends RequestProcessor {
     val SpecificComponent = ".+/api/v1/.+/components/([^/]+)".r
     val AllHosts = ".+/api/v1/clusters/[^/]+/hosts".r
     val SpecificHostQuery = """.+/api/v1/.*hosts\?Hosts%2Fhost_name=(.+)""".r
-    val AllServerHosts = ".+/api/v1/hosts".r
+    val AllServerHosts = """.+/api/v1/hosts\?fields=Hosts%2F%2A""".r
     val SpecificHost = ".+/api/v1/.*hosts/([^/]+)".r
     val SpecificRequest = """.+/api/v1/.*request/([^/]+)\?.+""".r
     val BootStrap = """.+/api/v1/bootstrap""".r

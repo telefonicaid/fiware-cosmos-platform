@@ -58,7 +58,7 @@ Represents general user profile information as JSON::
       "keys": [
         { "name": <string>, "signature": <string> },
         { "name": <string>, "signature": <string> }
-      }
+      ]
     }
 
 PUT ``/cosmos/v1/profile``
@@ -153,11 +153,63 @@ Consult details of the cluster with id ``<id>``. Body as follows::
       "state": <string>,
       "stateDescription": <string>,
       "href": <string>,
-      "size": <int>
+      "size": <int>,
+      "master": { "hostname": <string>, "ipAddress": <string> },
+      "slaves" : [
+        { "hostname": <string>, "ipAddress": <string> },
+        { "hostname": <string>, "ipAddress": <string> },
+        ...
+      ],
+      "users": [
+        { "username": <string>, "isSudoer": <boolean>, "sshPublicKey": <string> },
+        { "username": <string>, "isSudoer": <boolean>, "sshPublicKey": <string> },
+        ...
+      ]
     }
 
 State related fields have the same meaning as in ``/cosmos/v1/cluster`` GET
 response.
+
+POST ``/cosmos/v1/cluster/<id>/add_user``
+----------------------------------------
+
+*Since v1*
+
+Add a new user to the cluster with id ``<id>``. Request is of the form::
+
+    {
+      "username": <string>,
+    }
+
+The request must match the following rules.
+
+* The ``<username>`` field must match the handle of an existing user in the platform
+* The ``<username>`` field must match the handle of a user that is not a user of the cluster
+
+If all these rules match, the request returns immediately with status 200 OK. The user addition
+may take a while, so check the ``users`` field by means of a GET to check the user was added.
+
+
+POST ``/cosmos/v1/cluster/<id>/remove_user``
+--------------------------------------------
+
+*Since v1*
+
+Remove an user from the cluster with id ``<id>``. Request is of the form::
+
+    {
+      "username": <string>,
+    }
+
+The request must match the following rules.
+
+* The ``<username>`` field must match the handle of an existing user in the platform
+* The ``<username>`` field must match the handle of a user that is a user of the cluster
+* The ``<username>`` field must match the handle of a user that is not the owner of the cluster
+
+If all these rules match, the request returns immediately with status 200 OK. The user removal
+may take a while, so check the ``users`` field by means of a GET to check the user was removed.
+
 
 POST ``/cosmos/v1/cluster/<id>/terminate``
 ------------------------------------------

@@ -34,12 +34,13 @@ class Cluster(id: String) extends MustVerb with MustMatchers with Eventually wit
   def state: Option[String] = (describe \ "state").extractOpt[String]
 
   def ensureState(expectedState: String) {
-    val isStateReached = eventually (state == Some(expectedState))
-    assert(
-      isStateReached,
-      s"ExpectedState [${Some(expectedState)}] not reached. Actual: [$state]." +
-        s"Cluster info:\n${pretty(render(describe))}"
-    )
+    eventually {
+      assert(
+        state == Some(expectedState),
+        s"ExpectedState [${Some(expectedState)}] not reached. Actual: [$state]." +
+          s"Cluster info:\n${pretty(render(describe))}"
+      )
+    }
   }
 
   def terminate() {

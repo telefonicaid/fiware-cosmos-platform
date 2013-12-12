@@ -11,6 +11,7 @@
 #
 """Configuration handling"""
 
+import os.path
 import sys
 
 from pymlconf import ConfigManager
@@ -58,8 +59,11 @@ def load_config(args):
     config = ConfigManager(DEFAULT_CONFIG)
     config_dir = home_dir.get()
     try:
-        config_contents = config_dir.read_config_file(
-            filename_override=args.config_file)
+        if args.config_file is not None:
+            filename_override = os.path.abspath(args.config_file)
+        else:
+            filename_override = None
+        config_contents = config_dir.read_config_file(filename_override)
         config.merge(ConfigManager(config_contents))
     except Exception as ex:
         print "Error reading configuration: %s" % ex.message

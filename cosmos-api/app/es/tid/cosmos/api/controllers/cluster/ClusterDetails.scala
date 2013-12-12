@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
-
 import scala.Some
 
 import com.wordnik.swagger.annotations.ApiProperty
@@ -21,9 +20,7 @@ import play.api.mvc.RequestHeader
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
 import es.tid.cosmos.servicemanager.ClusterUser
 
-/**
- * A cluster from the perspective of API clients.
- */
+/** A cluster from the perspective of API clients. */
 case class ClusterDetails(
     href: String,
     id: String,
@@ -59,25 +56,23 @@ object ClusterDetails {
     )
 
   implicit object HostDetailsWrites extends Writes[HostDetails] {
-    def writes(info: HostDetails): JsValue = Json.obj(
+    override def writes(info: HostDetails): JsValue = Json.obj(
         "hostname" -> info.hostname,
         "ipAddress" -> info.ipAddress
       )
   }
 
   implicit object ClusterUserWrites extends Writes[ClusterUser] {
-    def writes(user: ClusterUser): JsValue =
-      if (user.isEnabled) {
-        Json.obj(
-          "username" -> user.username,
-          "sshPublicKey" -> user.publicKey,
-          "isSudoer" -> user.isSudoer
-        )
-    } else { Json.obj() }
+    override def writes(user: ClusterUser): JsValue = Json.obj(
+      "username" -> user.username,
+      "sshPublicKey" -> user.publicKey,
+      "isSudoer" -> user.isSudoer
+    )
   }
 
   implicit object ClusterDetailsWrites extends Writes[ClusterDetails] {
-    def writes(d: ClusterDetails): JsValue = basicInfo(d) ++ machinesInfo(d) ++ usersInfo(d)
+    override def writes(d: ClusterDetails): JsValue =
+      basicInfo(d) ++ machinesInfo(d) ++ usersInfo(d)
 
     private def basicInfo(d: ClusterDetails) = Json.obj(
       "href" -> d.href,
@@ -88,18 +83,14 @@ object ClusterDetails {
       "stateDescription" -> d.stateDescription
     )
 
-    private def machinesInfo(d: ClusterDetails) = (d.master, d.slaves) match {
-      case (Some(masterDetails), Some(slavesDetails)) => Json.obj(
-        "master" -> masterDetails,
-        "slaves" -> slavesDetails
-      )
-      case _ => Json.obj()
-    }
+    private def machinesInfo(d: ClusterDetails) =
+      optionalField("master" -> d.master) ++ optionalField("slaves" -> d.slaves)
 
-    private def usersInfo(d: ClusterDetails) = d.users match {
-      case Some(users) => Json.obj(
-        "users" -> users
-      )
+    private def usersInfo(d: ClusterDetails) =
+      optionalField("users" -> d.users.map(_.filter(_.isEnabled)))
+
+    private def optionalField[T: Writes](pair: (String, Option[T])) = pair match {
+      case (key, Some(value)) => Json.obj(key -> value)
       case _ => Json.obj()
     }
   }

@@ -24,4 +24,18 @@ case class ClusterUser(
     publicKey: String,
     sshEnabled: Boolean = true,
     hdfsEnabled: Boolean = true,
-    isSudoer: Boolean = false)
+    isSudoer: Boolean = false) {
+
+  val isEnabled = sshEnabled && hdfsEnabled
+}
+
+object ClusterUser {
+
+  def disabled(username: String, publicKey: String) = ClusterUser(
+    username,
+    publicKey,
+    sshEnabled = false,
+    hdfsEnabled = false,
+    isSudoer = false
+  )
+}

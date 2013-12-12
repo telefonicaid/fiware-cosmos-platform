@@ -219,12 +219,9 @@ class ClusterResource(
   private def removeUserFromCluster(
       user: CosmosProfile, cluster: ClusterId, currentUsers: Seq[ClusterUser]): SimpleResult = {
     Try {
-      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser(
+      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser.disabled(
         username = user.handle,
-        publicKey = user.keys.head.signature,
-        isSudoer = false,
-        sshEnabled = false,
-        hdfsEnabled = false
+        publicKey = user.keys.head.signature
       )
       serviceManager.setUsers(cluster, newUsers)
     } match {
@@ -317,25 +314,23 @@ class ClusterResource(
       profile: CosmosProfile,
       clusterId: ClusterId): ActionValidation[Unit] = {
     import Scalaz._
-    for {
-      users <- requireClusterUsersAreAvailable(clusterId)
-    } yield {
-      if (users.exists(_.username.equals(profile.handle))) ().success
+    requireClusterUsersAreAvailable(clusterId).flatMap { users =>
+      if (userIsMemberOfCluster(profile, users)) ().success
       else notUserOf(profile.handle, clusterId).failure
     }
   }
+
+  private def userIsMemberOfCluster(profile: CosmosProfile, users: Seq[ClusterUser]) =
+    users.exists(usr => usr.username.equals(profile.handle) && usr.isEnabled)
 
   private def requireProfileIsNotUserOf(
       profile: CosmosProfile,
       clusterId: ClusterId): ActionValidation[Unit] = {
     import Scalaz._
-    for {
-      users <- requireClusterUsersAreAvailable(clusterId)
-    } yield {
-      if (users.exists(_.username.equals(profile.handle)))
-        alreadyUserOf(profile.handle, clusterId).failure
-      else  ().success
-    }
+    requireProfileIsUserOf(profile, clusterId).fold(
+      fail = _ => ().success,
+      succ = _ => alreadyUserOf(profile.handle, clusterId).failure
+    )
   }
 
   private def requireClusterUsersAreAvailable(

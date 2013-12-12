@@ -21,7 +21,8 @@ object Navigation {
   /** Navigation tabs for regular users */
   lazy val UserNavigation: Seq[NavTab] = Seq(
     NavTab("profile", "Profile", Pages.showProfile().toString()),
-    NavTab("getting-started", "Getting started", Pages.customGettingStarted().toString())
+    NavTab("getting-started", "Getting started", Pages.customGettingStarted().toString()),
+    NavTab("faq", "FAQ", Pages.faq().toString())
   )
 
   /** Operators are user with access to the admin page */

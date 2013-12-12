@@ -21,14 +21,14 @@ class NavigationTest extends FlatSpec with MustMatchers {
   
   "Untrusted user capabilities" must "have navigation links to profile and getting-started pages" in {
     tabIds(Navigation.forCapabilities(UntrustedUserCapabilities)) must be (Set(
-      "profile", "getting-started"
+      "profile", "getting-started", "faq"
     ))
   }
 
   "Operator user capabilities" must "have regular users links and the admin page link" in {
     val operatorCapabilities = UntrustedUserCapabilities + Capability.IsOperator
     tabIds(Navigation.forCapabilities(operatorCapabilities)) must be (Set(
-      "profile", "getting-started", "admin"
+      "profile", "getting-started", "admin", "faq"
     ))
   }
 

@@ -177,6 +177,13 @@ class Pages(
     ))
   }
 
+  def faq = Action { implicit request =>
+    for {
+      profiles <- requireUserProfiles(request)
+      (_, cosmosProfile) = profiles
+    } yield Ok(views.html.faq(Navigation.forCapabilities(cosmosProfile.capabilities)))
+  }
+
   private def unauthorizedPage(ex: OAuthException)(implicit request: RequestHeader) = {
     Logger.error(s"OAuth request failed: ${ex.description}", ex)
     val message = if (ex.error == UnauthorizedClient) "Access denied" else "Authorization failed"

@@ -67,7 +67,7 @@ object ClusterDetails {
 
   implicit object ClusterUserWrites extends Writes[ClusterUser] {
     def writes(user: ClusterUser): JsValue =
-      if (user.sshEnabled) {
+      if (user.isEnabled) {
         Json.obj(
           "username" -> user.username,
           "sshPublicKey" -> user.publicKey,

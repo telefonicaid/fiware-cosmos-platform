@@ -54,7 +54,7 @@ object ClusterDetails {
       state = desc.state.name,
       stateDescription = desc.state.descLine,
       master = desc.master,
-      slaves = Option(desc.slaves),
+      slaves = if (desc.slaves.isEmpty) None else Some(desc.slaves),
       users = desc.users.map(_.toSeq)
     )
 

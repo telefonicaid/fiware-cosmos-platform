@@ -20,7 +20,7 @@ class UserStateTest extends FlatSpec with MustMatchers {
 
   "A user state" must "be convertible to string" in {
     UserState.values.map(_.toString).toList.sorted must equal (Seq(
-      "deleted", "deleting", "disabled", "enabled"))
+      "creating", "deleted", "deleting", "disabled", "enabled"))
   }
 
   it must "be extracted from its string representation" in {

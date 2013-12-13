@@ -30,12 +30,18 @@ class WithTestApplication(
 
   def services = playGlobal.application.services
 
+  /** Register a user for testing purposes (directly enabled, no infinity registration)
+    *
+    * @param dao   Where to register the user
+    * @param user  OAuth data to fill in the registration data
+    * @return      Newly created Cosmos profile
+    */
   def registerUser(dao: CosmosProfileDao, user: OAuthUserProfile): CosmosProfile =
     dao.withConnection { implicit c =>
       val email = user.email.getOrElse("root@host")
       val handle = email.split('@')(0)
       val reg = Registration(handle, s"ssh-rsa ABCDE $email", email)
-      dao.registerUser(user.id, reg)
+      dao.registerUser(user.id, reg, UserState.Enabled)
     }
 
   def withSession[A](request: FakeRequest[A], session: Session) =

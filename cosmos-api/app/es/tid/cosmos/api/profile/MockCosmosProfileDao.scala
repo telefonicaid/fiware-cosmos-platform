@@ -35,14 +35,14 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
-  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
-    val credentials = ApiCredentials.random()
+  override def registerUser(userId: UserId, reg: Registration, state: UserState)
+                           (implicit c: Conn): CosmosProfile = {
     val cosmosProfile = CosmosProfile(
       id = users.size,
-      state = Enabled,
+      state = state,
       handle = reg.handle,
       email = reg.email,
-      apiCredentials = credentials,
+      apiCredentials = ApiCredentials.random(),
       keys = List(NamedKey("default", reg.publicKey))
     )
     require(!users.values.exists(_.handle == reg.handle), s"Duplicated handle: ${reg.handle}")

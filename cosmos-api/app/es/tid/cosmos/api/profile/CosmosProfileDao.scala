@@ -34,10 +34,12 @@ trait CosmosProfileDao {
     *
     * @param userId  The id specified by the user.
     * @param reg     The registration options.
+    * @param state   The state of the user.
     * @param c       The connection to use.
     * @return        A newly created Cosmos profile.
     */
-  def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile
+  def registerUser(userId: UserId, reg: Registration, state: UserState)
+                  (implicit c: Conn): CosmosProfile
 
   /** Retrieves all the Cosmos profiles.
     *

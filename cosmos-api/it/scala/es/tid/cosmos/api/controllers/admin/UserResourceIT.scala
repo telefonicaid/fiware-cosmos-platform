@@ -26,7 +26,6 @@ import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Registration
-import scala.Some
 
 class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
 
@@ -109,7 +108,8 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   it must "reject requests when handle is already taken" in new WithTestApplication {
     dao.withTransaction { implicit c =>
       dao.registerUser(
-        UserId("otherUser"), Registration(requestedHandle, publicKey, email))
+        UserId("otherUser"), Registration(requestedHandle, publicKey, email), UserState.Enabled
+      )
     }
     val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)
@@ -118,7 +118,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email))
+      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email), UserState.Enabled)
     }
     val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)

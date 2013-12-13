@@ -1,4 +1,5 @@
-@(tabs: Seq[views.NavTab])(implicit request: RequestHeader)
+@(tabs: Option[Seq[views.NavTab]])(implicit request: RequestHeader)
+@import es.tid.cosmos.api.controllers.pages
 <!--
  Telefónica Digital - Product Development and Innovation
 
@@ -9,8 +10,23 @@
  Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  All rights reserved.
  -->
-@main("Cosmos FAQ")() {
-    @navigation("faq", tabs)
+@main("Cosmos FAQ") {
+    <link rel="stylesheet" media="screen"
+          href="@routes.Assets.at("third-party/gh-fork-ribbon/gh-fork-ribbon.css")">
+    <!--[if IE]>
+        <link rel="stylesheet" media="screen"
+              href="@routes.Assets.at("third-party/gh-fork-ribbon/gh-fork-ribbon.ie.css")">
+    <![endif]-->
+} {
+    @if(tabs.isDefined) {
+        @navigation("faq", tabs.get)
+    } else {
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a href="@pages.routes.Pages.faq" title="Click to find out more">Beta version</a>
+            </div>
+        </div>
+    }
 
     <h1 class="page-title">Frequently Asked Questions (FAQ)</h1>
 

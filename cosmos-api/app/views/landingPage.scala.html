@@ -1,4 +1,5 @@
 @(authAlternatives: Seq[views.AuthAlternative], message: Option[String] = None)
+@import es.tid.cosmos.api.controllers.pages
 <!--
  Telefónica Digital - Product Development and Innovation
 
@@ -9,7 +10,19 @@
  Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
  All rights reserved.
  -->
-@main("Cosmos")() {
+@main("Cosmos") {
+    <link rel="stylesheet" media="screen"
+          href="@routes.Assets.at("third-party/gh-fork-ribbon/gh-fork-ribbon.css")">
+    <!--[if IE]>
+        <link rel="stylesheet" media="screen"
+              href="@routes.Assets.at("third-party/gh-fork-ribbon/gh-fork-ribbon.ie.css")">
+    <![endif]-->
+} {
+    <div class="github-fork-ribbon-wrapper right">
+        <div class="github-fork-ribbon">
+            <a href="@pages.routes.Pages.faq" title="Click to find out more">Beta version</a>
+        </div>
+    </div>
     <div class="section">
         @if(message.isDefined) {
             <div class="message">
@@ -57,6 +70,10 @@
 
             <p>We do provide support in this environment on a best-effort basis and we are happy
                 to help you out or listen to suggestion if you reach out to us at
-                <a href="mailto:cosmos@@tid.es">cosmos@@tid.es</a></p></div>
+                <a href="mailto:cosmos@@tid.es">cosmos@@tid.es</a></p>
+
+            <p>For more information please have a look at our
+                <a href="@pages.routes.Pages.faq">FAQ page</a>.</p>
+        </div>
     </div>
 }

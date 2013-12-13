@@ -178,10 +178,12 @@ class Pages(
   }
 
   def faq = Action { implicit request =>
-    for {
+    if (requireAuthenticatedUser(request).isFailure)
+      Ok(views.html.faq(None))
+    else for {
       profiles <- requireUserProfiles(request)
       (_, cosmosProfile) = profiles
-    } yield Ok(views.html.faq(Navigation.forCapabilities(cosmosProfile.capabilities)))
+    } yield Ok(views.html.faq(Some(Navigation.forCapabilities(cosmosProfile.capabilities))))
   }
 
   private def unauthorizedPage(ex: OAuthException)(implicit request: RequestHeader) = {

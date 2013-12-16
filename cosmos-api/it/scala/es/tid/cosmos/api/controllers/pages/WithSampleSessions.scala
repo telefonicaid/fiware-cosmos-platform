@@ -25,6 +25,7 @@ import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.auth.ApiCredentials
 
 /** A series of user sessions to test with users on different states and roles */
 trait WithSampleSessions extends WithTestApplication {
@@ -32,6 +33,7 @@ trait WithSampleSessions extends WithTestApplication {
   /** Represents a user session */
   trait UserSession {
     val session: Session
+    val apiCredentials: Option[ApiCredentials]
 
     def request(path: String, method: String = GET) =
       FakeRequest(method, path).withSession(session.data.toSeq: _*)
@@ -52,6 +54,7 @@ trait WithSampleSessions extends WithTestApplication {
   class RegisteredUserSession(val handle: String, name: String) extends UserSession {
     val cosmosProfile = buildCosmosProfile()
     val email = cosmosProfile.email
+    val apiCredentials = Some(cosmosProfile.apiCredentials)
     val userProfile = OAuthUserProfile(
       id = CosmosProfileTestHelpers.userIdFor(handle),
       name = Some(name),
@@ -66,6 +69,7 @@ trait WithSampleSessions extends WithTestApplication {
   /** Not authenticated user */
   val unauthUser = new UserSession {
     val session = Session()
+    val apiCredentials = None
   }
 
   /** User authenticated but not registered */
@@ -77,6 +81,7 @@ trait WithSampleSessions extends WithTestApplication {
       email = Some("unreg@mail.com")
     )
     val session = Session().setUserProfile(userProfile).setToken("token")
+    val apiCredentials = None
   }
 
   /** Authenticated and registered user */

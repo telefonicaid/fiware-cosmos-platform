@@ -37,12 +37,13 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = DB.withConnection[A](block)
   def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
 
-  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
+  override def registerUser(userId: UserId, reg: Registration, state: UserState)
+                           (implicit c: Conn): CosmosProfile = {
     val apiCredentials = ApiCredentials.random()
     val defaultKey = NamedKey("default", reg.publicKey)
     val unpersistedProfile = CosmosProfile(
       id = -1,
-      state = Enabled,
+      state = state,
       handle = reg.handle,
       email = reg.email,
       apiCredentials = apiCredentials,
@@ -52,15 +53,16 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       unpersistedProfile.capabilities.capabilities.isEmpty,
       "No support for user registration with capabilities already added.")
     val profileId = SQL(
-      """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret, group_name,
+      """INSERT INTO user(auth_realm, auth_id, handle, state, email, api_key, api_secret, group_name,
         |                 machine_quota)
-        | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret}, {group_name},
-        |         {machine_quota})"""
+        | VALUES ({auth_realm}, {auth_id}, {handle}, {state}, {email}, {api_key}, {api_secret},
+        |         {group_name}, {machine_quota})"""
         .stripMargin)
       .on(
         "auth_realm" -> userId.realm,
         "auth_id" -> userId.id,
         "handle" -> reg.handle,
+        "state" -> state.toString,
         "email" -> reg.email,
         "api_key" -> apiCredentials.apiKey,
         "api_secret" -> apiCredentials.apiSecret,

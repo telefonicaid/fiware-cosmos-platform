@@ -54,6 +54,9 @@ object CosmosProfileTestHelpers {
 
   /** Overload of `registerUser` that uses a given transaction/connection.
     *
+    * As this is intended for testing isolated from a ServiceManager implementation the user
+    * is created directly as an enabled one.
+    *
     * Note that `dao` and `c` should be in different argument groups to satisfy type checking.
     * 
     * @param dao     Where to create the user in
@@ -62,8 +65,11 @@ object CosmosProfileTestHelpers {
     * @return        The newly created profile
     */
   def registerUser(dao: CosmosProfileDao, handle: String)
-                  (implicit c: dao.type#Conn): CosmosProfile =
-    dao.registerUser(userId = userIdFor(handle), reg = registrationFor(handle))
+                  (implicit c: dao.type#Conn): CosmosProfile = dao.registerUser(
+    userId = userIdFor(handle),
+    reg = registrationFor(handle),
+    state = UserState.Enabled
+  )
 
   /** Lookup a user profile by their handle.
     *

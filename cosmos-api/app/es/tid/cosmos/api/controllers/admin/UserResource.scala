@@ -91,7 +91,9 @@ class UserResource(
         } yield (userId, Registration(handle, params.sshPublicKey, params.email))
       }
       (userId, registration) = dbInfo
-      profile <- registrationWizard.registerUser(dao, userId, registration)
+      registrationResult <- registrationWizard.registerUser(dao, userId, registration)
+        .leftMap(message => InternalServerError(Json.toJson(message)))
+      (profile, _) = registrationResult
     } yield Created(Json.toJson(RegisterUserResponse(
       handle = profile.handle,
       apiKey = profile.apiCredentials.apiKey,

@@ -11,35 +11,27 @@
 
 package es.tid.cosmos.api.profile
 
-/**
- * States of the cosmos user lifecycle.
- */
+/** States of the cosmos user lifecycle. */
 object UserState extends Enumeration {
 
   type UserState = Value
 
-  /**
-   * User is active and can operate within his/her quota.
-   */
+  /** User is being created. */
+  val Creating = Value("creating")
+
+  /** User is active and can operate within his/her quota. */
   val Enabled = Value("enabled")
 
-  /**
-   * User exists but cannot perform operations.
-   */
+  /** User exists but cannot perform operations. */
   val Disabled = Value("disabled")
 
-  /**
-   * User is in the process of being deleted.
-   */
+  /** User is in the process of being deleted. */
   val Deleting = Value("deleting")
 
-  /**
-   * User has been already deleted.
-   */
+  /** User has been already deleted. */
   val Deleted = Value("deleted")
 
-  /**
-   * Extractor of user states.
+  /** Extractor of user states.
    *
    * @see <a href="http://www.scala-lang.org/old/node/112">Extractor Objects</a>
    */

@@ -17,7 +17,8 @@ import scala.util.control.NonFatal
 
 import play.Logger
 
-import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao}
+import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 
 /** Sequence of actions to update the users configured in the persistent HDFS cluster.
@@ -26,6 +27,7 @@ import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
   * @param serviceManager  To act on the cluster
   */
 class UpdatePersistentHdfsUsersWizard(serviceManager: ServiceManager) {
+  import UpdatePersistentHdfsUsersWizard._
 
   case class PersistentHdfsUpdateException(cause: Throwable)
     extends RuntimeException("Cannot update persistent HDFS users", cause)
@@ -36,7 +38,7 @@ class UpdatePersistentHdfsUsersWizard(serviceManager: ServiceManager) {
         username = profile.handle,
         publicKey = profile.keys.head.signature,
         sshEnabled = false,
-        hdfsEnabled = profile.state == UserState.Enabled
+        hdfsEnabled = AllowedUserStates.contains(profile.state)
       )
     }
     serviceManager.setUsers(serviceManager.persistentHdfsId, clusterUsers).recoverWith {
@@ -47,4 +49,9 @@ class UpdatePersistentHdfsUsersWizard(serviceManager: ServiceManager) {
       }
     }
   }
+}
+
+object UpdatePersistentHdfsUsersWizard {
+  /** Profiles in these user states should get HDFS access configured. */
+  private val AllowedUserStates: Set[UserState] = Set(Creating, Enabled)
 }

@@ -38,10 +38,10 @@ class ProfileIT extends FlatSpec with MustMatchers with AuthBehaviors {
   "The profile resource" must behave like
     rejectingUnauthenticatedRequests(FakeRequest(GET, profileResource))
 
-  it must "return profile information of the API keys owner" in new WithSampleUsers {
-    val response = route(FakeRequest(GET, profileResource).authorizedBy(user1)).get
-    status(response) must be (OK)
-    contentAsString(response) must include ("user1")
+  it must "return profile information about the credentials' owner" in new WithSampleSessions {
+    val res = regUser.doRequest(profileResource)
+    status(res) must be (OK)
+    contentAsString(res) must include (regUser.handle)
   }
 
   "Updates to the profile" must behave like rejectingUnauthenticatedRequests(

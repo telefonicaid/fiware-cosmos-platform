@@ -3,6 +3,7 @@
   tabs: Seq[views.NavTab])(implicit request: RequestHeader)
 @import es.tid.cosmos.api.controllers.pages
 @import es.tid.cosmos.api.profile.NamedKey
+@import es.tid.cosmos.api.profile.UserState
 <!--
  Telefónica Digital - Product Development and Innovation
 
@@ -18,6 +19,11 @@
     <script type="text/javascript" src="@routes.Assets.at("js/profile.js")"></script>
 } {
     @navigation("profile", tabs)
+
+    @if(cosmosProfile.state == UserState.Creating) {
+        <p><i>Your profile is being created</i>. You won't be allowed to create clusters for a
+        few minutes.</p>
+    }
 
     <h1 class="page-title">Profile for @oauthProfile.contact</h1>
 

@@ -79,11 +79,14 @@ class ProfileQuotas(
       val overallAvailable = Quota.min(availableFromProfile, availableFromGroup)
 
       val profileValidation = validate(availableFromProfile, size, "Profile quota exceeded.")
-      val groupValidation = validate(
-        availableFromGroup, size, s"Quota exceeded for group [${profile.group.name}].")
-      val overallValidation = validate(
-        overallAvailable, size,
-        s"You can request up to ${overallAvailable.toInt.getOrElse(0)} machine(s) at this point.")
+      val groupValidationMessage = "Quota exceeded for %s.".format(
+        if (profile.group == NoGroup) "users not belonging to any group"
+        else s"group [${profile.group.name}]"
+      )
+      val groupValidation = validate(availableFromGroup, size, groupValidationMessage)
+      val available = overallAvailable.toInt.getOrElse(0)
+      val overallValidation = validate(overallAvailable, size,
+        s"You can request up to $available machine${if (available != 1) "s" else ""} at this point.")
 
       (profileValidation |@| groupValidation |@| overallValidation){(_, _, last) => last}
     }

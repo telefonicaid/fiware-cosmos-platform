@@ -140,7 +140,7 @@ def add_user_to_cluster(args, proto):
 
 
 def add_adduser_command(subparsers):
-    parser = subparsers.add_parser("adduser", help="add an user to a existing cluster")
+    parser = subparsers.add_parser("adduser", help="add a user to an existing cluster")
     util.add_cluster_id_argument(parser)
     parser.add_argument("user_id", help="cluster id")
     parser.set_defaults(func=ComputeCommand(add_user_to_cluster))
@@ -153,9 +153,9 @@ def remove_user_from_cluster(args, proto):
 
 
 def add_rmuser_command(subparsers):
-    parser = subparsers.add_parser("rmuser", help="remove an user to a existing cluster")
+    parser = subparsers.add_parser("rmuser", help="remove a user from an existing cluster")
     util.add_cluster_id_argument(parser)
-    parser.add_argument("user_id", help="cluster id")
+    parser.add_argument("user_id", help="user id")
     parser.set_defaults(func=ComputeCommand(remove_user_from_cluster))
 
 

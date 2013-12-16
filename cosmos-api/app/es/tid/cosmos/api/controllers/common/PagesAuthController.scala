@@ -18,6 +18,7 @@ import play.api.mvc._
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.controllers.pages.routes
+import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.{UserId, CosmosProfile, CosmosProfileDao, UserState}
 
 trait PagesAuthController extends Controller {
@@ -44,7 +45,8 @@ trait PagesAuthController extends Controller {
       dao.withTransaction { implicit c =>
         dao.lookupByUserId(userProfile.id)
       } match {
-        case Some(cosmosProfile) if cosmosProfile.state == UserState.Enabled =>
+        case Some(cosmosProfile)
+          if cosmosProfile.state == Enabled || cosmosProfile.state == Creating =>
           whenRegistered(userProfile, cosmosProfile)
         case _ => whenNotRegistered(userProfile)
       }

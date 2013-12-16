@@ -43,9 +43,16 @@ class ClusterResource(
   @ApiOperation(value = "List clusters", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterList")
   def list = Action { implicit request =>
+
+    def listClustersWithOwnConnection(profile: CosmosProfile) = dao.withConnection { c =>
+      listClusters(profile)(c)
+    }
+
     for {
       profile <- requireAuthenticatedApiRequest(request)
-    } yield Ok(Json.toJson(ClusterList(listClusters(profile).map(_.withAbsoluteUri(request)))))
+    } yield Ok(Json.toJson(
+      ClusterList(listClustersWithOwnConnection(profile).map(_.withAbsoluteUri(request)))
+    ))
   }
 
   /** Start a new cluster provisioning. */
@@ -120,10 +127,8 @@ class ClusterResource(
       Forbidden(Json.toJson(Message(errors.list.mkString(" "))))
     )
 
-  private def listClusters(profile: CosmosProfile) = {
-    val assignedClusters = dao.withConnection { implicit c =>
-      Set(dao.clustersOf(profile.id): _*)
-    }
+  private def listClusters(profile: CosmosProfile)(implicit c: dao.Conn) = {
+    val assignedClusters =  Set(dao.clustersOf(profile.id): _*)
     (for {
       assignment <- assignedClusters.toList
       description <- serviceManager.describeCluster(assignment.clusterId).toList

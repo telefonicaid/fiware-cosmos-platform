@@ -33,7 +33,7 @@ class ProfileQuotas(
   machinePoolSize: => Int,
   groups: => Set[Group],
   lookupByGroup: Group => Set[CosmosProfile],
-  listClusters: CosmosProfile => List[ClusterReference]) {
+  listClusters: CosmosProfile => Seq[ClusterReference]) {
 
   //TODO lookupByGroup -> listClusters could be simplified with a function
   // Group => List[Int] where Int represents the number of machines used by a group

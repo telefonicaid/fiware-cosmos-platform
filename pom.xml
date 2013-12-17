@@ -2,13 +2,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>platform</artifactId>
-    <version>0.13.1</version>
+    <version>0.14.0</version>
     <packaging>pom</packaging>
 
     <parent>
         <artifactId>basepom</artifactId>
         <groupId>es.tid.cosmos</groupId>
-        <version>1.0.3</version>
+        <version>1.0.5</version>
     </parent>
 
     <name>platform</name>
@@ -53,6 +53,7 @@
                         <exclude>**/target/**</exclude>
                         <exclude>**/*_third_party/**</exclude>
                         <exclude>deployment/puppet/modules/openvz/**</exclude>
+                        <exclude>metrics.xml</exclude>
                     </excludes>
                     <mapping>
                         <pp>SCRIPT_STYLE</pp>

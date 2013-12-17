@@ -32,6 +32,9 @@ setup(name='cosmos',
       author='Cosmos Team',
       author_email='cosmos@tid.es',
       packages=['cosmos', 'cosmos.cli', 'cosmos.common', 'cosmos.compute', 'cosmos.storage'],
+      package_data={
+        'cosmos.common': ['cacerts.pem'],
+      },
       entry_points={
           'console_scripts': ['cosmos=cosmos.cli.main:run']},
       install_requires=[

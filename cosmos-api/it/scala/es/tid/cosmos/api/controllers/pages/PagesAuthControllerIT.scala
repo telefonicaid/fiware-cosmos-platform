@@ -11,10 +11,12 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import scala.concurrent.Future
+
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers._
-import play.api.mvc.{AnyContent, Result, Request, Action}
+import play.api.mvc._
 
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
@@ -32,7 +34,8 @@ class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 
   trait WithTestController extends WithSampleSessions {
     val controller = new TestController(dao)
-    def route(request: Request[AnyContent]): Result = controller.index().apply(request)
+    def route(request: Request[AnyContent]): Future[SimpleResult] =
+      controller.index().apply(request)
   }
 
   "The pages auth controller" must "detect not authenticated sessions" in new WithTestController {
@@ -45,5 +48,9 @@ class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 
   it must "detect sessions of registered users" in new WithTestController {
     contentAsString(route(regUser.request("/"))) must include ("registered")
+  }
+
+  it must "discard sessions of not-enabled users" in new WithTestController {
+    contentAsString(route(disabledUser.request("/"))) must include ("not registered")
   }
 }

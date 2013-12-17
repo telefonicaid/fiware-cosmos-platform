@@ -9,9 +9,6 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
-import requests
-
-from cosmos.common.routes import Routes
 from cosmos.compute.cluster import Cluster
 from cosmos.compute.protocol import Protocol
 

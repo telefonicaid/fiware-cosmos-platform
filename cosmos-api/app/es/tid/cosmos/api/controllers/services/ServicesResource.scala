@@ -18,17 +18,16 @@ import play.api.mvc.Action
 import es.tid.cosmos.api.controllers.common.JsonController
 import es.tid.cosmos.servicemanager.ServiceManager
 
-/**
- * Resource that represents the set of services that can be installed in clusters.
- */
+/** Resource that represents the set of services that can be installed in clusters. */
 @Api(value = "/cosmos/v1/services", listingPath = "/doc/cosmos/v1/services",
   description = "Represents all the services that can optionally be installed in a cluster")
 class ServicesResource(serviceManager: ServiceManager) extends JsonController {
-  /**
-   * List cluster services.
-   */
-  @ApiOperation(value = "List services", httpMethod = "GET", responseClass = "Seq[String]")
+
+  /**List cluster services. */
+  @ApiOperation(value = "List services", httpMethod = "GET",
+    notes = "The response is a bare array of strings (e.g. [\"service1\", \"service2\"])",
+    responseClass = "java.lang.String", multiValueResponse = true)
   def list = Action { implicit request =>
-      Ok(Json.toJson(serviceManager.services.map(_.name)))
+      Ok(Json.toJson(serviceManager.optionalServices.map(_.name)))
   }
 }

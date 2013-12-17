@@ -11,9 +11,10 @@
 
 package es.tid.cosmos.tests.e2e
 
+import scala.language.postfixOps
 import scala.sys.process._
 
-import net.liftweb.json.parse
+import net.liftweb.json._
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.{Eventually, IntegrationPatience}
 import org.scalatest.matchers.MustMatchers
@@ -28,12 +29,18 @@ class Cluster(id: String) extends MustVerb with MustMatchers with Eventually wit
 
   def isListed: Boolean = ("cosmos list" lines_!).exists(_.contains(id))
 
-  def describe = parse(s"cosmos show $id" !!)
+  def describe = parse(s"cosmos show $id" !! ProcessLogger(println(_)))
 
   def state: Option[String] = (describe \ "state").extractOpt[String]
 
   def ensureState(expectedState: String) {
-    eventually (state must be === (Some(expectedState)))
+    eventually {
+      assert(
+        state == Some(expectedState),
+        s"ExpectedState [${Some(expectedState)}] not reached. Actual: [$state]." +
+          s"Cluster info:\n${pretty(render(describe))}"
+      )
+    }
   }
 
   def terminate() {
@@ -46,7 +53,8 @@ object Cluster extends FlatSpec with MustMatchers {
     val ExpectedPrefix = "Provisioning new cluster "
     val flatServices = services.mkString(" ")
     val servicesCommand = if (services.nonEmpty) s"--services $flatServices" else ""
-    val id = (s"cosmos create --name default-services --size $size $servicesCommand" lines_!)
+    val id = s"cosmos create --name default-services --size $size $servicesCommand"
+      .lines_!(ProcessLogger(println(_)))
       .filter(_.startsWith(ExpectedPrefix))
       .head.substring(ExpectedPrefix.length)
     println(s"Cluster created with id $id")

@@ -15,10 +15,12 @@ import es.tid.cosmos.servicemanager.{ClusterUser, ComponentDescription}
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.util.SshKeyGenerator
 
-/**
- * Class for setting up a cluster user by presenting the configuration as
- * a service description.
- */
+/** Class for setting up a cluster user by presenting the configuration as
+  * a service description.
+  *
+  * Information about users is sent as configuration properties prefixed by {{{user1_}}} for the
+  * first user, {{{user2_}}} for the second and so on.
+  */
 class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescription {
   override val name: String = CosmosUserService.name
 
@@ -29,17 +31,20 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescriptio
     ConfigurationBundle(usersConfiguration(properties(ConfigurationKeys.MasterNode)))
 
   private def usersConfiguration(masterName: String) = {
-    val properties = (("number_of_users" -> users.size) +: (for {
+    val properties = (("number_of_users" -> users.size) +: ("master" -> masterName) +: (for {
       (user, index) <- users.zipWithIndex
-      sshKeys = SshKeyGenerator.newKeys(user.userName, masterName)
+      sshKeys = SshKeyGenerator.newKeys(user.username, masterName)
       prefix = s"user${index + 1}_"
-      pair <- Seq(
-        s"${prefix}username" -> user.userName,
-        s"${prefix}master" -> masterName,
+      pair <- Map(
+        s"${prefix}username" -> user.username,
+        s"${prefix}ssh_enabled" -> user.sshEnabled,
         s"${prefix}ssh_master_private_key" -> sshKeys.privateKey,
         s"${prefix}ssh_master_public_key" -> sshKeys.publicKey,
         s"${prefix}ssh_master_authorized_keys" -> user.publicKey,
-        s"${prefix}ssh_slave_authorized_keys" -> sshKeys.authorizedKey)
+        s"${prefix}ssh_slave_authorized_keys" -> sshKeys.authorizedKey,
+        s"${prefix}hdfs_enabled" -> user.hdfsEnabled,
+        s"${prefix}is_sudoer" -> user.isSudoer
+      )
     } yield pair)).toMap
 
     ServiceConfiguration("cosmos-user", properties)

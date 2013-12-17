@@ -14,7 +14,7 @@ class cosmos::openvz::images(
   $netmask    = $cosmos::slave::netmask,
   $gateway    = $cosmos::slave::ct_gateway,
   $base_image_url  = 'http://cosmos10/develenv/repos/ovz-templates',
-  $image_name = 'centos-6-cosmos.HDP.1.3.0-20131015-x86_64.tar.gz'
+  $image_name = 'centos-6-cosmos.HDP.1.3.0-20131210-x86_64.tar.gz'
 ) {
   include ssh_keys, ambari::repos
 
@@ -29,14 +29,20 @@ class cosmos::openvz::images(
     destination => $source_image_file,
   }
 
-  file { $replacements_dir :
+  exec { 'Remove extraction dir' :
+    command => "rm -rf ${replacements_dir}",
+    path    => '/bin',
+  }
+
+  file { 'Create extraction dir' :
     ensure => 'directory',
+    path   => $replacements_dir,
   }
 
   exec { 'unpack_image' :
-    command => "tar -C ${replacements_dir} -zxf ${source_image_file}",
-    user    => 'root',
-    path    => '/bin'
+    command     => "tar -C ${replacements_dir} -zxf ${source_image_file}",
+    user        => 'root',
+    path        => '/bin'
   }
 
   file { "${replacements_dir}/root/.ssh" :
@@ -45,6 +51,14 @@ class cosmos::openvz::images(
     recurse => true,
     purge   => true,
     force   => true,
+  }
+
+  file { "${replacements_dir}/root/.ssh/id_rsa" :
+    ensure  => absent,
+  }
+
+  file { "${replacements_dir}/root/.ssh/id_rsa.pub" :
+    ensure  => absent,
   }
 
   file { "${replacements_dir}/etc/ssh/ssh_host_rsa_key" :
@@ -86,17 +100,18 @@ class cosmos::openvz::images(
   }
 
   exec { 'pack_image' :
-    command => "tar -C ${replacements_dir} -czf ${dest_image_file} .",
-    user    => 'root',
-    path    => '/bin'
+    command     => "tar -C ${replacements_dir} -czf ${dest_image_file} .",
+    user        => 'root',
+    path        => '/bin'
   }
 
   Class['ssh_keys'] ~> File["${replacements_dir}/root/.ssh"]
   Class['ambari::repos'] ~> File["${replacements_dir}/etc/yum.repos.d"]
 
   Wget::Fetch['Download base image']
-    ~> File[$replacements_dir]
-    ~> Exec['unpack_image']
+    -> Exec['Remove extraction dir']
+    ~> File['Create extraction dir']
+    -> Exec['unpack_image']
     ~> File["${replacements_dir}/root/.ssh",
             "${replacements_dir}/etc/yum.repos.d",
             "${replacements_dir}/etc/resolv.conf",
@@ -105,7 +120,8 @@ class cosmos::openvz::images(
             "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0",
             "${replacements_dir}/etc/ssh/ssh_host_rsa_key.pub",
             "${replacements_dir}/etc/ssh/ssh_host_rsa_key"]
-    ~> Exec['pack_image']
+    ~> File["${replacements_dir}/root/.ssh/id_rsa", "${replacements_dir}/root/.ssh/id_rsa.pub"]
+    -> Exec['pack_image']
 
   # Class 'ambari::repos' is not included here to avoid creating a cyclic dependency
   anchor {'cosmos::openvz::images::begin': }

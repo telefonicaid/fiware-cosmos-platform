@@ -1,5 +1,5 @@
-@(profile: es.tid.cosmos.api.oauth2.OAuthUserProfile,
-    form: Form[es.tid.cosmos.api.controllers.pages.Registration])
+@(profile: es.tid.cosmos.api.auth.oauth2.OAuthUserProfile,
+    form: Form[es.tid.cosmos.api.profile.Registration])
 @import es.tid.cosmos.api.controllers.pages
 @import play.api.Play.current
 <!--
@@ -28,6 +28,13 @@
                 '_label -> "Handle",
                 '_help -> "Used as login name on Cosmos provisioned clusters",
                 '_error -> form.error("handle")
+            )
+
+            @helper.inputText(
+                form("email"),
+                '_label -> "Email address",
+                '_help -> "To receive email notifications",
+                '_error -> form.error("email")
             )
 
             @helper.textarea(

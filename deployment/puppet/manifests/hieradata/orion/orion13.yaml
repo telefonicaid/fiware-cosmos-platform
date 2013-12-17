@@ -9,10 +9,11 @@
 # All rights reserved.
 #
 
+cosmos::slave::rack: "rack01"
 cosmos::slave::ip: "192.168.63.31"
 cosmos::slave::ct_ip: "192.168.63.95"
 cosmos::slave::ct_hostname: "orion-compute13"
-cosmos::slave::hardware_profile: 1
+cosmos::slave::hardware_profile: g1-compute
 cosmos::slave::name: "Orion 13"
 cosmos::slave::ram: 32768
 cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAyB4qmBuK0l+WbdxqBIvfep0Vqcb+1l0fteo5GuzmbXa6a+7rTqrEtaavbcqMC8JTawPhZB6E+m98XilSStrrFSpys94LwKt0pJMtKJVzrVRo86k7i9T2yGS2VEydplROAYyX1kWRsqUr66ixTMcMoofgPzihBfsGYe0G3SUhxxteyAMorALcF4TnWp3s9/P9QavEMHFjpq6ZCMR2LT3UcyS9IF2/4f5Zgha9tB4+KQQwO8kxRrWH/YWQ3MIsDix4LUXpRK8dEOrSs8hFWUQ28QnthU3BYkcOFyedHKHS0wVk1W4JU51Nab/QSg8rDRdM87Bzc1OBCvJoBCJh84g9tQ=="

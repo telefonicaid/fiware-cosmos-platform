@@ -49,6 +49,6 @@ private[profile] object WithTestDatabase {
     props.load(new FileReader(TestPropertiesFile))
     import scala.collection.JavaConverters._
     val propMap = props.asScala.toMap
-    propMap.updated("db.default.url", s"jdbc:mysql://localhost/${propMap("db.default.database")}")
+    propMap.updated("db.default.url", s"jdbc:mysql://master.vagrant/${propMap("db.default.database")}")
   }
 }

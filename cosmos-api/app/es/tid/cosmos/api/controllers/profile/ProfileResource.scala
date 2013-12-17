@@ -15,7 +15,8 @@ import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.Action
 
-import es.tid.cosmos.api.controllers.common.{ApiAuthController, JsonController, Message}
+import es.tid.cosmos.api.controllers._
+import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 /**
@@ -32,9 +33,9 @@ class ProfileResource(override val dao: CosmosProfileDao)
   @ApiOperation(value = "Get the user profile details", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.profile.UserProfile")
   def show = Action { implicit request =>
-    withApiAuth(request) { profile =>
-      Ok(Json.toJson(UserProfile(profile.handle, profile.keys.toList)))
-    }
+    for {
+      profile <- requireAuthenticatedApiRequest(request)
+    } yield Ok(Json.toJson(profile.toUserProfile))
   }
 
   /**
@@ -52,14 +53,18 @@ class ProfileResource(override val dao: CosmosProfileDao)
     new ApiParamImplicit(paramType = "body",
       dataType = "es.tid.cosmos.api.controllers.profile.UserProfile")
   ))
-  def update() = JsonBodyAction[UserProfile] { (request, targetProfile) =>
-    withApiAuth(request) { currentProfile =>
+  def update() = Action(parse.tolerantJson) { implicit request =>
+    for {
+      currentProfile <- requireAuthenticatedApiRequest(request)
+      targetProfile <- validJsonBody[UserProfile](request)
+    } yield {
       if (targetProfile.keys.length != 1) badRequest("Only one public key is supported")
       else dao.withTransaction { implicit c =>
         if (currentProfile.handle != targetProfile.handle) {
           badRequest("Handle modification is not supported")
         } else {
           dao.setHandle(currentProfile.id, targetProfile.handle)
+          dao.setEmail(currentProfile.id, targetProfile.email)
           dao.setPublicKeys(currentProfile.id, targetProfile.keys)
           Ok(Json.toJson(targetProfile))
         }

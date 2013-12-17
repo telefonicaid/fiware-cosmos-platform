@@ -11,6 +11,9 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import scala.concurrent.Future
+import scalaz._
+
 import dispatch.{Future => _, _}, Defaults._
 import play.Logger
 import play.api.data.Form
@@ -18,12 +21,14 @@ import play.api.libs.json.Json
 import play.api.mvc.{RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
-import es.tid.cosmos.api.controllers._
-import es.tid.cosmos.api.controllers.common.{AbsoluteUrl, ErrorMessage, JsonController}
+import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
+import es.tid.cosmos.api.auth.oauth2.OAuthError.UnauthorizedClient
+import es.tid.cosmos.api.auth.oauth2._
+import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
+import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.oauth2.OAuthError.UnauthorizedClient
-import es.tid.cosmos.api.oauth2._
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration, UserId}
+import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.platform.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
 import views.AuthAlternative
@@ -32,10 +37,15 @@ import views.AuthAlternative
  * Controller for the web pages of the service.
  */
 class Pages(
-    oauthClients: MultiOAuthProvider,
+    multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
-    val dao: CosmosProfileDao
-  ) extends JsonController with PagesAuthController {
+    override val dao: CosmosProfileDao,
+    override val maintenanceStatus: MaintenanceStatus
+  ) extends JsonController with PagesAuthController with MaintenanceAwareController {
+
+  import Scalaz._
+
+  private val registrationWizard = new UserRegistrationWizard(serviceManager)
 
   def index = Action { implicit request =>
     withAuthentication(request)(
@@ -50,9 +60,9 @@ class Pages(
   }
 
   def authorize(providerId: String, maybeCode: Option[String], maybeError: Option[String]) =
-    Action { implicit request =>
+    Action.async { implicit request =>
 
-      def authorizeCode(oauthClient: OAuthProvider, code: String) = Async {
+      def authorizeCode(oauthClient: OAuthProvider, code: String) =
         (for {
           token <- oauthClient.requestAccessToken(code)
           userProfile <- oauthClient.requestUserProfile(token)
@@ -61,61 +71,77 @@ class Pages(
           Redirect(routes.Pages.showProfile())
             .withSession(session.setToken(token).setUserProfile(userProfile))
         }) recover {
-          case ex@OAuthException(_, _) => unauthorizedPage(ex)
+          case ex @ OAuthException(_, _) => unauthorizedPage(ex)
           case Wrapped(Wrapped(ex: OAuthException)) => unauthorizedPage(ex)
         }
-      }
-
-      def reportAuthError(error: OAuthError.OAuthError) = unauthorizedPage(OAuthException(error,
-        "OAuth provider redirected with an error code instead of an authorization code"))
 
       def reportMissingAuthCode = BadRequest(Json.toJson(ErrorMessage("Missing code")))
 
-      def reportUnknownProvider = NotFound(Json.toJson(
-        ErrorMessage(s"Unknown authorization provider $providerId")))
-
-      oauthClients.providers.get(providerId).map(oauthClient =>
-        (maybeCode, maybeError.flatMap(OAuthError.parse)) match {
-          case (_, Some(error)) => reportAuthError(error)
-          case (Some(code), _) => authorizeCode(oauthClient, code)
-          case _ => reportMissingAuthCode
-        }
-      ).getOrElse(reportUnknownProvider)
+      for {
+        oauthClient <- oauthProviderById(providerId)
+        _ <- requireNoOAuthError(maybeError)
+      } yield (maybeCode, maybeError.flatMap(OAuthError.parse)) match {
+        case (Some(code), _) => authorizeCode(oauthClient, code)
+        case _ => Future.successful(reportMissingAuthCode)
+      }
     }
 
-  def registerForm = Action { implicit request =>
-    withAuthentication(request)(
-      whenRegistered = (_, _) => redirectToIndex,
-      whenNotRegistered = userProfile => registrationPage(userProfile, RegistrationForm()),
-      whenNotAuthenticated = redirectToIndex
+  private def requireNoOAuthError(maybeError: Option[String])
+                                 (implicit request: RequestHeader): ActionValidation[Unit] = {
+    val errorResponse = for {
+      error <- maybeError
+      oauthError <- OAuthError.parse(error)
+    } yield unauthorizedPage(OAuthException(oauthError,
+        "OAuth provider redirected with an error code instead of an authorization code"))
+    errorResponse.toFailure(())
+  }
+
+  private def oauthProviderById(providerId: String): ActionValidation[OAuthProvider] =
+    multiAuthProvider.oauthProviders.get(providerId).toSuccess(
+      NotFound(Json.toJson(ErrorMessage(s"Unknown authorization provider $providerId")))
     )
+
+  def registerForm = Action { implicit request =>
+    for {
+      _ <- requirePageNotUnderMaintenance()
+      userProfile <- requireAuthenticatedUser(request)
+      cosmosProfile <- requireUnregisteredUser(userProfile.id)
+    } yield Ok(views.html.registration(userProfile, RegistrationForm.initializeFrom(userProfile)))
   }
 
   def registerUser = Action { implicit request =>
-    withAuthentication(request)(
-      whenRegistered = (_, _) => redirectToIndex,
-      whenNotAuthenticated = redirectToIndex,
-      whenNotRegistered = userProfile => dao.withTransaction { implicit c =>
-
-        val validatedForm = {
-          val form = RegistrationForm().bindFromRequest()
-          form.data.get("handle") match {
-            case Some(handle) if dao.handleExists(handle) =>
-              form.withError("handle", s"'$handle' is already taken")
-            case _ => form
-          }
+    for {
+      _ <- requireResourceNotUnderMaintenance()
+      userProfile <- requireAuthenticatedUser(request)
+      _ <- requireUnregisteredUser(userProfile.id)
+    } yield {
+      val validatedForm = dao.withTransaction { implicit c =>
+        val form = RegistrationForm().bindFromRequest()
+        form.data.get("handle") match {
+          case Some(handle) if dao.handleExists(handle) =>
+            form.withError("handle", s"'$handle' is already taken")
+          case _ => form
         }
-
-        validatedForm.fold(
-          formWithErrors => registrationPage(userProfile, formWithErrors),
-          registration => {
-            val cosmosProfile = dao.registerUserInDatabase(userProfile.id, registration)
-            serviceManager.addUsers(serviceManager.persistentHdfsId, cosmosProfile.toClusterUser)
-            redirectToIndex
-          }
-        )
       }
-    )
+
+      validatedForm.fold(
+        formWithErrors => registrationPage(userProfile, formWithErrors),
+        registration => {
+          dao.withTransaction { implicit c =>
+            registrationWizard.registerUser(dao, userProfile.id, registration)
+          }
+          redirectToIndex
+        }
+      )
+    }
+  }
+
+  private def requireUnregisteredUser(userId: UserId): ActionValidation[Unit] = {
+    val userExists = dao.withTransaction { implicit c =>
+      dao.lookupByUserId(userId).isDefined
+    }
+    if (userExists) redirectToIndex.failure
+    else ().success
   }
 
   private def registrationPage(profile: OAuthUserProfile, form: Form[Registration]) = {
@@ -128,23 +154,36 @@ class Pages(
     redirectToIndex.withNewSession
   }
 
-  private def redirectToIndex = Redirect(routes.Pages.index())
-
   private def landingPage(implicit request: RequestHeader) =
     Ok(views.html.landingPage(authAlternatives))
 
   def showProfile = Action { implicit request =>
-    whenRegistered(request) { (userProfile, _) =>
-      dao.withTransaction { implicit c =>
-        Ok(views.html.profile(userProfile, dao.lookupByUserId(userProfile.id).get))
-      }
-    }
+    for {
+      profiles <- requireUserProfiles(request)
+      (userProfile, cosmosProfile) = profiles
+    } yield Ok(views.html.profile(
+      oauthProfile = userProfile,
+      cosmosProfile = cosmosProfile,
+      tabs = Navigation.forCapabilities(cosmosProfile.capabilities)
+    ))
   }
 
   def customGettingStarted = Action { implicit request =>
-    whenRegistered(request) { (_, cosmosProfile) =>
-      Ok(views.html.gettingStarted(cosmosProfile))
-    }
+    for {
+      profiles <- requireUserProfiles(request)
+      (_, cosmosProfile) = profiles
+    } yield Ok(views.html.gettingStarted(
+      cosmosProfile, Navigation.forCapabilities(cosmosProfile.capabilities)
+    ))
+  }
+
+  def faq = Action { implicit request =>
+    if (requireAuthenticatedUser(request).isFailure)
+      Ok(views.html.faq(None))
+    else for {
+      profiles <- requireUserProfiles(request)
+      (_, cosmosProfile) = profiles
+    } yield Ok(views.html.faq(Some(Navigation.forCapabilities(cosmosProfile.capabilities))))
   }
 
   private def unauthorizedPage(ex: OAuthException)(implicit request: RequestHeader) = {
@@ -155,7 +194,7 @@ class Pages(
   }
 
   private def authAlternatives(implicit request: RequestHeader): Seq[AuthAlternative] = (for {
-    (id, oauthClient) <- oauthClients.providers
+    (id, oauthClient) <- multiAuthProvider.oauthProviders
     redirectUrl = AbsoluteUrl(routes.Pages.authorize(providerId = id, code = None, error = None))
   } yield AuthAlternative(
     id = oauthClient.id,

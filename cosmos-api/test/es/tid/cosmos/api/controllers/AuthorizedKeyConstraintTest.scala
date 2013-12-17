@@ -14,10 +14,11 @@ package es.tid.cosmos.api.controllers
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.data.validation.{Invalid, Valid}
+import es.tid.cosmos.api.profile.AuthorizedKeyConstraint
 
 class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
 
-  val validate = AuthorizedKeyConstraint.authorizedKey
+  val validate = AuthorizedKeyConstraint.constraint
 
   "The authorized key constraint" must "accept rsa keys" in {
     validate("ssh-rsa ADKDJDIEJDJ jsmith@example.com") must be (Valid)
@@ -41,7 +42,7 @@ class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
       Invalid("3 fields were expected but 2 were found"))
   }
 
-  it must "rejest multi-line inputs" in {
+  it must "reject multi-line inputs" in {
     validate("""ssh-rsa ADKDJDIEJDJ jsmith@example.com
                |ssh-rsa ADKDJDIEJDJ jsmith@example.com""".stripMargin) must be(
       Invalid("only one line was expected but 2 were found")
@@ -49,7 +50,10 @@ class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
   }
 
   it must "reject keys with invalid email addresses" in {
-    validate("ssh-rsa ADKDJDIEJDJ adamos@tid@e.es") must be(
-      Invalid("invalid email 'adamos@tid@e.es'"))
+    validate("ssh-rsa ADKDJDIEJDJ adamos@tid@e.es") must be(Invalid("invalid email"))
+  }
+
+  it must "be available as a simple function" in {
+    AuthorizedKeyConstraint("ssh-rsa ADKDJDIEJDJ jsmith@example.com") must be (true)
   }
 }

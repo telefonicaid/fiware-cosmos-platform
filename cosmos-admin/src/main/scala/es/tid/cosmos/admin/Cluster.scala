@@ -11,7 +11,8 @@
 
 package es.tid.cosmos.admin
 
-import es.tid.cosmos.servicemanager.{ServiceManager, ClusterId}
+import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 private[admin] object Cluster {
 

@@ -9,10 +9,11 @@
 # All rights reserved.
 #
 
+cosmos::slave::rack: "rack01"
 cosmos::slave::ip: "192.168.63.33"
 cosmos::slave::ct_ip: "192.168.63.97"
 cosmos::slave::ct_hostname: "andromeda-data99"
-cosmos::slave::hardware_profile: 2
+cosmos::slave::hardware_profile: hdfs-slave
 cosmos::slave::name: "Andromeda 99"
 cosmos::slave::ram: 8192
 cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDrisgGpVcK3J5rdKtmYHpySvBU7uuC3L9ysB1ZbpBXTckOazKnnQN0EnMn50RfHmrmJUDy98c6UDNVBVSt1EF1D2tq5B8xnnI97S/opHJ5EM/zXYOSgD9OvslQPu8x3Po1sSER/pOKgR8kcVYeRUHyysIM0jLA3eXidOV1wPFe1v58H5ALwIY6OZE0YFtZ5ut0DZWdJgp3+WtAACdDhT/1hMf3fSRP2lZWjQZD78TG2RtZrmr4lN2Yl+eKk3omNv0XqAdg0lgsm5C2snu4KZyHrTJ/GbxWqWXNzXDWmtK5u7kmSrOw/Zo26Sqomj4zjBsi3983OdKLPRAMAolt0Oh"

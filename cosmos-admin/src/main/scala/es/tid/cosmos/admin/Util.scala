@@ -14,6 +14,8 @@ package es.tid.cosmos.admin
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits._
+import scala.language.postfixOps
+import scala.util.{Failure, Success, Try}
 
 private[admin] object Util {
 
@@ -28,5 +30,17 @@ private[admin] object Util {
         throwable
       })
     Await.ready(handled_>, 15 minutes).value.get.isSuccess
+  }
+
+  def whenEmpty[T](value: Option[T])(action: => Unit): Option[T] = {
+    if (value.isEmpty) action
+    value
+  }
+
+  def tryAction(action: => Option[Any]): Boolean = {
+    Try(action) match {
+      case Success(maybe) => maybe.isDefined
+      case Failure(e) => { println(s"Error: ${e.getMessage}"); false }
+    }
   }
 }

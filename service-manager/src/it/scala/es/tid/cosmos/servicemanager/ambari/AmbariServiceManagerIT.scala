@@ -14,17 +14,23 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.annotation.tailrec
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.language.postfixOps
+import scala.util.Try
 
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
 import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
+import es.tid.cosmos.servicemanager.clusters._
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
   with FakeInfrastructureProviderComponent {
+
+  val preConditions = UnfilteredPassThrough
 
   @tailrec
   final def waitForClusterCompletion(id: ClusterId, sm: ServiceManager): ClusterState = {
@@ -41,14 +47,25 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
   var sm: AmbariServiceManager = null
 
   before {
+    val db = new MySqlDatabase(MySqlConnDetails("localhost", 3306, "root", "", "smtest"))
+    val dao = new SqlClusterDao(db)
+    before  {
+      dao.newTransaction {
+        Try {
+          SqlClusterDao.drop
+        }
+        SqlClusterDao.create
+      }
+    }
+    val ambariServer = new AmbariServer("10.95.161.137", 8080, "admin", "admin")
     sm = new AmbariServiceManager(
-      new AmbariServer("10.95.161.137", 8080, "admin", "admin"), infrastructureProvider,
-      initializationPeriod = 1.minutes, refreshGracePeriod = 1.seconds, ClusterId("hdfs"),
-      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1))
-  }
-
-  after {
-    sm.close()
+      ambariServer, infrastructureProvider,
+      ClusterId("hdfs"), exclusiveMasterSizeCutoff = 10,
+      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1),
+      new AmbariClusterDao(
+        new SqlClusterDao(db),
+        ambariServer,
+        AmbariServiceManager.AllServices))
   }
 
   "Ambari server" must "create and terminate cluster" taggedAs HasExternalDependencies in {
@@ -57,7 +74,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     val user3 = ClusterUser("luckydude3", "publicKey2")
 
     val id = sm.createCluster(
-      name = "persistentHdfsId", 1, serviceDescriptions = Seq(), Seq(user1, user2))
+      name = "persistentHdfsId", 1, serviceDescriptions = Seq(), Seq(user1, user2), preConditions)
     println("Cluster creating...")
     val description = sm.describeCluster(id).get
     description.state must be (Provisioning)
@@ -65,7 +82,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     val endState = waitForClusterCompletion(id, sm)
     println("Cluster completed.")
     endState must be === (Running)
-    val updatedService = sm.addUsers(id, user1, user3)
+    val updatedService = sm.setUsers(id, Seq(user1, user3))
     println("Starting wait for user setting...")
     Await.ready(updatedService, Duration.Inf)
     println("User setting done.")

@@ -14,7 +14,7 @@ package es.tid.cosmos.platform.ial.libvirt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, future}
 
-import es.tid.cosmos.platform.common.SequentialOperations
+import es.tid.cosmos.platform.common.{ExecutableValidation, SequentialOperations}
 import es.tid.cosmos.platform.ial._
 
 /**
@@ -28,21 +28,31 @@ class LibVirtInfrastructureProvider(
 
   private val createMachinesSequencer = new SequentialOperations
   override def createMachines(
+      preConditions: ExecutableValidation,
       profile: MachineProfile.Value,
       numberOfMachines: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
-    def takeServers(servers: Seq[LibVirtServer]) = {
-      val available = servers.length
-      if (available < numberOfMachines)
-        throw ResourceExhaustedException(profile.toString, numberOfMachines, available)
-      else
-        servers.take(numberOfMachines)
-    }
+
     createMachinesSequencer enqueue {
-      for {
-        servers <- availableServers(profile)
-        machines <- createMachines(bootstrapAction, takeServers(servers))
-      } yield machines
+      preConditions().fold(
+        fail = errors => throw PreconditionsNotMetException(profile, numberOfMachines, errors.list),
+        succ = _ => proceedToMachineCreation(profile, numberOfMachines, bootstrapAction)
+      )
+    }
+  }
+
+  private def proceedToMachineCreation(
+      profile: MachineProfile.Value,
+      numberOfMachines: Int,
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
+
+    val serversOfProfile = dao.libVirtServers.filter(_.profile == profile).map(libvirtServerFactory)
+    (for {
+      servers <- LibVirtServer.placeServers(serversOfProfile, numberOfMachines)
+      machines <- createMachines(bootstrapAction, servers)
+    } yield machines) recover {
+      case error @ LibVirtServer.PlacementException(_, available) =>
+        throw ResourceExhaustedException(profile.toString, numberOfMachines, available, error)
     }
   }
 
@@ -56,6 +66,9 @@ class LibVirtInfrastructureProvider(
     for {
       servers <- availableServers(profile)
     } yield servers.size
+
+  override def machinePoolCount(profileFilter: MachineProfile.Value => Boolean): Int =
+    dao.libVirtServers.map(_.profile).count(profileFilter)
 
   override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] = {
     for {
@@ -74,7 +87,7 @@ class LibVirtInfrastructureProvider(
   private def serversForMachines(machines: Seq[MachineState]): Future[Seq[LibVirtServer]] = future {
     for {
       machine <- machines
-      server <- dao.libVirtServers if (server.domainHostname == machine.hostname)
+      server <- dao.libVirtServers if server.domainHostname == machine.hostname
     } yield libvirtServerFactory(server)
   }
 
@@ -107,7 +120,7 @@ class LibVirtInfrastructureProvider(
       for (created <- srv.isCreated()) yield if (created) None else Some(srv)
 
     val servers = for {
-      serverProps <- dao.libVirtServers if (pred(serverProps))
+      serverProps <- dao.libVirtServers if pred(serverProps)
     } yield libvirtServerFactory(serverProps)
     Future.sequence(servers.map(availableServer)).map(_.flatten)
   }

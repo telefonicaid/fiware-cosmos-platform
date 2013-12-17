@@ -29,7 +29,8 @@ Note that the previous commands won't work if you have a python installation
 with setuptools version under 0.7. Take a look at setuptools documentation_ in
 that case.
 
-You will also need to have `distribute` installed (e.g. by executing `easy_install distribute`)
+You will also need to have `distribute` installed (e.g. by executing
+`easy_install distribute`)
 
 .. _documentation: https://pypi.python.org/pypi/setuptools/0.8#installing-and-using-setuptools
 
@@ -55,36 +56,22 @@ You can also create a SNAPSHOT version as follows::
     $ bin/buildout setup . egg_info --tag-build=.dev`date +%G%m%d-%H%M%S` \
                            bdist_egg rotate --match=.egg --keep=10
 
-Publishing the Cosmos CLI EGG
-=============================
+Testing
+=======
 
-Once a version of the component is ready to be published you can upload it to
-the local PYPI proxy, colocated in the same box as the continuous integration
-tools, ``cosmos10``, as follows::
+You can run the Python tests with the following command::
 
-    $ bin/buildout setup . egg_info --tag-build=.dev`date +%G%m%d-%H%M%S` \
-                           upload -r http://cosmos10.hi.inet:8000/simple/
+    $ bin/test
 
-In order to publish a non-snapshot version you should omit the ``--tag-build``
-flag and to publish to the public PYPI, the ``-r`` one.
+If you also want to measure the code coverage, you can do so with::
 
-To publish from a host other than ``cosmos10`` the ``~/.pypirc`` configuration
-file should containt the server credentials. Take a look at a sample
-configuration::
-
-     [distutils]
-     index-servers = pyshop
-
-     [pyshop]
-     username: jenkins
-     password: jenkins
-     repository: http://cosmos10.hi.inet:8000/simple/
+    $ bin/coverage
 
 Configure Cosmos
 ================
 
-By default, your cosmos is supposed to be at http://localhost:9000/cosmos but
-you can create a custom config file by::
+By default, your cosmos is supposed to be at https://cosmos.hi.inet/cosmos/v1
+but you can create a custom config file by::
 
     $ cosmos configure
 

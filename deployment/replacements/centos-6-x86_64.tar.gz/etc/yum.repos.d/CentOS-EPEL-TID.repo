@@ -1,5 +1,0 @@
-[epel-tid]
-name=EPEL REPO TID
-baseurl=http://repos.hi.inet/centos/epel6-x86_64/RPMS.all/
-gpgcheck=0
-enabled=1

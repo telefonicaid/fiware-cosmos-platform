@@ -17,7 +17,16 @@ either:
 - redirected with 301 REDIRECT to the new resource when compatible
 - returned a 410 GONE status
 
---------------
+----------------
+Maintenance mode
+----------------
+
+When the platform is under maintenance, resources will fail with status 503.
+
+-------------------------
+Resources of the user API
+-------------------------
+
 Authentication
 --------------
 
@@ -25,10 +34,6 @@ Requests should use a basic Authorization header as in RFC 2617 in which
 username corresponds with the API key and the password with the API secret.
 Alternatively, a session cookie of a valid user is also accepted as valid
 authentication to ease API exploration and direct use from JavaScript.
-
----------
-Resources
----------
 
 GET ``/cosmos/v1``
 ------------------
@@ -53,7 +58,7 @@ Represents general user profile information as JSON::
       "keys": [
         { "name": <string>, "signature": <string> },
         { "name": <string>, "signature": <string> }
-      }
+      ]
     }
 
 PUT ``/cosmos/v1/profile``
@@ -148,11 +153,63 @@ Consult details of the cluster with id ``<id>``. Body as follows::
       "state": <string>,
       "stateDescription": <string>,
       "href": <string>,
-      "size": <int>
+      "size": <int>,
+      "master": { "hostname": <string>, "ipAddress": <string> },
+      "slaves" : [
+        { "hostname": <string>, "ipAddress": <string> },
+        { "hostname": <string>, "ipAddress": <string> },
+        ...
+      ],
+      "users": [
+        { "username": <string>, "isSudoer": <boolean>, "sshPublicKey": <string> },
+        { "username": <string>, "isSudoer": <boolean>, "sshPublicKey": <string> },
+        ...
+      ]
     }
 
 State related fields have the same meaning as in ``/cosmos/v1/cluster`` GET
 response.
+
+POST ``/cosmos/v1/cluster/<id>/add_user``
+----------------------------------------
+
+*Since v1*
+
+Add a new user to the cluster with id ``<id>``. Request is of the form::
+
+    {
+      "username": <string>,
+    }
+
+The request must match the following rules.
+
+* The ``<username>`` field must match the handle of an existing user in the platform
+* The ``<username>`` field must match the handle of a user that is not a user of the cluster
+
+If all these rules match, the request returns immediately with status 200 OK. The user addition
+may take a while, so check the ``users`` field by means of a GET to check the user was added.
+
+
+POST ``/cosmos/v1/cluster/<id>/remove_user``
+--------------------------------------------
+
+*Since v1*
+
+Remove an user from the cluster with id ``<id>``. Request is of the form::
+
+    {
+      "username": <string>,
+    }
+
+The request must match the following rules.
+
+* The ``<username>`` field must match the handle of an existing user in the platform
+* The ``<username>`` field must match the handle of a user that is a user of the cluster
+* The ``<username>`` field must match the handle of a user that is not the owner of the cluster
+
+If all these rules match, the request returns immediately with status 200 OK. The user removal
+may take a while, so check the ``users`` field by means of a GET to check the user was removed.
+
 
 POST ``/cosmos/v1/cluster/<id>/terminate``
 ------------------------------------------
@@ -175,3 +232,102 @@ it consists on WebHdfs url and username::
       "location": <string>,
       "user": <string>
     }
+
+
+GET ``/cosmos/v1/maintenance``
+------------------------------
+
+*Since v1*
+
+Determines if the system is in maintenance status. Returns just a boolean payload.
+
+
+PUT ``/cosmos/v1/maintenance``
+------------------------------
+
+*Since v1*
+
+For operator users, allow to enter or leave the maintenance mode by posting a boolean payload.
+Other users will get a Forbidden status.
+
+In case of success the maintenance status will change and the new mode will be returned
+as a boolean payload with 200 status.
+
+
+--------------------------
+Resources of the admin API
+--------------------------
+
+These resources follow an authentication scheme different for the client API.
+Instead of using the pair API id / secret, a different set of credentials are
+accepted per authentication realm.  This is configured and enabled on the
+`cosmos-api` configuration file.
+
+Authentication
+--------------
+
+Requests should use a basic Authorization header as in RFC 2617 in which
+username corresponds to the ``authRealm`` being used in the call and the password
+is the one provided by the Cosmos team to the realm owners.
+
+POST ``/admin/v1/user``
+----------------------
+
+*Since v1*
+
+Provides a mean for user registration by posting the properties of the newly
+created user.  The properties have the following restrictions:
+
+* `authId`: non-empty string that must be unique per authorization realm.
+* `authRealm`: identifier of the authorization realm (also a non-empty string).
+* `email`: email address to contact the user about maintenance windows or other
+  conditions and announcements.
+* `handle`: user handle to be used as SSH login. It must be a valid unix login
+  (letters and numbers with a leading letter) and at least three characters.
+  If this field is not present, one will be generated.
+* `sshPublicKey`: must be a public key in the same format SSH stores it
+  (`ssh-rsa|ssh-dsa`, the key and the user email).
+
+Sample body::
+
+    {
+      "authId": "id",
+      "authRealm": "realm",
+      "email": "user@host",
+      "handle": "handle",
+      "sshPublicKey": "ssh-rsa CKDKDJDJD user@host"
+    }
+
+In case of success, a 201 status with the following body scheme is returned::
+
+    {
+      "handle": "handle",
+      "apiKey": "XXXXXXXXX",
+      "apiSecret": "YYYYYYYYYYYYYYYYYYYY"
+    }
+
+Otherwise, one of the following errors will be returned:
+
+* Unauthorized 401
+* Forbidden 403
+* Bad request 400, invalid JSON payload.
+* Conflict 409, already existing handle.
+* Conflict 409, already existing credentials.
+* Internal server error 500, account registration failed.
+
+DELETE ``/admin/v1/user/<realm>/<id>``
+--------------------------------------
+
+*Since v1*
+
+Provides a mean for user unregistration by sending a DELETE request.
+Note that the realm on the URL should match with the authentication credentials so
+each authentication provider can delete only its own users.
+
+In case of success, a 200 response is returned.
+Otherwise, one of the following errors will be returned:
+
+* Unauthorized 401
+* Forbidden 403
+* Not found 404, the user does not exist.
+* Internal server error 500, account unregistration failed.

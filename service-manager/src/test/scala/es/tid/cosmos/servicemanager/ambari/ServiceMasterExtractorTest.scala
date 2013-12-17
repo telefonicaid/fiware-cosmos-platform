@@ -14,6 +14,7 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.{Await, Future}
 import scala.concurrent.Future.successful
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import org.mockito.BDDMockito.given
 import org.scalatest.FlatSpec

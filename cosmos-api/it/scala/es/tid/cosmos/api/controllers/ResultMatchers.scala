@@ -11,42 +11,35 @@
 
 package es.tid.cosmos.api.controllers
 
-import org.scalatest.matchers.{MatchResult, Matcher}
-import play.api.mvc.{AsyncResult, Result}
-import play.api.test.Helpers._
 import scala.Some
-import scala.concurrent.Await
+import scala.concurrent.{Future, Await}
 import scala.concurrent.duration.Duration
 
+import org.scalatest.matchers.{MatchResult, Matcher}
+import play.api.mvc.SimpleResult
+import play.api.test.Helpers._
+
 object ResultMatchers {
-  def failWith[E](clazz: Class[E]): Matcher[Result] =
-    new Matcher[Result] {
-      def apply(r: Result): MatchResult = r match {
-        case AsyncResult(f) =>
-          MatchResult(
-            matches = Await.result(f.failed, Duration.Inf).getClass == clazz,
-            failureMessage = s"result doesn't fail with $clazz",
-            negatedFailureMessage = s"result fails with $clazz")
-        case _ =>
-          MatchResult(
-            matches = false,
-            failureMessage = s"result doesn't fail at all",
-            negatedFailureMessage = s"result is failed")
-      }
+  def failWith[E](clazz: Class[E]): Matcher[Future[SimpleResult]] =
+    new Matcher[Future[SimpleResult]] {
+      def apply(r_> : Future[SimpleResult]): MatchResult = MatchResult(
+        matches = Await.result(r_>.failed, Duration.Inf).getClass == clazz,
+        failureMessage = s"result doesn't fail with $clazz",
+        negatedFailureMessage = s"result fails with $clazz")
     }
 
-  def redirectTo(path: String): Matcher[Result] =
-    new Matcher[Result] {
-      def apply(r: Result): MatchResult =
-        if (status(r) != SEE_OTHER) {
+  def redirectTo(path: String): Matcher[Future[SimpleResult]] =
+    new Matcher[Future[SimpleResult]] {
+      def apply(r_> : Future[SimpleResult]): MatchResult =
+        if (status(r_>) != SEE_OTHER) {
           MatchResult(
             matches = false,
-            failureMessage = s"${status(r)} status found when $SEE_OTHER were expected",
-            negatedFailureMessage = s"${status(r)} status not found when $SEE_OTHER were expected"
+            failureMessage = s"${status(r_>)} status found when $SEE_OTHER were expected",
+            negatedFailureMessage = s"${status(r_>)} status not found when $SEE_OTHER were expected"
           )
         } else {
           MatchResult(
-            matches = header("Location", r) == Some(path),
+            matches = header("Location", r_>) == Some(path),
             failureMessage = s"result does not redirect to $path",
             negatedFailureMessage = s"result redirects to $path"
           )

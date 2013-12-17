@@ -84,7 +84,7 @@ private[ambari] class Cluster (clusterInfo: JValue, serverBaseUrl: Request)
   def getHost(hostName: String): Future[Host] =
     performRequest(baseUrl / "hosts" / hostName).map(new Host(_, baseUrl.build))
 
-  def getHosts = Future.sequence(hostNames.map(getHost(_)))
+  def getHosts = Future.sequence(hostNames.map(getHost))
 
   def addHost(hostName: String): Future[Host] =
     performRequest(baseUrl / "hosts" << s"""{"Hosts":{"host_name":"$hostName"}}""")

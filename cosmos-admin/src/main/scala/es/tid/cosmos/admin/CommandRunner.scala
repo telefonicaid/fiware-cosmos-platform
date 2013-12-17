@@ -11,10 +11,14 @@
 
 package es.tid.cosmos.admin
 
-import org.rogach.scallop.{Subcommand, ScallopConf}
+import scala.language.reflectiveCalls
 
-import es.tid.cosmos.api.profile.PlayDbCosmosProfileDao
-import es.tid.cosmos.servicemanager.{ClusterId, ServiceManager}
+import org.rogach.scallop.ScallopConf
+
+import es.tid.cosmos.api.profile.{NoGroup, PlayDbCosmosProfileDao}
+import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.admin.cli.AdminArguments
 
 class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
 
@@ -31,6 +35,7 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
       case Some(args.persistentStorage) => processPersistentStorageCommand(subcommands.tail)
       case Some(args.cluster) => processClusterCommand(subcommands.tail)
       case Some(args.profile) => processProfileCommand(subcommands.tail)
+      case Some(args.group) => processGroupCommand(subcommands.tail)
       case _ => help(args)
     }
 
@@ -51,10 +56,38 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
     val playDbProfile = new Profile(new PlayDbCosmosProfileDao)
     subcommands.headOption match {
       case Some(args.profile.setMachineQuota) => tryCommand(playDbProfile.setMachineQuota(
-          args.profile.setMachineQuota.cosmosid(), args.profile.setMachineQuota.limit()))
-      case Some(args.profile.unsetMachineQuota) => tryCommand(playDbProfile.unsetMachineQuota(
-          args.profile.setMachineQuota.cosmosid()))
+          args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()))
+      case Some(args.profile.removeMachineQuota) => tryCommand(playDbProfile.removeMachineQuota(
+          args.profile.setMachineQuota.handle()))
+      case Some(args.profile.enableCapability) => tryCommand(playDbProfile.enableCapability(
+        args.profile.enableCapability.handle(),
+        args.profile.enableCapability.capability()
+      ))
+      case Some(args.profile.disableCapability) => tryCommand(playDbProfile.disableCapability(
+        args.profile.disableCapability.handle(),
+        args.profile.disableCapability.capability()
+      ))
+      case Some(args.profile.setGroup) => tryCommand(playDbProfile.setGroup(
+        args.profile.setGroup.handle(), args.profile.setGroup.group()
+      ))
+      case Some(args.profile.removeGroup) => tryCommand(playDbProfile.removeGroup(
+        args.profile.setGroup.handle()
+      ))
+      case Some(args.profile.list) => tryCommandWithOutput(playDbProfile.list)
       case _ => help(args.profile)
+    }
+  }
+
+  private def processGroupCommand(subcommands: List[ScallopConf]) = {
+    val groups = new Groups(new PlayDbCosmosProfileDao)
+    subcommands.headOption match {
+      case Some(args.group.create) => tryCommand(groups.create(
+        args.group.create.name(), args.group.create.minQuota()))
+      case Some(args.group.list) => tryCommandWithOutput(groups.list)
+      case Some(args.group.delete) => tryCommand(groups.delete(args.group.delete.name()))
+      case Some(args.group.setMinQuota) => tryCommand(groups.setMinQuota(
+        args.group.setMinQuota.name(), args.group.setMinQuota.quota()))
+      case _ => help(args.group)
     }
   }
 
@@ -73,6 +106,16 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
   private def tryCommand(block: => Boolean) = try {
     if (block) CommandRunner.SuccessStatus
     else CommandRunner.ExecutionErrorStatus
+  } catch {
+    case ex: Throwable => {
+      ex.printStackTrace()
+      CommandRunner.ExecutionErrorStatus
+    }
+  }
+
+  private def tryCommandWithOutput(block: => String) = try {
+    println(block)
+    CommandRunner.SuccessStatus
   } catch {
     case ex: Throwable => {
       ex.printStackTrace()

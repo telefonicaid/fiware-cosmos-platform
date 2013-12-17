@@ -1,6 +1,10 @@
 # This is the main configuration file for the application.
 # ~~~~~
 
+# Maintenance mode
+# ~~~~
+application.underMaintenance=false
+
 # Public API address
 # ~~~~~
 application.baseurl="http://localhost:9000"
@@ -48,6 +52,11 @@ auth.pdihub {
     api.url=
     signup.url=
 }
+auth.horizon {
+    enabled=false
+    class="es.tid.cosmos.api.auth.horizon.HorizonAuthProvider"
+    password=
+}
 
 # Links (without trailing slashes)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -60,12 +69,7 @@ swagger.api.basepath=${application.baseurl}
 
 # IAL configuration
 # ~~~~~
-ial.root.ssh.private_key=
-ial.db.host=${db.default.host}
-ial.db.port=${db.default.port}
-ial.db.username=${db.default.user}
-ial.db.password=${db.default.pass}
-ial.db.name=${db.default.name}
+include "ial"
 
 # Service manager
 # ~~~~~
@@ -73,8 +77,9 @@ ambari.server.url=localhost
 ambari.server.port=8080
 ambari.server.username=
 ambari.server.password=
+ambari.servicemanager.exclusiveMasterSizeCutoff=10
 ambari.servicemanager.initialization.graceperiod.minutes=5
-ambari.servicemanager.refresh.graceperiod.seconds=30
+ambari.servicemanager.exclusiveMasterSizeCutoff=10
 ambari.servicemanager.mappersPerSlave=8
 ambari.servicemanager.reducersPerSlave=4
 hdfs.cluster.id=persistentHdfs

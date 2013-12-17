@@ -11,15 +11,19 @@
 
 package es.tid.cosmos.api
 
-import es.tid.cosmos.api.controllers.pages.CosmosProfile
-import es.tid.cosmos.servicemanager.ClusterUser
+import scala.language.implicitConversions
+
 import es.tid.cosmos.api.controllers.profile.UserProfile
+import es.tid.cosmos.api.profile.CosmosProfile
 
 package object controllers {
 
   class ClusterProfileExtensions(profile: CosmosProfile) {
-    val toClusterUser = ClusterUser(profile.handle, profile.keys.head.signature)
-    val toUserProfile = UserProfile(profile.handle, profile.keys.toList)
+    val toUserProfile = UserProfile(
+      handle = profile.handle,
+      email = profile.email,
+      keys = profile.keys.toList
+    )
   }
 
   implicit def extendMyProfile(profile: CosmosProfile) = new ClusterProfileExtensions(profile)

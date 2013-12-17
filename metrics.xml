@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Telefonica Digital - Product Development and Innovation
+
+THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+Copyright (c) Telefonica Investigacion y Desarrollo S.A.U.
+All rights reserved.
+-->
+<product name="Cosmos" release="Cosmos 0.13">
+    <generalComment>Cosmos product metrics definition</generalComment>
+
+    <metrics>
+        <suspect_lcom4_density value="x">
+            <rationale>Not being measured since Scala Sonar plugin did not work well</rationale>
+        </suspect_lcom4_density>
+        <duplicated_lines_density value="x"> <!-- Average -->
+            <rationale>Not being measured</rationale>
+        </duplicated_lines_density>
+        <ncloc value="12178"> <!-- SUM  -->
+            <rationale>Measured with CLOC: perl cloc-1.60.pl --exclude-dir=modules_third_party,target The result is the sum of Scala + Java + Python</rationale>
+        </ncloc>
+        <coverage value="x"> <!-- Average -->
+            <rationale>Measured for Scala using SCCT. Python coverage being measured in every PR, but not automated through Jenkins</rationale>
+        </coverage>
+        <techDebtStoryPoints must="0" should="0" niceToHave="0"> <!-- SUM -->
+            <rationale>Technical Debt measured in GitHub</rationale>
+        </techDebtStoryPoints>
+        <techDebtManMonths must="0" should="0" niceToHave="0"> <!-- SUM -->
+            <rationale>Technical Debt measured in GitHub</rationale>
+        </techDebtManMonths>
+        <scm_adoption value="100">
+            <rationale>Defined to be manual</rationale>
+        </scm_adoption>
+        <coding_style_guidelines_adoption value="100"> <!-- Average -->
+            <rationale>https://pdihub.hi.inet/Cosmos/cosmos-platform/wiki/Coding-guidelines</rationale>
+        </coding_style_guidelines_adoption>
+        <tech_plan_adoption value="Medium">
+            <rationale></rationale>
+        </tech_plan_adoption>
+        <process_dev_maturity value="Intermediate">
+            <rationale></rationale>
+        </process_dev_maturity>
+    </metrics>        
+    
+    <scms>
+        <scm type="git" urlbase="https://pdihub.hi.inet/Cosmos/cosmos-platform" />
+    </scms>
+
+    <ci-servers>
+        <ci type="jenkins" urlbase="http://cosmos10.hi.inet/jenkins/"/>
+    </ci-servers>
+    
+    <team velocity="NoIdeaWhatThisIs" devs="4" members="4" techDebtEstimationMethod="man-month"/>
+
+    <documentation>
+        <doc category="wiki" url="https://pdihub.hi.inet/Cosmos/cosmos-platform/wiki" />
+    </documentation>
+
+    <components>
+        <!-- Not sure what the "scan" attribute means -->
+        <component name="cosmos-cli" type="Client" language="Python" outsourced="no">
+        </component>
+        <component name="cosmos-api" type="Web" language="Scala" outsourced="no">
+        </component>
+        <component name="service-manager" type="Server Side" language="Scala" outsourced="no">
+        </component>
+        <component name="ial" type="Server Side" language="Scala" outsourced="no">
+        </component>
+    </components>
+</product>

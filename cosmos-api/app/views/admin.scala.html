@@ -1,0 +1,33 @@
+@(underMaintenance: Boolean, tabs: Seq[views.NavTab])(implicit request: RequestHeader)
+<!--
+ Telefónica Digital - Product Development and Innovation
+
+ THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+ Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ All rights reserved.
+ -->
+@main("Cosmos administration") {
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")">
+    <script type="text/javascript" src="@routes.Assets.at("js/admin.js")"></script>
+} {
+    @navigation("admin", tabs)
+
+    <h1 class="page-title">Cosmos administration</h1>
+
+    <h2>Maintenance mode</h2>
+
+    <p>Maintenance mode:
+        @if(underMaintenance) {
+            <strong>ON</strong>
+            <input id="leave-maintenance" type="submit" value="Leave maintenance mode"/>
+        } else {
+            <strong>OFF</strong>
+            <input id="enter-maintenance" type="submit" value="Enter maintenance mode"/>
+        }
+
+        <span id="maintenance-error" class="error-text"></span>
+    </p>
+}

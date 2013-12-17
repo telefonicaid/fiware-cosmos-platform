@@ -14,6 +14,8 @@ import unittest
 from testfixtures import TempDirectory
 
 import cosmos.cli.main as main
+from cosmos.common.tests.util import collect_outputs
+
 
 class MainTest(unittest.TestCase):
 
@@ -21,8 +23,10 @@ class MainTest(unittest.TestCase):
         self.parser = main.build_argument_parser()
 
     def test_exit_on_wrong_arguments(self):
-        self.assertRaises(SystemExit, self.parser.parse_args,
-                          "wrong arguments".split())
+        with collect_outputs() as outputs:
+            self.assertRaises(SystemExit, self.parser.parse_args,
+                              "wrong arguments".split())
+            self.assertIn("error: invalid choice", outputs.stderr.getvalue())
 
     def test_parse_correct_arguments(self):
         self.assertValidArguments("configure")
@@ -31,6 +35,8 @@ class MainTest(unittest.TestCase):
         self.assertValidArguments("terminate 12345678901234567890123456789012")
         self.assertValidArguments("create --name foo --size 3")
         self.assertValidArguments("ssh 12345678901234567890123456789012")
+        self.assertValidArguments("adduser 12345678901234567890123456789012 jsmith")
+        self.assertValidArguments("rmuser 12345678901234567890123456789012 jsmith")
         self.assertValidArguments("ls /tmp")
         self.assertValidArguments("rm /tmp")
         self.assertValidArguments("get /tmp/file.csv ../Downloads/")
@@ -40,4 +46,3 @@ class MainTest(unittest.TestCase):
 
     def assertValidArguments(self, arguments):
         self.assertIsNotNone(self.parser.parse_args(arguments.split()))
-

@@ -13,13 +13,13 @@
 
 
 import logging as log
-import requests
 import subprocess
 import time
 
+import cosmos.cli.command_util as util
 import cosmos.cli.config as c
-from cosmos.cli.command_util import add_cluster_id_argument
 from cosmos.cli.util import ExitWithError
+from cosmos.common.cosmos_requests import CosmosRequests
 from cosmos.common.exceptions import ResponseError
 from cosmos.common.routes import Routes
 
@@ -29,6 +29,7 @@ RETRY_WAIT = 10
 
 def ssh_cluster(cluster_id, config):
     """Try to connect to a cluster with SSH"""
+    util.set_last_cluster_id(cluster_id)
     cluster = wait_for_cluster_master(cluster_id, config)
     try:
         address = cluster['master']['ipAddress']
@@ -38,6 +39,8 @@ def ssh_cluster(cluster_id, config):
                     '-l', get_user_handle(config),
                     '-o', 'UserKnownHostsFile=/dev/null',
                     '-o', 'StrictHostKeyChecking=no']
+    if config.ssh_key is not None and config.ssh_key:
+        command_line.extend(['-i', config.ssh_key])
     log.info('SSH command: ' + ' '.join(command_line))
     try:
         return subprocess.call(command_line)
@@ -66,8 +69,8 @@ def wait_for_cluster_master(cluster_id, config):
 
 def get_cluster_details(cluster_id, config):
     """Gets the JSON cluster description or raises an exception"""
-    response = requests.get(Routes(config.api_url).cluster(cluster_id),
-                            auth=config.credentials)
+    response = CosmosRequests(config.credentials).get(
+            Routes(config.api_url).cluster(cluster_id))
     if response.status_code == 404:
         raise ExitWithError(404, "Cluster %s does not exist" % cluster_id)
     if response.status_code != 200:
@@ -78,8 +81,8 @@ def get_cluster_details(cluster_id, config):
 
 def get_user_handle(config):
     """Looks up the user handle or raises exception"""
-    response = requests.get(Routes(config.api_url).profile,
-                            auth=config.credentials)
+    response = CosmosRequests(config.credentials).get(
+            Routes(config.api_url).profile)
     if response.status_code != 200:
         raise ResponseError('Cannot access user profile details', response)
     return response.json()['handle']
@@ -93,6 +96,6 @@ def add_ssh_command(subcommands):
 
     parser = subcommands.add_parser(
         "ssh", help="Start a SSH connection with the cluster")
-    add_cluster_id_argument(parser)
+    util.add_cluster_id_argument(parser)
     parser.set_defaults(func=command)
 

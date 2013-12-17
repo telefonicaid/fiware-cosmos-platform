@@ -11,20 +11,20 @@
 
 package es.tid.cosmos.api.controllers
 
+import scala.language.reflectiveCalls
+
 import org.apache.commons.lang3.StringEscapeUtils
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import play.api.libs.json.Json
 import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.ResultMatchers.redirectTo
 import es.tid.cosmos.api.controllers.pages.{WithSampleSessions, CosmosSession}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.mocks.WithTestApplication
-import es.tid.cosmos.api.mocks.oauth2.MockOAuthConstants
+import es.tid.cosmos.api.mocks.{MockAuthConstants, WithTestApplication}
 
-class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
+class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
 
   "The index page" must "show the landing page with auth links for unauthorized users" in
     new WithSampleSessions {
@@ -33,6 +33,8 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
       contentAsString(landingPage) must include ("id=\"auth-selector\"")
       authenticationUrl(contentAsString(landingPage)) must be ('defined)
     }
+
+  it must behave like enabledWhenUnderMaintenance(FakeRequest(GET, "/"))
 
   it must "redirect to the registration form for the unregistered users" in new WithSampleSessions {
     unregUser.doRequest("/") must redirectTo ("/register")
@@ -47,7 +49,10 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
       unauthUser.doRequest("/register") must redirectTo ("/")
     }
 
-  it must "show the registration page to the unregistered users" in new WithSampleSessions {
+  it must behave like pageDisabledWhenUnderMaintenance(FakeRequest(GET, "/register"))
+  it must behave like resourceDisabledWhenUnderMaintenance(FakeRequest(POST, "/register"))
+
+  it must "show the registration form to the unregistered users" in new WithSampleSessions {
     val registrationPage = unregUser.doRequest("/register")
     status(registrationPage) must equal (OK)
     contentAsString(registrationPage) must include ("User registration")
@@ -69,6 +74,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
   it must "register unregistered users" in new WithSampleSessions {
     val response = unregUser.submitForm("/register",
       "handle" -> "newuser",
+      "email" -> "jsmith@example.com",
       "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
     val contents = contentAsString(response)
     response must redirectTo ("/")
@@ -80,6 +86,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
   it must "reject registrations when the submitted form is invalid" in new WithSampleSessions {
     val response = unregUser.submitForm("/register",
       "handle" -> "1nvalid handle",
+      "email" -> "not an email",
       "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example@invalid.com"
     )
     status(response) must be (BAD_REQUEST)
@@ -102,6 +109,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
     contentAsString(profilePage) must include (s"Profile for ${regUser.userProfile.contact}")
   }
 
+  it must behave like enabledWhenUnderMaintenance(FakeRequest(GET, "/profile"))
   it must behave like pageForRegistreredUsers("/profile")
 
   "The getting started page" must "show a personalized getting started tutorial" in
@@ -113,11 +121,15 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
     }
 
   it must behave like pageForRegistreredUsers("/getting-started")
+  it must behave like enabledWhenUnderMaintenance(FakeRequest(GET, "/getting-started"))
+
+  "The OAuth authorization resource" must behave like
+    enabledWhenUnderMaintenance(FakeRequest(GET, "/auth/provider"))
 
   "A registered user" must "be authenticated after OAuth redirection" in
     new WithTestApplication {
-      registerUser(dao, MockOAuthConstants.User101)
-      val redirection = oauthRedirectionWithCode(MockOAuthConstants.GrantedCode)
+      registerUser(dao, MockAuthConstants.User101)
+      val redirection = oauthRedirectionWithCode(MockAuthConstants.GrantedCode)
       redirection must redirectTo ("/profile")
       val cosmosSession: CosmosSession = session(redirection)
       cosmosSession must be ('authenticated)
@@ -143,7 +155,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors {
   private def oauthRedirectionWithError(error: String) = oauthRedirection(s"error=$error")
 
   private def oauthRedirection(queryString: String) =
-    route(FakeRequest(GET, s"/auth/${MockOAuthConstants.ProviderId}?$queryString")).get
+    route(FakeRequest(GET, s"/auth/${MockAuthConstants.ProviderId}?$queryString")).get
 
   private def authenticationUrl(page: String) =
     """<a class="login" href="(.*?)">""".r.findFirstMatchIn(page)

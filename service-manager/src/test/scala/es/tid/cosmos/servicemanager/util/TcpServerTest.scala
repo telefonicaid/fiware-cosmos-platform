@@ -14,6 +14,7 @@ package es.tid.cosmos.servicemanager.util
 import java.net.{InetSocketAddress, Socket, ServerSocket}
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

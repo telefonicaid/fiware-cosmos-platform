@@ -1,11 +1,8 @@
-@(oauthProfile: es.tid.cosmos.api.oauth2.OAuthUserProfile,
-  cosmosProfile: es.tid.cosmos.api.controllers.pages.CosmosProfile)(implicit request: RequestHeader)
-@import play.api.Play.current
-@import es.tid.cosmos.api.controllers.{routes => controllerRoutes}
-@import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
-@import es.tid.cosmos.api.controllers.common.AbsoluteUrl
+@(oauthProfile: es.tid.cosmos.api.auth.oauth2.OAuthUserProfile,
+  cosmosProfile: es.tid.cosmos.api.profile.CosmosProfile,
+  tabs: Seq[views.NavTab])(implicit request: RequestHeader)
 @import es.tid.cosmos.api.controllers.pages
-@import es.tid.cosmos.api.controllers.pages.NamedKey
+@import es.tid.cosmos.api.profile.NamedKey
 <!--
  Telefónica Digital - Product Development and Innovation
 
@@ -17,18 +14,35 @@
  All rights reserved.
  -->
 @main("Cosmos user profile") {
+    <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/profile.css")">
     <script type="text/javascript" src="@routes.Assets.at("js/profile.js")"></script>
 } {
-    @navigation("profile")
+    @navigation("profile", tabs)
 
     <h1 class="page-title">Profile for @oauthProfile.contact</h1>
 
     <ul>
         <li>User handle: <strong id="handle">@cosmosProfile.handle</strong></li>
+        <li>Email address:
+            <strong id="email">@cosmosProfile.email</strong>
+            <a id="edit-email" class="edit-link" href="#">[edit]</a>
+            @for(email <- oauthProfile.email) {
+                <a id="sync-email" class="edit-link" href="#" style="display: none"
+                   data-oauth-email="@email">
+                    [reset to @email]
+                </a>
+            }
+            <div id="edit-email-area" style="display: none">
+                <input id="new-email"/>
+                <input type="submit" class="submit" value="Update"/>
+                <a class="cancel-edit" href="#">Cancel</a>
+                <div id="email-error" class="edit-error" style="display: none"></div>
+            </div>
+        </li>
         <li>Public keys
             @for(NamedKey(name, signature) <- cosmosProfile.keys) {
                 <div class="key noedit" data-name="@name">
-                    <a class="edit-key" href="#">edit</a>
+                    <a class="edit-key edit-link" href="#">edit</a>
                     <div class="name">@name</div>
                     <div class="signature">@signature</div>
                     <form id="form-key-@name">
@@ -39,11 +53,11 @@
                             <dt><label>New key:</label></dt>
                             <dd>
                                 <textarea></textarea>
-                                <div class="edit-key-error" style="display: none"></div>
+                                <div class="edit-key-error edit-error" style="display: none"></div>
                             </dd>
                         </dl>
 
-                        <input type="submit" class="submit" value="Update"></input>
+                        <input type="submit" class="submit" value="Update"/>
                         <a class="cancel-edit" href="#">Cancel</a>
                     </form>
                 </div>
@@ -51,6 +65,8 @@
         </li>
     </ul>
 
-    <p><strong>Next steps!</strong> Learn how to <a href="@pages.routes.Pages.customGettingStarted()">get
-    started</a>.</p>
+    <p>
+        <strong>Next steps!</strong> Learn how to
+        <a href="@pages.routes.Pages.customGettingStarted()">get started</a>.
+    </p>
 }

@@ -14,6 +14,7 @@ package es.tid.cosmos.platform.common
 import scala.concurrent.{Future, Await, future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

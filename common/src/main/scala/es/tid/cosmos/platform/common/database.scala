@@ -16,8 +16,8 @@ import scala.util.Try
 
 import com.typesafe.config._
 import org.squeryl.{Session, SessionFactory}
+import org.squeryl.adapters.MySQLInnoDBAdapter
 import org.squeryl.internals.DatabaseAdapter
-import org.squeryl.adapters.MySQLAdapter
 
 /**
  * A trait of an SQL database.
@@ -48,7 +48,9 @@ case class MySqlConnDetails(
     port: Int,
     username: String,
     password: String,
-    dbName: String)
+    dbName: String) {
+  val asJdbc = s"jdbc:mysql://$host:$port/$dbName"
+}
 
 object MySqlConnDetails {
   private val DefaultPort: Int = 3306
@@ -58,12 +60,12 @@ object MySqlConnDetails {
 
   def fromConfig(c: Config) =
     MySqlConnDetails(
-      host = c.getString("ial.db.host"),
-      port = c.withFallback(ConfigValueFactory.fromAnyRef(DefaultPort, "ial.db.port"))
-        .getInt("ial.db.port"),
-      username = c.getString("ial.db.username"),
-      password = c.getString("ial.db.password"),
-      dbName = c.getString("ial.db.name")
+      host = c.getString("db.default.host"),
+      port = c.withFallback(ConfigValueFactory.fromAnyRef(DefaultPort, "db.default.port"))
+        .getInt("db.default.port"),
+      username = c.getString("db.default.user"),
+      password = c.getString("db.default.pass"),
+      dbName = c.getString("db.default.name")
     )
 }
 
@@ -75,8 +77,7 @@ class MySqlDatabase(c: MySqlConnDetails) extends SqlDatabase {
   /* Initialize MySQL JDBC driver, which registers the connection chain prefix on DriverManager. */
   Class.forName("com.mysql.jdbc.Driver")
 
-  def connect: Try[Connection] = Try(DriverManager.getConnection(
-    s"jdbc:mysql://${c.host}:${c.port}/${c.dbName}", c.username, c.password))
+  def connect: Try[Connection] = Try(DriverManager.getConnection(c.asJdbc, c.username, c.password))
 
-  override val adapter = new MySQLAdapter
+  override val adapter = new MySQLInnoDBAdapter
 }

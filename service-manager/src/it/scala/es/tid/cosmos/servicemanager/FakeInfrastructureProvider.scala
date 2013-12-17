@@ -13,16 +13,17 @@ package es.tid.cosmos.servicemanager
 
 import scala.concurrent._
 
+import es.tid.cosmos.platform.common.ExecutableValidation
 import es.tid.cosmos.platform.ial._
-import es.tid.cosmos.platform.ial.MachineState
 
 class FakeInfrastructureProvider extends InfrastructureProvider {
 
   override def createMachines(
+      preConditions: ExecutableValidation,
       profile: MachineProfile.Value,
       count: Int,
-      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = Future.successful(
-    for (index <- 1 to count) yield (buildMachineState(index, profile)))
+      bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] =
+    Future.successful(for (index <- 1 to count) yield buildMachineState(index, profile))
 
   private def buildMachineState(index: Int, profile: MachineProfile.Value) =
     new MachineState(
@@ -41,4 +42,6 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
 
   override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] =
     Future.successful(Seq())
+
+  override def machinePoolCount(profileFilter: MachineProfile.Value => Boolean): Int = 5
 }

@@ -13,7 +13,8 @@ package es.tid.cosmos.api.controllers
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
-import es.tid.cosmos.api.authorization.ApiCredentials
+
+import es.tid.cosmos.api.auth.ApiCredentials
 
 class CliConfigTest extends FlatSpec with MustMatchers {
 

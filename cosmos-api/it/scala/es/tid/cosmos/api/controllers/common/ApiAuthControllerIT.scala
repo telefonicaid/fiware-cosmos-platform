@@ -11,31 +11,35 @@
 
 package es.tid.cosmos.api.controllers.common
 
+import scala.concurrent.Future
+import scala.language.reflectiveCalls
+
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.mvc._
 import play.api.test._
 import play.api.test.Helpers._
 
+import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.WithSampleUsers
-import es.tid.cosmos.api.authorization.ApiCredentials
-import es.tid.cosmos.api.controllers.pages.{WithSampleSessions, Registration, CosmosProfile}
-import es.tid.cosmos.api.profile.{UserId, CosmosProfileDao}
+import es.tid.cosmos.api.profile._
 
 class ApiAuthControllerIT extends FlatSpec with MustMatchers {
 
   class TestController(override val dao: CosmosProfileDao) extends ApiAuthController {
     def index() = Action(parse.anyContent) { request =>
-      withApiAuth(request) { profile =>
-        Ok(s"handle=${profile.handle}")
-      }
+      for {
+        profile <- requireAuthenticatedApiRequest(request)
+      } yield Ok(s"handle=${profile.handle}")
     }
   }
 
-  def action(dao: CosmosProfileDao, request: Request[AnyContent]): Result =
+  def action(dao: CosmosProfileDao, request: Request[AnyContent]): Future[SimpleResult] =
     new TestController(dao).index().apply(request)
 
   val request: Request[AnyContent] = FakeRequest(GET, "/some/path")
+  val registration = Registration("login", "ssh-rsa AAAA login@host", "login@host")
 
   "The API auth controller" must "not authorize when authorization header is missing" in
     new WithSampleUsers {
@@ -50,6 +54,17 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     contentAsString(response) must include ("malformed authorization header")
   }
 
+  it must "not authorize when credentials belong to a non-enabled user" in new WithSampleUsers {
+    val profile = dao.withConnection { implicit c =>
+      val userId = UserId("db000")
+      val profile = dao.registerUser(userId, registration)
+      dao.setUserState(profile.id, UserState.Disabled)
+      profile
+    }
+    val response = action(dao, authorizedRequest(profile.apiCredentials))
+    status(response) must be (UNAUTHORIZED)
+  }
+
   it must "return bad request when credentials are invalid" in new WithSampleUsers {
     val response = action(dao, authorizedRequest(ApiCredentials.random()))
     status(response) must be (UNAUTHORIZED)
@@ -59,8 +74,8 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
   it must "succeed when credentials are valid" in new WithSampleUsers {
     val profile = dao.withConnection { implicit c =>
       val userId = UserId("db000")
-      dao.registerUserInDatabase(userId, Registration("login", "pk"))
-      dao.lookupByUserId(userId).get
+      val profile = dao.registerUser(userId, registration)
+      profile
     }
     val response = action(dao, authorizedRequest(profile.apiCredentials))
     status(response) must be (OK)
@@ -74,11 +89,17 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     contentAsString(response) must include (s"handle=${regUser.handle}")
   }
 
+  it must "not authorize when the user having a session is not enabled" in new WithSampleSessions {
+    val response = action(dao, FakeRequest(GET, "/some/path")
+      .withSession(disabledUser.session.data.toSeq: _*))
+    status(response) must be (UNAUTHORIZED)
+  }
+
   it must "have preference for authorization header over user session" in
     new WithSampleUsers with WithSampleSessions {
       val apiCredsProfile = dao.withConnection { implicit c =>
         val userId = UserId("db000")
-        dao.registerUserInDatabase(userId, Registration("login", "pk"))
+        dao.registerUser(userId, registration)
         dao.lookupByUserId(userId).get
       }
       val response = action(dao, authorizedRequest(apiCredsProfile.apiCredentials)

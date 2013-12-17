@@ -11,13 +11,14 @@
 
 package es.tid.cosmos.api.mocks
 
+import scala.language.implicitConversions
+
 import org.specs2.execute.{Result, AsResult}
 import play.api.test.FakeRequest
 
-import es.tid.cosmos.api.authorization.ApiCredentials
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.controllers.pages.{Registration, CosmosProfile}
-import es.tid.cosmos.api.profile.UserId
+import es.tid.cosmos.api.profile._
 
 class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(additionalConfiguration) {
@@ -25,12 +26,15 @@ class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   override def around[T: AsResult](t: => T): Result = {
     super.around {
       dao.withConnection { implicit c =>
-        dao.registerUserInDatabase(
-          UserId("tu1"), Registration("user1", "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA9L"))
-        dao.registerUserInDatabase(
-          UserId("tu2"), Registration("user2", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di"))
-        dao.registerUserInDatabase(
-          UserId("tu3"), Registration("user3", "ssh-rsa eYEAYQUKQE+xd0HNWz+d4+Y8Di"))
+        for (idx <- 1 to 3) {
+          val email = s"user$idx@host"
+          val registration = Registration(
+            handle = s"user$idx",
+            publicKey = s"ssh-rsa A3NzaC1yc2EAAAABIwAAAQEA9$idx $email",
+            email = email
+          )
+          dao.registerUser(UserId(s"tu$idx"), registration)
+        }
       }
       t
     }

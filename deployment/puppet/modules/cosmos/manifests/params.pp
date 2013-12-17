@@ -25,8 +25,8 @@ class cosmos::params (
   $ambari_user             = 'admin',
   $ambari_password         = 'admin',
   $ambari_init_period      = '5',
-  $ambari_refresh_period   = '30',
   $libvirt_version         = '1.0.5-1.el6',
+  $ntp_server              = 'ntp-server.hi.inet',
   $openvz_rplcements_dir   = '/tmp/replacements',
   $openvz_targz_path       = '/tmp/replacements/centos-6-x86_64.tar.gz',
   $openvz_vzkernel_version = '2.6.32-042stab079.6',
@@ -72,7 +72,8 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $domain,
   $infinity_url,
   $pdihub_client_id,
-  $pdihub_client_secret
+  $pdihub_client_secret,
+  $horizon_password
 ) {
   $cosmos_public_key       = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename     = 'cosmos-py2.7.egg'

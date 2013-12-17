@@ -25,6 +25,7 @@ cosmos::params::master_hostname: 'cosmos'
 cosmos::params::infinity_url: 'hdfs://orion-infinity.hi.inet'
 cosmos::params::pdihub_client_id: 'e2c65e49dd037825a147'
 cosmos::params::pdihub_client_secret: '79eb025adcce237a0198614efef91f8edb4a527d'
+cosmos::params::horizon_password: 'horizon!!'
 cosmos::openvz::network::host_iface: 'bond0.1'
 slave_hosts:
     - 'orion02'

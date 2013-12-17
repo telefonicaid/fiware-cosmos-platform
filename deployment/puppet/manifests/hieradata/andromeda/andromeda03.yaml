@@ -9,10 +9,11 @@
 # All rights reserved.
 #
 
+cosmos::slave::rack: "rack01"
 cosmos::slave::ip: "192.168.63.13"
 cosmos::slave::ct_ip: "192.168.63.77"
 cosmos::slave::ct_hostname: "andromeda-compute03"
-cosmos::slave::hardware_profile: 1
+cosmos::slave::hardware_profile: g1-compute
 cosmos::slave::name: "Andromeda 03"
 cosmos::slave::ram: 32768
 cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCum9cdWGct27Vj/gE8CgHPOASV4utGjgfGfZ90ZDDAql2VapNeIugVAZ1zh7ruBVHGC6UnDTWR7fjT7rBQVY4JVaqoOBvef1FSJ2aGBAmDxVKLHXOcw4Bk2jemWHEh51ZDuJlQoK1QoS1UpPcxcjM76cdyKqB1wk5+WPPlkPzsAoNhr66jYGzl+8OW0RLjLFKNcrS/Iak0cv7e8jkR/ij/0wsRjXGPC87NYppitVgGgm3UaPpxUM6inDP6yAzQHG80ESdLM74Yu7Tu1u2vtKul9vWJ+CHxHRPBBZsrZTfZRz7tXnlWpnEpW+ue2UJ6X1naaM5efJw7N8trgfS/L367"

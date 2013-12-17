@@ -1,0 +1,19 @@
+# This is the configuration file for Cosmos IAL
+# ~~~~~
+
+ial.root.ssh.private_key="""<%= @cosmos_private_key %>"""
+
+ial.libvirt.servers = [
+<% scope.function_hiera(["slave_hosts"]).each_with_index do |@host, @index| -%>
+    {
+        name = "<%=scope.function_hiera(["cosmos::slave::name", nil, @host])%>",
+        description = "<%=scope.function_hiera(["cosmos::slave::name", nil, @host])%>",
+        enabled = true,
+        profile = "<%=scope.function_hiera(["cosmos::slave::hardware_profile", nil, @host])%>",
+        rack = "<%=scope.function_hiera(["cosmos::slave::rack", nil, @host])%>",
+        connection = "openvz+ssh://root@<%=scope.function_hiera(["cosmos::slave::ip", nil, @host])%>/system?socket=/var/run/libvirt/libvirt-sock",
+        domain_hostname = "<%=scope.function_hiera(["cosmos::slave::ct_hostname", nil, @host])%><%=@domain%>"
+        domain_ipaddress = "<%=scope.function_hiera(["cosmos::slave::ct_ip", nil, @host])%>"
+    }<% if scope.function_hiera(["slave_hosts"]).length != @index + 1 %>,<% end %>
+<% end -%>
+]

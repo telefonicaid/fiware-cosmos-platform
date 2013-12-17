@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.api.controllers.common
 
-abstract class AuthError(message: String) extends Throwable(message)
+abstract class AuthError(val message: String)
 case object MalformedAuthHeader extends AuthError(
   s"Invalid API credentials: malformed authorization header")
-case object MissingAuthHeader extends AuthError("Missing authorization header")
+case object MissingAuthentication extends AuthError("Missing authorization header")
 case object InvalidAuthCredentials extends AuthError("Invalid API credentials")

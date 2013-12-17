@@ -31,6 +31,7 @@ class JnaLibVirtServerIT extends FlatSpec with MustMatchers with BeforeAndAfter 
         name = "Test",
         description = "Test libvirt Server",
         MachineProfile.G1Compute,
+        rack = "rack01",
         connectionChain =
           "openvz+ssh://cosmos@192.168.63.12/system?socket=/var/run/libvirt/libvirt-sock",
         domainHostname = "andromeda52",

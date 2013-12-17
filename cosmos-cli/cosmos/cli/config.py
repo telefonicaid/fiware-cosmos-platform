@@ -11,21 +11,20 @@
 #
 """Configuration handling"""
 
-import logging as log
-import os
-import os.path as p
+import os.path
 import sys
 
 from pymlconf import ConfigManager
 import yaml
 
 from cosmos.cli.util import ExitWithError
+import cosmos.cli.home_dir as home_dir
 
 
 CONFIG_SETTINGS = [dict(
     key='api_url',
     description='Base API URL',
-    default='http://localhost:9000/cosmos/v1'
+    default='https://cosmos.hi.inet/cosmos/v1'
 ), dict(
     key='api_key',
     description='API key',
@@ -36,10 +35,13 @@ CONFIG_SETTINGS = [dict(
     key='ssh_command',
     description='SSH command',
     default='ssh'
+), dict(
+    key='ssh_key',
+    description='SSH identity key (empty for the default one)',
+    default=''
 )]
 DEFAULT_CONFIG = dict([(setting['key'], setting['default'])
-                       for setting in CONFIG_SETTINGS
-                       if setting.has_key('default')])
+                       for setting in CONFIG_SETTINGS if 'default' in setting])
 
 
 def default_config_path():
@@ -49,30 +51,38 @@ def default_config_path():
     >>> "cosmosrc" in default_config_path()
     True
     """
-    if os.name == "nt" and os.getenv("USERPROFILE"):
-        return p.join(os.getenv("USERPROFILE").decode("mbcs"),
-                      "Application Data", "cosmosrc.yaml")
-    else:
-        return p.expanduser("~/.cosmosrc")
+    return home_dir.get().get_default_config_filename()
 
 
 def load_config(args):
     """Tries to load the configuration file or throws ExitWithError."""
-    filename = args.config_file if args.config_file else default_config_path()
-    log.info("Loading config from %s", filename)
+    config = ConfigManager(DEFAULT_CONFIG)
+    config_dir = home_dir.get()
     try:
-        config = ConfigManager(DEFAULT_CONFIG, files=[filename])
+        if args.config_file is not None:
+            filename_override = os.path.abspath(args.config_file)
+        else:
+            filename_override = None
+        config_contents = config_dir.read_config_file(filename_override)
+        config.merge(ConfigManager(config_contents))
     except Exception as ex:
-        print "Error reading configuration from %s: %s" % (
-            filename, ex.message)
-        config = ConfigManager(DEFAULT_CONFIG)
+        print "Error reading configuration: %s" % ex.message
     if not 'api_key' in config.keys() or not 'api_secret' in config.keys():
         raise ExitWithError(
             -1, ("Cosmos command is unconfigured. Use '%s configure' to " +
                  "create a valid configuration or use --config-file with a " +
                  "valid configuration file") % sys.argv[0])
     config.credentials = (config.api_key, config.api_secret)
+    strip_config(config)
     return config
+
+
+def strip_config(config):
+    """Strips all strings in a config"""
+    for key in dir(config):
+        value = getattr(config, key)
+        if type(value) == str:
+            setattr(config, key, value.strip())
 
 
 def with_config(command):
@@ -97,24 +107,11 @@ def ask_for_setting(config, setting):
     config[setting['key']] = answer
 
 
-def ask_binary_question(question, default_answer=False):
-    """Interactively asks a Y/N question on the console."""
-    answer_text = "Y" if default_answer else "N"
-    answer = raw_input("%s [%s]: " % (question, answer_text))
-    return answer.lower() in ("y", "yes")
-
-
 def command(args):
     """Create a configuration file by asking for the settings"""
     config = ConfigManager(DEFAULT_CONFIG)
-    for setting in CONFIG_SETTINGS:
-        ask_for_setting(config, setting)
-    filename = default_config_path()
-    if p.exists(filename) and not ask_binary_question(
-        "%s already exists. Overwrite?" % filename):
-        return 0
-    with open(filename, 'w') as outfile:
-        outfile.write(yaml.dump(dict(config.items()),
-                                default_flow_style=False))
-    print "Settings saved in %s" % filename
+    for setting_dict in CONFIG_SETTINGS:
+        ask_for_setting(config, setting_dict)
+    contents = yaml.dump(dict(config.items()), default_flow_style=False)
+    home_dir.get().write_config_file(contents)
     return 0

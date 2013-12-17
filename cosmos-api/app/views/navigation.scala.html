@@ -1,4 +1,4 @@
-@(current: String)
+@(current: String, tabs: Seq[views.NavTab])
 @import es.tid.cosmos.api.controllers.pages
 @*
  * Telefónica Digital - Product Development and Innovation
@@ -11,16 +11,13 @@
  * All rights reserved.
  *@
 <ul id="headernav">
-    @for((id, name, link) <- Seq(
-        ("profile", "Profile", pages.routes.Pages.showProfile()),
-        ("getting-started", "Getting started", pages.routes.Pages.customGettingStarted()))) {
-
-        @if(current == id) {
+    @for(tab <- tabs) {
+        @if(current == tab.id) {
             <li class="current">
         } else {
             <li>
         }
-        <a href="@link">@name</a></li>
+        <a href="@tab.link">@tab.name</a></li>
     }
     <li><a href="@pages.routes.Pages.logout()">Logout</a></li>
 </ul>

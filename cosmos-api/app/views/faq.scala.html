@@ -1,0 +1,74 @@
+@(tabs: Option[Seq[views.NavTab]])(implicit request: RequestHeader)
+@import es.tid.cosmos.api.controllers.pages
+<!--
+ Telefónica Digital - Product Development and Innovation
+
+ THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+
+ Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ All rights reserved.
+ -->
+@main("Cosmos FAQ") {
+    <link rel="stylesheet" media="screen"
+          href="@routes.Assets.at("third-party/gh-fork-ribbon/gh-fork-ribbon.css")">
+    <!--[if IE]>
+        <link rel="stylesheet" media="screen"
+              href="@routes.Assets.at("third-party/gh-fork-ribbon/gh-fork-ribbon.ie.css")">
+    <![endif]-->
+} {
+    @if(tabs.isDefined) {
+        @navigation("faq", tabs.get)
+    } else {
+        <div class="github-fork-ribbon-wrapper right">
+            <div class="github-fork-ribbon">
+                <a href="@pages.routes.Pages.faq" title="Click to find out more">Beta version</a>
+            </div>
+        </div>
+    }
+
+    <h1 class="page-title">Frequently Asked Questions (FAQ)</h1>
+
+        <h3>What is Cosmos?</h3>
+        <p>Cosmos is an on-demand, big data platform for internal Telef&oacute;nica consumption.
+            You can create and destroy Hadoop clusters to perform computations and store your data
+            in Infinity, our persistent storage solution.</p>
+
+        <h3>What services do Cosmos clusters support?</h3>
+        <p>All clusters contain HDFS and MapReduce pre-installed. You are able to choose extra
+            services when creating the cluster. We currently support Hive, Pig, Oozie and Sqoop as
+            additional services.</p>
+
+        <h3>There is a product in the Hadoop ecosystem which isn't supported by Cosmos. What can I
+            do?</h3>
+        <p>Contact us at <a href="mailto:cosmos@@tid.es">cosmos@@tid.es</a>! We are happy to add our
+            user's requests to our backlog and we strive to provide a quick turnaround.</p>
+
+        <h3>I am trying to create a cluster but it keeps telling me there are no resources
+            left!</h3>
+        <p>Cosmos is a service in high demand, so it is not uncommon for all our machines to be in
+            use. Since our first release we have more than doubled the compute capacity of the
+            platform and we keep adding more machines as our budget lets us.</p>
+
+        <h3>I would like to guarantee a certain number of machines for my team. Is that
+            possible?</h3>
+        <p>Sure! You can buy machines for our pool and we will guarantee your team a minimum amount
+        of compute power.</p>
+
+        <h3>Is Cosmos a secure environment?</h3>
+        <p>No. Hadoop is an insecure by default product and Cosmos currently does not provide the
+            extra layer of security Hadoop requires.</p>
+
+        <h3>Does this mean my data is not private?</h3>
+        <p>Correct. Data stored either in a Cosmos cluster or in Infinity can be accessed by anyone
+            who can access the Cosmos frontend page.</p>
+
+        <h3>Are there any plans to add access security to the platform?</h3>
+        <p>Yes. We are evaluating different options to add this feature to the platform.</p>
+
+        <h3>I've been added to a colleague's cluster but <tt>cosmos ssh</tt> doesn't let me in.</h3>
+        <p>This is a known bug to be fixed on the next release. Meanwhile ask the cluster owner
+            for the master node (available by running <tt>cosmos show [cluster-id]</tt>) and use the
+            ssh command by yourself.</p>
+}

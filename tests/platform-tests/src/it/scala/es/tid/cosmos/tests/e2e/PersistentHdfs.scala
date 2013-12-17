@@ -12,6 +12,7 @@
 package es.tid.cosmos.tests.e2e
 
 import java.io.File
+import scala.language.postfixOps
 import scala.sys.process._
 
 import org.scalatest.matchers.MustMatchers

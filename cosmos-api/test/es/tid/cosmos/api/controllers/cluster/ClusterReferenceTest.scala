@@ -19,17 +19,19 @@ import play.api.libs.json.Json
 
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.api.profile.ClusterAssignment
+import es.tid.cosmos.servicemanager.clusters.{Provisioning, ClusterId, ClusterDescription}
 
 class ClusterReferenceTest extends FlatSpec with MustMatchers {
 
   object TestDescription extends ClusterDescription {
     override val id = ClusterId("clusterId")
     override val name = "clusterName"
-    override val size = 10
     override val state = Provisioning
-    override def nameNode_> = throw new NotImplementedError()
-    override def master_> = throw new NotImplementedError()
-    override def slaves_> = throw new NotImplementedError()
+    override def size = throw new NotImplementedError()
+    override def nameNode = throw new NotImplementedError()
+    override def master = throw new NotImplementedError()
+    override def slaves = throw new NotImplementedError()
+    override def users = throw new NotImplementedError()
   }
 
   "A cluster reference" must ("be composed of cluster description and assignment" +

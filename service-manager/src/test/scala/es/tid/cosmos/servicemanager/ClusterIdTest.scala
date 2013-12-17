@@ -13,6 +13,7 @@ package es.tid.cosmos.servicemanager
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 /**
  * @author sortega

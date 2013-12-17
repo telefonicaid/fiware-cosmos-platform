@@ -15,16 +15,19 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
-import es.tid.cosmos.api.controllers.pages.NamedKey
+import es.tid.cosmos.api.profile.NamedKey
 
 class UserProfileTest extends FlatSpec with MustMatchers {
 
-  val profile1 = UserProfile("user1", List(NamedKey("key", "ssh-rsa sig user1@example.com")))
+  val email = "user1@example.com"
+  val signature = s"ssh-rsa sig $email"
+  val profile1 = UserProfile("user1", email, List(NamedKey("key", signature)))
   val profile1InJson = Json.obj(
     "handle" -> "user1",
+    "email" -> email,
     "keys" -> Json.arr(Json.obj(
       "name" -> "key",
-      "signature" -> "ssh-rsa sig user1@example.com"
+      "signature" -> signature
     ))
   )
 
@@ -33,7 +36,7 @@ class UserProfileTest extends FlatSpec with MustMatchers {
   }
 
   it must "sort keys by name" in {
-    val profile = UserProfile("user1", List(
+    val profile = UserProfile("user1", "a@example.com", List(
       NamedKey("key3", "ssh-rsa sig_a a@example.com"),
       NamedKey("key1", "ssh-rsa sig_b b@example.com"),
       NamedKey("key2", "ssh-rsa sig_c c@example.com")

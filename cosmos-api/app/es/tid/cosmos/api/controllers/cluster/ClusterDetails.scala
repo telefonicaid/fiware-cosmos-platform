@@ -87,7 +87,7 @@ object ClusterDetails {
       optionalField("master" -> d.master) ++ optionalField("slaves" -> d.slaves)
 
     private def usersInfo(d: ClusterDetails) =
-      optionalField("users" -> d.users.map(_.filter(_.sshEnabled)))
+      optionalField("users" -> d.users.map(_.filter(_.isEnabled)))
 
     private def optionalField[T: Writes](pair: (String, Option[T])) = pair match {
       case (key, Some(value)) => Json.obj(key -> value)

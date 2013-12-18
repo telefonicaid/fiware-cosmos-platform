@@ -7,6 +7,8 @@ scalaVersion in ThisBuild := "2.10.2"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
 
+addCommandAlias("run-local-it", ";it:compile ;it:test-only * -- -l \"HasExternalDependencies EndToEndTest\"")
+
 resolvers in ThisBuild ++= Seq(
     DefaultMavenRepository,
     "Cosmos Nexus Repository" at "http://cosmos10/nexus/content/groups/public/",

@@ -11,22 +11,23 @@
 
 package es.tid.cosmos.api.controllers.storage
 
-import java.net.URI
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, Json}
 import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.mocks.WithSampleUsers
-import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 
 class StorageResourceIT
   extends FlatSpec with MustMatchers with OneInstancePerTest with MaintenanceModeBehaviors {
 
   val request = FakeRequest(GET, "/cosmos/v1/storage")
+  val clusterCreationTimeout = 2 seconds
 
   "The storage resource" must "be unavailable when no service is active" in new WithSampleUsers {
     val result = route(request.authorizedBy(user1)).get
@@ -34,14 +35,16 @@ class StorageResourceIT
   }
 
   it must "provide the WebHDFS connection details" in new WithSampleUsers {
-    services.serviceManager().deployPersistentHdfsCluster()
+    Await.ready(services.serviceManager().deployPersistentHdfsCluster(), clusterCreationTimeout)
+    val persistentHdfsCluster = services.serviceManager().describePersistentHdfsCluster().get
     val result = route(request.authorizedBy(user1)).get
     status(result) must be (OK)
-    val jsonBody = Json.parse(contentAsString(result))
-    Json.fromJson[WebHdfsConnection](jsonBody).get must be (WebHdfsConnection(
-      location = new URI("web" + MockedServiceManager.PersistentHdfsUrl),
-      user = "user1"
-    ))
+    val jsonBody = contentAsJson(result)
+    val conn = Json.fromJson[WebHdfsConnection](jsonBody)
+    conn must not be JsError
+    conn.get.location.getScheme must be ("webhdfs")
+    conn.get.location.getHost must be (persistentHdfsCluster.master.get.ipAddress)
+    conn.get.user must be ("user1")
   }
 
   it must "reject unauthenticated requests" in new WithSampleUsers {

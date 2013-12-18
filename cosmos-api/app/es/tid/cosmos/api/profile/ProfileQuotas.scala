@@ -97,12 +97,21 @@ class ProfileQuotas(
     private def validate(quota: Quota, size: Int, errorMessage: String): ValidationNel[String, Int] =
       if (quota.withinQuota(size)) size.successNel[String] else errorMessage.failureNel[Int]
 
-    private def usedMachinesByGroups(groups: Set[Group]): Map[Group, Int] =
-      (for {
+    private def usedMachinesByGroups(groups: Set[Group]): Map[Group, Int] = {
+      val groupsToUsedMachines: Set[(Group, Int)] = for {
         group <- groups
-        groupProfiles = lookupByGroup(group)
-        usedMachinesForGroup = groupProfiles.map(usedMachinesForActiveClusters).sum
-      } yield group -> usedMachinesForGroup).toMap
+        groupProfiles: Set[CosmosProfile] = lookupByGroup(group)
+        /*
+         * groupProfiles.toSeq necessary so that map transformation does not give a set which
+         * would discard machine sizes of the same number.
+         */
+        usedMachinesForGroupProfiles: Seq[Int] = groupProfiles.toSeq.map(
+          usedMachinesForActiveClusters)
+        usedMachinesForGroup = usedMachinesForGroupProfiles.sum
+      } yield group -> usedMachinesForGroup
+
+      groupsToUsedMachines.toMap
+    }
 
     private def usedMachinesForActiveClusters(profile: CosmosProfile): Int =
       (for {

@@ -197,6 +197,49 @@ class ProfileQuotasTest extends FlatSpec
     }
   }
 
+  /* Regression test for issue https://pdihub.hi.inet/Cosmos/cosmos-platform/issues/1506 */
+  it must "correctly sum number of used machines among profiles of same group " +
+    "even if some profiles have the same number of used machines" in {
+    val aGroup = GuaranteedGroup("groupOf2", Quota(12))
+    val (noGroupUser1, noGroupUser2) = (
+      ProfileWithClusters(1, NoGroup, Seq(2, 1, 1)),
+      ProfileWithClusters(2, NoGroup, Seq(2, 2))
+      // 8 used machines
+    )
+    val (groupOf2User1, groupOf2User2) = (
+      ProfileWithClusters(3, aGroup, Seq(3, 2)),
+      ProfileWithClusters(4, aGroup, Seq(2, 1, 2))
+      // 10 used machines
+   )
+    val groupContexts: GroupContexts = Map[Group, Set[ProfileWithClusters]](
+      NoGroup -> Set(noGroupUser1, noGroupUser2),
+      aGroup -> Set(groupOf2User1, groupOf2User2)
+    )
+
+    val quotas = new ProfileQuotas(
+      machinePoolSize = 22,
+      groups = Set(NoGroup, aGroup),
+      lookupByGroup = groupContexts.groupsToProfiles,
+      listClusters = groupContexts.profilesToClusters
+    )
+
+    // 22 - 18 used = 4 available
+    // groupOf2 10 used 12 reserved.
+    // 2 available for NoGroup
+    // 4 available for groupOf2
+    quotas.withinQuota(noGroupUser1.profile, 2) must (beSuccessful and haveValidValue(2))
+    quotas.withinQuota(noGroupUser1.profile, 3) must haveFailures(
+      "Quota exceeded for group [No Group].",
+      "You can request up to 2 machine(s) at this point."
+    )
+
+    quotas.withinQuota(groupOf2User1.profile, 4) must (beSuccessful and haveValidValue(4))
+    quotas.withinQuota(groupOf2User1.profile, 5) must haveFailures(
+      "Quota exceeded for group [groupOf2].",
+      "You can request up to 4 machine(s) at this point."
+    )
+  }
+
   case class Context(
     groupUsage: Map[Group, Int],
     userGroup: Group,
@@ -218,35 +261,23 @@ class ProfileQuotasTest extends FlatSpec
      */
     def ensureThat(test: (ProfileQuotas, CosmosProfile) => Unit) {
       import scalaz.Scalaz._
-      val groupProfiles = (for ((group, id) <- groupUsage.keys zip (1 to groupUsage.size)) yield {
-        val quota = if (group == userGroup) personalMaxQuota else UnlimitedQuota
-        val profile = CosmosProfile(
-          id,
-          state = Enabled,
-          handle = s"handle$id",
-          email = "user@example.com",
-          ApiCredentials.random(),
-          keys = Nil,
-          group,
-          quota,
-          capabilities = UntrustedUserCapabilities
-        )
-        group -> Set(profile)
-      }).toMap
 
-      val groupClusters = groupUsage.map {
-        case (group, used) =>
-          groupProfiles(group).head -> List(clusterReference(used, pickAnyOne(ActiveStates)))
-      } |+| extraClusters.mapKeys(groupProfiles(_).head)
+      val groupContexts: GroupContexts =
+        (for (((group, usage), index) <- groupUsage.zipWithIndex) yield {
+          val profileQuota = if (group == userGroup) personalMaxQuota else UnlimitedQuota
+          group -> Set(ProfileWithClusters(index, group, Seq(usage), profileQuota))
+        }).toMap
+
+      val extraProfilesToClusters = extraClusters.mapKeys(groupContexts.groupsToProfiles(_).head)
 
       val quotas = new ProfileQuotas(
         machinePoolSize = machinePool,
         groups = groupUsage.keys.toSet,
-        lookupByGroup = groupProfiles,
-        listClusters = groupClusters
+        lookupByGroup = groupContexts.groupsToProfiles,
+        listClusters = groupContexts.profilesToClusters |+| extraProfilesToClusters
       )
 
-      test(quotas, groupProfiles(userGroup).head)
+      test(quotas, groupContexts.groupsToProfiles(userGroup).head)
     }
   }
 
@@ -274,5 +305,35 @@ class ProfileQuotasTest extends FlatSpec
     val reference = mock[ClusterReference]
     given(reference.description).willReturn(description)
     reference
+  }
+
+  private type GroupContexts = Map[Group, Set[ProfileWithClusters]]
+
+  private case class ProfileWithClusters(
+      profileId: Long, group: Group, clusterSizes: Seq[Int], profileQuota: Quota = UnlimitedQuota) {
+
+    val profile: CosmosProfile = CosmosProfile(
+      profileId,
+      state = Enabled,
+      handle = s"handle$profileId",
+      email = "user@example.com",
+      ApiCredentials.random(),
+      keys = Nil,
+      group,
+      quota = profileQuota,
+      capabilities = UntrustedUserCapabilities
+    )
+
+    val clusters: Seq[ClusterReference] = clusterSizes.map(
+      size => clusterReference(size, pickAnyOne(ActiveStates))
+    )
+  }
+
+  implicit private class GroupsToProfileWithClustersOps(thiz: GroupContexts) {
+
+    val groupsToProfiles: Map[Group, Set[CosmosProfile]] = thiz.mapValues(pwc => pwc.map(_.profile))
+
+    val profilesToClusters: Map[CosmosProfile, List[ClusterReference]] =
+      thiz.values.flatten.map(pwc => pwc.profile -> pwc.clusters.toList).toMap
   }
 }

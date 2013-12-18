@@ -63,7 +63,9 @@ class MockedServiceManager(transitionDelay: Int) extends ServiceManager {
         nameNode_ = Some(new URI(s"hdfs://10.0.0.${Random.nextInt(256)}:8084"))
         master_ = Some(HostDetails("fakeHostname", "fakeAddress"))
         slaves_ = (1 to (size-1)).map(i => HostDetails(s"fakeHostname$i", s"fakeAddress$i"))
-        users_ = Some(Set(ClusterUser("jsmith", "jsmith-public-key")))
+        users_ = Some(Set(
+          ClusterUser("user2", "jsmith-public-key"),
+          ClusterUser.disabled("user3", "jdoe-public-key")))
       }
     }
 

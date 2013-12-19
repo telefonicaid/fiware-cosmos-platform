@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.servicemanager.util
 
+import com.jcraft.jsch.{KeyPairRSA, KeyPair, JSch}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
@@ -25,6 +26,13 @@ class SshKeyGeneratorTest extends FlatSpec with MustMatchers {
     keysMustHaveCorrectContent(keys1a, "user1", "host")
     keysMustHaveCorrectContent(keys1b, "user1", "host")
     keysMustHaveCorrectContent(keys2, "user2", "host")
+  }
+
+  it must "create keys of size 2048 bits" in {
+    val keys = SshKeyGenerator.newKeys("user1", "host")
+    val generator = new JSch()
+    val pair = KeyPair.load(generator, keys.privateKey.getBytes, keys.publicKey.getBytes)
+    pair.asInstanceOf[KeyPairRSA].getKeySize must equal(2048)
   }
 
   def keysMustHaveCorrectContent(keys: SshKeys, username: String, host: String) {

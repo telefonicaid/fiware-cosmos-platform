@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.wizards
 
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import scalaz.Failure
 
@@ -36,9 +36,11 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
   val failedFuture: Future[Unit] = Future.failed(failure)
 
   trait WithWizard {
-    val sm = spy(new MockedServiceManager(transitionDelay = 0))
+    val sm = spy(new MockedServiceManager(transitionDelay = 0 seconds))
     val dao = spy(new MockCosmosProfileDao())
     val wizard = new UserUnregistrationWizard(sm)
+
+    Await.ready(sm.deployPersistentHdfsCluster(), timeout)
   }
 
   trait WithExistingUser extends WithWizard {
@@ -62,7 +64,7 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
   trait WithUserWithCluster extends WithExistingUser {
     val clusterId = sm.createCluster(
       name = "cluster1",
-      clusterSize = 1000,
+      size = 1000,
       serviceDescriptions = Seq.empty,
       users = Seq.empty,
       preConditions = UnfilteredPassThrough

@@ -72,14 +72,16 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   }
 
   it must "register unregistered users" in new WithSampleSessions {
-    val response = unregUser.submitForm("/register",
-      "handle" -> "newuser",
-      "email" -> "jsmith@example.com",
-      "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
-    val contents = contentAsString(response)
-    response must redirectTo ("/")
-    dao.withConnection { implicit c =>
-      dao.lookupByUserId(unregUser.userId) must be ('defined)
+    withPersistentHdfsDeployed {
+      val response = unregUser.submitForm("/register",
+        "handle" -> "newuser",
+        "email" -> "jsmith@example.com",
+        "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
+      val contents = contentAsString(response)
+      response must redirectTo ("/")
+      dao.withConnection { implicit c =>
+        dao.lookupByUserId(unregUser.userId) must be ('defined)
+      }
     }
   }
 

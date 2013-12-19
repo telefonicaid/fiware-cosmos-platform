@@ -12,57 +12,36 @@
 package es.tid.cosmos.api.controllers
 
 import scala.Some
+import scala.concurrent.duration._
 
 import org.scalatest.FlatSpec
-import org.scalatest.matchers.MustMatchers
-import play.api.libs.json.Json
+import org.scalatest.matchers.{Matcher, MatchResult, MustMatchers}
+import play.api.libs.json._
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.controllers.ResultMatchers.failWith
 import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.mocks.servicemanager.{MockedServiceManagerComponent, MockedServiceManager}
-import es.tid.cosmos.servicemanager.clusters.{Terminated, Terminating, ClusterId}
+import es.tid.cosmos.api.test.matchers.JsonMatchers
+import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.ClusterUser
+import scala.concurrent.Await
 
 class ClusterIT
-  extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
+  extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors
+  with JsonMatchers {
 
-  val resourcePath = s"/cosmos/v1/cluster/${MockedServiceManager.DefaultClusterId}"
-  val provisioningResourcePath = s"/cosmos/v1/cluster/${MockedServiceManager.InProgressClusterId}"
+  import MockedServiceManager.DefaultClusterProps
+  import MockedServiceManager.InProgressClusterProps
+
+  val runningClusterPath = s"/cosmos/v1/cluster/${DefaultClusterProps.id}"
+  val provisioningClusterPath = s"/cosmos/v1/cluster/${InProgressClusterProps.id}"
   val unknownClusterId = ClusterId()
-  val unknownResourcePath = s"/cosmos/v1/cluster/$unknownClusterId"
-  val completeDescription = Json.obj(
-      "href" -> s"http://$resourcePath",
-      "id" -> MockedServiceManager.DefaultClusterId.toString,
-      "name" -> "cluster0",
-      "size" -> 10,
-      "state" -> "running",
-      "stateDescription" -> "Cluster is ready",
-      "master" -> Json.obj(
-        "hostname" -> "fakeHostname",
-        "ipAddress" -> "fakeAddress"
-      ),
-      "slaves" -> (1 to 9).map(i => Json.obj(
-        "hostname" -> s"fakeHostname$i",
-        "ipAddress" -> s"fakeAddress$i"
-      )),
-      "users" -> Seq(
-        Json.obj(
-          "username" -> "user2",
-          "sshPublicKey" -> "jsmith-public-key",
-          "isSudoer" -> false
-      ))
-    )
-  val partialDescription = Json.obj(
-    "href" -> s"http://$provisioningResourcePath",
-    "id" -> MockedServiceManager.InProgressClusterId.toString,
-    "name" -> "clusterInProgress",
-    "size" -> 10,
-    "state" -> "provisioning",
-    "stateDescription" -> "Cluster is acquiring and configuring resources"
-  )
-  val clusterDetailsListing = FakeRequest(GET, resourcePath)
-  val clusterTermination = FakeRequest(POST, s"$unknownResourcePath/terminate")
+  val unknownClusterPath = s"/cosmos/v1/cluster/$unknownClusterId"
+
+  val clusterDetailsListing = FakeRequest(GET, runningClusterPath)
+  val clusterTermination = FakeRequest(POST, s"$unknownClusterPath/terminate")
 
   "Cluster detail listing" must behave like
     rejectingUnauthenticatedRequests(clusterDetailsListing)
@@ -77,42 +56,55 @@ class ClusterIT
   "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
     new WithSampleUsers {
       dao.withConnection { implicit c =>
-        dao.assignCluster(MockedServiceManager.DefaultClusterId, user1.id)
-        Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay)
+        dao.assignCluster(DefaultClusterProps.id, user1.id)
+        Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay.toMillis)
         val resource = route(clusterDetailsListing.authorizedBy(user1)).get
         status(resource) must equal (OK)
         contentType(resource) must be (Some("application/json"))
-        val description = Json.parse(contentAsString(resource))
-        description must equal(completeDescription)
+        val description = contentAsJson(resource)
+        description must representClusterProperties(DefaultClusterProps)
+        description must representRunningCluster
       }
     }
 
   it must "list complete cluster details for users with SSH access" in new WithSampleUsers {
     dao.withConnection { implicit c =>
-      dao.assignCluster(MockedServiceManager.DefaultClusterId, user1.id)
-      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay)
+      val sm = services.serviceManager()
+      val clusterUser1 = ClusterUser.enabled(
+        username = user2.handle,
+        publicKey = user2.keys(0).signature
+      )
+      dao.assignCluster(DefaultClusterProps.id, user1.id)
+      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay.toMillis)
+      Await.ready(
+        sm.setUsers(DefaultClusterProps.id, sm.listUsers(DefaultClusterProps.id).get :+ clusterUser1),
+        2 seconds
+      )
       val resource = route(clusterDetailsListing.authorizedBy(user2)).get
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       val description = Json.parse(contentAsString(resource))
-      description must equal(completeDescription)
+      description must representClusterProperties(DefaultClusterProps.copy(
+        users = DefaultClusterProps.users + clusterUser1
+      ))
     }
   }
 
   it must "list partial cluster details on GET request" +
     " when cluster is still provisioning" in new WithSampleUsers {
     dao.withConnection { implicit c =>
-      dao.assignCluster(MockedServiceManager.InProgressClusterId, user1.id)
-      val resource = route(FakeRequest(GET, provisioningResourcePath).authorizedBy(user1)).get
+      dao.assignCluster(InProgressClusterProps.id, user1.id)
+      val resource = route(FakeRequest(GET, provisioningClusterPath).authorizedBy(user1)).get
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       val description = Json.parse(contentAsString(resource))
-      description must equal(partialDescription)
+      description must representClusterProperties(InProgressClusterProps)
+      description must representInProgressCluster
     }
   }
 
   it must "return 404 on unknown cluster" in new WithSampleUsers {
-    val resource = route(FakeRequest(GET, unknownResourcePath).authorizedBy(user1)).get
+    val resource = route(FakeRequest(GET, unknownClusterPath).authorizedBy(user1)).get
     status(resource) must equal (NOT_FOUND)
   }
 
@@ -123,8 +115,8 @@ class ClusterIT
 
   it must "reject with 401 when listing a cluster where the user was removed" in new WithSampleUsers {
     dao.withConnection { implicit c =>
-      dao.assignCluster(MockedServiceManager.DefaultClusterId, user1.id)
-      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay)
+      dao.assignCluster(DefaultClusterProps.id, user1.id)
+      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay.toMillis)
       val resource = route(clusterDetailsListing.authorizedBy(user3)).get
       status(resource) must equal (UNAUTHORIZED)
     }
@@ -142,9 +134,9 @@ class ClusterIT
 
   it must "terminate cluster" in new WithSampleUsers {
     dao.withConnection { implicit c =>
-      val clusterId = MockedServiceManager.DefaultClusterId
+      val clusterId = DefaultClusterProps.id
       dao.assignCluster(clusterId, user1.id)
-      val resource = route(FakeRequest(POST, s"$resourcePath/terminate").authorizedBy(user1)).get
+      val resource = route(FakeRequest(POST, s"$runningClusterPath/terminate").authorizedBy(user1)).get
       status(resource) must equal (OK)
       val cluster = services.serviceManager().describeCluster(clusterId).get
       cluster.state must (be (Terminating) or be (Terminated))
@@ -156,15 +148,15 @@ class ClusterIT
   }
 
   it must "reject cluster termination of non owned clusters" in new WithSampleUsers {
-    val resource = route(FakeRequest(POST, s"$resourcePath/terminate").authorizedBy(user1)).get
+    val resource = route(FakeRequest(POST, s"$runningClusterPath/terminate").authorizedBy(user1)).get
     status(resource) must equal (UNAUTHORIZED)
   }
 
   it must "be idempotent respect to cluster termination" in new WithSampleUsers {
     dao.withConnection { implicit c =>
-      val clusterId = MockedServiceManager.DefaultClusterId
+      val clusterId = DefaultClusterProps.id
       dao.assignCluster(clusterId, user1.id)
-      val terminateRequest= FakeRequest(POST, s"$resourcePath/terminate").authorizedBy(user1)
+      val terminateRequest= FakeRequest(POST, s"$runningClusterPath/terminate").authorizedBy(user1)
       for (_ <- 1 to 2) {
         status(route(terminateRequest).get) must equal (OK)
         val cluster = services.serviceManager().describeCluster(clusterId).get
@@ -172,4 +164,43 @@ class ClusterIT
       }
     }
   }
+
+  private object representAMachine extends Matcher[JsObject] {
+    def apply(js: JsObject) = MatchResult(
+      matches = js match {
+        case JsObject(Seq(("hostname", _), ("ipAddress", _))) => true
+        case _ => false
+      },
+      failureMessage = s"$js does not represent a valid machine",
+      negatedFailureMessage = s"$js represents a valid machine"
+    )
+  }
+
+  private object representAUser extends Matcher[JsObject] {
+    def apply(js: JsObject) = MatchResult(
+      matches = js match {
+        case JsObject(Seq(("username", _), ("sshPublicKey", _), ("isSudoer", _))) => true
+        case _ => false
+      },
+      failureMessage = s"$js does not represent a valid user",
+      negatedFailureMessage = s"$js represents a valid user"
+    )
+  }
+
+  private def representClusterProperties(props: MockedServiceManager.ClusterProperties) =
+    containsFieldWithValue("id", JsString(props.id.toString)) and
+      containsFieldWithUrl("href") and
+      containsFieldWithValue("name", JsString(props.name.toString)) and
+      containsFieldWithValue("size", JsNumber(props.size))
+
+  private val representRunningCluster =
+    containsFieldWithValue("state", JsString(Running.name)) and
+    containsFieldWithValue("stateDescription", JsString(Running.descLine)) and
+    containsFieldThatMust("master", representAMachine) and
+    containsFieldThatMust("slaves", beAnArrayWhoseElementsMust(representAMachine)) and
+    containsFieldThatMust("users", beAnArrayWhoseElementsMust(representAUser))
+
+  private val representInProgressCluster =
+    containsFieldWithValue("state", JsString(Provisioning.name)) and
+    containsFieldWithValue("stateDescription", JsString(Provisioning.descLine))
 }

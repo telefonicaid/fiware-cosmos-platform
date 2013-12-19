@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.mocks.servicemanager
 
+import scala.concurrent.duration._
+
 import org.mockito.Mockito.spy
 
 import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
@@ -21,5 +23,5 @@ trait MockedServiceManagerComponent extends ServiceManagerComponent {
 }
 
 object MockedServiceManagerComponent {
-  val TransitionDelay: Int = 1000
+  val TransitionDelay: FiniteDuration = 1 second
 }

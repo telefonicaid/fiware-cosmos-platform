@@ -27,6 +27,7 @@ import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import scala.concurrent.Await
 
 class UserRegistrationWizardIT
   extends FlatSpec with MustMatchers with MockitoSugar with FutureMatchers {
@@ -38,8 +39,10 @@ class UserRegistrationWizardIT
 
   trait WithUserRegistrationWizard {
     val dao = new MockCosmosProfileDao()
-    val sm = spy(new MockedServiceManager(transitionDelay = 0))
+    val sm = spy(new MockedServiceManager(transitionDelay = 0 milliseconds))
     val instance = new UserRegistrationWizard(sm)
+
+    Await.ready(sm.deployPersistentHdfsCluster(), testTimeout)
   }
 
   "User registration" must "create a new profile with the input data" in

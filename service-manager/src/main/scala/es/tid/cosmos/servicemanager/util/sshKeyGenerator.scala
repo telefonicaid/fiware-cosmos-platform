@@ -19,9 +19,9 @@ import com.jcraft.jsch.{KeyPair, JSch}
  * Utility for generating SSH keys.
  */
 object SshKeyGenerator {
-  private val charset = "US-ASCII"
-
-  private lazy val generator = new JSch()
+  private val Charset = "US-ASCII"
+  private val KeySizeInBits = 2048
+  private lazy val Generator = new JSch()
 
   /**
    * Create a new set of RSA-based keys. For the given user name it creates
@@ -33,15 +33,15 @@ object SshKeyGenerator {
    * @return the generated SSH keys
    */
   def newKeys(userName: String, authorizedHost: String): SshKeys = {
-    val pair = KeyPair.genKeyPair(generator, KeyPair.RSA)
+    val pair = KeyPair.genKeyPair(Generator, KeyPair.RSA, KeySizeInBits)
     val privateKeyStream = new ByteArrayOutputStream()
     val publicKeyStream = new ByteArrayOutputStream()
     pair.writePrivateKey(privateKeyStream)
     pair.writePublicKey(publicKeyStream, userName)
     pair.dispose()
     SshKeys(
-      privateKeyStream.toString(charset),
-      publicKeyStream.toString(charset),
+      privateKeyStream.toString(Charset),
+      publicKeyStream.toString(Charset),
       authorizedHost
     )
   }

@@ -147,7 +147,7 @@ class ClusterResource(
       id: String) = Action { implicit request =>
     for {
       profile <- requireAuthenticatedApiRequest(request)
-      cluster <- requireOwnedCluster(profile, ClusterId(id))
+      cluster <- requireSshAccessToCluster(profile, ClusterId(id))
     } yield Ok(Json.toJson(ClusterDetails(cluster)))
   }
 
@@ -250,6 +250,17 @@ class ClusterResource(
         ErrorMessage(ex.getMessage, ex)))
       case Failure(ex) => throw ex
     }
+  }
+
+  private def requireSshAccessToCluster(
+      profile: CosmosProfile, clusterId: ClusterId): ActionValidation[ClusterDescription] = {
+    import Scalaz._
+    requireThatOwner(profile, clusterId,
+      ifOwner = desc => desc.success,
+      ifNotOwner = desc => (for {
+        users <- desc.users
+        if users.exists(user => user.sshEnabled && (user.username == profile.handle))
+      } yield desc).toSuccess(unauthorizedAccessTo(clusterId)))
   }
 
   private def requireOwnedCluster(

@@ -78,7 +78,7 @@ class ProfileQuotas(
       val availableFromGroup = maxAvailableFromGroup(profile.group)
       val overallAvailable = Quota.min(availableFromProfile, availableFromGroup)
 
-      val profileValidation = validate(availableFromProfile, size, "Profile quota exceeded")
+      val profileValidation = validate(availableFromProfile, size, "Profile quota exceeded.")
       val groupValidation = validate(
         availableFromGroup, size, s"Quota exceeded for group [${profile.group.name}].")
       val overallValidation = validate(

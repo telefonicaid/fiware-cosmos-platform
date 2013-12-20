@@ -26,6 +26,7 @@ import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 /** A series of user sessions to test with users on different states and roles */
 trait WithSampleSessions extends WithTestApplication {
@@ -61,6 +62,12 @@ trait WithSampleSessions extends WithTestApplication {
       email = Some(email)
     )
     val session = Session().setUserProfile(userProfile).setToken("token")
+
+    def setAsOwner(cluster: ClusterId) = {
+      dao.withConnection { implicit c =>
+        dao.assignCluster(cluster, cosmosProfile.id)
+      }
+    }
 
     protected def buildCosmosProfile(): CosmosProfile =
       CosmosProfileTestHelpers.registerUser(handle)(dao)

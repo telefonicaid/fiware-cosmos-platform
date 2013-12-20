@@ -12,7 +12,6 @@
 package es.tid.cosmos.api.controllers
 
 import scala.Some
-import scala.concurrent.duration._
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{Matcher, MatchResult, MustMatchers}
@@ -21,148 +20,134 @@ import play.api.test.Helpers._
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.controllers.ResultMatchers.failWith
-import es.tid.cosmos.api.mocks.WithSampleUsers
-import es.tid.cosmos.api.mocks.servicemanager.{MockedServiceManagerComponent, MockedServiceManager}
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.test.matchers.JsonMatchers
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.ClusterUser
-import scala.concurrent.Await
 
 class ClusterIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors
   with JsonMatchers {
 
-  import MockedServiceManager.DefaultClusterProps
-  import MockedServiceManager.InProgressClusterProps
-
-  val runningClusterPath = s"/cosmos/v1/cluster/${DefaultClusterProps.id}"
-  val provisioningClusterPath = s"/cosmos/v1/cluster/${InProgressClusterProps.id}"
-  val unknownClusterId = ClusterId()
-  val unknownClusterPath = s"/cosmos/v1/cluster/$unknownClusterId"
-
-  val clusterDetailsListing = FakeRequest(GET, runningClusterPath)
-  val clusterTermination = FakeRequest(POST, s"$unknownClusterPath/terminate")
+  import MockedServiceManager._
 
   "Cluster detail listing" must behave like
-    rejectingUnauthenticatedRequests(clusterDetailsListing)
+    rejectingUnauthenticatedRequests(DefaultClusterProps.listDetailsRequest)
 
-  it must behave like enabledWhenUnderMaintenance(clusterDetailsListing)
+  it must behave like enabledWhenUnderMaintenance(DefaultClusterProps.listDetailsRequest)
 
   "Cluster termination" must behave like
-    rejectingUnauthenticatedRequests(clusterTermination)
+    rejectingUnauthenticatedRequests(DefaultClusterProps.terminateRequest)
 
-  it must behave like enabledOnlyForOperatorsWhenUnderMaintenance(clusterTermination)
+  it must behave like
+    enabledOnlyForOperatorsWhenUnderMaintenance(DefaultClusterProps.terminateRequest)
+
+  "Cluster user management" must behave like
+    rejectingUnauthenticatedRequests(DefaultClusterProps.addUserRequest("pepito"))
+
+  it must behave like
+    enabledOnlyForOperatorsWhenUnderMaintenance(DefaultClusterProps.addUserRequest("pepito"))
 
   "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
-    new WithSampleUsers {
-      dao.withConnection { implicit c =>
-        dao.assignCluster(DefaultClusterProps.id, user1.id)
-        Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay.toMillis)
-        val resource = route(clusterDetailsListing.authorizedBy(user1)).get
-        status(resource) must equal (OK)
-        contentType(resource) must be (Some("application/json"))
-        val description = contentAsJson(resource)
-        description must representClusterProperties(DefaultClusterProps)
-        description must representRunningCluster
-      }
-    }
-
-  it must "list complete cluster details for users with SSH access" in new WithSampleUsers {
-    dao.withConnection { implicit c =>
-      val sm = services.serviceManager()
-      val clusterUser1 = ClusterUser.enabled(
-        username = user2.handle,
-        publicKey = user2.keys(0).signature
-      )
-      dao.assignCluster(DefaultClusterProps.id, user1.id)
-      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay.toMillis)
-      Await.ready(
-        sm.setUsers(DefaultClusterProps.id, sm.listUsers(DefaultClusterProps.id).get :+ clusterUser1),
-        2 seconds
-      )
-      val resource = route(clusterDetailsListing.authorizedBy(user2)).get
+    new WithSampleSessions {
+      regUser.setAsOwner(DefaultClusterProps.id)
+      val resource = regUser.doRequest(DefaultClusterProps.listDetailsRequest)
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
-      val description = Json.parse(contentAsString(resource))
-      description must representClusterProperties(DefaultClusterProps.copy(
-        users = DefaultClusterProps.users + clusterUser1
-      ))
+      val description = contentAsJson(resource)
+      description must representClusterProperties(DefaultClusterProps)
+      description must representRunningCluster
     }
-  }
 
   it must "list partial cluster details on GET request" +
-    " when cluster is still provisioning" in new WithSampleUsers {
-    dao.withConnection { implicit c =>
-      dao.assignCluster(InProgressClusterProps.id, user1.id)
-      val resource = route(FakeRequest(GET, provisioningClusterPath).authorizedBy(user1)).get
-      status(resource) must equal (OK)
-      contentType(resource) must be (Some("application/json"))
-      val description = Json.parse(contentAsString(resource))
-      description must representClusterProperties(InProgressClusterProps)
-      description must representInProgressCluster
-    }
+    " when cluster is still provisioning" in new WithSampleSessions {
+    regUser.setAsOwner(InProgressClusterProps.id)
+    val resource = regUser.doRequest(InProgressClusterProps.listDetailsRequest)
+    status(resource) must equal (OK)
+    contentType(resource) must be (Some("application/json"))
+    val description = contentAsJson(resource)
+    description must representClusterProperties(InProgressClusterProps)
+    description must representInProgressCluster
   }
 
-  it must "return 404 on unknown cluster" in new WithSampleUsers {
-    val resource = route(FakeRequest(GET, unknownClusterPath).authorizedBy(user1)).get
+  it must "return 404 on unknown cluster" in new WithSampleSessions {
+    val resource = regUser.doRequest(UnknownClusterProps.listDetailsRequest)
     status(resource) must equal (NOT_FOUND)
   }
 
-  it must "reject with 401 when listing non-owned cluster" in new WithSampleUsers {
-    val resource = route(clusterDetailsListing.authorizedBy(user2)).get
+  it must "reject with 401 when listing non-owned cluster" in new WithSampleSessions {
+    val resource = regUser.doRequest(DefaultClusterProps.listDetailsRequest)
     status(resource) must equal (UNAUTHORIZED)
   }
 
-  it must "reject with 401 when listing a cluster where the user was removed" in new WithSampleUsers {
-    dao.withConnection { implicit c =>
-      dao.assignCluster(DefaultClusterProps.id, user1.id)
-      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay.toMillis)
-      val resource = route(clusterDetailsListing.authorizedBy(user3)).get
-      status(resource) must equal (UNAUTHORIZED)
-    }
-  }
-
-  it must "throw if the service manager has no associated information" in
-    new WithSampleUsers {
-      val clusterId = ClusterId()
-      dao.withConnection { implicit c =>
-        dao.assignCluster(clusterId, user1.id)
-      }
-      val resource = route(FakeRequest(GET, s"/cosmos/v1/cluster/$clusterId").authorizedBy(user1)).get
+  it must "throw if the service manager has no associated information" in new WithSampleSessions {
+      regUser.setAsOwner(UnknownClusterProps.id)
+      val resource = regUser.doRequest(UnknownClusterProps.listDetailsRequest)
       resource must failWith (classOf[IllegalStateException])
     }
 
-  it must "terminate cluster" in new WithSampleUsers {
-    dao.withConnection { implicit c =>
-      val clusterId = DefaultClusterProps.id
-      dao.assignCluster(clusterId, user1.id)
-      val resource = route(FakeRequest(POST, s"$runningClusterPath/terminate").authorizedBy(user1)).get
-      status(resource) must equal (OK)
-      val cluster = services.serviceManager().describeCluster(clusterId).get
+  it must "terminate cluster" in new WithSampleSessions {
+    regUser.setAsOwner(DefaultClusterProps.id)
+    val resource = regUser.doRequest(DefaultClusterProps.terminateRequest)
+    status(resource) must equal (OK)
+    val cluster = services.serviceManager().describeCluster(DefaultClusterProps.id).get
+    cluster.state must (be (Terminating) or be (Terminated))
+  }
+
+  it must "return 404 when terminating unknown clusters" in new WithSampleSessions {
+    status(regUser.doRequest(UnknownClusterProps.terminateRequest)) must equal (NOT_FOUND)
+  }
+
+  it must "reject cluster termination of non owned clusters" in new WithSampleSessions {
+    status(regUser.doRequest(DefaultClusterProps.terminateRequest)) must equal (UNAUTHORIZED)
+  }
+
+  it must "be idempotent respect to cluster termination" in new WithSampleSessions {
+    regUser.setAsOwner(DefaultClusterProps.id)
+    for (_ <- 1 to 2) {
+      status(regUser.doRequest(DefaultClusterProps.terminateRequest)) must equal (OK)
+      val cluster = services.serviceManager().describeCluster(DefaultClusterProps.id).get
       cluster.state must (be (Terminating) or be (Terminated))
     }
   }
 
-  it must "return 404 when terminating unknown clusters" in new WithSampleUsers {
-    status(route(clusterTermination.authorizedBy(user1)).get) must equal (NOT_FOUND)
+  it must "add a user to cluster" in new WithSampleSessions {
+    regUser.setAsOwner(DefaultClusterProps.id)
+    val rep = regUser.doRequest(DefaultClusterProps.addUserRequest(opUser.handle))
+    status(rep) must equal (OK)
+    val users = services.serviceManager().listUsers(DefaultClusterProps.id)
+    users must be ('defined)
+    users.get.exists(
+      usr => usr.username.equals(opUser.handle) && usr.isEnabled
+    ) must be (true)
   }
 
-  it must "reject cluster termination of non owned clusters" in new WithSampleUsers {
-    val resource = route(FakeRequest(POST, s"$runningClusterPath/terminate").authorizedBy(user1)).get
-    status(resource) must equal (UNAUTHORIZED)
+  it must "fail to add an already existing user" in new WithSampleSessions {
+    regUser.setAsOwner(DefaultClusterProps.id)
+    val rep1 = regUser.doRequest(DefaultClusterProps.addUserRequest(opUser.handle))
+    status(rep1) must equal (OK)
+
+    val rep2 = regUser.doRequest(DefaultClusterProps.addUserRequest(opUser.handle))
+    status(rep2) must equal (BAD_REQUEST)
   }
 
-  it must "be idempotent respect to cluster termination" in new WithSampleUsers {
-    dao.withConnection { implicit c =>
-      val clusterId = DefaultClusterProps.id
-      dao.assignCluster(clusterId, user1.id)
-      val terminateRequest= FakeRequest(POST, s"$runningClusterPath/terminate").authorizedBy(user1)
-      for (_ <- 1 to 2) {
-        status(route(terminateRequest).get) must equal (OK)
-        val cluster = services.serviceManager().describeCluster(clusterId).get
-        cluster.state must (be (Terminating) or be (Terminated))
-      }
-    }
+  it must "remove a user from cluster" in new WithSampleSessions {
+    regUser.setAsOwner(DefaultClusterProps.id)
+    status(regUser.doRequest(DefaultClusterProps.addUserRequest(opUser.handle)))
+
+    val rep = regUser.doRequest(DefaultClusterProps.removeUserRequest(opUser.handle))
+    status(rep) must equal (OK)
+    val users = services.serviceManager().listUsers(DefaultClusterProps.id)
+    users must be ('defined)
+    users.get.exists(
+      usr => usr.username.equals("pocahontas") && usr.isEnabled
+    ) must be (false)
+  }
+
+  it must "fail to remove the owner of the cluster" in new WithSampleSessions {
+    regUser.setAsOwner(DefaultClusterProps.id)
+    val rep = regUser.doRequest(DefaultClusterProps.removeUserRequest(regUser.handle))
+    status(rep) must equal (BAD_REQUEST)
   }
 
   private object representAMachine extends Matcher[JsObject] {
@@ -203,4 +188,18 @@ class ClusterIT
   private val representInProgressCluster =
     containsFieldWithValue("state", JsString(Provisioning.name)) and
     containsFieldWithValue("stateDescription", JsString(Provisioning.descLine))
+
+  private implicit class RequestFactory(props: MockedServiceManager.ClusterProperties) {
+
+    val baseUrl = s"/cosmos/v1/cluster/${props.id}"
+
+    def listDetailsRequest = FakeRequest(GET, baseUrl)
+    def terminateRequest = FakeRequest(POST, s"$baseUrl/terminate")
+    def addUserRequest(handle: String) = FakeRequest(POST, s"$baseUrl/add_user").withJsonBody(
+      Json.obj("user" -> handle)
+    )
+    def removeUserRequest(handle: String) = FakeRequest(POST, s"$baseUrl/remove_user").withJsonBody(
+      Json.obj("user" -> handle)
+    )
+  }
 }

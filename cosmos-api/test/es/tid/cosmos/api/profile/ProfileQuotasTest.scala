@@ -47,7 +47,7 @@ class ProfileQuotasTest extends FlatSpec
     context.ensureThat { (quotas, profile) =>
       quotas.withinQuota(profile, 1) must (beSuccessful and haveValidValue(1))
       quotas.withinQuota(profile, 2) must haveFailures(
-        "Profile quota exceeded",
+        "Profile quota exceeded.",
         "You can request up to 1 machine(s) at this point."
       )
     }

@@ -15,21 +15,16 @@ import scala.language.postfixOps
 import scala.sys.process._
 
 import net.liftweb.json._
-import org.scalatest.FlatSpec
-import org.scalatest.concurrent.{Eventually, IntegrationPatience}
+import org.scalatest.{FeatureSpec, Informer}
 import org.scalatest.matchers.MustMatchers
-import org.scalatest.time.{Seconds, Minutes, Span}
 import org.scalatest.verb.MustVerb
 
-class Cluster(id: String) extends MustVerb with MustMatchers with Eventually with IntegrationPatience {
+class Cluster(id: String, user: User)(implicit info: Informer) extends MustVerb with MustMatchers with Patience {
   private implicit val Formats = net.liftweb.json.DefaultFormats
-  implicit override val patienceConfig = PatienceConfig(
-    timeout = scaled(Span(30, Minutes)),
-    interval = scaled(Span(10, Seconds)))
 
-  def isListed: Boolean = ("cosmos list" lines_!).exists(_.contains(id))
+  def isListed: Boolean = (s"cosmos -c ${user.cosmosrcPath} list" lines_!).exists(_.contains(id))
 
-  def describe = parse(s"cosmos show $id" !! ProcessLogger(println(_)))
+  def describe = parse(s"cosmos -c ${user.cosmosrcPath} show $id" !! ProcessLogger(info(_)))
 
   def state: Option[String] = (describe \ "state").extractOpt[String]
 
@@ -44,20 +39,24 @@ class Cluster(id: String) extends MustVerb with MustMatchers with Eventually wit
   }
 
   def terminate() {
-    s"cosmos terminate $id" !! ProcessLogger(println(_))
+    info(s"Calling terminate on cluster $id")
+    s"cosmos -c ${user.cosmosrcPath} terminate $id" ! ProcessLogger(info(_))
   }
 }
 
-object Cluster extends FlatSpec with MustMatchers {
-  def create(size: Int, services: Seq[String] = Seq()): Cluster = {
+object Cluster {
+  def create(size: Int, user: User, services: Seq[String] = Seq())(implicit info: Informer): Cluster = {
     val ExpectedPrefix = "Provisioning new cluster "
     val flatServices = services.mkString(" ")
     val servicesCommand = if (services.nonEmpty) s"--services $flatServices" else ""
-    val id = s"cosmos create --name default-services --size $size $servicesCommand"
-      .lines_!(ProcessLogger(println(_)))
+    info(s"Calling create cluster")
+    val commandOutput = s"cosmos -c ${user.cosmosrcPath} create --name default-services --size $size $servicesCommand"
+      .lines_!.toList
+    commandOutput.foreach(info(_))
+    val id = commandOutput
       .filter(_.startsWith(ExpectedPrefix))
       .head.substring(ExpectedPrefix.length)
-    println(s"Cluster created with id $id")
-    new Cluster(id)
+    info(s"Cluster created with id $id")
+    new Cluster(id, user)
   }
 }

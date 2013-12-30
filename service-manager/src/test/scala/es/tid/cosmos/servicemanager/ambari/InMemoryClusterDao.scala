@@ -11,8 +11,8 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.ClusterUser
 
 class InMemoryClusterDao extends ClusterDao {
   @volatile var clusters: Map[ClusterId, MutableClusterDescription] = Map.empty
@@ -25,8 +25,10 @@ class InMemoryClusterDao extends ClusterDao {
   override def registerCluster(
       clusterId: ClusterId,
       clusterName: String,
-      clusterSize: Int): MutableClusterDescription = {
-    val description = new InMemoryClusterDescription(clusterId, clusterName, clusterSize)
+      clusterSize: Int,
+      services: Set[ServiceDescription]): MutableClusterDescription = {
+    val description = new InMemoryClusterDescription(
+      clusterId, clusterName, clusterSize, services.map(_.name))
     clusters.synchronized {
       clusters = clusters.updated(clusterId, description)
     }

@@ -17,7 +17,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
-import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.api.profile.ClusterAssignment
 import es.tid.cosmos.servicemanager.clusters.{Provisioning, ClusterId, ClusterDescription}
 
@@ -32,6 +31,7 @@ class ClusterReferenceTest extends FlatSpec with MustMatchers {
     override def master = throw new NotImplementedError()
     override def slaves = throw new NotImplementedError()
     override def users = throw new NotImplementedError()
+    override def services = throw new NotImplementedError()
   }
 
   "A cluster reference" must ("be composed of cluster description and assignment" +

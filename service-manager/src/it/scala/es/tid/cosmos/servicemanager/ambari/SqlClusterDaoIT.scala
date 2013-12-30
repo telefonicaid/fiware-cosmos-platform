@@ -14,15 +14,17 @@ package es.tid.cosmos.servicemanager.ambari
 import java.net.URI
 import scala.util.Try
 
+import org.mockito.BDDMockito.given
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
+import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
 import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
+import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.ClusterUser
 
-class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
+class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter with MockitoSugar {
   val db = new MySqlDatabase(MySqlConnDetails("localhost", 3306, "root", "", "smtest"))
   val dao = new SqlClusterDao(db)
 
@@ -37,7 +39,10 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
 
   trait ClusterCreated {
     val id = ClusterId()
-    dao.registerCluster(id, "cosmos", 3)
+    val serviceA, serviceB = mock[ServiceDescription]
+    given(serviceA.name).willReturn("serviceA")
+    given(serviceB.name).willReturn("serviceB")
+    dao.registerCluster(id, "cosmos", 3, Set(serviceA, serviceB))
     val cluster = dao.getDescription(id).get
   }
 
@@ -53,6 +58,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
     cluster.master must be (None)
     cluster.state must be (Provisioning)
     cluster.slaves must be (Seq())
+    cluster.services must be (Set("serviceA", "serviceB"))
   }
 
   it must "update a cluster name" taggedAs HasExternalDependencies in new ClusterCreated {
@@ -92,6 +98,11 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
     cluster.state must be (Failed("The CPD was nuked"))
   }
 
+  it must "update a cluster's services" taggedAs HasExternalDependencies in new ClusterCreated {
+    cluster.services = Set("ServiceA", "ServiceC")
+    cluster.services must be (Set("ServiceA", "ServiceC"))
+  }
+
   it must "update a cluster with a slave nodes" taggedAs HasExternalDependencies in new ClusterCreated {
     val slaves = Seq(HostDetails("Oompa","1.1.1.2"), HostDetails("Lumpa", "1.1.1.3"))
     cluster.slaves = slaves
@@ -104,7 +115,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter {
 
   it must "return all cluster ids" taggedAs HasExternalDependencies in new ClusterCreated {
     val id2 = ClusterId()
-    dao.registerCluster(id2, "cosmos", 3)
+    dao.registerCluster(id2, "cosmos", 3, Set.empty)
     dao.ids.toSet must be (Set(id, id2))
   }
 

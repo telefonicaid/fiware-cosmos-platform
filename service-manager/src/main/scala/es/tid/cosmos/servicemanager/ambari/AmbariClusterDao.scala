@@ -18,7 +18,7 @@ import scala.concurrent.duration._
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 
 /**
   * This class wraps a ClusterDao and makes sure that the data in Ambari and the data in the
@@ -46,17 +46,25 @@ private[ambari] class AmbariClusterDao(
     this.dao.getDescription(id)
   }
 
-  def registerNewCluster(id: ClusterId, name: String, size: Int): MutableClusterDescription = {
-    val description = registerCluster(id, name, size)
+  def registerNewCluster(
+    id: ClusterId,
+    name: String,
+    size: Int, services: Set[ServiceDescription]): MutableClusterDescription = {
+    val description = registerCluster(id, name, size, services)
     description.state = Provisioning
     description
   }
 
-  def registerNewCluster(name: String, size: Int): MutableClusterDescription =
-    registerCluster(ClusterId(), name, size)
+  def registerNewCluster(
+      name: String, size: Int, services: Set[ServiceDescription]): MutableClusterDescription =
+    registerCluster(ClusterId(), name, size, services)
 
-  override def registerCluster(id: ClusterId, name: String, size: Int): MutableClusterDescription =
-    dao.registerCluster(id, name, size)
+  override def registerCluster(
+    id: ClusterId,
+    name: String,
+    size: Int,
+    services: Set[ServiceDescription]): MutableClusterDescription =
+    dao.registerCluster(id, name, size, services)
 
   override def getUsers(id: ClusterId): Option[Set[ClusterUser]] = dao.getUsers(id)
 

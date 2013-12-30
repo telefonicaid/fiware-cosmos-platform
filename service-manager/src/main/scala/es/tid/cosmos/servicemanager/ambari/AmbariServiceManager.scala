@@ -70,16 +70,16 @@ class AmbariServiceManager(
       serviceDescriptions: Seq[ServiceDescriptionType],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
-    val clusterDescription = clusterDao.registerNewCluster(name, clusterSize)
+    val clusterServiceDescriptions = BasicHadoopServices ++ serviceDescriptions ++ userServices(users)
+    val clusterDescription = clusterDao.registerNewCluster(
+      name, clusterSize, clusterServiceDescriptions.toSet)
     clusterDescription.withFailsafe {
       for {
         machines <- infrastructureProvider.createMachines(
           preConditions(clusterDescription.id), MachineProfile.G1Compute, clusterSize, waitForSsh)
         (master, slaves) = masterAndSlaves(machines)
         _ = setMachineInfo(clusterDescription, master, slaves)
-        _ <- createCluster(
-          clusterDescription,
-          BasicHadoopServices ++ serviceDescriptions ++ userServices(users))
+        _ <- createCluster(clusterDescription, clusterServiceDescriptions)
         _ = clusterDao.setUsers(clusterDescription.id, users.toSet)
       } yield ()
     }
@@ -168,19 +168,20 @@ class AmbariServiceManager(
 
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
+    serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq()))
     clusterDescription = clusterDao.registerNewCluster(
       id = persistentHdfsId,
       name = persistentHdfsId.id,
-      size = machineCount + 1)
+      size = machineCount + 1,
+      services = serviceDescriptions.toSet
+    )
     _ <- clusterDescription.withFailsafe(for {
       master <- infrastructureProvider.createMachines(
         PassThrough, MachineProfile.HdfsMaster, numberOfMachines = 1, waitForSsh).map(_.head)
       slaves <- infrastructureProvider.createMachines(
         PassThrough, MachineProfile.HdfsSlave, numberOfMachines = machineCount, waitForSsh)
       _ = setMachineInfo(clusterDescription, master, slaves)
-      _ <- createCluster(
-        clusterDescription,
-        serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq())))
+      _ <- createCluster(clusterDescription, serviceDescriptions)
     } yield ())
   } yield ()
 

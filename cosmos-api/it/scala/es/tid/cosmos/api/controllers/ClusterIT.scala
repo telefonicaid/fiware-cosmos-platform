@@ -63,6 +63,7 @@ class ClusterIT
         contentType(resource) must be (Some("application/json"))
         val description = contentAsJson(resource)
         description must representClusterProperties(DefaultClusterProps)
+        (description \ "services").as[Set[String]] must be(DefaultClusterProps.services)
         description must representRunningCluster
       }
     }

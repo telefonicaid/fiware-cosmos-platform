@@ -17,6 +17,7 @@ import com.wordnik.swagger.annotations.ApiProperty
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 
+import es.tid.cosmos.servicemanager.ambari.services.CosmosUserService
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
 import es.tid.cosmos.servicemanager.ClusterUser
 
@@ -31,7 +32,8 @@ case class ClusterDetails(
     stateDescription: String,
     master: Option[HostDetails],
     slaves: Option[Seq[HostDetails]],
-    users: Option[Seq[ClusterUser]]
+    users: Option[Seq[ClusterUser]],
+    services: Set[String]
 )
 
 object ClusterDetails {
@@ -43,8 +45,11 @@ object ClusterDetails {
    * @return         A ClusterDetails instance
    */
   def apply(desc: ClusterDescription)(implicit request: RequestHeader): ClusterDetails =
+    fromDescription(desc).copy(href = ClusterResource.clusterUrl(desc.id))
+
+  private[cluster] def fromDescription(desc: ClusterDescription): ClusterDetails =
     ClusterDetails(
-      href = ClusterResource.clusterUrl(desc.id),
+      href = "",
       id = desc.id.toString,
       name = desc.name,
       size = desc.size,
@@ -52,7 +57,8 @@ object ClusterDetails {
       stateDescription = desc.state.descLine,
       master = desc.master,
       slaves = if (desc.slaves.isEmpty) None else Some(desc.slaves),
-      users = desc.users.map(_.toSeq)
+      users = desc.users.map(_.toSeq),
+      services = desc.services.filterNot(_ == CosmosUserService.name)
     )
 
   implicit object HostDetailsWrites extends Writes[HostDetails] {
@@ -80,7 +86,8 @@ object ClusterDetails {
       "name" -> d.name,
       "size" -> d.size,
       "state" -> d.state,
-      "stateDescription" -> d.stateDescription
+      "stateDescription" -> d.stateDescription,
+      "services" -> d.services
     )
 
     private def machinesInfo(d: ClusterDetails) =

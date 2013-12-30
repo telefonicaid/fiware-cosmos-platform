@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.clusters
 
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 
 trait ClusterDaoComponent {
   val clusterDao: ClusterDao
@@ -35,15 +35,19 @@ trait ClusterDao {
     */
   def getDescription(id: ClusterId): Option[MutableClusterDescription]
 
-  /**
-    * Adds a new cluster to the DAO
+  /** Adds a new cluster to the DAO
     * @param id The id of the cluster
     * @param name The name of the cluster
     * @param size The size of the cluster
+    * @param services the enabled services of the cluster
     * @return A representation of a cluster which can be mutated. Mutations
     *         on this object will affect the state of the DAO.
     */
-  def registerCluster(id: ClusterId, name: String, size: Int): MutableClusterDescription
+  def registerCluster(
+    id: ClusterId,
+    name: String,
+    size: Int,
+    services: Set[ServiceDescription]): MutableClusterDescription
 
   /** Retrieve the list of users for given cluster.
     *

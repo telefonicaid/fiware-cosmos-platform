@@ -62,7 +62,7 @@ private[ambari] class SqlMutableClusterDescription(
   }
 
   override def master: Option[HostDetails] = dao.newTransaction {
-    from(masters)(m => where (m.clusterId === this.id.toString) select(m))
+    from(masters)(m => where (m.clusterId === this.id.toString) select m)
       .headOption.map(m => HostDetails(m.name, m.ip))
   }
 
@@ -74,7 +74,7 @@ private[ambari] class SqlMutableClusterDescription(
   }
 
   override def slaves: Seq[HostDetails] = dao.newTransaction {
-    from(SqlClusterDao.slaves)(s => where (s.clusterId === this.id.toString) select(s))
+    from(SqlClusterDao.slaves)(s => where (s.clusterId === this.id.toString) select s)
       .map(s => HostDetails(s.name, s.ip)).toSeq
   }
 
@@ -90,6 +90,21 @@ private[ambari] class SqlMutableClusterDescription(
   override def users: Option[Set[ClusterUser]] = dao.getUsers(id)
 
   override def users_=(users: Set[ClusterUser]) = dao.setUsers(id, users)
+
+  override def services: Set[String] = dao.newTransaction {
+    from(SqlClusterDao.services)(s => where (s.clusterId === this.id.toString) select s)
+      .map(_.name).toSet
+  }
+
+  override def services_=(services: Set[String]) {
+    dao.newTransaction {
+      val cluster = clusterState.lookup(this.id.toString).get
+      cluster.services.deleteAll
+      services.foreach { serviceName =>
+        cluster.services.associate(new ClusterServiceEntity(serviceName))
+      }
+    }
+  }
 
   private def getField[A](field: ClusterEntity => A) = dao.newTransaction {
     from(clusterState)(c => where (c.id === this.id.toString) select(field(c))).single

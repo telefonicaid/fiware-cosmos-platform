@@ -48,7 +48,7 @@ class ProfileQuotasTest extends FlatSpec
       quotas.withinQuota(profile, 1) must (beSuccessful and haveValidValue(1))
       quotas.withinQuota(profile, 2) must haveFailures(
         "Profile quota exceeded.",
-        "You can request up to 1 machine(s) at this point."
+        "You can request up to 1 machine at this point."
       )
     }
   }
@@ -82,7 +82,7 @@ class ProfileQuotasTest extends FlatSpec
       quotas.withinQuota(profile, 3) must (beSuccessful and haveValidValue(3))
       quotas.withinQuota(profile, 4) must haveFailures(
         "Quota exceeded for group [A].",
-        "You can request up to 3 machine(s) at this point."
+        "You can request up to 3 machines at this point."
       )
     }
   }
@@ -114,7 +114,7 @@ class ProfileQuotasTest extends FlatSpec
       quotas.withinQuota(profile, 3) must (beSuccessful and haveValidValue(3))
       quotas.withinQuota(profile, 4) must haveFailures(
         "Quota exceeded for group [A].",
-        "You can request up to 3 machine(s) at this point."
+        "You can request up to 3 machines at this point."
       )
     }
   }
@@ -162,7 +162,7 @@ class ProfileQuotasTest extends FlatSpec
       quotas.withinQuota(profile, 5) must (beSuccessful and haveValidValue(5))
       quotas.withinQuota(profile, 6) must haveFailures(
         "Quota exceeded for group [A].",
-        "You can request up to 5 machine(s) at this point."
+        "You can request up to 5 machines at this point."
       )
     }
   }
@@ -188,8 +188,8 @@ class ProfileQuotasTest extends FlatSpec
     )
     context.ensureThat { (quotas, profile) =>
       quotas.withinQuota(profile, 10, requestedClusterId = None) must haveFailures(
-        "Quota exceeded for group [No Group].",
-        "You can request up to 0 machine(s) at this point."
+        "Quota exceeded for users not belonging to any group.",
+        "You can request up to 0 machines at this point."
       )
       quotas.withinQuota(
         profile, 10, requestedClusterId = Some(requestedCluster.description.id)) must
@@ -229,14 +229,14 @@ class ProfileQuotasTest extends FlatSpec
     // 4 available for groupOf2
     quotas.withinQuota(noGroupUser1.profile, 2) must (beSuccessful and haveValidValue(2))
     quotas.withinQuota(noGroupUser1.profile, 3) must haveFailures(
-      "Quota exceeded for group [No Group].",
-      "You can request up to 2 machine(s) at this point."
+      "Quota exceeded for users not belonging to any group.",
+      "You can request up to 2 machines at this point."
     )
 
     quotas.withinQuota(groupOf2User1.profile, 4) must (beSuccessful and haveValidValue(4))
     quotas.withinQuota(groupOf2User1.profile, 5) must haveFailures(
       "Quota exceeded for group [groupOf2].",
-      "You can request up to 4 machine(s) at this point."
+      "You can request up to 4 machines at this point."
     )
   }
 

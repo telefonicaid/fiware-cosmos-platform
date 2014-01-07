@@ -89,11 +89,11 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
     val response = unregUser.submitForm("/register",
       "handle" -> "1nvalid handle",
       "email" -> "not an email",
-      "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example@invalid.com"
+      "publicKey" -> "ssh-rsa DKDJDJDK ;;;"
     )
     status(response) must be (BAD_REQUEST)
-    contentAsString(response) must include ("Not a valid unix handle")
-    contentAsString(response) must include ("invalid email")
+    contentAsString(response) must (include("Not a valid unix handle") and
+      include("Key comment &quot;;;;&quot; contains invalid characters"))
   }
 
   it must "reject registrations when selected handle is already taken" in new WithSampleSessions {

@@ -196,7 +196,15 @@ object MockedServiceManager {
 
   val InProgressClusterProps = ClusterProperties(
     id = new ClusterId(),
-    name = "in progress cluster",
+    name = "In progress cluster",
+    size = 4,
+    users = Set(ClusterUser.enabled("pocahontas", "pocahontas-public-key")),
+    initialState = None
+  )
+
+  val UnknownClusterProps = ClusterProperties(
+    id = new ClusterId(),
+    name = "A cluster that doesn't exist",
     size = 4,
     users = Set(ClusterUser.enabled("pocahontas", "pocahontas-public-key")),
     initialState = None

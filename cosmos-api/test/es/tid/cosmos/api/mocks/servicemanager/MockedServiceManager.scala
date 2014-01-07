@@ -158,7 +158,7 @@ class MockedServiceManager(
 
   private def defineCluster(props: ClusterProperties): FakeCluster = synchronized {
     val cluster = new FakeCluster(
-      props.id, props.name, props.size, props.users.toSet,  props.services, props.initialState)
+      props.id, props.name, props.size, props.users.toSet,  props.services.toSet, props.initialState)
     clusters += props.id -> cluster
     cluster
   }
@@ -175,7 +175,7 @@ object MockedServiceManager {
     size: Int,
     users: Set[ClusterUser],
     initialState: Option[ClusterState] = None,
-    services: Set[String] = Set("HDFS", "MAPREDUCE")
+    services: Seq[String] = Seq("HDFS", "MAPREDUCE")
   )
 
   val PersistentHdfsProps = ClusterProperties(

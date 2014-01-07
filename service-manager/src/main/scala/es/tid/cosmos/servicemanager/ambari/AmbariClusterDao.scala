@@ -46,21 +46,8 @@ private[ambari] class AmbariClusterDao(
     this.dao.getDescription(id)
   }
 
-  def registerNewCluster(
-    id: ClusterId,
-    name: String,
-    size: Int, services: Set[ServiceDescription]): MutableClusterDescription = {
-    val description = registerCluster(id, name, size, services)
-    description.state = Provisioning
-    description
-  }
-
-  def registerNewCluster(
-      name: String, size: Int, services: Set[ServiceDescription]): MutableClusterDescription =
-    registerCluster(ClusterId(), name, size, services)
-
   override def registerCluster(
-    id: ClusterId,
+    id: ClusterId = ClusterId(),
     name: String,
     size: Int,
     services: Set[ServiceDescription]): MutableClusterDescription =

@@ -49,7 +49,7 @@ object ClusterDetails {
 
   private[cluster] def fromDescription(desc: ClusterDescription): ClusterDetails =
     ClusterDetails(
-      href = "",
+      href = "href_not_available",
       id = desc.id.toString,
       name = desc.name,
       size = desc.size,
@@ -87,7 +87,7 @@ object ClusterDetails {
       "size" -> d.size,
       "state" -> d.state,
       "stateDescription" -> d.stateDescription,
-      "services" -> d.services
+      "services" -> d.services.toSeq.sorted
     )
 
     private def machinesInfo(d: ClusterDetails) =

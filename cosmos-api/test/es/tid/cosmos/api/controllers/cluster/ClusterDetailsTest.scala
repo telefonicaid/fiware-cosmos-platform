@@ -39,7 +39,7 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
     master = Some(host(1)),
     slaves = Some(Seq(host(2), host(3))),
     users = Some(Seq(clusterOwner, extraUser)),
-    services = Set("ServiceA", "ServiceB")
+    services = Set("ServiceB", "ServiceA")
   )
   val sampleJson = Json.obj(
     "href" -> "http://host/path",

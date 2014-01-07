@@ -71,8 +71,11 @@ class AmbariServiceManager(
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
     val clusterServiceDescriptions = BasicHadoopServices ++ serviceDescriptions ++ userServices(users)
-    val clusterDescription = clusterDao.registerNewCluster(
-      name, clusterSize, clusterServiceDescriptions.toSet)
+    val clusterDescription = clusterDao.registerCluster(
+      name = name,
+      size = clusterSize,
+      services = clusterServiceDescriptions.toSet
+    )
     clusterDescription.withFailsafe {
       for {
         machines <- infrastructureProvider.createMachines(
@@ -169,7 +172,7 @@ class AmbariServiceManager(
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
     serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq()))
-    clusterDescription = clusterDao.registerNewCluster(
+    clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = persistentHdfsId.id,
       size = machineCount + 1,

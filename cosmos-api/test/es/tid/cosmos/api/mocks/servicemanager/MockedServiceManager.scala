@@ -142,13 +142,7 @@ class MockedServiceManager(
   override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] =
     clusters(clusterId).setUsers(users.toSet)
 
-  override def clusterNodePoolCount: Int = synchronized {
-    maxPoolSize - provisionedMachines
-  }
-
-  private def provisionedMachines = synchronized {
-    clusters.values.filter(_.isConsumingMachines).map(_.view.size).sum
-  }
+  override def clusterNodePoolCount: Int = maxPoolSize
 
   private def defineCluster(props: ClusterProperties): FakeCluster = synchronized {
     val cluster = new FakeCluster(

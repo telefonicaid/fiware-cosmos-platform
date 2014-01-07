@@ -15,10 +15,15 @@ package es.tid.cosmos.admin
 import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Admin commands for managing groups. */
-private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChecks {
+private[admin] class Groups(
+    override val dao: CosmosProfileDao,
+    serviceManager: ServiceManager) extends GroupChecks {
   import Groups._
+
+  private val usageDao = new CosmosMachineUsageDao(dao, serviceManager)
 
   /** Create a group.
     *
@@ -27,7 +32,11 @@ private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChe
     * @return         true iff the group was successfully created
     */
   def create(name: String, minQuota: Int): Boolean = dao.withTransaction { implicit c =>
-    tryAction { Some(dao.registerGroup(GuaranteedGroup(name, Quota(minQuota)))) }
+    tryAction {
+      val group = GuaranteedGroup(name, Quota(minQuota))
+      requireFeasibleQuota(group, Quota(minQuota), isGroupNew = true)
+      Some(dao.registerGroup(group))
+    }
   }
 
   /** List the existing groups.
@@ -57,8 +66,29 @@ private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChe
     * @return      true if the group was successfully updated with the new minimum quota
     */
   def setMinQuota(name: String, quota: Int): Boolean = dao.withTransaction { implicit c =>
-    tryAction { for (group <- withGroup(name)) yield dao.setGroupQuota(group.name, Quota(quota)) }
+    tryAction { for (group <- withGroup(name)) yield {
+      requireFeasibleQuota(group, Quota(quota))
+      dao.setGroupQuota(group.name, Quota(quota))
+    }}
   }
+
+  private def requireFeasibleQuota(group: Group, quota: Quota, isGroupNew: Boolean = false)
+                                  (implicit c: dao.Conn) {
+    val usedMachinesByGroups =
+      if (isGroupNew) usageDao.withoutClusterFilter.usedMachinesByGroups + (group -> 0)
+      else usageDao.withoutClusterFilter.usedMachinesByGroups
+
+    val maxPossible = GroupQuotas.maximumQuota(
+      group,
+      usedMachinesByGroups,
+      usageDao.machinePoolSize
+    )
+    require(
+      maxPossible.withinQuota(quota),
+      s"Cannot set to $quota.\nGroup ${group.name} can have a minimum quota of up to $maxPossible."
+    )
+  }
+
 }
 
 private object Groups {

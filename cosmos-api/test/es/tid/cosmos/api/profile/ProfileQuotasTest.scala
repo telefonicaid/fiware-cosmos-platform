@@ -11,13 +11,11 @@
 
 package es.tid.cosmos.api.profile
 
-import org.mockito.BDDMockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.api.auth.ApiCredentials
-import es.tid.cosmos.api.controllers.cluster.ClusterReference
 import es.tid.cosmos.api.profile.UserState.Enabled
 import es.tid.cosmos.platform.common.scalatest.data.DataPicker
 import es.tid.cosmos.platform.common.scalatest.matchers.ValidationMatchers
@@ -136,13 +134,13 @@ class ProfileQuotasTest extends FlatSpec
       groupB -> 0,
       NoGroup -> 1
     )
-    val terminatedClusters = Map[Group, List[ClusterReference]](
-      userGroup -> List(clusterReference(1, Terminated)),
-      groupB -> List(clusterReference(1, Terminated)),
+    val terminatedClusters = Map[Group, List[ClusterDescription]](
+      userGroup -> List(clusterDescription(1, Terminated)),
+      groupB -> List(clusterDescription(1, Terminated)),
       NoGroup -> List(
-        clusterReference(
+        clusterDescription(
           1, Failed("Cluster with allocated machine blew up"), withMachineInfo = true),
-        clusterReference(
+        clusterDescription(
           1, Failed("Cluster without allocated machines blew up"), withMachineInfo = false)
       )
     )
@@ -177,7 +175,7 @@ class ProfileQuotasTest extends FlatSpec
     +----+----+----+----+----+----+----+----+----+----+
       X    X    X    X    X    X    X    X    X    X
      */
-    val requestedCluster = clusterReference(10, Provisioning)
+    val requestedCluster = clusterDescription(10, Provisioning)
     val context = Context(
       groupUsage = Map(NoGroup -> 0),
       userGroup = NoGroup,
@@ -192,7 +190,7 @@ class ProfileQuotasTest extends FlatSpec
         "You can request up to 0 machines at this point."
       )
       quotas.withinQuota(
-        profile, 10, requestedClusterId = Some(requestedCluster.description.id)) must
+        profile, 10, requestedClusterId = Some(requestedCluster.id)) must
         (beSuccessful and haveValidValue(10))
     }
   }
@@ -215,13 +213,13 @@ class ProfileQuotasTest extends FlatSpec
       NoGroup -> Set(noGroupUser1, noGroupUser2),
       aGroup -> Set(groupOf2User1, groupOf2User2)
     )
-
-    val quotas = new ProfileQuotas(
+    val dao = new MockedMachineUsageDao(
       machinePoolSize = 22,
       groups = Set(NoGroup, aGroup),
-      lookupByGroup = groupContexts.groupsToProfiles,
-      listClusters = groupContexts.profilesToClusters
+      groupsToProfiles = groupContexts.groupsToProfiles,
+      profilesToClusters = groupContexts.profilesToClusters
     )
+    val quotas = new ProfileQuotas(dao)
 
     // 22 - 18 used = 4 available
     // groupOf2 10 used 12 reserved.
@@ -246,7 +244,7 @@ class ProfileQuotasTest extends FlatSpec
     personalMaxQuota: Quota,
     usedMachinesByUser: Int,
     machinePool: Int,
-    extraClusters: Map[Group, List[ClusterReference]] = Map.empty
+    extraClusters: Map[Group, List[ClusterDescription]] = Map.empty
   ) {
 
     /**
@@ -270,21 +268,22 @@ class ProfileQuotasTest extends FlatSpec
 
       val extraProfilesToClusters = extraClusters.mapKeys(groupContexts.groupsToProfiles(_).head)
 
-      val quotas = new ProfileQuotas(
+      val dao = new MockedMachineUsageDao(
         machinePoolSize = machinePool,
         groups = groupUsage.keys.toSet,
-        lookupByGroup = groupContexts.groupsToProfiles,
-        listClusters = groupContexts.profilesToClusters |+| extraProfilesToClusters
+        groupsToProfiles = groupContexts.groupsToProfiles,
+        profilesToClusters = groupContexts.profilesToClusters |+| extraProfilesToClusters
       )
+      val quotas = new ProfileQuotas(dao)
 
       test(quotas, groupContexts.groupsToProfiles(userGroup).head)
     }
   }
 
-  def clusterReference(
+  def clusterDescription(
     size: Int,
     state: ClusterState,
-    withMachineInfo: Boolean = true): ClusterReference = {
+    withMachineInfo: Boolean = true): ClusterDescription = {
 
     def maybeMaster: Option[HostDetails] = if (withMachineInfo) Some(mock[HostDetails]) else None
     def maybeSlaves: Seq[HostDetails] =
@@ -303,9 +302,7 @@ class ProfileQuotasTest extends FlatSpec
       users = maybeUsers,
       services = Set.empty
     )
-    val reference = mock[ClusterReference]
-    given(reference.description).willReturn(description)
-    reference
+    description
   }
 
   private type GroupContexts = Map[Group, Set[ProfileWithClusters]]
@@ -325,8 +322,8 @@ class ProfileQuotasTest extends FlatSpec
       capabilities = UntrustedUserCapabilities
     )
 
-    val clusters: Seq[ClusterReference] = clusterSizes.map(
-      size => clusterReference(size, pickAnyOne(ActiveStates))
+    val clusters: Seq[ClusterDescription] = clusterSizes.map(
+      size => clusterDescription(size, pickAnyOne(ActiveStates))
     )
   }
 
@@ -334,7 +331,7 @@ class ProfileQuotasTest extends FlatSpec
 
     val groupsToProfiles: Map[Group, Set[CosmosProfile]] = thiz.mapValues(pwc => pwc.map(_.profile))
 
-    val profilesToClusters: Map[CosmosProfile, List[ClusterReference]] =
+    val profilesToClusters: Map[CosmosProfile, List[ClusterDescription]] =
       thiz.values.flatten.map(pwc => pwc.profile -> pwc.clusters.toList).toMap
   }
 }

@@ -39,6 +39,8 @@ class ClusterResource(
 
   import ClusterResource._
 
+  private lazy val profileQuotas = new ProfileQuotas(new CosmosMachineUsageDao(dao, serviceManager))
+
   /** List user clusters. */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterList")
@@ -105,25 +107,11 @@ class ClusterResource(
     }
   }
 
-  private def withinQuota(
-      profile: CosmosProfile,
-      size: Int,
-      requestedClusterId: Option[ClusterId] = None): ValidationNel[String, Int] =
-
-    dao.withConnection { implicit c =>
-      new ProfileQuotas(
-        machinePoolSize = serviceManager.clusterNodePoolCount,
-        groups = dao.getGroups,
-        lookupByGroup = dao.lookupByGroup,
-        listClusters = listClusters
-      ).withinQuota(profile, size, requestedClusterId)
-    }
-
   private def executableWithinQuota(profile: CosmosProfile, size: Int): ClusterExecutableValidation =
-    (id: ClusterId) => () => withinQuota(profile, size, Some(id))
+    (id: ClusterId) => () => profileQuotas.withinQuota(profile, size, Some(id))
 
   private def requireWithinQuota(profile: CosmosProfile, size: Int): ActionValidation[Int] =
-    withinQuota(profile, size).leftMap(errors =>
+    profileQuotas.withinQuota(profile, size).leftMap(errors =>
       Forbidden(Json.toJson(Message(errors.list.mkString(" "))))
     )
 

@@ -45,7 +45,8 @@ class PersistentStorageTest extends FlatSpec with MustMatchers with MockitoSugar
       nameNode = Some(new URI("hdfs://host:1234")),
       master = Some(HostDetails("host", "ipAddress")),
       slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
-      users = None
+      users = None,
+      services = Set("HDFS")
     )))
   }
 

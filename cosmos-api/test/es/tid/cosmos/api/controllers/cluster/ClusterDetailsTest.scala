@@ -16,7 +16,8 @@ import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
 import es.tid.cosmos.servicemanager.ClusterUser
-import es.tid.cosmos.servicemanager.clusters.HostDetails
+import es.tid.cosmos.servicemanager.ambari.services._
+import es.tid.cosmos.servicemanager.clusters._
 
 class ClusterDetailsTest extends FlatSpec with MustMatchers {
 
@@ -37,7 +38,8 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
     stateDescription = "releasing resources",
     master = Some(host(1)),
     slaves = Some(Seq(host(2), host(3))),
-    users = Some(Seq(clusterOwner, extraUser))
+    users = Some(Seq(clusterOwner, extraUser)),
+    services = Set("ServiceB", "ServiceA")
   )
   val sampleJson = Json.obj(
     "href" -> "http://host/path",
@@ -59,7 +61,8 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
         "sshPublicKey" -> "ssh-rsa ZZZZZ pbanks@example.com",
         "isSudoer" -> false
       )
-    )
+    ),
+    "services" -> Json.arr("ServiceA", "ServiceB")
   )
 
   "Cluster details" must "be serialized to JSON" in {
@@ -89,6 +92,22 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
       )
     ))
     Json.toJson(clusterWithRemovedUser) must equal (jsonWithRemovedUser)
+  }
+
+  it must "not show cosmos service when created from cluster description" in {
+    val description = ImmutableClusterDescription(
+      id = ClusterId("id"),
+      name = "mycluster",
+      size = 2,
+      state = Running,
+      nameNode = None,
+      master = None,
+      slaves = Seq.empty,
+      users = None,
+      services = Set(Hdfs.name, MapReduce.name, CosmosUserService.name)
+    )
+    val details = ClusterDetails.fromDescription(description)
+    (Json.toJson(details) \ "services").as[Set[String]] must not contain CosmosUserService.name
   }
 
   private def host(index: Int) = HostDetails(s"cosmos0$index", s"192.168.0.$index")

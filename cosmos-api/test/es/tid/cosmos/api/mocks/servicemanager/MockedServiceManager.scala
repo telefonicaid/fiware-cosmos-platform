@@ -38,6 +38,7 @@ class MockedServiceManager(
       name: String,
       size: Int,
       initialUsers: Set[ClusterUser],
+      services: Set[String],
       initialState: Option[ClusterState] = None) {
 
     private var state: ClusterState = Provisioning
@@ -71,7 +72,7 @@ class MockedServiceManager(
     def successfulProvision = clusterNodePoolCount >= size
 
     def view = synchronized {
-      ImmutableClusterDescription(id, name, size, state, nameNode, master, slaves, users)
+      ImmutableClusterDescription(id, name, size, state, nameNode, master, slaves, users, services)
     }
 
     def transitionTo(newState: ClusterState) = future {
@@ -157,7 +158,7 @@ class MockedServiceManager(
 
   private def defineCluster(props: ClusterProperties): FakeCluster = synchronized {
     val cluster = new FakeCluster(
-      props.id, props.name, props.size, props.users.toSet, props.initialState)
+      props.id, props.name, props.size, props.users.toSet,  props.services.toSet, props.initialState)
     clusters += props.id -> cluster
     cluster
   }
@@ -173,7 +174,9 @@ object MockedServiceManager {
     name: String,
     size: Int,
     users: Set[ClusterUser],
-    initialState: Option[ClusterState] = None)
+    initialState: Option[ClusterState] = None,
+    services: Seq[String] = Seq("HDFS", "MAPREDUCE")
+  )
 
   val PersistentHdfsProps = ClusterProperties(
     id = new ClusterId("persistentHdfs"),

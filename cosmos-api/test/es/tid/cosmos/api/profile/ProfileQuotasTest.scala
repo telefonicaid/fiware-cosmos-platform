@@ -300,7 +300,8 @@ class ProfileQuotasTest extends FlatSpec
       state = state,
       master = maybeMaster,
       slaves = maybeSlaves,
-      users = maybeUsers
+      users = maybeUsers,
+      services = Set.empty
     )
     val reference = mock[ClusterReference]
     given(reference.description).willReturn(description)

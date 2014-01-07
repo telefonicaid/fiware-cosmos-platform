@@ -26,4 +26,6 @@ case class ImmutableClusterDescription(
     override val nameNode: Option[URI],
     override val master: Option[HostDetails],
     override val slaves: Seq[HostDetails],
-    override val users: Option[Set[ClusterUser]]) extends ClusterDescription
+    override val users: Option[Set[ClusterUser]],
+    override val services: Set[String]
+) extends ClusterDescription

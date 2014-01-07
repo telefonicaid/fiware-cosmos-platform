@@ -176,7 +176,8 @@ class ClusterIT
     containsFieldWithValue("id", JsString(props.id.toString)) and
       containsFieldWithUrl("href") and
       containsFieldWithValue("name", JsString(props.name.toString)) and
-      containsFieldWithValue("size", JsNumber(props.size))
+      containsFieldWithValue("size", JsNumber(props.size)) and
+      containsFieldWithValue("services", JsArray(props.services.map(JsString)))
 
   private val representRunningCluster =
     containsFieldWithValue("state", JsString(Running.name)) and

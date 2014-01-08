@@ -23,6 +23,7 @@ import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
+import es.tid.cosmos.platform.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
@@ -34,7 +35,10 @@ abstract class Application {
     with InfrastructureProviderComponent
     with MultiAuthProviderComponent
     with CosmosProfileDaoComponent
-    with MaintenanceStatusComponent =>
+    with MaintenanceStatusComponent
+    with ConfigComponent =>
+
+  lazy val conf = this.config
 
   lazy val dao = this.cosmosProfileDao
 
@@ -44,7 +48,7 @@ abstract class Application {
     val ial = this.infrastructureProvider
     val multiAuthProvider = this.multiAuthProvider
     controllerMap(
-      new Pages(multiAuthProvider, sm, dao, status),
+      new Pages(multiAuthProvider, sm, dao, status, conf.getConfig("pages")),
       new AdminPage(dao, status),
       new StatsResource(dao, sm, ial),
       new CosmosResource(),

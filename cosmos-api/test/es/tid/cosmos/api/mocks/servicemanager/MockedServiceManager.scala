@@ -134,12 +134,6 @@ class MockedServiceManager(
   override def deployPersistentHdfsCluster(): Future[Unit] =
     defineCluster(PersistentHdfsProps).provisioningFuture
 
-  override def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
-    describeCluster(persistentHdfsId)
-
-  override def terminatePersistentHdfsCluster(): Future[Unit] =
-    clusters(persistentHdfsId).terminate()
-
   override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] = for {
     cluster <- clusters.get(clusterId)
     users <- cluster.view.users

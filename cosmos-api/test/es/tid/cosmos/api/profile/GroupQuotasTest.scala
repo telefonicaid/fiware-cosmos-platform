@@ -133,4 +133,24 @@ class GroupQuotasTest extends FlatSpec with MustMatchers {
     maximumQuota(b, usedMachines, machinePoolSize) must be (FiniteQuota(4))
     maximumQuota(ng, usedMachines, machinePoolSize) must be (FiniteQuota(5))
   }
+
+  // regression test to avoid ignoring same quotas due to set manipulation
+  "Group Quotas" must "correctly sum equal quotas" in {
+    val sameQuota = FiniteQuota(2)
+    val (a, b, ng) = (
+      GuaranteedGroup("A", sameQuota),
+      GuaranteedGroup("B", sameQuota),
+      NoGroup
+    )
+    val usedMachines: Map[Group, Int] = Map(
+      a -> 0,
+      b -> 0,
+      ng -> 0
+    )
+    val machinePoolSize = 2
+
+    evaluating(
+      maximumQuota(a, usedMachines, machinePoolSize)
+    ) must produce [IllegalArgumentException]
+  }
 }

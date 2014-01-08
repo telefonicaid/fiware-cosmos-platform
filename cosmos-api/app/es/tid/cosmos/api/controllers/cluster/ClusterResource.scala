@@ -165,28 +165,15 @@ class ClusterResource(
     for {
       user <- requireUserManagementConditions(request, clusterId)
       _ <- requireProfileIsNotUserOf(user, clusterId)
-      clusterUsers <- requireClusterUsersAreAvailable(clusterId)
-    } yield addUserToCluster(user, clusterId, clusterUsers)
-  }
-
-  private def addUserToCluster(
-      user: CosmosProfile, clusterId: ClusterId, currentUsers: Seq[ClusterUser]): SimpleResult = {
-    Try {
-      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser(
+      _ <- requireClusterUsersAreAvailable(clusterId)
+    } yield {
+      serviceManager.addUser(clusterId, ClusterUser.enabled(
         username = user.handle,
         publicKey = user.keys.head.signature,
-        isSudoer = user.capabilities.hasCapability(Capability.IsSudoer),
-        sshEnabled = true,
-        hdfsEnabled = true
-      )
-      serviceManager.setUsers(clusterId, newUsers)
-    } match {
-      case Success(_) => Ok(Json.toJson(
-        Message(s"Adding user ${user.handle} to cluster $clusterId " +
-          "(this will take a while, please be patient)")))
-      case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
-        ErrorMessage(ex.getMessage, ex)))
-      case Failure(ex) => throw ex
+        isSudoer = user.capabilities.hasCapability(Capability.IsSudoer)
+      ))
+      Ok(Json.toJson(Message(s"Adding user ${user.handle} to cluster $clusterId " +
+        "(this will take a while, please be patient)")))
     }
   }
 
@@ -205,25 +192,11 @@ class ClusterResource(
       user <- requireUserManagementConditions(request, clusterId)
       _ <- requireProfileIsUserOf(user, clusterId)
       _ <- requireNotOwnedCluster(user, clusterId)
-      clusterUsers <- requireClusterUsersAreAvailable(clusterId)
-    } yield removeUserFromCluster(user, clusterId, clusterUsers)
-  }
-
-  private def removeUserFromCluster(
-      user: CosmosProfile, cluster: ClusterId, currentUsers: Seq[ClusterUser]): SimpleResult = {
-    Try {
-      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser.disabled(
-        username = user.handle,
-        publicKey = user.keys.head.signature
-      )
-      serviceManager.setUsers(cluster, newUsers)
-    } match {
-      case Success(_) => Ok(Json.toJson(
-        Message(s"Removing user ${user.handle} from cluster $cluster " +
-          "(this will take a while, please be patient)")))
-      case Failure(ex: IllegalArgumentException) =>
-        Conflict(Json.toJson(ErrorMessage(ex.getMessage, ex)))
-      case Failure(ex) => throw ex
+      _ <- requireClusterUsersAreAvailable(clusterId)
+    } yield {
+      serviceManager.disableUser(clusterId, user.handle)
+      Ok(Json.toJson(Message(s"Removing user ${user.handle} from cluster $clusterId " +
+        "(this will take a while, please be patient)")))
     }
   }
 

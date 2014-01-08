@@ -76,15 +76,12 @@ trait ServiceManager {
    */
   def deployPersistentHdfsCluster(): Future[Unit]
 
-  /**
-   * Obtain information of the persistent HDFS cluster's state.
-   */
-  def describePersistentHdfsCluster(): Option[ImmutableClusterDescription]
+  /** A convenience function to obtain information of the persistent HDFS cluster's state. */
+  final def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
+    describeCluster(persistentHdfsId)
 
-  /**
-   * Terminates the persistent HDFS cluster.
-   */
-  def terminatePersistentHdfsCluster(): Future[Unit]
+  /** A convenience function to terminate the persistent HDFS cluster. */
+  final def terminatePersistentHdfsCluster(): Future[Unit] = terminateCluster(persistentHdfsId)
 
   /** List the users of a cluster.
     *

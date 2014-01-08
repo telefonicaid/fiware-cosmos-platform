@@ -188,11 +188,6 @@ class AmbariServiceManager(
     } yield ())
   } yield ()
 
-  override def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
-    describeCluster(persistentHdfsId)
-
-  override def terminatePersistentHdfsCluster(): Future[Unit] = terminateCluster(persistentHdfsId)
-
   override def clusterNodePoolCount: Int =
     infrastructureProvider.machinePoolCount(_ == MachineProfile.G1Compute)
 }

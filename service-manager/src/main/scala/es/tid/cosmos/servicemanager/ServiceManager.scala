@@ -11,9 +11,10 @@
 
 package es.tid.cosmos.servicemanager
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.clusters.{ClusterId, ImmutableClusterDescription}
+import es.tid.cosmos.servicemanager.clusters._
 
 /**
  * Cluster manager that allows cluster creation, termination as well as
@@ -135,6 +136,15 @@ trait ServiceManager {
         )
         setUsers(clusterId, newUsers)
     }
+  }
+
+  /** Disable the given user from all clusters in running state whose user list is available. */
+  def disableUserFromAll(username: String): Future[Unit] = {
+    val runningClusters = clusterIds
+      .flatMap(id => describeCluster(id))
+      .filter(c => c.state.equals(Running))
+    val clustersWithUsers = runningClusters.flatMap(c => listUsers(c.id).map(_ => c))
+    Future.sequence(clustersWithUsers.map(c => disableUser(c.id, username))).map(_ => ())
   }
 
   /**

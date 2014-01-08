@@ -19,6 +19,7 @@ import org.mockito.Matchers.{eq => the, any}
 import org.mockito.Mockito.{doReturn, doThrow, spy}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{Matcher, MustMatchers}
+import org.scalatest.concurrent.Eventually
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
@@ -27,9 +28,10 @@ import CosmosProfileTestHelpers.{registerUser, userIdFor}
 import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.{ClusterUser, UnfilteredPassThrough}
-import es.tid.cosmos.servicemanager.clusters.{ClusterId, Terminated}
+import es.tid.cosmos.servicemanager.clusters.{ClusterState, Running, ClusterId, Terminated}
 
-class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with FutureMatchers {
+class UserUnregistrationWizardTest
+  extends FlatSpec with MustMatchers with FutureMatchers with Eventually {
 
   val timeout = 1.second
   val failure = new RuntimeException("Forced failure")
@@ -74,6 +76,23 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
     }
   }
 
+  trait WithUserOfNotOwnedClusters extends WithExistingUser {
+    val clusterId = sm.createCluster(
+      name = "cluster1",
+      size = 2,
+      serviceDescriptions = Seq.empty,
+      users = Seq.empty,
+      preConditions = UnfilteredPassThrough
+    )
+    eventually { sm.describeCluster(clusterId).get.state must be (Running) }
+
+    Await.ready(sm.addUser(clusterId, ClusterUser.enabled(
+      username = cosmosProfile.handle,
+      publicKey = cosmosProfile.keys.head.signature,
+      isSudoer = false
+    )), timeout)
+  }
+
   "Unregistration" must "cannot be created when user status cannot be changed" in new WithWizard {
     doThrow(failure).when(dao)
       .setUserState(any[Long], any[UserState])(the(MockCosmosProfileDao.DummyConnection))
@@ -99,6 +118,14 @@ class UserUnregistrationWizardTest extends FlatSpec with MustMatchers with Futur
   it must "terminate user clusters" in new WithUserWithCluster {
     unregistrationMust(eventuallySucceed)
     sm.describeCluster(clusterId).get.state must be (Terminated)
+  }
+
+  it must "disable user in the clusters he's not owner of" in new WithUserOfNotOwnedClusters {
+    unregistrationMust(eventuallySucceed)
+    sm.listUsers(clusterId).get must contain(ClusterUser.disabled(
+      username = cosmosProfile.handle,
+      publicKey = cosmosProfile.keys.head.signature
+    ))
   }
 
   it must "keep user in deleting state if clusters cannot be freed" in

@@ -98,6 +98,45 @@ trait ServiceManager {
    */
   def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit]
 
+  /** A convenience function to add a new user to a cluster.
+    *
+    * This convenience function may be used to add a new user to an existing cluster. The list
+    * of users of the cluster must be available before invoking this function. Otherwise a failure
+    * is returned with a embed IllegalStateException. If there is a user with the same username
+    * already defined it will be replaced.
+    */
+  def addUser(clusterId: ClusterId, user: ClusterUser): Future[Unit] = {
+    listUsers(clusterId) match {
+      case None =>
+        Future.failed(new IllegalStateException(
+          s"cannot add user to cluster $clusterId: user list is not available yet"))
+      case Some(currentUsers) =>
+        val newUsers = currentUsers.filterNot(_.username.equals(user.username)) :+ user
+        setUsers(clusterId, newUsers)
+    }
+  }
+
+  /** A convenience function to disable a user from a cluster.
+    *
+    * This convenience function may be used to disable a user from a cluster. The user is
+    * not removed but instead his SSH and HDFS permissions on that cluster are revoked. The
+    * list of users of the cluster must be available before invoking this function. Otherwise
+    * a failure is returned with a embed IllegalStateException.
+    */
+  def disableUser(clusterId: ClusterId, username: String): Future[Unit] = {
+    listUsers(clusterId) match {
+      case None =>
+        Future.failed(new IllegalStateException(
+          s"cannot disable user from cluster $clusterId: user list is not available yet"))
+      case Some(currentUsers) =>
+        val newUsers = currentUsers.map(usr =>
+          if (usr.username.equals(username)) ClusterUser.disabled(username, usr.publicKey)
+          else usr
+        )
+        setUsers(clusterId, newUsers)
+    }
+  }
+
   /**
    * Get the total number of cluster nodes managed by the service manager.
    *

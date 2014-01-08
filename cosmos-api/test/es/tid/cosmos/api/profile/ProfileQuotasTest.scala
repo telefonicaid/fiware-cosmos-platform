@@ -19,6 +19,7 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.cluster.ClusterReference
 import es.tid.cosmos.api.profile.UserState.Enabled
+import es.tid.cosmos.api.quota._
 import es.tid.cosmos.platform.common.scalatest.data.DataPicker
 import es.tid.cosmos.platform.common.scalatest.matchers.ValidationMatchers
 import es.tid.cosmos.servicemanager.ClusterUser

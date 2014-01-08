@@ -15,6 +15,7 @@ package es.tid.cosmos.admin
 import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.quota.{GuaranteedGroup, Group, NoGroup, Quota}
 
 /** Admin commands for managing groups. */
 private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChecks {
@@ -33,7 +34,7 @@ private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChe
   /** List the existing groups.
     *
     * @return all the existing groups filtering out the implied
-    *         [[es.tid.cosmos.api.profile.NoGroup]]
+    *         [[es.tid.cosmos.api.quota.NoGroup]]
     */
   def list: String = dao.withConnection { implicit c =>
     val groups = dao.getGroups - NoGroup

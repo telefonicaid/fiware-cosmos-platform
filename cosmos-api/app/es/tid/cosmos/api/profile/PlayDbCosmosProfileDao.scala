@@ -23,6 +23,7 @@ import play.api.Play.current
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.Capability._
+import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
@@ -184,7 +185,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .on("min_quota" -> minQuota.toInt, "name" -> name).executeUpdate()
   }
 
-  /** ''Note:'' Referencial integrity is assumed to be delegated to the DB so as to set the group's
+  /** ''Note:'' Referential integrity is assumed to be delegated to the DB so as to set the group's
     * users to have NoGroup/NULL
     *
     * @see CosmosProfileDao

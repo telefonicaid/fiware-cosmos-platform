@@ -19,6 +19,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
+import es.tid.cosmos.api.quota._
 
 class ProfileTest extends FlatSpec with MustMatchers {
 

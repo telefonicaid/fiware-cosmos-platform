@@ -20,27 +20,29 @@ trait MachineUsageDao {
   /** The total number of machines in the machine pool */
   def machinePoolSize: Int
 
-  /** Access the DAO functionality while filtering out the requested cluster in the process.
-    * This is useful for usage calculations where the requested cluster has already been
-    * registered in the system but should not be taken into account since it has not been
-    * provisioned yet.
+  /** Get the number of used machines for each group.
     *
-    * @param requestedClusterId the ID of the requested cluster to be filtered out
-    * @return the DAO functionality with the applied filter.
+    * @param requestedClusterId the optional ID of the cluster requested to be created.
+    *                           When this is available it will be filtered out from the
+    *                           usage calculation since the cluster will have been registered
+    *                           without having been created yet.
+    * @return                   the number of used machines per group
     */
-  def withClusterFilter(requestedClusterId: Option[ClusterId]): WithClusterFilter
+  def usedMachinesByGroups(requestedClusterId: Option[ClusterId]): Map[Group, Int]
 
-  /** Access the DAO functionality without filtering any clusters.
+  /** Get the number of machines used by all the ''active'' clusters of a given user profile.
+    * A cluster is considered active if its state is within the set of
+    * [[es.tid.cosmos.servicemanager.clusters.ClusterState.ActiveStates]].
     *
-    * @return the DAO functionality without any filter
+    * @param profile            the user profile for whom to get the number of used machines
+    * @param requestedClusterId the optional ID of the cluster requested to be created.
+    *                           When this is available it will be filtered out from the
+    *                           usage calculation since the cluster will have been registered
+    *                           without having been created yet.
+    * @return the total number of used machines for the profile's active cluster.
     */
-  final def withoutClusterFilter: WithClusterFilter = withClusterFilter(None)
-
-  /** The DAO functionality that supports filtering. */
-  trait WithClusterFilter {
-    def usedMachinesByGroups: Map[Group, Int]
-    def usedMachinesForActiveClusters(profile: CosmosProfile): Int
-  }
+  def usedMachinesForActiveClusters(
+      profile: CosmosProfile, requestedClusterId: Option[ClusterId]): Int
 }
 
 /** Machine Usage DAO that combines the information of the
@@ -58,24 +60,8 @@ class CosmosMachineUsageDao(
 
   override def machinePoolSize = serviceManager.clusterNodePoolCount
 
-  override def withClusterFilter(requestedClusterId: Option[ClusterId]) =
-    new CosmosWithClusterFilter(requestedClusterId)
-
-  private def listClusters(profile: CosmosProfile)(implicit c: profileDao.Conn) = {
-    val assignedClusters =  Set(profileDao.clustersOf(profile.id): _*)
-    for {
-      assignment <- assignedClusters.toList
-      description <- serviceManager.describeCluster(assignment.clusterId).toList
-    } yield description
-  }
-
-  /** Filtered operations for [[es.tid.cosmos.api.profile.CosmosMachineUsageDao]].
-    *
-    * @param requestedClusterId the ID of the cluster to filter out
-    */
-  class CosmosWithClusterFilter(requestedClusterId: Option[ClusterId]) extends WithClusterFilter {
-
-    override def usedMachinesByGroups: Map[Group, Int] = profileDao.withConnection { implicit c =>
+  override def usedMachinesByGroups(requestedClusterId: Option[ClusterId]): Map[Group, Int] =
+    profileDao.withConnection { implicit c =>
       val groupsToUsedMachines: Set[(Group, Int)] = for {
         group <- profileDao.getGroups
         groupProfiles: Set[CosmosProfile] = profileDao.lookupByGroup(group)
@@ -84,25 +70,38 @@ class CosmosMachineUsageDao(
          * would discard machine sizes of the same number.
          */
         usedMachinesForGroupProfiles: Seq[Int] = groupProfiles.toSeq.map(
-          _usedMachinesForActiveClusters)
+          _usedMachinesForActiveClusters(_, requestedClusterId))
         usedMachinesForGroup = usedMachinesForGroupProfiles.sum
       } yield group -> usedMachinesForGroup
 
       groupsToUsedMachines.toMap
     }
 
-    override def usedMachinesForActiveClusters(profile: CosmosProfile): Int =
-      profileDao.withConnection { c => _usedMachinesForActiveClusters(profile)(c) }
+  override def usedMachinesForActiveClusters(
+      profile: CosmosProfile, requestedClusterId: Option[ClusterId]): Int =
+    profileDao.withConnection {
+      c => _usedMachinesForActiveClusters(profile, requestedClusterId)(c)
+    }
 
-    private def _usedMachinesForActiveClusters(profile: CosmosProfile)
-                                              (implicit c: profileDao.Conn): Int =
-      (for (description <- listClusters(profile) if !isRequestedCluster(description))
-        yield description.expectedSize).sum
+  private def _usedMachinesForActiveClusters(
+      profile: CosmosProfile, requestedClusterId: Option[ClusterId])
+                                            (implicit c: profileDao.Conn): Int =
+    (for (
+      description <- listClusters(profile) if !isRequestedCluster(description, requestedClusterId))
+      yield description.expectedSize).sum
 
-    private def isRequestedCluster(description: ClusterDescription): Boolean =
-      requestedClusterId match {
-        case Some(clusterId) => description.id == clusterId
-        case None => false
-      }
+  private def isRequestedCluster(
+      description: ClusterDescription, requestedClusterId: Option[ClusterId]): Boolean =
+    requestedClusterId match {
+      case Some(clusterId) => description.id == clusterId
+      case None => false
+    }
+
+  private def listClusters(profile: CosmosProfile)(implicit c: profileDao.Conn) = {
+    val assignedClusters =  Set(profileDao.clustersOf(profile.id): _*)
+    for {
+      assignment <- assignedClusters.toList
+      description <- serviceManager.describeCluster(assignment.clusterId).toList
+    } yield description
   }
 }

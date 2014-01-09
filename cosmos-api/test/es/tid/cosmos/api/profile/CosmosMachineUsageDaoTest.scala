@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.profile
 
-import scala.Some
 import scala.concurrent.duration._
 
 import org.scalatest.{OneInstancePerTest, FlatSpec}
@@ -31,42 +30,42 @@ class CosmosMachineUsageDaoTest
   val profileDao = new MockCosmosProfileDao
   val serviceManager = new MockedServiceManager(
     transitionDelay = 100.milliseconds,
-    maxPoolSize = 15
+    maxPoolSize = 16
   )
   val usageDao = new CosmosMachineUsageDao(profileDao, serviceManager)
   val profile = registerUser("myUser")(profileDao)
 
   "The usage dao" must "retrieve the machine pool size from the service manager" in {
-    usageDao.machinePoolSize must be (15)
+    usageDao.machinePoolSize must be (16)
   }
 
   it must "get the used machines for all active clusters of a profile without filtering" in
     new WithUserClusters {
-      usageDao.withoutClusterFilter.usedMachinesForActiveClusters(profile) must be (13)
+      usageDao.usedMachinesForActiveClusters(profile, None) must be (13)
       serviceManager.terminateCluster(terminated) must eventuallySucceed
-      usageDao.withoutClusterFilter.usedMachinesForActiveClusters(profile) must be (3)
+      usageDao.usedMachinesForActiveClusters(profile, None) must be (3)
     }
 
   it must "get the used machines for all active clusters of a profile with filtering" in
     new WithUserClusters {
       val filtered = Option(clusterId2)
-      usageDao.withClusterFilter(filtered).usedMachinesForActiveClusters(profile) must be (11)
+      usageDao.usedMachinesForActiveClusters(profile, filtered) must be (11)
       serviceManager.terminateCluster(terminated) must eventuallySucceed
-      usageDao.withClusterFilter(filtered).usedMachinesForActiveClusters(profile) must be (1)
+      usageDao.usedMachinesForActiveClusters(profile, filtered) must be (1)
     }
 
   it must "get no groups and no used machines by default" in {
-    usageDao.withoutClusterFilter.usedMachinesByGroups must be (Map(NoGroup -> 0))
+    usageDao.usedMachinesByGroups(None) must be (Map(NoGroup -> 0))
   }
 
   it must "get the used machines for all existing groups without filtering" in new WithGroups {
-    usageDao.withoutClusterFilter.usedMachinesByGroups must be (Map(
+    usageDao.usedMachinesByGroups(None) must be (Map(
       NoGroup -> 0,
       GuaranteedGroup("A", FiniteQuota(3)) -> 3,
       GuaranteedGroup("B", FiniteQuota(5)) -> 13
     ))
     serviceManager.terminateCluster(terminated) must eventuallySucceed
-    usageDao.withoutClusterFilter.usedMachinesByGroups must be (Map(
+    usageDao.usedMachinesByGroups(None) must be (Map(
       NoGroup -> 0,
       GuaranteedGroup("A", FiniteQuota(3)) -> 3,
       GuaranteedGroup("B", FiniteQuota(5)) -> 3
@@ -74,13 +73,13 @@ class CosmosMachineUsageDaoTest
   }
 
   it must "get the used machines for all existing groups with filtering" in new WithGroups {
-    usageDao.withClusterFilter(Some(clusterA2)).usedMachinesByGroups must be (Map(
+    usageDao.usedMachinesByGroups(Option(clusterA2)) must be (Map(
       NoGroup -> 0,
       GuaranteedGroup("A", FiniteQuota(3)) -> 1,
       GuaranteedGroup("B", FiniteQuota(5)) -> 13
     ))
     serviceManager.terminateCluster(terminated) must eventuallySucceed
-    usageDao.withClusterFilter(Some(clusterA2)).usedMachinesByGroups must be (Map(
+    usageDao.usedMachinesByGroups(Option(clusterA2)) must be (Map(
       NoGroup -> 0,
       GuaranteedGroup("A", FiniteQuota(3)) -> 1,
       GuaranteedGroup("B", FiniteQuota(5)) -> 3
@@ -88,8 +87,8 @@ class CosmosMachineUsageDaoTest
   }
 
   "A user without clusters" must "have 0 used machines" in {
-    usageDao.withoutClusterFilter.usedMachinesForActiveClusters(profile) must be (0)
-    usageDao.withClusterFilter(Some(ClusterId())).usedMachinesForActiveClusters(profile) must be (0)
+    usageDao.usedMachinesForActiveClusters(profile, None) must be (0)
+    usageDao.usedMachinesForActiveClusters(profile, Option(ClusterId())) must be (0)
   }
 
   private trait WithUserClusters {

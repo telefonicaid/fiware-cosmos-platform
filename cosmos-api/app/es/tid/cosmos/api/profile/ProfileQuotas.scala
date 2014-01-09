@@ -19,8 +19,6 @@ import es.tid.cosmos.servicemanager.clusters.ClusterId
  * Class responsible for handling user quotas.
  *
  * @constructor create a new profile-quotas handler.
- *              ''Note:'' The constructor uses function and pass-by-name parameters to allow
- *              loose-coupling while deferring their evaluation at the latest possible moment.
  * @param dao   the DAO to use to retrieve information about machine usage
  */
 class ProfileQuotas(dao: MachineUsageDao) {
@@ -45,9 +43,9 @@ class ProfileQuotas(dao: MachineUsageDao) {
       profile: CosmosProfile,
       size: Int,
       requestedClusterId: Option[ClusterId] = None): ValidationNel[String, Int] = {
-    val daoWithFilter = dao.withClusterFilter(requestedClusterId)
-    val availableFromProfile = profile.quota - Quota(daoWithFilter.usedMachinesForActiveClusters(profile))
-    val availableFromGroup = maxAvailableFromGroup(profile.group, daoWithFilter)
+    val usedMachinesFromProfile = dao.usedMachinesForActiveClusters(profile, requestedClusterId)
+    val availableFromProfile = profile.quota - Quota(usedMachinesFromProfile)
+    val availableFromGroup = maxAvailableFromGroup(profile.group, requestedClusterId)
     val overallAvailable = Quota.min(availableFromProfile, availableFromGroup)
 
     val profileValidation = validate(availableFromProfile, size, "Profile quota exceeded.")
@@ -63,8 +61,8 @@ class ProfileQuotas(dao: MachineUsageDao) {
     (profileValidation |@| groupValidation |@| overallValidation){(_, _, last) => last}
   }
 
-  private def maxAvailableFromGroup(group: Group, daoWithFilter: dao.WithClusterFilter): Quota = {
-    val usedByGroups = daoWithFilter.usedMachinesByGroups
+  private def maxAvailableFromGroup(group: Group, requestedClusterId: Option[ClusterId]): Quota = {
+    val usedByGroups = dao.usedMachinesByGroups(requestedClusterId)
     val maxQuota = GroupQuotas.maximumQuota(group, usedByGroups, dao.machinePoolSize)
     maxQuota - Quota(usedByGroups(group))
   }

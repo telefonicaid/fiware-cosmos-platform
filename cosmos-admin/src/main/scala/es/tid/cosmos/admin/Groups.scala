@@ -74,9 +74,10 @@ private[admin] class Groups(
 
   private def requireFeasibleQuota(group: Group, quota: Quota, isGroupNew: Boolean = false)
                                   (implicit c: dao.Conn) {
+    val withoutRequestedClusterId = None
     val usedMachinesByGroups =
-      if (isGroupNew) usageDao.withoutClusterFilter.usedMachinesByGroups + (group -> 0)
-      else usageDao.withoutClusterFilter.usedMachinesByGroups
+      if (isGroupNew) usageDao.usedMachinesByGroups(withoutRequestedClusterId) + (group -> 0)
+      else usageDao.usedMachinesByGroups(withoutRequestedClusterId)
 
     val maxPossible = GroupQuotas.maximumQuota(
       group,

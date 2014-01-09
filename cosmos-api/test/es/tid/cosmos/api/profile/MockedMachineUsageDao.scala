@@ -19,17 +19,15 @@ case class MockedMachineUsageDao(
       groupsToProfiles: Map[Group, Set[CosmosProfile]],
       profilesToClusters: Map[CosmosProfile, List[ClusterDescription]]) extends MachineUsageDao {
 
-    override def withClusterFilter(requestedClusterId: Option[ClusterId]) = new WithClusterFilter {
+  override def usedMachinesByGroups(requestedClusterId: Option[ClusterId]): Map[Group, Int] = (for {
+    group <- groups.toSeq
+    profiles = groupsToProfiles(group).toSeq
+    groupUsedMachinesSize = profiles.map(usedMachinesForActiveClusters(_, requestedClusterId)).sum
+  } yield group -> groupUsedMachinesSize).toMap
 
-      override def usedMachinesForActiveClusters(profile: CosmosProfile): Int = (for {
-        description <- profilesToClusters(profile) if Some(description.id) != requestedClusterId
-        clusterSize = description.expectedSize
-      } yield clusterSize).sum
-
-      override def usedMachinesByGroups: Map[Group, Int] = (for {
-        group <- groups.toSeq
-        profiles = groupsToProfiles(group).toSeq
-        groupUsedMachinesSize = profiles.map(usedMachinesForActiveClusters).sum
-      } yield group -> groupUsedMachinesSize).toMap
-    }
+  override def usedMachinesForActiveClusters(
+      profile: CosmosProfile, requestedClusterId: Option[ClusterId]): Int = (for {
+    description <- profilesToClusters(profile) if Some(description.id) != requestedClusterId
+    clusterSize = description.expectedSize
+  } yield clusterSize).sum
 }

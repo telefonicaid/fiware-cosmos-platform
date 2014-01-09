@@ -41,11 +41,11 @@ class MockedServiceManager(
       services: Set[String],
       initialState: Option[ClusterState] = None) {
 
-    private var state: ClusterState = Provisioning
-    private var nameNode: Option[URI] = None
-    private var master: Option[HostDetails] = None
-    private var slaves: Seq[HostDetails] = Seq.empty
-    private var users: Option[Set[ClusterUser]] = None
+    @volatile private var state: ClusterState = Provisioning
+    @volatile private var nameNode: Option[URI] = None
+    @volatile private var master: Option[HostDetails] = None
+    @volatile private var slaves: Seq[HostDetails] = Seq.empty
+    @volatile private var users: Option[Set[ClusterUser]] = None
 
     def isConsumingMachines: Boolean = state match {
       case Terminated | Failed(_) => false
@@ -101,7 +101,7 @@ class MockedServiceManager(
       }
   }
 
-  private var clusters: Map[ClusterId, FakeCluster] = Map.empty
+  @volatile private var clusters: Map[ClusterId, FakeCluster] = Map.empty
   
   override type ServiceDescriptionType = ServiceDescription
 

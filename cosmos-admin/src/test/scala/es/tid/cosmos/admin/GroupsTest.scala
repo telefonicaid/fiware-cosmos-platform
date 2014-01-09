@@ -61,13 +61,13 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   }
 
   it must "validate feasibility before creating a new group" in {
-      dao.withTransaction { implicit c =>
-        groups.create("hugeGroup", 100) must be (false)
-        dao.getGroups must be (Set(NoGroup))
-        groups.create("validGroup", 6) must be (true)
-        dao.getGroups must be (Set(NoGroup, GuaranteedGroup("validGroup", Quota(6))))
-      }
+    dao.withTransaction { implicit c =>
+      groups.create("hugeGroup", 100) must be (false)
+      dao.getGroups must be (Set(NoGroup))
+      groups.create("validGroup", 6) must be (true)
+      dao.getGroups must be (Set(NoGroup, GuaranteedGroup("validGroup", Quota(6))))
     }
+  }
 
   it must "validate feasibility before setting a group's new minimum quota" in {
     val group = GuaranteedGroup("groupA", Quota(3))

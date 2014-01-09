@@ -45,8 +45,22 @@ class HomeDir(object):
     def read_config_file(self, filename_override=None):
         filename = (filename_override if filename_override is not None
                     else self.get_default_config_filename())
-        log.info("Loading config from %s", self.abs_path(filename))
+        abs_path = self.abs_path(filename)
+        log.info("Loading config from %s", abs_path)
+        if self._is_public_file(abs_path):
+            print """WARNING: Configuration file can be accessed by other users.
+Please make it private ('chmod 0600 %s' in unix systems)
+""" % abs_path
         return self.read(filename)
+
+    def _is_public_file(self, filename):
+        try:
+            file_mode = os.stat(filename).st_mode
+            other_read = stat.S_IROTH | stat.S_IRGRP
+            return file_mode & other_read > 0
+        except OSError:
+            # File doesn't exist
+            return False
 
     def write_config_file(self, contents):
         filename = self.abs_path(self.get_default_config_filename())

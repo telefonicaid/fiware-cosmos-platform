@@ -73,6 +73,15 @@ class HomeDirTest(unittest.TestCase):
                 self.home.read_config_file(filename_override=other_config),
                 "config")
 
+    def test_warn_on_unprotected_config_file(self):
+        with collect_outputs() as outputs:
+            self.home.write_config_file("new config")
+            config_path = self.temp_dir.getpath(".cosmosrc")
+            os.lchmod(config_path, 0777)
+            #import ipdb; ipdb.set_trace()
+            self.home.read_config_file()
+            self.assertIn("WARNING", outputs.stdout.getvalue())
+
     def test_last_cluster(self):
         self.home.write_last_cluster("0000000")
         self.temp_dir.check(".cosmoslast")

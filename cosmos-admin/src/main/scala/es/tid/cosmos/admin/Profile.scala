@@ -16,6 +16,7 @@ import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Capability.Capability
+import es.tid.cosmos.api.quota.{UnlimitedQuota, Quota}
 
 private[admin] class Profile(override val dao: CosmosProfileDao) extends GroupChecks {
 

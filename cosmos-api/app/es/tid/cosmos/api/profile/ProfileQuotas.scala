@@ -14,7 +14,8 @@ package es.tid.cosmos.api.profile
 import scalaz._
 
 import es.tid.cosmos.api.controllers.cluster.ClusterReference
-import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ClusterId}
+import es.tid.cosmos.api.quota._
+import es.tid.cosmos.servicemanager.clusters.{Terminated, ClusterDescription, ClusterId}
 
 /**
  * Class responsible for handling user quotas.
@@ -71,61 +72,24 @@ class ProfileQuotas(
    */
   private class WithClusterFilter(requestedClusterId: Option[ClusterId]) {
 
-    import scalaz.Scalaz._
+    private val groupQuotas = GlobalGroupQuotas((for {
+      group@GuaranteedGroup(_, _) <- groups.toSeq
+      members = lookupByGroup(group).map(_.id)
+    } yield group -> members).toMap)
 
-    def withinQuota(profile: CosmosProfile, size: Int): ValidationNel[String, Int] = {
-      val availableFromProfile = profile.quota - Quota(usedMachinesForActiveClusters(profile))
-      val availableFromGroup = maxAvailableFromGroup(profile.group)
-      val overallAvailable = Quota.min(availableFromProfile, availableFromGroup)
+    private val usageByProfile: Map[ProfileId, Int] = (for {
+      g <- groups.toSeq
+      profile <- lookupByGroup(g)
+    } yield profile.id -> resourcesConsumed(profile)).toMap
 
-      val profileValidation = validate(availableFromProfile, size, "Profile quota exceeded.")
-      val groupValidationMessage = "Quota exceeded for %s.".format(
-        if (profile.group == NoGroup) "users not belonging to any group"
-        else s"group [${profile.group.name}]"
-      )
-      val groupValidation = validate(availableFromGroup, size, groupValidationMessage)
-      val available = overallAvailable.toInt.getOrElse(0)
-      val overallValidation = validate(overallAvailable, size,
-        s"You can request up to $available machine${if (available != 1) "s" else ""} at this point.")
+    private def resourcesConsumed(profile: CosmosProfile): Int = (for {
+      cluster <- listClusters(profile)
+      if Some(cluster.description.id) != requestedClusterId
+    } yield cluster.description.expectedSize).sum
 
-      (profileValidation |@| groupValidation |@| overallValidation){(_, _, last) => last}
-    }
+    private val context = QuotaContext(machinePoolSize, groupQuotas, usageByProfile)
 
-    private def maxAvailableFromGroup(group: Group): Quota = {
-      val usedByGroups = usedMachinesByGroups(groups)
-      val maxQuota = GroupQuotas.maximumQuota(group, usedByGroups, machinePoolSize)
-      maxQuota - Quota(usedByGroups(group))
-    }
-
-    private def validate(quota: Quota, size: Int, errorMessage: String): ValidationNel[String, Int] =
-      if (quota.withinQuota(size)) size.successNel[String] else errorMessage.failureNel[Int]
-
-    private def usedMachinesByGroups(groups: Set[Group]): Map[Group, Int] = {
-      val groupsToUsedMachines: Set[(Group, Int)] = for {
-        group <- groups
-        groupProfiles: Set[CosmosProfile] = lookupByGroup(group)
-        /*
-         * groupProfiles.toSeq necessary so that map transformation does not give a set which
-         * would discard machine sizes of the same number.
-         */
-        usedMachinesForGroupProfiles: Seq[Int] = groupProfiles.toSeq.map(
-          usedMachinesForActiveClusters)
-        usedMachinesForGroup = usedMachinesForGroupProfiles.sum
-      } yield group -> usedMachinesForGroup
-
-      groupsToUsedMachines.toMap
-    }
-
-    private def usedMachinesForActiveClusters(profile: CosmosProfile): Int =
-      (for {
-        clusterReference <- listClusters(profile)
-        description = clusterReference.description if !isRequestedCluster(description)
-      } yield description.expectedSize).sum
-
-    private def isRequestedCluster(description: ClusterDescription): Boolean =
-      requestedClusterId match {
-        case Some(clusterId) => description.id == clusterId
-        case None => false
-      }
+    def withinQuota(profile: CosmosProfile, size: Int): ValidationNel[String, Int] =
+      context.withinQuota(profile, size)
   }
 }

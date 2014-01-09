@@ -14,6 +14,7 @@ package es.tid.cosmos.api.profile
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.CosmosProfile._
 import es.tid.cosmos.api.profile.UserState.UserState
+import es.tid.cosmos.api.quota._
 
 /**
  * Represents the Cosmos-specific user profile.
@@ -37,7 +38,7 @@ case class CosmosProfile(
     keys: Seq[NamedKey],
     group: Group = DefaultGroup,
     quota: Quota = DefaultQuota,
-    capabilities: UserCapabilities = DefaultUserCapabilities) {
+    capabilities: UserCapabilities = DefaultUserCapabilities) extends QuotaConsumer[ProfileId] {
 
   require(HandleConstraint(handle), s"Invalid handle: $handle")
   require(duplicatedKeys.isEmpty, s"Duplicated keys: ${duplicatedKeys.mkString("", ", ", "")}")

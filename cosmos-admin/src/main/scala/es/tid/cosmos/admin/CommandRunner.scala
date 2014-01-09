@@ -15,10 +15,10 @@ import scala.language.reflectiveCalls
 
 import org.rogach.scallop.ScallopConf
 
-import es.tid.cosmos.api.profile.{NoGroup, PlayDbCosmosProfileDao}
+import es.tid.cosmos.admin.cli.AdminArguments
+import es.tid.cosmos.api.profile.PlayDbCosmosProfileDao
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
-import es.tid.cosmos.admin.cli.AdminArguments
 
 class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
 

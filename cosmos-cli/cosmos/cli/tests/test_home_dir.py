@@ -9,6 +9,8 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
+import os
+import stat
 import unittest
 
 from testfixtures import TempDirectory
@@ -61,6 +63,8 @@ class HomeDirTest(unittest.TestCase):
             self.temp_dir.check(".cosmosrc")
             self.assertEquals(self.home.read_config_file(), "new config")
             self.assertIn("Settings saved", outputs.stdout.getvalue())
+            file_mode = os.stat(self.temp_dir.getpath(".cosmosrc")).st_mode
+            self.assertEquals(file_mode, stat.S_IFREG | stat.S_IRUSR | stat.S_IWUSR)
 
     def test_override_config_file(self):
         with collect_outputs():

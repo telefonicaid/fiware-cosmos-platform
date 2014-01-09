@@ -14,6 +14,7 @@ the $HOME path on unix-like systems and the "Application Data" for MS ones."""
 
 import logging as log
 import os.path
+import stat
 
 
 class HomeDir(object):
@@ -48,10 +49,13 @@ class HomeDir(object):
         return self.read(filename)
 
     def write_config_file(self, contents):
-        filename = self.get_default_config_filename()
+        filename = self.abs_path(self.get_default_config_filename())
         if not os.path.exists(filename) or _confirm_overwrite(filename):
-            self.write(filename, contents)
-            print "Settings saved in %s" % self.abs_path(filename)
+            mode = stat.S_IRUSR | stat.S_IWUSR
+            handle = os.open(filename, os.O_WRONLY | os.O_CREAT, mode)
+            with os.fdopen(handle, "w") as f:
+                f.write(contents)
+            print "Settings saved in %s" % filename
 
     def get_last_cluster_filename(self):
         """Name of the file in which the last referred cluster id is stored"""

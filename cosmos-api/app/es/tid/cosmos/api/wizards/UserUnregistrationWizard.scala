@@ -70,10 +70,14 @@ class UserUnregistrationWizard(serviceManager: ServiceManager) {
     val persistentHdfsCleanup_> = dao.withTransaction { implicit c =>
       hdfsWizard.updatePersistentHdfsUsers(dao)
     }
+    val userDisabledFromAllClusters_> = dao.withTransaction { implicit c =>
+      serviceManager.disableUserFromAll(dao.lookupByProfileId(cosmosId).get.handle)
+    }
     for {
       _ <- clustersTermination_>
       _ <- persistentHdfsCleanup_>
       _ <- markUserDeleted(dao, cosmosId)
+      _ <- userDisabledFromAllClusters_>
     } yield ()
   }
 

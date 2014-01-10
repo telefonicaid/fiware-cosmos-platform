@@ -158,6 +158,61 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
     }
   }
 
+  val groupQuotasScenario = Scenario(
+    poolSize = 15,
+    groups = Map(
+      NoGroup -> Seq(
+        Profile(id = "userNG", usage = 4)
+      ),
+      GuaranteedGroup("A", Quota(8)) -> Seq(
+        Profile(id = "userA1", usage = 3),
+        Profile(id = "userA2", usage = 2)
+      ),
+      GuaranteedGroup("B", Quota(2)) -> Seq(
+        Profile(id = "userB1", usage = 2),
+        Profile(id = "userB2", usage = 0)
+      )
+    )
+  )
+
+  "The group minimum quota" must "be feasible when it decreases" in {
+    groupQuotasScenario.ensureThat { (context, profiles) =>
+      context.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(8))) must be ('success)
+      context.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(2))) must be ('success)
+      context.isGroupQuotaFeasible(GuaranteedGroup("A", EmptyQuota)) must be ('success)
+
+      context.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(2))) must be ('success)
+      context.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(1))) must be ('success)
+      context.isGroupQuotaFeasible(GuaranteedGroup("B", EmptyQuota)) must be ('success)
+    }
+  }
+
+  it must "be feasible when it increases and there is unreserved capacity" in {
+    groupQuotasScenario.ensureThat { (context, profiles) =>
+      context.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(9))) must be ('success)
+      context.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(10))) must be ('failure)
+
+      context.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(3))) must be ('success)
+      context.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(4))) must be ('failure)
+    }
+  }
+
+  "A new group's minimum quota" must
+    "be feasible when it less or equal to the unreserved capacity" in {
+    groupQuotasScenario.ensureThat { (context, profiles) =>
+      context.isGroupQuotaFeasible(GuaranteedGroup("C", EmptyQuota)) must be ('success)
+      context.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(1))) must be ('success)
+      context.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(2))) must be ('failure)
+    }
+  }
+
+  "A failed group quota message" must "indicate the maximum possible guaranteed quota" in {
+    groupQuotasScenario.ensureThat { (context, profiles) =>
+      val result = context.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(100)))
+      result must haveFailure("Group C can have a minimum quota of up to FiniteQuota(1).")
+    }
+  }
+
   case class Profile(id: String, usage: Int = 0, quota: Quota = UnlimitedQuota) {
     def quotaConsumer(quotaGroup: Group) = new QuotaConsumer[String] {
       override val id = Profile.this.id

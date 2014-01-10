@@ -27,6 +27,7 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
+import es.tid.cosmos.api.quota.QuotaContext
 
 /** Resource that represents a single cluster. */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
@@ -39,7 +40,8 @@ class ClusterResource(
 
   import ClusterResource._
 
-  private lazy val profileQuotas = new ProfileQuotas(new CosmosMachineUsageDao(dao, serviceManager))
+  private lazy val quotaContext =
+    new QuotaContextFactory(new CosmosMachineUsageDao(dao, serviceManager))
 
   /** List user clusters. */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
@@ -108,10 +110,10 @@ class ClusterResource(
   }
 
   private def executableWithinQuota(profile: CosmosProfile, size: Int): ClusterExecutableValidation =
-    (id: ClusterId) => () => profileQuotas.withinQuota(profile, size, Some(id))
+    (id: ClusterId) => () => quotaContext(Some(id)).withinQuota(profile, size)
 
   private def requireWithinQuota(profile: CosmosProfile, size: Int): ActionValidation[Int] =
-    profileQuotas.withinQuota(profile, size).leftMap(errors =>
+    quotaContext().withinQuota(profile, size).leftMap(errors =>
       Forbidden(Json.toJson(Message(errors.list.mkString(" "))))
     )
 

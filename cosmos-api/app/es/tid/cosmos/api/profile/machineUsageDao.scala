@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.api.profile
 
+import es.tid.cosmos.api.quota.{GuaranteedGroup, GlobalGroupQuotas}
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
 
@@ -20,29 +21,14 @@ trait MachineUsageDao {
   /** The total number of machines in the machine pool */
   def machinePoolSize: Int
 
-  /** Get the number of used machines for each group.
-    *
-    * @param requestedClusterId the optional ID of the cluster requested to be created.
-    *                           When this is available it will be filtered out from the
-    *                           usage calculation since the cluster will have been registered
-    *                           without having been created yet.
-    * @return                   the number of used machines per group
-    */
-  def usedMachinesByGroups(requestedClusterId: Option[ClusterId]): Map[Group, Int]
+  /** Get the system-wide quotas at a given point in time. */
+  def globalGroupQuotas: GlobalGroupQuotas[ProfileId]
 
-  /** Get the number of machines used by all the ''active'' clusters of a given user profile.
-    * A cluster is considered active if its state is within the set of
-    * [[es.tid.cosmos.servicemanager.clusters.ClusterState.ActiveStates]].
+  /** Aggregates resource usage by user profile.
     *
-    * @param profile            the user profile for whom to get the number of used machines
-    * @param requestedClusterId the optional ID of the cluster requested to be created.
-    *                           When this is available it will be filtered out from the
-    *                           usage calculation since the cluster will have been registered
-    *                           without having been created yet.
-    * @return the total number of used machines for the profile's active cluster.
+    * @param requestedClusterId the currently provisioning cluster to be filtered out or none
     */
-  def usedMachinesForActiveClusters(
-      profile: CosmosProfile, requestedClusterId: Option[ClusterId]): Int
+  def usageByProfile(requestedClusterId: Option[ClusterId]): Map[ProfileId, Int]
 }
 
 /** Machine Usage DAO that combines the information of the
@@ -60,35 +46,30 @@ class CosmosMachineUsageDao(
 
   override def machinePoolSize = serviceManager.clusterNodePoolCount
 
-  override def usedMachinesByGroups(requestedClusterId: Option[ClusterId]): Map[Group, Int] =
+  override def globalGroupQuotas: GlobalGroupQuotas[ProfileId] =
     profileDao.withConnection { implicit c =>
-      val groupsToUsedMachines: Set[(Group, Int)] = for {
-        group <- profileDao.getGroups
-        groupProfiles: Set[CosmosProfile] = profileDao.lookupByGroup(group)
-        /*
-         * groupProfiles.toSeq necessary so that map transformation does not give a set which
-         * would discard machine sizes of the same number.
-         */
-        usedMachinesForGroupProfiles: Seq[Int] = groupProfiles.toSeq.map(
-          _usedMachinesForActiveClusters(_, requestedClusterId))
-        usedMachinesForGroup = usedMachinesForGroupProfiles.sum
-      } yield group -> usedMachinesForGroup
-
-      groupsToUsedMachines.toMap
+      val membersByGroup = (for {
+        group@GuaranteedGroup(_, _) <- profileDao.getGroups.toSeq
+        members = profileDao.lookupByGroup(group).map(_.id)
+      } yield group -> members).toMap
+      GlobalGroupQuotas(membersByGroup)
     }
 
-  override def usedMachinesForActiveClusters(
+  override def usageByProfile(requestedClusterId: Option[ClusterId]): Map[ProfileId, Int] =
+    profileDao.withConnection { implicit c =>
+      (for {
+        g <- profileDao.getGroups.toSeq
+        profile <- profileDao.lookupByGroup(g)
+      } yield profile.id -> usedMachinesForActiveClusters(profile, requestedClusterId)).toMap
+    }
+
+  private def usedMachinesForActiveClusters(
       profile: CosmosProfile, requestedClusterId: Option[ClusterId]): Int =
-    profileDao.withConnection {
-      c => _usedMachinesForActiveClusters(profile, requestedClusterId)(c)
+    profileDao.withConnection { implicit c =>
+      (for (
+        description <- listClusters(profile) if !isRequestedCluster(description, requestedClusterId)
+      )yield description.expectedSize).sum
     }
-
-  private def _usedMachinesForActiveClusters(
-      profile: CosmosProfile, requestedClusterId: Option[ClusterId])
-                                            (implicit c: profileDao.Conn): Int =
-    (for (
-      description <- listClusters(profile) if !isRequestedCluster(description, requestedClusterId))
-      yield description.expectedSize).sum
 
   private def isRequestedCluster(
       description: ClusterDescription, requestedClusterId: Option[ClusterId]): Boolean =

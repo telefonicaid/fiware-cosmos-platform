@@ -18,8 +18,9 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
-import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.api.quota._
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.servicemanager.clusters._
 
 class CosmosMachineUsageDaoTest
   extends FlatSpec
@@ -41,54 +42,57 @@ class CosmosMachineUsageDaoTest
 
   it must "get the used machines for all active clusters of a profile without filtering" in
     new WithUserClusters {
-      usageDao.usedMachinesForActiveClusters(profile, None) must be (13)
+      usageDao.usageByProfile(requestedClusterId = None) must be (Map(
+         profile.id -> 13
+      ))
       serviceManager.terminateCluster(terminated) must eventuallySucceed
-      usageDao.usedMachinesForActiveClusters(profile, None) must be (3)
+      usageDao.usageByProfile(requestedClusterId = None) must be (Map(
+        profile.id -> 3
+      ))
     }
 
   it must "get the used machines for all active clusters of a profile with filtering" in
     new WithUserClusters {
       val filtered = Option(clusterId2)
-      usageDao.usedMachinesForActiveClusters(profile, filtered) must be (11)
+      usageDao.usageByProfile(filtered) must be (Map(
+        profile.id -> 11
+      ))
       serviceManager.terminateCluster(terminated) must eventuallySucceed
-      usageDao.usedMachinesForActiveClusters(profile, filtered) must be (1)
+      usageDao.usageByProfile(filtered) must be (Map(
+        profile.id -> 1
+      ))
     }
 
-  it must "get no groups and no used machines by default" in {
-    usageDao.usedMachinesByGroups(None) must be (Map(NoGroup -> 0))
-  }
+  it must "get the used machines considering the expected size of a cluster in failed state " +
+    "that already had its machines provisioned" in
+    new WithUserClusters {
+      serviceManager.makeClusterFail(clusterId2, "Failure example") must eventuallySucceed
+      usageDao.usageByProfile(requestedClusterId = None) must be (Map(
+        profile.id -> 13
+      ))
+    }
 
-  it must "get the used machines for all existing groups without filtering" in new WithGroups {
-    usageDao.usedMachinesByGroups(None) must be (Map(
-      NoGroup -> 0,
-      GuaranteedGroup("A", FiniteQuota(3)) -> 3,
-      GuaranteedGroup("B", FiniteQuota(5)) -> 13
-    ))
-    serviceManager.terminateCluster(terminated) must eventuallySucceed
-    usageDao.usedMachinesByGroups(None) must be (Map(
-      NoGroup -> 0,
-      GuaranteedGroup("A", FiniteQuota(3)) -> 3,
-      GuaranteedGroup("B", FiniteQuota(5)) -> 3
-    ))
-  }
+  it must "get the used machines considering the expected size of a cluster in failed state " +
+      "before provisioning any machines" in
+      new WithUserClusters {
+        import scalaz.Scalaz._
 
-  it must "get the used machines for all existing groups with filtering" in new WithGroups {
-    usageDao.usedMachinesByGroups(Option(clusterA2)) must be (Map(
-      NoGroup -> 0,
-      GuaranteedGroup("A", FiniteQuota(3)) -> 1,
-      GuaranteedGroup("B", FiniteQuota(5)) -> 13
-    ))
-    serviceManager.terminateCluster(terminated) must eventuallySucceed
-    usageDao.usedMachinesByGroups(Option(clusterA2)) must be (Map(
-      NoGroup -> 0,
-      GuaranteedGroup("A", FiniteQuota(3)) -> 1,
-      GuaranteedGroup("B", FiniteQuota(5)) -> 3
-    ))
-  }
+        val failedPreconditions = (clusterId: ClusterId) => () => "Failure example".failureNel
+        val clusterId = serviceManager.createCluster(
+          "failedCluster", 2, Seq.empty, Seq.empty, failedPreconditions)
+        profileDao.withTransaction { implicit c =>
+          profileDao.assignCluster(clusterId, profile.id)(c)
+        }
+        usageDao.usageByProfile(requestedClusterId = None) must be (Map(
+          profile.id -> 13
+        ))
+      }
 
-  "A user without clusters" must "have 0 used machines" in {
-    usageDao.usedMachinesForActiveClusters(profile, None) must be (0)
-    usageDao.usedMachinesForActiveClusters(profile, Option(ClusterId())) must be (0)
+  it must "collect all groups and their member profiles" in new WithGroups {
+    usageDao.globalGroupQuotas must be (GlobalGroupQuotas(Map(
+      groupA -> Set(profile.id, profileA2.id),
+      groupB -> Set(profileB1.id, profileB2.id)
+    )))
   }
 
   private trait WithUserClusters {
@@ -110,9 +114,11 @@ class CosmosMachineUsageDaoTest
     val clusterB1 = serviceManager.createCluster("clusterB1", 1, Seq.empty, Seq.empty)
     val clusterB2 = serviceManager.createCluster("clusterB2", 2, Seq.empty, Seq.empty)
     val terminated = serviceManager.createCluster("terminatedCluster", 10, Seq.empty, Seq.empty)
+    val groupA = GuaranteedGroup("A", Quota(3))
+    val groupB = GuaranteedGroup("B", Quota(5))
     profileDao.withTransaction { implicit c =>
-      profileDao.registerGroup(GuaranteedGroup("A", Quota(3)))
-      profileDao.registerGroup(GuaranteedGroup("B", Quota(5)))
+      profileDao.registerGroup(groupA)
+      profileDao.registerGroup(groupB)
       profileDao.setGroup(profile.id, Some("A"))
       profileDao.setGroup(profileA2.id, Some("A"))
       profileDao.setGroup(profileB1.id, Some("B"))

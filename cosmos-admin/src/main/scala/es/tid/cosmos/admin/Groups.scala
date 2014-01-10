@@ -16,7 +16,9 @@ import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.ServiceManager
-import es.tid.cosmos.api.quota.{GuaranteedGroup, Group, NoGroup, Quota}
+import es.tid.cosmos.api.quota._
+import es.tid.cosmos.api.quota.GuaranteedGroup
+import scala.Some
 
 /** Admin commands for managing groups. */
 private[admin] class Groups(
@@ -24,7 +26,8 @@ private[admin] class Groups(
     serviceManager: ServiceManager) extends GroupChecks {
   import Groups._
 
-  private val usageDao = new CosmosMachineUsageDao(dao, serviceManager)
+  private val quotaContext =
+      new QuotaContextFactory(new CosmosMachineUsageDao(dao, serviceManager))
 
   /** Create a group.
     *
@@ -35,7 +38,7 @@ private[admin] class Groups(
   def create(name: String, minQuota: Int): Boolean = dao.withTransaction { implicit c =>
     tryAction {
       val group = GuaranteedGroup(name, Quota(minQuota))
-      requireFeasibleQuota(group, Quota(minQuota), isGroupNew = true)
+      requireFeasibleQuota(group)
       Some(dao.registerGroup(group))
     }
   }
@@ -68,29 +71,20 @@ private[admin] class Groups(
     */
   def setMinQuota(name: String, quota: Int): Boolean = dao.withTransaction { implicit c =>
     tryAction { for (group <- withGroup(name)) yield {
-      requireFeasibleQuota(group, Quota(quota))
+      requireFeasibleQuota(group.copy(minimumQuota = Quota(quota)))
       dao.setGroupQuota(group.name, Quota(quota))
     }}
   }
 
-  private def requireFeasibleQuota(group: Group, quota: Quota, isGroupNew: Boolean = false)
-                                  (implicit c: dao.Conn) {
-    val withoutRequestedClusterId = None
-    val usedMachinesByGroups =
-      if (isGroupNew) usageDao.usedMachinesByGroups(withoutRequestedClusterId) + (group -> 0)
-      else usageDao.usedMachinesByGroups(withoutRequestedClusterId)
-
-    val maxPossible = GroupQuotas.maximumQuota(
-      group,
-      usedMachinesByGroups,
-      usageDao.machinePoolSize
-    )
-    require(
-      maxPossible.withinQuota(quota),
-      s"Cannot set to $quota.\nGroup ${group.name} can have a minimum quota of up to $maxPossible."
+  private def requireFeasibleQuota(group: GuaranteedGroup)(implicit c: dao.Conn) {
+    val validation = quotaContext().isGroupQuotaFeasible(group)
+    validation.fold(
+      succ = _ => (),
+      fail = error => throw new IllegalArgumentException(
+        s"Cannot set to ${group.minimumQuota}.\n$error\n"
+      )
     )
   }
-
 }
 
 private object Groups {

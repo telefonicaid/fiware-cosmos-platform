@@ -84,6 +84,8 @@ class MockedServiceManager(
       state = Terminating
       transitionTo(Terminated)
     }
+    
+    def makeFail(reason: String) = transitionTo(Failed(reason))
 
     private def randomHost: HostDetails = {
       val n = Random.nextInt(256) + 1
@@ -116,8 +118,13 @@ class MockedServiceManager(
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = synchronized {
     val id = ClusterId()
-    require(preConditions(id).apply().isSuccess, "preconditions were not met")
-    defineCluster(ClusterProperties(id, name, size, users.toSet))
+    val properties = ClusterProperties(id, name, size, users.toSet)
+
+    val propertiesAfterPreconditions = preConditions(id).apply().fold(
+     fail = errors => properties.copy(initialState = Some(Failed(errors.list.mkString(", ")))),
+     succ = (_) => properties
+    )
+    defineCluster(propertiesAfterPreconditions)
     id
   }
 
@@ -127,6 +134,10 @@ class MockedServiceManager(
 
   override def terminateCluster(id: ClusterId): Future[Unit] = synchronized {
     clusters(id).terminate()
+  }
+  
+  def makeClusterFail(id: ClusterId, reason: String): Future[Unit] = synchronized {
+    clusters(id).makeFail(reason)
   }
 
   override val persistentHdfsId: ClusterId = PersistentHdfsProps.id

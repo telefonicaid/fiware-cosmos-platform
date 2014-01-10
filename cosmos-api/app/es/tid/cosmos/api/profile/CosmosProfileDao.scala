@@ -15,6 +15,7 @@ import java.util.Date
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState.UserState
+import es.tid.cosmos.api.quota.{Group, LimitedQuota, Quota}
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 /** This trait creates an abstraction on how to use the underlying data, such as SQL databases,
@@ -118,7 +119,7 @@ trait CosmosProfileDao {
     * @throws CosmosProfileException  When no user has such id
     */
   def setEmail(id: ProfileId, email: String)(implicit c: Conn): Unit
-  
+
   /** Set the state of a given user.
     *
     * @param id         Id of the user.

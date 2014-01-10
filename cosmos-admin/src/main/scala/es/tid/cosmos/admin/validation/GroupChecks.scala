@@ -11,8 +11,9 @@
 
 package es.tid.cosmos.admin.validation
 
-import es.tid.cosmos.api.profile.{Group, CosmosProfileDao}
 import es.tid.cosmos.admin.Util
+import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.quota.Group
 
 /** Mix-in trait for adding user-group related checks */
 trait GroupChecks {

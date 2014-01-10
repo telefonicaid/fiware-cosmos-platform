@@ -19,6 +19,7 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.api.quota.{NoGroup, GuaranteedGroup, Quota, EmptyQuota}
 
 class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
 

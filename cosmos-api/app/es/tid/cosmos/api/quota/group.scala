@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.quota
 
 /**
  * Representation of a user group.
@@ -31,10 +31,10 @@ sealed trait Group {
  * @constructor create a new group
  * @param name the group's name
  * @param minimumQuota the minimum machine quota that should always be available for the group.
- *                     If [[es.tid.cosmos.api.profile.EmptyQuota]] the group offers no minimum
+ *                     If [[es.tid.cosmos.api.quota.EmptyQuota]] the group offers no minimum
  *                     quota guarantees.
  * @throws IllegalArgumentException if the minimum quota is
- *                                  [[es.tid.cosmos.api.profile.UnlimitedQuota]] because an unbound
+ *                                  [[es.tid.cosmos.api.quota.UnlimitedQuota]] because an unbound
  *                                  quota cannot be guaranteed.
  */
 case class GuaranteedGroup(

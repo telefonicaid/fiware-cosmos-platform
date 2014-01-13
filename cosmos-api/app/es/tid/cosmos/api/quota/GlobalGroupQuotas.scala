@@ -42,7 +42,5 @@ case class GlobalGroupQuotas[ConsumerId](membersByGroup: Map[GuaranteedGroup, Se
     } yield group -> max(0, groupResources - groupUsage(members))
   }
 
-  def get(name: String): Option[GuaranteedGroup] = membersByGroup.keys.collectFirst {
-    case group if group.name == name => group
-  }
+  def get(name: String): Option[GuaranteedGroup] = membersByGroup.keys.find(_.name == name)
 }

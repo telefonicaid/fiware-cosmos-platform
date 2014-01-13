@@ -49,7 +49,7 @@ class CosmosMachineUsageDao(
   override def globalGroupQuotas: GlobalGroupQuotas[ProfileId] =
     profileDao.withConnection { implicit c =>
       val membersByGroup = (for {
-        group@GuaranteedGroup(_, _) <- profileDao.getGroups.toSeq
+        group@GuaranteedGroup(_, _) <- profileDao.getGroups
         members = profileDao.lookupByGroup(group).map(_.id)
       } yield group -> members).toMap
       GlobalGroupQuotas(membersByGroup)
@@ -68,7 +68,7 @@ class CosmosMachineUsageDao(
     profileDao.withConnection { implicit c =>
       (for (
         description <- listClusters(profile) if !isRequestedCluster(description, requestedClusterId)
-      )yield description.expectedSize).sum
+      ) yield description.expectedSize).sum
     }
 
   private def isRequestedCluster(

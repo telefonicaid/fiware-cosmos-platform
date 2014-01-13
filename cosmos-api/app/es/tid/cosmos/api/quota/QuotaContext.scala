@@ -69,8 +69,6 @@ case class QuotaContext[ConsumerId](
 
     if (maxGuaranteedQuota.withinQuota(group.minimumQuota)) group.success
     else s"Group ${group.name} can have a minimum quota of up to $maxGuaranteedQuota.".failure
-
-
   }
 
   private def currentUse(id: ConsumerId): Int = usageByProfile.getOrElse(id, 0)

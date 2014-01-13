@@ -18,50 +18,37 @@ import es.tid.cosmos.platform.common.scalatest.matchers.ValidationMatchers
 
 class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatchers {
 
-  "A user request exceeding their personal quota" must "not be allowed" in {
-    Scenario(poolSize = 10, groups = Map(
-      GuaranteedGroup("A", Quota(3)) -> Seq(
-        Profile(id = "user0", usage = 2, Quota(3))
-      ),
-      GuaranteedGroup("B", Quota(2)) -> Seq(),
-      NoGroup -> Seq(
-        Profile(id = "user1", usage = 3)
-      )
-    )).ensureThat { (context, profiles) =>
-      context.withinQuota(profiles("user0"), 1) must (beSuccessful and haveValidValue(1))
-      context.withinQuota(profiles("user0"), 2) must haveFailures(
-        "Profile quota exceeded.",
-        "You can request up to 1 machine at this point."
-      )
-    }
+  "A user request exceeding their personal quota" must "not be allowed" in new Scenario(Map(
+    GuaranteedGroup("A", Quota(3)) -> Seq(
+      Profile(id = "user0", usage = 2, Quota(3))
+    ),
+    GuaranteedGroup("B", Quota(2)) -> Seq(),
+    NoGroup -> Seq(
+      Profile(id = "user1", usage = 3)
+    )
+  )) {
+    context.withinQuota(profiles("user0"), 1) must (beSuccessful and haveValidValue(1))
+    context.withinQuota(profiles("user0"), 2) must haveFailures(
+      "Profile quota exceeded.",
+      "You can request up to 1 machine at this point."
+    )
   }
 
-  "A user request exceeding available resources" must "not be allowed" in {
-    Scenario(poolSize = 10, groups = Map(
-      NoGroup -> Seq(
-        Profile(id = "user0", usage = 2),
-        Profile(id = "user1", usage = 3)
-      )
-    )).ensureThat { (context, profiles) =>
-      context.withinQuota(profiles("user0"), 5) must (beSuccessful and haveValidValue(5))
-      context.withinQuota(profiles("user0"), 6) must haveFailures(
-        "Quota exceeded for users not belonging to any group.",
-        "You can request up to 5 machines at this point."
-      )
-    }
+  "A user request exceeding available resources" must "not be allowed" in new Scenario(Map(
+    NoGroup -> Seq(
+      Profile(id = "user0", usage = 2),
+      Profile(id = "user1", usage = 3)
+    )
+  )) {
+    context.withinQuota(profiles("user0"), 5) must (beSuccessful and haveValidValue(5))
+    context.withinQuota(profiles("user0"), 6) must haveFailures(
+      "Quota exceeded for users not belonging to any group.",
+      "You can request up to 5 machines at this point."
+    )
   }
 
-  "A user request exceeding their minimum group quota" must "be allowed if machines available" in {
-    /*
-    +----+----+---+---+----+----+----+---+---+----+
-    | 1  | 2  | 3 | 4 | 5  | 6  | 7  | 8 | 9 | 10 |
-    +----+----+---+---+----+----+----+---+---+----+
-    | A  | A  | B | B | NG | NG | NG | o | o | o  |
-    | ur | ur | r | r | u  | u  | u  | o | o | o  |
-    +----+----+---+---+----+----+----+---+---+----+
-                                       X   X   X
-     */
-    Scenario(poolSize = 10, groups = Map(
+  "A user request exceeding their minimum group quota" must "be allowed if machines available" in
+    new Scenario(Map(
       GuaranteedGroup("A", Quota(2)) -> Seq(
         Profile(id = "user0", usage = 2)
       ),
@@ -69,7 +56,7 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
       NoGroup -> Seq(
         Profile(id = "user1", usage = 3)
       )
-    )).ensureThat { (context, profiles) =>
+    )) {
       context.withinQuota(profiles("user0"), 1) must (beSuccessful and haveValidValue(1))
       context.withinQuota(profiles("user0"), 2) must (beSuccessful and haveValidValue(2))
       context.withinQuota(profiles("user0"), 3) must (beSuccessful and haveValidValue(3))
@@ -78,19 +65,9 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
         "You can request up to 3 machines at this point."
       )
     }
-  }
 
-  "A user without personal quota" must "be allowed the max number of available machines" in {
-    /*
-    +----+----+---+---+---+----+----+----+---+----+
-    | 1  | 2  | 3 | 4 | 5 | 6  | 7  | 8  | 9 | 10 |
-    +----+----+---+---+---+----+----+----+---+----+
-    | A  | A  | A | B | B | NG | NG | NG | o | o  |
-    | ur | ur | r | r | r | u  | u  | u  | o | o  |
-    +----+----+---+---+---+----+----+----+---+----+
-                X                          X   X
-     */
-    Scenario(poolSize = 10, groups = Map(
+  "A user without personal quota" must "be allowed the max number of available machines" in
+    new Scenario(Map(
       GuaranteedGroup("A", Quota(3)) -> Seq(
         Profile(id = "user0", usage = 2)
       ),
@@ -98,18 +75,17 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
       NoGroup -> Seq(
         Profile(id = "user1", usage = 3)
       )
-    )).ensureThat { (context, profiles) =>
+    )) {
       context.withinQuota(profiles("user0"), 3) must (beSuccessful and haveValidValue(3))
       context.withinQuota(profiles("user0"), 4) must haveFailures(
         "Quota exceeded for group [A].",
         "You can request up to 3 machines at this point."
       )
     }
-  }
 
   "The minimum group quota" must "be guaranteed for all groups" in {
     val ex = evaluating {
-      Scenario(poolSize = 10, groups = Map(
+      Scenario(Map(
         GuaranteedGroup("A", Quota(5)) -> Seq(
           Profile(id = "user0", usage = 2)
         ),
@@ -125,40 +101,37 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
 
   /* Regression test for issue https://pdihub.hi.inet/Cosmos/cosmos-platform/issues/1506 */
   it must "correctly sum number of used machines among profiles of same group " +
-    "even if some profiles have the same number of used machines" in {
+    "even if some profiles have the same number of used machines" in new Scenario(
+      poolSize = 22,
+      groups = Map(
+        NoGroup -> Seq(
+          Profile(id = "user1", usage = 4),
+          Profile(id = "user2", usage = 4)
+        ),
+        GuaranteedGroup("A", Quota(12)) -> Seq(
+          Profile(id = "user3", usage = 5),
+          Profile(id = "user4", usage = 5)
+        )
+      )) {
+        // 22 - 4 - 4 - 5 - 5 = 4 available
+        // group A: 10 used 12 reserved.
 
-    Scenario(poolSize = 22, groups = Map(
-      NoGroup -> Seq(
-        Profile(id = "user1", usage = 4),
-        Profile(id = "user2", usage = 4)
-        // 8 used machines
-      ),
-      GuaranteedGroup("A", Quota(12)) -> Seq(
-        Profile(id = "user3", usage = 5),
-        Profile(id = "user4", usage = 5)
-        // 10 used machines
-      )
-    )).ensureThat { (context, profiles) =>
-      // 22 - 18 used = 4 available
-      // group A: 10 used 12 reserved.
+        // 2 available for NoGroup
+        context.withinQuota(profiles("user1"), 2) must (beSuccessful and haveValidValue(2))
+        context.withinQuota(profiles("user1"), 3) must haveFailures(
+          "Quota exceeded for users not belonging to any group.",
+          "You can request up to 2 machines at this point."
+        )
 
-      // 2 available for NoGroup
-      context.withinQuota(profiles("user1"), 2) must (beSuccessful and haveValidValue(2))
-      context.withinQuota(profiles("user1"), 3) must haveFailures(
-        "Quota exceeded for users not belonging to any group.",
-        "You can request up to 2 machines at this point."
-      )
+        // 4 available for group A
+        context.withinQuota(profiles("user3"), 4) must (beSuccessful and haveValidValue(4))
+        context.withinQuota(profiles("user3"), 5) must haveFailures(
+          "Quota exceeded for group [A].",
+          "You can request up to 4 machines at this point."
+        )
+      }
 
-      // 4 available for group A
-      context.withinQuota(profiles("user3"), 4) must (beSuccessful and haveValidValue(4))
-      context.withinQuota(profiles("user3"), 5) must haveFailures(
-        "Quota exceeded for group [A].",
-        "You can request up to 4 machines at this point."
-      )
-    }
-  }
-
-  val groupQuotasScenario = Scenario(
+  val groupQuotasContext = Scenario(
     poolSize = 15,
     groups = Map(
       NoGroup -> Seq(
@@ -173,44 +146,36 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
         Profile(id = "userB2", usage = 0)
       )
     )
-  )
+  ).context
 
   "The group minimum quota" must "be feasible when it decreases" in {
-    groupQuotasScenario.ensureThat { (context, profiles) =>
-      context.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(8))) must be ('success)
-      context.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(2))) must be ('success)
-      context.isGroupQuotaFeasible(GuaranteedGroup("A", EmptyQuota)) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(8))) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(2))) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("A", EmptyQuota)) must be ('success)
 
-      context.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(2))) must be ('success)
-      context.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(1))) must be ('success)
-      context.isGroupQuotaFeasible(GuaranteedGroup("B", EmptyQuota)) must be ('success)
-    }
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(2))) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(1))) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("B", EmptyQuota)) must be ('success)
   }
 
   it must "be feasible when it increases and there is unreserved capacity" in {
-    groupQuotasScenario.ensureThat { (context, profiles) =>
-      context.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(9))) must be ('success)
-      context.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(10))) must be ('failure)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(9))) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("A", Quota(10))) must be ('failure)
 
-      context.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(3))) must be ('success)
-      context.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(4))) must be ('failure)
-    }
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(3))) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("B", Quota(4))) must be ('failure)
   }
 
   "A new group's minimum quota" must
     "be feasible when it less or equal to the unreserved capacity" in {
-    groupQuotasScenario.ensureThat { (context, profiles) =>
-      context.isGroupQuotaFeasible(GuaranteedGroup("C", EmptyQuota)) must be ('success)
-      context.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(1))) must be ('success)
-      context.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(2))) must be ('failure)
-    }
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("C", EmptyQuota)) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(1))) must be ('success)
+    groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(2))) must be ('failure)
   }
 
   "A failed group quota message" must "indicate the maximum possible guaranteed quota" in {
-    groupQuotasScenario.ensureThat { (context, profiles) =>
-      val result = context.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(100)))
-      result must haveFailure("Group C can have a minimum quota of up to FiniteQuota(1).")
-    }
+    val result = groupQuotasContext.isGroupQuotaFeasible(GuaranteedGroup("C", Quota(100)))
+    result must haveFailure("Group C can have a minimum quota of up to FiniteQuota(1).")
   }
 
   case class Profile(id: String, usage: Int = 0, quota: Quota = UnlimitedQuota) {
@@ -221,14 +186,14 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
     }
   }
 
-  case class Scenario(poolSize: Int, groups: Map[Group, Seq[Profile]]) {
+  case class Scenario(groups: Map[Group, Seq[Profile]], poolSize: Int = 10) {
 
     private val groupQuotas = GlobalGroupQuotas(for {
       (group: GuaranteedGroup, profiles) <- groups
       members = profiles.map(_.id).toSet
     } yield group -> members)
 
-    private val context = QuotaContext(
+    val context = QuotaContext(
       poolSize = poolSize,
       groupQuotas = groupQuotas,
       usageByProfile = (for {
@@ -236,14 +201,9 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
       } yield profile.id -> profile.usage).toMap
     )
 
-    private val cosmosProfiles = for {
-      (group, profiles)<- groups
-      profile <- profiles
+    val profiles = for {
+      (group, groupProfiles)<- groups
+      profile <- groupProfiles
     } yield profile.id -> profile.quotaConsumer(group)
-
-    def ensureThat(
-        test: (QuotaContext[String], Map[String, QuotaConsumer[String]]) => Unit) {
-      test(context, cosmosProfiles)
-    }
   }
 }

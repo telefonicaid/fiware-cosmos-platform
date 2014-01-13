@@ -41,4 +41,6 @@ case class GlobalGroupQuotas[ConsumerId](membersByGroup: Map[GuaranteedGroup, Se
       groupResources = group.minimumQuota.toInt.getOrElse(0)
     } yield group -> max(0, groupResources - groupUsage(members))
   }
+
+  def get(name: String): Option[GuaranteedGroup] = membersByGroup.keys.find(_.name == name)
 }

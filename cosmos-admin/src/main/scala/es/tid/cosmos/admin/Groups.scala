@@ -15,11 +15,17 @@ package es.tid.cosmos.admin
 import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.quota.{GuaranteedGroup, Group, NoGroup, Quota}
+import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.api.quota._
 
 /** Admin commands for managing groups. */
-private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChecks {
+private[admin] class Groups(
+    override val dao: CosmosProfileDao,
+    serviceManager: ServiceManager) extends GroupChecks {
   import Groups._
+
+  private val quotaContext =
+      new QuotaContextFactory(new CosmosMachineUsageDao(dao, serviceManager))
 
   /** Create a group.
     *
@@ -28,7 +34,11 @@ private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChe
     * @return         true iff the group was successfully created
     */
   def create(name: String, minQuota: Int): Boolean = dao.withTransaction { implicit c =>
-    tryAction { Some(dao.registerGroup(GuaranteedGroup(name, Quota(minQuota)))) }
+    tryAction {
+      val group = GuaranteedGroup(name, Quota(minQuota))
+      requireFeasibleQuota(group)
+      Some(dao.registerGroup(group))
+    }
   }
 
   /** List the existing groups.
@@ -58,7 +68,20 @@ private[admin] class Groups(override val dao: CosmosProfileDao) extends GroupChe
     * @return      true if the group was successfully updated with the new minimum quota
     */
   def setMinQuota(name: String, quota: Int): Boolean = dao.withTransaction { implicit c =>
-    tryAction { for (group <- withGroup(name)) yield dao.setGroupQuota(group.name, Quota(quota)) }
+    tryAction { for (group <- withGroup(name)) yield {
+      requireFeasibleQuota(group.copy(minimumQuota = Quota(quota)))
+      dao.setGroupQuota(group.name, Quota(quota))
+    }}
+  }
+
+  private def requireFeasibleQuota(group: GuaranteedGroup)(implicit c: dao.Conn) {
+    val validation = quotaContext().isGroupQuotaFeasible(group)
+    validation.fold(
+      succ = _ => (),
+      fail = error => throw new IllegalArgumentException(
+        s"Cannot set to ${group.minimumQuota}.\n$error\n"
+      )
+    )
   }
 }
 

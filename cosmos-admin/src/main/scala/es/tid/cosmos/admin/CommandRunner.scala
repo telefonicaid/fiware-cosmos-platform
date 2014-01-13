@@ -79,7 +79,7 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
   }
 
   private def processGroupCommand(subcommands: List[ScallopConf]) = {
-    val groups = new Groups(new PlayDbCosmosProfileDao)
+    val groups = new Groups(new PlayDbCosmosProfileDao, serviceManager)
     subcommands.headOption match {
       case Some(args.group.create) => tryCommand(groups.create(
         args.group.create.name(), args.group.create.minQuota()))

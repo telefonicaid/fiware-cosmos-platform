@@ -81,4 +81,14 @@ trait ValidationMatchers {
       "Failures matched"
     )
   }
+
+  def haveFailure[T](expected: T) = Matcher { (left: Validation[T, _]) =>
+    val failure = left.swap.toOption.get
+
+    MatchResult(
+      left.isFailure && failure == expected,
+      s"Failure did not match. ${expected === failure}",
+      "Failures matched"
+    )
+  }
 }

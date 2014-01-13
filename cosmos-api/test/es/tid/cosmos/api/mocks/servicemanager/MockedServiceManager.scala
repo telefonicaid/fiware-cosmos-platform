@@ -41,11 +41,11 @@ class MockedServiceManager(
       services: Set[String],
       initialState: Option[ClusterState] = None) {
 
-    private var state: ClusterState = Provisioning
-    private var nameNode: Option[URI] = None
-    private var master: Option[HostDetails] = None
-    private var slaves: Seq[HostDetails] = Seq.empty
-    private var users: Option[Set[ClusterUser]] = None
+    @volatile private var state: ClusterState = Provisioning
+    @volatile private var nameNode: Option[URI] = None
+    @volatile private var master: Option[HostDetails] = None
+    @volatile private var slaves: Seq[HostDetails] = Seq.empty
+    @volatile private var users: Option[Set[ClusterUser]] = None
 
     def isConsumingMachines: Boolean = state match {
       case Terminated | Failed(_) => false
@@ -84,6 +84,8 @@ class MockedServiceManager(
       state = Terminating
       transitionTo(Terminated)
     }
+    
+    def makeFail(reason: String) = transitionTo(Failed(reason))
 
     private def randomHost: HostDetails = {
       val n = Random.nextInt(256) + 1
@@ -101,7 +103,7 @@ class MockedServiceManager(
       }
   }
 
-  private var clusters: Map[ClusterId, FakeCluster] = Map.empty
+  @volatile private var clusters: Map[ClusterId, FakeCluster] = Map.empty
   
   override type ServiceDescriptionType = ServiceDescription
 
@@ -116,8 +118,13 @@ class MockedServiceManager(
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = synchronized {
     val id = ClusterId()
-    require(preConditions(id).apply().isSuccess, "preconditions were not met")
-    defineCluster(ClusterProperties(id, name, size, users.toSet))
+    val properties = ClusterProperties(id, name, size, users.toSet)
+
+    val propertiesAfterPreconditions = preConditions(id).apply().fold(
+     fail = errors => properties.copy(initialState = Some(Failed(errors.list.mkString(", ")))),
+     succ = (_) => properties
+    )
+    defineCluster(propertiesAfterPreconditions)
     id
   }
 
@@ -127,6 +134,10 @@ class MockedServiceManager(
 
   override def terminateCluster(id: ClusterId): Future[Unit] = synchronized {
     clusters(id).terminate()
+  }
+  
+  def makeClusterFail(id: ClusterId, reason: String): Future[Unit] = synchronized {
+    clusters(id).makeFail(reason)
   }
 
   override val persistentHdfsId: ClusterId = PersistentHdfsProps.id
@@ -142,13 +153,7 @@ class MockedServiceManager(
   override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] =
     clusters(clusterId).setUsers(users.toSet)
 
-  override def clusterNodePoolCount: Int = synchronized {
-    maxPoolSize - provisionedMachines
-  }
-
-  private def provisionedMachines = synchronized {
-    clusters.values.filter(_.isConsumingMachines).map(_.view.size).sum
-  }
+  override def clusterNodePoolCount: Int = maxPoolSize
 
   private def defineCluster(props: ClusterProperties): FakeCluster = synchronized {
     val cluster = new FakeCluster(

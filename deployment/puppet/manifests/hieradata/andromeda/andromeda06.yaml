@@ -10,8 +10,8 @@
 #
 
 cosmos::slave::rack: "rack02"
-cosmos::slave::ip: "192.168.63.16"
-cosmos::slave::ct_ip: "192.168.63.80"
+cosmos::slave::ip: "10.95.236.20"
+cosmos::slave::ct_ip: "10.95.236.21"
 cosmos::slave::ct_hostname: "andromeda-compute06"
 cosmos::slave::hardware_profile: g1-compute
 cosmos::slave::name: "Andromeda 06"

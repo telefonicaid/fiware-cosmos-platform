@@ -10,8 +10,8 @@
 #
 
 cosmos::slave::rack: "rack02"
-cosmos::slave::ip: "192.168.63.32"
-cosmos::slave::ct_ip: "192.168.63.96"
+cosmos::slave::ip: "10.95.236.52"
+cosmos::slave::ct_ip: "10.95.236.53"
 cosmos::slave::ct_hostname: "orion-infinity"
 cosmos::slave::hardware_profile: hdfs-master
 cosmos::slave::name: "Orion 14"

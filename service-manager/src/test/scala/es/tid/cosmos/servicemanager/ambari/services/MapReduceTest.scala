@@ -34,7 +34,7 @@ class MapReduceTest extends FlatSpec with MustMatchers {
       ConfigurationKeys.ReducersPerSlave -> "1"
     ))
     contributions.global must be ('defined)
-    contributions.core must be ('empty)
-    contributions.services must have length(1)
+    contributions.core must be ('defined)
+    contributions.services must have length 1
   }
 }

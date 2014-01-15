@@ -171,7 +171,7 @@ class AmbariServiceManager(
 
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
-    serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq()))
+    serviceDescriptions = Seq(Hdfs, Zookeeper, new CosmosUserService(Seq()))
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = persistentHdfsId.id,
@@ -193,7 +193,7 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val BasicHadoopServices = Seq(Hdfs, MapReduce)
+  val BasicHadoopServices = Seq(Hdfs, Zookeeper, MapReduce)
   val OptionalServices: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
   val AllServices = (CosmosUserService +: BasicHadoopServices) ++ OptionalServices
 

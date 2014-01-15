@@ -39,7 +39,7 @@ class ConfiguratorTestHelpers(masterName: String, slaveCount: Int) {
   private def getConfigurationFromCompulsoryServices(extractor: ConfigurationBundle => Option[Configuration]) = {
     def getProperties(contributor: ConfigurationContributor) = extractor(contributor.contributions(dynamicProperties))
       .map(_.properties).getOrElse(Map())
-    getProperties(Hdfs) ++ getProperties(MapReduce)
+    AmbariServiceManager.BasicHadoopServices.map(getProperties).reduce(_++_)
   }
 }
 

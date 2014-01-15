@@ -27,7 +27,7 @@ class HdfsTest extends FlatSpec with MustMatchers {
     val description = Hdfs
     description.name must equal("HDFS")
     description.components must (
-      have length (3) and
+      have length 3 and
       contain(ComponentDescription("NAMENODE", isMaster = true, isClient = false)) and
       contain(ComponentDescription("DATANODE", isMaster = false, isClient = false)) and
       contain(ComponentDescription("HDFS_CLIENT", isMaster = true, isClient = true)))
@@ -39,12 +39,7 @@ class HdfsTest extends FlatSpec with MustMatchers {
     ))
     contributions.global must be('defined)
     contributions.core must be('defined)
-    contributions.services must have length(1)
-  }
-
-  it must "have the oozie proxyuser group configured to be [cosmos]" in {
-    Hdfs.contributions(DynamicProperties).core.get.properties(
-      "hadoop.proxyuser.oozie.groups") must equal("cosmos")
+    contributions.services must have length 1
   }
 
   it must "return the namenode port" in {

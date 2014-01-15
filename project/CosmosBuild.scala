@@ -26,6 +26,7 @@ object CosmosBuild extends Build {
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
     lazy val scalaLogging = "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
     lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
+    lazy val scalatest = "org.scalatest" %% "scalatest" % "1.9.1"
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
   }
 
@@ -89,6 +90,8 @@ object CosmosBuild extends Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs(IntegrationTest)
     settings(Defaults.itSettings : _*)
-    dependsOn(common_test % "compile->compile;test->test")
+    dependsOn(
+      common_test % "compile->compile;test->test",
+      cosmosApi % "compile->compile;test->test")
   )
 }

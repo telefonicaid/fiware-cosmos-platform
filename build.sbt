@@ -17,6 +17,6 @@ resolvers in ThisBuild ++= Seq(
 )
 
 libraryDependencies in ThisBuild ++= Seq(
-    "org.scalatest" %% "scalatest" % "1.9.1" % "test, it",
+    Dependencies.scalatest % "test, it",
     "org.mockito" % "mockito-all" % "1.9.5" % "test, it"
 )

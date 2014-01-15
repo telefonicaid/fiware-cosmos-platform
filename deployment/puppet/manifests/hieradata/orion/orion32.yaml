@@ -10,8 +10,8 @@
 #
 
 cosmos::slave::rack: "rack02" 
-cosmos::slave::ip: "192.168.63.54" 
-cosmos::slave::ct_ip: "192.168.63.118" 
+cosmos::slave::ip: "10.95.236.88" 
+cosmos::slave::ct_ip: "10.95.236.89" 
 cosmos::slave::ct_hostname: "orion-compute32" 
 cosmos::slave::hardware_profile: g1-compute
 cosmos::slave::name: "Orion 32" 

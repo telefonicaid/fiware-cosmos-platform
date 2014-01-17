@@ -36,14 +36,4 @@ class OozieTest extends FlatSpec with MustMatchers  {
     contributions.global must be('defined)
     contributions.services must have length 1
   }
-
-  it must "have the oozie proxyuser group configured to be [cosmos]" in {
-    Oozie.contributions(DynamicProperties).core.get.properties(
-      "hadoop.proxyuser.oozie.groups") must equal("cosmos")
-  }
-
-  it must "have the oozie proxyuser hosts configured to be [*]" in {
-    Oozie.contributions(DynamicProperties).core.get.properties(
-      "hadoop.proxyuser.oozie.hosts") must equal("*")
-  }
 }

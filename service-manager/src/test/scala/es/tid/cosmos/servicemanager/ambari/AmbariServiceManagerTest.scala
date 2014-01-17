@@ -61,6 +61,7 @@ class AmbariServiceManagerTest
       AmbariServiceManager.AllServices))
   val testTimeout = 1 second
   val NoPreconditions = UnfilteredPassThrough
+  val stackVersion = "HDP-2.0.6_Cosmos"
 
   "A ServiceManager" must "have no Clusters by default" in {
     instance.clusterIds must be('empty)
@@ -178,7 +179,7 @@ class AmbariServiceManagerTest
       verify(provisioner).bootstrapMachines(
         distinctHostnames,
         infrastructureProvider.rootPrivateSshKey)
-      verify(provisioner).createCluster(instance.persistentHdfsId.id, "Cosmos-0.1.0")
+      verify(provisioner).createCluster(instance.persistentHdfsId.id, stackVersion)
       verify(cluster).addHosts(any())
       Seq(hdfsService, userService).foreach(service => {
         verify(service).install()
@@ -349,7 +350,7 @@ class AmbariServiceManagerTest
     verify(infrastructureProvider).createMachines(
       any(), the(MachineProfile.G1Compute), the(machines.size), any())
     verify(infrastructureProvider).releaseMachines(machines)
-    verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
+    verify(provisioner).createCluster(clusterId.toString, stackVersion)
     val distinctHostnames = machines.map(_.hostname).toSet
     verify(provisioner).bootstrapMachines(
       distinctHostnames,

@@ -23,7 +23,7 @@ class ZookeeperTest extends FlatSpec with MustMatchers {
     description.name must equal("ZOOKEEPER")
     description.components must (
       have length 2 and
-      contain(ComponentDescription("ZOOKEEPER_SERVER", isMaster = true)) and
+      contain(ComponentDescription("ZOOKEEPER_SERVER", isMaster = false)) and
       contain(ComponentDescription("ZOOKEEPER_CLIENT", isMaster = true, isClient = true))
     )
     val contributions = description.contributions(Map.empty)

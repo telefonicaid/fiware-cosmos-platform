@@ -45,4 +45,16 @@ class HdfsTest extends FlatSpec with MustMatchers {
   it must "return the namenode port" in {
     Hdfs.nameNodeHttpPort must be (50070)
   }
+
+  /* Note: This is a HDFS-specific configuration needed even when Oozie is not installed */
+  it must "have the oozie proxyuser group configured to be [cosmos]" in {
+    Hdfs.contributions(DynamicProperties).core.get.properties(
+      "hadoop.proxyuser.oozie.groups") must equal("cosmos")
+  }
+
+  /* Note: This is a HDFS-specific configuration needed even when Oozie is not installed */
+  it must "have the oozie proxyuser hosts configured to be [*]" in {
+    Hdfs.contributions(DynamicProperties).core.get.properties(
+      "hadoop.proxyuser.oozie.hosts") must equal("*")
+  }
 }

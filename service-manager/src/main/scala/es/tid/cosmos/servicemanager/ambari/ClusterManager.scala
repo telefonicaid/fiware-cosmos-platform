@@ -93,5 +93,5 @@ private[ambari] class ClusterManager(
 }
 
 private[ambari] object ClusterManager {
-  val StackVersion = "Cosmos-0.1.0"
+  val StackVersion = "HDP-2.0.6_Cosmos"
 }

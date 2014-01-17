@@ -105,15 +105,28 @@ trait FileConfigurationContributor extends ConfigurationContributor {
   private def optional[T <: Configuration : Factory](name: String, config: Config): Option[T] =
     properties(name, config).map(implicitly[Factory[T]])
 
-  private def service(config: Config) = properties(configName, config)
-    .map(props => ServiceConfiguration(config.getString(s"$configName.configType"), props))
-    .toList
+  private def service(config: Config) =
+    if (config.hasPath(configName)) {
+      val maybeSingleConfig = properties(configName, config).map(
+        props => List(ServiceConfiguration(config.getString(s"$configName.configType"), props)))
 
-  private def properties(name: String, config: Config) = {
+      def multipleConfig = (for ((configName, props) <- multipleProperties(configName, config))
+        yield ServiceConfiguration(configName, props)).toList
+
+      maybeSingleConfig.getOrElse(multipleConfig)
+    } else Nil
+
+  private def properties(name: String, config: Config): Option[Map[String, AnyRef]] = {
     val key = s"$name.properties"
     if (config.hasPath(key))
       Some(config.getObject(key).unwrapped().toMap)
     else
       None
   }
+
+  private def multipleProperties(name: String, config: Config): Map[String, Map[String, AnyRef]] =
+    (for (innerConfig <- config.getConfigList(name))
+      yield innerConfig.getString("configType") -> innerConfig.getObject("properties")
+        .unwrapped().toMap
+    ).toMap
 }

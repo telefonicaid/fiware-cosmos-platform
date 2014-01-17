@@ -13,17 +13,14 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 
-/** Representation of the Zookeeper service. */
-object Zookeeper extends ServiceWithConfigurationFile {
-  override val name: String = "ZOOKEEPER"
+/**
+ * Representation of the YARN service.
+ */
+object Yarn extends ServiceWithConfigurationFile {
+  override val name: String = "YARN"
 
   override val components: Seq[ComponentDescription] = Seq(
-    /* Zookeeper is a distributed application.
-     * We choose to have one zookeeper server on each slave for resilience purposes.
-     */
-    ComponentDescription("ZOOKEEPER_SERVER", isMaster = false),
-    ComponentDescription("ZOOKEEPER_CLIENT", isMaster = true, isClient = true)
-  )
+    ComponentDescription("RESOURCEMANAGER", isMaster = true),
+    ComponentDescription("NODEMANAGER", isMaster = false),
+    ComponentDescription("YARN_CLIENT", isMaster = true, isClient = true))
 }
-
-

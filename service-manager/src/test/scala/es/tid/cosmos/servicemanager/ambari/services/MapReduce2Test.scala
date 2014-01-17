@@ -17,15 +17,14 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
-class MapReduceTest extends FlatSpec with MustMatchers {
+class MapReduce2Test extends FlatSpec with MustMatchers {
   "A MapReduce service" must "have a jobtracker, tasktracker and mapreduce client" in {
-    val description = MapReduce
-    description.name must equal ("MAPREDUCE")
+    val description = MapReduce2
+    description.name must equal ("MAPREDUCE2")
     description.components must (
-      have length (3) and
-      contain (ComponentDescription("JOBTRACKER", isMaster = true)) and
-      contain (ComponentDescription("TASKTRACKER", isMaster = false)) and
-      contain (ComponentDescription("MAPREDUCE_CLIENT", isMaster = true, isClient = true)))
+      have length 2 and
+      contain (ComponentDescription("HISTORYSERVER", isMaster = true)) and
+      contain (ComponentDescription("MAPREDUCE2_CLIENT", isMaster = true, isClient = true)))
     val contributions = description.contributions(Map(
       ConfigurationKeys.MappersPerSlave -> "3",
       ConfigurationKeys.MasterNode -> "aMasterNodeName",

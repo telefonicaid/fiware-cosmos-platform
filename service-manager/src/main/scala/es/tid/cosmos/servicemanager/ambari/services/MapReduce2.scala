@@ -14,13 +14,14 @@ package es.tid.cosmos.servicemanager.ambari.services
 import es.tid.cosmos.servicemanager.ComponentDescription
 
 /**
- * Representation of the Map Reduce service.
+ * Representation of the Map Reduce 2 service.
+ * The service needs to run along with YARN.
+ * @see [[es.tid.cosmos.servicemanager.ambari.services.Yarn]]
  */
-object MapReduce extends ServiceWithConfigurationFile {
-  override val name: String = "MAPREDUCE"
+object MapReduce2 extends ServiceWithConfigurationFile {
+  override val name: String = "MAPREDUCE2"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("JOBTRACKER", isMaster = true),
-    ComponentDescription("TASKTRACKER", isMaster = false),
-    ComponentDescription("MAPREDUCE_CLIENT", isMaster = true, isClient = true))
+    ComponentDescription("HISTORYSERVER", isMaster = true),
+    ComponentDescription("MAPREDUCE2_CLIENT", isMaster = true, isClient = true))
 }

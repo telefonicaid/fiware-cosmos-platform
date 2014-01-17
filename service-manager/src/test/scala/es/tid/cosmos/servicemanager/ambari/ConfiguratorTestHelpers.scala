@@ -12,7 +12,6 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.services.{MapReduce, Hdfs}
 
 class ConfiguratorTestHelpers(masterName: String, slaveCount: Int) {
   import ConfiguratorTestHelpers._

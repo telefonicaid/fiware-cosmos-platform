@@ -126,8 +126,10 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   }
 
   override def lookupByProfileId(id: ProfileId)(implicit c: Conn): Option[CosmosProfile] =
-    lookup(SQL(s"SELECT $AllUserFields, p.name, p.signature FROM user u WHERE u.id = {id}").
-      on("id" -> id)
+    lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
+        |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+        |WHERE u.id = {id}""".stripMargin)
+      .on("id" -> id)
     ).headOption
 
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =

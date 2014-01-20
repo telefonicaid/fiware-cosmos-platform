@@ -48,7 +48,7 @@ class ClusterIT
       )),
       "users" -> Seq(
         Json.obj(
-          "username" -> "jsmith",
+          "username" -> "user2",
           "sshPublicKey" -> "jsmith-public-key",
           "isSudoer" -> false
       ))
@@ -87,6 +87,18 @@ class ClusterIT
       }
     }
 
+  it must "list complete cluster details for users with SSH access" in new WithSampleUsers {
+    dao.withConnection { implicit c =>
+      dao.assignCluster(MockedServiceManager.DefaultClusterId, user1.id)
+      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay)
+      val resource = route(clusterDetailsListing.authorizedBy(user2)).get
+      status(resource) must equal (OK)
+      contentType(resource) must be (Some("application/json"))
+      val description = Json.parse(contentAsString(resource))
+      description must equal(completeDescription)
+    }
+  }
+
   it must "list partial cluster details on GET request" +
     " when cluster is still provisioning" in new WithSampleUsers {
     dao.withConnection { implicit c =>
@@ -107,6 +119,15 @@ class ClusterIT
   it must "reject with 401 when listing non-owned cluster" in new WithSampleUsers {
     val resource = route(clusterDetailsListing.authorizedBy(user2)).get
     status(resource) must equal (UNAUTHORIZED)
+  }
+
+  it must "reject with 401 when listing a cluster where the user was removed" in new WithSampleUsers {
+    dao.withConnection { implicit c =>
+      dao.assignCluster(MockedServiceManager.DefaultClusterId, user1.id)
+      Thread.sleep(2 * MockedServiceManagerComponent.TransitionDelay)
+      val resource = route(clusterDetailsListing.authorizedBy(user3)).get
+      status(resource) must equal (UNAUTHORIZED)
+    }
   }
 
   it must "throw if the service manager has no associated information" in

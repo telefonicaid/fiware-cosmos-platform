@@ -11,4 +11,4 @@
 
 package es.tid.cosmos.servicemanager.ambari.configuration
 
-case class HadoopConfig(mappersPerSlave: Int, reducersPerSlave: Int)
+case class HadoopConfig(mappersPerSlave: Int, reducersPerSlave: Int, zookeeperPort: Int)

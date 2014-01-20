@@ -61,7 +61,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     sm = new AmbariServiceManager(
       ambariServer, infrastructureProvider,
       ClusterId("hdfs"), exclusiveMasterSizeCutoff = 10,
-      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1),
+      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1, zookeeperPort = 1234),
       new AmbariClusterDao(
         new SqlClusterDao(db),
         ambariServer,

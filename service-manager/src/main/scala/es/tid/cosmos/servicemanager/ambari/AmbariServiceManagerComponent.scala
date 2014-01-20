@@ -36,7 +36,9 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       config.getInt("ambari.servicemanager.exclusiveMasterSizeCutoff"),
       HadoopConfig(
         config.getInt("ambari.servicemanager.mappersPerSlave"),
-        config.getInt("ambari.servicemanager.reducersPerSlave")),
+        config.getInt("ambari.servicemanager.reducersPerSlave"),
+        config.getInt("ambari.servicemanager.zookeeperPort")
+      ),
       new AmbariClusterDao(
         clusterDao,
         ambariServer,

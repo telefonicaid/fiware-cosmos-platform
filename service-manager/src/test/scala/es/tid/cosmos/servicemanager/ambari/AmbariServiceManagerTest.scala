@@ -44,6 +44,7 @@ class AmbariServiceManagerTest
 
   val mappersPerSlave = 8
   val reducersPerSlave = 4
+  val zookeeperPort = 1234
   val exclusiveMasterSizeCutoff = 10
   val provisioner = initializeProvisioner
   val infrastructureProvider = mock[InfrastructureProvider]
@@ -54,7 +55,8 @@ class AmbariServiceManagerTest
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
   val instance = new AmbariServiceManager(
     provisioner, infrastructureProvider,
-    ClusterId("HDFS"), exclusiveMasterSizeCutoff, HadoopConfig(mappersPerSlave, reducersPerSlave),
+    ClusterId("HDFS"), exclusiveMasterSizeCutoff,
+    HadoopConfig(mappersPerSlave, reducersPerSlave, zookeeperPort),
     new AmbariClusterDao(
       new InMemoryClusterDao,
       initializeProvisioner,
@@ -283,6 +285,22 @@ class AmbariServiceManagerTest
       matchesValidation(willFailCondition(clusterId)), any(), any(), any())
   }
 
+  it must "create cluster including service bundles" in {
+    val (machines, hosts) = machinesAndHostsOf(3)
+    setMachineExpectations(machines, hosts)
+    setServiceExpectations()
+    val clusterId = instance.createCluster(
+          "clusterName", 3, Seq(Hive), Seq(), NoPreconditions)
+    waitForClusterCompletion(clusterId, instance)
+    val description = instance.describeCluster(clusterId)
+    val hiveBundledServices = Seq(WebHCat, HCatalog)
+    val expectedServices =
+      (AmbariServiceManager.BasicHadoopServices
+        ++ Seq(CosmosUserService, Hive)
+        ++ hiveBundledServices)
+    description.get.services must be (expectedServices.map(_.name).toSet)
+  }
+
   private def initializeProvisioner = {
     val provisionerMock = mock[AmbariServer]
     given(provisionerMock.listClusterNames).willReturn(successful(Seq()))
@@ -371,7 +389,11 @@ class AmbariServiceManagerTest
         ConfigurationKeys.MasterNode -> master.name,
         ConfigurationKeys.MaxMapTasks -> (mappersPerSlave * slaves.length).toString,
         ConfigurationKeys.MaxReduceTasks -> (reducersPerSlave * 1.75 * slaves.length).round.toString,
-        ConfigurationKeys.ReducersPerSlave -> reducersPerSlave.toString))
+        ConfigurationKeys.ReducersPerSlave -> reducersPerSlave.toString,
+        ConfigurationKeys.ZookeeperHosts -> slaves.map(
+          s => s"${s.name}:$zookeeperPort").mkString(","),
+        ConfigurationKeys.ZookeeperPort -> zookeeperPort.toString
+      ))
     })
     services.foreach(service => {
       verify(service).install()

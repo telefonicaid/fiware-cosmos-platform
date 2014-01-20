@@ -9,15 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.configuration
+package es.tid.cosmos.servicemanager.ambari.services
 
-object ConfigurationKeys extends Enumeration {
-  val HdfsReplicationFactor,
-      MappersPerSlave,
-      MasterNode,
-      MaxMapTasks,
-      MaxReduceTasks,
-      ReducersPerSlave,
-      ZookeeperHosts,
-      ZookeeperPort = Value
+import es.tid.cosmos.servicemanager.ComponentDescription
+
+/** Representation of the HCatalog service */
+object HCatalog extends ServiceWithConfigurationFile {
+  override val name: String = "HCATALOG"
+
+  override val components: Seq[ComponentDescription] = Seq(
+    ComponentDescription("HCAT", isMaster = true, isClient = true)
+  )
 }

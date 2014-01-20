@@ -70,7 +70,8 @@ class AmbariServiceManager(
       serviceDescriptions: Seq[ServiceDescriptionType],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
-    val clusterServiceDescriptions = BasicHadoopServices ++ serviceDescriptions ++ userServices(users)
+    val clusterServiceDescriptions =
+      (BasicHadoopServices ++ serviceDescriptions ++ userServices(users)).withServiceBundles
     val clusterDescription = clusterDao.registerCluster(
       name = name,
       size = clusterSize,
@@ -164,8 +165,8 @@ class AmbariServiceManager(
     stoppedService <- service.stop()
     slaveDetails = clusterDescription.slaves
     slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
-    _ <- Configurator.applyConfiguration(
-      cluster, master, slaves, hadoopConfig, List(serviceDescription))
+    properties = DynamicProperties(hadoopConfig, master, slaves)
+    _ <- Configurator.applyConfiguration(cluster, properties, List(serviceDescription))
     startedService <- stoppedService.start()
   } yield startedService
 
@@ -193,9 +194,17 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
+  val ServiceBundles: Map[AmbariServiceDescription, Seq[AmbariServiceDescription]] =
+    Map(Hive -> Seq(HCatalog, WebHCat))
+
   val BasicHadoopServices = Seq(Hdfs, Zookeeper, Yarn, MapReduce2)
   val OptionalServices: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
-  val AllServices = (CosmosUserService +: BasicHadoopServices) ++ OptionalServices
+  val AllServices = ((CosmosUserService +: BasicHadoopServices) ++ OptionalServices).withServiceBundles
+
+  implicit class ServiceBundles(services: Seq[AmbariServiceDescription]) {
+    val withServiceBundles: Seq[AmbariServiceDescription] =
+      services.flatMap(service => service +: ServiceBundles.getOrElse(service, Seq.empty))
+  }
 
   private def setMachineInfo(
       description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {

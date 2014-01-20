@@ -22,7 +22,9 @@ class ConfiguratorTestHelpers(masterName: String, slaveCount: Int) {
     ConfigurationKeys.MaxReduceTasks -> "10",
     ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaveCount).toString,
     ConfigurationKeys.MappersPerSlave -> "8",
-    ConfigurationKeys.ReducersPerSlave -> "4"
+    ConfigurationKeys.ReducersPerSlave -> "4",
+    ConfigurationKeys.ZookeeperHosts -> Seq("hostname1:1234", "hostname2:1234").mkString(","),
+    ConfigurationKeys.ZookeeperPort -> "1234"
   )
 
   private def propertiesUpTo(confType: String, number: Int) =

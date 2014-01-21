@@ -17,7 +17,9 @@ case class ClusterStats(
     id: String,
     name: String,
     ownerHandle: String,
-    size: Int)
+    size: Int,
+    master: String,
+    slaves: Seq[String])
 
 object ClusterStats {
   implicit val clusterStatWrites: Writes[ClusterStats] = Json.writes[ClusterStats]

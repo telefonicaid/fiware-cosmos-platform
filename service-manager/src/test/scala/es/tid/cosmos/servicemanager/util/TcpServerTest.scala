@@ -11,18 +11,17 @@
 
 package es.tid.cosmos.servicemanager.util
 
-import java.net.{InetSocketAddress, Socket, ServerSocket}
+import java.net.{BindException, InetSocketAddress, Socket, ServerSocket}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import org.scalatest.FlatSpec
-import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
-class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers with Eventually {
+class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
 
   val timeout: FiniteDuration = 3 second
 
@@ -33,7 +32,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers with 
     def withServerMock[T](f: LocalServer => T): T = {
       val serverMock = new LocalServer(server.port)
       try {
-        eventually { f(serverMock) }
+        f(serverMock)
       } finally {
         serverMock.close()
       }
@@ -48,7 +47,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers with 
   }
 
   "A tcp server" must "be waited for until it starts" in new RandomServer {
-    withServerMock { mock =>
+    eventuallyTcpBind { withServerMock { mock =>
       val f = server.waitForServer()
       f must not be ('completed)
       Thread.sleep(1500)
@@ -56,7 +55,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers with 
       mock.acceptClient()
       f must runUnder(timeout)
       f must eventually (be ())
-    }
+    }}
   }
 
   it must "be waited for until timeout is exceeded" in new RandomServer {
@@ -95,5 +94,21 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers with 
       clientSocket.map(_.close())
       socket.map(_.close())
     }
+  }
+
+  def eventuallyTcpBind(action: => Unit) {
+    val maxAttemps = 5
+    for (i <- 1 to maxAttemps) {
+      try {
+        action
+        return
+      } catch {
+        case e: BindException =>
+        case e: Throwable => throw e
+      }
+    }
+    throw new IllegalStateException(
+      s"cannot execute the test due to a BindException after $maxAttemps attempts"
+    )
   }
 }

@@ -142,7 +142,7 @@ def add_user_to_cluster(args, proto):
 def add_adduser_command(subparsers):
     parser = subparsers.add_parser("adduser", help="add a user to an existing cluster")
     util.add_cluster_id_argument(parser)
-    parser.add_argument("user_id", help="cluster id")
+    parser.add_argument("user_id", help="user id")
     parser.set_defaults(func=ComputeCommand(add_user_to_cluster))
 
 

@@ -17,11 +17,12 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import org.scalatest.FlatSpec
+import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
-class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
+class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers with Eventually {
 
   val timeout: FiniteDuration = 3 second
 
@@ -32,7 +33,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
     def withServerMock[T](f: LocalServer => T): T = {
       val serverMock = new LocalServer(server.port)
       try {
-        f(serverMock)
+        eventually { f(serverMock) }
       } finally {
         serverMock.close()
       }

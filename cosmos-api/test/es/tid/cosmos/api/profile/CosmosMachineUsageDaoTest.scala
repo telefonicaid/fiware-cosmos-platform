@@ -14,6 +14,7 @@ package es.tid.cosmos.api.profile
 import scala.concurrent.duration._
 
 import org.scalatest.{OneInstancePerTest, FlatSpec}
+import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
@@ -26,6 +27,7 @@ class CosmosMachineUsageDaoTest
   extends FlatSpec
   with MustMatchers
   with FutureMatchers
+  with Eventually
   with OneInstancePerTest {
 
   val profileDao = new MockCosmosProfileDao
@@ -57,7 +59,10 @@ class CosmosMachineUsageDaoTest
       usageDao.usageByProfile(filtered) must be (Map(
         profile.id -> 11
       ))
-      serviceManager.terminateCluster(terminated) must eventuallySucceed
+      serviceManager.terminateCluster(terminated)
+      eventually {
+        serviceManager.describeCluster(terminated).get.state must be (Terminated)
+      }
       usageDao.usageByProfile(filtered) must be (Map(
         profile.id -> 1
       ))
@@ -104,7 +109,7 @@ class CosmosMachineUsageDaoTest
         profileDao.assignCluster(clusterId, profile.id)(c)
     }
   }
-  
+
   private trait WithGroups {
     val profileA2 = registerUser("userA2")(profileDao)
     val profileB1 = registerUser("userB1")(profileDao)

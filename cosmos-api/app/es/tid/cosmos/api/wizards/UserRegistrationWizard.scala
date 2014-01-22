@@ -51,7 +51,7 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
       userId: UserId,
       registration: Registration): Validation[ErrorMessage, (CosmosProfile, Future[Unit])] =
     dao.withTransaction { implicit c =>
-      Logger.info(s"Starting $userId (${registration.handle}}) registration")
+      Logger.info(s"Starting $userId (${registration.handle}) registration")
       Try (dao.registerUser(userId, registration, UserState.Creating)) match {
         case Failure(ex) => {
           logRegistrationError(userId, ex)
@@ -77,7 +77,7 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
           dao.setUserState(profile.id, UserState.Enabled)
         } else {
           logRegistrationError(userId, new IllegalStateException(s"""
-            | Registration for $userId (${profile.handle}}) cannot be completed as it is in
+            | Registration for $userId (${profile.handle}) cannot be completed as it is in
             | '${profile.state}' state instead of 'creating' state." +
           """.stripMargin))
         }
@@ -89,7 +89,7 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
   }
 
   private def logRegistrationSuccess(userId: UserId, profile: CosmosProfile) {
-    Logger.info(s"User $userId (${profile.handle}}) was successfully registered")
+    Logger.info(s"User $userId (${profile.handle}) was successfully registered")
   }
 
   private def logRegistrationError(userId: UserId, ex: Throwable) {

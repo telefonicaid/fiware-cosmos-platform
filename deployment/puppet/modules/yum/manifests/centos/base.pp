@@ -21,6 +21,6 @@ class yum::centos::base ($repo_server = 'repos.hi.inet') {
     descr      => "Centos Base ${::operatingsystemrelease}",
     enabled    => '1',
     gpgcheck   => '0',
-    baseurl    => "http://${repo_server}/redhat/centos${::operatingsystemrelease}-\$basearch/RPMS.all/",
+    baseurl    => "http://${repo_server}/redhat/centos${::operatingsystemmajrelease}-\$basearch/RPMS.all/",
   }
 }

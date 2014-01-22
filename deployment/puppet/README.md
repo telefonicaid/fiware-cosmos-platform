@@ -9,9 +9,8 @@ Vagrant environment
 You can deploy a sandbox Cosmos environment in local virtual machines using
 vagrant. To do so, you will need:
 
- * Vagrant 1.2.2. More recent versions won't perform the provision due to
-   changes on the configuration DSL.
- * Virtualbox.
+ * Vagrant 1.4+
+ * Virtualbox 4.2+
  * About 4 GB of free memory before start provisioning the environment.
 
 To spin up the environment, run from this directory:

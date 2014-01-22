@@ -23,7 +23,7 @@ import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
 class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
 
-  val timeout: FiniteDuration = 3 second
+  val timeout: FiniteDuration = 15 second
 
   class RandomServer {
     val port = availablePort()

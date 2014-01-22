@@ -9,7 +9,7 @@
 # All rights reserved.
 #
 
-class yum::thirdparty::puppetlabs($repo_server = 'servilinux.hi.inet') inherits yum::variables {
+class yum::thirdparty::puppetlabs($repo_server = 'servilinux.hi.inet') {
 
   yumrepo { 'puppetlabs-products':
     descr    => "Puppet Labs Products - $operatingsystemmajrelease",

@@ -20,7 +20,8 @@ function configureActiveClustersSection() {
             { "mData": "id", "sClass": "id-cell" },
             { "mData": "name" },
             { "mData": "ownerHandle" },
-            { "mData": "size", "sType": "numeric", "sClass": "numeric-cell" }
+            { "mData": "size", "sType": "numeric", "sClass": "numeric-cell" },
+            { "mData": "master" }
         ]
     });
     $.ajax({

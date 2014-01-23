@@ -30,7 +30,6 @@ trait AuthBehaviors { this: FlatSpec with MustMatchers =>
     it must "reject unauthenticated request" in new WithSampleUsers {
       status(route(request).get) must equal (UNAUTHORIZED)
     }
-
     it must "reject request with malformed credentials" in new WithSampleUsers {
       val invalidRequest = request.withHeaders("Authorization" -> "invalid")
       status(route(invalidRequest).get) must equal (UNAUTHORIZED)

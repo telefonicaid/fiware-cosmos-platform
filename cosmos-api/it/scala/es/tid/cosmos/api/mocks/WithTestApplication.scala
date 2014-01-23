@@ -23,6 +23,8 @@ import es.tid.cosmos.api.AbstractGlobal
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Registration
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.servicemanager.clusters.Running
 
 class WithTestApplication(
     additionalConfiguration: Map[String, String] = Map.empty,
@@ -30,7 +32,7 @@ class WithTestApplication(
   extends WithApplication(
     WithTestApplication.buildApp(additionalConfiguration, testApp.global)) {
 
-  val playGlobal = testApp.global
+  lazy val playGlobal = testApp.global
 
   val mockedServiceManager = testApp.mockedServiceManager
 
@@ -56,7 +58,8 @@ class WithTestApplication(
     request.withSession(session.data.toSeq: _*)
 
   def withPersistentHdfsDeployed(action: => Unit) = {
-    Await.ready(services.serviceManager().deployPersistentHdfsCluster(), 5 seconds)
+    mockedServiceManager.defineCluster(
+      MockedServiceManager.PersistentHdfsProps.copy(initialState = Some(Running)))
     action
   }
 }

@@ -31,7 +31,6 @@ class StatsResourceIT
   "Cluster stats" must behave like operatorOnlyResource(clusterStatsRequest)
 
   it must "have an empty listing when when there are no clusters" in new WithSampleSessions {
-    given(services.serviceManager().clusterIds).willReturn(Seq.empty)
     val response = opUser.doRequest(clusterStatsRequest)
     status(response) must be (OK)
     (contentAsJson(response) \ "clusters" \\ "id") must have size 0

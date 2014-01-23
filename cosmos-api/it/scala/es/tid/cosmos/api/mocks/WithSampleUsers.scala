@@ -24,20 +24,15 @@ import es.tid.cosmos.api.profile._
 class WithSampleUsers(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(additionalConfiguration) {
 
-  override def around[T: AsResult](t: => T): Result = {
-    super.around {
-      dao.withConnection { implicit c =>
-        for (idx <- 1 to 3) {
-          val email = s"user$idx@host"
-          val registration = Registration(
-            handle = s"user$idx",
-            publicKey = s"ssh-rsa A3NzaC1yc2EAAAABIwAAAQEA9$idx $email",
-            email = email
-          )
-          dao.registerUser(UserId(s"tu$idx"), registration, UserState.Enabled)
-        }
-      }
-      t
+  dao.withConnection { implicit c =>
+    for (idx <- 1 to 3) {
+      val email = s"user$idx@host"
+      val registration = Registration(
+        handle = s"user$idx",
+        publicKey = s"ssh-rsa A3NzaC1yc2EAAAABIwAAAQEA9$idx $email",
+        email = email
+      )
+      dao.registerUser(UserId(s"tu$idx"), registration, UserState.Enabled)
     }
   }
 

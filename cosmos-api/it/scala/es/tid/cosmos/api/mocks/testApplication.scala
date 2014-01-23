@@ -18,7 +18,7 @@ import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
 import es.tid.cosmos.api.profile.{CosmosProfileDaoComponent, PlayDbCosmosProfileDaoComponent, MockCosmosProfileDaoComponent}
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
 
-class TestApplication extends Application
+abstract class TestApplication extends Application
   with MockMultiAuthProviderComponent
   with MockedServiceManagerComponent
   with MockInfrastructureProvider.Component
@@ -27,7 +27,7 @@ class TestApplication extends Application
 
   self: CosmosProfileDaoComponent =>
 
-  def global = new AbstractGlobal(this) {}
+  val global = new AbstractGlobal(this) {}
 }
 
 class MockDaoTestApplication extends TestApplication with MockCosmosProfileDaoComponent

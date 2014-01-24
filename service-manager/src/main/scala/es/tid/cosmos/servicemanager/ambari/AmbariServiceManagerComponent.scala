@@ -35,9 +35,17 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       ClusterId(config.getString("hdfs.cluster.id")),
       config.getInt("ambari.servicemanager.exclusiveMasterSizeCutoff"),
       HadoopConfig(
-        config.getInt("ambari.servicemanager.mappersPerSlave"),
-        config.getInt("ambari.servicemanager.reducersPerSlave"),
-        config.getInt("ambari.servicemanager.zookeeperPort")
+        mrAppMasterMemory = config.getInt("ambari.servicemanager.mrAppMasterMemory"),
+        mapTaskMemory = config.getInt("ambari.servicemanager.mapTaskMemory"),
+        mapHeapMemory = config.getInt("ambari.servicemanager.mapHeapMemory"),
+        reduceTaskMemory = config.getInt("ambari.servicemanager.reduceTaskMemory"),
+        reduceHeapMemory = config.getInt("ambari.servicemanager.reduceHeapMemory"),
+        yarnTotalMemory = config.getInt("ambari.servicemanager.yarnTotalMemory"),
+        yarnContainerMinimumMemory = config
+          .getInt("ambari.servicemanager.yarnContainerMinimumMemory"),
+        yarnVirtualToPhysicalMemoryRatio = config
+          .getDouble("ambari.servicemanager.yarnVirtualToPhysicalMemoryRatio"),
+        zookeeperPort = config.getInt("ambari.servicemanager.zookeeperPort")
       ),
       new AmbariClusterDao(
         clusterDao,

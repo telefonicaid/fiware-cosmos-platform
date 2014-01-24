@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.ambari.rest.Host
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
 import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, HadoopConfig}
 
 
@@ -29,17 +30,22 @@ object DynamicProperties {
     */
   def apply(hadoopConfig: HadoopConfig, master: Host, slaves: Seq[Host])
       : Map[ConfigurationKeys.Value, String] = Map(
-    ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
-    ConfigurationKeys.MasterNode -> master.name,
-    ConfigurationKeys.MappersPerSlave -> hadoopConfig.mappersPerSlave.toString,
-    ConfigurationKeys.MaxMapTasks ->
-      (hadoopConfig.mappersPerSlave * slaves.length).toString,
-    ConfigurationKeys.MaxReduceTasks ->
-      (1.75 * hadoopConfig.reducersPerSlave * slaves.length).round.toString,
-    ConfigurationKeys.ReducersPerSlave -> hadoopConfig.reducersPerSlave.toString,
-    ConfigurationKeys.ZookeeperHosts -> zookeeperHosts(slaves, hadoopConfig.zookeeperPort)
+    HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
+    MasterNode -> master.name,
+
+    MrAppMasterMemory -> hadoopConfig.mrAppMasterMemory.toString,
+    MapTaskMemory -> hadoopConfig.mapTaskMemory.toString,
+    MapHeapMemory -> hadoopConfig.mapHeapMemory.toString,
+    ReduceTaskMemory -> hadoopConfig.reduceTaskMemory.toString,
+    ReduceHeapMemory -> hadoopConfig.reduceHeapMemory.toString,
+
+    YarnTotalMemory -> hadoopConfig.yarnTotalMemory.toString,
+    YarnContainerMinimumMemory -> hadoopConfig.yarnContainerMinimumMemory.toString,
+    YarnVirtualToPhysicalMemoryRatio -> hadoopConfig.yarnVirtualToPhysicalMemoryRatio.toString,
+
+    ZookeeperHosts -> zookeeperHosts(slaves, hadoopConfig.zookeeperPort)
       .mkString(","),
-    ConfigurationKeys.ZookeeperPort -> hadoopConfig.zookeeperPort.toString
+    ZookeeperPort -> hadoopConfig.zookeeperPort.toString
   )
 
   private def zookeeperHosts(hosts: Seq[Host], port: Int) = hosts.map(h => s"${h.name}:$port")

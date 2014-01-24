@@ -89,9 +89,15 @@ ambari.server.username=<%= @ambari_user %>
 ambari.server.password=<%= @ambari_password %>
 ambari.servicemanager.exclusiveMasterSizeCutoff=10
 ambari.servicemanager.initialization.graceperiod.minutes=<%= @ambari_init_period %>
-ambari.servicemanager.mappersPerSlave=8
-ambari.servicemanager.reducersPerSlave=4
 ambari.servicemanager.zookeeperPort=2181
+ambari.servicemanager.yarnTotalMemory=<%= @ambari_yarn_total_memory %>
+ambari.servicemanager.yarnContainerMinimumMemory=<%= @ambari_yarn_container_min_memory %>
+ambari.servicemanager.yarnVirtualToPhysicalMemoryRatio=<%= @ambari_yarn_virtual_physical_memory_ratio %>
+ambari.servicemanager.mapTaskMemory=<%= @ambari_map_task_memory %>
+ambari.servicemanager.reduceTaskMemory=<%= @ambari_reduce_task_memory %>
+ambari.servicemanager.mapHeapMemory=<%= @ambari_map_heap_memory %>
+ambari.servicemanager.reduceHeapMemory=<%= @ambari_reduce_heap_memory %>
+ambari.servicemanager.mrAppMasterMemory=<%= @ambari_mr_app_master_memory %>
 hdfs.cluster.id=persistentHdfs
 
 # Logger

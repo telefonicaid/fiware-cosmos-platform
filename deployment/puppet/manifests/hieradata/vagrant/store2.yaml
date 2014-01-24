@@ -16,6 +16,6 @@ cosmos::slave::ct_hostname: "cosmos-store2"
 cosmos::slave::ct_gateway: "192.168.11.22"
 cosmos::slave::hardware_profile: hdfs-slave
 cosmos::slave::name: "Store 2"
-cosmos::slave::ram: 480
+cosmos::slave::ram: 1024
 cosmos::slave::host_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5a6pMIEPMt9ivRwJiP/8JIhygEn8Z7XCZemp9wZF8Qub5QojDO++Z5Jd5fmA4P3VSLskMubQZbCoCGk3FawUbGHLsdB900NZ5TIY6vI/IktmSMtlDMSWa/Tk/BqsLK2wus1OxRyoATYWkwEy6mRPVdiegrc1bFv0TQauBcad7I9ZphqD/0S9eo/B0usjQsRlGz1zVlMNoefB8K3ytIMwHSbEbNFHRiLhWWAF5D8+Zs5j050TA+gGs5zLGFwox2/6ABsCaGabKoSsI6iC/BUHQP4s/N6ohX6YPvLayxMlWfGUOlB9MaEkOzWKfYG+ASO86V/Oyb3Ni99F3+N0dxw1F"
 cosmos::slave::ct_key_pub: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDEp0rWSyrRfQYxVeXVPVow4e5gjbgPtB+ffmBTPtPcWbeFBiqf0WpvccvSeb9VQHgA2ZdsLEFTEp8Tl7anw1fCakQvlTtGtz2p8eNTOYerkzMeltW/2BObFk/g654M0pf7SnDM5bBXF8BlYMyj/n0HTBg26SWyJ2CgCI8dI4PJMH/CPtnhIBEyBKp2COCrqfrm+w+ggjZ4eyyDlheLR90IcgrmDgbxdWvwMRakvKVweCbB8yR7NObU/1EIH7yNvAtJcK9MOo1OuL+lFxVLVsvZ1rwZSGjw+e1kitIVZRM5iIKzWArPzAD5zTHhy3vHPIjXfEuLuYW2fgE25LOXNH/T"

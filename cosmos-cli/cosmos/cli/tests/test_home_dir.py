@@ -77,7 +77,7 @@ class HomeDirTest(unittest.TestCase):
         with collect_outputs() as outputs:
             self.home.write_config_file("new config")
             config_path = self.temp_dir.getpath(".cosmosrc")
-            os.lchmod(config_path, 0777)
+            os.chmod(config_path, 0777)
             #import ipdb; ipdb.set_trace()
             self.home.read_config_file()
             self.assertIn("WARNING", outputs.stdout.getvalue())

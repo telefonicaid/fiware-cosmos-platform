@@ -13,7 +13,7 @@ import sbt._
 import play.{Keys => PlayKeys}
 import com.github.shivawu.sbt.maven.MavenBuild
 
-object CosmosBuild extends Build {
+object Build extends sbt.Build {
 
   object POM extends MavenBuild {
     val version = pom.ver
@@ -80,6 +80,8 @@ object CosmosBuild extends Build {
     configs IntegrationTest
     settings(Defaults.itSettings : _*)
     dependsOn serviceManager
+    dependsOn common
+    dependsOn ial
     dependsOn common_test % "test->compile"
   )
 

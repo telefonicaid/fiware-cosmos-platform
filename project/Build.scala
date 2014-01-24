@@ -71,6 +71,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings : _*)
+    dependsOn common
     dependsOn(ial, common_test % "compile->compile;test->test")
   )
 

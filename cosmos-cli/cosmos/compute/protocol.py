@@ -14,6 +14,7 @@ import json
 from cosmos.common.cosmos_requests import CosmosRequests
 from cosmos.common.exceptions import ResponseError
 from cosmos.common.routes import Routes
+from cosmos.common.version import assert_supported_version
 
 
 class Protocol(object):
@@ -22,6 +23,7 @@ class Protocol(object):
 
     def __init__(self, api_url, credentials):
         self.__routes = Routes(api_url)
+        assert_supported_version(self.__routes.api_version)
         self.__client = CosmosRequests(credentials)
 
     def get_clusters(self):
@@ -42,8 +44,8 @@ class Protocol(object):
     def create_cluster(self, cluster_name, cluster_size, services):
         """Send a request to create a new cluster and return the response
         in JSON format"""
-        body = json.dumps({ "name" : cluster_name, "size" : cluster_size,
-            "optionalServices" : services })
+        body = json.dumps({"name": cluster_name, "size": cluster_size,
+                           "optionalServices": services})
         r = self.__client.post(self.__routes.clusters(),
                                body)
         if r.status_code != 201:
@@ -83,7 +85,7 @@ class Protocol(object):
             error_msg="Cannot remove user %s from cluster %s" % (user_id, cluster_id))
 
     def __manage_cluster_user(self, cluster_id, user_id, action, error_msg):
-        body = json.dumps({ "user" : user_id })
+        body = json.dumps({"user": user_id})
         r = self.__client.post(
             self.__routes.cluster(cluster_id, action=action),
             body)

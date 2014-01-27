@@ -12,13 +12,10 @@
 import os
 
 from cosmos.common.cosmos_requests import CosmosRequests
-from cosmos.common.exceptions import (OperationError, ResponseError,
-                                      UnsupportedApiVersionException)
+from cosmos.common.exceptions import OperationError, ResponseError
 from cosmos.common.routes import Routes
+from cosmos.common.version import assert_supported_version
 from cosmos.storage.webhdfs import WebHdfsClient
-
-
-SUPPORTED_VERSIONS = [1]
 
 
 def connect(api_key, api_secret, api_url):
@@ -29,9 +26,7 @@ def connect(api_key, api_secret, api_url):
         ResponseException               if connection request fails
     """
     routes = Routes(api_url)
-    if not routes.api_version in SUPPORTED_VERSIONS:
-        raise UnsupportedApiVersionException(routes.api_version,
-                                                SUPPORTED_VERSIONS)
+    assert_supported_version(routes.api_version)
     response = CosmosRequests((api_key, api_secret)).get(routes.storage)
     if response.status_code != 200:
         raise ResponseError("Cannot get WebHDFS details",

@@ -158,7 +158,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .on("handle" -> handle)).headOption
 
   override def getGroups(implicit c: Conn): Set[Group] = {
-    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(ToGroup)
+    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(ToGroup).force
     Set[Group](NoGroup) ++ registeredGroups
   }
 
@@ -213,10 +213,11 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   override def clustersOf(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment] =
     SQL("SELECT cluster_id, creation_date FROM cluster WHERE owner = {owner}")
       .on("owner" -> id)
-      .apply() collect {
+      .apply()
+      .collect({
         case Row(clusterId: String, creationDate: Date) =>
           ClusterAssignment(ClusterId(clusterId), id, creationDate)
-      }
+      }).force
 
   /** Lookup Cosmos profiles retrieved by a custom query.
     *

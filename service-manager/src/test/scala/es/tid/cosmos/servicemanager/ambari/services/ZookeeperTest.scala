@@ -19,7 +19,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class ZookeeperTest extends FlatSpec with MustMatchers {
 
-  val DynamicProperties = Map(ConfigurationKeys.ZookeeperPort -> "1234")
+  val dynamicProperties = Map(ConfigurationKeys.ZookeeperPort -> "1234")
 
   "A Zookeeper service" must "have a zookeeper server and a client" in {
     val description = Zookeeper
@@ -29,14 +29,14 @@ class ZookeeperTest extends FlatSpec with MustMatchers {
       contain(ComponentDescription("ZOOKEEPER_SERVER", isMaster = false)) and
       contain(ComponentDescription("ZOOKEEPER_CLIENT", isMaster = true, isClient = true))
     )
-    val contributions = description.contributions(DynamicProperties)
+    val contributions = description.contributions(dynamicProperties)
     contributions.global must be('defined)
     contributions.core must not be('defined)
     contributions.services must be('empty)
   }
 
   it must "have the zookeeper server port injected as dynamic properties" in {
-    Zookeeper.contributions(DynamicProperties)
+    Zookeeper.contributions(dynamicProperties)
       .global.get.properties("clientPort") must equal("1234")
   }
 }

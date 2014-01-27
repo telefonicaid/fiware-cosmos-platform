@@ -13,19 +13,28 @@ package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
 
-class ConfiguratorTestHelpers(masterName: String, slaveCount: Int) {
+class ConfiguratorTestHelpers(
+    masterName: String, slaveCount: Int, withMasterAsSlave: Boolean = true) {
   import ConfiguratorTestHelpers._
 
-  val dynamicProperties = Map(
-    ConfigurationKeys.MasterNode -> masterName,
-    ConfigurationKeys.MaxMapTasks -> "20",
-    ConfigurationKeys.MaxReduceTasks -> "10",
-    ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaveCount).toString,
-    ConfigurationKeys.MappersPerSlave -> "8",
-    ConfigurationKeys.ReducersPerSlave -> "4",
-    ConfigurationKeys.ZookeeperHosts -> Seq("hostname1:1234", "hostname2:1234").mkString(","),
-    ConfigurationKeys.ZookeeperPort -> "1234"
-  )
+  val dynamicProperties = {
+    import ConfigurationKeys._
+    Map(
+      HdfsReplicationFactor -> Math.min(3, slaveCount).toString,
+      MasterNode -> masterName,
+      MapTaskMemory -> TestHadoopConfig.mapTaskMemory.toString,
+      MapHeapMemory -> TestHadoopConfig.mapHeapMemory.toString,
+      ReduceTaskMemory -> TestHadoopConfig.reduceTaskMemory.toString,
+      ReduceHeapMemory -> TestHadoopConfig.reduceHeapMemory.toString,
+      MrAppMasterMemory -> TestHadoopConfig.mrAppMasterMemory.toString,
+      YarnTotalMemory -> TestHadoopConfig.yarnTotalMemory.toString,
+      YarnContainerMinimumMemory -> TestHadoopConfig.yarnContainerMinimumMemory.toString,
+      YarnVirtualToPhysicalMemoryRatio -> TestHadoopConfig.yarnVirtualToPhysicalMemoryRatio.toString,
+      ZookeeperHosts -> (if (withMasterAsSlave) 1 to slaveCount else 2 to slaveCount + 1)
+        .map(index => s"hostname$index:${TestHadoopConfig.zookeeperPort}").mkString(","),
+      ZookeeperPort -> TestHadoopConfig.zookeeperPort.toString
+    )
+  }
 
   private def propertiesUpTo(confType: String, number: Int) =
     (1 to number).map(properties(confType, _)).reduce(_++_)
@@ -45,6 +54,19 @@ class ConfiguratorTestHelpers(masterName: String, slaveCount: Int) {
 }
 
 object ConfiguratorTestHelpers {
+  
+  val TestHadoopConfig = HadoopConfig(
+      yarnTotalMemory = 1024,
+      yarnContainerMinimumMemory = 100,
+      yarnVirtualToPhysicalMemoryRatio = 2.1,
+      mapTaskMemory = 200,
+      mapHeapMemory = 100,
+      reduceTaskMemory = 200,
+      reduceHeapMemory = 100,
+      mrAppMasterMemory = 100,
+      zookeeperPort = 1234
+    )
+  
   def properties(confType: String, number: Int) =
     Map(s"some${confType}Content$number" -> s"somevalue$number")
 

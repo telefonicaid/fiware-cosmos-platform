@@ -22,6 +22,7 @@ import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, Machi
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.{AmbariServer, Service}
+import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
@@ -71,7 +72,7 @@ class AmbariServiceManager(
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
     val clusterServiceDescriptions =
-      (BasicHadoopServices ++ serviceDescriptions ++ userServices(users)).withServiceBundles
+      (BasicHadoopServices ++ serviceDescriptions ++ userServices(users)).withDependencies
     val clusterDescription = clusterDao.registerCluster(
       name = name,
       size = clusterSize,
@@ -194,17 +195,9 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  private val ServiceBundles: Map[AmbariServiceDescription, Seq[AmbariServiceDescription]] =
-    Map(Hive -> Seq(HCatalog, WebHCat))
-
   val BasicHadoopServices = Seq(Zookeeper, Hdfs, Yarn, MapReduce2)
   val OptionalServices: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
-  val AllServices = ((CosmosUserService +: BasicHadoopServices) ++ OptionalServices).withServiceBundles
-
-  implicit class ServiceBundles(services: Seq[AmbariServiceDescription]) {
-    val withServiceBundles: Seq[AmbariServiceDescription] =
-      services.flatMap(service => ServiceBundles.getOrElse(service, Seq.empty) :+ service)
-  }
+  val AllServices = (BasicHadoopServices ++ OptionalServices :+ CosmosUserService).withDependencies
 
   private def setMachineInfo(
       description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {

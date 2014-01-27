@@ -17,13 +17,12 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
-import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.Host
 
 class DynamicPropertiesTest extends FlatSpec with MustMatchers with MockitoSugar
     with OneInstancePerTest {
 
-  val hadoopConfig = HadoopConfig(mappersPerSlave = 4, reducersPerSlave = 2, zookeeperPort = 1234)
+  val hadoopConfig = ConfiguratorTestHelpers.TestHadoopConfig
   val master = mock[Host]
 
   "Dynamic HDFS replication factor" must "be equal to the number of slaves on clusters " +
@@ -53,5 +52,4 @@ class DynamicPropertiesTest extends FlatSpec with MustMatchers with MockitoSugar
   }
 
   def slaves(size: Int): Seq[Host] = (1 to size).map(_ => mock[Host])
-
 }

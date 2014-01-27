@@ -11,9 +11,9 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
-import es.tid.cosmos.servicemanager.ambari.rest.Host
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
 import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, HadoopConfig}
+import es.tid.cosmos.servicemanager.ambari.rest.Host
 
 
 /** Factory for run-time, dynamic cluster configuration. */
@@ -48,5 +48,5 @@ object DynamicProperties {
     ZookeeperPort -> hadoopConfig.zookeeperPort.toString
   )
 
-  private def zookeeperHosts(hosts: Seq[Host], port: Int) = hosts.map(h => s"${h.name}:$port")
+  private def zookeeperHosts(hosts: Seq[Host], port: Int) = hosts.map(host => s"${host.name}:$port")
 }

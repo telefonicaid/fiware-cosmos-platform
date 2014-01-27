@@ -19,7 +19,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class WebHCatTest extends FlatSpec with MustMatchers {
 
-  val DynamicProperties = Map(
+  val dynamicProperties = Map(
     ConfigurationKeys.MasterNode -> "aMasterNodeName",
     ConfigurationKeys.ZookeeperHosts -> Seq("hostname1:1234", "hostname2:1234").mkString(",")
   )
@@ -30,14 +30,14 @@ class WebHCatTest extends FlatSpec with MustMatchers {
     description.components must (
       have length 1 and contain(ComponentDescription("WEBHCAT_SERVER", isMaster = true))
     )
-    val contributions = description.contributions(DynamicProperties)
+    val contributions = description.contributions(dynamicProperties)
     contributions.global must be('defined)
     contributions.core must not be('defined)
     contributions.services must have length 1
   }
 
   it must "have the zookeeper hosts injected as dynamic properties" in {
-    WebHCat.contributions(DynamicProperties).services.head
+    WebHCat.contributions(dynamicProperties).services.head
       .properties("templeton.zookeeper.hosts") must equal("hostname1:1234,hostname2:1234")
   }
 }

@@ -17,21 +17,19 @@ import org.scalatest.matchers.MustMatchers
 
 class FileConfigurationContributorTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   val masterName = "myMasterNode"
-  val maxMapTasks = "10"
-  val maxReduceTasks = "5"
   val expectedGlobal = GlobalConfiguration(Map(
-    "global.example.string" -> s"global-$masterName$maxMapTasks$maxReduceTasks",
+    "global.example.string" -> s"global-$masterName",
     "global.example.boolean" -> true,
     "global.example.number" -> 29
   ))
   val expectedCore = CoreConfiguration(Map(
-    "core.example" -> s"core-$masterName$maxMapTasks$maxReduceTasks"))
+    "core.example" -> s"core-$masterName"))
   val expectedService = ServiceConfiguration("test-service-site",
-    Map("service.example" -> s"service-$masterName$maxMapTasks$maxReduceTasks")
+    Map("service.example" -> s"service-$masterName")
   )
   val expectedServiceList = (1 to 2).toList.map(index =>
     ServiceConfiguration(s"test-service-site$index",
-        Map(s"service.example$index" -> s"service$index-$masterName$maxMapTasks$maxReduceTasks"))
+        Map(s"service.example$index" -> s"service$index-$masterName"))
   )
 
   val full = new FileConfigurationContributor {
@@ -54,11 +52,7 @@ class FileConfigurationContributorTest extends FlatSpec with MustMatchers with O
     override protected val configName: String = "service-list"
   }
 
-  val properties = Map(
-    ConfigurationKeys.MasterNode -> masterName,
-    ConfigurationKeys.MaxMapTasks -> maxMapTasks,
-    ConfigurationKeys.MaxReduceTasks -> maxReduceTasks
-  )
+  val properties = Map(ConfigurationKeys.MasterNode -> masterName)
 
   def withConfig(contributor: FileConfigurationContributor) =
     contributor.contributions(properties)

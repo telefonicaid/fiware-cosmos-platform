@@ -18,6 +18,16 @@ import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class MapReduce2Test extends FlatSpec with MustMatchers {
+
+  val dynamicProperties = Map(
+    ConfigurationKeys.MasterNode -> "aMasterNodeName",
+    ConfigurationKeys.MapTaskMemory -> "200",
+    ConfigurationKeys.MapHeapMemory -> "100",
+    ConfigurationKeys.MrAppMasterMemory -> "100",
+    ConfigurationKeys.ReduceTaskMemory -> "100",
+    ConfigurationKeys.ReduceHeapMemory -> "50"
+  )
+
   "A MapReduce service" must "have a jobtracker, tasktracker and mapreduce client" in {
     val description = MapReduce2
     description.name must equal ("MAPREDUCE2")
@@ -25,13 +35,7 @@ class MapReduce2Test extends FlatSpec with MustMatchers {
       have length 2 and
       contain (ComponentDescription("HISTORYSERVER", isMaster = true)) and
       contain (ComponentDescription("MAPREDUCE2_CLIENT", isMaster = true, isClient = true)))
-    val contributions = description.contributions(Map(
-      ConfigurationKeys.MappersPerSlave -> "3",
-      ConfigurationKeys.MasterNode -> "aMasterNodeName",
-      ConfigurationKeys.MaxMapTasks -> "10",
-      ConfigurationKeys.MaxReduceTasks -> "5",
-      ConfigurationKeys.ReducersPerSlave -> "1"
-    ))
+    val contributions = description.contributions(dynamicProperties)
     contributions.global must be ('defined)
     contributions.core must be ('defined)
     contributions.services must have length 1

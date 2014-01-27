@@ -18,6 +18,7 @@ import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class HiveTest extends FlatSpec with MustMatchers {
+
   "The Hive service" must "have a server, a metastore, a client and a mysql server" in {
     val description = Hive
     description.name must equal("HIVE")
@@ -28,10 +29,7 @@ class HiveTest extends FlatSpec with MustMatchers {
         contain(ComponentDescription("HIVE_CLIENT", isMaster = true, isClient = true)) and
         contain(ComponentDescription("MYSQL_SERVER", isMaster = true, isClient = false)))
     val contributions = description.contributions(Map(
-      ConfigurationKeys.HdfsReplicationFactor -> "3",
-      ConfigurationKeys.MasterNode -> "aMasterNodeName",
-      ConfigurationKeys.MaxMapTasks -> "10",
-      ConfigurationKeys.MaxReduceTasks -> "5"
+      ConfigurationKeys.MasterNode -> "aMasterNodeName"
     ))
     contributions.global must be ('defined)
     contributions.core must be ('defined)

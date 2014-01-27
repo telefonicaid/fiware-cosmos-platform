@@ -18,7 +18,8 @@ import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class HdfsTest extends FlatSpec with MustMatchers {
-  val DynamicProperties = Map(
+
+  val dynamicProperties = Map(
     ConfigurationKeys.MasterNode -> "aMasterNodeName",
     ConfigurationKeys.HdfsReplicationFactor -> "3"
   )
@@ -31,12 +32,7 @@ class HdfsTest extends FlatSpec with MustMatchers {
       contain(ComponentDescription("NAMENODE", isMaster = true, isClient = false)) and
       contain(ComponentDescription("DATANODE", isMaster = false, isClient = false)) and
       contain(ComponentDescription("HDFS_CLIENT", isMaster = true, isClient = true)))
-    val contributions = description.contributions(Map(
-      ConfigurationKeys.HdfsReplicationFactor -> "3",
-      ConfigurationKeys.MasterNode -> "aMasterNodeName",
-      ConfigurationKeys.MaxMapTasks -> "10",
-      ConfigurationKeys.MaxReduceTasks -> "5"
-    ))
+    val contributions = description.contributions(dynamicProperties)
     contributions.global must be('defined)
     contributions.core must be('defined)
     contributions.services must have length 1
@@ -48,13 +44,13 @@ class HdfsTest extends FlatSpec with MustMatchers {
 
   /* Note: This is a HDFS-specific configuration needed even when Oozie is not installed */
   it must "have the oozie proxyuser group configured to be [cosmos]" in {
-    Hdfs.contributions(DynamicProperties).core.get.properties(
+    Hdfs.contributions(dynamicProperties).core.get.properties(
       "hadoop.proxyuser.oozie.groups") must equal("cosmos")
   }
 
   /* Note: This is a HDFS-specific configuration needed even when Oozie is not installed */
   it must "have the oozie proxyuser hosts configured to be [*]" in {
-    Hdfs.contributions(DynamicProperties).core.get.properties(
+    Hdfs.contributions(dynamicProperties).core.get.properties(
       "hadoop.proxyuser.oozie.hosts") must equal("*")
   }
 }

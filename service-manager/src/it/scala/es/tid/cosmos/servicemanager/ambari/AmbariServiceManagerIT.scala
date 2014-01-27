@@ -32,6 +32,18 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
 
   val preConditions = UnfilteredPassThrough
 
+  val hadoopConfig = HadoopConfig(
+    yarnTotalMemory = 1024,
+    yarnContainerMinimumMemory = 100,
+    yarnVirtualToPhysicalMemoryRatio = 2.1,
+    mapTaskMemory = 200,
+    mapHeapMemory = 100,
+    reduceTaskMemory = 200,
+    reduceHeapMemory = 100,
+    mrAppMasterMemory = 100,
+    zookeeperPort = 1234
+  )
+
   @tailrec
   final def waitForClusterCompletion(id: ClusterId, sm: ServiceManager): ClusterState = {
     val description = sm.describeCluster(id)
@@ -61,7 +73,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     sm = new AmbariServiceManager(
       ambariServer, infrastructureProvider,
       ClusterId("hdfs"), exclusiveMasterSizeCutoff = 10,
-      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1, zookeeperPort = 1234),
+      hadoopConfig,
       new AmbariClusterDao(
         new SqlClusterDao(db),
         ambariServer,

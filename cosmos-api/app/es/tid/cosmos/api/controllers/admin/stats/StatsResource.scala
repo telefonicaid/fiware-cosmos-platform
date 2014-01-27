@@ -54,7 +54,9 @@ class StatsResource(
     id = clusterId.toString,
     name = description.name,
     ownerHandle = ownerHandle,
-    size = description.size
+    size = description.size,
+    master = description.master.map(_.hostname).getOrElse(""),
+    slaves = description.slaves.map(_.hostname)
   )
 
   private def ownerHandleOf(clusterId: ClusterId): String = dao.withTransaction { implicit c =>

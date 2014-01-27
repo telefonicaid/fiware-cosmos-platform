@@ -33,6 +33,7 @@ cosmos::params::ambari_reduce_task_memory: 600
 cosmos::params::ambari_map_heap_memory: 400
 cosmos::params::ambari_reduce_heap_memory: 400
 cosmos::params::ambari_mr_app_master_memory: 200
+cosmos::openvz::images::source_image_file_dir: '/vagrant'
 cosmos::openvz::network::host_iface: 'eth1'
 slave_hosts:
     - 'compute1'

@@ -131,17 +131,17 @@ class UserResource(
   }
 
   private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = for {
-    cosmosId <- dao.withTransaction { implicit c => dao.getProfileId(userId)}.toSuccess(
+    cosmosProfile <- dao.withTransaction { implicit c => dao.lookupByUserId(userId)}.toSuccess(
       NotFound(Json.toJson(Message(s"User $userId does not exist")))
     )
-    unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosId)
+    unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosProfile.id)
       .leftMap(message => InternalServerError(Json.toJson(message)))
   } yield {
     unregistration_>.onSuccess {
-      case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
+      case _ => Logger.info(s"User $userId (${cosmosProfile.handle}) successfully unregistered")
     }
     unregistration_>.onFailure {
-      case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
+      case ex => Logger.error(s"Could not unregister user $userId (${cosmosProfile.handle})", ex)
     }
     unregistration_>
   }

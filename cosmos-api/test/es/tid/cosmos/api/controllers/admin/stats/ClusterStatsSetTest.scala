@@ -19,8 +19,10 @@ class ClusterStatsSetTest extends FlatSpec with MustMatchers {
 
   "A cluster stats set" must "be represented in JSON sorted by cluster id" in {
     val stats = ClusterStatsSet(Set(
-      ClusterStats(id = "1111", name = "cluster1", ownerHandle = "jsmith", size = 4),
-      ClusterStats(id = "0000", name = "cluster0", ownerHandle = "jsmith", size = 10)
+      ClusterStats(id = "1111", name = "cluster1", ownerHandle = "jsmith",
+        size = 4, master = "master.hi.inet", slaves = Seq()),
+      ClusterStats(id = "0000", name = "cluster0", ownerHandle = "jsmith",
+        size = 10, master= "master2.hi.inet", slaves = Seq("slave.hi.inet"))
     ))
     (Json.toJson(stats) \\ "id") must be (Seq(JsString("0000"), JsString("1111")))
   }

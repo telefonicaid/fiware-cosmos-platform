@@ -19,28 +19,37 @@ object CosmosBuild extends Build {
     val version = pom.ver
   }
 
+  object Versions {
+    /** HDP 1.3 has a patched 1.2.0 Hadoop stabilized by themselves */
+    val hdp13Hadoop = "1.2.0"
+  }
+
   object Dependencies {
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
+    lazy val hadoopCore = "org.apache.hadoop" % "hadoop-core" % Versions.hdp13Hadoop
     lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
-    lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
+    lazy val mockito = "org.mockito" % "mockito-all" % "1.9.5"
     lazy val scalaLogging = "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
     lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
+    lazy val scalatest = "org.scalatest" %% "scalatest" % "1.9.1"
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
+    lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
   }
 
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)
 
   lazy val root = (Project(id = "cosmos-platform", base = file("."))
     settings(ScctPlugin.mergeReportSettings: _*)
-    configs(IntegrationTest)
+    configs IntegrationTest
     settings(Defaults.itSettings : _*)
-    aggregate(cosmosApi, serviceManager, ial, cosmosAdmin, common, common_test, platformTests)
+    aggregate(
+      cosmosApi, serviceManager, ial, cosmosAdmin, common, common_test, platformTests, infinityfs)
   )
 
   lazy val common = (Project(id = "common", base = file("common"))
     settings(ScctPlugin.instrumentSettings: _*)
-    configs(IntegrationTest)
+    configs IntegrationTest
     settings(Defaults.itSettings : _*)
     dependsOn(common_test % "compile->compile;test->test")
   )
@@ -48,19 +57,19 @@ object CosmosBuild extends Build {
   lazy val common_test = (Project(id = "common-test", base = file("common-test"))
     settings(ScctPlugin.instrumentSettings: _*)
     settings(Defaults.itSettings : _*)
-    configs(IntegrationTest)
+    configs IntegrationTest
   )
 
   lazy val ial = (Project(id = "ial", base = file("ial"))
     settings(ScctPlugin.instrumentSettings: _*)
-    configs(IntegrationTest)
+    configs IntegrationTest
     settings(Defaults.itSettings : _*)
     dependsOn(common, common_test % "compile->compile;test->test")
   )
 
   lazy val serviceManager = (Project(id = "service-manager", base = file("service-manager"))
     settings(ScctPlugin.instrumentSettings: _*)
-    configs(IntegrationTest)
+    configs IntegrationTest
     settings(Defaults.itSettings : _*)
     dependsOn(ial, common_test % "compile->compile;test->test")
   )
@@ -68,15 +77,15 @@ object CosmosBuild extends Build {
   lazy val cosmosApi = (play.Project("cosmos-api", POM.version, path = file("cosmos-api"),
                         dependencies = Seq(PlayKeys.anorm, PlayKeys.jdbc))
     settings(ScctPlugin.instrumentSettings: _*)
-    configs(IntegrationTest)
+    configs IntegrationTest
     settings(Defaults.itSettings : _*)
-    dependsOn(serviceManager)
-    dependsOn(common_test) % "test->compile"
+    dependsOn serviceManager
+    dependsOn common_test % "test->compile"
   )
 
   lazy val cosmosAdmin = (Project(id = "cosmos-admin", base = file("cosmos-admin"))
     settings(ScctPlugin.instrumentSettings: _*)
-    configs(IntegrationTest)
+    configs IntegrationTest
     settings(Defaults.itSettings : _*)
     dependsOn(
       serviceManager,
@@ -87,8 +96,16 @@ object CosmosBuild extends Build {
 
   lazy val platformTests = (Project(id = "platform-tests", base = file("tests/platform-tests"))
     settings(ScctPlugin.instrumentSettings: _*)
-    configs(IntegrationTest)
+    configs IntegrationTest
     settings(Defaults.itSettings : _*)
-    dependsOn(common_test % "compile->compile;test->test")
+    dependsOn(
+      common_test % "compile->compile;test->test",
+      cosmosApi % "compile->compile;test->test")
+  )
+
+  lazy val infinityfs = (Project(id = "infinityfs", base = file("infinityfs"))
+    settings(ScctPlugin.instrumentSettings: _*)
+    configs IntegrationTest
+    settings(Defaults.itSettings : _*)
   )
 }

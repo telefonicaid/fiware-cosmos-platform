@@ -21,7 +21,7 @@ class yum::rhel::base($repo_server = 'repos.hi.inet') {
     descr    => "Red Hat Enterprise Linux $::operatingsystemrelease - Base",
     enabled  => '1',
     gpgcheck => '0',
-    baseurl  => "http://${repo_server}/redhat/rhel${::operatingsystemrelease}s-\$basearch/RPMS.all/",
+    baseurl  => "http://${repo_server}/redhat/rhel${::operatingsystemmajrelease}s-\$basearch/RPMS.all/",
   }
 
 }

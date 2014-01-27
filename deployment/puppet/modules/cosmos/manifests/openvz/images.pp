@@ -14,12 +14,12 @@ class cosmos::openvz::images(
   $netmask    = $cosmos::slave::netmask,
   $gateway    = $cosmos::slave::ct_gateway,
   $base_image_url  = 'http://cosmos10/develenv/repos/ovz-templates',
-  $image_name = 'centos-6-cosmos.HDP.2.0.6-20140123-x86_64.tar.gz'
+  $image_name = 'centos-6-cosmos.HDP.2.0.6-20140123-x86_64.tar.gz',
+  $source_image_file_dir = '/tmp'
 ) {
   include ssh_keys, ambari::repos
 
   $image_url             = "${base_image_url}/${image_name}"
-  $source_image_file_dir = '/tmp'
   $source_image_file     = "${source_image_file_dir}/${image_name}"
   $dest_image_file       = '/vz/template/cache/centos-6-cosmos-x86_64.tar.gz'
   $replacements_dir      = '/tmp/centos-6-cosmos-x86_64'

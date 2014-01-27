@@ -52,12 +52,15 @@ class StatsResourceIT
 
     val json = contentAsJson(opUser.doRequest(clusterStatsRequest))
 
-    (json \ "clusters").as[JsArray].value.map(_.as[JsObject]) must contain (Json.obj(
-      "id" -> activeClusterId.toString,
-      "name" -> "active",
-      "ownerHandle" -> regUser.handle,
-      "size" -> 2
-    ))
+    val expectedCluster = (json \ "clusters").as[JsArray].value
+      .map(_.as[JsObject])
+      .find(cluster => {
+        (cluster \ "id").as[String] == activeClusterId.toString
+      }).get
+    (expectedCluster \ "name").as[String] must be ("active")
+    (expectedCluster \ "ownerHandle").as[String] must be (regUser.handle)
+    (expectedCluster \ "size").as[Int] must be (2)
+    (expectedCluster \ "slaves").as[Seq[String]] must ((have size 2) or (have size 0))
   }
 
   val machineStatsRequest = FakeRequest(GET, "/cosmos/v1/stats/machines")

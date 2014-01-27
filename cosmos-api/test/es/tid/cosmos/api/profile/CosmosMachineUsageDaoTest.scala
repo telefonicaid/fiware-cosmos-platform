@@ -16,6 +16,7 @@ import scala.concurrent.duration._
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
+import org.scalatest.time.{Second, Seconds, Span}
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
@@ -29,6 +30,11 @@ class CosmosMachineUsageDaoTest
   with FutureMatchers
   with Eventually
   with OneInstancePerTest {
+
+  override implicit def patienceConfig = PatienceConfig(
+    timeout = Span(1, Second),
+    interval = Span(10, Seconds)
+  )
 
   val profileDao = new MockCosmosProfileDao
   val serviceManager = new MockedServiceManager(

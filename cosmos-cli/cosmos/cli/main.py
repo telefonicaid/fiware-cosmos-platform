@@ -23,6 +23,17 @@ from cosmos.cli.ssh import add_ssh_command
 from cosmos.cli.storage import add_storage_commands
 from cosmos.cli.util import ExitWithError
 from cosmos.common.exceptions import CosmosException
+from cosmos.common.version import print_versions
+
+
+def add_version_command(subcommands):
+
+    def command(args):
+        print_versions()
+        return 0
+
+    parser = subcommands.add_parser("version", help="Show version information")
+    parser.set_defaults(func=command)
 
 
 def add_configure_command(subcommands):
@@ -41,6 +52,7 @@ def build_argument_parser():
     subparsers = parser.add_subparsers(help='sub-command help',
                                        title='subcommands',
                                        description='valid subcommands')
+    add_version_command(subparsers)
     add_configure_command(subparsers)
     add_ssh_command(subparsers)
     add_compute_commands(subparsers)

@@ -1,13 +1,14 @@
-import AssemblyKeys._
+name := "infinityfs"
 
-name := "Infinity HFS driver"
-
-assemblySettings
-
-jarName in assembly := "infinityfs.jar"
-
-mainClass in assembly := Some("es.tid.cosmos.admin.Main")
+description := "Infinity HFS driver"
 
 libraryDependencies ++= Seq(
   Dependencies.hadoopCore % "provided"
 )
+
+publishTo := {
+  val releaseType = if (version.value.trim.endsWith("SNAPSHOT")) "snapshots" else "releases"
+  Some(releaseType  at "http://cosmos10.hi.inet/nexus/content/repositories/" + releaseType)
+}
+
+credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")

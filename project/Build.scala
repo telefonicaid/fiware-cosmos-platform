@@ -42,7 +42,7 @@ object Build extends sbt.Build {
   lazy val root = (Project(id = "cosmos-platform", base = file("."))
     settings(ScctPlugin.mergeReportSettings: _*)
     configs IntegrationTest
-    settings(Defaults.itSettings : _*)
+    settings(Defaults.itSettings: _*)
     aggregate(
       cosmosApi, serviceManager, ial, cosmosAdmin, common, common_test, platformTests, infinityfs)
   )
@@ -50,46 +50,42 @@ object Build extends sbt.Build {
   lazy val common = (Project(id = "common", base = file("common"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
-    settings(Defaults.itSettings : _*)
+    settings(Defaults.itSettings: _*)
     dependsOn(common_test % "compile->compile;test->test")
   )
 
   lazy val common_test = (Project(id = "common-test", base = file("common-test"))
     settings(ScctPlugin.instrumentSettings: _*)
-    settings(Defaults.itSettings : _*)
+    settings(Defaults.itSettings: _*)
     configs IntegrationTest
   )
 
   lazy val ial = (Project(id = "ial", base = file("ial"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
-    settings(Defaults.itSettings : _*)
+    settings(Defaults.itSettings: _*)
     dependsOn(common, common_test % "compile->compile;test->test")
   )
 
   lazy val serviceManager = (Project(id = "service-manager", base = file("service-manager"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
-    settings(Defaults.itSettings : _*)
-    dependsOn common
-    dependsOn(ial, common_test % "compile->compile;test->test")
+    settings(Defaults.itSettings: _*)
+    dependsOn(common, ial, common_test % "compile->compile;test->test")
   )
 
   lazy val cosmosApi = (play.Project("cosmos-api", POM.version, path = file("cosmos-api"),
                         dependencies = Seq(PlayKeys.anorm, PlayKeys.jdbc))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
-    settings(Defaults.itSettings : _*)
-    dependsOn serviceManager
-    dependsOn common
-    dependsOn ial
-    dependsOn common_test % "test->compile"
+    settings(Defaults.itSettings: _*)
+    dependsOn(serviceManager, common, ial, common_test % "test->compile")
   )
 
   lazy val cosmosAdmin = (Project(id = "cosmos-admin", base = file("cosmos-admin"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
-    settings(Defaults.itSettings : _*)
+    settings(Defaults.itSettings: _*)
     dependsOn(
       serviceManager,
       cosmosApi % "compile->compile;test->test",
@@ -100,7 +96,7 @@ object Build extends sbt.Build {
   lazy val platformTests = (Project(id = "platform-tests", base = file("tests/platform-tests"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
-    settings(Defaults.itSettings : _*)
+    settings(Defaults.itSettings: _*)
     dependsOn(
       common_test % "compile->compile;test->test",
       cosmosApi % "compile->compile;test->test")
@@ -109,6 +105,7 @@ object Build extends sbt.Build {
   lazy val infinityfs = (Project(id = "infinityfs", base = file("infinityfs"))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
-    settings(Defaults.itSettings : _*)
+    settings(Defaults.itSettings: _*)
+    settings(InfinityDeployment.settings: _*)
   )
 }

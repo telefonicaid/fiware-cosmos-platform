@@ -18,10 +18,21 @@ class ServiceDependenciesTest extends FlatSpec with MustMatchers {
 
   import ServiceDependencies._
 
+  "Hdfs" must "depend on Zookeeper" in {
+    Seq(Hdfs).withDependencies must be (Seq(Zookeeper, Hdfs))
+  }
+
+  "MapReduce2" must "depend on YARN" in {
+    Seq(MapReduce2).withDependencies must be (Seq(Yarn, MapReduce2))
+  }
+
+  "Hive" must "depend on HCatalog and WebHCat" in {
+    Seq(Hive).withDependencies must be (Seq(HCatalog, WebHCat, Hive))
+  }
+
   "Service dependencies" must "be added to a given service collection " +
     "with each service placed after its dependencies" in {
-    Seq(Hive).withDependencies must be (Seq(HCatalog, WebHCat, Hive))
     Seq(Hdfs, Hive, MapReduce2).withDependencies must be
-      Seq(Hdfs, HCatalog, WebHCat, Hive, MapReduce2)
+    Seq(Zookeeper, Hdfs, HCatalog, WebHCat, Hive, Yarn, MapReduce2)
   }
 }

@@ -15,7 +15,11 @@ package es.tid.cosmos.servicemanager.ambari.services
 object ServiceDependencies {
   type Service = AmbariServiceDescription
 
-  private val Dependencies: Map[Service, Seq[Service]] = Map(Hive -> Seq(HCatalog, WebHCat))
+  private val Dependencies: Map[Service, Seq[Service]] = Map(
+    Hdfs -> Seq(Zookeeper),
+    MapReduce2 -> Seq(Yarn),
+    Hive -> Seq(HCatalog, WebHCat)
+  )
 
   implicit class ServiceBundle(services: Seq[Service]) {
 

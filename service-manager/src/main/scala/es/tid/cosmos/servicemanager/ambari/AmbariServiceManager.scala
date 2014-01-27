@@ -195,7 +195,7 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val BasicHadoopServices = Seq(Zookeeper, Hdfs, Yarn, MapReduce2)
+  val BasicHadoopServices = Seq(Hdfs, MapReduce2)
   val OptionalServices: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
   val AllServices = (BasicHadoopServices ++ OptionalServices :+ CosmosUserService).withDependencies
 

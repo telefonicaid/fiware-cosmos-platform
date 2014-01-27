@@ -12,6 +12,7 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
+import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
 
 class ConfiguratorTestHelpers(
     masterName: String, slaveCount: Int, withMasterAsSlave: Boolean = true) {
@@ -49,7 +50,7 @@ class ConfiguratorTestHelpers(
   private def getConfigurationFromCompulsoryServices(extractor: ConfigurationBundle => Option[Configuration]) = {
     def getProperties(contributor: ConfigurationContributor) = extractor(contributor.contributions(dynamicProperties))
       .map(_.properties).getOrElse(Map())
-    AmbariServiceManager.BasicHadoopServices.map(getProperties).reduce(_++_)
+    AmbariServiceManager.BasicHadoopServices.withDependencies.map(getProperties).reduce(_++_)
   }
 }
 

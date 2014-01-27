@@ -283,6 +283,8 @@ class AmbariServiceManagerTest
   }
 
   it must "create cluster including service bundles" in {
+    import ServiceDependencies._
+
     val (machines, hosts) = machinesAndHostsOf(3)
     setMachineExpectations(machines, hosts)
     setServiceExpectations()
@@ -290,11 +292,8 @@ class AmbariServiceManagerTest
           "clusterName", 3, Seq(Hive), Seq(), NoPreconditions)
     waitForClusterCompletion(clusterId, instance)
     val description = instance.describeCluster(clusterId)
-    val hiveBundledServices = Seq(WebHCat, HCatalog)
     val expectedServices =
-      (AmbariServiceManager.BasicHadoopServices
-        ++ Seq(CosmosUserService, Hive)
-        ++ hiveBundledServices)
+      (AmbariServiceManager.BasicHadoopServices ++ Seq(CosmosUserService, Hive)).withDependencies
     description.get.services must be (expectedServices.map(_.name).toSet)
   }
 

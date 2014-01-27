@@ -62,6 +62,9 @@ trait FileConfigurationContributor extends ConfigurationContributor {
    * For the service `configName` it loads its configuration from a file and it looks for 3 types of
    * configuration: Global, Core and Service. They are all optional.
    *
+   * The Service configuration type can be either come in the form of a single configuration or a
+   * list of configurations.
+   *
    * In order for the configuration file to be able to use dynamic properties, the configuration
    * file must include a `include "cluster-properties` statement.
    *
@@ -76,12 +79,15 @@ trait FileConfigurationContributor extends ConfigurationContributor {
    *    "global.example.string"="global-"${MasterNode}
    *   }
    *}
+   *
    *"core" {
    *  "tag"="aTag",
    *  "properties" {
    *    "core.example"="core-"${MasterNode}
    *   }
    *}
+   *
+   *# Option A: Single configuration for service
    *"a-service" {
    *  "configType"="test-service-site"
    *  "tag"="aTag",
@@ -89,8 +95,28 @@ trait FileConfigurationContributor extends ConfigurationContributor {
    *    "service.example"="service-"${MasterNode}
    *   }
    *}
-   * }}}
    *
+   * # Option B: List of configurations for service
+   *"a-service" = [
+   *  {
+   *    "configType"="test-service-site1"
+   *    "tag"="aTag",
+   *    "properties" {
+   *      "service.example1"="service-"${MasterNode}
+   *     }
+   *  },
+   *
+   *  {
+   *    "configType"="test-service-site2"
+   *    "tag"="aTag",
+   *    "properties" {
+   *      "service.example2"="service-"${MasterNode}
+   *     }
+   *  }
+   *]
+   *}}}
+   *
+   * @param properties the dynamic properties to be injected to the configuration contributions
    * @see [[ConfigurationKeys]]
    */
   override def contributions(

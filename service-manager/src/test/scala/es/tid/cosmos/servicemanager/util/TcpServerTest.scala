@@ -62,7 +62,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
     val f = server.waitForServer(1500 milliseconds)
     f must not be ('completed)
     val ex = evaluating {
-      Await.result(f, 4 seconds)
+      Await.result(f, Duration.Inf)
     } must produce[RuntimeException]
     ex.getMessage must include ("not found")
   }
@@ -72,7 +72,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
     val f = server.waitForServer(1500 milliseconds)
     f must not be ('completed)
     val ex = evaluating {
-      Await.result(f, 4 seconds)
+      Await.result(f, Duration.Inf)
     } must produce[TcpServerNotFound]
   }
 

@@ -13,6 +13,7 @@ package es.tid.cosmos.api.wizards
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.language.postfixOps
 import scalaz.Failure
 
 import org.mockito.Matchers.{eq => the, any}

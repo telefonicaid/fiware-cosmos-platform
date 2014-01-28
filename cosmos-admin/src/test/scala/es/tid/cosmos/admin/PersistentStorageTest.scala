@@ -27,6 +27,18 @@ class PersistentStorageTest extends FlatSpec with MustMatchers with MockitoSugar
 
   val hdfsId = ClusterId("booya")
 
+  val clusterDescProto = new ImmutableClusterDescription(
+    id = hdfsId,
+    name = "",
+    size = 3,
+    state = null,
+    nameNode = Some(new URI("hdfs://host:1234")),
+    master = Some(HostDetails("host", "ipAddress")),
+    slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
+    users = None,
+    services = Set("HDFS")
+  )
+
   trait WithServiceManager {
     val sm = mock[ServiceManager]
     given(sm.persistentHdfsId).willReturn(hdfsId)
@@ -36,74 +48,10 @@ class PersistentStorageTest extends FlatSpec with MustMatchers with MockitoSugar
     given(sm.describePersistentHdfsCluster()).willReturn(None)
   }
 
-  trait WithProvisioningStorage extends WithServiceManager {
-    given(sm.describePersistentHdfsCluster()).willReturn(Some(new ImmutableClusterDescription(
-      id = hdfsId,
-      name = "",
-      size = 3,
-      state = Provisioning,
-      nameNode = Some(new URI("hdfs://host:1234")),
-      master = Some(HostDetails("host", "ipAddress")),
-      slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
-      users = None,
-      services = Set("HDFS")
-    )))
-  }
-
-  trait WithRunningStorage extends WithServiceManager {
-    given(sm.describePersistentHdfsCluster()).willReturn(Some(new ImmutableClusterDescription(
-      id = hdfsId,
-      name = "",
-      size = 3,
-      state = Running,
-      nameNode = Some(new URI("hdfs://host:1234")),
-      master = Some(HostDetails("host", "ipAddress")),
-      slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
-      users = None,
-      services = Set("HDFS")
-    )))
-  }
-
-  trait WithTerminatingStorage extends WithServiceManager {
-    given(sm.describePersistentHdfsCluster()).willReturn(Some(new ImmutableClusterDescription(
-      id = hdfsId,
-      name = "",
-      size = 3,
-      state = Terminating,
-      nameNode = Some(new URI("hdfs://host:1234")),
-      master = Some(HostDetails("host", "ipAddress")),
-      slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
-      users = None,
-      services = Set("HDFS")
-    )))
-  }
-
-  trait WithTerminatedStorage extends WithServiceManager {
-    given(sm.describePersistentHdfsCluster()).willReturn(Some(new ImmutableClusterDescription(
-      id = hdfsId,
-      name = "",
-      size = 3,
-      state = Terminated,
-      nameNode = Some(new URI("hdfs://host:1234")),
-      master = Some(HostDetails("host", "ipAddress")),
-      slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
-      users = None,
-      services = Set("HDFS")
-    )))
-  }
-
-  trait WithFailedStorage extends WithServiceManager {
-    given(sm.describePersistentHdfsCluster()).willReturn(Some(new ImmutableClusterDescription(
-      id = hdfsId,
-      name = "",
-      size = 3,
-      state = Failed("some reason"),
-      nameNode = Some(new URI("hdfs://host:1234")),
-      master = Some(HostDetails("host", "ipAddress")),
-      slaves  = Seq(HostDetails("host2", "ipAddress2"), HostDetails("host3", "ipAddress3")),
-      users = None,
-      services = Set("HDFS")
-    )))
+  trait WithStorage extends WithServiceManager {
+    def setState(state: ClusterState) =
+      given(sm.describePersistentHdfsCluster())
+        .willReturn(Some(clusterDescProto.copy(state = state)))
   }
 
   it must "deploy the persistent storage if it hasn't been found" in new WithMissingStorage {
@@ -114,7 +62,8 @@ class PersistentStorageTest extends FlatSpec with MustMatchers with MockitoSugar
     verify(sm).deployPersistentHdfsCluster()
   }
 
-  it must "not deploy the persistent storage if it has been found" in new WithRunningStorage {
+  it must "not deploy the persistent storage if it has been found" in new WithStorage {
+    setState(Running)
     PersistentStorage.setup(sm) must be (true)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).deployPersistentHdfsCluster()
@@ -135,7 +84,8 @@ class PersistentStorageTest extends FlatSpec with MustMatchers with MockitoSugar
     verify(sm, never()).terminatePersistentHdfsCluster()
   }
 
-  it must "terminate the persistent storage if it has been found" in new WithRunningStorage {
+  it must "terminate the persistent storage if it has been found" in new WithStorage {
+    setState(Running)
     given(sm.terminatePersistentHdfsCluster()).willReturn(Future.successful())
     PersistentStorage.terminate(sm) must be (true)
     verify(sm).describePersistentHdfsCluster()
@@ -149,43 +99,50 @@ class PersistentStorageTest extends FlatSpec with MustMatchers with MockitoSugar
     verify(sm).describePersistentHdfsCluster()
   }
 
-  it must "not deploy the persistent storage if it is in failed state" in new WithFailedStorage {
+  it must "not deploy the persistent storage if it is in failed state" in new WithStorage {
+    setState(Failed("some reason"))
     PersistentStorage.setup(sm) must be (false)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).deployPersistentHdfsCluster()
   }
 
-  it must "not deploy the persistent storage if it is in terminating state" in new WithTerminatingStorage {
+  it must "not deploy the persistent storage if it is in terminating state" in new WithStorage {
+    setState(Terminating)
     PersistentStorage.setup(sm) must be (false)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).deployPersistentHdfsCluster()
   }
 
-  it must "not deploy the persistent storage if it is in terminated state" in new WithTerminatedStorage {
+  it must "not deploy the persistent storage if it is in terminated state" in new WithStorage {
+    setState(Terminated)
     PersistentStorage.setup(sm) must be (false)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).deployPersistentHdfsCluster()
   }
 
-  it must "do not terminate the persistent storage if it is in provisioning state" in new WithProvisioningStorage {
+  it must "not terminate the persistent storage if it is in provisioning state" in new WithStorage {
+    setState(Provisioning)
     PersistentStorage.terminate(sm) must be (false)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).terminatePersistentHdfsCluster()
   }
 
-  it must "do not terminate the persistent storage if it is in terminating state" in new WithTerminatingStorage {
+  it must "not terminate the persistent storage if it is in terminating state" in new WithStorage {
+    setState(Terminating)
     PersistentStorage.terminate(sm) must be (true)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).terminatePersistentHdfsCluster()
   }
 
-  it must "do not terminate the persistent storage if it is in terminated state" in new WithTerminatedStorage {
+  it must "not terminate the persistent storage if it is in terminated state" in new WithStorage {
+    setState(Terminated)
     PersistentStorage.terminate(sm) must be (true)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).terminatePersistentHdfsCluster()
   }
 
-  it must "do not terminate the persistent storage if it is in failed state" in new WithFailedStorage {
+  it must "not terminate the persistent storage if it is in failed state" in new WithStorage {
+    setState(Failed("some reason"))
     PersistentStorage.terminate(sm) must be (false)
     verify(sm).describePersistentHdfsCluster()
     verify(sm, never()).terminatePersistentHdfsCluster()

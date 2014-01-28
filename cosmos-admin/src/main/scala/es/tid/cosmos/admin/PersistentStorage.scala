@@ -13,7 +13,6 @@ package es.tid.cosmos.admin
 
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters._
-import scala.Some
 
 private[admin] object PersistentStorage {
 

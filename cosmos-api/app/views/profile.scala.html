@@ -20,12 +20,12 @@
 } {
     @navigation("profile", tabs)
 
-    @if(cosmosProfile.state == UserState.Creating) {
-        <p><i>Your profile is being created</i>. You won't be allowed to create clusters for a
-        few minutes.</p>
-    }
-
     <h1 class="page-title">Profile for @oauthProfile.contact</h1>
+
+    @if(cosmosProfile.state == UserState.Creating) {
+        <div class="warning">Your profile is being created. You won't be allowed to create clusters
+        for a few minutes.</div>
+    }
 
     <ul>
         <li>User handle: <strong id="handle">@cosmosProfile.handle</strong></li>

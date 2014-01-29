@@ -1,0 +1,15 @@
+.idea/
+common-test/target/
+common/target/
+cosmos-admin/target/
+cosmos-api/logs/
+cosmos-api/target/
+ial/target/
+infinityfs/target/
+logs/
+project/project/
+project/target/
+service-manager/target/
+target/
+servicetests/platform-tests/target/target
+

@@ -17,5 +17,6 @@ def test_suite():
     return unittest.TestSuite([
         doctest.DocTestSuite("cosmos.common.exceptions"),
         doctest.DocTestSuite("cosmos.common.routes"),
+        doctest.DocTestSuite("cosmos.common.version", optionflags=doctest.ELLIPSIS),
     ])
 

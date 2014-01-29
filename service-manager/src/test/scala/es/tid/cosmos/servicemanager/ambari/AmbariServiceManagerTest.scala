@@ -223,7 +223,8 @@ class AmbariServiceManagerTest
       override def matches(argument: Any): Boolean = argument match {
         case conf: Configuration => {
           val propertyValues = conf.properties.values.toSeq
-          propertyValues.contains("user2") && propertyValues.contains("publicKey2")
+          propertyValues.contains("user2") && propertyValues.contains("publicKey2") &&
+          !propertyValues.contains("user1") && !propertyValues.contains("publicKey1")
         }
       }
     }

@@ -15,17 +15,16 @@ import java.util.Properties
 import java.io.{File, FileReader}
 
 import anorm._
-import play.api.Play.current
 import play.api.db.DB
+import play.api.db.evolutions.EvolutionsPlugin
 import play.api.test.FakeApplication
 
-import es.tid.cosmos.api.mocks.{TestWithDbGlobal, WithTestApplication}
-import play.api.db.evolutions.EvolutionsPlugin
+import es.tid.cosmos.api.mocks._
 
 private[profile] class WithTestDatabase(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(
     additionalConfiguration = additionalConfiguration ++ WithTestDatabase.loadDatabaseProperties(),
-    playGlobal = new TestWithDbGlobal) {
+    testApp = new PlayDaoTestApplication) {
 
   def appWithTestDb: FakeApplication = implicitApp
 

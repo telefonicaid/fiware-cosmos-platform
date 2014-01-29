@@ -39,10 +39,10 @@ class UserRegistrationWizardIT
 
   trait WithUserRegistrationWizard {
     val dao = new MockCosmosProfileDao()
-    val sm = spy(new MockedServiceManager(transitionDelay = 0 milliseconds))
+    val sm = spy(new MockedServiceManager())
     val instance = new UserRegistrationWizard(sm)
 
-    Await.ready(sm.deployPersistentHdfsCluster(), testTimeout)
+    sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
 
   "User registration" must "create a new profile with the input data" in

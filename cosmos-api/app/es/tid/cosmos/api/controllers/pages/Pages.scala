@@ -14,6 +14,7 @@ package es.tid.cosmos.api.controllers.pages
 import scala.concurrent.Future
 import scalaz._
 
+import com.typesafe.config.Config
 import dispatch.{Future => _, _}, Defaults._
 import play.Logger
 import play.api.data.Form
@@ -40,7 +41,8 @@ class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
     override val dao: CosmosProfileDao,
-    override val maintenanceStatus: MaintenanceStatus
+    override val maintenanceStatus: MaintenanceStatus,
+    config: Config
   ) extends JsonController with PagesAuthController with MaintenanceAwareController {
 
   import Scalaz._
@@ -180,12 +182,15 @@ class Pages(
   }
 
   def faq = Action { implicit request =>
+    val faqConfig = config.getConfig("faq")
     if (requireAuthenticatedUser(request).isFailure)
-      Ok(views.html.faq(None))
+      Ok(views.html.faq(None, faqConfig))
     else for {
       profiles <- requireUserProfiles(request)
       (_, cosmosProfile) = profiles
-    } yield Ok(views.html.faq(Some(Navigation.forCapabilities(cosmosProfile.capabilities))))
+    } yield {
+      Ok(views.html.faq(Some(Navigation.forCapabilities(cosmosProfile.capabilities)), faqConfig))
+    }
   }
 
   private def unauthorizedPage(ex: OAuthException)(implicit request: RequestHeader) = {

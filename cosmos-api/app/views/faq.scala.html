@@ -1,4 +1,4 @@
-@(tabs: Option[Seq[views.NavTab]])(implicit request: RequestHeader)
+@(tabs: Option[Seq[views.NavTab]], config: com.typesafe.config.Config)(implicit request: RequestHeader)
 @import es.tid.cosmos.api.controllers.pages
 <!--
  Telefónica Digital - Product Development and Innovation
@@ -66,4 +66,24 @@
 
         <h3>Are there any plans to add access security to the platform?</h3>
         <p>Yes. We are evaluating different options to add this feature to the platform.</p>
+
+        <h3>When I try to download or use Cosmos CLI I am getting an SSL3_GET_SERVER_CERTIFICATE
+            error. Why and what can I do?</h3>
+
+        <p>As of v0.13, Cosmos supports Secure HTTP (https) via SSL using certificates provided by
+            @config.getString("ssl.authority"). This means that you can no longer access Cosmos via
+            simple HTTP.</p>
+        <p>In order to securely communicate with Cosmos your machine needs to trust the Cosmos
+            server.
+            To do that, it needs be told to trust the certificates on which Cosmos' secure
+            communication is based.</p>
+
+        <p>What you need to do is install the CA and ROOT certificates found in
+            <a href="@config.getString("ssl.certificateLocation")">
+            @config.getString("ssl.certificateLocation")</a>. For more information please contact
+            <a href="mailto:@config.getString("ssl.support.email")">
+            @config.getString("ssl.support.name")</a>.</p>
+
+        <p><i>Note:</i> secure communication with the Cosmos server does not mean that Cosmos
+            Hadoop clusters are secure. Please see related question above for more information.</p>
 }

@@ -11,8 +11,6 @@
 
 package es.tid.cosmos.api.controllers
 
-import scala.Some
-
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{Matcher, MatchResult, MustMatchers}
 import play.api.libs.json._
@@ -20,6 +18,7 @@ import play.api.test.Helpers._
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.controllers.ResultMatchers.failWith
+import es.tid.cosmos.api.mocks.{SampleClusters, WithTestApplication}
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.test.matchers.JsonMatchers
@@ -29,124 +28,127 @@ class ClusterIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors
   with JsonMatchers {
 
-  import MockedServiceManager._
+  import SampleClusters._
 
   "Cluster detail listing" must behave like
-    rejectingUnauthenticatedRequests(DefaultClusterProps.listDetailsRequest)
+    rejectingUnauthenticatedRequests(RunningClusterProps.listDetailsRequest)
 
-  it must behave like enabledWhenUnderMaintenance(DefaultClusterProps.listDetailsRequest)
+  it must behave like enabledWhenUnderMaintenance(RunningClusterProps.listDetailsRequest)
 
   "Cluster termination" must behave like
-    rejectingUnauthenticatedRequests(DefaultClusterProps.terminateRequest)
+    rejectingUnauthenticatedRequests(RunningClusterProps.terminateRequest)
 
   it must behave like
-    enabledOnlyForOperatorsWhenUnderMaintenance(DefaultClusterProps.terminateRequest)
+    enabledOnlyForOperatorsWhenUnderMaintenance(RunningClusterProps.terminateRequest)
 
   "Cluster user management" must behave like
-    rejectingUnauthenticatedRequests(DefaultClusterProps.addUserRequest("pepito"))
+    rejectingUnauthenticatedRequests(RunningClusterProps.addUserRequest("pepito"))
 
   it must behave like
-    enabledOnlyForOperatorsWhenUnderMaintenance(DefaultClusterProps.addUserRequest("pepito"))
+    enabledOnlyForOperatorsWhenUnderMaintenance(RunningClusterProps.addUserRequest("pepito"))
 
   "Cluster resource" must "list complete cluster details on GET request when cluster is running" in
-    new WithSampleSessions {
-      regUser.setAsOwner(DefaultClusterProps.id)
-      val resource = regUser.doRequest(DefaultClusterProps.listDetailsRequest)
+    new WithSampleSessions with SampleClusters {
+      regUser.setAsOwner(RunningClusterProps.id)
+      val resource = regUser.doRequest(RunningClusterProps.listDetailsRequest)
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       val description = contentAsJson(resource)
-      description must representClusterProperties(DefaultClusterProps)
+      description must representClusterProperties(RunningClusterProps)
       description must representRunningCluster
     }
 
   it must "list partial cluster details on GET request" +
-    " when cluster is still provisioning" in new WithSampleSessions {
-    regUser.setAsOwner(InProgressClusterProps.id)
-    val resource = regUser.doRequest(InProgressClusterProps.listDetailsRequest)
+    " when cluster is still provisioning" in new WithSampleSessions with SampleClusters {
+    regUser.setAsOwner(ProvisioningClusterProps.id)
+    val resource = regUser.doRequest(ProvisioningClusterProps.listDetailsRequest)
     status(resource) must equal (OK)
     contentType(resource) must be (Some("application/json"))
     val description = contentAsJson(resource)
-    description must representClusterProperties(InProgressClusterProps)
+    description must representClusterProperties(ProvisioningClusterProps)
     description must representInProgressCluster
   }
 
   it must "return 404 on unknown cluster" in new WithSampleSessions {
-    val resource = regUser.doRequest(UnknownClusterProps.listDetailsRequest)
+    val resource = regUser.doRequest(RunningClusterProps.listDetailsRequest)
     status(resource) must equal (NOT_FOUND)
   }
 
-  it must "reject with 401 when listing non-owned cluster" in new WithSampleSessions {
-    val resource = regUser.doRequest(DefaultClusterProps.listDetailsRequest)
+  it must "reject with 401 when listing non-owned cluster" in
+      new WithSampleSessions with SampleClusters {
+    val resource = regUser.doRequest(RunningClusterProps.listDetailsRequest)
     status(resource) must equal (UNAUTHORIZED)
   }
 
   it must "throw if the service manager has no associated information" in new WithSampleSessions {
-      regUser.setAsOwner(UnknownClusterProps.id)
-      val resource = regUser.doRequest(UnknownClusterProps.listDetailsRequest)
+      regUser.setAsOwner(RunningClusterProps.id)
+      val resource = regUser.doRequest(RunningClusterProps.listDetailsRequest)
       resource must failWith (classOf[IllegalStateException])
     }
 
-  it must "terminate cluster" in new WithSampleSessions {
-    regUser.setAsOwner(DefaultClusterProps.id)
-    val resource = regUser.doRequest(DefaultClusterProps.terminateRequest)
+  it must "terminate cluster" in new WithSampleSessions with SampleClusters {
+    regUser.setAsOwner(RunningClusterProps.id)
+    val resource = regUser.doRequest(RunningClusterProps.terminateRequest)
     status(resource) must equal (OK)
-    val cluster = services.serviceManager().describeCluster(DefaultClusterProps.id).get
+    val cluster = services.serviceManager().describeCluster(RunningClusterProps.id).get
     cluster.state must (be (Terminating) or be (Terminated))
   }
 
   it must "return 404 when terminating unknown clusters" in new WithSampleSessions {
-    status(regUser.doRequest(UnknownClusterProps.terminateRequest)) must equal (NOT_FOUND)
+    status(regUser.doRequest(RunningClusterProps.terminateRequest)) must equal (NOT_FOUND)
   }
 
-  it must "reject cluster termination of non owned clusters" in new WithSampleSessions {
-    status(regUser.doRequest(DefaultClusterProps.terminateRequest)) must equal (UNAUTHORIZED)
+  it must "reject cluster termination of non owned clusters" in
+      new WithSampleSessions with SampleClusters {
+    status(regUser.doRequest(RunningClusterProps.terminateRequest)) must equal (UNAUTHORIZED)
   }
 
-  it must "be idempotent respect to cluster termination" in new WithSampleSessions {
-    regUser.setAsOwner(DefaultClusterProps.id)
+  it must "be idempotent respect to cluster termination" in
+      new WithSampleSessions with SampleClusters {
+    regUser.setAsOwner(RunningClusterProps.id)
     for (_ <- 1 to 2) {
-      status(regUser.doRequest(DefaultClusterProps.terminateRequest)) must equal (OK)
-      val cluster = services.serviceManager().describeCluster(DefaultClusterProps.id).get
+      status(regUser.doRequest(RunningClusterProps.terminateRequest)) must equal (OK)
+      val cluster = services.serviceManager().describeCluster(RunningClusterProps.id).get
       cluster.state must (be (Terminating) or be (Terminated))
     }
   }
 
-  it must "add a user to cluster" in new WithSampleSessions {
-    regUser.setAsOwner(DefaultClusterProps.id)
-    val rep = regUser.doRequest(DefaultClusterProps.addUserRequest(opUser.handle))
+  it must "add a user to cluster" in new WithSampleSessions with SampleClusters {
+    regUser.setAsOwner(RunningClusterProps.id)
+    val rep = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
     status(rep) must equal (OK)
-    val users = services.serviceManager().listUsers(DefaultClusterProps.id)
+    val users = services.serviceManager().listUsers(RunningClusterProps.id)
     users must be ('defined)
     users.get.exists(
       usr => usr.username.equals(opUser.handle) && usr.isEnabled
     ) must be (true)
   }
 
-  it must "fail to add an already existing user" in new WithSampleSessions {
-    regUser.setAsOwner(DefaultClusterProps.id)
-    val rep1 = regUser.doRequest(DefaultClusterProps.addUserRequest(opUser.handle))
+  it must "fail to add an already existing user" in new WithSampleSessions with SampleClusters {
+    regUser.setAsOwner(RunningClusterProps.id)
+    val rep1 = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
     status(rep1) must equal (OK)
 
-    val rep2 = regUser.doRequest(DefaultClusterProps.addUserRequest(opUser.handle))
+    val rep2 = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
     status(rep2) must equal (BAD_REQUEST)
   }
 
-  it must "remove a user from cluster" in new WithSampleSessions {
-    regUser.setAsOwner(DefaultClusterProps.id)
-    status(regUser.doRequest(DefaultClusterProps.addUserRequest(opUser.handle)))
+  it must "remove a user from cluster" in new WithSampleSessions with SampleClusters {
+    regUser.setAsOwner(RunningClusterProps.id)
+    status(regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle)))
 
-    val rep = regUser.doRequest(DefaultClusterProps.removeUserRequest(opUser.handle))
+    val rep = regUser.doRequest(RunningClusterProps.removeUserRequest(opUser.handle))
     status(rep) must equal (OK)
-    val users = services.serviceManager().listUsers(DefaultClusterProps.id)
+    val users = services.serviceManager().listUsers(RunningClusterProps.id)
     users must be ('defined)
     users.get.exists(
       usr => usr.username.equals("pocahontas") && usr.isEnabled
     ) must be (false)
   }
 
-  it must "fail to remove the owner of the cluster" in new WithSampleSessions {
-    regUser.setAsOwner(DefaultClusterProps.id)
-    val rep = regUser.doRequest(DefaultClusterProps.removeUserRequest(regUser.handle))
+  it must "fail to remove the owner of the cluster" in new WithSampleSessions with SampleClusters {
+    regUser.setAsOwner(RunningClusterProps.id)
+    val rep = regUser.doRequest(RunningClusterProps.removeUserRequest(regUser.handle))
     status(rep) must equal (BAD_REQUEST)
   }
 

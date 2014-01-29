@@ -18,8 +18,7 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.cluster.CreateClusterParams
-import es.tid.cosmos.api.mocks.WithSampleUsers
-import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.api.mocks.{SampleClusters, WithSampleUsers}
 import es.tid.cosmos.servicemanager.ambari.services.Hdfs
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
@@ -40,9 +39,9 @@ class ClustersIT
 
   it must behave like enabledOnlyForOperatorsWhenUnderMaintenance(createCluster)
 
-  "The clusters resource" must "list user clusters" in new WithSampleUsers {
+  "The clusters resource" must "list user clusters" in new WithSampleUsers with SampleClusters {
     dao.withConnection { implicit c =>
-      val ownCluster = MockedServiceManager.DefaultClusterProps.id
+      val ownCluster = SampleClusters.RunningClusterProps.id
       val otherCluster = ClusterId()
       dao.assignCluster(ownCluster, user1.id)
       dao.assignCluster(otherCluster, user2.id)
@@ -50,7 +49,7 @@ class ClustersIT
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)
-      contentAsString(resource) must include (MockedServiceManager.DefaultClusterProps.name)
+      contentAsString(resource) must include (SampleClusters.RunningClusterProps.name)
       contentAsString(resource) must not include otherCluster.toString
     }
   }

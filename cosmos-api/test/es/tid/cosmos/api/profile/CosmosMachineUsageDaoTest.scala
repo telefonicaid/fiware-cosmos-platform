@@ -16,6 +16,7 @@ import scala.concurrent.duration._
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
+import org.scalatest.time.{Second, Seconds, Span}
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
@@ -30,11 +31,13 @@ class CosmosMachineUsageDaoTest
   with Eventually
   with OneInstancePerTest {
 
-  val profileDao = new MockCosmosProfileDao
-  val serviceManager = new MockedServiceManager(
-    transitionDelay = 100.milliseconds,
-    maxPoolSize = 16
+  override implicit def patienceConfig = PatienceConfig(
+    timeout = Span(1, Second),
+    interval = Span(10, Seconds)
   )
+
+  val profileDao = new MockCosmosProfileDao
+  val serviceManager = new MockedServiceManager(maxPoolSize = 16)
   val usageDao = new CosmosMachineUsageDao(profileDao, serviceManager)
   val profile = registerUser("myUser")(profileDao)
 
@@ -104,6 +107,11 @@ class CosmosMachineUsageDaoTest
     val clusterId1 = serviceManager.createCluster("myCluster1", 1, Seq.empty, Seq.empty)
     val clusterId2 = serviceManager.createCluster("myCluster2", 2, Seq.empty, Seq.empty)
     val terminated = serviceManager.createCluster("terminatedCluster", 10, Seq.empty, Seq.empty)
+
+    serviceManager.withCluster(clusterId1)(_.completeProvisioning())
+    serviceManager.withCluster(clusterId2)(_.completeProvisioning())
+    serviceManager.withCluster(terminated)(_.immediateTermination())
+
     profileDao.withTransaction { c =>
       for (clusterId <- Seq(clusterId1, clusterId2, terminated))
         profileDao.assignCluster(clusterId, profile.id)(c)

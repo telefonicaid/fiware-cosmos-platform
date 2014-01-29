@@ -150,11 +150,16 @@ class AmbariServiceManager(
       changedService <- changeServiceConfiguration(
         clusterId,
         clusterDescription.get,
-        new CosmosUserService(users))
+        new CosmosUserService(clusterUsersDelta(listUsers(clusterId), users)))
     } yield {
       clusterDao.setUsers(clusterId, users.toSet)
     }
   }
+
+  private def clusterUsersDelta(
+      currentUsers: Option[Seq[ClusterUser]],
+      newUsers: Seq[ClusterUser]): Seq[ClusterUser] =
+    (newUsers.toSet diff currentUsers.toSet.flatten).toSeq
 
   private def changeServiceConfiguration(
       id: ClusterId,

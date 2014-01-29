@@ -38,11 +38,11 @@ class UserUnregistrationWizardTest
   val failedFuture: Future[Unit] = Future.failed(failure)
 
   trait WithWizard {
-    val sm = spy(new MockedServiceManager(transitionDelay = 0 seconds))
+    val sm = spy(new MockedServiceManager())
     val dao = spy(new MockCosmosProfileDao())
     val wizard = new UserUnregistrationWizard(sm)
 
-    Await.ready(sm.deployPersistentHdfsCluster(), timeout)
+    sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
 
   trait WithExistingUser extends WithWizard {
@@ -66,11 +66,15 @@ class UserUnregistrationWizardTest
   trait WithUserWithCluster extends WithExistingUser {
     val clusterId = sm.createCluster(
       name = "cluster1",
-      size = 1000,
+      size = 6,
       serviceDescriptions = Seq.empty,
       users = Seq.empty,
       preConditions = UnfilteredPassThrough
     )
+    sm.withCluster(clusterId) { cluster =>
+      cluster.completeProvisioning()
+      cluster.immediateTermination()
+    }
     dao.withTransaction { implicit c =>
       dao.assignCluster(clusterId, cosmosProfile.id)
     }
@@ -84,6 +88,8 @@ class UserUnregistrationWizardTest
       users = Seq.empty,
       preConditions = UnfilteredPassThrough
     )
+    sm.withCluster(clusterId)(_.completeProvisioning())
+
     eventually { sm.describeCluster(clusterId).get.state must be (Running) }
 
     Await.ready(sm.addUser(clusterId, ClusterUser.enabled(

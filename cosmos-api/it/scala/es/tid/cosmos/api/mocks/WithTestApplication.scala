@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.mocks
 
 import scala.Some
+import scala.concurrent.Await
 import scala.concurrent.duration._
 
 import play.core.DevSettings
@@ -19,14 +20,21 @@ import play.api.mvc.Session
 import play.api.test.{FakeApplication, FakeRequest, WithApplication}
 
 import es.tid.cosmos.api.AbstractGlobal
-import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile._
-import scala.concurrent.Await
+import es.tid.cosmos.api.profile.Registration
+import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.servicemanager.clusters.Running
 
 class WithTestApplication(
     additionalConfiguration: Map[String, String] = Map.empty,
-    val playGlobal: AbstractGlobal = new TestGlobal
-  ) extends WithApplication(WithTestApplication.buildApp(additionalConfiguration, playGlobal)) {
+    val testApp: TestApplication = new MockDaoTestApplication)
+  extends WithApplication(
+    WithTestApplication.buildApp(additionalConfiguration, testApp.global)) {
+
+  lazy val playGlobal = testApp.global
+
+  val mockedServiceManager = testApp.mockedServiceManager
 
   lazy val dao = playGlobal.application.dao
 
@@ -50,7 +58,8 @@ class WithTestApplication(
     request.withSession(session.data.toSeq: _*)
 
   def withPersistentHdfsDeployed(action: => Unit) = {
-    Await.ready(services.serviceManager().deployPersistentHdfsCluster(), 5 seconds)
+    mockedServiceManager.defineCluster(
+      MockedServiceManager.PersistentHdfsProps.copy(initialState = Some(Running)))
     action
   }
 }

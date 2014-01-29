@@ -11,8 +11,6 @@
 
 package es.tid.cosmos.admin
 
-import scala.concurrent.duration._
-
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
@@ -24,7 +22,7 @@ import es.tid.cosmos.api.quota.{NoGroup, GuaranteedGroup, Quota, EmptyQuota}
 class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
 
   val dao = new MockCosmosProfileDao
-  val serviceManager = new MockedServiceManager(transitionDelay = 100.milliseconds, maxPoolSize = 6)
+  val serviceManager = new MockedServiceManager(maxPoolSize = 6)
   val groups = new Groups(dao, serviceManager)
 
   "Group commands" must "support creating a new group" in {

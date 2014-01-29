@@ -71,6 +71,13 @@ auth.horizon {
 cli.url="https://<%=@master_hostname%><%=@domain%>:8000/eggs/<%= @cosmos_cli_filename %>"
 infinity.url="<%= @infinity_url %>"
 
+# Pages
+# ~~~~~
+pages.faq.ssl.authority="<%= @ssl_authority %>"
+pages.faq.ssl.certificateLocation="<%= @ssl_cert_location %>"
+pages.faq.ssl.support.name="<%= @ssl_support_name %>"
+pages.faq.ssl.support.email="<%= @ssl_support_email %>"
+
 # Swagger API documentation
 # ~~~~~
 swagger.api.basepath=${application.baseurl}

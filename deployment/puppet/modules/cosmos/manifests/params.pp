@@ -73,6 +73,10 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $infinity_url,
   $pdihub_client_id,
   $pdihub_client_secret,
+  $ssl_authority,
+  $ssl_cert_location,
+  $ssl_support_name,
+  $ssl_support_email,
   $horizon_password
 ) {
   $cosmos_public_key       = "ssh-rsa ${cosmos_raw_public_key} root@localhost"

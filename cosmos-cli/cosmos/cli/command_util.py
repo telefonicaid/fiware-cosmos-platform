@@ -127,7 +127,3 @@ def get_console_width():
         return get_terminal_size()[0]
     except:
         return DEFAULT_CONSOLE_WIDTH
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

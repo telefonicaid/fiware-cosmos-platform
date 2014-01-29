@@ -17,21 +17,27 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
-class OozieTest extends FlatSpec with MustMatchers  {
+class WebHCatTest extends FlatSpec with MustMatchers {
 
   val dynamicProperties = Map(
-    ConfigurationKeys.MasterNode -> "aMasterNodeName"
+    ConfigurationKeys.MasterNode -> "aMasterNodeName",
+    ConfigurationKeys.ZookeeperHosts -> Seq("hostname1:1234", "hostname2:1234").mkString(",")
   )
 
-  "An Oozie service" must "have an oozie server and a client" in {
-    val description = Oozie
-    description.name must equal("OOZIE")
+  "A WebHCat service" must "have a server as a component" in {
+    val description = WebHCat
+    description.name must equal("WEBHCAT")
     description.components must (
-      have length 2 and
-      contain(ComponentDescription("OOZIE_SERVER", isMaster = true)) and
-      contain(ComponentDescription("OOZIE_CLIENT", isMaster = true, isClient = true)))
+      have length 1 and contain(ComponentDescription("WEBHCAT_SERVER", isMaster = true))
+    )
     val contributions = description.contributions(dynamicProperties)
     contributions.global must be('defined)
+    contributions.core must not be('defined)
     contributions.services must have length 1
+  }
+
+  it must "have the zookeeper hosts injected as dynamic properties" in {
+    WebHCat.contributions(dynamicProperties).services.head
+      .properties("templeton.zookeeper.hosts") must equal("hostname1:1234,hostname2:1234")
   }
 }

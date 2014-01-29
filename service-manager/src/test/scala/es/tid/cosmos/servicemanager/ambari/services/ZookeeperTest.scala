@@ -17,21 +17,26 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
-class OozieTest extends FlatSpec with MustMatchers  {
+class ZookeeperTest extends FlatSpec with MustMatchers {
 
-  val dynamicProperties = Map(
-    ConfigurationKeys.MasterNode -> "aMasterNodeName"
-  )
+  val dynamicProperties = Map(ConfigurationKeys.ZookeeperPort -> "1234")
 
-  "An Oozie service" must "have an oozie server and a client" in {
-    val description = Oozie
-    description.name must equal("OOZIE")
+  "A Zookeeper service" must "have a zookeeper server and a client" in {
+    val description = Zookeeper
+    description.name must equal("ZOOKEEPER")
     description.components must (
       have length 2 and
-      contain(ComponentDescription("OOZIE_SERVER", isMaster = true)) and
-      contain(ComponentDescription("OOZIE_CLIENT", isMaster = true, isClient = true)))
+      contain(ComponentDescription("ZOOKEEPER_SERVER", isMaster = false)) and
+      contain(ComponentDescription("ZOOKEEPER_CLIENT", isMaster = true, isClient = true))
+    )
     val contributions = description.contributions(dynamicProperties)
     contributions.global must be('defined)
-    contributions.services must have length 1
+    contributions.core must not be('defined)
+    contributions.services must be('empty)
+  }
+
+  it must "have the zookeeper server port injected as dynamic properties" in {
+    Zookeeper.contributions(dynamicProperties)
+      .global.get.properties("clientPort") must equal("1234")
   }
 }

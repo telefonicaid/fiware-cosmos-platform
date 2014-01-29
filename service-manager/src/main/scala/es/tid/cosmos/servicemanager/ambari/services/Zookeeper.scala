@@ -13,14 +13,17 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 
-/**
- * Representation of the Map Reduce service.
- */
-object MapReduce extends ServiceWithConfigurationFile {
-  override val name: String = "MAPREDUCE"
+/** Representation of the Zookeeper service. */
+object Zookeeper extends ServiceWithConfigurationFile {
+  override val name: String = "ZOOKEEPER"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("JOBTRACKER", isMaster = true),
-    ComponentDescription("TASKTRACKER", isMaster = false),
-    ComponentDescription("MAPREDUCE_CLIENT", isMaster = true, isClient = true))
+    /* Zookeeper is a distributed application.
+     * We choose to have one zookeeper server on each slave for resilience purposes.
+     */
+    ComponentDescription("ZOOKEEPER_SERVER", isMaster = false),
+    ComponentDescription("ZOOKEEPER_CLIENT", isMaster = true, isClient = true)
+  )
 }
+
+

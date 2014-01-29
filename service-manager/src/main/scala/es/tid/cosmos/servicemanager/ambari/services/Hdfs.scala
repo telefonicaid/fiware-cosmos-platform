@@ -33,7 +33,7 @@ object Hdfs extends ServiceWithConfigurationFile {
       val port = resolveConfig(emptyProperties)
         .getObject("hdfs.properties")
         .unwrapped()
-        .get("dfs.http.address")
+        .get("dfs.namenode.http-address")
         .toString
         .split(":")
         .last

@@ -19,7 +19,7 @@ import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.services.{Hdfs, MapReduce}
+import es.tid.cosmos.servicemanager.ambari.services.{Hdfs, MapReduce2}
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
 
@@ -138,7 +138,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
-  override val optionalServices: Seq[ServiceDescriptionType] = Seq(Hdfs, MapReduce)
+  override val optionalServices: Seq[ServiceDescriptionType] = Seq(Hdfs, MapReduce2)  // TODO: See if should add ZOOKEEPER & YARN
 
   override def createCluster(
       name: String,

@@ -36,14 +36,13 @@ private[ambari] class ClusterManager(
     hosts <- cluster.addHosts(clusterDescription.machines.map(_.hostname))
     masterHost = hosts.find(_.name == master.hostname).get
     slaveHosts = hosts.filter(host => slaves.exists(_.hostname == host.name))
-    configuredCluster <- Configurator.applyConfiguration(
+    properties = DynamicProperties(hadoopConfig, masterHost, slaveHosts)
+    _ <- Configurator.applyConfiguration(
       cluster,
-      masterHost,
-      slaveHosts,
-      hadoopConfig,
+      properties,
       contributors = this +: serviceDescriptions)
     services <- Future.traverse(serviceDescriptions)(
-      srv => srv.createService(configuredCluster, masterHost, slaveHosts))
+      srv => srv.createService(cluster, masterHost, slaveHosts))
     deployedServices <- installInOrder(services)
   } yield ()
 
@@ -93,5 +92,5 @@ private[ambari] class ClusterManager(
 }
 
 private[ambari] object ClusterManager {
-  val StackVersion = "Cosmos-0.1.0"
+  val StackVersion = "HDP-2.0.6_Cosmos"
 }

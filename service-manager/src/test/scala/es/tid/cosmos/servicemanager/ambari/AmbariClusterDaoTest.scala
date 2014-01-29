@@ -23,7 +23,7 @@ import org.mockito.Mockito.{verify, never}
 
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterState.AmbariClusterState
 import es.tid.cosmos.servicemanager.ambari.rest.{Cluster, AmbariServer}
-import es.tid.cosmos.servicemanager.ambari.services.{MapReduce, Hdfs, AmbariServiceDescription}
+import es.tid.cosmos.servicemanager.ambari.services.{MapReduce2, Hdfs, AmbariServiceDescription}
 import es.tid.cosmos.servicemanager.clusters._
 
 class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar {
@@ -40,7 +40,7 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
     val ambariServer = mock[AmbariServer]
     val services = Seq()
     val id = ClusterId()
-    val enabledServices = Set(Hdfs, MapReduce).map(_.name)
+    val enabledServices = Set(Hdfs, MapReduce2).map(_.name)
     val clusterDesc = new InMemoryClusterDescription(ClusterId(), "test", 5, enabledServices)
     clusterDesc.state = Running
     val ambariCluster = mock[Cluster]

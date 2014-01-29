@@ -9,16 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.configuration
+package es.tid.cosmos.servicemanager.ambari.services
 
-case class HadoopConfig(
-    yarnTotalMemory: Int,
-    yarnContainerMinimumMemory: Int,
-    yarnVirtualToPhysicalMemoryRatio: Double,
-    mapTaskMemory: Int,
-    reduceTaskMemory: Int,
-    mapHeapMemory: Int,
-    reduceHeapMemory: Int,
-    mrAppMasterMemory: Int,
-    zookeeperPort: Int
-)
+import es.tid.cosmos.servicemanager.ComponentDescription
+
+/** Representation of the WebHCat service */
+object WebHCat extends ServiceWithConfigurationFile {
+  val name: String = "WEBHCAT"
+
+  val components: Seq[ComponentDescription] = Seq(
+    ComponentDescription("WEBHCAT_SERVER", isMaster = true)
+  )
+}

@@ -104,7 +104,7 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
       master = None,
       slaves = Seq.empty,
       users = None,
-      services = Set(Hdfs.name, MapReduce.name, CosmosUserService.name)
+      services = Set(Hdfs.name, MapReduce2.name, CosmosUserService.name)
     )
     val details = ClusterDetails.fromDescription(description)
     (Json.toJson(details) \ "services").as[Set[String]] must not contain CosmosUserService.name

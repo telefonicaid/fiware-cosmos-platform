@@ -73,11 +73,19 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $infinity_url,
   $pdihub_client_id,
   $pdihub_client_secret,
+  $horizon_password,
   $ssl_authority,
   $ssl_cert_location,
   $ssl_support_name,
   $ssl_support_email,
-  $horizon_password
+  $ambari_yarn_total_memory,
+  $ambari_yarn_container_min_memory,
+  $ambari_yarn_virtual_physical_memory_ratio,
+  $ambari_map_task_memory,
+  $ambari_reduce_task_memory,
+  $ambari_map_heap_memory,
+  $ambari_reduce_heap_memory,
+  $ambari_mr_app_master_memory
 ) {
   $cosmos_public_key       = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
   $cosmos_cli_filename     = 'cosmos-py2.7.egg'

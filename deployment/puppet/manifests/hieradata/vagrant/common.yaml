@@ -29,6 +29,14 @@ cosmos::params::ssl_authority: 'TID'
 cosmos::params::ssl_cert_location: 'https://issuecatid.hi.inet/certsrv'
 cosmos::params::ssl_support_name: 'EPG'
 cosmos::params::ssl_support_email: 'epg@tid.es'
+cosmos::params::ambari_yarn_total_memory: 600
+cosmos::params::ambari_yarn_container_min_memory: 10
+cosmos::params::ambari_yarn_virtual_physical_memory_ratio: 2.1
+cosmos::params::ambari_map_task_memory: 600
+cosmos::params::ambari_reduce_task_memory: 600
+cosmos::params::ambari_map_heap_memory: 400
+cosmos::params::ambari_reduce_heap_memory: 400
+cosmos::params::ambari_mr_app_master_memory: 200
 cosmos::openvz::images::source_image_file_dir: '/vagrant'
 cosmos::openvz::network::host_iface: 'eth1'
 slave_hosts:

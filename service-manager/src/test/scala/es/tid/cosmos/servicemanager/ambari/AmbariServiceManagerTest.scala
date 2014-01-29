@@ -34,7 +34,7 @@ import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterNotFound
-import es.tid.cosmos.servicemanager.ambari.configuration.{HadoopConfig, ConfigurationKeys, Configuration}
+import es.tid.cosmos.servicemanager.ambari.configuration.Configuration
 import es.tid.cosmos.servicemanager.ambari.rest._
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
@@ -42,8 +42,6 @@ import es.tid.cosmos.servicemanager.clusters._
 class AmbariServiceManagerTest
   extends AmbariTestBase with OneInstancePerTest with MockitoSugar with FutureMatchers {
 
-  val mappersPerSlave = 8
-  val reducersPerSlave = 4
   val exclusiveMasterSizeCutoff = 10
   val provisioner = initializeProvisioner
   val infrastructureProvider = mock[InfrastructureProvider]
@@ -54,13 +52,14 @@ class AmbariServiceManagerTest
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
   val instance = new AmbariServiceManager(
     provisioner, infrastructureProvider,
-    ClusterId("HDFS"), exclusiveMasterSizeCutoff, HadoopConfig(mappersPerSlave, reducersPerSlave),
+    ClusterId("HDFS"), exclusiveMasterSizeCutoff, TestHadoopConfig,
     new AmbariClusterDao(
       new InMemoryClusterDao,
       initializeProvisioner,
       AmbariServiceManager.AllServices))
   val testTimeout = 1 second
   val NoPreconditions = UnfilteredPassThrough
+  val stackVersion = "HDP-2.0.6_Cosmos"
 
   "A ServiceManager" must "have no Clusters by default" in {
     instance.clusterIds must be('empty)
@@ -126,7 +125,8 @@ class AmbariServiceManagerTest
     clusterDescription.size must be (ClusterSize)
     clusterDescription.nameNode must be (Some(new URI("hdfs://hostname1:50070")))
     terminateAndVerify(clusterId, instance)
-    verifyClusterAndServices(machines, hosts.head, hosts.tail, clusterId)
+    verifyClusterAndServices(
+      machines, hosts.head, hosts.tail, clusterId, includeMasterAsSlave = false)
   }
 
   it must "be able to deploy the persistent HDFS cluster" in {
@@ -178,7 +178,7 @@ class AmbariServiceManagerTest
       verify(provisioner).bootstrapMachines(
         distinctHostnames,
         infrastructureProvider.rootPrivateSshKey)
-      verify(provisioner).createCluster(instance.persistentHdfsId.id, "Cosmos-0.1.0")
+      verify(provisioner).createCluster(instance.persistentHdfsId.id, stackVersion)
       verify(cluster).addHosts(any())
       Seq(hdfsService, userService).foreach(service => {
         verify(service).install()
@@ -283,6 +283,21 @@ class AmbariServiceManagerTest
       matchesValidation(willFailCondition(clusterId)), any(), any(), any())
   }
 
+  it must "create cluster including service bundles" in {
+    import ServiceDependencies._
+
+    val (machines, hosts) = machinesAndHostsOf(3)
+    setMachineExpectations(machines, hosts)
+    setServiceExpectations()
+    val clusterId = instance.createCluster(
+          "clusterName", 3, Seq(Hive), Seq(), NoPreconditions)
+    waitForClusterCompletion(clusterId, instance)
+    val description = instance.describeCluster(clusterId)
+    val expectedServices =
+      (AmbariServiceManager.BasicHadoopServices ++ Seq(CosmosUserService, Hive)).withDependencies
+    description.get.services must be (expectedServices.map(_.name).toSet)
+  }
+
   private def initializeProvisioner = {
     val provisionerMock = mock[AmbariServer]
     given(provisionerMock.listClusterNames).willReturn(successful(Seq()))
@@ -346,17 +361,19 @@ class AmbariServiceManagerTest
     machines: Seq[MachineState],
     master: Host,
     slaves: Seq[Host],
-    clusterId: ClusterId) {
+    clusterId: ClusterId,
+    includeMasterAsSlave: Boolean = true) {
     verify(infrastructureProvider).createMachines(
       any(), the(MachineProfile.G1Compute), the(machines.size), any())
     verify(infrastructureProvider).releaseMachines(machines)
-    verify(provisioner).createCluster(clusterId.toString, "Cosmos-0.1.0")
+    verify(provisioner).createCluster(clusterId.toString, stackVersion)
     val distinctHostnames = machines.map(_.hostname).toSet
     verify(provisioner).bootstrapMachines(
       distinctHostnames,
       infrastructureProvider.rootPrivateSshKey)
     verify(provisioner).removeCluster(clusterId.toString)
-    val configTestHelper = new ConfiguratorTestHelpers(master.name, slaves.length)
+    val configTestHelper = new ConfiguratorTestHelpers(
+      master.name, slaves.length, includeMasterAsSlave)
     verify(cluster).applyConfiguration(
       the(configTestHelper.mergedGlobalConfiguration(2, instance)), tagPattern)
     verify(cluster).applyConfiguration(the(configTestHelper.mergedCoreConfiguration(2)), tagPattern)
@@ -365,13 +382,7 @@ class AmbariServiceManagerTest
     verify(cluster).addHosts(any())
     serviceDescriptions.foreach(sd => {
       verify(sd).createService(cluster, master, slaves)
-      verify(sd).contributions(Map(
-        ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
-        ConfigurationKeys.MappersPerSlave -> mappersPerSlave.toString,
-        ConfigurationKeys.MasterNode -> master.name,
-        ConfigurationKeys.MaxMapTasks -> (mappersPerSlave * slaves.length).toString,
-        ConfigurationKeys.MaxReduceTasks -> (reducersPerSlave * 1.75 * slaves.length).round.toString,
-        ConfigurationKeys.ReducersPerSlave -> reducersPerSlave.toString))
+      verify(sd).contributions(configTestHelper.dynamicProperties)
     })
     services.foreach(service => {
       verify(service).install()

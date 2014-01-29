@@ -22,6 +22,7 @@ import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, Machi
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.{AmbariServer, Service}
+import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
@@ -70,7 +71,8 @@ class AmbariServiceManager(
       serviceDescriptions: Seq[ServiceDescriptionType],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
-    val clusterServiceDescriptions = BasicHadoopServices ++ serviceDescriptions ++ userServices(users)
+    val clusterServiceDescriptions =
+      (BasicHadoopServices ++ serviceDescriptions ++ userServices(users)).withDependencies
     val clusterDescription = clusterDao.registerCluster(
       name = name,
       size = clusterSize,
@@ -169,14 +171,14 @@ class AmbariServiceManager(
     stoppedService <- service.stop()
     slaveDetails = clusterDescription.slaves
     slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
-    _ <- Configurator.applyConfiguration(
-      cluster, master, slaves, hadoopConfig, List(serviceDescription))
+    properties = DynamicProperties(hadoopConfig, master, slaves)
+    _ <- Configurator.applyConfiguration(cluster, properties, List(serviceDescription))
     startedService <- stoppedService.start()
   } yield startedService
 
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
-    serviceDescriptions = Seq(Hdfs, new CosmosUserService(Seq()))
+    serviceDescriptions = Seq(Zookeeper, Hdfs, new CosmosUserService(Seq()))
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = persistentHdfsId.id,
@@ -198,9 +200,9 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val BasicHadoopServices = Seq(Hdfs, MapReduce)
+  val BasicHadoopServices = Seq(Hdfs, MapReduce2)
   val OptionalServices: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
-  val AllServices = (CosmosUserService +: BasicHadoopServices) ++ OptionalServices
+  val AllServices = (BasicHadoopServices ++ OptionalServices :+ CosmosUserService).withDependencies
 
   private def setMachineInfo(
       description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {

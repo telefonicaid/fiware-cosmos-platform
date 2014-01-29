@@ -62,6 +62,9 @@ trait FileConfigurationContributor extends ConfigurationContributor {
    * For the service `configName` it loads its configuration from a file and it looks for 3 types of
    * configuration: Global, Core and Service. They are all optional.
    *
+   * The Service configuration type can be either come in the form of a single configuration or a
+   * list of configurations.
+   *
    * In order for the configuration file to be able to use dynamic properties, the configuration
    * file must include a `include "cluster-properties` statement.
    *
@@ -76,12 +79,15 @@ trait FileConfigurationContributor extends ConfigurationContributor {
    *    "global.example.string"="global-"${MasterNode}
    *   }
    *}
+   *
    *"core" {
    *  "tag"="aTag",
    *  "properties" {
    *    "core.example"="core-"${MasterNode}
    *   }
    *}
+   *
+   *# Option A: Single configuration for service
    *"a-service" {
    *  "configType"="test-service-site"
    *  "tag"="aTag",
@@ -89,8 +95,28 @@ trait FileConfigurationContributor extends ConfigurationContributor {
    *    "service.example"="service-"${MasterNode}
    *   }
    *}
-   * }}}
    *
+   * # Option B: List of configurations for service
+   *"a-service" = [
+   *  {
+   *    "configType"="test-service-site1"
+   *    "tag"="aTag",
+   *    "properties" {
+   *      "service.example1"="service-"${MasterNode}
+   *     }
+   *  },
+   *
+   *  {
+   *    "configType"="test-service-site2"
+   *    "tag"="aTag",
+   *    "properties" {
+   *      "service.example2"="service-"${MasterNode}
+   *     }
+   *  }
+   *]
+   *}}}
+   *
+   * @param properties the dynamic properties to be injected to the configuration contributions
    * @see [[ConfigurationKeys]]
    */
   override def contributions(
@@ -105,15 +131,28 @@ trait FileConfigurationContributor extends ConfigurationContributor {
   private def optional[T <: Configuration : Factory](name: String, config: Config): Option[T] =
     properties(name, config).map(implicitly[Factory[T]])
 
-  private def service(config: Config) = properties(configName, config)
-    .map(props => ServiceConfiguration(config.getString(s"$configName.configType"), props))
-    .toList
+  private def service(config: Config) =
+    if (config.hasPath(configName)) {
+      val maybeSingleConfig = properties(configName, config).map(
+        props => List(ServiceConfiguration(config.getString(s"$configName.configType"), props)))
 
-  private def properties(name: String, config: Config) = {
+      def multipleConfig = (for ((configName, props) <- multipleProperties(configName, config))
+        yield ServiceConfiguration(configName, props)).toList
+
+      maybeSingleConfig.getOrElse(multipleConfig)
+    } else Nil
+
+  private def properties(name: String, config: Config): Option[Map[String, AnyRef]] = {
     val key = s"$name.properties"
     if (config.hasPath(key))
       Some(config.getObject(key).unwrapped().toMap)
     else
       None
   }
+
+  private def multipleProperties(name: String, config: Config): Map[String, Map[String, AnyRef]] =
+    (for (innerConfig <- config.getConfigList(name))
+      yield innerConfig.getString("configType") -> innerConfig.getObject("properties")
+        .unwrapped().toMap
+    ).toMap
 }

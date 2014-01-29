@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.controllers.storage
 
-import scala.concurrent.Await
 import scala.concurrent.duration._
 
 import org.scalatest.{OneInstancePerTest, FlatSpec}
@@ -22,6 +21,7 @@ import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.mocks.WithSampleUsers
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 
 class StorageResourceIT
   extends FlatSpec with MustMatchers with OneInstancePerTest with MaintenanceModeBehaviors {
@@ -35,7 +35,7 @@ class StorageResourceIT
   }
 
   it must "provide the WebHDFS connection details" in new WithSampleUsers {
-    Await.ready(services.serviceManager().deployPersistentHdfsCluster(), clusterCreationTimeout)
+    mockedServiceManager.defineCluster(MockedServiceManager.PersistentHdfsProps)
     val persistentHdfsCluster = services.serviceManager().describePersistentHdfsCluster().get
     val result = route(request.authorizedBy(user1)).get
     status(result) must be (OK)

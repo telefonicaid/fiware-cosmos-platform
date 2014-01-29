@@ -25,11 +25,8 @@ import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
 
 /**
  * In-memory, simulated service manager.
- *
- * @param transitionDelay Cluster state transition delay in millis
  */
-class MockedServiceManager(
-    transitionDelay: FiniteDuration, maxPoolSize: Int = 20) extends ServiceManager {
+class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   import MockedServiceManager._
 
@@ -41,14 +38,19 @@ class MockedServiceManager(
       services: Set[String],
       initialState: Option[ClusterState] = None) {
 
-    @volatile private var state: ClusterState = Provisioning
+    private case class Observer(predicate: FakeCluster => Boolean, action: FakeCluster => Unit)
+
+    @volatile private var state: ClusterState =
+      if (successfulProvision) initialState.getOrElse(Provisioning) else Failed(new Error)
     @volatile private var nameNode: Option[URI] = None
     @volatile private var master: Option[HostDetails] = None
     @volatile private var slaves: Seq[HostDetails] = Seq.empty
     @volatile private var users: Option[Set[ClusterUser]] = None
+    @volatile private var statePromises: Map[ClusterState, Promise[Unit]] = Map.empty
+    @volatile private var observers: Set[Observer] = Set.empty
 
     def isConsumingMachines: Boolean = state match {
-      case Terminated | Failed(_) => false
+      case Terminated => false
       case _ => true
     }
 
@@ -57,9 +59,10 @@ class MockedServiceManager(
       Future.successful()
     }
 
-    def setState(newState: ClusterState) = synchronized {
+    def setState(newState: ClusterState): Future[Unit] = synchronized {
+      statePromises.get(state).foreach(_.success(()))
       (state, newState) match {
-        case (Provisioning, Running) =>
+        case (_, Running) =>
           master = Some(randomHost)
           slaves = randomHostSeq(size)
           nameNode = Some(new URI(s"hdfs://${master.get.ipAddress}:8084"))
@@ -67,7 +70,25 @@ class MockedServiceManager(
         case _ =>
       }
       state = newState
+      val promise = Promise[Unit]()
+      statePromises += state -> promise
+      notifyObservers()
+      promise.future
     }
+
+    def when(predicate: FakeCluster => Boolean)(action: FakeCluster => Unit) { synchronized {
+      observers += Observer(predicate, action)
+    }}
+
+    def immediateTransition(from: ClusterState, to: ClusterState) {
+      when(_.state == from) {
+        _.setState(to)
+      }
+    }
+
+    def immediateProvision() = immediateTransition(Provisioning, Running)
+
+    def immediateTermination() = immediateTransition(Terminating, Terminated)
 
     def successfulProvision = clusterNodePoolCount >= size
 
@@ -75,17 +96,31 @@ class MockedServiceManager(
       ImmutableClusterDescription(id, name, size, state, nameNode, master, slaves, users, services)
     }
 
-    def transitionTo(newState: ClusterState) = future {
-      Thread.sleep(transitionDelay.toMillis)
-      setState(newState)
+    def transitionFuture: Future[Unit] = synchronized { statePromises(state).future }
+
+    def completeProvisioning() = {
+      require(state == Provisioning)
+      setState(Running)
     }
 
-    def terminate() = synchronized {
-      state = Terminating
-      transitionTo(Terminated)
+    def startTermination() = setState(Terminating)
+
+    def completeTermination() = {
+      require(state == Terminating)
+      setState(Terminated)
     }
-    
-    def makeFail(reason: String) = transitionTo(Failed(reason))
+
+    def makeFail(reason: String) = synchronized {
+      val failTransition_> = transitionFuture
+      setState(Failed(reason))
+      failTransition_>
+    }
+
+    private def notifyObservers() {
+      for (Observer(pred, act) <- observers if pred(this)) {
+        act(this)
+      }
+    }
 
     private def randomHost: HostDetails = {
       val n = Random.nextInt(256) + 1
@@ -94,13 +129,7 @@ class MockedServiceManager(
 
     private def randomHostSeq(len: Int): Seq[HostDetails] = Seq.fill(len - 1)(randomHost)
 
-    val provisioningFuture =
-      if (initialState.isEmpty) {
-        if (successfulProvision) transitionTo(Running) else transitionTo(Failed(new Error))
-      } else {
-        setState(initialState.get)
-        Future.successful()
-      }
+    setState(state)
   }
 
   @volatile private var clusters: Map[ClusterId, FakeCluster] = Map.empty
@@ -133,7 +162,7 @@ class MockedServiceManager(
   }
 
   override def terminateCluster(id: ClusterId): Future[Unit] = synchronized {
-    clusters(id).terminate()
+    clusters(id).startTermination()
   }
   
   def makeClusterFail(id: ClusterId, reason: String): Future[Unit] = synchronized {
@@ -143,7 +172,7 @@ class MockedServiceManager(
   override val persistentHdfsId: ClusterId = PersistentHdfsProps.id
 
   override def deployPersistentHdfsCluster(): Future[Unit] =
-    defineCluster(PersistentHdfsProps).provisioningFuture
+    defineCluster(PersistentHdfsProps).transitionFuture
 
   override def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]] = for {
     cluster <- clusters.get(clusterId)
@@ -155,15 +184,16 @@ class MockedServiceManager(
 
   override def clusterNodePoolCount: Int = maxPoolSize
 
-  private def defineCluster(props: ClusterProperties): FakeCluster = synchronized {
+  def withCluster(clusterId: ClusterId)(action: FakeCluster => Unit) {
+    action(clusters(clusterId))
+  }
+
+  def defineCluster(props: ClusterProperties): FakeCluster = synchronized {
     val cluster = new FakeCluster(
       props.id, props.name, props.size, props.users.toSet,  props.services.toSet, props.initialState)
     clusters += props.id -> cluster
     cluster
   }
-
-  defineCluster(DefaultClusterProps)
-  defineCluster(InProgressClusterProps)
 }
 
 object MockedServiceManager {
@@ -185,30 +215,6 @@ object MockedServiceManager {
       ClusterUser.enabled("jsmith", "jsmith-public-key"),
       ClusterUser.enabled("pocahontas", "pocahontas-public-key")
     ),
-    initialState = None
-  )
-
-  val DefaultClusterProps = ClusterProperties(
-    id = new ClusterId(),
-    name = "Default cluster",
-    size = 4,
-    users = Set(ClusterUser.enabled("jsmith", "jsmith-public-key")),
     initialState = Some(Running)
-  )
-
-  val InProgressClusterProps = ClusterProperties(
-    id = new ClusterId(),
-    name = "In progress cluster",
-    size = 4,
-    users = Set(ClusterUser.enabled("pocahontas", "pocahontas-public-key")),
-    initialState = None
-  )
-
-  val UnknownClusterProps = ClusterProperties(
-    id = new ClusterId(),
-    name = "A cluster that doesn't exist",
-    size = 4,
-    users = Set(ClusterUser.enabled("pocahontas", "pocahontas-public-key")),
-    initialState = None
   )
 }

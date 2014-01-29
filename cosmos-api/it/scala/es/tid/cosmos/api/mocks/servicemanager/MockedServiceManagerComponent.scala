@@ -11,17 +11,9 @@
 
 package es.tid.cosmos.api.mocks.servicemanager
 
-import scala.concurrent.duration._
-
-import org.mockito.Mockito.spy
-
 import es.tid.cosmos.servicemanager.{ServiceManager, ServiceManagerComponent}
 
 trait MockedServiceManagerComponent extends ServiceManagerComponent {
-  val serviceManager: ServiceManager =
-    spy(new MockedServiceManager(transitionDelay = MockedServiceManagerComponent.TransitionDelay))
-}
-
-object MockedServiceManagerComponent {
-  val TransitionDelay: FiniteDuration = 1 second
+  val mockedServiceManager = new MockedServiceManager()
+  val serviceManager: ServiceManager = mockedServiceManager
 }

@@ -37,10 +37,7 @@ class CosmosMachineUsageDaoTest
   )
 
   val profileDao = new MockCosmosProfileDao
-  val serviceManager = new MockedServiceManager(
-    transitionDelay = 100.milliseconds,
-    maxPoolSize = 16
-  )
+  val serviceManager = new MockedServiceManager(maxPoolSize = 16)
   val usageDao = new CosmosMachineUsageDao(profileDao, serviceManager)
   val profile = registerUser("myUser")(profileDao)
 
@@ -110,6 +107,11 @@ class CosmosMachineUsageDaoTest
     val clusterId1 = serviceManager.createCluster("myCluster1", 1, Seq.empty, Seq.empty)
     val clusterId2 = serviceManager.createCluster("myCluster2", 2, Seq.empty, Seq.empty)
     val terminated = serviceManager.createCluster("terminatedCluster", 10, Seq.empty, Seq.empty)
+
+    serviceManager.withCluster(clusterId1)(_.completeProvisioning())
+    serviceManager.withCluster(clusterId2)(_.completeProvisioning())
+    serviceManager.withCluster(terminated)(_.immediateTermination())
+
     profileDao.withTransaction { c =>
       for (clusterId <- Seq(clusterId1, clusterId2, terminated))
         profileDao.assignCluster(clusterId, profile.id)(c)

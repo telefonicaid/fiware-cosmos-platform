@@ -13,18 +13,23 @@ package es.tid.cosmos.api.mocks
 
 import es.tid.cosmos.api.AbstractGlobal
 import es.tid.cosmos.api.controllers.Application
-import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
-import es.tid.cosmos.api.profile.PlayDbCosmosProfileDaoComponent
+import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
+import es.tid.cosmos.api.profile.{CosmosProfileDaoComponent, PlayDbCosmosProfileDaoComponent, MockCosmosProfileDaoComponent}
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
 
-/**
- * Custom global Play! settings to configure mocked services but use a real database.
- */
-class TestWithDbGlobal extends AbstractGlobal(new Application
+abstract class TestApplication extends Application
   with MockMultiAuthProviderComponent
-  with PlayDbCosmosProfileDaoComponent
   with MockedServiceManagerComponent
   with MockInfrastructureProvider.Component
   with ApplicationConfigComponent
-  with InMemoryMaintenanceStatusComponent)
+  with InMemoryMaintenanceStatusComponent {
+
+  self: CosmosProfileDaoComponent =>
+
+  val global = new AbstractGlobal(this) {}
+}
+
+class MockDaoTestApplication extends TestApplication with MockCosmosProfileDaoComponent
+
+class PlayDaoTestApplication extends TestApplication with PlayDbCosmosProfileDaoComponent

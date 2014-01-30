@@ -14,14 +14,20 @@ package es.tid.cosmos.servicemanager.ambari.configuration
 object ConfigurationKeys extends Enumeration {
   val HdfsReplicationFactor,
       MasterNode,
+      MrAppMasterMemory,
+
       MapTaskMemory,
       MapHeapMemory,
+      MaxMapTasks,
+
       ReduceTaskMemory,
       ReduceHeapMemory,
-      MrAppMasterMemory,
+      MaxReduceTasks,
+
       YarnTotalMemory,
       YarnContainerMinimumMemory,
       YarnVirtualToPhysicalMemoryRatio,
+
       ZookeeperHosts,
       ZookeeperPort = Value
 }

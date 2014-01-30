@@ -15,17 +15,19 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
+import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
 
 class MapReduce2Test extends FlatSpec with MustMatchers {
 
   val dynamicProperties = Map(
-    ConfigurationKeys.MasterNode -> "aMasterNodeName",
-    ConfigurationKeys.MapTaskMemory -> "200",
-    ConfigurationKeys.MapHeapMemory -> "100",
-    ConfigurationKeys.MrAppMasterMemory -> "100",
-    ConfigurationKeys.ReduceTaskMemory -> "100",
-    ConfigurationKeys.ReduceHeapMemory -> "50"
+    MasterNode -> "aMasterNodeName",
+    MrAppMasterMemory -> "100",
+    MapTaskMemory -> "200",
+    MapHeapMemory -> "100",
+    MaxMapTasks -> "8",
+    ReduceTaskMemory -> "100",
+    ReduceHeapMemory -> "50",
+    MaxReduceTasks -> "4"
   )
 
   "A MapReduce service" must "have a jobtracker, tasktracker and mapreduce client" in {

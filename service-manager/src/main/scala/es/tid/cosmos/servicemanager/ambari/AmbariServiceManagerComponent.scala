@@ -38,8 +38,10 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
         mrAppMasterMemory = config.getInt("ambari.servicemanager.mrAppMasterMemory"),
         mapTaskMemory = config.getInt("ambari.servicemanager.mapTaskMemory"),
         mapHeapMemory = config.getInt("ambari.servicemanager.mapHeapMemory"),
+        mappersPerSlave = config.getInt("ambari.servicemanager.mappersPerSlave"),
         reduceTaskMemory = config.getInt("ambari.servicemanager.reduceTaskMemory"),
         reduceHeapMemory = config.getInt("ambari.servicemanager.reduceHeapMemory"),
+        reducersPerSlave = config.getInt("ambari.servicemanager.reducersPerSlave"),
         yarnTotalMemory = config.getInt("ambari.servicemanager.yarnTotalMemory"),
         yarnContainerMinimumMemory = config
           .getInt("ambari.servicemanager.yarnContainerMinimumMemory"),

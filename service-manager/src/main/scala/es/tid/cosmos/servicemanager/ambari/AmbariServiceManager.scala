@@ -200,9 +200,10 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val BasicHadoopServices = Seq(Hdfs, MapReduce2)
+  val BasicHadoopServices: Seq[AmbariServiceDescription] = Seq(Hdfs, MapReduce2, InfinityfsDriver)
   val OptionalServices: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
-  val AllServices = (BasicHadoopServices ++ OptionalServices :+ CosmosUserService).withDependencies
+  val AllServices: Seq[AmbariServiceDescription] =
+    (BasicHadoopServices ++ OptionalServices :+ CosmosUserService).withDependencies.distinct
 
   private def setMachineInfo(
       description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {

@@ -18,6 +18,7 @@ import es.tid.cosmos.api.controllers.admin._
 import es.tid.cosmos.api.controllers.admin.stats.StatsResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
 import es.tid.cosmos.api.controllers.cosmos.CosmosResource
+import es.tid.cosmos.api.controllers.info.InfoResource
 import es.tid.cosmos.api.controllers.pages.{AdminPage, Pages}
 import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.services.ServicesResource
@@ -53,6 +54,7 @@ abstract class Application {
       new AdminPage(dao, status),
       new StatsResource(dao, sm, ial),
       new CosmosResource(),
+      new InfoResource(dao, sm),
       new ProfileResource(dao),
       new ClusterResource(sm, taskDao, dao, status),
       new StorageResource(sm, dao, status),

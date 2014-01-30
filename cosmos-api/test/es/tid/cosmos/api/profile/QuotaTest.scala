@@ -11,10 +11,9 @@
 
 package es.tid.cosmos.api.profile
 
-import java.lang.IllegalArgumentException
-
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+
 import es.tid.cosmos.api.quota.{Quota, FiniteQuota, UnlimitedQuota, EmptyQuota}
 
 class QuotaTest extends FlatSpec with MustMatchers {
@@ -30,6 +29,7 @@ class QuotaTest extends FlatSpec with MustMatchers {
   }
 
   "A finite quota" must "accept request within bounds" in {
+    FiniteQuota(5).withinQuota(EmptyQuota) must be (true)
     FiniteQuota(5).withinQuota(4) must be (true)
   }
 
@@ -40,6 +40,7 @@ class QuotaTest extends FlatSpec with MustMatchers {
 
   it must "disallow requests out of bounds" in {
     FiniteQuota(5).withinQuota(1000) must be (false)
+    FiniteQuota(5).withinQuota(UnlimitedQuota) must be (false)
   }
 
   "A quota" must "be initialized from optional value" in {
@@ -49,9 +50,9 @@ class QuotaTest extends FlatSpec with MustMatchers {
   }
 
   it must "be convertible to a numeric representation" in {
-    UnlimitedQuota.toInt must equal (None)
-    EmptyQuota.toInt must equal (Some(0))
-    FiniteQuota(5).toInt must equal (Some(5))
+    UnlimitedQuota.toOptInt must equal (None)
+    EmptyQuota.toOptInt must equal (Some(0))
+    FiniteQuota(5).toOptInt must equal (Some(5))
   }
 
   "The max quota between an empty and another quota" must "be the other quota" in {
@@ -69,7 +70,9 @@ class QuotaTest extends FlatSpec with MustMatchers {
   "The max quota between an unlimited and another quota" must "be the unlimited quota" in {
     Quota.max(UnlimitedQuota, UnlimitedQuota) must equal (UnlimitedQuota)
     Quota.max(UnlimitedQuota, EmptyQuota) must equal (UnlimitedQuota)
+    Quota.max(EmptyQuota, UnlimitedQuota) must equal (UnlimitedQuota)
     Quota.max(UnlimitedQuota, FiniteQuota(1)) must equal (UnlimitedQuota)
+    Quota.max(FiniteQuota(1), UnlimitedQuota) must equal (UnlimitedQuota)
   }
 
   "The min quota between an unlimited and another quota" must "be the other quota" in {
@@ -107,5 +110,4 @@ class QuotaTest extends FlatSpec with MustMatchers {
     FiniteQuota(1) - FiniteQuota(2) must equal(EmptyQuota)
     FiniteQuota(1) - UnlimitedQuota must equal(EmptyQuota)
   }
-
 }

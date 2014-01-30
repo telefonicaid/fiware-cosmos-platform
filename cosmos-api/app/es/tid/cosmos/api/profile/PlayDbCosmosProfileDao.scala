@@ -68,7 +68,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
         "api_key" -> apiCredentials.apiKey,
         "api_secret" -> apiCredentials.apiSecret,
         "group_name" -> dbGroupName(unpersistedProfile.group),
-        "machine_quota" -> unpersistedProfile.quota.toInt
+        "machine_quota" -> unpersistedProfile.quota.toOptInt
       ).executeInsert(scalar[ProfileId].single)
     addPublicKey(profileId, defaultKey)
     val persistedProfile = unpersistedProfile.copy(id = profileId)
@@ -97,7 +97,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   override def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Conn) {
     val updatedRows =
       SQL("UPDATE user SET machine_quota = {machine_quota} WHERE cosmos_id = {cosmos_id}")
-        .on("cosmos_id" -> id, "machine_quota" -> quota.toInt)
+        .on("cosmos_id" -> id, "machine_quota" -> quota.toOptInt)
         .executeUpdate()
     if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
   }
@@ -174,7 +174,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     SQL("""INSERT INTO user_group(name, min_quota)
           | VALUES ({name}, {min_quota})""".stripMargin).on(
       "name" -> group.name,
-      "min_quota" -> group.minimumQuota.toInt
+      "min_quota" -> group.minimumQuota.toOptInt
     ).execute()
   }
 
@@ -184,7 +184,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
 
   override def setGroupQuota(name: String, minQuota: LimitedQuota)(implicit c: Conn) {
     SQL("UPDATE user_group SET min_quota = {min_quota} where name = {name}")
-      .on("min_quota" -> minQuota.toInt, "name" -> name).executeUpdate()
+      .on("min_quota" -> minQuota.toOptInt, "name" -> name).executeUpdate()
   }
 
   /** ''Note:'' Referential integrity is assumed to be delegated to the DB so as to set the group's

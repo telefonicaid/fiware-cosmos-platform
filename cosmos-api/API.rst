@@ -254,6 +254,41 @@ In case of success the maintenance status will change and the new mode will be r
 as a boolean payload with 200 status.
 
 
+GET ``/cosmos/v1/info``
+-----------------------
+
+*Since v1*
+
+General info about the platform for the user performing the request: user details, owned and
+accessible clusters and resource information.
+
+In case of success, a 200 status and a payload of the following form is returned::
+
+    {
+        "profileId": <int>,
+        "handle": <string>,
+        "individualQuota": <int>,
+        "group": {
+            "name": <string>,
+            "guaranteedQuota": <int>
+        },
+        "clusters": {
+            "owned": [<string>, <string>, ...],
+            "accessible": [<string>, <string>, ...]
+        },
+        "resources": {
+            "groupConsumption": <int>,
+            "individualConsumption": <int>,
+            "available": <int>,
+            "availableForGroup": <int>,
+            "availableForUser": <int>
+        }
+    }
+
+In the case of lacking minimum or maximum quotas the ``individualQuota`` or ``guaranteedQuota``
+fields will be missing.
+
+
 GET ``/cosmos/v1/stats/clusters``
 ---------------------------------
 

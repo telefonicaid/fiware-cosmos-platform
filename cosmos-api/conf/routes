@@ -17,6 +17,9 @@ GET     /cosmosrc                           @es.tid.cosmos.api.controllers.CliCo
 # API
 GET     /cosmos/v1                          @es.tid.cosmos.api.controllers.cosmos.CosmosResource.get
 
+GET     /cosmos/v1/info                     @es.tid.cosmos.api.controllers.info.InfoResource.get
+GET     /doc/cosmos/v1/info                 controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/info")
+
 GET     /cosmos/v1/profile                  @es.tid.cosmos.api.controllers.profile.ProfileResource.show
 PUT     /cosmos/v1/profile                  @es.tid.cosmos.api.controllers.profile.ProfileResource.update
 GET     /doc/cosmos/v1/profile              controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/profile")
@@ -41,10 +44,10 @@ GET     /cosmos/v1/maintenance              @es.tid.cosmos.api.controllers.admin
 PUT     /cosmos/v1/maintenance              @es.tid.cosmos.api.controllers.admin.MaintenanceResource.put()
 GET     /doc/cosmos/v1/maintenance          controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/maintenance")
 
-GET     /cosmos/v1/stats/clusters        @es.tid.cosmos.api.controllers.admin.stats.StatsResource.listActiveClusters
-GET     /doc/cosmos/v1/status/clusters   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/stats/clusters")
-GET     /cosmos/v1/stats/machines        @es.tid.cosmos.api.controllers.admin.stats.StatsResource.listMachinesByProfile
-GET     /doc/cosmos/v1/status/machines   controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/stats/machines")
+GET     /cosmos/v1/stats/clusters           @es.tid.cosmos.api.controllers.admin.stats.StatsResource.listActiveClusters
+GET     /doc/cosmos/v1/status/clusters      controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/stats/clusters")
+GET     /cosmos/v1/stats/machines           @es.tid.cosmos.api.controllers.admin.stats.StatsResource.listMachinesByProfile
+GET     /doc/cosmos/v1/status/machines      controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/stats/machines")
 
 # Admin API
 POST    /admin/v1/user                      @es.tid.cosmos.api.controllers.admin.UserResource.register

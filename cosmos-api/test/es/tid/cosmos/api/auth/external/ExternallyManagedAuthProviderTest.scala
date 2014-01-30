@@ -9,20 +9,20 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth.horizon
+package es.tid.cosmos.api.auth.external
 
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-class HorizonAuthProviderTest extends FlatSpec with MustMatchers {
+class ExternallyManagedAuthProviderTest extends FlatSpec with MustMatchers {
 
   def providerForConfig(config: String) =
-    new HorizonAuthProvider("horizon", ConfigFactory.parseString(config))
+    new ExternallyManagedAuthProvider("external", ConfigFactory.parseString(config))
 
-  "An horizon auth provider" must "enable the admin api" in {
+  "An external auth provider" must "enable the admin api" in {
     val provider = providerForConfig("password=\"secret\"")
-    provider.id must be ("horizon")
+    provider.id must be ("external")
     provider.adminPassword must be ("secret")
   }
 

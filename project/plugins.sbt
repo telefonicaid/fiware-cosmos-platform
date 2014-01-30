@@ -7,6 +7,8 @@ addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.1")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.2")
 
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.6.4")
+
 /*
  * Taken from SNAPSHOT as it has fix of including test resources.
  * TODO: Replace with released version once available

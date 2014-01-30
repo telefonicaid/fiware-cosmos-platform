@@ -10,6 +10,13 @@
 #
 
 ambari::params::repo_url: %{cosmos::params::cosmos_repo_platform_url}
+ambari::params::repo_rpm_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::jdk_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jdk-6u31-linux-x64.bin'
+ambari::params::hdp_utils_repo_url: 'http://servilinux.hi.inet/ambari/HDP-UTILS-1.1.0.15/'
+ambari::params::hdp_utils_gpg_url: 'http://servilinux.hi.inet/ambari/RPM-GPG-KEY-Jenkins'
+cosmos::params::cosmos_repo_deps_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps'
+cosmos::openvz::images::base_image_url: 'http://cosmos10/develenv/repos/ovz-templates'
+cosmos::openvz::images::image_name: 'centos-6-cosmos.HDP.2.0.6-20140123-x86_64.tar.gz'
 cosmos::params::cosmos_subnet: '192.168.11.0'
 cosmos::params::cosmos_netmask: '255.255.255.0'
 cosmos::params::cosmos_api_mode: 'dev'

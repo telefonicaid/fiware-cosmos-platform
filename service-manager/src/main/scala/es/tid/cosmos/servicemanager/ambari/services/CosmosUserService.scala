@@ -55,7 +55,7 @@ object CosmosUserService extends AmbariServiceDescription with NoConfigurationCo
   override val name: String = "COSMOS_USER"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("USER_MASTER_MANAGER", isMaster = true, isClient = true),
-    ComponentDescription("USER_SLAVE_MANAGER", isMaster = false, isClient = true)
+    ComponentDescription.masterComponent("USER_MASTER_MANAGER").makeClient,
+    ComponentDescription.slaveComponent("USER_SLAVE_MANAGER").makeClient
   )
 }

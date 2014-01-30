@@ -22,7 +22,7 @@ class HCatalogTest extends FlatSpec with MustMatchers {
     val description = HCatalog
     description.name must equal("HCATALOG")
     description.components must (
-      have length 1 and contain(ComponentDescription("HCAT", isMaster = true, isClient = true))
+      have length 1 and contain(ComponentDescription.masterComponent("HCAT").makeClient)
     )
   }
 }

@@ -34,8 +34,8 @@ class CosmosUserServiceTest extends FlatSpec with MustMatchers {
     description.name must equal("COSMOS_USER")
     description.components must (
       have length 2 and
-      contain(ComponentDescription("USER_MASTER_MANAGER", isMaster = true, isClient = true)) and
-      contain(ComponentDescription("USER_SLAVE_MANAGER", isMaster = false, isClient = true))
+      contain(ComponentDescription.masterComponent("USER_MASTER_MANAGER").makeClient) and
+      contain(ComponentDescription.slaveComponent("USER_SLAVE_MANAGER").makeClient)
     )
   }
 

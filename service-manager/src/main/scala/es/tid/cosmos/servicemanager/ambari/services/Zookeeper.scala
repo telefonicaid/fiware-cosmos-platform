@@ -21,8 +21,8 @@ object Zookeeper extends ServiceWithConfigurationFile {
     /* Zookeeper is a distributed application.
      * We choose to have one zookeeper server on each slave for resilience purposes.
      */
-    ComponentDescription("ZOOKEEPER_SERVER", isMaster = false),
-    ComponentDescription("ZOOKEEPER_CLIENT", isMaster = true, isClient = true)
+    ComponentDescription.slaveComponent("ZOOKEEPER_SERVER"),
+    ComponentDescription.masterComponent("ZOOKEEPER_CLIENT").makeClient
   )
 }
 

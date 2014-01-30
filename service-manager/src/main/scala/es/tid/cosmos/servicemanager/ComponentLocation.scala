@@ -9,15 +9,15 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager
 
-import es.tid.cosmos.servicemanager.ComponentDescription
+/** Enumeration of locations components can be installed in. */
+object ComponentLocation extends Enumeration {
+  type ComponentLocation = Value
 
-/** Representation of the HCatalog service */
-object HCatalog extends ServiceWithConfigurationFile {
-  override val name: String = "HCATALOG"
+  /** Install on the master node. */
+  val Master = Value
 
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("HCAT").makeClient
-  )
+  /** Install on the slave nodes. */
+  val Slave = Value
 }

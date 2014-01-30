@@ -54,7 +54,7 @@ auth.pdihub {
 }
 auth.horizon {
     enabled=false
-    class="es.tid.cosmos.api.auth.horizon.HorizonAuthProvider"
+    class="es.tid.cosmos.api.auth.external.ExternallyManagedAuthProvider"
     password=
 }
 

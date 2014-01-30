@@ -48,8 +48,17 @@ class ambari::server::config {
     onlyif    => $tables_exist
   }
 
+  augeas { "ambari-config-repoinfo":
+    lens    => "Xml.lns",
+    incl    => "/var/lib/ambari-server/resources/stacks/HDP/2.0.6_Cosmos/repos/repoinfo.xml",
+    changes => [
+    "set reposinfo/os/repo/baseurl/#text ${ambari::params::repo_rpm_url}"
+    ],
+  }
+
   File_line['remove original jdk bin']
     -> File_line['add jdk bin from CI']
+    -> Augeas['ambari-config-repoinfo']
     -> Exec['ambari-server-stop']
     -> Exec['ambari-server-upgrade']
     -> Exec['ambari-server-setup']

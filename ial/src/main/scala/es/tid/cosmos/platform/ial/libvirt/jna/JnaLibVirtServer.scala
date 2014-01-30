@@ -69,7 +69,7 @@ case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirt
   }}
 
   def isCreated(): Future[Boolean] = future { blocking {
-    conn.listDomains().filter(dom => dom == domainId).length == 1
+    conn.domainLookupByID(domainId).isActive == 1
   }}
 
   def destroyDomain(): Future[Unit] =

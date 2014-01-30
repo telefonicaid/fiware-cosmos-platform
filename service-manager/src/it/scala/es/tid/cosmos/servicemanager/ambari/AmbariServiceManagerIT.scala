@@ -33,14 +33,16 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
   val preConditions = UnfilteredPassThrough
 
   val hadoopConfig = HadoopConfig(
+    mrAppMasterMemory = 100,
+    mapTaskMemory = 200,
+    mapHeapMemory = 100,
+    mappersPerSlave = 8,
+    reduceTaskMemory = 200,
+    reduceHeapMemory = 100,
+    reducersPerSlave = 4,
     yarnTotalMemory = 1024,
     yarnContainerMinimumMemory = 100,
     yarnVirtualToPhysicalMemoryRatio = 2.1,
-    mapTaskMemory = 200,
-    mapHeapMemory = 100,
-    reduceTaskMemory = 200,
-    reduceHeapMemory = 100,
-    mrAppMasterMemory = 100,
     zookeeperPort = 1234
   )
 

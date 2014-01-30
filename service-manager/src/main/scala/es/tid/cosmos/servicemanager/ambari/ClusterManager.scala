@@ -36,7 +36,7 @@ private[ambari] class ClusterManager(
     hosts <- cluster.addHosts(clusterDescription.machines.map(_.hostname))
     masterHost = hosts.find(_.name == master.hostname).get
     slaveHosts = hosts.filter(host => slaves.exists(_.hostname == host.name))
-    properties = DynamicProperties(hadoopConfig, masterHost, slaveHosts)
+    properties = DynamicProperties(hadoopConfig, masterHost.name, slaveHosts.map(_.name))
     _ <- Configurator.applyConfiguration(
       cluster,
       properties,

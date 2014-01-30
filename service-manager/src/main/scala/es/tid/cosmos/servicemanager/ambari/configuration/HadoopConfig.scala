@@ -12,13 +12,15 @@
 package es.tid.cosmos.servicemanager.ambari.configuration
 
 case class HadoopConfig(
+    mrAppMasterMemory: Int,
+    mapTaskMemory: Int,
+    mapHeapMemory: Int,
+    mappersPerSlave: Int,
+    reduceTaskMemory: Int,
+    reduceHeapMemory: Int,
+    reducersPerSlave: Int,
     yarnTotalMemory: Int,
     yarnContainerMinimumMemory: Int,
     yarnVirtualToPhysicalMemoryRatio: Double,
-    mapTaskMemory: Int,
-    reduceTaskMemory: Int,
-    mapHeapMemory: Int,
-    reduceHeapMemory: Int,
-    mrAppMasterMemory: Int,
     zookeeperPort: Int
 )

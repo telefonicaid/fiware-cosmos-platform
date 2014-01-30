@@ -171,7 +171,7 @@ class AmbariServiceManager(
     stoppedService <- service.stop()
     slaveDetails = clusterDescription.slaves
     slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
-    properties = DynamicProperties(hadoopConfig, master, slaves)
+    properties = DynamicProperties(hadoopConfig, master.name, slaves.map(_.name))
     _ <- Configurator.applyConfiguration(cluster, properties, List(serviceDescription))
     startedService <- stoppedService.start()
   } yield startedService

@@ -20,13 +20,14 @@ object Build extends sbt.Build {
   }
 
   object Versions {
-    /** HDP 1.3 has a patched 1.2.0 Hadoop stabilized by themselves */
-    val hdp13Hadoop = "1.2.0"
+    /** HDP 2 has a patched 2.2.0 Hadoop stabilized by themselves */
+    val hdp2Hadoop = "2.2.0"
   }
 
   object Dependencies {
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
-    lazy val hadoopCore = "org.apache.hadoop" % "hadoop-core" % Versions.hdp13Hadoop
+    lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
+    lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop
     lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
     lazy val mockito = "org.mockito" % "mockito-all" % "1.9.5"

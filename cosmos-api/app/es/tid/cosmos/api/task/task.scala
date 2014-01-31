@@ -15,15 +15,21 @@ sealed trait Task {
   val id: Int
   def status: TaskStatus
   def usersWithAccess: Seq[String]
+  def metadata: Any
   def view: ImmutableTask
 }
 
 trait MutableTask extends Task {
   var status: TaskStatus
   var usersWithAccess: Seq[String]
-  def view: ImmutableTask = ImmutableTask(id, status, usersWithAccess)
+  var metadata: Any
+  def view: ImmutableTask = ImmutableTask(id, status, usersWithAccess, metadata)
 }
 
-case class ImmutableTask(id: Int, status: TaskStatus, usersWithAccess: Seq[String]) extends Task {
+case class ImmutableTask(
+    id: Int,
+    status: TaskStatus,
+    usersWithAccess: Seq[String],
+    metadata: Any) extends Task {
   val view = this
 }

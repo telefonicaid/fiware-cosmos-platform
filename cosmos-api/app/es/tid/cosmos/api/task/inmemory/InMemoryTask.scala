@@ -16,4 +16,5 @@ import es.tid.cosmos.api.task.{MutableTask, Running, TaskStatus}
 class InMemoryTask(val id: Int) extends MutableTask {
   @volatile override var status: TaskStatus = Running
   @volatile override var usersWithAccess: Seq[String] = Seq.empty
+  @volatile override var metadata: Any = ()
 }

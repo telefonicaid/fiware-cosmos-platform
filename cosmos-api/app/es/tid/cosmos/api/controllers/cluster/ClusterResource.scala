@@ -27,7 +27,6 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
-import es.tid.cosmos.api.quota.QuotaContext
 
 /** Resource that represents a single cluster. */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",

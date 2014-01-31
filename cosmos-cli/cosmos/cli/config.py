@@ -37,7 +37,7 @@ CONFIG_SETTINGS = [dict(
     default='ssh'
 ), dict(
     key='ssh_key',
-    description='SSH identity key (empty for the default one)',
+    description='SSH identity-key file full path (empty for default, e.g. ~/.ssh/id_rsa)',
     default=''
 )]
 DEFAULT_CONFIG = dict([(setting['key'], setting['default'])

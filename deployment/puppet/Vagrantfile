@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
     puppet.manifests_path = "modules/cosmos/manifests"
     puppet.manifest_file  = "site.pp"
     puppet.module_path = ["modules", "modules_third_party"]
-    puppet.options = "--environment vagrant --hiera_config /tmp/vagrant-puppet-1/manifests/hiera.yaml --manifestdir /tmp/vagrant-puppet-1/manifests"
+    puppet.options = "--environment vagrant --hiera_config /tmp/vagrant-puppet/manifests/hiera.yaml --manifestdir /tmp/vagrant-puppet/manifests"
   end
 
   config.vm.define :store1 do |config|

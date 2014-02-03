@@ -28,14 +28,10 @@
             <a href="https://pypi.python.org/pypi/setuptools">setuptools</a>.
         </p></li>
 
-        <li><p>
-            Install the Cosmos CLI:
-            @if(current.configuration.getString("cli.url").isDefined) {
-                <tt>easy_install @{current.configuration.getString("cli.url").get}</tt>
-            } else {
-                <tt>easy_install cosmos-x.y-z.egg</tt>
-            }
-        </p></li>
+        <li>
+            Install the Cosmos CLI with <tt>easy_install</tt>. <br/>
+            <tt>sudo easy_install -U @{current.configuration.getString("cli.url").getOrElse("cosmos-x.y-z.egg")}</tt>
+        </li>
 
         <li><p>Configure the tool: <tt>cosmos configure</tt>.</p></li>
 

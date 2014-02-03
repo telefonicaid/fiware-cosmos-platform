@@ -17,4 +17,5 @@ class InMemoryTask(val id: Int) extends MutableTask {
   @volatile override var status: TaskStatus = Running
   @volatile override var usersWithAccess: Seq[String] = Seq.empty
   @volatile override var metadata: Any = ()
+  @volatile override var resource: String = ""
 }

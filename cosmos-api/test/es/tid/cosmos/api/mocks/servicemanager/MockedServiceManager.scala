@@ -13,8 +13,6 @@ package es.tid.cosmos.api.mocks.servicemanager
 
 import java.net.URI
 import scala.concurrent._
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.language.{postfixOps, reflectiveCalls}
 import scala.util.Random
 
@@ -47,6 +45,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
     @volatile private var slaves: Seq[HostDetails] = Seq.empty
     @volatile private var users: Option[Set[ClusterUser]] = None
     @volatile private var statePromises: Map[ClusterState, Promise[Unit]] = Map.empty
+    @volatile private var pendingSetUserOperations: Seq[(Set[ClusterUser], Promise[Unit])] = Seq()
     @volatile private var observers: Set[Observer] = Set.empty
 
     def isConsumingMachines: Boolean = state match {
@@ -55,9 +54,24 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
     }
 
     def setUsers(newUsers: Set[ClusterUser]): Future[Unit] = synchronized {
-      users = Some(newUsers)
-      Future.successful()
+      val setUserOperation = (newUsers, Promise[Unit]())
+      pendingSetUserOperations +:= setUserOperation
+      if (autoCompleteSetUserOperations) completeSetUsers()
+      setUserOperation._2.future
     }
+
+    def completeSetUsers(): Boolean = { synchronized {
+      if (pendingSetUserOperations.isEmpty)
+        return false
+      for {
+        (newUsers, promise) <- pendingSetUserOperations
+      } {
+        users = Some(newUsers)
+        promise.success()
+      }
+      pendingSetUserOperations = Seq()
+      true
+    }}
 
     def setState(newState: ClusterState): Future[Unit] = synchronized {
       statePromises.get(state).foreach(_.success(()))
@@ -133,6 +147,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
   }
 
   @volatile private var clusters: Map[ClusterId, FakeCluster] = Map.empty
+  @volatile var autoCompleteSetUserOperations = true
   
   override type ServiceDescriptionType = ServiceDescription
 
@@ -181,6 +196,13 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   override def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit] =
     clusters(clusterId).setUsers(users.toSet)
+
+  def completeAllSetUserOperations() = {
+    clusterIds.map(clusterId => {
+      val cluster = clusters(clusterId)
+      cluster.completeSetUsers()
+    }).exists(_ == true)
+  }
 
   override def clusterNodePoolCount: Int = maxPoolSize
 

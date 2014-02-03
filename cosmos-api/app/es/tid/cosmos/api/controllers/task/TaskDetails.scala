@@ -14,15 +14,17 @@ package es.tid.cosmos.api.controllers.task
 import es.tid.cosmos.api.task.{ImmutableTask, TaskStatus}
 import play.api.libs.json._
 
-case class TaskDetails(id: Int, status: TaskStatus)
+case class TaskDetails(id: Int, status: TaskStatus, resource: String)
 
 object TaskDetails {
-  def apply(details: ImmutableTask): TaskDetails = TaskDetails(details.id, details.status)
+  def apply(details: ImmutableTask): TaskDetails =
+    TaskDetails(details.id, details.status, details.resource)
 
   implicit object TaskDetailsWrites extends Writes[TaskDetails] {
     override def writes(info: TaskDetails): JsValue = Json.obj(
       "id" -> info.id,
-      "status" -> info.status.toString
+      "status" -> info.status.toString,
+      "resource" -> info.resource
     )
   }
 }

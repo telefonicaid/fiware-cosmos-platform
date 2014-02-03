@@ -16,4 +16,3 @@ trait TaskDao {
   def registerTask(): MutableTask
   def list: Seq[ImmutableTask]
 }
-

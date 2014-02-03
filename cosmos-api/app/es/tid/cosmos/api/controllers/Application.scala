@@ -56,7 +56,7 @@ abstract class Application {
       new StatsResource(dao, sm, ial),
       new CosmosResource(),
       new ProfileResource(dao),
-      new ClusterResource(sm, dao, status),
+      new ClusterResource(sm, taskDao, dao, status),
       new StorageResource(sm, dao, status),
       new ServicesResource(sm),
       new CliConfigResource(dao),

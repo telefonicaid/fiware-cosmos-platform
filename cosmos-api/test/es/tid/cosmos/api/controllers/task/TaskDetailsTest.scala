@@ -19,26 +19,29 @@ import play.api.libs.json._
 class TaskDetailsTest extends FlatSpec with MustMatchers {
 
   "TaskDetails" must "serialize to JSON correctly when Running" in {
-    val task = TaskDetails(40, Running)
+    val task = TaskDetails(40, Running, "/cosmos/v1/cluster")
     Json.toJson(task) must be (Json.obj(
       "id" -> 40,
-      "status" -> "Running"
+      "status" -> "Running",
+      "resource" -> "/cosmos/v1/cluster"
     ))
   }
 
   it must "serialize to JSON correctly when Finished" in {
-    val task = TaskDetails(0, Finished)
+    val task = TaskDetails(0, Finished, "")
     Json.toJson(task) must be (Json.obj(
       "id" -> 0,
-      "status" -> "Finished"
+      "status" -> "Finished",
+      "resource" -> ""
     ))
   }
 
   it must "serialize to JSON correctly when Failed" in {
-    val task = TaskDetails(0, Failed("foo"))
+    val task = TaskDetails(0, Failed("foo"), "bar")
     Json.toJson(task) must be (Json.obj(
       "id" -> 0,
-      "status" -> "Failed: foo"
+      "status" -> "Failed: foo",
+      "resource" -> "bar"
     ))
   }
 }

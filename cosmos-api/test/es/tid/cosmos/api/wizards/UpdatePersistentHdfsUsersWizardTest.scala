@@ -17,7 +17,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.{eq => the, _}
+import org.mockito.Matchers.{eq => the}
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

@@ -21,7 +21,6 @@ import es.tid.cosmos.common._
 import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.rest.{AmbariServer, Service}
 import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
@@ -32,7 +31,7 @@ import es.tid.cosmos.servicemanager.util.TcpServer._
   * It allows creating clusters with specified services using Ambari.
   *
   * @constructor
-  * @param ambariServer the cluster provisioner
+  * @param clusterManager the cluster manager
   * @param infrastructureProvider the host-machines provider
   * @param persistentHdfsId the id of the persistent hdfs cluster
   * @param exclusiveMasterSizeCutoff the minimum size of a cluster such that
@@ -41,7 +40,7 @@ import es.tid.cosmos.servicemanager.util.TcpServer._
   * @param clusterDao the dao that stores cluster states
   */
 class AmbariServiceManager(
-    ambariServer: AmbariServer,
+    val clusterManager: AmbariClusterManager,
     infrastructureProvider: InfrastructureProvider,
     override val persistentHdfsId: ClusterId,
     exclusiveMasterSizeCutoff: Int,
@@ -49,15 +48,12 @@ class AmbariServiceManager(
     clusterDao: AmbariClusterDao) extends ServiceManager with Logging {
   import AmbariServiceManager._
 
-  private[ambari] val clusterDeployer = new ClusterManager(
-    ambariServer, infrastructureProvider.rootPrivateSshKey)
-
   private val dynamicProperties = new DynamicPropertiesFactory(hadoopConfig, () => for {
     description <- describePersistentHdfsCluster()
     master <- description.master
   } yield master.hostname)
 
-  override type ServiceDescriptionType = AmbariServiceDescription
+  override type ServiceDescriptionType = clusterManager.ServiceDescriptionType
 
   override def clusterIds: Seq[ClusterId] = clusterDao.ids
 
@@ -111,7 +107,7 @@ class AmbariServiceManager(
       "This function cannot be called if the slaves have not been set")
     val master = dbClusterDescription.master.get
     val deployment_> = for {
-      _ <- clusterDeployer.deployCluster(
+      _ <- clusterManager.deployCluster(
         dbClusterDescription.view, serviceDescriptions, dynamicProperties)
     } yield {
       dbClusterDescription.nameNode = toNameNodeUri(master)
@@ -130,7 +126,7 @@ class AmbariServiceManager(
         s"Cluster $id is in state $clusterState, which is not a valid state for termination")
       mutableCluster.state = Terminating
       for {
-        _ <- clusterDeployer.removeClusterFromAmbari(cluster)
+        _ <- clusterManager.removeCluster(cluster)
         machines <- infrastructureProvider.assignedMachines(cluster.machines.map(_.hostname))
         _ <- infrastructureProvider.releaseMachines(machines)
       } yield {
@@ -151,8 +147,9 @@ class AmbariServiceManager(
       clusterDescription.get.state == Running,
       s"Cluster[$clusterId] not Running")
     for {
-      changedService <- changeServiceConfiguration(
+      changedService <- clusterManager.changeServiceConfiguration(
         clusterId,
+        dynamicProperties,
         clusterDescription.get,
         new CosmosUserService(clusterUsersDelta(listUsers(clusterId), users)))
     } yield {
@@ -164,24 +161,6 @@ class AmbariServiceManager(
       currentUsers: Option[Seq[ClusterUser]],
       newUsers: Seq[ClusterUser]): Seq[ClusterUser] =
     (newUsers.toSet diff currentUsers.toSet.flatten).toSeq
-
-  private def changeServiceConfiguration(
-      id: ClusterId,
-      clusterDescription: ClusterDescription,
-      serviceDescription: AmbariServiceDescription): Future[Service] = for {
-    cluster <- ambariServer.getCluster(id.toString)
-    service <- cluster.getService(serviceDescription.name)
-    master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription)
-    stoppedService <- service.stop()
-    slaveDetails = clusterDescription.slaves
-    slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
-    _ <- Configurator.applyConfiguration(
-      cluster,
-      properties = dynamicProperties.forCluster(master.name, slaves.map(_.name)),
-      contributors = List(serviceDescription)
-    )
-    startedService <- stoppedService.start()
-  } yield startedService
 
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)

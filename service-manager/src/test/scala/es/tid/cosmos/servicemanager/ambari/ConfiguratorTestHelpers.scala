@@ -31,7 +31,7 @@ class ConfiguratorTestHelpers(
     new CoreConfiguration(propertiesUpTo("Core", number) ++ getConfigurationFromCompulsoryServices(_.core))
 
   def mergedGlobalConfiguration(number: Int, instance: AmbariServiceManager) =
-    GlobalConfiguration(instance.clusterDeployer.contributions(dynamicProperties).global.get.properties ++
+    GlobalConfiguration(instance.clusterManager.contributions(dynamicProperties).global.get.properties ++
       propertiesUpTo("Global", number) ++ getConfigurationFromCompulsoryServices(_.global))
 
   private def getConfigurationFromCompulsoryServices(extractor: ConfigurationBundle => Option[Configuration]) = {

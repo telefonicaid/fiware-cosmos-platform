@@ -14,6 +14,7 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer

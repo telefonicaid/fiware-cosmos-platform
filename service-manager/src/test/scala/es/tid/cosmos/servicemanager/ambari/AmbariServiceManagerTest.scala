@@ -46,12 +46,13 @@ class AmbariServiceManagerTest
   val provisioner = initializeProvisioner
   val infrastructureProvider = mock[InfrastructureProvider]
   given(infrastructureProvider.rootPrivateSshKey).willReturn("sshKey")
+  val clusterManager = new AmbariClusterManager(provisioner, infrastructureProvider.rootPrivateSshKey)
   val cluster = mock[Cluster]
   val serviceDescriptions = List(mock[AmbariServiceDescription], mock[AmbariServiceDescription])
   val services = List(mock[Service], mock[Service])
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
   val instance = new AmbariServiceManager(
-    provisioner, infrastructureProvider,
+    clusterManager, infrastructureProvider,
     ClusterId("HDFS"), exclusiveMasterSizeCutoff, TestHadoopConfig,
     new AmbariClusterDao(
       new InMemoryClusterDao,

@@ -99,7 +99,7 @@ class UserUnregistrationWizardTest
     )), timeout)
   }
 
-  "Unregistration" must "cannot be created when user status cannot be changed" in new WithWizard {
+  "Unregistration" must "not be created when user status cannot be changed" in new WithWizard {
     doThrow(failure).when(dao)
       .setUserState(any[Long], any[UserState])(the(MockCosmosProfileDao.DummyConnection))
     val userId = 0

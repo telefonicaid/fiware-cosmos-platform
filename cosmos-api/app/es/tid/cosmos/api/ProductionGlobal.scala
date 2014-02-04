@@ -15,6 +15,7 @@ import es.tid.cosmos.api.auth.ConfigBasedMultiAuthProviderComponent
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
 import es.tid.cosmos.api.profile.PlayDbCosmosProfileDaoComponent
+import es.tid.cosmos.api.task.inmemory.InMemoryTaskDaoComponent
 import es.tid.cosmos.platform.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.ProductionServiceManagerComponent
 
@@ -26,5 +27,6 @@ object ProductionGlobal extends AbstractGlobal(new Application
   with PlayDbCosmosProfileDaoComponent
   with ProductionServiceManagerComponent
   with ApplicationConfigComponent
-  with InMemoryMaintenanceStatusComponent) {
+  with InMemoryMaintenanceStatusComponent
+  with InMemoryTaskDaoComponent) {
 }

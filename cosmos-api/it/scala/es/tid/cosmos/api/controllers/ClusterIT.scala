@@ -133,6 +133,17 @@ class ClusterIT
     status(rep2) must equal (BAD_REQUEST)
   }
 
+  it must "fail to add a user that is already being added" in new WithSampleSessions with SampleClusters {
+    mockedServiceManager.autoCompleteSetUserOperations = false
+    regUser.setAsOwner(RunningClusterProps.id)
+    val rep1 = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
+    status(rep1) must equal (OK)
+
+    val rep2 = regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle))
+    status(rep2) must equal (BAD_REQUEST)
+    (contentAsJson(rep2) \ "error").as[String] must include ("Please wait for it to finish")
+  }
+
   it must "remove a user from cluster" in new WithSampleSessions with SampleClusters {
     regUser.setAsOwner(RunningClusterProps.id)
     status(regUser.doRequest(RunningClusterProps.addUserRequest(opUser.handle)))

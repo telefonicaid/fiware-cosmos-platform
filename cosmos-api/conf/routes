@@ -24,6 +24,8 @@ GET     /doc/cosmos/v1/profile              controllers.ApiHelpController.getRes
 GET     /cosmos/v1/storage                  @es.tid.cosmos.api.controllers.storage.StorageResource.details
 GET     /doc/cosmos/v1/storage              controllers.ApiHelpController.getResource(path = "/doc/cosmos/v1/storage")
 
+GET     /cosmos/v1/task/:id                 @es.tid.cosmos.api.controllers.task.TaskResource.getDetails(id)
+
 GET     /cosmos/v1/cluster                  @es.tid.cosmos.api.controllers.cluster.ClusterResource.list()
 POST    /cosmos/v1/cluster                  @es.tid.cosmos.api.controllers.cluster.ClusterResource.createCluster()
 GET     /cosmos/v1/cluster/:id              @es.tid.cosmos.api.controllers.cluster.ClusterResource.listDetails(id)

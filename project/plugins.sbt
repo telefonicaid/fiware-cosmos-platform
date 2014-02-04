@@ -3,7 +3,7 @@ logLevel := Level.Warn
 
 resolvers += "Cosmos Nexus Repository" at "http://cosmos10.hi.inet/nexus/content/groups/public/"
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.1")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.2.2-RC2")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.2")
 

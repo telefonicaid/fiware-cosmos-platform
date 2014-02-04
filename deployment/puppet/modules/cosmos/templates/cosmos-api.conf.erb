@@ -40,6 +40,9 @@ db.default.driver=com.mysql.jdbc.Driver
 db.default.url="jdbc:mysql://"${db.default.host}":"${db.default.port}"/"${db.default.name}
 db.default.user=<%= @cosmos_db_user %>
 db.default.pass="<%= @cosmos_db_pass %>"
+# Related to BoneCP issue of spontaneously closing connections.
+# See https://pdihub.hi.inet/Cosmos/cosmos-platform/issues/1496
+db.default.maxConnectionAge=0 second
 
 # Evolutions
 # ~~~~~

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common
+package es.tid.cosmos.common
 
 import java.sql.{DriverManager, Connection}
 import scala.util.Try

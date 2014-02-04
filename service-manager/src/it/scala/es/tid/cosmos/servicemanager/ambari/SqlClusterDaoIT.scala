@@ -19,8 +19,8 @@ import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
-import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
+import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
+import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 

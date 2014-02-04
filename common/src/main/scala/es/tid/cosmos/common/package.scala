@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform
+package es.tid.cosmos
 
 import scalaz.ValidationNel
 import scalaz.syntax.validation._

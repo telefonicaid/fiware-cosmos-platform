@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common
+package es.tid.cosmos.common
 
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec

@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager
 
 import scala.concurrent._
 
-import es.tid.cosmos.platform.common.ExecutableValidation
+import es.tid.cosmos.common.ExecutableValidation
 import es.tid.cosmos.platform.ial._
 
 class FakeInfrastructureProvider extends InfrastructureProvider {
@@ -37,7 +37,7 @@ class FakeInfrastructureProvider extends InfrastructureProvider {
   val rootPrivateSshKey: String = "FIXME"
 
   override def releaseMachines(machines: Seq[MachineState]): Future[Unit] = Future.successful()
- 
+
   override def availableMachineCount(profile: MachineProfile.Value): Future[Int] = Future.successful(1)
 
   override def assignedMachines(hostNames: Seq[String]): Future[Seq[MachineState]] =

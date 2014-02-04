@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common.scalatest.matchers
+package es.tid.cosmos.common.scalatest.matchers
 
 import org.scalatest.matchers.{MatchResult, Matcher}
 

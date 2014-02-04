@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common.scalatest.data
+package es.tid.cosmos.common.scalatest.data
 
 import scala.util.Random
 

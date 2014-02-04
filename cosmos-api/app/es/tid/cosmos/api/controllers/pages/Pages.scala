@@ -30,13 +30,11 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration, UserId}
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
-import es.tid.cosmos.platform.common.Wrapped
+import es.tid.cosmos.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
 import views.AuthAlternative
 
-/**
- * Controller for the web pages of the service.
- */
+/** Controller for the web pages of the service. */
 class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,

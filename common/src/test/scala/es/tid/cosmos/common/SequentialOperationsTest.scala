@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common
+package es.tid.cosmos.common
 
 import scala.concurrent.{Future, Await, future}
 import scala.concurrent.ExecutionContext.Implicits.global

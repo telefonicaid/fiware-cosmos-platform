@@ -9,14 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common
+package es.tid.cosmos.common
 
-import com.typesafe.config.{ConfigFactory, Config}
+import com.typesafe.config.Config
 
 /**
- * Component that pulls configuration application.conf.
+ * Configuration provider
  */
-trait ApplicationConfigComponent extends ConfigComponent {
-
-  def config: Config = ConfigFactory.load()
+trait ConfigComponent {
+  def config: Config
 }

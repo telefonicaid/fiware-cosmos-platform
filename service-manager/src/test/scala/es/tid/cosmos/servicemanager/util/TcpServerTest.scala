@@ -19,7 +19,7 @@ import scala.language.postfixOps
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 
 class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
 

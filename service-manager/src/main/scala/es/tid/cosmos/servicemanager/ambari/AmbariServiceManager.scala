@@ -17,7 +17,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.typesafe.scalalogging.slf4j.Logging
 
-import es.tid.cosmos.platform.common._
+import es.tid.cosmos.common._
 import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._

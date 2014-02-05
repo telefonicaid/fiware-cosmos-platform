@@ -11,9 +11,11 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
+import es.tid.cosmos.servicemanager.ServiceDescription
+
 /** Object expressing inter-service dependencies. */
 object ServiceDependencies {
-  type Service = AmbariServiceDescription
+  type Service = ServiceDescription
 
   private val Dependencies: Map[Service, Seq[Service]] = Map(
     Hdfs -> Seq(Zookeeper),

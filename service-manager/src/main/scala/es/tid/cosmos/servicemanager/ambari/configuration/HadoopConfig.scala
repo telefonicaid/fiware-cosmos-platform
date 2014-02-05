@@ -22,5 +22,7 @@ case class HadoopConfig(
     yarnTotalMemory: Int,
     yarnContainerMinimumMemory: Int,
     yarnVirtualToPhysicalMemoryRatio: Double,
-    zookeeperPort: Int
+    nameNodeHttpPort: Int,
+    zookeeperPort: Int,
+    servicesConfigDirectory: String
 )

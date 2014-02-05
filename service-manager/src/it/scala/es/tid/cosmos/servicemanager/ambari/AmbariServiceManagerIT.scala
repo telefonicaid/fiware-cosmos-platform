@@ -23,12 +23,15 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
 import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.ambari.services.ServicesConfiguration
+import es.tid.cosmos.servicemanager.ambari.services.ServiceWithConfigurationFile._
+import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
-  with FakeInfrastructureProviderComponent {
+  with FakeInfrastructureProviderComponent
+  with ServicesConfiguration {
 
   val preConditions = UnfilteredPassThrough
 
@@ -43,7 +46,9 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     yarnTotalMemory = 1024,
     yarnContainerMinimumMemory = 100,
     yarnVirtualToPhysicalMemoryRatio = 2.1,
-    zookeeperPort = 1234
+    nameNodeHttpPort = 50070,
+    zookeeperPort = 1234,
+    servicesConfigDirectory = configDirectory
   )
 
   @tailrec
@@ -79,7 +84,10 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
       new AmbariClusterDao(
         new SqlClusterDao(db),
         ambariServer,
-        AmbariServiceManager.AllServices))
+        AmbariServiceManager.AllServices.map(
+          decorateWithFileConfiguration(_)(hadoopConfig.servicesConfigDirectory))
+      )
+    )
   }
 
   "Ambari server" must "create and terminate cluster" taggedAs HasExternalDependencies in {

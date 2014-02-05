@@ -11,10 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.servicemanager.{ServiceDescription, ComponentDescription}
 
 /** Representation of the Oozie service. */
-object Oozie extends ServiceWithConfigurationFile {
+object Oozie extends ServiceDescription {
   override val name: String = "OOZIE"
 
   override val components: Seq[ComponentDescription] = Seq(

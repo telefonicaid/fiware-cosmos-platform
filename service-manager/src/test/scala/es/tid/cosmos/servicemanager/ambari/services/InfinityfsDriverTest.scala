@@ -15,7 +15,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class InfinityfsDriverTest extends FlatSpec with MustMatchers {
 
@@ -23,18 +22,5 @@ class InfinityfsDriverTest extends FlatSpec with MustMatchers {
     InfinityfsDriver.components must be (Seq(
       ComponentDescription.allNodesComponent("INFINITY_HFS_DRIVER").makeClient
     ))
-  }
-
-  val dynamicProperties = Map(
-    ConfigurationKeys.InfinityMasterNode -> "andromeda-infinity"
-  )
-  val contributedConfig = InfinityfsDriver.contributions(dynamicProperties).core.get
-
-  it must "have the default infinity's cluster configured" in {
-    contributedConfig.properties("fs.infinity.defaultAuthority") must be ("andromeda-infinity:8020")
-  }
-
-  it must "configure the infinity HFS driver" in {
-    contributedConfig.properties("fs.infinity.impl").toString must include ("InfinityFileSystem")
   }
 }

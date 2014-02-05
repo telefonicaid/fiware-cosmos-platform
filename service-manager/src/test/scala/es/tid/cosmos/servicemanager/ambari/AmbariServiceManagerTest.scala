@@ -50,13 +50,17 @@ class AmbariServiceManagerTest
   val serviceDescriptions = List(mock[AmbariServiceDescription], mock[AmbariServiceDescription])
   val services = List(mock[Service], mock[Service])
   val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
+  val hadoopConfig = TestHadoopConfig.copy(
+    servicesConfigDirectory = this.getClass.getResource("").getPath)
   val instance = new AmbariServiceManager(
     provisioner, infrastructureProvider,
-    ClusterId("HDFS"), exclusiveMasterSizeCutoff, TestHadoopConfig,
+    ClusterId("HDFS"), exclusiveMasterSizeCutoff, hadoopConfig,
     new AmbariClusterDao(
       new InMemoryClusterDao,
       initializeProvisioner,
-      AmbariServiceManager.AllServices))
+      ConfiguratorTestHelpers.AllServices
+    )
+  )
   val testTimeout = 1 second
   val NoPreconditions = UnfilteredPassThrough
   val stackVersion = "HDP-2.0.6_Cosmos"

@@ -11,7 +11,9 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import es.tid.cosmos.servicemanager.ServiceDescription
 import es.tid.cosmos.servicemanager.ambari.configuration._
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
 
 class ConfiguratorTestHelpers(
@@ -28,16 +30,22 @@ class ConfiguratorTestHelpers(
     (1 to number).map(properties(confType, _)).reduce(_++_)
 
   def mergedCoreConfiguration(number: Int) =
-    new CoreConfiguration(propertiesUpTo("Core", number) ++ getConfigurationFromCompulsoryServices(_.core))
+    new CoreConfiguration(propertiesUpTo("Core", number) ++
+      getConfigurationFromCompulsoryServices(_.core))
 
   def mergedGlobalConfiguration(number: Int, instance: AmbariServiceManager) =
-    GlobalConfiguration(instance.clusterDeployer.contributions(dynamicProperties).global.get.properties ++
-      propertiesUpTo("Global", number) ++ getConfigurationFromCompulsoryServices(_.global))
+    GlobalConfiguration(
+      instance.clusterDeployer.contributions(dynamicProperties).global.get.properties ++
+      propertiesUpTo("Global", number) ++ getConfigurationFromCompulsoryServices(_.global)
+    )
 
-  private def getConfigurationFromCompulsoryServices(extractor: ConfigurationBundle => Option[Configuration]) = {
-    def getProperties(contributor: ConfigurationContributor) = extractor(contributor.contributions(dynamicProperties))
-      .map(_.properties).getOrElse(Map())
-    AmbariServiceManager.BasicHadoopServices.withDependencies.map(getProperties).reduce(_++_)
+  private def getConfigurationFromCompulsoryServices(
+      extractor: ConfigurationBundle => Option[Configuration]) = {
+
+    def getProperties(contributor: ConfigurationContributor) =
+      extractor(contributor.contributions(dynamicProperties)).map(_.properties).getOrElse(Map())
+
+    BasicServices.map(getProperties).reduce(_++_)
   }
 }
 
@@ -54,8 +62,24 @@ object ConfiguratorTestHelpers {
     yarnTotalMemory = 1024,
     yarnContainerMinimumMemory = 100,
     yarnVirtualToPhysicalMemoryRatio = 2.1,
-    zookeeperPort = 1234
+    nameNodeHttpPort = 50070,
+    zookeeperPort = 1234,
+    servicesConfigDirectory = "/tmp/services"
   )
+
+  val BasicServices = AmbariServiceManager.BasicHadoopServices.withDependencies
+    .map(toAmbariServicesNoConfig)
+
+  val AllServices = AmbariServiceManager.AllServices.withDependencies.map(toAmbariServicesNoConfig)
+  
+  def toAmbariServicesNoConfig(service: ServiceDescription): AmbariServiceDescription =
+    service match {
+      case ambariService: AmbariServiceDescription => ambariService
+      case _ => new AmbariServiceDescription with NoConfigurationContribution {
+        override val name = service.name
+        override val components = service.components
+      }
+    }
 
   def properties(confType: String, number: Int) =
     Map(s"some${confType}Content$number" -> s"somevalue$number")

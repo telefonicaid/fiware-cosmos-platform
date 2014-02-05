@@ -36,6 +36,16 @@ class cosmos::setup inherits cosmos::params {
     content => template('cosmos/ial.conf.erb'),
   }
 
+  file { 'service configurations':
+    ensure  => 'directory',
+    source  => "puppet:///modules/${module_name}/services",
+    path    => "${cosmos::params::cosmos_confdir}/services",
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0640',
+    recurse => true
+  }
+
   file { 'logback.conf' :
     ensure  => 'present',
     path    => "${cosmos::params::cosmos_confdir}/logback.conf",
@@ -84,6 +94,8 @@ class cosmos::setup inherits cosmos::params {
   File[$cosmos::params::cosmos_confdir]
     -> File[
         'cosmos-api.conf',
+        'ial.conf',
+        'service configurations',
         'logback.conf',
         $cosmos::params::cosmos_ssl_dir
       ]

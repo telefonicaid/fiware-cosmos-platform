@@ -21,6 +21,7 @@ import es.tid.cosmos.servicemanager.clusters.{ImmutableClusterDescription, Clust
 
 private[ambari] class ClusterManager(
     ambariServer: AmbariServer,
+    override val configPath: String,
     rootPrivateSshKey: String) extends FileConfigurationContributor {
   import ClusterManager._
 

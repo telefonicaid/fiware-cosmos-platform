@@ -12,8 +12,9 @@
 package es.tid.cosmos.servicemanager.ambari.configuration
 
 object ConfigurationKeys extends Enumeration {
-  val HdfsReplicationFactor,
-      MasterNode,
+  val MasterNode,
+      HdfsReplicationFactor,
+      NameNodeHttpPort,
       MrAppMasterMemory,
 
       InfinityMasterNode,

@@ -12,8 +12,6 @@
 class cosmos::params (
   $version                 = '0.15.0',
   $cosmos_basedir          = '/opt/pdi-cosmos',
-  $cosmos_confdir          = '/opt/pdi-cosmos/etc',
-  $cosmos_ssl_dir          = '/opt/pdi-cosmos/etc/ssl',
   $cosmos_cli_repo_path    = '/opt/repos',
   $cosmos_repo_deps_url,
   $cosmos_api_mode         = 'prod',
@@ -88,10 +86,13 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $ambari_reduce_heap_memory,
   $ambari_mr_app_master_memory
 ) {
-  $cosmos_public_key       = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
-  $cosmos_cli_filename     = "cosmos-${version}-py2.7.egg"
-  $ssl_cert_file   = "${cosmos_ssl_dir}/cosmos_cer.pem"
-  $ssl_key_file    = "${cosmos_ssl_dir}/cosmos_key.pem"
-  $ssl_ca_filename = 'issuecatid_ca.pem'
-  $ssl_ca_file     = "${cosmos_ssl_dir}/${ssl_ca_filename}"
+  $cosmos_public_key          = "ssh-rsa ${cosmos_raw_public_key} root@localhost"
+  $cosmos_cli_filename        = "cosmos-${version}-py2.7.egg"
+  $cosmos_confdir             = "${cosmos_basedir}/etc"
+  $cosmos_services_config_dir = "${cosmos_confdir}/services"
+  $cosmos_ssl_dir             = "${cosmos_confdir}/ssl"
+  $ssl_cert_file              = "${cosmos_ssl_dir}/cosmos_cer.pem"
+  $ssl_key_file               = "${cosmos_ssl_dir}/cosmos_key.pem"
+  $ssl_ca_filename            = 'issuecatid_ca.pem'
+  $ssl_ca_file                = "${cosmos_ssl_dir}/${ssl_ca_filename}"
 }

@@ -22,8 +22,6 @@ import es.tid.cosmos.servicemanager.clusters._
  */
 trait ServiceManager {
 
-  type ServiceDescriptionType <: ServiceDescription
-
   /**
    * Get the IDs of the existing clusters managed by this manager.
    * @return the IDs of the existing clusters
@@ -33,7 +31,7 @@ trait ServiceManager {
   /**
    * A sequence of all services this service manager supports
    */
-  val optionalServices: Seq[ServiceDescriptionType]
+  val optionalServices: Seq[ServiceDescription]
 
   /**
    * Create a cluster of a given size with a specified set of services.
@@ -48,7 +46,7 @@ trait ServiceManager {
   def createCluster(
     name: String,
     clusterSize: Int,
-    serviceDescriptions: Seq[ServiceDescriptionType],
+    serviceDescriptions: Seq[ServiceDescription],
     users: Seq[ClusterUser],
     preConditions: ClusterExecutableValidation = UnfilteredPassThrough): ClusterId
 

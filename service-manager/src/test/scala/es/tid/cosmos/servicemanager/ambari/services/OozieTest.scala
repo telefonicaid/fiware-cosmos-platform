@@ -15,24 +15,15 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class OozieTest extends FlatSpec with MustMatchers  {
-
-  val dynamicProperties = Map(
-    ConfigurationKeys.MasterNode -> "aMasterNodeName"
-  )
 
   "An Oozie service" must "have an oozie server and a client" in {
     val description = Oozie
     description.name must equal("OOZIE")
     description.components must (
       have length 2 and
-      contain(ComponentDescription.masterComponent("OOZIE_SERVER")) and
-      contain(ComponentDescription.masterComponent("OOZIE_CLIENT").makeClient)
-    )
-    val contributions = description.contributions(dynamicProperties)
-    contributions.global must be('defined)
-    contributions.services must have length 1
+        contain(ComponentDescription.masterComponent("OOZIE_SERVER")) and
+        contain(ComponentDescription.masterComponent("OOZIE_CLIENT").makeClient))
   }
 }

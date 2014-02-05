@@ -99,6 +99,7 @@ ambari.server.username=<%= @ambari_user %>
 ambari.server.password=<%= @ambari_password %>
 ambari.servicemanager.exclusiveMasterSizeCutoff=10
 ambari.servicemanager.initialization.graceperiod.minutes=<%= @ambari_init_period %>
+ambari.servicemanager.servicesConfigDirectory="<%= @cosmos_services_config_dir %>"
 
 ambari.servicemanager.mrAppMasterMemory=<%= @ambari_mr_app_master_memory %>
 
@@ -113,6 +114,8 @@ ambari.servicemanager.reducersPerSlave=4
 ambari.servicemanager.yarnTotalMemory=<%= @ambari_yarn_total_memory %>
 ambari.servicemanager.yarnContainerMinimumMemory=<%= @ambari_yarn_container_min_memory %>
 ambari.servicemanager.yarnVirtualToPhysicalMemoryRatio=<%= @ambari_yarn_virtual_physical_memory_ratio %>
+
+ambari.servicemanager.nameNodeHttpPort=50070
 ambari.servicemanager.zookeeperPort=2181
 
 hdfs.cluster.id=persistentHdfs

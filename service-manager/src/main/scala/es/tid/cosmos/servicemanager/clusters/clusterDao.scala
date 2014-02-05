@@ -44,7 +44,7 @@ trait ClusterDao {
     *         on this object will affect the state of the DAO.
     */
   def registerCluster(
-    id: ClusterId,
+    id: ClusterId = ClusterId(),
     name: String,
     size: Int,
     services: Set[ServiceDescription]): MutableClusterDescription

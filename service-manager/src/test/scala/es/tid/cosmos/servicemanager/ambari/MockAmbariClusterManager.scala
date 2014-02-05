@@ -9,27 +9,26 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager
-
-import scala.concurrent.Future
+package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ImmutableClusterDescription}
-import es.tid.cosmos.servicemanager.ambari.DynamicPropertiesFactory
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
+import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
+import scala.concurrent.Future
+import es.tid.cosmos.servicemanager.ambari.ServiceMasterExtractor.ServiceMasterNotFound
 
-trait ClusterManager {
-  type ServiceDescriptionType
+class MockAmbariClusterManager extends AmbariClusterManager(null, "") {
 
-  def deployCluster(
+  override def deployCluster(
     clusterDescription: ImmutableClusterDescription,
     serviceDescriptions: Seq[AmbariServiceDescription],
-    dynamicProperties: DynamicPropertiesFactory): Future[Any]
+    hadoopConfig: HadoopConfig): Future[Unit] = Future.successful()
 
-  def removeCluster(cluster: ImmutableClusterDescription): Future[Any]
+  override def removeCluster(cluster: ImmutableClusterDescription): Future[Unit] = Future.successful()
 
-  def changeServiceConfiguration(
+  override def changeServiceConfiguration(
     id: ClusterId,
-    dynamicProperties: DynamicPropertiesFactory,
+    hadoopConfig: HadoopConfig,
     clusterDescription: ImmutableClusterDescription,
-    serviceDescription: ServiceDescriptionType): Future[Any]
+    serviceDescription: AmbariServiceDescription): Future[Unit] = Future.successful()
 }

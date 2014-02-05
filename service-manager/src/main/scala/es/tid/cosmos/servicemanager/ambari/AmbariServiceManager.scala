@@ -45,7 +45,7 @@ class AmbariServiceManager(
     override val persistentHdfsId: ClusterId,
     exclusiveMasterSizeCutoff: Int,
     hadoopConfig: HadoopConfig,
-    clusterDao: AmbariClusterDao) extends ServiceManager with Logging {
+    clusterDao: ClusterDao) extends ServiceManager with Logging {
   import AmbariServiceManager._
 
   private val dynamicProperties = new DynamicPropertiesFactory(hadoopConfig, () => for {
@@ -147,7 +147,7 @@ class AmbariServiceManager(
       clusterDescription.get.state == Running,
       s"Cluster[$clusterId] not Running")
     for {
-      changedService <- clusterManager.changeServiceConfiguration(
+      _ <- clusterManager.changeServiceConfiguration(
         clusterId,
         dynamicProperties,
         clusterDescription.get,

@@ -57,7 +57,7 @@ private[ambari] class AmbariClusterManager(
       id: ClusterId,
       dynamicProperties: DynamicPropertiesFactory,
       clusterDescription: ImmutableClusterDescription,
-      serviceDescription: AmbariServiceDescription): Future[Service] = for {
+      serviceDescription: AmbariServiceDescription): Future[Any] = for {
     cluster <- ambariServer.getCluster(id.toString)
     service <- cluster.getService(serviceDescription.name)
     master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription)

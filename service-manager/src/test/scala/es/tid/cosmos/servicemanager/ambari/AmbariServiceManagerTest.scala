@@ -13,10 +13,9 @@ package es.tid.cosmos.servicemanager.ambari
 
 import java.net.URI
 import scala.annotation.tailrec
+import scala.concurrent.{Await, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import scala.concurrent.Future.successful
-import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scalaz.syntax.validation._
@@ -32,7 +31,8 @@ import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
-import es.tid.cosmos.servicemanager.ambari.rest._
+import es.tid.cosmos.servicemanager.ambari.mocks.{MockAmbariClusterManager, InMemoryClusterDao}
+import es.tid.cosmos.servicemanager.ambari.rest.AmbariTestBase
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 
@@ -47,7 +47,6 @@ class AmbariServiceManagerTest
     val exclusiveMasterSizeCutoff = 10
     val clusterManager = new MockAmbariClusterManager
     val serviceDescriptions = List(mock[AmbariServiceDescription], mock[AmbariServiceDescription])
-    val configurationContributions = List(contributionsWithNumber(1), contributionsWithNumber(2))
     lazy val instance = new AmbariServiceManager(
       clusterManager, infrastructureProvider,
       ClusterId("HDFS"), exclusiveMasterSizeCutoff, TestHadoopConfig,

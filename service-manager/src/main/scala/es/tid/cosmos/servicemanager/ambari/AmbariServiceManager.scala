@@ -148,9 +148,8 @@ class AmbariServiceManager(
       s"Cluster[$clusterId] not Running")
     for {
       _ <- clusterManager.changeServiceConfiguration(
-        clusterId,
-        dynamicProperties,
         clusterDescription.get,
+        dynamicProperties,
         new CosmosUserService(clusterUsersDelta(listUsers(clusterId), users)))
     } yield {
       clusterDao.setUsers(clusterId, users.toSet)

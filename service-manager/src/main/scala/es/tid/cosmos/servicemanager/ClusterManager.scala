@@ -28,8 +28,7 @@ trait ClusterManager {
   def removeCluster(cluster: ImmutableClusterDescription): Future[Any]
 
   def changeServiceConfiguration(
-    id: ClusterId,
-    dynamicProperties: DynamicPropertiesFactory,
     clusterDescription: ImmutableClusterDescription,
+    dynamicProperties: DynamicPropertiesFactory,
     serviceDescription: ServiceDescriptionType): Future[Any]
 }

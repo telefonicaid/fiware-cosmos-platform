@@ -16,10 +16,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
+import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 
 /**
   * This class wraps a ClusterDao and makes sure that the data in Ambari and the data in the

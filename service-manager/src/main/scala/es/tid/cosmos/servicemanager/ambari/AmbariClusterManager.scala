@@ -54,11 +54,10 @@ private[ambari] class AmbariClusterManager(
   } yield ()
 
   override def changeServiceConfiguration(
-      id: ClusterId,
-      dynamicProperties: DynamicPropertiesFactory,
       clusterDescription: ImmutableClusterDescription,
+      dynamicProperties: DynamicPropertiesFactory,
       serviceDescription: AmbariServiceDescription): Future[Any] = for {
-    cluster <- ambariServer.getCluster(id.toString)
+    cluster <- ambariServer.getCluster(clusterDescription.id.toString)
     service <- cluster.getService(serviceDescription.name)
     master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription)
     stoppedService <- service.stop()

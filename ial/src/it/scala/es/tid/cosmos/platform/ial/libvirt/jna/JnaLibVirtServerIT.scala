@@ -18,9 +18,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.platform.ial.libvirt.TransientLibVirtServerProperties
 import es.tid.cosmos.platform.ial.MachineProfile
-import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
 
 class JnaLibVirtServerIT extends FlatSpec with MustMatchers with BeforeAndAfter {
 

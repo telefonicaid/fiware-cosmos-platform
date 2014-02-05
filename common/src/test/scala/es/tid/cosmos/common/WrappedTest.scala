@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common
+package es.tid.cosmos.common
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers

@@ -26,7 +26,7 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
 import CosmosProfileTestHelpers.{registerUser, userIdFor}
 import es.tid.cosmos.api.controllers.common.Message
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.{ClusterUser, UnfilteredPassThrough}
 import es.tid.cosmos.servicemanager.clusters.{ClusterState, Running, ClusterId, Terminated}
 
@@ -107,7 +107,7 @@ class UserUnregistrationWizardTest
       wizard.unregisterUser(dao, userId)
     } must be (Failure(Message(s"Cannot change user cosmosId=$userId status")))
   }
-  
+
   it must "mark user as deleted" in new WithExistingUser {
     unregistrationMust(eventuallySucceed)
     databaseUser.get.state must be (UserState.Deleted)
@@ -120,7 +120,7 @@ class UserUnregistrationWizardTest
       s"Cannot remove user with cosmosId=$cosmosId from the database"))
     databaseUser.get.state must be (UserState.Deleting)
   }
-  
+
   it must "terminate user clusters" in new WithUserWithCluster {
     unregistrationMust(eventuallySucceed)
     sm.describeCluster(clusterId).get.state must be (Terminated)

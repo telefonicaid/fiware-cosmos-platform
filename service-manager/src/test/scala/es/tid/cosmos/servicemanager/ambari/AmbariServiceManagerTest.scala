@@ -28,8 +28,8 @@ import org.mockito.Mockito._
 import org.scalatest.OneInstancePerTest
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.platform.common.ExecutableValidation
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.ExecutableValidation
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._

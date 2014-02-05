@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import es.tid.cosmos.platform.common.ConfigComponent
+import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig

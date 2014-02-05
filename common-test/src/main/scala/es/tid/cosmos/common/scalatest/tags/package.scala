@@ -9,23 +9,18 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common.scalatest
+package es.tid.cosmos.common.scalatest
 
 import org.scalatest.Tag
 
-/**
- * Package containing test tag definitions used for test filtering.
- */
+/** Package containing test tag definitions used for test filtering. */
 package object tags {
 
-  /**
-   * Tag for tests with external dependencies requiring a special running environment
-   * e.g. Database instances, system libraries etc.
-   */
+  /** Tag for tests with external dependencies requiring a special running environment
+    * e.g. Database instances, system libraries etc.
+    */
   object HasExternalDependencies extends Tag("HasExternalDependencies")
 
-  /**
-   * Tag for end to end tests which are meant to be run against a functional instance of Cosmos
-   */
+  /** Tag for end to end tests which are meant to be run against a functional instance of Cosmos */
   object EndToEndTest extends Tag("EndToEndTest")
 }

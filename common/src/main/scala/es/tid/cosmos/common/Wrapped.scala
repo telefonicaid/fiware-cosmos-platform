@@ -9,13 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.platform.common
+package es.tid.cosmos.common
 
-import com.typesafe.config.Config
-
-/**
- * Configuration provider
- */
-trait ConfigComponent {
-  def config: Config
+/** Extractor of exception causes. */
+object Wrapped {
+  def unapply(ex: Throwable): Option[Throwable] =
+    if (ex == null) None
+    else if (ex.getCause == null) None
+    else Some(ex.getCause)
 }

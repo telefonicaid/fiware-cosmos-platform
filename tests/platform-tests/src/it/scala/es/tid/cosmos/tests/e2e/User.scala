@@ -26,8 +26,8 @@ import org.scalatest.Informer
 import org.scalatest.verb.MustVerb
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.api.controllers.admin.RegisterUserResponse
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
 class User(implicit info: Informer, testConfig: Config) extends MustVerb
   with MustMatchers with Patience with FutureMatchers {

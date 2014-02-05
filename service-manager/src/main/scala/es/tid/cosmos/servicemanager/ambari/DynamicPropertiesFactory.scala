@@ -12,25 +12,31 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, HadoopConfig}
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, HadoopConfig}
 
-
-/** Factory for run-time, dynamic cluster configuration. */
-object DynamicProperties {
+/** Factory for run-time, dynamic cluster configuration.
+  *
+  * @constructor
+  * @param hadoopConfig        the hadoop configuration.
+  * @param infinityMasterName  gets the current infinity master node name when called
+  */
+class DynamicPropertiesFactory(
+     hadoopConfig: HadoopConfig,
+     infinityMasterName: () => Option[String]) {
 
   /** Generate dynamic configuration properties for a given cluster.
     * This is useful for properties that differ from cluster to cluster such as host names.
     *
-    * @param hadoopConfig the hadoop configuration.
     * @param masterName   the cluster master node hostname
     * @param slaveNames   the cluster slave nodes hostnames
     * @return             the dynamically generated configuration properties
     * @see [[es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys]]
     */
-  def apply(hadoopConfig: HadoopConfig, masterName: String, slaveNames: Seq[String])
-      : Map[ConfigurationKeys.Value, String] = Map(
+  def forCluster(masterName: String, slaveNames: Seq[String]): ConfigProperties = Map(
     HdfsReplicationFactor -> Math.min(3, slaveNames.length).toString,
     MasterNode -> masterName,
+
+    InfinityMasterNode -> infinityMasterName().getOrElse(""),
 
     MrAppMasterMemory -> hadoopConfig.mrAppMasterMemory.toString,
 

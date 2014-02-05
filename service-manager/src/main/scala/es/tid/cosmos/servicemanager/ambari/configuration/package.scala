@@ -9,13 +9,10 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager.ambari
 
-import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
+package object configuration {
 
-/** Trait for service descriptions that have a configuration file. */
-trait ServiceWithConfigurationFile
-  extends AmbariServiceDescription with FileConfigurationContributor {
-
-  override protected lazy val configName = name.toLowerCase
+  /** Properties to configure services and components. */
+  type ConfigProperties = Map[ConfigurationKeys.Value, String]
 }

@@ -23,7 +23,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationKeys, ConfigurationBundle}
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, ConfigurationKeys, ConfigurationBundle}
 
 class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with MockitoSugar {
 
@@ -54,7 +54,7 @@ class AmbariServiceDescriptionTest extends FlatSpec with MustMatchers with Mocki
   }
 
   class SimpleServiceDescription(services: (String, Boolean)*) extends AmbariServiceDescription {
-    def contributions(properties: Map[ConfigurationKeys.Value, String]) =
+    def contributions(properties: ConfigProperties) =
       ConfigurationBundle(None, None, List())
     val name = "FakeServiceName"
     val components = for {

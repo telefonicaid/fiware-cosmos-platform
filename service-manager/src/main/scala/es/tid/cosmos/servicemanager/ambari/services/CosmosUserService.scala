@@ -26,8 +26,7 @@ class CosmosUserService(users: Seq[ClusterUser]) extends AmbariServiceDescriptio
 
   override val components: Seq[ComponentDescription] = CosmosUserService.components
 
-  override def contributions(
-      properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle =
+  override def contributions(properties: ConfigProperties): ConfigurationBundle =
     ConfigurationBundle(usersConfiguration(properties(ConfigurationKeys.MasterNode)))
 
   private def usersConfiguration(masterName: String) = {

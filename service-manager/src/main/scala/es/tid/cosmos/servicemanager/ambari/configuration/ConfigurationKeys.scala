@@ -16,6 +16,8 @@ object ConfigurationKeys extends Enumeration {
       MasterNode,
       MrAppMasterMemory,
 
+      InfinityMasterNode,
+
       MapTaskMemory,
       MapHeapMemory,
       MaxMapTasks,

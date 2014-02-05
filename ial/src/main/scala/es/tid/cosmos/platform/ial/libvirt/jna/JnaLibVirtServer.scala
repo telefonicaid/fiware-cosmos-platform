@@ -19,12 +19,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import org.libvirt.{LibvirtException, Domain, Connect}
 import org.libvirt.Error.ErrorNumber
 
-import es.tid.cosmos.platform.common.SequentialOperations
+import es.tid.cosmos.common.SequentialOperations
 import es.tid.cosmos.platform.ial.libvirt.{LibVirtServerProperties, DomainProperties, LibVirtServer}
 
-/**
- * A JNA based libvirt server
- */
+/** A JNA based libvirt server */
 case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirtServer {
 
   val domainId: Int = 101
@@ -69,7 +67,7 @@ case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirt
   }}
 
   def isCreated(): Future[Boolean] = future { blocking {
-    conn.domainLookupByID(domainId).isActive == 1
+    conn.listDomains().filter(dom => dom == domainId).length == 1
   }}
 
   def destroyDomain(): Future[Unit] =

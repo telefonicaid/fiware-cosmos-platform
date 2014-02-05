@@ -29,9 +29,9 @@ class HdfsTest extends FlatSpec with MustMatchers {
     description.name must equal("HDFS")
     description.components must (
       have length 3 and
-      contain(ComponentDescription("NAMENODE", isMaster = true, isClient = false)) and
-      contain(ComponentDescription("DATANODE", isMaster = false, isClient = false)) and
-      contain(ComponentDescription("HDFS_CLIENT", isMaster = true, isClient = true)))
+      contain(ComponentDescription.masterComponent("NAMENODE")) and
+      contain(ComponentDescription.slaveComponent("DATANODE")) and
+      contain(ComponentDescription.masterComponent("HDFS_CLIENT").makeClient))
     val contributions = description.contributions(dynamicProperties)
     contributions.global must be('defined)
     contributions.core must be('defined)

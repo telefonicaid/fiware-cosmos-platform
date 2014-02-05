@@ -13,7 +13,7 @@ package es.tid.cosmos.platform.ial
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.platform.common.ExecutableValidation
+import es.tid.cosmos.common.ExecutableValidation
 
 /** An abstraction for an infrastructure provider */
 trait InfrastructureProvider {

@@ -26,13 +26,13 @@ class ZookeeperTest extends FlatSpec with MustMatchers {
     description.name must equal("ZOOKEEPER")
     description.components must (
       have length 2 and
-      contain(ComponentDescription("ZOOKEEPER_SERVER", isMaster = false)) and
-      contain(ComponentDescription("ZOOKEEPER_CLIENT", isMaster = true, isClient = true))
+      contain(ComponentDescription.slaveComponent("ZOOKEEPER_SERVER")) and
+      contain(ComponentDescription.masterComponent("ZOOKEEPER_CLIENT").makeClient)
     )
     val contributions = description.contributions(dynamicProperties)
-    contributions.global must be('defined)
-    contributions.core must not be('defined)
-    contributions.services must be('empty)
+    contributions.global must be ('defined)
+    contributions.core must not be 'defined
+    contributions.services must be ('empty)
   }
 
   it must "have the zookeeper server port injected as dynamic properties" in {

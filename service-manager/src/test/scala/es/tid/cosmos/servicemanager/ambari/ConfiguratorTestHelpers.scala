@@ -15,26 +15,13 @@ import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
 
 class ConfiguratorTestHelpers(
-    masterName: String, slaveCount: Int, withMasterAsSlave: Boolean = true) {
+    masterName: String, slaveCount: Int, includeMasterAsSlave: Boolean = true) {
   import ConfiguratorTestHelpers._
 
   val dynamicProperties = {
-    import ConfigurationKeys._
-    Map(
-      HdfsReplicationFactor -> Math.min(3, slaveCount).toString,
-      MasterNode -> masterName,
-      MapTaskMemory -> TestHadoopConfig.mapTaskMemory.toString,
-      MapHeapMemory -> TestHadoopConfig.mapHeapMemory.toString,
-      ReduceTaskMemory -> TestHadoopConfig.reduceTaskMemory.toString,
-      ReduceHeapMemory -> TestHadoopConfig.reduceHeapMemory.toString,
-      MrAppMasterMemory -> TestHadoopConfig.mrAppMasterMemory.toString,
-      YarnTotalMemory -> TestHadoopConfig.yarnTotalMemory.toString,
-      YarnContainerMinimumMemory -> TestHadoopConfig.yarnContainerMinimumMemory.toString,
-      YarnVirtualToPhysicalMemoryRatio -> TestHadoopConfig.yarnVirtualToPhysicalMemoryRatio.toString,
-      ZookeeperHosts -> (if (withMasterAsSlave) 1 to slaveCount else 2 to slaveCount + 1)
-        .map(index => s"hostname$index:${TestHadoopConfig.zookeeperPort}").mkString(","),
-      ZookeeperPort -> TestHadoopConfig.zookeeperPort.toString
-    )
+    val slaveNames = (if (includeMasterAsSlave) 1 to slaveCount else 2 to slaveCount + 1)
+      .map(index => s"hostname$index")
+    new DynamicPropertiesFactory(TestHadoopConfig, () => None).forCluster(masterName, slaveNames)
   }
 
   private def propertiesUpTo(confType: String, number: Int) =
@@ -55,19 +42,21 @@ class ConfiguratorTestHelpers(
 }
 
 object ConfiguratorTestHelpers {
-  
+
   val TestHadoopConfig = HadoopConfig(
-      yarnTotalMemory = 1024,
-      yarnContainerMinimumMemory = 100,
-      yarnVirtualToPhysicalMemoryRatio = 2.1,
-      mapTaskMemory = 200,
-      mapHeapMemory = 100,
-      reduceTaskMemory = 200,
-      reduceHeapMemory = 100,
-      mrAppMasterMemory = 100,
-      zookeeperPort = 1234
-    )
-  
+    mrAppMasterMemory = 100,
+    mapTaskMemory = 200,
+    mapHeapMemory = 100,
+    mappersPerSlave = 8,
+    reduceTaskMemory = 200,
+    reduceHeapMemory = 100,
+    reducersPerSlave = 4,
+    yarnTotalMemory = 1024,
+    yarnContainerMinimumMemory = 100,
+    yarnVirtualToPhysicalMemoryRatio = 2.1,
+    zookeeperPort = 1234
+  )
+
   def properties(confType: String, number: Int) =
     Map(s"some${confType}Content$number" -> s"somevalue$number")
 

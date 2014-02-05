@@ -14,9 +14,9 @@ package es.tid.cosmos.api.mocks
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
+import es.tid.cosmos.common.ExecutableValidation
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.platform.ial.MachineProfile._
-import es.tid.cosmos.platform.common.ExecutableValidation
 import es.tid.cosmos.platform.ial.MachineProfile
 import es.tid.cosmos.platform.ial.MachineState
 

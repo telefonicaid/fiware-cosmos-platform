@@ -2,8 +2,8 @@ name := "cosmos-platform"
 
 organization in ThisBuild := "es.tid.cosmos"
 
-// Note: This is the Scala version used by Play 2.2.0. Ensure Play compatibility before upgrading.
-scalaVersion in ThisBuild := "2.10.2"
+// Note: This is the Scala version used by Play 2.2.2. Ensure Play compatibility before upgrading.
+scalaVersion in ThisBuild := "2.10.3"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
 

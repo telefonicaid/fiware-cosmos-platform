@@ -17,7 +17,7 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.annotations.Column
 import org.squeryl.dsl.{ManyToOne, OneToMany, CompositeKey3}
 
-import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase, ConfigComponent, SqlDatabase}
+import es.tid.cosmos.common.{ConfigComponent, MySqlDatabase, MySqlConnDetails, SqlDatabase}
 import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 

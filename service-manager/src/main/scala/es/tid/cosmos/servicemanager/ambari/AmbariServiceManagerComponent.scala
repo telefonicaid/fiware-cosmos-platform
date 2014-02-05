@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import es.tid.cosmos.platform.common.ConfigComponent
+import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
@@ -38,8 +38,10 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
         mrAppMasterMemory = config.getInt("ambari.servicemanager.mrAppMasterMemory"),
         mapTaskMemory = config.getInt("ambari.servicemanager.mapTaskMemory"),
         mapHeapMemory = config.getInt("ambari.servicemanager.mapHeapMemory"),
+        mappersPerSlave = config.getInt("ambari.servicemanager.mappersPerSlave"),
         reduceTaskMemory = config.getInt("ambari.servicemanager.reduceTaskMemory"),
         reduceHeapMemory = config.getInt("ambari.servicemanager.reduceHeapMemory"),
+        reducersPerSlave = config.getInt("ambari.servicemanager.reducersPerSlave"),
         yarnTotalMemory = config.getInt("ambari.servicemanager.yarnTotalMemory"),
         yarnContainerMinimumMemory = config
           .getInt("ambari.servicemanager.yarnContainerMinimumMemory"),

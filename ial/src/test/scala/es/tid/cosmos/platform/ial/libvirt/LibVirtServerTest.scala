@@ -11,13 +11,11 @@
 
 package es.tid.cosmos.platform.ial.libvirt
 
-import scala.concurrent.duration._
-
 import org.scalatest.{Inside, FlatSpec}
 import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
 
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial.MachineProfile
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
 
 class LibVirtServerTest extends FlatSpec with MustMatchers with FutureMatchers with Inside {
 

@@ -21,8 +21,8 @@ import scalaz.syntax.validation._
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.common.{ExecutableValidation, PassThrough}
-import es.tid.cosmos.platform.common.scalatest.matchers.{FutureMatchers, ForAllMatcher}
+import es.tid.cosmos.common.{ExecutableValidation, PassThrough}
+import es.tid.cosmos.common.scalatest.matchers.{FutureMatchers, ForAllMatcher}
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.platform.ial.MachineProfile._
 

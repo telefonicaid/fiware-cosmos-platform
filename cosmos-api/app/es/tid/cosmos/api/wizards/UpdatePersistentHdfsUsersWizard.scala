@@ -19,7 +19,7 @@ import play.Logger
 
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.api.profile.UserState._
-import es.tid.cosmos.platform.common.SequentialOperations
+import es.tid.cosmos.common.SequentialOperations
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 
 /** Sequence of actions to update the users configured in the persistent HDFS cluster.

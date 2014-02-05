@@ -23,7 +23,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.mocks.oauth2.MockedGitHubApi
 import es.tid.cosmos.api.profile.UserId
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 
 class GitHubOAuthProviderTest extends FlatSpec
   with MustMatchers

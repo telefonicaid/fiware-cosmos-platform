@@ -94,7 +94,7 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
     Json.toJson(clusterWithRemovedUser) must equal (jsonWithRemovedUser)
   }
 
-  it must "not show cosmos service when created from cluster description" in {
+  it must "not show hidden services" in {
     val description = ImmutableClusterDescription(
       id = ClusterId("id"),
       name = "mycluster",
@@ -104,10 +104,13 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
       master = None,
       slaves = Seq.empty,
       users = None,
-      services = Set(Hdfs.name, MapReduce2.name, CosmosUserService.name)
+      services = Set(Hdfs.name, MapReduce2.name) ++ ClusterDetails.unlistedServices
     )
     val details = ClusterDetails.fromDescription(description)
-    (Json.toJson(details) \ "services").as[Set[String]] must not contain CosmosUserService.name
+    val listedServices = (Json.toJson(details) \ "services").as[Set[String]]
+    ClusterDetails.unlistedServices.foreach { serviceName =>
+      listedServices must not contain serviceName
+    }
   }
 
   private def host(index: Int) = HostDetails(s"cosmos0$index", s"192.168.0.$index")

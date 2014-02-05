@@ -24,12 +24,12 @@ import scalaz.syntax.validation._
 import org.mockito.ArgumentMatcher
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.{any, eq => the, matches, argThat}
-import org.mockito.Mockito.verify
+import org.mockito.Mockito._
 import org.scalatest.OneInstancePerTest
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.platform.common.ExecutableValidation
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.ExecutableValidation
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
@@ -223,12 +223,17 @@ class AmbariServiceManagerTest
       override def matches(argument: Any): Boolean = argument match {
         case conf: Configuration => {
           val propertyValues = conf.properties.values.toSeq
-          propertyValues.contains("user2") && propertyValues.contains("publicKey2") &&
-          !propertyValues.contains("user1") && !propertyValues.contains("publicKey1")
+          propertyValues.contains("user2") && valueContains(propertyValues, "publicKey2")
+            !propertyValues.contains("user1") && !valueContains(propertyValues, "publicKey1")
         }
       }
+
+      private def valueContains(values: Seq[Any], token: String) = values.exists {
+        case v: String => v.contains(token)
+        case _ => false
+      }
     }
-    verify(cluster).applyConfiguration(argThat(ConfigurationMatcher), any())
+    verify(cluster, atLeastOnce()).applyConfiguration(argThat(ConfigurationMatcher), any())
     val clusterUsers = instance.listUsers(clusterId)
     clusterUsers must be ('defined)
     clusterUsers.get must be (Seq(ClusterUser("user2", "publicKey2")))

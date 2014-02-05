@@ -3,7 +3,8 @@ name := "infinityfs"
 description := "Infinity HFS driver"
 
 libraryDependencies ++= Seq(
-  Dependencies.hadoopCore % "provided"
+  Dependencies.hadoopCommon % "provided",
+  Dependencies.hadoopHdfs % "provided"
 )
 
 publishTo := {

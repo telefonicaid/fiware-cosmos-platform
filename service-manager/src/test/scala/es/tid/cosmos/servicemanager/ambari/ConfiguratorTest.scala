@@ -27,7 +27,7 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
     with MockitoSugar {
 
   val cluster = mock[Cluster]
-  val noProperties = Map[ConfigurationKeys.Value, String]()
+  val noProperties: ConfigProperties = Map.empty
 
   "A Configurator" must "not apply configuration when there is none available" in {
     Configurator.applyConfiguration(cluster, noProperties, contributors = List())
@@ -88,7 +88,7 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
       Configurator.applyConfiguration(cluster, noProperties, List(contributor1, contributor2))
     } must produce [ConfigurationConflict]
   }
-  
+
 //  it must "apply a configuration with dynamic properties created from hadoop configuration" in {
 //    val hadoopConfig = HadoopConfig(mappersPerSlave = 4, reducersPerSlave = 8, zookeeperPort = 1234)
 //    val contributor = mock[ConfigurationContributor]

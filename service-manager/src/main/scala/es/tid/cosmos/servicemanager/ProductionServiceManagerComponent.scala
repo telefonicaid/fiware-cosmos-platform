@@ -11,10 +11,9 @@
 
 package es.tid.cosmos.servicemanager
 
-import es.tid.cosmos.platform.common.ConfigComponent
+import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.libvirt.LibVirtInfrastructureProviderComponent
-import es.tid.cosmos.servicemanager.ambari.{SqlClusterDaoComponent,
-  AmbariServiceManagerComponent}
+import es.tid.cosmos.servicemanager.ambari.{SqlClusterDaoComponent, AmbariServiceManagerComponent}
 
 trait ProductionServiceManagerComponent
     extends AmbariServiceManagerComponent

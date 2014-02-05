@@ -28,11 +28,11 @@ class WebHCatTest extends FlatSpec with MustMatchers {
     val description = WebHCat
     description.name must equal("WEBHCAT")
     description.components must (
-      have length 1 and contain(ComponentDescription("WEBHCAT_SERVER", isMaster = true))
+      have length 1 and contain(ComponentDescription.masterComponent("WEBHCAT_SERVER"))
     )
     val contributions = description.contributions(dynamicProperties)
-    contributions.global must be('defined)
-    contributions.core must not be('defined)
+    contributions.global must be ('defined)
+    contributions.core must not be 'defined
     contributions.services must have length 1
   }
 

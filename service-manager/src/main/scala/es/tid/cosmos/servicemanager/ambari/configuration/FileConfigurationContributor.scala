@@ -34,7 +34,7 @@ trait FileConfigurationContributor extends ConfigurationContributor {
   protected val configName: String
 
   private class ClusterConfigIncluder(
-      properties: Map[ConfigurationKeys.Value, String],
+      properties: ConfigProperties,
       fallback: Option[ConfigIncluder] = None)
     extends ConfigIncluder {
 
@@ -50,12 +50,12 @@ trait FileConfigurationContributor extends ConfigurationContributor {
     }
   }
 
-  protected def resolveConfig(properties: Map[ConfigurationKeys.Value, String]) =
-    ConfigFactory.load(
-      this.getClass.getClassLoader,
-      configName,
-      ConfigParseOptions.defaults().setIncluder(new ClusterConfigIncluder(properties)),
-      ConfigResolveOptions.defaults())
+  protected def resolveConfig(properties: ConfigProperties) = ConfigFactory.load(
+    this.getClass.getClassLoader,
+    configName,
+    ConfigParseOptions.defaults().setIncluder(new ClusterConfigIncluder(properties)),
+    ConfigResolveOptions.defaults()
+  )
 
   /**
    * Builder of service description configurations.
@@ -119,8 +119,7 @@ trait FileConfigurationContributor extends ConfigurationContributor {
    * @param properties the dynamic properties to be injected to the configuration contributions
    * @see [[ConfigurationKeys]]
    */
-  override def contributions(
-      properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle = {
+  override def contributions(properties: ConfigProperties): ConfigurationBundle = {
     val config = resolveConfig(properties)
     ConfigurationBundle(
       optional[GlobalConfiguration]("global", config),

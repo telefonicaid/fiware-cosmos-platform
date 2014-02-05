@@ -33,7 +33,7 @@ class UrlMapper(defaultAuthority: Option[String]) {
 
   def transformBack(s: FileStatus): FileStatus = new FileStatus(
     s.getLen,
-    s.isDir,
+    s.isDirectory,
     s.getReplication,
     s.getBlockSize,
     s.getModificationTime,
@@ -41,6 +41,7 @@ class UrlMapper(defaultAuthority: Option[String]) {
     s.getPermission,
     s.getOwner,
     s.getGroup,
+    if (s.isSymlink) transformBack(s.getSymlink) else null,
     transformBack(s.getPath)
   )
 

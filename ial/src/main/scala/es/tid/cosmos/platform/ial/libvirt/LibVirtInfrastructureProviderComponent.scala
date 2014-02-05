@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.platform.ial.libvirt
 
-import es.tid.cosmos.platform.common.ConfigComponent
+import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.platform.ial.libvirt.jna.JnaLibVirtServer
 

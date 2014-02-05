@@ -11,7 +11,7 @@
 
 package es.tid.cosmos
 
-import es.tid.cosmos.platform.common.{ExecutableValidation, PassThrough}
+import es.tid.cosmos.common.{ExecutableValidation, PassThrough}
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 /** Service Manager related type aliases. */
@@ -31,7 +31,7 @@ package object servicemanager {
     * executable().isSuccess == true
     * }}}
     *
-    * @see [[es.tid.cosmos.platform.common.ExecutableValidation]]
+    * @see [[es.tid.cosmos.common.ExecutableValidation]]
     */
   type ClusterExecutableValidation = ClusterId => ExecutableValidation
 

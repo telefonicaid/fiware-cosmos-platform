@@ -15,9 +15,10 @@ import es.tid.cosmos.servicemanager.ComponentDescription
 
 /** Representation of the WebHCat service */
 object WebHCat extends ServiceWithConfigurationFile {
-  val name: String = "WEBHCAT"
 
-  val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("WEBHCAT_SERVER", isMaster = true)
+  override val name: String = "WEBHCAT"
+
+  override val components: Seq[ComponentDescription] = Seq(
+    ComponentDescription.masterComponent("WEBHCAT_SERVER")
   )
 }

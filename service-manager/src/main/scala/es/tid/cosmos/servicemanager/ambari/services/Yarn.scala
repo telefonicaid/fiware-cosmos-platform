@@ -13,14 +13,12 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 
-/**
- * Representation of the YARN service.
- */
+/** Representation of the YARN service. */
 object Yarn extends ServiceWithConfigurationFile {
   override val name: String = "YARN"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("RESOURCEMANAGER", isMaster = true),
-    ComponentDescription("NODEMANAGER", isMaster = false),
-    ComponentDescription("YARN_CLIENT", isMaster = true, isClient = true))
+    ComponentDescription.masterComponent("RESOURCEMANAGER"),
+    ComponentDescription.slaveComponent("NODEMANAGER"),
+    ComponentDescription.masterComponent("YARN_CLIENT").makeClient)
 }

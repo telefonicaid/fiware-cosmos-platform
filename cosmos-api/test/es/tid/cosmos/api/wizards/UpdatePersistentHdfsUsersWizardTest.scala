@@ -17,7 +17,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import org.mockito.ArgumentCaptor
-import org.mockito.Matchers.{eq => the, _}
+import org.mockito.Matchers.{eq => the}
 import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -25,7 +25,7 @@ import org.scalatest.concurrent.Eventually
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
 
 class UpdatePersistentHdfsUsersWizardTest

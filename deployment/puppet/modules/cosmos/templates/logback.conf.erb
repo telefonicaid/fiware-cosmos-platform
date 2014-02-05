@@ -16,6 +16,10 @@
         <appender-ref ref="STDOUT" />
     </logger>
 
+    <!-- Loggers that are reporting false errors. -->
+    <logger name="com.wordnik.swagger.play.HelpApi" level="OFF"/>
+    <logger name="com.wordnik.swagger.core.util.TypeUtil" level="OFF"/>
+
     <root level="INFO">
         <appender-ref ref="FILE" />
     </root>

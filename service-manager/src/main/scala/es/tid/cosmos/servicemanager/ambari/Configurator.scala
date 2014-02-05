@@ -38,7 +38,7 @@ object Configurator {
    */
   def applyConfiguration(
     cluster: Cluster,
-    properties: Map[ConfigurationKeys.Value, String],
+    properties: ConfigProperties,
     contributors: Seq[ConfigurationContributor]): Future[Seq[Unit]] = {
     val tag = timestampedTag()
     val configurations = consolidateConfiguration(contributors, properties)
@@ -47,7 +47,7 @@ object Configurator {
 
   private def consolidateConfiguration(
       contributors: Seq[ConfigurationContributor],
-      properties: Map[ConfigurationKeys.Value, String]): List[Configuration] =
+      properties: ConfigProperties): List[Configuration] =
     contributors.map(_.contributions(properties)).foldLeft(empty)(consolidate).configurations
 
   private def consolidate(

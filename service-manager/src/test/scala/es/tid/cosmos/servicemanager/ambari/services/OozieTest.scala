@@ -28,8 +28,9 @@ class OozieTest extends FlatSpec with MustMatchers  {
     description.name must equal("OOZIE")
     description.components must (
       have length 2 and
-      contain(ComponentDescription("OOZIE_SERVER", isMaster = true)) and
-      contain(ComponentDescription("OOZIE_CLIENT", isMaster = true, isClient = true)))
+      contain(ComponentDescription.masterComponent("OOZIE_SERVER")) and
+      contain(ComponentDescription.masterComponent("OOZIE_CLIENT").makeClient)
+    )
     val contributions = description.contributions(dynamicProperties)
     contributions.global must be('defined)
     contributions.services must have length 1

@@ -21,7 +21,7 @@ class ConfiguratorTestHelpers(
   val dynamicProperties = {
     val slaveNames = (if (includeMasterAsSlave) 1 to slaveCount else 2 to slaveCount + 1)
       .map(index => s"hostname$index")
-    DynamicProperties(TestHadoopConfig, masterName, slaveNames)
+    new DynamicPropertiesFactory(TestHadoopConfig, () => None).forCluster(masterName, slaveNames)
   }
 
   private def propertiesUpTo(confType: String, number: Int) =
@@ -56,7 +56,7 @@ object ConfiguratorTestHelpers {
     yarnVirtualToPhysicalMemoryRatio = 2.1,
     zookeeperPort = 1234
   )
-  
+
   def properties(confType: String, number: Int) =
     Map(s"some${confType}Content$number" -> s"somevalue$number")
 

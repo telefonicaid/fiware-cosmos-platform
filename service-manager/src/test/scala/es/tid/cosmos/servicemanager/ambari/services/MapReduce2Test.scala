@@ -35,8 +35,8 @@ class MapReduce2Test extends FlatSpec with MustMatchers {
     description.name must equal ("MAPREDUCE2")
     description.components must (
       have length 2 and
-      contain (ComponentDescription("HISTORYSERVER", isMaster = true)) and
-      contain (ComponentDescription("MAPREDUCE2_CLIENT", isMaster = true, isClient = true)))
+      contain (ComponentDescription.masterComponent("HISTORYSERVER")) and
+      contain (ComponentDescription.masterComponent("MAPREDUCE2_CLIENT").makeClient))
     val contributions = description.contributions(dynamicProperties)
     contributions.global must be ('defined)
     contributions.core must be ('defined)

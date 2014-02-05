@@ -28,19 +28,18 @@ import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
 import es.tid.cosmos.servicemanager.util.TcpServer._
 
-/**
- * Manager of the Ambari service configuration workflow.
- * It allows creating clusters with specified services using Ambari.
- *
- * @constructor
- * @param ambariServer the cluster provisioner
- * @param infrastructureProvider the host-machines provider
- * @param persistentHdfsId the id of the persistent hdfs cluster
- * @param exclusiveMasterSizeCutoff the minimum size of a cluster such that
- *                                  the master node stops acting like a slave
- * @param clusterDao the dao that stores cluster states
- * @param hadoopConfig parameters that fine-tune configuration of Hadoop
- */
+/** Manager of the Ambari service configuration workflow.
+  * It allows creating clusters with specified services using Ambari.
+  *
+  * @constructor
+  * @param ambariServer the cluster provisioner
+  * @param infrastructureProvider the host-machines provider
+  * @param persistentHdfsId the id of the persistent hdfs cluster
+  * @param exclusiveMasterSizeCutoff the minimum size of a cluster such that
+  *                                  the master node stops acting like a slave
+  * @param hadoopConfig parameters that fine-tune configuration of Hadoop
+  * @param clusterDao the dao that stores cluster states
+  */
 class AmbariServiceManager(
     ambariServer: AmbariServer,
     infrastructureProvider: InfrastructureProvider,
@@ -52,6 +51,11 @@ class AmbariServiceManager(
 
   private[ambari] val clusterDeployer = new ClusterManager(
     ambariServer, infrastructureProvider.rootPrivateSshKey)
+
+  private val dynamicProperties = new DynamicPropertiesFactory(hadoopConfig, () => for {
+    description <- describePersistentHdfsCluster()
+    master <- description.master
+  } yield master.hostname)
 
   override type ServiceDescriptionType = AmbariServiceDescription
 
@@ -108,7 +112,7 @@ class AmbariServiceManager(
     val master = dbClusterDescription.master.get
     val deployment_> = for {
       _ <- clusterDeployer.deployCluster(
-        dbClusterDescription.view, serviceDescriptions, hadoopConfig)
+        dbClusterDescription.view, serviceDescriptions, dynamicProperties)
     } yield {
       dbClusterDescription.nameNode = toNameNodeUri(master)
       dbClusterDescription.state = Running
@@ -171,8 +175,11 @@ class AmbariServiceManager(
     stoppedService <- service.stop()
     slaveDetails = clusterDescription.slaves
     slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
-    properties = DynamicProperties(hadoopConfig, master.name, slaves.map(_.name))
-    _ <- Configurator.applyConfiguration(cluster, properties, List(serviceDescription))
+    _ <- Configurator.applyConfiguration(
+      cluster,
+      properties = dynamicProperties.forCluster(master.name, slaves.map(_.name)),
+      contributors = List(serviceDescription)
+    )
     startedService <- stoppedService.start()
   } yield startedService
 
@@ -200,9 +207,10 @@ class AmbariServiceManager(
 }
 
 private[ambari] object AmbariServiceManager {
-  val BasicHadoopServices = Seq(Hdfs, MapReduce2)
+  val BasicHadoopServices: Seq[AmbariServiceDescription] = Seq(Hdfs, MapReduce2, InfinityfsDriver)
   val OptionalServices: Seq[AmbariServiceDescription] = Seq(Hive, Oozie, Pig, Sqoop)
-  val AllServices = (BasicHadoopServices ++ OptionalServices :+ CosmosUserService).withDependencies
+  val AllServices: Seq[AmbariServiceDescription] =
+    (BasicHadoopServices ++ OptionalServices :+ CosmosUserService).withDependencies.distinct
 
   private def setMachineInfo(
       description: MutableClusterDescription, master: MachineState, slaves: Seq[MachineState]) {
@@ -210,12 +218,11 @@ private[ambari] object AmbariServiceManager {
     description.slaves = slaves.map(toHostInfo)
   }
 
-  /**
-   * Create the namenode URI for the given host.
-   *
-   * @param host the host for whom to create the URI
-   * @return the namenode URI e.g. `hdfs://localhost:50070`
-   */
+  /** Create the namenode URI for the given host.
+    *
+    * @param host the host for whom to create the URI
+    * @return the namenode URI e.g. `hdfs://localhost:50070`
+    */
   private def toNameNodeUri(host: HostDetails) =
     new URI(s"hdfs://${host.hostname}:${Hdfs.nameNodeHttpPort}")
 

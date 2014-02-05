@@ -13,11 +13,9 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 
-/** Representation of the HCatalog service */
-object HCatalog extends ServiceWithConfigurationFile {
-  override val name: String = "HCATALOG"
-
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("HCAT").makeClient
-  )
+/** Component that enables the infinity:// scheme in Hadoop. */
+object InfinityfsDriver extends ServiceWithConfigurationFile {
+  private val componentName = "INFINITY_HFS_DRIVER"
+  override val name = "INFINITYFS_DRIVER"
+  override val components = Seq(ComponentDescription.allNodesComponent(componentName).makeClient)
 }

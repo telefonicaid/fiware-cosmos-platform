@@ -9,15 +9,10 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager.ambari
 
-import es.tid.cosmos.servicemanager.ComponentDescription
+package object configuration {
 
-/** Representation of the HCatalog service */
-object HCatalog extends ServiceWithConfigurationFile {
-  override val name: String = "HCATALOG"
-
-  override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription.masterComponent("HCAT").makeClient
-  )
+  /** Properties to configure services and components. */
+  type ConfigProperties = Map[ConfigurationKeys.Value, String]
 }

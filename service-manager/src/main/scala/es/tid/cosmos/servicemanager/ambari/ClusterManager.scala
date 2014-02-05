@@ -14,8 +14,8 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.{blocking, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import es.tid.cosmos.servicemanager.ambari.configuration.{FileConfigurationContributor, HadoopConfig}
-import es.tid.cosmos.servicemanager.ambari.rest.{Service, AmbariServer, Cluster}
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, FileConfigurationContributor}
+import es.tid.cosmos.servicemanager.ambari.rest.{Host, Service, AmbariServer, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.clusters.{ImmutableClusterDescription, ClusterDescription, ClusterId}
 
@@ -29,17 +29,16 @@ private[ambari] class ClusterManager(
   def deployCluster(
       clusterDescription: ImmutableClusterDescription,
       serviceDescriptions: Seq[AmbariServiceDescription],
-      hadoopConfig: HadoopConfig): Future[Unit] = for {
+      dynamicProperties: DynamicPropertiesFactory): Future[Unit] = for {
     cluster <- initCluster(clusterDescription)
     master = clusterDescription.master.get
     slaves = clusterDescription.slaves
     hosts <- cluster.addHosts(clusterDescription.machines.map(_.hostname))
     masterHost = hosts.find(_.name == master.hostname).get
     slaveHosts = hosts.filter(host => slaves.exists(_.hostname == host.name))
-    properties = DynamicProperties(hadoopConfig, masterHost.name, slaveHosts.map(_.name))
     _ <- Configurator.applyConfiguration(
       cluster,
-      properties,
+      properties = dynamicProperties.forCluster(masterHost.name, slaveHosts.map(_.name)),
       contributors = this +: serviceDescriptions)
     services <- Future.traverse(serviceDescriptions)(
       srv => srv.createService(cluster, masterHost, slaveHosts))

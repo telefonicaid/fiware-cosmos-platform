@@ -22,7 +22,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.{ComponentDescription, RequestException}
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationBundle, ConfigurationKeys}
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, ConfigurationBundle, ConfigurationKeys}
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.{InstalledService, StartedService, ServiceState, AmbariServiceDescription}
 
@@ -39,7 +39,7 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
   case class FakeAmbariServiceDescription(
       override val name: String,
       override val runningState: ServiceState) extends AmbariServiceDescription {
-    def contributions(properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle =
+    def contributions(properties: ConfigProperties): ConfigurationBundle =
       throw new NotImplementedError()
     val components: Seq[ComponentDescription] = Seq()
   }

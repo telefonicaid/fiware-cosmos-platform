@@ -13,15 +13,14 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 
-/**
- * Representation of Hive service
- */
+/** Representation of Hive service */
 object Hive extends ServiceWithConfigurationFile {
   override val name: String = "HIVE"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("HIVE_SERVER", isMaster = true),
-    ComponentDescription("HIVE_METASTORE", isMaster = true),
-    ComponentDescription("HIVE_CLIENT", isMaster = true, isClient = true),
-    ComponentDescription("MYSQL_SERVER", isMaster = true))
+    ComponentDescription.masterComponent("HIVE_SERVER"),
+    ComponentDescription.masterComponent("HIVE_METASTORE"),
+    ComponentDescription.masterComponent("HIVE_CLIENT").makeClient,
+    ComponentDescription.masterComponent("MYSQL_SERVER")
+  )
 }

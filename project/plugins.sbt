@@ -9,11 +9,7 @@ addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.2")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.6.4")
 
-/*
- * Taken from SNAPSHOT as it has fix of including test resources.
- * TODO: Replace with released version once available
- */
-addSbtPlugin("com.github.scct" % "sbt-scct" % "0.3-Cosmos")
+addSbtPlugin("com.sqality.scct" % "sbt-scct" % "0.3")
 
 /*
  * Taken from SNAPSHOT fixed and recompiled to work with Scala 2.10.2.

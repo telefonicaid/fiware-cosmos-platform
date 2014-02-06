@@ -33,13 +33,13 @@ import es.tid.cosmos.servicemanager.util.TcpServer._
   * It allows creating clusters with specified services using Ambari.
   *
   * @constructor
-  * @param ambariServer the cluster provisioner
-  * @param infrastructureProvider the host-machines provider
-  * @param persistentHdfsId the id of the persistent hdfs cluster
+  * @param ambariServer              the cluster provisioner
+  * @param infrastructureProvider    the host-machines provider
+  * @param persistentHdfsId          the id of the persistent hdfs cluster
   * @param exclusiveMasterSizeCutoff the minimum size of a cluster such that
   *                                  the master node stops acting like a slave
-  * @param hadoopConfig parameters that fine-tune configuration of Hadoop
-  * @param clusterDao the dao that stores cluster states
+  * @param hadoopConfig              parameters that fine-tune configuration of Hadoop
+  * @param clusterDao                the dao that stores cluster states
   */
 class AmbariServiceManager(
     ambariServer: AmbariServer,

@@ -42,7 +42,7 @@ class User(implicit info: Informer, testConfig: Config) extends MustVerb
 
   val id = "testUser" + Random.nextInt(Int.MaxValue)
   val email = s"$id@$realm"
-  val publicKey = {
+  lazy val publicKey = {
     val source = Source.fromFile(System.getProperty("user.home") + "/.ssh/id_rsa.pub")
     val result = Try(source.mkString)
     source.close()

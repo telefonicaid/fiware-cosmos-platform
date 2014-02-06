@@ -19,8 +19,8 @@ import com.typesafe.config.{ConfigFactory, Config}
 import org.scalatest.{BeforeAndAfterAll, FeatureSpec}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.platform.common.scalatest.tags.EndToEndTest
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.scalatest.tags.EndToEndTest
 
 abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
   with FutureMatchers with BeforeAndAfterAll {

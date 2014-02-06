@@ -16,14 +16,16 @@ import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
 import es.tid.cosmos.api.profile.{CosmosProfileDaoComponent, PlayDbCosmosProfileDaoComponent, MockCosmosProfileDaoComponent}
-import es.tid.cosmos.platform.common.ApplicationConfigComponent
+import es.tid.cosmos.api.task.inmemory.InMemoryTaskDaoComponent
+import es.tid.cosmos.common.ApplicationConfigComponent
 
 abstract class TestApplication extends Application
   with MockMultiAuthProviderComponent
   with MockedServiceManagerComponent
   with MockInfrastructureProvider.Component
   with ApplicationConfigComponent
-  with InMemoryMaintenanceStatusComponent {
+  with InMemoryMaintenanceStatusComponent
+  with InMemoryTaskDaoComponent {
 
   self: CosmosProfileDaoComponent =>
 

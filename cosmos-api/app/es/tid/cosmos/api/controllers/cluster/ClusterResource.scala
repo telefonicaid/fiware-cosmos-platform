@@ -13,7 +13,6 @@ package es.tid.cosmos.api.controllers.cluster
 
 import java.util.Date
 import javax.ws.rs.PathParam
-import scala.Some
 import scala.util.{Try, Failure, Success}
 import scalaz._
 
@@ -27,13 +26,14 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
-import es.tid.cosmos.api.quota.QuotaContext
+import es.tid.cosmos.api.task.{Running, TaskDao}
 
 /** Resource that represents a single cluster. */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
   description = "Represents an existing or decommissioned cluster")
 class ClusterResource(
     serviceManager: ServiceManager,
+    taskDao: TaskDao,
     override val dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus)
   extends ApiAuthController with JsonController with MaintenanceAwareController {
@@ -155,13 +155,20 @@ class ClusterResource(
     for {
       user <- requireUserManagementConditions(request, clusterId)
       _ <- requireProfileIsNotUserOf(user, clusterId)
-      _ <- requireClusterUsersAreAvailable(clusterId)
+      _ <- requireNoActiveTask(user.handle)
+      clusterUsers <- requireClusterUsersAreAvailable(clusterId)
     } yield {
-      serviceManager.addUser(clusterId, ClusterUser.enabled(
+      val addUser_> = serviceManager.addUser(clusterId, ClusterUser.enabled(
         username = user.handle,
         publicKey = user.keys.head.signature,
         isSudoer = user.capabilities.hasCapability(Capability.IsSudoer)
       ))
+      val task = taskDao.registerTask().linkToFuture(
+        future = addUser_>,
+        errorMessage = s"Failed to add user ${user.handle} to cluster")
+      task.usersWithAccess = user.handle +: clusterUsers.map(_.username)
+      task.metadata = user.handle
+      task.resource = request.uri
       Ok(Json.toJson(Message(s"Adding user ${user.handle} to cluster $clusterId " +
         "(this will take a while, please be patient)")))
     }
@@ -318,6 +325,15 @@ class ClusterResource(
     user <- requireProfileExists(body.user)
   } yield user
 
+  private def requireNoActiveTask(metadata: Any): ActionValidation[Unit] = {
+    import Scalaz._
+    val existsTask = taskDao.list.view
+      .filter(_.status == Running)
+      .exists(_.metadata == metadata)
+    if (existsTask) taskAlreadyExists.failure
+    else ().success
+  }
+
   private def isOwnerOfCluster(cosmosId: Long, cluster: ClusterId): Boolean =
     dao.withConnection { implicit c =>
       dao.clustersOf(cosmosId).exists(_.clusterId == cluster)
@@ -339,6 +355,11 @@ object ClusterResource extends Results {
 
   private def alreadyUserOf(handle: String, cluster: ClusterId) =
     BadRequest(Json.toJson(ErrorMessage(s"User $handle is already a user of cluster '$cluster'")))
+
+  private val taskAlreadyExists =
+    BadRequest(Json.toJson(ErrorMessage(
+      "A previous task that does the same thing than the current request is already running." +
+        " Please wait for it to finish.")))
 
   private def notFound(cluster: ClusterId) =
     NotFound(Json.toJson(ErrorMessage(s"No cluster '$cluster' exists")))

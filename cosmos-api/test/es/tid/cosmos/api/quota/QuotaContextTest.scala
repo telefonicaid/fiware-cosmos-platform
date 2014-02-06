@@ -14,7 +14,7 @@ package es.tid.cosmos.api.quota
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.common.scalatest.matchers.ValidationMatchers
+import es.tid.cosmos.common.scalatest.matchers.ValidationMatchers
 
 class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatchers {
 

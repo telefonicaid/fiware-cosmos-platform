@@ -17,7 +17,7 @@ import com.wordnik.swagger.annotations.ApiProperty
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 
-import es.tid.cosmos.servicemanager.ambari.services.CosmosUserService
+import es.tid.cosmos.servicemanager.ambari.services.{InfinityfsDriver, CosmosUserService}
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
 import es.tid.cosmos.servicemanager.ClusterUser
 
@@ -37,6 +37,10 @@ case class ClusterDetails(
 )
 
 object ClusterDetails {
+
+  /** Services hidden from the API user. */
+  val unlistedServices: Set[String] = Set(CosmosUserService.name, InfinityfsDriver.name)
+
   /**
    * Create a ClusterDetails from a description in the context of a request.
    *
@@ -58,7 +62,7 @@ object ClusterDetails {
       master = desc.master,
       slaves = if (desc.slaves.isEmpty) None else Some(desc.slaves),
       users = desc.users.map(_.toSeq),
-      services = desc.services.filterNot(_ == CosmosUserService.name)
+      services = desc.services.filterNot(unlistedServices)
     )
 
   implicit object HostDetailsWrites extends Writes[HostDetails] {

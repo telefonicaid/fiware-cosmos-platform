@@ -18,6 +18,6 @@ object HCatalog extends ServiceWithConfigurationFile {
   override val name: String = "HCATALOG"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("HCAT", isMaster = true, isClient = true)
+    ComponentDescription.masterComponent("HCAT").makeClient
   )
 }

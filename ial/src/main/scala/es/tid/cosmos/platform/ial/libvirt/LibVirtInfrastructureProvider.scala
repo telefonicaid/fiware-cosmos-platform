@@ -14,7 +14,7 @@ package es.tid.cosmos.platform.ial.libvirt
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, future}
 
-import es.tid.cosmos.platform.common.{ExecutableValidation, SequentialOperations}
+import es.tid.cosmos.common.{ExecutableValidation, SequentialOperations}
 import es.tid.cosmos.platform.ial._
 
 /**

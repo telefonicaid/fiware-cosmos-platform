@@ -14,16 +14,15 @@ package es.tid.cosmos.servicemanager.ambari.services
 import es.tid.cosmos.servicemanager.{ServiceError, ComponentDescription}
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
-/**
- * Representation of the HDFS service.
- */
+/** Representation of the HDFS service. */
 object Hdfs extends ServiceWithConfigurationFile {
   override val name: String = "HDFS"
 
   override val components: Seq[ComponentDescription] = Seq(
-    ComponentDescription("NAMENODE", isMaster = true),
-    ComponentDescription("DATANODE", isMaster = false),
-    ComponentDescription("HDFS_CLIENT", isMaster = true, isClient = true))
+    ComponentDescription.masterComponent("NAMENODE"),
+    ComponentDescription.slaveComponent("DATANODE"),
+    ComponentDescription.masterComponent("HDFS_CLIENT").makeClient
+  )
 
   lazy val nameNodeHttpPort: Int = {
     try {

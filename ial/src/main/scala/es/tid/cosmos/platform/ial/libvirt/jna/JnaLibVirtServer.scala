@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import org.libvirt.{Connect, LibvirtException, Domain}
 import org.libvirt.Error.ErrorNumber
 
-import es.tid.cosmos.platform.common.SequentialOperations
+import es.tid.cosmos.common.SequentialOperations
 import es.tid.cosmos.platform.ial.libvirt.{LibVirtServerProperties, DomainProperties, LibVirtServer}
 
 /** A JNA based libvirt server */

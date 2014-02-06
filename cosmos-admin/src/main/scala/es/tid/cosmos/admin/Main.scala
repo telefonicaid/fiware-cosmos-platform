@@ -11,12 +11,11 @@
 
 package es.tid.cosmos.admin
 
-
 import _root_.play.api.Play
 
 import es.tid.cosmos.admin.cli.AdminArguments
 import es.tid.cosmos.admin.play.DataAccessApplication
-import es.tid.cosmos.platform.common.ApplicationConfigComponent
+import es.tid.cosmos.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.ProductionServiceManagerComponent
 
 object ServiceManagerProvider extends ProductionServiceManagerComponent

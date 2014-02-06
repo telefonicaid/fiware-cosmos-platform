@@ -15,7 +15,7 @@ import scala.util.Try
 
 import com.typesafe.config.Config
 
-import es.tid.cosmos.platform.common.ConfigComponent
+import es.tid.cosmos.common.ConfigComponent
 
 /**
  * Keeps maintenance status information in memory taking the initial value from

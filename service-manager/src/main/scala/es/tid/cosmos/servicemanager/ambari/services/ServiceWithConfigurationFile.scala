@@ -13,9 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
 
-/**
- * Trait for service descriptions that have a configuration file.
- */
+/** Trait for service descriptions that have a configuration file. */
 trait ServiceWithConfigurationFile
   extends AmbariServiceDescription with FileConfigurationContributor {
 

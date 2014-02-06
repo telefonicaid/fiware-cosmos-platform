@@ -48,6 +48,7 @@ class yum {
   Anchor['yum::begin']
     -> Class['yum::remove_repos']
     ~> Class['yum::post_clean']
+    -> Class['yum::params']
     -> Class[$os_repo]
     -> Class['yum::thirdparty::puppetlabs', 'yum::thirdparty::epel']
     -> Anchor['yum::end']

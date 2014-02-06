@@ -22,6 +22,18 @@ class ambari::server::config {
     path   => '/etc/ambari-server/conf/ambari.properties',
   }
 
+  file_line { 'remove original jce_policy file':
+    ensure => 'absent',
+    line   => 'jce_policy.url=http://public-repo-1.hortonworks.com/ARTIFACTS/jce_policy-6.zip',
+    path   => '/etc/ambari-server/conf/ambari.properties',
+  }
+
+  file_line { 'add jce_policy from CI':
+    ensure => 'present',
+    line   => "jce_policy.url=${ambari::params::jce_url}",
+    path   => '/etc/ambari-server/conf/ambari.properties',
+  }
+
   $tables_exist = '/bin/bash -c "[[ `sudo -u postgres psql -l | grep ambari | wc -l` -ge 2 ]]"'
 
   exec { 'ambari-server-stop':
@@ -48,8 +60,19 @@ class ambari::server::config {
     onlyif    => $tables_exist
   }
 
+  augeas { "ambari-config-repoinfo":
+    lens    => "Xml.lns",
+    incl    => "/var/lib/ambari-server/resources/stacks/HDP/2.0.6_Cosmos/repos/repoinfo.xml",
+    changes => [
+    "set reposinfo/os/repo/baseurl/#text ${ambari::params::repo_rpm_url}"
+    ],
+  }
+
   File_line['remove original jdk bin']
     -> File_line['add jdk bin from CI']
+    -> File_line['remove original jce_policy file']
+    -> File_line['add jce_policy from CI']
+    -> Augeas['ambari-config-repoinfo']
     -> Exec['ambari-server-stop']
     -> Exec['ambari-server-upgrade']
     -> Exec['ambari-server-setup']

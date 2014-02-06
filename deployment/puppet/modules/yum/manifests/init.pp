@@ -23,8 +23,8 @@ class yum {
   anchor { 'yum::begin': }
   anchor { 'yum::end': }
 
-  include yum::remove_repos, yum::post_clean, yum::thirdparty::puppetlabs,
-    yum::thirdparty::epel
+  include yum::params, yum::remove_repos, yum::post_clean,
+    yum::thirdparty::puppetlabs, yum::thirdparty::epel
 
 # When the name changes to common:yum, make a grep of yum::thirdparty::epel
 # and yum::rhel::optional in initiatives' code, in case anyone if using it
@@ -48,6 +48,7 @@ class yum {
   Anchor['yum::begin']
     -> Class['yum::remove_repos']
     ~> Class['yum::post_clean']
+    -> Class['yum::params']
     -> Class[$os_repo]
     -> Class['yum::thirdparty::puppetlabs', 'yum::thirdparty::epel']
     -> Anchor['yum::end']

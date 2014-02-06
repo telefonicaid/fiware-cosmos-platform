@@ -9,19 +9,21 @@
 # All rights reserved.
 #
 
-class yum::thirdparty::puppetlabs($repo_server = 'servilinux.hi.inet') {
+class yum::thirdparty::puppetlabs(
+    $repo_server = $yum::params::yum_puppet,
+    $repo_deps = $yum::params::yum_puppet_deps) {
 
   yumrepo { 'puppetlabs-products':
     descr    => "Puppet Labs Products - $operatingsystemmajrelease",
     enabled  => '1',
     gpgcheck => '0',
-    baseurl  => "http://${repo_server}/puppet/yum/el/$operatingsystemmajrelease/products/\$basearch/",
+    baseurl  => $repo_server,
   }
 
   yumrepo { 'puppetlabs-deps':
     descr    => "Puppet Labs Dependencies - $operatingsystemmajrelease",
     enabled  => '1',
     gpgcheck => '0',
-    baseurl  => "http://${repo_server}/puppet/yum/el/$operatingsystemmajrelease/dependencies/\$basearch/",
+    baseurl  => $repo_deps,
   }
 }

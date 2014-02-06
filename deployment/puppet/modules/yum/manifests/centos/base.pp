@@ -15,7 +15,7 @@
 # This class finds the operating release and calls the yumrepo class
 # to create the repo.
 #
-class yum::centos::base ($repo_server = $cosmos::params::yum_centos) {
+class yum::centos::base ($repo_server = $yum::params::yum_centos) {
 
   yumrepo { 'Centos-Base':
     descr      => "Centos Base ${::operatingsystemrelease}",

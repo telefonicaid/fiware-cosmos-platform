@@ -10,8 +10,8 @@
 #
 
 class yum::thirdparty::puppetlabs(
-    $repo_server = $cosmos::params::yum_puppet,
-    $repo_deps = $cosmos::params::yum_puppet_deps) {
+    $repo_server = $yum::params::yum_puppet,
+    $repo_deps = $yum::params::yum_puppet_deps) {
 
   yumrepo { 'puppetlabs-products':
     descr    => "Puppet Labs Products - $operatingsystemmajrelease",

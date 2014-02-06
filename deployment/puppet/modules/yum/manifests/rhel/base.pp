@@ -15,7 +15,7 @@
 # This class finds the operating system release and calls the yumrepo class
 # to create the repo.
 # 
-class yum::rhel::base($repo_server = $cosmos::params::yum_redhat) {
+class yum::rhel::base($repo_server = $yum::params::yum_redhat) {
 
   yumrepo { 'rhel-base':
     descr    => "Red Hat Enterprise Linux $::operatingsystemrelease - Base",

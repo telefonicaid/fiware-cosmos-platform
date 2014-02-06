@@ -15,7 +15,7 @@
 # This class finds the operating system release and calls the yumrepo class
 # to create the repo.
 # 
-class yum::rhel::optional($repo_server = $cosmos::params::yum_redhat_optional) {
+class yum::rhel::optional($repo_server = $yum::params::yum_redhat_optional) {
 
   yumrepo { 'rhel-optional':
     descr    => "Red Hat Enterprise Linux $operatingsystemmajrelease - Optional",

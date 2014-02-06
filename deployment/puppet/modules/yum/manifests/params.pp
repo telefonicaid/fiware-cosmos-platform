@@ -9,12 +9,13 @@
 # All rights reserved.
 #
 
-class yum::thirdparty::epel($repo_server = $yum::params::yum_epel) {
-
-  yumrepo { 'epel':
-    descr    => "Extra Packages for Enterprise Linux ${::operatingsystemmajrelease}",
-    enabled  => '1',
-    gpgcheck => '0',
-    baseurl  => $repo_server,
-  }
+class yum::params (
+$yum_epel,
+$yum_centos,
+$yum_centos_updates,
+$yum_redhat,
+$yum_redhat_optional,
+$yum_puppet,
+$yum_puppet_deps
+) {
 }

@@ -15,7 +15,7 @@
 # This class finds the operating release and calls the yumrepo class
 # to create the repo.
 #
-class yum::centos::updates ($repo_server = $cosmos::params::yum_centos_updates) {
+class yum::centos::updates ($repo_server = $yum::params::yum_centos_updates) {
 
   yumrepo { 'Centos-Updates':
     descr      => 'Centos Updates',

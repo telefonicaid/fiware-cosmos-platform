@@ -30,7 +30,7 @@ class ambari::server::config {
 
   file_line { 'add jce_file from CI':
     ensure => 'present',
-    line   => "jce_policy.url==${ambari::params::jce_url}",
+    line   => "jce_policy.url=${ambari::params::jce_url}",
     path   => '/etc/ambari-server/conf/ambari.properties',
   }
 

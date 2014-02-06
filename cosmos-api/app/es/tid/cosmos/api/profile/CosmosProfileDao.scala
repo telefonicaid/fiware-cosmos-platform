@@ -191,7 +191,7 @@ trait CosmosProfileDao {
     *
     * @param id        the profile id of the user
     * @param groupName the optional group name. If `None` then the user will not belong to any group
-    *                  indicated by setting it to [[es.tid.cosmos.api.profile.NoGroup]]
+    *                  indicated by setting it to [[es.tid.cosmos.api.quota.NoGroup]]
     * @param c         the connection to use
     */
   def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Conn): Unit

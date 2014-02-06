@@ -15,12 +15,12 @@
 # This class finds the operating release and calls the yumrepo class
 # to create the repo.
 #
-class yum::centos::base ($repo_server = 'repos.hi.inet') {
+class yum::centos::base ($repo_server = $cosmos::params::yum_centos) {
 
   yumrepo { 'Centos-Base':
     descr      => "Centos Base ${::operatingsystemrelease}",
     enabled    => '1',
     gpgcheck   => '0',
-    baseurl    => "http://${repo_server}/redhat/centos${::operatingsystemmajrelease}-\$basearch/RPMS.all/",
+    baseurl    => $repo_server,
   }
 }

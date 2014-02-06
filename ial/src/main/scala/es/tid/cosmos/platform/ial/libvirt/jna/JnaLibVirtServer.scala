@@ -23,12 +23,12 @@ import es.tid.cosmos.common.SequentialOperations
 import es.tid.cosmos.platform.ial.libvirt.{LibVirtServerProperties, DomainProperties, LibVirtServer}
 
 /** A JNA based libvirt server */
-class JnaLibVirtServer(override val properties: LibVirtServerProperties, conn: Connect) extends LibVirtServer {
-
-  def this(properties: LibVirtServerProperties) = this(properties, new Connect(properties.connectionChain))
+class JnaLibVirtServer(override val properties: LibVirtServerProperties) extends LibVirtServer {
 
   val domainId: Int = 101
   val domainName: String = domainId.toString
+
+  private val conn = new Connect(properties.connectionChain)
 
   private val openVzDomainXmlDoc = {
     <domain type='openvz' id={domainId.toString}>

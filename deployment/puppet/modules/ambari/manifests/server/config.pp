@@ -28,7 +28,7 @@ class ambari::server::config {
     path   => '/etc/ambari-server/conf/ambari.properties',
   }
 
-  file_line { 'add jce_file from CI':
+  file_line { 'add jce_policy from CI':
     ensure => 'present',
     line   => "jce_policy.url=${ambari::params::jce_url}",
     path   => '/etc/ambari-server/conf/ambari.properties',
@@ -71,7 +71,7 @@ class ambari::server::config {
   File_line['remove original jdk bin']
     -> File_line['add jdk bin from CI']
     -> File_line['remove original jce_policy file']
-    -> File_line['add jce_file from CI']
+    -> File_line['add jce_policy from CI']
     -> Augeas['ambari-config-repoinfo']
     -> Exec['ambari-server-stop']
     -> Exec['ambari-server-upgrade']

@@ -35,7 +35,13 @@ class cosmos::api inherits cosmos::params {
     hasrestart => true,
   }
 
-  YumRepo['cosmos'] -> Package['cosmos'] -> Service['cosmos-api']
+  exec { "egg_is_present":
+    command => "/bin/false",
+    creates => "${cosmos::params::cosmos_cli_repo_path}/eggs/${cosmos::params::cosmos_cli_filename}"
+  }
+
+  YumRepo['cosmos'] -> Package['cosmos'] -> Exec['egg_is_present'] -> Service['cosmos-api']
+
   Class['cosmos::setup']                      ~> Service['cosmos-api']
   File['cosmos-api.conf', 'logback.conf']     ~> Service['cosmos-api']
 

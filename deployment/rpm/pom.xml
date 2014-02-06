@@ -35,19 +35,6 @@
                             <goal>run</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>rename egg</id>
-                        <phase>initialize</phase>
-                        <configuration>
-                            <tasks name="copy and rename file">
-                                <copy file="../../cosmos-cli/dist/cosmos-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}-py${python.version}.egg"
-                                      tofile="../../cosmos-cli/dist/cosmos-py${python.version}.egg" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -83,7 +70,7 @@
                             <groupname>root</groupname>
                             <sources>
                                 <source>
-                                    <location>../../cosmos-cli/dist/cosmos-py${python.version}.egg</location>
+                                    <location>../../cosmos-cli/dist/cosmos-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}-py${python.version}.egg</location>
                                 </source>
                             </sources>
                         </mapping>

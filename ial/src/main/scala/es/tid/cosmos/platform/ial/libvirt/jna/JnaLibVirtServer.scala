@@ -16,19 +16,19 @@ import java.util.{NoSuchElementException, UUID}
 import scala.concurrent.{blocking, Future, future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import org.libvirt.{LibvirtException, Domain, Connect}
+import org.libvirt.{Connect, LibvirtException, Domain}
 import org.libvirt.Error.ErrorNumber
 
 import es.tid.cosmos.common.SequentialOperations
 import es.tid.cosmos.platform.ial.libvirt.{LibVirtServerProperties, DomainProperties, LibVirtServer}
 
 /** A JNA based libvirt server */
-case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirtServer {
+class JnaLibVirtServer(override val properties: LibVirtServerProperties, conn: Connect) extends LibVirtServer {
+
+  def this(properties: LibVirtServerProperties) = this(properties, new Connect(properties.connectionChain))
 
   val domainId: Int = 101
   val domainName: String = domainId.toString
-
-  private val conn = new Connect(properties.connectionChain)
 
   private val openVzDomainXmlDoc = {
     <domain type='openvz' id={domainId.toString}>
@@ -67,8 +67,10 @@ case class JnaLibVirtServer(properties: LibVirtServerProperties) extends LibVirt
   }}
 
   def isCreated(): Future[Boolean] = future { blocking {
-    conn.listDomains().filter(dom => dom == domainId).length == 1
-  }}
+    conn.domainLookupByID(domainId).isActive == 1
+  }} recover {
+    case _: LibvirtException => false
+  }
 
   def destroyDomain(): Future[Unit] =
     (for {

@@ -23,11 +23,13 @@ import org.apache.hadoop.fs.{FileStatus, Path}
 class UrlMapper(defaultAuthority: Option[String]) {
   import UrlMapper._
 
-  def transform(name: URI): URI = setDefaultAuthority(setHdfsScheme(name))
+  def uri = new URI(s"$InfinityScheme:///")
+
+  def transform(name: URI): URI = prependUserPath(setDefaultAuthority(setHdfsScheme(name)))
 
   def transform(path: Path): Path = new Path(transform(path.toUri))
 
-  def transformBack(name: URI): URI = UriUtil.replaceScheme(name, InfinityScheme)
+  def transformBack(name: URI): URI = removeUserPath(UriUtil.replaceScheme(name, InfinityScheme))
 
   def transformBack(path: Path): Path = new Path(transformBack(path.toUri))
 
@@ -55,6 +57,16 @@ class UrlMapper(defaultAuthority: Option[String]) {
     }
     val newAuthority = currentAuthority orElse defaultAuthority getOrElse ""
     UriUtil.replaceAuthority(name, newAuthority)
+  }
+
+  private def prependUserPath(name: URI) =
+    UriUtil.replacePath(name, "/user" + name.getPath)
+
+  private def removeUserPath(name: URI) = {
+    val prefix = "/user"
+    val oldPath = name.getPath
+    require(oldPath.startsWith(prefix), s"URI ${name.toString} does not have an infinity mapping")
+    UriUtil.replacePath(name, oldPath.substring(prefix.length))
   }
 }
 

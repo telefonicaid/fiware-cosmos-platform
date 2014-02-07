@@ -22,4 +22,7 @@ object UriUtil {
 
   def replaceAuthority(uri: URI, newAuthority: String): URI =
     new URI(uri.getScheme, newAuthority, uri.getPath, uri.getRawQuery, uri.getFragment)
+
+  def replacePath(uri: URI, newPath: String): URI =
+    new URI(uri.getScheme, uri.getAuthority, newPath, uri.getRawQuery, uri.getFragment)
 }

@@ -77,7 +77,6 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
         "handle" -> "newuser",
         "email" -> "jsmith@example.com",
         "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
-      val contents = contentAsString(response)
       response must redirectTo ("/")
       dao.withConnection { implicit c =>
         dao.lookupByUserId(unregUser.userId) must be ('defined)
@@ -103,6 +102,20 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
     )
     status(response) must be (BAD_REQUEST)
     contentAsString(response) must include ("already taken")
+  }
+
+  it must "reject registration when user is already being registered" in new WithSampleSessions {
+    withPersistentHdfsDeployed {
+      val runningTask = services.taskDao.registerTask()
+      runningTask.resource = "newuser"
+      runningTask.metadata = "registration"
+      val response = unregUser.submitForm("/register",
+        "handle" -> "newuser",
+        "email" -> "jsmith@example.com",
+        "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
+      status(response) must be (BAD_REQUEST)
+      contentAsString(response) must include ("already running")
+    }
   }
 
   "The profile page" must "show the user profile page for registered users" in new WithSampleSessions {

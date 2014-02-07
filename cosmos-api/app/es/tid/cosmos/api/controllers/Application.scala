@@ -49,7 +49,7 @@ abstract class Application {
     val ial = this.infrastructureProvider
     val multiAuthProvider = this.multiAuthProvider
     controllerMap(
-      new Pages(multiAuthProvider, sm, dao, status, conf.getConfig("pages")),
+      new Pages(multiAuthProvider, sm, taskDao, dao, status, conf.getConfig("pages")),
       new AdminPage(dao, status),
       new StatsResource(dao, sm, ial),
       new CosmosResource(),
@@ -66,7 +66,8 @@ abstract class Application {
 
   def services: ServiceManagerComponent
     with MultiAuthProviderComponent
-    with MaintenanceStatusComponent = this
+    with MaintenanceStatusComponent
+    with TaskDaoComponent = this
 
   private def controllerMap(controllers: Controller*) = Map(
     (for (controller <- controllers)

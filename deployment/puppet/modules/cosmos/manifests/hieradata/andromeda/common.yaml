@@ -37,7 +37,6 @@ cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{enviro
 cosmos::params::domain: '.hi.inet'
 cosmos::params::master_ip: '10.95.236.10'
 cosmos::params::master_hostname: 'andromeda01'
-cosmos::params::infinity_url: 'hdfs://andromeda-infinity.hi.inet'
 cosmos::params::pdihub_client_id: '20f0381a6698c19953d5'
 cosmos::params::pdihub_client_secret: 'b11b73f83e7dcf940fec3356d3d0604e3169ab98'
 cosmos::params::horizon_password: 'horizon!'

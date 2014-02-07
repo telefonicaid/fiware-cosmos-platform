@@ -13,10 +13,14 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.{ServiceDescription, ComponentDescription}
+import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
 
-class AmbariServiceDescriptionFactoryTest extends FlatSpec with MustMatchers {
+class AmbariServiceDescriptionFactoryTest extends FlatSpec with MustMatchers
+    with TestResourcePaths {
+
   import AmbariServiceDescriptionFactory.toAmbariService
 
   val dummyAmbariService = new AmbariServiceDescription {
@@ -31,7 +35,7 @@ class AmbariServiceDescriptionFactoryTest extends FlatSpec with MustMatchers {
     override val name: String = "Acme-Service"
     override val components: Seq[ComponentDescription] = Seq.empty
   }
-  val acmeConfigPath = this.getClass.getResource("").getPath
+  val acmeConfigPath = packageResourcesConfigDirectory
 
   val serviceWithConfig = new ServiceDescription with ConfigurationContributor {
     override val name: String = "Service-With-Configuration"

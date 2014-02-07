@@ -14,19 +14,16 @@ package es.tid.cosmos.servicemanager.ambari.services
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
+import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
 import es.tid.cosmos.servicemanager.ServiceDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 
-trait ServicesConfiguration {
-  protected val configDirectory = this.getClass.getClassLoader.getResource("").getPath
-}
-
-trait ConfiguredServiceTest extends FlatSpec with MustMatchers with ServicesConfiguration {
+trait ConfiguredServiceTest extends FlatSpec with MustMatchers with TestResourcePaths {
 
   val dynamicProperties: Map[ConfigurationKeys.Value, String]
   val service: ServiceDescription
 
-  def contributions = toAmbariService(service, configDirectory)
+  def contributions = toAmbariService(service, resourcesConfigDirectory)
     .contributions(dynamicProperties)
 }

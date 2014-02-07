@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari
+package es.tid.cosmos.servicemanager.ambari.mocks
 
 import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
@@ -35,13 +35,9 @@ class InMemoryClusterDao extends ClusterDao {
     description
   }
 
-  override def getUsers(id: ClusterId): Option[Set[ClusterUser]] = users.get(id)
+  override def getUsers(id: ClusterId): Option[Set[ClusterUser]] = clusters(id).users
 
-  override def setUsers(id: ClusterId, newUsers: Set[ClusterUser]) = {
-    if (clusters.isDefinedAt(id)) {
-      users = users + (id -> newUsers)
-    } else {
-      throw new IllegalArgumentException(s"no cluster was found for $id")
-    }
-  }
+  override def setUsers(id: ClusterId, newUsers: Set[ClusterUser]) =
+    clusters(id).users = newUsers
+
 }

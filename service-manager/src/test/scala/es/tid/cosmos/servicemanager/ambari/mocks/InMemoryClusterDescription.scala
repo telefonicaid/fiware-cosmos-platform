@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari
+package es.tid.cosmos.servicemanager.ambari.mocks
 
 import java.net.URI
 import scala.Some

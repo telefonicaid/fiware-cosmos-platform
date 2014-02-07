@@ -11,11 +11,14 @@
 
 package es.tid.cosmos.servicemanager.ambari.configuration
 
-import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-class FileConfigurationContributorTest extends FlatSpec with MustMatchers with OneInstancePerTest {
+import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
+
+class FileConfigurationContributorTest extends FlatSpec with MustMatchers with OneInstancePerTest
+    with TestResourcePaths {
+
   val masterName = "myMasterNode"
   val expectedGlobal = GlobalConfiguration(Map(
     "global.example.string" -> s"global-$masterName",
@@ -32,7 +35,7 @@ class FileConfigurationContributorTest extends FlatSpec with MustMatchers with O
         Map(s"service.example$index" -> s"service$index-$masterName"))
   )
   trait ClasspathFileConfigurationContributor extends FileConfigurationContributor {
-    override protected val configPath: String = this.getClass.getResource("").getPath
+    override protected val configPath: String = packageResourcesConfigDirectory
   }
 
   val full = new ClasspathFileConfigurationContributor {

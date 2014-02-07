@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Factory
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
-import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest.Cluster
 
 /**
  * Class for consolidating configuration from multiple contributors and applying it to a cluster.

@@ -14,22 +14,25 @@ package es.tid.cosmos.servicemanager.ambari
 import scala.concurrent.{blocking, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, FileConfigurationContributor}
-import es.tid.cosmos.servicemanager.ambari.rest.{Host, Service, AmbariServer, Cluster}
+import es.tid.cosmos.servicemanager.ClusterManager
+import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
+import es.tid.cosmos.servicemanager.ambari.rest.{Service, AmbariServer, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
-import es.tid.cosmos.servicemanager.clusters.{ImmutableClusterDescription, ClusterDescription, ClusterId}
+import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription, ClusterId}
 
-private[ambari] class ClusterManager(
+private[ambari] class AmbariClusterManager(
     ambariServer: AmbariServer,
-    override val configPath: String,
-    rootPrivateSshKey: String) extends FileConfigurationContributor {
-  import ClusterManager._
+    rootPrivateSshKey: String,
+    override val configPath: String) extends ClusterManager with FileConfigurationContributor {
+  import AmbariClusterManager._
+
+  override type ServiceDescriptionType = AmbariServiceDescription
 
   override val configName = "global-basic"
 
-  def deployCluster(
+  override def deployCluster(
       clusterDescription: ImmutableClusterDescription,
-      serviceDescriptions: Seq[AmbariServiceDescription],
+      serviceDescriptions: Seq[ServiceDescriptionType],
       dynamicProperties: DynamicPropertiesFactory): Future[Unit] = for {
     cluster <- initCluster(clusterDescription)
     master = clusterDescription.master.get
@@ -46,10 +49,25 @@ private[ambari] class ClusterManager(
     deployedServices <- installInOrder(services)
   } yield ()
 
-  def removeClusterFromAmbari(cluster: ClusterDescription): Future[Unit] = for {
+  override def removeCluster(cluster: ClusterDescription): Future[Unit] = for {
     _ <- stopStartedServices(cluster.id)
     _ <- ambariServer.removeCluster(cluster.id.toString)
   } yield ()
+
+  override def changeServiceConfiguration(
+      clusterDescription: ImmutableClusterDescription,
+      dynamicProperties: DynamicPropertiesFactory,
+      serviceDescription: AmbariServiceDescription): Future[Any] = for {
+    cluster <- ambariServer.getCluster(clusterDescription.id.toString)
+    service <- cluster.getService(serviceDescription.name)
+    master <- ServiceMasterExtractor.getServiceMaster(cluster, serviceDescription)
+    stoppedService <- service.stop()
+    slaveDetails = clusterDescription.slaves
+    slaves <- Future.traverse(slaveDetails)(details => cluster.getHost(details.hostname))
+    properties = dynamicProperties.forCluster(master.name, slaves.map(_.name))
+    _ <- Configurator.applyConfiguration(cluster, properties, List(serviceDescription))
+    startedService <- stoppedService.start()
+  } yield startedService
 
   private def initCluster(description: ImmutableClusterDescription) : Future[Cluster] = {
     val distinctHostnames = description.machines.map(_.hostname).toSet
@@ -91,6 +109,6 @@ private[ambari] class ClusterManager(
   } yield stoppedServices
 }
 
-private[ambari] object ClusterManager {
+private[ambari] object AmbariClusterManager {
   val StackVersion = "HDP-2.0.6_Cosmos"
 }

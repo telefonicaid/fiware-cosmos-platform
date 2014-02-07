@@ -49,8 +49,14 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
     servicesConfigDirectory = config.getString("ambari.servicemanager.servicesConfigDirectory")
   )
 
+  private val ambariClusterManager = new AmbariClusterManager(
+    ambariServer,
+    infrastructureProvider.rootPrivateSshKey,
+    hadoopConfig.servicesConfigDirectory
+  )
+
   override lazy val serviceManager: AmbariServiceManager = new AmbariServiceManager(
-      ambariServer,
+      ambariClusterManager,
       infrastructureProvider,
       ClusterId(config.getString("hdfs.cluster.id")),
       config.getInt("ambari.servicemanager.exclusiveMasterSizeCutoff"),

@@ -16,7 +16,7 @@ import scalaz.Scalaz._
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.{Controller, Action}
 
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao}
@@ -27,7 +27,7 @@ import es.tid.cosmos.api.task.{Task, TaskDao}
 class TaskResource(
     taskDao: TaskDao,
     override val dao: CosmosProfileDao)
-  extends ApiAuthController with JsonController {
+  extends Controller with ApiAuthController with JsonController {
 
   private def requireTaskExists(id: Int): ActionValidation[Task] = taskDao.get(id) match {
     case Some(task) => task.success

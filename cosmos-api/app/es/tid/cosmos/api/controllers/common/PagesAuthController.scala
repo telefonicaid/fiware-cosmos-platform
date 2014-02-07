@@ -18,10 +18,11 @@ import play.api.mvc._
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.controllers.pages.routes
+import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao, UserId}
 import es.tid.cosmos.api.profile.UserState._
-import es.tid.cosmos.api.profile.{UserId, CosmosProfile, CosmosProfileDao, UserState}
 
-trait PagesAuthController extends Controller {
+/** Controller mixin adding authentication validations. */
+trait PagesAuthController { this: Controller =>
   val dao: CosmosProfileDao
 
   import Scalaz._
@@ -53,7 +54,7 @@ trait PagesAuthController extends Controller {
     ).getOrElse(whenNotAuthenticated)
 
   /** Action validation requiring a registered user to be authenticated.
-    * 
+    *
     * @param request  Action request
     * @return         Either the user profiles or an error redirecting to the login page
     *                 or the registration page
@@ -66,7 +67,7 @@ trait PagesAuthController extends Controller {
     } yield (userProfile, cosmosProfile)
 
   /** Action validation requiring an authenticated user.
-    * 
+    *
     * @param request     Action request
     * @return            Either the user profile or a redirection response
     */

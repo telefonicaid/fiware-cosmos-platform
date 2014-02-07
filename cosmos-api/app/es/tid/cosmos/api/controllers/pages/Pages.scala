@@ -19,7 +19,7 @@ import dispatch.{Future => _, _}, Defaults._
 import play.Logger
 import play.api.data.Form
 import play.api.libs.json.Json
-import play.api.mvc.{RequestHeader, Action}
+import play.api.mvc.{Controller, RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
 import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
@@ -41,7 +41,7 @@ class Pages(
     override val dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus,
     config: Config
-  ) extends JsonController with PagesAuthController with MaintenanceAwareController {
+  ) extends Controller with JsonController with PagesAuthController with MaintenanceAwareController {
 
   import Scalaz._
 

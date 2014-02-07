@@ -29,7 +29,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
   trait WithTestController extends WithSampleSessions {
     private val controllerDao = dao
 
-    object TestController extends ApiAuthController {
+    object TestController extends Controller with ApiAuthController {
       override val dao = controllerDao
 
       def index() = Action(parse.anyContent) { request =>

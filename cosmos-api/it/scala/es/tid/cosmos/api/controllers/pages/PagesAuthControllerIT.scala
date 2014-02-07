@@ -23,7 +23,9 @@ import es.tid.cosmos.api.profile.CosmosProfileDao
 
 class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 
-  class TestController(override val dao: CosmosProfileDao) extends PagesAuthController {
+  class TestController(override val dao: CosmosProfileDao)
+    extends Controller with PagesAuthController {
+
     def index() = Action(parse.anyContent) { request =>
       withAuthentication(request) (
         whenRegistered = (u, c) => Ok(s"registered: userProfile=$u, cosmosProfile=$c"),

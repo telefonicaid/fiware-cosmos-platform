@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys.InfinityMasterNode
 
 class InfinityfsDriverIT extends ConfiguredServiceTest {

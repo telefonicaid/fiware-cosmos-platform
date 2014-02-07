@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
 
-class HiveIT  extends ConfiguredServiceTest {
+class HiveIT extends ConfiguredServiceTest {
 
   override val dynamicProperties = Map(
     MasterNode -> "aMasterNodeName"

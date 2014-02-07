@@ -16,7 +16,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ServiceDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
-import es.tid.cosmos.servicemanager.ambari.services.ServiceWithConfigurationFile._
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 
 trait ServicesConfiguration {
   protected val configDirectory = this.getClass.getClassLoader.getResource("").getPath
@@ -27,6 +27,6 @@ trait ConfiguredServiceTest extends FlatSpec with MustMatchers with ServicesConf
   val dynamicProperties: Map[ConfigurationKeys.Value, String]
   val service: ServiceDescription
 
-  def contributions = decorateWithFileConfiguration(service, configDirectory)
+  def contributions = toAmbariService(service, configDirectory)
     .contributions(dynamicProperties)
 }

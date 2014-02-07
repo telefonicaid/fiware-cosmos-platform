@@ -22,8 +22,8 @@ import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, Machi
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.rest.{AmbariServer, Service}
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
-import es.tid.cosmos.servicemanager.ambari.services.ServiceWithConfigurationFile._
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
@@ -79,7 +79,7 @@ class AmbariServiceManager(
     val clusterServiceDescriptions =
       (BasicHadoopServices ++ serviceDescriptions ++ userServices(users))
         .withDependencies
-        .map(decorateWithFileConfiguration(_, serviceConfigPath))
+        .map(toAmbariService(_, serviceConfigPath))
     val clusterDescription = clusterDao.registerCluster(
       name = name,
       size = clusterSize,
@@ -197,7 +197,7 @@ class AmbariServiceManager(
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
     serviceDescriptions = Seq(Zookeeper, Hdfs, new CosmosUserService(Seq()))
-      .map(decorateWithFileConfiguration(_, serviceConfigPath))
+      .map(toAmbariService(_, serviceConfigPath))
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = persistentHdfsId.id,

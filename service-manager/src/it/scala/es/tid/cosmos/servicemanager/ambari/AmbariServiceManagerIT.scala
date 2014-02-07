@@ -26,7 +26,7 @@ import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.ambari.services.ServicesConfiguration
-import es.tid.cosmos.servicemanager.ambari.services.ServiceWithConfigurationFile._
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
@@ -85,7 +85,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
         new SqlClusterDao(db),
         ambariServer,
         AmbariServiceManager.AllServices.map(
-          decorateWithFileConfiguration(_, hadoopConfig.servicesConfigDirectory))
+          toAmbariService(_, hadoopConfig.servicesConfigDirectory))
       )
     )
   }

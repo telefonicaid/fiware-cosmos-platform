@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.clusters.{ClusterId, ImmutableClusterDescription}
+import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription}
 import es.tid.cosmos.servicemanager.ambari.DynamicPropertiesFactory
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 
@@ -25,7 +25,7 @@ trait ClusterManager {
     serviceDescriptions: Seq[AmbariServiceDescription],
     dynamicProperties: DynamicPropertiesFactory): Future[Any]
 
-  def removeCluster(cluster: ImmutableClusterDescription): Future[Any]
+  def removeCluster(cluster: ClusterDescription): Future[Any]
 
   def changeServiceConfiguration(
     clusterDescription: ImmutableClusterDescription,

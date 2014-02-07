@@ -30,6 +30,57 @@ class AmbariClusterManagerTest
 
   def tagPattern = matches("version\\d+")
 
+  "The AmbariClusterManager" must "be able to deploy and remove a cluster" in new WithServer(10) {
+    val deployment_> = instance.deployCluster(
+      description,
+      serviceDescriptions,
+      configHelper.dynamicPropertiesFactory)
+
+    deployment_> must eventuallySucceed
+    verify(ambariServer).bootstrapMachines(
+      hostDetails.map(_.hostname).toSet,
+      "")
+    val configTestHelper = new ConfiguratorTestHelpers(
+      description.master.get.hostname, description.slaves.map(_.hostname))
+    verify(cluster).applyConfiguration(
+      the(configTestHelper.mergedGlobalConfiguration(2, instance)), tagPattern)
+    verify(cluster).applyConfiguration(the(configTestHelper.mergedCoreConfiguration(2)), tagPattern)
+    verify(cluster).applyConfiguration(the(contributionsWithNumber(1).services(0)), tagPattern)
+    verify(cluster).applyConfiguration(the(contributionsWithNumber(2).services(0)), tagPattern)
+    verify(cluster).addHosts(any())
+    serviceDescriptions.foreach {sd =>
+      verify(sd).createService(cluster, hosts.head, hosts)
+      verify(sd).contributions(configTestHelper.dynamicProperties)
+      val service = sd.serviceMock
+      verify(service).install()
+      verify(service).start()
+    }
+
+    val removeCluster_> = instance.removeCluster(description)
+    removeCluster_> must eventuallySucceed
+    verify(ambariServer).removeCluster(description.id.toString)
+  }
+
+  it must "be able to change the configuration of a service" in new WithServer(3) {
+    given(ambariServer.getCluster(any())).willReturn(successful(cluster))
+    val newConfig = contributionsWithNumber(3)
+    val newServiceDescription = serviceDescriptions(0).copy(
+      configuration = newConfig)
+    val configurationChange_> = instance.changeServiceConfiguration(
+      description, configHelper.dynamicPropertiesFactory, newServiceDescription)
+    configurationChange_> must eventuallySucceed
+    verify(cluster).applyConfiguration(the(newConfig.services(0)), tagPattern)
+  }
+
+  it must "fail to change the configuration of a service with no master" in new WithServer(3) {
+    given(ambariServer.getCluster(any())).willReturn(successful(cluster))
+    val newServiceDescription = serviceDescriptions(1).copy(
+      configuration = contributionsWithNumber(3))
+    val configurationChange_> = instance.changeServiceConfiguration(
+      description, configHelper.dynamicPropertiesFactory, newServiceDescription)
+    configurationChange_> must eventuallyFailWith[IllegalArgumentException]
+  }
+
   class WithServer(hostCount: Int) {
     val ambariServer = mock[AmbariServer]
     given(ambariServer.bootstrapMachines(any(), any())).willReturn(successful())
@@ -96,56 +147,5 @@ class AmbariClusterManagerTest
       description.master.get.hostname,
       description.slaves.map(_.hostname))
     val instance = new AmbariClusterManager(ambariServer, "")
-  }
-
-  "The AmbariClusterManager" must "be able to deploy and remove a cluster" in new WithServer(10) {
-    val deployment_> = instance.deployCluster(
-      description,
-      serviceDescriptions,
-      configHelper.dynamicPropertiesFactory)
-
-    deployment_> must eventuallySucceed
-    verify(ambariServer).bootstrapMachines(
-      hostDetails.map(_.hostname).toSet,
-      "")
-    val configTestHelper = new ConfiguratorTestHelpers(
-      description.master.get.hostname, description.slaves.map(_.hostname))
-    verify(cluster).applyConfiguration(
-      the(configTestHelper.mergedGlobalConfiguration(2, instance)), tagPattern)
-    verify(cluster).applyConfiguration(the(configTestHelper.mergedCoreConfiguration(2)), tagPattern)
-    verify(cluster).applyConfiguration(the(contributionsWithNumber(1).services(0)), tagPattern)
-    verify(cluster).applyConfiguration(the(contributionsWithNumber(2).services(0)), tagPattern)
-    verify(cluster).addHosts(any())
-    serviceDescriptions.foreach {sd =>
-      verify(sd).createService(cluster, hosts.head, hosts)
-      verify(sd).contributions(configTestHelper.dynamicProperties)
-      val service = sd.serviceMock
-      verify(service).install()
-      verify(service).start()
-    }
-
-    val removeCluster_> = instance.removeCluster(description)
-    removeCluster_> must eventuallySucceed
-    verify(ambariServer).removeCluster(description.id.toString)
-  }
-
-  it must "be able to change the configuration of a service" in new WithServer(3) {
-    given(ambariServer.getCluster(any())).willReturn(successful(cluster))
-    val newConfig = contributionsWithNumber(3)
-    val newServiceDescription = serviceDescriptions(0).copy(
-      configuration = newConfig)
-    val configurationChange_> = instance.changeServiceConfiguration(
-      description, configHelper.dynamicPropertiesFactory, newServiceDescription)
-    configurationChange_> must eventuallySucceed
-    verify(cluster).applyConfiguration(the(newConfig.services(0)), tagPattern)
-  }
-
-  it must "fail to change the configuration of a service with no master" in new WithServer(3) {
-    given(ambariServer.getCluster(any())).willReturn(successful(cluster))
-    val newServiceDescription = serviceDescriptions(1).copy(
-      configuration = contributionsWithNumber(3))
-    val configurationChange_> = instance.changeServiceConfiguration(
-      description, configHelper.dynamicPropertiesFactory, newServiceDescription)
-    configurationChange_> must eventuallyFailWith[IllegalArgumentException]
   }
 }

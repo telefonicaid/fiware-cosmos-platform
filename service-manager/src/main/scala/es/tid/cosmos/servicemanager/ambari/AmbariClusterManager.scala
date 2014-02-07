@@ -18,7 +18,7 @@ import es.tid.cosmos.servicemanager.ClusterManager
 import es.tid.cosmos.servicemanager.ambari.configuration.FileConfigurationContributor
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, AmbariServer, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
-import es.tid.cosmos.servicemanager.clusters.{ImmutableClusterDescription, ClusterId}
+import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClusterDescription, ClusterId}
 
 private[ambari] class AmbariClusterManager(
     ambariServer: AmbariServer,
@@ -48,7 +48,7 @@ private[ambari] class AmbariClusterManager(
     deployedServices <- installInOrder(services)
   } yield ()
 
-  override def removeCluster(cluster: ImmutableClusterDescription): Future[Unit] = for {
+  override def removeCluster(cluster: ClusterDescription): Future[Unit] = for {
     _ <- stopStartedServices(cluster.id)
     _ <- ambariServer.removeCluster(cluster.id.toString)
   } yield ()

@@ -11,7 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari
 
+import es.tid.cosmos.servicemanager.ServiceDescription
 import es.tid.cosmos.servicemanager.ambari.configuration._
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
+import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
 
 class ConfiguratorTestHelpers(
     masterName: String,
@@ -47,8 +50,24 @@ object ConfiguratorTestHelpers {
     yarnTotalMemory = 1024,
     yarnContainerMinimumMemory = 100,
     yarnVirtualToPhysicalMemoryRatio = 2.1,
-    zookeeperPort = 1234
+    nameNodeHttpPort = 50070,
+    zookeeperPort = 1234,
+    servicesConfigDirectory = "/tmp/services"
   )
+
+  val BasicServices = AmbariServiceManager.BasicHadoopServices.withDependencies
+    .map(toAmbariServicesNoConfig)
+
+  val AllServices = AmbariServiceManager.AllServices.withDependencies.map(toAmbariServicesNoConfig)
+  
+  def toAmbariServicesNoConfig(service: ServiceDescription): AmbariServiceDescription =
+    service match {
+      case ambariService: AmbariServiceDescription => ambariService
+      case _ => new AmbariServiceDescription with NoConfigurationContribution {
+        override val name = service.name
+        override val components = service.components
+      }
+    }
 
   def properties(confType: String, number: Int) =
     Map(s"some${confType}Content$number" -> s"somevalue$number")

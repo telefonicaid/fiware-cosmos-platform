@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari.configuration
 
-import scala.Some
+import java.io.File
 import scala.collection.JavaConversions._
 
 import com.typesafe.config._
@@ -31,6 +31,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits.
  * @see [[https://github.com/typesafehub/config/blob/master/HOCON.md About HOCON format]]
  */
 trait FileConfigurationContributor extends ConfigurationContributor {
+  protected val configPath: String
   protected val configName: String
 
   private class ClusterConfigIncluder(
@@ -50,12 +51,11 @@ trait FileConfigurationContributor extends ConfigurationContributor {
     }
   }
 
-  protected def resolveConfig(properties: ConfigProperties) = ConfigFactory.load(
-    this.getClass.getClassLoader,
-    configName,
-    ConfigParseOptions.defaults().setIncluder(new ClusterConfigIncluder(properties)),
-    ConfigResolveOptions.defaults()
-  )
+  protected def resolveConfig(properties: Map[ConfigurationKeys.Value, String]) =
+    ConfigFactory.parseFileAnySyntax(
+      new File(s"$configPath/$configName"),
+      ConfigParseOptions.defaults().setIncluder(new ClusterConfigIncluder(properties))
+    ).resolve()
 
   /**
    * Builder of service description configurations.

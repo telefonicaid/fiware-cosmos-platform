@@ -11,11 +11,14 @@
 
 package es.tid.cosmos.servicemanager.ambari.configuration
 
-import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-class FileConfigurationContributorTest extends FlatSpec with MustMatchers with OneInstancePerTest {
+import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
+
+class FileConfigurationContributorTest extends FlatSpec with MustMatchers with OneInstancePerTest
+    with TestResourcePaths {
+
   val masterName = "myMasterNode"
   val expectedGlobal = GlobalConfiguration(Map(
     "global.example.string" -> s"global-$masterName",
@@ -31,24 +34,27 @@ class FileConfigurationContributorTest extends FlatSpec with MustMatchers with O
     ServiceConfiguration(s"test-service-site$index",
         Map(s"service.example$index" -> s"service$index-$masterName"))
   )
+  trait ClasspathFileConfigurationContributor extends FileConfigurationContributor {
+    override protected val configPath: String = packageResourcesConfigDirectory
+  }
 
-  val full = new FileConfigurationContributor {
+  val full = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "global-core-service"
   }
-  val noGlobal = new FileConfigurationContributor {
+  val noGlobal = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "core-service"
   }
-  val noCore = new FileConfigurationContributor {
+  val noCore = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "global-service"
   }
-  val justService = new FileConfigurationContributor {
+  val justService = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "service"
   }
-  val noService = new FileConfigurationContributor {
+  val noService = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "no-service"
   }
 
-  val serviceList = new FileConfigurationContributor {
+  val serviceList = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "service-list"
   }
 

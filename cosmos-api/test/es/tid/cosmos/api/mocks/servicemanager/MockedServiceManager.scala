@@ -149,16 +149,14 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
   @volatile private var clusters: Map[ClusterId, FakeCluster] = Map.empty
   @volatile var autoCompleteSetUserOperations = true
   
-  override type ServiceDescriptionType = ServiceDescription
-
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
-  override val optionalServices: Seq[ServiceDescriptionType] = Seq(Hdfs, MapReduce2)  // TODO: See if should add ZOOKEEPER & YARN
+  override val optionalServices: Seq[ServiceDescription] = Seq(Hdfs, MapReduce2)
 
   override def createCluster(
       name: String,
       size: Int,
-      serviceDescriptions: Seq[ServiceDescriptionType],
+      serviceDescriptions: Seq[ServiceDescription],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = synchronized {
     val id = ClusterId()

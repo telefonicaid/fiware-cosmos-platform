@@ -10,6 +10,7 @@
  */
 
 import sbt._
+import sbt.Keys.baseDirectory
 import play.{Keys => PlayKeys}
 import com.github.shivawu.sbt.maven.MavenBuild
 
@@ -36,6 +37,10 @@ object Build extends sbt.Build {
     lazy val scalatest = "org.scalatest" %% "scalatest" % "1.9.1"
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
+  }
+
+  object ExternalSources {
+    lazy val servicesConfigDirectory = (baseDirectory) {_ / "../deployment/puppet/modules/cosmos/files/services"}
   }
 
   override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)

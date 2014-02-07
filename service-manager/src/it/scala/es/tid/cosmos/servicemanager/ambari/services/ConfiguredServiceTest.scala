@@ -14,20 +14,16 @@ package es.tid.cosmos.servicemanager.ambari.services
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.ComponentDescription
+import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
+import es.tid.cosmos.servicemanager.ServiceDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 
-class ZookeeperTest extends FlatSpec with MustMatchers {
+trait ConfiguredServiceTest extends FlatSpec with MustMatchers with TestResourcePaths {
 
-  val dynamicProperties = Map(ConfigurationKeys.ZookeeperPort -> "1234")
+  val dynamicProperties: Map[ConfigurationKeys.Value, String]
+  val service: ServiceDescription
 
-  "A Zookeeper service" must "have a zookeeper server and a client" in {
-    val description = Zookeeper
-    description.name must equal("ZOOKEEPER")
-    description.components must (
-      have length 2 and
-        contain(ComponentDescription.slaveComponent("ZOOKEEPER_SERVER")) and
-        contain(ComponentDescription.masterComponent("ZOOKEEPER_CLIENT").makeClient)
-    )
-  }
+  def contributions = toAmbariService(service, resourcesConfigDirectory)
+    .contributions(dynamicProperties)
 }

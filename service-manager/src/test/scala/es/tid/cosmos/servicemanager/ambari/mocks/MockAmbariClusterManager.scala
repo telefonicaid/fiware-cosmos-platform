@@ -17,7 +17,7 @@ import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClust
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.ambari.{DynamicPropertiesFactory, AmbariClusterManager}
 
-class MockAmbariClusterManager extends AmbariClusterManager(null, "") {
+class MockAmbariClusterManager extends AmbariClusterManager(null, "", "/tmp/null") {
 
   override def deployCluster(
     clusterDescription: ImmutableClusterDescription,

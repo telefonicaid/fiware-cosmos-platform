@@ -25,7 +25,7 @@ import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
  * @see ConfigurationContributor
  * @see ServiceDescription
  */
-trait AmbariServiceDescription extends ConfigurationContributor with ServiceDescription {
+private[ambari] trait AmbariServiceDescription extends ConfigurationContributor with ServiceDescription {
   /**
    * Create a service instance on a given cluster.
    *

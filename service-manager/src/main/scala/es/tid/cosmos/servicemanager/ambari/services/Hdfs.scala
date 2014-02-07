@@ -11,11 +11,10 @@
 
 package es.tid.cosmos.servicemanager.ambari.services
 
-import es.tid.cosmos.servicemanager.{ServiceError, ComponentDescription}
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
+import es.tid.cosmos.servicemanager.{ServiceDescription, ComponentDescription}
 
 /** Representation of the HDFS service. */
-object Hdfs extends ServiceWithConfigurationFile {
+object Hdfs extends ServiceDescription {
   override val name: String = "HDFS"
 
   override val components: Seq[ComponentDescription] = Seq(
@@ -23,29 +22,4 @@ object Hdfs extends ServiceWithConfigurationFile {
     ComponentDescription.slaveComponent("DATANODE"),
     ComponentDescription.masterComponent("HDFS_CLIENT").makeClient
   )
-
-  lazy val nameNodeHttpPort: Int = {
-    try {
-      val emptyProperties = Map(
-        ConfigurationKeys.MasterNode -> "",
-        ConfigurationKeys.HdfsReplicationFactor -> "")
-      val port = resolveConfig(emptyProperties)
-        .getObject("hdfs.properties")
-        .unwrapped()
-        .get("dfs.namenode.http-address")
-        .toString
-        .split(":")
-        .last
-        .toInt
-      if (port == 0) {
-        throw new ServiceError("Namenode port 0 is not supported in Cosmos.")
-      }
-      port
-    }
-    catch {
-      case e: NumberFormatException =>
-        throw new ServiceError("Could not read namenode Http port. Please check the configuration" +
-          " file.")
-    }
-  }
 }

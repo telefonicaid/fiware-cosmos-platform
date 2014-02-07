@@ -22,7 +22,8 @@ import es.tid.cosmos.servicemanager.clusters.{ClusterDescription, ImmutableClust
 
 private[ambari] class AmbariClusterManager(
     ambariServer: AmbariServer,
-    rootPrivateSshKey: String) extends ClusterManager with FileConfigurationContributor {
+    rootPrivateSshKey: String,
+    override val configPath: String) extends ClusterManager with FileConfigurationContributor {
   import AmbariClusterManager._
 
   override type ServiceDescriptionType = AmbariServiceDescription
@@ -31,7 +32,7 @@ private[ambari] class AmbariClusterManager(
 
   override def deployCluster(
       clusterDescription: ImmutableClusterDescription,
-      serviceDescriptions: Seq[AmbariServiceDescription],
+      serviceDescriptions: Seq[ServiceDescriptionType],
       dynamicProperties: DynamicPropertiesFactory): Future[Unit] = for {
     cluster <- initCluster(clusterDescription)
     master = clusterDescription.master.get

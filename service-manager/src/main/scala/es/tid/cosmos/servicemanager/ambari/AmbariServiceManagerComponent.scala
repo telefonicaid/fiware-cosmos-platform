@@ -19,6 +19,7 @@ import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 import es.tid.cosmos.servicemanager.clusters.{ClusterDaoComponent, ClusterId}
 
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
@@ -29,6 +30,7 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
     config.getInt("ambari.server.port"),
     config.getString("ambari.server.username"),
     config.getString("ambari.server.password"))
+
   private val hadoopConfig = HadoopConfig(
     mrAppMasterMemory = config.getInt("ambari.servicemanager.mrAppMasterMemory"),
     mapTaskMemory = config.getInt("ambari.servicemanager.mapTaskMemory"),
@@ -42,9 +44,17 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       .getInt("ambari.servicemanager.yarnContainerMinimumMemory"),
     yarnVirtualToPhysicalMemoryRatio = config
       .getDouble("ambari.servicemanager.yarnVirtualToPhysicalMemoryRatio"),
-    zookeeperPort = config.getInt("ambari.servicemanager.zookeeperPort")
+    nameNodeHttpPort = config.getInt("ambari.servicemanager.nameNodeHttpPort"),
+    zookeeperPort = config.getInt("ambari.servicemanager.zookeeperPort"),
+    servicesConfigDirectory = config.getString("ambari.servicemanager.servicesConfigDirectory")
   )
-  private val ambariClusterManager = new AmbariClusterManager(ambariServer, infrastructureProvider.rootPrivateSshKey)
+
+  private val ambariClusterManager = new AmbariClusterManager(
+    ambariServer,
+    infrastructureProvider.rootPrivateSshKey,
+    hadoopConfig.servicesConfigDirectory
+  )
+
   override lazy val serviceManager: AmbariServiceManager = new AmbariServiceManager(
       ambariClusterManager,
       infrastructureProvider,
@@ -54,7 +64,8 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       new AmbariClusterDao(
         clusterDao,
         ambariServer,
-        AmbariServiceManager.AllServices,
+        AmbariServiceManager.AllServices.map(
+          toAmbariService(_, hadoopConfig.servicesConfigDirectory)),
         config.getInt("ambari.servicemanager.initialization.graceperiod.minutes") minutes)
     )
 }

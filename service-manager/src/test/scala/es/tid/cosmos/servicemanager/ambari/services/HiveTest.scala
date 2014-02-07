@@ -15,7 +15,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ComponentDescription
-import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class HiveTest extends FlatSpec with MustMatchers {
 
@@ -28,11 +27,5 @@ class HiveTest extends FlatSpec with MustMatchers {
         contain(ComponentDescription.masterComponent("HIVE_METASTORE")) and
         contain(ComponentDescription.masterComponent("HIVE_CLIENT").makeClient) and
         contain(ComponentDescription.masterComponent("MYSQL_SERVER")))
-    val contributions = description.contributions(Map(
-      ConfigurationKeys.MasterNode -> "aMasterNodeName"
-    ))
-    contributions.global must be ('defined)
-    contributions.core must be ('defined)
-    contributions.services must have length 1
   }
 }

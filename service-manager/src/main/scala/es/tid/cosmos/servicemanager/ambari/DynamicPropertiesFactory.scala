@@ -33,10 +33,12 @@ class DynamicPropertiesFactory(
     * @see [[es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys]]
     */
   def forCluster(masterName: String, slaveNames: Seq[String]): ConfigProperties = Map(
-    HdfsReplicationFactor -> Math.min(3, slaveNames.length).toString,
     MasterNode -> masterName,
 
     InfinityMasterNode -> infinityMasterName().getOrElse(""),
+
+    HdfsReplicationFactor -> Math.min(3, slaveNames.length).toString,
+    NameNodeHttpPort -> hadoopConfig.nameNodeHttpPort.toString,
 
     MrAppMasterMemory -> hadoopConfig.mrAppMasterMemory.toString,
 

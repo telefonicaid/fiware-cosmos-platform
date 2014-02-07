@@ -34,11 +34,11 @@ class ServiceWithConfigurationFileTest extends FlatSpec with MustMatchers {
   val acmeConfigPath = this.getClass.getResource("").getPath
 
   "A configuration file service decorator" must "ignore any AmbariServiceDescription services" in {
-    decorateWithFileConfiguration(dummyAmbariService)(dummyConfigDir) must be (dummyAmbariService)
+    decorateWithFileConfiguration(dummyAmbariService, dummyConfigDir) must be (dummyAmbariService)
   }
 
   it must "decorate service descriptions with file configuration" in {
-    val decorated = decorateWithFileConfiguration(acmeService)(acmeConfigPath)
+    val decorated = decorateWithFileConfiguration(acmeService, acmeConfigPath)
     val contributions = decorated.contributions(properties = Map.empty)
     decorated must not be acmeService
     contributions.global must be ('defined)

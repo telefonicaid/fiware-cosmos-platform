@@ -32,8 +32,7 @@ object ServiceWithConfigurationFile {
     * @param service                    the service to decorate
     * @param configDirectoryPath the directory path to find the service configuration file
     */
-  def decorateWithFileConfiguration(service: ServiceDescription)
-                                   (implicit configDirectoryPath: String)
+  def decorateWithFileConfiguration(service: ServiceDescription, configDirectoryPath: String)
       : AmbariServiceDescription =
     service match {
       case ambariService: AmbariServiceDescription => ambariService

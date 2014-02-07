@@ -27,6 +27,6 @@ trait ConfiguredServiceTest extends FlatSpec with MustMatchers with ServicesConf
   val dynamicProperties: Map[ConfigurationKeys.Value, String]
   val service: ServiceDescription
 
-  def contributions = decorateWithFileConfiguration(service)(configDirectory)
+  def contributions = decorateWithFileConfiguration(service, configDirectory)
     .contributions(dynamicProperties)
 }

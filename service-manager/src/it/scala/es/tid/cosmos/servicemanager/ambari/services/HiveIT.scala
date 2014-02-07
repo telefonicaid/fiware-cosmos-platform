@@ -16,7 +16,7 @@ import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys._
 class HiveIT  extends ConfiguredServiceTest {
 
   override val dynamicProperties = Map(
-        MasterNode -> "aMasterNodeName"
+    MasterNode -> "aMasterNodeName"
   )
 
   override val service = Hive

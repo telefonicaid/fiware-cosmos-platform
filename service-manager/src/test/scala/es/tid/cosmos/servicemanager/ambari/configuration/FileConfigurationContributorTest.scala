@@ -31,27 +31,27 @@ class FileConfigurationContributorTest extends FlatSpec with MustMatchers with O
     ServiceConfiguration(s"test-service-site$index",
         Map(s"service.example$index" -> s"service$index-$masterName"))
   )
-  trait TestContributor extends FileConfigurationContributor {
+  trait ClasspathFileConfigurationContributor extends FileConfigurationContributor {
     override protected val configPath: String = this.getClass.getResource("").getPath
   }
 
-  val full = new TestContributor {
+  val full = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "global-core-service"
   }
-  val noGlobal = new TestContributor {
+  val noGlobal = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "core-service"
   }
-  val noCore = new TestContributor {
+  val noCore = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "global-service"
   }
-  val justService = new TestContributor {
+  val justService = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "service"
   }
-  val noService = new TestContributor {
+  val noService = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "no-service"
   }
 
-  val serviceList = new TestContributor {
+  val serviceList = new ClasspathFileConfigurationContributor {
     override protected val configName: String = "service-list"
   }
 

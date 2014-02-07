@@ -85,7 +85,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
         new SqlClusterDao(db),
         ambariServer,
         AmbariServiceManager.AllServices.map(
-          decorateWithFileConfiguration(_)(hadoopConfig.servicesConfigDirectory))
+          decorateWithFileConfiguration(_, hadoopConfig.servicesConfigDirectory))
       )
     )
   }

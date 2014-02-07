@@ -50,8 +50,8 @@ class AmbariServiceManager(
     clusterDao: AmbariClusterDao) extends ServiceManager with Logging {
   import AmbariServiceManager._
 
-  private implicit val serviceConfigPath = hadoopConfig.servicesConfigDirectory
-  
+  private val serviceConfigPath = hadoopConfig.servicesConfigDirectory
+
   private val dynamicProperties = new DynamicPropertiesFactory(hadoopConfig, () => for {
     description <- describePersistentHdfsCluster()
     master <- description.master
@@ -79,7 +79,7 @@ class AmbariServiceManager(
     val clusterServiceDescriptions =
       (BasicHadoopServices ++ serviceDescriptions ++ userServices(users))
         .withDependencies
-        .map(decorateWithFileConfiguration)
+        .map(decorateWithFileConfiguration(_, serviceConfigPath))
     val clusterDescription = clusterDao.registerCluster(
       name = name,
       size = clusterSize,
@@ -197,7 +197,7 @@ class AmbariServiceManager(
   override def deployPersistentHdfsCluster(): Future[Unit] = for {
     machineCount <- infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave)
     serviceDescriptions = Seq(Zookeeper, Hdfs, new CosmosUserService(Seq()))
-      .map(decorateWithFileConfiguration)
+      .map(decorateWithFileConfiguration(_, serviceConfigPath))
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
       name = persistentHdfsId.id,

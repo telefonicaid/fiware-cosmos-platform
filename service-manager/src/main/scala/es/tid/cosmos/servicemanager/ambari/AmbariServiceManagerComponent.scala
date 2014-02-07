@@ -59,7 +59,7 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
         clusterDao,
         ambariServer,
         AmbariServiceManager.AllServices.map(
-          decorateWithFileConfiguration(_)(hadoopConfig.servicesConfigDirectory)),
+          decorateWithFileConfiguration(_, hadoopConfig.servicesConfigDirectory)),
         config.getInt("ambari.servicemanager.initialization.graceperiod.minutes") minutes)
     )
 }

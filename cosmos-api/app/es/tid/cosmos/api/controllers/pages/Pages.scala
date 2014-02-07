@@ -19,7 +19,7 @@ import dispatch.{Future => _, _}, Defaults._
 import play.Logger
 import play.api.data.Form
 import play.api.libs.json.Json
-import play.api.mvc.{RequestHeader, Action}
+import play.api.mvc.{Controller, RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
 import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
@@ -29,6 +29,7 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration, UserId}
+import es.tid.cosmos.api.task.{MutableTask, TaskDao}
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -38,10 +39,12 @@ import views.AuthAlternative
 class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
+    override val taskDao: TaskDao,
     override val dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus,
     config: Config
-  ) extends JsonController with PagesAuthController with MaintenanceAwareController {
+  ) extends Controller with JsonController with PagesAuthController
+    with MaintenanceAwareController with TaskController {
 
   import Scalaz._
 
@@ -123,12 +126,19 @@ class Pages(
         }
       }
       registration <- requireValidRegistration(userProfile, validatedForm)
-      _ <- dao.withTransaction { implicit c =>
-        registrationWizard
-          .registerUser(dao, userProfile.id, registration)
+      _ <- requireNoActiveTask(registration.handle, "registration")
+      wizardResult <- dao.withTransaction { implicit c =>
+        registrationWizard.registerUser(dao, userProfile.id, registration)
           .leftMap(message => InternalServerError(Json.toJson(message)))
       }
-    } yield redirectToIndex
+    } yield {
+      val (_, registration_>) = wizardResult
+      val task = taskDao.registerTask()
+        .linkToFuture(registration_>, s"Failed to register user with handle ${registration.handle}")
+      task.resource = registration.handle
+      task.metadata = "registration"
+      redirectToIndex
+    }
   }
 
   private def requireValidRegistration(

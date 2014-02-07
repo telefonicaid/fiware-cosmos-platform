@@ -29,9 +29,7 @@ import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
-/**
- * Web application template to be mixed-in with its dependencies.
- */
+/** Web application template to be mixed-in with its dependencies. */
 abstract class Application {
   this: ServiceManagerComponent
     with InfrastructureProviderComponent
@@ -51,7 +49,7 @@ abstract class Application {
     val ial = this.infrastructureProvider
     val multiAuthProvider = this.multiAuthProvider
     controllerMap(
-      new Pages(multiAuthProvider, sm, dao, status, conf.getConfig("pages")),
+      new Pages(multiAuthProvider, sm, taskDao, dao, status, conf.getConfig("pages")),
       new AdminPage(dao, status),
       new StatsResource(dao, sm, ial),
       new CosmosResource(),
@@ -68,7 +66,8 @@ abstract class Application {
 
   def services: ServiceManagerComponent
     with MultiAuthProviderComponent
-    with MaintenanceStatusComponent = this
+    with MaintenanceStatusComponent
+    with TaskDaoComponent = this
 
   private def controllerMap(controllers: Controller*) = Map(
     (for (controller <- controllers)

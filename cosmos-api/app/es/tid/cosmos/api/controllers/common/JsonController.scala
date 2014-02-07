@@ -18,7 +18,7 @@ import play.api.libs.json._
 import play.api.mvc.{Controller, Request}
 
 /** JSON consuming controller. */
-trait JsonController extends Controller {
+trait JsonController { this: Controller =>
 
   def validJsonBody[Payload: Reads](request: Request[JsValue]): ActionValidation[Payload] = {
     import Scalaz._

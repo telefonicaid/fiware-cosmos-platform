@@ -21,7 +21,7 @@ import scalaz._
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Headers}
+import play.api.mvc.{Controller, Action, Headers}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers.common._
@@ -37,7 +37,7 @@ class UserResource(
     serviceManager: ServiceManager,
     dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus
-  ) extends JsonController with MaintenanceAwareController {
+  ) extends Controller with JsonController with MaintenanceAwareController {
 
   import Scalaz._
 
@@ -156,7 +156,7 @@ class UserResource(
   private def uniqueUserId(params: RegisterUserParams)
                           (implicit c: Conn): ActionValidation[UserId] = {
     val userId = UserId(params.authRealm, params.authId)
-    if (dao.lookupByUserId(userId).isEmpty) userId.success 
+    if (dao.lookupByUserId(userId).isEmpty) userId.success
     else failWith(Conflict, s"Already existing credentials: $userId")
   }
 
@@ -173,7 +173,7 @@ class UserResource(
       case (`providerName`, adminProvider : AdminEnabledAuthProvider) => adminProvider
     }
   } yield password == provider.adminPassword).getOrElse(false)
-  
+
   private def failWith(status: Status, message: String) = status(Json.toJson(Message(message))).fail
 
   @tailrec

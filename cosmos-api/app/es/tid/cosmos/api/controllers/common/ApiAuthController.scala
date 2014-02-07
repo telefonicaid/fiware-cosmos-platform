@@ -22,12 +22,11 @@ import es.tid.cosmos.api.auth.ApiCredentials.{ApiKeyLength, ApiSecretLength}
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{Capability, UserState, CosmosProfile, CosmosProfileDao}
 
-/**
- * Controller able to check authentication and authorization.
- *
- * Must be mixed-in onto Controllers with a field of type CosmosProfileDao
- */
-trait ApiAuthController extends Controller {
+/** Controller-mixin able to check authentication and authorization.
+  *
+  * Must be mixed-in onto Controllers with a field of type CosmosProfileDao
+  */
+trait ApiAuthController { this: Controller =>
 
   import Scalaz._
 

@@ -13,23 +13,19 @@ package es.tid.cosmos.api.controllers.profile
 
 import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.{Controller, Action}
 
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
-/**
- * Resource that represents a user profile.
- */
+/** Resource that represents a user profile. */
 @Api(value = "/cosmos/v1/profile", listingPath = "/doc/cosmos/v1/profile",
   description = "Represents the user profile")
 class ProfileResource(override val dao: CosmosProfileDao)
-  extends JsonController with ApiAuthController {
+  extends Controller with JsonController with ApiAuthController {
 
-  /**
-   * Show user profile.
-   */
+  /** Show user profile. */
   @ApiOperation(value = "Get the user profile details", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.profile.UserProfile")
   def show = Action { implicit request =>
@@ -38,9 +34,7 @@ class ProfileResource(override val dao: CosmosProfileDao)
     } yield Ok(Json.toJson(profile.toUserProfile))
   }
 
-  /**
-   * Update the user profile
-   */
+  /** Update the user profile */
   @ApiOperation(value = "Update the user profile details", httpMethod = "PUT",
     responseClass = "es.tid.cosmos.api.controllers.profile.UserProfile")
   @ApiErrors(Array(

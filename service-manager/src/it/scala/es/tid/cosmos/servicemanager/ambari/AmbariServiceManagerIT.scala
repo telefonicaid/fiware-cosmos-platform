@@ -72,8 +72,10 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
       }
     }
     val ambariServer = new AmbariServer("10.95.161.137", 8080, "admin", "admin")
+    val clusterManager = new AmbariClusterManager(
+      ambariServer, infrastructureProvider.rootPrivateSshKey)
     sm = new AmbariServiceManager(
-      ambariServer, infrastructureProvider,
+      clusterManager, infrastructureProvider,
       ClusterId("hdfs"), exclusiveMasterSizeCutoff = 10,
       hadoopConfig,
       new AmbariClusterDao(

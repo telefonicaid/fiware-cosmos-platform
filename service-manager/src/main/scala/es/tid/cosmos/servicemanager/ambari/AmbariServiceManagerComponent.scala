@@ -29,26 +29,28 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
     config.getInt("ambari.server.port"),
     config.getString("ambari.server.username"),
     config.getString("ambari.server.password"))
+  private val hadoopConfig = HadoopConfig(
+    mrAppMasterMemory = config.getInt("ambari.servicemanager.mrAppMasterMemory"),
+    mapTaskMemory = config.getInt("ambari.servicemanager.mapTaskMemory"),
+    mapHeapMemory = config.getInt("ambari.servicemanager.mapHeapMemory"),
+    mappersPerSlave = config.getInt("ambari.servicemanager.mappersPerSlave"),
+    reduceTaskMemory = config.getInt("ambari.servicemanager.reduceTaskMemory"),
+    reduceHeapMemory = config.getInt("ambari.servicemanager.reduceHeapMemory"),
+    reducersPerSlave = config.getInt("ambari.servicemanager.reducersPerSlave"),
+    yarnTotalMemory = config.getInt("ambari.servicemanager.yarnTotalMemory"),
+    yarnContainerMinimumMemory = config
+      .getInt("ambari.servicemanager.yarnContainerMinimumMemory"),
+    yarnVirtualToPhysicalMemoryRatio = config
+      .getDouble("ambari.servicemanager.yarnVirtualToPhysicalMemoryRatio"),
+    zookeeperPort = config.getInt("ambari.servicemanager.zookeeperPort")
+  )
+  private val ambariClusterManager = new AmbariClusterManager(ambariServer, infrastructureProvider.rootPrivateSshKey)
   override lazy val serviceManager: AmbariServiceManager = new AmbariServiceManager(
-      ambariServer,
+      ambariClusterManager,
       infrastructureProvider,
       ClusterId(config.getString("hdfs.cluster.id")),
       config.getInt("ambari.servicemanager.exclusiveMasterSizeCutoff"),
-      HadoopConfig(
-        mrAppMasterMemory = config.getInt("ambari.servicemanager.mrAppMasterMemory"),
-        mapTaskMemory = config.getInt("ambari.servicemanager.mapTaskMemory"),
-        mapHeapMemory = config.getInt("ambari.servicemanager.mapHeapMemory"),
-        mappersPerSlave = config.getInt("ambari.servicemanager.mappersPerSlave"),
-        reduceTaskMemory = config.getInt("ambari.servicemanager.reduceTaskMemory"),
-        reduceHeapMemory = config.getInt("ambari.servicemanager.reduceHeapMemory"),
-        reducersPerSlave = config.getInt("ambari.servicemanager.reducersPerSlave"),
-        yarnTotalMemory = config.getInt("ambari.servicemanager.yarnTotalMemory"),
-        yarnContainerMinimumMemory = config
-          .getInt("ambari.servicemanager.yarnContainerMinimumMemory"),
-        yarnVirtualToPhysicalMemoryRatio = config
-          .getDouble("ambari.servicemanager.yarnVirtualToPhysicalMemoryRatio"),
-        zookeeperPort = config.getInt("ambari.servicemanager.zookeeperPort")
-      ),
+      hadoopConfig,
       new AmbariClusterDao(
         clusterDao,
         ambariServer,

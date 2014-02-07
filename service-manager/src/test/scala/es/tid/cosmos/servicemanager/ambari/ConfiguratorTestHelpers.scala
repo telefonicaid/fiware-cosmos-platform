@@ -12,33 +12,26 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
 
 class ConfiguratorTestHelpers(
-    masterName: String, slaveCount: Int, includeMasterAsSlave: Boolean = true) {
+    masterName: String,
+    slaveNames: Seq[String],
+    hadoopConfig: HadoopConfig = ConfiguratorTestHelpers.TestHadoopConfig) {
   import ConfiguratorTestHelpers._
 
-  val dynamicProperties = {
-    val slaveNames = (if (includeMasterAsSlave) 1 to slaveCount else 2 to slaveCount + 1)
-      .map(index => s"hostname$index")
-    new DynamicPropertiesFactory(TestHadoopConfig, () => None).forCluster(masterName, slaveNames)
-  }
+  val dynamicPropertiesFactory = new DynamicPropertiesFactory(hadoopConfig, () => None)
+
+  val dynamicProperties = dynamicPropertiesFactory.forCluster(masterName, slaveNames)
 
   private def propertiesUpTo(confType: String, number: Int) =
     (1 to number).map(properties(confType, _)).reduce(_++_)
 
   def mergedCoreConfiguration(number: Int) =
-    new CoreConfiguration(propertiesUpTo("Core", number) ++ getConfigurationFromCompulsoryServices(_.core))
+    new CoreConfiguration(propertiesUpTo("Core", number))
 
-  def mergedGlobalConfiguration(number: Int, instance: AmbariServiceManager) =
-    GlobalConfiguration(instance.clusterDeployer.contributions(dynamicProperties).global.get.properties ++
-      propertiesUpTo("Global", number) ++ getConfigurationFromCompulsoryServices(_.global))
-
-  private def getConfigurationFromCompulsoryServices(extractor: ConfigurationBundle => Option[Configuration]) = {
-    def getProperties(contributor: ConfigurationContributor) = extractor(contributor.contributions(dynamicProperties))
-      .map(_.properties).getOrElse(Map())
-    AmbariServiceManager.BasicHadoopServices.withDependencies.map(getProperties).reduce(_++_)
-  }
+  def mergedGlobalConfiguration(number: Int, instance: AmbariClusterManager) =
+    GlobalConfiguration(instance.contributions(dynamicProperties).global.get.properties ++
+      propertiesUpTo("Global", number))
 }
 
 object ConfiguratorTestHelpers {

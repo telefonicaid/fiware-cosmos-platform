@@ -29,9 +29,7 @@ import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
 import es.tid.cosmos.servicemanager.ServiceManagerComponent
 
-/**
- * Web application template to be mixed-in with its dependencies.
- */
+/** Web application template to be mixed-in with its dependencies. */
 abstract class Application {
   this: ServiceManagerComponent
     with InfrastructureProviderComponent

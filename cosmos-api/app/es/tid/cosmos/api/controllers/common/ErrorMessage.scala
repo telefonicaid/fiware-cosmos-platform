@@ -15,12 +15,11 @@ import play.api.Play
 import play.api.Play.current
 import play.api.libs.json._
 
-/**
- * Represents a failed action.
- *
- * @param error      Error description
- * @param exception  Optional associated exception
- */
+/** Represents a failed action.
+  *
+  * @param error      Error description
+  * @param exception  Optional associated exception
+  */
 case class ErrorMessage(error: String, exception: Option[Throwable] = None)
 
 object ErrorMessage {
@@ -30,7 +29,7 @@ object ErrorMessage {
   implicit object ErrorMessageWrites extends Writes[ErrorMessage] {
     def writes(message: ErrorMessage): JsValue =
       message.exception match {
-        case Some(ex) if (!Play.isProd) => Json.obj(
+        case Some(ex) if !Play.isProd => Json.obj(
           "error" -> s"${message.error}: ${ex.getMessage}",
           "exception" -> getExceptionName(ex),
           "stackTrace" -> getStackTraceLines(ex)

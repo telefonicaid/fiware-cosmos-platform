@@ -155,7 +155,7 @@ class ClusterResource(
     for {
       user <- requireUserManagementConditions(request, clusterId)
       _ <- requireProfileIsNotUserOf(user, clusterId)
-      _ <- requireNoActiveTask(user.handle)
+      _ <- requireNoActiveTask(resource = request.uri, metadata = user.handle)
       clusterUsers <- requireClusterUsersAreAvailable(clusterId)
     } yield {
       val addUser_> = serviceManager.addUser(clusterId, ClusterUser.enabled(
@@ -325,11 +325,11 @@ class ClusterResource(
     user <- requireProfileExists(body.user)
   } yield user
 
-  private def requireNoActiveTask(metadata: Any): ActionValidation[Unit] = {
+  private def requireNoActiveTask(resource: String, metadata: Any): ActionValidation[Unit] = {
     import Scalaz._
     val existsTask = taskDao.list.view
       .filter(_.status == Running)
-      .exists(_.metadata == metadata)
+      .exists(task => task.resource == resource && task.metadata == metadata)
     if (existsTask) taskAlreadyExists.failure
     else ().success
   }

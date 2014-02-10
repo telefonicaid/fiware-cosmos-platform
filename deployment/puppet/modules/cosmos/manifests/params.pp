@@ -10,7 +10,7 @@
 #
 
 class cosmos::params (
-  $version                 = '0.15.0',
+  $version                 = '0.16.0',
   $cosmos_basedir          = '/opt/pdi-cosmos',
   $cosmos_cli_repo_path    = '/opt/repos',
   $cosmos_repo_deps_url,

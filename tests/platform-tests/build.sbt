@@ -8,3 +8,5 @@ libraryDependencies ++= Seq(
   Dependencies.logbackClassic,
   Dependencies.typesafeConfig
 )
+
+parallelExecution in IntegrationTest := false

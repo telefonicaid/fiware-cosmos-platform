@@ -1,14 +1,12 @@
-.idea/
-common-test/target/
-common/target/
-cosmos-admin/target/
-cosmos-api/logs/
-cosmos-api/target/
-ial/target/
-infinityfs/target/
+.*
+*.tar.gz
+*.pyc
+*egg-info/
+*eggs/
+bin/
+build/
+coverage/
+dist/
 logs/
-project/target/
-service-manager/target/
-servicetests/platform-tests/target/target
 target/
 

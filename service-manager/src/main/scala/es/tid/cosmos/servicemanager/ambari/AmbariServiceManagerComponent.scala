@@ -49,7 +49,7 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
     servicesConfigDirectory = config.getString("ambari.servicemanager.servicesConfigDirectory")
   )
 
-  private val ambariClusterManager = new AmbariClusterManager(
+  private lazy val ambariClusterManager = new AmbariClusterManager(
     ambariServer,
     infrastructureProvider.rootPrivateSshKey,
     hadoopConfig.servicesConfigDirectory

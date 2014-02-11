@@ -28,7 +28,7 @@ object Build extends sbt.Build {
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop
-    lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
+    lazy val liftJson = "net.liftweb" %% "lift-json" % "2.6-M2"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
     lazy val mockito = "org.mockito" % "mockito-all" % "1.9.5"
     lazy val scalaLogging = "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"

@@ -80,7 +80,7 @@ class HomeDirTest(unittest.TestCase):
             os.chmod(config_path, 0777)
             #import ipdb; ipdb.set_trace()
             self.home.read_config_file()
-            self.assertIn("WARNING", outputs.stdout.getvalue())
+            self.assertIn("WARNING", outputs.stderr.getvalue())
 
     def test_last_cluster(self):
         self.home.write_last_cluster("0000000")

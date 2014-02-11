@@ -15,6 +15,7 @@ the $HOME path on unix-like systems and the "Application Data" for MS ones."""
 import logging as log
 import os.path
 import stat
+import sys
 
 
 class HomeDir(object):
@@ -48,9 +49,10 @@ class HomeDir(object):
         abs_path = self.abs_path(filename)
         log.info("Loading config from %s", abs_path)
         if self._is_public_file(abs_path):
-            print """WARNING: Configuration file can be accessed by other users.
+            sys.stderr.write("""WARNING: Configuration file can be accessed by other users.
 Please make it private ('chmod 0600 %s' in unix systems)
-""" % abs_path
+
+""" % abs_path)
         return self.read(filename)
 
     def _is_public_file(self, filename):

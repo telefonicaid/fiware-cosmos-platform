@@ -13,6 +13,9 @@ package es.tid.cosmos.platform.ial.libvirt
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, future}
+import scala.util.Try
+
+import com.typesafe.scalalogging.slf4j.Logging
 
 import es.tid.cosmos.common.{ExecutableValidation, SequentialOperations}
 import es.tid.cosmos.platform.ial._
@@ -24,7 +27,7 @@ class LibVirtInfrastructureProvider(
     val dao: LibVirtDao,
     val libvirtServerFactory: LibVirtServerProperties => LibVirtServer,
     val rootPrivateSshKey: String)
-  extends InfrastructureProvider {
+  extends InfrastructureProvider with Logging {
 
   private val createMachinesSequencer = new SequentialOperations
   override def createMachines(
@@ -46,7 +49,16 @@ class LibVirtInfrastructureProvider(
       numberOfMachines: Int,
       bootstrapAction: MachineState => Future[Unit]): Future[Seq[MachineState]] = {
 
-    val serversOfProfile = dao.libVirtServers.filter(_.profile == profile).map(libvirtServerFactory)
+    val serversOfProfileAttempt = for {
+      serverProperties <- dao.libVirtServers if serverProperties.profile == profile
+    } yield Try(libvirtServerFactory(serverProperties))
+
+    serversOfProfileAttempt.filter(_.isFailure).map(_.failed).foreach { failure =>
+      logger.error("Could not connect to slave machine", failure.get)
+    }
+
+    val serversOfProfile = serversOfProfileAttempt.filter(_.isSuccess).map(_.get)
+
     (for {
       servers <- LibVirtServer.placeServers(serversOfProfile, numberOfMachines)
       machines <- createMachines(bootstrapAction, servers)

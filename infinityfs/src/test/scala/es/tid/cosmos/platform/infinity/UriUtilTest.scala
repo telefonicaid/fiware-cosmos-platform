@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.platform.infinity
 
-import java.net.URI
+import java.net.{URISyntaxException, URI}
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
@@ -34,5 +34,18 @@ class UriUtilTest extends FlatSpec with MustMatchers {
     val hostUri = URI.create("http://user:pass@host:8080/path#tag?foo=bar")
     val otherHostUri = URI.create("http://otherHost:1234/path#tag?foo=bar")
     UriUtil.replaceAuthority(hostUri, "otherHost:1234") must equal (otherHostUri)
+  }
+
+  "Path replacement" must "keep all other fields" in {
+    val hostUri = URI.create("http://user:pass@host:8080/old/path#tag?foo=bar")
+    val otherPathUri = URI.create("http://user:pass@host:8080/new/path#tag?foo=bar")
+    UriUtil.replacePath(hostUri, "/new/path") must equal (otherPathUri)
+  }
+
+  it must "fail if a relative path is used" in {
+    val hostUri = URI.create("http://user:pass@host:8080/old/path#tag?foo=bar")
+    evaluating {
+      UriUtil.replacePath(hostUri, "new/path")
+    } must produce [URISyntaxException]
   }
 }

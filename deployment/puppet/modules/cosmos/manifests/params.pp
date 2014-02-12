@@ -69,7 +69,6 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $master_ip,
   $master_hostname,
   $domain,
-  $infinity_url,
   $pdihub_client_id,
   $pdihub_client_secret,
   $horizon_password,

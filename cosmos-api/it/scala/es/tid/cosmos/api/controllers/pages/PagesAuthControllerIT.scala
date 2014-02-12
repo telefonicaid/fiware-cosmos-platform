@@ -19,7 +19,7 @@ import play.api.test.Helpers._
 import play.api.mvc._
 
 import es.tid.cosmos.api.controllers.common.PagesAuthController
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao}
 
 class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 
@@ -54,6 +54,7 @@ class PagesAuthControllerIT extends FlatSpec with MustMatchers {
   }
 
   it must "discard sessions of not-enabled users" in new WithTestController {
-    contentAsString(route(disabledUser.request("/"))) must include ("not registered")
+    contentAsString(route(userWithState(UserState.Disabled).request("/"))) must include (
+      "not registered")
   }
 }

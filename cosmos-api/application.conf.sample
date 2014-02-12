@@ -61,7 +61,6 @@ auth.horizon {
 # Links (without trailing slashes)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cli.url="http://localhost/cosmos.egg"
-infinity.url="hdfs://"
 
 # Swagger API documentation
 # ~~~~~

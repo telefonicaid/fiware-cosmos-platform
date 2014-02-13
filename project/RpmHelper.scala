@@ -1,11 +1,22 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+import com.typesafe.sbt.packager.linux.LinuxSymlink
 import com.typesafe.sbt.packager.rpm.RpmSpec
 import sbt._
-import com.typesafe.sbt.packager.linux.LinuxSymlink
 
 /** This trait in extracted from sbt-native-packager to implement some workarounds
   * for packaging on OSX, as rpmbuild seems that doesn't honor `target` switch.
   *
-  * All workarounds are tagged with `DLM` keyword. Other comments are copied from original.
+  * Workarounds are tagged with `@davidlm
   */
 trait RpmHelper {
 
@@ -62,7 +73,7 @@ trait RpmHelper {
     val tmpBuildRoot = workArea / "tmp-buildroot"
     val specfile = specdir / (spec.meta.name + ".spec")
     log.debug("Creating SPEC file: " + specfile.getAbsolutePath)
-    // DLM very dirty hack to prepend BuildArch
+    // @davidlm very dirty hack to prepend BuildArch
     val specStr = s"BuildArch: ${spec.meta.arch}\n" + spec.writeSpec(rpmBuildroot, tmpBuildRoot)
     IO.write(specfile, specStr)
     specfile
@@ -81,12 +92,12 @@ trait RpmHelper {
       "-bb",
       "--buildroot", buildRoot.getAbsolutePath,
       "--define", "_topdir " + workArea.getAbsolutePath,
-      // DLM "--target", spec.meta.arch + '-' + spec.meta.vendor + '-' + spec.meta.os,
-      "--define", "_target_os " + spec.meta.os, // DLM hack
-      "--define", "_target " + spec.meta.arch, // DLM hack
-      "--define", "_arch " + spec.meta.arch // DLM hack
+      // @davidlm "--target", spec.meta.arch + '-' + spec.meta.vendor + '-' + spec.meta.os,
+      "--define", "_target_os " + spec.meta.os, // @davidlm
+      "--define", "_target " + spec.meta.arch, // @davidlm
+      "--define", "_arch " + spec.meta.arch // @davidlm
     ) ++ (
-      // DLM
+      // @davidlm
       if (spec.meta.autoreq != "yes") Seq("--nodeps")
       else Seq.empty
     ) ++ (

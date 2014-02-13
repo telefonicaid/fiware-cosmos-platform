@@ -11,28 +11,14 @@
 
 package es.tid.cosmos.tests.e2e
 
-class HiveServiceIT extends E2ETestBase {
-  withNewUser { user =>
-    feature("Hive is a supported service") {
-      var cluster: Cluster = null
+class HiveServiceIT extends E2ETestBase with ServiceBehaviors {
 
-      scenario("The user can request a cluster with Hive") {
-        cluster = Cluster.create(2, user, services = Seq("HIVE"))
-        cluster.isListed must be (true)
-        cluster.state.get must (be ("provisioning") or be ("running"))
-        cluster.ensureState("running")
-      }
+  override protected val service = "HIVE"
 
-      scenario("The user can use Hive on the cluster") {
-        cluster.scp(resource("/hive-test.sh"))
-        cluster.sshCommand("bash ./hive-test.sh")
-      }
-
-      scenario("The user can terminate the cluster") {
-        cluster.terminate()
-        cluster.state.get must (be ("terminating") or be ("terminated"))
-        cluster.ensureState("terminated")
-      }
+  scenariosFor(
+    installingServiceAndRunningAnExample { cluster =>
+      cluster.scp(resource("/hive-test.sh"))
+      cluster.sshCommand("bash ./hive-test.sh")
     }
-  }
+  )
 }

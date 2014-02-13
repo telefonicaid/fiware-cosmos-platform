@@ -90,7 +90,7 @@ trait ServiceManager {
   def listUsers(clusterId: ClusterId): Option[Seq[ClusterUser]]
 
   /**
-   * Add users to the CosmosUser service for the given cluster.
+   * Set the users of the CosmosUser service for the given cluster.
    *
    * @param clusterId the cluster id where the users will be added
    * @param users the users to be added to the CosmosUser service

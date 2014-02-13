@@ -28,6 +28,7 @@ import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.servicemanager.ClusterUser
 
 /** A series of user sessions to test with users on different states and roles */
 trait WithSampleSessions extends WithTestApplication {
@@ -69,6 +70,11 @@ trait WithSampleSessions extends WithTestApplication {
         dao.assignCluster(cluster, cosmosProfile.id)
       }
     }
+
+    def asClusterUser: ClusterUser = ClusterUser(
+      username = handle,
+      publicKey = cosmosProfile.keys.head.signature
+    )
 
     protected def buildCosmosProfile(): CosmosProfile =
       CosmosProfileTestHelpers.registerUser(handle)(dao)

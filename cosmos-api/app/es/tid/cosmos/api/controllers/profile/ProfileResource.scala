@@ -28,6 +28,7 @@ class ProfileResource(override val dao: CosmosProfileDao)
   /** Show user profile. */
   @ApiOperation(value = "Get the user profile details", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.profile.UserProfile")
+  @ApiErrors(Array(new ApiError(code = 401, reason = "Unauthorized user")))
   def show = Action { implicit request =>
     for {
       profile <- requireAuthenticatedApiRequest(request)
@@ -41,7 +42,8 @@ class ProfileResource(override val dao: CosmosProfileDao)
     new ApiError(code = 400, reason = "Invalid JSON payload"),
     new ApiError(code = 400, reason = "No defined public key"),
     new ApiError(code = 400, reason = "More than one public key"),
-    new ApiError(code = 400, reason = "Trying to modify user handle")
+    new ApiError(code = 400, reason = "Trying to modify user handle"),
+    new ApiError(code = 401, reason = "Unauthorized user")
   ))
   @ApiParamsImplicit(Array(
     new ApiParamImplicit(paramType = "body",

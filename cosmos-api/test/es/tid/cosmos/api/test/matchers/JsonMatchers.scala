@@ -32,7 +32,7 @@ trait JsonMatchers extends ClassicMatchers {
     }
   }
 
-  def containsFieldThatMust[T <: JsValue: Manifest](
+  def containFieldThatMust[T <: JsValue: Manifest](
       expectedField: String, elemMatcher: Matcher[T]) = new Matcher[JsValue] {
     def apply(js: JsValue) = {
       js \ expectedField match {
@@ -46,15 +46,15 @@ trait JsonMatchers extends ClassicMatchers {
     }
   }
 
-  def containsFieldWithValue[T <: JsValue: Manifest](expectedField: String, expectedValue: T) =
-    containsFieldThatMust(expectedField, equal(expectedValue))
+  def containFieldWithValue[T <: JsValue: Manifest](expectedField: String, expectedValue: T) =
+    containFieldThatMust(expectedField, equal(expectedValue))
 
-  def containsField(expectedField: String) = containsFieldThatMust(
+  def containsField(expectedField: String) = containFieldThatMust(
     expectedField,
     not be JsUndefined
   )
 
-  def containsFieldWithUrl(expectedField: String) = containsFieldThatMust(
+  def containFieldWithUrl(expectedField: String) = containFieldThatMust(
     expectedField,
     new Matcher[JsString] {
       def apply(url: JsString) = MatchResult(

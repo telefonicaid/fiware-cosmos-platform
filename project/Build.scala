@@ -10,7 +10,7 @@
  */
 
 import sbt._
-import sbt.Keys._
+import sbt.Keys.baseDirectory
 import play.{Keys => PlayKeys}
 import com.github.shivawu.sbt.maven.MavenBuild
 

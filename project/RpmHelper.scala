@@ -79,10 +79,7 @@ trait RpmHelper {
     specfile
   }
 
-  private[this] def buildPackage(
-                                  workArea: File,
-                                  spec: RpmSpec,
-                                  log: sbt.Logger): Unit = {
+  private[this] def buildPackage(workArea: File, spec: RpmSpec, log: sbt.Logger): Unit = {
     val buildRoot = workArea / "buildroot"
     val specsDir = workArea / "SPECS"
     val gpg = false

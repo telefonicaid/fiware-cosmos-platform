@@ -46,6 +46,8 @@ private[ambari] class SqlMutableClusterDescription(
     case (Terminating.name, _) => Terminating
     case (Terminated.name, _) => Terminated
     case (Failed.name, Some(reason)) => Failed(reason)
+    case (unknownState, reason) => throw new IllegalStateException(
+      s"Unknown state [$unknownState] with reason: $reason")
   }
 
   override def state_=(state: ClusterState) {

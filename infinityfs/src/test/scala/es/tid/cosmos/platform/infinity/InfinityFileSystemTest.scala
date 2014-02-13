@@ -91,7 +91,7 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
 
   it must "delegate `delete` with translated path" in {
     given(nestedFileSystem.delete(any[Path], anyBoolean)).willReturn(true)
-    defaultInfinity.delete(new Path("infinity://host/path")) must be (true)
+    defaultInfinity.delete(new Path("infinity://host/path"), recursive = true) must be (true)
     verify(nestedFileSystem).delete(new Path("hdfs://host/user/path"), true)
   }
 

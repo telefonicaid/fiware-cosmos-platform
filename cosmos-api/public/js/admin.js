@@ -13,6 +13,7 @@
 
 function configureActiveClustersSection() {
     $('#active-clusters').dataTable({
+        "sScrollX": "100%",
         "bProcessing": true,
         "sAjaxSource": '/cosmos/v1/stats/clusters',
         "sAjaxDataProp": "clusters",

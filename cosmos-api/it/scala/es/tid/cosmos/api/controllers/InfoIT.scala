@@ -64,7 +64,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
     )
   }
 
-  it must "provide info about clusters owned or added to by someone else" in
+  it must "provide info about clusters owned or accessible by SSH" in
     new WithSampleSessions {
       val cluster1 = mockedServiceManager.createCluster(
         name = "ownCluster",
@@ -77,10 +77,16 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       mockedServiceManager.defineCluster(ClusterProperties(
         id = cluster2,
         name = "cluster2",
-        users = Set(opUser.asClusterUser, regUser.asClusterUser),
+        users = Set(opUser.asClusterUser(), regUser.asClusterUser()),
         size  = 2,
         initialState = Some(Running)
       ))
+      mockedServiceManager.createCluster(
+        name = "unlisted",
+        size = 2,
+        serviceDescriptions = Seq.empty,
+        users = Seq(opUser.asClusterUser(), regUser.asClusterUser(sshEnabled = false))
+      )
 
       val res = regUser.doRequest(getInfo)
       status(res) must be (OK)

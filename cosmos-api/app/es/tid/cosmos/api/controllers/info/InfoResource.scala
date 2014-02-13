@@ -51,7 +51,7 @@ class InfoResource(override val dao: CosmosProfileDao, serviceManager: ServiceMa
       clusterId <- serviceManager.clusterIds
       description <- serviceManager.describeCluster(clusterId)
       users <- description.users
-      if users.exists(_.username == profile.handle)
+      if users.exists(user => user.username == profile.handle && user.sshEnabled)
     } yield clusterId
     ClustersInfo(ownClusters, accessibleClusters)
   }

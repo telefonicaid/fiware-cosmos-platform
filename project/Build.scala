@@ -10,7 +10,7 @@
  */
 
 import sbt._
-import sbt.Keys.baseDirectory
+import sbt.Keys._
 import play.{Keys => PlayKeys}
 import com.github.shivawu.sbt.maven.MavenBuild
 
@@ -85,6 +85,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(CosmosAPIBuild.settings: _*)
     dependsOn(serviceManager, common, ial, common_test % "test->compile")
   )
 

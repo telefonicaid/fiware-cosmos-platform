@@ -24,7 +24,6 @@ import sbt.Keys.packageBin
 import sbt.Keys.streams
 import sbt.Keys.target
 import sbt.Keys.version
-import scala.Some
 
 object CosmosAPIBuild extends RpmHelper {
 
@@ -50,21 +49,21 @@ object CosmosAPIBuild extends RpmHelper {
       rpmAutoprov := "no",
       linuxPackageMappings in Rpm <<= (mappings in Universal) map { (f: Seq[(File,String)]) =>
         f map { case (file: File, name: String) =>
-          packageMapping(file -> s"/opt/pdi-cosmos/cosmos-api/$name")
-          //withUser "root" withGroup "root" withPerms "0755"
+          (packageMapping(file -> s"/opt/pdi-cosmos/cosmos-api/$name")
+            withUser "root" withGroup "root" withPerms "0755")
         }
       },
-      linuxPackageMappings in Rpm <++= (baseDirectory) map { base =>
+      linuxPackageMappings in Rpm <++= baseDirectory map { base =>
         Seq(
-          packageMapping ( base / "scripts/cosmos-api" -> "/etc/init.d/cosmos-api"),
-          packageMapping ( IO.temporaryDirectory / "." -> "/opt/pdi-cosmos/var/run/")
+          packageMapping(base / "scripts/cosmos-api" -> "/etc/init.d/cosmos-api"),
+          packageMapping(IO.temporaryDirectory / "." -> "/opt/pdi-cosmos/var/run/")
             withUser "root" withGroup "root" withPerms "0440"
         )
       },
-      linuxPackageMappings in Rpm <++= (baseDirectory) map { base =>
+      linuxPackageMappings in Rpm <++= baseDirectory map { base =>
         val egg = base.getParentFile / "cosmos-cli/dist" * "*.egg"
         egg.get map { f =>
-          packageMapping ( f -> s"/opt/repos/eggs/${f.name}" )
+          packageMapping(f -> s"/opt/repos/eggs/${f.name}")
         }
       },
       rpmPost := Some("""chmod +x /etc/init.d/cosmos-api

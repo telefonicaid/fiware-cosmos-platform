@@ -19,7 +19,6 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.AuthBehaviors
-import es.tid.cosmos.api.mocks.WithSampleUsers
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import play.api.libs.json.Json
 

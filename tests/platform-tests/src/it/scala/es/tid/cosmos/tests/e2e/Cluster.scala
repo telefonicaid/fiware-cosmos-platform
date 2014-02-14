@@ -87,9 +87,11 @@ class Cluster(id: String, user: User)(implicit info: Informer)
 
 object Cluster extends Assertions {
   def create(size: Int, user: User, services: Seq[String] = Seq())(implicit info: Informer): Cluster = {
+    val availableServices = listServices()
+    val optionalServices = services.filter(availableServices.contains)
     val ExpectedPrefix = "Provisioning new cluster "
-    val flatServices = services.mkString(" ")
-    val servicesCommand = if (services.nonEmpty) s"--services $flatServices" else ""
+    val flatServices = optionalServices.mkString(" ")
+    val servicesCommand = if (optionalServices.nonEmpty) s"--services $flatServices" else ""
     info(s"Calling create cluster")
     val commandOutput = s"cosmos -c ${user.cosmosrcPath} create --name default-services --size $size $servicesCommand"
       .lines_!.toList
@@ -100,5 +102,11 @@ object Cluster extends Assertions {
       .substring(ExpectedPrefix.length)
     info(s"Cluster created with id $id")
     new Cluster(id, user)
+  }
+
+  def listServices(): Seq[String] = {
+    val commandOutput = s"cosmos list-services".lines_!.toSeq
+    val optionalServices = commandOutput.tail.map(_.trim)
+    optionalServices
   }
 }

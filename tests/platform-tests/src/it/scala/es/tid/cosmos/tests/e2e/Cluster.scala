@@ -15,7 +15,7 @@ import scala.language.postfixOps
 import scala.sys.process._
 
 import net.liftweb.json._
-import org.scalatest.Informer
+import org.scalatest.{Assertions, Informer}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.verb.MustVerb
 
@@ -61,7 +61,7 @@ class Cluster(id: String, user: User)(implicit info: Informer) extends MustVerb 
   }
 }
 
-object Cluster {
+object Cluster extends Assertions {
   def create(size: Int, user: User, services: Seq[String] = Seq())(implicit info: Informer): Cluster = {
     val ExpectedPrefix = "Provisioning new cluster "
     val flatServices = services.mkString(" ")
@@ -71,8 +71,9 @@ object Cluster {
       .lines_!.toList
     commandOutput.foreach(info(_))
     val id = commandOutput
-      .filter(_.startsWith(ExpectedPrefix))
-      .head.substring(ExpectedPrefix.length)
+      .find(_.startsWith(ExpectedPrefix))
+      .getOrElse(fail(s"unexpected create command output: ${commandOutput.mkString("\n")}"))
+      .substring(ExpectedPrefix.length)
     info(s"Cluster created with id $id")
     new Cluster(id, user)
   }

@@ -25,30 +25,60 @@ class UrlMapperTest extends FlatSpec with MustMatchers {
 
   "An Infinity URL" must "be transformed to a HDFS one" in {
     mapperWithAuthority.transform(URI.create("infinity://host/path")) must
-      be (URI.create("hdfs://host/path"))
+      be (URI.create("hdfs://host/user/path"))
   }
 
   it must "be transformed with default authority when appropriate" in {
     mapperWithAuthority.transform(URI.create("infinity:///path")) must
-      be (URI.create("hdfs://foo-infinity/path"))
+      be (URI.create("hdfs://foo-infinity/user/path"))
     mapperWithoutAuthority.transform(URI.create("infinity:///path")) must
-      be (URI.create("hdfs:///path"))
+      be (URI.create("hdfs:///user/path"))
   }
 
   "An Infinity path" must "be transformed to a HDFS one" in {
     mapperWithAuthority.transform(new Path("infinity://host/path")) must
-      be (new Path("hdfs://host/path"))
+      be (new Path("hdfs://host/user/path"))
   }
 
   "A HDFS URL" must "be transformed back to an Infinity one" in {
     val expectedURI = URI.create("infinity:///path")
-    mapperWithAuthority.transformBack(URI.create("hdfs:///path")) must be (expectedURI)
-    mapperWithoutAuthority.transformBack(URI.create("hdfs:///path")) must be (expectedURI)
+    mapperWithAuthority.transformBack(URI.create("hdfs:///user/path")) must be (expectedURI)
+    mapperWithoutAuthority.transformBack(URI.create("hdfs:///user/path")) must be (expectedURI)
+  }
+
+  it must "fail if the URL does not contain the /user folder" in {
+    evaluating {
+      mapperWithAuthority.transformBack(URI.create("hdfs:///path"))
+    } must produce[IllegalArgumentException]
+    evaluating {
+      mapperWithoutAuthority.transformBack(URI.create("hdfs:///path"))
+    } must produce[IllegalArgumentException]
+    evaluating {
+      mapperWithoutAuthority.transformBack(URI.create("hdfs:///path/user"))
+    } must produce[IllegalArgumentException]
+    evaluating {
+      mapperWithoutAuthority.transformBack(URI.create("hdfs:///path/user"))
+    } must produce[IllegalArgumentException]
   }
 
   "A HDFS path" must "be transformed back to an Infinity one" in {
-    mapperWithAuthority.transformBack(new Path("hdfs:///path")) must
+    mapperWithAuthority.transformBack(new Path("hdfs:///user/path")) must
       be(new Path("infinity:///path"))
+  }
+
+  it must "fail if the URL does not contain the /user folder" in {
+    evaluating {
+      mapperWithAuthority.transformBack(new Path("hdfs:///path"))
+    } must produce[IllegalArgumentException]
+    evaluating {
+      mapperWithoutAuthority.transformBack(new Path("hdfs:///path"))
+    } must produce[IllegalArgumentException]
+    evaluating {
+      mapperWithoutAuthority.transformBack(new Path("hdfs:///path/user"))
+    } must produce[IllegalArgumentException]
+    evaluating {
+      mapperWithoutAuthority.transformBack(new Path("hdfs:///path/user"))
+    } must produce[IllegalArgumentException]
   }
 
   val len = 1000L
@@ -59,16 +89,16 @@ class UrlMapperTest extends FlatSpec with MustMatchers {
 
   "A file status" must "have its path transformed back to an Infinity one" in {
     mapperWithAuthority.transformBack(new FileStatus(
-      len, isDir, replication, blockSize, time, new Path("hdfs://foo/path"))) must
+      len, isDir, replication, blockSize, time, new Path("hdfs://foo/user/path"))) must
       be (new FileStatus(len, isDir, replication, blockSize, time, new Path("infinity://foo/path")))
   }
 
   it must "transform back the symlink path for symlinks" in {
     val permission = new FsPermission("700")
     val originalFileStatus = new FileStatus(len, isDir, replication, blockSize, time, time, permission, "owner",
-      "group", new Path("hdfs://link"), new Path("hdfs://foo/path"))
+      "group", new Path("hdfs://link/user"), new Path("hdfs://foo/user/path"))
     val transformedFileStatus = new FileStatus(len, isDir, replication, blockSize, time, time, permission, "owner",
-      "group", new Path("infinity://link"), new Path("infinity://foo/path"))
+      "group", new Path("infinity://link/user"), new Path("infinity://foo/path"))
     mapperWithAuthority.transformBack(originalFileStatus) must be (transformedFileStatus)
   }
 }

@@ -45,27 +45,24 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
 
   "The Infinity filesystem" must "initialize the nested filesystem" in {
     defaultInfinity.initialize(URI.create("infinity:///path"), conf)
-    verify(nestedFileSystem).initialize(URI.create("hdfs://default:1234/path"), conf)
+    verify(nestedFileSystem).initialize(URI.create("hdfs://default:1234/user/path"), conf)
     specificInfinity.initialize(URI.create("infinity://host:8888/path"), conf)
-    verify(nestedFileSystem).initialize(URI.create("hdfs://host:8888/path"), conf)
+    verify(nestedFileSystem).initialize(URI.create("hdfs://host:8888/user/path"), conf)
   }
 
   it must "report infinity:// URIs" in {
-    given(nestedFileSystem.getUri).willReturn(URI.create("hdfs://default:1234/path"))
-    defaultInfinity.getUri must be (URI.create("infinity://default:1234/path"))
+    defaultInfinity.getUri must be (URI.create("infinity:///"))
   }
 
-  it must "delegate `makeQualified` with translated path and translate back the response" in {
-    val res = new Path("infinity://default:1234/path")
-    given(nestedFileSystem.makeQualified(any[Path])).willReturn(res)
-    defaultInfinity.makeQualified(new Path("infinity://host/path")) must be (res)
-    verify(nestedFileSystem).makeQualified(new Path("hdfs://host/path"))
+  it must "make paths qualified" in {
+    given(nestedFileSystem.getWorkingDirectory).willReturn(new Path("hdfs://default:1234/user"))
+    defaultInfinity.makeQualified(new Path("infinity:///")) must be (new Path("infinity:/"))
   }
 
   it must "delegate `open` with translated path" in {
     given(nestedFileSystem.open(any[Path], the(bufferSize))).willReturn(inputStream)
     defaultInfinity.open(new Path("infinity:///path"), bufferSize) must be (inputStream)
-    verify(nestedFileSystem).open(new Path("hdfs://default:1234/path"), bufferSize)
+    verify(nestedFileSystem).open(new Path("hdfs://default:1234/user/path"), bufferSize)
   }
 
   it must "delegate `create` with translated path" in {
@@ -74,7 +71,7 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
       anyShort, anyLong, any[Progressable])).willReturn(outputStream)
     defaultInfinity.create(new Path("infinity:///path"), permission, overwrite, bufferSize,
       replication, blockSize, progressable) must be (outputStream)
-    verify(nestedFileSystem).create(new Path("hdfs://default:1234/path"), permission, overwrite,
+    verify(nestedFileSystem).create(new Path("hdfs://default:1234/user/path"), permission, overwrite,
       bufferSize, replication, blockSize, progressable)
   }
 
@@ -82,25 +79,25 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     given(nestedFileSystem.append(any[Path], anyInt, any[Progressable])).willReturn(outputStream)
     defaultInfinity.append(new Path("infinity://other/path"), bufferSize, progressable) must
       be (outputStream)
-    verify(nestedFileSystem).append(new Path("hdfs://other/path"), bufferSize, progressable)
+    verify(nestedFileSystem).append(new Path("hdfs://other/user/path"), bufferSize, progressable)
   }
 
   it must "delegate `rename` with translated path" in {
     given(nestedFileSystem.rename(any[Path], any[Path])).willReturn(true)
     defaultInfinity.rename(new Path("infinity:///from"), new Path("infinity:///to")) must be (true)
     verify(nestedFileSystem)
-      .rename(new Path("hdfs://default:1234/from"), new Path("hdfs://default:1234/to"))
+      .rename(new Path("hdfs://default:1234/user/from"), new Path("hdfs://default:1234/user/to"))
   }
 
   it must "delegate `delete` with translated path" in {
     given(nestedFileSystem.delete(any[Path], anyBoolean)).willReturn(true)
-    defaultInfinity.delete(new Path("infinity://host/path")) must be (true)
-    verify(nestedFileSystem).delete(new Path("hdfs://host/path"), false)
+    defaultInfinity.delete(new Path("infinity://host/path"), recursive = true) must be (true)
+    verify(nestedFileSystem).delete(new Path("hdfs://host/user/path"), true)
   }
 
   it must "delegate `listStatus` with translated listed path" in {
     val status = mock[FileStatus]
-    given(status.getPath).willReturn(new Path("hdfs://host/path/file"))
+    given(status.getPath).willReturn(new Path("hdfs://host/user/path/file"))
     val statuses = Array(status)
     given(nestedFileSystem.listStatus(any[Path])).willReturn(statuses)
     val listing = defaultInfinity.listStatus(new Path("infinity://host/path"))
@@ -109,23 +106,23 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
 
   it must "delegate `setWorkingDirectory` with translated path" in {
     defaultInfinity.setWorkingDirectory(new Path("infinity:///path"))
-    verify(nestedFileSystem).setWorkingDirectory(new Path("hdfs://default:1234/path"))
+    verify(nestedFileSystem).setWorkingDirectory(new Path("hdfs://default:1234/user/path"))
   }
 
   it must "delegate `getWorkingDirectory` translating back returned path" in {
-    given(nestedFileSystem.getWorkingDirectory).willReturn(new Path("hdfs://host/path"))
+    given(nestedFileSystem.getWorkingDirectory).willReturn(new Path("hdfs://host/user/path"))
     defaultInfinity.getWorkingDirectory must be (new Path("infinity://host/path"))
   }
 
   it must "delegate `mkdirs` with translated path" in {
     given(nestedFileSystem.mkdirs(any[Path], any[FsPermission])).willReturn(true)
     defaultInfinity.mkdirs(new Path("infinity:///path"), permission) must be (true)
-    verify(nestedFileSystem).mkdirs(new Path("hdfs://default:1234/path"), permission)
+    verify(nestedFileSystem).mkdirs(new Path("hdfs://default:1234/user/path"), permission)
   }
 
   it must "delegate `getFileStatus` with translated status path" in {
     val status = mock[FileStatus]
-    given(status.getPath).willReturn(new Path("hdfs://host/path"))
+    given(status.getPath).willReturn(new Path("hdfs://host/user/path"))
     given(nestedFileSystem.getFileStatus(any[Path])).willReturn(status)
     defaultInfinity.getFileStatus(new Path("infinity://host/path")).getPath must
       be (new Path("infinity://host/path"))

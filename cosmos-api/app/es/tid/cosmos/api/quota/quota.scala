@@ -13,12 +13,6 @@ package es.tid.cosmos.api.quota
 
 /** Defines the resource quota, which can be empty, unlimited or finite. */
 sealed trait Quota {
-  /** Check if the requested number of resources is within this quota.
-   *
-   * @param request the requested number of resources
-   * @return        true iff the number of resources is within this quota
-   */
-  def withinQuota(request: Int): Boolean
 
   /** Check if the given quota is contained within this quota.
    *
@@ -26,6 +20,15 @@ sealed trait Quota {
    * @return      true iff the quota provided is within this quota
    */
   def withinQuota(other: Quota): Boolean
+
+  /** Check if the requested number of resources is within this quota.
+    *
+    * Convenience wrapper of ``withinQuota(Quota)``.
+    *
+    * @param request the requested number of resources
+    * @return        true iff the number of resources is within this quota
+    */
+  def withinQuota(request: Int): Boolean = withinQuota(Quota(request))
 
   /** Extend the quota by adding another quota to it.
    *
@@ -41,36 +44,41 @@ sealed trait Quota {
    */
   def -(other: Quota): Quota
 
-  /** Get a numeric representation of the quota.
+  /** Get a numeric representation of the quota or None.
    *
    * @return the number of resources represented by this quota.
    *         [[scala.None]] represents an unlimited quota
    */
-  def toInt: Option[Int]
+  def toOptInt: Option[Int]
 }
 
 /** Representation of a quota that can be either empty (`EmptyQuota`)
   * or have a finite limit (`FiniteQuota`).
   */
-sealed trait LimitedQuota extends Quota
+sealed trait LimitedQuota extends Quota {
+
+  /** Get a numeric representation of the quota.
+    *
+    * @return the number of resources represented by this quota.
+    */
+  def toInt: Int
+
+  override def toOptInt: Option[Int] = Some(toInt)
+}
 
 /** Representation of an empty quota, i.e. a quota of zero resources. */
 case object EmptyQuota extends LimitedQuota {
-  override def withinQuota(request: Int): Boolean = false
-
   override def withinQuota(request: Quota): Boolean = false
 
   override def +(other: Quota): Quota = other
 
   override def -(other: Quota): Quota = this
 
-  override def toInt: Option[Int] = Some(0)
+  override def toInt: Int = 0
 }
 
 /** Representation of a quota with no resource limit. */
 case object UnlimitedQuota extends Quota {
-  override def withinQuota(request: Int): Boolean = true
-
   override def withinQuota(request: Quota): Boolean = true
 
   override def +(other: Quota): Quota = this
@@ -81,7 +89,7 @@ case object UnlimitedQuota extends Quota {
     case _ => this
   }
 
-  override def toInt: Option[Int] = None
+  override def toOptInt: Option[Int] = None
 }
 
 /** Representation of a quota with a finite resource limit.
@@ -90,8 +98,6 @@ case object UnlimitedQuota extends Quota {
  */
 case class FiniteQuota(limit: Int) extends LimitedQuota {
   require(limit > 0, s"Invalid quota: $limit")
-
-  override def withinQuota(request: Int): Boolean = request <= limit
 
   override def withinQuota(request: Quota): Boolean = request match {
     case EmptyQuota => true
@@ -113,7 +119,7 @@ case class FiniteQuota(limit: Int) extends LimitedQuota {
       else FiniteQuota(limit - otherLimit)
   }
 
-  override def toInt: Option[Int] = Some(limit)
+  override def toInt: Int = limit
 }
 
 /** Companion object with utility methods for managing quotas. */

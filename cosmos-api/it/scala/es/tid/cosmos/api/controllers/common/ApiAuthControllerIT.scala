@@ -79,9 +79,32 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
     contentAsString(res) must include ("malformed authorization header")
   }
 
-  it must "not authorize when credentials belong to a non-enabled user" in new WithTestController {
-    val request = authorizedRequest(disabledUser.cosmosProfile.apiCredentials)
-    status(action(request)) must be (UNAUTHORIZED)
+  it must "not authorize when credentials belong to a disabled user" in new WithTestController {
+    val res = action(authorizedRequest(
+      userWithState(UserState.Disabled).cosmosProfile.apiCredentials))
+    status(res) must be (UNAUTHORIZED)
+    contentAsString(res) must include ("User profile is disabled")
+  }
+
+  it must "not authorize when credentials belong to a deleted user" in new WithTestController {
+    val res = action(authorizedRequest(
+          userWithState(UserState.Deleted).cosmosProfile.apiCredentials))
+    status(res) must be (UNAUTHORIZED)
+    contentAsString(res) must include ("User profile is deleted")
+  }
+
+  it must "not authorize when credentials belong to user being created" in new WithTestController {
+    val res = action(authorizedRequest(
+      userWithState(UserState.Creating).cosmosProfile.apiCredentials))
+    status(res) must be (UNAUTHORIZED)
+    contentAsString(res) must include ("User profile is still being created")
+  }
+
+  it must "not authorize when credentials belong to user being deleted" in new WithTestController {
+    val res = action(authorizedRequest(
+      userWithState(UserState.Deleting).cosmosProfile.apiCredentials))
+    status(res) must be (UNAUTHORIZED)
+    contentAsString(res) must include ("User profile is being deleted")
   }
 
   it must "return bad request when credentials are invalid" in new WithTestController {
@@ -104,7 +127,7 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers {
   }
 
   it must "not authorize when the user having a session is not enabled" in new WithTestController {
-    status(action(authorizedRequest(disabledUser))) must be (UNAUTHORIZED)
+    status(action(authorizedRequest(userWithState(UserState.Disabled)))) must be (UNAUTHORIZED)
   }
 
   it must "have preference for authorization header over user session" in

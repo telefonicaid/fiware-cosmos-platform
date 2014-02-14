@@ -18,7 +18,7 @@ import play.api.test.Helpers._
 import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.controllers.ResultMatchers.failWith
-import es.tid.cosmos.api.mocks.{SampleClusters, WithTestApplication}
+import es.tid.cosmos.api.mocks.SampleClusters
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.test.matchers.JsonMatchers
@@ -186,22 +186,22 @@ class ClusterIT
   }
 
   private def representClusterProperties(props: MockedServiceManager.ClusterProperties) =
-    containsFieldWithValue("id", JsString(props.id.toString)) and
-      containsFieldWithUrl("href") and
-      containsFieldWithValue("name", JsString(props.name.toString)) and
-      containsFieldWithValue("size", JsNumber(props.size)) and
-      containsFieldWithValue("services", JsArray(props.services.map(JsString)))
+    containFieldWithValue("id", JsString(props.id.toString)) and
+      containFieldWithUrl("href") and
+      containFieldWithValue("name", JsString(props.name.toString)) and
+      containFieldWithValue("size", JsNumber(props.size)) and
+      containFieldWithValue("services", JsArray(props.services.map(JsString)))
 
   private val representRunningCluster =
-    containsFieldWithValue("state", JsString(Running.name)) and
-    containsFieldWithValue("stateDescription", JsString(Running.descLine)) and
-    containsFieldThatMust("master", representAMachine) and
-    containsFieldThatMust("slaves", beAnArrayWhoseElementsMust(representAMachine)) and
-    containsFieldThatMust("users", beAnArrayWhoseElementsMust(representAUser))
+    containFieldWithValue("state", JsString(Running.name)) and
+    containFieldWithValue("stateDescription", JsString(Running.descLine)) and
+    containFieldThatMust("master", representAMachine) and
+    containFieldThatMust("slaves", beAnArrayWhoseElementsMust(representAMachine)) and
+    containFieldThatMust("users", beAnArrayWhoseElementsMust(representAUser))
 
   private val representInProgressCluster =
-    containsFieldWithValue("state", JsString(Provisioning.name)) and
-    containsFieldWithValue("stateDescription", JsString(Provisioning.descLine))
+    containFieldWithValue("state", JsString(Provisioning.name)) and
+    containFieldWithValue("stateDescription", JsString(Provisioning.descLine))
 
   private implicit class RequestFactory(props: MockedServiceManager.ClusterProperties) {
 

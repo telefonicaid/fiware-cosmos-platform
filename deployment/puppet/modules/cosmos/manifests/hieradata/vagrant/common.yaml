@@ -36,7 +36,6 @@ cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{enviro
 cosmos::params::domain: '.vagrant'
 cosmos::params::master_ip: '192.168.11.10'
 cosmos::params::master_hostname: 'master'
-cosmos::params::infinity_url: 'hdfs://cosmos-store1'
 cosmos::params::pdihub_client_id: 'e86cb3c9ffd8bd51f9ec'
 cosmos::params::pdihub_client_secret: '843e55ffe646e223f75fe1f6a3d6f880c3c507ce'
 cosmos::params::horizon_password: 'horizon'

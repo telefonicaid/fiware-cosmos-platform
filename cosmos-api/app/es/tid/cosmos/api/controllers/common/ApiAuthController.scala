@@ -147,7 +147,7 @@ trait ApiAuthController { this: Controller =>
     */
   private def enabledProfile(profile: CosmosProfile): Validation[AuthError, CosmosProfile] =
     if (profile.state == UserState.Enabled) profile.success
-    else InvalidAuthCredentials.failure
+    else InvalidProfileState(profile.state).failure
 
   private def unauthorizedResponse(error: AuthError) =
     Unauthorized(Json.toJson(ErrorMessage(error.message)))

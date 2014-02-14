@@ -27,6 +27,7 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
       Profile(id = "user1", usage = 3)
     )
   )) {
+    context.availableForUser(profiles("user0")) must be (1)
     context.withinQuota(profiles("user0"), 1) must (beSuccessful and haveValidValue(1))
     context.withinQuota(profiles("user0"), 2) must haveFailures(
       "Profile quota exceeded.",
@@ -40,6 +41,7 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
       Profile(id = "user1", usage = 3)
     )
   )) {
+    context.availableForUser(profiles("user0")) must be (5)
     context.withinQuota(profiles("user0"), 5) must (beSuccessful and haveValidValue(5))
     context.withinQuota(profiles("user0"), 6) must haveFailures(
       "Quota exceeded for users not belonging to any group.",
@@ -57,6 +59,7 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
         Profile(id = "user1", usage = 3)
       )
     )) {
+      context.availableForUser(profiles("user0")) must be (3)
       context.withinQuota(profiles("user0"), 1) must (beSuccessful and haveValidValue(1))
       context.withinQuota(profiles("user0"), 2) must (beSuccessful and haveValidValue(2))
       context.withinQuota(profiles("user0"), 3) must (beSuccessful and haveValidValue(3))
@@ -76,6 +79,7 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
         Profile(id = "user1", usage = 3)
       )
     )) {
+      context.availableForUser(profiles("user0")) must be (3)
       context.withinQuota(profiles("user0"), 3) must (beSuccessful and haveValidValue(3))
       context.withinQuota(profiles("user0"), 4) must haveFailures(
         "Quota exceeded for group [A].",
@@ -115,8 +119,10 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
       )) {
         // 22 - 4 - 4 - 5 - 5 = 4 available
         // group A: 10 used 12 reserved.
+        context.usageByGroup(group("A")) must be (10)
 
         // 2 available for NoGroup
+        context.availableForUser(profiles("user1")) must be (2)
         context.withinQuota(profiles("user1"), 2) must (beSuccessful and haveValidValue(2))
         context.withinQuota(profiles("user1"), 3) must haveFailures(
           "Quota exceeded for users not belonging to any group.",
@@ -124,6 +130,7 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
         )
 
         // 4 available for group A
+        context.availableForUser(profiles("user3")) must be (4)
         context.withinQuota(profiles("user3"), 4) must (beSuccessful and haveValidValue(4))
         context.withinQuota(profiles("user3"), 5) must haveFailures(
           "Quota exceeded for group [A].",
@@ -205,5 +212,7 @@ class QuotaContextTest extends FlatSpec with MustMatchers with ValidationMatcher
       (group, groupProfiles)<- groups
       profile <- groupProfiles
     } yield profile.id -> profile.quotaConsumer(group)
+
+    def group(name: String) = groups.keys.find(_.name == name).get
   }
 }

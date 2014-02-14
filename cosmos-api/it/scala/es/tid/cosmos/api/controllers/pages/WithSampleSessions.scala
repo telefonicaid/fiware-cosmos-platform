@@ -15,18 +15,20 @@ import scala.Some
 import scala.concurrent.Future
 
 import play.api.http.Writeable
+import play.api.libs.json.JsValue
 import play.api.mvc.Session
 import play.api.mvc.SimpleResult
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
-import play.api.libs.json.JsValue
 
+import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.servicemanager.ClusterUser
 
 /** A series of user sessions to test with users on different states and roles */
 trait WithSampleSessions extends WithTestApplication {
@@ -69,6 +71,11 @@ trait WithSampleSessions extends WithTestApplication {
       }
     }
 
+    def asClusterUser: ClusterUser = ClusterUser(
+      username = handle,
+      publicKey = cosmosProfile.keys.head.signature
+    )
+
     protected def buildCosmosProfile(): CosmosProfile =
       CosmosProfileTestHelpers.registerUser(handle)(dao)
   }
@@ -94,15 +101,16 @@ trait WithSampleSessions extends WithTestApplication {
   /** Authenticated and registered user */
   val regUser = new RegisteredUserSession("reguser", "User 1")
 
-  val disabledUser = new RegisteredUserSession("disabled", "Disabled 1") {
-    override protected def buildCosmosProfile(): CosmosProfile = {
-      val profile = super.buildCosmosProfile()
-      dao.withTransaction { implicit c =>
-        dao.setUserState(profile.id, UserState.Disabled)
+  def userWithState(state: UserState) =
+    new RegisteredUserSession(state.toString, s"${state.toString} 1") {
+      override protected def buildCosmosProfile(): CosmosProfile = {
+        val profile = super.buildCosmosProfile()
+        dao.withTransaction { implicit c =>
+          dao.setUserState(profile.id, state)
+        }
+        profile
       }
-      profile
     }
-  }
 
   /** Authenticated system operator */
   val opUser = new RegisteredUserSession("operator", "Mr Operator") {

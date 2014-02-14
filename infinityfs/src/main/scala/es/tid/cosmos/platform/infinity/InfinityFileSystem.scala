@@ -35,14 +35,13 @@ class InfinityFileSystem(fs: FileSystem) extends FileSystem {
   override def initialize(name: URI, conf: Configuration) {
     require(name.getScheme == UrlMapper.InfinityScheme, s"Invalid scheme in name $name")
     setConf(conf)
-    mapper = new UrlMapper(Option(getConf.get(DefaultAuthorityProperty)))
+    val authority = Option(name.getAuthority).orElse(Option(getConf.get(DefaultAuthorityProperty)))
+    mapper = new UrlMapper(authority)
     super.initialize(name, conf)
     fs.initialize(mapper.transform(name), conf)
   }
 
-  override def getUri: URI = mapper.transformBack(fs.getUri)
-
-  override def makeQualified(path: Path) = fs.makeQualified(mapper.transform(path))
+  override def getUri: URI = mapper.uri
 
   override def open(f: Path, bufferSize: Int) = fs.open(mapper.transform(f), bufferSize)
 
@@ -56,8 +55,6 @@ class InfinityFileSystem(fs: FileSystem) extends FileSystem {
     fs.append(mapper.transform(f), bufferSize, progress)
 
   override def rename(src: Path, dst: Path) = fs.rename(mapper.transform(src), mapper.transform(dst))
-
-  override def delete(f: Path) = delete(f, recursive = false)
 
   override def delete(f: Path, recursive: Boolean) = fs.delete(mapper.transform(f), recursive)
 

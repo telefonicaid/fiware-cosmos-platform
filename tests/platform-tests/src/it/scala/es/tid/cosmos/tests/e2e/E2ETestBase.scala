@@ -24,7 +24,10 @@ import es.tid.cosmos.common.scalatest.tags.EndToEndTest
 
 abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
   with FutureMatchers with BeforeAndAfterAll {
-  implicit val testConfig: Config = ConfigFactory.load(getClass.getClassLoader, "test.conf")
+  implicit val testConfig: Config = {
+    val configFile = Option(System.getProperty("testConfig")).getOrElse("test.conf")
+    ConfigFactory.load(getClass.getClassLoader, configFile)
+  }
   val restTimeout = testConfig.getInt("restTimeout").seconds
 
   override def tags: Map[String, Set[String]] = {
@@ -62,4 +65,6 @@ abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
     usersToDelete.foreach(_.delete())
     clustersToDelete.foreach(_.terminate())
   }
+
+  def resource(resourcePath: String): String = getClass.getResource(resourcePath).getFile
 }

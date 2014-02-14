@@ -11,18 +11,18 @@
 
 package es.tid.cosmos.tests.e2e
 
+import es.tid.cosmos.servicemanager.ServiceDescription
+
 trait ServiceBehaviors { this: E2ETestBase =>
 
   type TestOnCluster = Cluster => Unit
 
-  protected val service: String
-
-  def installingServiceAndRunningAnExample(test: TestOnCluster) {
+  def installingServiceAndRunningAnExample(service: ServiceDescription)(test: TestOnCluster) {
     withNewUser { user =>
       var cluster: Cluster = null
 
       scenario(s"The user can request a cluster with $service") {
-        cluster = Cluster.create(2, user, services = Seq(service))
+        cluster = Cluster.create(2, user, services = Seq(service.name))
         cluster.isListed must be (true)
         cluster.state.get must (be ("provisioning") or be ("running"))
         cluster.ensureState("running")

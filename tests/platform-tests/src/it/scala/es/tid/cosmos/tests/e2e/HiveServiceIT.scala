@@ -11,12 +11,12 @@
 
 package es.tid.cosmos.tests.e2e
 
+import es.tid.cosmos.servicemanager.ambari.services.Hive
+
 class HiveServiceIT extends E2ETestBase with ServiceBehaviors {
 
-  override protected val service = "HIVE"
-
   scenariosFor(
-    installingServiceAndRunningAnExample { cluster =>
+    installingServiceAndRunningAnExample(Hive) { cluster =>
       cluster.scp(resource("/hive-test.sh"))
       cluster.sshCommand("bash ./hive-test.sh")
     }

@@ -15,18 +15,35 @@ import scala.language.postfixOps
 import scala.sys.process._
 
 import net.liftweb.json._
-import org.scalatest.{FeatureSpec, Informer}
+import org.scalatest.Informer
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.verb.MustVerb
 
 class Cluster(id: String, user: User)(implicit info: Informer) extends MustVerb with MustMatchers with Patience {
   private implicit val Formats = net.liftweb.json.DefaultFormats
 
+  def asUser(otherUser: User) = new Cluster(id, otherUser)
+
   def isListed: Boolean = (s"cosmos -c ${user.cosmosrcPath} list" lines_!).exists(_.contains(id))
 
   def describe = parse(s"cosmos -c ${user.cosmosrcPath} show $id" !! ProcessLogger(info(_)))
 
   def state: Option[String] = (describe \ "state").extractOpt[String]
+
+  def users: Seq[String] = (describe \ "users").toOpt match {
+    case Some(users) =>
+      for {
+        JObject(fields) <- users
+        JField("username", JString(handle)) <- fields
+      } yield handle
+    case None => Seq.empty
+  }
+
+  def addUser(clusterUser: String): Int =
+    s"cosmos -c ${user.cosmosrcPath} adduser $id $clusterUser" ! ProcessLogger(info(_))
+
+  def removeUser(clusterUser: String): Int =
+    s"cosmos -c ${user.cosmosrcPath} rmuser $id $clusterUser" ! ProcessLogger(info(_))
 
   def ensureState(expectedState: String) {
     eventually {

@@ -19,8 +19,11 @@ import org.scalatest.{Assertions, Informer}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.verb.MustVerb
 
-class Cluster(id: String, user: User)(implicit info: Informer) extends MustVerb with MustMatchers with Patience {
+class Cluster(id: String, user: User)(implicit info: Informer)
+  extends MustVerb with MustMatchers with Patience with CommandLineMatchers {
+
   private implicit val Formats = net.liftweb.json.DefaultFormats
+  private val sshFlags = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
   def asUser(otherUser: User) = new Cluster(id, otherUser)
 
@@ -59,6 +62,27 @@ class Cluster(id: String, user: User)(implicit info: Informer) extends MustVerb 
     info(s"Calling terminate on cluster $id")
     s"cosmos -c ${user.cosmosrcPath} terminate $id" ! ProcessLogger(info(_))
   }
+
+  /** Upload a file to the cluster master using SCP */
+  def scp(localFile: String, remotePath: String = "", recursive: Boolean = false) {
+    val hostname = masterHostname().getOrElse(fail("No master to scp to"))
+    val scpFlags = if (recursive) "-r" else ""
+    s"scp $sshFlags $scpFlags $localFile ${user.handle}@$hostname:$remotePath".! must runSuccessfully
+  }
+
+  /** Executes a command on the master node through SSH.
+    * An exception is thrown if the command has nonzero return status.
+    */
+  def sshCommand(command: String) {
+    val hostname = masterHostname().getOrElse(fail("No master to ssh to"))
+    s"""ssh $sshFlags ${user.handle}@$hostname "$command"""".! must runSuccessfully
+  }
+
+  private def masterHostname(): Option[String] = (for {
+    JObject(children) <- describe
+    JField("master", JObject(masterFields)) <- children
+    JField("hostname", JString(hostname)) <- masterFields
+  } yield hostname).headOption
 }
 
 object Cluster extends Assertions {

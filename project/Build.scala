@@ -85,7 +85,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
-    settings(CosmosAPIBuild.settings: _*)
+    settings(RpmSettings.cosmosApiSettings: _*)
     dependsOn(serviceManager, common, ial, common_test % "test->compile")
   )
 
@@ -93,6 +93,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(RpmSettings.cosmosAdminSettings: _*)
     dependsOn(
       serviceManager,
       cosmosApi % "compile->compile;test->test",

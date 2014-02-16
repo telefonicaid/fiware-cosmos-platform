@@ -115,5 +115,6 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(InfinityDeployment.settings: _*)
+    settings(RpmSettings.infinitySettings: _*)
   )
 }

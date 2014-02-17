@@ -21,20 +21,15 @@ import sbt.URI
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
 import com.typesafe.sbt.packager.Keys._
-import com.typesafe.sbt.packager.linux.LinuxSymlink
 import com.typesafe.sbt.SbtNativePackager._
 
 object InfinityDeployment {
 
-  val settings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++ rpmSettings ++
+  val settings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++
     publishRpmSettings ++ Seq(
     jarName in assembly <<= name.map(_ + ".jar"),
     dist <<= (packageBin in Rpm)
   )
-
-  val JarPath = "/opt/pdi-cosmos/infinityfs.jar"
-  val JarLinks = for (service <- Seq("hdfs", "mapreduce", "yarm"))
-    yield s"/usr/lib/hadoop-$service/lib/infinityfs.jar"
 
   private def publishRpmSettings: Seq[Setting[_]] = inConfig(Rpm)(Seq(
     publish := {
@@ -75,28 +70,10 @@ object InfinityDeployment {
     Await.ready(upload, Duration.Inf)
   }
 
-  private def rpmSettings: Seq[Setting[_]] = Seq(
-    name in Rpm := "infinityfs",
-    maintainer := "Cosmos Team <cosmos@tid.es>",
-    packageSummary := "Infinity HFS driver",
-    description in Rpm := "Library that enables the infinity:// scheme.",
-    rpmVendor := "Telefonica Digital",
-    rpmGroup := Some("System Environment/Libraries"),
-    rpmLicense := Some("All rights reserved"),
-    version in Rpm <<= version apply { v =>
-      v.replace("-SNAPSHOT", currentTimestamp())
-    },
-    linuxPackageMappings in Rpm := Seq(
-      packageMapping(assembly.value -> JarPath) withUser "root" withGroup "root" withPerms "0755"
-    ),
-    linuxPackageSymlinks in Rpm := JarLinks.map(destination => LinuxSymlink(JarPath, destination))
-  )
-
   private def findCreds(uri: URI, creds: Seq[sbt.Credentials]): Seq[(String, String)] = for {
     c <- creds
     cred = Credentials.toDirect(c)
     if cred.host == uri.getHost
   } yield cred.userName -> cred.passwd
 
-  private def currentTimestamp() = new SimpleDateFormat(".yyyyMMdd.HHmmss").format(new Date)
 }

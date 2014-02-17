@@ -16,7 +16,6 @@ import com.typesafe.sbt.SbtNativePackager
 import com.typesafe.sbt.SbtNativePackager._
 import com.typesafe.sbt.packager.Keys._
 import com.typesafe.sbt.packager.linux.LinuxSymlink
-import com.typesafe.sbt.packager.linux.Keys._
 import sbt._
 import sbt.Keys._
 import sbtassembly.Plugin.AssemblyKeys._

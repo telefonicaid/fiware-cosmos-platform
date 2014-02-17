@@ -37,10 +37,15 @@ trait ClusterStateResolver extends Logging {
 
   private def isServiceRunning(
       allServices: Seq[AmbariServiceDescription])(service: Service): Boolean = {
-    val serviceDescription = allServices
-      .find(_.name == service.name)
-      .getOrElse(
-        throw new IllegalStateException(s"Found an unknown service: ${service.name}"))
-    serviceDescription.runningState.toString == service.state
+    // FIXME: Nasty hack to unblock 0.15.0 release with existing clusters with HDP 1.x
+    if (service.name == "MAPREDUCE")
+      true
+    else {
+      val serviceDescription = allServices
+        .find(_.name == service.name)
+        .getOrElse(
+          throw new IllegalStateException(s"Found an unknown service: ${service.name}"))
+      serviceDescription.runningState.toString == service.state
+    }
   }
 }

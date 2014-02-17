@@ -21,7 +21,6 @@ import sbt.URI
 import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
 import com.typesafe.sbt.packager.Keys._
-import com.typesafe.sbt.packager.linux.LinuxSymlink
 import com.typesafe.sbt.SbtNativePackager._
 
 object InfinityDeployment {
@@ -32,8 +31,7 @@ object InfinityDeployment {
     dist <<= (packageBin in Rpm)
   )
 
-  val JarPath = "/opt/pdi-cosmos/infinityfs.jar"
-  val JarLinks = for (service <- Seq("hdfs", "mapreduce", "yarm"))
+  val JarDestinations = for (service <- Seq("hdfs", "mapreduce", "yarn"))
     yield s"/usr/lib/hadoop-$service/lib/infinityfs.jar"
 
   private def publishRpmSettings: Seq[Setting[_]] = inConfig(Rpm)(Seq(
@@ -86,10 +84,9 @@ object InfinityDeployment {
     version in Rpm <<= version apply { v =>
       v.replace("-SNAPSHOT", currentTimestamp())
     },
-    linuxPackageMappings in Rpm := Seq(
-      packageMapping(assembly.value -> JarPath) withUser "root" withGroup "root" withPerms "0755"
-    ),
-    linuxPackageSymlinks in Rpm := JarLinks.map(destination => LinuxSymlink(JarPath, destination))
+    linuxPackageMappings in Rpm := JarDestinations.map { destination =>
+      packageMapping(assembly.value -> destination) withUser "root" withGroup "root" withPerms "0644"
+    }
   )
 
   private def findCreds(uri: URI, creds: Seq[sbt.Credentials]): Seq[(String, String)] = for {

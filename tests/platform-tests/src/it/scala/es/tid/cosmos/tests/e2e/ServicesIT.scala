@@ -11,12 +11,12 @@
 
 package es.tid.cosmos.tests.e2e
 
-import es.tid.cosmos.servicemanager.ambari.services.{Hdfs, MapReduce2, Hive}
+import es.tid.cosmos.servicemanager.ambari.services.{Oozie, Hdfs, MapReduce2, Hive}
 import es.tid.cosmos.tests.e2e.cluster.Cluster
 
 class ServicesIT extends E2ETestBase {
 
-  val services = Seq(Hive, MapReduce2, Hdfs).map(_.name)
+  val services = Seq(Hive, Oozie, MapReduce2, Hdfs).map(_.name)
 
   withNewUser { user =>
     var cluster: Cluster = null
@@ -41,6 +41,11 @@ class ServicesIT extends E2ETestBase {
     scenario(s"The user can use Hive on the cluster") {
       cluster.scp(resource("/hive-test.sh"))
       cluster.sshCommand("bash ./hive-test.sh")
+    }
+
+    scenario("The user can use Oozie on the cluster") {
+      cluster.scp(resource("/oozie-test.sh"))
+      cluster.sshCommand("bash ./oozie-test.sh")
     }
 
     scenario("The user can terminate the cluster") {

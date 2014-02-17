@@ -25,7 +25,7 @@ import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
  * @see ConfigurationContributor
  * @see ServiceDescription
  */
-trait AmbariServiceDescription extends ConfigurationContributor with ServiceDescription {
+private[ambari] trait AmbariServiceDescription extends ConfigurationContributor with ServiceDescription {
   /**
    * Create a service instance on a given cluster.
    *
@@ -34,7 +34,7 @@ trait AmbariServiceDescription extends ConfigurationContributor with ServiceDesc
    * @param slaves the cluster's slave nodes
    * @return the future of the service instance for the given cluster
    */
-  final def createService(cluster: Cluster, master: Host, slaves: Seq[Host]): Future[Service] =
+  def createService(cluster: Cluster, master: Host, slaves: Seq[Host]): Future[Service] =
     for {
       service <- cluster.addService(name)
       _ <- Future.sequence(components.map(component => service.addComponent(component.name)))

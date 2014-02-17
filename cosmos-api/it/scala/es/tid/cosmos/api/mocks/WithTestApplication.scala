@@ -12,34 +12,56 @@
 package es.tid.cosmos.api.mocks
 
 import scala.Some
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 import play.core.DevSettings
 import play.api.mvc.Session
 import play.api.test.{FakeApplication, FakeRequest, WithApplication}
 
 import es.tid.cosmos.api.AbstractGlobal
-import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.Registration
+import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.servicemanager.clusters.Running
 
 class WithTestApplication(
     additionalConfiguration: Map[String, String] = Map.empty,
-    val playGlobal: AbstractGlobal = new TestGlobal
-  ) extends WithApplication(WithTestApplication.buildApp(additionalConfiguration, playGlobal)) {
+    val testApp: TestApplication = new MockDaoTestApplication)
+  extends WithApplication(
+    WithTestApplication.buildApp(additionalConfiguration, testApp.global)) {
+
+  lazy val playGlobal = testApp.global
+
+  val mockedServiceManager = testApp.mockedServiceManager
 
   lazy val dao = playGlobal.application.dao
 
   def services = playGlobal.application.services
 
+  /** Register a user for testing purposes (directly enabled, no infinity registration)
+    *
+    * @param dao   Where to register the user
+    * @param user  OAuth data to fill in the registration data
+    * @return      Newly created Cosmos profile
+    */
   def registerUser(dao: CosmosProfileDao, user: OAuthUserProfile): CosmosProfile =
     dao.withConnection { implicit c =>
       val email = user.email.getOrElse("root@host")
       val handle = email.split('@')(0)
       val reg = Registration(handle, s"ssh-rsa ABCDE $email", email)
-      dao.registerUser(user.id, reg)
+      dao.registerUser(user.id, reg, UserState.Enabled)
     }
 
   def withSession[A](request: FakeRequest[A], session: Session) =
     request.withSession(session.data.toSeq: _*)
+
+  def withPersistentHdfsDeployed(action: => Unit) = {
+    mockedServiceManager.defineCluster(
+      MockedServiceManager.PersistentHdfsProps.copy(initialState = Some(Running)))
+    action
+  }
 }
 
 object WithTestApplication {

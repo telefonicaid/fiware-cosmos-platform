@@ -4,7 +4,7 @@
     <parent>
         <groupId>es.tid.cosmos</groupId>
         <artifactId>platform</artifactId>
-        <version>0.14.1</version>
+        <version>0.15.0</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
@@ -29,19 +29,6 @@
                             <tasks>
                                 <echo message="Unzipping Cosmos API dist ZIP" />
                                 <unzip src="../../cosmos-api/target/universal/cosmos-api-${project.version}.zip" dest="target/" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>rename egg</id>
-                        <phase>initialize</phase>
-                        <configuration>
-                            <tasks name="copy and rename file">
-                                <copy file="../../cosmos-cli/dist/cosmos-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}-py${python.version}.egg"
-                                      tofile="../../cosmos-cli/dist/cosmos-py${python.version}.egg" />
                             </tasks>
                         </configuration>
                         <goals>
@@ -83,7 +70,7 @@
                             <groupname>root</groupname>
                             <sources>
                                 <source>
-                                    <location>../../cosmos-cli/dist/cosmos-py${python.version}.egg</location>
+                                    <location>../../cosmos-cli/dist/cosmos-${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}-py${python.version}.egg</location>
                                 </source>
                             </sources>
                         </mapping>

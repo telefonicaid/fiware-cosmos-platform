@@ -28,14 +28,10 @@
             <a href="https://pypi.python.org/pypi/setuptools">setuptools</a>.
         </p></li>
 
-        <li><p>
-            Install the Cosmos CLI:
-            @if(current.configuration.getString("cli.url").isDefined) {
-                <tt>easy_install @{current.configuration.getString("cli.url").get}</tt>
-            } else {
-                <tt>easy_install cosmos-x.y-z.egg</tt>
-            }
-        </p></li>
+        <li>
+            Install the Cosmos CLI with <tt>easy_install</tt>. <br/>
+            <tt>sudo easy_install -U @{current.configuration.getString("cli.url").getOrElse("cosmos-x.y-z.egg")}</tt>
+        </li>
 
         <li><p>Configure the tool: <tt>cosmos configure</tt>.</p></li>
 
@@ -160,10 +156,9 @@
         <li>Remove files <tt>cosmos rm [-r] &lt;path&gt;</tt></li>
     </ul>
 
-    <p>Note that the persistent storage is visible from your clusters as a <strong>non-local HDFS
-       system</strong>. When you upload a dataset to <tt>/data/file.txt</tt> with <tt>cosmos put</tt>
-       the information will be available at
-       <tt>@{current.configuration.getString("infinity.url").getOrElse("hdfs://infinity-hostname:port")}/user/@cosmosProfile.handle/data/file.txt</tt></p>
+    <p>Note that the persistent storage is also visible from Hadoop. When you upload a dataset to
+    <tt>/data/file.txt</tt> with <tt>cosmos put</tt> the information will be available at
+    <tt>infinity:///@cosmosProfile.handle/data/file.txt</tt></p>
 
     <h2>Use the REST API</h2>
 

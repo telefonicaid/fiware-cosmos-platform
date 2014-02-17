@@ -16,6 +16,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
+import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait CosmosProfileDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMatchers =>
@@ -180,7 +181,7 @@ trait CosmosProfileDaoBehavior extends CapabilityMatchers { this: FlatSpec with 
         dao.getMachineQuota(unknownUserId) must equal (EmptyQuota)
       }
     })
-    
+
     taggedTest(it must "set machine quota for a given user", withDao { dao =>
       dao.withTransaction { implicit c =>
         val id1 = registerUser(dao, "jsmith").id
@@ -230,6 +231,18 @@ trait CosmosProfileDaoBehavior extends CapabilityMatchers { this: FlatSpec with 
         dao.assignCluster(clusterId, id2)
         dao.clustersOf(id1).map(_.clusterId).toList must not contain clusterId
         dao.clustersOf(id2).map(_.clusterId).toList must contain (clusterId)
+      }
+    })
+
+    taggedTest(it must "retrieve the owner of a cluster", withDao { implicit dao =>
+      val clusterId = ClusterId()
+      val profileId = dao.withTransaction { implicit c =>
+        val profileId = registerUser(dao, "user1").id
+        dao.assignCluster(clusterId, profileId)
+        profileId
+      }
+      dao.withTransaction { implicit c =>
+        dao.ownerOf(clusterId) must be (Some(profileId))
       }
     })
 

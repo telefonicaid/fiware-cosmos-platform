@@ -13,7 +13,7 @@ package es.tid.cosmos.api.controllers.services
 
 import com.wordnik.swagger.annotations.{ApiOperation, Api}
 import play.api.libs.json.Json
-import play.api.mvc.Action
+import play.api.mvc.{Controller, Action}
 
 import es.tid.cosmos.api.controllers.common.JsonController
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -21,13 +21,13 @@ import es.tid.cosmos.servicemanager.ServiceManager
 /** Resource that represents the set of services that can be installed in clusters. */
 @Api(value = "/cosmos/v1/services", listingPath = "/doc/cosmos/v1/services",
   description = "Represents all the services that can optionally be installed in a cluster")
-class ServicesResource(serviceManager: ServiceManager) extends JsonController {
+class ServicesResource(serviceManager: ServiceManager) extends Controller with JsonController {
 
   /**List cluster services. */
   @ApiOperation(value = "List services", httpMethod = "GET",
     notes = "The response is a bare array of strings (e.g. [\"service1\", \"service2\"])",
     responseClass = "java.lang.String", multiValueResponse = true)
   def list = Action { implicit request =>
-      Ok(Json.toJson(serviceManager.optionalServices.map(_.name)))
+    Ok(Json.toJson(serviceManager.optionalServices.map(_.name)))
   }
 }

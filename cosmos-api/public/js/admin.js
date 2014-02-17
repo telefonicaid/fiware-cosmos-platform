@@ -11,6 +11,30 @@
 
 ;"use strict";
 
+function configureActiveClustersSection() {
+    $('#active-clusters').dataTable({
+        "sScrollX": "100%",
+        "bProcessing": true,
+        "sAjaxSource": '/cosmos/v1/stats/clusters',
+        "sAjaxDataProp": "clusters",
+        "aoColumns": [
+            { "mData": "id", "sClass": "id-cell" },
+            { "mData": "name" },
+            { "mData": "ownerHandle" },
+            { "mData": "size", "sType": "numeric", "sClass": "numeric-cell" },
+            { "mData": "master" }
+        ]
+    });
+    $.ajax({
+        url: '/cosmos/v1/stats/machines',
+        type: 'GET',
+        contentType: 'json',
+        success: function(data) {
+            $('#available-machines').text(data['g1-compute'].available)
+        }
+    });
+}
+
 /**
  * Configure AJAX buttons for entering/leaving maintenance mode with user confirmation.
  */
@@ -43,5 +67,6 @@ function configureMaintenanceButtons() {
 }
 
 $(document).ready(function() {
+    configureActiveClustersSection();
     configureMaintenanceButtons();
 });

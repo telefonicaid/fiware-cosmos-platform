@@ -27,17 +27,17 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
     with MockitoSugar {
 
   val cluster = mock[Cluster]
-  val properties = Map[ConfigurationKeys.Value, String]()
+  val noProperties: ConfigProperties = Map.empty
 
   "A Configurator" must "not apply configuration when there is none available" in {
-    Configurator.applyConfiguration(cluster, properties, contributors = List())
+    Configurator.applyConfiguration(cluster, noProperties, contributors = List())
     verifyNoMoreInteractions(cluster)
   }
 
   it must "configure using only one contributor" in {
     val contributor = mock[ConfigurationContributor]
     given(contributor.contributions(any())).willReturn(contributionsWithNumber(1))
-    Configurator.applyConfiguration(cluster, properties, List(contributor))
+    Configurator.applyConfiguration(cluster, noProperties, List(contributor))
     verify(cluster).applyConfiguration(isEq(contributionsWithNumber(1).global.get), tagPattern)
     verify(cluster).applyConfiguration(isEq(contributionsWithNumber(1).core.get), tagPattern)
     verify(cluster).applyConfiguration(isEq(contributionsWithNumber(1).services(0)), tagPattern)
@@ -48,7 +48,7 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
     val contributor2 = mock[ConfigurationContributor]
     given(contributor1.contributions(any())).willReturn(contributionsWithNumber(1))
     given(contributor2.contributions(any())).willReturn(contributionsWithNumber(2))
-    Configurator.applyConfiguration(cluster, properties, List(contributor1, contributor2))
+    Configurator.applyConfiguration(cluster, noProperties, List(contributor1, contributor2))
     verify(cluster).applyConfiguration(
       isEq(GlobalConfiguration(
         Map("someGlobalContent1" -> "somevalue1", "someGlobalContent2" -> "somevalue2"))),
@@ -72,22 +72,43 @@ class ConfiguratorTest extends FlatSpec with OneInstancePerTest with MustMatcher
     given(contributor2.contributions(any())).willReturn(
       ConfigurationBundle(configuration2.global, configuration2.core, configuration1.services))
     evaluating {
-      Configurator.applyConfiguration(cluster, properties, List(contributor1, contributor2))
+      Configurator.applyConfiguration(cluster, noProperties, List(contributor1, contributor2))
     } must produce [ConfigurationConflict]
   }
 
   it must "fail when global configuration contributions have property conflicts" in {
-      val contributor1 = mock[ConfigurationContributor]
-      val contributor2 = mock[ConfigurationContributor]
-      val configuration1 = contributionsWithNumber(1)
-      val configuration2 = contributionsWithNumber(2)
-      given(contributor1.contributions(any())).willReturn(configuration1)
-      given(contributor2.contributions(any())).willReturn(
-        ConfigurationBundle(configuration1.global, configuration2.core, configuration2.services))
-      evaluating {
-        Configurator.applyConfiguration(cluster, properties, List(contributor1, contributor2))
-      } must produce [ConfigurationConflict]
-    }
+    val contributor1 = mock[ConfigurationContributor]
+    val contributor2 = mock[ConfigurationContributor]
+    val configuration1 = contributionsWithNumber(1)
+    val configuration2 = contributionsWithNumber(2)
+    given(contributor1.contributions(any())).willReturn(configuration1)
+    given(contributor2.contributions(any())).willReturn(
+      ConfigurationBundle(configuration1.global, configuration2.core, configuration2.services))
+    evaluating {
+      Configurator.applyConfiguration(cluster, noProperties, List(contributor1, contributor2))
+    } must produce [ConfigurationConflict]
+  }
+
+//  it must "apply a configuration with dynamic properties created from hadoop configuration" in {
+//    val hadoopConfig = HadoopConfig(mappersPerSlave = 4, reducersPerSlave = 8, zookeeperPort = 1234)
+//    val contributor = mock[ConfigurationContributor]
+//    val configuration = ConfigurationBundle(GlobalConfiguration(Map.empty))
+//    given(contributor.contributions(any())).willReturn(configuration)
+//    val master, slave = mock[Host]
+//    given(master.name).willReturn("master")
+//    given(slave.name).willReturn("slave")
+//    Configurator.applyConfiguration(cluster, master, Seq(slave), hadoopConfig, List(contributor))
+//    verify(contributor).contributions(Map(
+//      HdfsReplicationFactor -> "1",
+//      MappersPerSlave -> "4",
+//      MasterNode -> "master",
+//      MaxReduceTasks -> "14",
+//      MaxMapTasks -> "4",
+//      ReducersPerSlave -> "8",
+//      ZookeeperHosts -> "slave:1234",
+//      ZookeeperPort -> "1234"
+//    ))
+//  }
 
   def tagPattern = matches("version\\d+")
 }

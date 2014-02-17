@@ -9,6 +9,8 @@
 # Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
 # All rights reserved.
 #
+import os
+import stat
 import unittest
 
 from testfixtures import TempDirectory
@@ -61,6 +63,8 @@ class HomeDirTest(unittest.TestCase):
             self.temp_dir.check(".cosmosrc")
             self.assertEquals(self.home.read_config_file(), "new config")
             self.assertIn("Settings saved", outputs.stdout.getvalue())
+            file_mode = os.stat(self.temp_dir.getpath(".cosmosrc")).st_mode
+            self.assertEquals(file_mode, stat.S_IFREG | stat.S_IRUSR | stat.S_IWUSR)
 
     def test_override_config_file(self):
         with collect_outputs():
@@ -68,6 +72,15 @@ class HomeDirTest(unittest.TestCase):
             self.assertEquals(
                 self.home.read_config_file(filename_override=other_config),
                 "config")
+
+    def test_warn_on_unprotected_config_file(self):
+        with collect_outputs() as outputs:
+            self.home.write_config_file("new config")
+            config_path = self.temp_dir.getpath(".cosmosrc")
+            os.chmod(config_path, 0777)
+            #import ipdb; ipdb.set_trace()
+            self.home.read_config_file()
+            self.assertIn("WARNING", outputs.stderr.getvalue())
 
     def test_last_cluster(self):
         self.home.write_last_cluster("0000000")

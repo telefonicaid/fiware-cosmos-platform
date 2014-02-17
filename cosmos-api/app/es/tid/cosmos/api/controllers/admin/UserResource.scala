@@ -21,7 +21,7 @@ import scalaz._
 import com.wordnik.swagger.annotations._
 import play.Logger
 import play.api.libs.json.Json
-import play.api.mvc.{Action, Headers}
+import play.api.mvc.{Controller, Action, Headers}
 
 import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.controllers.common._
@@ -37,7 +37,7 @@ class UserResource(
     serviceManager: ServiceManager,
     dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus
-  ) extends JsonController with MaintenanceAwareController {
+  ) extends Controller with JsonController with MaintenanceAwareController {
 
   import Scalaz._
 
@@ -91,7 +91,9 @@ class UserResource(
         } yield (userId, Registration(handle, params.sshPublicKey, params.email))
       }
       (userId, registration) = dbInfo
-      profile <- registrationWizard.registerUser(dao, userId, registration)
+      registrationResult <- registrationWizard.registerUser(dao, userId, registration)
+        .leftMap(message => InternalServerError(Json.toJson(message)))
+      (profile, _) = registrationResult
     } yield Created(Json.toJson(RegisterUserResponse(
       handle = profile.handle,
       apiKey = profile.apiCredentials.apiKey,
@@ -129,17 +131,17 @@ class UserResource(
   }
 
   private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = for {
-    cosmosId <- dao.withTransaction { implicit c => dao.getProfileId(userId)}.toSuccess(
+    cosmosProfile <- dao.withTransaction { implicit c => dao.lookupByUserId(userId)}.toSuccess(
       NotFound(Json.toJson(Message(s"User $userId does not exist")))
     )
-    unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosId)
+    unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosProfile.id)
       .leftMap(message => InternalServerError(Json.toJson(message)))
   } yield {
     unregistration_>.onSuccess {
-      case _ => Logger.info(s"User with id $cosmosId successfully unregistered")
+      case _ => Logger.info(s"User $userId (${cosmosProfile.handle}) successfully unregistered")
     }
     unregistration_>.onFailure {
-      case ex => Logger.error(s"Could not unregister user with id $cosmosId", ex)
+      case ex => Logger.error(s"Could not unregister user $userId (${cosmosProfile.handle})", ex)
     }
     unregistration_>
   }
@@ -154,7 +156,7 @@ class UserResource(
   private def uniqueUserId(params: RegisterUserParams)
                           (implicit c: Conn): ActionValidation[UserId] = {
     val userId = UserId(params.authRealm, params.authId)
-    if (dao.lookupByUserId(userId).isEmpty) userId.success 
+    if (dao.lookupByUserId(userId).isEmpty) userId.success
     else failWith(Conflict, s"Already existing credentials: $userId")
   }
 
@@ -171,7 +173,7 @@ class UserResource(
       case (`providerName`, adminProvider : AdminEnabledAuthProvider) => adminProvider
     }
   } yield password == provider.adminPassword).getOrElse(false)
-  
+
   private def failWith(status: Status, message: String) = status(Json.toJson(Message(message))).fail
 
   @tailrec

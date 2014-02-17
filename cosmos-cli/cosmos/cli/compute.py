@@ -114,8 +114,8 @@ def create_cluster(args, proto):
 def add_create_cluster_command(subparsers):
     parser = subparsers.add_parser("create", help="create a new cluster")
     parser.add_argument("--name", required=True, help="cluster name")
-    parser.add_argument("--size", required=True, type=util.at_least_2,
-                        help="number of machines (at least 2")
+    parser.add_argument("--size", required=True, type=util.at_least_1,
+                        help="number of machines (at least 1")
     parser.add_argument("--services", required=False, nargs="*",
                         help='optional services to install in the cluster')
     parser.set_defaults(func=ComputeCommand(create_cluster))
@@ -142,7 +142,7 @@ def add_user_to_cluster(args, proto):
 def add_adduser_command(subparsers):
     parser = subparsers.add_parser("adduser", help="add a user to an existing cluster")
     util.add_cluster_id_argument(parser)
-    parser.add_argument("user_id", help="cluster id")
+    parser.add_argument("user_id", help="user id")
     parser.set_defaults(func=ComputeCommand(add_user_to_cluster))
 
 

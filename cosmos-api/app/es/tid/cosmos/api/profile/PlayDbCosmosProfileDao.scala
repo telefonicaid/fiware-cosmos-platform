@@ -23,6 +23,7 @@ import play.api.Play.current
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.Capability._
+import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait PlayDbCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
@@ -37,12 +38,13 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = DB.withConnection[A](block)
   def withTransaction[A](block: (Conn) => A): A = DB.withTransaction[A](block)
 
-  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
+  override def registerUser(userId: UserId, reg: Registration, state: UserState)
+                           (implicit c: Conn): CosmosProfile = {
     val apiCredentials = ApiCredentials.random()
     val defaultKey = NamedKey("default", reg.publicKey)
     val unpersistedProfile = CosmosProfile(
       id = -1,
-      state = Enabled,
+      state = state,
       handle = reg.handle,
       email = reg.email,
       apiCredentials = apiCredentials,
@@ -52,15 +54,16 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       unpersistedProfile.capabilities.capabilities.isEmpty,
       "No support for user registration with capabilities already added.")
     val profileId = SQL(
-      """INSERT INTO user(auth_realm, auth_id, handle, email, api_key, api_secret, group_name,
+      """INSERT INTO user(auth_realm, auth_id, handle, state, email, api_key, api_secret, group_name,
         |                 machine_quota)
-        | VALUES ({auth_realm}, {auth_id}, {handle}, {email}, {api_key}, {api_secret}, {group_name},
-        |         {machine_quota})"""
+        | VALUES ({auth_realm}, {auth_id}, {handle}, {state}, {email}, {api_key}, {api_secret},
+        |         {group_name}, {machine_quota})"""
         .stripMargin)
       .on(
         "auth_realm" -> userId.realm,
         "auth_id" -> userId.id,
         "handle" -> reg.handle,
+        "state" -> state.toString,
         "email" -> reg.email,
         "api_key" -> apiCredentials.apiKey,
         "api_secret" -> apiCredentials.apiSecret,
@@ -122,6 +125,13 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     usersWithThatHandle > 0
   }
 
+  override def lookupByProfileId(id: ProfileId)(implicit c: Conn): Option[CosmosProfile] =
+    lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
+        |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
+        |WHERE u.cosmos_id = {id}""".stripMargin)
+      .on("id" -> id)
+    ).headOption
+
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     lookup(SQL(s"""SELECT $AllUserFields, p.name, p.signature
                   |FROM user u LEFT OUTER JOIN public_key p ON (u.cosmos_id = p.cosmos_id)
@@ -148,7 +158,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .on("handle" -> handle)).headOption
 
   override def getGroups(implicit c: Conn): Set[Group] = {
-    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(ToGroup)
+    val registeredGroups = SQL("SELECT name, min_quota FROM user_group").apply().collect(ToGroup).force
     Set[Group](NoGroup) ++ registeredGroups
   }
 
@@ -177,7 +187,7 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
       .on("min_quota" -> minQuota.toInt, "name" -> name).executeUpdate()
   }
 
-  /** ''Note:'' Referencial integrity is assumed to be delegated to the DB so as to set the group's
+  /** ''Note:'' Referential integrity is assumed to be delegated to the DB so as to set the group's
     * users to have NoGroup/NULL
     *
     * @see CosmosProfileDao
@@ -195,13 +205,19 @@ class PlayDbCosmosProfileDao extends CosmosProfileDao {
     ).execute()
   }
 
+  override def ownerOf(clusterId: ClusterId)(implicit c: Conn): Option[ProfileId] =
+    SQL("SELECT owner FROM cluster WHERE cluster_id = {cluster_id}")
+      .on("cluster_id" -> clusterId.id)
+      .as(scalar[ProfileId].singleOpt)
+
   override def clustersOf(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment] =
     SQL("SELECT cluster_id, creation_date FROM cluster WHERE owner = {owner}")
       .on("owner" -> id)
-      .apply() collect {
+      .apply()
+      .collect({
         case Row(clusterId: String, creationDate: Date) =>
           ClusterAssignment(ClusterId(clusterId), id, creationDate)
-      }
+      }).force
 
   /** Lookup Cosmos profiles retrieved by a custom query.
     *

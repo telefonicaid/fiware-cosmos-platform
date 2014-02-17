@@ -54,14 +54,13 @@ auth.pdihub {
 }
 auth.horizon {
     enabled=false
-    class="es.tid.cosmos.api.auth.horizon.HorizonAuthProvider"
+    class="es.tid.cosmos.api.auth.external.ExternallyManagedAuthProvider"
     password=
 }
 
 # Links (without trailing slashes)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cli.url="http://localhost/cosmos.egg"
-infinity.url="hdfs://"
 
 # Swagger API documentation
 # ~~~~~

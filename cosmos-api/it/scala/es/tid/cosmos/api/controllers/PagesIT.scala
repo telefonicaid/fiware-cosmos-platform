@@ -72,14 +72,15 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   }
 
   it must "register unregistered users" in new WithSampleSessions {
-    val response = unregUser.submitForm("/register",
-      "handle" -> "newuser",
-      "email" -> "jsmith@example.com",
-      "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
-    val contents = contentAsString(response)
-    response must redirectTo ("/")
-    dao.withConnection { implicit c =>
-      dao.lookupByUserId(unregUser.userId) must be ('defined)
+    withPersistentHdfsDeployed {
+      val response = unregUser.submitForm("/register",
+        "handle" -> "newuser",
+        "email" -> "jsmith@example.com",
+        "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
+      response must redirectTo ("/")
+      dao.withConnection { implicit c =>
+        dao.lookupByUserId(unregUser.userId) must be ('defined)
+      }
     }
   }
 
@@ -87,11 +88,11 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
     val response = unregUser.submitForm("/register",
       "handle" -> "1nvalid handle",
       "email" -> "not an email",
-      "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example@invalid.com"
+      "publicKey" -> "ssh-rsa DKDJDJDK ;;;"
     )
     status(response) must be (BAD_REQUEST)
-    contentAsString(response) must include ("Not a valid unix handle")
-    contentAsString(response) must include ("invalid email")
+    contentAsString(response) must (include("Not a valid unix handle") and
+      include("Key comment &quot;;;;&quot; contains invalid characters"))
   }
 
   it must "reject registrations when selected handle is already taken" in new WithSampleSessions {
@@ -101,6 +102,20 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
     )
     status(response) must be (BAD_REQUEST)
     contentAsString(response) must include ("already taken")
+  }
+
+  it must "reject registration when user is already being registered" in new WithSampleSessions {
+    withPersistentHdfsDeployed {
+      val runningTask = services.taskDao.registerTask()
+      runningTask.resource = "newuser"
+      runningTask.metadata = "registration"
+      val response = unregUser.submitForm("/register",
+        "handle" -> "newuser",
+        "email" -> "jsmith@example.com",
+        "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
+      status(response) must be (BAD_REQUEST)
+      contentAsString(response) must include ("already running")
+    }
   }
 
   "The profile page" must "show the user profile page for registered users" in new WithSampleSessions {

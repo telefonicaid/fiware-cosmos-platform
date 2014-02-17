@@ -16,5 +16,5 @@ import es.tid.cosmos.servicemanager.ambari.configuration.NoConfigurationContribu
 
 object Pig extends AmbariServiceDescription with NoConfigurationContribution {
   override val name = "PIG"
-  override val components = Seq(ComponentDescription("PIG", isClient = true, isMaster = true))
+  override val components = Seq(ComponentDescription.masterComponent("PIG").makeClient)
 }

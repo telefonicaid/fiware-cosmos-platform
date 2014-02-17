@@ -15,12 +15,12 @@
 # This class finds the operating release and calls the yumrepo class
 # to create the repo.
 #
-class yum::centos::updates ($repo_server = 'repos.hi.inet') inherits yum::variables {
+class yum::centos::updates ($repo_server = $yum::params::yum_centos_updates) {
 
   yumrepo { 'Centos-Updates':
     descr      => 'Centos Updates',
     enabled    => '1',
     gpgcheck   => '0',
-    baseurl    => "http://${repo_server}/redhat/centos${operatingsystemmajrelease}-\$basearch/RPMS.updates",
+    baseurl    => $repo_server,
   }
 }

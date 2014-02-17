@@ -16,12 +16,12 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test._
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.mocks.WithSampleUsers
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 
 class CosmosIT extends FlatSpec with MustMatchers {
-  "The Cosmos resource" must "redirect to the doc page" in new WithSampleUsers {
-    val resource = route(FakeRequest(GET, "/cosmos/v1")).get
-    status(resource) must equal (MOVED_PERMANENTLY)
-    header("Location", resource).get must include ("/doc.html")
+  "The Cosmos resource" must "redirect to the doc page" in new WithSampleSessions {
+    val res = regUser.doRequest("/cosmos/v1")
+    status(res) must equal (MOVED_PERMANENTLY)
+    header("Location", res).get must include ("/doc.html")
   }
 }

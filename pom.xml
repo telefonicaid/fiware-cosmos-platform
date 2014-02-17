@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>platform</artifactId>
-    <version>0.14.1</version>
+    <version>0.15.0</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -26,21 +26,13 @@
                 <groupId>com.mycila.maven-license-plugin</groupId>
                 <artifactId>maven-license-plugin</artifactId>
                 <configuration>
+                    <includes>
+                        <include>**/.java</include>
+                        <include>**/.scala</include>
+                        <include>**/.pp</include>
+                    </includes>
                     <excludes>
-                        <exclude>**/*.css</exclude>
-                        <exclude>**/*.egg-info/**</exclude>
-                        <exclude>**/*.html</exclude>
-                        <exclude>**/*.js</exclude>
-                        <exclude>**/*.json</exclude>
-                        <exclude>**/*.log</exclude>
-                        <exclude>**/*.md</exclude>
-                        <exclude>**/*.properties</exclude>
-                        <exclude>**/*.proto</exclude>
-                        <exclude>**/*.py</exclude>
-                        <exclude>**/*.rb</exclude>
-                        <exclude>**/*.rst</exclude>
-                        <exclude>**/*.sbt</exclude>
-                        <exclude>**/*.ttf</exclude>
+                        <exclude>**/*_third_party/**</exclude>
                         <exclude>**/.idea/**</exclude>
                         <exclude>**/.installed.cfg</exclude>
                         <exclude>**/build/**</exclude>
@@ -51,7 +43,6 @@
                         <exclude>**/parts/**</exclude>
                         <exclude>**/resources/**/*</exclude>
                         <exclude>**/target/**</exclude>
-                        <exclude>**/*_third_party/**</exclude>
                         <exclude>deployment/puppet/modules/openvz/**</exclude>
                         <exclude>metrics.xml</exclude>
                     </excludes>

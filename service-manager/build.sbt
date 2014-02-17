@@ -11,3 +11,5 @@ libraryDependencies ++= Seq(
   Dependencies.squeryl,
   Dependencies.typesafeConfig
 )
+
+unmanagedResourceDirectories in IntegrationTest <+= ExternalSources.servicesConfigDirectory

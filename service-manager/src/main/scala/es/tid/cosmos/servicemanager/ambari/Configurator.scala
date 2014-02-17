@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Factory
 import es.tid.cosmos.servicemanager.ambari.configuration.FactoryTypes.Implicits._
-import es.tid.cosmos.servicemanager.ambari.rest.{Host, Cluster}
+import es.tid.cosmos.servicemanager.ambari.rest.Cluster
 
 /**
  * Class for consolidating configuration from multiple contributors and applying it to a cluster.
@@ -38,34 +38,16 @@ object Configurator {
    */
   def applyConfiguration(
     cluster: Cluster,
-    properties: Map[ConfigurationKeys.Value, String],
+    properties: ConfigProperties,
     contributors: Seq[ConfigurationContributor]): Future[Seq[Unit]] = {
     val tag = timestampedTag()
     val configurations = consolidateConfiguration(contributors, properties)
     Future.traverse(configurations)(cluster.applyConfiguration(_, tag))
   }
 
-  def applyConfiguration(
-      cluster: Cluster,
-      master: Host,
-      slaves: Seq[Host],
-      hadoopConfiguration: HadoopConfig,
-      contributors: Seq[ConfigurationContributor]): Future[Cluster] = {
-    val properties = Map(
-      ConfigurationKeys.HdfsReplicationFactor -> Math.min(3, slaves.length).toString,
-      ConfigurationKeys.MasterNode -> master.name,
-      ConfigurationKeys.MappersPerSlave -> hadoopConfiguration.mappersPerSlave.toString,
-      ConfigurationKeys.MaxMapTasks ->
-        (hadoopConfiguration.mappersPerSlave * slaves.length).toString,
-      ConfigurationKeys.MaxReduceTasks ->
-        (1.75 * hadoopConfiguration.reducersPerSlave * slaves.length).round.toString,
-      ConfigurationKeys.ReducersPerSlave -> hadoopConfiguration.reducersPerSlave.toString)
-    Configurator.applyConfiguration(cluster, properties, contributors).map(_ => cluster)
-  }
-
   private def consolidateConfiguration(
       contributors: Seq[ConfigurationContributor],
-      properties: Map[ConfigurationKeys.Value, String]): List[Configuration] =
+      properties: ConfigProperties): List[Configuration] =
     contributors.map(_.contributions(properties)).foldLeft(empty)(consolidate).configurations
 
   private def consolidate(

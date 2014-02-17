@@ -10,12 +10,35 @@
  All rights reserved.
  -->
 @main("Cosmos administration") {
+    <link rel="stylesheet" media="screen"
+      href="@routes.Assets.at("third-party/datatables-1.9.4/jquery.dataTables.css")">
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/admin.css")">
+    <script type="text/javascript"
+      src="@routes.Assets.at("third-party/datatables-1.9.4/jquery.dataTables.min.js")"></script>
     <script type="text/javascript" src="@routes.Assets.at("js/admin.js")"></script>
 } {
     @navigation("admin", tabs)
 
     <h1 class="page-title">Cosmos administration</h1>
+
+    <h2>Active clusters</h2>
+
+    <table id="active-clusters">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Owner</th>
+                <th>Size</th>
+                <th>Master</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <p><span id="available-machines">Unknown</span> available computing machines (not being used on
+        any listed cluster).</p>
 
     <h2>Maintenance mode</h2>
 

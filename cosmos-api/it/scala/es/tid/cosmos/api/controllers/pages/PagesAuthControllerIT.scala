@@ -18,11 +18,14 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers._
 import play.api.mvc._
 
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.controllers.common.PagesAuthController
+import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao}
 
 class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 
-  class TestController(override val dao: CosmosProfileDao) extends PagesAuthController {
+  class TestController(override val dao: CosmosProfileDao)
+    extends Controller with PagesAuthController {
+
     def index() = Action(parse.anyContent) { request =>
       withAuthentication(request) (
         whenRegistered = (u, c) => Ok(s"registered: userProfile=$u, cosmosProfile=$c"),
@@ -51,6 +54,7 @@ class PagesAuthControllerIT extends FlatSpec with MustMatchers {
   }
 
   it must "discard sessions of not-enabled users" in new WithTestController {
-    contentAsString(route(disabledUser.request("/"))) must include ("not registered")
+    contentAsString(route(userWithState(UserState.Disabled).request("/"))) must include (
+      "not registered")
   }
 }

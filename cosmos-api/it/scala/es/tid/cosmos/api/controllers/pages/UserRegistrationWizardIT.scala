@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.controllers.pages
 
+import scala.concurrent.duration._
+
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers.any
 import org.mockito.Mockito.{verify, spy}
@@ -22,19 +24,25 @@ import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import scala.concurrent.Await
 
-class UserRegistrationWizardIT extends FlatSpec with MustMatchers with MockitoSugar {
+class UserRegistrationWizardIT
+  extends FlatSpec with MustMatchers with MockitoSugar with FutureMatchers {
 
+  val testTimeout = 3.seconds
   val handle = "jsmith"
   val userId = userIdFor(handle)
   val registration = registrationFor(handle)
 
   trait WithUserRegistrationWizard {
     val dao = new MockCosmosProfileDao()
-    val sm = spy(new MockedServiceManager(transitionDelay = 0))
+    val sm = spy(new MockedServiceManager())
     val instance = new UserRegistrationWizard(sm)
+
+    sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
   }
 
   "User registration" must "create a new profile with the input data" in
@@ -42,13 +50,15 @@ class UserRegistrationWizardIT extends FlatSpec with MustMatchers with MockitoSu
       val validationResult = dao.withTransaction { implicit c =>
         instance.registerUser(dao, userId, registration)
       }
+
       validationResult must be ('success)
-      validationResult.foreach { p =>
-        p.handle must be (handle)
-        p.email must be (registration.email)
-        p.state must be (UserState.Enabled)
-        p.keys must have size 1
-      }
+      val (profile, registration_>) = validationResult.toOption.get
+      registration_> must (runUnder(testTimeout) and eventuallySucceed)
+
+      profile.handle must be (handle)
+      profile.email must be (registration.email)
+      profile.state must be (UserState.Creating)
+      profile.keys must have size 1
     }
 
   it must "reconfigure persistent HDFS cluster with current and deleted users" in
@@ -58,9 +68,13 @@ class UserRegistrationWizardIT extends FlatSpec with MustMatchers with MockitoSu
         dao.setUserState(deletedUser.id, UserState.Deleted)
       }
 
-      dao.withTransaction { implicit c =>
+      val validationResult = dao.withTransaction { implicit c =>
         instance.registerUser(dao, userId, registration)
       }
+
+      validationResult must be ('success)
+      val (_, registration_>) = validationResult.toOption.get
+      registration_> must (runUnder(testTimeout) and eventuallySucceed)
 
       val usersCaptor = ArgumentCaptor.forClass(classOf[Seq[ClusterUser]])
       verify(sm).setUsers(any[ClusterId], usersCaptor.capture())

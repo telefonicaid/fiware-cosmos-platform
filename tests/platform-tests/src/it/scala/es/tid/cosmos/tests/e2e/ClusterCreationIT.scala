@@ -11,24 +11,23 @@
 
 package es.tid.cosmos.tests.e2e
 
-import org.scalatest.FlatSpec
-import org.scalatest.matchers.MustMatchers
+class ClusterCreationIT extends E2ETestBase {
+  withNewUser { user =>
+    feature("A user can manage clusters") {
+      var cluster: Cluster = null
 
-import es.tid.cosmos.platform.common.scalatest.tags.EndToEndTest
+      scenario("The user can create a cluster") {
+        cluster = Cluster.create(6, user)
+        cluster.isListed must be (true)
+        cluster.state.get must (be ("provisioning") or be ("running"))
+        cluster.ensureState("running")
+      }
 
-class ClusterCreationIT extends FlatSpec with MustMatchers {
-  var cluster: Cluster = null
-
-  "A big cluster with default services" must "be created" taggedAs EndToEndTest in {
-    cluster = Cluster.create(6)
-    cluster.isListed must be (true)
-    cluster.state.get must (be ("provisioning") or be ("running"))
-    cluster.ensureState("running")
-  }
-
-  it must "be terminated" taggedAs EndToEndTest in {
-    cluster.terminate()
-    cluster.state.get must (be ("terminating") or be ("terminated"))
-    cluster.ensureState("terminated")
+      scenario("The user can terminate the cluster") {
+        cluster.terminate()
+        cluster.state.get must (be ("terminating") or be ("terminated"))
+        cluster.ensureState("terminated")
+      }
+    }
   }
 }

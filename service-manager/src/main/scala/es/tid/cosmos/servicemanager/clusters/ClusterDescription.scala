@@ -62,4 +62,7 @@ trait ClusterDescription {
 
   /** The users of this cluster. */
   def users: Option[Set[ClusterUser]]
+
+  /** The services enabled on this cluster */
+  def services: Set[String]
 }

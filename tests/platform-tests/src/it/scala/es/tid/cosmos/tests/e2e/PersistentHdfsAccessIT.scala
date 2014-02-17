@@ -11,42 +11,41 @@
 
 package es.tid.cosmos.tests.e2e
 
-import java.io.File
 import java.io.File.createTempFile
 
-import org.scalatest.{BeforeAndAfter, FlatSpec}
-import org.scalatest.matchers.MustMatchers
-
-import es.tid.cosmos.platform.common.scalatest.tags.EndToEndTest
-
-class PersistentHdfsAccessIT extends FlatSpec with MustMatchers with BeforeAndAfter {
+class PersistentHdfsAccessIT extends E2ETestBase {
   val source = {
     val file = createTempFile("test", "txt")
     file.deleteOnExit()
     file.getAbsolutePath
   }
   val target = "testInHdfs.txt"
-  var localCopy: File = _
-
-  before {
-    ensureCleanHdfsDirectory()
-    localCopy = createTempFile("localCopy", "txt")
-    localCopy.delete() must be (true)
+  val localCopy = {
+    val file = createTempFile("localcopy", "txt")
+    file.delete()
+    file.getAbsolutePath
   }
 
-  after  {
-    ensureCleanHdfsDirectory()
-    localCopy.delete() must be (true)
-  }
+  withNewUser { user =>
+    lazy val infinity = new PersistentHdfs(user)
 
-  "The peristent HDFS cluster" must "be accessible by a cosmos user" taggedAs EndToEndTest in {
-    PersistentHdfs.ls must be ('empty)
-    PersistentHdfs.put(source, target)
-    PersistentHdfs.ls must be (Stream(target))
-    PersistentHdfs.get(target, localCopy.getAbsolutePath).exists must be (true)
-    PersistentHdfs.rm(target)
-    PersistentHdfs.ls must be ('empty)
-  }
+    feature("Users can use Infinity to persist important data") {
+      scenario("Initially, the user's directory must be empty") {
+        infinity.ls must be ('empty)
+      }
+      scenario("The user can upload a file to Infinity through the CLI") {
+        infinity.put(source, target)
+        infinity.ls must be (Stream(target))
+      }
 
-  def ensureCleanHdfsDirectory() { PersistentHdfs.rm(target, checkOutput = false) }
+      scenario("The user can get the file that was uploaded") {
+        infinity.get(target, localCopy).exists must be (true)
+      }
+
+      scenario("The user can remove the file from Infinity") {
+        infinity.rm(target)
+        infinity.ls must be ('empty)
+      }
+    }
+  }
 }

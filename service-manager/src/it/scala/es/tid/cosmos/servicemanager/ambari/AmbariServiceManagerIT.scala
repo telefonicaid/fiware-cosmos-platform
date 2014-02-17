@@ -20,17 +20,36 @@ import scala.util.Try
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase}
-import es.tid.cosmos.platform.common.scalatest.tags.HasExternalDependencies
+import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
+import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
+import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
+import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
-  with FakeInfrastructureProviderComponent {
+  with FakeInfrastructureProviderComponent
+  with TestResourcePaths {
 
   val preConditions = UnfilteredPassThrough
+
+  val hadoopConfig = HadoopConfig(
+    mrAppMasterMemory = 100,
+    mapTaskMemory = 200,
+    mapHeapMemory = 100,
+    mappersPerSlave = 8,
+    reduceTaskMemory = 200,
+    reduceHeapMemory = 100,
+    reducersPerSlave = 4,
+    yarnTotalMemory = 1024,
+    yarnContainerMinimumMemory = 100,
+    yarnVirtualToPhysicalMemoryRatio = 2.1,
+    nameNodeHttpPort = 50070,
+    zookeeperPort = 1234,
+    servicesConfigDirectory = resourcesConfigDirectory
+  )
 
   @tailrec
   final def waitForClusterCompletion(id: ClusterId, sm: ServiceManager): ClusterState = {
@@ -58,14 +77,19 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
       }
     }
     val ambariServer = new AmbariServer("10.95.161.137", 8080, "admin", "admin")
+    val clusterManager = new AmbariClusterManager(
+      ambariServer, infrastructureProvider.rootPrivateSshKey, hadoopConfig.servicesConfigDirectory)
     sm = new AmbariServiceManager(
-      ambariServer, infrastructureProvider,
+      clusterManager, infrastructureProvider,
       ClusterId("hdfs"), exclusiveMasterSizeCutoff = 10,
-      HadoopConfig(mappersPerSlave = 2, reducersPerSlave = 1),
+      hadoopConfig,
       new AmbariClusterDao(
         new SqlClusterDao(db),
         ambariServer,
-        AmbariServiceManager.AllServices))
+        AmbariServiceManager.AllServices.map(
+          toAmbariService(_, hadoopConfig.servicesConfigDirectory))
+      )
+    )
   }
 
   "Ambari server" must "create and terminate cluster" taggedAs HasExternalDependencies in {

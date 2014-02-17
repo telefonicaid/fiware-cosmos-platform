@@ -14,6 +14,7 @@ package es.tid.cosmos.servicemanager.clusters
 import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+
 import es.tid.cosmos.servicemanager.ClusterUser
 
 /**
@@ -33,6 +34,8 @@ trait MutableClusterDescription extends ClusterDescription {
   def slaves_=(slaves: Seq[HostDetails]): Unit
   override def users: Option[Set[ClusterUser]]
   def users_=(users: Set[ClusterUser])
+  override def services: Set[String]
+  def services_=(services: Set[String])
 
   /**
    * This function handles any errors in the body by marking the cluster as failed.
@@ -43,5 +46,5 @@ trait MutableClusterDescription extends ClusterDescription {
   })
 
   final def view: ImmutableClusterDescription = new ImmutableClusterDescription(
-    id, name, size, state, nameNode, master, slaves, users)
+    id, name, size, state, nameNode, master, slaves, users, services)
 }

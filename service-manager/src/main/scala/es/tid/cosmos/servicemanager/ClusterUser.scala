@@ -31,6 +31,14 @@ case class ClusterUser(
 
 object ClusterUser {
 
+  def enabled(username: String, publicKey: String, isSudoer: Boolean = false) = ClusterUser(
+    username,
+    publicKey,
+    sshEnabled = true,
+    hdfsEnabled = true,
+    isSudoer
+  )
+
   def disabled(username: String, publicKey: String) = ClusterUser(
     username,
     publicKey,

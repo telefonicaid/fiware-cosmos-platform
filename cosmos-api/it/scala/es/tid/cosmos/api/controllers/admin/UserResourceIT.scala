@@ -26,7 +26,6 @@ import es.tid.cosmos.api.controllers.MaintenanceModeBehaviors
 import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Registration
-import scala.Some
 
 class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBehaviors {
 
@@ -63,25 +62,29 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
     FakeRequest(DELETE, s"$userResource/realm/id").withJsonBody(Json.obj()))
 
   "The user resource" must "register a new user when posted" in new WithTestApplication {
-    val response = postRegistration(validPayload)
-    status(response) must be (CREATED)
-    val responseData = Json.parse(contentAsString(response))
-    responseData must have (field[String]("apiKey"))
-    responseData must have (field[String]("apiSecret"))
-    (responseData \ "handle").as[String] must be (requestedHandle)
-    val createdProfile = dao.withTransaction { implicit c =>
-      dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
+    withPersistentHdfsDeployed {
+      val response = postRegistration(validPayload)
+      status(response) must be (CREATED)
+      val responseData = Json.parse(contentAsString(response))
+      responseData must have (field[String]("apiKey"))
+      responseData must have (field[String]("apiSecret"))
+      (responseData \ "handle").as[String] must be (requestedHandle)
+      val createdProfile = dao.withTransaction { implicit c =>
+        dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
+      }
+      createdProfile.handle must be (requestedHandle)
+      createdProfile.keys must be (Seq(NamedKey("default", publicKey)))
     }
-    createdProfile.handle must be (requestedHandle)
-    createdProfile.keys must be (Seq(NamedKey("default", publicKey)))
   }
 
   it must "register a new user with auto generated id" in new WithTestApplication {
-    val response = postRegistration(validPayload - "handle")
-    status(response) must be (CREATED)
-    Json.parse(contentAsString(response)) must have (field[String]("handle"))
-    val createdProfile = dao.withTransaction { implicit c =>
-      dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
+    withPersistentHdfsDeployed {
+      val response = postRegistration(validPayload - "handle")
+      status(response) must be (CREATED)
+      Json.parse(contentAsString(response)) must have (field[String]("handle"))
+      val createdProfile = dao.withTransaction { implicit c =>
+        dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
+      }
     }
   }
 
@@ -109,7 +112,8 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   it must "reject requests when handle is already taken" in new WithTestApplication {
     dao.withTransaction { implicit c =>
       dao.registerUser(
-        UserId("otherUser"), Registration(requestedHandle, publicKey, email))
+        UserId("otherUser"), Registration(requestedHandle, publicKey, email), UserState.Enabled
+      )
     }
     val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)
@@ -118,7 +122,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email))
+      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email), UserState.Enabled)
     }
     val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)
@@ -138,15 +142,17 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   }
 
   it must "unregister existing users of the same realm" in new WithTestApplication {
-    dao.withTransaction { implicit c =>
-      registerUser(dao, MockAuthConstants.User101.copy(id = newUserId))
+    withPersistentHdfsDeployed {
+      dao.withTransaction { implicit c =>
+        registerUser(dao, MockAuthConstants.User101.copy(id = newUserId))
+      }
+      val response = deleteUser(newUserId)
+      status(response) must be (OK)
+      contentAsString(response) must include ("User new_id@id_service unregistration started")
+      dao.withTransaction { implicit c =>
+        dao.lookupByUserId(newUserId).get.state
+      } must (be (UserState.Deleting) or be (UserState.Deleted))
     }
-    val response = deleteUser(newUserId)
-    status(response) must be (OK)
-    contentAsString(response) must include ("User new_id@id_service unregistration started")
-    dao.withTransaction { implicit c =>
-      dao.lookupByUserId(newUserId).get.state
-    } must (be (UserState.Deleting) or be (UserState.Deleted))
   }
 
   def field[T: Reads](fieldName: String) = new HavePropertyMatcher[JsValue, String](){

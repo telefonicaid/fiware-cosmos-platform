@@ -98,18 +98,18 @@ def ellipsize(text, max_width):
     return text[: max_width - len(ELLIPSIS)] + ELLIPSIS
 
 
-def at_least_2(argument):
-    """Parses integers equal or greater than 2.
-    >>> at_least_2('2')
-    2
-    >>> at_least_2('1')
+def at_least_1(argument):
+    """Parses integers equal or greater than 1.
+    >>> at_least_1('1')
+    1
+    >>> at_least_1('0')
     Traceback (most recent call last):
         ...
-    ArgumentTypeError: 1 is less than 2
+    ArgumentTypeError: 0 is less than 1
     """
     amount = int(argument)
-    if amount <= 1:
-        raise argparse.ArgumentTypeError("%r is less than 2" % amount)
+    if amount < 1:
+        raise argparse.ArgumentTypeError("%r is less than 1" % amount)
     return amount
 
 

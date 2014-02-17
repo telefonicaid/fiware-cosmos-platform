@@ -34,6 +34,7 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
     override val slaves = HostDetails("foo2", "bar2") +: (1 to (size - 1)).map(
       i => HostDetails(s"host$i", s"ip$i"))
     override val users = Some(Set(ClusterUser("jsmith", "jsmith-public-key")))
+    override val services = Set("ServiceA", "ServiceB")
   }
 
   /**

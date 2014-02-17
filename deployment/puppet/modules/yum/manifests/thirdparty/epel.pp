@@ -9,12 +9,12 @@
 # All rights reserved.
 #
 
-class yum::thirdparty::epel($repo_server = 'repos.hi.inet') inherits yum::variables {
+class yum::thirdparty::epel($repo_server = $yum::params::yum_epel) {
 
   yumrepo { 'epel':
-    descr    => "Extra Packages for Enterprise Linux ${operatingsystemmajrelease}",
+    descr    => "Extra Packages for Enterprise Linux ${::operatingsystemmajrelease}",
     enabled  => '1',
     gpgcheck => '0',
-    baseurl  => "http://${repo_server}/centos/epel${operatingsystemmajrelease}-\$basearch/RPMS.all/",
+    baseurl  => $repo_server,
   }
 }

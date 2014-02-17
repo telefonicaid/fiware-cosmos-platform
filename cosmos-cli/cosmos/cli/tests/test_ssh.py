@@ -13,6 +13,7 @@ import unittest
 
 
 from mock import MagicMock, patch
+from os import path
 
 from cosmos.cli.ssh import ssh_cluster
 from cosmos.cli.util import ExitWithError
@@ -87,11 +88,12 @@ class SshCommandTest(unittest.TestCase):
         with patch('requests.get', MagicMock(return_value=response)), \
                 patch('subprocess.call', call_mock), mock_home():
             self.assertEquals(0, ssh_cluster('cluster1', self.config))
+        expected_key_path = path.expanduser(self.config.ssh_key)
         call_mock.assert_called_with(['ssh', '192.168.20.18',
                                       '-l', 'user1',
                                       '-o', 'UserKnownHostsFile=/dev/null',
                                       '-o', 'StrictHostKeyChecking=no',
-                                      '-i', '~/.ssh/aws_key'])
+                                      '-i', expected_key_path])
 
     def test_exit_with_error_when_ssh_command_is_not_executable(self):
         response = mock_response(json=MagicMock(side_effect=[RUNNING, PROFILE]))

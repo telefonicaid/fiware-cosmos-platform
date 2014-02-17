@@ -12,9 +12,10 @@
 package es.tid.cosmos.api.profile
 
 import es.tid.cosmos.api.auth.ApiCredentials
-import es.tid.cosmos.api.profile.Capability._
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.MockCosmosProfileDao._
+import es.tid.cosmos.api.quota._
+import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
   def cosmosProfileDao: CosmosProfileDao = new MockCosmosProfileDao
@@ -34,14 +35,14 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
   def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
 
-  override def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile = {
-    val credentials = ApiCredentials.random()
+  override def registerUser(userId: UserId, reg: Registration, state: UserState)
+                           (implicit c: Conn): CosmosProfile = {
     val cosmosProfile = CosmosProfile(
       id = users.size,
-      state = Enabled,
+      state = state,
       handle = reg.handle,
       email = reg.email,
-      apiCredentials = credentials,
+      apiCredentials = ApiCredentials.random(),
       keys = List(NamedKey("default", reg.publicKey))
     )
     require(!users.values.exists(_.handle == reg.handle), s"Duplicated handle: ${reg.handle}")
@@ -81,6 +82,9 @@ class MockCosmosProfileDao extends CosmosProfileDao {
   override def handleExists(handle: String)(implicit c: Conn): Boolean =
     users.values.exists(_.handle == handle)
 
+  override def lookupByProfileId(id: ProfileId)(implicit c: Conn): Option[CosmosProfile] =
+    users.values.find(_.id == id)
+
   override def lookupByUserId(userId: UserId)(implicit c: Conn): Option[CosmosProfile] =
     users.get(userId)
 
@@ -96,6 +100,9 @@ class MockCosmosProfileDao extends CosmosProfileDao {
       clusters = clusters :+ assignment
     }
   }
+
+  override def ownerOf(clusterId: ClusterId)(implicit c: Conn): Option[ProfileId] =
+    clusters.find(_.clusterId == clusterId).map(_.ownerId)
 
   override def clustersOf(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment] =
     clusters.filter(_.ownerId == id)

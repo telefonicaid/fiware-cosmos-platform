@@ -11,17 +11,16 @@
 
 package es.tid.cosmos.servicemanager
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.clusters.{ClusterId, ImmutableClusterDescription}
+import es.tid.cosmos.servicemanager.clusters._
 
 /**
  * Cluster manager that allows cluster creation, termination as well as
  * querying about the state of a managed cluster.
  */
 trait ServiceManager {
-
-  type ServiceDescriptionType <: ServiceDescription
 
   /**
    * Get the IDs of the existing clusters managed by this manager.
@@ -32,7 +31,7 @@ trait ServiceManager {
   /**
    * A sequence of all services this service manager supports
    */
-  val optionalServices: Seq[ServiceDescriptionType]
+  val optionalServices: Seq[ServiceDescription]
 
   /**
    * Create a cluster of a given size with a specified set of services.
@@ -47,9 +46,9 @@ trait ServiceManager {
   def createCluster(
     name: String,
     clusterSize: Int,
-    serviceDescriptions: Seq[ServiceDescriptionType],
+    serviceDescriptions: Seq[ServiceDescription],
     users: Seq[ClusterUser],
-    preConditions: ClusterExecutableValidation): ClusterId
+    preConditions: ClusterExecutableValidation = UnfilteredPassThrough): ClusterId
 
   /**
    * Obtain information of an existing cluster's state.
@@ -76,15 +75,12 @@ trait ServiceManager {
    */
   def deployPersistentHdfsCluster(): Future[Unit]
 
-  /**
-   * Obtain information of the persistent HDFS cluster's state.
-   */
-  def describePersistentHdfsCluster(): Option[ImmutableClusterDescription]
+  /** A convenience function to obtain information of the persistent HDFS cluster's state. */
+  final def describePersistentHdfsCluster(): Option[ImmutableClusterDescription] =
+    describeCluster(persistentHdfsId)
 
-  /**
-   * Terminates the persistent HDFS cluster.
-   */
-  def terminatePersistentHdfsCluster(): Future[Unit]
+  /** A convenience function to terminate the persistent HDFS cluster. */
+  final def terminatePersistentHdfsCluster(): Future[Unit] = terminateCluster(persistentHdfsId)
 
   /** List the users of a cluster.
     *
@@ -100,6 +96,54 @@ trait ServiceManager {
    * @param users the users to be added to the CosmosUser service
    */
   def setUsers(clusterId: ClusterId, users: Seq[ClusterUser]): Future[Unit]
+
+  /** A convenience function to add a new user to a cluster.
+    *
+    * This convenience function may be used to add a new user to an existing cluster. The list
+    * of users of the cluster must be available before invoking this function. Otherwise a failure
+    * is returned with a embed IllegalStateException. If there is a user with the same username
+    * already defined it will be replaced.
+    */
+  def addUser(clusterId: ClusterId, user: ClusterUser): Future[Unit] = {
+    listUsers(clusterId) match {
+      case None =>
+        Future.failed(new IllegalStateException(
+          s"cannot add user to cluster $clusterId: user list is not available yet"))
+      case Some(currentUsers) =>
+        val newUsers = currentUsers.filterNot(_.username.equals(user.username)) :+ user
+        setUsers(clusterId, newUsers)
+    }
+  }
+
+  /** A convenience function to disable a user from a cluster.
+    *
+    * This convenience function may be used to disable a user from a cluster. The user is
+    * not removed but instead his SSH and HDFS permissions on that cluster are revoked. The
+    * list of users of the cluster must be available before invoking this function. Otherwise
+    * a failure is returned with a embed IllegalStateException.
+    */
+  def disableUser(clusterId: ClusterId, username: String): Future[Unit] = {
+    listUsers(clusterId) match {
+      case None =>
+        Future.failed(new IllegalStateException(
+          s"cannot disable user from cluster $clusterId: user list is not available yet"))
+      case Some(currentUsers) =>
+        val newUsers = currentUsers.map(usr =>
+          if (usr.username.equals(username)) ClusterUser.disabled(username, usr.publicKey)
+          else usr
+        )
+        setUsers(clusterId, newUsers)
+    }
+  }
+
+  /** Disable the given user from all clusters in running state whose user list is available. */
+  def disableUserFromAll(username: String): Future[Unit] = {
+    val runningClusters = clusterIds
+      .flatMap(id => describeCluster(id))
+      .filter(c => c.state.equals(Running))
+    val clustersWithUsers = runningClusters.flatMap(c => listUsers(c.id).map(_ => c))
+    Future.sequence(clustersWithUsers.map(c => disableUser(c.id, username))).map(_ => ())
+  }
 
   /**
    * Get the total number of cluster nodes managed by the service manager.

@@ -21,10 +21,11 @@ import scalaz.syntax.validation._
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.common.{ExecutableValidation, PassThrough}
-import es.tid.cosmos.platform.common.scalatest.matchers.{FutureMatchers, ForAllMatcher}
+import es.tid.cosmos.common.{ExecutableValidation, PassThrough}
+import es.tid.cosmos.common.scalatest.matchers.{FutureMatchers, ForAllMatcher}
 import es.tid.cosmos.platform.ial._
 import es.tid.cosmos.platform.ial.MachineProfile._
+import es.tid.cosmos.platform.ial.libvirt.LibVirtServerProperties
 
 class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with FutureMatchers
     with OneInstancePerTest {
@@ -51,6 +52,22 @@ class LibVirtInfrastructureProviderTest extends FlatSpec with MustMatchers with 
   it must "not create machines when unavailable for requested profile" in {
     mustNotCreateMachines(
       infraProvider.createMachines(noCondition, HdfsMaster, 2, action))
+  }
+
+  it must "not fail to create machines if connecting to one of them fails" in {
+    val serverFactory = new FakeLibVirtServerFactory
+    var called = false
+    def throwOnFirstInvocation(properties: LibVirtServerProperties) = {
+      if (!called) {
+        called = true
+        throw new Error()
+      } else {
+        serverFactory(properties)
+      }
+    }
+    val ial = new LibVirtInfrastructureProvider(
+      new FakeLibVirtDao, throwOnFirstInvocation, "DUMMY-SSH-KEY")
+    Await.result(ial.createMachines(noCondition, G1Compute, 2, action), timeout)
   }
 
   it must "not create machines after several requests and resources exhausted" in {

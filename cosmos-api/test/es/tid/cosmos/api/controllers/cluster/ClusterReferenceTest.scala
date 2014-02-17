@@ -17,7 +17,6 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
-import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.api.profile.ClusterAssignment
 import es.tid.cosmos.servicemanager.clusters.{Provisioning, ClusterId, ClusterDescription}
 
@@ -32,6 +31,7 @@ class ClusterReferenceTest extends FlatSpec with MustMatchers {
     override def master = throw new NotImplementedError()
     override def slaves = throw new NotImplementedError()
     override def users = throw new NotImplementedError()
+    override def services = throw new NotImplementedError()
   }
 
   "A cluster reference" must ("be composed of cluster description and assignment" +
@@ -43,7 +43,8 @@ class ClusterReferenceTest extends FlatSpec with MustMatchers {
   }
 
   "A cluster reference with an absolute URL" must "be convertible to JSON" in {
-    val assignment = ClusterAssignment(TestDescription.id, 1L, new Date(0))
+    val epoch = new Date(0)
+    val assignment = ClusterAssignment(TestDescription.id, 1L, epoch)
     val reference = ClusterReference(TestDescription, assignment)
     val url = "http://host/resource"
     Json.toJson(AbsoluteUriClusterReference(url, reference)) must equal (Json.obj(
@@ -52,7 +53,7 @@ class ClusterReferenceTest extends FlatSpec with MustMatchers {
       "name" -> "clusterName",
       "state" -> "provisioning",
       "stateDescription" -> "Cluster is acquiring and configuring resources",
-      "creationDate" -> "1970-01-01T01:00:00+01:00"
+      "creationDate" -> AbsoluteUriClusterReference.timestampFormat.format(epoch)
     ))
   }
 }

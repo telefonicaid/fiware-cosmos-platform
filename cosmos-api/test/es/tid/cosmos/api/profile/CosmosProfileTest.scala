@@ -16,6 +16,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState._
+import es.tid.cosmos.api.quota.{NoGroup, EmptyQuota}
 
 class CosmosProfileTest extends FlatSpec with MustMatchers {
 

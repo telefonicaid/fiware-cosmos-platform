@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.util
 
-import java.net.{InetSocketAddress, Socket, ServerSocket}
+import java.net.{BindException, InetSocketAddress, Socket, ServerSocket}
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
@@ -19,11 +19,11 @@ import scala.language.postfixOps
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 
 class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
 
-  val timeout: FiniteDuration = 3 second
+  val timeout: FiniteDuration = 15 second
 
   class RandomServer {
     val port = availablePort()
@@ -47,7 +47,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
   }
 
   "A tcp server" must "be waited for until it starts" in new RandomServer {
-    withServerMock { mock =>
+    eventuallyTcpBind { withServerMock { mock =>
       val f = server.waitForServer()
       f must not be ('completed)
       Thread.sleep(1500)
@@ -55,14 +55,14 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
       mock.acceptClient()
       f must runUnder(timeout)
       f must eventually (be ())
-    }
+    }}
   }
 
   it must "be waited for until timeout is exceeded" in new RandomServer {
     val f = server.waitForServer(1500 milliseconds)
     f must not be ('completed)
     val ex = evaluating {
-      Await.result(f, 4 seconds)
+      Await.result(f, Duration.Inf)
     } must produce[RuntimeException]
     ex.getMessage must include ("not found")
   }
@@ -72,7 +72,7 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
     val f = server.waitForServer(1500 milliseconds)
     f must not be ('completed)
     val ex = evaluating {
-      Await.result(f, 4 seconds)
+      Await.result(f, Duration.Inf)
     } must produce[TcpServerNotFound]
   }
 
@@ -94,5 +94,21 @@ class TcpServerTest extends FlatSpec with MustMatchers with FutureMatchers {
       clientSocket.map(_.close())
       socket.map(_.close())
     }
+  }
+
+  def eventuallyTcpBind(action: => Unit) {
+    val maxAttemps = 5
+    for (i <- 1 to maxAttemps) {
+      try {
+        action
+        return
+      } catch {
+        case e: BindException =>
+        case e: Throwable => throw e
+      }
+    }
+    throw new IllegalStateException(
+      s"cannot execute the test due to a BindException after $maxAttemps attempts"
+    )
   }
 }

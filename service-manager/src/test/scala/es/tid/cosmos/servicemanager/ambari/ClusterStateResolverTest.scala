@@ -20,9 +20,9 @@ import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
-import es.tid.cosmos.platform.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.{ComponentDescription, RequestException}
-import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigurationBundle, ConfigurationKeys}
+import es.tid.cosmos.servicemanager.ambari.configuration.{ConfigProperties, ConfigurationBundle, ConfigurationKeys}
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Cluster}
 import es.tid.cosmos.servicemanager.ambari.services.{InstalledService, StartedService, ServiceState, AmbariServiceDescription}
 
@@ -39,7 +39,7 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
   case class FakeAmbariServiceDescription(
       override val name: String,
       override val runningState: ServiceState) extends AmbariServiceDescription {
-    def contributions(properties: Map[ConfigurationKeys.Value, String]): ConfigurationBundle =
+    def contributions(properties: ConfigProperties): ConfigurationBundle =
       throw new NotImplementedError()
     val components: Seq[ComponentDescription] = Seq()
   }
@@ -49,7 +49,7 @@ class ClusterStateResolverTest extends FlatSpec with MustMatchers
     given(cluster.getService(any())).willReturn(Future.successful(hdfs))
     given(hdfs.state).willReturn("ERROR")
     given(hdfs.name).willReturn("HDFS")
-    val resolveState_> = instance.resolveState(cluster, AmbariServiceManager.AllServices)
+    val resolveState_> = instance.resolveState(cluster, ConfiguratorTestHelpers.AllServices)
     resolveState_> must eventually (be (AmbariClusterState.Unknown))
   }
 

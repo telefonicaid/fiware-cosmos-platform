@@ -13,7 +13,6 @@ package es.tid.cosmos.api.controllers.cluster
 
 import java.util.Date
 import javax.ws.rs.PathParam
-import scala.Some
 import scala.util.{Try, Failure, Success}
 import scalaz._
 
@@ -27,17 +26,22 @@ import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
+import es.tid.cosmos.api.task.{Running, TaskDao}
 
 /** Resource that represents a single cluster. */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
   description = "Represents an existing or decommissioned cluster")
 class ClusterResource(
     serviceManager: ServiceManager,
+    override val taskDao: TaskDao,
     override val dao: CosmosProfileDao,
-    override val maintenanceStatus: MaintenanceStatus)
-  extends ApiAuthController with JsonController with MaintenanceAwareController {
+    override val maintenanceStatus: MaintenanceStatus) extends Controller with ApiAuthController
+  with JsonController with MaintenanceAwareController with TaskController {
 
   import ClusterResource._
+
+  private lazy val quotaContext =
+    new QuotaContextFactory(new CosmosMachineUsageDao(dao, serviceManager))
 
   /** List user clusters. */
   @ApiOperation(value = "List clusters", httpMethod = "GET",
@@ -94,36 +98,21 @@ class ClusterResource(
       preConditions = executableWithinQuota(profile, body.size)
     )) match {
       case Failure(ex) => throw ex
-      case Success(clusterId: ClusterId) => {
+      case Success(clusterId: ClusterId) =>
         Logger.info(s"Provisioning new cluster $clusterId")
         val assignment = ClusterAssignment(clusterId, profile.id, new Date())
         dao.withTransaction { implicit c => dao.assignCluster(assignment) }
         val clusterDescription = serviceManager.describeCluster(clusterId).get
         val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
         Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
-      }
     }
   }
 
-  private def withinQuota(
-      profile: CosmosProfile,
-      size: Int,
-      requestedClusterId: Option[ClusterId] = None): ValidationNel[String, Int] =
-
-    dao.withConnection { implicit c =>
-      new ProfileQuotas(
-        machinePoolSize = serviceManager.clusterNodePoolCount,
-        groups = dao.getGroups,
-        lookupByGroup = dao.lookupByGroup,
-        listClusters = listClusters
-      ).withinQuota(profile, size, requestedClusterId)
-    }
-
   private def executableWithinQuota(profile: CosmosProfile, size: Int): ClusterExecutableValidation =
-    (id: ClusterId) => () => withinQuota(profile, size, Some(id))
+    (id: ClusterId) => () => quotaContext(Some(id)).withinQuota(profile, size)
 
   private def requireWithinQuota(profile: CosmosProfile, size: Int): ActionValidation[Int] =
-    withinQuota(profile, size).leftMap(errors =>
+    quotaContext().withinQuota(profile, size).leftMap(errors =>
       Forbidden(Json.toJson(Message(errors.list.mkString(" "))))
     )
 
@@ -165,28 +154,22 @@ class ClusterResource(
     for {
       user <- requireUserManagementConditions(request, clusterId)
       _ <- requireProfileIsNotUserOf(user, clusterId)
+      _ <- requireNoActiveTask(resource = request.uri, metadata = user.handle)
       clusterUsers <- requireClusterUsersAreAvailable(clusterId)
-    } yield addUserToCluster(user, clusterId, clusterUsers)
-  }
-
-  private def addUserToCluster(
-      user: CosmosProfile, clusterId: ClusterId, currentUsers: Seq[ClusterUser]): SimpleResult = {
-    Try {
-      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser(
+    } yield {
+      val addUser_> = serviceManager.addUser(clusterId, ClusterUser.enabled(
         username = user.handle,
         publicKey = user.keys.head.signature,
-        isSudoer = user.capabilities.hasCapability(Capability.IsSudoer),
-        sshEnabled = true,
-        hdfsEnabled = true
-      )
-      serviceManager.setUsers(clusterId, newUsers)
-    } match {
-      case Success(_) => Ok(Json.toJson(
-        Message(s"Adding user ${user.handle} to cluster $clusterId " +
-          "(this will take a while, please be patient)")))
-      case Failure(ex: IllegalArgumentException) => Conflict(Json.toJson(
-        ErrorMessage(ex.getMessage, ex)))
-      case Failure(ex) => throw ex
+        isSudoer = user.capabilities.hasCapability(Capability.IsSudoer)
+      ))
+      val task = taskDao.registerTask().linkToFuture(
+        future = addUser_>,
+        errorMessage = s"Failed to add user ${user.handle} to cluster")
+      task.usersWithAccess = user.handle +: clusterUsers.map(_.username)
+      task.metadata = user.handle
+      task.resource = request.uri
+      Ok(Json.toJson(Message(s"Adding user ${user.handle} to cluster $clusterId " +
+        "(this will take a while, please be patient)")))
     }
   }
 
@@ -205,25 +188,11 @@ class ClusterResource(
       user <- requireUserManagementConditions(request, clusterId)
       _ <- requireProfileIsUserOf(user, clusterId)
       _ <- requireNotOwnedCluster(user, clusterId)
-      clusterUsers <- requireClusterUsersAreAvailable(clusterId)
-    } yield removeUserFromCluster(user, clusterId, clusterUsers)
-  }
-
-  private def removeUserFromCluster(
-      user: CosmosProfile, cluster: ClusterId, currentUsers: Seq[ClusterUser]): SimpleResult = {
-    Try {
-      val newUsers = currentUsers.filterNot(_.username.equals(user.handle)) :+ ClusterUser.disabled(
-        username = user.handle,
-        publicKey = user.keys.head.signature
-      )
-      serviceManager.setUsers(cluster, newUsers)
-    } match {
-      case Success(_) => Ok(Json.toJson(
-        Message(s"Removing user ${user.handle} from cluster $cluster " +
-          "(this will take a while, please be patient)")))
-      case Failure(ex: IllegalArgumentException) =>
-        Conflict(Json.toJson(ErrorMessage(ex.getMessage, ex)))
-      case Failure(ex) => throw ex
+      _ <- requireClusterUsersAreAvailable(clusterId)
+    } yield {
+      serviceManager.disableUser(clusterId, user.handle)
+      Ok(Json.toJson(Message(s"Removing user ${user.handle} from cluster $clusterId " +
+        "(this will take a while, please be patient)")))
     }
   }
 

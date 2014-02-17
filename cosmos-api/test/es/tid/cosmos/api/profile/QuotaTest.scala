@@ -15,6 +15,7 @@ import java.lang.IllegalArgumentException
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import es.tid.cosmos.api.quota.{Quota, FiniteQuota, UnlimitedQuota, EmptyQuota}
 
 class QuotaTest extends FlatSpec with MustMatchers {
 

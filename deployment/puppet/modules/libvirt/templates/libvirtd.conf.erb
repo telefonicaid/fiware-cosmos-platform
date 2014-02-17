@@ -20,7 +20,7 @@
 #
 # This is enabled by default, uncomment this to disable it
 #listen_tls = 0
-#<% if listen_tls != '1' -%>
+#<% if @listen_tls != '1' -%>
 listen_tls = <%= scope.lookupvar('libvirt::listen_tls') %>
 #<% end -%>
 
@@ -34,7 +34,7 @@ listen_tls = <%= scope.lookupvar('libvirt::listen_tls') %>
 #
 # This is disabled by default, uncomment this to enable it.
 #listen_tcp = 1
-#<% if listen_tcp != '1' -%>
+#<% if @listen_tcp != '1' -%>
 listen_tcp = <%= scope.lookupvar('libvirt::listen_tcp') %>
 #<% end -%>
 
@@ -63,7 +63,7 @@ tcp_port = "16509"
 #
 # This is enabled by default, uncomment this to disable it
 #mdns_adv = 0
-#<% if mdns_adv != '1' -%>
+#<% if @mdns_adv != '1' -%>
 mdns_adv = <%= scope.lookupvar('libvirt::mdns_adv') %>
 #<% end -%>
 
@@ -87,7 +87,7 @@ mdns_adv = <%= scope.lookupvar('libvirt::mdns_adv') %>
 #
 # This is restricted to 'root' by default.
 #unix_sock_group = "libvirt"
-#<% if unix_sock_group != 'root' -%>
+#<% if @unix_sock_group != 'root' -%>
 unix_sock_group = "<%= scope.lookupvar('libvirt::unix_sock_group') %>"
 #<% end -%>
 
@@ -97,7 +97,7 @@ unix_sock_group = "<%= scope.lookupvar('libvirt::unix_sock_group') %>"
 # Default allows any user. If setting group ownership may want to
 # restrict this to:
 #unix_sock_ro_perms = "0777"
-#<% if unix_sock_ro_perms != '0777' -%>
+#<% if @unix_sock_ro_perms != '0777' -%>
 unix_sock_ro_perms = "<%= scope.lookupvar('libvirt::unix_sock_ro_perms') %>"
 #<% end -%>
 
@@ -110,13 +110,13 @@ unix_sock_ro_perms = "<%= scope.lookupvar('libvirt::unix_sock_ro_perms') %>"
 # If not using PolicyKit and setting group ownership for access
 # control then you may want to relax this to:
 #unix_sock_rw_perms = "0770"
-#<% if unix_sock_rw_perms != '0700' -%>
+#<% if @unix_sock_rw_perms != '0700' -%>
 unix_sock_rw_perms = "<%= scope.lookupvar('libvirt::unix_sock_rw_perms') %>"
 #<% end -%>
 
 # Set the name of the directory in which sockets will be found/created.
 #unix_sock_dir = "/var/run/libvirt"
-#<% if unix_sock_dir != '/var/run/libvirt' -%>
+#<% if @unix_sock_dir != '/var/run/libvirt' -%>
 unix_sock_dir = "<%= scope.lookupvar('libvirt::unix_sock_dir') %>"
 #<% end -%>
 

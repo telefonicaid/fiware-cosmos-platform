@@ -183,3 +183,10 @@ hr {
     color: rgba(0, 0, 0, 0.5);
     white-space: pre-wrap;
 }
+
+.warning {
+    background-color: LightGoldenRodYellow ;
+    border: 1px solid Gold;
+    color: rgba(0, 0, 0, 0.5);
+    padding: 5px;
+}

@@ -19,7 +19,7 @@ import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST.JString
 import net.liftweb.json.render
 
-import es.tid.cosmos.platform.common.SequentialOperations
+import es.tid.cosmos.common.SequentialOperations
 import es.tid.cosmos.servicemanager.{ServiceError, RequestException}
 
 /**

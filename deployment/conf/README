@@ -1,3 +1,0 @@
-Use this directory to store the config files for the servers of your deployment. Each config
-file describe the properties needed to customize a OpenVZ template according to the specific
-configuration of that machine.

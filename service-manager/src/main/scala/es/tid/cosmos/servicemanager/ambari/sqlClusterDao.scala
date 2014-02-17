@@ -17,9 +17,9 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.annotations.Column
 import org.squeryl.dsl.{ManyToOne, OneToMany, CompositeKey3}
 
-import es.tid.cosmos.platform.common.{MySqlConnDetails, MySqlDatabase, ConfigComponent, SqlDatabase}
+import es.tid.cosmos.common.{ConfigComponent, MySqlDatabase, MySqlConnDetails, SqlDatabase}
+import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.ClusterUser
 
 private[servicemanager] trait SqlClusterDaoComponent extends ClusterDaoComponent {
   this: ConfigComponent =>
@@ -47,6 +47,7 @@ private[ambari] case class ClusterEntity(
 ) extends KeyedEntity[String] {
 
   lazy val users: OneToMany[ClusterUserEntity] = SqlClusterDao.clusterToUsers.left(this)
+  lazy val services: OneToMany[ClusterServiceEntity] = SqlClusterDao.clusterToServices.left(this)
 }
 
 private[ambari] case class HostEntity(
@@ -81,6 +82,12 @@ private[ambari] object ClusterUserEntity {
   )
 }
 
+private[ambari] case class ClusterServiceEntity(name: String) extends KeyedEntity[Long] {
+  override val id: Long = 0
+  @Column("cluster_id") val clusterId: String = ""
+  lazy val services: ManyToOne[ClusterEntity] = SqlClusterDao.clusterToServices.right(this)
+}
+
 object HostEntityTypes {
   type MasterEntity = HostEntity with MasterKey
   type SlaveEntity = HostEntity with SlaveKey
@@ -105,10 +112,15 @@ private[ambari] class SqlClusterDao(db: SqlDatabase) extends ClusterDao {
       .map(_ => new SqlMutableClusterDescription(id, this))
   }
 
-  override def registerCluster(id: ClusterId, name: String, size: Int): MutableClusterDescription =
+  override def registerCluster(
+    id: ClusterId,
+    name: String,
+    size: Int,
+    services: Set[ServiceDescription]): MutableClusterDescription =
     newTransaction {
-      clusterState.insert(ClusterEntity(id = id.toString, name = name, size = size,
+      val cluster = clusterState.insert(ClusterEntity(id = id.toString, name = name, size = size,
         nameNode = None, state = Provisioning.name, reason = None))
+      services.foreach(service => cluster.services.associate(ClusterServiceEntity(service.name)))
       new SqlMutableClusterDescription(id, this)
     }
 
@@ -150,16 +162,23 @@ private[ambari] object SqlClusterDao extends Schema {
   private[ambari] val clusterUsers = table[ClusterUserEntity]("cluster_user")
   private[ambari] val masters = table[MasterEntity]("cluster_master")
   private[ambari] val slaves = table[SlaveEntity]("cluster_slave")
+  private[ambari] val services = table[ClusterServiceEntity]("cluster_service")
   private[ambari] val clusterToUsers = oneToManyRelation(clusterState, clusterUsers)
     .via((c, u) => c.id === u.clusterId)
+  private[ambari] val clusterToServices = oneToManyRelation(clusterState, services)
+      .via((c, s) => c.id === s.clusterId)
 
   override def applyDefaultForeignKeyPolicy(foreignKeyDeclaration: ForeignKeyDeclaration) =
     foreignKeyDeclaration.constrainReference
 
   clusterToUsers.foreignKeyDeclaration.constrainReference(onDelete cascade)
+  clusterToServices.foreignKeyDeclaration.constrainReference(onDelete cascade)
 
   on(clusterUsers)(usr => declare(
     usr.id is autoIncremented("cluster_users_id_seq")
+  ))
+  on(services)(srv => declare(
+    srv.id is autoIncremented("cluster_services_id_seq")
   ))
 }
 

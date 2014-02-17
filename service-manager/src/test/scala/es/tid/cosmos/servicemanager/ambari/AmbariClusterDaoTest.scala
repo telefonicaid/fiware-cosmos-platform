@@ -19,11 +19,12 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.any
-import org.mockito.Mockito.{verify, never}
 
+import es.tid.cosmos.servicemanager.{ClusterUser, ServiceDescription}
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterState.AmbariClusterState
+import es.tid.cosmos.servicemanager.ambari.mocks.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.rest.{Cluster, AmbariServer}
-import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
+import es.tid.cosmos.servicemanager.ambari.services.{MapReduce2, Hdfs, AmbariServiceDescription}
 import es.tid.cosmos.servicemanager.clusters._
 
 class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar {
@@ -36,16 +37,15 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
   }
 
   trait WithMockCluster {
-    val innerDao = mock[ClusterDao]
+    val innerDao = new InMemoryClusterDao
     val ambariServer = mock[AmbariServer]
     val services = Seq()
     val id = ClusterId()
-    val clusterDesc = new InMemoryClusterDescription(ClusterId(), "test", 5)
+    val enabledServices: Set[ServiceDescription] = Set(Hdfs, MapReduce2)
+    val clusterDesc = innerDao.registerCluster(id, "test", 5, enabledServices)
     clusterDesc.state = Running
     val ambariCluster = mock[Cluster]
     val ignoredRequest = mock[Request]
-    given(innerDao.getDescription(any[ClusterId])).willReturn(Some(clusterDesc))
-    given(innerDao.ids).willReturn(Seq())
     given(ambariServer.getCluster(any[String])).willReturn(Future.successful(ambariCluster))
     given(ambariServer.listClusterNames).willReturn(Future.successful(Seq()))
   }
@@ -54,7 +54,6 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
       new WithMockCluster {
     given(ambariServer.listClusterNames).willReturn(Future.successful(Seq(id.toString)),
       Future.successful(Seq()))
-    given(innerDao.ids).willReturn(Seq(id))
     val mockResolver = new MockClusterStateResolver(AmbariClusterState.ClusterNotPresent)
     val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
     dao.getDescription(id).get.state must be (Terminated)
@@ -62,7 +61,6 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
 
   it must "set to Running a cluster found Terminating in dao but Running in ambari" in new WithMockCluster {
     given(ambariServer.listClusterNames).willReturn(Future.successful(Seq(id.toString)))
-    given(innerDao.ids).willReturn(Seq(id))
     clusterDesc.state = Terminating
     val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
     val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
@@ -71,7 +69,6 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
 
   it must "set to Failed a cluster found Running in dao but Unknown in ambari" in new WithMockCluster {
     given(ambariServer.listClusterNames).willReturn(Future.successful(Seq(id.toString)))
-    given(innerDao.ids).willReturn(Seq(id))
     val mockResolver = new MockClusterStateResolver(AmbariClusterState.Unknown)
     val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
     dao.getDescription(id).get.state must be (Failed("Mismatch between SQL and Ambari information"))
@@ -79,7 +76,6 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
 
   it must "set to Running a cluster found Provisioning in dao but Running in ambari" in new WithMockCluster {
     given(ambariServer.listClusterNames).willReturn(Future.successful(Seq(id.toString)))
-    given(innerDao.ids).willReturn(Seq(id))
     clusterDesc.state = Provisioning
     val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
     val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
@@ -87,23 +83,42 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
   }
 
   it must "set to Terminated every cluster found in dao but not in ambari" in new WithMockCluster {
-    val id1 = ClusterId()
     val id2 = ClusterId()
     val id3 = ClusterId()
-    val cl1 = mock[MutableClusterDescription]
-    val cl2 = mock[MutableClusterDescription]
-    val cl3 = mock[MutableClusterDescription]
-    given(ambariServer.listClusterNames).willReturn(Future.successful(Seq(id1.toString,
+    val cl2 = innerDao.registerCluster(id2, "cluster2", 2, Set())
+    val cl3 = innerDao.registerCluster(id3, "cluster3", 3, Set())
+    given(ambariServer.listClusterNames).willReturn(Future.successful(Seq(id.toString,
       id2.toString)))
-    given(innerDao.ids).willReturn(Seq(id1, id2, id3))
-    given(innerDao.getDescription(id1)).willReturn(Some(cl1))
-    given(innerDao.getDescription(id2)).willReturn(Some(cl2))
-    given(innerDao.getDescription(id3)).willReturn(Some(cl3))
     val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
     val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
     dao.ids
-    verify(cl1, never).state_=(Terminated)
-    verify(cl2, never).state_=(Terminated)
-    verify(cl3).state_=(Terminated)
+    clusterDesc.state must not be (Terminated)
+    cl2.state must not be (Terminated)
+    cl3.state must be (Terminated)
+  }
+
+  it must "pass through register requests" in new WithMockCluster {
+    given(ambariServer.listClusterNames).willReturn(Future.successful(Seq()))
+    val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
+    val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
+    val newId = ClusterId()
+    val newCluster = dao.registerCluster(newId, "newCluster", 10, Set())
+    innerDao.getDescription(newId).get must be (newCluster)
+  }
+
+  it must "pass through getUser requests" in new WithMockCluster {
+    given(ambariServer.listClusterNames).willReturn(Future.successful(Seq()))
+    val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
+    val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
+    dao.getUsers(id) must be (innerDao.getUsers(id))
+  }
+
+  it must "pass through setUser requests" in new WithMockCluster {
+    given(ambariServer.listClusterNames).willReturn(Future.successful(Seq()))
+    val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
+    val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
+    val newUsers = Set(ClusterUser.enabled("foo", "pK", false))
+    dao.setUsers(id, newUsers)
+    innerDao.getUsers(id) must be (Some(newUsers))
   }
 }

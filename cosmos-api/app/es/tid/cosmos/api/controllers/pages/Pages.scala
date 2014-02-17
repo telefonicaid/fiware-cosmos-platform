@@ -14,11 +14,12 @@ package es.tid.cosmos.api.controllers.pages
 import scala.concurrent.Future
 import scalaz._
 
+import com.typesafe.config.Config
 import dispatch.{Future => _, _}, Defaults._
 import play.Logger
 import play.api.data.Form
 import play.api.libs.json.Json
-import play.api.mvc.{RequestHeader, Action}
+import play.api.mvc.{Controller, RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
 import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
@@ -28,20 +29,22 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration, UserId}
+import es.tid.cosmos.api.task.{MutableTask, TaskDao}
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
-import es.tid.cosmos.platform.common.Wrapped
+import es.tid.cosmos.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
 import views.AuthAlternative
 
-/**
- * Controller for the web pages of the service.
- */
+/** Controller for the web pages of the service. */
 class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
+    override val taskDao: TaskDao,
     override val dao: CosmosProfileDao,
-    override val maintenanceStatus: MaintenanceStatus
-  ) extends JsonController with PagesAuthController with MaintenanceAwareController {
+    override val maintenanceStatus: MaintenanceStatus,
+    config: Config
+  ) extends Controller with JsonController with PagesAuthController
+    with MaintenanceAwareController with TaskController {
 
   import Scalaz._
 
@@ -114,8 +117,7 @@ class Pages(
       _ <- requireResourceNotUnderMaintenance()
       userProfile <- requireAuthenticatedUser(request)
       _ <- requireUnregisteredUser(userProfile.id)
-    } yield {
-      val validatedForm = dao.withTransaction { implicit c =>
+      validatedForm = dao.withTransaction { implicit c =>
         val form = RegistrationForm().bindFromRequest()
         form.data.get("handle") match {
           case Some(handle) if dao.handleExists(handle) =>
@@ -123,18 +125,28 @@ class Pages(
           case _ => form
         }
       }
-
-      validatedForm.fold(
-        formWithErrors => registrationPage(userProfile, formWithErrors),
-        registration => {
-          dao.withTransaction { implicit c =>
-            registrationWizard.registerUser(dao, userProfile.id, registration)
-          }
-          redirectToIndex
-        }
-      )
+      registration <- requireValidRegistration(userProfile, validatedForm)
+      _ <- requireNoActiveTask(registration.handle, "registration")
+      wizardResult <- dao.withTransaction { implicit c =>
+        registrationWizard.registerUser(dao, userProfile.id, registration)
+          .leftMap(message => InternalServerError(Json.toJson(message)))
+      }
+    } yield {
+      val (_, registration_>) = wizardResult
+      val task = taskDao.registerTask()
+        .linkToFuture(registration_>, s"Failed to register user with handle ${registration.handle}")
+      task.resource = registration.handle
+      task.metadata = "registration"
+      redirectToIndex
     }
   }
+
+  private def requireValidRegistration(
+      userProfile: OAuthUserProfile, form: Form[Registration]): ActionValidation[Registration] =
+    form.fold(
+      formWithErrors => registrationPage(userProfile, formWithErrors).failure,
+      registration => registration.success
+    )
 
   private def requireUnregisteredUser(userId: UserId): ActionValidation[Unit] = {
     val userExists = dao.withTransaction { implicit c =>
@@ -178,12 +190,15 @@ class Pages(
   }
 
   def faq = Action { implicit request =>
+    val faqConfig = config.getConfig("faq")
     if (requireAuthenticatedUser(request).isFailure)
-      Ok(views.html.faq(None))
+      Ok(views.html.faq(None, faqConfig))
     else for {
       profiles <- requireUserProfiles(request)
       (_, cosmosProfile) = profiles
-    } yield Ok(views.html.faq(Some(Navigation.forCapabilities(cosmosProfile.capabilities))))
+    } yield {
+      Ok(views.html.faq(Some(Navigation.forCapabilities(cosmosProfile.capabilities)), faqConfig))
+    }
   }
 
   private def unauthorizedPage(ex: OAuthException)(implicit request: RequestHeader) = {

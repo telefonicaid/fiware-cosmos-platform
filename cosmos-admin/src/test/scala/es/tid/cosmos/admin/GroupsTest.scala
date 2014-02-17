@@ -11,16 +11,19 @@
 
 package es.tid.cosmos.admin
 
-
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.api.quota.{NoGroup, GuaranteedGroup, Quota, EmptyQuota}
 
 class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
 
   val dao = new MockCosmosProfileDao
-  val groups = new Groups(dao)
+  val serviceManager = new MockedServiceManager(maxPoolSize = 6)
+  val groups = new Groups(dao, serviceManager)
 
   "Group commands" must "support creating a new group" in {
     groups.create(name = "mygroup", minQuota = 3) must be (true)
@@ -53,6 +56,27 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
       dao.registerGroup(GuaranteedGroup("groupA", Quota(3)))
       groups.setMinQuota("groupA", 6)
       dao.getGroups must be (Set(NoGroup, GuaranteedGroup("groupA", Quota(6))))
+    }
+  }
+
+  it must "validate feasibility before creating a new group" in {
+    dao.withTransaction { implicit c =>
+      groups.create("hugeGroup", 100) must be (false)
+      dao.getGroups must be (Set(NoGroup))
+      groups.create("validGroup", 6) must be (true)
+      dao.getGroups must be (Set(NoGroup, GuaranteedGroup("validGroup", Quota(6))))
+    }
+  }
+
+  it must "validate feasibility before setting a group's new minimum quota" in {
+    val group = GuaranteedGroup("groupA", Quota(3))
+    val clusterId = serviceManager.createCluster("myCluster", 2, Seq.empty, Seq.empty)
+    dao.withTransaction { implicit c =>
+      val profile = registerUser(dao, "myUser")
+      dao.registerGroup(group)
+      dao.assignCluster(clusterId, profile.id)
+      groups.setMinQuota("groupA", 5) must be (false)
+      dao.getGroups must be (Set(NoGroup, GuaranteedGroup("groupA", Quota(3))))
     }
   }
 }

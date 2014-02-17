@@ -38,8 +38,7 @@ class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
   }
 
   it must "reject lines with missing fields" in {
-    validate("ssh-rsa ADKDJDIEJDJ") must equal (
-      Invalid("3 fields were expected but 2 were found"))
+    validate("ssh-rsa") must equal (Invalid("2 fields were expected but 1 found"))
   }
 
   it must "reject multi-line inputs" in {
@@ -49,8 +48,12 @@ class AuthorizedKeyConstraintTest extends FlatSpec with MustMatchers {
     )
   }
 
-  it must "reject keys with invalid email addresses" in {
-    validate("ssh-rsa ADKDJDIEJDJ adamos@tid@e.es") must be(Invalid("invalid email"))
+  it must "accept keys with comments other than emails" in {
+    validate("ssh-rsa ADKDJDIEJDJ Laptop key") must be (Valid)
+  }
+
+  it must "reject keys with special characters on their comment" in {
+    validate("ssh-rsa ADKDJDIEJDJ |%;$0").toString must include("invalid characters")
   }
 
   it must "be available as a simple function" in {

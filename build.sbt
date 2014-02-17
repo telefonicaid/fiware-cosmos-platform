@@ -2,10 +2,12 @@ name := "cosmos-platform"
 
 organization in ThisBuild := "es.tid.cosmos"
 
-// Note: This is the Scala version used by Play 2.2.0. Ensure Play compatibility before upgrading.
-scalaVersion in ThisBuild := "2.10.2"
+// Note: This is the Scala version used by Play 2.2.2. Ensure Play compatibility before upgrading.
+scalaVersion in ThisBuild := "2.10.3"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
+
+addCommandAlias("run-local-it", ";it:compile ;it:test-only * -- -l \"HasExternalDependencies EndToEndTest\"")
 
 resolvers in ThisBuild ++= Seq(
     DefaultMavenRepository,
@@ -15,6 +17,6 @@ resolvers in ThisBuild ++= Seq(
 )
 
 libraryDependencies in ThisBuild ++= Seq(
-    "org.scalatest" %% "scalatest" % "1.9.1" % "test, it",
-    "org.mockito" % "mockito-all" % "1.9.5" % "test, it"
+  Dependencies.mockito % "test, it",
+  Dependencies.scalatest % "test, it"
 )

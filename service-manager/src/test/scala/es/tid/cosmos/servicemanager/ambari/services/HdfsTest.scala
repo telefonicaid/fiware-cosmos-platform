@@ -18,7 +18,8 @@ import es.tid.cosmos.servicemanager.ComponentDescription
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationKeys
 
 class HdfsTest extends FlatSpec with MustMatchers {
-  val DynamicProperties = Map(
+
+  val dynamicProperties = Map(
     ConfigurationKeys.MasterNode -> "aMasterNodeName",
     ConfigurationKeys.HdfsReplicationFactor -> "3"
   )
@@ -27,27 +28,9 @@ class HdfsTest extends FlatSpec with MustMatchers {
     val description = Hdfs
     description.name must equal("HDFS")
     description.components must (
-      have length (3) and
-      contain(ComponentDescription("NAMENODE", isMaster = true, isClient = false)) and
-      contain(ComponentDescription("DATANODE", isMaster = false, isClient = false)) and
-      contain(ComponentDescription("HDFS_CLIENT", isMaster = true, isClient = true)))
-    val contributions = description.contributions(Map(
-      ConfigurationKeys.HdfsReplicationFactor -> "3",
-      ConfigurationKeys.MasterNode -> "aMasterNodeName",
-      ConfigurationKeys.MaxMapTasks -> "10",
-      ConfigurationKeys.MaxReduceTasks -> "5"
-    ))
-    contributions.global must be('defined)
-    contributions.core must be('defined)
-    contributions.services must have length(1)
-  }
-
-  it must "have the oozie proxyuser group configured to be [cosmos]" in {
-    Hdfs.contributions(DynamicProperties).core.get.properties(
-      "hadoop.proxyuser.oozie.groups") must equal("cosmos")
-  }
-
-  it must "return the namenode port" in {
-    Hdfs.nameNodeHttpPort must be (50070)
+      have length 3 and
+        contain(ComponentDescription.masterComponent("NAMENODE")) and
+        contain(ComponentDescription.slaveComponent("DATANODE")) and
+        contain(ComponentDescription.masterComponent("HDFS_CLIENT").makeClient))
   }
 }

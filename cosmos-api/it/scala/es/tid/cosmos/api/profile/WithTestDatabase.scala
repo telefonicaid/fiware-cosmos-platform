@@ -12,20 +12,19 @@
 package es.tid.cosmos.api.profile
 
 import java.util.Properties
-import java.io.FileReader
+import java.io.{File, FileReader}
 
 import anorm._
-import play.api.Play.current
 import play.api.db.DB
+import play.api.db.evolutions.EvolutionsPlugin
 import play.api.test.FakeApplication
 
-import es.tid.cosmos.api.mocks.{TestWithDbGlobal, WithTestApplication}
-import play.api.db.evolutions.EvolutionsPlugin
+import es.tid.cosmos.api.mocks._
 
 private[profile] class WithTestDatabase(additionalConfiguration: Map[String, String] = Map.empty)
   extends WithTestApplication(
     additionalConfiguration = additionalConfiguration ++ WithTestDatabase.loadDatabaseProperties(),
-    playGlobal = new TestWithDbGlobal) {
+    testApp = new PlayDaoTestApplication) {
 
   def appWithTestDb: FakeApplication = implicitApp
 
@@ -42,13 +41,24 @@ private[profile] class WithTestDatabase(additionalConfiguration: Map[String, Str
 
 private[profile] object WithTestDatabase {
 
-  val TestPropertiesFile = "cosmos-api/it/resources/test.properties"
+  private val TestPropertiesPath = "cosmos-api/it/resources/"
+  private val TestProperties = new File(TestPropertiesPath, "test.properties")
+  private val TestPropertiesOverrides = new File(TestPropertiesPath, "test_local.properties")
 
   def loadDatabaseProperties(): Map[String, String] = {
-    val props = new Properties()
-    props.load(new FileReader(TestPropertiesFile))
+    val props = loadJavaProperties()
     import scala.collection.JavaConverters._
     val propMap = props.asScala.toMap
-    propMap.updated("db.default.url", s"jdbc:mysql://master.vagrant/${propMap("db.default.database")}")
+    propMap.updated("db.default.url",
+      s"jdbc:mysql://${propMap("db.default.hostname")}/${propMap("db.default.database")}")
+  }
+
+  private def loadJavaProperties(): Properties = {
+    val props = new Properties()
+    props.load(new FileReader(TestProperties))
+    if (TestPropertiesOverrides.exists()) {
+      props.load(new FileReader(TestPropertiesOverrides))
+    }
+    props
   }
 }

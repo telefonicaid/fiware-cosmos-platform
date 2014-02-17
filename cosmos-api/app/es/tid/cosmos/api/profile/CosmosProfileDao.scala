@@ -15,6 +15,7 @@ import java.util.Date
 
 import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState.UserState
+import es.tid.cosmos.api.quota.{Group, LimitedQuota, Quota}
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 /** This trait creates an abstraction on how to use the underlying data, such as SQL databases,
@@ -34,10 +35,12 @@ trait CosmosProfileDao {
     *
     * @param userId  The id specified by the user.
     * @param reg     The registration options.
+    * @param state   The state of the user.
     * @param c       The connection to use.
     * @return        A newly created Cosmos profile.
     */
-  def registerUser(userId: UserId, reg: Registration)(implicit c: Conn): CosmosProfile
+  def registerUser(userId: UserId, reg: Registration, state: UserState)
+                  (implicit c: Conn): CosmosProfile
 
   /** Retrieves all the Cosmos profiles.
     *
@@ -116,7 +119,7 @@ trait CosmosProfileDao {
     * @throws CosmosProfileException  When no user has such id
     */
   def setEmail(id: ProfileId, email: String)(implicit c: Conn): Unit
-  
+
   /** Set the state of a given user.
     *
     * @param id         Id of the user.
@@ -125,6 +128,14 @@ trait CosmosProfileDao {
     * @throws CosmosProfileException  When no user has such id
     */
   def setUserState(id: ProfileId, userState: UserState)(implicit c: Conn): Unit
+
+  /** Obtains the profile for a given user.
+    *
+    * @param id  The id of who to retrieve the profile
+    * @param c   The connection to use
+    * @return    The profile of the given user
+    */
+  def lookupByProfileId(id: ProfileId)(implicit c: Conn): Option[CosmosProfile]
 
   /** Obtains the profile for a given user.
     *
@@ -180,7 +191,7 @@ trait CosmosProfileDao {
     *
     * @param id        the profile id of the user
     * @param groupName the optional group name. If `None` then the user will not belong to any group
-    *                  indicated by settting it to [[es.tid.cosmos.api.profile.NoGroup]]
+    *                  indicated by setting it to [[es.tid.cosmos.api.quota.NoGroup]]
     * @param c         the connection to use
     */
   def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Conn): Unit
@@ -219,6 +230,14 @@ trait CosmosProfileDao {
     * @param c           The connection to use.
     */
   def assignCluster(assignment: ClusterAssignment)(implicit c: Conn): Unit
+
+  /** Determines the owner of a cluster if any.
+    *
+    * @param clusterId  Id of the cluster whose ownership is looked for
+    * @param c          The connection to use
+    * @return           The owner profile id or none
+    */
+  def ownerOf(clusterId: ClusterId)(implicit c: Conn): Option[ProfileId]
 
   /** Retrieves the set of cluster ids for a given user.
     *

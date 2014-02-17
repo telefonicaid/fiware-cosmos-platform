@@ -12,15 +12,15 @@
 package es.tid.cosmos.api.wizards
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.{Failure, Try, Success}
 import scala.util.control.NonFatal
 import scalaz.{Success => _, Failure => _, _}
 
 import play.Logger
-import play.api.libs.json.Json
 import play.api.mvc.Results
 
-import es.tid.cosmos.api.controllers.common.{ErrorMessage, ActionValidation}
+import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Registration
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -44,26 +44,53 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
     * @param dao           For accessing to the store of Cosmos profiles
     * @param userId        User id
     * @param registration  Registration parameters
-    * @return              Newly created profile or an error response
+    * @return              Newly created profile or an error message
     */
   def registerUser(
       dao: CosmosProfileDao,
       userId: UserId,
-      registration: Registration): ActionValidation[CosmosProfile] =
+      registration: Registration): Validation[ErrorMessage, (CosmosProfile, Future[Unit])] =
     dao.withTransaction { implicit c =>
-      Try (dao.registerUser(userId, registration)) match {
+      Logger.info(s"Starting $userId (${registration.handle}) registration")
+      Try (dao.registerUser(userId, registration, UserState.Creating)) match {
         case Failure(ex) => {
           logRegistrationError(userId, ex)
-          InternalServerError(Json.toJson(ErrorMessage(registrationErrorMessage(userId)))).failure
+          ErrorMessage(registrationErrorMessage(userId)).failure
         }
         case Success(profile) => {
-          hdfsWizard.updatePersistentHdfsUsers(dao).onFailure {
-            case NonFatal(ex) => logRegistrationError(userId, ex)
+          val registration_> = for {
+            _ <- hdfsWizard.updatePersistentHdfsUsers(dao)
+          } yield markUserEnabled(dao, userId)
+          registration_>.onComplete {
+            case Failure(NonFatal(ex)) => logRegistrationError(userId, ex)
+            case Success(_) => logRegistrationSuccess(userId, profile)
           }
-          profile.success
+          (profile, registration_>).success
         }
       }
     }
+
+  private def markUserEnabled(dao: CosmosProfileDao, userId: UserId) {
+    dao.withTransaction { implicit c =>
+      dao.lookupByUserId(userId).map { profile =>
+        if (profile.state == UserState.Creating) {
+          dao.setUserState(profile.id, UserState.Enabled)
+        } else {
+          logRegistrationError(userId, new IllegalStateException(s"""
+            | Registration for $userId (${profile.handle}) cannot be completed as it is in
+            | '${profile.state}' state instead of 'creating' state." +
+          """.stripMargin))
+        }
+      }.getOrElse {
+        logRegistrationError(userId, new IllegalStateException(
+          s"Cannot complete registration of unknown user $userId"))
+      }
+    }
+  }
+
+  private def logRegistrationSuccess(userId: UserId, profile: CosmosProfile) {
+    Logger.info(s"User $userId (${profile.handle}) was successfully registered")
+  }
 
   private def logRegistrationError(userId: UserId, ex: Throwable) {
     Logger.error(registrationErrorMessage(userId), ex)

@@ -16,7 +16,7 @@ import scala.util.control.NonFatal
 
 import com.typesafe.config.{ConfigException, Config}
 
-import es.tid.cosmos.platform.common.ConfigComponent
+import es.tid.cosmos.common.ConfigComponent
 
 private[auth] class ConfigBasedMultiAuthProvider(config: Config)
   extends MultiAuthProvider {

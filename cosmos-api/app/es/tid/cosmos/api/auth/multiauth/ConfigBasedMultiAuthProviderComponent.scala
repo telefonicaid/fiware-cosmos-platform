@@ -9,14 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.mocks.oauth2
+package es.tid.cosmos.api.auth.multiauth
 
-object UrlUtils {
+import es.tid.cosmos.common.ConfigComponent
 
-  def parseQueryParams(url: String): Array[(String, String)] = {
-    url.substring(url.indexOf('?') + 1).split('&')
-      .map(parameter => parameter.split('=') match {
-      case Array(key, value) => (key, value)
-    })
-  }
+trait ConfigBasedMultiAuthProviderComponent extends MultiAuthProviderComponent {
+  this: ConfigComponent =>
+
+  override val multiAuthProvider: MultiAuthProvider = new ConfigBasedMultiAuthProvider(config)
 }

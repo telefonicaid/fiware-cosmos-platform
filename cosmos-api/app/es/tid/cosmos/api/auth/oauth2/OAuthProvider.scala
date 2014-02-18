@@ -9,11 +9,10 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth
+package es.tid.cosmos.api.auth.oauth2
 
+import es.tid.cosmos.api.auth.AuthProvider
 import scala.concurrent.Future
-
-import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 
 trait OAuthProvider extends AuthProvider {
 

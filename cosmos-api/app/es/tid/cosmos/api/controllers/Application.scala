@@ -13,7 +13,7 @@ package es.tid.cosmos.api.controllers
 
 import play.api.mvc.Controller
 
-import es.tid.cosmos.api.auth.MultiAuthProviderComponent
+import es.tid.cosmos.api.auth.multiauth.MultiAuthProviderComponent
 import es.tid.cosmos.api.controllers.admin._
 import es.tid.cosmos.api.controllers.admin.stats.StatsResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource

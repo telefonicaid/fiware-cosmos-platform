@@ -9,12 +9,13 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth.oauth2
+package es.tid.cosmos.api.auth.oauth2.github
 
 import scala.util.Try
 
 import play.api.libs.json.Json
 import es.tid.cosmos.api.profile.UserId
+import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 
 case class GitHubProfile(id: Int, login: String, name: String, email: String) {
   def asUserProfile(realm: String): OAuthUserProfile =

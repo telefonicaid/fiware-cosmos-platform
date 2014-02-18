@@ -13,7 +13,7 @@ package es.tid.cosmos.api.auth.external
 
 import com.typesafe.config.{ConfigException, Config}
 
-import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, AuthProvider}
+import es.tid.cosmos.api.auth.AuthProvider
 
 /** An auth provider that is managed by an external component.
   *

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.mocks.oauth2
+package es.tid.cosmos.api.auth.oauth2.github
 
 import scala.concurrent.stm.{TSet, atomic}
 import scala.util.Random
@@ -20,8 +20,7 @@ import unfiltered.jetty.Http
 import unfiltered.request._
 import unfiltered.response._
 
-import es.tid.cosmos.api.auth.oauth2.{GitHubOAuthProvider, GitHubProfile}
-import es.tid.cosmos.api.mocks.oauth2.UrlUtils.parseQueryParams
+import es.tid.cosmos.api.auth.oauth2.github.UrlUtils.parseQueryParams
 
 class MockedGitHubApi(
     port: Int,
@@ -65,7 +64,7 @@ class MockedGitHubApi(
     val baseUrl = s"http://127.0.0.1:$port"
     Map(
       "name" -> "GitHub",
-      "class" -> classOf[GitHubOAuthProvider].getName,
+      "class" -> classOf[Provider].getName,
       "client.id" -> clientId,
       "client.secret" -> clientSecret,
       "auth.url" -> s"$baseUrl/login/oauth/",

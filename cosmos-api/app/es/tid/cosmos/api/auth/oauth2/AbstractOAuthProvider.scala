@@ -14,11 +14,7 @@ package es.tid.cosmos.api.auth.oauth2
 import com.typesafe.config.{ConfigException, Config}
 import dispatch.url
 
-import es.tid.cosmos.api.auth.OAuthProvider
-
-/**
- * OAuth client for authentication and user profile access.
- */
+/** OAuth client for authentication and user profile access. */
 private[oauth2] abstract class AbstractOAuthProvider(
     override val id: String,
     config: Config
@@ -32,22 +28,17 @@ private[oauth2] abstract class AbstractOAuthProvider(
     case _: ConfigException.Missing => None
   }
 
-  /**
-   * OAuth client ID
-   */
+  /** OAuth client ID */
   protected val clientId = stringConfig("client.id")
 
-  /**
-   * OAuth client secret
-   */
+  /** OAuth client secret */
   protected val clientSecret = stringConfig("client.secret")
 
-  /**
-   * Get a required configuration key
-   * @param key Configuration key (relative to the OAuth provider conf)
-   * @return    An string
-   * @throws IllegalArgumentException If the key is missing
-   */
+  /** Get a required configuration key
+    * @param key Configuration key (relative to the OAuth provider conf)
+    * @return    An string
+    * @throws IllegalArgumentException If the key is missing
+    */
   protected def stringConfig(key: String) = try {
     config.getString(key)
   } catch {

@@ -9,10 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth
+package es.tid.cosmos.api.auth.multiauth
 
-trait AuthProvider {
+import com.typesafe.config.Config
 
-  /** OAuth provider identifier aka authentication realm */
-  def id: String
+import es.tid.cosmos.api.auth.AuthProvider
+
+case class StubProvider(name: String, config: Config) extends AuthProvider {
+  override val id = name
 }

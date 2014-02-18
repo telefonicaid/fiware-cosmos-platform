@@ -13,8 +13,9 @@ package es.tid.cosmos.api.mocks
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.api.auth._
-import es.tid.cosmos.api.auth.oauth2.{OAuthError, OAuthException, OAuthUserProfile}
+import es.tid.cosmos.api.auth.oauth2._
+import es.tid.cosmos.api.auth.external.AdminEnabledAuthProvider
+import es.tid.cosmos.api.auth.multiauth.{MultiAuthProviderComponent, MultiAuthProvider}
 import es.tid.cosmos.api.profile.UserId
 
 object MockAuthConstants {

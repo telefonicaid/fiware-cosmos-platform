@@ -13,9 +13,7 @@ package es.tid.cosmos.api.auth
 
 import java.security.SecureRandom
 
-/**
- * Represents the api access credentials
- */
+/** Represents the api access credentials. */
 case class ApiCredentials(apiKey: String, apiSecret: String) {
   require(apiKey.length == ApiCredentials.ApiKeyLength,
     s"API identifier must have a length of ${ApiCredentials.ApiKeyLength} " +

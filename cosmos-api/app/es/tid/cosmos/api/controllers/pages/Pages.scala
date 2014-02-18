@@ -22,9 +22,9 @@ import play.api.libs.json.Json
 import play.api.mvc.{Controller, RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
-import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.auth.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.auth.oauth2._
+import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._

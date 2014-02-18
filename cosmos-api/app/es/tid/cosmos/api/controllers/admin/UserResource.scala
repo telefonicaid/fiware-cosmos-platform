@@ -23,7 +23,8 @@ import play.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Controller, Action, Headers}
 
-import es.tid.cosmos.api.auth.{AdminEnabledAuthProvider, MultiAuthProvider}
+import es.tid.cosmos.api.auth.external.AdminEnabledAuthProvider
+import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
 import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth
+package es.tid.cosmos.api.auth.multiauth
 
 trait MultiAuthProviderComponent {
   val multiAuthProvider: MultiAuthProvider

@@ -7,6 +7,8 @@ scalaVersion in ThisBuild := "2.10.3"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature")
 
+javacOptions in ThisBuild ++= Seq("-source", "1.7")
+
 addCommandAlias("run-local-it", ";it:compile ;it:test-only * -- -l \"HasExternalDependencies EndToEndTest\"")
 
 resolvers in ThisBuild ++= Seq(

@@ -107,6 +107,7 @@ object Build extends sbt.Build {
     settings(Defaults.itSettings: _*)
     dependsOn(
       common_test % "compile->compile;test->test",
+      serviceManager % "compile->compile;test->test",
       cosmosApi % "compile->compile;test->test")
   )
 

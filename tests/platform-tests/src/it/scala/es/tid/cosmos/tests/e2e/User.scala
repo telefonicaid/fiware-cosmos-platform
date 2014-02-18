@@ -11,7 +11,10 @@
 
 package es.tid.cosmos.tests.e2e
 
-import java.io.{File, PrintWriter}
+import java.nio.charset.Charset
+import java.nio.file.{Files, StandardOpenOption}
+import java.nio.file.attribute.PosixFilePermissions
+import scala.collection.JavaConversions._
 import scala.concurrent.duration._
 import scala.io.Source
 import scala.language.postfixOps
@@ -58,17 +61,22 @@ class User(implicit info: Informer, testConfig: Config) extends MustVerb
   def profileResource =
     (cosmos / "cosmos" / "v1" / "profile").as_!(apiKey, apiSecret)
   lazy val cosmosrcPath = {
-    val tempFile = File.createTempFile(handle, "cosmosrc")
-    val writer = new PrintWriter(tempFile)
-    writer.write(
-      s"""api_key: $apiKey
-        |api_secret: $apiSecret
-        |api_url: ${cosmos.url}/cosmos/v1/
-        |ssh_command: ssh
-        |ssh_key: ''""".stripMargin)
-    writer.close()
-    info(s"The cosmosrc path is ${tempFile.getAbsolutePath}")
-    tempFile.getAbsolutePath
+    val permissions = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))
+    val tempFile = Files.createTempFile(handle, "cosmosrc", permissions)
+    val contents = Seq(s"""api_key: $apiKey
+      |api_secret: $apiSecret
+      |api_url: ${cosmos.url}/cosmos/v1/
+      |ssh_command: ssh
+      |ssh_key: ''""".stripMargin)
+
+    Files.write(
+      tempFile,
+      contents,
+      Charset.defaultCharset(),
+      StandardOpenOption.WRITE
+    )
+    info(s"The cosmosrc path is ${tempFile.toAbsolutePath}")
+    tempFile.toAbsolutePath
   }
 
   private def register() = {

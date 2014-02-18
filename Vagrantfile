@@ -17,9 +17,9 @@ Vagrant.configure("2") do |config|
   config.vm.box_url = "http://cosmos10.hi.inet:8080/vagrant-boxes/CentOS-6.4-x86_64-vzkernel-v20131211.box"
 
   config.vm.provision :puppet, :module_path =>  "modules" do |puppet|
-    puppet.manifests_path = "modules/cosmos/manifests"
+    puppet.manifests_path = "target/dist/puppet/modules/cosmos/manifests"
     puppet.manifest_file  = "site.pp"
-    puppet.module_path = ["modules", "modules_third_party", "dist"]
+    puppet.module_path = ["target/dist/puppet/modules", "target/dist/puppet/modules_third_party", "target/dist/rpms"]
     puppet.working_directory = "/tmp/vagrant-puppet"
     puppet.hiera_config_path = "/tmp/vagrant-puppet/manifests/hiera.yaml"
     puppet.options = "--environment vagrant --manifestdir /tmp/vagrant-puppet/manifests"

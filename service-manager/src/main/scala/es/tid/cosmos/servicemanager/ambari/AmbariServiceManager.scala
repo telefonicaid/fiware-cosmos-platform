@@ -21,9 +21,8 @@ import es.tid.cosmos.common.PassThrough
 import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
-import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies._
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer

@@ -9,18 +9,21 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.services
+package es.tid.cosmos.servicemanager.ambari.services.dependencies
 
 import es.tid.cosmos.servicemanager.ServiceDescription
+import es.tid.cosmos.servicemanager.ambari.services._
 
 /** Object expressing inter-service dependencies. */
 object ServiceDependencies {
   type Service = ServiceDescription
 
-  private val Dependencies: Map[Service, Seq[Service]] = Map(
-    Hdfs -> Seq(Zookeeper),
-    MapReduce2 -> Seq(Yarn),
-    Hive -> Seq(HCatalog, WebHCat)
+  private val Dependencies = DependencyMapping[Service](
+    Hdfs -> Set(Zookeeper, InfinityfsDriver),
+    MapReduce2 -> Set(Yarn),
+    Hive -> Set(HCatalog, WebHCat),
+    Yarn -> Set(InfinityfsDriver),
+    CosmosUserService -> Set(Hdfs)
   )
 
   implicit class ServiceBundle(services: Seq[Service]) {
@@ -33,10 +36,10 @@ object ServiceDependencies {
       *   // assume that serviceA depends on serviceC and serviceB on serviceD
       *   import ServiceDependencies._
       *
-      *   Seq(serviceA, serviceB).withDepdenencies == Seq(serviceC, serviceA, serviceD, serviceB)
+      *   Seq(serviceA, serviceB).withDependencies == Seq(serviceC, serviceA, serviceD, serviceB)
       * }}}
       */
     val withDependencies: Seq[Service] =
-      services.flatMap(service => Dependencies.getOrElse(service, Seq.empty) :+ service)
+      Dependencies.executionOrder(Dependencies.resolve(services.toSet))
   }
 }

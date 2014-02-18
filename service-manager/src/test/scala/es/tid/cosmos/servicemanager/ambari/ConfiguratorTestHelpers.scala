@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager.ambari
 import es.tid.cosmos.servicemanager.ServiceDescription
 import es.tid.cosmos.servicemanager.ambari.configuration._
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
-import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies._
 
 class ConfiguratorTestHelpers(
     masterName: String,
@@ -59,7 +59,7 @@ object ConfiguratorTestHelpers {
     .map(toAmbariServicesNoConfig)
 
   val AllServices = AmbariServiceManager.AllServices.withDependencies.map(toAmbariServicesNoConfig)
-  
+
   def toAmbariServicesNoConfig(service: ServiceDescription): AmbariServiceDescription =
     service match {
       case ambariService: AmbariServiceDescription => ambariService

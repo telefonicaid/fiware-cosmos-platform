@@ -13,7 +13,11 @@ class cosmos::api inherits cosmos::params {
 
   include cosmos::setup
 
-  package { 'cosmos':
+  package { 'cosmos-api':
+    ensure => latest,
+  }
+
+  package { 'cosmos-admin':
     ensure => latest,
   }
 

@@ -11,11 +11,34 @@
 
 class cosmos::localrepo {
 
+  package { 'createrepo':
+    ensure => present,
+  }
+
   file { 'repodir':
     path => '/opt/pdi-cosmos/rpms',
     ensure => 'directory',
     recurse => true,
-    source => 'puppet://modules/cosmosplatform',
+    source => 'puppet:///modules/cosmosplatform',
   }
+
+  exec { 'createrepo':
+    command   => '/usr/bin/createrepo /opt/pdi-cosmos/rpms',
+    path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
+    logoutput => true,
+    timeout   => 600,
+  }
+
+  yumrepo { 'localrepo':
+    descr    => "Comos local repo",
+    enabled  => '1',
+    gpgcheck => '0',
+    baseurl  => "file:///opt/pdi-cosmos/rpms",
+  }
+
+  Package['createrepo']
+    -> File['repodir']
+    ~> Exec['createrepo']
+    ~> Yumrepo['localrepo']
 
 }

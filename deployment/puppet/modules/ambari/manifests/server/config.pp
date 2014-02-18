@@ -34,7 +34,7 @@ class ambari::server::config {
     path   => '/etc/ambari-server/conf/ambari.properties',
   }
 
-  $tables_exist = '/bin/bash -c "[[ `sudo -u postgres psql -l | grep ambari | wc -l` -ge 2 ]]"'
+  $tables_exist = '/bin/bash -c "[[ `su postgres -c \'psql -l | grep ambari | wc -l\'` -ge 2 ]]"'
 
   exec { 'ambari-server-stop':
     command   => 'ambari-server stop',

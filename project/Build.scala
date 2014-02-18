@@ -10,11 +10,14 @@
  */
 
 import sbt._
-import sbt.Keys.baseDirectory
+import sbt.Keys._
 import play.{Keys => PlayKeys}
 import com.github.shivawu.sbt.maven.MavenBuild
+import com.typesafe.sbt.packager.Keys._
 
 object Build extends sbt.Build {
+
+  val distProject = TaskKey[sbt.File]("dist", "Build project distribution.")
 
   object POM extends MavenBuild {
     val version = pom.ver
@@ -49,6 +52,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.mergeReportSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(rootPackageSettings: _*)
     aggregate(
       cosmosApi, serviceManager, ial, cosmosAdmin, common, common_test, platformTests, infinityfs)
   )
@@ -116,5 +120,45 @@ object Build extends sbt.Build {
     settings(Defaults.itSettings: _*)
     settings(InfinityDeployment.settings: _*)
     settings(RpmSettings.infinitySettings: _*)
+  )
+
+  def rootPackageSettings: Seq[Setting[_]] = Seq(
+    distProject := {
+      val s = streams.value
+
+      val filesDir = target.value / "dist/rpms/cosmosplatform/files"
+      IO.delete(filesDir)
+      filesDir.mkdirs
+
+      s.log.info("Copying cosmos-api RPM to project dist directory...")
+      val cosmosApiRPM = (dist in cosmosApi).value
+      IO.copyFile(cosmosApiRPM, filesDir / cosmosApiRPM.name)
+
+      s.log.info("Copying cosmos-admin RPM to project dist directory...")
+      val cosmosAdminRPM = (dist in cosmosAdmin).value
+      IO.copyFile(cosmosAdminRPM, filesDir / cosmosAdminRPM.name)
+
+      val puppetDir = target.value / "dist/puppet"
+      puppetDir.mkdirs()
+
+      s.log.info("Copying puppet to project dist directory...")
+      val puppetBase = baseDirectory.value / "deployment/puppet/"
+      val modules = (puppetBase / "modules" ***) +++
+        (puppetBase / "modules_third_party" ***)
+      IO.copy(for {
+        (file, name) <- modules pair relativeTo(puppetBase)
+      } yield (file, puppetDir / name))
+
+      val distFile = target.value / s"cosmos-platform-${POM.version}.zip"
+      val distDir = target.value / "dist"
+
+      s.log.info("Generating cosmos-platform zip package...")
+      val distFiles = (distDir.*** --- distDir) pair relativeTo(distDir)
+      IO.delete(distFile)
+      IO.zip(distFiles, distFile)
+
+      s.log.success(s"Cosmos platform distribution ready in ${distFile}")
+      distFile
+    }
   )
 }

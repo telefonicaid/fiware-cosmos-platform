@@ -17,15 +17,15 @@ class ClusterCreationIT extends E2ETestBase {
       var cluster: Cluster = null
 
       scenario("The user can create a cluster") {
-        cluster = Cluster.create(6, user)
-        cluster.isListed must be (true)
-        cluster.state.get must (be ("provisioning") or be ("running"))
+        cluster = new Cluster(6, user)
+        cluster.isListed() must be (true)
+        cluster.state().get must (be ("provisioning") or be ("running"))
         cluster.ensureState("running")
       }
 
       scenario("The user can terminate the cluster") {
         cluster.terminate()
-        cluster.state.get must (be ("terminating") or be ("terminated"))
+        cluster.state().get must (be ("terminating") or be ("terminated"))
         cluster.ensureState("terminated")
       }
     }

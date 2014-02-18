@@ -19,94 +19,114 @@ import org.scalatest.{Assertions, Informer}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.verb.MustVerb
 
-class Cluster(id: String, user: User)(implicit info: Informer)
+class Cluster(clusterSize: Int, owner: User, services: Seq[String] = Seq())
+             (implicit info: Informer)
   extends MustVerb with MustMatchers with Patience with CommandLineMatchers {
 
   private implicit val Formats = net.liftweb.json.DefaultFormats
   private val sshFlags = "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
 
-  def asUser(otherUser: User) = new Cluster(id, otherUser)
+  private var _id: Option[String] = None
 
-  def isListed: Boolean = (s"cosmos -c ${user.cosmosrcPath} list" lines_!).exists(_.contains(id))
-
-  def describe = parse(s"cosmos -c ${user.cosmosrcPath} show $id" !! ProcessLogger(info(_)))
-
-  def state: Option[String] = (describe \ "state").extractOpt[String]
-
-  def users: Seq[String] = (describe \ "users").toOpt match {
-    case Some(users) =>
-      for {
-        JObject(fields) <- users
-        JField("username", JString(handle)) <- fields
-      } yield handle
-    case None => Seq.empty
+  def id(): String = _id match {
+    case Some(id) => id
+    case None =>
+      _id = Some(create())
+      _id.get
   }
 
-  def addUser(clusterUser: String): Int =
-    s"cosmos -c ${user.cosmosrcPath} adduser $id $clusterUser" ! ProcessLogger(info(_))
+  def isListed(executedBy: User = owner): Boolean =
+    (s"cosmos -c ${executedBy.cosmosrcPath} list" lines_!).exists(_.contains(id()))
 
-  def removeUser(clusterUser: String): Int =
-    s"cosmos -c ${user.cosmosrcPath} rmuser $id $clusterUser" ! ProcessLogger(info(_))
+  def describe(executedBy: User = owner) = parse(
+    s"cosmos -c ${executedBy.cosmosrcPath} show ${id()}" !! ProcessLogger(info(_))
+  )
 
-  def ensureState(expectedState: String) {
+  def state(executedBy: User = owner): Option[String] =
+    (describe(executedBy) \ "state").extractOpt[String]
+
+  def users(executedBy: User = owner): Seq[String] =
+    (describe(executedBy) \ "users").toOpt match {
+      case Some(users) =>
+        for {
+          JObject(fields) <- users
+          JField("username", JString(handle)) <- fields
+        } yield handle
+      case None => Seq.empty
+    }
+
+  def addUser(clusterUser: String, executedBy: User = owner): Int = {
+    val command = s"cosmos -c ${executedBy.cosmosrcPath} adduser ${id()} $clusterUser"
+    command ! ProcessLogger(info(_))
+  }
+
+  def removeUser(clusterUser: String, executedBy: User = owner): Int = {
+    val command = s"cosmos -c ${executedBy.cosmosrcPath} rmuser ${id()} $clusterUser"
+    command ! ProcessLogger(info(_))
+  }
+
+  def ensureState(expectedState: String, executedBy: User = owner) {
     eventually {
       assert(
-        state == Some(expectedState),
-        s"ExpectedState [${Some(expectedState)}] not reached. Actual: [$state]." +
-          s"Cluster info:\n${pretty(render(describe))}"
+        state(executedBy) == Some(expectedState),
+        s"ExpectedState [${Some(expectedState)}] not reached. Actual: [${state(executedBy)}]." +
+          s"Cluster info:\n${pretty(render(describe(executedBy)))}"
       )
     }
   }
 
-  def terminate() {
-    info(s"Calling terminate on cluster $id")
-    s"cosmos -c ${user.cosmosrcPath} terminate $id" ! ProcessLogger(info(_))
+  def terminate(executedBy: User = owner) = _id match {
+    case Some(clusterId) =>
+      info(s"Calling terminate on cluster $clusterId")
+      s"cosmos -c ${executedBy.cosmosrcPath} terminate $clusterId" ! ProcessLogger(info(_))
+    case _ => ()
   }
 
   /** Upload a file to the cluster master using SCP */
-  def scp(localFile: String, remotePath: String = "", recursive: Boolean = false) {
-    val hostname = masterHostname().getOrElse(fail("No master to scp to"))
+  def scp(localFile: String, remotePath: String = "", recursive: Boolean = false, executedBy: User = owner) {
+    val hostname = masterHostname(executedBy).getOrElse(fail("No master to scp to"))
     val scpFlags = if (recursive) "-r" else ""
-    s"scp $sshFlags $scpFlags $localFile ${user.handle}@$hostname:$remotePath".! must runSuccessfully
+    val command = s"scp $sshFlags $scpFlags $localFile ${executedBy.handle}@$hostname:$remotePath"
+    command.! must runSuccessfully
   }
 
   /** Executes a command on the master node through SSH.
     * An exception is thrown if the command has nonzero return status.
     */
-  def sshCommand(command: String) {
-    val hostname = masterHostname().getOrElse(fail("No master to ssh to"))
-    s"""ssh $sshFlags ${user.handle}@$hostname "$command"""".! must runSuccessfully
+  def sshCommand(command: String, executedBy: User = owner) {
+    val hostname = masterHostname(executedBy).getOrElse(fail("No master to ssh to"))
+    s"""ssh $sshFlags ${executedBy.handle}@$hostname "$command""".! must runSuccessfully
   }
 
-  private def masterHostname(): Option[String] = (for {
-    JObject(children) <- describe
-    JField("master", JObject(masterFields)) <- children
-    JField("hostname", JString(hostname)) <- masterFields
-  } yield hostname).headOption
-}
-
-object Cluster extends Assertions {
-  def create(size: Int, user: User, services: Seq[String] = Seq())(implicit info: Informer): Cluster = {
-    val availableServices = listServices()
+  /** Creates the cluster and returns its ID in case of success. */
+  private def create(): String = {
+    val availableServices = listServices(owner)
     val optionalServices = services.filter(availableServices.contains)
-    val ExpectedPrefix = "Provisioning new cluster "
-    val flatServices = optionalServices.mkString(" ")
-    val servicesCommand = if (optionalServices.nonEmpty) s"--services $flatServices" else ""
-    info(s"Calling create cluster")
-    val commandOutput = s"cosmos -c ${user.cosmosrcPath} create --name default-services --size $size $servicesCommand"
-      .lines_!.toList
+    val nameFlag = "--name default-services"
+    val sizeFlag = s"--size $clusterSize"
+    val servicesFlag = if (optionalServices.nonEmpty) s"--services ${services.mkString(" ")}" else ""
+    val command = s"cosmos -c ${owner.cosmosrcPath} create $nameFlag $sizeFlag $servicesFlag"
+    info(s"Calling create cluster with command '$command'")
+    val commandOutput = command.lines_!.toList
     commandOutput.foreach(info(_))
+    val expectedPrefix = "Provisioning new cluster "
     val id = commandOutput
-      .find(_.startsWith(ExpectedPrefix))
+      .find(_.startsWith(expectedPrefix))
       .getOrElse(fail(s"unexpected create command output: ${commandOutput.mkString("\n")}"))
-      .substring(ExpectedPrefix.length)
+      .substring(expectedPrefix.length)
     info(s"Cluster created with id $id")
-    new Cluster(id, user)
+    id
   }
 
-  def listServices(): Seq[String] = {
-    val commandOutput = s"cosmos list-services".lines_!.toSeq
+  private def listServices(executedBy: User = owner): Seq[String] = {
+    val commandOutput = s"cosmos -c ${executedBy.handle} list-services".lines_!.toSeq
     val optionalServices = commandOutput.tail.map(_.trim)
     optionalServices
   }
+
+  private def masterHostname(executedBy: User = owner): Option[String] = (for {
+    JObject(children) <- describe(executedBy)
+    JField("master", JObject(masterFields)) <- children
+    JField("hostname", JString(hostname)) <- masterFields
+  } yield hostname).headOption
 }

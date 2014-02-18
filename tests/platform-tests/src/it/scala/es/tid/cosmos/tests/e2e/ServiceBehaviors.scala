@@ -22,9 +22,9 @@ trait ServiceBehaviors { this: E2ETestBase =>
       var cluster: Cluster = null
 
       scenario(s"The user can request a cluster with $service") {
-        cluster = Cluster.create(2, user, services = Seq(service.name))
-        cluster.isListed must be (true)
-        cluster.state.get must (be ("provisioning") or be ("running"))
+        cluster = new Cluster(2, user, services = Seq(service.name))
+        cluster.isListed() must be (true)
+        cluster.state().get must (be ("provisioning") or be ("running"))
         cluster.ensureState("running")
       }
 
@@ -32,7 +32,7 @@ trait ServiceBehaviors { this: E2ETestBase =>
 
       scenario("The user can terminate the cluster") {
         cluster.terminate()
-        cluster.state.get must (be ("terminating") or be ("terminated"))
+        cluster.state().get must (be ("terminating") or be ("terminated"))
         cluster.ensureState("terminated")
       }
     }

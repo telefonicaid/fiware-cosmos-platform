@@ -9,16 +9,16 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth
+package es.tid.cosmos.api.auth.multiauth
 
 import scala.collection.JavaConversions._
 import scala.util.control.NonFatal
 
 import com.typesafe.config.{ConfigException, Config}
 
-import es.tid.cosmos.common.ConfigComponent
+import es.tid.cosmos.api.auth.AuthProvider
 
-private[auth] class ConfigBasedMultiAuthProvider(config: Config)
+private[multiauth] class ConfigBasedMultiAuthProvider(config: Config)
   extends MultiAuthProvider {
 
   private val authConfig = try {
@@ -59,11 +59,4 @@ private[auth] class ConfigBasedMultiAuthProvider(config: Config)
   }
 
   private def providerConfig(name: String) = authConfig.getConfig(name)
-}
-
-trait ConfigBasedMultiAuthProviderComponent extends MultiAuthProviderComponent {
-  this: ConfigComponent =>
-
-  override val multiAuthProvider: MultiAuthProvider =
-    new ConfigBasedMultiAuthProvider(config)
 }

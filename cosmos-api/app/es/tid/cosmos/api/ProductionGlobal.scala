@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api
 
-import es.tid.cosmos.api.auth.ConfigBasedMultiAuthProviderComponent
+import es.tid.cosmos.api.auth.multiauth.ConfigBasedMultiAuthProviderComponent
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
 import es.tid.cosmos.api.profile.PlayDbCosmosProfileDaoComponent

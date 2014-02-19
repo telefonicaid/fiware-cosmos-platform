@@ -9,10 +9,14 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth
+package es.tid.cosmos.api.auth.oauth2.github
 
-import com.typesafe.config.Config
+object UrlUtils {
 
-case class StubProvider(name: String, config: Config) extends AuthProvider {
-  override val id = name
+  def parseQueryParams(url: String): Array[(String, String)] = {
+    url.substring(url.indexOf('?') + 1).split('&')
+      .map(parameter => parameter.split('=') match {
+      case Array(key, value) => (key, value)
+    })
+  }
 }

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth.oauth2
+package es.tid.cosmos.api.auth.oauth2.github
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -20,8 +20,10 @@ import play.api.Logger
 import play.api.libs.json.Json
 
 import es.tid.cosmos.api.auth.oauth2.OAuthTupleBuilder._
+import es.tid.cosmos.api.auth.oauth2.{OAuthUserProfile, AbstractOAuthProvider}
 
-class GitHubOAuthProvider(id: String, config: Config) extends AbstractOAuthProvider(id, config) {
+/** OAuth2 integration with GitHub */
+class Provider(id: String, config: Config) extends AbstractOAuthProvider(id, config) {
 
   override def authenticationUrl(redirectUri: String): String =
     (authorizationUrl / "authorize" <<? Map(

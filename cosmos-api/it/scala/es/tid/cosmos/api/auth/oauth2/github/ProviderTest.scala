@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth.oauth2
+package es.tid.cosmos.api.auth.oauth2.github
 
 import java.util.concurrent.ExecutionException
 import scala.collection.JavaConversions
@@ -21,11 +21,11 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.api.mocks.oauth2.MockedGitHubApi
+import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 
-class GitHubOAuthProviderTest extends FlatSpec
+class ProviderTest extends FlatSpec
   with MustMatchers
   with BeforeAndAfter
   with BeforeAndAfterAll
@@ -47,14 +47,14 @@ class GitHubOAuthProviderTest extends FlatSpec
     existingUser = gitHubUser
   )
   var config = gitHubMock.configurationKeys
-  var client: GitHubOAuthProvider = null
+  var client: Provider = null
 
   override def beforeAll() {
     gitHubMock.start()
   }
 
   before {
-    client = new GitHubOAuthProvider("github", toConfig(config))
+    client = new Provider("github", toConfig(config))
   }
 
   after {

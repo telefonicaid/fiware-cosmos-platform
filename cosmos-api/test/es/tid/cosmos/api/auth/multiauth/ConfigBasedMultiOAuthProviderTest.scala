@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth
+package es.tid.cosmos.api.auth.multiauth
 
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec
@@ -51,7 +51,7 @@ class ConfigBasedMultiOAuthProviderTest extends FlatSpec with MustMatchers {
   it must "instantiate enabled providers" in {
     val config = """
       |auth.default.enabled=true
-      |auth.default.class=es.tid.cosmos.api.auth.StubProvider
+      |auth.default.class=es.tid.cosmos.api.auth.multiauth.StubProvider
       |auth.alternative.enabled=false
     """.stripMargin
     val instance = buildFromConfig(config)
@@ -74,9 +74,9 @@ class ConfigBasedMultiOAuthProviderTest extends FlatSpec with MustMatchers {
   it must "support multiple providers" in {
     buildFromConfig("""
       |auth.default.enabled=true
-      |auth.default.class=es.tid.cosmos.api.auth.StubProvider
+      |auth.default.class=es.tid.cosmos.api.auth.multiauth.StubProvider
       |auth.alternative.enabled=true
-      |auth.alternative.class=es.tid.cosmos.api.auth.StubProvider
+      |auth.alternative.class=es.tid.cosmos.api.auth.multiauth.StubProvider
     """.stripMargin).providers must have size 2
   }
 
@@ -84,10 +84,10 @@ class ConfigBasedMultiOAuthProviderTest extends FlatSpec with MustMatchers {
     buildFromConfig("""
       |auth.default {
       |  enabled=true,
-      |  class=es.tid.cosmos.api.auth.StubProvider
+      |  class=es.tid.cosmos.api.auth.multiauth.StubProvider
       |}
       |auth.alternative.enabled=true
-      |auth.alternative.class=es.tid.cosmos.api.auth.StubProvider
+      |auth.alternative.class=es.tid.cosmos.api.auth.multiauth.StubProvider
     """.stripMargin).providers must have size 2
   }
 }

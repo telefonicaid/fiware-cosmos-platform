@@ -9,13 +9,16 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth
+package es.tid.cosmos.api.auth.multiauth
 
-trait AdminEnabledAuthProvider {
-  this: AuthProvider =>
+import es.tid.cosmos.api.auth.AuthProvider
+import es.tid.cosmos.api.auth.oauth2.OAuthProvider
 
-  /**
-   * Password for the admin resources
-   */
-  def adminPassword: String
+trait MultiAuthProvider {
+
+  val providers: Map[String, AuthProvider]
+
+  def oauthProviders: Map[String, OAuthProvider] = providers.collect {
+    case (id, provider: OAuthProvider) => (id, provider)
+  }
 }

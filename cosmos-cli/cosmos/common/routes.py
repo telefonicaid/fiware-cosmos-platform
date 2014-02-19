@@ -12,9 +12,10 @@
 """Routes mapping"""
 
 import re
-from urlparse import urlparse, urlunparse
+from urlparse import urlparse
 
 PATH_PATTERN = re.compile('(?:/[^/]+)*/v(\d+)/?')
+
 
 class Routes(object):
     """Resource URLs factory"""
@@ -38,6 +39,7 @@ class Routes(object):
         ValueError: Base API url has not version tag: "http://foo/unversioned"
         """
         self.__set_base_url(base_url)
+        self.info = self.base_url + "/info"
         self.storage = self.base_url + "/storage"
         self.profile = self.base_url + "/profile"
         self.services = self.base_url + "/services"

@@ -19,6 +19,7 @@ from requests.exceptions import ConnectionError, Timeout
 
 import cosmos.cli.config as c
 from cosmos.cli.compute import add_compute_commands
+from cosmos.cli.info import add_info_command
 from cosmos.cli.ssh import add_ssh_command
 from cosmos.cli.storage import add_storage_commands
 from cosmos.cli.util import ExitWithError
@@ -53,6 +54,7 @@ def build_argument_parser():
                                        title='subcommands',
                                        description='valid subcommands')
     add_version_command(subparsers)
+    add_info_command(subparsers)
     add_configure_command(subparsers)
     add_ssh_command(subparsers)
     add_compute_commands(subparsers)

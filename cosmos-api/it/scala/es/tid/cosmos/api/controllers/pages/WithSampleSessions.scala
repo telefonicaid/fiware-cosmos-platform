@@ -71,9 +71,10 @@ trait WithSampleSessions extends WithTestApplication {
       }
     }
 
-    def asClusterUser: ClusterUser = ClusterUser(
+    def asClusterUser(sshEnabled: Boolean = true): ClusterUser = ClusterUser(
       username = handle,
-      publicKey = cosmosProfile.keys.head.signature
+      publicKey = cosmosProfile.keys.head.signature,
+      sshEnabled = sshEnabled
     )
 
     protected def buildCosmosProfile(): CosmosProfile =

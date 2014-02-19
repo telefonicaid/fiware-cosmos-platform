@@ -15,6 +15,11 @@ class cosmos::localrepo {
     ensure => present,
   }
 
+  file { 'repodirparent':
+    path => '/opt/pdi-cosmos',
+    ensure => 'directory',
+  }
+
   file { 'repodir':
     path => '/opt/pdi-cosmos/rpms',
     ensure => 'directory',
@@ -37,6 +42,7 @@ class cosmos::localrepo {
   }
 
   Package['createrepo']
+    -> File['repodirparent']
     -> File['repodir']
     ~> Exec['createrepo']
     ~> Yumrepo['localrepo']

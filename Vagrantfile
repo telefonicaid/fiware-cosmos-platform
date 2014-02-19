@@ -21,8 +21,7 @@ Vagrant.configure("2") do |config|
     puppet.manifest_file  = "site.pp"
     puppet.module_path = ["target/dist/puppet/modules", "target/dist/puppet/modules_third_party", "target/dist/rpms"]
     puppet.working_directory = "/tmp/vagrant-puppet"
-    puppet.hiera_config_path = "/tmp/vagrant-puppet/manifests/hiera.yaml"
-    puppet.options = "--environment vagrant --manifestdir /tmp/vagrant-puppet/manifests"
+    puppet.options = "--environment vagrant --hiera_config /tmp/vagrant-puppet/manifests/hiera.yaml --manifestdir /tmp/vagrant-puppet/manifests"
   end
 
   config.vm.define :store1 do |config|

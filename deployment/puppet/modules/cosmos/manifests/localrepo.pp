@@ -16,19 +16,19 @@ class cosmos::localrepo {
   }
 
   file { 'repodirparent':
-    path => '/opt/pdi-cosmos',
+    path => "${cosmos::params::cosmos_basedir}",
     ensure => 'directory',
   }
 
   file { 'repodir':
-    path => '/opt/pdi-cosmos/rpms',
+    path => "${cosmos::params::cosmos_basedir}/rpms",
     ensure => 'directory',
     recurse => true,
     source => 'puppet:///modules/cosmosplatform',
   }
 
   exec { 'createrepo':
-    command   => '/usr/bin/createrepo /opt/pdi-cosmos/rpms',
+    command   => "/usr/bin/createrepo ${cosmos::params::cosmos_basedir}/rpms",
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
     timeout   => 600,
@@ -38,7 +38,7 @@ class cosmos::localrepo {
     descr    => "Comos local repo",
     enabled  => '1',
     gpgcheck => '0',
-    baseurl  => "file:///opt/pdi-cosmos/rpms",
+    baseurl  => "file://${cosmos::params::cosmos_basedir}/rpms",
   }
 
   Package['createrepo']

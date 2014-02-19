@@ -10,7 +10,7 @@
 #
 
 class cosmos::base inherits cosmos::params {
-  include cosmos::cluster_hosts
+  include cosmos::cluster_hosts, timezone
   
   class { '::ntp':
     servers => [ $cosmos::params::ntp_server ],
@@ -43,6 +43,6 @@ class cosmos::base inherits cosmos::params {
   }
 
   anchor { 'cosmos::base::begin': }
-    -> Class['cosmos::cluster_hosts', '::ntp']
+    -> Class['cosmos::cluster_hosts', '::ntp', 'timezone']
     -> anchor { 'cosmos::base::end': }
 }

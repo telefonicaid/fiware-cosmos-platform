@@ -99,6 +99,11 @@ class cosmos::openvz::images(
     content => template("${module_name}/ifcfg-eth0.erb"),
   }
 
+  file { "${replacements_dir}/etc/localtime" :
+    ensure  => 'present',
+    source => '/etc/localtime'
+  }
+
   exec { 'pack_image' :
     command     => "tar -C ${replacements_dir} -czf ${dest_image_file} .",
     user        => 'root',
@@ -119,7 +124,8 @@ class cosmos::openvz::images(
             "${replacements_dir}/etc/sysconfig/network",
             "${replacements_dir}/etc/sysconfig/network-scripts/ifcfg-eth0",
             "${replacements_dir}/etc/ssh/ssh_host_rsa_key.pub",
-            "${replacements_dir}/etc/ssh/ssh_host_rsa_key"]
+            "${replacements_dir}/etc/ssh/ssh_host_rsa_key",
+            "${replacements_dir}/etc/localtime"]
     ~> File["${replacements_dir}/root/.ssh/id_rsa", "${replacements_dir}/root/.ssh/id_rsa.pub"]
     -> Exec['pack_image']
 

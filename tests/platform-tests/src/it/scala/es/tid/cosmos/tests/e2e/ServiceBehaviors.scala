@@ -12,6 +12,7 @@
 package es.tid.cosmos.tests.e2e
 
 import es.tid.cosmos.servicemanager.ServiceDescription
+import es.tid.cosmos.tests.e2e.cluster.Cluster
 
 trait ServiceBehaviors { this: E2ETestBase =>
 
@@ -22,7 +23,7 @@ trait ServiceBehaviors { this: E2ETestBase =>
       var cluster: Cluster = null
 
       scenario(s"The user can request a cluster with $service") {
-        cluster = new Cluster(2, user, services = Seq(service.name))
+        cluster = Cluster(2, user, services = Seq(service.name))
         cluster.isListed() must be (true)
         cluster.state().get must (be ("provisioning") or be ("running"))
         cluster.ensureState("running")

@@ -109,6 +109,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(parallelExecution in ThisBuild := false)
     dependsOn(
       common_test % "compile->compile;test->test",
       serviceManager % "compile->compile;test->test",

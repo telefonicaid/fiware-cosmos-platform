@@ -87,6 +87,25 @@ To ease testing, you will find the local ports 80 and 443 mapped to the
     192.168.11.23 compute1
     192.168.11.24 compute2
 
+-------------------------------
+Override remote RPMs for Ambari
+-------------------------------
+
+Vagrant will deploy by default the latest nightly build of Ambari.
+This might be OK for some scenarios, but we might want to deploy a local change
+we have.
+
+If that is the case, the first thing we need to do is to generate the RPMs (in a
+Linux machine for Ambari).
+
+Next, you need to run the `createrepo` command to generate the repository
+metadata. In that same directory, you can start a temporary HTTP server on port
+12345 with the following command: `python -m SimpleHTTPServer 12345`
+
+The final step is to change the `cosmos::params::cosmos_repo_platform_url`
+parameter in Hiera so it points to `http://<your-ip-address>:12345`. At this
+point, running `vagrant up` will deploy your RPMs instead of the nightly build.
+
 ------------
 Distribution
 ------------

@@ -141,11 +141,11 @@ hr {
     background-color: #222;
 }
 
-#tuid-auth.oauth-logo {
-    background-color: #e25e2b;
+#fiware-auth.oauth-logo {
+    background-color: #002969;
 }
-#tuid-auth.oauth-logo:hover {
-    background-color: #FF7E14;
+#fiware-auth.oauth-logo:hover {
+    background-color: #00c2d1;
 }
 
 #github-auth.oauth-logo,

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth.oauth2.github
+package es.tid.cosmos.api.auth.oauth2.keyrock
 
 import scala.concurrent.Future
 
@@ -20,39 +20,35 @@ import play.api.libs.json.{Reads, JsValue, Json}
 import es.tid.cosmos.api.auth.oauth2.{OAuthUserProfile, JsonProfileParser, AbstractOAuthProvider}
 import es.tid.cosmos.api.auth.oauth2.OAuthTupleBuilder._
 
-/** OAuth2 integration with GitHub */
+/** OAuth2 integration with Keyrock */
 class Provider(id: String, config: Config) extends AbstractOAuthProvider(id, config) {
 
-  override def authenticationUrl(redirectUri: String): String =
+  override def authenticationUrl(redirectUrl: String): String =
     (authorizationUrl / "authorize" <<? Map(
+      "response_type" -> "code",
       "client_id" -> clientId,
-      "scope" -> "user",
-      "redirect_uri" -> redirectUri
+      "redirect_uri" -> redirectUrl
     )).build().getRawUrl
 
   override def requestAccessToken(code: String, redirectUrl: String): Future[String] = {
     val queryParams = Map(
-      "client_id" -> clientId,
-      "client_secret" -> clientSecret,
-      "code" -> code
+      "grant_type" -> "authorization_code",
+      "code" -> code,
+      "redirect_uri" -> redirectUrl
     )
-    val headers = Map(
-      "Accept" -> "application/json"
-    )
-    val request = authorizationUrl / "access_token" <<? queryParams <:< headers << ""
-    Http(request OAuthOK as.String)
-      .map(response => (Json.parse(response) \ "access_token").as[String]
-    )
+    val headers = Map("Accept" -> "application/json")
+    val request = authorizationUrl / "token" <<? queryParams <:< headers << ""
+    Http(request.as_!(clientId, clientSecret) OAuthOK as.String)
+      .map(response => (Json.parse(response) \ "access_token").as[String])
   }
 
   override protected val profileParser = new JsonProfileParser(new Reads[OAuthUserProfile]{
-    override def reads(json: JsValue) = Json.fromJson[GitHubProfile](json).map(_.asUserProfile(id))
+    override def reads(json: JsValue) = Json.fromJson[KeyrockProfile](json).map(_.asUserProfile(id))
   })
 
+  /** Request the profile resource contents. */
   override protected def requestProfileResource(token: String): Future[String] = {
-    val request = apiUrl / "user" <<? Map(
-      "access_token" -> token
-    )
+    val request = apiUrl / "user" <<? Map("access_token" -> token)
     Http(request OAuthOK as.String)
   }
 }

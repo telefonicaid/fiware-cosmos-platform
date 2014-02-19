@@ -11,6 +11,9 @@
 
 package es.tid.cosmos.api.auth.oauth2
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 import com.typesafe.config.{ConfigException, Config}
 import dispatch.url
 
@@ -28,11 +31,19 @@ private[oauth2] abstract class AbstractOAuthProvider(
     case _: ConfigException.Missing => None
   }
 
+  override def requestUserProfile(token: String): Future[OAuthUserProfile] =
+    requestProfileResource(token).map(profileParser.parse)
+
   /** OAuth client ID */
   protected val clientId = stringConfig("client.id")
 
   /** OAuth client secret */
   protected val clientSecret = stringConfig("client.secret")
+
+  /** Request the profile resource contents. */
+  protected def requestProfileResource(token: String): Future[String]
+
+  protected val profileParser: ProfileParser
 
   /** Get a required configuration key
     * @param key Configuration key (relative to the OAuth provider conf)

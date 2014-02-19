@@ -39,7 +39,7 @@ object MockAuthProvider extends OAuthProvider with AdminEnabledAuthProvider {
   override def authenticationUrl(redirectUri: String): String =
     s"$BaseUrl/oauth?client_id=fake&redirect_to=$redirectUri"
 
-  override def requestAccessToken(code: String): Future[String] =
+  override def requestAccessToken(code: String, redirectUrl: String): Future[String] =
     if (code == GrantedCode) Future.successful(GrantedToken)
     else Future.failed(OAuthException(OAuthError.InvalidGrant, "testing invalid grant"))
 

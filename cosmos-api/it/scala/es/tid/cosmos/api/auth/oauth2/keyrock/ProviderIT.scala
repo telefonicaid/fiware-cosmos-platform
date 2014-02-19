@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth.oauth2.github
+package es.tid.cosmos.api.auth.oauth2.keyrock
 
 import java.util.concurrent.ExecutionException
 import scala.collection.JavaConversions
@@ -25,7 +25,7 @@ import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.profile.UserId
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 
-class ProviderTest extends FlatSpec
+class ProviderIT extends FlatSpec
   with MustMatchers
   with BeforeAndAfter
   with BeforeAndAfterAll
@@ -34,74 +34,78 @@ class ProviderTest extends FlatSpec
   val testTimeout = 3 seconds
   val clientId = "client-id-1"
   val clientSecret = "client-s3cr3t"
-  val gitHubUser = GitHubProfile(
+  val redirectUri = "http://callback"
+  val userProfile = KeyrockProfile(
     id = 53,
-    login = "jsmith",
-    name = "John Smith",
+    actorId = 112,
+    nickName = "jackie",
+    displayName = "John Smith",
     email = "jsmith@tid.es"
   )
-  val gitHubMock = new MockedGitHubApi(
-    port = 2348,
+  val serverMock = new MockedKeyrockApi(
+    port = 2349,
     clientId = clientId,
     clientSecret = clientSecret,
-    existingUser = gitHubUser
+    existingUser = userProfile,
+    redirectUri = redirectUri
   )
-  var config = gitHubMock.configurationKeys
+  var config = serverMock.configurationKeys
   var client: Provider = null
 
   override def beforeAll() {
-    gitHubMock.start()
+    serverMock.start()
   }
 
   before {
-    client = new Provider("github", toConfig(config))
+    client = new Provider("keyrock", toConfig(config))
   }
 
   after {
-    gitHubMock.clear()
+    serverMock.clear()
   }
 
   override def afterAll() {
-    gitHubMock.stop()
+    serverMock.stop()
   }
 
   private def toConfig(keys: Map[String, String]) =
     ConfigFactory.parseMap(JavaConversions.mapAsJavaMap(keys))
 
-  "A GitHub OAuth client" must "link to signup url" in {
+  "A Keyrock OAuth client" must "link to signup url" in {
     client.newAccountUrl.get must be (config("signup.url"))
   }
 
   it must "link to an authentication url" in {
-    client.authenticationUrl("http://callback") must be (
-      s"${config("auth.url")}authorize?client_id=client-id-1&scope=user&redirect_uri=" +
-      "http://callback")
+    client.authenticationUrl(redirectUri) must be (s"${config("auth.url")}authorize?" + Seq(
+      "response_type=code",
+      s"client_id=$clientId",
+      s"redirect_uri=$redirectUri"
+    ).mkString("&"))
   }
 
   it must "successfully request an access token with a valid code" in {
-    val authUrl = client.authenticationUrl("http://callback")
-    val code = gitHubMock.requestAuthorizationCode(authUrl, gitHubUser.id)
-    val token_> = client.requestAccessToken(code)
-    token_> must runUnder(testTimeout)
-    token_> must eventually(fullyMatch regex ".{8}")
+    val authUrl = client.authenticationUrl(redirectUri)
+    val code = serverMock.requestAuthorizationCode(authUrl, userProfile.id)
+    val token_> = client.requestAccessToken(code, redirectUri)
+    token_> must (runUnder(testTimeout) and eventually(have length 8))
   }
 
   it must "handle an OAuth error when requesting an access tokens with invalid code" in {
-    val token_> = client.requestAccessToken("invalid_code")
+    val token_> = client.requestAccessToken("invalid_code", redirectUri)
     token_> must runUnder(testTimeout)
     token_> must eventuallyFailWith [ExecutionException]
   }
 
   it must "request the user profile" in {
-    val authUrl = client.authenticationUrl("http://callback")
-    val code = gitHubMock.requestAuthorizationCode(authUrl, gitHubUser.id)
+    val authUrl = client.authenticationUrl(redirectUri)
+    val code = serverMock.requestAuthorizationCode(authUrl, userProfile.id)
     val profile_> = for {
-      token <- client.requestAccessToken(code)
+      token <- client.requestAccessToken(code, redirectUri)
       profile <- client.requestUserProfile(token)
     } yield profile
     profile_> must runUnder(testTimeout)
     profile_> must eventually(equal(OAuthUserProfile(
-      id = UserId("github", "53"),
+      id = UserId("keyrock", "112"),
       name = Some("John Smith"),
       email = Some("jsmith@tid.es")
     )))

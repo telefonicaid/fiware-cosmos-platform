@@ -9,14 +9,14 @@
 # All rights reserved.
 #
 
-class cosmos::localrepo {
+class cosmos::localrepo inherits cosmos::params {
 
   package { 'createrepo':
     ensure => present,
   }
 
   file { 'repodirparent':
-    path => "${cosmos::params::cosmos_basedir}",
+    path => $cosmos::params::cosmos_basedir,
     ensure => 'directory',
   }
 

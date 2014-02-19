@@ -45,7 +45,7 @@ db.default.pass=
 auth.pdihub {
     enabled=false
     name="PDIHub"
-    class="es.tid.cosmos.api.oauth2.GitHubOAuthProvider"
+    class="es.tid.cosmos.api.auth.oauth2.github.Provider"
     client.id=
     client.secret=
     auth.url=

@@ -18,6 +18,7 @@ class cosmos::master {
   anchor { 'cosmos::master::begin': }
     -> Class['stdlib', 'ssh_keys', 'mysql']
     -> Class['cosmos::base']
+    -> Class['cosmos::localrepo']
     -> Class['ambari::server']
     -> Class['cosmos::api']
     -> Class['cosmos::apache::setup']

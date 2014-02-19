@@ -20,3 +20,5 @@ libraryDependencies in ThisBuild ++= Seq(
   Dependencies.mockito % "test, it",
   Dependencies.scalatest % "test, it"
 )
+
+cleanKeepFiles := (target.value * "centos-6-cosmos.HDP.*").get

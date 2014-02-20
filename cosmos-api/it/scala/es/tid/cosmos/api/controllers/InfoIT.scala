@@ -25,6 +25,7 @@ import es.tid.cosmos.api.profile.CosmosProfile
 import es.tid.cosmos.api.test.matchers.JsonMatchers
 import es.tid.cosmos.api.quota.{Quota, GuaranteedGroup}
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, Running}
 
 class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors
@@ -67,7 +68,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
   it must "provide info about clusters owned or accessible by SSH" in
     new WithSampleSessions {
       val cluster1 = mockedServiceManager.createCluster(
-        name = "ownCluster",
+        name = ClusterName("ownCluster"),
         size = 2,
         serviceDescriptions = Seq.empty,
         users = Seq.empty
@@ -76,13 +77,13 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       val cluster2 = ClusterId("cluster2")
       mockedServiceManager.defineCluster(ClusterProperties(
         id = cluster2,
-        name = "cluster2",
+        name = ClusterName("cluster2"),
         users = Set(opUser.asClusterUser(), regUser.asClusterUser()),
         size  = 2,
         initialState = Some(Running)
       ))
       mockedServiceManager.createCluster(
-        name = "unlisted",
+        name = ClusterName("unlisted"),
         size = 2,
         serviceDescriptions = Seq.empty,
         users = Seq(opUser.asClusterUser(), regUser.asClusterUser(sshEnabled = false))
@@ -104,7 +105,7 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       dao.setGroup(regUser.cosmosProfile.id, Some("fooGroup"))
     }
     val cluster = mockedServiceManager.createCluster(
-      name = "ownCluster",
+      name = ClusterName("ownCluster"),
       size = 2,
       serviceDescriptions = Seq.empty,
       users = Seq.empty

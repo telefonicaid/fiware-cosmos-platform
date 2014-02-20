@@ -15,7 +15,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 
@@ -32,7 +32,7 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
   val sampleDetails = ClusterDetails(
     href = "http://host/path",
     id = "001",
-    name = "test cluster",
+    name = ClusterName("test cluster"),
     size = 20,
     state = "terminating",
     stateDescription = "releasing resources",
@@ -97,7 +97,7 @@ class ClusterDetailsTest extends FlatSpec with MustMatchers {
   it must "not show hidden services" in {
     val description = ImmutableClusterDescription(
       id = ClusterId("id"),
-      name = "mycluster",
+      name = ClusterName("mycluster"),
       size = 2,
       state = Running,
       nameNode = None,

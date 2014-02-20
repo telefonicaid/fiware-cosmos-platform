@@ -11,24 +11,27 @@
 
 package es.tid.cosmos.api.controllers.cluster
 
+import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-/**
- * Parameters for cluster creation.
- */
-case class CreateClusterParams(name: String, size: Int, optionalServices: Seq[String])
+import es.tid.cosmos.servicemanager.ClusterName
+
+/** Parameters for cluster creation. */
+case class CreateClusterParams(name: ClusterName, size: Int, optionalServices: Seq[String])
 
 object CreateClusterParams {
   implicit val createClusterParamsReads: Reads[CreateClusterParams] = (
-    (__ \ "name").read[String] ~
+    (__ \ "name").read[String]
+      .filter(ValidationError("cluster name is too long"))(_.size <= ClusterName.MaxLength)
+      .map(ClusterName.apply) ~
     (__ \ "size").read[Int] ~
     (__ \ "optionalServices").readNullable[Seq[String]].map(_.getOrElse(Seq()))
   )(CreateClusterParams.apply _)
 
   implicit object CreateClusterParamsWrites extends Writes[CreateClusterParams] {
     def writes(params: CreateClusterParams) = Json.obj(
-      "name" -> params.name,
+      "name" -> params.name.underlying,
       "size" -> params.size,
       "optionalServices" -> params.optionalServices
     )

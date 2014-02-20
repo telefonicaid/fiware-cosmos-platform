@@ -12,14 +12,13 @@
 package es.tid.cosmos.servicemanager.ambari.mocks
 
 import java.net.URI
-import scala.Some
 
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
 class InMemoryClusterDescription(
     override val id: ClusterId,
-    override var name: String,
+    override var name: ClusterName,
     private var clusterSize: Int,
     override var services : Set[String]) extends MutableClusterDescription {
 

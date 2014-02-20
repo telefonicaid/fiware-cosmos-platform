@@ -38,7 +38,7 @@ class ClusterTest extends FlatSpec with MustMatchers with MockitoSugar {
   trait WithExistingStorage extends WithServiceManager {
     given(sm.describeCluster(clusterId)).willReturn(Some(new ImmutableClusterDescription(
       id = clusterId,
-      name = "",
+      name = ClusterName(""),
       state = Running,
       size = 3,
       nameNode = Some(new URI("hdfs://host:1234")),

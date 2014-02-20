@@ -25,11 +25,11 @@ import org.scalatest.concurrent.Eventually
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
-import CosmosProfileTestHelpers.{registerUser, userIdFor}
+import es.tid.cosmos.api.profile.CosmosProfileTestHelpers.{registerUser, userIdFor}
 import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.servicemanager.{ClusterUser, UnfilteredPassThrough}
-import es.tid.cosmos.servicemanager.clusters.{ClusterState, Running, ClusterId, Terminated}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, UnfilteredPassThrough}
+import es.tid.cosmos.servicemanager.clusters.{Running, ClusterId, Terminated}
 
 class UserUnregistrationWizardTest
   extends FlatSpec with MustMatchers with FutureMatchers with Eventually {
@@ -66,7 +66,7 @@ class UserUnregistrationWizardTest
 
   trait WithUserWithCluster extends WithExistingUser {
     val clusterId = sm.createCluster(
-      name = "cluster1",
+      name = ClusterName("cluster1"),
       size = 6,
       serviceDescriptions = Seq.empty,
       users = Seq.empty,
@@ -83,7 +83,7 @@ class UserUnregistrationWizardTest
 
   trait WithUserOfNotOwnedClusters extends WithExistingUser {
     val clusterId = sm.createCluster(
-      name = "cluster1",
+      name = ClusterName("cluster1"),
       size = 2,
       serviceDescriptions = Seq.empty,
       users = Seq.empty,

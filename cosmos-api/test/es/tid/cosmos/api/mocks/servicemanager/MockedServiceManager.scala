@@ -21,16 +21,14 @@ import es.tid.cosmos.servicemanager.ambari.services.{Hdfs, MapReduce2}
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.clusters.ImmutableClusterDescription
 
-/**
- * In-memory, simulated service manager.
- */
+/** In-memory, simulated service manager. */
 class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   import MockedServiceManager._
 
   class FakeCluster(
       id: ClusterId,
-      name: String,
+      name: ClusterName,
       size: Int,
       initialUsers: Set[ClusterUser],
       services: Set[String],
@@ -148,13 +146,13 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
 
   @volatile private var clusters: Map[ClusterId, FakeCluster] = Map.empty
   @volatile var autoCompleteSetUserOperations = true
-  
+
   override def clusterIds: Seq[ClusterId] = clusters.keySet.toSeq
 
   override val optionalServices: Seq[ServiceDescription] = Seq(Hdfs, MapReduce2)
 
   override def createCluster(
-      name: String,
+      name: ClusterName,
       size: Int,
       serviceDescriptions: Seq[ServiceDescription],
       users: Seq[ClusterUser],
@@ -177,7 +175,7 @@ class MockedServiceManager(maxPoolSize: Int = 20) extends ServiceManager {
   override def terminateCluster(id: ClusterId): Future[Unit] = synchronized {
     clusters(id).startTermination()
   }
-  
+
   def makeClusterFail(id: ClusterId, reason: String): Future[Unit] = synchronized {
     clusters(id).makeFail(reason)
   }
@@ -220,7 +218,7 @@ object MockedServiceManager {
 
   case class ClusterProperties(
     id: ClusterId,
-    name: String,
+    name: ClusterName,
     size: Int,
     users: Set[ClusterUser],
     initialState: Option[ClusterState] = None,
@@ -229,7 +227,7 @@ object MockedServiceManager {
 
   val PersistentHdfsProps = ClusterProperties(
     id = new ClusterId("persistentHdfs"),
-    name = "Persistent HDFS",
+    name = ClusterName("Persistent HDFS"),
     size = 4,
     users = Set(
       ClusterUser.enabled("jsmith", "jsmith-public-key"),

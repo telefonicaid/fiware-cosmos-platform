@@ -12,8 +12,8 @@
 package es.tid.cosmos.api.mocks
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager.ClusterProperties
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters.{Running, ClusterId}
-import es.tid.cosmos.servicemanager.ClusterUser
 
 trait SampleClusters {
   self: WithTestApplication =>
@@ -28,7 +28,7 @@ object SampleClusters {
 
   val RunningClusterProps = ClusterProperties(
     id = new ClusterId(),
-    name = "Running cluster",
+    name = ClusterName("Running cluster"),
     size = 4,
     users = Set(ClusterUser.enabled("jsmith", "jsmith-public-key")),
     initialState = Some(Running)
@@ -36,7 +36,7 @@ object SampleClusters {
 
   val ProvisioningClusterProps = ClusterProperties(
     id = new ClusterId(),
-    name = "Provisioning cluster",
+    name = ClusterName("Provisioning cluster"),
     size = 4,
     users = Set(ClusterUser.enabled("pocahontas", "pocahontas-public-key")),
     initialState = None

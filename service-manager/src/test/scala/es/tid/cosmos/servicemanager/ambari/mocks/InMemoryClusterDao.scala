@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.ambari.mocks
 
-import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
 class InMemoryClusterDao extends ClusterDao {
@@ -24,7 +24,7 @@ class InMemoryClusterDao extends ClusterDao {
 
   override def registerCluster(
       clusterId: ClusterId,
-      clusterName: String,
+      clusterName: ClusterName,
       clusterSize: Int,
       services: Set[ServiceDescription]): MutableClusterDescription = {
     val description = new InMemoryClusterDescription(

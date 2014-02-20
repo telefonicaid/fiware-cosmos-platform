@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.servicemanager.clusters
 
-import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
 
 trait ClusterDaoComponent {
   val clusterDao: ClusterDao
@@ -45,7 +45,7 @@ trait ClusterDao {
     */
   def registerCluster(
     id: ClusterId = ClusterId(),
-    name: String,
+    name: ClusterName,
     size: Int,
     services: Set[ServiceDescription]): MutableClusterDescription
 

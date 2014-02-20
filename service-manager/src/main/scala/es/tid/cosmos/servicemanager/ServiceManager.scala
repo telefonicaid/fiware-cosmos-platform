@@ -44,7 +44,7 @@ trait ServiceManager {
    * @return the ID of the newly created cluster
    */
   def createCluster(
-    name: String,
+    name: ClusterName,
     clusterSize: Int,
     serviceDescriptions: Seq[ServiceDescription],
     users: Seq[ClusterUser],

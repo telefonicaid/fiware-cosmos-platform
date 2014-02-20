@@ -13,7 +13,7 @@ package es.tid.cosmos.servicemanager.clusters
 
 import java.net.URI
 
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 
 /** A description of a cluster */
 trait ClusterDescription {
@@ -22,7 +22,7 @@ trait ClusterDescription {
   def id: ClusterId
 
   /** Human-readable name of the cluster. */
-  def name: String
+  def name: ClusterName
 
   /** Number of machines. */
   def size: Int

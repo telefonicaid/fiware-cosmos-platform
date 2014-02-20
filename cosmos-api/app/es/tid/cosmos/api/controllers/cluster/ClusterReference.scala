@@ -38,7 +38,7 @@ object AbsoluteUriClusterReference {
         case AbsoluteUriClusterReference(href, ClusterReference(desc, assig)) => Json.obj(
           "id" -> desc.id.toString,
           "href" -> href,
-          "name" -> desc.name,
+          "name" -> desc.name.underlying,
           "state" -> desc.state.name,
           "stateDescription" -> desc.state.descLine,
           "creationDate" -> timestampFormat.format(assig.creationDate)

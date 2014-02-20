@@ -16,12 +16,11 @@ import java.net.URI
 import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.UpdateAssignment
 
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.HostEntityTypes._
 import es.tid.cosmos.servicemanager.clusters._
 
-/**
-  * This class provides a mutable cluster description which reads directly from the SQL DAO
+/** This class provides a mutable cluster description which reads directly from the SQL DAO
   * and writes any changes to the DAO too
   * @param id The ID of the cluster
   * @param dao The DAO that backs the description of the cluster
@@ -32,10 +31,10 @@ private[ambari] class SqlMutableClusterDescription(
 
   import SqlClusterDao._
 
-  override def name: String = getField(_.name)
+  override def name: ClusterName = ClusterName(getField(_.name))
 
-  override def name_=(name: String) {
-    setField(_.name := name)
+  override def name_=(name: ClusterName) {
+    setField(_.name := name.underlying)
   }
 
   override def size: Int = getField(_.size)

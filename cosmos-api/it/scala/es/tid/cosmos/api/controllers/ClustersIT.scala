@@ -20,13 +20,15 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.cluster.CreateClusterParams
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.mocks.SampleClusters
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.ambari.services.Hdfs
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 class ClustersIT
   extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors {
 
-  val validCreationParams = Json.toJson(CreateClusterParams("cluster_new", 6, Seq(Hdfs.name)))
+  val validCreationParams =
+    Json.toJson(CreateClusterParams(ClusterName("cluster_new"), 6, Seq(Hdfs.name)))
   val inValidCreationParams = Json.obj("invalid" -> "json")
   val resourcePath = "/cosmos/v1/cluster"
   val listClusters = FakeRequest(GET, resourcePath)
@@ -52,7 +54,7 @@ class ClustersIT
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)
-      contentAsString(resource) must include (SampleClusters.RunningClusterProps.name)
+      contentAsString(resource) must include (SampleClusters.RunningClusterProps.name.underlying)
       contentAsString(resource) must not include otherCluster.toString
     }
   }
@@ -83,7 +85,8 @@ class ClustersIT
   }
 
   it must "reject cluster creation with invalid payload" in new WithSampleSessions {
-    val resource = regUser.doRequest(FakeRequest(POST, resourcePath).withJsonBody(inValidCreationParams))
+    val resource =
+      regUser.doRequest(FakeRequest(POST, resourcePath).withJsonBody(inValidCreationParams))
     status(resource) must equal (BAD_REQUEST)
   }
 }

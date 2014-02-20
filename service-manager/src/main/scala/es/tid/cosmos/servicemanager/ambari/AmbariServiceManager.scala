@@ -67,7 +67,7 @@ class AmbariServiceManager(
     Seq(new CosmosUserService(users))
 
   override def createCluster(
-      name: String,
+      name: ClusterName,
       clusterSize: Int,
       serviceDescriptions: Seq[ServiceDescription],
       users: Seq[ClusterUser],
@@ -191,7 +191,7 @@ class AmbariServiceManager(
       .map(toAmbariService(_, serviceConfigPath))
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
-      name = persistentHdfsId.id,
+      name = ClusterName(persistentHdfsId.id),
       size = machineCount + 1,
       services = serviceDescriptions.toSet
     )

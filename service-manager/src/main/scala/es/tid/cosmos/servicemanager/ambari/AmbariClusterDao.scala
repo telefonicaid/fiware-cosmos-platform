@@ -16,7 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
@@ -49,7 +49,7 @@ private[ambari] class AmbariClusterDao(
 
   override def registerCluster(
     id: ClusterId = ClusterId(),
-    name: String,
+    name: ClusterName,
     size: Int,
     services: Set[ServiceDescription]): MutableClusterDescription =
     dao.registerCluster(id, name, size, services)

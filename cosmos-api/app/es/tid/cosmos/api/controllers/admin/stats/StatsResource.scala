@@ -52,7 +52,7 @@ class StatsResource(
     ownerHandle = ownerHandleOf(clusterId)
   } yield ClusterStats(
     id = clusterId.toString,
-    name = description.name,
+    name = description.name.underlying,
     ownerHandle = ownerHandle,
     size = description.size,
     master = description.master.map(_.hostname).getOrElse(""),
@@ -65,7 +65,7 @@ class StatsResource(
       profile <- dao.lookupByProfileId(cosmosId)
     } yield profile.handle
   }.getOrElse(StatsResource.UnknownOwnerHandle)
-  
+
   @ApiOperation(value = "Total and available machines by profile", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.admin.stats.MachineStats")
   @ApiErrors(Array(

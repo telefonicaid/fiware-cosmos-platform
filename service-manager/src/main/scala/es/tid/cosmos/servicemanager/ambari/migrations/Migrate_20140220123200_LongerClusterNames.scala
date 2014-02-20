@@ -23,6 +23,6 @@ class Migrate_20140220123200_LongerClusterNames extends Migration {
 
   override def down() {
     execute("UPDATE cluster_state SET name = SUBSTRING(name, 1, 45);")
-    execute("ALTER TABLE cluster_state CHANGE COLUMN name name VARCHAR(80) NOT NULL;")
+    execute("ALTER TABLE cluster_state CHANGE COLUMN name name VARCHAR(45) NOT NULL;")
   }
 }

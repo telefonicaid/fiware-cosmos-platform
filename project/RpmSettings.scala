@@ -40,10 +40,15 @@ object RpmSettings {
     rpmAutoprov := "no"
   )
 
+  lazy val CosmosCli = config("cosmosCli")
+
   val cosmosApiSettings: Seq[Setting[_]] = commonRpmSettings ++ Seq(
     name in Rpm := "cosmos-api",
     packageSummary := "Cosmos API",
     packageDescription in Rpm := "Cosmos API server",
+    packageBin in CosmosCli := {
+      CosmosCliBuildHelper.make(baseDirectory.value.getParentFile / "cosmos-cli", streams.value.log)
+    },
     linuxPackageMappings in Rpm <<= (mappings in Universal) map { (f: Seq[(File,String)]) =>
       f map { case (file: File, name: String) =>
         (packageMapping(file -> s"/opt/pdi-cosmos/cosmos-api/$name")
@@ -57,11 +62,8 @@ object RpmSettings {
           withUser "root" withGroup "root" withPerms "0440"
       )
     },
-    linuxPackageMappings in Rpm <++= baseDirectory map { base =>
-      val egg = base.getParentFile / "cosmos-cli/dist" * "*.egg"
-      egg.get map { f =>
-        packageMapping(f -> s"/opt/repos/eggs/${f.name}")
-      }
+    linuxPackageMappings in Rpm <+= (baseDirectory, packageBin in CosmosCli) map { (base, egg) =>
+      packageMapping(egg -> s"/opt/repos/eggs/${egg.name}")
     },
     linuxPackageSymlinks := {
       Seq(LinuxSymlink("/usr/bin/cosmos-api", "/opt/pdi-cosmos/cosmos-api/bin/cosmos-api"))

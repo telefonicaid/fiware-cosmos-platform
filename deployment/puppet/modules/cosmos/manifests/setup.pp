@@ -104,10 +104,10 @@ class cosmos::setup inherits cosmos::params {
         $cosmos::params::ssl_key_file,
         $cosmos::params::ssl_ca_file
       ]
-  Package['cosmos'] -> File['cosmos-api.conf']
+  Package['cosmos-api'] -> File['cosmos-api.conf']
   Class['ssh_keys', 'cosmos::master_db'] -> Exec['cosmos-setup']
 
-  Package['cosmos'] ~> Exec['cosmos-setup']
+  Package['cosmos-admin'] ~> Exec['cosmos-setup']
   File[
     'cosmos-api.conf',
     $cosmos::params::ssl_cert_file,

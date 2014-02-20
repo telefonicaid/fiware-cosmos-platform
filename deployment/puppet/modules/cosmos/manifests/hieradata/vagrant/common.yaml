@@ -53,7 +53,7 @@ cosmos::params::ambari_reduce_heap_memory: 400
 cosmos::params::ambari_yarn_total_memory: 600
 cosmos::params::ambari_yarn_container_min_memory: 10
 cosmos::params::ambari_yarn_virtual_physical_memory_ratio: 2.1
-cosmos::openvz::images::source_image_file_dir: '/vagrant'
+cosmos::openvz::images::source_image_file_dir: '/vagrant/target'
 cosmos::openvz::network::host_iface: 'eth1'
 slave_hosts:
     - 'compute1'

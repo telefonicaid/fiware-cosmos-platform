@@ -38,7 +38,7 @@ class cosmos::localrepo inherits cosmos::params {
     descr    => "Comos local repo",
     enabled  => '1',
     gpgcheck => '0',
-    baseurl  => "file://${cosmos::params::cosmos_basedir}/rpms",
+    baseurl  => "http://${cosmos::params::master_ip}:8081/",
   }
 
   Package['createrepo']

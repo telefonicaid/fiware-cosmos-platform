@@ -51,6 +51,14 @@ class cosmos::apache::setup inherits cosmos::params {
     request_headers => ['set X-Forwarded-Proto "https"'],
   }
 
+  apache::vhost { 'platform.repo':
+    priority      => '03',
+    servername    => $ssl_fqdn,
+    port          => '8081',
+    docroot       => "${cosmos::params::cosmos_basedir}/rpms",
+    ssl           => false,
+  }
+
   apache::vhost { 'redirect.to.fqdn':
     priority        => '10',
     servername      => $ssl_fqdn,
@@ -77,7 +85,7 @@ class cosmos::apache::setup inherits cosmos::params {
   }
 
   File[$cosmos::params::cosmos_cli_repo_path]
-    -> Apache::Vhost['cli.repo', 'ssl.master', 'redirect.to.fqdn', 'ssl.redirect.to.fqdn']
+    -> Apache::Vhost['cli.repo', 'ssl.master', 'platform.repo', 'redirect.to.fqdn', 'ssl.redirect.to.fqdn']
     ~> Service['httpd']
 
   anchor{'cosmos::apache::setup::begin': }

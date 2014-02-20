@@ -21,6 +21,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.common.scalatest.tags.EndToEndTest
+import es.tid.cosmos.tests.e2e.cluster.Cluster
 
 abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
   with FutureMatchers with BeforeAndAfterAll {
@@ -55,7 +56,7 @@ abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
   }
 
   def withNewCluster(size: Int, owner: User, services: Seq[String] = Seq())(body: Cluster => Unit) {
-    val cluster = new Cluster(size, owner, services)(info)
+    val cluster = Cluster(size, owner, services)(info)
     val executionResult = Try(body(cluster))
     clustersToDelete ::= cluster
     executionResult.get

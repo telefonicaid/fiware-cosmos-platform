@@ -11,13 +11,15 @@
 
 package es.tid.cosmos.tests.e2e
 
+import es.tid.cosmos.tests.e2e.cluster.Cluster
+
 class ClusterCreationIT extends E2ETestBase {
   withNewUser { user =>
     feature("A user can manage clusters") {
       var cluster: Cluster = null
 
       scenario("The user can create a cluster") {
-        cluster = new Cluster(6, user)
+        cluster = Cluster(6, user)
         cluster.isListed() must be (true)
         cluster.state().get must (be ("provisioning") or be ("running"))
         cluster.ensureState("running")

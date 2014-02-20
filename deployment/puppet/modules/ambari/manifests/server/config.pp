@@ -34,30 +34,25 @@ class ambari::server::config {
     path   => '/etc/ambari-server/conf/ambari.properties',
   }
 
-  $tables_exist = '/bin/bash -c "[[ `su postgres -c \'psql -l | grep ambari | wc -l\'` -ge 2 ]]"'
-
   exec { 'ambari-server-stop':
     command   => 'ambari-server stop',
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
-    timeout   => 600,
-    onlyif    => $tables_exist
+    timeout   => 600
   }
 
   exec { 'ambari-server-setup':
     command   => 'ambari-server setup --silent',
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
-    timeout   => 600,
-    unless    => $tables_exist
+    timeout   => 600
   }
 
   exec { 'ambari-server-upgrade':
     command   => 'ambari-server upgrade --silent',
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
-    timeout   => 600,
-    onlyif    => $tables_exist
+    timeout   => 600
   }
 
   augeas { "ambari-config-repoinfo":
@@ -74,6 +69,6 @@ class ambari::server::config {
     -> File_line['add jce_policy from CI']
     -> Augeas['ambari-config-repoinfo']
     -> Exec['ambari-server-stop']
-    -> Exec['ambari-server-upgrade']
     -> Exec['ambari-server-setup']
+    -> Exec['ambari-server-upgrade']
 }

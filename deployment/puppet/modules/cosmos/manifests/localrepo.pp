@@ -15,13 +15,11 @@ class cosmos::localrepo inherits cosmos::params {
     ensure => present,
   }
 
-  file { 'repodirparent':
-    path => $cosmos::params::cosmos_basedir,
+  file { "${cosmos::params::cosmos_basedir}" :
     ensure => 'directory',
   }
 
-  file { 'repodir':
-    path => "${cosmos::params::cosmos_basedir}/rpms",
+  file { "${cosmos::params::cosmos_basedir}/rpms":
     ensure => 'directory',
     recurse => true,
     source => 'puppet:///modules/cosmosplatform',
@@ -42,8 +40,8 @@ class cosmos::localrepo inherits cosmos::params {
   }
 
   Package['createrepo']
-    -> File['repodirparent']
-    -> File['repodir']
+    -> File["${cosmos::params::cosmos_basedir}"]
+    -> File["${cosmos::params::cosmos_basedir}/rpms"]
     ~> Exec['createrepo']
     ~> Yumrepo['localrepo']
 

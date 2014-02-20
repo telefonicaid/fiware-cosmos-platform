@@ -59,7 +59,8 @@ class ambari::server::config {
     lens    => "Xml.lns",
     incl    => "/var/lib/ambari-server/resources/stacks/HDP/2.0.6_Cosmos/repos/repoinfo.xml",
     changes => [
-    "set reposinfo/os/repo/baseurl/#text ${ambari::params::repo_rpm_url}"
+    "set reposinfo/os[#attribute/type='centos6']/repo/baseurl/#text ${ambari::params::repo_rpm_url}",
+    "set reposinfo/os[#attribute/type='cosmos']/repo/baseurl/#text ${ambari::params::$repo_cosmpos_rpm_url}"
     ],
   }
 

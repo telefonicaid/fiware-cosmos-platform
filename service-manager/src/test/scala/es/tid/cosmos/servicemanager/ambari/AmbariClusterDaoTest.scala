@@ -22,7 +22,6 @@ import org.mockito.Matchers.any
 
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, ServiceDescription}
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterState.AmbariClusterState
-import es.tid.cosmos.servicemanager.ambari.mocks.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.rest.{Cluster, AmbariServer}
 import es.tid.cosmos.servicemanager.ambari.services.{MapReduce2, Hdfs, AmbariServiceDescription}
 import es.tid.cosmos.servicemanager.clusters._

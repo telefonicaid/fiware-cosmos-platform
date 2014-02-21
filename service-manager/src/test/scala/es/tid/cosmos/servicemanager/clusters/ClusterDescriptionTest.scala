@@ -16,7 +16,7 @@ import java.net.URI
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 
 class ClusterDescriptionTest extends FlatSpec with MustMatchers {
 
@@ -29,7 +29,7 @@ class ClusterDescriptionTest extends FlatSpec with MustMatchers {
     val withMachines = withMachineInfoForState(Provisioning)
     withMachines.expectedSize must equal(withMachines.size)
     withMachines.expectedSize must be (10)
-    
+
     val withoutMachines = withoutMachineInfoForState(Provisioning)
     withoutMachines.expectedSize must equal(withoutMachines.size)
     withoutMachines.expectedSize must be (10)
@@ -67,7 +67,7 @@ class ClusterDescriptionTest extends FlatSpec with MustMatchers {
 
   def withMachineInfoForState(state: ClusterState) = ImmutableClusterDescription(
     id = ClusterId(),
-    name = "myCluster",
+    name = ClusterName("myCluster"),
     size = 10,
     state,
     nameNode = Some(new URI("someURI")),
@@ -76,10 +76,10 @@ class ClusterDescriptionTest extends FlatSpec with MustMatchers {
     users = Some(Set(ClusterUser("jsmith", "a public key"))),
     services = Set("ServiceA", "ServiceB")
   )
-  
+
   def withoutMachineInfoForState(state: ClusterState) = ImmutableClusterDescription(
     id = ClusterId(),
-    name = "myCluster",
+    name = ClusterName("myCluster"),
     size = 10,
     state,
     nameNode = None,

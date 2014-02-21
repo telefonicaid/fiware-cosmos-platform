@@ -20,7 +20,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
-import es.tid.cosmos.servicemanager.{ComponentLocation, ComponentDescription}
+import es.tid.cosmos.servicemanager.{ClusterName, ComponentLocation, ComponentDescription}
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.mocks.MockServiceDescription
 import es.tid.cosmos.servicemanager.ambari.rest._
@@ -136,7 +136,7 @@ class AmbariClusterManagerTest
 
     val description = ImmutableClusterDescription(
       ClusterId(),
-      "clusterName",
+      ClusterName("clusterName"),
       hostCount,
       Provisioning,
       nameNode = None,

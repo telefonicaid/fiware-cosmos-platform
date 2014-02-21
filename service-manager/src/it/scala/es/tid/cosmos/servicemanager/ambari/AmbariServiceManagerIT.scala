@@ -24,10 +24,10 @@ import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
 import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
-import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
+import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
+import es.tid.cosmos.servicemanager.clusters._
 
 class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAfter
   with FakeInfrastructureProviderComponent
@@ -55,10 +55,9 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
   final def waitForClusterCompletion(id: ClusterId, sm: ServiceManager): ClusterState = {
     val description = sm.describeCluster(id)
     description.get.state match {
-      case Provisioning | Terminating => {
+      case Provisioning | Terminating =>
         Thread.sleep(1000)
         waitForClusterCompletion(id, sm)
-      }
       case _ => description.get.state
     }
   }
@@ -98,14 +97,19 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
     val user3 = ClusterUser("luckydude3", "publicKey2")
 
     val id = sm.createCluster(
-      name = "persistentHdfsId", 1, serviceDescriptions = Seq(), Seq(user1, user2), preConditions)
+      name = ClusterName("persistentHdfsId"),
+      clusterSize = 1,
+      serviceDescriptions = Seq(),
+      users = Seq(user1, user2),
+      preConditions = preConditions
+    )
     println("Cluster creating...")
     val description = sm.describeCluster(id).get
     description.state must be (Provisioning)
     println("Starting wait for cluster completion...")
     val endState = waitForClusterCompletion(id, sm)
     println("Cluster completed.")
-    endState must be === (Running)
+    endState must be === Running
     val updatedService = sm.setUsers(id, Seq(user1, user3))
     println("Starting wait for user setting...")
     Await.ready(updatedService, Duration.Inf)

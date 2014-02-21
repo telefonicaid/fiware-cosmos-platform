@@ -18,6 +18,7 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.quota.{NoGroup, GuaranteedGroup, Quota, EmptyQuota}
+import es.tid.cosmos.servicemanager.ClusterName
 
 class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
 
@@ -70,7 +71,7 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
 
   it must "validate feasibility before setting a group's new minimum quota" in {
     val group = GuaranteedGroup("groupA", Quota(3))
-    val clusterId = serviceManager.createCluster("myCluster", 2, Seq.empty, Seq.empty)
+    val clusterId = serviceManager.createCluster(ClusterName("myCluster"), 2, Seq.empty, Seq.empty)
     dao.withTransaction { implicit c =>
       val profile = registerUser(dao, "myUser")
       dao.registerGroup(group)

@@ -21,7 +21,7 @@ import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
 import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
-import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
 class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter with MockitoSugar {
@@ -42,7 +42,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
     val serviceA, serviceB = mock[ServiceDescription]
     given(serviceA.name).willReturn("serviceA")
     given(serviceB.name).willReturn("serviceB")
-    dao.registerCluster(id, "cosmos", 3, Set(serviceA, serviceB))
+    dao.registerCluster(id, ClusterName("cosmos"), 3, Set(serviceA, serviceB))
     val cluster = dao.getDescription(id).get
   }
 
@@ -62,8 +62,9 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   it must "update a cluster name" taggedAs HasExternalDependencies in new ClusterCreated {
-    cluster.name = "Another name"
-    cluster.name must be ("Another name")
+    val anotherName = ClusterName("Another name")
+    cluster.name = anotherName
+    cluster.name must be (anotherName)
   }
 
   it must "update a cluster nameNode URI" taggedAs HasExternalDependencies in new ClusterCreated {
@@ -115,7 +116,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
 
   it must "return all cluster ids" taggedAs HasExternalDependencies in new ClusterCreated {
     val id2 = ClusterId()
-    dao.registerCluster(id2, "cosmos", 3, Set.empty)
+    dao.registerCluster(id2, ClusterName("cosmos"), 3, Set.empty)
     dao.ids.toSet must be (Set(id, id2))
   }
 
@@ -124,7 +125,7 @@ class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter wit
   }
 
   it must "retrieve none users for unexisting cluster" taggedAs HasExternalDependencies in new ClusterCreated {
-    dao.getUsers(ClusterId()) must not be ('defined)
+    dao.getUsers(ClusterId()) must not be 'defined
   }
 
   it must "set users of existing cluster" taggedAs HasExternalDependencies in new ClusterCreated {

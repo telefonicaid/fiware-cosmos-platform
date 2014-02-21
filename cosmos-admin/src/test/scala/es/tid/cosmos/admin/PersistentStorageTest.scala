@@ -29,7 +29,7 @@ class PersistentStorageTest extends FlatSpec with MustMatchers with MockitoSugar
 
   val clusterDescProto = new ImmutableClusterDescription(
     id = hdfsId,
-    name = "",
+    name = ClusterName(""),
     size = 3,
     state = null,
     nameNode = Some(new URI("hdfs://host:1234")),

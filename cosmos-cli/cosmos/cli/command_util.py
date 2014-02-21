@@ -113,6 +113,29 @@ def at_least_1(argument):
     return amount
 
 
+def string_of(max_len):
+    """Returns an argparse validator of string of bounded length.
+
+    >>> validator = string_of(5)
+    >>> validator("hello")
+    'hello'
+    >>> validator("toolong")
+    Traceback (most recent call last):
+        ...
+    ArgumentTypeError: "toolong" has more than 5 characters
+    """
+
+    def validator(argument):
+        if len(argument) > max_len:
+            raise argparse.ArgumentTypeError(
+                "\"%s\" has more than %d characters" % (argument, max_len)
+            )
+        else:
+            return argument
+
+    return validator
+
+
 def filtered(json, filter_keys):
     """ Returns a dict of key-value pairs filtering out the specified keys.
 

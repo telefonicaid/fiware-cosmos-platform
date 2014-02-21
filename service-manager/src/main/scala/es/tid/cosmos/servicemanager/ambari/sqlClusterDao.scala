@@ -18,7 +18,7 @@ import org.squeryl.annotations.Column
 import org.squeryl.dsl.{ManyToOne, OneToMany, CompositeKey3}
 
 import es.tid.cosmos.common.{ConfigComponent, MySqlDatabase, MySqlConnDetails, SqlDatabase}
-import es.tid.cosmos.servicemanager.{ServiceDescription, ClusterUser}
+import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
 private[servicemanager] trait SqlClusterDaoComponent extends ClusterDaoComponent {
@@ -114,12 +114,18 @@ private[ambari] class SqlClusterDao(db: SqlDatabase) extends ClusterDao {
 
   override def registerCluster(
     id: ClusterId,
-    name: String,
+    name: ClusterName,
     size: Int,
     services: Set[ServiceDescription]): MutableClusterDescription =
     newTransaction {
-      val cluster = clusterState.insert(ClusterEntity(id = id.toString, name = name, size = size,
-        nameNode = None, state = Provisioning.name, reason = None))
+      val cluster = clusterState.insert(ClusterEntity(
+        id = id.toString,
+        name = name.underlying,
+        size = size,
+        nameNode = None,
+        state = Provisioning.name,
+        reason = None
+      ))
       services.foreach(service => cluster.services.associate(ClusterServiceEntity(service.name)))
       new SqlMutableClusterDescription(id, this)
     }

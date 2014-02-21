@@ -15,15 +15,13 @@ import java.net.URI
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 
-/**
- * A mutable description of a cluster that includes setters
- */
+/** A mutable description of a cluster that includes setters */
 trait MutableClusterDescription extends ClusterDescription {
   override val id: ClusterId
-  override def name: String
-  def name_=(name: String): Unit
+  override def name: ClusterName
+  def name_=(name: ClusterName): Unit
   override def state: ClusterState
   def state_=(state: ClusterState): Unit
   override def nameNode: Option[URI]
@@ -37,9 +35,7 @@ trait MutableClusterDescription extends ClusterDescription {
   override def services: Set[String]
   def services_=(services: Set[String])
 
-  /**
-   * This function handles any errors in the body by marking the cluster as failed.
-   */
+  /** This function handles any errors in the body by marking the cluster as failed. */
   def withFailsafe[A](body: Future[A]): Future[A] = body.transform(identity, err => {
     state = Failed(err)
     err

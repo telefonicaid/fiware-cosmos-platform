@@ -21,6 +21,7 @@ import play.api.test.Helpers._
 import es.tid.cosmos.api.controllers.{MaintenanceModeBehaviors, AuthBehaviors}
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.platform.ial.MachineProfile._
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 class StatsResourceIT
@@ -38,7 +39,7 @@ class StatsResourceIT
 
   it must "list running clusters" in new WithSampleSessions {
     val activeClusterId = services.serviceManager().createCluster(
-      name = "active",
+      name = ClusterName("active"),
       clusterSize = 2,
       serviceDescriptions = Seq.empty,
       users = Seq.empty

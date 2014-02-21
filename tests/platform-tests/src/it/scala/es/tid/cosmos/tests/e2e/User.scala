@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.tests.e2e
 
+import java.io.Closeable
 import java.nio.charset.Charset
 import java.nio.file.{Files, StandardOpenOption}
 import java.nio.file.attribute.PosixFilePermissions
@@ -32,8 +33,8 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.api.controllers.admin.RegisterUserResponse
 
-class User(implicit info: Informer, testConfig: Config) extends MustVerb
-  with MustMatchers with Patience with FutureMatchers {
+class User(implicit info: Informer, testConfig: Config) extends Closeable
+  with MustVerb with MustMatchers with Patience with FutureMatchers {
 
   implicit val formats = DefaultFormats
 
@@ -45,22 +46,21 @@ class User(implicit info: Informer, testConfig: Config) extends MustVerb
 
   val id = "testUser" + Random.nextInt(Int.MaxValue)
   val email = s"$id@$realm"
-  lazy val publicKey = {
+  val publicKey = {
     val source = Source.fromFile(System.getProperty("user.home") + "/.ssh/id_rsa.pub")
     val result = Try(source.mkString)
     source.close()
     result.get
   }
 
-  private var userCreated = false
-  private lazy val registrationResponse = register()
+  private val registrationResponse = register()
 
-  lazy val apiKey = registrationResponse.apiKey
-  lazy val apiSecret = registrationResponse.apiSecret
-  lazy val handle = registrationResponse.handle
+  val apiKey = registrationResponse.apiKey
+  val apiSecret = registrationResponse.apiSecret
+  val handle = registrationResponse.handle
   def profileResource =
     (cosmos / "cosmos" / "v1" / "profile").as_!(apiKey, apiSecret)
-  lazy val cosmosrcPath = {
+  val cosmosrcPath = {
     val permissions = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"))
     val tempFile = Files.createTempFile(handle, "cosmosrc", permissions)
     val contents = Seq(s"""api_key: $apiKey
@@ -81,7 +81,6 @@ class User(implicit info: Informer, testConfig: Config) extends MustVerb
 
   private def register() = {
     info(s"Starting registration for user with id $id")
-    userCreated = true
     val request = userResource << compact(render(
       ("authId" -> id) ~
       ("authRealm" -> realm) ~
@@ -101,23 +100,23 @@ class User(implicit info: Informer, testConfig: Config) extends MustVerb
     }
     response_> must (runUnder(restTimeout) and eventuallySucceed)
     info(s"The user creation REST request returned 200")
-    Thread.sleep((5 minutes).toMillis) // FIXME: Wait while user is being added to Infinity, etc.
+    Thread.sleep((3 minutes).toMillis) // FIXME: Wait while user is being added to Infinity, etc.
     val response = response_>.value.get.get
     info(s"The username being created is ${response.handle}")
     response
   }
 
   def delete() = {
-    if (userCreated) {
-      val unregistration = (userResource / realm / id).DELETE
-      Http(unregistration > as.String) must (runUnder(restTimeout) and eventuallySucceed)
-      info(s"Deletion for user $handle started")
-      eventually {
-        val statusCode_> = Http(profileResource).map(_.getStatusCode)
-        statusCode_> must (runUnder(restTimeout) and eventually(be(401)))
-        info(s"User $handle removed")
-      }
-      Thread.sleep((2 minutes).toMillis) // FIXME: Wait until user is removed from Infinity, etc.
+    val unregistration = (userResource / realm / id).DELETE
+    Http(unregistration > as.String) must (runUnder(restTimeout) and eventuallySucceed)
+    info(s"Deletion for user $handle started")
+    eventually {
+      val statusCode_> = Http(profileResource).map(_.getStatusCode)
+      statusCode_> must (runUnder(restTimeout) and eventually(be(401)))
+      info(s"User $handle removed")
     }
+    Thread.sleep((3 minutes).toMillis) // FIXME: Wait until user is removed from Infinity, etc.
   }
+
+  override def close() = delete()
 }

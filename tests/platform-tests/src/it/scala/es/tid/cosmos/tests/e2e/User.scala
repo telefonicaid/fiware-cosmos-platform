@@ -101,7 +101,7 @@ class User(implicit info: Informer, testConfig: Config) extends MustVerb
     }
     response_> must (runUnder(restTimeout) and eventuallySucceed)
     info(s"The user creation REST request returned 200")
-    Thread.sleep((5 minutes).toMillis) // Wait while user is being added to Infinity, etc.
+    Thread.sleep((5 minutes).toMillis) // FIXME: Wait while user is being added to Infinity, etc.
     val response = response_>.value.get.get
     info(s"The username being created is ${response.handle}")
     response
@@ -117,6 +117,7 @@ class User(implicit info: Informer, testConfig: Config) extends MustVerb
         statusCode_> must (runUnder(restTimeout) and eventually(be(401)))
         info(s"User $handle removed")
       }
+      Thread.sleep((2 minutes).toMillis) // FIXME: Wait until user is removed from Infinity, etc.
     }
   }
 }

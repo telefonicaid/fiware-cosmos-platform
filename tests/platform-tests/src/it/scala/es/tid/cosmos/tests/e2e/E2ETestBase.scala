@@ -56,15 +56,20 @@ abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
   }
 
   def withNewCluster(size: Int, owner: User, services: Seq[String] = Seq())(body: Cluster => Unit) {
-    val cluster = Cluster(size, owner, services)(info)
+    val cluster = Cluster(size, owner, services)
     val executionResult = Try(body(cluster))
     clustersToDelete ::= cluster
     executionResult.get
   }
 
   override def afterAll() {
-    usersToDelete.foreach(_.delete())
-    clustersToDelete.foreach(c => c.terminate())
+    clustersToDelete.foreach { c =>
+      c.terminate()
+      c.ensureState("terminated")
+    }
+    usersToDelete.foreach { user =>
+      user.delete()
+    }
   }
 
   def resource(resourcePath: String): String = getClass.getResource(resourcePath).getFile

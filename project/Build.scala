@@ -55,7 +55,9 @@ object Build extends sbt.Build {
     settings(rootPackageSettings: _*)
     settings(projectArtifact: _*)
     aggregate(
-      cosmosApi, serviceManager, ial, cosmosAdmin, common, common_test, platformTests, infinityfs)
+      cosmosApi, ambariServiceManager, serviceManager, ial, cosmosAdmin, common, common_test,
+      platformTests, infinityfs
+    )
   )
 
   lazy val common = (Project(id = "common", base = file("common"))
@@ -85,13 +87,21 @@ object Build extends sbt.Build {
     dependsOn(common, ial, common_test % "compile->compile;test->test")
   )
 
+  lazy val ambariServiceManager =
+    (Project(id = "ambari-service-manager", base = file("ambari-service-manager"))
+      settings(ScctPlugin.instrumentSettings: _*)
+      configs IntegrationTest
+      settings(Defaults.itSettings: _*)
+      dependsOn(serviceManager, common, ial, common_test % "compile->compile;test->test")
+    )
+
   lazy val cosmosApi = (play.Project("cosmos-api", POM.version, path = file("cosmos-api"),
                         dependencies = Seq(PlayKeys.anorm, PlayKeys.jdbc))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.cosmosApiSettings: _*)
-    dependsOn(serviceManager, common, ial, common_test % "test->compile")
+    dependsOn(ambariServiceManager, serviceManager, common, ial, common_test % "test->compile")
   )
 
   lazy val cosmosAdmin = (Project(id = "cosmos-admin", base = file("cosmos-admin"))

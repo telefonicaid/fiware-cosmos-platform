@@ -88,6 +88,7 @@ class cosmos::setup inherits cosmos::params {
     refreshonly => true,
     user        => root,
     timeout     => 900,
+    require => Package['cosmos-admin']
   }
 
   File[$cosmos::params::cosmos_confdir] -> Class['cosmos::master_db']
@@ -107,7 +108,6 @@ class cosmos::setup inherits cosmos::params {
   Package['cosmos-api'] -> File['cosmos-api.conf']
   Class['ssh_keys', 'cosmos::master_db'] -> Exec['cosmos-setup']
 
-  Package['cosmos-admin'] ~> Exec['cosmos-setup']
   File[
     'cosmos-api.conf',
     $cosmos::params::ssl_cert_file,

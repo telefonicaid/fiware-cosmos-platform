@@ -11,25 +11,17 @@
 
 package es.tid.cosmos.api.auth.oauth2.github
 
-import scala.util.Try
+import play.api.libs.json._
 
-import play.api.libs.json.Json
-import es.tid.cosmos.api.profile.UserId
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
+import es.tid.cosmos.api.profile.UserId
 
-case class GitHubProfile(id: Int, login: String, name: String, email: String) {
+private[github] case class GitHubProfile(id: Int, login: String, name: String, email: String) {
   def asUserProfile(realm: String): OAuthUserProfile =
     OAuthUserProfile(UserId(realm, id.toString), Some(name), Some(email))
 }
 
-object GitHubProfile {
-  def fromJson(jsonProfile: String): Try[GitHubProfile] = Try {
-    val json = Json.parse(jsonProfile)
-    GitHubProfile(
-      (json \ "id").as[Int],
-      (json \ "login").as[String],
-      (json \ "name").as[String],
-      (json \ "email").as[String]
-    )
-  }
+private[github] object GitHubProfile {
+
+  implicit val GitHubProfileReads = Json.reads[GitHubProfile]
 }

@@ -19,10 +19,10 @@ class cosmos::master {
     -> Class['stdlib', 'ssh_keys', 'mysql']
     -> Class['cosmos::base']
     -> Class['cosmos::localrepo']
-    -> Class['ambari::server']
-    -> Class['cosmos::api']
     -> Class['cosmos::apache::setup']
     -> Class['cosmos::firewall::firewall_app']
+    -> Class['ambari::server']
+    -> Class['cosmos::api']
     -> anchor { 'cosmos::master::end': }
 
   file { '/root/.ssh/known_hosts':

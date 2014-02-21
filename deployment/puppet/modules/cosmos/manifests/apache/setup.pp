@@ -84,8 +84,7 @@ class cosmos::apache::setup inherits cosmos::params {
     redirect_status => 'permanent',
   }
 
-  File[$cosmos::params::cosmos_cli_repo_path]
-    -> Apache::Vhost['cli.repo', 'ssl.master', 'platform.repo', 'redirect.to.fqdn', 'ssl.redirect.to.fqdn']
+    Apache::Vhost['cli.repo', 'ssl.master', 'platform.repo', 'redirect.to.fqdn', 'ssl.redirect.to.fqdn']
     ~> Service['httpd']
 
   anchor{'cosmos::apache::setup::begin': }

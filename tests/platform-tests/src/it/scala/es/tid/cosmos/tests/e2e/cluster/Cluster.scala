@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.tests.e2e.cluster
 
+import java.io.Closeable
 import scala.language.postfixOps
 
 import net.liftweb.json._
@@ -18,7 +19,7 @@ import org.scalatest.Informer
 
 import es.tid.cosmos.tests.e2e.{User, Patience}
 
-trait Cluster extends Patience {
+trait Cluster extends Closeable with Patience {
 
   protected implicit val Formats = net.liftweb.json.DefaultFormats
 
@@ -70,6 +71,11 @@ trait Cluster extends Patience {
       )
     }
   }
+
+  override def close() = {
+    terminate()
+    ensureState("terminated")
+  }
 }
 
 object Cluster {
@@ -80,7 +86,6 @@ object Cluster {
   }
 
   def apply(clusterSize: Int, owner: User, services: Seq[String] = Seq.empty)
-           (implicit info: Informer): Cluster = {
-    new ProxyCluster(clusterSize, owner, services)(CommandLineManagedCluster, info)
-  }
+           (implicit info: Informer): Cluster =
+    CommandLineManagedCluster(clusterSize, owner, services)
 }

@@ -38,38 +38,34 @@ abstract class E2ETestBase extends FeatureSpec with MustMatchers with Patience
     } yield (test, originalTags.getOrElse(test, Set()) + EndToEndTest.name)).toMap
   }
 
-  private var usersToDelete = List.empty[User]
-  private var clustersToDelete = List.empty[Cluster]
+  private var usersToDelete = List.empty[LazyVal[User]]
+  private var clustersToDelete = List.empty[LazyVal[Cluster]]
 
-  def withNewUser(body: User => Unit) {
-    val user = new User()
+  def withNewUser(body: LazyVal[User] => Unit) {
+    val user = new LazyVal(new User())
     val executionResult = Try(body(user))
     usersToDelete = user :: usersToDelete
     executionResult.get
   }
 
-  def withNewUsers(numberOfUsers: Int)(body: Seq[User] => Unit) {
-    val users = (1 to numberOfUsers).map(_ => new User())
+  def withNewUsers(numberOfUsers: Int)(body: Seq[LazyVal[User]] => Unit) {
+    val users = (1 to numberOfUsers).map(_ => new LazyVal(new User()))
     val executionResult = Try(body(users))
     usersToDelete ++= users
     executionResult.get
   }
 
-  def withNewCluster(size: Int, owner: User, services: Seq[String] = Seq())(body: Cluster => Unit) {
-    val cluster = Cluster(size, owner, services)
+  def withNewCluster(size: Int, owner: LazyVal[User], services: Seq[String] = Seq())(
+      body: LazyVal[Cluster] => Unit) {
+    val cluster = new LazyVal(Cluster(size, owner, services))
     val executionResult = Try(body(cluster))
     clustersToDelete ::= cluster
     executionResult.get
   }
 
   override def afterAll() {
-    clustersToDelete.foreach { c =>
-      c.terminate()
-      c.ensureState("terminated")
-    }
-    usersToDelete.foreach { user =>
-      user.delete()
-    }
+    clustersToDelete.foreach(_.close())
+    usersToDelete.foreach(_.close())
   }
 
   def resource(resourcePath: String): String = getClass.getResource(resourcePath).getFile

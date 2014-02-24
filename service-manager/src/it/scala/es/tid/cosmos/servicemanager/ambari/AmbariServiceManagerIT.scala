@@ -15,12 +15,10 @@ import scala.annotation.tailrec
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.language.postfixOps
-import scala.util.Try
 
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
-import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
 import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
@@ -65,16 +63,6 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
   var sm: AmbariServiceManager = null
 
   before {
-    val db = new MySqlDatabase(MySqlConnDetails("localhost", 3306, "root", "", "smtest"))
-    val dao = new SqlClusterDao(db)
-    before  {
-      dao.newTransaction {
-        Try {
-          SqlClusterDao.drop
-        }
-        SqlClusterDao.create
-      }
-    }
     val ambariServer = new AmbariServer("10.95.161.137", 8080, "admin", "admin")
     val clusterManager = new AmbariClusterManager(
       ambariServer, infrastructureProvider.rootPrivateSshKey, hadoopConfig.servicesConfigDirectory)
@@ -83,7 +71,7 @@ class AmbariServiceManagerIT extends FlatSpec with MustMatchers with BeforeAndAf
       ClusterId("hdfs"), exclusiveMasterSizeCutoff = 10,
       hadoopConfig,
       new AmbariClusterDao(
-        new SqlClusterDao(db),
+        new InMemoryClusterDao,
         ambariServer,
         AmbariServiceManager.AllServices.map(
           toAmbariService(_, hadoopConfig.servicesConfigDirectory))

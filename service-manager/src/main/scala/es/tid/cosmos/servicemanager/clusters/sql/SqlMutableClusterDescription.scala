@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari
+package es.tid.cosmos.servicemanager.clusters.sql
 
 import java.net.URI
 
@@ -17,19 +17,19 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.dsl.ast.UpdateAssignment
 
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
-import es.tid.cosmos.servicemanager.ambari.HostEntityTypes._
 import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.clusters.sql.HostEntityTypes.{SlaveKey, MasterKey}
 
 /** This class provides a mutable cluster description which reads directly from the SQL DAO
   * and writes any changes to the DAO too
   * @param id The ID of the cluster
   * @param dao The DAO that backs the description of the cluster
   */
-private[ambari] class SqlMutableClusterDescription(
+private[sql] class SqlMutableClusterDescription(
     override val id: ClusterId,
     dao: SqlClusterDao) extends MutableClusterDescription  {
 
-  import SqlClusterDao._
+  import ClusterSchema._
 
   override def name: ClusterName = ClusterName(getField(_.name))
 
@@ -69,21 +69,21 @@ private[ambari] class SqlMutableClusterDescription(
 
   override def master_=(master: HostDetails) {
     dao.newTransaction {
-      masters.insertOrUpdate(new HostEntity(this.id.toString, master.hostname, master.ipAddress)
-        with MasterKey)
+      masters.insertOrUpdate(
+        new HostEntity(this.id.toString, master.hostname, master.ipAddress) with MasterKey)
     }
   }
 
   override def slaves: Seq[HostDetails] = dao.newTransaction {
-    from(SqlClusterDao.slaves)(s => where (s.clusterId === this.id.toString) select s)
+    from(ClusterSchema.slaves)(s => where (s.clusterId === this.id.toString) select s)
       .map(s => HostDetails(s.name, s.ip)).toSeq
   }
 
   override def slaves_=(slaves: Seq[HostDetails]) {
     dao.newTransaction {
       slaves.foreach { h =>
-        SqlClusterDao.slaves.insertOrUpdate(new HostEntity(this.id.toString, h.hostname, h.ipAddress)
-          with SlaveKey)
+        ClusterSchema.slaves.insertOrUpdate(
+          new HostEntity(this.id.toString, h.hostname, h.ipAddress) with SlaveKey)
       }
     }
   }
@@ -93,7 +93,7 @@ private[ambari] class SqlMutableClusterDescription(
   override def users_=(users: Set[ClusterUser]) = dao.setUsers(id, users)
 
   override def services: Set[String] = dao.newTransaction {
-    from(SqlClusterDao.services)(s => where (s.clusterId === this.id.toString) select s)
+    from(ClusterSchema.services)(s => where (s.clusterId === this.id.toString) select s)
       .map(_.name).toSet
   }
 

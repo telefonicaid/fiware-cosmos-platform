@@ -42,10 +42,9 @@ private[multiauth] class ConfigBasedMultiAuthProvider(config: Config)
         case ex: ConfigException.Missing => throw new IllegalArgumentException(
           "Token authentication was enabled but no provider was defined")
       }
-      providers.collectFirst {
-        case (`name`, provider: OAuthProvider) => Some(provider)
-      }.getOrElse(throw new IllegalArgumentException(
-        s"Cannot use '$name' since it is not an enabled, OAuth provider"))
+      Some(oauthProviders.get(name)
+        .getOrElse(throw new IllegalArgumentException(
+          s"Cannot use '$name' since it is not an enabled, OAuth provider")))
     } else None
   }
 

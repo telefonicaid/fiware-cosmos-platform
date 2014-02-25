@@ -60,11 +60,9 @@ trait ApiAuthController { this: Controller =>
     * @param profile  Profile that must be enabled
     * @return         Either an enabled profile or a validation error
     */
-  private def enabledProfile(profile: CosmosProfile): Validation[AuthError, CosmosProfile] = {
-    import Scalaz._
+  private def enabledProfile(profile: CosmosProfile): Validation[AuthError, CosmosProfile] =
     if (profile.state == UserState.Enabled) profile.success
     else InvalidProfileState(profile.state).failure
-  }
 
   private def unauthorizedResponse(error: AuthError) =
     Unauthorized(Json.toJson(ErrorMessage(error.message)))

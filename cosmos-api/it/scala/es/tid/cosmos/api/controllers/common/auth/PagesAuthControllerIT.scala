@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.pages
+package es.tid.cosmos.api.controllers.common.auth
 
 import scala.concurrent.Future
 
@@ -18,8 +18,8 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers._
 import play.api.mvc._
 
-import es.tid.cosmos.api.controllers.common.PagesAuthController
 import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao}
+import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 
 class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 

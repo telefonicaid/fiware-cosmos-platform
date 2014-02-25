@@ -9,14 +9,14 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.auth
+package es.tid.cosmos.api.profile
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 class ApiCredentialsTest extends FlatSpec with MustMatchers {
   "Api credentials" must "be randomly created on demand" in {
-    ApiCredentials.random must not be (ApiCredentials.random)
+    ApiCredentials.random must not be ApiCredentials.random()
   }
 
   it must "preserve API id size invariant" in {

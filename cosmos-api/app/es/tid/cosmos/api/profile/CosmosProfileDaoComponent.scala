@@ -12,5 +12,5 @@
 package es.tid.cosmos.api.profile
 
 trait CosmosProfileDaoComponent {
-  def cosmosProfileDao: CosmosProfileDao
+  val cosmosProfileDao: CosmosProfileDao
 }

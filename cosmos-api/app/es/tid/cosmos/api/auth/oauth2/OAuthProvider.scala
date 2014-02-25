@@ -11,8 +11,9 @@
 
 package es.tid.cosmos.api.auth.oauth2
 
-import es.tid.cosmos.api.auth.AuthProvider
 import scala.concurrent.Future
+
+import es.tid.cosmos.api.auth.AuthProvider
 
 trait OAuthProvider extends AuthProvider {
 

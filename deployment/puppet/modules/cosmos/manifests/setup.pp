@@ -17,11 +17,6 @@ class cosmos::setup inherits cosmos::params {
     ensure => 'present'
   }
 
-  file { $cosmos::params::cosmos_confdir:
-    ensure => 'directory',
-    mode   => '0440',
-  }
-
   file { 'cosmos-api.conf':
     ensure  => 'present',
     path    => "${cosmos::params::cosmos_confdir}/cosmos-api.conf",
@@ -53,36 +48,6 @@ class cosmos::setup inherits cosmos::params {
     content => template('cosmos/logback.conf.erb'),
   }
 
-
-  file { $cosmos::params::cosmos_ssl_dir:
-    ensure => 'directory',
-    mode   => '0440',
-  }
-
-  file { $cosmos::params::ssl_cert_file:
-    ensure => 'present',
-    source => $cosmos::params::cosmos_ssl_cert_source,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-  }
-
-  file { $cosmos::params::ssl_key_file:
-    ensure => 'present',
-    source => $cosmos::params::cosmos_ssl_key_source,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-  }
-
-  file { $cosmos::params::ssl_ca_file:
-    ensure => 'present',
-    source => "puppet:///modules/${module_name}/${cosmos::params::ssl_ca_filename}",
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
-  }
-
   exec { 'cosmos-setup':
     command     => "${cosmos::params::cosmos_basedir}/cosmos-admin/cosmos-admin setup",
     refreshonly => true,
@@ -96,18 +61,17 @@ class cosmos::setup inherits cosmos::params {
         'cosmos-api.conf',
         'ial.conf',
         'service configurations',
-        'logback.conf',
-        $cosmos::params::cosmos_ssl_dir
+        'logback.conf'
       ]
-    -> File[
-        $cosmos::params::ssl_cert_file,
-        $cosmos::params::ssl_key_file,
-        $cosmos::params::ssl_ca_file
-      ]
+
   Package['cosmos-api'] -> File['cosmos-api.conf']
+
+  Package['cosmos-admin'] -> Exec['cosmos-setup']
+
+  Apache::Vhost['platform.repo'] -> Exec['cosmos-setup']
+
   Class['ssh_keys', 'cosmos::master_db'] -> Exec['cosmos-setup']
 
-  Package['cosmos-admin'] ~> Exec['cosmos-setup']
   File[
     'cosmos-api.conf',
     $cosmos::params::ssl_cert_file,

@@ -66,6 +66,7 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $cosmos_ssl_cert_source,
   $cosmos_ssl_key_source,
   $master_ip,
+  $master_repo_port,
   $master_hostname,
   $domain,
   $pdihub_client_id,
@@ -93,4 +94,5 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   $ssl_key_file               = "${cosmos_ssl_dir}/cosmos_key.pem"
   $ssl_ca_filename            = 'issuecatid_ca.pem'
   $ssl_ca_file                = "${cosmos_ssl_dir}/${ssl_ca_filename}"
+  $cosmos_stack_repo_path     = "${cosmos_basedir}/rpms"
 }

@@ -140,6 +140,10 @@ object Build extends sbt.Build {
       val cosmosAdminRPM = (dist in cosmosAdmin).value
       IO.copyFile(cosmosAdminRPM, filesDir / cosmosAdminRPM.name)
 
+      s.log.info("Copying infinity RPM to project dist directory...")
+      val infinityRPM = (dist in infinityfs).value
+      IO.copyFile(infinityRPM, filesDir / infinityRPM.name)
+
       val puppetDir = target.value / "dist/puppet"
       puppetDir.mkdirs()
 

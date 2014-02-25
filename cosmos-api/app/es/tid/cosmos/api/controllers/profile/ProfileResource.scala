@@ -15,14 +15,16 @@ import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Controller, Action}
 
+import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
+import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 /** Resource that represents a user profile. */
 @Api(value = "/cosmos/v1/profile", listingPath = "/doc/cosmos/v1/profile",
   description = "Represents the user profile")
-class ProfileResource(override val dao: CosmosProfileDao)
+class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosProfileDao)
   extends Controller with JsonController with ApiAuthController {
 
   /** Show user profile. */

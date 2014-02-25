@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.mocks
 
 import es.tid.cosmos.api.AbstractGlobal
+import es.tid.cosmos.api.auth.request.ChainedAuthenticationComponent
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
@@ -25,6 +26,7 @@ abstract class TestApplication extends Application
   with MockInfrastructureProvider.Component
   with ApplicationConfigComponent
   with InMemoryMaintenanceStatusComponent
+  with ChainedAuthenticationComponent
   with InMemoryTaskDaoComponent {
 
   self: CosmosProfileDaoComponent =>

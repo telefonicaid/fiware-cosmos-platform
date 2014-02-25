@@ -125,6 +125,7 @@ object Build extends sbt.Build {
   )
 
   def rootPackageSettings: Seq[Setting[_]] = Seq(
+    aggregate in dist := false,
     distProject := {
       val s = streams.value
 

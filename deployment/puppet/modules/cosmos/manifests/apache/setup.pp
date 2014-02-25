@@ -114,8 +114,8 @@ class cosmos::apache::setup inherits cosmos::params {
   }
 
   File[$cosmos::params::cosmos_confdir]
+    -> File[$cosmos::params::cosmos_ssl_dir]
     -> File[
-      $cosmos::params::cosmos_ssl_dir,
       $cosmos::params::ssl_cert_file,
       $cosmos::params::ssl_key_file,
       $cosmos::params::ssl_ca_file]

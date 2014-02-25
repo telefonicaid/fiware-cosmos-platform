@@ -18,7 +18,7 @@ class cosmos::apache::setup inherits cosmos::params {
   }
   include apache::mod::proxy_http
 
-  $master_fqdn      = "${cosmos::params::master_hostname}${cosmos::params::domain}"
+  $master_fqdn   = "${cosmos::params::master_hostname}${cosmos::params::domain}"
   # Apache module seems to require a docroot even when not applicable.
   # Using an empty folder for the SSL redirect and Cosmos-API virtual hosts
   $dummy_docroot = '/tmp/apache_null'

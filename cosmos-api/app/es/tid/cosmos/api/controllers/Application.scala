@@ -14,6 +14,7 @@ package es.tid.cosmos.api.controllers
 import play.api.mvc.Controller
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProviderComponent
+import es.tid.cosmos.api.auth.request.RequestAuthenticationComponent
 import es.tid.cosmos.api.controllers.admin._
 import es.tid.cosmos.api.controllers.admin.stats.StatsResource
 import es.tid.cosmos.api.controllers.cluster.ClusterResource
@@ -38,6 +39,7 @@ abstract class Application {
     with CosmosProfileDaoComponent
     with TaskDaoComponent
     with MaintenanceStatusComponent
+    with RequestAuthenticationComponent
     with ConfigComponent =>
 
   lazy val conf = this.config
@@ -49,20 +51,28 @@ abstract class Application {
     val sm = this.serviceManager()
     val ial = this.infrastructureProvider
     val multiAuthProvider = this.multiAuthProvider
+    val auth = apiRequestAuthentication
     controllerMap(
+      // Pages
       new Pages(multiAuthProvider, sm, taskDao, dao, status, conf.getConfig("pages")),
       new AdminPage(dao, status),
-      new StatsResource(dao, sm, ial),
-      new CosmosResource(),
-      new InfoResource(dao, sm),
-      new ProfileResource(dao),
-      new ClusterResource(sm, taskDao, dao, status),
-      new StorageResource(sm, dao, status),
-      new ServicesResource(sm),
       new CliConfigResource(dao),
-      new UserResource(multiAuthProvider, sm, dao, status),
-      new MaintenanceResource(dao, status),
-      new TaskResource(taskDao, dao)
+
+      // Non-authenticated user API
+      new CosmosResource(),
+      new ServicesResource(sm),
+
+      // Authenticated user API
+      new StatsResource(auth, dao, sm, ial),
+      new InfoResource(auth, dao, sm),
+      new ProfileResource(auth, dao),
+      new ClusterResource(auth, sm, taskDao, dao, status),
+      new StorageResource(auth, sm, status),
+      new MaintenanceResource(auth, status),
+      new TaskResource(auth, taskDao),
+
+      // Admin API
+      new UserResource(multiAuthProvider, sm, dao, status)
     )
   }
 

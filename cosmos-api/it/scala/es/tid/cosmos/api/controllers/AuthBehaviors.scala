@@ -14,13 +14,13 @@ package es.tid.cosmos.api.controllers
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.http.Writeable
+import play.api.mvc.Session
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 
-import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 import es.tid.cosmos.api.controllers.ResultMatchers._
-import play.api.mvc.Session
+import es.tid.cosmos.api.profile.ApiCredentials
 
 trait AuthBehaviors { this: FlatSpec with MustMatchers =>
 
@@ -44,7 +44,7 @@ trait AuthBehaviors { this: FlatSpec with MustMatchers =>
     }
   }
 
-  def pageForRegistreredUsers(path: String) {
+  def pageForRegisteredUsers(path: String) {
     it must "redirect unauthenticated users to the index" in new WithSampleSessions {
       unauthUser.doRequest(path) must redirectTo ("/")
     }

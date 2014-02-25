@@ -125,7 +125,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
   }
 
   it must behave like enabledWhenUnderMaintenance(FakeRequest(GET, "/profile"))
-  it must behave like pageForRegistreredUsers("/profile")
+  it must behave like pageForRegisteredUsers("/profile")
 
   "The getting started page" must "show a personalized getting started tutorial" in
     new WithSampleSessions {
@@ -135,7 +135,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
         include (regUser.cosmosProfile.apiCredentials.apiSecret))
     }
 
-  it must behave like pageForRegistreredUsers("/getting-started")
+  it must behave like pageForRegisteredUsers("/getting-started")
   it must behave like enabledWhenUnderMaintenance(FakeRequest(GET, "/getting-started"))
 
   "The OAuth authorization resource" must behave like

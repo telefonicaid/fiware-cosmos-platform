@@ -20,7 +20,6 @@ import play.Logger
 import play.api.db.DB
 import play.api.Play.current
 
-import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.Capability._
 import es.tid.cosmos.api.quota._

@@ -21,20 +21,23 @@ import play.Logger
 import play.api.libs.json._
 import play.api.mvc._
 
+import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
+import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.servicemanager.{ClusterExecutableValidation, ClusterUser, ServiceManager}
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
-import es.tid.cosmos.api.task.{Running, TaskDao}
 
 /** Resource that represents a single cluster. */
 @Api(value = "/cosmos/v1/cluster", listingPath = "/doc/cosmos/v1/cluster",
   description = "Represents an existing or decommissioned cluster")
 class ClusterResource(
+    override val auth: RequestAuthentication,
     serviceManager: ServiceManager,
     override val taskDao: TaskDao,
-    override val dao: CosmosProfileDao,
+    dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus) extends Controller with ApiAuthController
   with JsonController with MaintenanceAwareController with TaskController {
 

@@ -21,28 +21,25 @@ import play.api.mvc.Action
 
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.api.auth.request.RequestAuthentication
 
-/**
- * Resource that represents the persistent HDFS shared by all clusters.
- */
+/** Resource that represents the persistent HDFS shared by all clusters. */
 @Api(value = "/cosmos/v1/storage", listingPath = "/doc/cosmos/v1/storage",
   description = "Represents the persistent storage shared by all clusters")
 class StorageResource(
+    override val auth: RequestAuthentication,
     serviceManager: ServiceManager,
-    override val dao: CosmosProfileDao,
     override val maintenanceStatus: MaintenanceStatus)
   extends ApiAuthController with MaintenanceAwareController {
-  
+
   import Scalaz._
 
   private val UnavailableHdfsResponse =
     ServiceUnavailable(Json.toJson(ErrorMessage("persistent storage service not available")))
 
-  /**
-   * Returns HDFS connection details.
-   */
+  /** Returns HDFS connection details. */
   @ApiOperation(value = "Persistent storage connection details", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.storage.WebHdfsConnection")
   @ApiErrors(Array(
@@ -55,7 +52,7 @@ class StorageResource(
       location <- persistentWebHdfsUri().toSuccess(UnavailableHdfsResponse)
     } yield Ok(Json.toJson(WebHdfsConnection(location, profile.handle)))
   }
-  
+
   private def persistentWebHdfsUri(): Option[URI] = for {
     description <- serviceManager.describeCluster(serviceManager.persistentHdfsId)
     if description.nameNode.isDefined

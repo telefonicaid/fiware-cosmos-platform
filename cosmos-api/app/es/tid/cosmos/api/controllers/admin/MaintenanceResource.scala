@@ -17,14 +17,17 @@ import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Action, Controller}
 
+import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Capability, CosmosProfile, CosmosProfileDao}
-
+import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
+import es.tid.cosmos.api.profile.{Capability, CosmosProfile}
 
 /** Admin resource representing the maintenance status of the system */
 @Api(value = "/cosmos/v1/maintenance", listingPath = "/doc/cosmos/v1/maintenance",
   description = "Maintenance status of the Cosmos platform")
-class MaintenanceResource(override val dao: CosmosProfileDao, maintenanceStatus: MaintenanceStatus)
+class MaintenanceResource(
+    override val auth: RequestAuthentication,
+    maintenanceStatus: MaintenanceStatus)
   extends Controller with ApiAuthController with JsonController {
 
   @ApiOperation(value = "Maintenance status of the system", httpMethod = "GET",

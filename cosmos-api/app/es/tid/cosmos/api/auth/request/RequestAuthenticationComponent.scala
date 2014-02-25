@@ -9,15 +9,9 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers
+package es.tid.cosmos.api.auth.request
 
-import es.tid.cosmos.api.profile.ApiCredentials
-
-case class CliConfig(apiCredentials: ApiCredentials, apiUrl: String, sshClient: String = "ssh") {
-  override def toString =
-    s"""api_key: ${apiCredentials.apiKey}
-      |api_secret: ${apiCredentials.apiSecret}
-      |api_url: $apiUrl
-      |ssh_command: $sshClient
-    """.stripMargin
+/** Component that provides means for authenticating API requests */
+trait RequestAuthenticationComponent {
+  val apiRequestAuthentication: RequestAuthentication
 }

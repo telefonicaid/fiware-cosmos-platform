@@ -60,6 +60,11 @@ First, build the project
 
     $ sbt dist
 
+*NOTE* Building requires python. It uses `python2.7` by default, but can be
+overridden setting `PYTHON` environment variable, i.e.:
+
+    $ PYTHON=/usr/bin/python2.7 sbt dist
+
 To spin up the environment, run from this directory:
 
     $ vagrant up

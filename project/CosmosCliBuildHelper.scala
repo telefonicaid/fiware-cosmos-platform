@@ -15,8 +15,8 @@ object CosmosCliBuildHelper {
 
   def make(cwd: File, log: sbt.Logger): File = {
     IO.delete(cwd / "dist")
-    // TODO obtain python executable from env variable.
-    exec(cwd, log, Seq("python2.7", "./bootstrap.py"))
+    val python = scala.util.Properties.envOrElse("PYTHON", "python2.7" )
+    exec(cwd, log, Seq(python, "./bootstrap.py"))
     exec(cwd, log, Seq("bin/buildout", "setup", ".", "bdist_egg"))
     val eggs = (cwd / "dist") * "*.egg"
     eggs.get.head

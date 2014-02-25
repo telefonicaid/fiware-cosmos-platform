@@ -18,6 +18,11 @@ trait MultiAuthProvider {
 
   val providers: Map[String, AuthProvider]
 
+  /** When enabled, the OAuth 2 provider used for token-based authentication.
+    * It must be one of the providers on the ``providers`` val.
+    */
+  val tokenAuthenticationProvider: Option[OAuthProvider]
+
   def oauthProviders: Map[String, OAuthProvider] = providers.collect {
     case (id, provider: OAuthProvider) => (id, provider)
   }

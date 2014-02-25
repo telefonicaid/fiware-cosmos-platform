@@ -58,6 +58,15 @@ auth.horizon {
     password=
 }
 
+# Token-based authentication
+# ~~~~
+# If you enable this, a X-Auth-Token header with a valid token of the following
+# provider will be accepted
+tokenAuth {
+    enabled=false
+    provider="pdihub"
+}
+
 # Links (without trailing slashes)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 cli.url="http://localhost/cosmos.egg"

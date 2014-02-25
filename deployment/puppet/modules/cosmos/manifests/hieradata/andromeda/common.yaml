@@ -10,8 +10,8 @@
 #
 
 ambari::params::repo_url: %{cosmos::params::cosmos_repo_platform_url}
-ambari::params::repo_rpm_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
-ambari::params::repo_cosmpos_rpm_url: 'http://%{cosmos::params::master_ip}:8081/'
+ambari::params::hdp_stack_repo_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::cosmos_stack_repo_url: 'http://%{cosmos::params::master_ip}:%{cosmos::params::master_repo_port}/'
 ambari::params::jdk_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jdk-6u31-linux-x64.bin'
 ambari::params::jce_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jce_policy-6.zip'
 ambari::params::hdp_utils_repo_url: 'http://servilinux.hi.inet/ambari/HDP-UTILS-1.1.0.15/'
@@ -39,6 +39,7 @@ cosmos::slave::host_key_priv_file: "puppet:///modules/cosmos/environments/%{envi
 cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_ct_key"
 cosmos::params::domain: '.hi.inet'
 cosmos::params::master_ip: '10.95.236.10'
+cosmos::params::master_repo_port: '8081'
 cosmos::params::master_hostname: 'andromeda01'
 cosmos::params::pdihub_client_id: '20f0381a6698c19953d5'
 cosmos::params::pdihub_client_secret: 'b11b73f83e7dcf940fec3356d3d0604e3169ab98'

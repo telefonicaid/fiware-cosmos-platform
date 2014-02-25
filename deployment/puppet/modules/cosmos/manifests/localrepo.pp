@@ -15,18 +15,14 @@ class cosmos::localrepo inherits cosmos::params {
     ensure => present,
   }
 
-  file { "${cosmos::params::cosmos_basedir}" :
-    ensure => 'directory',
-  }
-
-  file { "${cosmos::params::cosmos_basedir}/rpms":
+  file { $cosmos_stack_repo_path:
     ensure => 'directory',
     recurse => true,
     source => 'puppet:///modules/cosmosplatform',
   }
 
   exec { 'createrepo':
-    command   => "/usr/bin/createrepo ${cosmos::params::cosmos_basedir}/rpms",
+    command   => "/usr/bin/createrepo ${cosmos_stack_repo_path}",
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
     timeout   => 600,
@@ -36,13 +32,17 @@ class cosmos::localrepo inherits cosmos::params {
     descr    => "Comos local repo",
     enabled  => '1',
     gpgcheck => '0',
-    baseurl  => "file://${cosmos::params::cosmos_basedir}/rpms",
+    baseurl  => "file://${cosmos_stack_repo_path}",
   }
 
-  Package['createrepo']
-    -> File["${cosmos::params::cosmos_basedir}"]
-    -> File["${cosmos::params::cosmos_basedir}/rpms"]
+  File[$cosmos::params::cosmos_basedir]
+    -> File[$cosmos_stack_repo_path]
     ~> Exec['createrepo']
+
+  Package['createrepo']
+    -> Exec['createrepo']
+
+  Exec['createrepo']
     ~> Yumrepo['localrepo']
 
 }

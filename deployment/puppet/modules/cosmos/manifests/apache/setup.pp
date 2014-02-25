@@ -18,14 +18,43 @@ class cosmos::apache::setup inherits cosmos::params {
   }
   include apache::mod::proxy_http
 
-  $ssl_fqdn      = "${cosmos::params::master_hostname}${cosmos::params::domain}"
+  $master_fqdn      = "${cosmos::params::master_hostname}${cosmos::params::domain}"
   # Apache module seems to require a docroot even when not applicable.
   # Using an empty folder for the SSL redirect and Cosmos-API virtual hosts
   $dummy_docroot = '/tmp/apache_null'
 
+  file { $cosmos::params::cosmos_ssl_dir:
+    ensure => 'directory',
+    mode   => '0440',
+  }
+
+  file { $cosmos::params::ssl_cert_file:
+    ensure => 'present',
+    source => $cosmos::params::cosmos_ssl_cert_source,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+  }
+
+  file { $cosmos::params::ssl_key_file:
+    ensure => 'present',
+    source => $cosmos::params::cosmos_ssl_key_source,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+  }
+
+  file { $cosmos::params::ssl_ca_file:
+    ensure => 'present',
+    source => "puppet:///modules/${module_name}/${cosmos::params::ssl_ca_filename}",
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0644',
+  }
+
   apache::vhost { 'cli.repo':
     priority      => '01',
-    servername    => $ssl_fqdn,
+    servername    => $master_fqdn,
     port          => '8000',
     docroot       => $cosmos::params::cosmos_cli_repo_path,
     ssl           => true,
@@ -37,7 +66,7 @@ class cosmos::apache::setup inherits cosmos::params {
 
   apache::vhost { 'ssl.master':
     priority        => '02',
-    servername      => $ssl_fqdn,
+    servername      => $master_fqdn,
     port            => '443',
     docroot         => $dummy_docroot,
     ssl             => true,
@@ -53,19 +82,19 @@ class cosmos::apache::setup inherits cosmos::params {
 
   apache::vhost { 'platform.repo':
     priority      => '03',
-    servername    => $ssl_fqdn,
-    port          => '8081',
-    docroot       => "${cosmos::params::cosmos_basedir}/rpms",
+    servername    => $master_fqdn,
+    port          => $cosmos::params::master_repo_port,
+    docroot       => $cosmos_stack_repo_path,
     ssl           => false,
   }
 
   apache::vhost { 'redirect.to.fqdn':
     priority        => '10',
-    servername      => $ssl_fqdn,
+    servername      => $master_fqdn,
     port            => '80',
     docroot         => $dummy_docroot,
     redirect_source => '/',
-    redirect_dest   => "https://${ssl_fqdn}/",
+    redirect_dest   => "https://${master_fqdn}/",
     redirect_status => 'permanent',
   }
 
@@ -80,11 +109,19 @@ class cosmos::apache::setup inherits cosmos::params {
     ssl_ca          => $cosmos::params::ssl_ca_file,
     ssl_certs_dir   => $cosmos::params::cosmos_ssl_dir,
     redirect_source => '/',
-    redirect_dest   => "https://${ssl_fqdn}/",
+    redirect_dest   => "https://${master_fqdn}/",
     redirect_status => 'permanent',
   }
 
-    Apache::Vhost['cli.repo', 'ssl.master', 'platform.repo', 'redirect.to.fqdn', 'ssl.redirect.to.fqdn']
+  File[$cosmos::params::cosmos_confdir]
+    -> File[
+      $cosmos::params::cosmos_ssl_dir,
+      $cosmos::params::ssl_cert_file,
+      $cosmos::params::ssl_key_file,
+      $cosmos::params::ssl_ca_file]
+    -> Apache::Vhost['ssl.master', 'ssl.redirect.to.fqdn']
+
+Apache::Vhost['cli.repo', 'ssl.master', 'platform.repo', 'redirect.to.fqdn', 'ssl.redirect.to.fqdn']
     ~> Service['httpd']
 
   anchor{'cosmos::apache::setup::begin': }

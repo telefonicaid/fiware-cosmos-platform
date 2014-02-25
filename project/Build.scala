@@ -92,7 +92,8 @@ object Build extends sbt.Build {
       settings(ScctPlugin.instrumentSettings: _*)
       configs IntegrationTest
       settings(Defaults.itSettings: _*)
-      dependsOn(serviceManager, common, ial, common_test % "compile->compile;test->test")
+      dependsOn(serviceManager % "compile->compile;test->test", common, ial,
+        common_test % "compile->compile;test->test")
     )
 
   lazy val cosmosApi = (play.Project("cosmos-api", POM.version, path = file("cosmos-api"),

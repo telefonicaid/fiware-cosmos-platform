@@ -12,15 +12,14 @@
 package es.tid.cosmos.servicemanager.ambari
 
 import scala.concurrent.duration._
-import scala.language.postfixOps
 
 import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent
-import es.tid.cosmos.servicemanager._
-import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
+import es.tid.cosmos.servicemanager.ServiceManagerComponent
+import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDaoComponent}
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
-import es.tid.cosmos.servicemanager.clusters.{ClusterDaoComponent, ClusterId}
+import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 
 trait AmbariServiceManagerComponent extends ServiceManagerComponent {
   this: InfrastructureProviderComponent with ConfigComponent with ClusterDaoComponent =>
@@ -66,6 +65,6 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
         ambariServer,
         AmbariServiceManager.AllServices.map(
           toAmbariService(_, hadoopConfig.servicesConfigDirectory)),
-        config.getInt("ambari.servicemanager.initialization.graceperiod.minutes") minutes)
+        config.getInt("ambari.servicemanager.initialization.graceperiod.minutes").minutes)
     )
 }

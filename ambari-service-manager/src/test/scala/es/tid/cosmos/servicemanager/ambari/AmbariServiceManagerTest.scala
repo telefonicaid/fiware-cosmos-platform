@@ -84,7 +84,9 @@ class AmbariServiceManagerTest
           s"hostname$prefix$number", s"ipAddress$number"))
   }
 
-  private abstract class WithMachines(numberOfMachines: Integer) extends MockIalComponent with WithServiceManager {
+  private abstract class WithMachines(numberOfMachines: Integer)
+    extends MockIalComponent with WithServiceManager {
+
     def verifyCluster(
         machines: Seq[MachineState],
         clusterId: ClusterId,
@@ -105,9 +107,10 @@ class AmbariServiceManagerTest
       .willReturn(successful(machines))
   }
 
-  "A ServiceManager" must "have no Clusters by default" in new WithServiceManager with MockIalComponent {
-    instance.clusterIds must be('empty)
-  }
+  "A ServiceManager" must "have no Clusters by default" in
+    new WithServiceManager with MockIalComponent {
+      instance.clusterIds must be('empty)
+    }
 
   it must "be able to create and terminate a single machine cluster" in new WithMachines(1) {
     val clusterId = instance.createCluster(
@@ -145,65 +148,68 @@ class AmbariServiceManagerTest
     verifyCluster(machines, clusterId)
   }
 
-  it must "be able to create and terminate a multi-machine cluster with non-slave master node" in new WithMachines(50) {
-    val clusterId = instance.createCluster(
-      ClusterName("clusterName"), machines.size, serviceDescriptions, Seq(), UnfilteredPassThrough)
-    clusterId must not be null
-    val state = waitForClusterCompletion(clusterId, instance)
-    state must equal(Running)
-    val clusterDescription = instance.describeCluster(clusterId).get
-    clusterDescription.size must be (machines.size)
-    clusterDescription.nameNode must be (Some(new URI("hdfs://hostname1:50070")))
-    terminateAndVerify(clusterId, instance)
-    verifyCluster(
-      machines, clusterId, includeMasterAsSlave = false)
-  }
-
-  it must "be able to deploy the persistent HDFS cluster" in new WithServiceManager with MockIalComponent {
-    val slaveCount = 10
-    val machines = machinesOf(slaveCount, "slaves")
-    val masterMachine = machinesOf(1, "master")
-    given(infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave))
-      .willReturn(successful(slaveCount))
-    given(infrastructureProvider.releaseMachines(any()))
-      .willReturn(successful())
-    def setMachineExpectations(machines: Seq[MachineState], profile: MachineProfile.Value) = {
-      val machineFutures = Future.traverse(machines)(successful)
-      given(infrastructureProvider.createMachines(any(), the(profile), any(), any()))
-        .willReturn(machineFutures)
-    }
-    given(infrastructureProvider.assignedMachines(any()))
-      .willReturn(successful(machines))
-    setMachineExpectations(machines, MachineProfile.HdfsSlave)
-    setMachineExpectations(masterMachine, MachineProfile.HdfsMaster)
-
-    def verifyCalls() {
-      verify(infrastructureProvider)
-        .availableMachineCount(MachineProfile.HdfsSlave)
-      verify(infrastructureProvider)
-        .createMachines(
-            any(),
-            the(MachineProfile.HdfsSlave),
-            the(slaveCount),
-            any())
-      verify(infrastructureProvider)
-        .createMachines(
-            any(),
-            the(MachineProfile.HdfsMaster),
-            the(1),
-            any())
+  it must "be able to create and terminate a multi-machine cluster with non-slave master node" in
+    new WithMachines(50) {
+      val clusterId = instance.createCluster(
+        ClusterName("clusterName"), machines.size, serviceDescriptions, Seq(), UnfilteredPassThrough)
+      clusterId must not be null
+      val state = waitForClusterCompletion(clusterId, instance)
+      state must equal(Running)
+      val clusterDescription = instance.describeCluster(clusterId).get
+      clusterDescription.size must be (machines.size)
+      clusterDescription.nameNode must be (Some(new URI("hdfs://hostname1:50070")))
+      terminateAndVerify(clusterId, instance)
+      verifyCluster(
+        machines, clusterId, includeMasterAsSlave = false)
     }
 
-    get(instance.deployPersistentHdfsCluster())
-    verifyCalls()
-  }
+  it must "be able to deploy the persistent HDFS cluster" in
+    new WithServiceManager with MockIalComponent {
+      val slaveCount = 10
+      val machines = machinesOf(slaveCount, "slaves")
+      val masterMachine = machinesOf(1, "master")
+      given(infrastructureProvider.availableMachineCount(MachineProfile.HdfsSlave))
+        .willReturn(successful(slaveCount))
+      given(infrastructureProvider.releaseMachines(any()))
+        .willReturn(successful())
+      def setMachineExpectations(machines: Seq[MachineState], profile: MachineProfile.Value) = {
+        val machineFutures = Future.traverse(machines)(successful)
+        given(infrastructureProvider.createMachines(any(), the(profile), any(), any()))
+          .willReturn(machineFutures)
+      }
+      given(infrastructureProvider.assignedMachines(any()))
+        .willReturn(successful(machines))
+      setMachineExpectations(machines, MachineProfile.HdfsSlave)
+      setMachineExpectations(masterMachine, MachineProfile.HdfsMaster)
 
-  it must "fail adding users on an un-managed cluster" in new MockIalComponent with WithServiceManager  {
-    val unmanagedClusterId = ClusterId()
-    evaluating {
-      instance.setUsers(unmanagedClusterId, Seq(ClusterUser("username", "publicKey")))
-    } must produce [IllegalArgumentException]
-  }
+      def verifyCalls() {
+        verify(infrastructureProvider)
+          .availableMachineCount(MachineProfile.HdfsSlave)
+        verify(infrastructureProvider)
+          .createMachines(
+              any(),
+              the(MachineProfile.HdfsSlave),
+              the(slaveCount),
+              any())
+        verify(infrastructureProvider)
+          .createMachines(
+              any(),
+              the(MachineProfile.HdfsMaster),
+              the(1),
+              any())
+      }
+
+      get(instance.deployPersistentHdfsCluster())
+      verifyCalls()
+    }
+
+  it must "fail adding users on an un-managed cluster" in
+    new MockIalComponent with WithServiceManager {
+      val unmanagedClusterId = ClusterId()
+      evaluating {
+        instance.setUsers(unmanagedClusterId, Seq(ClusterUser("username", "publicKey")))
+      } must produce [IllegalArgumentException]
+    }
 
   it must "add users on a cluster" in new WithMachines(3) {
     val clusterId = instance.createCluster(
@@ -231,14 +237,15 @@ class AmbariServiceManagerTest
       produce [IllegalArgumentException]
   }
 
-  it must "fail terminating a cluster that is not in a valid termination state" in new WithMachines(3) {
-    val clusterId = instance.createCluster(
-      ClusterName("clusterName"), 3, serviceDescriptions, Seq(), UnfilteredPassThrough)
-    waitForClusterCompletion(clusterId, instance)
-    terminateAndVerify(clusterId, instance)
-    evaluating (instance.terminateCluster(clusterId)) must
-      produce [IllegalArgumentException]
-  }
+  it must "fail terminating a cluster that is not in a valid termination state" in
+    new WithMachines(3) {
+      val clusterId = instance.createCluster(
+        ClusterName("clusterName"), 3, serviceDescriptions, Seq(), UnfilteredPassThrough)
+      waitForClusterCompletion(clusterId, instance)
+      terminateAndVerify(clusterId, instance)
+      evaluating (instance.terminateCluster(clusterId)) must
+        produce [IllegalArgumentException]
+    }
 
   it must "pass through the preconditions to the infrastructure provider" in new WithMachines(3) {
     val willFailCondition: ClusterExecutableValidation = (_) => () => "Failed!".failureNel

@@ -25,17 +25,7 @@ private[request] class SessionCookieAuthentication(dao: CosmosProfileDao)
   import Scalaz._
 
   /** Get the profile form the request session when possible. */
-  override def authenticateRequest(request: RequestHeader): AuthResult = for {
-    profile <- getProfileFromSession(request)
-    _ <- enabledProfile(profile)
-  } yield profile
-
-  /** Try to extract a cosmos profile from a session cookie.
-    *
-    * @param request Request whose session is inspected
-    * @return        Either a cosmos profile or a validation error
-    */
-  private def getProfileFromSession(request: RequestHeader): AuthResult =
+  override def authenticateRequest(request: RequestHeader): AuthResult =
     (for {
       userId <- request.session.userId
       profile <- dao.withTransaction { implicit c =>

@@ -15,7 +15,7 @@ import scalaz._
 
 import play.api.mvc.RequestHeader
 
-import es.tid.cosmos.api.profile.{UserState, CosmosProfile}
+import es.tid.cosmos.api.profile.CosmosProfile
 
 /** Authentication scheme */
 trait RequestAuthentication {
@@ -27,15 +27,4 @@ trait RequestAuthentication {
     * @return         Profile of the user performing the request or an authentication error
     */
   def authenticateRequest(request: RequestHeader): AuthResult
-
-  /** Check for enabled profiles.
-    *
-    * @param profile  Profile that must be enabled
-    * @return         Either an enabled profile or a validation error
-    */
-  protected def enabledProfile(profile: CosmosProfile): AuthResult = {
-    import Scalaz._
-    if (profile.state == UserState.Enabled) profile.success
-    else InvalidProfileState(profile.state).failure
-  }
 }

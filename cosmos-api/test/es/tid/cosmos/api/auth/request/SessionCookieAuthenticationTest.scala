@@ -58,12 +58,4 @@ class SessionCookieAuthenticationTest extends FlatSpec with MustMatchers {
       val request = requestWithSession(UserId("unknown"))
       auth.authenticateRequest(request) must be (MissingAuthentication.fail)
     }
-
-  it must "fail with invalid profile state unless user is enabled" in new WithInstance {
-    dao.withTransaction { implicit c =>
-      dao.setUserState(userProfile.id, UserState.Disabled)
-    }
-    val request = requestWithSession(userId)
-    auth.authenticateRequest(request) must be (InvalidProfileState(UserState.Disabled).fail)
-  }
 }

@@ -19,7 +19,7 @@ import play.api.test.FakeRequest
 
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.profile.UserState.{Disabled, Enabled}
+import es.tid.cosmos.api.profile.UserState.Enabled
 import es.tid.cosmos.api.profile.Registration
 
 class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
@@ -75,14 +75,5 @@ class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
     val unknownCredentials = ApiCredentials.random()
     val invalidRequest = requestWithCredentials(unknownCredentials.apiKey, unknownCredentials.apiSecret)
     auth.authenticateRequest(invalidRequest) must be (InvalidAuthCredentials.fail)
-  }
-
-  it must "fail if the profile is not enabled" in new WithInstance {
-    dao.withTransaction { implicit c =>
-      dao.setUserState(userProfile.id, Disabled)
-    }
-    val request = requestWithCredentials(
-      userProfile.apiCredentials.apiKey, userProfile.apiCredentials.apiSecret)
-    auth.authenticateRequest(request) must be (InvalidProfileState(Disabled).fail)
   }
 }

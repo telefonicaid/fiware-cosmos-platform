@@ -12,6 +12,7 @@
 package es.tid.cosmos.api
 
 import es.tid.cosmos.api.auth.multiauth.ConfigBasedMultiAuthProviderComponent
+import es.tid.cosmos.api.auth.request.ChainedAuthenticationComponent
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
 import es.tid.cosmos.api.profile.PlayDbCosmosProfileDaoComponent
@@ -26,5 +27,6 @@ object ProductionGlobal extends AbstractGlobal(new Application
   with ProductionServiceManagerComponent
   with ApplicationConfigComponent
   with InMemoryMaintenanceStatusComponent
+  with ChainedAuthenticationComponent
   with InMemoryTaskDaoComponent) {
 }

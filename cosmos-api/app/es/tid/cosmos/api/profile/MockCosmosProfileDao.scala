@@ -11,19 +11,16 @@
 
 package es.tid.cosmos.api.profile
 
-import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.MockCosmosProfileDao._
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 trait MockCosmosProfileDaoComponent extends CosmosProfileDaoComponent {
-  def cosmosProfileDao: CosmosProfileDao = new MockCosmosProfileDao
+  lazy val cosmosProfileDao: CosmosProfileDao = new MockCosmosProfileDao
 }
 
-/**
- * Mock to be used in tests for handling the profile DAO. Thread-safe.
- */
+/** Mock to be used in tests for handling the profile DAO. Thread-safe. */
 class MockCosmosProfileDao extends CosmosProfileDao {
 
   type Conn = DummyConnection.type

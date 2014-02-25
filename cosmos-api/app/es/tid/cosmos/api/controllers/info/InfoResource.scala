@@ -15,15 +15,19 @@ import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Controller, Action}
 
+import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.common._
+import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.quota.Group
 import es.tid.cosmos.servicemanager.ServiceManager
 
 @Api(value = "/cosmos/v1/info", listingPath = "/doc/cosmos/v1/info",
   description = "Provides general-purpose information about a platform user")
-class InfoResource(override val dao: CosmosProfileDao, serviceManager: ServiceManager)
-  extends Controller with JsonController with ApiAuthController {
+class InfoResource(
+     override val auth: RequestAuthentication,
+     dao: CosmosProfileDao,
+     serviceManager: ServiceManager) extends Controller with JsonController with ApiAuthController {
 
   @ApiOperation(value = "Get general information about the user whose credentials are used",
     httpMethod = "GET", responseClass = "es.tid.cosmos.api.controllers.info.Info")

@@ -9,13 +9,14 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.controllers.common
+package es.tid.cosmos.api.controllers.common.auth
 
 import scalaz._
 
 import play.api.mvc._
 
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
+import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.controllers.pages.routes
 import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao, UserId}
@@ -27,17 +28,16 @@ trait PagesAuthController { this: Controller =>
 
   import Scalaz._
 
-  /**
-   * Checks cookie and DB information to clear inconsistent cookies and
-   * let you execute a different action for authenticated and unauthenticated
-   * requests.
-   *
-   * @param request               Request we are dispatching actions
-   * @param whenRegistered        Action to use when the user is registered
-   * @param whenNotRegistered     Action to use when the user is authenticated but not registered
-   * @param whenNotAuthenticated  Action to use when the user is not authenticated
-   * @return                      Output of one or the actions or a redirection to the index
-   */
+  /** Checks cookie and DB information to clear inconsistent cookies and
+    * let you execute a different action for authenticated and unauthenticated
+    * requests.
+    *
+    * @param request               Request we are dispatching actions
+    * @param whenRegistered        Action to use when the user is registered
+    * @param whenNotRegistered     Action to use when the user is authenticated but not registered
+    * @param whenNotAuthenticated  Action to use when the user is not authenticated
+    * @return                      Output of one or the actions or a redirection to the index
+    */
   def withAuthentication(request: RequestHeader)(
       whenRegistered: (OAuthUserProfile, CosmosProfile) => SimpleResult,
       whenNotRegistered: OAuthUserProfile => SimpleResult,

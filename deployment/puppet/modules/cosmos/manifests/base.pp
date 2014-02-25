@@ -16,13 +16,6 @@ class cosmos::base inherits cosmos::params {
     servers => [ $cosmos::params::ntp_server ],
   }
 
-  yumrepo { 'cosmos' :
-    descr    => 'Cosmos Platform Repository',
-    baseurl  => $cosmos::params::cosmos_repo_platform_url,
-    gpgcheck => '0',
-    enabled  => '1',
-  }
-
   package { 'java-1.7.0-openjdk':
     ensure => installed,
   }

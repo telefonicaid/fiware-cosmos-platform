@@ -63,7 +63,6 @@ vOc96sFgQcKeKY1C7SvULGIxi+bwF1bxwZEUIn65I8Rw5qF65oasiQ==
   # Filled by hiera data
   $cosmos_subnet,
   $cosmos_netmask,
-  $cosmos_repo_platform_url,
   $cosmos_ssl_cert_source,
   $cosmos_ssl_key_source,
   $master_ip,

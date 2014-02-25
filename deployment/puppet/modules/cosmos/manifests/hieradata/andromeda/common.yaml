@@ -9,7 +9,7 @@
 # All rights reserved.
 #
 
-ambari::params::repo_url: %{cosmos::params::cosmos_repo_platform_url}
+ambari::params::repo_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/staging'
 ambari::params::hdp_stack_repo_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
 ambari::params::cosmos_stack_repo_url: 'http://%{cosmos::params::master_ip}:%{cosmos::params::master_repo_port}/'
 ambari::params::jdk_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jdk-6u31-linux-x64.bin'
@@ -30,7 +30,6 @@ cosmos::openvz::images::base_image_url: 'http://cosmos10/develenv/repos/ovz-temp
 cosmos::openvz::images::image_name: 'centos-6-cosmos.HDP.2.0.6-20140123-x86_64.tar.gz'
 cosmos::params::cosmos_subnet: '10.95.236.0'
 cosmos::params::cosmos_netmask: '255.255.255.0'
-cosmos::params::cosmos_repo_platform_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/staging'
 cosmos::params::cosmos_ssl_cert_source: "puppet:///modules/cosmos/environments/%{environment}/certs/%{hostname}_cer.pem"
 cosmos::params::cosmos_ssl_key_source: "puppet:///modules/cosmos/environments/%{environment}/certs/%{hostname}_key.pem"
 cosmos::slave::gateway: '10.95.236.1'

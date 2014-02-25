@@ -19,11 +19,15 @@ object ServiceDependencies {
   type Service = ServiceDescription
 
   private val Dependencies = DependencyMapping[Service](
+    CosmosUserService -> Set(Hdfs),
     Hdfs -> Set(Zookeeper, InfinityfsDriver),
+    Hive -> Set(Hdfs, MapReduce2, HCatalog, WebHCat),
     MapReduce2 -> Set(Yarn),
-    Hive -> Set(HCatalog, WebHCat),
-    Yarn -> Set(InfinityfsDriver),
-    CosmosUserService -> Set(Hdfs)
+    Oozie -> Set(Hdfs, MapReduce2),
+    Pig -> Set(Hdfs, MapReduce2),
+    Sqoop -> Set(Hdfs, MapReduce2),
+    WebHCat -> Set(Hdfs, MapReduce2),
+    Yarn -> Set(InfinityfsDriver)
   )
 
   implicit class ServiceBundle(services: Seq[Service]) {

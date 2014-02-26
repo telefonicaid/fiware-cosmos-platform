@@ -53,6 +53,7 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(rootPackageSettings: _*)
+    settings(projectArtifact: _*)
     aggregate(
       cosmosApi, serviceManager, ial, cosmosAdmin, common, common_test, platformTests, infinityfs)
   )
@@ -168,4 +169,7 @@ object Build extends sbt.Build {
       distFile
     }
   )
+
+  lazy val projectArtifact = addArtifact(Artifact("cosmos-platform", "zip", "zip"), distProject)
+
 }

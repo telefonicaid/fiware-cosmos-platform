@@ -21,10 +21,10 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
 import es.tid.cosmos.servicemanager.{ClusterName, ComponentLocation, ComponentDescription}
+import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.ambari.ConfiguratorTestHelpers._
 import es.tid.cosmos.servicemanager.ambari.mocks.MockServiceDescription
 import es.tid.cosmos.servicemanager.ambari.rest._
-import es.tid.cosmos.servicemanager.clusters.{HostDetails, Provisioning, ClusterId, ImmutableClusterDescription}
 
 class AmbariClusterManagerTest
   extends AmbariTestBase with MockitoSugar with FutureMatchers with TestResourcePaths {

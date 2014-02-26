@@ -1,9 +1,10 @@
-package es.tid.cosmos.servicemanager.clusters
+package es.tid.cosmos.servicemanager.ambari.clusters
 
 import org.scalatest.Assertions
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, ServiceDescription}
+import es.tid.cosmos.servicemanager.clusters.{MutableClusterDescription, ClusterId, ClusterDao}
 
 class InMemoryClusterDao extends ClusterDao with MustMatchers with Assertions {
 

@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.ambari.migrations
+package es.tid.cosmos.servicemanager.clusters.sql.migrations
 
 import com.imageworks.migration.Migration
 

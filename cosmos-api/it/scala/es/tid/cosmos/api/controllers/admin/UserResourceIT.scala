@@ -82,7 +82,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       val response = postRegistration(validPayload - "handle")
       status(response) must be (CREATED)
       Json.parse(contentAsString(response)) must have (field[String]("handle"))
-      val createdProfile = dao.withTransaction { implicit c =>
+      dao.withTransaction { implicit c =>
         dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
       }
     }
@@ -97,10 +97,10 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
     status(postRegistration(validPayload, auth = Some(wrongAuth))) must be (FORBIDDEN)
   }
 
-  it must "reject correct credentials for a different realm" in new WithTestApplication {
+  it must "reject requests to unknown realms" in new WithTestApplication {
     val response = postRegistration(validPayload ++ Json.obj("authRealm" -> "other_realm"))
-    status(response) must be (FORBIDDEN)
-    contentAsString(response) must include ("Cannot administer users")
+    status(response) must be (NOT_FOUND)
+    contentAsString(response) must include ("other_realm authentication realm does not exist")
   }
 
   it must "reject requests with malformed JSON" in new WithTestApplication {
@@ -134,7 +134,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   }
 
   it must "reject unregistration of users of other realms" in new WithTestApplication {
-    status(deleteUser(newUserId.copy(realm = "other_realm"), auth = None)) must be (UNAUTHORIZED)
+    status(deleteUser(newUserId.copy(realm = "other_realm"), auth = None)) must be (NOT_FOUND)
   }
 
   it must "produce 404 when the user does not exist" in new WithTestApplication {

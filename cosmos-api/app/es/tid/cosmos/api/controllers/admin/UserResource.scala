@@ -23,7 +23,6 @@ import play.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{Controller, Action, Headers}
 
-import es.tid.cosmos.api.auth.external.AdminEnabledAuthProvider
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
@@ -162,20 +161,36 @@ class UserResource(
   }
 
   private def requireAdminCreds(targetRealm: String, headers: Headers): ActionValidation[Unit] =
-    headers.get("Authorization") match {
-      case Some(BasicAuth(`targetRealm`, password))
-        if canAdministerUsers(targetRealm, password) => ().success
-      case Some(_) => failWith(Forbidden, "Cannot administer users")
-      case None => failWith(Unauthorized, "Missing authorization header")
-    }
+    for {
+      password <- requireProviderWithExternalAdmin(targetRealm)
+      authHeader <- headers.get("Authorization")
+        .toSuccess(message(Unauthorized, "Missing authorization header"))
+      _ <- authHeader match {
+        case BasicAuth(wrongRealm, _) if targetRealm != wrongRealm => failWith(
+          Forbidden, s"Trying to create users in $targetRealm with $wrongRealm credentials")
+        case BasicAuth(`targetRealm`, wrongPassword) if wrongPassword != password =>
+          failWith(Forbidden, "Invalid credentials")
+        case BasicAuth(`targetRealm`, `password`) => ().success
+        case _ => failWith(Unauthorized, "Malformed authorization header")
+      }
+    } yield ()
 
-  private def canAdministerUsers(providerName: String, password: String) = (for {
-    provider <- multiUserProvider.providers.collectFirst {
-      case (`providerName`, adminProvider : AdminEnabledAuthProvider) => adminProvider
-    }
-  } yield password == provider.adminPassword).getOrElse(false)
+  /** Require that the provide has administration enabled.
+    *
+    * @param providerName  Name of the provider
+    * @return              Administration password or an error
+    */
+  private def requireProviderWithExternalAdmin(providerName: String): ActionValidation[String] =
+    for {
+      provider <- multiUserProvider.providers.get(providerName)
+        .toSuccess(message(NotFound, s"$providerName authentication realm does not exist"))
+      password <- provider.adminPassword.toSuccess(
+        message(Unauthorized, s"External user creation is disabled for the $providerName realm"))
+    } yield password
 
-  private def failWith(status: Status, message: String) = status(Json.toJson(Message(message))).fail
+  private def message(status: Status, text: String) = status(Json.toJson(Message(text)))
+
+  private def failWith(status: Status, text: String) = message(status, text).fail
 
   @tailrec
   private def generateHandle()(implicit c: Conn): String = {

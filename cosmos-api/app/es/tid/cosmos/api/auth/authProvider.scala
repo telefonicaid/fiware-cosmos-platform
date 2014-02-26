@@ -15,4 +15,10 @@ trait AuthProvider {
 
   /** OAuth provider identifier aka authentication realm */
   def id: String
+
+  /** Whether this auth provider has external user administration enabled. */
+  def externalAdministrationEnabled: Boolean = adminPassword.isDefined
+
+  /** Password for the admin resources */
+  def adminPassword: Option[String]
 }

@@ -82,6 +82,13 @@ class ApiAuthControllerIT extends FlatSpec with MustMatchers with MockitoSugar {
     contentAsString(res) must include (s"handle=${regUser.handle}")
   }
 
+  it must "reject disabled user requests" in new WithTestController {
+    authenticateProfile(userWithState(UserState.Disabled).cosmosProfile)
+    val res = requestIndex()
+    status(res) must be (UNAUTHORIZED)
+    contentAsString(res) must include ("User profile is disabled")
+  }
+
   it must "reject non operator from admin pages" in new WithTestController {
     authenticateProfile(regUser.cosmosProfile)
     val res = requestAdmin()

@@ -52,6 +52,7 @@ object MockAuthProvider extends OAuthProvider with AdminEnabledAuthProvider {
 
 object MockMultiAuthProvider extends MultiAuthProvider {
   override val providers = Map(MockAuthConstants.ProviderId -> MockAuthProvider)
+  override val tokenAuthenticationProvider = None
 }
 
 trait MockMultiAuthProviderComponent extends MultiAuthProviderComponent {

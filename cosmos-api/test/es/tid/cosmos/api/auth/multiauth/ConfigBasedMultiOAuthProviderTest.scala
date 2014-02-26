@@ -90,4 +90,69 @@ class ConfigBasedMultiOAuthProviderTest extends FlatSpec with MustMatchers {
       |auth.alternative.class=es.tid.cosmos.api.auth.multiauth.StubProvider
     """.stripMargin).providers must have size 2
   }
+
+  it must "disable token authentication when missing tokenAuth config section" in {
+    buildFromConfig("""
+      |auth.default.enabled=true
+      |auth.default.class=es.tid.cosmos.api.auth.multiauth.StubProvider
+    """.stripMargin).tokenAuthenticationProvider must be ('empty)
+  }
+
+  it must "disable token authentication when enabled property is false" in {
+    buildFromConfig(
+      """
+        |auth.default.enabled=true
+        |auth.default.class=es.tid.cosmos.api.auth.multiauth.StubProvider
+        |tokenAuth {
+        |  enabled=false
+        |  provider="default"
+        |}
+      """.stripMargin).tokenAuthenticationProvider must be ('empty)
+  }
+
+  it must "enable token authentication against the configured provider" in {
+    val tokenProvider = buildFromConfig(
+      """
+        |auth.default.enabled=true
+        |auth.default.class=es.tid.cosmos.api.auth.multiauth.StubProvider
+        |tokenAuth {
+        |  enabled=true
+        |  provider="default"
+        |}
+      """.stripMargin).tokenAuthenticationProvider
+    tokenProvider must not be 'empty
+    tokenProvider.get.name must be ("default")
+  }
+
+  it must "fail to initialize when an unknown provider is configured for token authentication" in {
+    val ex = evaluating {
+      buildFromConfig(
+        """
+          |auth.default.enabled=true
+          |auth.default.class=es.tid.cosmos.api.auth.multiauth.StubProvider
+          |tokenAuth {
+          |  enabled=true
+          |  provider="unknown"
+          |}
+        """.stripMargin)
+    } must produce [IllegalArgumentException]
+    ex.getMessage must include ("Cannot use 'unknown' since it is not an enabled, OAuth provider")
+  }
+
+  it must "fail to initialize when a disabled provider is configured for token authentication" in {
+    val ex = evaluating {
+      buildFromConfig(
+        """
+          |auth.default.enabled=true
+          |auth.default.class=es.tid.cosmos.api.auth.multiauth.StubProvider
+          |auth.disabled.enabled=false
+          |auth.disabled.class=es.tid.cosmos.api.auth.multiauth.StubProvider
+          |tokenAuth {
+          |  enabled=true
+          |  provider="disabled"
+          |}
+        """.stripMargin)
+    } must produce [IllegalArgumentException]
+    ex.getMessage must include ("Cannot use 'disabled' since it is not an enabled, OAuth provider")
+  }
 }

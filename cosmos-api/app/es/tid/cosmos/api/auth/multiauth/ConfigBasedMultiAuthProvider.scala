@@ -17,6 +17,7 @@ import scala.util.control.NonFatal
 import com.typesafe.config.{ConfigException, Config}
 
 import es.tid.cosmos.api.auth.AuthProvider
+import es.tid.cosmos.api.auth.oauth2.OAuthProvider
 
 private[multiauth] class ConfigBasedMultiAuthProvider(config: Config)
   extends MultiAuthProvider {
@@ -29,11 +30,31 @@ private[multiauth] class ConfigBasedMultiAuthProvider(config: Config)
   }
 
   override val providers: Map[String, AuthProvider] = (for {
-    name <- findEnabledProviders
+    name <- enabledProviderNames
     provider = instantiateProvider(name, providerConfig(name))
   } yield (name, provider)).toMap
 
-  private def findEnabledProviders = {
+  override val tokenAuthenticationProvider: Option[OAuthProvider] = {
+    if (isTokenAuthenticationEnabled) {
+      val name = try {
+        config.getString("tokenAuth.provider")
+      } catch {
+        case ex: ConfigException.Missing => throw new IllegalArgumentException(
+          "Token authentication was enabled but no provider was defined")
+      }
+      Some(oauthProviders.get(name)
+        .getOrElse(throw new IllegalArgumentException(
+          s"Cannot use '$name' since it is not an enabled, OAuth provider")))
+    } else None
+  }
+
+  private def isTokenAuthenticationEnabled = try {
+    config.getBoolean("tokenAuth.enabled")
+  } catch {
+    case ex: ConfigException.Missing => false
+  }
+
+  private lazy val enabledProviderNames = {
     val providers = authConfig.root().keySet().toSet
     val enabledProviders = providers.filter(isEnabled)
     require(!enabledProviders.isEmpty,

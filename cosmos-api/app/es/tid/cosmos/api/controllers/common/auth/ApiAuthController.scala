@@ -19,7 +19,7 @@ import play.api.mvc._
 
 import es.tid.cosmos.api.auth.request._
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Capability, CosmosProfile}
+import es.tid.cosmos.api.profile.{UserState, Capability, CosmosProfile}
 
 /** Controller-mixin able to check authentication and authorization.
   *
@@ -38,10 +38,10 @@ trait ApiAuthController { this: Controller =>
     * @return          Either a user profile or an authorization error response
     */
   def requireAuthenticatedApiRequest(request: RequestHeader): ActionValidation[CosmosProfile] =
-    auth.authenticateRequest(request).leftMap(error => {
+    auth.authenticateRequest(request).flatMap(enabledProfile).leftMap { error =>
       Logger.warn(s"Rejected API request: ${error.message}")
       unauthorizedResponse(error)
-    })
+    }
 
   /** Require an API request authenticated as in `requireAuthenticatedApiRequest` and also
     * require that the credentials are from an actual operator.
@@ -54,6 +54,15 @@ trait ApiAuthController { this: Controller =>
     _ <- if (profile.capabilities.hasCapability(Capability.IsOperator)) ().success
          else Forbidden(Json.toJson(Message("You need to be an operator"))).failure
   } yield profile
+
+  /** Check for enabled profiles.
+    *
+    * @param profile  Profile that must be enabled
+    * @return         Either an enabled profile or a validation error
+    */
+  private def enabledProfile(profile: CosmosProfile): Validation[AuthError, CosmosProfile] =
+    if (profile.state == UserState.Enabled) profile.success
+    else InvalidProfileState(profile.state).failure
 
   private def unauthorizedResponse(error: AuthError) =
     Unauthorized(Json.toJson(ErrorMessage(error.message)))

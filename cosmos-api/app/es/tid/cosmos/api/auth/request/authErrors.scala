@@ -13,7 +13,9 @@ package es.tid.cosmos.api.auth.request
 
 import es.tid.cosmos.api.profile.UserState._
 
-sealed abstract class AuthError(val message: String)
+sealed abstract class AuthError(val message: String) {
+  override def toString = message
+}
 
 case class MalformedAuthHeader(malformedHeader: String) extends AuthError(
   s"Invalid API credentials: malformed authorization header '$malformedHeader'")
@@ -35,3 +37,6 @@ case object InvalidProfileState {
     }
   }
 }
+
+case class CannotRetrieveProfile(cause: Throwable)
+  extends AuthError(s"Cannot retrieve user profile: $cause")

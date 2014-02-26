@@ -33,7 +33,6 @@ private[request] class ApiCredentialsAuthentication(dao: CosmosProfileDao)
   override def authenticateRequest(request: RequestHeader): AuthResult = for {
     credentials <- getApiCredentials(request)
     profile <- getProfileFromCredentials(credentials)
-    _ <- enabledProfile(profile)
   } yield profile
 
   /** Either extract API credentials from request headers or get an error message. */

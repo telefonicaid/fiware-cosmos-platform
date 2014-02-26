@@ -21,11 +21,10 @@ import es.tid.cosmos.api.auth.AuthProvider
   * component external to Cosmos. Such a component can use the admin API in order to add
   * or remove users from the realm represented by this provider.
   */
-class ExternallyManagedAuthProvider(override val id: String, config: Config)
-  extends AuthProvider with AdminEnabledAuthProvider {
+class ExternallyManagedAuthProvider(override val id: String, config: Config) extends AuthProvider {
 
   override val adminPassword = try {
-    config.getString("password")
+    Some(config.getString("password"))
   } catch {
     case ex: ConfigException.Missing =>
       throw new IllegalArgumentException(

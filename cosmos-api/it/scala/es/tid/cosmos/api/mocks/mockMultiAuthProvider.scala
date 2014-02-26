@@ -14,7 +14,6 @@ package es.tid.cosmos.api.mocks
 import scala.concurrent.Future
 
 import es.tid.cosmos.api.auth.oauth2._
-import es.tid.cosmos.api.auth.external.AdminEnabledAuthProvider
 import es.tid.cosmos.api.auth.multiauth.{MultiAuthProviderComponent, MultiAuthProvider}
 import es.tid.cosmos.api.profile.UserId
 
@@ -27,7 +26,7 @@ object MockAuthConstants {
   val AdminPassword = "sample password"
 }
 
-object MockAuthProvider extends OAuthProvider with AdminEnabledAuthProvider {
+object MockAuthProvider extends OAuthProvider {
   import MockAuthConstants._
 
   override val id = ProviderId
@@ -47,7 +46,7 @@ object MockAuthProvider extends OAuthProvider with AdminEnabledAuthProvider {
     if (token == GrantedToken) Future.successful(User101)
     else Future.failed(OAuthException(OAuthError.InvalidRequest, "testing invalid requests"))
 
-  override val adminPassword = AdminPassword
+  override val adminPassword = Some(AdminPassword)
 }
 
 object MockMultiAuthProvider extends MultiAuthProvider {

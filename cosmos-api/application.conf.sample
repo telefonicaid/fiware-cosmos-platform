@@ -51,6 +51,11 @@ auth.pdihub {
     auth.url=
     api.url=
     signup.url=
+    # Optional section
+    externalAdmin {
+        enabled=false
+        password=
+    }
 }
 auth.horizon {
     enabled=false

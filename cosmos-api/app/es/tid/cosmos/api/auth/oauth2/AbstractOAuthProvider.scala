@@ -34,6 +34,21 @@ private[oauth2] abstract class AbstractOAuthProvider(
   override def requestUserProfile(token: String): Future[OAuthUserProfile] =
     requestProfileResource(token).map(profileParser.parse)
 
+  override lazy val adminPassword: Option[String] = {
+    val isEnabled = try {
+      config.getBoolean("externalAdmin.enabled")
+    } catch {
+      case _: ConfigException.Missing => false
+    }
+    if (!isEnabled) None
+    else try {
+      Some(config.getString("externalAdmin.password"))
+    } catch {
+      case _: ConfigException.Missing => throw new IllegalArgumentException(
+        s"auth.$id.externalAdmin.password is mandatory when externalAdmin is enabled")
+    }
+  }
+
   /** OAuth client ID */
   protected val clientId = stringConfig("client.id")
 

@@ -21,4 +21,5 @@ case class StubProvider(name: String, config: Config) extends OAuthProvider {
   override def requestAccessToken(code: String, redirectUrl: String) = ???
   override def newAccountUrl = ???
   override def authenticationUrl(redirectUrl: String) = ???
+  override val adminPassword = None
 }

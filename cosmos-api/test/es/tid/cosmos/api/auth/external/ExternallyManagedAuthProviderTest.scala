@@ -23,7 +23,8 @@ class ExternallyManagedAuthProviderTest extends FlatSpec with MustMatchers {
   "An external auth provider" must "enable the admin api" in {
     val provider = providerForConfig("password=\"secret\"")
     provider.id must be ("external")
-    provider.adminPassword must be ("secret")
+    provider.externalAdministrationEnabled must be (true)
+    provider.adminPassword must be (Some("secret"))
   }
 
   it must "throw exception when the password is not configured" in {

@@ -127,4 +127,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     defaultInfinity.getFileStatus(new Path("infinity://host/path")).getPath must
       be (new Path("infinity://host/path"))
   }
+
+  it must "return the correct scheme on getScheme" in {
+    defaultInfinity.getScheme() must be ("infinity")
+  }
 }

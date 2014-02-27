@@ -24,7 +24,9 @@ import org.mockito.ArgumentMatcher
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.{any, eq => the, argThat}
 import org.mockito.Mockito._
+import org.scalatest.concurrent.Eventually
 import org.scalatest.mock.MockitoSugar
+import org.scalatest.time.{Millis, Seconds, Span}
 
 import es.tid.cosmos.common.ExecutableValidation
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
@@ -38,7 +40,10 @@ import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependen
 import es.tid.cosmos.servicemanager.clusters._
 
 class AmbariServiceManagerTest
-  extends AmbariTestBase with MockitoSugar with FutureMatchers {
+  extends AmbariTestBase with MockitoSugar with FutureMatchers with Eventually {
+
+  override implicit def patienceConfig =
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(100, Millis))
 
   private val testTimeout = 1 second
 
@@ -126,8 +131,9 @@ class AmbariServiceManagerTest
     val users = Seq(ClusterUser(username = "jsmith", publicKey = "that public key"))
     val clusterId = instance.createCluster(
       ClusterName("clusterName"), 1, serviceDescriptions, users, UnfilteredPassThrough)
-    waitForClusterCompletion(clusterId, instance)
-    instance.listUsers(clusterId) must be (Some(users))
+    eventually {
+      instance.listUsers(clusterId) must be (Some(users))
+    }
     terminateAndVerify(clusterId, instance)
     verifyCluster(machines, clusterId)
   }

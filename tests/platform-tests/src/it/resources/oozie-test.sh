@@ -16,11 +16,11 @@ oozie.services.ext=org.apache.oozie.service.HadoopAccessorService
 nameNode=hdfs://`hostname`:8020
 jobTracker=`hostname`:8050
 queueName=default
-oozie.wf.application.path=/user/${USER}/terasort.xml
+oozie.wf.application.path=/user/${USER}/teragen.xml
 EOB
 
-cat >terasort.xml <<EOB
-<workflow-app name="terasort" xmlns="uri:oozie:workflow:0.1">
+cat >teragen.xml <<EOB
+<workflow-app name="teragen" xmlns="uri:oozie:workflow:0.1">
   <start to="a1"/>
   <action name="a1">
     <map-reduce>
@@ -58,11 +58,11 @@ cat >terasort.xml <<EOB
 </workflow-app>
 EOB
 
-hdfs dfs -test -f terasort.xml && hdfs dfs -rm terasort.xml
+hdfs dfs -test -f teragen.xml && hdfs dfs -rm teragen.xml
 hdfs dfs -test -d lib && hdfs dfs -rm -r lib
 hdfs dfs -test -d dummy && hdfs dfs -rm -r dummy
 
-hdfs dfs -put terasort.xml hdfs:///user/${USER}/
+hdfs dfs -put teragen.xml hdfs:///user/${USER}/
 hdfs dfs -mkdir lib
 hdfs dfs -put /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples*.jar lib/
 

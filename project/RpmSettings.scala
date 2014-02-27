@@ -102,7 +102,7 @@ object RpmSettings {
     )
 
   val JarPath = "/opt/pdi-cosmos/infinityfs.jar"
-  val JarLinks = for (service <- Seq("hdfs", "mapreduce", "yarm"))
+  val JarLinks = for (service <- Seq("hdfs", "mapreduce", "yarn"))
     yield s"/usr/lib/hadoop-$service/lib/infinityfs.jar"
 
   val infinitySettings: Seq[Setting[_]] = commonRpmSettings ++ Seq(
@@ -112,7 +112,7 @@ object RpmSettings {
     linuxPackageMappings in Rpm := Seq(
       packageMapping(assembly.value -> JarPath) withUser "root" withGroup "root" withPerms "0755"
     ),
-    linuxPackageSymlinks in Rpm := JarLinks.map(destination => LinuxSymlink(JarPath, destination))
+    linuxPackageSymlinks in Rpm := JarLinks.map(destination => LinuxSymlink(destination, JarPath))
   )
 
 }

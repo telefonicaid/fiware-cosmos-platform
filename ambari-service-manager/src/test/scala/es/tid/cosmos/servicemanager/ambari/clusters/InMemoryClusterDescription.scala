@@ -9,11 +9,12 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.servicemanager.clusters
+package es.tid.cosmos.servicemanager.ambari.clusters
 
 import java.net.URI
 
 import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
+import es.tid.cosmos.servicemanager.clusters._
 
 class InMemoryClusterDescription(
     override val id: ClusterId,

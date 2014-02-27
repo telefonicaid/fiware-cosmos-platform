@@ -22,6 +22,7 @@ import org.scalatest.matchers.MustMatchers
 import es.tid.cosmos.common.scalatest.resources.TestResourcePaths
 import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 import es.tid.cosmos.servicemanager._
+import es.tid.cosmos.servicemanager.ambari.clusters.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.configuration.HadoopConfig
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._

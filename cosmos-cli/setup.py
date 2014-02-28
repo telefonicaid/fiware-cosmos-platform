@@ -11,21 +11,16 @@
 #
 from setuptools import setup
 
-from version import parse_pom_version
-
-
 SNAPSHOT_SUFFIX='-SNAPSHOT'
 
-
 def lookup_version():
-    pom_version = parse_pom_version('../pom.xml')
-    if pom_version.endswith(SNAPSHOT_SUFFIX):
+    version = file('../VERSION').read().strip()
+    if version.endswith(SNAPSHOT_SUFFIX):
         # EGG timestamp is managed at deployment time so we remove the
         # snapshot suffix here
-        return pom_version[:-len(SNAPSHOT_SUFFIX)]
+        return version[:-len(SNAPSHOT_SUFFIX)]
     else:
-        return pom_version
-
+        return version
 
 setup(name='cosmos',
       version=lookup_version(),

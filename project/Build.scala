@@ -12,16 +12,13 @@
 import sbt._
 import sbt.Keys._
 import play.{Keys => PlayKeys}
-import com.github.shivawu.sbt.maven.MavenBuild
 import com.typesafe.sbt.packager.Keys._
 
 object Build extends sbt.Build {
 
   val distProject = TaskKey[sbt.File]("dist", "Build project distribution.")
 
-  object POM extends MavenBuild {
-    val version = pom.ver
-  }
+  val projectVersion = IO.read(file("VERSION")).trim
 
   object Versions {
     /** HDP 2 has a patched 2.2.0 Hadoop stabilized by themselves */
@@ -46,7 +43,7 @@ object Build extends sbt.Build {
     lazy val servicesConfigDirectory = (baseDirectory) {_ / "../deployment/puppet/modules/cosmos/files/services"}
   }
 
-  override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := POM.version)
+  override lazy val settings = super.settings ++ Seq(Keys.version in ThisBuild := projectVersion)
 
   lazy val root = (Project(id = "cosmos-platform", base = file("."))
     settings(ScctPlugin.mergeReportSettings: _*)
@@ -96,7 +93,7 @@ object Build extends sbt.Build {
         common_test % "compile->compile;test->test")
     )
 
-  lazy val cosmosApi = (play.Project("cosmos-api", POM.version, path = file("cosmos-api"),
+  lazy val cosmosApi = (play.Project("cosmos-api", projectVersion, path = file("cosmos-api"),
                         dependencies = Seq(PlayKeys.anorm, PlayKeys.jdbc))
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
@@ -174,7 +171,7 @@ object Build extends sbt.Build {
         (file, name) <- modules pair relativeTo(puppetBase)
       } yield (file, puppetDir / name))
 
-      val distFile = target.value / s"cosmos-platform-${POM.version}.zip"
+      val distFile = target.value / s"cosmos-platform-${projectVersion}.zip"
       val distDir = target.value / "dist"
 
       s.log.info("Generating cosmos-platform zip package...")

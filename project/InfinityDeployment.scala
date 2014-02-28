@@ -23,6 +23,8 @@ import sbtassembly.Plugin.AssemblyKeys._
 import com.typesafe.sbt.packager.Keys._
 import com.typesafe.sbt.SbtNativePackager._
 
+/* TODO remove once merged in develop */
+
 object InfinityDeployment {
 
   val settings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++

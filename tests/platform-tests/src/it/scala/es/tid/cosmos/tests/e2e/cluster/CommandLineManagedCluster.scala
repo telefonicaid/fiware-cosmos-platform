@@ -80,13 +80,11 @@ object CommandLineManagedCluster extends Cluster.Factory with MustMatchers {
 
   /** Creates the cluster and returns its ID in case of success. */
   def apply(clusterSize: Int, owner: User, services: Seq[String] = Seq.empty)
-            (implicit info: Informer): CommandLineManagedCluster = {
-    val availableServices = listServices(owner)
-    val optionalServices = services.filter(availableServices.contains)
+           (implicit info: Informer): CommandLineManagedCluster = {
     val nameFlag = "--name default-services"
     val sizeFlag = s"--size $clusterSize"
-    val servicesFlag = if (optionalServices.nonEmpty) s"--services ${services.mkString(" ")}" else ""
-    val command = s"cosmos -c ${owner.cosmosrcPath} create $nameFlag $sizeFlag $servicesFlag"
+    val srvFlag = servicesFlag(services, owner)
+    val command = s"cosmos -c ${owner.cosmosrcPath} create $nameFlag $sizeFlag $srvFlag"
     info(s"Calling create cluster with command '$command'")
     val commandOutput = command.lines_!.toList
     commandOutput.foreach(info(_))
@@ -99,8 +97,15 @@ object CommandLineManagedCluster extends Cluster.Factory with MustMatchers {
     new CommandLineManagedCluster(id, owner)(info)
   }
 
+  private def servicesFlag(services: Seq[String], user: User) = {
+    val availableServices = listServices(user)
+    val optionalServices = services.filter(availableServices.contains)
+    if (optionalServices.nonEmpty) s"--services ${optionalServices.mkString(" ")}" else ""
+  }
+
   private def listServices(executedBy: User): Seq[String] = {
-    val commandOutput = s"cosmos -c ${executedBy.handle} list-services".lines_!.toSeq
+    val command = s"cosmos -c ${executedBy.cosmosrcPath} list-services"
+    val commandOutput = stringToProcess(command).lines.toSeq
     val optionalServices = commandOutput.tail.map(_.trim)
     optionalServices
   }

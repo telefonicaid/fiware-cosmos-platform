@@ -67,6 +67,8 @@ class InfinityFileSystem(fs: FileSystem) extends FileSystem {
 
   override def getWorkingDirectory = mapper.transformBack(fs.getWorkingDirectory)
 
+  override def getHomeDirectory: Path = makeQualified(new Path(System.getProperty("user.name")))
+
   override def mkdirs(f: Path, permission: FsPermission) = fs.mkdirs(mapper.transform(f), permission)
 
   override def getFileStatus(f: Path) = mapper.transformBack(fs.getFileStatus(mapper.transform(f)))

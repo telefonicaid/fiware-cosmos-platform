@@ -21,6 +21,7 @@ import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.quota.Group
 import es.tid.cosmos.servicemanager.ServiceManager
+import es.tid.cosmos.servicemanager.clusters._
 
 @Api(value = "/cosmos/v1/info", listingPath = "/doc/cosmos/v1/info",
   description = "Provides general-purpose information about a platform user")
@@ -39,21 +40,27 @@ class InfoResource(
   }
 
   private def gatherInfo(profile: CosmosProfile) = dao.withTransaction { implicit c =>
+    val userClusters = dao.clustersOf(profile.id).map(_.clusterId)
     Info(
       profileId = profile.id,
       handle = profile.handle,
       individualQuota = profile.quota.toOptInt,
       group = groupInfo(profile.group),
-      clusters = clustersInfo(dao.clustersOf(profile.id), profile),
+      clusters = clustersInfo(userClusters, profile),
       resources = resourcesInfo(profile)
     )
   }
 
-  private def clustersInfo(userClusters: Seq[ClusterAssignment], profile: CosmosProfile) = {
-    val ownClusters = userClusters.map(_.clusterId)
+  private def clustersInfo(userClusters: Seq[ClusterId], profile: CosmosProfile) = {
+    val ownClusters = for {
+      clusterId <- userClusters
+      description <- serviceManager.describeCluster(clusterId)
+      if description.state != Terminated
+    } yield clusterId
     val accessibleClusters = for {
       clusterId <- serviceManager.clusterIds
       description <- serviceManager.describeCluster(clusterId)
+      if description.state == Running
       users <- description.users
       if users.exists(user => user.username == profile.handle && user.sshEnabled)
     } yield clusterId

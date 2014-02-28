@@ -138,6 +138,12 @@ object Build extends sbt.Build {
 
   def rootPackageSettings: Seq[Setting[_]] = Seq(
     aggregate in dist := false,
+    aggregate in publish := false,
+    publish <<= publish.dependsOn(distProject),
+    publishArtifact in (Compile, packageBin) := false,
+    publishArtifact in (Compile, packageSrc) := false,
+    publishArtifact in (Compile, packageDoc) := false,
+    crossPaths := false,
     distProject := {
       val s = streams.value
 

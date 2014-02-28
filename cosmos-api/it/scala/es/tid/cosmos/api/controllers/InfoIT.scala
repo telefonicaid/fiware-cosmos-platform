@@ -20,13 +20,14 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
+import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager.ClusterProperties
 import es.tid.cosmos.api.profile.CosmosProfile
 import es.tid.cosmos.api.test.matchers.JsonMatchers
 import es.tid.cosmos.api.quota.{Quota, GuaranteedGroup}
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
-import es.tid.cosmos.servicemanager.ClusterName
-import es.tid.cosmos.servicemanager.clusters.{ClusterId, Running}
+import es.tid.cosmos.servicemanager.{ClusterUser, ClusterName}
+import es.tid.cosmos.servicemanager.clusters._
 
 class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with MaintenanceModeBehaviors
   with JsonMatchers with Eventually with FutureMatchers {
@@ -95,6 +96,44 @@ class InfoIT extends FlatSpec with MustMatchers with AuthBehaviors with Maintena
       contentAsJson(res) must containFieldThatMust("clusters",
         containFieldWithValue("owned", Json.arr(cluster1.toString)) and
         containFieldWithValue("accessible", Json.arr(cluster2.toString))
+      )
+    }
+
+  it must "filter terminated clusters from the owned listing" in
+    new WithSampleSessions {
+      val cluster1 = mockedServiceManager.defineCluster(MockedServiceManager.ClusterProperties(
+        id = ClusterId(),
+        name = ClusterName("own but terminated"),
+        size = 10,
+        users = Set(regUser.asClusterUser()),
+        initialState = Some(Terminated)
+      ))
+      regUser.setAsOwner(cluster1.view.id)
+
+      val res = regUser.doRequest(getInfo)
+      status(res) must be (OK)
+
+      contentAsJson(res) must containFieldThatMust("clusters",
+        containFieldWithValue("owned", Json.arr())
+      )
+    }
+
+  it must "filter non-running clusters from the accessible listing" in
+    new WithSampleSessions {
+      val cluster1 = mockedServiceManager.defineCluster(ClusterProperties(
+        id = ClusterId("cluster1"),
+        name = ClusterName("added to but not running"),
+        users = Set(opUser.asClusterUser(), regUser.asClusterUser()),
+        size  = 2,
+        initialState = Some(Provisioning)
+      ))
+      opUser.setAsOwner(cluster1.view.id)
+
+      val res = regUser.doRequest(getInfo)
+      status(res) must be (OK)
+
+      contentAsJson(res) must containFieldThatMust("clusters",
+        containFieldWithValue("accessible", Json.arr())
       )
     }
 

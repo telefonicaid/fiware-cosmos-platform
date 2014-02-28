@@ -29,7 +29,8 @@ class UrlMapper(defaultAuthority: Option[String]) {
 
   def transform(path: Path): Path = new Path(transform(path.toUri))
 
-  def transformBack(name: URI): URI = removeUserPath(UriUtil.replaceScheme(name, InfinityScheme))
+  def transformBack(name: URI): URI = removeUserPath(
+    UriUtil.replaceAuthority(UriUtil.replaceScheme(name, InfinityScheme), null))
 
   def transformBack(path: Path): Path = new Path(transformBack(path.toUri))
 

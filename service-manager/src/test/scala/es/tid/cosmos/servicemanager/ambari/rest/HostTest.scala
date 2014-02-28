@@ -57,7 +57,7 @@ class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     addMock(
       host.responses.addHostComponent(hostName, jsonPayload),
       JNothing)
-    get(host.addComponents("SuperComponent1", "SuperComponent2"))
+    get(host.addComponents(Seq("SuperComponent1", "SuperComponent2")))
     verify(host.responses).addHostComponent(hostName, jsonPayload)
   }
 
@@ -67,17 +67,17 @@ class HostTest extends AmbariTestBase with BeforeAndAfter with MockitoSugar {
     addMock(
       host.responses.addHostComponent(hostName, jsonPayload),
       JNothing)
-    get(host.addComponents("SuperComponent"))
+    get(host.addComponents(Seq("SuperComponent")))
     verify(host.responses).addHostComponent(hostName, jsonPayload)
   }
 
   it must "propagate failures when adding components" in errorPropagation(
     host.responses.addHostComponent(the(hostName), any[String]),
-    host.addComponents("BadComponent")
+    host.addComponents(Seq("BadComponent"))
   )
 
   it must "allow empty list of components without making any requests" in {
-    get(host.addComponents())
+    get(host.addComponents(Seq()))
     verify(host.responses, never()).addHostComponent(any(), any())
   }
 }

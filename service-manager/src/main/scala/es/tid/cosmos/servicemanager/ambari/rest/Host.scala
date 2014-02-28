@@ -39,7 +39,7 @@ private[ambari] class Host private[ambari](hostInfo: JValue, clusterBaseUrl: Req
    * Given a sequence of component names, add each component to the host. The services of each of
    * the components must have been added to the cluster previously.
    */
-  def addComponents(componentNames: String*): Future[Unit] = {
+  def addComponents(componentNames: Seq[String]): Future[Unit] = {
     def getJsonForComponent(componentName: String) =
       ("HostRoles" -> ("component_name" -> componentName))
     def ignoreResult(result: JValue) {}

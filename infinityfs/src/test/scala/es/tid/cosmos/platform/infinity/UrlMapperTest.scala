@@ -90,15 +90,15 @@ class UrlMapperTest extends FlatSpec with MustMatchers {
   "A file status" must "have its path transformed back to an Infinity one" in {
     mapperWithAuthority.transformBack(new FileStatus(
       len, isDir, replication, blockSize, time, new Path("hdfs://foo/user/path"))) must
-      be (new FileStatus(len, isDir, replication, blockSize, time, new Path("infinity://foo/path")))
+      be (new FileStatus(len, isDir, replication, blockSize, time, new Path("infinity:///path")))
   }
 
   it must "transform back the symlink path for symlinks" in {
     val permission = new FsPermission("700")
     val originalFileStatus = new FileStatus(len, isDir, replication, blockSize, time, time, permission, "owner",
-      "group", new Path("hdfs://link/user"), new Path("hdfs://foo/user/path"))
+      "group", new Path("hdfs://foo/user/link"), new Path("hdfs://foo/user/path"))
     val transformedFileStatus = new FileStatus(len, isDir, replication, blockSize, time, time, permission, "owner",
-      "group", new Path("infinity://link/user"), new Path("infinity://foo/path"))
+      "group", new Path("infinity:///link"), new Path("infinity:///path"))
     mapperWithAuthority.transformBack(originalFileStatus) must be (transformedFileStatus)
   }
 }

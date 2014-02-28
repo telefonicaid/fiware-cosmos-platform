@@ -55,8 +55,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
   }
 
   it must "make paths qualified" in {
-    given(nestedFileSystem.getWorkingDirectory).willReturn(new Path("hdfs://default:1234/user"))
-    defaultInfinity.makeQualified(new Path("infinity:///")) must be (new Path("infinity:/"))
+    given(nestedFileSystem.getWorkingDirectory).willReturn(new Path("hdfs://default:1234/user/foo"))
+    defaultInfinity.makeQualified(new Path("infinity:///")) must be (new Path("infinity:///"))
   }
 
   it must "delegate `open` with translated path" in {
@@ -100,8 +100,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     given(status.getPath).willReturn(new Path("hdfs://host/user/path/file"))
     val statuses = Array(status)
     given(nestedFileSystem.listStatus(any[Path])).willReturn(statuses)
-    val listing = defaultInfinity.listStatus(new Path("infinity://host/path"))
-    listing(0).getPath must be (new Path("infinity://host/path/file"))
+    val listing = defaultInfinity.listStatus(new Path("infinity:///path"))
+    listing(0).getPath must be (new Path("infinity:///path/file"))
   }
 
   it must "delegate `setWorkingDirectory` with translated path" in {
@@ -111,7 +111,7 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
 
   it must "delegate `getWorkingDirectory` translating back returned path" in {
     given(nestedFileSystem.getWorkingDirectory).willReturn(new Path("hdfs://host/user/path"))
-    defaultInfinity.getWorkingDirectory must be (new Path("infinity://host/path"))
+    defaultInfinity.getWorkingDirectory must be (new Path("infinity:///path"))
   }
 
   it must "delegate `mkdirs` with translated path" in {
@@ -124,8 +124,8 @@ class InfinityFileSystemTest extends FlatSpec with MustMatchers with MockitoSuga
     val status = mock[FileStatus]
     given(status.getPath).willReturn(new Path("hdfs://host/user/path"))
     given(nestedFileSystem.getFileStatus(any[Path])).willReturn(status)
-    defaultInfinity.getFileStatus(new Path("infinity://host/path")).getPath must
-      be (new Path("infinity://host/path"))
+    defaultInfinity.getFileStatus(new Path("infinity:///path")).getPath must
+      be (new Path("infinity:///path"))
   }
 
   it must "return the correct scheme on getScheme" in {

@@ -12,7 +12,7 @@
 echo "==== CHECKING PUPPET SYNTAX ===="
 ALL_PUPPET_FILES=$(find $WORKSPACE/deployment/puppet -iname '*.pp')
 puppet parser validate --color false --render-as s --modulepath= \
-    "$WORKSPACE/deployment/puppet/modules:deployment/puppet/modules_third_party" \
+    "$WORKSPACE/deployment/puppet/modules:$WORKSPACE/deployment/puppet/modules_third_party" \
      $ALL_PUPPET_FILES || exit 1
 
 echo "==== CHECKING PUPPET STYLE ===="

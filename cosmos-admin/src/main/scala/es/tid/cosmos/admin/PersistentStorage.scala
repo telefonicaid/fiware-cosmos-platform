@@ -47,8 +47,6 @@ private[admin] object PersistentStorage {
     }
   }
 
-  private def storageState(serviceManager: ServiceManager) = {
+  private def storageState(serviceManager: ServiceManager) =
     serviceManager.describePersistentHdfsCluster().map(_.state)
-  }
-
 }

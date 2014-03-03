@@ -13,12 +13,10 @@ package es.tid.cosmos.servicemanager.ambari.rest.as
 
 import net.liftweb.json.JsonAST.{JValue, JString}
 
-/**
- * Helper object to extract values from JSON lists.
- */
+/** Helper object to extract values from JSON lists. */
 object FlatValues {
-  /**
-   * Extract the list of child values of the attributes of a given parent list within a JSON value.
+
+  /** Extract the list of child values of the attributes of a given parent list within a JSON value.
    *
    * @param json the json from which to extract the values
    * @param parentListName the name of the parent list

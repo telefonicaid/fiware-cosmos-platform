@@ -17,15 +17,17 @@ import scala.concurrent.Future
 import com.ning.http.client.RequestBuilder
 import dispatch.{Future => _, _}, Defaults._
 import net.liftweb.json.JsonAST.JValue
+
 import es.tid.cosmos.servicemanager.RequestException
 
 private[ambari] trait RequestProcessor {
-  /**
-   * Executes the given request, handles error cases and returns the body as JSON in the success case.
-   */
+
+  /** Executes the given request, handles error cases and returns the body as JSON in the success
+    * case.
+    */
   def performRequest(request: RequestBuilder): Future[JValue] = {
     def handleFailure(throwable: Throwable) = throwable match {
-      case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] => {
+      case ex: ExecutionException if ex.getCause.isInstanceOf[StatusCode] =>
         RequestException(
           request.build,
           s"""Error when performing Http request.
@@ -33,7 +35,6 @@ private[ambari] trait RequestProcessor {
           |Body: ${request.build.getStringData}"
           |Message: ${ex.getMessage}""".stripMargin,
           ex.getCause)
-      }
       case other => other
     }
     Http(request.OK(as.Json)).transform(identity, handleFailure)

@@ -21,8 +21,7 @@ import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescription
 import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.clusters._
 
-/**
-  * This class wraps a ClusterDao and makes sure that the data in Ambari and the data in the
+/** This class wraps a ClusterDao and makes sure that the data in Ambari and the data in the
   * DAO are consistent. If there is an inconsistency the DAO is modified (so we use the Ambari
   * server as the ground truth).
   *
@@ -58,6 +57,18 @@ private[ambari] class AmbariClusterDao(
 
   override def setUsers(id: ClusterId, users: Set[ClusterUser]) = dao.setUsers(id, users)
 
+  private def verifyIntegrity = {
+    val clusterIds = dao.ids
+    for {
+      clusterNames <- ambariServer.listClusterNames
+      (daoClustersInAmbari, daoClustersNotInAmbari) = clusterIds.partition(id =>
+        clusterNames.contains(id.toString))
+      _ <- Future.traverse(daoClustersInAmbari)(verifyClusterIntegrity)
+    } yield {
+      daoClustersNotInAmbari.foreach(id => dao.getDescription(id).map(_.state = Terminated))
+    }
+  }
+
   private def verifyClusterIntegrity(id: ClusterId): Future[Unit] = {
     val daoCluster = this.dao.getDescription(id).get
     for {
@@ -71,18 +82,6 @@ private[ambari] class AmbariClusterDao(
         "Mismatch between SQL and Ambari information")
       case (Provisioning, AmbariClusterState.Running) => daoCluster.state = Running
       case _ => ()
-    }
-  }
-
-  private def verifyIntegrity = {
-    val clusterIds = dao.ids
-    for {
-      clusterNames <- ambariServer.listClusterNames
-      (daoClustersInAmbari, daoClustersNotInAmbari) = clusterIds.partition(id =>
-        clusterNames.contains(id.toString))
-      _ <- Future.traverse(daoClustersInAmbari)(verifyClusterIntegrity)
-    } yield {
-      daoClustersNotInAmbari.foreach(id => dao.getDescription(id).map(_.state = Terminated))
     }
   }
 

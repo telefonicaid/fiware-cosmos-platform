@@ -45,17 +45,31 @@ db.default.pass=
 auth.pdihub {
     enabled=false
     name="PDIHub"
-    class="es.tid.cosmos.api.oauth2.GitHubOAuthProvider"
+    class="es.tid.cosmos.api.auth.oauth2.github.Provider"
     client.id=
     client.secret=
     auth.url=
     api.url=
     signup.url=
+    # Optional section
+    externalAdmin {
+        enabled=false
+        password=
+    }
 }
 auth.horizon {
     enabled=false
     class="es.tid.cosmos.api.auth.external.ExternallyManagedAuthProvider"
     password=
+}
+
+# Token-based authentication
+# ~~~~
+# If you enable this, a X-Auth-Token header with a valid token of the following
+# provider will be accepted
+tokenAuth {
+    enabled=false
+    provider="pdihub"
 }
 
 # Links (without trailing slashes)

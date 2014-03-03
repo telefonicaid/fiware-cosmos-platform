@@ -44,4 +44,21 @@ class GlobalGroupQuotasTest extends FlatSpec with MustMatchers {
       groupB -> 0
     ))
   }
+
+  it must "provide the quota of a consumer" in {
+    val quotas = GlobalGroupQuotas(Map(
+      GuaranteedGroup("GroupA", Quota(10)) -> Set("user")
+    ))
+    quotas.get("GroupA") must be (Quota(10))
+    quotas.get(NoGroup.name) must be (EmptyQuota)
+  }
+
+  it must "provide the group of a consumer" in {
+    val groupA = GuaranteedGroup("A", Quota(10))
+    val quotas = GlobalGroupQuotas(Map(
+      groupA -> Set("user")
+    ))
+    quotas.groupOf("user") must be (groupA)
+    quotas.groupOf("other") must be (NoGroup)
+  }
 }

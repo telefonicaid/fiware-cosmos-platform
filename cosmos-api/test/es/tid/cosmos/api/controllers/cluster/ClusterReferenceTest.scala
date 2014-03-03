@@ -18,13 +18,14 @@ import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.Json
 
 import es.tid.cosmos.api.profile.ClusterAssignment
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters.{Provisioning, ClusterId, ClusterDescription}
 
 class ClusterReferenceTest extends FlatSpec with MustMatchers {
 
   object TestDescription extends ClusterDescription {
     override val id = ClusterId("clusterId")
-    override val name = "clusterName"
+    override val name = ClusterName("clusterName")
     override val state = Provisioning
     override def size = throw new NotImplementedError()
     override def nameNode = throw new NotImplementedError()

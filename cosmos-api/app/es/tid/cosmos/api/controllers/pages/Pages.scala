@@ -22,11 +22,12 @@ import play.api.libs.json.Json
 import play.api.mvc.{Controller, RequestHeader, Action}
 
 import _root_.controllers.{routes => rootRoutes}
-import es.tid.cosmos.api.auth.{OAuthProvider, MultiAuthProvider}
 import es.tid.cosmos.api.auth.oauth2.OAuthError.UnauthorizedClient
 import es.tid.cosmos.api.auth.oauth2._
+import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
+import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration, UserId}
 import es.tid.cosmos.api.task.{MutableTask, TaskDao}
@@ -67,7 +68,7 @@ class Pages(
 
       def authorizeCode(oauthClient: OAuthProvider, code: String) =
         (for {
-          token <- oauthClient.requestAccessToken(code)
+          token <- oauthClient.requestAccessToken(code, redirectUrl(oauthClient.id))
           userProfile <- oauthClient.requestUserProfile(token)
         } yield {
           Logger.info(s"${userProfile.id} authorized with token $token")
@@ -210,11 +211,13 @@ class Pages(
 
   private def authAlternatives(implicit request: RequestHeader): Seq[AuthAlternative] = (for {
     (id, oauthClient) <- multiAuthProvider.oauthProviders
-    redirectUrl = AbsoluteUrl(routes.Pages.authorize(providerId = id, code = None, error = None))
   } yield AuthAlternative(
     id = oauthClient.id,
     name = oauthClient.name,
-    authUrl = oauthClient.authenticationUrl(redirectUrl),
+    authUrl = oauthClient.authenticationUrl(redirectUrl(id)),
     newAccountUrl = oauthClient.newAccountUrl
   )).toSeq
+
+  private def redirectUrl(id: String)(implicit request: RequestHeader): String =
+    AbsoluteUrl(routes.Pages.authorize(providerId = id, code = None, error = None))
 }

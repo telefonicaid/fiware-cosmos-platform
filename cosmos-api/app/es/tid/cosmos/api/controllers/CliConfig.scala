@@ -11,7 +11,7 @@
 
 package es.tid.cosmos.api.controllers
 
-import es.tid.cosmos.api.auth.ApiCredentials
+import es.tid.cosmos.api.profile.ApiCredentials
 
 case class CliConfig(apiCredentials: ApiCredentials, apiUrl: String, sshClient: String = "ssh") {
   override def toString =

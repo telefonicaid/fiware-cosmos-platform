@@ -10,11 +10,14 @@
  */
 
 import sbt._
-import sbt.Keys.baseDirectory
+import sbt.Keys._
 import play.{Keys => PlayKeys}
 import com.github.shivawu.sbt.maven.MavenBuild
+import com.typesafe.sbt.packager.Keys._
 
 object Build extends sbt.Build {
+
+  val distProject = TaskKey[sbt.File]("dist", "Build project distribution.")
 
   object POM extends MavenBuild {
     val version = pom.ver
@@ -29,7 +32,7 @@ object Build extends sbt.Build {
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop
-    lazy val liftJson = "net.liftweb" %% "lift-json" % "2.5.1"
+    lazy val liftJson = "net.liftweb" %% "lift-json" % "2.6-M2"
     lazy val logbackClassic = "ch.qos.logback" % "logback-classic" % "1.0.13"
     lazy val mockito = "org.mockito" % "mockito-all" % "1.9.5"
     lazy val scalaLogging = "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
@@ -49,6 +52,8 @@ object Build extends sbt.Build {
     settings(ScctPlugin.mergeReportSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(rootPackageSettings: _*)
+    settings(projectArtifact: _*)
     aggregate(
       cosmosApi, serviceManager, ial, cosmosAdmin, common, common_test, platformTests, infinityfs)
   )
@@ -85,6 +90,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(RpmSettings.cosmosApiSettings: _*)
     dependsOn(serviceManager, common, ial, common_test % "test->compile")
   )
 
@@ -92,6 +98,7 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(RpmSettings.cosmosAdminSettings: _*)
     dependsOn(
       serviceManager,
       cosmosApi % "compile->compile;test->test",
@@ -103,8 +110,10 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(parallelExecution in ThisBuild := false)
     dependsOn(
       common_test % "compile->compile;test->test",
+      serviceManager % "compile->compile;test->test",
       cosmosApi % "compile->compile;test->test")
   )
 
@@ -113,5 +122,54 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(InfinityDeployment.settings: _*)
+    settings(RpmSettings.infinitySettings: _*)
   )
+
+  def rootPackageSettings: Seq[Setting[_]] = Seq(
+    aggregate in dist := false,
+    distProject := {
+      val s = streams.value
+
+      val filesDir = target.value / "dist/rpms/cosmosplatform/files"
+      IO.delete(filesDir)
+      filesDir.mkdirs
+
+      s.log.info("Copying cosmos-api RPM to project dist directory...")
+      val cosmosApiRPM = (dist in cosmosApi).value
+      IO.copyFile(cosmosApiRPM, filesDir / cosmosApiRPM.name)
+
+      s.log.info("Copying cosmos-admin RPM to project dist directory...")
+      val cosmosAdminRPM = (dist in cosmosAdmin).value
+      IO.copyFile(cosmosAdminRPM, filesDir / cosmosAdminRPM.name)
+
+      s.log.info("Copying infinity RPM to project dist directory...")
+      val infinityRPM = (dist in infinityfs).value
+      IO.copyFile(infinityRPM, filesDir / infinityRPM.name)
+
+      val puppetDir = target.value / "dist/puppet"
+      puppetDir.mkdirs()
+
+      s.log.info("Copying puppet to project dist directory...")
+      val puppetBase = baseDirectory.value / "deployment/puppet/"
+      val modules = (puppetBase / "modules" ***) +++
+        (puppetBase / "modules_third_party" ***)
+      IO.copy(for {
+        (file, name) <- modules pair relativeTo(puppetBase)
+      } yield (file, puppetDir / name))
+
+      val distFile = target.value / s"cosmos-platform-${POM.version}.zip"
+      val distDir = target.value / "dist"
+
+      s.log.info("Generating cosmos-platform zip package...")
+      val distFiles = (distDir.*** --- distDir) pair relativeTo(distDir)
+      IO.delete(distFile)
+      IO.zip(distFiles, distFile)
+
+      s.log.success(s"Cosmos platform distribution ready in ${distFile}")
+      distFile
+    }
+  )
+
+  lazy val projectArtifact = addArtifact(Artifact("cosmos-platform", "zip", "zip"), distProject)
+
 }

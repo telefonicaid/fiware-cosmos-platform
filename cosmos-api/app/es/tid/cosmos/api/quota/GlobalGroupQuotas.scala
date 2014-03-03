@@ -29,7 +29,7 @@ case class GlobalGroupQuotas[ConsumerId](membersByGroup: Map[GuaranteedGroup, Se
     * @param usageByConsumer  Current resource usage
     * @return                Remaining reserved resources per group
     */
-  def reservedUnusedResources(usageByConsumer: Map[ConsumerId, Int]): Map[GuaranteedGroup, Int] = {
+  def reservedUnusedResources(usageByConsumer: Map[ConsumerId, Int]): Map[Group, Int] = {
 
     def groupUsage(members: Set[ConsumerId]): Int = (for {
       member <- members.toSeq
@@ -38,9 +38,15 @@ case class GlobalGroupQuotas[ConsumerId](membersByGroup: Map[GuaranteedGroup, Se
 
     for {
       (group, members) <- membersByGroup
-      groupResources = group.minimumQuota.toInt.getOrElse(0)
+      groupResources = group.minimumQuota.toInt
     } yield group -> max(0, groupResources - groupUsage(members))
   }
 
-  def get(name: String): Option[GuaranteedGroup] = membersByGroup.keys.find(_.name == name)
+  /** Determines the guaranteed quota given a group name */
+  def get(name: String): LimitedQuota =
+    membersByGroup.keys.find(_.name == name).map(_.minimumQuota).getOrElse(EmptyQuota)
+
+  def groupOf(consumerId: ConsumerId): Group = membersByGroup.collectFirst {
+    case (group, members) if members.contains(consumerId) => group
+  }.getOrElse(NoGroup)
 }

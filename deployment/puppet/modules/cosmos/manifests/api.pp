@@ -13,19 +13,12 @@ class cosmos::api inherits cosmos::params {
 
   include cosmos::setup
 
-  package { 'cosmos':
+  package { 'cosmos-api':
     ensure => latest,
   }
 
-  file { $cosmos::params::cosmos_cli_repo_path:
-    ensure => 'directory'
-  }
-
-  file { "${cosmos::params::cosmos_cli_repo_path}/eggs":
-    ensure => 'directory',
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0755'
+  package { 'cosmos-admin':
+    ensure => latest,
   }
 
   service { 'cosmos-api':
@@ -35,12 +28,7 @@ class cosmos::api inherits cosmos::params {
     hasrestart => true,
   }
 
-  exec { "egg_is_present":
-    command => "/bin/false",
-    creates => "${cosmos::params::cosmos_cli_repo_path}/eggs/${cosmos::params::cosmos_cli_filename}"
-  }
-
-  YumRepo['cosmos'] -> Package['cosmos'] -> Exec['egg_is_present'] -> Service['cosmos-api']
+  Package['cosmos-api'] -> Service['cosmos-api']
 
   Class['cosmos::setup']                      ~> Service['cosmos-api']
   File['cosmos-api.conf', 'logback.conf']     ~> Service['cosmos-api']

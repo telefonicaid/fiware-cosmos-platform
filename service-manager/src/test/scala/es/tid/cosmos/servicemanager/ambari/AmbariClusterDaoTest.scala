@@ -20,9 +20,8 @@ import org.scalatest.mock.MockitoSugar
 import org.mockito.BDDMockito.given
 import org.mockito.Matchers.any
 
-import es.tid.cosmos.servicemanager.{ClusterUser, ServiceDescription}
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser, ServiceDescription}
 import es.tid.cosmos.servicemanager.ambari.AmbariClusterState.AmbariClusterState
-import es.tid.cosmos.servicemanager.ambari.mocks.InMemoryClusterDao
 import es.tid.cosmos.servicemanager.ambari.rest.{Cluster, AmbariServer}
 import es.tid.cosmos.servicemanager.ambari.services.{MapReduce2, Hdfs, AmbariServiceDescription}
 import es.tid.cosmos.servicemanager.clusters._
@@ -42,7 +41,7 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
     val services = Seq()
     val id = ClusterId()
     val enabledServices: Set[ServiceDescription] = Set(Hdfs, MapReduce2)
-    val clusterDesc = innerDao.registerCluster(id, "test", 5, enabledServices)
+    val clusterDesc = innerDao.registerCluster(id, ClusterName("test"), 5, enabledServices)
     clusterDesc.state = Running
     val ambariCluster = mock[Cluster]
     val ignoredRequest = mock[Request]
@@ -85,15 +84,15 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
   it must "set to Terminated every cluster found in dao but not in ambari" in new WithMockCluster {
     val id2 = ClusterId()
     val id3 = ClusterId()
-    val cl2 = innerDao.registerCluster(id2, "cluster2", 2, Set())
-    val cl3 = innerDao.registerCluster(id3, "cluster3", 3, Set())
+    val cl2 = innerDao.registerCluster(id2, ClusterName("cluster2"), 2, Set())
+    val cl3 = innerDao.registerCluster(id3, ClusterName("cluster3"), 3, Set())
     given(ambariServer.listClusterNames).willReturn(Future.successful(Seq(id.toString,
       id2.toString)))
     val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
     val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
     dao.ids
-    clusterDesc.state must not be (Terminated)
-    cl2.state must not be (Terminated)
+    clusterDesc.state must not be Terminated
+    cl2.state must not be Terminated
     cl3.state must be (Terminated)
   }
 
@@ -102,7 +101,7 @@ class AmbariClusterDaoTest extends FlatSpec with MustMatchers with MockitoSugar 
     val mockResolver = new MockClusterStateResolver(AmbariClusterState.Running)
     val dao = new AmbariClusterDao(innerDao, ambariServer, services) with mockResolver.Trait
     val newId = ClusterId()
-    val newCluster = dao.registerCluster(newId, "newCluster", 10, Set())
+    val newCluster = dao.registerCluster(newId, ClusterName("newCluster"), 10, Set())
     innerDao.getDescription(newId).get must be (newCluster)
   }
 

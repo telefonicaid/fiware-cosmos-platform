@@ -10,17 +10,10 @@
 #
 
 class cosmos::base inherits cosmos::params {
-  include cosmos::cluster_hosts
+  include cosmos::cluster_hosts, timezone
   
   class { '::ntp':
     servers => [ $cosmos::params::ntp_server ],
-  }
-
-  yumrepo { 'cosmos' :
-    descr    => 'Cosmos Platform Repository',
-    baseurl  => $cosmos::params::cosmos_repo_platform_url,
-    gpgcheck => '0',
-    enabled  => '1',
   }
 
   package { 'java-1.7.0-openjdk':
@@ -43,6 +36,6 @@ class cosmos::base inherits cosmos::params {
   }
 
   anchor { 'cosmos::base::begin': }
-    -> Class['cosmos::cluster_hosts', '::ntp']
+    -> Class['cosmos::cluster_hosts', '::ntp', 'timezone']
     -> anchor { 'cosmos::base::end': }
 }

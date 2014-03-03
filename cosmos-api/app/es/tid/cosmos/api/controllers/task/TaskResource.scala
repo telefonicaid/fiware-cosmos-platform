@@ -18,15 +18,15 @@ import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Controller, Action}
 
+import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao}
+import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
+import es.tid.cosmos.api.profile.CosmosProfile
 import es.tid.cosmos.api.task.{Task, TaskDao}
 
 @Api(value = "/cosmos/v1/task", listingPath = "/doc/cosmos/v1/task",
   description = "Represents an ongoing operation")
-class TaskResource(
-    taskDao: TaskDao,
-    override val dao: CosmosProfileDao)
+class TaskResource(override val auth: RequestAuthentication, taskDao: TaskDao)
   extends Controller with ApiAuthController with JsonController {
 
   private def requireTaskExists(id: Int): ActionValidation[Task] = taskDao.get(id) match {
@@ -40,8 +40,7 @@ class TaskResource(
     new ApiError(code = 404, reason = "When task ID is unknown")
   ))
   def getDetails(
-      @ApiParam(value = "Task identifier", required = true,
-        defaultValue = "0")
+      @ApiParam(value = "Task identifier", required = true, defaultValue = "0")
       @PathParam("id")
       id: String) = Action { implicit request =>
     for {

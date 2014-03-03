@@ -30,10 +30,25 @@ Resources of the user API
 Authentication
 --------------
 
-Requests should use a basic Authorization header as in RFC 2617 in which
-username corresponds with the API key and the password with the API secret.
-Alternatively, a session cookie of a valid user is also accepted as valid
-authentication to ease API exploration and direct use from JavaScript.
+Most API requests require authentication so they can be traced to a valid user
+in order to be accepted.  There are three supported authentication methods
+that can be equally used.
+
+ * **Cosmos API credentials.** Requests should use a basic "Authorization"
+   header as in RFC 2617 in which username corresponds with the API key
+   and the password with the API secret.  Users can check their credentials
+   at their profile pages.  This is the recommended authentication method
+   for normal use of the API.
+
+ * **Session cookie.** A session cookie of a valid user is also accepted as
+   valid authentication to ease API exploration and direct use from
+   JavaScript.  This is recommended when exploring the API from the Swagger
+   page.
+
+ * **Authentication token.** Requests should have a ``X-Auth-Token`` with a
+   valid OAuth 2 token with read access to the user profile.  This can be
+   enabled for at most one of the OAuth 2 providers and it is disabled by
+   default.
 
 GET ``/cosmos/v1``
 ------------------
@@ -171,7 +186,7 @@ State related fields have the same meaning as in ``/cosmos/v1/cluster`` GET
 response.
 
 POST ``/cosmos/v1/cluster/<id>/add_user``
-----------------------------------------
+-----------------------------------------
 
 *Since v1*
 
@@ -254,6 +269,41 @@ In case of success the maintenance status will change and the new mode will be r
 as a boolean payload with 200 status.
 
 
+GET ``/cosmos/v1/info``
+-----------------------
+
+*Since v1*
+
+General info about the platform for the user performing the request: user details, owned and
+accessible clusters and resource information.
+
+In case of success, a 200 status and a payload of the following form is returned::
+
+    {
+        "profileId": <int>,
+        "handle": <string>,
+        "individualQuota": <int>,
+        "group": {
+            "name": <string>,
+            "guaranteedQuota": <int>
+        },
+        "clusters": {
+            "owned": [<string>, <string>, ...],
+            "accessible": [<string>, <string>, ...]
+        },
+        "resources": {
+            "groupConsumption": <int>,
+            "individualConsumption": <int>,
+            "available": <int>,
+            "availableForGroup": <int>,
+            "availableForUser": <int>
+        }
+    }
+
+In the case of lacking minimum or maximum quotas the ``individualQuota`` or ``guaranteedQuota``
+fields will be missing.
+
+
 GET ``/cosmos/v1/stats/clusters``
 ---------------------------------
 
@@ -332,7 +382,7 @@ username corresponds to the ``authRealm`` being used in the call and the passwor
 is the one provided by the Cosmos team to the realm owners.
 
 POST ``/admin/v1/user``
-----------------------
+-----------------------
 
 *Since v1*
 

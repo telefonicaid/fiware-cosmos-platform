@@ -15,19 +15,22 @@ import com.wordnik.swagger.annotations._
 import play.api.libs.json.Json
 import play.api.mvc.{Controller, Action}
 
+import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
+import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile.CosmosProfileDao
 
 /** Resource that represents a user profile. */
 @Api(value = "/cosmos/v1/profile", listingPath = "/doc/cosmos/v1/profile",
   description = "Represents the user profile")
-class ProfileResource(override val dao: CosmosProfileDao)
+class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosProfileDao)
   extends Controller with JsonController with ApiAuthController {
 
   /** Show user profile. */
   @ApiOperation(value = "Get the user profile details", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.profile.UserProfile")
+  @ApiErrors(Array(new ApiError(code = 401, reason = "Unauthorized user")))
   def show = Action { implicit request =>
     for {
       profile <- requireAuthenticatedApiRequest(request)
@@ -41,7 +44,8 @@ class ProfileResource(override val dao: CosmosProfileDao)
     new ApiError(code = 400, reason = "Invalid JSON payload"),
     new ApiError(code = 400, reason = "No defined public key"),
     new ApiError(code = 400, reason = "More than one public key"),
-    new ApiError(code = 400, reason = "Trying to modify user handle")
+    new ApiError(code = 400, reason = "Trying to modify user handle"),
+    new ApiError(code = 401, reason = "Unauthorized user")
   ))
   @ApiParamsImplicit(Array(
     new ApiParamImplicit(paramType = "body",

@@ -18,13 +18,13 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile.ClusterAssignment
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
-import es.tid.cosmos.servicemanager.ClusterUser
 
 class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
 
   case class SimpleDescription(
-      override val name: String,
+      override val name: ClusterName,
       override val state: ClusterState
     ) extends ClusterDescription {
     override val id = ClusterId()
@@ -37,12 +37,9 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
     override val services = Set("ServiceA", "ServiceB")
   }
 
-  /**
-   * Create a ClusterReference with a given name and state and randomize
-   * the other fields.
-   */
+  /** Create a ClusterReference with a given name and state and randomize the other fields. */
   def makeRef(name: String, state: ClusterState): ClusterReference = {
-    val description = SimpleDescription(name, state)
+    val description = SimpleDescription(ClusterName(name), state)
     val randomOwner = Random.nextLong()
     val randomDate = new Date(Random.nextLong())
     ClusterReference(description, ClusterAssignment(description.id, randomOwner, randomDate))
@@ -59,13 +56,12 @@ class ClustersDisplayOrderTest extends FlatSpec with MustMatchers {
       (Provisioning, Terminating),
       (Running, FailedState)
     ).foreach {
-      case (state1, state2) => {
+      case (state1, state2) =>
         val cluster1 = makeRef("cluster2", state1)
         val cluster2 = makeRef("cluster1", state2)
         ClustersDisplayOrder.compare(cluster1, cluster2) must be < 0
         ClustersDisplayOrder.compare(cluster2, cluster1) must be > 0
         ClustersDisplayOrder.compare(cluster1, cluster1) must equal (0)
-      }
     }
   }
 

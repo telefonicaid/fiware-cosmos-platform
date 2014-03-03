@@ -11,8 +11,6 @@
 
 package es.tid.cosmos.api.profile
 
-import scala.concurrent.duration._
-
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.matchers.MustMatchers
@@ -22,6 +20,7 @@ import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.clusters._
 
 class CosmosMachineUsageDaoTest
@@ -87,7 +86,7 @@ class CosmosMachineUsageDaoTest
 
         val failedPreconditions = (clusterId: ClusterId) => () => "Failure example".failureNel
         val clusterId = serviceManager.createCluster(
-          "failedCluster", 2, Seq.empty, Seq.empty, failedPreconditions)
+          ClusterName("failedCluster"), 2, Seq.empty, Seq.empty, failedPreconditions)
         profileDao.withTransaction { implicit c =>
           profileDao.assignCluster(clusterId, profile.id)(c)
         }
@@ -104,9 +103,10 @@ class CosmosMachineUsageDaoTest
   }
 
   private trait WithUserClusters {
-    val clusterId1 = serviceManager.createCluster("myCluster1", 1, Seq.empty, Seq.empty)
-    val clusterId2 = serviceManager.createCluster("myCluster2", 2, Seq.empty, Seq.empty)
-    val terminated = serviceManager.createCluster("terminatedCluster", 10, Seq.empty, Seq.empty)
+    val clusterId1 = serviceManager.createCluster(ClusterName("myCluster1"), 1, Seq.empty, Seq.empty)
+    val clusterId2 = serviceManager.createCluster(ClusterName("myCluster2"), 2, Seq.empty, Seq.empty)
+    val terminated = serviceManager.createCluster(
+      ClusterName("terminatedCluster"), 10, Seq.empty, Seq.empty)
 
     serviceManager.withCluster(clusterId1)(_.completeProvisioning())
     serviceManager.withCluster(clusterId2)(_.completeProvisioning())
@@ -122,11 +122,12 @@ class CosmosMachineUsageDaoTest
     val profileA2 = registerUser("userA2")(profileDao)
     val profileB1 = registerUser("userB1")(profileDao)
     val profileB2 = registerUser("userB2")(profileDao)
-    val clusterA1 = serviceManager.createCluster("clusterA1", 1, Seq.empty, Seq.empty)
-    val clusterA2 = serviceManager.createCluster("clusterA2", 2, Seq.empty, Seq.empty)
-    val clusterB1 = serviceManager.createCluster("clusterB1", 1, Seq.empty, Seq.empty)
-    val clusterB2 = serviceManager.createCluster("clusterB2", 2, Seq.empty, Seq.empty)
-    val terminated = serviceManager.createCluster("terminatedCluster", 10, Seq.empty, Seq.empty)
+    val clusterA1 = serviceManager.createCluster(ClusterName("clusterA1"), 1, Seq.empty, Seq.empty)
+    val clusterA2 = serviceManager.createCluster(ClusterName("clusterA2"), 2, Seq.empty, Seq.empty)
+    val clusterB1 = serviceManager.createCluster(ClusterName("clusterB1"), 1, Seq.empty, Seq.empty)
+    val clusterB2 = serviceManager.createCluster(ClusterName("clusterB2"), 2, Seq.empty, Seq.empty)
+    val terminated = serviceManager.createCluster(
+      ClusterName("terminatedCluster"), 10, Seq.empty, Seq.empty)
     val groupA = GuaranteedGroup("A", Quota(3))
     val groupB = GuaranteedGroup("B", Quota(5))
     profileDao.withTransaction { implicit c =>

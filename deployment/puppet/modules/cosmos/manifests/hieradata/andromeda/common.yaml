@@ -9,12 +9,15 @@
 # All rights reserved.
 #
 
-ambari::params::repo_url: %{cosmos::params::cosmos_repo_platform_url}
-ambari::params::repo_rpm_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::repo_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/staging'
+ambari::params::hdp_stack_repo_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::cosmos_stack_repo_url: 'http://%{cosmos::params::master_ip}:%{cosmos::params::master_repo_port}/'
 ambari::params::jdk_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jdk-6u31-linux-x64.bin'
 ambari::params::jce_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jce_policy-6.zip'
 ambari::params::hdp_utils_repo_url: 'http://servilinux.hi.inet/ambari/HDP-UTILS-1.1.0.15/'
 ambari::params::hdp_utils_gpg_url: 'http://servilinux.hi.inet/ambari/RPM-GPG-KEY-Jenkins'
+timezone::region: 'Europe'
+timezone::locality: 'Madrid'
 yum::params::yum_epel: 'http://repos.hi.inet/centos/epel%{operatingsystemmajrelease}-$basearch/RPMS.all/'
 yum::params::yum_centos: 'http://repos.hi.inet/redhat/centos%{operatingsystemmajrelease}-$basearch/RPMS.all/'
 yum::params::yum_centos_updates: 'http://repos.hi.inet/redhat/centos%{operatingsystemmajrelease}-$basearch/RPMS.updates'
@@ -27,7 +30,6 @@ cosmos::openvz::images::base_image_url: 'http://cosmos10/develenv/repos/ovz-temp
 cosmos::openvz::images::image_name: 'centos-6-cosmos.HDP.2.0.6-20140123-x86_64.tar.gz'
 cosmos::params::cosmos_subnet: '10.95.236.0'
 cosmos::params::cosmos_netmask: '255.255.255.0'
-cosmos::params::cosmos_repo_platform_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/staging'
 cosmos::params::cosmos_ssl_cert_source: "puppet:///modules/cosmos/environments/%{environment}/certs/%{hostname}_cer.pem"
 cosmos::params::cosmos_ssl_key_source: "puppet:///modules/cosmos/environments/%{environment}/certs/%{hostname}_key.pem"
 cosmos::slave::gateway: '10.95.236.1'
@@ -36,6 +38,7 @@ cosmos::slave::host_key_priv_file: "puppet:///modules/cosmos/environments/%{envi
 cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_ct_key"
 cosmos::params::domain: '.hi.inet'
 cosmos::params::master_ip: '10.95.236.10'
+cosmos::params::master_repo_port: '8081'
 cosmos::params::master_hostname: 'andromeda01'
 cosmos::params::pdihub_client_id: '20f0381a6698c19953d5'
 cosmos::params::pdihub_client_secret: 'b11b73f83e7dcf940fec3356d3d0604e3169ab98'

@@ -9,12 +9,15 @@
 # All rights reserved.
 #
 
-ambari::params::repo_url: %{cosmos::params::cosmos_repo_platform_url}
-ambari::params::repo_rpm_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::repo_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/development'
+ambari::params::hdp_stack_repo_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::cosmos_stack_repo_url: 'http://%{cosmos::params::master_ip}:%{cosmos::params::master_repo_port}/'
 ambari::params::jdk_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jdk-6u31-linux-x64.bin'
 ambari::params::jce_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jce_policy-6.zip'
 ambari::params::hdp_utils_repo_url: 'http://servilinux.hi.inet/ambari/HDP-UTILS-1.1.0.15/'
 ambari::params::hdp_utils_gpg_url: 'http://servilinux.hi.inet/ambari/RPM-GPG-KEY-Jenkins'
+timezone::region: 'Europe'
+timezone::locality: 'Madrid'
 yum::params::yum_epel: 'http://repos.hi.inet/centos/epel%{operatingsystemmajrelease}-$basearch/RPMS.all/'
 yum::params::yum_centos: 'http://repos.hi.inet/redhat/centos%{operatingsystemmajrelease}-$basearch/RPMS.all/'
 yum::params::yum_centos_updates: 'http://repos.hi.inet/redhat/centos%{operatingsystemmajrelease}-$basearch/RPMS.updates'
@@ -28,13 +31,13 @@ cosmos::openvz::images::image_name: 'centos-6-cosmos.HDP.2.0.6-20140123-x86_64.t
 cosmos::params::cosmos_subnet: '192.168.11.0'
 cosmos::params::cosmos_netmask: '255.255.255.0'
 cosmos::params::cosmos_api_mode: 'dev'
-cosmos::params::cosmos_repo_platform_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/development'
 cosmos::params::cosmos_ssl_cert_source: "puppet:///modules/cosmos/environments/%{environment}/certs/%{hostname}_cer.pem"
 cosmos::params::cosmos_ssl_key_source: "puppet:///modules/cosmos/environments/%{environment}/certs/%{hostname}_key.pem"
 cosmos::slave::host_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_key"
 cosmos::slave::ct_key_priv_file: "puppet:///modules/cosmos/environments/%{environment}/%{hostname}_ct_key"
 cosmos::params::domain: '.vagrant'
 cosmos::params::master_ip: '192.168.11.10'
+cosmos::params::master_repo_port: '8081'
 cosmos::params::master_hostname: 'master'
 cosmos::params::pdihub_client_id: 'e86cb3c9ffd8bd51f9ec'
 cosmos::params::pdihub_client_secret: '843e55ffe646e223f75fe1f6a3d6f880c3c507ce'
@@ -51,7 +54,7 @@ cosmos::params::ambari_reduce_heap_memory: 400
 cosmos::params::ambari_yarn_total_memory: 600
 cosmos::params::ambari_yarn_container_min_memory: 10
 cosmos::params::ambari_yarn_virtual_physical_memory_ratio: 2.1
-cosmos::openvz::images::source_image_file_dir: '/vagrant'
+cosmos::openvz::images::source_image_file_dir: '/vagrant/target'
 cosmos::openvz::network::host_iface: 'eth1'
 slave_hosts:
     - 'compute1'

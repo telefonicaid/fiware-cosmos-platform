@@ -11,7 +11,8 @@
 
 class ambari::params (
   $repo_url,
-  $repo_rpm_url,
+  $hdp_stack_repo_url,
+  $cosmos_stack_repo_url,
   $hdp_utils_repo_url,
   $hdp_utils_gpg_url,
   $install_ensure  = 'latest',

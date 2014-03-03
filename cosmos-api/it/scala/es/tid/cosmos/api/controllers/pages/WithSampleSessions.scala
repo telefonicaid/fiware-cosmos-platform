@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.controllers.pages
 
-import scala.Some
 import scala.concurrent.Future
 
 import play.api.http.Writeable
@@ -21,12 +20,12 @@ import play.api.mvc.SimpleResult
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
 
-import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.mocks.WithTestApplication
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
+import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 /** A series of user sessions to test with users on different states and roles */
@@ -70,6 +69,12 @@ trait WithSampleSessions extends WithTestApplication {
       }
     }
 
+    def asClusterUser(sshEnabled: Boolean = true): ClusterUser = ClusterUser(
+      username = handle,
+      publicKey = cosmosProfile.keys.head.signature,
+      sshEnabled = sshEnabled
+    )
+
     protected def buildCosmosProfile(): CosmosProfile =
       CosmosProfileTestHelpers.registerUser(handle)(dao)
   }
@@ -101,8 +106,8 @@ trait WithSampleSessions extends WithTestApplication {
         val profile = super.buildCosmosProfile()
         dao.withTransaction { implicit c =>
           dao.setUserState(profile.id, state)
+          dao.lookupByProfileId(profile.id).get
         }
-        profile
       }
     }
 
@@ -112,8 +117,8 @@ trait WithSampleSessions extends WithTestApplication {
       val profile = super.buildCosmosProfile()
       dao.withTransaction { implicit c =>
         dao.enableUserCapability(profile.id, Capability.IsOperator)
+        dao.lookupByProfileId(profile.id).get
       }
-      profile
     }
   }
 }

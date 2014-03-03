@@ -24,12 +24,12 @@ class ClusterUserManagementIT extends E2ETestBase with CommandLineMatchers {
           cluster.ensureState("running")
           cluster.addUser(notOwnerUser.handle) must runSuccessfully
           eventually {
-            cluster.users must contain (notOwnerUser.handle)
+            cluster.users() must contain (notOwnerUser.handle)
           }
         }
 
         scenario("A not-owner of the cluster cannot add users") {
-          cluster.asUser(notOwnerUser).addUser(otherUser.handle) must not (runSuccessfully)
+          cluster.addUser(otherUser.handle, notOwnerUser) must not (runSuccessfully)
         }
 
         scenario("The cluster owner cannot add himself") {
@@ -41,13 +41,13 @@ class ClusterUserManagementIT extends E2ETestBase with CommandLineMatchers {
         }
 
         scenario("A not-owner of the cluster cannot remove users") {
-          cluster.asUser(otherUser).removeUser(notOwnerUser.handle) must not (runSuccessfully)
+          cluster.removeUser(notOwnerUser.handle, otherUser) must not (runSuccessfully)
         }
 
         scenario("The cluster owner can remove a previously added user") {
           cluster.removeUser(notOwnerUser.handle) must runSuccessfully
           eventually {
-            cluster.users must (not contain notOwnerUser.handle)
+            cluster.users() must (not contain notOwnerUser.handle)
           }
         }
 

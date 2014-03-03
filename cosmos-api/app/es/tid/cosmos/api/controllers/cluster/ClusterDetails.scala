@@ -17,15 +17,16 @@ import com.wordnik.swagger.annotations.ApiProperty
 import play.api.libs.json._
 import play.api.mvc.RequestHeader
 
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 import es.tid.cosmos.servicemanager.ambari.services.{InfinityfsDriver, CosmosUserService}
 import es.tid.cosmos.servicemanager.clusters.{HostDetails, ClusterDescription}
-import es.tid.cosmos.servicemanager.ClusterUser
 
 /** A cluster from the perspective of API clients. */
 case class ClusterDetails(
     href: String,
     id: String,
-    name: String,
+    @ApiProperty(dataType = "java.lang.String", notes = "Max length of 120 chars")
+    name: ClusterName,
     size: Int,
     @ApiProperty(allowableValues = "provisioning,running,terminating,terminated,failed")
     state: String,
@@ -87,7 +88,7 @@ object ClusterDetails {
     private def basicInfo(d: ClusterDetails) = Json.obj(
       "href" -> d.href,
       "id" -> d.id,
-      "name" -> d.name,
+      "name" -> d.name.underlying,
       "size" -> d.size,
       "state" -> d.state,
       "stateDescription" -> d.stateDescription,

@@ -19,15 +19,15 @@ import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
+import es.tid.cosmos.servicemanager.ClusterName
 import es.tid.cosmos.servicemanager.ambari.services.{MapReduce2, Hdfs}
-import es.tid.cosmos.servicemanager.ambari.mocks.InMemoryClusterDescription
 
 class MutableClusterDescriptionTest
   extends FlatSpec with MustMatchers with FutureMatchers with OneInstancePerTest {
 
   val enabledServices = Set(Hdfs, MapReduce2).map(_.name)
   val description: MutableClusterDescription = new InMemoryClusterDescription(
-    ClusterId(), name = "test", clusterSize = 4, enabledServices)
+    ClusterId(), name = ClusterName("test"), clusterSize = 4, enabledServices)
 
   "A mutable cluster description" must "be able to guard against failures" in {
     val error = new IllegalArgumentException("some error")

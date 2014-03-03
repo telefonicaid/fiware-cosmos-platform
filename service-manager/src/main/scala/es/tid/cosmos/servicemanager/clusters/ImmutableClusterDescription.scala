@@ -13,14 +13,12 @@ package es.tid.cosmos.servicemanager.clusters
 
 import java.net.URI
 
-import es.tid.cosmos.servicemanager.ClusterUser
+import es.tid.cosmos.servicemanager.{ClusterName, ClusterUser}
 
-/**
- * An immutable description of a cluster
- */
+/** An immutable description of a cluster */
 case class ImmutableClusterDescription(
     override val id: ClusterId,
-    override val name: String,
+    override val name: ClusterName,
     override val size: Int,
     override val state: ClusterState,
     override val nameNode: Option[URI],

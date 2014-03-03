@@ -14,7 +14,7 @@ package es.tid.cosmos.servicemanager.ambari.services
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-import es.tid.cosmos.servicemanager.ServiceDescription
+import es.tid.cosmos.servicemanager.{ComponentDescription, ServiceDescription}
 import es.tid.cosmos.servicemanager.ambari.configuration.ConfigurationContributor
 import es.tid.cosmos.servicemanager.ambari.rest.{Service, Host, Cluster}
 
@@ -38,10 +38,15 @@ private[ambari] trait AmbariServiceDescription extends ConfigurationContributor 
     for {
       service <- cluster.addService(name)
       _ <- Future.sequence(components.map(component => service.addComponent(component.name)))
-      _ <- master.addComponents(components.filter(_.isMaster).map(_.name): _*)
-      _ <- Future.sequence(
-        slaves.map(slave => slave.addComponents(components.filter(!_.isMaster).map(_.name): _*)))
+      _ <- master.addComponents(components.filter(_.isMaster).map(_.name))
+      (masterAndSlaveHost, exclusiveSlaves) = slaves.partition(_.name == master.name)
+      _ <- addComponents(exclusiveSlaves, _.isSlave)
+      _ <- addComponents(masterAndSlaveHost, c => c.isSlave && !c.isMaster)
     } yield service
+
+  private def addComponents(hosts: Seq[Host], componentFilter: ComponentDescription => Boolean) =
+    Future.sequence(
+      hosts.map(_.addComponents(components.filter(componentFilter).map(_.name))))
 
   /**
    * The state of a service to be considered as running.

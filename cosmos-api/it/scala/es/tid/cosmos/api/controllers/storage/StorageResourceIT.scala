@@ -12,6 +12,7 @@
 package es.tid.cosmos.api.controllers.storage
 
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import org.scalatest.{OneInstancePerTest, FlatSpec}
 import org.scalatest.matchers.MustMatchers

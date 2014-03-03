@@ -21,9 +21,8 @@ import es.tid.cosmos.common.PassThrough
 import es.tid.cosmos.platform.ial.{MachineProfile, InfrastructureProvider, MachineState}
 import es.tid.cosmos.servicemanager._
 import es.tid.cosmos.servicemanager.ambari.configuration._
-import es.tid.cosmos.servicemanager.ambari.rest.AmbariServer
 import es.tid.cosmos.servicemanager.ambari.services.AmbariServiceDescriptionFactory._
-import es.tid.cosmos.servicemanager.ambari.services.ServiceDependencies._
+import es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies._
 import es.tid.cosmos.servicemanager.ambari.services._
 import es.tid.cosmos.servicemanager.clusters._
 import es.tid.cosmos.servicemanager.util.TcpServer
@@ -68,14 +67,16 @@ class AmbariServiceManager(
     Seq(new CosmosUserService(users))
 
   override def createCluster(
-      name: String,
+      name: ClusterName,
       clusterSize: Int,
       serviceDescriptions: Seq[ServiceDescription],
       users: Seq[ClusterUser],
       preConditions: ClusterExecutableValidation): ClusterId = {
-    val clusterServiceDescriptions =
+    val servicesWithDependencies = makeUserServiceLast(
       (BasicHadoopServices ++ serviceDescriptions ++ userServices(users)).withDependencies
-        .map(toAmbariService(_, serviceConfigPath))
+    )
+    val clusterServiceDescriptions =
+      servicesWithDependencies.map(toAmbariService(_, serviceConfigPath))
     val clusterDescription = clusterDao.registerCluster(
       name = name,
       size = clusterSize,
@@ -93,6 +94,18 @@ class AmbariServiceManager(
     }
     clusterDescription.id
   }
+
+  /** Moves the cosmos user service to the last position of the seq.
+    *
+    * FIXME: dirty hack to have the cosmos user service installed as the last service.
+    *        This is needed since we don't have a distinction between services, parametrized
+    *        services and Ambari specific stuff so
+    *        [[es.tid.cosmos.servicemanager.ambari.services.dependencies.ServiceDependencies]]
+    *        doesn't work for this case.
+    */
+  private def makeUserServiceLast(services: Seq[ServiceDescription]): Seq[ServiceDescription] =
+    services.filterNot(_.name == CosmosUserService.name) ++
+      services.find(_.name == CosmosUserService.name)
 
   private def masterAndSlaves(machines: Seq[MachineState]) = machines match {
     case Seq(master, slaves @ _*) if machines.length < exclusiveMasterSizeCutoff =>
@@ -178,7 +191,7 @@ class AmbariServiceManager(
       .map(toAmbariService(_, serviceConfigPath))
     clusterDescription = clusterDao.registerCluster(
       id = persistentHdfsId,
-      name = persistentHdfsId.id,
+      name = ClusterName(persistentHdfsId.id),
       size = machineCount + 1,
       services = serviceDescriptions.toSet
     )

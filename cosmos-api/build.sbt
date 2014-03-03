@@ -22,5 +22,5 @@ libraryDependencies ++= Seq(
     Artifact("javax.servlet", "jar", "jar")),
   "org.eclipse.jetty" % "jetty-webapp" % "7.0.0.v20091005" % "it" artifacts (
     Artifact("jetty-webapp", "jar", "jar")),
-  "com.typesafe.play" %% "play-test" % play.core.PlayVersion.current % "it"
+  "com.typesafe.play" %% "play-test" % play.core.PlayVersion.current % "test, it"
 )

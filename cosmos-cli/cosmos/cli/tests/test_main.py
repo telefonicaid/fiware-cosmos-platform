@@ -31,6 +31,7 @@ class MainTest(unittest.TestCase):
     def test_parse_correct_arguments(self):
         self.assertValidArguments("configure")
         self.assertValidArguments("list")
+        self.assertValidArguments("info")
         self.assertValidArguments("show 12345678901234567890123456789012")
         self.assertValidArguments("terminate 12345678901234567890123456789012")
         self.assertValidArguments("create --name foo --size 3")

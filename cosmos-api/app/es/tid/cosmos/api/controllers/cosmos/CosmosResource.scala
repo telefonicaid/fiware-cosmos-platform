@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.controllers.cosmos
 
-import com.wordnik.swagger.annotations.{ApiOperation, Api}
 import play.api.mvc.{Action, Controller}
 
 import es.tid.cosmos.api.controllers.pages.{routes => pageRoutes}

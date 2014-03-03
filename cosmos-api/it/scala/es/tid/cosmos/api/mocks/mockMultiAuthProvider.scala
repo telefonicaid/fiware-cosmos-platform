@@ -13,8 +13,8 @@ package es.tid.cosmos.api.mocks
 
 import scala.concurrent.Future
 
-import es.tid.cosmos.api.auth._
-import es.tid.cosmos.api.auth.oauth2.{OAuthError, OAuthException, OAuthUserProfile}
+import es.tid.cosmos.api.auth.oauth2._
+import es.tid.cosmos.api.auth.multiauth.{MultiAuthProviderComponent, MultiAuthProvider}
 import es.tid.cosmos.api.profile.UserId
 
 object MockAuthConstants {
@@ -26,7 +26,7 @@ object MockAuthConstants {
   val AdminPassword = "sample password"
 }
 
-object MockAuthProvider extends OAuthProvider with AdminEnabledAuthProvider {
+object MockAuthProvider extends OAuthProvider {
   import MockAuthConstants._
 
   override val id = ProviderId
@@ -38,7 +38,7 @@ object MockAuthProvider extends OAuthProvider with AdminEnabledAuthProvider {
   override def authenticationUrl(redirectUri: String): String =
     s"$BaseUrl/oauth?client_id=fake&redirect_to=$redirectUri"
 
-  override def requestAccessToken(code: String): Future[String] =
+  override def requestAccessToken(code: String, redirectUrl: String): Future[String] =
     if (code == GrantedCode) Future.successful(GrantedToken)
     else Future.failed(OAuthException(OAuthError.InvalidGrant, "testing invalid grant"))
 
@@ -46,11 +46,12 @@ object MockAuthProvider extends OAuthProvider with AdminEnabledAuthProvider {
     if (token == GrantedToken) Future.successful(User101)
     else Future.failed(OAuthException(OAuthError.InvalidRequest, "testing invalid requests"))
 
-  override val adminPassword = AdminPassword
+  override val adminPassword = Some(AdminPassword)
 }
 
 object MockMultiAuthProvider extends MultiAuthProvider {
   override val providers = Map(MockAuthConstants.ProviderId -> MockAuthProvider)
+  override val tokenAuthenticationProvider = None
 }
 
 trait MockMultiAuthProviderComponent extends MultiAuthProviderComponent {

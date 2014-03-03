@@ -34,37 +34,35 @@ class ambari::server::config {
     path   => '/etc/ambari-server/conf/ambari.properties',
   }
 
-  $tables_exist = '/bin/bash -c "[[ `sudo -u postgres psql -l | grep ambari | wc -l` -ge 2 ]]"'
-
   exec { 'ambari-server-stop':
     command   => 'ambari-server stop',
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
-    timeout   => 600,
-    onlyif    => $tables_exist
+    timeout   => 600
   }
 
   exec { 'ambari-server-setup':
     command   => 'ambari-server setup --silent',
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
-    timeout   => 600,
-    unless    => $tables_exist
+    timeout   => 600
   }
 
   exec { 'ambari-server-upgrade':
     command   => 'ambari-server upgrade --silent',
     path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
     logoutput => true,
-    timeout   => 600,
-    onlyif    => $tables_exist
+    timeout   => 600
   }
 
   augeas { "ambari-config-repoinfo":
     lens    => "Xml.lns",
     incl    => "/var/lib/ambari-server/resources/stacks/HDP/2.0.6_Cosmos/repos/repoinfo.xml",
     changes => [
-    "set reposinfo/os/repo/baseurl/#text ${ambari::params::repo_rpm_url}"
+    "set reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='HDP-2.0.6']/baseurl/#text ${ambari::params::hdp_stack_repo_url}",
+    "set reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='cosmos-platform']/repoid/#text cosmos-platform",
+    "set reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='cosmos-platform']/baseurl/#text ${ambari::params::cosmos_stack_repo_url}",
+    "set reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='cosmos-platform']/reponame/#text cosmos-platform"
     ],
   }
 
@@ -74,6 +72,6 @@ class ambari::server::config {
     -> File_line['add jce_policy from CI']
     -> Augeas['ambari-config-repoinfo']
     -> Exec['ambari-server-stop']
-    -> Exec['ambari-server-upgrade']
     -> Exec['ambari-server-setup']
+    -> Exec['ambari-server-upgrade']
 }

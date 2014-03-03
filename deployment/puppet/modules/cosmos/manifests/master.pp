@@ -13,15 +13,27 @@ class cosmos::master {
 
   include stdlib, ssh_keys, mysql, ambari::server,
     cosmos::base, cosmos::firewall::firewall_app, cosmos::apache::setup,
-    cosmos::api
+    cosmos::api, cosmos::localrepo
+
+  # This is a bit tricky: there are some directories (cosmos_confdir,
+  # cosmos_stack_repo_path) that depends on it, but dependency is not implicit
+  file { $cosmos::params::cosmos_basedir:
+    ensure => 'directory',
+  }
+
+  file { $cosmos::params::cosmos_confdir:
+    ensure => 'directory',
+    mode   => '0440',
+  }
 
   anchor { 'cosmos::master::begin': }
     -> Class['stdlib', 'ssh_keys', 'mysql']
     -> Class['cosmos::base']
-    -> Class['ambari::server']
-    -> Class['cosmos::api']
+    -> Class['cosmos::localrepo']
     -> Class['cosmos::apache::setup']
     -> Class['cosmos::firewall::firewall_app']
+    -> Class['ambari::server']
+    -> Class['cosmos::api']
     -> anchor { 'cosmos::master::end': }
 
   file { '/root/.ssh/known_hosts':

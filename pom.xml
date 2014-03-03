@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>platform</artifactId>
-    <version>0.15.0</version>
+    <version>0.16.0</version>
     <packaging>pom</packaging>
 
     <parent>
@@ -12,12 +12,10 @@
     </parent>
 
     <name>platform</name>
-    <description>Cosmos Big Data Platform</description>
+    <description>Legacy POM of the Cosmos Big Data Platform</description>
 
     <properties>
-        <!-- platform-wide dependency versions -->
         <jvm.version>1.6</jvm.version>
-        <org.apache.hadoop>1.0.4</org.apache.hadoop>
     </properties>
 
     <build>
@@ -116,30 +114,6 @@
                     </reportPlugins>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-plugin-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 
@@ -159,81 +133,4 @@
             <url>http://cosmos10/nexus/content/groups/public/</url>
         </pluginRepository>
     </pluginRepositories>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>es.tid.cosmos</groupId>
-                <artifactId>cosmos-common</artifactId>
-                <version>1.0.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-core</artifactId>
-                <version>${org.apache.hadoop}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.hadoop.compression</groupId>
-                <artifactId>hadoop-gpl-compression</artifactId>
-                <version>0.1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.mongodb</groupId>
-                <artifactId>mongo-hadoop</artifactId>
-                <version>1.0</version>
-            </dependency>
-            <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-api</artifactId>
-                <version>1.6.3</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java</artifactId>
-                <version>2.4.1</version>
-            </dependency>
-            <dependency>
-                <groupId>com.twitter.elephantbird</groupId>
-                <artifactId>elephant-bird-core</artifactId>
-                <version>3.0.5</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>11.0.1</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <dependencies>
-        <dependency>
-            <groupId>es.tid.cosmos.tests</groupId>
-            <artifactId>test-common</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-            <version>1.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.mrunit</groupId>
-            <artifactId>mrunit</artifactId>
-            <version>0.8.0-incubating</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <modules>
-        <module>sftp</module>
-        <module>tests</module>
-    </modules>
 </project>

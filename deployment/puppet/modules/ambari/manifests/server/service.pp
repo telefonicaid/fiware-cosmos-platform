@@ -10,7 +10,7 @@
 #
 
 class ambari::server::service {
-  service { ['postgresql', 'ambari-server']:
+  service { 'ambari-server':
     ensure     => 'running',
     enable     => true,
     hasstatus  => true,
@@ -26,6 +26,6 @@ class ambari::server::service {
     ensure  => present,
   }
 
-  Service['postgresql'] -> Service['ambari-server'] -> Exec['Wait for server']
+  Service['ambari-server'] -> Exec['Wait for server']
   Package['nc'] -> Exec['Wait for server']
 }

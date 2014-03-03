@@ -18,7 +18,9 @@ import com.wordnik.swagger.annotations.{ApiError, ApiErrors, ApiOperation}
 import play.api.libs.json.Json
 import play.api.mvc._
 
+import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.common._
+import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile.CosmosProfileDao
 import es.tid.cosmos.platform.ial.InfrastructureProvider
 import es.tid.cosmos.platform.ial.MachineProfile
@@ -28,7 +30,8 @@ import es.tid.cosmos.servicemanager.clusters.{ClusterState, ClusterId}
 
 /** Stats for administration purposes */
 class StatsResource(
-    override val dao: CosmosProfileDao,
+    override val auth: RequestAuthentication,
+    dao: CosmosProfileDao,
     serviceManager: ServiceManager,
     ial: InfrastructureProvider
   ) extends Controller with ApiAuthController {
@@ -52,7 +55,7 @@ class StatsResource(
     ownerHandle = ownerHandleOf(clusterId)
   } yield ClusterStats(
     id = clusterId.toString,
-    name = description.name,
+    name = description.name.underlying,
     ownerHandle = ownerHandle,
     size = description.size,
     master = description.master.map(_.hostname).getOrElse(""),
@@ -65,7 +68,7 @@ class StatsResource(
       profile <- dao.lookupByProfileId(cosmosId)
     } yield profile.handle
   }.getOrElse(StatsResource.UnknownOwnerHandle)
-  
+
   @ApiOperation(value = "Total and available machines by profile", httpMethod = "GET",
     responseClass = "es.tid.cosmos.api.controllers.admin.stats.MachineStats")
   @ApiErrors(Array(

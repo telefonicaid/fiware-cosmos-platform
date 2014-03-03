@@ -13,7 +13,6 @@ package es.tid.cosmos.api.profile
 
 import java.util.Date
 
-import es.tid.cosmos.api.auth.ApiCredentials
 import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.api.quota.{Group, LimitedQuota, Quota}
 import es.tid.cosmos.servicemanager.clusters.ClusterId

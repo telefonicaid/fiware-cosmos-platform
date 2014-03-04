@@ -11,12 +11,20 @@
 
 class ambari::repos inherits ambari::params {
 
-  # PDI Ambari repository
-  yumrepo { 'ambari':
-    baseurl  => $ambari::params::repo_url,
-    descr    => '[Cosmos] Ambari Repository 1.x',
-    enabled  => 1,
-    gpgcheck => 0,
+  if $ambari::params::reposync {
+    yumrepo { 'ambari':
+      baseurl  => $ambari::params::cosmos_stack_repo_url,
+      descr    => '[Cosmos] Ambari Repository 1.x',
+      enabled  => 1,
+      gpgcheck => 0,
+    }
+  } else {
+    yumrepo { 'ambari':
+      baseurl  => $ambari::params::repo_url,
+      descr    => '[Cosmos] Ambari Repository 1.x',
+      enabled  => 1,
+      gpgcheck => 0,
+    }
   }
 
   yumrepo { 'HDP-UTILS-1.1.0.15':

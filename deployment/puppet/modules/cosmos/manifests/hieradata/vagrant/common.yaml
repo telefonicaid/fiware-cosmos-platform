@@ -11,6 +11,7 @@
 
 ambari::params::repo_url: 'http://cosmos10.hi.inet/nexus/service/local/yum/repos/snapshots/development'
 ambari::params::hdp_stack_repo_url: 'http://cosmos10.hi.inet/develenv/rpms/cosmos-deps/hortonworks/HDP-2.0.6.0/'
+ambari::params::reposync: false
 ambari::params::cosmos_stack_repo_url: 'http://%{cosmos::params::master_ip}:%{cosmos::params::master_repo_port}/'
 ambari::params::jdk_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jdk-6u31-linux-x64.bin'
 ambari::params::jce_url: 'http://cosmos10.hi.inet/develenv/repos/bins/jce_policy-6.zip'

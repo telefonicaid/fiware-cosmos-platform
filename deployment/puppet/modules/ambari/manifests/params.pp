@@ -12,6 +12,7 @@
 class ambari::params (
   $repo_url,
   $hdp_stack_repo_url,
+  $enable_repo_mirroring,
   $cosmos_stack_repo_url,
   $hdp_utils_repo_url,
   $hdp_utils_gpg_url,

@@ -17,7 +17,7 @@ class cosmos::openvz::images(
   $image_name,
   $source_image_file_dir = '/tmp'
 ) {
-  include ssh_keys, ambari::repos
+  include ssh_keys
 
   $image_url             = "${base_image_url}/${image_name}"
   $source_image_file     = "${source_image_file_dir}/${image_name}"
@@ -111,7 +111,6 @@ class cosmos::openvz::images(
   }
 
   Class['ssh_keys'] ~> File["${replacements_dir}/root/.ssh"]
-  Class['ambari::repos'] ~> File["${replacements_dir}/etc/yum.repos.d"]
 
   Wget::Fetch['Download base image']
     -> Exec['Remove extraction dir']
@@ -129,7 +128,6 @@ class cosmos::openvz::images(
     ~> File["${replacements_dir}/root/.ssh/id_rsa", "${replacements_dir}/root/.ssh/id_rsa.pub"]
     -> Exec['pack_image']
 
-  # Class 'ambari::repos' is not included here to avoid creating a cyclic dependency
   anchor {'cosmos::openvz::images::begin': }
     -> Class['ssh_keys']
     -> anchor {'cosmos::openvz::images::end': }

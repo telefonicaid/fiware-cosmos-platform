@@ -29,7 +29,7 @@ class cosmos::localrepo inherits cosmos::params {
     timeout   => 600,
   }
 
-  if $ambari::params::reposync {
+  if $ambari::params::enable_repo_mirroring {
 
     package{ 'yum-utils':
       ensure => present,

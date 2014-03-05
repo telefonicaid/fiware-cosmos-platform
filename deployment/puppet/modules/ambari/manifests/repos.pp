@@ -11,7 +11,7 @@
 
 class ambari::repos inherits ambari::params {
 
-  if $ambari::params::reposync {
+  if $ambari::params::enable_repo_mirroring {
     yumrepo { 'ambari':
       baseurl  => $ambari::params::cosmos_stack_repo_url,
       descr    => '[Cosmos] Ambari Repository 1.x',

@@ -55,7 +55,7 @@ class ambari::server::config {
     timeout   => 600
   }
 
-  if $ambari::params::reposync {
+  if $ambari::params::enable_repo_mirroring {
     augeas { 'ambari-config-repoinfo':
       lens    => 'Xml.lns',
       incl    => '/var/lib/ambari-server/resources/stacks/HDP/2.0.6_Cosmos/repos/repoinfo.xml',

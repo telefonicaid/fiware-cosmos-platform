@@ -18,6 +18,7 @@ import com.typesafe.sbt.packager.Keys._
 import com.typesafe.sbt.packager.linux.LinuxSymlink
 import sbt._
 import sbt.Keys._
+import sbtassembly.Plugin._
 import sbtassembly.Plugin.AssemblyKeys._
 
 object RpmSettings {
@@ -105,7 +106,7 @@ object RpmSettings {
   val JarLinks = for (service <- Seq("hdfs", "mapreduce", "yarn"))
     yield s"/usr/lib/hadoop-$service/lib/infinityfs.jar"
 
-  val infinitySettings: Seq[Setting[_]] = commonRpmSettings ++ Seq(
+  val infinitySettings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++ commonRpmSettings ++ Seq(
     name in Rpm := "infinityfs",
     packageSummary := "Infinity HFS driver",
     packageDescription in Rpm := "Library that enables the infinity:// scheme.",

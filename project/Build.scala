@@ -129,7 +129,6 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
-    settings(InfinityDeployment.settings: _*)
     settings(RpmSettings.infinitySettings: _*)
   )
 

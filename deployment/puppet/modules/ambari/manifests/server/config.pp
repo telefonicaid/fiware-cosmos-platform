@@ -60,7 +60,9 @@ class ambari::server::config {
       lens    => 'Xml.lns',
       incl    => '/var/lib/ambari-server/resources/stacks/HDP/2.0.6_Cosmos/repos/repoinfo.xml',
       changes => [
-      "rm reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='HDP-2.0.6']",
+      "set reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='HDP-2.0.6']/repoid/#text HDP-2.0.6",
+      "set reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='HDP-2.0.6']/baseurl/#text ${ambari::params::cosmos_stack_repo_url}",
+      "set reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='HDP-2.0.6']/reponame/#text HDP-2.0.6",
       "rm reposinfo/os[#attribute/type='centos6']/repo[repoid/#text='cosmos-platform']"
       ],
     }

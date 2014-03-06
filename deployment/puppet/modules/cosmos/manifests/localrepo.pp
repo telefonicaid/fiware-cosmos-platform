@@ -58,12 +58,18 @@ class cosmos::localrepo inherits cosmos::params {
       timeout   => 6000,
     }
 
+    File[$cosmos_stack_repo_path]
+      -> Exec['reposync_ambari']
+
     File['reposync-repo']
       -> Exec['reposync_ambari']
 
     Package['yum-utils']
       -> Exec['reposync_ambari']
       -> Exec['createrepo']
+
+    File[$cosmos_stack_repo_path]
+    -> Exec['reposync_hdp']
 
     File['reposync-repo']
       -> Exec['reposync_hdp']

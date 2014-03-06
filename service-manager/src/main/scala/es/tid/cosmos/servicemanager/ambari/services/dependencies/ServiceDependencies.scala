@@ -22,6 +22,7 @@ object ServiceDependencies {
     CosmosUserService -> Set(Hdfs),
     Hdfs -> Set(Zookeeper, InfinityfsDriver),
     Hive -> Set(Hdfs, MapReduce2, HCatalog, WebHCat),
+    InfinityfsServer -> Set(Hdfs),
     MapReduce2 -> Set(Yarn),
     Oozie -> Set(Hdfs, MapReduce2),
     Pig -> Set(Hdfs, MapReduce2),

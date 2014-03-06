@@ -21,11 +21,16 @@ object Build extends sbt.Build {
   val projectVersion = IO.read(file("VERSION")).trim
 
   object Versions {
-    /** HDP 2 has a patched 2.2.0 Hadoop stabilized by themselves */
-    val hdp2Hadoop = "2.2.0"
+    val akka = "2.3.0"
+    val hdp2Hadoop = "2.2.0" /** HDP 2 has a patched 2.2.0 Hadoop stabilized by themselves */
+    val spray = "1.2.0"
   }
 
   object Dependencies {
+    lazy val akka = Seq(
+      "com.typesafe.akka" %% "akka-actor" % Versions.akka,
+      "com.typesafe.akka" %% "akka-testkit" % Versions.akka % "test"
+    )
     lazy val dispatch = "net.databinder.dispatch" %% "dispatch-core" % "0.10.0"
     lazy val hadoopCommon = "org.apache.hadoop" % "hadoop-common" % Versions.hdp2Hadoop
     lazy val hadoopHdfs = "org.apache.hadoop" % "hadoop-hdfs" % Versions.hdp2Hadoop
@@ -35,6 +40,11 @@ object Build extends sbt.Build {
     lazy val scalaLogging = "com.typesafe" %% "scalalogging-slf4j" % "1.0.1"
     lazy val scalaz = "org.scalaz" %% "scalaz-core" % "7.0.4"
     lazy val scalatest = "org.scalatest" %% "scalatest" % "1.9.1"
+    lazy val spray = Seq(
+      "io.spray" % "spray-can" % Versions.spray,
+      "io.spray" % "spray-routing" % Versions.spray,
+      "io.spray" % "spray-testkit" % Versions.spray % "test"
+    )
     lazy val squeryl = "org.squeryl" %% "squeryl" % "0.9.5-6"
     lazy val typesafeConfig = "com.typesafe" % "config" % "1.0.0"
   }
@@ -130,6 +140,12 @@ object Build extends sbt.Build {
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
     settings(RpmSettings.infinitySettings: _*)
+  )
+
+  lazy val infinityServer = (Project(id = "infinity-server", base = file("infinity-server"))
+    settings(ScctPlugin.instrumentSettings: _*)
+    configs IntegrationTest
+    settings(Defaults.itSettings: _*)
   )
 
   def rootPackageSettings: Seq[Setting[_]] = Seq(

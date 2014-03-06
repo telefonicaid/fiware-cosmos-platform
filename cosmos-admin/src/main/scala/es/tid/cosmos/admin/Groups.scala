@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.admin
 
-
 import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
@@ -20,7 +19,7 @@ import es.tid.cosmos.api.quota._
 
 /** Admin commands for managing groups. */
 private[admin] class Groups(
-    override val dao: CosmosProfileDao,
+    override val dao: CosmosDao,
     serviceManager: ServiceManager) extends GroupChecks {
   import Groups._
 
@@ -37,7 +36,7 @@ private[admin] class Groups(
     tryAction {
       val group = GuaranteedGroup(name, Quota(minQuota))
       requireFeasibleQuota(group)
-      Some(dao.registerGroup(group))
+      Some(dao.group.register(group))
     }
   }
 
@@ -47,7 +46,7 @@ private[admin] class Groups(
     *         [[es.tid.cosmos.api.quota.NoGroup]]
     */
   def list: String = dao.withConnection { implicit c =>
-    val groups = dao.getGroups - NoGroup
+    val groups = dao.group.list() - NoGroup
     if (groups.isEmpty) "No groups available"
     else s"Available groups: [Name | Minimum Quota]:\n${groups.map(toUserFriendly).mkString("\n")}"
   }
@@ -58,7 +57,7 @@ private[admin] class Groups(
     * @return     true iff the group was successfully deleted
     */
   def delete(name: String): Boolean = dao.withTransaction { implicit c =>
-    tryAction { for (group <- withGroup(name)) yield dao.deleteGroup(group.name) }
+    tryAction { for (group <- withGroup(name)) yield dao.group.delete(group.name) }
   }
 
   /** Set an existing group's minimum, guaranteed quota.
@@ -70,7 +69,7 @@ private[admin] class Groups(
   def setMinQuota(name: String, quota: Int): Boolean = dao.withTransaction { implicit c =>
     tryAction { for (group <- withGroup(name)) yield {
       requireFeasibleQuota(group.copy(minimumQuota = Quota(quota)))
-      dao.setGroupQuota(group.name, Quota(quota))
+      dao.group.setQuota(group.name, Quota(quota))
     }}
   }
 

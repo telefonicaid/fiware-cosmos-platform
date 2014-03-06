@@ -17,14 +17,13 @@ import scala.language.postfixOps
 import scalaz.Failure
 
 import org.mockito.Matchers.{eq => the, any}
-import org.mockito.Mockito.{doReturn, doThrow, spy}
+import org.mockito.Mockito.{doReturn, spy}
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.{Matcher, MustMatchers}
 import org.scalatest.concurrent.Eventually
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers.{registerUser, userIdFor}
 import es.tid.cosmos.api.controllers.common.Message
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
@@ -40,7 +39,7 @@ class UserUnregistrationWizardTest
 
   trait WithWizard {
     val sm = spy(new MockedServiceManager())
-    val dao = spy(new MockCosmosProfileDao())
+    val dao = spy(new MockCosmosDao())
     val wizard = new UserUnregistrationWizard(sm)
 
     sm.defineCluster(MockedServiceManager.PersistentHdfsProps)
@@ -60,7 +59,7 @@ class UserUnregistrationWizardTest
     }
 
     def databaseUser = dao.withTransaction { implicit c =>
-      dao.lookupByUserId(userIdFor("jsmith"))
+      dao.profile.lookupByUserId(userIdFor("jsmith"))
     }
   }
 
@@ -77,7 +76,7 @@ class UserUnregistrationWizardTest
       cluster.immediateTermination()
     }
     dao.withTransaction { implicit c =>
-      dao.assignCluster(clusterId, cosmosProfile.id)
+      dao.cluster.assignCluster(clusterId, cosmosProfile.id)
     }
   }
 
@@ -101,9 +100,8 @@ class UserUnregistrationWizardTest
   }
 
   "Unregistration" must "not be created when user status cannot be changed" in new WithWizard {
-    doThrow(failure).when(dao)
-      .setUserState(any[Long], any[UserState])(the(MockCosmosProfileDao.DummyConnection))
     val userId = 0
+    dao.throwOnUserStateChangeTo(UserState.Creating)
     dao.withTransaction { implicit c =>
       wizard.unregisterUser(dao, userId)
     } must be (Failure(Message(s"Cannot change user cosmosId=$userId status")))
@@ -114,9 +112,8 @@ class UserUnregistrationWizardTest
     databaseUser.get.state must be (UserState.Deleted)
   }
 
-  it must "fail when user cannot be mark as deleted" in new WithExistingUser {
-    doThrow(failure).when(dao)
-      .setUserState(the(cosmosId), the(UserState.Deleted))(the(MockCosmosProfileDao.DummyConnection))
+  it must "fail when user cannot be marked as deleted" in new WithExistingUser {
+    dao.throwOnUserStateChangeTo(UserState.Deleted)
     unregistrationMust(eventuallyFailWith(
       s"Cannot remove user with cosmosId=$cosmosId from the database"))
     databaseUser.get.state must be (UserState.Deleting)

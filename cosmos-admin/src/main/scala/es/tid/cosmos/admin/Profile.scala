@@ -18,7 +18,7 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Capability.Capability
 import es.tid.cosmos.api.quota.{UnlimitedQuota, Quota}
 
-private[admin] class Profile(override val dao: CosmosProfileDao) extends GroupChecks {
+private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
 
   def setMachineQuota(handle: String, limit: Int): Boolean = setMachineQuota(handle, Quota(limit))
 
@@ -29,7 +29,7 @@ private[admin] class Profile(override val dao: CosmosProfileDao) extends GroupCh
       for {
         cosmosProfile <- withProfile(handle)
       } yield {
-        dao.setMachineQuota(cosmosProfile.id, quota)
+        dao.profile.setMachineQuota(cosmosProfile.id, quota)
         println(s"Machine quota for user $handle changed to $quota")
       }
     }}
@@ -45,20 +45,21 @@ private[admin] class Profile(override val dao: CosmosProfileDao) extends GroupCh
   def removeGroup(handle: String): Boolean = handleGroup(handle, groupName = None)
 
   def list: String = dao.withTransaction { implicit c =>
-    val handles = dao.getAllUsers().map(_.handle).sorted
+    val handles = for (
+      profile <- dao.profile.list() if profile.state != UserState.Deleted
+    ) yield profile.handle
     if (handles.isEmpty) "No users found"
-    else s"Users found (handles):\n${handles.mkString("\n")}"
+    else s"Users found (handles):\n${handles.sorted.mkString("\n")}"
   }
 
-  private def withProfile(handle: String)
-                         (implicit c: this.dao.type#Conn): Option[CosmosProfile] =
-    whenEmpty(dao.lookupByHandle(handle)) {
+  private def withProfile(handle: String)(implicit c: this.dao.type#Conn): Option[CosmosProfile] =
+    whenEmpty(dao.profile.lookupByHandle(handle)) {
       println(s"No user with handle $handle")
     }
 
   private def modifyCapability(handle: String, capability: String, enable: Boolean): Boolean =
     dao.withTransaction { implicit c => tryAction {
-      val action = if (enable) dao.enableUserCapability _ else dao.disableUserCapability _
+      val action = if (enable) dao.capability.enable _ else dao.capability.disable _
       for {
         cosmosProfile <- withProfile(handle)
         parsedCapability <- parseCapability(capability)
@@ -92,7 +93,7 @@ private[admin] class Profile(override val dao: CosmosProfileDao) extends GroupCh
       else for {
         cosmosProfile <- withProfile(handle)
       } yield {
-        dao.setGroup(cosmosProfile.id, maybeGroupName)
+        dao.profile.setGroup(cosmosProfile.id, maybeGroupName)
         println(s"User $handle now belongs to group $groupName")
       }
     }}

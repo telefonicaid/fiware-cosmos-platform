@@ -70,7 +70,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       responseData must have (field[String]("apiSecret"))
       (responseData \ "handle").as[String] must be (requestedHandle)
       val createdProfile = dao.withTransaction { implicit c =>
-        dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
+        dao.profile.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
       }
       createdProfile.handle must be (requestedHandle)
       createdProfile.keys must be (Seq(NamedKey("default", publicKey)))
@@ -83,7 +83,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       status(response) must be (CREATED)
       Json.parse(contentAsString(response)) must have (field[String]("handle"))
       dao.withTransaction { implicit c =>
-        dao.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
+        dao.profile.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
       }
     }
   }
@@ -111,7 +111,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when handle is already taken" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUser(
+      dao.profile.register(
         UserId("otherUser"), Registration(requestedHandle, publicKey, email), UserState.Enabled
       )
     }
@@ -122,7 +122,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
     dao.withTransaction { implicit c =>
-      dao.registerUser(newUserId, Registration("otherHandle", publicKey, email), UserState.Enabled)
+      dao.profile.register(newUserId, Registration("otherHandle", publicKey, email), UserState.Enabled)
     }
     val response = postRegistration(validPayload)
     status(response) must be (CONFLICT)
@@ -150,7 +150,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       status(response) must be (OK)
       contentAsString(response) must include ("User new_id@id_service unregistration started")
       dao.withTransaction { implicit c =>
-        dao.lookupByUserId(newUserId).get.state
+        dao.profile.lookupByUserId(newUserId).get.state
       } must (be (UserState.Deleting) or be (UserState.Deleted))
     }
   }

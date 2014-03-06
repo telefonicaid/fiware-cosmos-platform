@@ -27,7 +27,7 @@ import es.tid.cosmos.servicemanager.clusters._
   description = "Provides general-purpose information about a platform user")
 class InfoResource(
      override val auth: RequestAuthentication,
-     dao: CosmosProfileDao,
+     dao: CosmosDao,
      serviceManager: ServiceManager) extends Controller with JsonController with ApiAuthController {
 
   @ApiOperation(value = "Get general information about the user whose credentials are used",
@@ -40,7 +40,7 @@ class InfoResource(
   }
 
   private def gatherInfo(profile: CosmosProfile) = dao.withTransaction { implicit c =>
-    val userClusters = dao.clustersOf(profile.id).map(_.clusterId)
+    val userClusters = dao.cluster.ownedBy(profile.id).map(_.clusterId)
     Info(
       profileId = profile.id,
       handle = profile.handle,

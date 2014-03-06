@@ -19,12 +19,12 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.CosmosDao
 
 /** Resource that represents a user profile. */
 @Api(value = "/cosmos/v1/profile", listingPath = "/doc/cosmos/v1/profile",
   description = "Represents the user profile")
-class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosProfileDao)
+class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosDao)
   extends Controller with JsonController with ApiAuthController {
 
   /** Show user profile. */
@@ -61,9 +61,9 @@ class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosP
         if (currentProfile.handle != targetProfile.handle) {
           badRequest("Handle modification is not supported")
         } else {
-          dao.setHandle(currentProfile.id, targetProfile.handle)
-          dao.setEmail(currentProfile.id, targetProfile.email)
-          dao.setPublicKeys(currentProfile.id, targetProfile.keys)
+          dao.profile.setHandle(currentProfile.id, targetProfile.handle)
+          dao.profile.setEmail(currentProfile.id, targetProfile.email)
+          dao.profile.setPublicKeys(currentProfile.id, targetProfile.keys)
           Ok(Json.toJson(targetProfile))
         }
       }

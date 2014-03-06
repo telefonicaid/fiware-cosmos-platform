@@ -19,7 +19,7 @@ import scalaz._
 import play.Logger
 
 import es.tid.cosmos.api.controllers.common.Message
-import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{UserState, CosmosDao}
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.{Terminating, Terminated, ClusterId}
 
@@ -47,15 +47,15 @@ class UserUnregistrationWizard(serviceManager: ServiceManager) {
     * @param cosmosId  User to unregister
     * @return          The unregistration operation or a validation error
     */
-  def unregisterUser(dao: CosmosProfileDao, cosmosId: Long): Validation[Message, Unregistration] =
+  def unregisterUser(dao: CosmosDao, cosmosId: Long): Validation[Message, Unregistration] =
     for {
       _ <- markUserBeingDeleted(dao, cosmosId)
     } yield startUnregistration(dao, cosmosId)
 
   private def markUserBeingDeleted(
-      dao: CosmosProfileDao, cosmosId: Long): Validation[Message, Unit] = try {
+      dao: CosmosDao, cosmosId: Long): Validation[Message, Unit] = try {
     dao.withTransaction { implicit c =>
-      dao.setUserState(cosmosId, UserState.Deleting).success
+      dao.profile.setUserState(cosmosId, UserState.Deleting).success
     }
   } catch {
     case NonFatal(ex) => {
@@ -65,13 +65,13 @@ class UserUnregistrationWizard(serviceManager: ServiceManager) {
     }
   }
 
-  private def startUnregistration(dao: CosmosProfileDao, cosmosId: Long): Future[Unit] = {
+  private def startUnregistration(dao: CosmosDao, cosmosId: Long): Future[Unit] = {
     val clustersTermination_> = terminateClusters(dao, cosmosId)
     val persistentHdfsCleanup_> = dao.withTransaction { implicit c =>
       hdfsWizard.updatePersistentHdfsUsers(dao)
     }
     val userDisabledFromAllClusters_> = dao.withTransaction { implicit c =>
-      serviceManager.disableUserFromAll(dao.lookupByProfileId(cosmosId).get.handle)
+      serviceManager.disableUserFromAll(dao.profile.lookupByProfileId(cosmosId).get.handle)
     }
     for {
       _ <- clustersTermination_>
@@ -81,10 +81,10 @@ class UserUnregistrationWizard(serviceManager: ServiceManager) {
     } yield ()
   }
 
-  private def terminateClusters(dao: CosmosProfileDao, cosmosId: Long) = {
+  private def terminateClusters(dao: CosmosDao, cosmosId: Long) = {
     val terminableClusters = for {
       cluster <- dao.withTransaction { implicit c =>
-        dao.clustersOf(cosmosId)
+        dao.cluster.ownedBy(cosmosId)
       }
       description <- serviceManager.describeCluster(cluster.clusterId)
       if description.state != Terminated && description.state != Terminating
@@ -98,10 +98,10 @@ class UserUnregistrationWizard(serviceManager: ServiceManager) {
       exception => ClusterTerminationException(cosmosId, clusterId, exception)
     ))
   }
-  
-  private def markUserDeleted(dao: CosmosProfileDao, cosmosId: Long): Future[Unit] = Future {
+
+  private def markUserDeleted(dao: CosmosDao, cosmosId: Long): Future[Unit] = Future {
     dao.withTransaction { implicit c =>
-      dao.setUserState(cosmosId, UserState.Deleted)
+      dao.profile.setUserState(cosmosId, UserState.Deleted)
     }
   }.recoverWith {
     case NonFatal(ex) => Future.failed(DatabaseUnregistrationException(cosmosId, ex))

@@ -29,8 +29,8 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{CosmosProfileDao, Registration, UserId}
-import es.tid.cosmos.api.task.{MutableTask, TaskDao}
+import es.tid.cosmos.api.profile.{CosmosProfile, CosmosDao, Registration, UserId}
+import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.Wrapped
 import es.tid.cosmos.servicemanager.ServiceManager
@@ -41,7 +41,7 @@ class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
     override val taskDao: TaskDao,
-    override val dao: CosmosProfileDao,
+    override val dao: CosmosDao,
     override val maintenanceStatus: MaintenanceStatus,
     config: Config
   ) extends Controller with JsonController with PagesAuthController
@@ -121,7 +121,7 @@ class Pages(
       validatedForm = dao.withTransaction { implicit c =>
         val form = RegistrationForm().bindFromRequest()
         form.data.get("handle") match {
-          case Some(handle) if dao.handleExists(handle) =>
+          case Some(handle) if dao.profile.handleExists(handle) =>
             form.withError("handle", s"'$handle' is already taken")
           case _ => form
         }
@@ -151,10 +151,9 @@ class Pages(
 
   private def requireUnregisteredUser(userId: UserId): ActionValidation[Unit] = {
     val userExists = dao.withTransaction { implicit c =>
-      dao.lookupByUserId(userId).isDefined
+      dao.profile.lookupByUserId(userId).isDefined
     }
-    if (userExists) redirectToIndex.failure
-    else ().success
+    if (userExists) redirectToIndex.failure else ().success
   }
 
   private def registrationPage(profile: OAuthUserProfile, form: Form[Registration]) = {

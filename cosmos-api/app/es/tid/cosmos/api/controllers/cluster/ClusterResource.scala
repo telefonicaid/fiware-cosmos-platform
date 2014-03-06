@@ -37,7 +37,7 @@ class ClusterResource(
     override val auth: RequestAuthentication,
     serviceManager: ServiceManager,
     override val taskDao: TaskDao,
-    dao: CosmosProfileDao,
+    dao: CosmosDao,
     override val maintenanceStatus: MaintenanceStatus) extends Controller with ApiAuthController
   with JsonController with MaintenanceAwareController with TaskController {
 
@@ -104,7 +104,7 @@ class ClusterResource(
       case Success(clusterId: ClusterId) =>
         Logger.info(s"Provisioning new cluster $clusterId")
         val assignment = ClusterAssignment(clusterId, profile.id, new Date())
-        dao.withTransaction { implicit c => dao.assignCluster(assignment) }
+        dao.withTransaction { implicit c => dao.cluster.assignCluster(assignment) }
         val clusterDescription = serviceManager.describeCluster(clusterId).get
         val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
         Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
@@ -120,7 +120,7 @@ class ClusterResource(
     )
 
   private def listClusters(profile: CosmosProfile)(implicit c: dao.Conn) = {
-    val assignedClusters =  Set(dao.clustersOf(profile.id): _*)
+    val assignedClusters =  Set(dao.cluster.ownedBy(profile.id): _*)
     (for {
       assignment <- assignedClusters.toList
       description <- serviceManager.describeCluster(assignment.clusterId).toList
@@ -279,7 +279,7 @@ class ClusterResource(
   private def requireProfileExists(handle: String): ActionValidation[CosmosProfile] = {
     import Scalaz._
     dao.withConnection { implicit c =>
-      dao.lookupByHandle(handle) match {
+      dao.profile.lookupByHandle(handle) match {
         case Some(profile: CosmosProfile) => profile.success
         case None => profileNotFound(handle).failure
       }
@@ -329,7 +329,7 @@ class ClusterResource(
 
   private def isOwnerOfCluster(cosmosId: Long, cluster: ClusterId): Boolean =
     dao.withConnection { implicit c =>
-      dao.clustersOf(cosmosId).exists(_.clusterId == cluster)
+      dao.cluster.ownedBy(cosmosId).exists(_.clusterId == cluster)
     }
 }
 

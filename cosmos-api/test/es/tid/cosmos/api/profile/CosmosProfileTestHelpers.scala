@@ -31,7 +31,7 @@ object CosmosProfileTestHelpers {
   }
 
   /** Generates a user id based on a keyword.
-    * 
+    *
     * @param keyword To fill in the auth id
     * @return        A user id on the default realm
     */
@@ -47,7 +47,7 @@ object CosmosProfileTestHelpers {
     * @see [[es.tid.cosmos.api.profile.CosmosProfileTestHelpers$#registrationFor]]
     * @see [[es.tid.cosmos.api.profile.CosmosProfileTestHelpers$#userIdFor]]
     */
-  def registerUser(handle: String)(implicit dao: CosmosProfileDao): CosmosProfile =
+  def registerUser(handle: String)(implicit dao: CosmosDao): CosmosProfile =
     dao.withTransaction { implicit c =>
       registerUser(dao, handle)
     }
@@ -58,14 +58,14 @@ object CosmosProfileTestHelpers {
     * is created directly as an enabled one.
     *
     * Note that `dao` and `c` should be in different argument groups to satisfy type checking.
-    * 
+    *
     * @param dao     Where to create the user in
     * @param handle  Handle to base the dummy info generation on
     * @param c       Connection/transaction to do the changes on
     * @return        The newly created profile
     */
-  def registerUser(dao: CosmosProfileDao, handle: String)
-                  (implicit c: dao.type#Conn): CosmosProfile = dao.registerUser(
+  def registerUser(dao: CosmosDao, handle: String)
+                  (implicit c: dao.type#Conn): CosmosProfile = dao.profile.register(
     userId = userIdFor(handle),
     reg = registrationFor(handle),
     state = UserState.Enabled
@@ -77,7 +77,7 @@ object CosmosProfileTestHelpers {
     * @param dao     The dao to use
     * @return        The profile iff found
     */
-  def lookup(handle: String)(implicit dao: CosmosProfileDao): Option[CosmosProfile] =
+  def lookup(handle: String)(implicit dao: CosmosDao): Option[CosmosProfile] =
     dao.withTransaction{ implicit c =>
       lookup(dao, handle)
     }
@@ -89,8 +89,8 @@ object CosmosProfileTestHelpers {
     * @param c       Connection/transaction to do the changes on
     * @return        The profile iff found
     */
-  def lookup(dao: CosmosProfileDao, handle: String)
+  def lookup(dao: CosmosDao, handle: String)
             (implicit c: dao.type#Conn): Option[CosmosProfile] = {
-    dao.lookupByUserId(userIdFor(handle))
+    dao.profile.lookupByUserId(userIdFor(handle))
   }
 }

@@ -16,45 +16,44 @@ import scala.language.reflectiveCalls
 import org.rogach.scallop.ScallopConf
 
 import es.tid.cosmos.admin.cli.AdminArguments
-import es.tid.cosmos.api.profile.PlayDbCosmosProfileDao
+import es.tid.cosmos.api.profile.sql.PlayDbCosmosDao
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
 class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
 
-  /**
-   * Executes an administration command.
-   *
-   * @return Exit status
-   */
+  /** Executes an administration command.
+    *
+    * @return Exit status
+    */
   def run(): Int = processCommands(args.subcommands)
 
-  private def processCommands(subcommands: List[ScallopConf]): Int =
-    subcommands.headOption match {
+  private def processCommands(subCommands: List[ScallopConf]): Int =
+    subCommands.headOption match {
       case Some(args.setup) => tryCommand(setupAll(serviceManager))
-      case Some(args.persistentStorage) => processPersistentStorageCommand(subcommands.tail)
-      case Some(args.cluster) => processClusterCommand(subcommands.tail)
-      case Some(args.profile) => processProfileCommand(subcommands.tail)
-      case Some(args.group) => processGroupCommand(subcommands.tail)
+      case Some(args.persistentStorage) => processPersistentStorageCommand(subCommands.tail)
+      case Some(args.cluster) => processClusterCommand(subCommands.tail)
+      case Some(args.profile) => processProfileCommand(subCommands.tail)
+      case Some(args.group) => processGroupCommand(subCommands.tail)
       case _ => help(args)
     }
 
-  private def processPersistentStorageCommand(subcommands: List[ScallopConf]) =
-    subcommands.headOption match {
+  private def processPersistentStorageCommand(subCommands: List[ScallopConf]) =
+    subCommands.headOption match {
       case Some(args.persistentStorage.setup) => tryCommand(PersistentStorage.setup(serviceManager))
       case Some(args.persistentStorage.terminate) => tryCommand(PersistentStorage.terminate(serviceManager))
       case _ => help(args.persistentStorage)
     }
 
-  private def processClusterCommand(subcommands: List[ScallopConf]) = subcommands.headOption match {
+  private def processClusterCommand(subCommands: List[ScallopConf]) = subCommands.headOption match {
       case Some(args.cluster.terminate) =>
         tryCommand(Cluster.terminate(serviceManager, ClusterId(args.cluster.terminate.clusterId())))
       case _ => help(args.cluster)
   }
 
-  private def processProfileCommand(subcommands: List[ScallopConf]) = {
-    val playDbProfile = new Profile(new PlayDbCosmosProfileDao)
-    subcommands.headOption match {
+  private def processProfileCommand(subCommands: List[ScallopConf]) = {
+    val playDbProfile = new Profile(new PlayDbCosmosDao())
+    subCommands.headOption match {
       case Some(args.profile.setMachineQuota) => tryCommand(playDbProfile.setMachineQuota(
           args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()))
       case Some(args.profile.removeMachineQuota) => tryCommand(playDbProfile.removeMachineQuota(
@@ -78,9 +77,9 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
     }
   }
 
-  private def processGroupCommand(subcommands: List[ScallopConf]) = {
-    val groups = new Groups(new PlayDbCosmosProfileDao, serviceManager)
-    subcommands.headOption match {
+  private def processGroupCommand(subCommands: List[ScallopConf]) = {
+    val groups = new Groups(new PlayDbCosmosDao(), serviceManager)
+    subCommands.headOption match {
       case Some(args.group.create) => tryCommand(groups.create(
         args.group.create.name(), args.group.create.minQuota()))
       case Some(args.group.list) => tryCommandWithOutput(groups.list)
@@ -91,11 +90,10 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
     }
   }
 
-  /**
-   * Performs a setup of all platform components.
-   * @param serviceManager The service manager to use.
-   * @return Whether the operation succeeded.
-   */
+  /** Performs a setup of all platform components.
+    * @param serviceManager The service manager to use.
+    * @return Whether the operation succeeded.
+    */
   private def setupAll(serviceManager: ServiceManager) = PersistentStorage.setup(serviceManager)
 
   private def help(conf: ScallopConf) = {
@@ -107,20 +105,18 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
     if (block) CommandRunner.SuccessStatus
     else CommandRunner.ExecutionErrorStatus
   } catch {
-    case ex: Throwable => {
+    case ex: Throwable =>
       ex.printStackTrace()
       CommandRunner.ExecutionErrorStatus
-    }
   }
 
   private def tryCommandWithOutput(block: => String) = try {
     println(block)
     CommandRunner.SuccessStatus
   } catch {
-    case ex: Throwable => {
+    case ex: Throwable =>
       ex.printStackTrace()
       CommandRunner.ExecutionErrorStatus
-    }
   }
 }
 

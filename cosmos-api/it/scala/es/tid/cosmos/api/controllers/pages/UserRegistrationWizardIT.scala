@@ -38,7 +38,7 @@ class UserRegistrationWizardIT
   val registration = registrationFor(handle)
 
   trait WithUserRegistrationWizard {
-    val dao = new MockCosmosProfileDao()
+    val dao = new MockCosmosDao()
     val sm = spy(new MockedServiceManager())
     val instance = new UserRegistrationWizard(sm)
 
@@ -65,7 +65,7 @@ class UserRegistrationWizardIT
     new WithUserRegistrationWizard {
       val deletedUser = registerUser("deleted")(dao)
       dao.withTransaction { implicit c =>
-        dao.setUserState(deletedUser.id, UserState.Deleted)
+        dao.profile.setUserState(deletedUser.id, UserState.Deleted)
       }
 
       val validationResult = dao.withTransaction { implicit c =>

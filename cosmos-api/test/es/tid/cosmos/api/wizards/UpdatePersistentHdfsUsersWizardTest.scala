@@ -33,14 +33,14 @@ class UpdatePersistentHdfsUsersWizardTest
 
   val sm = spy(new MockedServiceManager())
   sm.deployPersistentHdfsCluster()
-  val dao = spy(new MockCosmosProfileDao())
+  val dao = spy(new MockCosmosDao())
   val wizard = new UpdatePersistentHdfsUsersWizard(sm)
 
   "The UpdatePersistentHdfsUsersWizard" must "handle concurrent update petitions by serializing them" in {
     val numberOfUsers = 10
     val futures = for (i <- 1 to numberOfUsers)
       yield dao.withTransaction { implicit c =>
-        dao.registerUser(
+        dao.profile.register(
           UserId(s"user$i"),
           Registration(s"user$i", "ssh-rsa pubkey test", s"user$i@test.com"),
           UserState.Enabled)

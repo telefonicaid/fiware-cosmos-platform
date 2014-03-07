@@ -49,3 +49,8 @@ case object NoGroup extends Group {
   override val name = "No Group"
   override val minimumQuota = EmptyQuota
 }
+
+object Group {
+  /** Alias of NoGroup with Group type to avoid the pitfalls of the NoGroup.type inference */
+  val noGroup: Group = NoGroup
+}

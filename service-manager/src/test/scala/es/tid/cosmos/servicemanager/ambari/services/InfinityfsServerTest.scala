@@ -16,11 +16,10 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.servicemanager.ComponentDescription
 
-class InfinityfsDriverTest extends FlatSpec with MustMatchers {
+class InfinityfsServerTest extends FlatSpec with MustMatchers {
 
-  "An infinity driver service" must "have a single driver component" in {
-    InfinityfsDriver.components must be (Seq(
-      ComponentDescription.allNodesComponent("INFINITY_HFS_DRIVER").makeClient
-    ))
+  "An infinity server service" must "have a single driver component" in {
+    InfinityfsServer.components must be (Seq(
+      ComponentDescription.allNodesComponent("INFINITY_HFS_SERVER")))
   }
 }

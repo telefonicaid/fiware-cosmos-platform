@@ -107,7 +107,8 @@ class cosmos::openvz::images(
   exec { 'pack_image' :
     command     => "tar -C ${replacements_dir} -czf ${dest_image_file} .",
     user        => 'root',
-    path        => '/bin'
+    path        => '/bin',
+    timeout     => 600
   }
 
   Class['ssh_keys'] ~> File["${replacements_dir}/root/.ssh"]

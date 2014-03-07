@@ -9,9 +9,9 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao
 
-import java.sql.Connection
+import es.tid.cosmos.api.profile._
 
 trait CapabilityDao[Conn] {
 
@@ -21,7 +21,7 @@ trait CapabilityDao[Conn] {
     *
     * @param id           The unique Cosmos ID of the given user.
     * @param capability   The capability to be enabled.
-    * @throws CosmosProfileException  When no user has such id
+    * @throws CosmosDaoException  When no user has such id
     */
   def enable(id: ProfileId, capability: Capability.Value)(implicit c: Conn): Unit
 

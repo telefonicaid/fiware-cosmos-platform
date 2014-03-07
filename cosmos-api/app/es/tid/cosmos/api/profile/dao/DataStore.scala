@@ -1,4 +1,4 @@
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao
 
 /** This trait creates an abstraction on where underlying data is stored, such as SQL databases,
   * in-memory lists, mocks, etc.

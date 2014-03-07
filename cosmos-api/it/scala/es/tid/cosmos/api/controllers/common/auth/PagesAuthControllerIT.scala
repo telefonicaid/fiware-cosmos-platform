@@ -18,7 +18,8 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers._
 import play.api.mvc._
 
-import es.tid.cosmos.api.profile.{UserState, CosmosDao}
+import es.tid.cosmos.api.profile.UserState
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 
 class PagesAuthControllerIT extends FlatSpec with MustMatchers {

@@ -19,8 +19,9 @@ import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.controllers.pages.routes
-import es.tid.cosmos.api.profile.{CosmosProfile, CosmosDao, UserId}
+import es.tid.cosmos.api.profile.{CosmosProfile, UserId}
 import es.tid.cosmos.api.profile.UserState._
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 /** Controller mixin adding authentication validations. */
 trait PagesAuthController { this: Controller =>

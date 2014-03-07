@@ -19,6 +19,7 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.api.quota.Group
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters._

@@ -19,9 +19,10 @@ import scalaz._
 import play.Logger
 
 import es.tid.cosmos.api.controllers.common.Message
-import es.tid.cosmos.api.profile.{UserState, CosmosDao}
+import es.tid.cosmos.api.profile.UserState
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.{Terminating, Terminated, ClusterId}
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 class UserUnregistrationWizard(serviceManager: ServiceManager) {
 

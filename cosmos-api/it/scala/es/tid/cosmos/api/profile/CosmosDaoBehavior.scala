@@ -16,6 +16,7 @@ import org.scalatest.matchers.MustMatchers
 
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
+import es.tid.cosmos.api.profile.dao.{CosmosDaoException, CosmosDao}
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
@@ -64,7 +65,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
       dao.store.withTransaction { implicit c =>
         evaluating {
           dao.profile.setHandle(unknownCosmosId, "jsm")
-        } must produce [CosmosProfileException]
+        } must produce [CosmosDaoException]
       }
     })
 
@@ -80,7 +81,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
       dao.store.withTransaction { implicit c =>
         evaluating {
           dao.profile.setEmail(unknownCosmosId, "new@mail.com")
-        } must produce [CosmosProfileException]
+        } must produce [CosmosDaoException]
       }
     })
 
@@ -96,7 +97,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
       dao.store.withTransaction { implicit c =>
         evaluating {
           dao.profile.setUserState(unknownCosmosId, Disabled)
-        } must produce [CosmosProfileException]
+        } must produce [CosmosDaoException]
       }
     })
 
@@ -106,7 +107,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
         val cosmosId = registerUser(dao, "current").id
         evaluating {
           dao.profile.setHandle(cosmosId, "existing")
-        } must produce [CosmosProfileException]
+        } must produce [CosmosDaoException]
       }
     })
 
@@ -126,7 +127,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
         evaluating {
           dao.profile.setPublicKeys(
             unknownCosmosId, Seq(NamedKey("default", "ssh-rsa AAAAA jsmith@host")))
-        } must produce [CosmosProfileException]
+        } must produce [CosmosDaoException]
       }
     })
 

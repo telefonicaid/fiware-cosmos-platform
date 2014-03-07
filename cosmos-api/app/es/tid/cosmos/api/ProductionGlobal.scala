@@ -15,7 +15,7 @@ import es.tid.cosmos.api.auth.multiauth.ConfigBasedMultiAuthProviderComponent
 import es.tid.cosmos.api.auth.request.ChainedAuthenticationComponent
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
-import es.tid.cosmos.api.profile.sql.PlayDbCosmosDaoComponent
+import es.tid.cosmos.api.profile.dao.sql.PlayDbCosmosDaoComponent
 import es.tid.cosmos.api.task.inmemory.InMemoryTaskDaoComponent
 import es.tid.cosmos.common.ApplicationConfigComponent
 import es.tid.cosmos.servicemanager.production.ProductionServiceManagerComponent

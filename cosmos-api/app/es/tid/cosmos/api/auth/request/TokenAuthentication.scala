@@ -20,7 +20,8 @@ import play.Logger
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.auth.oauth2.OAuthProvider
-import es.tid.cosmos.api.profile.{CosmosDao, UserId}
+import es.tid.cosmos.api.profile.UserId
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 private[request] class TokenAuthentication(
      oauth: OAuthProvider,

@@ -9,10 +9,10 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile.sql
+package es.tid.cosmos.api.profile.dao.sql
 
-import java.sql.Connection
 import java.util.Date
+import java.sql.Connection
 
 import anorm._
 import anorm.SqlParser._
@@ -20,8 +20,9 @@ import anorm.SqlParser._
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 import es.tid.cosmos.api.profile.ClusterAssignment
+import es.tid.cosmos.api.profile.dao.ClusterDao
 
-object PlayDbClusterDao extends ClusterDao[Connection] {
+private[sql] object PlayDbClusterDao extends ClusterDao[Connection] {
 
   override def ownedBy(id: ProfileId)(implicit c: Connection): Seq[ClusterAssignment] =
     SQL("SELECT cluster_id, creation_date FROM cluster WHERE owner = {owner}")

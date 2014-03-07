@@ -16,8 +16,9 @@ import es.tid.cosmos.api.auth.request.ChainedAuthenticationComponent
 import es.tid.cosmos.api.controllers.Application
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManagerComponent
 import es.tid.cosmos.api.controllers.admin.InMemoryMaintenanceStatusComponent
-import es.tid.cosmos.api.profile.{CosmosProfileDaoComponent, MockCosmosDaoComponent}
-import es.tid.cosmos.api.profile.sql.PlayDbCosmosDaoComponent
+import es.tid.cosmos.api.profile.dao.CosmosProfileDaoComponent
+import es.tid.cosmos.api.profile.dao.sql.PlayDbCosmosDaoComponent
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDaoComponent
 import es.tid.cosmos.api.task.inmemory.InMemoryTaskDaoComponent
 import es.tid.cosmos.common.ApplicationConfigComponent
 

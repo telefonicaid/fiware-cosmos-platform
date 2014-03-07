@@ -23,6 +23,7 @@ import play.api.test.FakeRequest
 import es.tid.cosmos.api.auth.oauth2.{OAuthUserProfile, OAuthProvider}
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.Enabled
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
 
 class TokenAuthenticationTest extends FlatSpec with MustMatchers with MockitoSugar {
 

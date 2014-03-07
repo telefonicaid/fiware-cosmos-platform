@@ -25,7 +25,8 @@ import play.api.mvc.{Controller, Action, Headers}
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Registration, UserId, CosmosDao}
+import es.tid.cosmos.api.profile.{Registration, UserId}
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}
 import es.tid.cosmos.servicemanager.ServiceManager
 

@@ -18,8 +18,9 @@ import play.api.mvc.{Action, Controller}
 import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
-import es.tid.cosmos.api.profile.{CosmosProfile, Capability, CosmosDao}
+import es.tid.cosmos.api.profile.{CosmosProfile, Capability}
 import es.tid.cosmos.api.profile.Capability.Capability
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 /** Administration page used the Cosmos operators */
 class AdminPage(

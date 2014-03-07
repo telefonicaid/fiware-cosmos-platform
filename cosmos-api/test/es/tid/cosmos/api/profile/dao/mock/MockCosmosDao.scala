@@ -9,17 +9,16 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao.mock
 
 import scala.concurrent.stm._
 
-import es.tid.cosmos.api.profile.UserState._
+import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao._
+import es.tid.cosmos.api.profile.UserState.UserState
+import es.tid.cosmos.api.profile.UserCapabilities
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
-
-trait MockCosmosDaoComponent extends CosmosProfileDaoComponent {
-  lazy val cosmosProfileDao: CosmosDao = new MockCosmosDao
-}
 
 /** Mock to be used in tests for handling the profile DAO. Thread-safe. */
 class MockCosmosDao extends CosmosDao {
@@ -86,7 +85,7 @@ class MockCosmosDao extends CosmosDao {
     override def setHandle(id: ProfileId, handle: String)(implicit c: Conn) =
       updateProfile(id) { profile =>
         if (profile.handle != handle && users().values.exists(_.handle == handle))
-          throw CosmosProfileException.duplicatedHandle(handle)
+          throw CosmosDaoException.duplicatedHandle(handle)
         profile.copy(handle = handle)
       }
 
@@ -179,7 +178,7 @@ class MockCosmosDao extends CosmosDao {
         users() = users().updated(userId, f(profile))
         userId
       }
-      if (updatedUserId.isEmpty) throw CosmosProfileException.unknownUser(id)
+      if (updatedUserId.isEmpty) throw CosmosDaoException.unknownUser(id)
     }
 
   private def groupByName(name: String): Option[Group] = atomic { implicit txn =>

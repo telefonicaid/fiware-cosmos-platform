@@ -19,7 +19,7 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers._
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
-import es.tid.cosmos.api.profile.CosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 /** Resource that represents a user profile. */
 @Api(value = "/cosmos/v1/profile", listingPath = "/doc/cosmos/v1/profile",

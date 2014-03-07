@@ -9,11 +9,11 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile.sql
+package es.tid.cosmos.api.profile.dao.sql
 
 import java.sql.Connection
 
-import es.tid.cosmos.api.profile.CosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 class PlayDbCosmosDao extends CosmosDao {
 

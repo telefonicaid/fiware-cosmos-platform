@@ -25,7 +25,7 @@ import es.tid.cosmos.api.controllers.profile.ProfileResource
 import es.tid.cosmos.api.controllers.services.ServicesResource
 import es.tid.cosmos.api.controllers.storage.StorageResource
 import es.tid.cosmos.api.controllers.task.TaskResource
-import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
+import es.tid.cosmos.api.profile.dao.CosmosProfileDaoComponent
 import es.tid.cosmos.api.task.TaskDaoComponent
 import es.tid.cosmos.common.ConfigComponent
 import es.tid.cosmos.platform.ial.InfrastructureProviderComponent

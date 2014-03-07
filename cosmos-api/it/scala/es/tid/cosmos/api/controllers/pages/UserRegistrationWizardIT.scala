@@ -23,11 +23,11 @@ import org.scalatest.mock.MockitoSugar
 import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
 import es.tid.cosmos.servicemanager.clusters.ClusterId
-import scala.concurrent.Await
 
 class UserRegistrationWizardIT
   extends FlatSpec with MustMatchers with MockitoSugar with FutureMatchers {

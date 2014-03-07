@@ -21,7 +21,7 @@ import play.api.mvc._
 import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
-import es.tid.cosmos.api.profile.CosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.platform.ial.InfrastructureProvider
 import es.tid.cosmos.platform.ial.MachineProfile
 import es.tid.cosmos.platform.ial.MachineProfile.MachineProfile

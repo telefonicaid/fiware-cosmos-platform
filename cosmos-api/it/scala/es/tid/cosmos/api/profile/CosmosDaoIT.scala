@@ -15,7 +15,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers
 
-import es.tid.cosmos.api.profile.sql.PlayDbCosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDao
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
+import es.tid.cosmos.api.profile.dao.sql.PlayDbCosmosDao
 import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 
 class CosmosDaoIT extends FlatSpec with MustMatchers with CosmosDaoBehavior {

@@ -12,7 +12,7 @@
 package es.tid.cosmos.api.auth.request
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProviderComponent
-import es.tid.cosmos.api.profile.CosmosProfileDaoComponent
+import es.tid.cosmos.api.profile.dao.CosmosProfileDaoComponent
 
 trait ChainedAuthenticationComponent extends RequestAuthenticationComponent {
   this: CosmosProfileDaoComponent with MultiAuthProviderComponent =>

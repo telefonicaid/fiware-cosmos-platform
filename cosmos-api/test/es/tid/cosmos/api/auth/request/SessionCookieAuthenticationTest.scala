@@ -21,6 +21,7 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
 
 class SessionCookieAuthenticationTest extends FlatSpec with MustMatchers {
 

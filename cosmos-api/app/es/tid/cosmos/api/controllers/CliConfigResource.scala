@@ -16,7 +16,7 @@ import play.api.mvc.{Controller, Action}
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
 import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
-import es.tid.cosmos.api.profile.CosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 /** Downloadable configuration file for cosmos-cli */
 class CliConfigResource(override val dao: CosmosDao)

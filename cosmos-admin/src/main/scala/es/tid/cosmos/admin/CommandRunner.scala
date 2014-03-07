@@ -16,7 +16,7 @@ import scala.language.reflectiveCalls
 import org.rogach.scallop.ScallopConf
 
 import es.tid.cosmos.admin.cli.AdminArguments
-import es.tid.cosmos.api.profile.sql.PlayDbCosmosDao
+import es.tid.cosmos.api.profile.dao.sql.PlayDbCosmosDao
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 

@@ -23,6 +23,7 @@ import play.api.mvc.Results
 import es.tid.cosmos.api.controllers.common.ErrorMessage
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Registration
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.servicemanager.ServiceManager
 
 /** Sequence of actions to register a new user in Cosmos.

@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.profile
 
+import es.tid.cosmos.api.profile.dao.CosmosDao
+
 /** Utilities for setting up users on integration tests. */
 object CosmosProfileTestHelpers {
 

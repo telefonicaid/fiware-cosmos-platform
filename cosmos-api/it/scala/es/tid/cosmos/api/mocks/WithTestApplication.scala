@@ -11,19 +11,15 @@
 
 package es.tid.cosmos.api.mocks
 
-import scala.Some
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 import play.core.DevSettings
 import play.api.mvc.Session
 import play.api.test.{FakeApplication, FakeRequest, WithApplication}
 
 import es.tid.cosmos.api.AbstractGlobal
-import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.Registration
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
+import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.servicemanager.clusters.Running
 
 class WithTestApplication(

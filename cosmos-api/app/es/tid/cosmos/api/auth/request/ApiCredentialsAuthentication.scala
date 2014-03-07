@@ -16,8 +16,9 @@ import scalaz._
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.controllers.common.BasicAuth
-import es.tid.cosmos.api.profile.{ApiCredentials, CosmosDao}
+import es.tid.cosmos.api.profile.ApiCredentials
 import es.tid.cosmos.api.profile.ApiCredentials.{ApiKeyLength, ApiSecretLength}
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 /** Authenticated requests that have a BasicAuth header with the Cosmos API key and secret. */
 private[request] class ApiCredentialsAuthentication(dao: CosmosDao)

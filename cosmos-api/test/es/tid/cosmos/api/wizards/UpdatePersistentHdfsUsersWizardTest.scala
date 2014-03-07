@@ -25,6 +25,7 @@ import org.scalatest.concurrent.Eventually
 
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
 import es.tid.cosmos.common.scalatest.matchers.FutureMatchers
 import es.tid.cosmos.servicemanager.ClusterUser
 

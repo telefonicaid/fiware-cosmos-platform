@@ -17,8 +17,8 @@ import scala.util.control.NonFatal
 
 import play.Logger
 
-import es.tid.cosmos.api.profile.CosmosDao
 import es.tid.cosmos.api.profile.UserState._
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.common.SequentialOperations
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
 

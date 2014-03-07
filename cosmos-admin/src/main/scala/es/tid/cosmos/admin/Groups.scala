@@ -16,6 +16,7 @@ import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.api.quota._
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 /** Admin commands for managing groups. */
 private[admin] class Groups(

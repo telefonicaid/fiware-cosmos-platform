@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile.sql
+package es.tid.cosmos.api.profile.dao.sql
 
 import java.sql.{SQLException, Connection}
 
@@ -20,8 +20,9 @@ import play.Logger
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
 import es.tid.cosmos.api.quota._
+import es.tid.cosmos.api.profile.dao.{CosmosDaoException, ProfileDao}
 
-object PlayDbProfileDao extends ProfileDao[Connection] {
+private[sql] object PlayDbProfileDao extends ProfileDao[Connection] {
 
   private val AllUserFields = """u.cosmos_id, u.state, u.handle, u.email, u.machine_quota,
                                 | u.api_key, u.api_secret, u.group_name""".stripMargin
@@ -107,45 +108,42 @@ object PlayDbProfileDao extends ProfileDao[Connection] {
     usersWithThatHandle > 0
   }
 
-  override def setHandle(id: ProfileId, handle: String)(implicit c: Connection) {
+  override def setHandle(id: ProfileId, handle: String)(implicit c: Connection): Unit =
     try {
       updateProfileField("handle", id, handle)
     } catch {
       case ex: SQLException =>
         Logger.error("Cannot update handle", ex)
-        throw CosmosProfileException.duplicatedHandle(handle)
+        throw CosmosDaoException.duplicatedHandle(handle)
     }
-  }
 
-  override def setEmail(id: ProfileId, email: String)(implicit c: Connection) {
+  override def setEmail(id: ProfileId, email: String)(implicit c: Connection): Unit =
     updateProfileField("email", id, email)
-  }
 
-  override def setPublicKeys(id: ProfileId, publicKeys: Seq[NamedKey])(implicit c: Connection) {
+  override def setPublicKeys(id: ProfileId, publicKeys: Seq[NamedKey])
+                            (implicit c: Connection): Unit =
     try {
       SQL("DELETE FROM public_key WHERE cosmos_id = {id}").on("id" -> id).executeUpdate()
       publicKeys.foreach(key => addPublicKey(id, key))
     } catch {
       case ex: SQLException =>
         Logger.error(s"Cannot change $id keys", ex)
-        throw CosmosProfileException.unknownUser(id)
+        throw CosmosDaoException.unknownUser(id)
     }
-  }
 
-  override def setUserState(id: ProfileId, state: UserState.UserState)(implicit c: Connection) {
+  override def setUserState(id: ProfileId, state: UserState.UserState)
+                           (implicit c: Connection): Unit =
     updateProfileField("state", id, state.toString)
-  }
 
-  override def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Connection) {
+  override def setGroup(id: ProfileId, groupName: Option[String])(implicit c: Connection): Unit =
     updateProfileField("group_name", id, groupName)
-  }
 
-  override def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Connection) {
+  override def setMachineQuota(id: ProfileId, quota: Quota)(implicit c: Connection): Unit = {
     val updatedRows =
       SQL("UPDATE user SET machine_quota = {machine_quota} WHERE cosmos_id = {cosmos_id}")
         .on("cosmos_id" -> id, "machine_quota" -> quota.toOptInt)
         .executeUpdate()
-    if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
+    if (updatedRows == 0) throw CosmosDaoException.unknownUser(id)
   }
 
   /** Lookup Cosmos profiles retrieved by a custom query.
@@ -182,11 +180,12 @@ object PlayDbProfileDao extends ProfileDao[Connection] {
     }
   }
 
-  private def updateProfileField(fieldName: String, id: ProfileId, value: Any)(implicit c: Connection) {
+  private def updateProfileField(fieldName: String, id: ProfileId, value: Any)
+                                (implicit c: Connection): Unit = {
     val updatedRows = SQL(s"UPDATE user SET $fieldName = {value} WHERE cosmos_id = {id}")
       .on("value" -> value, "id" -> id)
       .executeUpdate()
-    if (updatedRows == 0) throw CosmosProfileException.unknownUser(id)
+    if (updatedRows == 0) throw CosmosDaoException.unknownUser(id)
   }
 
   private def addPublicKey(id: ProfileId, publicKey: NamedKey)(implicit c: Connection) =

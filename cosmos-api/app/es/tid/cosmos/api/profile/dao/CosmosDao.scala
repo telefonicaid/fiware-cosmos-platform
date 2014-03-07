@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.dao
 
 /** This trait creates an abstraction on how to use the underlying data, such as SQL databases,
   * in-memory lists, mocks, etc.

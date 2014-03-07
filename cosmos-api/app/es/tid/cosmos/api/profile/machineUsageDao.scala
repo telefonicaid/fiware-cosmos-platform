@@ -11,6 +11,7 @@
 
 package es.tid.cosmos.api.profile
 
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.api.quota.{GuaranteedGroup, GlobalGroupQuotas}
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.{ClusterId, ClusterDescription}
@@ -32,7 +33,7 @@ trait MachineUsageDao {
 }
 
 /** Machine Usage DAO that combines the information of the
-  * [[es.tid.cosmos.api.profile.CosmosDao]] and
+  * [[es.tid.cosmos.api.profile.dao.CosmosDao]] and
   * [[es.tid.cosmos.servicemanager.ServiceManager]] in order to calculate the machine usage at a
   * given time.
   *

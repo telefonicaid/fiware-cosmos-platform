@@ -9,14 +9,14 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile.sql
+package es.tid.cosmos.api.profile.dao.sql
 
 import java.sql.Connection
 
 import anorm._
 
-import es.tid.cosmos.api.profile.GroupDao
 import es.tid.cosmos.api.quota.{LimitedQuota, NoGroup, Group}
+import es.tid.cosmos.api.profile.dao.GroupDao
 
 private[sql] object PlayDbGroupDao extends GroupDao[Connection] {
 

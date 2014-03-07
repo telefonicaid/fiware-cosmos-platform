@@ -29,7 +29,8 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{CosmosProfile, CosmosDao, Registration, UserId}
+import es.tid.cosmos.api.profile.{CosmosProfile, Registration, UserId}
+import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.Wrapped

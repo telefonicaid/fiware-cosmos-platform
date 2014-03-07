@@ -16,7 +16,7 @@ import scalaz._
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.CosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDao
 
 /** Authenticates requests that have a valid session cookie associated. */
 private[request] class SessionCookieAuthentication(dao: CosmosDao)

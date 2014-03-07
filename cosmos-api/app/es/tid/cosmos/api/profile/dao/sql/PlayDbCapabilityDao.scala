@@ -9,7 +9,7 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile.sql
+package es.tid.cosmos.api.profile.dao.sql
 
 import java.sql.Connection
 
@@ -17,25 +17,23 @@ import anorm._
 
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Capability._
-import es.tid.cosmos.api.profile.UserCapabilities
+import es.tid.cosmos.api.profile.dao.CapabilityDao
 
 private[sql] object PlayDbCapabilityDao extends CapabilityDao[Connection] {
 
-  override def enable(id: ProfileId, capability: Capability)(implicit c: Connection) {
+  override def enable(id: ProfileId, capability: Capability)(implicit c: Connection): Unit =
     if (!PlayDbCapabilityDao.userCapabilities(id).hasCapability(capability)) {
       SQL("INSERT INTO user_capability(name, cosmos_id) VALUES ({name}, {cosmos_id})")
         .on("name" -> capability.toString, "cosmos_id" -> id)
         .executeInsert()
     }
-  }
 
-  override def disable(id: ProfileId, capability: Capability)(implicit c: Connection) {
+  override def disable(id: ProfileId, capability: Capability)(implicit c: Connection): Unit =
     if (PlayDbCapabilityDao.userCapabilities(id).hasCapability(capability)) {
       SQL("DELETE FROM user_capability WHERE name = {name} AND cosmos_id = {cosmos_id}")
         .on("name" -> capability.toString, "cosmos_id" -> id)
         .executeInsert()
     }
-  }
 
   override def userCapabilities(id: ProfileId)(implicit c: Connection): UserCapabilities =
     SQL("SELECT name FROM user_capability WHERE cosmos_id = {cosmos_id}")

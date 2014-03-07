@@ -43,14 +43,18 @@ class ClustersIT
   it must behave like enabledOnlyForOperatorsWhenUnderMaintenance(createCluster)
 
   "The clusters resource" must "list user clusters" in new WithSampleSessions with SampleClusters {
-    dao.store.withConnection { implicit c =>
-      val user1 = new RegisteredUserSession("user1", "User 1")
-      val user2 = new RegisteredUserSession("user2", "User 2")
-      val ownCluster = SampleClusters.RunningClusterProps.id
-      val otherCluster = ClusterId()
+    val user1 = new RegisteredUserSession("user1", "User 1")
+    val user2 = new RegisteredUserSession("user2", "User 2")
+    val ownCluster = SampleClusters.RunningClusterProps.id
+    val otherCluster = ClusterId()
+    dao.store.withTransaction { implicit c =>
       dao.cluster.register(ownCluster, user1.cosmosProfile.id)
       dao.cluster.register(otherCluster, user2.cosmosProfile.id)
-      val resource = user1.doRequest(listClusters)
+    }
+
+    val resource = user1.doRequest(listClusters)
+
+    dao.store.withTransaction { implicit c =>
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)

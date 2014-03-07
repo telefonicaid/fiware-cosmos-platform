@@ -91,13 +91,16 @@ class WebHdfsClientTest(unittest.TestCase):
 
     def setUp(self):
         self.client = MagicMock()
+        key = 'key'
+        secret = 'secret'
         self.instance = webhdfs.WebHdfsClient(
-            'webhdfs://namenode:1234/', 'user1', client=self.client)
+            'webhdfs://namenode:1234/', 'user1', key, secret, client=self.client)
         self.namenode_base = 'http://namenode:1234/webhdfs/v1/user/user1'
         self.datanode_base = 'http://datanode:5678/webhdfs/v1/user/user1'
         self.config = MagicMock()
         self.config.credentials = ("user", "pass")
         self.config.api_url = 'http://host:port/endpoint/v1'
+        self.auth = (key, secret)
 
     def test_file_upload(self):
         with TempDirectory() as local_dir:
@@ -118,7 +121,8 @@ class WebHdfsClientTest(unittest.TestCase):
             self.client.put.assert_any_call(
                 self.namenode_base + '/remote/path',
                 allow_redirects=False,
-                params={'user.name': 'user1', 'op': 'CREATE'}
+                params={'user.name': 'user1', 'op': 'CREATE'},
+                auth = self.auth
             )
             last_put = self.client.put.call_args_list[1]
             self.assertEqual(datanode_url, last_put[0][0])
@@ -149,7 +153,8 @@ class WebHdfsClientTest(unittest.TestCase):
                           statuses)
         self.client.get.assert_called_with(
             self.namenode_base + '/some/path',
-            params={'user.name': 'user1', 'op': 'LISTSTATUS'})
+            params={'user.name': 'user1', 'op': 'LISTSTATUS'},
+            auth = self.auth)
 
     def test_list_nonexistent_path(self):
         self.client.get.return_value = mock_response(status_code=404)
@@ -179,7 +184,8 @@ class WebHdfsClientTest(unittest.TestCase):
         self.assertTrue(self.instance.delete_path('/remote/file.txt'))
         self.client.delete.assert_called_with(
             self.namenode_base + '/remote/file.txt',
-            params={'user.name': 'user1', 'op': 'DELETE', 'recursive': 'false'})
+            params={'user.name': 'user1', 'op': 'DELETE', 'recursive': 'false'},
+            auth = self.auth)
 
     def test_delete_path_with_error(self):
         self.client.delete.return_value = mock_response(status_code=403)
@@ -194,5 +200,6 @@ class WebHdfsClientTest(unittest.TestCase):
                                                    recursive=True))
         self.client.delete.assert_called_with(
             self.namenode_base + '/remote/file.txt',
-            params={'user.name': 'user1', 'op': 'DELETE', 'recursive': 'true'})
+            params={'user.name': 'user1', 'op': 'DELETE', 'recursive': 'true'},
+            auth = self.auth)
 

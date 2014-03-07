@@ -48,7 +48,7 @@ object CosmosProfileTestHelpers {
     * @see [[es.tid.cosmos.api.profile.CosmosProfileTestHelpers$#userIdFor]]
     */
   def registerUser(handle: String)(implicit dao: CosmosDao): CosmosProfile =
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       registerUser(dao, handle)
     }
 
@@ -78,7 +78,7 @@ object CosmosProfileTestHelpers {
     * @return        The profile iff found
     */
   def lookup(handle: String)(implicit dao: CosmosDao): Option[CosmosProfile] =
-    dao.withTransaction{ implicit c =>
+    dao.store.withTransaction{ implicit c =>
       lookup(dao, handle)
     }
 

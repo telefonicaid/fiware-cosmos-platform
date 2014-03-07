@@ -56,7 +56,7 @@ private[request] class ApiCredentialsAuthentication(dao: CosmosDao)
     * @return             Either a cosmos profile or a validation error
     */
   private def getProfileFromCredentials(credentials: ApiCredentials): AuthResult =
-    dao.withConnection { implicit c =>
+    dao.store.withConnection { implicit c =>
       dao.profile.lookupByApiCredentials(credentials)
         .map(_.success)
         .getOrElse(InvalidAuthCredentials.failure)

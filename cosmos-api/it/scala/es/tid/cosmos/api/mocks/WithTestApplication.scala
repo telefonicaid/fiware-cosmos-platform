@@ -47,7 +47,7 @@ class WithTestApplication(
     * @return      Newly created Cosmos profile
     */
   def registerUser(dao: CosmosDao, user: OAuthUserProfile): CosmosProfile =
-    dao.withConnection { implicit c =>
+    dao.store.withConnection { implicit c =>
       val email = user.email.getOrElse("root@host")
       val handle = email.split('@')(0)
       val reg = Registration(handle, s"ssh-rsa ABCDE $email", email)

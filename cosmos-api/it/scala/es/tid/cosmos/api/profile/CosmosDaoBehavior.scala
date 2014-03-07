@@ -32,7 +32,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
         .getOrElse(subject in testFun)
 
     taggedTest(it must "register new users", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val profile = registerUser(dao, "jsmith")
         profile.handle must be ("jsmith")
         profile.keys.length must be (1)
@@ -45,7 +45,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "list all users", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         registerUser(dao, "user1")
         registerUser(dao, "user2")
         dao.profile.list().map(_.handle) must be (Seq("user1", "user2"))
@@ -53,7 +53,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "change the handle of users", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val cosmosId = registerUser(dao, "jsmith").id
         dao.profile.setHandle(cosmosId, "jsm")
         dao.profile.lookupByUserId(userIdFor("jsmith")).get.handle must equal ("jsm")
@@ -61,7 +61,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "not change the handle of unknown users", withDao { dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         evaluating {
           dao.profile.setHandle(unknownCosmosId, "jsm")
         } must produce [CosmosProfileException]
@@ -69,7 +69,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "change the email of users", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val cosmosId = registerUser(dao, "jsmith").id
         dao.profile.setEmail(cosmosId, "new@mail.com")
         dao.profile.lookupByUserId(userIdFor("jsmith")).get.email must equal ("new@mail.com")
@@ -77,7 +77,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "not change the email of unknown users", withDao { dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         evaluating {
           dao.profile.setEmail(unknownCosmosId, "new@mail.com")
         } must produce [CosmosProfileException]
@@ -85,7 +85,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "change the state of users", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val cosmosId = registerUser(dao, "jsmith").id
         dao.profile.setUserState(cosmosId, Deleting)
         dao.profile.lookupByUserId(userIdFor("jsmith")).get.state must equal (Deleting)
@@ -93,7 +93,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "not change the state of unknown users", withDao { dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         evaluating {
           dao.profile.setUserState(unknownCosmosId, Disabled)
         } must produce [CosmosProfileException]
@@ -101,7 +101,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "not change the handle to a repeated one", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         registerUser("existing")
         val cosmosId = registerUser(dao, "current").id
         evaluating {
@@ -111,7 +111,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "change the keys of users", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val cosmosId = registerUser(dao, "jsmith").id
         val newKeys = Seq(
           NamedKey("default", "ssh-rsa AAAAA jsmith@host"),
@@ -122,7 +122,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "not change the keys of unknown users", withDao { dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         evaluating {
           dao.profile.setPublicKeys(
             unknownCosmosId, Seq(NamedKey("default", "ssh-rsa AAAAA jsmith@host")))
@@ -131,7 +131,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "set user default capabilities to unstrusted", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val userProfile = registerUser(dao, "jsmith")
 
         userProfile.capabilities must be (UntrustedUserCapabilities)
@@ -139,7 +139,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "enable user capabilities", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val jsmith = registerUser(dao, "jsmith").id
         val bclinton = registerUser(dao, "bclinton").id
 
@@ -151,7 +151,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "disable user capabilities", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val jsmith = registerUser(dao, "jsmith").id
         val bclinton = registerUser(dao, "bclinton").id
 
@@ -164,7 +164,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "detect unused handles", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         registerUser(dao, "usedHandle")
         dao.profile.handleExists("usedHandle") must be (true)
         dao.profile.handleExists("unusedHandle") must be (false)
@@ -172,7 +172,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "set machine quota for a given user", withDao { dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val id1 = registerUser(dao, "jsmith").id
         val id2 = registerUser(dao, "bclinton").id
         val id3 = registerUser(dao, "imontoya").id
@@ -194,7 +194,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "lookup a profile from api credentials", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         registerUser(dao, "user4")
         val profileByUserId = dao.profile.lookupByUserId(userIdFor("user4")).get
         val profileByApiCredentials =
@@ -204,7 +204,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "lookup existing profiles by handle", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val profile = registerUser(dao, "handle")
         dao.profile.lookupByHandle("handle") must be (Some(profile))
         dao.profile.lookupByHandle("unknown") must not be 'defined
@@ -212,7 +212,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
     })
 
     taggedTest(it must "assign cluster ownership and remember it", withDao { implicit dao =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         val clusterId = ClusterId()
         val id1 = registerUser(dao, "user1").id
         val id2 = registerUser(dao, "user2").id
@@ -224,29 +224,29 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
 
     taggedTest(it must "retrieve the owner of a cluster", withDao { implicit dao =>
       val clusterId = ClusterId()
-      val profileId = dao.withTransaction { implicit c =>
+      val profileId = dao.store.withTransaction { implicit c =>
         val profileId = registerUser(dao, "user1").id
         dao.cluster.register(clusterId, profileId)
         profileId
       }
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         dao.cluster.ownerOf(clusterId) must be (Some(profileId))
       }
     })
 
     taggedTest(it must "get empty, NoGroup by default", withDao{ dao =>
-      dao.withConnection{ implicit c =>
+      dao.store.withConnection{ implicit c =>
         dao.group.list() must equal (Set(NoGroup))
       }
     })
 
-    taggedTest(it must "get all registered groups + NoGroup", withDao{ dao =>
+    taggedTest(it must "get all registered groups + NoGroup", withDao { dao =>
       val (a, b, c) = (
         GuaranteedGroup("A", EmptyQuota),
         GuaranteedGroup("B", Quota(2)),
         GuaranteedGroup("C", Quota(3))
       )
-      dao.withTransaction{ implicit conn =>
+      dao.store.withTransaction{ implicit conn =>
         Seq(a, b, c).foreach(dao.group.register)
         dao.group.list() must be (Set(a, b, c, NoGroup))
       }
@@ -254,7 +254,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
 
     taggedTest(it must "set a user's group to an existing one", withDao { implicit dao =>
       val group = GuaranteedGroup("A", Quota(7))
-      dao.withTransaction{ implicit c =>
+      dao.store.withTransaction{ implicit c =>
         dao.group.register(group)
         val id1 = registerUser("user1").id
         registerUser("user2")
@@ -268,7 +268,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
 
     taggedTest(it must "delete an existing group", withDao { implicit dao =>
       val group: Group = GuaranteedGroup("A", Quota(7))
-      dao.withTransaction{ implicit c =>
+      dao.store.withTransaction{ implicit c =>
         dao.group.register(group)
         val id = registerUser("user1").id
         dao.profile.setGroup(id, Some(group.name))
@@ -280,7 +280,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
 
     taggedTest(it must "set the minimum quota of an existing group", withDao { implicit dao =>
       val group = GuaranteedGroup("A", Quota(7))
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         dao.group.register(group)
         val id = registerUser("user1").id
         dao.profile.setGroup(id, Some(group.name))
@@ -291,8 +291,8 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
       }
     })
 
-    taggedTest(it must "lookup users by group", withDao{ implicit dao =>
-      dao.withTransaction { implicit c =>
+    taggedTest(it must "lookup users by group", withDao { implicit dao =>
+      dao.store.withTransaction { implicit c =>
         val group = GuaranteedGroup("A", Quota(3))
         dao.group.register(group)
         val id1 = registerUser("user1").id

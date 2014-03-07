@@ -78,7 +78,7 @@ class PagesIT extends FlatSpec with MustMatchers with AuthBehaviors with Mainten
         "email" -> "jsmith@example.com",
         "publicKey" -> "ssh-rsa DKDJDJDK jsmith@example.com")
       response must redirectTo ("/")
-      dao.withConnection { implicit c =>
+      dao.store.withConnection { implicit c =>
         dao.profile.lookupByUserId(unregUser.userId) must be ('defined)
       }
     }

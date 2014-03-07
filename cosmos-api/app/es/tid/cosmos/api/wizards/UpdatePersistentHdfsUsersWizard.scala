@@ -35,7 +35,7 @@ class UpdatePersistentHdfsUsersWizard(serviceManager: ServiceManager) {
 
   def updatePersistentHdfsUsers(dao: CosmosDao): Future[Unit] =
     persistentHdfsOperationsQueue.enqueue {
-      val clusterUsers = dao.withTransaction { implicit c =>
+      val clusterUsers = dao.store.withTransaction { implicit c =>
         dao.profile.list().map { profile =>
           ClusterUser(
             username = profile.handle,

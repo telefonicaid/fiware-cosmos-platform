@@ -47,7 +47,7 @@ class CosmosMachineUsageDao(
   override def machinePoolSize = serviceManager.clusterNodePoolCount
 
   override def globalGroupQuotas: GlobalGroupQuotas[ProfileId] =
-    profileDao.withConnection { implicit c =>
+    profileDao.store.withConnection { implicit c =>
       val membersByGroup = (for {
         group@GuaranteedGroup(_, _) <- profileDao.group.list()
         members = profileDao.profile.lookupByGroup(group).map(_.id)
@@ -56,7 +56,7 @@ class CosmosMachineUsageDao(
     }
 
   override def usageByProfile(requestedClusterId: Option[ClusterId]): Map[ProfileId, Int] =
-    profileDao.withConnection { implicit c =>
+    profileDao.store.withConnection { implicit c =>
       (for {
         g <- profileDao.group.list().toSeq
         profile <- profileDao.profile.lookupByGroup(g)
@@ -65,7 +65,7 @@ class CosmosMachineUsageDao(
 
   private def usedMachinesForActiveClusters(
       profile: CosmosProfile, requestedClusterId: Option[ClusterId]): Int =
-    profileDao.withConnection { implicit c =>
+    profileDao.store.withConnection { implicit c =>
       (for (
         description <- listClusters(profile) if !isRequestedCluster(description, requestedClusterId)
       ) yield description.expectedSize).sum

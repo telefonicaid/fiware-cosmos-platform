@@ -69,7 +69,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       responseData must have (field[String]("apiKey"))
       responseData must have (field[String]("apiSecret"))
       (responseData \ "handle").as[String] must be (requestedHandle)
-      val createdProfile = dao.withTransaction { implicit c =>
+      val createdProfile = dao.store.withTransaction { implicit c =>
         dao.profile.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
       }
       createdProfile.handle must be (requestedHandle)
@@ -82,7 +82,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
       val response = postRegistration(validPayload - "handle")
       status(response) must be (CREATED)
       Json.parse(contentAsString(response)) must have (field[String]("handle"))
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         dao.profile.lookupByUserId(newUserId).getOrElse(fail("User was not created"))
       }
     }
@@ -110,7 +110,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   }
 
   it must "reject requests when handle is already taken" in new WithTestApplication {
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       dao.profile.register(
         UserId("otherUser"), Registration(requestedHandle, publicKey, email), UserState.Enabled
       )
@@ -121,7 +121,7 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
   }
 
   it must "reject requests when credentials are already registered" in new WithTestApplication {
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       dao.profile.register(newUserId, Registration("otherHandle", publicKey, email), UserState.Enabled)
     }
     val response = postRegistration(validPayload)
@@ -143,13 +143,13 @@ class UserResourceIT extends FlatSpec with MustMatchers with MaintenanceModeBeha
 
   it must "unregister existing users of the same realm" in new WithTestApplication {
     withPersistentHdfsDeployed {
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         registerUser(dao, MockAuthConstants.User101.copy(id = newUserId))
       }
       val response = deleteUser(newUserId)
       status(response) must be (OK)
       contentAsString(response) must include ("User new_id@id_service unregistration started")
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         dao.profile.lookupByUserId(newUserId).get.state
       } must (be (UserState.Deleting) or be (UserState.Deleted))
     }

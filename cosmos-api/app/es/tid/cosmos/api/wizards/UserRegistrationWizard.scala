@@ -50,7 +50,7 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
       dao: CosmosDao,
       userId: UserId,
       registration: Registration): Validation[ErrorMessage, (CosmosProfile, Future[Unit])] =
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       Logger.info(s"Starting $userId (${registration.handle}) registration")
       Try (dao.profile.register(userId, registration, UserState.Creating)) match {
         case Failure(ex) =>
@@ -69,7 +69,7 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
     }
 
   private def markUserEnabled(dao: CosmosDao, userId: UserId) {
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       dao.profile.lookupByUserId(userId).map { profile =>
         if (profile.state == UserState.Creating) {
           dao.profile.setUserState(profile.id, UserState.Enabled)

@@ -87,7 +87,7 @@ class CosmosMachineUsageDaoTest
         val failedPreconditions = (clusterId: ClusterId) => () => "Failure example".failureNel
         val clusterId = serviceManager.createCluster(
           ClusterName("failedCluster"), 2, Seq.empty, Seq.empty, failedPreconditions)
-        cosmosDao.withTransaction { implicit c =>
+        cosmosDao.store.withTransaction { implicit c =>
           cosmosDao.cluster.register(clusterId, profile.id)(c)
         }
         usageDao.usageByProfile(requestedClusterId = None) must be (Map(
@@ -112,7 +112,7 @@ class CosmosMachineUsageDaoTest
     serviceManager.withCluster(clusterId2)(_.completeProvisioning())
     serviceManager.withCluster(terminated)(_.immediateTermination())
 
-    cosmosDao.withTransaction { c =>
+    cosmosDao.store.withTransaction { c =>
       for (clusterId <- Seq(clusterId1, clusterId2, terminated))
         cosmosDao.cluster.register(clusterId, profile.id)(c)
     }
@@ -130,7 +130,7 @@ class CosmosMachineUsageDaoTest
       ClusterName("terminatedCluster"), 10, Seq.empty, Seq.empty)
     val groupA = GuaranteedGroup("A", Quota(3))
     val groupB = GuaranteedGroup("B", Quota(5))
-    cosmosDao.withTransaction { implicit c =>
+    cosmosDao.store.withTransaction { implicit c =>
       cosmosDao.group.register(groupA)
       cosmosDao.group.register(groupB)
       cosmosDao.profile.setGroup(profile.id, Some("A"))

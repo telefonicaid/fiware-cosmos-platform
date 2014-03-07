@@ -47,7 +47,7 @@ class UserRegistrationWizardIT
 
   "User registration" must "create a new profile with the input data" in
     new WithUserRegistrationWizard {
-      val validationResult = dao.withTransaction { implicit c =>
+      val validationResult = dao.store.withTransaction { implicit c =>
         instance.registerUser(dao, userId, registration)
       }
 
@@ -64,11 +64,11 @@ class UserRegistrationWizardIT
   it must "reconfigure persistent HDFS cluster with current and deleted users" in
     new WithUserRegistrationWizard {
       val deletedUser = registerUser("deleted")(dao)
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         dao.profile.setUserState(deletedUser.id, UserState.Deleted)
       }
 
-      val validationResult = dao.withTransaction { implicit c =>
+      val validationResult = dao.store.withTransaction { implicit c =>
         instance.registerUser(dao, userId, registration)
       }
 

@@ -43,7 +43,7 @@ trait PagesAuthController { this: Controller =>
       whenNotRegistered: OAuthUserProfile => SimpleResult,
       whenNotAuthenticated: => SimpleResult): SimpleResult =
     request.session.userProfile.map(userProfile =>
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         dao.profile.lookupByUserId(userProfile.id)
       } match {
         case Some(cosmosProfile)
@@ -83,7 +83,7 @@ trait PagesAuthController { this: Controller =>
   def requireRegisteredUser(
       userId: UserId,
       redirectTo: Call = routes.Pages.registerForm()): ActionValidation[CosmosProfile] =
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       dao.profile.lookupByUserId(userId)
     }.toSuccess(Redirect(redirectTo))
 

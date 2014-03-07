@@ -84,7 +84,7 @@ class UserResource(
       _ <- requireResourceNotUnderMaintenance()
       params <- validJsonBody[RegisterUserParams](request)
       _ <- requireAdminCreds(params.authRealm, request.headers)
-      dbInfo <- dao.withTransaction { implicit c =>
+      dbInfo <- dao.store.withTransaction { implicit c =>
         for {
           userId <- uniqueUserId(params)
           handle <- selectHandle(params.handle)
@@ -131,7 +131,7 @@ class UserResource(
   }
 
   private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = for {
-    cosmosProfile <- dao.withTransaction { implicit c =>
+    cosmosProfile <- dao.store.withTransaction { implicit c =>
       dao.profile.lookupByUserId(userId)
     }.toSuccess(message(NotFound, s"User $userId does not exist"))
     unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosProfile.id)

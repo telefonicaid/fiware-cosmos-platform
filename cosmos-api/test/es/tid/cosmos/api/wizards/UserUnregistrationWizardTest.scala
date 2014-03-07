@@ -50,7 +50,7 @@ class UserUnregistrationWizardTest
     val cosmosId = cosmosProfile.id
 
     def unregistrationMust(futureMatcher: Matcher[Future[_]]) {
-      dao.withTransaction { implicit c =>
+      dao.store.withTransaction { implicit c =>
         wizard.unregisterUser(dao, cosmosId)
       }.fold(
         fail = message => fail(s"Unexpected failure with message $message"),
@@ -58,7 +58,7 @@ class UserUnregistrationWizardTest
       )
     }
 
-    def databaseUser = dao.withTransaction { implicit c =>
+    def databaseUser = dao.store.withTransaction { implicit c =>
       dao.profile.lookupByUserId(userIdFor("jsmith"))
     }
   }
@@ -75,7 +75,7 @@ class UserUnregistrationWizardTest
       cluster.completeProvisioning()
       cluster.immediateTermination()
     }
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       dao.cluster.register(clusterId, cosmosProfile.id)
     }
   }
@@ -102,7 +102,7 @@ class UserUnregistrationWizardTest
   "Unregistration" must "not be created when user status cannot be changed" in new WithWizard {
     val userId = 0
     dao.throwOnUserStateChangeTo(UserState.Creating)
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       wizard.unregisterUser(dao, userId)
     } must be (Failure(Message(s"Cannot change user cosmosId=$userId status")))
   }

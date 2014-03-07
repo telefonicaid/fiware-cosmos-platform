@@ -28,7 +28,7 @@ private[request] class SessionCookieAuthentication(dao: CosmosDao)
   override def authenticateRequest(request: RequestHeader): AuthResult =
     (for {
       userId <- request.session.userId
-      profile <- dao.withTransaction { implicit c =>
+      profile <- dao.store.withTransaction { implicit c =>
         dao.profile.lookupByUserId(userId)
       }
     } yield profile.success).getOrElse(MissingAuthentication.failure)

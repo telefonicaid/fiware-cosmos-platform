@@ -43,7 +43,7 @@ class ClustersIT
   it must behave like enabledOnlyForOperatorsWhenUnderMaintenance(createCluster)
 
   "The clusters resource" must "list user clusters" in new WithSampleSessions with SampleClusters {
-    dao.withConnection { implicit c =>
+    dao.store.withConnection { implicit c =>
       val user1 = new RegisteredUserSession("user1", "User 1")
       val user2 = new RegisteredUserSession("user2", "User 2")
       val ownCluster = SampleClusters.RunningClusterProps.id
@@ -67,7 +67,7 @@ class ClustersIT
     val location = header("Location", resource)
     location must be ('defined)
     contentAsString(resource) must include (location.get)
-    dao.withConnection { implicit c =>
+    dao.store.withConnection { implicit c =>
       dao.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
     }
   }
@@ -79,7 +79,7 @@ class ClustersIT
     val location = header("Location", resource)
     location must be ('defined)
     contentAsString(resource) must include (location.get)
-    dao.withConnection { implicit c =>
+    dao.store.withConnection { implicit c =>
       dao.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
     }
   }

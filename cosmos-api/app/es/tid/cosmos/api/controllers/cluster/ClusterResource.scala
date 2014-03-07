@@ -51,7 +51,7 @@ class ClusterResource(
     responseClass = "es.tid.cosmos.api.controllers.cluster.ClusterList")
   def list = Action { implicit request =>
 
-    def listClustersWithOwnConnection(profile: CosmosProfile) = dao.withConnection { c =>
+    def listClustersWithOwnConnection(profile: CosmosProfile) = dao.store.withConnection { c =>
       listClusters(profile)(c)
     }
 
@@ -104,7 +104,7 @@ class ClusterResource(
       case Success(clusterId: ClusterId) =>
         Logger.info(s"Provisioning new cluster $clusterId")
         val assignment = ClusterAssignment(clusterId, profile.id, new Date())
-        dao.withTransaction { implicit c => dao.cluster.register(assignment) }
+        dao.store.withTransaction { implicit c => dao.cluster.register(assignment) }
         val clusterDescription = serviceManager.describeCluster(clusterId).get
         val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
         Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
@@ -278,7 +278,7 @@ class ClusterResource(
 
   private def requireProfileExists(handle: String): ActionValidation[CosmosProfile] = {
     import Scalaz._
-    dao.withConnection { implicit c =>
+    dao.store.withConnection { implicit c =>
       dao.profile.lookupByHandle(handle) match {
         case Some(profile: CosmosProfile) => profile.success
         case None => profileNotFound(handle).failure
@@ -328,7 +328,7 @@ class ClusterResource(
   } yield user
 
   private def isOwnerOfCluster(cosmosId: Long, cluster: ClusterId): Boolean =
-    dao.withConnection { implicit c =>
+    dao.store.withConnection { implicit c =>
       dao.cluster.ownedBy(cosmosId).exists(_.clusterId == cluster)
     }
 }

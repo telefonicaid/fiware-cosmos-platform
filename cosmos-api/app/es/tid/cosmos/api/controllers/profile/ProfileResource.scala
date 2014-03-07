@@ -57,7 +57,7 @@ class ProfileResource(override val auth: RequestAuthentication, val dao: CosmosD
       targetProfile <- validJsonBody[UserProfile](request)
     } yield {
       if (targetProfile.keys.length != 1) badRequest("Only one public key is supported")
-      else dao.withTransaction { implicit c =>
+      else dao.store.withTransaction { implicit c =>
         if (currentProfile.handle != targetProfile.handle) {
           badRequest("Handle modification is not supported")
         } else {

@@ -39,7 +39,7 @@ class InfoResource(
     } yield Ok(Json.toJson(gatherInfo(profile)))
   }
 
-  private def gatherInfo(profile: CosmosProfile) = dao.withTransaction { implicit c =>
+  private def gatherInfo(profile: CosmosProfile) = dao.store.withTransaction { implicit c =>
     val userClusters = dao.cluster.ownedBy(profile.id).map(_.clusterId)
     Info(
       profileId = profile.id,

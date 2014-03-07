@@ -62,7 +62,7 @@ class StatsResource(
     slaves = description.slaves.map(_.hostname)
   )
 
-  private def ownerHandleOf(clusterId: ClusterId): String = dao.withTransaction { implicit c =>
+  private def ownerHandleOf(clusterId: ClusterId): String = dao.store.withTransaction { implicit c =>
     for {
       cosmosId <- dao.cluster.ownerOf(clusterId)
       profile <- dao.profile.lookupByProfileId(cosmosId)

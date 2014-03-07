@@ -39,7 +39,7 @@ class UpdatePersistentHdfsUsersWizardTest
   "The UpdatePersistentHdfsUsersWizard" must "handle concurrent update petitions by serializing them" in {
     val numberOfUsers = 10
     val futures = for (i <- 1 to numberOfUsers)
-      yield dao.withTransaction { implicit c =>
+      yield dao.store.withTransaction { implicit c =>
         dao.profile.register(
           UserId(s"user$i"),
           Registration(s"user$i", "ssh-rsa pubkey test", s"user$i@test.com"),

@@ -45,7 +45,7 @@ class StatsResourceIT
       users = Seq.empty
     )
     val terminatedClusterId = ClusterId()
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       dao.cluster.register(activeClusterId, regUser.cosmosProfile.id)
       dao.cluster.register(terminatedClusterId, opUser.cosmosProfile.id)
     }

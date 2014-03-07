@@ -25,6 +25,7 @@ trait MockCosmosDaoComponent extends CosmosProfileDaoComponent {
 /** Mock to be used in tests for handling the profile DAO. Thread-safe. */
 class MockCosmosDao extends CosmosDao {
 
+  // TODO: replace DummyConnection with the STM transaction
   type Conn = DummyConnection.type
 
   private val users = Ref(Map[UserId, CosmosProfile]())
@@ -32,11 +33,13 @@ class MockCosmosDao extends CosmosDao {
   private val groups = Ref(Set(Group.noGroup))
   private val bannedStates = Ref(Set.empty[UserState])
 
-  def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
-  def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
-
   def throwOnUserStateChangeTo(state: UserState): Unit = atomic { implicit txn =>
     bannedStates() = bannedStates() + state
+  }
+
+  override def store = new DataStore[Conn] {
+    override def withConnection[A](block: (Conn) => A): A = block(DummyConnection)
+    override def withTransaction[A](block: (Conn) => A): A = block(DummyConnection)
   }
 
   override def profile = new ProfileDao[Conn] {

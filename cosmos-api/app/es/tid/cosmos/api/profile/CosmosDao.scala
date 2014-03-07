@@ -19,9 +19,7 @@ trait CosmosDao {
   /** Specifies the type of connection to use to the data. */
   type Conn
 
-  def withConnection[A](block: Conn => A): A
-  def withTransaction[A](block: Conn => A): A
-
+  def store: DataStore[Conn]
   def profile: ProfileDao[Conn]
   def capability: CapabilityDao[Conn]
   def group: GroupDao[Conn]

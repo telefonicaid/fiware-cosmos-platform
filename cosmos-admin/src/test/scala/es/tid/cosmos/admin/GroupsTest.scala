@@ -29,7 +29,7 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   "Group commands" must "support creating a new group" in {
     groups.create(name = "mygroup", minQuota = 3) must be (true)
     groups.create(name = "my-noquota-group", minQuota = 0) must be (true)
-    dao.withConnection { implicit c =>
+    dao.store.withConnection { implicit c =>
       dao.group.list() must be (Set(
         NoGroup,
         GuaranteedGroup("mygroup", Quota(3)),
@@ -38,14 +38,14 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
     }
   }
 
-  it must "support listing existing groups" in { dao.withTransaction { implicit c =>
+  it must "support listing existing groups" in { dao.store.withTransaction { implicit c =>
       dao.group.register(GuaranteedGroup("groupA", Quota(3)))
       dao.group.register(GuaranteedGroup("groupB", Quota(4)))
       groups.list must include("groupA")
       groups.list must include("groupB")
   }}
 
-  it must "support deleting an existing group" in { dao.withTransaction { implicit c =>
+  it must "support deleting an existing group" in { dao.store.withTransaction { implicit c =>
     dao.group.register(GuaranteedGroup("groupA", Quota(3)))
     groups.list must include("groupA")
     groups.delete("groupA")
@@ -53,7 +53,7 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   }}
 
   it must "support setting an existing group's minimum quota" in {
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       dao.group.register(GuaranteedGroup("groupA", Quota(3)))
       groups.setMinQuota("groupA", 6)
       dao.group.list() must be (Set(NoGroup, GuaranteedGroup("groupA", Quota(6))))
@@ -61,7 +61,7 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   }
 
   it must "validate feasibility before creating a new group" in {
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       groups.create("hugeGroup", 100) must be (false)
       dao.group.list() must be (Set(NoGroup))
       groups.create("validGroup", 6) must be (true)
@@ -72,7 +72,7 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
   it must "validate feasibility before setting a group's new minimum quota" in {
     val group = GuaranteedGroup("groupA", Quota(3))
     val clusterId = serviceManager.createCluster(ClusterName("myCluster"), 2, Seq.empty, Seq.empty)
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       val profile = registerUser(dao, "myUser")
       dao.group.register(group)
       dao.cluster.register(clusterId, profile.id)

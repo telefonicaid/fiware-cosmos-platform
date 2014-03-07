@@ -118,7 +118,7 @@ class Pages(
       _ <- requireResourceNotUnderMaintenance()
       userProfile <- requireAuthenticatedUser(request)
       _ <- requireUnregisteredUser(userProfile.id)
-      validatedForm = dao.withTransaction { implicit c =>
+      validatedForm = dao.store.withTransaction { implicit c =>
         val form = RegistrationForm().bindFromRequest()
         form.data.get("handle") match {
           case Some(handle) if dao.profile.handleExists(handle) =>
@@ -128,7 +128,7 @@ class Pages(
       }
       registration <- requireValidRegistration(userProfile, validatedForm)
       _ <- requireNoActiveTask(registration.handle, "registration")
-      wizardResult <- dao.withTransaction { implicit c =>
+      wizardResult <- dao.store.withTransaction { implicit c =>
         registrationWizard.registerUser(dao, userProfile.id, registration)
           .leftMap(message => InternalServerError(Json.toJson(message)))
       }
@@ -150,7 +150,7 @@ class Pages(
     )
 
   private def requireUnregisteredUser(userId: UserId): ActionValidation[Unit] = {
-    val userExists = dao.withTransaction { implicit c =>
+    val userExists = dao.store.withTransaction { implicit c =>
       dao.profile.lookupByUserId(userId).isDefined
     }
     if (userExists) redirectToIndex.failure else ().success

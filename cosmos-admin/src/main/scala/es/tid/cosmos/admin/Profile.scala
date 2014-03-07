@@ -25,7 +25,7 @@ private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
   def removeMachineQuota(handle: String): Boolean = setMachineQuota(handle, UnlimitedQuota)
 
   private def setMachineQuota(handle: String, quota: Quota): Boolean =
-    dao.withTransaction { implicit c =>  tryAction {
+    dao.store.withTransaction { implicit c =>  tryAction {
       for {
         cosmosProfile <- withProfile(handle)
       } yield {
@@ -44,7 +44,7 @@ private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
 
   def removeGroup(handle: String): Boolean = handleGroup(handle, groupName = None)
 
-  def list: String = dao.withTransaction { implicit c =>
+  def list: String = dao.store.withTransaction { implicit c =>
     val handles = for (
       profile <- dao.profile.list() if profile.state != UserState.Deleted
     ) yield profile.handle
@@ -58,7 +58,7 @@ private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
     }
 
   private def modifyCapability(handle: String, capability: String, enable: Boolean): Boolean =
-    dao.withTransaction { implicit c => tryAction {
+    dao.store.withTransaction { implicit c => tryAction {
       val action = if (enable) dao.capability.enable _ else dao.capability.disable _
       for {
         cosmosProfile <- withProfile(handle)
@@ -85,7 +85,7 @@ private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
     * @return          true iff the operation was successful
     */
   private def handleGroup(handle: String, groupName: Option[String]): Boolean =
-    dao.withTransaction { implicit c => tryAction {
+    dao.store.withTransaction { implicit c => tryAction {
       val maybeGroupName = groupName.flatMap(withGroup).map(_.name)
       val groupNameGivenButNotFound = groupName.isDefined && maybeGroupName.isEmpty
       if (groupNameGivenButNotFound)

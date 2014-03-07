@@ -45,7 +45,7 @@ class TokenAuthenticationTest extends FlatSpec with MustMatchers with MockitoSug
       given(oauth.requestUserProfile(token)).willReturn(Future.failed(new Error("Invalid token")))
     }
 
-    def registerUser() = dao.withTransaction { implicit c =>
+    def registerUser() = dao.store.withTransaction { implicit c =>
       dao.profile.register(
         oauthProfile.id, Registration("handle", "ssh-rsa XXX", "user@host"), Enabled)
     }

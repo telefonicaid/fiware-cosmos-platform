@@ -34,7 +34,7 @@ class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
     def requestWithCredentials(apiKey: String, apiSecret: String) =
       requestWithoutCredentials.withHeaders("Authorization" -> BasicAuth(apiKey, apiSecret))
 
-    val userProfile = dao.withTransaction { implicit c =>
+    val userProfile = dao.store.withTransaction { implicit c =>
       dao.profile.register(UserId("id"), Registration("user", "ssh-rsa XXX", "user@host"), Enabled)
     }
     val validApiKey = userProfile.apiCredentials.apiKey

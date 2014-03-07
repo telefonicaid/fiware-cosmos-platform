@@ -51,7 +51,7 @@ private[request] class TokenAuthentication(
   }
 
   private def requireExistingProfile(userId: UserId): AuthResult =
-    dao.withTransaction { implicit c =>
+    dao.store.withTransaction { implicit c =>
       dao.profile.lookupByUserId(userId)
     }.toSuccess(InvalidAuthCredentials)
 }

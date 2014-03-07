@@ -29,7 +29,7 @@ class SessionCookieAuthenticationTest extends FlatSpec with MustMatchers {
   trait WithInstance {
     val dao = new MockCosmosDao()
     val userId = UserId("id")
-    val userProfile = dao.withTransaction { implicit c =>
+    val userProfile = dao.store.withTransaction { implicit c =>
       dao.profile.register(
         userId, Registration("user", "ssh-rsa XXXX", "user@host"), UserState.Enabled)
     }

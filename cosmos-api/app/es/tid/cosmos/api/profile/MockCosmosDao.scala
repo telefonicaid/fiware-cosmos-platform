@@ -187,7 +187,7 @@ class MockCosmosDao extends CosmosDao {
         clusters().find(_.clusterId == clusterId).map(_.ownerId)
       }
 
-    override def assignCluster(assignment: ClusterAssignment)(implicit c: Conn): Unit =
+    override def register(assignment: ClusterAssignment)(implicit c: Conn): Unit =
       atomic { implicit txn =>
         require(!clusters().exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
         clusters() = clusters() :+ assignment

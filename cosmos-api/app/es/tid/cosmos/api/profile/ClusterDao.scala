@@ -39,16 +39,15 @@ trait ClusterDao[Conn] {
     * @param assignment  Assignment to make persistent.
     * @param c           The connection to use.
     */
-  def assignCluster(assignment: ClusterAssignment)(implicit c: Conn): Unit
+  def register(assignment: ClusterAssignment)(implicit c: Conn): Unit
 
   /** Assigns a cluster to a given user at the present moment.
     * @param clusterId  The cluster ID to assign.
     * @param ownerId    The unique Cosmos ID of the new owner.
     * @param c          The connection to use.
     */
-  def assignCluster(clusterId: ClusterId, ownerId: Long)(implicit c: Conn) {
-    assignCluster(ClusterAssignment(clusterId, ownerId, new Date()))
-  }
+  def register(clusterId: ClusterId, ownerId: Long)(implicit c: Conn): Unit =
+    register(ClusterAssignment(clusterId, ownerId, new Date()))
 
   /** Assigns a cluster to a given user.
     *
@@ -57,7 +56,6 @@ trait ClusterDao[Conn] {
     * @param creationDate  The instant the cluster creation started.
     * @param c             The connection to use.
     */
-  def assign(clusterId: ClusterId, ownerId: Long, creationDate: Date)(implicit c: Conn) {
-    assignCluster(ClusterAssignment(clusterId, ownerId, creationDate))
-  }
+  def register(clusterId: ClusterId, ownerId: Long, creationDate: Date)(implicit c: Conn): Unit =
+    register(ClusterAssignment(clusterId, ownerId, creationDate))
 }

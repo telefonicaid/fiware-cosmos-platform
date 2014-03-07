@@ -104,7 +104,7 @@ class ClusterResource(
       case Success(clusterId: ClusterId) =>
         Logger.info(s"Provisioning new cluster $clusterId")
         val assignment = ClusterAssignment(clusterId, profile.id, new Date())
-        dao.withTransaction { implicit c => dao.cluster.assignCluster(assignment) }
+        dao.withTransaction { implicit c => dao.cluster.register(assignment) }
         val clusterDescription = serviceManager.describeCluster(clusterId).get
         val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
         Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)

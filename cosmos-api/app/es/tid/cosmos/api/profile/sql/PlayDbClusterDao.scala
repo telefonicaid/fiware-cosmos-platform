@@ -37,12 +37,11 @@ object PlayDbClusterDao extends ClusterDao[Connection] {
       .on("cluster_id" -> clusterId.id)
       .as(scalar[ProfileId].singleOpt)
 
-  override def assignCluster(assignment: ClusterAssignment)(implicit c: Connection) {
+  override def register(assignment: ClusterAssignment)(implicit c: Connection): Unit =
     SQL("""INSERT INTO cluster(cluster_id, owner, creation_date)
           | VALUES ({cluster_id}, {owner}, {creation_date})""".stripMargin).on(
         "cluster_id" -> assignment.clusterId.toString,
         "owner" -> assignment.ownerId,
         "creation_date" -> assignment.creationDate
       ).execute()
-  }
 }

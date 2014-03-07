@@ -75,7 +75,7 @@ class GroupsTest extends FlatSpec with MustMatchers with OneInstancePerTest {
     dao.withTransaction { implicit c =>
       val profile = registerUser(dao, "myUser")
       dao.group.register(group)
-      dao.cluster.assignCluster(clusterId, profile.id)
+      dao.cluster.register(clusterId, profile.id)
       groups.setMinQuota("groupA", 5) must be (false)
       dao.group.list() must be (Set(NoGroup, GuaranteedGroup("groupA", Quota(3))))
     }

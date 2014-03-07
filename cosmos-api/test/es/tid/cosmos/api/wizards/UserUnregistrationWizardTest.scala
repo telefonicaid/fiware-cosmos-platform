@@ -76,7 +76,7 @@ class UserUnregistrationWizardTest
       cluster.immediateTermination()
     }
     dao.withTransaction { implicit c =>
-      dao.cluster.assignCluster(clusterId, cosmosProfile.id)
+      dao.cluster.register(clusterId, cosmosProfile.id)
     }
   }
 

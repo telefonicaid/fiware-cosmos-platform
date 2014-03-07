@@ -88,7 +88,7 @@ class CosmosMachineUsageDaoTest
         val clusterId = serviceManager.createCluster(
           ClusterName("failedCluster"), 2, Seq.empty, Seq.empty, failedPreconditions)
         cosmosDao.withTransaction { implicit c =>
-          cosmosDao.cluster.assignCluster(clusterId, profile.id)(c)
+          cosmosDao.cluster.register(clusterId, profile.id)(c)
         }
         usageDao.usageByProfile(requestedClusterId = None) must be (Map(
           profile.id -> 13
@@ -114,7 +114,7 @@ class CosmosMachineUsageDaoTest
 
     cosmosDao.withTransaction { c =>
       for (clusterId <- Seq(clusterId1, clusterId2, terminated))
-        cosmosDao.cluster.assignCluster(clusterId, profile.id)(c)
+        cosmosDao.cluster.register(clusterId, profile.id)(c)
     }
   }
 
@@ -137,11 +137,11 @@ class CosmosMachineUsageDaoTest
       cosmosDao.profile.setGroup(profileA2.id, Some("A"))
       cosmosDao.profile.setGroup(profileB1.id, Some("B"))
       cosmosDao.profile.setGroup(profileB2.id, Some("B"))
-      cosmosDao.cluster.assignCluster(clusterA1, profile.id)
-      cosmosDao.cluster.assignCluster(clusterA2, profileA2.id)
-      cosmosDao.cluster.assignCluster(clusterB1, profileB1.id)
-      cosmosDao.cluster.assignCluster(clusterB2, profileB2.id)
-      cosmosDao.cluster.assignCluster(terminated, profileB2.id)
+      cosmosDao.cluster.register(clusterA1, profile.id)
+      cosmosDao.cluster.register(clusterA2, profileA2.id)
+      cosmosDao.cluster.register(clusterB1, profileB1.id)
+      cosmosDao.cluster.register(clusterB2, profileB2.id)
+      cosmosDao.cluster.register(terminated, profileB2.id)
     }
   }
 }

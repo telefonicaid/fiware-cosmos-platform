@@ -46,8 +46,8 @@ class StatsResourceIT
     )
     val terminatedClusterId = ClusterId()
     dao.withTransaction { implicit c =>
-      dao.cluster.assignCluster(activeClusterId, regUser.cosmosProfile.id)
-      dao.cluster.assignCluster(terminatedClusterId, opUser.cosmosProfile.id)
+      dao.cluster.register(activeClusterId, regUser.cosmosProfile.id)
+      dao.cluster.register(terminatedClusterId, opUser.cosmosProfile.id)
     }
 
     val json = contentAsJson(opUser.doRequest(clusterStatsRequest))

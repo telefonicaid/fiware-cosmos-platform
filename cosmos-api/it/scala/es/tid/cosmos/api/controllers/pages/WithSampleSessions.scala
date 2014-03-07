@@ -65,7 +65,7 @@ trait WithSampleSessions extends WithTestApplication {
 
     def setAsOwner(cluster: ClusterId) = {
       dao.withConnection { implicit c =>
-        dao.cluster.assignCluster(cluster, cosmosProfile.id)
+        dao.cluster.register(cluster, cosmosProfile.id)
       }
     }
 

@@ -48,8 +48,8 @@ class ClustersIT
       val user2 = new RegisteredUserSession("user2", "User 2")
       val ownCluster = SampleClusters.RunningClusterProps.id
       val otherCluster = ClusterId()
-      dao.cluster.assignCluster(ownCluster, user1.cosmosProfile.id)
-      dao.cluster.assignCluster(otherCluster, user2.cosmosProfile.id)
+      dao.cluster.register(ownCluster, user1.cosmosProfile.id)
+      dao.cluster.register(otherCluster, user2.cosmosProfile.id)
       val resource = user1.doRequest(listClusters)
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))

@@ -216,7 +216,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
         val clusterId = ClusterId()
         val id1 = registerUser(dao, "user1").id
         val id2 = registerUser(dao, "user2").id
-        dao.cluster.assignCluster(clusterId, id2)
+        dao.cluster.register(clusterId, id2)
         dao.cluster.ownedBy(id1).map(_.clusterId).toList must not contain clusterId
         dao.cluster.ownedBy(id2).map(_.clusterId).toList must contain (clusterId)
       }
@@ -226,7 +226,7 @@ trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMat
       val clusterId = ClusterId()
       val profileId = dao.withTransaction { implicit c =>
         val profileId = registerUser(dao, "user1").id
-        dao.cluster.assignCluster(clusterId, profileId)
+        dao.cluster.register(clusterId, profileId)
         profileId
       }
       dao.withTransaction { implicit c =>

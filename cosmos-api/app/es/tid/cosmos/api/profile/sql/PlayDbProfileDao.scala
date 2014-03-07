@@ -174,7 +174,7 @@ object PlayDbProfileDao extends ProfileDao[Connection] {
           id, state, handle, email,
           group = getGroup(groupName.asInstanceOf[Option[String]]),
           quota = Quota(machineQuota.asInstanceOf[Option[Int]]),
-          capabilities = PlayDbCapabilityDao.getUserCapabilities(id),
+          capabilities = PlayDbCapabilityDao.userCapabilities(id),
           apiCredentials = ApiCredentials(apiKey, apiSecret),
           keys = namedKeys
         )

@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.profile
 
+import java.sql.Connection
+
 trait CapabilityDao[Conn] {
 
   /** Enable some capability to the given user.
@@ -31,4 +33,11 @@ trait CapabilityDao[Conn] {
     * @param capability   The capability to be disabled.
     */
   def disable(id: ProfileId, capability: Capability.Value)(implicit c: Conn): Unit
+
+  /** List capabilities for a given profile.
+    *
+    * @param id  Profile id
+    * @return    User capabilities or UntrustedUserCapabilities if the user doesn't exist
+    */
+  def userCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities
 }

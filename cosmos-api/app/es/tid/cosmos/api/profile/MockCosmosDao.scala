@@ -137,17 +137,18 @@ class MockCosmosDao extends CosmosDao {
 
   override def capability = new CapabilityDao[Conn] {
 
-    override def enable(id: ProfileId, capability: Capability.Value)(implicit c: Conn) {
+    override def enable(id: ProfileId, capability: Capability.Value)(implicit c: Conn) =
       updateProfile(id) { profile =>
         profile.copy(capabilities = profile.capabilities + capability)
       }
-    }
 
-    override def disable(id: ProfileId, capability: Capability.Value)(implicit c: Conn) {
+    override def disable(id: ProfileId, capability: Capability.Value)(implicit c: Conn) =
       updateProfile(id) { profile =>
         profile.copy(capabilities = profile.capabilities - capability)
       }
-    }
+
+    override def userCapabilities(id: ProfileId)(implicit c: Conn): UserCapabilities =
+      profile.lookupByProfileId(id).map(_.capabilities).getOrElse(UntrustedUserCapabilities)
   }
 
   override def group = new GroupDao[Conn] {

@@ -18,7 +18,7 @@ import play.api.test.Helpers
 import es.tid.cosmos.api.profile.sql.PlayDbCosmosDao
 import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 
-class CosmosProfileDaoIT extends FlatSpec with MustMatchers with CosmosProfileDaoBehavior {
+class CosmosDaoIT extends FlatSpec with MustMatchers with CosmosDaoBehavior {
 
   def withPlayDbCosmosProfileDao(block: CosmosDao => Unit) {
     val environment = new WithTestDatabase()

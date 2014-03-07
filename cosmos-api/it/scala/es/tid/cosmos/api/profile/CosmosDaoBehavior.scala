@@ -19,7 +19,7 @@ import es.tid.cosmos.api.profile.CosmosProfileTestHelpers._
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-trait CosmosProfileDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMatchers =>
+trait CosmosDaoBehavior extends CapabilityMatchers { this: FlatSpec with MustMatchers =>
 
   type DaoTest = CosmosDao => Unit
 
@@ -140,22 +140,26 @@ trait CosmosProfileDaoBehavior extends CapabilityMatchers { this: FlatSpec with 
 
     taggedTest(it must "enable user capabilities", withDao { implicit dao =>
       dao.withTransaction { implicit c =>
-        registerUser(dao, "jsmith")
-        val userProfile2 = registerUser(dao, "bclinton")
-        dao.capability.enable(userProfile2.id, Capability.IsSudoer)
-        lookup(dao, "jsmith").get must not(haveCapability (Capability.IsSudoer))
-        lookup(dao, "bclinton").get must haveCapability (Capability.IsSudoer)
+        val jsmith = registerUser(dao, "jsmith").id
+        val bclinton = registerUser(dao, "bclinton").id
+
+        dao.capability.enable(bclinton, Capability.IsSudoer)
+
+        dao.capability.userCapabilities(jsmith) must not(containCapability(Capability.IsSudoer))
+        dao.capability.userCapabilities(bclinton) must containCapability(Capability.IsSudoer)
       }
     })
 
     taggedTest(it must "disable user capabilities", withDao { implicit dao =>
-      registerUser("jsmith")
-      val userProfile2 = registerUser("bclinton")
       dao.withTransaction { implicit c =>
-        dao.capability.enable(userProfile2.id, Capability.IsSudoer)
-        dao.capability.disable(userProfile2.id, Capability.IsSudoer)
-        lookup(dao, "jsmith").get must not(haveCapability(Capability.IsSudoer))
-        lookup(dao, "bclinton").get must not(haveCapability(Capability.IsSudoer))
+        val jsmith = registerUser(dao, "jsmith").id
+        val bclinton = registerUser(dao, "bclinton").id
+
+        dao.capability.enable(bclinton, Capability.IsSudoer)
+        dao.capability.disable(bclinton, Capability.IsSudoer)
+
+        dao.capability.userCapabilities(jsmith) must not(containCapability(Capability.IsSudoer))
+        dao.capability.userCapabilities(bclinton) must not(containCapability(Capability.IsSudoer))
       }
     })
 

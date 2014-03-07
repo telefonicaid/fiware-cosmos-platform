@@ -16,10 +16,10 @@ import scalaz._
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.CosmosDao
 
 /** Authenticates requests that have a valid session cookie associated. */
-private[request] class SessionCookieAuthentication(dao: CosmosProfileDao)
+private[request] class SessionCookieAuthentication(dao: CosmosDao)
   extends RequestAuthentication {
 
   import Scalaz._
@@ -29,7 +29,7 @@ private[request] class SessionCookieAuthentication(dao: CosmosProfileDao)
     (for {
       userId <- request.session.userId
       profile <- dao.withTransaction { implicit c =>
-        dao.lookupByUserId(userId)
+        dao.profile.lookupByUserId(userId)
       }
     } yield profile.success).getOrElse(MissingAuthentication.failure)
 }

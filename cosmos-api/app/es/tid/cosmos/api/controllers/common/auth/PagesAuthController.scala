@@ -19,12 +19,12 @@ import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.controllers.pages.routes
-import es.tid.cosmos.api.profile.{CosmosProfile, CosmosProfileDao, UserId}
+import es.tid.cosmos.api.profile.{CosmosProfile, CosmosDao, UserId}
 import es.tid.cosmos.api.profile.UserState._
 
 /** Controller mixin adding authentication validations. */
 trait PagesAuthController { this: Controller =>
-  val dao: CosmosProfileDao
+  val dao: CosmosDao
 
   import Scalaz._
 
@@ -44,7 +44,7 @@ trait PagesAuthController { this: Controller =>
       whenNotAuthenticated: => SimpleResult): SimpleResult =
     request.session.userProfile.map(userProfile =>
       dao.withTransaction { implicit c =>
-        dao.lookupByUserId(userProfile.id)
+        dao.profile.lookupByUserId(userProfile.id)
       } match {
         case Some(cosmosProfile)
           if cosmosProfile.state == Enabled || cosmosProfile.state == Creating =>
@@ -84,7 +84,7 @@ trait PagesAuthController { this: Controller =>
       userId: UserId,
       redirectTo: Call = routes.Pages.registerForm()): ActionValidation[CosmosProfile] =
     dao.withTransaction { implicit c =>
-      dao.lookupByUserId(userId)
+      dao.profile.lookupByUserId(userId)
     }.toSuccess(Redirect(redirectTo))
 
   lazy val redirectToIndex = Redirect(routes.Pages.index())

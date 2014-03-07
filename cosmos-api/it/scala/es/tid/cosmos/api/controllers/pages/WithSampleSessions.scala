@@ -65,7 +65,7 @@ trait WithSampleSessions extends WithTestApplication {
 
     def setAsOwner(cluster: ClusterId) = {
       dao.withConnection { implicit c =>
-        dao.assignCluster(cluster, cosmosProfile.id)
+        dao.cluster.register(cluster, cosmosProfile.id)
       }
     }
 
@@ -105,8 +105,8 @@ trait WithSampleSessions extends WithTestApplication {
       override protected def buildCosmosProfile(): CosmosProfile = {
         val profile = super.buildCosmosProfile()
         dao.withTransaction { implicit c =>
-          dao.setUserState(profile.id, state)
-          dao.lookupByProfileId(profile.id).get
+          dao.profile.setUserState(profile.id, state)
+          dao.profile.lookupByProfileId(profile.id).get
         }
       }
     }
@@ -116,8 +116,8 @@ trait WithSampleSessions extends WithTestApplication {
     override protected def buildCosmosProfile(): CosmosProfile = {
       val profile = super.buildCosmosProfile()
       dao.withTransaction { implicit c =>
-        dao.enableUserCapability(profile.id, Capability.IsOperator)
-        dao.lookupByProfileId(profile.id).get
+        dao.capability.enable(profile.id, Capability.IsOperator)
+        dao.profile.lookupByProfileId(profile.id).get
       }
     }
   }

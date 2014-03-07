@@ -9,8 +9,10 @@
  * All rights reserved.
  */
 
-package es.tid.cosmos.api.profile
+package es.tid.cosmos.api.profile.sql
 
-trait CosmosProfileDaoComponent {
-  val cosmosProfileDao: CosmosDao
+import es.tid.cosmos.api.profile.{CosmosDao, CosmosProfileDaoComponent}
+
+trait PlayDbCosmosDaoComponent extends CosmosProfileDaoComponent {
+  lazy val cosmosProfileDao: CosmosDao = new PlayDbCosmosDao
 }

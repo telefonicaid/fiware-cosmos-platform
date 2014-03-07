@@ -17,7 +17,7 @@ import scala.util.control.NonFatal
 
 import play.Logger
 
-import es.tid.cosmos.api.profile.CosmosProfileDao
+import es.tid.cosmos.api.profile.CosmosDao
 import es.tid.cosmos.api.profile.UserState._
 import es.tid.cosmos.common.SequentialOperations
 import es.tid.cosmos.servicemanager.{ClusterUser, ServiceManager}
@@ -33,10 +33,10 @@ class UpdatePersistentHdfsUsersWizard(serviceManager: ServiceManager) {
   case class PersistentHdfsUpdateException(cause: Throwable)
     extends RuntimeException("Cannot update persistent HDFS users", cause)
 
-  def updatePersistentHdfsUsers(dao: CosmosProfileDao): Future[Unit] =
+  def updatePersistentHdfsUsers(dao: CosmosDao): Future[Unit] =
     persistentHdfsOperationsQueue.enqueue {
       val clusterUsers = dao.withTransaction { implicit c =>
-        dao.getAllUsers().map { profile =>
+        dao.profile.list().map { profile =>
           ClusterUser(
             username = profile.handle,
             publicKey = profile.keys.head.signature,

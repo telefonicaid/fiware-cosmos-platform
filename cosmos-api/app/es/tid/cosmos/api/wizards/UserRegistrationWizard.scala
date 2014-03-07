@@ -47,17 +47,16 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
     * @return              Newly created profile or an error message
     */
   def registerUser(
-      dao: CosmosProfileDao,
+      dao: CosmosDao,
       userId: UserId,
       registration: Registration): Validation[ErrorMessage, (CosmosProfile, Future[Unit])] =
     dao.withTransaction { implicit c =>
       Logger.info(s"Starting $userId (${registration.handle}) registration")
-      Try (dao.registerUser(userId, registration, UserState.Creating)) match {
-        case Failure(ex) => {
+      Try (dao.profile.register(userId, registration, UserState.Creating)) match {
+        case Failure(ex) =>
           logRegistrationError(userId, ex)
           ErrorMessage(registrationErrorMessage(userId)).failure
-        }
-        case Success(profile) => {
+        case Success(profile) =>
           val registration_> = for {
             _ <- hdfsWizard.updatePersistentHdfsUsers(dao)
           } yield markUserEnabled(dao, userId)
@@ -66,15 +65,14 @@ class UserRegistrationWizard(serviceManager: ServiceManager) extends Results {
             case Success(_) => logRegistrationSuccess(userId, profile)
           }
           (profile, registration_>).success
-        }
       }
     }
 
-  private def markUserEnabled(dao: CosmosProfileDao, userId: UserId) {
+  private def markUserEnabled(dao: CosmosDao, userId: UserId) {
     dao.withTransaction { implicit c =>
-      dao.lookupByUserId(userId).map { profile =>
+      dao.profile.lookupByUserId(userId).map { profile =>
         if (profile.state == UserState.Creating) {
-          dao.setUserState(profile.id, UserState.Enabled)
+          dao.profile.setUserState(profile.id, UserState.Enabled)
         } else {
           logRegistrationError(userId, new IllegalStateException(s"""
             | Registration for $userId (${profile.handle}) cannot be completed as it is in

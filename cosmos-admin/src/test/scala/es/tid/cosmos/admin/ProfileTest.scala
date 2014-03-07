@@ -11,9 +11,6 @@
 
 package es.tid.cosmos.admin
 
-import org.mockito.BDDMockito.given
-import org.mockito.Matchers.any
-import org.mockito.Mockito.spy
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 
@@ -24,18 +21,18 @@ import es.tid.cosmos.api.quota._
 class ProfileTest extends FlatSpec with MustMatchers {
 
   trait WithMockCosmosProfileDao {
-    val dao = new MockCosmosProfileDao()
+    val dao = new MockCosmosDao()
     val handle = "jsmith"
     val cosmosId = registerUser(handle)(dao).id
     val instance = new Profile(dao)
     def userProfile = dao.withTransaction { implicit c =>
-      dao.lookupByHandle(handle)
+      dao.profile.lookupByHandle(handle)
     }.get
   }
 
   "A profile" must "unset quota" in new WithMockCosmosProfileDao {
     dao.withTransaction { implicit c =>
-      dao.setMachineQuota(cosmosId, EmptyQuota)
+      dao.profile.setMachineQuota(cosmosId, EmptyQuota)
     }
     instance.removeMachineQuota(handle) must be (true)
     userProfile.quota must be (UnlimitedQuota)
@@ -53,7 +50,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
 
   it must "disable user capabilities" in new WithMockCosmosProfileDao {
     dao.withTransaction { implicit c =>
-      dao.enableUserCapability(cosmosId, Capability.IsSudoer)
+      dao.capability.enable(cosmosId, Capability.IsSudoer)
     }
     instance.disableCapability(handle, "is_sudoer") must be (true)
     userProfile.capabilities.hasCapability(Capability.IsSudoer) must be (false)
@@ -62,7 +59,7 @@ class ProfileTest extends FlatSpec with MustMatchers {
   it must "set to an existing group" in new WithMockCosmosProfileDao {
     val group = GuaranteedGroup("mygroup", Quota(3))
     dao.withTransaction{ implicit c =>
-      dao.registerGroup(group)
+      dao.group.register(group)
       new Profile(dao).setGroup(handle, group.name) must be (true)
       userProfile.group must be (group)
     }
@@ -71,8 +68,8 @@ class ProfileTest extends FlatSpec with MustMatchers {
   it must "remove user from its assigned group" in new WithMockCosmosProfileDao {
     val group = GuaranteedGroup("mygroup", Quota(3))
     dao.withTransaction{ implicit c =>
-      dao.registerGroup(group)
-      dao.setGroup(cosmosId, Some("mygroup"))
+      dao.group.register(group)
+      dao.profile.setGroup(cosmosId, Some("mygroup"))
       new Profile(dao).removeGroup(handle) must be (true)
       userProfile.group must be (NoGroup)
     }
@@ -86,10 +83,11 @@ class ProfileTest extends FlatSpec with MustMatchers {
   }
 
   it must "list no handles when there are no users" in new WithMockCosmosProfileDao {
-    val spicedDao = spy(dao)
-    given(spicedDao.getAllUsers()(any())).willReturn(Nil)
-    spicedDao.withTransaction { implicit c =>
-      new Profile(spicedDao).list must equal("No users found")
+    dao.withTransaction { implicit c =>
+      dao.profile.list().foreach { profile =>
+        dao.profile.setUserState(profile.id, UserState.Deleted)
+      }
+      new Profile(dao).list must equal("No users found")
     }
   }
 }

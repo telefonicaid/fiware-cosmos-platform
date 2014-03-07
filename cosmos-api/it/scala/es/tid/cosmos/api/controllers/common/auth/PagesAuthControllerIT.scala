@@ -18,12 +18,12 @@ import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers._
 import play.api.mvc._
 
-import es.tid.cosmos.api.profile.{UserState, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{UserState, CosmosDao}
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 
 class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 
-  class TestController(override val dao: CosmosProfileDao)
+  class TestController(override val dao: CosmosDao)
     extends Controller with PagesAuthController {
 
     def index() = Action(parse.anyContent) { request =>

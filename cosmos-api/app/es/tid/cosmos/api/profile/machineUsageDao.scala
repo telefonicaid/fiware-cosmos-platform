@@ -32,7 +32,7 @@ trait MachineUsageDao {
 }
 
 /** Machine Usage DAO that combines the information of the
-  * [[es.tid.cosmos.api.profile.CosmosProfileDao]] and
+  * [[es.tid.cosmos.api.profile.CosmosDao]] and
   * [[es.tid.cosmos.servicemanager.ServiceManager]] in order to calculate the machine usage at a
   * given time.
   *
@@ -42,15 +42,15 @@ trait MachineUsageDao {
   * @param serviceManager the service manager
   */
 class CosmosMachineUsageDao(
-    profileDao: CosmosProfileDao, serviceManager: ServiceManager) extends MachineUsageDao {
+    profileDao: CosmosDao, serviceManager: ServiceManager) extends MachineUsageDao {
 
   override def machinePoolSize = serviceManager.clusterNodePoolCount
 
   override def globalGroupQuotas: GlobalGroupQuotas[ProfileId] =
     profileDao.withConnection { implicit c =>
       val membersByGroup = (for {
-        group@GuaranteedGroup(_, _) <- profileDao.getGroups
-        members = profileDao.lookupByGroup(group).map(_.id)
+        group@GuaranteedGroup(_, _) <- profileDao.group.list()
+        members = profileDao.profile.lookupByGroup(group).map(_.id)
       } yield group -> members).toMap
       GlobalGroupQuotas(membersByGroup)
     }
@@ -58,8 +58,8 @@ class CosmosMachineUsageDao(
   override def usageByProfile(requestedClusterId: Option[ClusterId]): Map[ProfileId, Int] =
     profileDao.withConnection { implicit c =>
       (for {
-        g <- profileDao.getGroups.toSeq
-        profile <- profileDao.lookupByGroup(g)
+        g <- profileDao.group.list().toSeq
+        profile <- profileDao.profile.lookupByGroup(g)
       } yield profile.id -> usedMachinesForActiveClusters(profile, requestedClusterId)).toMap
     }
 
@@ -79,7 +79,7 @@ class CosmosMachineUsageDao(
     }
 
   private def listClusters(profile: CosmosProfile)(implicit c: profileDao.Conn) = {
-    val assignedClusters =  Set(profileDao.clustersOf(profile.id): _*)
+    val assignedClusters =  Set(profileDao.cluster.ownedBy(profile.id): _*)
     for {
       assignment <- assignedClusters.toList
       description <- serviceManager.describeCluster(assignment.clusterId).toList

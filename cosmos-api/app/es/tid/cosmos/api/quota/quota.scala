@@ -47,7 +47,7 @@ sealed trait Quota {
   /** Get a numeric representation of the quota or None.
    *
    * @return the number of resources represented by this quota.
-   *         [[scala.None]] represents an unlimited quota
+   *         None represents an unlimited quota
    */
   def toOptInt: Option[Int]
 }

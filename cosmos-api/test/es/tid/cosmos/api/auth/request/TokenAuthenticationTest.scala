@@ -30,7 +30,7 @@ class TokenAuthenticationTest extends FlatSpec with MustMatchers with MockitoSug
 
   trait WithInstance {
     val oauth = mock[OAuthProvider]
-    val dao = new MockCosmosProfileDao()
+    val dao = new MockCosmosDao()
     val token = "oauth-token"
     val oauthProfile = OAuthUserProfile(UserId("id"))
     val requestWithoutToken = FakeRequest("GET", "/resource")
@@ -46,7 +46,8 @@ class TokenAuthenticationTest extends FlatSpec with MustMatchers with MockitoSug
     }
 
     def registerUser() = dao.withTransaction { implicit c =>
-      dao.registerUser(oauthProfile.id, Registration("handle", "ssh-rsa XXX", "user@host"), Enabled)
+      dao.profile.register(
+        oauthProfile.id, Registration("handle", "ssh-rsa XXX", "user@host"), Enabled)
     }
   }
 

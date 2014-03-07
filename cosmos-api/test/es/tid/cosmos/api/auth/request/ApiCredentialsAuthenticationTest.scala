@@ -27,7 +27,7 @@ class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
   import Scalaz._
 
   trait WithInstance {
-    val dao = new MockCosmosProfileDao()
+    val dao = new MockCosmosDao()
     val auth = new ApiCredentialsAuthentication(dao)
 
     val requestWithoutCredentials = FakeRequest("GET", "/sample/resource")
@@ -35,7 +35,7 @@ class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
       requestWithoutCredentials.withHeaders("Authorization" -> BasicAuth(apiKey, apiSecret))
 
     val userProfile = dao.withTransaction { implicit c =>
-      dao.registerUser(UserId("id"), Registration("user", "ssh-rsa XXX", "user@host"), Enabled)
+      dao.profile.register(UserId("id"), Registration("user", "ssh-rsa XXX", "user@host"), Enabled)
     }
     val validApiKey = userProfile.apiCredentials.apiKey
     val invalidApiKey = stringOf(ApiCredentials.ApiKeyLength + 1)

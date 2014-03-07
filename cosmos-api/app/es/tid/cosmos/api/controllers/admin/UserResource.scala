@@ -25,7 +25,7 @@ import play.api.mvc.{Controller, Action, Headers}
 
 import es.tid.cosmos.api.auth.multiauth.MultiAuthProvider
 import es.tid.cosmos.api.controllers.common._
-import es.tid.cosmos.api.profile.{Registration, UserId, CosmosProfileDao}
+import es.tid.cosmos.api.profile.{Registration, UserId, CosmosDao}
 import es.tid.cosmos.api.wizards.{UserUnregistrationWizard, UserRegistrationWizard}
 import es.tid.cosmos.servicemanager.ServiceManager
 
@@ -35,7 +35,7 @@ import es.tid.cosmos.servicemanager.ServiceManager
 class UserResource(
     multiUserProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
-    dao: CosmosProfileDao,
+    dao: CosmosDao,
     override val maintenanceStatus: MaintenanceStatus
   ) extends Controller with JsonController with MaintenanceAwareController {
 
@@ -124,16 +124,16 @@ class UserResource(
       _ <- requireAdminCreds(realm, request.headers)
       unregistration_> <- startUnregistration(userId)
     } yield {
-      val message = s"User $userId unregistration started"
-      Logger.info(message)
-      Ok(Json.toJson(Message(message)))
+      val text = s"User $userId unregistration started"
+      Logger.info(text)
+      message(Ok, text)
     }
   }
 
   private def startUnregistration(userId: UserId): ActionValidation[Future[Unit]] = for {
-    cosmosProfile <- dao.withTransaction { implicit c => dao.lookupByUserId(userId)}.toSuccess(
-      NotFound(Json.toJson(Message(s"User $userId does not exist")))
-    )
+    cosmosProfile <- dao.withTransaction { implicit c =>
+      dao.profile.lookupByUserId(userId)
+    }.toSuccess(message(NotFound, s"User $userId does not exist"))
     unregistration_> <- unregistrationWizard.unregisterUser(dao, cosmosProfile.id)
       .leftMap(message => InternalServerError(Json.toJson(message)))
   } yield {
@@ -149,14 +149,14 @@ class UserResource(
   private def selectHandle(reqHandle: Option[String])(implicit c: Conn) =
     reqHandle match {
       case None => Success(generateHandle())
-      case Some(handle) if !dao.handleExists(handle) => handle.success
+      case Some(handle) if !dao.profile.handleExists(handle) => handle.success
       case Some(handle) => failWith(Conflict, s"Handle '$handle' is already taken")
     }
 
   private def uniqueUserId(params: RegisterUserParams)
                           (implicit c: Conn): ActionValidation[UserId] = {
     val userId = UserId(params.authRealm, params.authId)
-    if (dao.lookupByUserId(userId).isEmpty) userId.success
+    if (dao.profile.lookupByUserId(userId).isEmpty) userId.success
     else failWith(Conflict, s"Already existing credentials: $userId")
   }
 
@@ -195,7 +195,6 @@ class UserResource(
   @tailrec
   private def generateHandle()(implicit c: Conn): String = {
     val handle = s"id${Random.nextLong().abs.toString}"
-    if (dao.handleExists(handle)) generateHandle()
-    else handle
+    if (dao.profile.handleExists(handle)) generateHandle() else handle
   }
 }

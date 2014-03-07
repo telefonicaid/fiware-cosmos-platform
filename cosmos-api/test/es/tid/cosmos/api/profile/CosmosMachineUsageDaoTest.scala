@@ -35,10 +35,10 @@ class CosmosMachineUsageDaoTest
     interval = Span(10, Seconds)
   )
 
-  val profileDao = new MockCosmosProfileDao
+  val cosmosDao = new MockCosmosDao
   val serviceManager = new MockedServiceManager(maxPoolSize = 16)
-  val usageDao = new CosmosMachineUsageDao(profileDao, serviceManager)
-  val profile = registerUser("myUser")(profileDao)
+  val usageDao = new CosmosMachineUsageDao(cosmosDao, serviceManager)
+  val profile = registerUser("myUser")(cosmosDao)
 
   "The usage dao" must "retrieve the machine pool size from the service manager" in {
     usageDao.machinePoolSize must be (16)
@@ -87,8 +87,8 @@ class CosmosMachineUsageDaoTest
         val failedPreconditions = (clusterId: ClusterId) => () => "Failure example".failureNel
         val clusterId = serviceManager.createCluster(
           ClusterName("failedCluster"), 2, Seq.empty, Seq.empty, failedPreconditions)
-        profileDao.withTransaction { implicit c =>
-          profileDao.assignCluster(clusterId, profile.id)(c)
+        cosmosDao.withTransaction { implicit c =>
+          cosmosDao.cluster.register(clusterId, profile.id)(c)
         }
         usageDao.usageByProfile(requestedClusterId = None) must be (Map(
           profile.id -> 13
@@ -112,16 +112,16 @@ class CosmosMachineUsageDaoTest
     serviceManager.withCluster(clusterId2)(_.completeProvisioning())
     serviceManager.withCluster(terminated)(_.immediateTermination())
 
-    profileDao.withTransaction { c =>
+    cosmosDao.withTransaction { c =>
       for (clusterId <- Seq(clusterId1, clusterId2, terminated))
-        profileDao.assignCluster(clusterId, profile.id)(c)
+        cosmosDao.cluster.register(clusterId, profile.id)(c)
     }
   }
 
   private trait WithGroups {
-    val profileA2 = registerUser("userA2")(profileDao)
-    val profileB1 = registerUser("userB1")(profileDao)
-    val profileB2 = registerUser("userB2")(profileDao)
+    val profileA2 = registerUser("userA2")(cosmosDao)
+    val profileB1 = registerUser("userB1")(cosmosDao)
+    val profileB2 = registerUser("userB2")(cosmosDao)
     val clusterA1 = serviceManager.createCluster(ClusterName("clusterA1"), 1, Seq.empty, Seq.empty)
     val clusterA2 = serviceManager.createCluster(ClusterName("clusterA2"), 2, Seq.empty, Seq.empty)
     val clusterB1 = serviceManager.createCluster(ClusterName("clusterB1"), 1, Seq.empty, Seq.empty)
@@ -130,18 +130,18 @@ class CosmosMachineUsageDaoTest
       ClusterName("terminatedCluster"), 10, Seq.empty, Seq.empty)
     val groupA = GuaranteedGroup("A", Quota(3))
     val groupB = GuaranteedGroup("B", Quota(5))
-    profileDao.withTransaction { implicit c =>
-      profileDao.registerGroup(groupA)
-      profileDao.registerGroup(groupB)
-      profileDao.setGroup(profile.id, Some("A"))
-      profileDao.setGroup(profileA2.id, Some("A"))
-      profileDao.setGroup(profileB1.id, Some("B"))
-      profileDao.setGroup(profileB2.id, Some("B"))
-      profileDao.assignCluster(clusterA1, profile.id)
-      profileDao.assignCluster(clusterA2, profileA2.id)
-      profileDao.assignCluster(clusterB1, profileB1.id)
-      profileDao.assignCluster(clusterB2, profileB2.id)
-      profileDao.assignCluster(terminated, profileB2.id)
+    cosmosDao.withTransaction { implicit c =>
+      cosmosDao.group.register(groupA)
+      cosmosDao.group.register(groupB)
+      cosmosDao.profile.setGroup(profile.id, Some("A"))
+      cosmosDao.profile.setGroup(profileA2.id, Some("A"))
+      cosmosDao.profile.setGroup(profileB1.id, Some("B"))
+      cosmosDao.profile.setGroup(profileB2.id, Some("B"))
+      cosmosDao.cluster.register(clusterA1, profile.id)
+      cosmosDao.cluster.register(clusterA2, profileA2.id)
+      cosmosDao.cluster.register(clusterB1, profileB1.id)
+      cosmosDao.cluster.register(clusterB2, profileB2.id)
+      cosmosDao.cluster.register(terminated, profileB2.id)
     }
   }
 }

@@ -20,11 +20,11 @@ import play.Logger
 import play.api.mvc.RequestHeader
 
 import es.tid.cosmos.api.auth.oauth2.OAuthProvider
-import es.tid.cosmos.api.profile.{CosmosProfileDao, UserId}
+import es.tid.cosmos.api.profile.{CosmosDao, UserId}
 
 private[request] class TokenAuthentication(
      oauth: OAuthProvider,
-     dao: CosmosProfileDao,
+     dao: CosmosDao,
      timeout: FiniteDuration = TokenAuthentication.DefaultTimeout)
   extends RequestAuthentication {
 
@@ -52,7 +52,7 @@ private[request] class TokenAuthentication(
 
   private def requireExistingProfile(userId: UserId): AuthResult =
     dao.withTransaction { implicit c =>
-      dao.lookupByUserId(userId)
+      dao.profile.lookupByUserId(userId)
     }.toSuccess(InvalidAuthCredentials)
 }
 

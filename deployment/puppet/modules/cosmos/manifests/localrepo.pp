@@ -45,14 +45,14 @@ class cosmos::localrepo inherits cosmos::params {
     }
 
     exec { 'reposync_ambari':
-      command => "reposync -c /tmp/reposync.repo -r ambari -p ${cosmos_stack_repo_path}/ambari -n -d",
+      command => "reposync -c /tmp/reposync.repo -r ambari-local -p ${cosmos_stack_repo_path}/ambari -n -d",
       path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
       logoutput => true,
       timeout   => 6000,
     }
 
     exec { 'reposync_hdp':
-      command => "reposync -c /tmp/reposync.repo -r HDP-2.0.6 -p ${cosmos_stack_repo_path}/hdp -n -d",
+      command => "reposync -c /tmp/reposync.repo -r HDP-2.0.6-local -p ${cosmos_stack_repo_path}/hdp -n -d",
       path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
       logoutput => true,
       timeout   => 6000,

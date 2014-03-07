@@ -1,10 +1,10 @@
-[ambari]
+[ambari-local]
 name=[Cosmos] Ambari Repository 1.x
 baseurl=<%= scope.lookupvar('ambari::params::repo_url') %>
 enabled=1
 gpgcheck=0
 
-[HDP-2.0.6]
+[HDP-2.0.6-local]
 baseurl=<%= scope.lookupvar('ambari::params::hdp_stack_repo_url') %>
 enabled=1
 gpgcheck=0

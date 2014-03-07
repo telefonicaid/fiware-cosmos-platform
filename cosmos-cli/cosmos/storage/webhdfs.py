@@ -51,9 +51,11 @@ class DirectoryListing(object):
 
 class WebHdfsClient(object):
 
-    def __init__(self, webhdfs_uri, username, client=requests):
+    def __init__(self, webhdfs_uri, username, api_key, api_secret, client=requests):
         self.webhdfs_uri = webhdfs_uri
         self.username = username
+        self.api_key = api_key
+        self.api_secret = api_secret
         self.client = client
 
     def opParams(self, operation, **kwargs):
@@ -70,9 +72,9 @@ class WebHdfsClient(object):
                                 response)
 
     def __request_upload_location(self, remote_path):
-        response = self.client.put(self.to_http(remote_path),
-                                   allow_redirects=False,
-                                   params=self.opParams('CREATE'))
+        response = self.make_call(self.client.put, remote_path,
+                                  allow_redirects=False,
+                                  params=self.opParams('CREATE'))
         if response.status_code == 201:
             raise OperationError('WebHDFS uploads are not supported on '
                                  '1-machine clusters: an empty file has been '
@@ -88,8 +90,8 @@ class WebHdfsClient(object):
     def list_path(self, path):
         """Lists a directory or check a file status. Returns an instance
         of DirectoryListing."""
-        r = self.client.get(self.to_http(path),
-                            params=self.opParams('LISTSTATUS'))
+        r = self.make_call(self.client.get, path,
+                           params=self.opParams('LISTSTATUS'))
         if r.status_code == 200:
             return DirectoryListing(
                 statuses=r.json()["FileStatuses"]["FileStatus"])
@@ -99,8 +101,8 @@ class WebHdfsClient(object):
             raise ResponseError('Cannot list directory %s' % path, r)
 
     def get_file(self, remote_path, out_file):
-        response = self.client.get(self.to_http(remote_path), stream=True,
-                                   params=self.opParams('OPEN'))
+        response = self.make_call(self.client.get, remote_path, stream=True,
+                                  params=self.opParams('OPEN'))
         if response.status_code == 404:
             raise ResponseError('File %s does not exist' % remote_path,
                                 response)
@@ -116,20 +118,23 @@ class WebHdfsClient(object):
         return written
 
     def delete_path(self, path, recursive=False):
-        r = self.client.delete(self.to_http(path), params=self.opParams(
+        r = self.make_call(self.client.delete, path, params=self.opParams(
             'DELETE', recursive=str(recursive).lower()))
         if r.status_code != 200:
             raise ResponseError('Cannot delete path %s' % path, r)
         return r.json()["boolean"]
 
-    def to_http(self, path):
+    def make_call(self, method, path, **kwargs):
         """Translates a simple path to the related WebHDFS HTTP URL."""
         if path.startswith("/"):
             rel_path = path[1:]
         else:
             rel_path = path
-        return urljoin('http://' + urlparse(self.webhdfs_uri).netloc,
-                       '/webhdfs/v1/user/%s/%s' % (self.username, rel_path))
+        processedPath = urljoin(
+            'http://' + urlparse(self.webhdfs_uri).netloc,
+            '/webhdfs/v1/user/%s/%s' % (self.username, rel_path))
+        return method(processedPath,
+                      auth=(self.api_key, self.api_secret), **kwargs)
 
     def __is_replication_exception(self, response):
         if response.status_code != 500:

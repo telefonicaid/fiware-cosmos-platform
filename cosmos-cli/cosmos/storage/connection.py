@@ -32,7 +32,7 @@ def connect(api_key, api_secret, api_url):
         raise ResponseError("Cannot get WebHDFS details",
                             response)
     details = response.json()
-    client = WebHdfsClient(details["location"], details["user"])
+    client = WebHdfsClient(details["location"], details["user"], api_key, api_secret)
     return StorageConnection(client)
 
 

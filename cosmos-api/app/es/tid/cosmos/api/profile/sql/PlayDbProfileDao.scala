@@ -158,15 +158,16 @@ object PlayDbProfileDao extends ProfileDao[Connection] {
     val rows = query().toList
     rows.map {
       case Row(
-      id: Int,
-      UserState(state),
-      handle: String,
-      email: String,
-      machineQuota: Option[_],
-      apiKey: String,
-      apiSecret: String,
-      groupName: Option[_],
-      _, _) =>
+        id: Int,
+        UserState(state),
+        handle: String,
+        email: String,
+        machineQuota: Option[_],
+        apiKey: String,
+        apiSecret: String,
+        groupName: Option[_],
+        _, _
+      ) =>
         val namedKeys = for {
           row <- rows if row[Int]("cosmos_id") == id
         } yield NamedKey(row[String]("name"), row[String]("signature"))

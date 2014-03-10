@@ -15,26 +15,26 @@ import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.test.Helpers
 
-import es.tid.cosmos.api.profile.dao.CosmosDao
-import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
-import es.tid.cosmos.api.profile.dao.sql.PlayDbCosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDataStore
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStore
+import es.tid.cosmos.api.profile.dao.sql.PlayDbCosmosDataStore
 import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
 
 class CosmosDaoIT extends FlatSpec with MustMatchers with CosmosDaoBehavior {
 
-  def withPlayDbCosmosProfileDao(block: CosmosDao => Unit) {
+  def withPlayDbCosmosProfileDao(block: CosmosDataStore => Unit) {
     val environment = new WithTestDatabase()
     Helpers.running(environment.appWithTestDb) {
       environment.resetDb()
-      block(new PlayDbCosmosDao)
+      block(PlayDbCosmosDataStore)
     }
   }
 
   "The Play DB profile resource" must behave like
     profileDao(withPlayDbCosmosProfileDao, Some(HasExternalDependencies))
 
-  def withMockCosmosProfileDao(block: CosmosDao => Unit) {
-    block(new MockCosmosDao)
+  def withMockCosmosProfileDao(block: CosmosDataStore => Unit) {
+    block(new MockCosmosDataStore())
   }
 
   "The mocked profile resource" must behave like profileDao(withMockCosmosProfileDao)

@@ -14,16 +14,12 @@ package es.tid.cosmos.api.profile.dao.mock
 import scala.concurrent.stm._
 
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.api.profile.UserState.UserState
-import es.tid.cosmos.api.profile.UserCapabilities
+import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.api.quota._
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-/** Mock to be used in tests for handling the profile DAO. Thread-safe. */
-class MockCosmosDao extends CosmosDao {
-
-  type Conn = InTxn
+class MockCosmosDataStore extends CosmosDataStore {
 
   private val users = Ref(Map[UserId, CosmosProfile]())
   private val clusters = Ref(List[ClusterAssignment]())
@@ -34,12 +30,9 @@ class MockCosmosDao extends CosmosDao {
     bannedStates() = bannedStates() + state
   }
 
-  override def store = new DataStore[Conn] {
-    override def withConnection[A](block: (Conn) => A): A = withTransaction(block)
-    override def withTransaction[A](block: (Conn) => A): A = atomic { implicit txn =>
-      block(txn)
-    }
-  }
+  override type Conn = InTxn
+  override def withConnection[A](block: (Conn) => A): A = withTransaction(block)
+  override def withTransaction[A](block: (Conn) => A): A = atomic { implicit txn => block(txn) }
 
   override def profile = new ProfileDao[Conn] {
 

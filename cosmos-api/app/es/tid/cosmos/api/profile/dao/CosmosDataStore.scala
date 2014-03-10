@@ -11,6 +11,8 @@
 
 package es.tid.cosmos.api.profile.dao
 
-trait CosmosProfileDaoComponent {
-  def cosmosProfileDao: CosmosDao
-}
+trait CosmosDataStore
+  extends ProfileDataStore
+  with CapabilityDataStore
+  with GroupDataStore
+  with ClusterDataStore

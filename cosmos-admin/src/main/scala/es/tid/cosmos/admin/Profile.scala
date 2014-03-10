@@ -11,26 +11,27 @@
 
 package es.tid.cosmos.admin
 
-
 import es.tid.cosmos.admin.Util._
 import es.tid.cosmos.admin.validation.GroupChecks
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.Capability.Capability
+import es.tid.cosmos.api.profile.dao.{CapabilityDataStore, ProfileDataStore, GroupDataStore}
 import es.tid.cosmos.api.quota.{UnlimitedQuota, Quota}
-import es.tid.cosmos.api.profile.dao.CosmosDao
 
-private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
+private[admin] class Profile(
+    override val store: ProfileDataStore with GroupDataStore with CapabilityDataStore
+  ) extends GroupChecks {
 
   def setMachineQuota(handle: String, limit: Int): Boolean = setMachineQuota(handle, Quota(limit))
 
   def removeMachineQuota(handle: String): Boolean = setMachineQuota(handle, UnlimitedQuota)
 
   private def setMachineQuota(handle: String, quota: Quota): Boolean =
-    dao.store.withTransaction { implicit c =>  tryAction {
+    store.withTransaction { implicit c =>  tryAction {
       for {
         cosmosProfile <- withProfile(handle)
       } yield {
-        dao.profile.setMachineQuota(cosmosProfile.id, quota)
+        store.profile.setMachineQuota(cosmosProfile.id, quota)
         println(s"Machine quota for user $handle changed to $quota")
       }
     }}
@@ -45,22 +46,22 @@ private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
 
   def removeGroup(handle: String): Boolean = handleGroup(handle, groupName = None)
 
-  def list: String = dao.store.withTransaction { implicit c =>
+  def list: String = store.withTransaction { implicit c =>
     val handles = for (
-      profile <- dao.profile.list() if profile.state != UserState.Deleted
+      profile <- store.profile.list() if profile.state != UserState.Deleted
     ) yield profile.handle
     if (handles.isEmpty) "No users found"
     else s"Users found (handles):\n${handles.sorted.mkString("\n")}"
   }
 
-  private def withProfile(handle: String)(implicit c: this.dao.type#Conn): Option[CosmosProfile] =
-    whenEmpty(dao.profile.lookupByHandle(handle)) {
+  private def withProfile(handle: String)(implicit c: store.Conn): Option[CosmosProfile] =
+    whenEmpty(store.profile.lookupByHandle(handle)) {
       println(s"No user with handle $handle")
     }
 
   private def modifyCapability(handle: String, capability: String, enable: Boolean): Boolean =
-    dao.store.withTransaction { implicit c => tryAction {
-      val action = if (enable) dao.capability.enable _ else dao.capability.disable _
+    store.withTransaction { implicit c => tryAction {
+      val action = if (enable) store.capability.enable _ else store.capability.disable _
       for {
         cosmosProfile <- withProfile(handle)
         parsedCapability <- parseCapability(capability)
@@ -86,7 +87,7 @@ private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
     * @return          true iff the operation was successful
     */
   private def handleGroup(handle: String, groupName: Option[String]): Boolean =
-    dao.store.withTransaction { implicit c => tryAction {
+    store.withTransaction { implicit c => tryAction {
       val maybeGroupName = groupName.flatMap(withGroup).map(_.name)
       val groupNameGivenButNotFound = groupName.isDefined && maybeGroupName.isEmpty
       if (groupNameGivenButNotFound)
@@ -94,7 +95,7 @@ private[admin] class Profile(override val dao: CosmosDao) extends GroupChecks {
       else for {
         cosmosProfile <- withProfile(handle)
       } yield {
-        dao.profile.setGroup(cosmosProfile.id, maybeGroupName)
+        store.profile.setGroup(cosmosProfile.id, maybeGroupName)
         println(s"User $handle now belongs to group $groupName")
       }
     }}

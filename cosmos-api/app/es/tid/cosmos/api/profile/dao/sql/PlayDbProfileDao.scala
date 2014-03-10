@@ -19,8 +19,8 @@ import play.Logger
 
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.UserState
-import es.tid.cosmos.api.quota._
 import es.tid.cosmos.api.profile.dao.{CosmosDaoException, ProfileDao}
+import es.tid.cosmos.api.quota._
 
 private[sql] object PlayDbProfileDao extends ProfileDao[Connection] {
 

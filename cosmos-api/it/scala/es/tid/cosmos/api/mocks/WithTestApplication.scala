@@ -19,7 +19,6 @@ import es.tid.cosmos.api.AbstractGlobal
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.mocks.servicemanager.MockedServiceManager
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.dao.CosmosDao
 import es.tid.cosmos.servicemanager.clusters.Running
 
 class WithTestApplication(
@@ -32,22 +31,21 @@ class WithTestApplication(
 
   val mockedServiceManager = testApp.mockedServiceManager
 
-  lazy val dao = playGlobal.application.dao
+  lazy val store = playGlobal.application.store
 
   def services = playGlobal.application.services
 
   /** Register a user for testing purposes (directly enabled, no infinity registration)
     *
-    * @param dao   Where to register the user
     * @param user  OAuth data to fill in the registration data
     * @return      Newly created Cosmos profile
     */
-  def registerUser(dao: CosmosDao, user: OAuthUserProfile): CosmosProfile =
-    dao.store.withConnection { implicit c =>
+  def registerUser(user: OAuthUserProfile): CosmosProfile =
+    store.withConnection { implicit c =>
       val email = user.email.getOrElse("root@host")
       val handle = email.split('@')(0)
       val reg = Registration(handle, s"ssh-rsa ABCDE $email", email)
-      dao.profile.register(user.id, reg, UserState.Enabled)
+      store.profile.register(user.id, reg, UserState.Enabled)
     }
 
   def withSession[A](request: FakeRequest[A], session: Session) =

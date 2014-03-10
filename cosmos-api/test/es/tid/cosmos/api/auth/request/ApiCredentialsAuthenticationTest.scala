@@ -21,22 +21,22 @@ import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.controllers.common.BasicAuth
 import es.tid.cosmos.api.profile.UserState.Enabled
 import es.tid.cosmos.api.profile.Registration
-import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 
 class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
 
   import Scalaz._
 
-  trait WithInstance {
-    val dao = new MockCosmosDao()
-    val auth = new ApiCredentialsAuthentication(dao)
+  trait WithInstance extends MockCosmosDataStoreComponent {
+    val auth = new ApiCredentialsAuthentication(store)
 
     val requestWithoutCredentials = FakeRequest("GET", "/sample/resource")
     def requestWithCredentials(apiKey: String, apiSecret: String) =
       requestWithoutCredentials.withHeaders("Authorization" -> BasicAuth(apiKey, apiSecret))
 
-    val userProfile = dao.store.withTransaction { implicit c =>
-      dao.profile.register(UserId("id"), Registration("user", "ssh-rsa XXX", "user@host"), Enabled)
+    val userProfile = store.withTransaction { implicit c =>
+      store.profile.register(
+        UserId("id"), Registration("user", "ssh-rsa XXX", "user@host"), Enabled)
     }
     val validApiKey = userProfile.apiCredentials.apiKey
     val invalidApiKey = stringOf(ApiCredentials.ApiKeyLength + 1)
@@ -60,7 +60,8 @@ class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
     val requestWithMalformedAuth = FakeRequest("GET", "/sample/resource").withHeaders(
       "Authorization" -> "malformed"
     )
-    auth.authenticateRequest(requestWithMalformedAuth) must be (MalformedAuthHeader("malformed").fail)
+    auth.authenticateRequest(requestWithMalformedAuth) must
+      be (MalformedAuthHeader("malformed").fail)
   }
 
   it must "consider malformed header if keys have wrong lengths" in new WithInstance {
@@ -74,7 +75,8 @@ class ApiCredentialsAuthenticationTest extends FlatSpec with MustMatchers {
 
   it must "fail if the credentials doesn't belong to any user" in new WithInstance {
     val unknownCredentials = ApiCredentials.random()
-    val invalidRequest = requestWithCredentials(unknownCredentials.apiKey, unknownCredentials.apiSecret)
+    val invalidRequest =
+      requestWithCredentials(unknownCredentials.apiKey, unknownCredentials.apiSecret)
     auth.authenticateRequest(invalidRequest) must be (InvalidAuthCredentials.fail)
   }
 }

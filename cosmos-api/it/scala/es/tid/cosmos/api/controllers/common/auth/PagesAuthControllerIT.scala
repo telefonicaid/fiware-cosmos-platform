@@ -19,12 +19,12 @@ import play.api.test.Helpers._
 import play.api.mvc._
 
 import es.tid.cosmos.api.profile.UserState
-import es.tid.cosmos.api.profile.dao.CosmosDao
+import es.tid.cosmos.api.profile.dao.CosmosDataStore
 import es.tid.cosmos.api.controllers.pages.WithSampleSessions
 
 class PagesAuthControllerIT extends FlatSpec with MustMatchers {
 
-  class TestController(override val dao: CosmosDao)
+  class TestController(override val store: CosmosDataStore)
     extends Controller with PagesAuthController {
 
     def index() = Action(parse.anyContent) { request =>
@@ -37,7 +37,7 @@ class PagesAuthControllerIT extends FlatSpec with MustMatchers {
   }
 
   trait WithTestController extends WithSampleSessions {
-    val controller = new TestController(dao)
+    val controller = new TestController(store)
     def route(request: Request[AnyContent]): Future[SimpleResult] =
       controller.index().apply(request)
   }

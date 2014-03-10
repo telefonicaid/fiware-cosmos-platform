@@ -21,20 +21,19 @@ import play.api.test.{FakeHeaders, FakeRequest}
 import es.tid.cosmos.api.auth.oauth2.OAuthUserProfile
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 
 class SessionCookieAuthenticationTest extends FlatSpec with MustMatchers {
 
   import Scalaz._
 
-  trait WithInstance {
-    val dao = new MockCosmosDao()
+  trait WithInstance extends MockCosmosDataStoreComponent {
     val userId = UserId("id")
-    val userProfile = dao.store.withTransaction { implicit c =>
-      dao.profile.register(
+    val userProfile = store.withTransaction { implicit c =>
+      store.profile.register(
         userId, Registration("user", "ssh-rsa XXXX", "user@host"), UserState.Enabled)
     }
-    val auth = new SessionCookieAuthentication(dao)
+    val auth = new SessionCookieAuthentication(store)
 
     val requestWithoutSession = FakeRequest("GET", "/sample/path")
 

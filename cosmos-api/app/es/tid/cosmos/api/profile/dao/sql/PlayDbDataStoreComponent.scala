@@ -11,17 +11,9 @@
 
 package es.tid.cosmos.api.profile.dao.sql
 
-import java.sql.Connection
+import es.tid.cosmos.api.profile.dao.CosmosDataStoreComponent
 
-import es.tid.cosmos.api.profile.dao.CosmosDao
-
-class PlayDbCosmosDao extends CosmosDao {
-
-  type Conn = Connection
-
-  override val store = PlayDbDataStore
-  override val profile = PlayDbProfileDao
-  override val capability = PlayDbCapabilityDao
-  override val group = PlayDbGroupDao
-  override val cluster = PlayDbClusterDao
+/** Use Play DB as data store for Cosmos profile, groups, etc. */
+trait PlayDbDataStoreComponent extends CosmosDataStoreComponent {
+  override lazy val store = PlayDbCosmosDataStore
 }

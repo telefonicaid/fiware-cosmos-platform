@@ -23,20 +23,19 @@ import play.api.test.FakeRequest
 import es.tid.cosmos.api.auth.oauth2.{OAuthUserProfile, OAuthProvider}
 import es.tid.cosmos.api.profile._
 import es.tid.cosmos.api.profile.UserState.Enabled
-import es.tid.cosmos.api.profile.dao.mock.MockCosmosDao
+import es.tid.cosmos.api.profile.dao.mock.MockCosmosDataStoreComponent
 
 class TokenAuthenticationTest extends FlatSpec with MustMatchers with MockitoSugar {
 
   import Scalaz._
 
-  trait WithInstance {
+  trait WithInstance extends MockCosmosDataStoreComponent {
     val oauth = mock[OAuthProvider]
-    val dao = new MockCosmosDao()
     val token = "oauth-token"
     val oauthProfile = OAuthUserProfile(UserId("id"))
     val requestWithoutToken = FakeRequest("GET", "/resource")
     val requestWithToken = requestWithoutToken.withHeaders("X-Auth-Token" -> token)
-    val authentication = new TokenAuthentication(oauth, dao)
+    val authentication = new TokenAuthentication(oauth, store)
 
     def givenTokenIsValid() {
       given(oauth.requestUserProfile(token)).willReturn(Future.successful(oauthProfile))
@@ -46,8 +45,8 @@ class TokenAuthenticationTest extends FlatSpec with MustMatchers with MockitoSug
       given(oauth.requestUserProfile(token)).willReturn(Future.failed(new Error("Invalid token")))
     }
 
-    def registerUser() = dao.store.withTransaction { implicit c =>
-      dao.profile.register(
+    def registerUser() = store.withTransaction { implicit c =>
+      store.profile.register(
         oauthProfile.id, Registration("handle", "ssh-rsa XXX", "user@host"), Enabled)
     }
   }

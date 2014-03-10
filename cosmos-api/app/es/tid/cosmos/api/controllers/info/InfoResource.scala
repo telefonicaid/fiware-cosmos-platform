@@ -19,17 +19,19 @@ import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
 import es.tid.cosmos.api.profile._
-import es.tid.cosmos.api.profile.dao.CosmosDao
+import es.tid.cosmos.api.profile.dao.{ClusterDataStore, ClusterDao, DataStore}
 import es.tid.cosmos.api.quota.Group
+import es.tid.cosmos.api.usage.MachineUsage
 import es.tid.cosmos.servicemanager.ServiceManager
-import es.tid.cosmos.servicemanager.clusters._
+import es.tid.cosmos.servicemanager.clusters.{ClusterDao => _, _}
 
 @Api(value = "/cosmos/v1/info", listingPath = "/doc/cosmos/v1/info",
   description = "Provides general-purpose information about a platform user")
 class InfoResource(
      override val auth: RequestAuthentication,
-     dao: CosmosDao,
-     serviceManager: ServiceManager) extends Controller with JsonController with ApiAuthController {
+     store: ClusterDataStore,
+     serviceManager: ServiceManager,
+     machineUsage: MachineUsage) extends Controller with JsonController with ApiAuthController {
 
   @ApiOperation(value = "Get general information about the user whose credentials are used",
     httpMethod = "GET", responseClass = "es.tid.cosmos.api.controllers.info.Info")
@@ -40,8 +42,8 @@ class InfoResource(
     } yield Ok(Json.toJson(gatherInfo(profile)))
   }
 
-  private def gatherInfo(profile: CosmosProfile) = dao.store.withTransaction { implicit c =>
-    val userClusters = dao.cluster.ownedBy(profile.id).map(_.clusterId)
+  private def gatherInfo(profile: CosmosProfile) = store.withTransaction { implicit c =>
+    val userClusters = store.cluster.ownedBy(profile.id).map(_.clusterId)
     Info(
       profileId = profile.id,
       handle = profile.handle,
@@ -84,6 +86,5 @@ class InfoResource(
     )
   }
 
-  private def currentQuotaContext() =
-    new QuotaContextFactory(new CosmosMachineUsageDao(dao, serviceManager)).apply()
+  private def currentQuotaContext() = new QuotaContextFactory(machineUsage).apply()
 }

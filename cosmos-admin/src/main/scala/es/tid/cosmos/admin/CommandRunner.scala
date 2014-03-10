@@ -16,11 +16,12 @@ import scala.language.reflectiveCalls
 import org.rogach.scallop.ScallopConf
 
 import es.tid.cosmos.admin.cli.AdminArguments
-import es.tid.cosmos.api.profile.dao.sql.PlayDbCosmosDao
+import es.tid.cosmos.api.profile.dao.sql.PlayDbDataStoreComponent
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
+class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager)
+  extends PlayDbDataStoreComponent {
 
   /** Executes an administration command.
     *
@@ -41,7 +42,8 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
   private def processPersistentStorageCommand(subCommands: List[ScallopConf]) =
     subCommands.headOption match {
       case Some(args.persistentStorage.setup) => tryCommand(PersistentStorage.setup(serviceManager))
-      case Some(args.persistentStorage.terminate) => tryCommand(PersistentStorage.terminate(serviceManager))
+      case Some(args.persistentStorage.terminate) =>
+        tryCommand(PersistentStorage.terminate(serviceManager))
       case _ => help(args.persistentStorage)
     }
 
@@ -52,7 +54,7 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
   }
 
   private def processProfileCommand(subCommands: List[ScallopConf]) = {
-    val playDbProfile = new Profile(new PlayDbCosmosDao())
+    val playDbProfile = new Profile(store)
     subCommands.headOption match {
       case Some(args.profile.setMachineQuota) => tryCommand(playDbProfile.setMachineQuota(
           args.profile.setMachineQuota.handle(), args.profile.setMachineQuota.limit()))
@@ -78,7 +80,7 @@ class CommandRunner(args: AdminArguments, serviceManager: => ServiceManager) {
   }
 
   private def processGroupCommand(subCommands: List[ScallopConf]) = {
-    val groups = new Groups(new PlayDbCosmosDao(), serviceManager)
+    val groups = new Groups(store, serviceManager)
     subCommands.headOption match {
       case Some(args.group.create) => tryCommand(groups.create(
         args.group.create.name(), args.group.create.minQuota()))

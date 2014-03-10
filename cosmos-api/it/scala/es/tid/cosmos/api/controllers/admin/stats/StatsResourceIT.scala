@@ -11,7 +11,6 @@
 
 package es.tid.cosmos.api.controllers.admin.stats
 
-import org.mockito.BDDMockito.given
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
 import play.api.libs.json.{JsObject, Json, JsArray}
@@ -38,16 +37,16 @@ class StatsResourceIT
   }
 
   it must "list running clusters" in new WithSampleSessions {
-    val activeClusterId = services.serviceManager().createCluster(
+    val activeClusterId = services.serviceManager.createCluster(
       name = ClusterName("active"),
       clusterSize = 2,
       serviceDescriptions = Seq.empty,
       users = Seq.empty
     )
     val terminatedClusterId = ClusterId()
-    dao.store.withTransaction { implicit c =>
-      dao.cluster.register(activeClusterId, regUser.cosmosProfile.id)
-      dao.cluster.register(terminatedClusterId, opUser.cosmosProfile.id)
+    store.withTransaction { implicit c =>
+      store.cluster.register(activeClusterId, regUser.cosmosProfile.id)
+      store.cluster.register(terminatedClusterId, opUser.cosmosProfile.id)
     }
 
     val json = contentAsJson(opUser.doRequest(clusterStatsRequest))

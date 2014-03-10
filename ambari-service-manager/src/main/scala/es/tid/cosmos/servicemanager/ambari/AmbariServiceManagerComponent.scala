@@ -61,7 +61,7 @@ trait AmbariServiceManagerComponent extends ServiceManagerComponent {
       config.getInt("ambari.servicemanager.exclusiveMasterSizeCutoff"),
       hadoopConfig,
       new AmbariClusterDao(
-        clusterDao,
+        serviceManagerClusterDao,
         ambariServer,
         AmbariServiceManager.AllServices.map(
           toAmbariService(_, hadoopConfig.servicesConfigDirectory)),

@@ -21,7 +21,7 @@ import play.api.mvc._
 import es.tid.cosmos.api.auth.request.RequestAuthentication
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.ApiAuthController
-import es.tid.cosmos.api.profile.dao.CosmosDao
+import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.platform.ial.InfrastructureProvider
 import es.tid.cosmos.platform.ial.MachineProfile
 import es.tid.cosmos.platform.ial.MachineProfile.MachineProfile
@@ -31,7 +31,7 @@ import es.tid.cosmos.servicemanager.clusters.{ClusterState, ClusterId}
 /** Stats for administration purposes */
 class StatsResource(
     override val auth: RequestAuthentication,
-    dao: CosmosDao,
+    store: ProfileDataStore with ClusterDataStore,
     serviceManager: ServiceManager,
     ial: InfrastructureProvider
   ) extends Controller with ApiAuthController {
@@ -62,10 +62,10 @@ class StatsResource(
     slaves = description.slaves.map(_.hostname)
   )
 
-  private def ownerHandleOf(clusterId: ClusterId): String = dao.store.withTransaction { implicit c =>
+  private def ownerHandleOf(clusterId: ClusterId): String = store.withTransaction { implicit c =>
     for {
-      cosmosId <- dao.cluster.ownerOf(clusterId)
-      profile <- dao.profile.lookupByProfileId(cosmosId)
+      cosmosId <- store.cluster.ownerOf(clusterId)
+      profile <- store.profile.lookupByProfileId(cosmosId)
     } yield profile.handle
   }.getOrElse(StatsResource.UnknownOwnerHandle)
 

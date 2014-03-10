@@ -11,17 +11,6 @@
 
 package es.tid.cosmos.api.profile.dao
 
-/** This trait creates an abstraction on how to use the underlying data, such as SQL databases,
-  * in-memory lists, mocks, etc.
-  */
-trait CosmosDao {
-
-  /** Specifies the type of connection to use to the data. */
-  type Conn
-
-  def store: DataStore[Conn]
-  def profile: ProfileDao[Conn]
-  def capability: CapabilityDao[Conn]
-  def group: GroupDao[Conn]
+trait ClusterDataStore extends DataStore {
   def cluster: ClusterDao[Conn]
 }

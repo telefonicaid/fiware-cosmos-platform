@@ -13,11 +13,12 @@ package es.tid.cosmos.api.profile
 
 import es.tid.cosmos.api.quota.QuotaContext
 import es.tid.cosmos.servicemanager.clusters.ClusterId
+import es.tid.cosmos.api.usage.MachineUsage
 
-/** Factory of quota contexts that make use of a [[es.tid.cosmos.api.profile.MachineUsageDao]]
+/** Factory of quota contexts that make use of a [[es.tid.cosmos.api.usage.MachineUsage]]
   * for information retrieval.
   */
-class QuotaContextFactory(usageDao: MachineUsageDao) {
+class QuotaContextFactory(usageDao: MachineUsage) {
 
   /** Create a new quota context.
     *

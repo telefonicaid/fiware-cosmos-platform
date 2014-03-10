@@ -15,8 +15,8 @@ import java.sql.Connection
 
 import anorm._
 
-import es.tid.cosmos.api.quota.{LimitedQuota, NoGroup, Group}
 import es.tid.cosmos.api.profile.dao.GroupDao
+import es.tid.cosmos.api.quota.{LimitedQuota, NoGroup, Group}
 
 private[sql] object PlayDbGroupDao extends GroupDao[Connection] {
 

@@ -29,8 +29,8 @@ import es.tid.cosmos.api.controllers.admin.MaintenanceStatus
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
 import es.tid.cosmos.api.controllers.pages.CosmosSession._
-import es.tid.cosmos.api.profile.{CosmosProfile, Registration, UserId}
-import es.tid.cosmos.api.profile.dao.CosmosDao
+import es.tid.cosmos.api.profile.{Registration, UserId}
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 import es.tid.cosmos.api.task.TaskDao
 import es.tid.cosmos.api.wizards.UserRegistrationWizard
 import es.tid.cosmos.common.Wrapped
@@ -42,7 +42,7 @@ class Pages(
     multiAuthProvider: MultiAuthProvider,
     serviceManager: ServiceManager,
     override val taskDao: TaskDao,
-    override val dao: CosmosDao,
+    override val store: ProfileDataStore,
     override val maintenanceStatus: MaintenanceStatus,
     config: Config
   ) extends Controller with JsonController with PagesAuthController
@@ -50,7 +50,7 @@ class Pages(
 
   import Scalaz._
 
-  private val registrationWizard = new UserRegistrationWizard(serviceManager)
+  private val registrationWizard = new UserRegistrationWizard(store, serviceManager)
 
   def index = Action { implicit request =>
     withAuthentication(request)(
@@ -119,18 +119,18 @@ class Pages(
       _ <- requireResourceNotUnderMaintenance()
       userProfile <- requireAuthenticatedUser(request)
       _ <- requireUnregisteredUser(userProfile.id)
-      validatedForm = dao.store.withTransaction { implicit c =>
+      validatedForm = store.withTransaction { implicit c =>
         val form = RegistrationForm().bindFromRequest()
         form.data.get("handle") match {
-          case Some(handle) if dao.profile.handleExists(handle) =>
+          case Some(handle) if store.profile.handleExists(handle) =>
             form.withError("handle", s"'$handle' is already taken")
           case _ => form
         }
       }
       registration <- requireValidRegistration(userProfile, validatedForm)
       _ <- requireNoActiveTask(registration.handle, "registration")
-      wizardResult <- dao.store.withTransaction { implicit c =>
-        registrationWizard.registerUser(dao, userProfile.id, registration)
+      wizardResult <- store.withTransaction { implicit c =>
+        registrationWizard.registerUser(userProfile.id, registration)
           .leftMap(message => InternalServerError(Json.toJson(message)))
       }
     } yield {
@@ -151,8 +151,8 @@ class Pages(
     )
 
   private def requireUnregisteredUser(userId: UserId): ActionValidation[Unit] = {
-    val userExists = dao.store.withTransaction { implicit c =>
-      dao.profile.lookupByUserId(userId).isDefined
+    val userExists = store.withTransaction { implicit c =>
+      store.profile.lookupByUserId(userId).isDefined
     }
     if (userExists) redirectToIndex.failure else ().success
   }

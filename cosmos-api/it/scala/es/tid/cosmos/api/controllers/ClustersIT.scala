@@ -47,14 +47,14 @@ class ClustersIT
     val user2 = new RegisteredUserSession("user2", "User 2")
     val ownCluster = SampleClusters.RunningClusterProps.id
     val otherCluster = ClusterId()
-    dao.store.withTransaction { implicit c =>
-      dao.cluster.register(ownCluster, user1.cosmosProfile.id)
-      dao.cluster.register(otherCluster, user2.cosmosProfile.id)
+    store.withTransaction { implicit c =>
+      store.cluster.register(ownCluster, user1.cosmosProfile.id)
+      store.cluster.register(otherCluster, user2.cosmosProfile.id)
     }
 
     val resource = user1.doRequest(listClusters)
 
-    dao.store.withTransaction { implicit c =>
+    store.withTransaction { implicit c =>
       status(resource) must equal (OK)
       contentType(resource) must be (Some("application/json"))
       contentAsString(resource) must include (ownCluster.toString)
@@ -71,8 +71,8 @@ class ClustersIT
     val location = header("Location", resource)
     location must be ('defined)
     contentAsString(resource) must include (location.get)
-    dao.store.withConnection { implicit c =>
-      dao.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
+    store.withConnection { implicit c =>
+      store.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
     }
   }
 
@@ -83,8 +83,8 @@ class ClustersIT
     val location = header("Location", resource)
     location must be ('defined)
     contentAsString(resource) must include (location.get)
-    dao.store.withConnection { implicit c =>
-      dao.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
+    store.withConnection { implicit c =>
+      store.cluster.ownedBy(regUser.cosmosProfile.id) must have length 1
     }
   }
 

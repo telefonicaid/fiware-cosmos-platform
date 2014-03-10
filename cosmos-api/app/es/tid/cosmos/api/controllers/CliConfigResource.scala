@@ -16,10 +16,10 @@ import play.api.mvc.{Controller, Action}
 import es.tid.cosmos.api.controllers.common._
 import es.tid.cosmos.api.controllers.cosmos.{routes => cosmosRoutes}
 import es.tid.cosmos.api.controllers.common.auth.PagesAuthController
-import es.tid.cosmos.api.profile.dao.CosmosDao
+import es.tid.cosmos.api.profile.dao.ProfileDataStore
 
 /** Downloadable configuration file for cosmos-cli */
-class CliConfigResource(override val dao: CosmosDao)
+class CliConfigResource(override val store: ProfileDataStore)
   extends Controller with PagesAuthController {
 
   def generate = Action { implicit request =>

@@ -11,5 +11,14 @@
 
 package es.tid.cosmos.infinity.server.auth
 
-/** The identity of a user in Infinity. */
-case class UserIdentity(username: String, group: String)
+/** The profile of a user in Infinity.
+  *
+  * @param username The name of the user.
+  * @param group The group of the user
+  * @param unixPermissionMask The mask applied to the UNIX permissions for the user.
+  */
+case class UserProfile(
+  username: String,
+  group: String,
+  unixPermissionMask: UnixFilePermissions
+)

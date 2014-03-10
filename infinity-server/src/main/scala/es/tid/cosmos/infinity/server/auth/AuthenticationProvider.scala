@@ -22,7 +22,7 @@ trait AuthenticationProvider {
     * @return the user identity associated to the credentials, or an exception if the user
     *         cannot be authenticated.
     */
-  def authenticate(credentials: UserCredentials): Try[UserIdentity]
+  def authenticate(credentials: UserCredentials): Try[UserProfile]
 
   /** Authenticate the given cluster from the given credentials
     *
@@ -30,5 +30,5 @@ trait AuthenticationProvider {
     * @return the user identity associated to the credentials, or an exception if the user
     *         cannot be authenticated.
     */
-  def authenticate(credentials: ClusterCredentials): Try[UserIdentity]
+  def authenticate(credentials: ClusterCredentials): Try[UserProfile]
 }

@@ -13,12 +13,14 @@ class cosmos::api inherits cosmos::params {
 
   include cosmos::setup
 
-  package { 'cosmos-api':
-    ensure => latest,
+  exec { 'install-cosmos-api':
+    command   => "yum localinstall -d 0 -e 0 -y ${cosmos_stack_repo_path}/cosmos-api-*.rpm",
+    path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
   }
 
-  package { 'cosmos-admin':
-    ensure => latest,
+  exec { 'install-cosmos-admin':
+    command   => "yum localinstall -d 0 -e 0 -y ${cosmos_stack_repo_path}/cosmos-admin-*.rpm",
+    path      => [ '/sbin', '/bin', '/usr/sbin', '/usr/bin' ],
   }
 
   service { 'cosmos-api':
@@ -28,7 +30,7 @@ class cosmos::api inherits cosmos::params {
     hasrestart => true,
   }
 
-  Package['cosmos-api'] -> Service['cosmos-api']
+  Exec['install-cosmos-api'] -> Service['cosmos-api']
 
   Class['cosmos::setup']                      ~> Service['cosmos-api']
   File['cosmos-api.conf', 'logback.conf']     ~> Service['cosmos-api']

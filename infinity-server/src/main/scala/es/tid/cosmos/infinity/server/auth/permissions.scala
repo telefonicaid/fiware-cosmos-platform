@@ -11,6 +11,10 @@
 
 package es.tid.cosmos.infinity.server.auth
 
+import scala.util.Try
+
+import es.tid.cosmos.infinity.server.util.Path
+
 /** A permission class (owner, group, others). */
 case class PermissionClass(read: Boolean, write: Boolean, execute: Boolean) {
 
@@ -63,4 +67,18 @@ object UnixFilePermissions {
 }
 
 /** The permissions of a file in Infinity. */
-case class FilePermissions(unix: UnixFilePermissions)
+case class FilePermissions(
+  owner: String,
+  group: String,
+  unix: UnixFilePermissions
+)
+
+/** An object able to store and retrieve file permissions.*/
+trait FilePermissionsStore {
+
+  /** Retrieve the permissions for the given file or directory. */
+  def get(path: Path): Try[FilePermissions]
+
+  /** Set the permissions for the given file or directory. */
+  def set(path: Path, permissions: FilePermissions): Try[Unit]
+}

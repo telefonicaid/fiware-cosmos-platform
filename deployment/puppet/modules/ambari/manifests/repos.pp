@@ -18,12 +18,20 @@ class ambari::repos inherits ambari::params {
       enabled  => 1,
       gpgcheck => 0,
     }
+    yumrepo { 'ambari-remote':
+      baseurl  => $ambari::params::repo_url,
+      descr    => '[Cosmos] Ambari Repository 1.x',
+      enabled  => 1,
+      gpgcheck => 0,
+      metadata_expire => 900,
+    }
   } else {
     yumrepo { 'ambari':
       baseurl  => $ambari::params::repo_url,
       descr    => '[Cosmos] Ambari Repository 1.x',
       enabled  => 1,
       gpgcheck => 0,
+      metadata_expire => 900,
     }
   }
 

@@ -13,6 +13,8 @@ import sbt._
 import sbt.Keys._
 import play.{Keys => PlayKeys}
 import com.typesafe.sbt.packager.Keys._
+import sbtassembly.Plugin._
+import AssemblyKeys._
 
 object Build extends sbt.Build {
 
@@ -21,7 +23,7 @@ object Build extends sbt.Build {
   val projectVersion = IO.read(file("VERSION")).trim
 
   object Versions {
-    val akka = "2.3.0"
+    val akka = "2.2.3"
     val hdp2Hadoop = "2.2.0" /** HDP 2 has a patched 2.2.0 Hadoop stabilized by themselves */
     val spray = "1.2.0"
   }
@@ -63,7 +65,7 @@ object Build extends sbt.Build {
     settings(projectArtifact: _*)
     aggregate(
       cosmosApi, ambariServiceManager, serviceManager, ial, cosmosAdmin, common, common_test,
-      platformTests, infinityfs
+      platformTests, infinityfs, infinityServer
     )
   )
 
@@ -146,6 +148,10 @@ object Build extends sbt.Build {
     settings(ScctPlugin.instrumentSettings: _*)
     configs IntegrationTest
     settings(Defaults.itSettings: _*)
+    settings(buildSettings: _*)
+    settings(assemblySettings: _*)
+    settings(mainClass in assembly := Some("es.tid.cosmos.infinity.server.Boot"))
+    settings(RpmSettings.infinityServerSettings: _*)
   )
 
   def rootPackageSettings: Seq[Setting[_]] = Seq(
@@ -175,7 +181,11 @@ object Build extends sbt.Build {
       val infinityRPM = (dist in infinityfs).value
       IO.copyFile(infinityRPM, filesDir / infinityRPM.name)
 
-      val puppetDir = target.value / "dist/puppet"
+      s.log.info("Copying infinity-server RPM to project dist directory...")
+      val infinityServerRPM = (dist in infinityServer).value
+      IO.copyFile(infinityServerRPM, filesDir / infinityServerRPM.name)
+
+      val puppetDir = target.value / "di  st/puppet"
       puppetDir.mkdirs()
 
       s.log.info("Copying puppet to project dist directory...")

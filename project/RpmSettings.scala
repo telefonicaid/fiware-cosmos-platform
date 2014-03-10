@@ -116,4 +116,14 @@ object RpmSettings {
     linuxPackageSymlinks in Rpm := JarLinks.map(destination => LinuxSymlink(destination, JarPath))
   )
 
+  val infinityServerSettings: Seq[Setting[_]] = assemblySettings ++ packagerSettings ++ commonRpmSettings ++ Seq(
+    name in Rpm := "infinity-server",
+    packageSummary := "Infinity Server",
+    packageDescription in Rpm := "Server for infinity:// scheme.",
+    linuxPackageMappings in Rpm := Seq(
+      packageMapping(assembly.value -> "/opt/pdi-cosmos/infinity-server.jar") withUser "root" withGroup "root" withPerms "0755"
+    )
+  )
+
+
 }

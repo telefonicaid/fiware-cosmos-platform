@@ -18,3 +18,6 @@ libraryDependencies += ("com.typesafe.sbt" % "sbt-native-packager" % "0.6.4-cosm
 libraryDependencies += "org.apache.commons" % "commons-compress" % "1.4.1"
 
 addSbtPlugin("com.sqality.scct" % "sbt-scct" % "0.3")
+
+addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.1")
+

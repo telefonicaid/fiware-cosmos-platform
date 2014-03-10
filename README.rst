@@ -107,7 +107,7 @@ Next, you need to run the `createrepo` command to generate the repository
 metadata. In that same directory, you can start a temporary HTTP server on port
 12345 with the following command: `python -m SimpleHTTPServer 12345`
 
-The final step is to change the `cosmos::params::cosmos_repo_platform_url`
+The final step is to change the `ambari::params::repo_url`
 parameter in Hiera so it points to `http://<your-ip-address>:12345`. At this
 point, running `vagrant up` will deploy your RPMs instead of the nightly build.
 

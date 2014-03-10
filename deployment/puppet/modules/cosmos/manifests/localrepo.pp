@@ -19,6 +19,7 @@ class cosmos::localrepo inherits cosmos::params {
     ensure  => 'directory',
     recurse => true,
     purge   => true,
+    force   => true,
     source  => 'puppet:///modules/cosmosplatform',
   }
 

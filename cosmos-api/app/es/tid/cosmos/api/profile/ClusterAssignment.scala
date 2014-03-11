@@ -22,7 +22,7 @@ import es.tid.cosmos.servicemanager.clusters.ClusterId
   * @param creationDate  Creation timestamp
   * @param secret        Cluster secret
   */
-case class Cluster(
+case class ClusterAssignment(
     clusterId: ClusterId,
     ownerId: Long,
     creationDate: Date,

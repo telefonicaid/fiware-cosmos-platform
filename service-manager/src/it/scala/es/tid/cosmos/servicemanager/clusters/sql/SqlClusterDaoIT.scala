@@ -19,20 +19,17 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.mock.MockitoSugar
 
 import es.tid.cosmos.common.{MySqlDatabase, MySqlConnDetails}
-import es.tid.cosmos.common.scalatest.tags.HasExternalDependencies
+import es.tid.cosmos.common.scalatest.tags.{TaggedTests, HasExternalDependencies}
 import es.tid.cosmos.servicemanager.{ClusterName, ServiceDescription, ClusterUser}
 import es.tid.cosmos.servicemanager.clusters._
 
-class SqlClusterDaoIT extends FlatSpec with MustMatchers with BeforeAndAfter with MockitoSugar {
+class SqlClusterDaoIT
+  extends FlatSpec with MustMatchers with BeforeAndAfter with TaggedTests with MockitoSugar {
+
+  override val testsTag = HasExternalDependencies
+
   val db = new MySqlDatabase(MySqlConnDetails("localhost", 3306, "root", "", "smtest"))
   val dao = new SqlClusterDao(db)
-
-  override def tags: Map[String, Set[String]] = {
-    val originalTags = super.tags
-    (for {
-      test <- testNames
-    } yield (test, originalTags.getOrElse(test, Set()) + HasExternalDependencies.name)).toMap
-  }
 
   before  {
     dao.newTransaction {

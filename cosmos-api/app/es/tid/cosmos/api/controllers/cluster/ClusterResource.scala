@@ -106,10 +106,11 @@ class ClusterResource(
       case Failure(ex) => throw ex
       case Success(clusterId: ClusterId) =>
         Logger.info(s"Provisioning new cluster $clusterId")
-        val assignment = ClusterAssignment(clusterId, profile.id, new Date())
-        store.withTransaction { implicit c => store.cluster.register(assignment) }
+        val cluster = store.withTransaction { implicit c =>
+          store.cluster.register(clusterId, profile.id)
+        }
         val clusterDescription = serviceManager.describeCluster(clusterId).get
-        val reference = ClusterReference(clusterDescription, assignment).withAbsoluteUri(request)
+        val reference = ClusterReference(clusterDescription, cluster).withAbsoluteUri(request)
         Created(Json.toJson(reference)).withHeaders(LOCATION -> reference.href)
     }
   }

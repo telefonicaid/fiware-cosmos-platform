@@ -13,6 +13,7 @@ package es.tid.cosmos.api.profile.dao.sql
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.MustMatchers
+import org.specs2.execute.{Result, AsResult}
 import play.api.test.Helpers
 
 import es.tid.cosmos.api.profile.WithTestDatabase
@@ -24,11 +25,16 @@ class PlayDbCosmosDataStoreIT
 
   override val testsTag = HasExternalDependencies
 
-  def withStore(block: CosmosDataStore => Unit) {
-    val environment = new WithTestDatabase()
-    Helpers.running(environment.appWithTestDb) {
-      environment.resetDb()
+  def withStore(block: (CosmosDataStore) => Unit): Unit = new WithTestDatabase() {
+
+    override def around[T: AsResult](t: => T): Result = Helpers.running(app) {
+      // This code block should work without overriding the around method but the compiler
+      // breaks down due to the interaction of closure capturing and the DelayedInit inherited
+      // from [[play.api.test.WithTestApplication]].
+      resetDb()
       block(PlayDbCosmosDataStore)
+
+      AsResult.effectively(t)
     }
   }
 

@@ -22,7 +22,7 @@ import es.tid.cosmos.servicemanager.clusters.ClusterId
 class MockCosmosDataStore extends CosmosDataStore {
 
   private val users = Ref(Map[UserId, CosmosProfile]())
-  private val clusters = Ref(List[ClusterAssignment]())
+  private val clusters = Ref(List[Cluster]())
   private val groups = Ref(Set(Group.noGroup))
   private val bannedStates = Ref(Set.empty[UserState])
 
@@ -151,16 +151,21 @@ class MockCosmosDataStore extends CosmosDataStore {
 
   override def cluster = new ClusterDao[Conn] {
 
-    override def ownedBy(id: ProfileId)(implicit c: Conn): Seq[ClusterAssignment] =
+    override def ownedBy(id: ProfileId)(implicit c: Conn): Seq[Cluster] =
       clusters().filter(_.ownerId == id)
 
     override def ownerOf(clusterId: ClusterId)(implicit c: Conn): Option[ProfileId] =
       clusters().find(_.clusterId == clusterId).map(_.ownerId)
 
-    override def register(assignment: ClusterAssignment)(implicit c: Conn): Unit = {
-      require(!clusters().exists(_.clusterId == assignment.clusterId), "Cluster already assigned")
-      clusters() = clusters() :+ assignment
+    override def register(cluster: Cluster)(implicit c: Conn): Cluster = {
+      require(cluster.secret.isDefined, "Missing cluster secret")
+      require(!clusters().exists(_.clusterId == cluster.clusterId), "Cluster already assigned")
+      clusters() = clusters() :+ cluster
+      cluster
     }
+
+    override def lookupBySecret(secret: ClusterSecret)(implicit c: Conn): Option[Cluster] =
+      clusters().find(_.secret == Some(secret))
   }
 
   private def updateProfile(id: ProfileId)(f: CosmosProfile => CosmosProfile): Unit =

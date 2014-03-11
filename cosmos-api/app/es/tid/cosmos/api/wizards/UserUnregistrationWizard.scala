@@ -19,7 +19,7 @@ import scalaz._
 import play.Logger
 
 import es.tid.cosmos.api.controllers.common.Message
-import es.tid.cosmos.api.profile.{ClusterAssignment, UserState}
+import es.tid.cosmos.api.profile.{Cluster, UserState}
 import es.tid.cosmos.api.profile.dao._
 import es.tid.cosmos.servicemanager.ServiceManager
 import es.tid.cosmos.servicemanager.clusters.{Terminating, Terminated, ClusterId}
@@ -93,7 +93,7 @@ class UserUnregistrationWizard(
     if description.state != Terminated && description.state != Terminating
   } yield cluster.clusterId
 
-  private def profileClusters(cosmosId: Long): Seq[ClusterAssignment] =
+  private def profileClusters(cosmosId: Long): Seq[Cluster] =
     store.withTransaction { implicit c =>
       store.cluster.ownedBy(cosmosId)
     }

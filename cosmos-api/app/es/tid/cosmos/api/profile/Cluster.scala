@@ -11,20 +11,20 @@
 
 package es.tid.cosmos.api.profile
 
-import java.util.Date
+import java.sql.Timestamp
 
 import es.tid.cosmos.servicemanager.clusters.ClusterId
 
-/** Association between a cluster and his owner.
+/** Cluster owned by a user profile.
   *
   * @param clusterId     Owned cluster
   * @param ownerId       Cluster creator
   * @param creationDate  Creation timestamp
-  * @param secret        Cluster secret
+  * @param secret        Cluster secret or None for legacy clusters
   */
-case class ClusterAssignment(
+case class Cluster(
     clusterId: ClusterId,
     ownerId: Long,
-    creationDate: Date,
+    creationDate: Timestamp,
     secret: Option[ClusterSecret] = None
 )

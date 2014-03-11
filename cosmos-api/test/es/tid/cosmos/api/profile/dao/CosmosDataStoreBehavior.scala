@@ -22,7 +22,9 @@ import es.tid.cosmos.api.quota._
 trait CosmosDataStoreBehavior
   extends CapabilityMatchers with MustMatchers with ClusterDataStoreBehavior { this: FlatSpec =>
 
-  def profileDataStore(withStore: DaoTest => Unit) {
+  type ProfileTest = CosmosDataStore => Unit
+
+  def profileDataStore(withStore: ProfileTest => Unit) {
 
     val unknownCosmosId = 1000
 

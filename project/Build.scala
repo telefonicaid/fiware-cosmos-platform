@@ -184,7 +184,7 @@ object Build extends sbt.Build {
         (puppetBase / "modules_third_party" ***)
       IO.copy(for {
         (file, name) <- modules pair relativeTo(puppetBase)
-      } yield (file, puppetDir / name))
+      } yield (file, puppetDir / name), true)
 
       val distFile = target.value / s"cosmos-platform-${projectVersion}.zip"
       val distDir = target.value / "dist"
